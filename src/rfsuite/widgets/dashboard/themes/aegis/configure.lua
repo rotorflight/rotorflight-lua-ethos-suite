@@ -13,7 +13,7 @@ local config = {}
 local DEFAULTS = {
     rpm_max = 2500,
     bec_min = 6.5,
-    bec_warn = 8.0,
+    bec_warn = 7.0,
     esc_warn = 110,
     esc_max = 150,
     fuel_warn = 25,
@@ -38,6 +38,11 @@ local function loadConfig()
     for key, default in pairs(DEFAULTS) do
         config[key] = tonumber(getPref(key)) or default
     end
+
+    -- Migrate the original 8.0 V default, which is too high for a normal
+    -- 7.2 V BEC. User-entered values other than exactly 8.0 V are preserved.
+    if config.bec_warn == 8 then config.bec_warn = DEFAULTS.bec_warn end
+
     config.rpm_max = clamp(config.rpm_max, 100, 20000)
     config.bec_min = clamp(config.bec_min, 2.0, 14.8)
     config.bec_warn = clamp(config.bec_warn, config.bec_min + 0.1, 15.0)
@@ -82,7 +87,7 @@ local function configure()
     )
 
     addField(
-        power:addLine("BEC healthy"),
+        power:addLine("BEC caution below"),
         20, 150,
         function() return floor(config.bec_warn * 10 + 0.5) end,
         function(v)
