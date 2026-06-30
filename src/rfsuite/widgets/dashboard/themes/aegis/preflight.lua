@@ -14,21 +14,75 @@ local format = string.format
 
 local utils = rfsuite.widgets.dashboard.utils
 local headeropts = utils.getHeaderOptions()
+local colorMode = utils.themeColors()
 local header_layout = utils.standardHeaderLayout(headeropts)
-local header_boxes = utils.standardHeaderBoxes(headeropts)
+local header_boxes_cache = nil
+local last_txbatt_type = nil
+local C
+
+local function header_boxes()
+    local txbatt_type = 0
+    if rfsuite and rfsuite.preferences and rfsuite.preferences.general then
+        txbatt_type = rfsuite.preferences.general.txbatt_type or 0
+    end
+
+    if header_boxes_cache == nil or last_txbatt_type ~= txbatt_type then
+        local boxes = utils.standardHeaderBoxes(i18n, colorMode, headeropts, txbatt_type)
+
+        -- Replace the stock Rotorflight logo with the MWRC-style title while
+        -- keeping the radio's native header surface and battery/RSSI widgets.
+        for _, headerBox in ipairs(boxes) do
+            if headerBox.type == "image" then
+                headerBox.type = "func"
+                headerBox.subtype = "func"
+                headerBox.bgcolor = "transparent"
+                headerBox.paint = function(x, y, w, h)
+                    local headerBg = colorMode.tbbgcolor or colorMode.bgcolor
+                    if type(headerBg) == "number" then
+                        lcd.color(headerBg)
+                        lcd.drawFilledRectangle(floor(x), floor(y), floor(w), floor(h))
+                    end
+
+                    local font = utils.resolveFont("FONT_L", nil)
+                    if type(font) ~= "number" then return end
+                    lcd.font(font)
+
+                    local t1, t2, t3 = "ETHOS ", "// ", "ROTORFLIGHT"
+                    local tw1, th = lcd.getTextSize(t1)
+                    local tw2 = lcd.getTextSize(t2)
+                    local tw3 = lcd.getTextSize(t3)
+                    local totalW = tw1 + tw2 + tw3
+                    local tx = floor(x + (w - totalW) / 2)
+                    local ty = floor(y + (h - th) / 2)
+
+                    lcd.color(C.cyan)
+                    lcd.drawText(tx, ty, t1)
+                    lcd.color(C.amber)
+                    lcd.drawText(tx + tw1, ty, t2)
+                    lcd.color(C.white)
+                    lcd.drawText(tx + tw1 + tw2, ty, t3)
+                end
+            end
+        end
+
+        header_boxes_cache = boxes
+        last_txbatt_type = txbatt_type
+    end
+    return header_boxes_cache
+end
 
 local THEME_SECTION = "system/aegis"
 local DEFAULTS = {
     rpm_max = 2500,
     bec_min = 6.5,
-    bec_warn = 8.0,
+    bec_warn = 7.0,
     esc_warn = 110,
     esc_max = 150,
     fuel_warn = 25,
     link_warn = 50
 }
 
-local C = {
+C = {
     bg = lcd.RGB(7, 11, 16),
     panel = lcd.RGB(14, 21, 29),
     panel2 = lcd.RGB(19, 28, 38),
@@ -48,14 +102,27 @@ local C = {
     violetDim = lcd.RGB(55, 41, 88)
 }
 
+-- Use the radio's actual header surface for the dashboard and every panel.
+-- This removes the separate near-black Aegis backdrop while preserving the
+-- instrument borders, accents, and high-contrast telemetry.
+C.bg = colorMode.tbbgcolor or colorMode.bgcolor or C.bg
+C.panel = C.bg
+C.panel2 = C.bg
+
 local function getThemeValue(key)
     local session = rfsuite and rfsuite.session
     local prefs = session and session.modelPreferences and session.modelPreferences[THEME_SECTION]
     local value = prefs and tonumber(prefs[key])
+
+    -- Migrate the v1/v1.2 BEC healthy threshold. 8.0 V marked normal
+    -- 7.2 V BEC systems as a caution, so the new baseline is 7.0 V.
+    if key == "bec_warn" and value == 8 then value = 7.0 end
+
     return value or DEFAULTS[key]
 end
 
 local function sensor(telemetry, name, alias1, alias2)
+    telemetry = telemetry or (rfsuite.tasks and rfsuite.tasks.telemetry)
     if not (telemetry and telemetry.getSensor) then return nil end
     local value = telemetry.getSensor(name)
     if value ~= nil then return tonumber(value) end
@@ -68,6 +135,65 @@ local function sensor(telemetry, name, alias1, alias2)
         if value ~= nil then return tonumber(value) end
     end
     return nil
+end
+
+local GOVERNOR_LABELS = {
+    [0] = "OFF",
+    [1] = "IDLE",
+    [2] = "SPOOLUP",
+    [3] = "RECOVERY",
+    [4] = "ACTIVE",
+    [5] = "THR OFF",
+    [6] = "LOST HS",
+    [7] = "AUTOROT",
+    [8] = "BAILOUT",
+    [100] = "GOV DISABLED",
+    [101] = "DISARMED"
+}
+
+local GOVERNOR_COLORS = {
+    [0] = C.amber,
+    [1] = C.amber,
+    [2] = C.red,
+    [3] = C.amber,
+    [4] = C.red,
+    [5] = C.green,
+    [6] = C.red,
+    [7] = C.amber,
+    [8] = C.red,
+    [100] = C.muted,
+    [101] = C.green
+}
+
+local function getFlightState(telemetry)
+    local armflags = sensor(telemetry, "armflags")
+    local governor = sensor(telemetry, "governor")
+    local armed = nil
+
+    if rfsuite.utils and rfsuite.utils.armFlagsToIsArmed then
+        armed = rfsuite.utils.armFlagsToIsArmed(armflags)
+    end
+
+    if armed == nil and armflags == nil and governor == nil then
+        local session = rfsuite and rfsuite.session
+        if session and session.telemetryState then armed = session.isArmed == true end
+    end
+
+    if armed == false then return "DISARMED", C.green end
+
+    local governorCode = governor and floor(governor + 0.5) or nil
+    local governorLabel = governorCode and GOVERNOR_LABELS[governorCode] or nil
+    local governorColor = governorCode and GOVERNOR_COLORS[governorCode] or nil
+
+    if governorCode == 101 then return "DISARMED", C.green end
+    if armed == true then
+        if governorLabel and governorCode ~= 100 then
+            return "ARMED / " .. governorLabel, governorColor or C.red
+        end
+        return "ARMED", C.red
+    end
+    if governorLabel then return governorLabel, governorColor or C.cyan end
+    return "STATE --", C.muted
 end
 
 local function fmt(value, decimals, suffix, missing)
@@ -114,6 +240,18 @@ local function drawPanel(x, y, w, h, accent, title)
     if title then
         drawTextAligned(x + 12, y + 7, w - 22, title, "FONT_XS", C.muted, "left")
     end
+end
+
+local function drawStateBadge(x, y, w, h, label, color)
+    x, y, w, h = floor(x), floor(y), floor(w), floor(h)
+    color = color or C.muted
+    lcd.color(C.panel)
+    lcd.drawFilledRectangle(x, y, w, h)
+    lcd.color(C.line)
+    lcd.drawRectangle(x, y, w, h, 1)
+    lcd.color(color)
+    lcd.drawFilledRectangle(x, y, 4, h)
+    drawTextAligned(x + 10, y + 5, w - 18, label or "STATE --", "FONT_XS", color, "center")
 end
 
 local function drawMetric(x, y, w, h, title, valueText, accent, subtitle)
@@ -181,52 +319,72 @@ local function preflightWakeup(box, telemetry)
     c.rate = sensor(telemetry, "rate_profile")
     c.pid = sensor(telemetry, "pid_profile")
     c.voltage = sensor(telemetry, "voltage")
+    c.flightState, c.flightStateColor = getFlightState(telemetry)
 
     local available = 0
     local faults = 0
     local warnings = 0
+    local issues = {}
 
     if c.fuel ~= nil then
         available = available + 1
-        if c.fuel <= getThemeValue("fuel_warn") then faults = faults + 1 end
+        if c.fuel <= getThemeValue("fuel_warn") then
+            faults = faults + 1
+            issues[#issues + 1] = "SMART FUEL " .. fmt(c.fuel, 0, "%") .. " AT RESERVE"
+        end
     end
     if c.bec ~= nil then
         available = available + 1
         if c.bec < getThemeValue("bec_min") then
             faults = faults + 1
+            issues[#issues + 1] = "BEC " .. fmt(c.bec, 1, "V") .. " BELOW " .. fmt(getThemeValue("bec_min"), 1, "V")
         elseif c.bec < getThemeValue("bec_warn") then
             warnings = warnings + 1
+            issues[#issues + 1] = "BEC " .. fmt(c.bec, 1, "V") .. " BELOW " .. fmt(getThemeValue("bec_warn"), 1, "V")
         end
     end
     if c.esc ~= nil then
         available = available + 1
         if c.esc >= getThemeValue("esc_max") then
             faults = faults + 1
+            issues[#issues + 1] = "ESC " .. fmt(c.esc, 0, "°C") .. " AT LIMIT"
         elseif c.esc >= getThemeValue("esc_warn") then
             warnings = warnings + 1
+            issues[#issues + 1] = "ESC " .. fmt(c.esc, 0, "°C") .. " ABOVE WARNING"
         end
     end
     if c.link ~= nil then
         available = available + 1
-        if c.link < getThemeValue("link_warn") then warnings = warnings + 1 end
+        if c.link < getThemeValue("link_warn") then
+            warnings = warnings + 1
+            issues[#issues + 1] = "LINK " .. fmt(c.link, 0, "%") .. " BELOW " .. fmt(getThemeValue("link_warn"), 0, "%")
+        end
+    end
+
+    local issueCount = faults + warnings
+    c.issueText = issues[1]
+    if issueCount > 1 and c.issueText then
+        c.issueText = c.issueText .. "  +" .. tostring(issueCount - 1) .. " MORE"
     end
 
     if available == 0 then
         c.status = "WAITING"
         c.statusColor = C.muted
         c.statusSub = "CONNECT TELEMETRY"
+        c.issueText = nil
     elseif faults > 0 then
         c.status = "CHECK"
         c.statusColor = C.red
-        c.statusSub = tostring(faults) .. " CRITICAL ITEM" .. (faults == 1 and "" or "S")
+        c.statusSub = tostring(issueCount) .. " ITEM" .. (issueCount == 1 and "" or "S") .. " FLAGGED"
     elseif warnings > 0 then
         c.status = "CAUTION"
         c.statusColor = C.amber
-        c.statusSub = tostring(warnings) .. " ITEM" .. (warnings == 1 and "" or "S") .. " TO REVIEW"
+        c.statusSub = tostring(issueCount) .. " ITEM" .. (issueCount == 1 and "" or "S") .. " TO REVIEW"
     else
         c.status = "READY"
         c.statusColor = C.green
         c.statusSub = "SYSTEMS NOMINAL"
+        c.issueText = nil
     end
 
     return c
@@ -278,8 +436,13 @@ local function preflightPaint(x, y, w, h, box, c)
     local radius = min(centerW * 0.33, bodyH * 0.32)
     drawHex(cx, cy, radius + 12, C.line2)
     drawHex(cx, cy, radius, c.statusColor or C.muted)
-    drawTextAligned(centerX, cy - 26, centerW, c.status or "WAITING", "FONT_XXL", C.white, "center")
-    drawTextAligned(centerX, cy + 18, centerW, c.statusSub or "CONNECT TELEMETRY", "FONT_XXS", c.statusColor or C.muted, "center")
+    drawTextAligned(centerX, cy - 34, centerW, c.status or "WAITING", "FONT_XXL", C.white, "center")
+    if c.issueText then
+        drawTextAligned(centerX + 12, cy + 15, centerW - 24, c.issueText, "FONT_XS", C.white, "center")
+        drawTextAligned(centerX, cy + 40, centerW, c.statusSub or "ITEM TO REVIEW", "FONT_XXS", c.statusColor or C.muted, "center")
+    else
+        drawTextAligned(centerX, cy + 22, centerW, c.statusSub or "CONNECT TELEMETRY", "FONT_XXS", c.statusColor or C.muted, "center")
+    end
 
     local segY = bodyY + bodyH - 86
     drawTextAligned(centerX + 18, segY - 22, centerW - 36, "SMART FUEL", "FONT_XS", C.muted, "left")
@@ -287,6 +450,9 @@ local function preflightPaint(x, y, w, h, box, c)
     drawSegments(centerX + 18, segY, centerW - 42, 18, fuel, 12, fuelColor, C.line)
     lcd.color(fuelColor)
     lcd.drawFilledRectangle(floor(centerX + centerW - 20), floor(segY + 5), 5, 8)
+
+    -- Put the arm/governor state directly below the Smart Fuel battery.
+    drawStateBadge(centerX + 18, segY + 31, centerW - 36, 27, c.flightState, c.flightStateColor)
 
     drawMetric(rightX, bodyY, sideW, cardH, "ESC THERMAL", fmt(c.esc, 0, "°C"), escColor, "controller temperature")
     drawProgress(rightX + 12, bodyY + cardH - 36, sideW - 24, 9, c.esc and c.esc / getThemeValue("esc_max") or 0, escColor)
@@ -297,14 +463,19 @@ local function preflightPaint(x, y, w, h, box, c)
     drawCheckRow(rightX + 14, bodyY + cardH + pad + 102, sideW - 28, "PACK", fmt(c.voltage, 1, " V"), C.cyan)
 end
 
+local boxes_cache = nil
+
 local function boxes()
-    return {{
+    if boxes_cache == nil then
+        boxes_cache = {{
         col = 1, row = 1, colspan = 12, rowspan = 12,
         type = "func", subtype = "func",
         wakeup = preflightWakeup,
         paint = preflightPaint,
         bgcolor = "transparent"
-    }}
+        }}
+    end
+    return boxes_cache
 end
 
 return {
