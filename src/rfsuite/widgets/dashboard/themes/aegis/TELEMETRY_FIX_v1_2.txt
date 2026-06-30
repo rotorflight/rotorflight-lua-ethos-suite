@@ -1,1 +1,0 @@
-Aegis v1.2 fixes telemetry by keeping the full-screen function box persistent between dashboard boxes() calls. The custom wakeup cache now survives into paint, and all three screens include a fallback to rfsuite.tasks.telemetry.
