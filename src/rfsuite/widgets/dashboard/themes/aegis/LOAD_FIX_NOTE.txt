@@ -1,0 +1,1 @@
+Aegis v1.1 fixes the initial theme load failure by using the RFSuite standardHeaderBoxes API correctly on all three screens.
