@@ -75,7 +75,7 @@ end
 local function logMemCheckpoint(label)
     local dev = rfsuite.preferences and rfsuite.preferences.developer
     if dev and (dev.memstats or dev.overlaystats) then
-        log(string.format("[mem] %s: %dk", label, collectgarbage("count")), "info")
+        log(format("[mem] %s: %dk", label, floor((collectgarbage("count") or 0) + 0.5)), "info")
     end
 end
 
