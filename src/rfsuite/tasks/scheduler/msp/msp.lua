@@ -90,16 +90,23 @@ bindActiveTransport()
 -- Load MSP queue with protocol settings
 mspQueue = assert(loadfile("SCRIPTS:/" .. rfsuite.config.baseDir .. "/tasks/scheduler/msp/mspQueue.lua"))()
 msp.mspQueue = mspQueue
-mspQueue.maxRetries   = msp.protocol.maxRetries
-mspQueue.loopInterval = 0                -- Queue processing rate
-mspQueue.copyOnAdd    = true             -- Clone messages on enqueue
-mspQueue.interMessageDelay = 0.05         -- Delay between messages
-mspQueue.timeout      = msp.protocol.mspQueueTimeout or 2.0
-mspQueue.drainAfterReplyMss = 0.05         -- No drain delay after reply
-mspQueue.drainMaxPolls = 5                 -- Max polls to wait during drain
-mspQueue.busyWarningThreshold = msp.protocol.mspQueueBusyWarning or 8 -- Soft pressure signal only
-mspQueue.maxQueueDepth = msp.protocol.mspQueueMaxDepth or 20            -- Hard cap (0 = disabled)
-mspQueue.busyStatusCooldown = msp.protocol.mspQueueBusyStatusCooldown or 0.35
+
+local function applyProtocolQueueSettings()
+    local active = msp.protocol or {}
+    mspQueue.maxRetries = active.maxRetries or 3
+    mspQueue.loopInterval = 0
+    mspQueue.copyOnAdd = true
+    mspQueue.interMessageDelay = active.mspQueueInterMessageDelay or 0.05
+    mspQueue.timeout = active.mspQueueTimeout or 2.0
+    mspQueue.rxInactivityTimeout = active.mspRxInactivityTimeout or 0.9
+    mspQueue.drainAfterReplyMs = active.mspQueueDrainAfterReplyMs or 0.03
+    mspQueue.drainMaxPolls = active.mspQueueDrainMaxPolls or 5
+    mspQueue.busyWarningThreshold = active.mspQueueBusyWarning or 8
+    mspQueue.maxQueueDepth = active.mspQueueMaxDepth or 20
+    mspQueue.busyStatusCooldown = active.mspQueueBusyStatusCooldown or 0.35
+end
+
+applyProtocolQueueSettings()
 
 -- Load helpers and API handlers
 msp.mspHelper = assert(loadfile("SCRIPTS:/" .. rfsuite.config.baseDir .. "/tasks/scheduler/msp/mspHelper.lua"))()
@@ -196,6 +203,7 @@ function msp.wakeup()
         msp.protocol = protocol.getProtocol()
 
         bindActiveTransport()
+        applyProtocolQueueSettings()
 
         utils.session()
         msp.onConnectChecksInit = true
