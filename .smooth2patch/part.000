@@ -1,0 +1,195 @@
+--- a/src/rfsuite/lib/utils.lua
++++ b/src/rfsuite/lib/utils.lua
+@@ -68,6 +68,7 @@
+         telemetryModuleNumber = nil,
+ 
+         mspBusy = false,
++        mspWakeRequested = false,
+         mspStatusMessage = nil,
+         mspStatusUpdatedAt = nil,
+         mspStatusLast = nil,
+--- a/src/rfsuite/tasks/tasks.lua
++++ b/src/rfsuite/tasks/tasks.lua
+@@ -644,12 +644,13 @@
+ 
+ 
+ -- Hoisted runners (avoid allocating closures on every wakeup)
+-local function runNonSpreadTasks(now)
++local function runNonSpreadTasks(now, skipPriorityTasks)
+ 
+     local loopCpu = 0
+ 
+     for _, task in ipairs(tasksListNonSpread) do
+-        local mod = tasks[task.name]
++        local skipTask = skipPriorityTasks and (task.name == "msp" or task.name == "callback")
++        local mod = not skipTask and tasks[task.name] or nil
+         if mod and mod.wakeup then
+             local okToRun, od = canRunTask(task, now)
+             if okToRun then
+@@ -914,33 +915,45 @@
+     local cycleFlip = schedulerTick % 2
+ 
+     -- MSP boost mode:
+-    -- As soon as we have any MSP activity, prioritize MSP and callback tasks only.
+-    -- This ensures that the MSP queue is drained as fast as possible to reduce latency.
+-    if rfsuite.session.mspBusy then
+-            if tasks.msp and tasks.msp.wakeup then
+-                if perfTimingEnabled then
+-                    local c0 = os_clock()
+-                    tasks.msp.wakeup()
+-                    loopCpu = loopCpu + (os_clock() - c0)
+-                else
+-                    tasks.msp.wakeup()
+-                end
++    -- mspWakeRequested starts queued work promptly without pretending the transport
++    -- is already busy. Once a request is in flight, mspBusy keeps the hot path focused
++    -- on MSP and callback processing until the reply completes.
++    local session = rfsuite.session
++    local mspPriority = session.mspBusy or session.mspWakeRequested
++    if mspPriority then
++        if tasks.msp and tasks.msp.wakeup then
++            if perfTimingEnabled then
++                local c0 = os_clock()
++                tasks.msp.wakeup()
++                loopCpu = loopCpu + (os_clock() - c0)
++            else
++                tasks.msp.wakeup()
+             end
+-            if tasks.callback and tasks.callback.wakeup then
+-                if perfTimingEnabled then
+-                    local c0 = os_clock()
+-                    tasks.callback.wakeup()
+-                    loopCpu = loopCpu + (os_clock() - c0)
+-                else
+-                    tasks.callback.wakeup()
+-                end
++        end
++        if tasks.callback and tasks.callback.wakeup then
++            if perfTimingEnabled then
++                local c0 = os_clock()
++                tasks.callback.wakeup()
++                loopCpu = loopCpu + (os_clock() - c0)
++            else
++                tasks.callback.wakeup()
+             end
++        end
++
++        -- If the request only needed an early wake (for example, an inter-message
++        -- delay), continue normal tasks so battery and arm-state telemetry are not
++        -- suppressed. Skip MSP/callback because they already ran above.
++        if not session.mspBusy then
++            if cycleFlip == 0 then
++                loopCpu = loopCpu + (runNonSpreadTasks(now, true) or 0)
++            else
++                loopCpu = loopCpu + (runSpreadTasks(now) or 0)
++            end
++        end
+     else
+-    -- Bulk task processing split across two cycles to reduce per-cycle load.
+-    -- This includes MSP and callback so they are guaranteed to run regardless.
+-    -- The cycle starts MSP; it then boosts, then drops back after MSP is done.
++        -- Bulk task processing split across two cycles to reduce per-cycle load.
+         if cycleFlip == 0 then
+-            loopCpu = loopCpu + (runNonSpreadTasks(now) or 0)
++            loopCpu = loopCpu + (runNonSpreadTasks(now, false) or 0)
+         else
+             loopCpu = loopCpu + (runSpreadTasks(now) or 0)
+         end
+--- a/src/rfsuite/tasks/scheduler/msp/common.lua
++++ b/src/rfsuite/tasks/scheduler/msp/common.lua
+@@ -44,11 +44,26 @@
+ local mspRxCRC      = 0              -- Accumulated CRC for V1
+ local mspRxReq      = 0              -- Command ID of reply
+ local mspStarted    = false          -- True when in middle of multi-frame RX
++local mspRxLastActivityAt = nil      -- Timestamp of the most recent valid fragment
+ local mspLastReq    = 0              -- Command ID we last sent
+ local mspTxBuf      = {}             -- Outgoing payload buffer
+ local mspTxIdx      = 1              -- Write pointer into TX buffer
+ local mspTxCRC      = 0              -- Running CRC for V1
+ 
++-- Reset receive-side assembly state. clearLastReq is used when a transaction is
++-- abandoned; retries keep the outstanding command so a fresh start frame can match.
++local function mspResetRxState(clearLastReq)
++    mspRemoteSeq = 0
++    mspRxBuf = {}
++    mspRxError = false
++    mspRxSize = 0
++    mspRxCRC = 0
++    mspRxReq = 0
++    mspStarted = false
++    mspRxLastActivityAt = nil
++    if clearLastReq then mspLastReq = 0 end
++end
++
+ -- Set protocol: only 1 or 2 are valid
+ local function setProtocolVersion(v)
+     v = tonumber(v)
+@@ -220,15 +235,14 @@
+     else
+         -- Continuation frame: ensure sequencing is correct
+         if (not mspStarted) or (((mspRemoteSeq + 1) & 0x0F) ~= seq) then
+-            mspStarted = false
+-            mspRxBuf = {}
+-            mspRxSize = 0
+-            mspRxCRC = 0
+-            mspRemoteSeq = 0
++            mspResetRxState(false)
+             return nil
+         end
+     end
+ 
++    -- A matching start frame or correctly sequenced continuation is progress.
++    if mspStarted then mspRxLastActivityAt = os_clock() end
++
+     -- Copy payload bytes
+     while (idx <= maxRx()) and (#mspRxBuf < mspRxSize) do
+         mspRxBuf[#mspRxBuf + 1] = payload[idx]
+@@ -369,6 +383,10 @@
+     mspSendRequest     = mspSendRequest,
+     mspPollReply       = mspPollReply,
+     mspClearTxBuf      = mspClearTxBuf,
++    resetRxState       = mspResetRxState,
++    isRxInProgress     = function() return mspStarted end,
++    getRxLastActivityAt= function() return mspRxLastActivityAt end,
++    getRxProgress      = function() return #mspRxBuf, mspRxSize end,
+     getLastTxCmd       = function() return mspLastReq end,
+     getLastRxCmd       = function() return mspRxReq end
+ }
+--- a/src/rfsuite/tasks/scheduler/msp/mspQueue.lua
++++ b/src/rfsuite/tasks/scheduler/msp/mspQueue.lua
+@@ -243,6 +243,7 @@
+ -- This reduces "spillover" where a late duplicate reply (from an earlier resend) is consumed by the next message.
+ local function drainAfterSuccess(self, cmd)
+     if not cmd then return end
++    if (self.retryCount or 0) <= 1 then return end
+     local drainMs = self.drainAfterReplyMs or 0
+     if drainMs <= 0 then return end
+ 
+@@ -281,6 +282,7 @@
+     self.retryCount = 0
+     self.maxRetries = opts.maxRetries or 3
+     self.timeout = opts.timeout or 2.0
++    self.rxInactivityTimeout = opts.rxInactivityTimeout or 0.9
+ 
+     -- Minimum seconds between re-sends of the same message (prevents pipelined retries)
+     self.retryBackoff = opts.retryBackoff or RETRY_BACKOFF_SECONDS or DEFAULT_RETRY_BACKOFF_SECONDS
+@@ -340,6 +342,7 @@
+     -- Nothing to do
+     if self:isProcessed() then
+         session.mspBusy = false
++        session.mspWakeRequested = false
+         self.mspBusyStart = nil
+         if session and session.mspStatusMessage then
+             session.mspStatusClearAt = now + 0.75
+@@ -352,6 +355,7 @@
+         --utils.log("MSP busy for more than " .. mspBusyTimeout .. " seconds", "info")
+         --utils.log(" - Unblocking by setting rfsuite.session.mspBusy = false", "info")
+         session.mspBusy = false
++        session.mspWakeRequested = true
+         self.mspBusyStart = nil
+         return
+     end
+@@ -362,6 +366,7 @@
+         if self.interMessageDelay and self.interMessageDelay > 0 then
+             if now < (self._nextMessageAt or 0) then
+                 session.mspBusy = false
