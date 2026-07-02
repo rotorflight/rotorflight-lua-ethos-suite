@@ -176,12 +176,14 @@ local function paintHeaderLogo(x, y)
     lcd.color(colorMode.textcolor)
     lcd.drawText(x + 5 + headerTextWidth1 + headerTextWidth2, y + 4, HEADER_TEXT_3)
 
+    -- Small permanent author mark in the common header. It is present on
+    -- preflight, inflight, and postflight without covering telemetry.
     local watermarkX = x + 5 + headerTextWidth1 + headerTextWidth2 + headerTextWidth3 + 10
     lcd.color(rc.amber)
     lcd.drawLine(watermarkX - 5, y + 9, watermarkX - 5, y + 25)
     lcd.font(FONT_XS or FONT_XXS or 0)
     if headerWatermarkWidth == nil then headerWatermarkWidth = lcd.getTextSize(HEADER_WATERMARK) end
-    lcd.color(rc.cyan)
+    lcd.color(colorMode.accentcolor)
     lcd.drawText(watermarkX, y + 8, HEADER_WATERMARK)
 end
 

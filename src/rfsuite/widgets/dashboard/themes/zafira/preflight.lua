@@ -1,28 +1,429 @@
-local rfsuite=require("rfsuite")
-local lcd=lcd
-local floor,min,max=math.floor,math.min,math.max
-local cos,sin,rad=math.cos,math.sin,math.rad
-local tonumber,tostring,type=tonumber,tostring,type
-local format=string.format
-local utils=rfsuite.widgets.dashboard.utils
-local headeropts=utils.getHeaderOptions()
-local colorMode=utils.themeColors()
-local header_layout=utils.standardHeaderLayout(headeropts)
-local C={bg=lcd.RGB(42,42,42),panel=lcd.RGB(42,42,42),line=lcd.RGB(104,75,119),line2=lcd.RGB(151,107,160),white=lcd.RGB(246,239,255),muted=lcd.RGB(190,166,199),gold=lcd.RGB(255,199,91),cyan=lcd.RGB(58,238,216),green=lcd.RGB(81,241,139),pink=lcd.RGB(255,78,203),violet=lcd.RGB(187,107,255),red=lcd.RGB(255,88,110),amber=lcd.RGB(255,166,62)}
-local SECTION="system/zafira"
-local DEF={bec_min=6.5,bec_warn=7.0,esc_warn=110,esc_max=150,fuel_warn=25,link_warn=50}
-local function pref(k) local s=rfsuite and rfsuite.session local p=s and s.modelPreferences and s.modelPreferences[SECTION] return (p and tonumber(p[k])) or DEF[k] end
-local function sensor(t,n,a) t=t or(rfsuite.tasks and rfsuite.tasks.telemetry) if not(t and t.getSensor) then return nil end local v=t.getSensor(n) if v~=nil then return tonumber(v) end if a then v=t.getSensor(a) if v~=nil then return tonumber(v) end end end
-local function fmt(v,d,u) if v==nil then return "--" end local q=d==1 and format("%.1f",v) or tostring(floor(v+0.5)) return q..(u or "") end
-local function font(n) return utils.resolveFont(n,nil) end
-local function text(x,y,w,s,f,c,a) local ft=font(f) if type(ft)~="number" then return end lcd.font(ft) lcd.color(c) local tw=lcd.getTextSize(s) local tx=x if a=="center" then tx=x+(w-tw)/2 elseif a=="right" then tx=x+w-tw end lcd.drawText(floor(tx),floor(y),s) end
-local function diamond(cx,cy,r,c,c2) lcd.color(c) lcd.drawLine(cx,cy-r,cx+r,cy) lcd.drawLine(cx+r,cy,cx,cy+r) lcd.drawLine(cx,cy+r,cx-r,cy) lcd.drawLine(cx-r,cy,cx,cy-r) if c2 then local q=floor(r*0.55) lcd.color(c2) lcd.drawLine(cx,cy-q,cx+q,cy) lcd.drawLine(cx+q,cy,cx,cy+q) lcd.drawLine(cx,cy+q,cx-q,cy) lcd.drawLine(cx-q,cy,cx,cy-q) end end
-local function panel(x,y,w,h,title,value,c,sub) lcd.color(C.panel) lcd.drawFilledRectangle(floor(x),floor(y),floor(w),floor(h)) lcd.color(C.line2) lcd.drawRectangle(floor(x),floor(y),floor(w),floor(h),1) lcd.color(c) lcd.drawFilledRectangle(floor(x),floor(y),3,floor(h)) diamond(floor(x+10),floor(y+10),5,c,C.line2) text(x+16,y+7,w-28,title,"FONT_XXS",C.muted,"left") text(x+12,y+30,w-24,value,"FONT_L",C.white,"left") text(x+12,y+h-22,w-24,sub,"FONT_XXS",C.muted,"left") end
-local function header(x,y,w,h) lcd.color(C.bg) lcd.drawFilledRectangle(floor(x),floor(y),floor(w),floor(h)) local f=font("FONT_L") if type(f)~="number" then return end lcd.font(f) local a,b,c="ETHOS ","// ","ROTORFLIGHT" local wa,th=lcd.getTextSize(a) local wb=lcd.getTextSize(b) local wc=lcd.getTextSize(c) local wf=font("FONT_XS") local wm="MWRC" local ww,wh=0,0 if type(wf)=="number" then lcd.font(wf) ww,wh=lcd.getTextSize(wm) lcd.font(f) end local tw=wa+wb+wc local tx=floor(x+(w-tw-ww-14)/2) local ty=floor(y+(h-th)/2) lcd.color(C.gold) lcd.drawText(tx,ty,a) lcd.color(C.pink) lcd.drawText(tx+wa,ty,b) lcd.color(C.white) lcd.drawText(tx+wa+wb,ty,c) if ww>0 then local dx=tx+tw+6 lcd.color(C.line2) lcd.drawLine(dx,y+7,dx,y+h-7) lcd.font(wf) lcd.color(C.cyan) lcd.drawText(dx+7,floor(y+(h-wh)/2),wm) end end
-local hb,last=nil,nil
-local function header_boxes() local t=0 if rfsuite and rfsuite.preferences and rfsuite.preferences.general then t=rfsuite.preferences.general.txbatt_type or 0 end if not hb or last~=t then hb=utils.standardHeaderBoxes(i18n,colorMode,headeropts,t) for _,b in ipairs(hb) do b.bgcolor=C.bg if b.type=="image" then b.type="func" b.subtype="func" b.paint=header end end last=t end return hb end
-local function wake(box,t) local c=box._cache or{} box._cache=c c.fuel=sensor(t,"smartfuel") c.bec=sensor(t,"bec_voltage","bec") c.esc=sensor(t,"temp_esc","esc_temp") c.link=sensor(t,"link","vfr") c.rate=sensor(t,"rate_profile") c.pid=sensor(t,"pid_profile") c.pack=sensor(t,"voltage") local count=0 if c.fuel and c.fuel<=pref("fuel_warn") then count=count+1 end if c.bec and c.bec<pref("bec_warn") then count=count+1 end if c.esc and c.esc>=pref("esc_warn") then count=count+1 end if c.link and c.link<pref("link_warn") then count=count+1 end if count==0 then c.state,c.color,c.sub="READY TO FLY",C.green,"JEWELS ALIGNED" else c.state,c.color,c.sub="REVIEW",C.amber,tostring(count).." ITEM"..(count==1 and "" or "S") end return c end
-local function paint(x,y,w,h,box,c) x,y=utils.applyOffset(x,y,box) c=c or box._cache or{} lcd.color(C.bg) lcd.drawFilledRectangle(floor(x),floor(y),floor(w),floor(h)) text(x+14,y+8,w*0.5,"ZAFIRA // PRE-FLIGHT","FONT_STD",C.gold,"left") text(x+w-230,y+8,216,c.state or "READY TO FLY","FONT_STD",c.color or C.green,"right") local cx=x+w*0.5 local cy=y+h*0.48 local r=min(w,h)*0.20 for i=0,7 do local a=rad(i*45-90) local px=floor(cx+cos(a)*r*1.05) local py=floor(cy+sin(a)*r*1.05) diamond(px,py,floor(r*0.27),i%2==0 and C.cyan or C.pink,C.gold) end diamond(floor(cx),floor(cy),floor(r*0.72),C.gold,C.green) diamond(floor(cx),floor(cy),floor(r*0.42),c.color or C.green,C.white) text(cx-r,cy-46,r*2,c.state or "READY","FONT_XL",C.white,"center") text(cx-r,cy+10,r*2,c.sub or "JEWELS ALIGNED","FONT_XS",c.color or C.green,"center") text(cx-r,cy+42,r*2,"FUEL "..fmt(c.fuel,0,"%"),"FONT_S",C.green,"center") local nw=floor(w*0.21) local nh=floor(h*0.19) local lx=x+14 local rx=x+w-nw-14 local y1=y+54 local y2=y+h-nh-14 panel(lx,y1,nw,nh,"SAPPHIRE BEC",fmt(c.bec,1," V"),C.cyan,"POWER CLARITY") panel(lx,y2,nw,nh,"TURQUOISE LINK",fmt(c.link,0,"%"),C.cyan,"RADIO CLARITY") panel(rx,y1,nw,nh,"EMBER TEMP",fmt(c.esc,0," C"),C.green,"ESC THERMAL") panel(rx,y2,nw,nh,"FLIGHT JEWELS","R"..fmt(c.rate,0,"").." P"..fmt(c.pid,0,""),C.violet,"PACK "..fmt(c.pack,1," V")) end
-local box
-local function boxes() if not box then box={{col=1,row=1,colspan=12,rowspan=12,type="func",subtype="func",wakeup=wake,paint=paint,bgcolor="transparent"}} end return box end
-return{layout={cols=12,rows=12,padding=0},boxes=boxes,header_boxes=header_boxes,header_layout=header_layout,screenBorderStyle={enabled=false},scheduler={spread_scheduling=true,spread_scheduling_paint=false,spread_ratio=0.85}}
+local rfsuite = require("rfsuite")
+local lcd = lcd
+local math = math
+local floor = math.floor
+local min = math.min
+local max = math.max
+local sin = math.sin
+local cos = math.cos
+local rad = math.rad
+local pi = math.pi
+local tonumber = tonumber
+local tostring = tostring
+local type = type
+local format = string.format
+local ipairs = ipairs
+
+local utils = rfsuite.widgets.dashboard.utils
+local headeropts = utils.getHeaderOptions()
+local colorMode = utils.themeColors()
+local header_layout = utils.standardHeaderLayout(headeropts)
+
+local C = {
+    bg = lcd.RGB(34, 26, 42),
+    panel = lcd.RGB(34, 26, 42),
+    line = lcd.RGB(104, 75, 119),
+    line2 = lcd.RGB(151, 107, 160),
+    white = lcd.RGB(246, 239, 255),
+    muted = lcd.RGB(190, 166, 199),
+    gold = lcd.RGB(255, 199, 91),
+    goldDim = lcd.RGB(112, 77, 28),
+    turquoise = lcd.RGB(58, 238, 216),
+    turquoiseDim = lcd.RGB(16, 86, 79),
+    emerald = lcd.RGB(81, 241, 139),
+    emeraldDim = lcd.RGB(22, 91, 52),
+    fuchsia = lcd.RGB(255, 78, 203),
+    fuchsiaDim = lcd.RGB(105, 26, 78),
+    violet = lcd.RGB(187, 107, 255),
+    violetDim = lcd.RGB(67, 34, 99),
+    coral = lcd.RGB(255, 104, 112),
+    amber = lcd.RGB(255, 166, 62),
+    red = lcd.RGB(255, 74, 96)
+}
+
+-- Use the native ETHOS header surface everywhere so the theme is visually
+-- continuous from the system header through the custom dashboard.
+C.bg = colorMode.tbbgcolor or colorMode.bgcolor or C.bg
+C.panel = C.bg
+
+local THEME_SECTION = "system/zafira"
+local DEFAULTS = {
+    rpm_max = 2500,
+    bec_min = 6.5,
+    bec_warn = 7.0,
+    esc_warn = 110,
+    esc_max = 150,
+    fuel_warn = 25,
+    link_warn = 50,
+    current_warn = 120,
+    watts_warn = 3500
+}
+
+local function clamp(v, lo, hi)
+    if v < lo then return lo end
+    if v > hi then return hi end
+    return v
+end
+
+local function getThemeValue(key)
+    local session = rfsuite and rfsuite.session
+    local prefs = session and session.modelPreferences and session.modelPreferences[THEME_SECTION]
+    local value = prefs and tonumber(prefs[key])
+    return value or DEFAULTS[key]
+end
+
+local function sensor(telemetry, name, alias1, alias2)
+    telemetry = telemetry or (rfsuite.tasks and rfsuite.tasks.telemetry)
+    if not (telemetry and telemetry.getSensor) then return nil end
+    local value = telemetry.getSensor(name)
+    if value ~= nil then return tonumber(value) end
+    if alias1 then
+        value = telemetry.getSensor(alias1)
+        if value ~= nil then return tonumber(value) end
+    end
+    if alias2 then
+        value = telemetry.getSensor(alias2)
+        if value ~= nil then return tonumber(value) end
+    end
+    return nil
+end
+
+local function stat(telemetry, source, statType, alias1, alias2)
+    telemetry = telemetry or (rfsuite.tasks and rfsuite.tasks.telemetry)
+    local stats = telemetry and telemetry.sensorStats
+    local data = stats and stats[source]
+    local value = data and data[statType]
+    if value ~= nil then return tonumber(value) end
+    if alias1 then
+        data = stats and stats[alias1]
+        value = data and data[statType]
+        if value ~= nil then return tonumber(value) end
+    end
+    if alias2 then
+        data = stats and stats[alias2]
+        value = data and data[statType]
+        if value ~= nil then return tonumber(value) end
+    end
+    return nil
+end
+
+local function fmt(value, decimals, suffix, missing)
+    if value == nil then return missing or "--" end
+    local text
+    if decimals == 1 then text = format("%.1f", value)
+    elseif decimals == 2 then text = format("%.2f", value)
+    else text = tostring(floor(value + 0.5)) end
+    return text .. (suffix or "")
+end
+
+local function resolveFont(name)
+    return utils.resolveFont(name, nil)
+end
+
+local function drawTextAligned(x, y, w, text, fontName, color, align)
+    local font = resolveFont(fontName)
+    if type(font) ~= "number" then return 0, 0 end
+    lcd.font(font)
+    lcd.color(color)
+    local tw, th = lcd.getTextSize(text)
+    local tx = x
+    if align == "center" then tx = x + (w - tw) / 2
+    elseif align == "right" then tx = x + w - tw end
+    lcd.drawText(floor(tx + 0.5), floor(y + 0.5), text)
+    return tw, th
+end
+
+local function drawDiamond(cx, cy, radius, color, innerColor)
+    cx, cy, radius = floor(cx), floor(cy), floor(radius)
+    lcd.color(color)
+    lcd.drawLine(cx, cy - radius, cx + radius, cy)
+    lcd.drawLine(cx + radius, cy, cx, cy + radius)
+    lcd.drawLine(cx, cy + radius, cx - radius, cy)
+    lcd.drawLine(cx - radius, cy, cx, cy - radius)
+    if innerColor and radius > 4 then
+        local r = floor(radius * 0.55)
+        lcd.color(innerColor)
+        lcd.drawLine(cx, cy - r, cx + r, cy)
+        lcd.drawLine(cx + r, cy, cx, cy + r)
+        lcd.drawLine(cx, cy + r, cx - r, cy)
+        lcd.drawLine(cx - r, cy, cx, cy - r)
+    end
+end
+
+local function drawPetal(cx, cy, length, width, angleDeg, color)
+    local a = rad(angleDeg)
+    local ax, ay = cos(a), sin(a)
+    local px, py = -ay, ax
+    local lastLx, lastLy, lastRx, lastRy
+    lcd.color(color)
+    for i = 0, 8 do
+        local t = i / 8
+        local centerDist = length * t
+        local side = sin(pi * t) * width
+        local ccx = cx + ax * centerDist
+        local ccy = cy + ay * centerDist
+        local lx = floor(ccx + px * side)
+        local ly = floor(ccy + py * side)
+        local rx = floor(ccx - px * side)
+        local ry = floor(ccy - py * side)
+        if lastLx then
+            lcd.drawLine(lastLx, lastLy, lx, ly)
+            lcd.drawLine(lastRx, lastRy, rx, ry)
+        end
+        lastLx, lastLy, lastRx, lastRy = lx, ly, rx, ry
+    end
+end
+
+local function drawLattice(x, y, w, h)
+    local step = 42
+    lcd.color(C.line)
+    for sx = floor(x - h), floor(x + w), step do
+        lcd.drawLine(sx, floor(y + h), sx + floor(h), floor(y))
+    end
+    for sx = floor(x), floor(x + w + h), step do
+        lcd.drawLine(sx, floor(y), sx - floor(h), floor(y + h))
+    end
+end
+
+local function drawPanel(x, y, w, h, accent, title)
+    x, y, w, h = floor(x), floor(y), floor(w), floor(h)
+    lcd.color(C.panel)
+    lcd.drawFilledRectangle(x, y, w, h)
+    lcd.color(C.line2)
+    lcd.drawRectangle(x, y, w, h, 1)
+    lcd.color(accent or C.gold)
+    lcd.drawFilledRectangle(x, y, 3, h)
+    drawDiamond(x + 8, y + 8, 5, accent or C.gold, C.line2)
+    drawDiamond(x + w - 8, y + h - 8, 5, accent or C.gold, C.line2)
+    if title then drawTextAligned(x + 16, y + 7, w - 30, title, "FONT_XXS", C.muted, "left") end
+end
+
+local function drawMetric(x, y, w, h, title, value, accent, subtitle)
+    drawPanel(x, y, w, h, accent, title)
+    drawTextAligned(x + 13, y + 28, w - 26, value, "FONT_L", C.white, "left")
+    if subtitle then drawTextAligned(x + 13, y + h - 23, w - 26, subtitle, "FONT_XXS", C.muted, "left") end
+end
+
+local function drawProgress(x, y, w, h, percent, color)
+    percent = clamp(percent or 0, 0, 1)
+    lcd.color(C.line2)
+    lcd.drawRectangle(floor(x), floor(y), floor(w), floor(h), 1)
+    if percent > 0 then
+        lcd.color(color)
+        lcd.drawFilledRectangle(floor(x + 2), floor(y + 2), floor((w - 4) * percent), max(1, floor(h - 4)))
+    end
+end
+
+local function drawGemLine(x, y, w, count, percent, activeColor, dimColor)
+    percent = clamp(percent or 0, 0, 100)
+    local active = percent > 0 and max(1, min(count, floor(percent * count / 100 + 0.999))) or 0
+    local spacing = w / count
+    for i = 0, count - 1 do
+        local cx = x + spacing * (i + 0.5)
+        drawDiamond(cx, y, min(8, spacing * 0.34), i < active and activeColor or dimColor, i < active and C.white or nil)
+    end
+end
+
+local function drawHeaderTitle(x, y, w, h)
+    lcd.color(C.bg)
+    lcd.drawFilledRectangle(floor(x), floor(y), floor(w), floor(h))
+    local t1, t2, t3 = "ETHOS ", "// ", "ROTORFLIGHT"
+    local f = resolveFont("FONT_L")
+    if type(f) ~= "number" then return end
+    lcd.font(f)
+    local w1, th = lcd.getTextSize(t1)
+    local w2 = lcd.getTextSize(t2)
+    local w3 = lcd.getTextSize(t3)
+
+    local watermarkFont = resolveFont("FONT_XS")
+    local watermarkText = "MWRC"
+    local watermarkWidth, watermarkHeight = 0, 0
+    if type(watermarkFont) == "number" then
+        lcd.font(watermarkFont)
+        watermarkWidth, watermarkHeight = lcd.getTextSize(watermarkText)
+        lcd.font(f)
+    end
+
+    local titleWidth = w1 + w2 + w3
+    local dividerGap = watermarkWidth > 0 and 14 or 0
+    local totalWidth = titleWidth + dividerGap + watermarkWidth
+    local tx = floor(x + (w - totalWidth) / 2)
+    local ty = floor(y + (h - th) / 2)
+    lcd.color(C.gold); lcd.drawText(tx, ty, t1)
+    lcd.color(C.fuchsia); lcd.drawText(tx + w1, ty, t2)
+    lcd.color(C.white); lcd.drawText(tx + w1 + w2, ty, t3)
+
+    if watermarkWidth > 0 then
+        local dividerX = tx + titleWidth + 6
+        lcd.color(C.line2)
+        lcd.drawLine(dividerX, y + 7, dividerX, y + h - 7)
+        lcd.font(watermarkFont)
+        lcd.color(C.gold)
+        lcd.drawText(dividerX + 7, floor(y + (h - watermarkHeight) / 2), watermarkText)
+    end
+end
+
+local header_boxes_cache = nil
+local last_txbatt_type = nil
+local function header_boxes()
+    local txbatt_type = 0
+    if rfsuite and rfsuite.preferences and rfsuite.preferences.general then
+        txbatt_type = rfsuite.preferences.general.txbatt_type or 0
+    end
+    if header_boxes_cache == nil or last_txbatt_type ~= txbatt_type then
+        local boxes = utils.standardHeaderBoxes(i18n, colorMode, headeropts, txbatt_type)
+        for _, b in ipairs(boxes) do
+            b.bgcolor = C.bg
+            if b.type == "image" then
+                b.type = "func"
+                b.subtype = "func"
+                b.paint = drawHeaderTitle
+            end
+        end
+        header_boxes_cache = boxes
+        last_txbatt_type = txbatt_type
+    end
+    return header_boxes_cache
+end
+
+local STATE_LABELS = {
+    [0] = "ARMED / OFF",
+    [1] = "ARMED / IDLE",
+    [2] = "ARMED / SPOOLUP",
+    [3] = "ARMED / RECOVERY",
+    [4] = "ARMED / ACTIVE",
+    [5] = "ARMED / THR CUT",
+    [6] = "ARMED / LINK LOST",
+    [7] = "ARMED / AUTOROT",
+    [8] = "ARMED / BAILOUT",
+    [100] = "GOVERNOR OFF",
+    [101] = "DISARMED"
+}
+local STATE_COLORS = {
+    [0] = C.amber, [1] = C.amber, [2] = C.fuchsia, [3] = C.amber,
+    [4] = C.emerald, [5] = C.emerald, [6] = C.red, [7] = C.amber,
+    [8] = C.red, [100] = C.muted, [101] = C.turquoise
+}
+
+local function getFlightState(telemetry)
+    local armflags = sensor(telemetry, "armflags")
+    local governor = sensor(telemetry, "governor")
+    local armed = nil
+    if rfsuite.utils and rfsuite.utils.armFlagsToIsArmed then armed = rfsuite.utils.armFlagsToIsArmed(armflags) end
+    if armed == nil and armflags == nil and governor == nil then
+        local session = rfsuite and rfsuite.session
+        if session and session.telemetryState then armed = session.isArmed == true end
+    end
+    if armed == false then return "DISARMED", C.turquoise end
+    local code = governor and floor(governor + 0.5) or nil
+    if code == 101 then return "DISARMED", C.turquoise end
+    if armed == true then
+        if code and STATE_LABELS[code] then return STATE_LABELS[code], STATE_COLORS[code] or C.red end
+        return "ARMED", C.red
+    end
+    if code and STATE_LABELS[code] then return STATE_LABELS[code], STATE_COLORS[code] or C.turquoise end
+    return "STATE --", C.muted
+end
+
+local layout = {cols = 12, rows = 12, padding = 0}
+local screenBorderStyle = {enabled = false}
+
+local function preflightWakeup(box, telemetry)
+    local c = box._cache or {}
+    box._cache = c
+    c.fuel = sensor(telemetry, "smartfuel")
+    c.bec = sensor(telemetry, "bec_voltage", "bec")
+    c.esc = sensor(telemetry, "temp_esc", "esc_temp")
+    c.link = sensor(telemetry, "link", "vfr")
+    c.rate = sensor(telemetry, "rate_profile")
+    c.pid = sensor(telemetry, "pid_profile")
+    c.voltage = sensor(telemetry, "voltage")
+    c.flightState, c.flightColor = getFlightState(telemetry)
+
+    local available, faults, warnings = 0, 0, 0
+    local issue = nil
+    if c.fuel ~= nil then
+        available = available + 1
+        if c.fuel <= getThemeValue("fuel_warn") then faults = faults + 1; issue = issue or ("FUEL " .. fmt(c.fuel,0,"%") .. " AT RESERVE") end
+    end
+    if c.bec ~= nil then
+        available = available + 1
+        if c.bec < getThemeValue("bec_min") then faults = faults + 1; issue = issue or ("BEC " .. fmt(c.bec,1,"V") .. " CRITICAL")
+        elseif c.bec < getThemeValue("bec_warn") then warnings = warnings + 1; issue = issue or ("BEC " .. fmt(c.bec,1,"V") .. " LOW") end
+    end
+    if c.esc ~= nil then
+        available = available + 1
+        if c.esc >= getThemeValue("esc_max") then faults = faults + 1; issue = issue or ("ESC " .. fmt(c.esc,0,"C") .. " AT LIMIT")
+        elseif c.esc >= getThemeValue("esc_warn") then warnings = warnings + 1; issue = issue or ("ESC " .. fmt(c.esc,0,"C") .. " HOT") end
+    end
+    if c.link ~= nil then
+        available = available + 1
+        if c.link < getThemeValue("link_warn") then warnings = warnings + 1; issue = issue or ("LINK " .. fmt(c.link,0,"%") .. " LOW") end
+    end
+
+    c.issue = issue
+    if available == 0 then c.status, c.statusSub, c.statusColor = "AWAITING SIGNAL", "CONNECT TELEMETRY", C.muted
+    elseif faults > 0 then c.status, c.statusSub, c.statusColor = "DO NOT LAUNCH", issue or "CRITICAL CHECK", C.red
+    elseif warnings > 0 then c.status, c.statusSub, c.statusColor = "PAUSE & REVIEW", issue or "CHECK SYSTEMS", C.amber
+    else c.status, c.statusSub, c.statusColor = "READY TO BLOOM", "ALL SYSTEMS NOMINAL", C.emerald end
+    return c
+end
+
+local function preflightPaint(x, y, w, h, box, c)
+    x, y = utils.applyOffset(x, y, box)
+    c = c or box._cache or {}
+    lcd.color(C.bg); lcd.drawFilledRectangle(floor(x), floor(y), floor(w), floor(h))
+    drawLattice(x, y, w, h)
+
+    drawTextAligned(x + 14, y + 7, w * 0.52, "ZAFIRA // PRE-FLIGHT", "FONT_STD", C.gold, "left")
+    drawTextAligned(x + w - 300, y + 8, 286, c.status or "AWAITING SIGNAL", "FONT_STD", c.statusColor or C.muted, "right")
+
+    local bodyY, bodyH = y + 43, h - 55
+    local sideW = floor(w * 0.245)
+    local leftX, rightX = x + 12, x + w - sideW - 12
+    local centerX = leftX + sideW + 12
+    local centerW = w - sideW * 2 - 48
+    local cardH = floor((bodyH - 10) / 2)
+
+    local becColor = c.bec and (c.bec < getThemeValue("bec_min") and C.red or (c.bec < getThemeValue("bec_warn") and C.amber or C.turquoise)) or C.muted
+    local escColor = c.esc and (c.esc >= getThemeValue("esc_max") and C.red or (c.esc >= getThemeValue("esc_warn") and C.amber or C.emerald)) or C.muted
+    local linkColor = c.link and (c.link < getThemeValue("link_warn") and C.amber or C.turquoise) or C.muted
+    local fuel = c.fuel or 0
+    local fuelColor = fuel <= getThemeValue("fuel_warn") and C.red or (fuel <= 50 and C.amber or C.emerald)
+
+    drawMetric(leftX, bodyY, sideW, cardH, "SAPPHIRE BEC", fmt(c.bec,1," V"), becColor, "regulated power")
+    drawProgress(leftX + 14, bodyY + cardH - 36, sideW - 28, 9, c.bec and c.bec / 15 or 0, becColor)
+    drawMetric(leftX, bodyY + cardH + 10, sideW, cardH, "TURQUOISE LINK", fmt(c.link,0,"%"), linkColor, "radio clarity")
+    drawProgress(leftX + 14, bodyY + bodyH - 36, sideW - 28, 9, c.link and c.link / 100 or 0, linkColor)
+
+    drawPanel(centerX, bodyY, centerW, bodyH, c.statusColor or C.gold, nil)
+    local cx = centerX + centerW * 0.5
+    local cy = bodyY + bodyH * 0.39
+    local petalL = min(centerW, bodyH) * 0.28
+    for i = 0, 7 do drawPetal(cx, cy, petalL, petalL * 0.22, i * 45, i % 2 == 0 and C.fuchsia or C.turquoise) end
+    drawDiamond(cx, cy, petalL * 0.62, C.gold, C.violet)
+    drawDiamond(cx, cy, petalL * 0.40, c.statusColor or C.gold, C.white)
+    drawTextAligned(cx - petalL, cy - 24, petalL * 2, c.status or "WAITING", "FONT_L", C.white, "center")
+    drawTextAligned(cx - petalL, cy + 18, petalL * 2, c.statusSub or "CONNECT TELEMETRY", "FONT_XXS", c.statusColor or C.muted, "center")
+
+    local gemY = bodyY + bodyH - 82
+    drawTextAligned(centerX + 18, gemY - 27, centerW - 36, "SMART FUEL JEWELS", "FONT_XXS", C.muted, "left")
+    drawTextAligned(centerX + 18, gemY - 28, centerW - 36, fmt(c.fuel,0,"%"), "FONT_S", C.white, "right")
+    drawGemLine(centerX + 20, gemY, centerW - 40, 12, fuel, fuelColor, C.line2)
+    drawPanel(centerX + 48, gemY + 20, centerW - 96, 29, c.flightColor or C.turquoise, nil)
+    drawTextAligned(centerX + 58, gemY + 25, centerW - 116, c.flightState or "STATE --", "FONT_XXS", c.flightColor or C.muted, "center")
+
+    drawMetric(rightX, bodyY, sideW, cardH, "EMBER ESC", fmt(c.esc,0,"C"), escColor, "thermal balance")
+    drawProgress(rightX + 14, bodyY + cardH - 36, sideW - 28, 9, c.esc and c.esc / getThemeValue("esc_max") or 0, escColor)
+    drawPanel(rightX, bodyY + cardH + 10, sideW, cardH, C.violet, "FLIGHT TALISMAN")
+    drawTextAligned(rightX + 16, bodyY + cardH + 50, sideW - 32, "RATES  " .. fmt(c.rate,0,""), "FONT_XS", C.white, "left")
+    drawTextAligned(rightX + 16, bodyY + cardH + 84, sideW - 32, "PID     " .. fmt(c.pid,0,""), "FONT_XS", C.white, "left")
+    drawTextAligned(rightX + 16, bodyY + cardH + 118, sideW - 32, "PACK   " .. fmt(c.voltage,1," V"), "FONT_XS", C.white, "left")
+end
+
+local boxes_cache
+local function boxes()
+    if not boxes_cache then boxes_cache = {{col=1,row=1,colspan=12,rowspan=12,type="func",subtype="func",wakeup=preflightWakeup,paint=preflightPaint,bgcolor="transparent"}} end
+    return boxes_cache
+end
+return {layout=layout,boxes=boxes,header_boxes=header_boxes,header_layout=header_layout,screenBorderStyle=screenBorderStyle,scheduler={spread_scheduling=true,spread_scheduling_paint=false,spread_ratio=0.85}}

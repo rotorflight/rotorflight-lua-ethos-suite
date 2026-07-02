@@ -1,100 +1,449 @@
 local rfsuite = require("rfsuite")
 local lcd = lcd
-local floor, min, max = math.floor, math.min, math.max
-local cos, sin, rad = math.cos, math.sin, math.rad
-local tonumber, tostring, type = tonumber, tostring, type
+local math = math
+local floor = math.floor
+local min = math.min
+local max = math.max
+local sin = math.sin
+local cos = math.cos
+local rad = math.rad
+local tonumber = tonumber
+local tostring = tostring
+local type = type
 local format = string.format
+local ipairs = ipairs
+
 local utils = rfsuite.widgets.dashboard.utils
 local headeropts = utils.getHeaderOptions()
 local colorMode = utils.themeColors()
 local header_layout = utils.standardHeaderLayout(headeropts)
 
 local C = {
-  bg=lcd.RGB(3,5,12), panel=lcd.RGB(8,12,24), line=lcd.RGB(37,57,87), line2=lcd.RGB(75,101,140),
-  white=lcd.RGB(228,240,255), muted=lcd.RGB(122,147,177), cyan=lcd.RGB(58,236,255),
-  violet=lcd.RGB(170,97,255), green=lcd.RGB(98,255,165), amber=lcd.RGB(255,190,70),
-  red=lcd.RGB(255,72,110), magenta=lcd.RGB(255,74,235)
+    space = lcd.RGB(3, 5, 12),
+    void = lcd.RGB(0, 0, 3),
+    panel = lcd.RGB(8, 12, 24),
+    panel2 = lcd.RGB(13, 18, 34),
+    line = lcd.RGB(37, 57, 87),
+    line2 = lcd.RGB(75, 101, 140),
+    white = lcd.RGB(228, 240, 255),
+    muted = lcd.RGB(122, 147, 177),
+    cyan = lcd.RGB(58, 236, 255),
+    cyanDim = lcd.RGB(16, 74, 92),
+    violet = lcd.RGB(170, 97, 255),
+    violetDim = lcd.RGB(53, 27, 89),
+    blue = lcd.RGB(58, 111, 255),
+    blueDim = lcd.RGB(18, 38, 91),
+    green = lcd.RGB(98, 255, 165),
+    greenDim = lcd.RGB(21, 87, 59),
+    amber = lcd.RGB(255, 190, 70),
+    amberDim = lcd.RGB(94, 64, 17),
+    red = lcd.RGB(255, 72, 110),
+    redDim = lcd.RGB(90, 19, 38),
+    magenta = lcd.RGB(255, 74, 235)
 }
-local THEME_SECTION="system/singularity"
-local DEFAULTS={bec_min=6.5,bec_warn=7.0,esc_warn=110,esc_max=150,fuel_warn=25,link_warn=50,current_warn=120,watts_warn=3500}
-local STARS={{3,8},{9,23},{14,13},{21,31},{28,7},{35,20},{43,11},{51,27},{59,6},{67,21},{75,14},{83,30},{91,9},{97,24},{6,49},{17,61},{29,43},{41,70},{54,52},{66,67},{78,47},{89,73},{12,88},{32,91},{49,82},{71,94},{94,85}}
 
-local function pref(k)
-  local s=rfsuite and rfsuite.session
-  local p=s and s.modelPreferences and s.modelPreferences[THEME_SECTION]
-  return (p and tonumber(p[k])) or DEFAULTS[k]
+local THEME_SECTION = "system/singularity"
+local DEFAULTS = {
+    rpm_max = 2500,
+    bec_min = 6.5,
+    bec_warn = 7.0,
+    esc_warn = 110,
+    esc_max = 150,
+    fuel_warn = 25,
+    link_warn = 50,
+    current_warn = 120,
+    watts_warn = 3500
+}
+
+local STARFIELD = {
+    {2,6,1},{7,18,1},{11,9,2},{15,29,1},{19,14,1},{23,5,1},{27,24,2},{31,12,1},
+    {35,32,1},{39,20,1},{43,7,2},{47,27,1},{51,16,1},{55,4,1},{59,31,2},{63,11,1},
+    {67,23,1},{71,6,1},{75,18,2},{79,29,1},{83,13,1},{87,2,1},{91,24,2},{95,9,1},
+    {5,38,1},{13,44,2},{21,36,1},{29,48,1},{37,40,2},{45,50,1},{53,37,1},{61,46,2},
+    {69,39,1},{77,49,1},{85,35,2},{93,45,1},{9,58,1},{18,67,2},{26,56,1},{34,71,1},
+    {42,62,2},{50,75,1},{58,59,1},{66,69,2},{74,55,1},{82,73,1},{90,61,2},{97,76,1},
+    {4,85,1},{12,94,2},{24,82,1},{32,91,1},{40,79,2},{48,96,1},{56,84,1},{64,93,2},
+    {72,81,1},{80,97,1},{88,86,2},{96,92,1}
+}
+
+local function clamp(v, lo, hi)
+    if v < lo then return lo end
+    if v > hi then return hi end
+    return v
 end
-local function stat(t,n,mode,a)
-  t=t or (rfsuite.tasks and rfsuite.tasks.telemetry)
-  local s=t and t.sensorStats
-  local d=s and s[n]
-  local v=d and d[mode]
-  if v~=nil then return tonumber(v) end
-  if a then d=s and s[a]; v=d and d[mode]; if v~=nil then return tonumber(v) end end
+
+local function getThemeValue(key)
+    local session = rfsuite and rfsuite.session
+    local prefs = session and session.modelPreferences and session.modelPreferences[THEME_SECTION]
+    local value = prefs and tonumber(prefs[key])
+    return value or DEFAULTS[key]
 end
-local function fmt(v,d,u)
-  if v==nil then return "--" end
-  local q=d==1 and format("%.1f",v) or d==2 and format("%.2f",v) or tostring(floor(v+0.5))
-  return q..(u or "")
+
+local function sensor(telemetry, name, alias1, alias2)
+    telemetry = telemetry or (rfsuite.tasks and rfsuite.tasks.telemetry)
+    if not (telemetry and telemetry.getSensor) then return nil end
+    local value = telemetry.getSensor(name)
+    if value ~= nil then return tonumber(value) end
+    if alias1 then
+        value = telemetry.getSensor(alias1)
+        if value ~= nil then return tonumber(value) end
+    end
+    if alias2 then
+        value = telemetry.getSensor(alias2)
+        if value ~= nil then return tonumber(value) end
+    end
+    return nil
 end
-local function font(n) return utils.resolveFont(n,nil) end
-local function text(x,y,w,s,f,c,a)
-  local ft=font(f); if type(ft)~="number" then return end
-  lcd.font(ft); lcd.color(c); local tw=lcd.getTextSize(s); local tx=x
-  if a=="center" then tx=x+(w-tw)/2 elseif a=="right" then tx=x+w-tw end
-  lcd.drawText(floor(tx),floor(y),s)
+
+local function stat(telemetry, source, statType, alias1, alias2)
+    telemetry = telemetry or (rfsuite.tasks and rfsuite.tasks.telemetry)
+    local stats = telemetry and telemetry.sensorStats
+    local data = stats and stats[source]
+    local value = data and data[statType]
+    if value ~= nil then return tonumber(value) end
+    if alias1 then
+        data = stats and stats[alias1]
+        value = data and data[statType]
+        if value ~= nil then return tonumber(value) end
+    end
+    if alias2 then
+        data = stats and stats[alias2]
+        value = data and data[statType]
+        if value ~= nil then return tonumber(value) end
+    end
+    return nil
 end
-local function stars(x,y,w,h)
-  lcd.color(C.line)
-  for i=1,#STARS do local s=STARS[i]; lcd.drawFilledRectangle(floor(x+w*s[1]/100),floor(y+h*s[2]/100),1+(i%7==0 and 1 or 0),1+(i%7==0 and 1 or 0)) end
+
+local function fmt(value, decimals, suffix, missing)
+    if value == nil then return missing or "--" end
+    local text
+    if decimals == 1 then text = format("%.1f", value)
+    elseif decimals == 2 then text = format("%.2f", value)
+    else text = tostring(floor(value + 0.5)) end
+    return text .. (suffix or "")
 end
-local function hex(cx,cy,r,c)
-  lcd.color(c); local px,py
-  for i=0,6 do local a=rad(30+(i%6)*60); local x=floor(cx+cos(a)*r); local y=floor(cy+sin(a)*r); if px then lcd.drawLine(px,py,x,y) end; px,py=x,y end
+
+local function resolveFont(name)
+    return utils.resolveFont(name, nil)
 end
-local function ring(cx,cy,r,p,c)
-  local n=32; local active=floor(max(0,min(100,p or 0))*n/100+0.5)
-  for i=0,n-1 do local a=rad(i*360/n); local r1=r-10; lcd.color(i<active and c or C.line); lcd.drawLine(floor(cx+cos(a)*r1),floor(cy+sin(a)*r1),floor(cx+cos(a)*r),floor(cy+sin(a)*r)) end
+
+local function drawTextAligned(x, y, w, text, fontName, color, align)
+    local font = resolveFont(fontName)
+    if type(font) ~= "number" then return 0, 0 end
+    lcd.font(font)
+    lcd.color(color)
+    local tw, th = lcd.getTextSize(text)
+    local tx = x
+    if align == "center" then tx = x + (w - tw) / 2
+    elseif align == "right" then tx = x + w - tw end
+    lcd.drawText(floor(tx + 0.5), floor(y + 0.5), text)
+    return tw, th
 end
-local function panel(x,y,w,h,title,value,c,sub)
-  lcd.color(C.panel); lcd.drawFilledRectangle(floor(x),floor(y),floor(w),floor(h)); lcd.color(C.line2); lcd.drawRectangle(floor(x),floor(y),floor(w),floor(h),1); lcd.color(c); lcd.drawFilledRectangle(floor(x),floor(y),3,floor(h))
-  text(x+11,y+7,w-22,title,"FONT_XXS",C.muted,"left"); text(x+11,y+30,w-22,value,"FONT_L",C.white,"left"); text(x+11,y+h-22,w-22,sub,"FONT_XXS",C.muted,"left")
+
+local function drawStars(x, y, w, h)
+    for i = 1, #STARFIELD do
+        local s = STARFIELD[i]
+        local sx = floor(x + w * s[1] / 100)
+        local sy = floor(y + h * s[2] / 100)
+        local size = s[3]
+        lcd.color(size == 2 and C.line2 or C.line)
+        lcd.drawFilledRectangle(sx, sy, size, size)
+    end
 end
-local function header(x,y,w,h)
-  lcd.color(C.bg); lcd.drawFilledRectangle(floor(x),floor(y),floor(w),floor(h))
-  local f=font("FONT_L"); if type(f)~="number" then return end; lcd.font(f)
-  local a,b,c="ETHOS ","// ","ROTORFLIGHT"; local wa,th=lcd.getTextSize(a); local wb=lcd.getTextSize(b); local wc=lcd.getTextSize(c)
-  local wf=font("FONT_XS"); local wm="MWRC"; local ww,wh=0,0; if type(wf)=="number" then lcd.font(wf); ww,wh=lcd.getTextSize(wm); lcd.font(f) end
-  local tw=wa+wb+wc; local tx=floor(x+(w-tw-ww-14)/2); local ty=floor(y+(h-th)/2)
-  lcd.color(C.violet); lcd.drawText(tx,ty,a); lcd.color(C.cyan); lcd.drawText(tx+wa,ty,b); lcd.color(C.white); lcd.drawText(tx+wa+wb,ty,c)
-  if ww>0 then local dx=tx+tw+6; lcd.color(C.line2); lcd.drawLine(dx,y+7,dx,y+h-7); lcd.font(wf); lcd.color(C.magenta); lcd.drawText(dx+7,floor(y+(h-wh)/2),wm) end
+
+local function drawPanel(x, y, w, h, accent, title)
+    x, y, w, h = floor(x), floor(y), floor(w), floor(h)
+    lcd.color(C.panel)
+    lcd.drawFilledRectangle(x, y, w, h)
+    lcd.color(C.line)
+    lcd.drawRectangle(x, y, w, h, 1)
+    lcd.color(accent or C.cyan)
+    lcd.drawFilledRectangle(x, y, 3, h)
+    if title then
+        drawTextAligned(x + 11, y + 7, w - 20, title, "FONT_XXS", C.muted, "left")
+    end
 end
-local hb,last=nil,nil
+
+local function drawNode(x, y, w, h, title, value, accent, subtitle)
+    drawPanel(x, y, w, h, accent, title)
+    drawTextAligned(x + 11, y + 28, w - 22, value, "FONT_L", C.white, "left")
+    if subtitle then drawTextAligned(x + 11, y + h - 22, w - 22, subtitle, "FONT_XXS", C.muted, "left") end
+end
+
+local function drawHex(cx, cy, radius, color)
+    local px, py = nil, nil
+    local firstx, firsty = nil, nil
+    lcd.color(color)
+    for i = 0, 6 do
+        local a = rad(30 + (i % 6) * 60)
+        local x = floor(cx + cos(a) * radius)
+        local y = floor(cy + sin(a) * radius)
+        if i == 0 then firstx, firsty = x, y else lcd.drawLine(px, py, x, y) end
+        px, py = x, y
+    end
+    if px and firstx then lcd.drawLine(px, py, firstx, firsty) end
+end
+
+local function drawRingSegments(cx, cy, radius, count, percent, activeColor, dimColor, thickness, startAngle, sweep)
+    count = count or 24
+    percent = clamp(percent or 0, 0, 100)
+    thickness = thickness or 8
+    startAngle = startAngle or 0
+    sweep = sweep or 360
+    local active = percent > 0 and max(1, min(count, floor(percent * count / 100 + 0.999))) or 0
+    for i = 0, count - 1 do
+        local a = rad(startAngle + sweep * i / count)
+        local r1 = radius - thickness
+        local r2 = radius
+        local x1 = floor(cx + cos(a) * r1)
+        local y1 = floor(cy + sin(a) * r1)
+        local x2 = floor(cx + cos(a) * r2)
+        local y2 = floor(cy + sin(a) * r2)
+        lcd.color(i < active and activeColor or dimColor)
+        lcd.drawLine(x1, y1, x2, y2)
+    end
+end
+
+local function drawOrbit(cx, cy, rx, ry, color, segments)
+    segments = segments or 48
+    local lastx, lasty
+    lcd.color(color)
+    for i = 0, segments do
+        local a = rad(360 * i / segments)
+        local x = floor(cx + cos(a) * rx)
+        local y = floor(cy + sin(a) * ry)
+        if lastx then lcd.drawLine(lastx, lasty, x, y) end
+        lastx, lasty = x, y
+    end
+end
+
+local function drawOrbitalMarker(cx, cy, rx, ry, angle, color, size)
+    local a = rad(angle)
+    local x = floor(cx + cos(a) * rx)
+    local y = floor(cy + sin(a) * ry)
+    size = size or 6
+    lcd.color(color)
+    lcd.drawFilledRectangle(x - floor(size/2), y - floor(size/2), size, size)
+end
+
+local function drawProgress(x, y, w, h, percent, color)
+    percent = clamp(percent or 0, 0, 1)
+    lcd.color(C.line)
+    lcd.drawRectangle(floor(x), floor(y), floor(w), floor(h), 1)
+    if percent > 0 then
+        lcd.color(color)
+        lcd.drawFilledRectangle(floor(x + 2), floor(y + 2), floor((w - 4) * percent), max(1, floor(h - 4)))
+    end
+end
+
+local function drawHeaderTitle(x, y, w, h)
+    lcd.color(C.space)
+    lcd.drawFilledRectangle(floor(x), floor(y), floor(w), floor(h))
+    local t1, t2, t3 = "ETHOS ", "// ", "ROTORFLIGHT"
+    local font = resolveFont("FONT_L")
+    if type(font) ~= "number" then return end
+    lcd.font(font)
+    local w1, th = lcd.getTextSize(t1)
+    local w2 = lcd.getTextSize(t2)
+    local w3 = lcd.getTextSize(t3)
+
+    local watermarkFont = resolveFont("FONT_XS")
+    local watermarkText = "MWRC"
+    local watermarkWidth, watermarkHeight = 0, 0
+    if type(watermarkFont) == "number" then
+        lcd.font(watermarkFont)
+        watermarkWidth, watermarkHeight = lcd.getTextSize(watermarkText)
+        lcd.font(font)
+    end
+
+    local titleWidth = w1 + w2 + w3
+    local dividerGap = watermarkWidth > 0 and 14 or 0
+    local total = titleWidth + dividerGap + watermarkWidth
+    local tx = floor(x + (w - total) / 2)
+    local ty = floor(y + (h - th) / 2)
+    lcd.color(C.violet)
+    lcd.drawText(tx, ty, t1)
+    lcd.color(C.cyan)
+    lcd.drawText(tx + w1, ty, t2)
+    lcd.color(C.white)
+    lcd.drawText(tx + w1 + w2, ty, t3)
+
+    if watermarkWidth > 0 then
+        local dividerX = tx + titleWidth + 6
+        lcd.color(C.line2)
+        lcd.drawLine(dividerX, y + 7, dividerX, y + h - 7)
+        lcd.font(watermarkFont)
+        lcd.color(C.magenta)
+        lcd.drawText(dividerX + 7, floor(y + (h - watermarkHeight) / 2), watermarkText)
+    end
+end
+
+local header_boxes_cache = nil
+local last_txbatt_type = nil
 local function header_boxes()
-  local t=0; if rfsuite and rfsuite.preferences and rfsuite.preferences.general then t=rfsuite.preferences.general.txbatt_type or 0 end
-  if not hb or last~=t then hb=utils.standardHeaderBoxes(i18n,colorMode,headeropts,t); for _,b in ipairs(hb) do b.bgcolor=C.bg; if b.type=="image" then b.type="func"; b.subtype="func"; b.paint=header end end; last=t end
-  return hb
+    local txbatt_type = 0
+    if rfsuite and rfsuite.preferences and rfsuite.preferences.general then
+        txbatt_type = rfsuite.preferences.general.txbatt_type or 0
+    end
+    if header_boxes_cache == nil or last_txbatt_type ~= txbatt_type then
+        local boxes = utils.standardHeaderBoxes(i18n, colorMode, headeropts, txbatt_type)
+        for _, b in ipairs(boxes) do
+            b.bgcolor = C.space
+            if b.type == "image" then
+                b.type = "func"
+                b.subtype = "func"
+                b.paint = drawHeaderTitle
+            end
+        end
+        header_boxes_cache = boxes
+        last_txbatt_type = txbatt_type
+    end
+    return header_boxes_cache
 end
 
-local function wake(box,t)
-  local c=box._cache or {}; box._cache=c
-  c.rpm=stat(t,"rpm","max","headspeed"); c.esc=stat(t,"temp_esc","max","esc_temp"); c.current=stat(t,"current","max"); c.watts=stat(t,"watts","max")
-  c.bec=stat(t,"bec_voltage","min","bec"); c.link=stat(t,"link","min","vfr"); c.fuel=stat(t,"smartfuel","min"); c.consumed=stat(t,"smartconsumption","max","consumption")
-  local items=0
-  if c.esc and c.esc>=pref("esc_warn") then items=items+1 end; if c.bec and c.bec<pref("bec_warn") then items=items+1 end; if c.link and c.link<pref("link_warn") then items=items+1 end; if c.fuel and c.fuel<=pref("fuel_warn") then items=items+1 end
-  if items==0 then c.state,c.color,c.integrity="MISSION NOMINAL",C.green,100 else c.state,c.color,c.integrity="MISSION REVIEW",C.amber,max(55,100-items*11) end
-  local s=rfsuite and rfsuite.session; local sec=s and s.timer and tonumber(s.timer.live) or 0; c.time=format("%02d:%02d",floor(sec/60),floor(sec%60)); return c
+local function flightTimeText()
+    local session = rfsuite and rfsuite.session
+    local seconds = session and session.timer and tonumber(session.timer.live) or 0
+    seconds = max(0, seconds)
+    return format("%02d:%02d", floor(seconds / 60), floor(seconds % 60))
 end
-local function paint(x,y,w,h,box,c)
-  x,y=utils.applyOffset(x,y,box); c=c or box._cache or {}; lcd.color(C.bg); lcd.drawFilledRectangle(floor(x),floor(y),floor(w),floor(h)); stars(x,y,w,h)
-  text(x+14,y+8,w*0.5,"SINGULARITY // MISSION DEBRIEF","FONT_STD",C.violet,"left"); text(x+w-260,y+8,246,c.state or "MISSION NOMINAL","FONT_STD",c.color or C.green,"right")
-  local cx=x+w*0.5; local cy=y+h*0.49; local r=min(w,h)*0.18; ring(cx,cy,r,c.integrity or 0,c.color or C.green); hex(cx,cy,r*0.72,C.line2); hex(cx,cy,r*0.48,c.color or C.green)
-  text(cx-r,cy-48,r*2,fmt(c.integrity,0,"%"),"FONT_XXL",C.white,"center"); text(cx-r,cy+12,r*2,"SYSTEM INTEGRITY","FONT_XS",C.muted,"center"); text(cx-r,cy+43,r*2,"FLIGHT TIME "..(c.time or "00:00"),"FONT_XS",C.cyan,"center")
-  local nw=floor(w*0.20); local nh=floor(h*0.17); local lx=x+14; local rx=x+w-nw-14; local y1=y+55; local y2=y+h*0.42; local y3=y+h-nh-14
-  panel(lx,y1,nw,nh,"MAX HEADSPEED",fmt(c.rpm,0," RPM"),C.violet,"ORBITAL VELOCITY"); panel(lx,y2,nw,nh,"PEAK CURRENT",fmt(c.current,1," A"),C.cyan,"REACTOR LOAD"); panel(lx,y3,nw,nh,"MIN BEC",fmt(c.bec,2," V"),C.cyan,"POWER CORE")
-  panel(rx,y1,nw,nh,"MAX ESC TEMP",fmt(c.esc,0," C"),C.green,"THERMAL PLUME"); panel(rx,y2,nw,nh,"PEAK POWER",fmt(c.watts,0," W"),C.magenta,"ENERGY RELEASE"); panel(rx,y3,nw,nh,"MIN LINK",fmt(c.link,0,"%"),C.cyan,"SIGNAL LOCK")
-  text(cx-r*2,y+h-36,r*4,"ENERGY "..fmt(c.fuel,0,"%").."    CONSUMED "..fmt(c.consumed,0," mAh"),"FONT_XS",C.green,"center")
+
+local STATE_LABELS = {
+    [0] = "OFFLINE",
+    [1] = "IDLE",
+    [2] = "IGNITION",
+    [3] = "RECOVERY",
+    [4] = "STABLE ORBIT",
+    [5] = "THRUST CUT",
+    [6] = "SIGNAL LOST",
+    [7] = "AUTOROTATION",
+    [8] = "BAILOUT",
+    [100] = "GOV DISABLED",
+    [101] = "COLD"
+}
+local STATE_COLORS = {
+    [0] = C.amber,[1] = C.amber,[2] = C.magenta,[3] = C.amber,[4] = C.green,
+    [5] = C.green,[6] = C.red,[7] = C.amber,[8] = C.red,[100] = C.muted,[101] = C.cyan
+}
+
+local function getReactorState(telemetry)
+    local armflags = sensor(telemetry, "armflags")
+    local governor = sensor(telemetry, "governor")
+    local armed = nil
+    if rfsuite.utils and rfsuite.utils.armFlagsToIsArmed then
+        armed = rfsuite.utils.armFlagsToIsArmed(armflags)
+    end
+    if armed == nil and armflags == nil and governor == nil then
+        local session = rfsuite and rfsuite.session
+        if session and session.telemetryState then armed = session.isArmed == true end
+    end
+    if armed == false then return "COLD", C.cyan end
+    local code = governor and floor(governor + 0.5) or nil
+    if code == 101 then return "COLD", C.cyan end
+    if armed == true then
+        if code and STATE_LABELS[code] then return STATE_LABELS[code], STATE_COLORS[code] or C.red end
+        return "ARMED", C.red
+    end
+    if code and STATE_LABELS[code] then return STATE_LABELS[code], STATE_COLORS[code] or C.cyan end
+    return "STATE --", C.muted
 end
-local box
-local function boxes() if not box then box={{col=1,row=1,colspan=12,rowspan=12,type="func",subtype="func",wakeup=wake,paint=paint,bgcolor="transparent"}} end return box end
-return {layout={cols=12,rows=12,padding=0},boxes=boxes,header_boxes=header_boxes,header_layout=header_layout,screenBorderStyle={enabled=false},scheduler={spread_scheduling=true,spread_scheduling_paint=false,spread_ratio=0.85}}
+
+local layout = {cols = 12, rows = 12, padding = 0}
+local screenBorderStyle = {enabled = false}
+
+local function postflightWakeup(box, telemetry)
+    local c = box._cache or {}
+    box._cache = c
+    c.rpm = stat(telemetry, "rpm", "max", "headspeed", "erpm")
+    c.esc = stat(telemetry, "temp_esc", "max", "esc_temp")
+    c.current = stat(telemetry, "current", "max")
+    c.watts = stat(telemetry, "watts", "max")
+    c.bec = stat(telemetry, "bec_voltage", "min", "bec")
+    c.link = stat(telemetry, "link", "min", "vfr")
+    c.fuel = stat(telemetry, "smartfuel", "min")
+    c.consumed = stat(telemetry, "smartconsumption", "max", "consumption")
+    c.voltage = stat(telemetry, "voltage", "min")
+    c.altitude = stat(telemetry, "altitude", "max")
+    c.time = flightTimeText()
+
+    local faults, cautions = 0, 0
+    if c.esc and c.esc >= getThemeValue("esc_max") then faults = faults + 1 elseif c.esc and c.esc >= getThemeValue("esc_warn") then cautions = cautions + 1 end
+    if c.bec and c.bec < getThemeValue("bec_min") then faults = faults + 1 elseif c.bec and c.bec < getThemeValue("bec_warn") then cautions = cautions + 1 end
+    if c.fuel and c.fuel <= getThemeValue("fuel_warn") then cautions = cautions + 1 end
+    if c.link and c.link < getThemeValue("link_warn") then cautions = cautions + 1 end
+    if c.current and c.current >= getThemeValue("current_warn") then cautions = cautions + 1 end
+    if c.watts and c.watts >= getThemeValue("watts_warn") then cautions = cautions + 1 end
+
+    if faults > 0 then
+        c.mission = "SYSTEM INSPECTION"
+        c.missionColor = C.red
+        c.integrity = max(15, 55 - faults * 20 - cautions * 8)
+        c.missionSub = "CRITICAL LIMIT EXCEEDED"
+    elseif cautions > 0 then
+        c.mission = "MISSION REVIEW"
+        c.missionColor = C.amber
+        c.integrity = max(55, 100 - cautions * 10)
+        c.missionSub = tostring(cautions) .. " ANOMALY" .. (cautions == 1 and "" or "IES")
+    else
+        c.mission = "MISSION NOMINAL"
+        c.missionColor = C.green
+        c.integrity = 100
+        c.missionSub = "ALL SYSTEMS WITHIN LIMITS"
+    end
+    return c
+end
+
+local function postflightPaint(x, y, w, h, box, c)
+    x, y = utils.applyOffset(x, y, box)
+    c = c or box._cache or {}
+    lcd.color(C.space)
+    lcd.drawFilledRectangle(floor(x), floor(y), floor(w), floor(h))
+    drawStars(x, y, w, h)
+
+    drawTextAligned(x + 14, y + 8, w * 0.45, "SINGULARITY // MISSION DEBRIEF", "FONT_STD", C.violet, "left")
+    drawTextAligned(x + w - 280, y + 8, 266, c.mission or "MISSION NOMINAL", "FONT_STD", c.missionColor or C.green, "right")
+
+    local cx = x + w * 0.5
+    local cy = y + h * 0.48
+    local radius = min(w, h) * 0.19
+    drawOrbit(cx, cy, radius * 1.65, radius * 0.70, C.line, 64)
+    drawOrbit(cx, cy, radius * 1.10, radius * 1.20, C.line, 64)
+    drawRingSegments(cx, cy, radius * 1.02, 32, c.integrity or 0, c.missionColor or C.green, C.line, 11, 0, 360)
+    drawHex(cx, cy, radius * 0.72, C.line2)
+    drawHex(cx, cy, radius * 0.48, c.missionColor or C.green)
+    drawTextAligned(cx - radius, cy - 45, radius * 2, fmt(c.integrity,0,"%"), "FONT_XXL", C.white, "center")
+    drawTextAligned(cx - radius, cy + 12, radius * 2, "SYSTEM INTEGRITY", "FONT_XS", C.muted, "center")
+    drawTextAligned(cx - radius, cy + 42, radius * 2, c.missionSub or "ALL SYSTEMS WITHIN LIMITS", "FONT_XXS", c.missionColor or C.green, "center")
+    drawTextAligned(cx - radius, cy + radius * 1.28, radius * 2, "FLIGHT TIME " .. (c.time or "00:00"), "FONT_S", C.cyan, "center")
+
+    local nw = floor(w * 0.19)
+    local nh = floor(h * 0.16)
+    local leftX = x + 14
+    local rightX = x + w - nw - 14
+    local y1 = y + 55
+    local y2 = y + h * 0.40
+    local y3 = y + h - nh - 14
+
+    local escColor = c.esc and (c.esc >= getThemeValue("esc_max") and C.red or (c.esc >= getThemeValue("esc_warn") and C.amber or C.green)) or C.muted
+    local becColor = c.bec and (c.bec < getThemeValue("bec_min") and C.red or (c.bec < getThemeValue("bec_warn") and C.amber or C.cyan)) or C.muted
+    local linkColor = c.link and (c.link < getThemeValue("link_warn") and C.amber or C.cyan) or C.muted
+    local fuelColor = c.fuel and c.fuel <= getThemeValue("fuel_warn") and C.amber or C.green
+
+    drawNode(leftX, y1, nw, nh, "MAX HEADSPEED", fmt(c.rpm,0," RPM"), C.violet, "ORBITAL VELOCITY")
+    drawNode(leftX, y2, nw, nh, "PEAK CURRENT", fmt(c.current,1," A"), C.cyan, "REACTOR LOAD")
+    drawNode(leftX, y3, nw, nh, "MIN BEC", fmt(c.bec,2," V"), becColor, "POWER CORE")
+
+    drawNode(rightX, y1, nw, nh, "MAX ESC TEMP", fmt(c.esc,0," C"), escColor, "THERMAL PLUME")
+    drawNode(rightX, y2, nw, nh, "PEAK POWER", fmt(c.watts,0," W"), C.magenta, "ENERGY RELEASE")
+    drawNode(rightX, y3, nw, nh, "MIN LINK", fmt(c.link,0,"%"), linkColor, "SIGNAL CONSTELLATION")
+
+    drawTextAligned(cx - radius * 2.1, y + h - 46, radius * 4.2, "ENERGY " .. fmt(c.fuel,0,"%") .. "    CONSUMED " .. fmt(c.consumed,0," mAh") .. "    PACK " .. fmt(c.voltage,1," V") .. "    ALT " .. fmt(c.altitude,0," ft"), "FONT_XS", fuelColor, "center")
+end
+
+local boxes_cache
+local function boxes()
+    if not boxes_cache then boxes_cache = {{col=1,row=1,colspan=12,rowspan=12,type="func",subtype="func",wakeup=postflightWakeup,paint=postflightPaint,bgcolor="transparent"}} end
+    return boxes_cache
+end
+
+return {layout=layout,boxes=boxes,header_boxes=header_boxes,header_layout=header_layout,screenBorderStyle=screenBorderStyle,scheduler={spread_scheduling=true,spread_scheduling_paint=false,spread_ratio=0.85}}
