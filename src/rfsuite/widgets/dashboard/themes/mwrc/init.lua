@@ -10,8 +10,7 @@ local init = {
     postflight = "postflight.lua",
     configure = "configure.lua",
     standalone = false,
-    minResolution = {x = 784, y = 294},
-    logo = {dark = "gfx/rfsuite-dark.png", light = "gfx/rfsuite-light.png"}
+    minResolution = {x = 784, y = 294}
 }
 
 return init

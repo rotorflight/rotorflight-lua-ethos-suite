@@ -154,8 +154,11 @@ end
 local HEADER_TEXT_1 = "ETHOS "
 local HEADER_TEXT_2 = "// "
 local HEADER_TEXT_3 = "ROTORFLIGHT"
+local HEADER_WATERMARK = "MWRC"
 local headerTextWidth1 = nil
 local headerTextWidth2 = nil
+local headerTextWidth3 = nil
+local headerWatermarkWidth = nil
 
 local function paintHeaderLogo(x, y)
     lcd.font(FONT_L or 0)
@@ -163,6 +166,7 @@ local function paintHeaderLogo(x, y)
     if headerTextWidth1 == nil then
         headerTextWidth1 = lcd.getTextSize(HEADER_TEXT_1)
         headerTextWidth2 = lcd.getTextSize(HEADER_TEXT_2)
+        headerTextWidth3 = lcd.getTextSize(HEADER_TEXT_3)
     end
 
     lcd.color(colorMode.accentcolor)
@@ -171,6 +175,14 @@ local function paintHeaderLogo(x, y)
     lcd.drawText(x + 5 + headerTextWidth1, y + 4, HEADER_TEXT_2)
     lcd.color(colorMode.textcolor)
     lcd.drawText(x + 5 + headerTextWidth1 + headerTextWidth2, y + 4, HEADER_TEXT_3)
+
+    local watermarkX = x + 5 + headerTextWidth1 + headerTextWidth2 + headerTextWidth3 + 10
+    lcd.color(rc.amber)
+    lcd.drawLine(watermarkX - 5, y + 9, watermarkX - 5, y + 25)
+    lcd.font(FONT_XS or FONT_XXS or 0)
+    if headerWatermarkWidth == nil then headerWatermarkWidth = lcd.getTextSize(HEADER_WATERMARK) end
+    lcd.color(rc.cyan)
+    lcd.drawText(watermarkX, y + 8, HEADER_WATERMARK)
 end
 
 local function header_boxes()
