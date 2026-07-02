@@ -75,7 +75,7 @@ end
 local function logMemCheckpoint(label)
     local dev = rfsuite.preferences and rfsuite.preferences.developer
     if dev and (dev.memstats or dev.overlaystats) then
-        log(format("[mem] %s: %dk", label, floor((collectgarbage("count") or 0) + 0.5)), "info")
+        log(string.format("[mem] %s: %dk", label, collectgarbage("count")), "info")
     end
 end
 
@@ -568,7 +568,7 @@ end
 function dashboard.overlaystatic(x, y, w, h, txt)
     local msg = txt
     if not msg or msg == "" then
-        msg = (dashboard.computeOverlayMessage and dashboard.computeOverlayMessage()) or "@i18n(app.msg_loading)@"
+        msg = (dashboard.computeOverlayMessage and dashboard.computeOverlayMessage()) or "Loading..."
     end
 
     local themeLoader = (rfsuite.preferences and rfsuite.preferences.general and rfsuite.preferences.general.theme_loader) or 0
@@ -1628,7 +1628,7 @@ function dashboard.paint(widget)
 
     if not dashboard.utils then return end
 
-    local isCompiledCheck = "@i18n(iscompiledcheck)@"
+    local isCompiledCheck = "true"
     if isCompiledCheck ~= "true" and isCompiledCheck ~= "eurt" then
         dashboard.utils.screenError("i18n not compiled - download a release version", true, 0.6)
         return
@@ -1639,9 +1639,9 @@ function dashboard.paint(widget)
         local W, H = lcd.getWindowSize()
         local sys = system.getVersion()
         if H < (sys.lcdHeight / 5) or W < (sys.lcdWidth / 10) then
-            dashboard.utils.screenError("@i18n(widgets.dashboard.unsupported_resolution)@", true, 0.4)
+            dashboard.utils.screenError("TO SMALL", true, 0.4)
         else
-            dashboard.overlaymessage(0, 0, W, H, "@i18n(widgets.dashboard.unsupported_resolution)@")
+            dashboard.overlaymessage(0, 0, W, H, "TO SMALL")
         end
         return
     end
