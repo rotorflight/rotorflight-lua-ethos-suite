@@ -1,3 +1,4 @@
+# Retriggered after the workflow was present on master.
 name: Apply Rotorflight ETHOS Smooth2
 
 on:
@@ -85,7 +86,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          rm -rf .smooth2 .smooth2hex .smooth2e .smooth2patch .smooth2hex
+          rm -rf .smooth2 .smooth2hex .smooth2e .smooth2patch
           rm -f .github/workflows/apply-smooth2.yml
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
