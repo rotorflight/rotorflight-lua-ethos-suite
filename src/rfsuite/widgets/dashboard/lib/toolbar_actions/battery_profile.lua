@@ -176,9 +176,9 @@ local function setBatteryType(typeIndex, profileName)
     if typeIndex == rfsuite.session.activeBatteryType then
         if rfsuite.session.showConfirmationDialog then
             form.openDialog({
-                title = "@i18n(widgets.battery.title)@",
-                message = "@i18n(widgets.battery.msg_battery_selected)@ " .. tostring(profileName),
-                buttons = {{label = "@i18n(app.btn_ok)@", action = function() return true end}},
+                title = "Battery Profile",
+                message = "Selected battery: " .. tostring(profileName),
+                buttons = {{label = "          OK           ", action = function() return true end}},
                 options = TEXT_LEFT
             })
         end
@@ -187,11 +187,11 @@ local function setBatteryType(typeIndex, profileName)
 
     closeAndClearProgress()
 
-    progress = openProgressDialog("@i18n(app.msg_saving)@", "@i18n(app.msg_saving_to_fbl)@")
+    progress = openProgressDialog("Saving...", "Saving data to flight controller...")
     if not progress then return end
     progress:value(0)
     progress:closeAllowed(false)
-    progressBaseMessage = "@i18n(app.msg_saving_to_fbl)@"
+    progressBaseMessage = "Saving data to flight controller..."
     progressMspStatusLast = nil
 
     registerProgressDialog(progress, progressBaseMessage)
@@ -204,7 +204,7 @@ local function setBatteryType(typeIndex, profileName)
         if rfsuite.session.showConfirmationDialog then
             if progress then
                 progress:value(100)
-                progress:message("@i18n(widgets.battery.msg_battery_selected)@ " .. tostring(profileName))
+                progress:message("Selected battery: " .. tostring(profileName))
                 progress:closeAllowed(true)
                 clearProgressDialog(progress)
                 progress = nil
@@ -232,9 +232,9 @@ end
 function M.chooseBatteryType()
     if isAdjustmentConfigured() then
         form.openDialog({
-            title = "@i18n(widgets.battery.title)@",
-            message = "@i18n(widgets.battery.adjustment_active)@",
-            buttons = {{label = "@i18n(app.btn_ok)@", action = function() return true end}},
+            title = "Battery Profile",
+            message = "Selection disabled because Battery Profile adjustment is configured.",
+            buttons = {{label = "          OK           ", action = function() return true end}},
             options = TEXT_LEFT
         })
         return
@@ -244,9 +244,9 @@ function M.chooseBatteryType()
 
     if #profileList == 0 then
         form.openDialog({
-            title = "@i18n(widgets.battery.title)@",
-            message = "@i18n(widgets.battery.no_profiles)@",
-            buttons = {{label = "@i18n(app.btn_ok)@", action = function() return true end}},
+            title = "Battery Profile",
+            message = "No battery profiles configured.",
+            buttons = {{label = "          OK           ", action = function() return true end}},
             options = TEXT_LEFT
         })
         return
@@ -255,7 +255,7 @@ function M.chooseBatteryType()
     local buttons = {}
     local dialogWidth = getBatteryDialogWidth()
     local buttonCount = #profileList
-    local message = "@i18n(widgets.battery.msg_select_battery)@\n\n"
+    local message = "Please select the battery you want to use:\n\n"
     for _, profile in ipairs(profileList) do
         local label = tostring(profile.idx + 1)
         message = message .. label .. " - " .. profile.name .. "\n"
@@ -274,7 +274,7 @@ function M.chooseBatteryType()
     end
 
     form.openDialog({
-        title = "@i18n(widgets.battery.select_title)@",
+        title = "Select Battery",
         message = message,
         width = dialogWidth,
         buttons = buttons,

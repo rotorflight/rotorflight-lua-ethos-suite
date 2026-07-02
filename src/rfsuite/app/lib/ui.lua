@@ -30,6 +30,10 @@ local function wipeTable(t)
     for k in pairs(t) do t[k] = nil end
 end
 
+local function requestIncrementalGc()
+    if app then app.gcPending = true end
+end
+
 local function NOOP_PAINT() end
 
 local MASK_CACHE_MAX = 16  -- a small cache for recently used masks; evict old entries to avoid unbounded memory growth.
@@ -323,8 +327,14 @@ local clearFieldHandlerCache
 function ui.clearRuntimeCaches()
     menuLookupCache = {menuRef = nil}
     if clearFieldHandlerCache then clearFieldHandlerCache() end
-    ui._helpCache = {}
-    ui._helpExistsCache = {}
+    wipeTable(ui._helpCache)
+    wipeTable(ui._helpExistsCache)
+    wipeTable(ui._helpCacheOrder)
+
+    if tasks and tasks.msp and tasks.msp.api then
+        if tasks.msp.api.clearChunkCache then tasks.msp.api.clearChunkCache() end
+        if tasks.msp.api.clearHelpCache then tasks.msp.api.clearHelpCache() end
+    end
 
     if app then
         app._mainMenuPressHandlers = nil
@@ -1262,17 +1272,11 @@ function ui.cleanupCurrentPage()
 
     app.fieldHelpTxt = nil
     app._fieldHelpSection = nil
-    ui._helpCache = {}
-    ui._helpExistsCache = {}
-    if tasks and tasks.msp and tasks.msp.api and tasks.msp.api.clearHelpCache then
-        tasks.msp.api.clearHelpCache()
-    end
 
     rfsuite.tasks.activePage = nil
     app.Page = nil
 
-    collectgarbage('collect')
-    collectgarbage('collect')
+    requestIncrementalGc()
 
     local dev = preferences and preferences.developer
     local logMem = dev and dev.memstats == true
@@ -1379,7 +1383,7 @@ function ui.resetPageState(activesection)
         for k in pairs(app.gfx_buttons) do if k ~= "mainmenu" then app.gfx_buttons[k] = nil end end
     end
 
-    collectgarbage('collect')
+    requestIncrementalGc()
 end
 
 local function openMenuSectionById(sectionId)
@@ -1635,7 +1639,7 @@ function ui.openMainMenu(activesection)
 
     utils.reportMemoryUsage("app.openMainMenu", "end")
 
-    collectgarbage('collect')
+    requestIncrementalGc()
 end
 
 function ui.getLabel(id, page)
@@ -2070,6 +2074,28 @@ end
 
 ui._helpCache = ui._helpCache or {}
 ui._helpExistsCache = ui._helpExistsCache or {}
+ui._helpCacheOrder = ui._helpCacheOrder or {}
+local HELP_CACHE_MAX = 4
+
+local function touchHelpCache(section)
+    local order = ui._helpCacheOrder
+    for i = 1, #order do
+        if order[i] == section then
+            table.remove(order, i)
+            break
+        end
+    end
+    order[#order + 1] = section
+end
+
+local function cacheHelpData(section, value)
+    ui._helpCache[section] = value
+    touchHelpCache(section)
+    while #ui._helpCacheOrder > HELP_CACHE_MAX do
+        local oldest = table.remove(ui._helpCacheOrder, 1)
+        ui._helpCache[oldest] = nil
+    end
+end
 
 local function resolveHelpContext(scriptPath)
     if type(scriptPath) ~= "string" then return nil, nil end
@@ -2103,12 +2129,12 @@ local function getHelpData(section)
             local helpPath = "app/modules/" .. section .. "/help.lua"
             local chunk = loadfile(helpPath)
             local helpData = chunk and chunk() or nil
-
-            ui._helpCache[section] =
-                (type(helpData) == "table") and helpData or false
+            cacheHelpData(section, (type(helpData) == "table") and helpData or false)
         else
-            ui._helpCache[section] = false
+            cacheHelpData(section, false)
         end
+    else
+        touchHelpCache(section)
     end
 
     return ui._helpCache[section] or nil
@@ -2238,7 +2264,7 @@ function ui.openPage(opts)
             end
         end
         ui.setPageDirty(false)
-        collectgarbage('collect')
+        requestIncrementalGc()
         utils.reportMemoryUsage("app.Page.openPage: " .. script, "end")
         return
     end
@@ -2300,8 +2326,7 @@ function ui.openPage(opts)
     utils.reportMemoryUsage("ui.openPage: " .. script, "end")
     clearFieldHandlerCache()
 
-    collectgarbage('collect')
-    collectgarbage('collect')
+    requestIncrementalGc()
 end
 
 local function getNavButtonContext()
@@ -2517,12 +2542,6 @@ function ui.openPageHelp(txtData, title)
         buttons = {{
             label = "@i18n(app.btn_close)@",
             action = function()
-                local section = resolveHelpContext(app.lastScript)
-                if section then
-                    ui._helpCache[section] = nil
-                else
-                    ui._helpCache = {}
-                end
                 app.fieldHelpTxt = nil
                 app._fieldHelpSection = nil
                 return true

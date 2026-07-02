@@ -311,7 +311,10 @@ function core.buildFullPayload(apiName, payloadData, writeStructure)
             fieldDef.decimals = fieldDef.decimals or actual.decimals
         end
 
-        local value = payloadData[name] or fieldDef.default or 0
+        local value = payloadData[name]
+        if value == nil then value = fieldDef.default end
+        if value == nil then value = 0 end
+        if value == true then value = 1 elseif value == false then value = 0 end
         local scale = actual and (fieldDef.scale or 1) or 1
         value = math_floor(value * scale + 0.5)
 
@@ -389,7 +392,10 @@ function core.buildDeltaPayload(apiName, payloadData, writeStructure, positionma
             fieldDef.max = fieldDef.max or actualField.max
         end
 
-        local value = payloadData[name] or fieldDef.default or 0
+        local value = payloadData[name]
+        if value == nil then value = fieldDef.default end
+        if value == nil then value = 0 end
+        if value == true then value = 1 elseif value == false then value = 0 end
         local scale = fieldDef.scale or 1
         value = math_floor(value * scale + 0.5)
 

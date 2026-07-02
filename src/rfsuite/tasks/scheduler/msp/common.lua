@@ -44,10 +44,27 @@ local mspRxSize     = 0              -- Expected RX payload size
 local mspRxCRC      = 0              -- Accumulated CRC for V1
 local mspRxReq      = 0              -- Command ID of reply
 local mspStarted    = false          -- True when in middle of multi-frame RX
+local mspRxLastActivityAt = nil       -- Timestamp of the most recent valid fragment for the active reply
 local mspLastReq    = 0              -- Command ID we last sent
 local mspTxBuf      = {}             -- Outgoing payload buffer
 local mspTxIdx      = 1              -- Write pointer into TX buffer
 local mspTxCRC      = 0              -- Running CRC for V1
+
+
+-- Reset receive-side assembly state.  clearLastReq is used when a transaction is
+-- abandoned; retries keep the outstanding command so a fresh start frame can be
+-- matched immediately.
+local function mspResetRxState(clearLastReq)
+    mspRemoteSeq = 0
+    mspRxBuf = {}
+    mspRxError = false
+    mspRxSize = 0
+    mspRxCRC = 0
+    mspRxReq = 0
+    mspStarted = false
+    mspRxLastActivityAt = nil
+    if clearLastReq then mspLastReq = 0 end
+end
 
 -- Set protocol: only 1 or 2 are valid
 local function setProtocolVersion(v)
@@ -220,14 +237,13 @@ local function _receivedReply(payload)
     else
         -- Continuation frame: ensure sequencing is correct
         if (not mspStarted) or (((mspRemoteSeq + 1) & 0x0F) ~= seq) then
-            mspStarted = false
-            mspRxBuf = {}
-            mspRxSize = 0
-            mspRxCRC = 0
-            mspRemoteSeq = 0
+            mspResetRxState(false)
             return nil
         end
     end
+
+    -- A matching start frame or correctly sequenced continuation is progress.
+    if mspStarted then mspRxLastActivityAt = os_clock() end
 
     -- Copy payload bytes
     while (idx <= maxRx()) and (#mspRxBuf < mspRxSize) do
@@ -369,6 +385,10 @@ return {
     mspSendRequest     = mspSendRequest,
     mspPollReply       = mspPollReply,
     mspClearTxBuf      = mspClearTxBuf,
+    resetRxState       = mspResetRxState,
+    isRxInProgress     = function() return mspStarted end,
+    getRxLastActivityAt= function() return mspRxLastActivityAt end,
+    getRxProgress      = function() return #mspRxBuf, mspRxSize end,
     getLastTxCmd       = function() return mspLastReq end,
     getLastRxCmd       = function() return mspRxReq end
 }

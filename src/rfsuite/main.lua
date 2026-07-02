@@ -16,7 +16,7 @@ local config = {
     icon = lcd.loadMask("app/gfx/icon.png"),
     icon_logtool = lcd.loadMask("app/gfx/icon_logtool.png"),
     icon_unsupported = lcd.loadMask("app/gfx/unsupported.png"),
-    version = {major = 2, minor = 3, revision = 0, suffix = ""},
+    version = {major = 2, minor = 3, revision = 0, suffix = "smooth2"},
     ethosVersion = {1, 6, 2},
     supportedMspApiVersion = {"12.07", "12.08", "12.09", "12.10"},
     baseDir = "rfsuite",
@@ -455,7 +455,7 @@ local function init()
         return
     end
 
-    local isCompiledCheck = "@i18n(iscompiledcheck)@"
+    local isCompiledCheck = "true"
     if isCompiledCheck ~= "true" and isCompiledCheck ~= "eurt" then
         system.registerSystemTool(unsupported_i18n())
     else

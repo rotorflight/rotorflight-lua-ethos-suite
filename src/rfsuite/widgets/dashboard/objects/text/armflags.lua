@@ -105,9 +105,9 @@ function render.wakeup(box)
     if not showReason then
         if value ~= nil then
             if value == 1 or value == 3 then
-                displayValue = "@i18n(widgets.governor.ARMED)@"
+                displayValue = "ARMED"
             else
-                displayValue = "@i18n(widgets.governor.DISARMED)@"
+                displayValue = "DISARMED"
             end
         end
     end

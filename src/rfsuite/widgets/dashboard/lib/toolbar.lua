@@ -37,7 +37,7 @@ local DEFAULT_TOOLBAR_ITEMS = {
         end
     },      
     {
-        name = "@i18n(widgets.dashboard.reset_flight)@",
+        name = "Reset flight",
         order = 100,
         icon = "widgets/dashboard/gfx/toolbar_reset.png",
         iconSize = 55,
@@ -49,7 +49,7 @@ local DEFAULT_TOOLBAR_ITEMS = {
         end
     },
     {
-        name = "@i18n(widgets.bbl.erase_dataflash)@",
+        name = "Erase dataflash",
         order = 110,
         icon = "widgets/dashboard/gfx/toolbar_erase.png",
         iconSize = 55,
@@ -62,7 +62,7 @@ local DEFAULT_TOOLBAR_ITEMS = {
         end
     },
     {
-        name = "@i18n(widgets.dashboard.battery_profile)@",
+        name = "Battery Profile",
         order = 110,
         icon = "widgets/dashboard/gfx/toolbar_battery.png",
         iconSize = 55,

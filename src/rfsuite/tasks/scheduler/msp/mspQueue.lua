@@ -243,6 +243,8 @@ end
 -- This reduces "spillover" where a late duplicate reply (from an earlier resend) is consumed by the next message.
 local function drainAfterSuccess(self, cmd)
     if not cmd then return end
+    -- Duplicate/late replies are only expected after at least one resend.
+    if (self.retryCount or 0) <= 1 then return end
     local drainMs = self.drainAfterReplyMs or 0
     if drainMs <= 0 then return end
 
@@ -281,6 +283,7 @@ function MspQueueController.new(opts)
     self.retryCount = 0
     self.maxRetries = opts.maxRetries or 3
     self.timeout = opts.timeout or 2.0
+    self.rxInactivityTimeout = opts.rxInactivityTimeout or 0.9
 
     -- Minimum seconds between re-sends of the same message (prevents pipelined retries)
     self.retryBackoff = opts.retryBackoff or RETRY_BACKOFF_SECONDS or DEFAULT_RETRY_BACKOFF_SECONDS
@@ -340,6 +343,7 @@ function MspQueueController:processQueue()
     -- Nothing to do
     if self:isProcessed() then
         session.mspBusy = false
+        session.mspWakeRequested = false
         self.mspBusyStart = nil
         if session and session.mspStatusMessage then
             session.mspStatusClearAt = now + 0.75
@@ -352,6 +356,7 @@ function MspQueueController:processQueue()
         --utils.log("MSP busy for more than " .. mspBusyTimeout .. " seconds", "info")
         --utils.log(" - Unblocking by setting rfsuite.session.mspBusy = false", "info")
         session.mspBusy = false
+        session.mspWakeRequested = true
         self.mspBusyStart = nil
         return
     end
@@ -361,7 +366,9 @@ function MspQueueController:processQueue()
         -- Inter-message gap (after a message completes/fails)
         if self.interMessageDelay and self.interMessageDelay > 0 then
             if now < (self._nextMessageAt or 0) then
+                -- Request an early MSP wakeup without suppressing battery/telemetry tasks.
                 session.mspBusy = false
+                session.mspWakeRequested = true
                 self.mspBusyStart = nil
                 return
             end
@@ -371,6 +378,7 @@ function MspQueueController:processQueue()
         if self.loopInterval and self.loopInterval > 0 then
             if now < (self._nextProcessAt or 0) then
                 session.mspBusy = false
+                session.mspWakeRequested = true
                 self.mspBusyStart = nil
                 return
             end
@@ -383,7 +391,8 @@ function MspQueueController:processQueue()
         self.retryCount = 0
     end
 
-    -- We are now genuinely active (either working a current message or about to send one)
+    -- We are now genuinely active (either working a current message or about to send one).
+    session.mspWakeRequested = false
     session.mspBusy = true
     self.mspBusyStart = self.mspBusyStart or now
 
@@ -399,6 +408,21 @@ function MspQueueController:processQueue()
         if self.currentMessage then
             local now2 = os_clock()
 
+            -- Never restart a fragmented response while valid frames are still arriving.
+            -- If the stream stalls, discard only the partial RX assembly and permit the normal retry.
+            local rxInProgress = mspCommon and mspCommon.isRxInProgress and mspCommon.isRxInProgress()
+            local rxRecentlyActive = false
+            if rxInProgress then
+                local lastRxAt = mspCommon.getRxLastActivityAt and mspCommon.getRxLastActivityAt() or nil
+                local inactivity = self.currentMessage.rxInactivityTimeout or self.rxInactivityTimeout or 0.9
+                rxRecentlyActive = (lastRxAt == nil) or ((now2 - lastRxAt) < inactivity)
+                if not rxRecentlyActive then
+                    if mspCommon.resetRxState then mspCommon.resetRxState(false) end
+                    rxInProgress = false
+                    setMspStatus(formatMspStatus(self.currentMessage, "reply stalled"))
+                end
+            end
+
             -- Minimum spacing between any sends (existing throttle)
             local canSendByInterval = (not self.lastTimeCommandSent) or ((self.lastTimeCommandSent + lastTimeInterval) < now2)
 
@@ -406,7 +430,7 @@ function MspQueueController:processQueue()
             local backoff = (self.currentMessage.retryBackoff or self.retryBackoff or RETRY_BACKOFF_SECONDS or DEFAULT_RETRY_BACKOFF_SECONDS)
             local canSendByBackoff = (self.retryCount == 0) or ((self.lastTimeCommandSent and (now2 - self.lastTimeCommandSent) >= backoff) or false)
 
-            if canSendByInterval and canSendByBackoff and (self.retryCount <= self.maxRetries) then
+            if (not rxInProgress) and canSendByInterval and canSendByBackoff and (self.retryCount <= self.maxRetries) then
                 local sent = mspProtocol.mspWrite(self.currentMessage.command, self.currentMessage.payload or {})
                 if sent then
                     self.lastTimeCommandSent = now2
@@ -452,6 +476,9 @@ function MspQueueController:processQueue()
             self.apiname = nil
             self.lastTimeCommandSent = nil
             self.currentMessageStartTime = nil
+            session.mspBusy = false
+            session.mspWakeRequested = self:queueCount() > 0
+            self.mspBusyStart = nil
             return
         end
         cmd, buf, err = self.currentMessage.command, self.currentMessage.simulatorResponse, nil
@@ -481,9 +508,13 @@ function MspQueueController:processQueue()
         self.apiname = nil
         self.lastTimeCommandSent = nil
         self.currentMessageStartTime = nil
+        if mspCommon and mspCommon.resetRxState then mspCommon.resetRxState(true) end
         if self.interMessageDelay and self.interMessageDelay > 0 then
             self._nextMessageAt = now + self.interMessageDelay
         end
+        session.mspBusy = false
+        session.mspWakeRequested = self:queueCount() > 0
+        self.mspBusyStart = nil
         releaseMessageHandlers(msg)
         return
     end
@@ -607,7 +638,10 @@ function MspQueueController:processQueue()
         self.currentMessageStartTime = nil
         if self.interMessageDelay and self.interMessageDelay > 0 then
             self._nextMessageAt = now + self.interMessageDelay
-        end        
+        end
+        session.mspBusy = false
+        session.mspWakeRequested = self:queueCount() > 0
+        self.mspBusyStart = nil
         local cb = rfsuite.tasks.uiCallbacks
         if cb and cb.mspSuccess then cb.mspSuccess() end
 
@@ -638,7 +672,10 @@ end
 
 -- Reset queue + MSP state
 function MspQueueController:clear()
-    if rfsuite.session then rfsuite.session.mspBusy = false end
+    if rfsuite.session then
+        rfsuite.session.mspBusy = false
+        rfsuite.session.mspWakeRequested = false
+    end
     self.mspBusyStart = nil
     releaseQueuedHandlers(self)
     if self.queue then
@@ -653,7 +690,9 @@ function MspQueueController:clear()
     self.uuid = nil
     self.apiname = nil
     if rfsuite.tasks and rfsuite.tasks.msp and rfsuite.tasks.msp.common then
-        rfsuite.tasks.msp.common.mspClearTxBuf()
+        local common = rfsuite.tasks.msp.common
+        common.mspClearTxBuf()
+        if common.resetRxState then common.resetRxState(true) end
     end
 end
 
@@ -743,6 +782,10 @@ function MspQueueController:add(message)
         end
     end
     qpush(self.queue, toQueue)
+    -- Ask the scheduler for an immediate MSP wakeup, but do not claim the link is
+    -- busy until a message is actually selected for transmission.  This keeps
+    -- battery/arm telemetry responsive during the short queue-to-send gap.
+    if session then session.mspWakeRequested = true end
     pending = self:queueCount() + (self.currentMessage and 1 or 0)
 
     local isBusy = self.busyWarningThreshold and self.busyWarningThreshold > 0 and pending >= self.busyWarningThreshold

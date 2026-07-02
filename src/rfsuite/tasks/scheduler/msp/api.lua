@@ -21,6 +21,15 @@ local api = {}
 api._fileExistsCache = {}
 api._fileExistsCacheOrder = {}
 api._fileExistsCacheMax = 24
+api._chunkCache = {}
+api._chunkCacheOrder = {}
+api._chunkCacheMax = 2
+api._helpChunkCache = {}
+api._helpChunkCacheOrder = {}
+api._helpChunkCacheMax = 2
+api._helpDataCache = {}
+api._helpDataCacheOrder = {}
+api._helpDataCacheMax = 2
 api._deltaCacheDefault = true
 api._deltaCacheByApi = {}
 api._ported = {}
@@ -129,13 +138,80 @@ local function resolvePath(apiName)
     return nil, nil
 end
 
-local function getChunk(apiName, path)
+local function clearTable(t)
+    if type(t) ~= "table" then return end
+    for key in pairs(t) do t[key] = nil end
+end
+
+local function cacheValue(cache, order, maxEntries, key, value)
+    cache[key] = value
+    touchCacheOrder(order, key)
+
+    while #order > maxEntries do
+        local oldest = table_remove(order, 1)
+        cache[oldest] = nil
+    end
+
+    return value
+end
+
+local function getCachedChunk(apiName, path, cache, order, maxEntries, logPrefix)
+    local cached = cache[path]
+    if cached then
+        touchCacheOrder(order, path)
+        return cached
+    end
+
     local loaderFn, err = loadfile(path)
     if not loaderFn then
-        utils.log("[api] compile failed for " .. tostring(apiName) .. ": " .. tostring(err), "info")
+        utils.log(logPrefix .. " compile failed for " .. tostring(apiName) .. ": " .. tostring(err), "info")
         return nil
     end
-    return loaderFn
+
+    return cacheValue(cache, order, maxEntries, path, loaderFn)
+end
+
+local function getChunk(apiName, path)
+    return getCachedChunk(
+        apiName,
+        path,
+        api._chunkCache,
+        api._chunkCacheOrder,
+        api._chunkCacheMax,
+        "[api]"
+    )
+end
+
+local function getHelpData(apiName, helpPath)
+    local cached = api._helpDataCache[helpPath]
+    if cached then
+        touchCacheOrder(api._helpDataCacheOrder, helpPath)
+        return cached
+    end
+
+    local loaderFn = getCachedChunk(
+        apiName,
+        helpPath,
+        api._helpChunkCache,
+        api._helpChunkCacheOrder,
+        api._helpChunkCacheMax,
+        "[apihelp]"
+    )
+    if not loaderFn then return nil end
+
+    local ok, helpData = pcall(loaderFn)
+    if not ok or type(helpData) ~= "table" then
+        utils.log("[apihelp] invalid help data for " .. tostring(apiName), "info")
+        return nil
+    end
+
+    return cacheValue(
+        api._helpDataCache,
+        api._helpDataCacheOrder,
+        api._helpDataCacheMax,
+        helpPath,
+        helpData
+    )
 end
 
 local function shouldLoadHelp(loadOpts)
@@ -154,17 +230,8 @@ local function injectHelpIntoStructure(apiName, structure)
     local helpPath = resolveHelpPath(apiName)
     if not helpPath or not cachedFileExists(helpPath) then return end
 
-    local loaderFn, err = loadfile(helpPath)
-    if not loaderFn then
-        utils.log("[apihelp] compile failed for " .. tostring(apiName) .. ": " .. tostring(err), "info")
-        return
-    end
-
-    local ok, helpData = pcall(loaderFn)
-    if not ok or type(helpData) ~= "table" then
-        utils.log("[apihelp] invalid help data for " .. tostring(apiName), "info")
-        return
-    end
+    local helpData = getHelpData(apiName, helpPath)
+    if not helpData then return end
 
     local helpFields = type(helpData.fields) == "table" and helpData.fields or helpData
     if type(helpFields) ~= "table" then return end
@@ -366,9 +433,15 @@ function api.resetApidata()
 end
 
 function api.clearChunkCache()
+    clearTable(api._chunkCache)
+    clearTable(api._chunkCacheOrder)
 end
 
 function api.clearHelpCache()
+    clearTable(api._helpChunkCache)
+    clearTable(api._helpChunkCacheOrder)
+    clearTable(api._helpDataCache)
+    clearTable(api._helpDataCacheOrder)
 end
 
 function api.clearFileExistsCache()
