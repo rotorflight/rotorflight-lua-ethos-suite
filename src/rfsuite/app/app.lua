@@ -17,6 +17,7 @@ local busyUiTick = 0
 -- Lower RUN_NUM to yield more CPU to MSP; set RUN_NUM == RUN_DEN to disable this throttle.
 local BUSY_UI_RUN_NUM = 2
 local BUSY_UI_RUN_DEN = 3
+local GC_STEP_SIZE = 48
 
 local function closeTransientDialogs()
     if not app or not app.dialogs then return end
@@ -137,6 +138,14 @@ function app.wakeup_protected()
     end
     if runUiTasks and app.tasks then app.tasks.wakeup() end
 
+    -- Navigation releases many short-lived form/page objects. Reclaim them in
+    -- small idle slices instead of pausing the UI for repeated full collections.
+    if app.gcPending and not (rfsuite.session and rfsuite.session.mspBusy) then
+        if collectgarbage("step", GC_STEP_SIZE) then
+            app.gcPending = false
+        end
+    end
+
     if app.ui and app.ui.wakeupAdminStatsOverlay then app.ui.wakeupAdminStatsOverlay() end
 end
 
@@ -149,6 +158,7 @@ end
 
 function app.create()
     app._closing = false
+    app.gcPending = false
 
     if not app.initialized then
 
@@ -520,6 +530,7 @@ function app.close()
     if rfsuite.tasks.msp then rfsuite.tasks.msp.api.resetApidata() end
     if rfsuite.tasks.msp and rfsuite.tasks.msp.mspQueue then rfsuite.tasks.msp.mspQueue:clear() end
 
+    app.gcPending = false
     collectgarbage("collect")
 
     rfsuite.utils.reportMemoryUsage("app.close", "end")

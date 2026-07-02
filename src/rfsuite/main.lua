@@ -21,7 +21,7 @@ local config = {
     supportedMspApiVersion = {"12.07", "12.08", "12.09", "12.10"},
     baseDir = "rfsuite",
     preferences = "rfsuite.user",
-    defaultRateProfile = 6,
+    defaultRateProfile = 6,   -- default, may be overridden in onconnect/tasks/rateprofile.lua
     watchdogParam = 10,
     msp = {
         probeProtocol = 1,
@@ -30,7 +30,7 @@ local config = {
         v2MinApiVersion = {12, 0, 9},
     },
     mspProtocolVersion = 1,
-    maxModelImageBytes = 350 * 1024
+    maxModelImageBytes = 350 * 1024 -- 350KB, to prevent OOM crashes on models with very large images
 }
 -- LuaFormatter on
 
@@ -39,7 +39,9 @@ config.ethosVersionString = string.format("ETHOS < V%d.%d.%d", table.unpack(conf
 rfsuite.config = config
 
 local performance = {cpuload = 0, freeram = 0, mainStackKB = 0, ramKB = 0, luaRamKB = 0, luaBitmapsRamKB = 0}
+
 rfsuite.performance = performance
+
 rfsuite.ini = assert(loadfile("lib/ini.lua", "t", _ENV))(config)
 
 local userpref_defaults = {
@@ -51,8 +53,8 @@ local userpref_defaults = {
         gimbalsupression = 0.85,
         txbatt_type = 0,
         hs_loader = 0,
-        theme_loader = 1,
-        save_confirm = true,
+        theme_loader = 1,  
+        save_confirm = true,   
         save_dirty_only = true,
         reload_confirm = true,
         mspstatusdialog = true,
@@ -63,7 +65,10 @@ local userpref_defaults = {
         show_confirmation_dialog = false,
         show_esc_tools_warning = true
     },
-    localizations = {temperature_unit = 0, altitude_unit = 0},
+    localizations = {
+        temperature_unit = 0,
+        altitude_unit = 0
+    },
     dashboard = {
         theme_preflight = "system/default",
         theme_inflight = "system/default",
@@ -142,43 +147,60 @@ local userpref_defaults = {
 local prefs_dir = "SCRIPTS:/" .. rfsuite.config.preferences
 os.mkdir(prefs_dir)
 local userpref_file = prefs_dir .. "/preferences.ini"
+
 local master_ini = rfsuite.ini.load_ini_file(userpref_file) or {}
 local updated_ini = rfsuite.ini.merge_ini_tables(master_ini, userpref_defaults)
 rfsuite.preferences = updated_ini
 
+-- Migrate legacy developer.mspstatusdialog to general.mspstatusdialog if present
 if rfsuite.preferences then
     local gen = rfsuite.preferences.general
     local dev = rfsuite.preferences.developer
-    if gen and gen.mspstatusdialog == nil and dev and dev.mspstatusdialog ~= nil then gen.mspstatusdialog = dev.mspstatusdialog end
-    if gen and gen.elrs_sync_mode ~= nil then gen.elrs_sync_mode = nil end
+    if gen and gen.mspstatusdialog == nil and dev and dev.mspstatusdialog ~= nil then
+        gen.mspstatusdialog = dev.mspstatusdialog
+    end
+    if gen and gen.elrs_sync_mode ~= nil then
+        gen.elrs_sync_mode = nil
+    end
 end
 
 if not rfsuite.ini.ini_tables_equal(master_ini, updated_ini) then rfsuite.ini.save_ini_file(userpref_file, updated_ini) end
 
 if system.getVersion and system.getVersion().simulation then
     local dev = rfsuite.preferences.developer
-    if dev and simulator and type(simulator.setDebug) == "function" then simulator.setDebug("malloc", dev.debugmalloc == true) end
+    if dev and simulator and type(simulator.setDebug) == "function" then
+        simulator.setDebug("malloc", dev.debugmalloc == true)
+    end
 end
 
 rfsuite.config.bgTaskName = rfsuite.config.toolName .. " [Background]"
 rfsuite.config.bgTaskKey = "rf2bg"
+
 rfsuite.utils = assert(loadfile("lib/utils.lua"))(rfsuite.config)
 rfsuite.bus = assert(loadfile("lib/message_bus.lua", "t", _ENV))()
 rfsuite.ethos_events = assert(loadfile("lib/ethos_events.lua", "t", _ENV))()
 
 local function createLazyAppProxy()
     local loadedModule = nil
+
     local function ensureAppModule()
-        if loadedModule ~= nil then return loadedModule end
+        if loadedModule ~= nil then
+            return loadedModule
+        end
+
         loadedModule = assert(loadfile("app/app.lua"))(rfsuite.config)
         rfsuite.app = loadedModule
         return loadedModule
     end
+
     local proxy = {}
     setmetatable(proxy, {
         __index = function(_, key)
             local mod = loadedModule
-            if mod then return mod[key] end
+            if mod then
+                return mod[key]
+            end
+
             if key == "guiIsRunning" then
                 local t = rfsuite.tasks
                 return (t and t.appRunning) or false
@@ -187,7 +209,10 @@ local function createLazyAppProxy()
                 local t = rfsuite.tasks
                 return (t and t.escPowerCycleLoader) or false
             end
-            if key == "tasks" or key == "triggers" or key == "ui" then return nil end
+            if key == "tasks" or key == "triggers" or key == "ui" then
+                return nil
+            end
+
             return ensureAppModule()[key]
         end,
         __newindex = function(_, key, value)
@@ -198,20 +223,28 @@ local function createLazyAppProxy()
             ensureAppModule()[key] = value
         end
     })
+
     local function callAppMethod(method, ...)
         local mod = ensureAppModule()
         local fn = mod and mod[method]
-        if type(fn) == "function" then return fn(...) end
+        if type(fn) == "function" then
+            return fn(...)
+        end
     end
+
     return proxy, callAppMethod
 end
 
 local callAppMethod
 rfsuite.app, callAppMethod = createLazyAppProxy()
+
 rfsuite.tasks = assert(loadfile("tasks/tasks.lua"))(rfsuite.config)
+
 rfsuite.flightmode = {current = "preflight"}
 rfsuite.utils.session()
+
 rfsuite.simevent = {telemetry_state = true}
+
 rfsuite.sysIndex = {}
 
 function rfsuite.version()
@@ -257,25 +290,25 @@ end
 
 local function register_main_tool()
     rfsuite.sysIndex['app'] = system.registerSystemTool({
-        name = rfsuite.config.toolName,
-        icon = rfsuite.config.icon,
-        event = function(...) return callAppMethod("event", ...) end,
+        name   = rfsuite.config.toolName,
+        icon   = rfsuite.config.icon,
+        event  = function(...) return callAppMethod("event", ...) end,
         create = function(...) return callAppMethod("create", ...) end,
         wakeup = function(...) return callAppMethod("wakeup", ...) end,
-        paint = function(...) return callAppMethod("paint", ...) end,
-        close = function(...) return callAppMethod("close", ...) end
+        paint  = function(...) return callAppMethod("paint", ...) end,
+        close  = function(...) return callAppMethod("close", ...) end
     })
 end
 
 local function register_bg_task()
     rfsuite.sysIndex['task'] = system.registerTask({
-        name = rfsuite.config.bgTaskName,
-        key = rfsuite.config.bgTaskKey,
+        name  = rfsuite.config.bgTaskName,
+        key   = rfsuite.config.bgTaskKey,
         wakeup = rfsuite.tasks.wakeup,
         event = rfsuite.tasks.event,
-        init = rfsuite.tasks.init,
+        init  = rfsuite.tasks.init,
         done = rfsuite.tasks.done,
-        read = rfsuite.tasks.read,
+        read  = rfsuite.tasks.read,
         write = rfsuite.tasks.write
     })
 end
@@ -283,35 +316,49 @@ end
 local function createLazyWidgetProxy(path)
     local loadedModule = nil
     local loadFailed = false
+
     local function ensureWidgetModule()
-        if loadedModule ~= nil then return loadedModule end
-        if loadFailed then return nil end
+        if loadedModule ~= nil then
+            return loadedModule
+        end
+        if loadFailed then
+            return nil
+        end
+
         local wchunk, err = loadfile(path)
         if not wchunk then
             rfsuite.utils.log("[widgets] failed to load widget: " .. path .. " (" .. tostring(err) .. ")", "info")
             loadFailed = true
             return nil
         end
+
         local ok, scriptModule = pcall(wchunk, config)
         if not ok then
             rfsuite.utils.log("[widgets] widget errored while loading: " .. path .. " (" .. tostring(scriptModule) .. ")", "info")
             loadFailed = true
             return nil
         end
+
         if type(scriptModule) ~= "table" then
             rfsuite.utils.log("[widgets] widget did not return a module table: " .. path, "info")
             loadFailed = true
             return nil
         end
+
         loadedModule = scriptModule
         return loadedModule
     end
+
     local proxy = {}
-    proxy.__isLoaded = function() return loadedModule ~= nil end
+    proxy.__isLoaded = function()
+        return loadedModule ~= nil
+    end
     proxy.__callIfLoaded = function(method, ...)
         local mod = loadedModule
         local fn = mod and mod[method]
-        if type(fn) == "function" then return fn(...) end
+        if type(fn) == "function" then
+            return fn(...)
+        end
     end
     setmetatable(proxy, {
         __index = function(_, key)
@@ -323,26 +370,37 @@ local function createLazyWidgetProxy(path)
             if mod then mod[key] = value end
         end
     })
+
     local function callWidgetMethod(method, ...)
         local mod = ensureWidgetModule()
         local fn = mod and mod[method]
-        if type(fn) == "function" then return fn(...) end
+        if type(fn) == "function" then
+            return fn(...)
+        end
     end
+
     return proxy, callWidgetMethod
 end
 
 local function register_widgets()
     local manifestPath = "widgets/manifest.lua"
     local widgetList = {}
+
     local chunk = loadfile(manifestPath)
     if chunk then
         local res = chunk()
-        if type(res) == "table" then widgetList = res else rfsuite.utils.log("[widgets] manifest did not return a table", "info") end
+        if type(res) == "table" then
+            widgetList = res
+        else
+            rfsuite.utils.log("[widgets] manifest did not return a table", "info")
+        end
     else
         rfsuite.utils.log("[widgets] manifest not found or load failed", "info")
     end
+
     rfsuite.widgets = {}
     local dupCount = {}
+
     for _, v in ipairs(widgetList) do
         if v.script then
             local path = "widgets/" .. v.folder .. "/" .. v.script
@@ -353,7 +411,9 @@ local function register_widgets()
                 base = string.format("%s_dup%02d", base, dupCount[base])
             end
             rfsuite.widgets[base] = proxy
+
             if v.type == "glasses" then
+                -- Register a thin proxy so the widget module is only loaded if used.
                 if system.registerGlassesWidget then
                     rfsuite.sysIndex['widget_' .. v.folder] = system.registerGlassesWidget({
                         key = v.key,
@@ -364,6 +424,8 @@ local function register_widgets()
                     })
                 end
             else
+                -- Keep static registration metadata simple and defer loading the module
+                -- until one of its callbacks is actually invoked by Ethos.
                 rfsuite.sysIndex['widget_' .. v.folder] = system.registerWidget({
                     name = v.name,
                     key = v.key,
@@ -386,13 +448,24 @@ local function register_widgets()
 end
 
 local function init()
+    local cfg = rfsuite.config
+
     if not rfsuite.utils.ethosVersionAtLeast() then
         system.registerSystemTool(unsupported_tool())
         return
     end
+
     local isCompiledCheck = "true"
-    if isCompiledCheck ~= "true" and isCompiledCheck ~= "eurt" then system.registerSystemTool(unsupported_i18n()) else register_main_tool() end
+    if isCompiledCheck ~= "true" and isCompiledCheck ~= "eurt" then
+        system.registerSystemTool(unsupported_i18n())
+    else
+        register_main_tool()
+    end
+
+    -- register background task
     register_bg_task()
+
+    -- register widgets
     register_widgets()
 end
 

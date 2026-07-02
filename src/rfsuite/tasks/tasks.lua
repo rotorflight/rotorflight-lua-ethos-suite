@@ -445,7 +445,7 @@ function tasks.telemetryCheckScheduler()
         if not rfsuite.session.isConnected then
             if (not lastCheckAt) or (now - lastCheckAt) >= 1.0 then
                 lastCheckAt = now
-                utils.log("@i18n(app.msg_waiting_for_connection)@", "connect")
+                utils.log("Waiting for connection", "connect")
             end
         end
 
@@ -506,7 +506,7 @@ function tasks.telemetryCheckScheduler()
         if newModelPath ~= lastModelPath then
             local oldModelPath = lastModelPath
             utils.log("Model changed, resetting session", "info")
-            utils.log("@i18n(app.msg_model_changed_reset)@", "connect")
+            utils.log("Model changed, resetting session", "connect")
             utils.log("[event] onmodelchange", "info")
 
             local omc = getEvent("onmodelchange")
@@ -532,7 +532,7 @@ function tasks.telemetryCheckScheduler()
             lastNameCheckAt = now
             if currentSensor:name() ~= lastSensorName then
                 utils.log("Telemetry sensor changed to " .. tostring(currentSensor:name()), "info")
-                utils.log("@i18n(app.msg_telem_sensor_changed)@ " .. tostring(currentSensor:name()), "connect")
+                utils.log("Telem. sensor changed to " .. tostring(currentSensor:name()), "connect")
                 lastSensorName = currentSensor:name()
                 currentSensor = nil
                 clearSessionAndQueue()
@@ -579,7 +579,7 @@ function tasks.telemetryCheckScheduler()
     if currentTelemetryType ~= lastTelemetryType then
         local oldTelemetryType = lastTelemetryType
         rfsuite.utils.log("Telemetry type changed to " .. tostring(currentTelemetryType), "info")
-        rfsuite.utils.log("@i18n(app.msg_telem_type_changed)@ " .. tostring(currentTelemetryType), "connect")
+        rfsuite.utils.log("Telem. type changed to " .. tostring(currentTelemetryType), "connect")
         utils.log("[event] ontransportchange", "info")
 
         local otc = getEvent("ontransportchange")
@@ -644,12 +644,13 @@ end
 
 
 -- Hoisted runners (avoid allocating closures on every wakeup)
-local function runNonSpreadTasks(now)
+local function runNonSpreadTasks(now, skipPriorityTasks)
 
     local loopCpu = 0
 
     for _, task in ipairs(tasksListNonSpread) do
-        local mod = tasks[task.name]
+        local skipTask = skipPriorityTasks and (task.name == "msp" or task.name == "callback")
+        local mod = not skipTask and tasks[task.name] or nil
         if mod and mod.wakeup then
             local okToRun, od = canRunTask(task, now)
             if okToRun then
@@ -899,7 +900,7 @@ function tasks.wakeup_protected()
             tasks._initByName = nil
             tasks._initIndex = 1
             utils.log("All tasks initialized.", "info")
-            utils.log("@i18n(app.msg_tasks_initialized)@", "connect")
+            utils.log("All tasks initialized.", "connect")
             return
         end
     end
@@ -914,33 +915,45 @@ function tasks.wakeup_protected()
     local cycleFlip = schedulerTick % 2
 
     -- MSP boost mode:
-    -- As soon as we have any MSP activity, prioritize MSP and callback tasks only.
-    -- This ensures that the MSP queue is drained as fast as possible to reduce latency.
-    if rfsuite.session.mspBusy then
-            if tasks.msp and tasks.msp.wakeup then
-                if perfTimingEnabled then
-                    local c0 = os_clock()
-                    tasks.msp.wakeup()
-                    loopCpu = loopCpu + (os_clock() - c0)
-                else
-                    tasks.msp.wakeup()
-                end
+    -- mspWakeRequested starts queued work promptly without pretending the transport
+    -- is already busy.  Once a request is in flight, mspBusy keeps the hot path focused
+    -- on MSP and callback processing until the reply completes.
+    local session = rfsuite.session
+    local mspPriority = session.mspBusy or session.mspWakeRequested
+    if mspPriority then
+        if tasks.msp and tasks.msp.wakeup then
+            if perfTimingEnabled then
+                local c0 = os_clock()
+                tasks.msp.wakeup()
+                loopCpu = loopCpu + (os_clock() - c0)
+            else
+                tasks.msp.wakeup()
             end
-            if tasks.callback and tasks.callback.wakeup then
-                if perfTimingEnabled then
-                    local c0 = os_clock()
-                    tasks.callback.wakeup()
-                    loopCpu = loopCpu + (os_clock() - c0)
-                else
-                    tasks.callback.wakeup()
-                end
+        end
+        if tasks.callback and tasks.callback.wakeup then
+            if perfTimingEnabled then
+                local c0 = os_clock()
+                tasks.callback.wakeup()
+                loopCpu = loopCpu + (os_clock() - c0)
+            else
+                tasks.callback.wakeup()
             end
+        end
+
+        -- If the request only needed an early wake (for example, an inter-message
+        -- delay), continue normal tasks so battery and arm-state telemetry are not
+        -- suppressed.  Skip MSP/callback because they already ran above.
+        if not session.mspBusy then
+            if cycleFlip == 0 then
+                loopCpu = loopCpu + (runNonSpreadTasks(now, true) or 0)
+            else
+                loopCpu = loopCpu + (runSpreadTasks(now) or 0)
+            end
+        end
     else
-    -- Bulk task processing split across two cycles to reduce per-cycle load.
-    -- This includes MSP and callback so they are guaranteed to run regardless.
-    -- The cycle starts MSP; it then boosts, then drops back after MSP is done.
+        -- Bulk task processing split across two cycles to reduce per-cycle load.
         if cycleFlip == 0 then
-            loopCpu = loopCpu + (runNonSpreadTasks(now) or 0)
+            loopCpu = loopCpu + (runNonSpreadTasks(now, false) or 0)
         else
             loopCpu = loopCpu + (runSpreadTasks(now) or 0)
         end
@@ -1338,7 +1351,7 @@ function tasks.load(name, meta)
     end
 
     utils.log(string_format("[scheduler] Loaded task '%s' (%s)", name, meta.script), "info")
-    utils.log(string_format("[scheduler] @i18n(app.msg_loaded_task)@ [%s]", name), "connect")
+    utils.log(string_format("[scheduler] Loaded task [%s]", name), "connect")
     return true
 end
 
