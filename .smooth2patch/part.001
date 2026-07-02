@@ -1,0 +1,215 @@
+
++                session.mspWakeRequested = true
+                 self.mspBusyStart = nil
+                 return
+             end
+@@ -371,6 +376,7 @@
+         if self.loopInterval and self.loopInterval > 0 then
+             if now < (self._nextProcessAt or 0) then
+                 session.mspBusy = false
++                session.mspWakeRequested = true
+                 self.mspBusyStart = nil
+                 return
+             end
+@@ -383,7 +389,8 @@
+         self.retryCount = 0
+     end
+ 
+-    -- We are now genuinely active (either working a current message or about to send one)
++    -- We are now genuinely active (either working a current message or about to send one).
++    session.mspWakeRequested = false
+     session.mspBusy = true
+     self.mspBusyStart = self.mspBusyStart or now
+ 
+@@ -399,6 +406,20 @@
+         if self.currentMessage then
+             local now2 = os_clock()
+ 
++            -- Never restart a fragmented response while valid frames are still arriving.
++            -- If the stream stalls, discard only the partial RX assembly and allow retry.
++            local rxInProgress = mspCommon and mspCommon.isRxInProgress and mspCommon.isRxInProgress()
++            if rxInProgress then
++                local lastRxAt = mspCommon.getRxLastActivityAt and mspCommon.getRxLastActivityAt() or nil
++                local inactivity = self.currentMessage.rxInactivityTimeout or self.rxInactivityTimeout or 0.9
++                local rxRecentlyActive = (lastRxAt == nil) or ((now2 - lastRxAt) < inactivity)
++                if not rxRecentlyActive then
++                    if mspCommon.resetRxState then mspCommon.resetRxState(false) end
++                    rxInProgress = false
++                    setMspStatus(formatMspStatus(self.currentMessage, "reply stalled"))
++                end
++            end
++
+             -- Minimum spacing between any sends (existing throttle)
+             local canSendByInterval = (not self.lastTimeCommandSent) or ((self.lastTimeCommandSent + lastTimeInterval) < now2)
+ 
+@@ -406,7 +427,7 @@
+             local backoff = (self.currentMessage.retryBackoff or self.retryBackoff or RETRY_BACKOFF_SECONDS or DEFAULT_RETRY_BACKOFF_SECONDS)
+             local canSendByBackoff = (self.retryCount == 0) or ((self.lastTimeCommandSent and (now2 - self.lastTimeCommandSent) >= backoff) or false)
+ 
+-            if canSendByInterval and canSendByBackoff and (self.retryCount <= self.maxRetries) then
++            if (not rxInProgress) and canSendByInterval and canSendByBackoff and (self.retryCount <= self.maxRetries) then
+                 local sent = mspProtocol.mspWrite(self.currentMessage.command, self.currentMessage.payload or {})
+                 if sent then
+                     self.lastTimeCommandSent = now2
+@@ -452,6 +473,9 @@
+             self.apiname = nil
+             self.lastTimeCommandSent = nil
+             self.currentMessageStartTime = nil
++            session.mspBusy = false
++            session.mspWakeRequested = self:queueCount() > 0
++            self.mspBusyStart = nil
+             return
+         end
+         cmd, buf, err = self.currentMessage.command, self.currentMessage.simulatorResponse, nil
+@@ -481,9 +505,13 @@
+         self.apiname = nil
+         self.lastTimeCommandSent = nil
+         self.currentMessageStartTime = nil
++        if mspCommon and mspCommon.resetRxState then mspCommon.resetRxState(true) end
+         if self.interMessageDelay and self.interMessageDelay > 0 then
+             self._nextMessageAt = now + self.interMessageDelay
+         end
++        session.mspBusy = false
++        session.mspWakeRequested = self:queueCount() > 0
++        self.mspBusyStart = nil
+         releaseMessageHandlers(msg)
+         return
+     end
+@@ -607,7 +635,10 @@
+         self.currentMessageStartTime = nil
+         if self.interMessageDelay and self.interMessageDelay > 0 then
+             self._nextMessageAt = now + self.interMessageDelay
+-        end        
++        end
++        session.mspBusy = false
++        session.mspWakeRequested = self:queueCount() > 0
++        self.mspBusyStart = nil
+         local cb = rfsuite.tasks.uiCallbacks
+         if cb and cb.mspSuccess then cb.mspSuccess() end
+ 
+@@ -638,7 +669,10 @@
+ 
+ -- Reset queue + MSP state
+ function MspQueueController:clear()
+-    if rfsuite.session then rfsuite.session.mspBusy = false end
++    if rfsuite.session then
++        rfsuite.session.mspBusy = false
++        rfsuite.session.mspWakeRequested = false
++    end
+     self.mspBusyStart = nil
+     releaseQueuedHandlers(self)
+     if self.queue then
+@@ -653,7 +687,9 @@
+     self.uuid = nil
+     self.apiname = nil
+     if rfsuite.tasks and rfsuite.tasks.msp and rfsuite.tasks.msp.common then
+-        rfsuite.tasks.msp.common.mspClearTxBuf()
++        local common = rfsuite.tasks.msp.common
++        common.mspClearTxBuf()
++        if common.resetRxState then common.resetRxState(true) end
+     end
+ end
+ 
+@@ -743,6 +779,7 @@
+         end
+     end
+     qpush(self.queue, toQueue)
++    if session then session.mspWakeRequested = true end
+     pending = self:queueCount() + (self.currentMessage and 1 or 0)
+ 
+     local isBusy = self.busyWarningThreshold and self.busyWarningThreshold > 0 and pending >= self.busyWarningThreshold
+--- a/src/rfsuite/app/app.lua
++++ b/src/rfsuite/app/app.lua
+@@ -17,6 +17,7 @@
+ -- Lower RUN_NUM to yield more CPU to MSP; set RUN_NUM == RUN_DEN to disable this throttle.
+ local BUSY_UI_RUN_NUM = 2
+ local BUSY_UI_RUN_DEN = 3
++local GC_STEP_SIZE = 48
+ 
+ local function closeTransientDialogs()
+     if not app or not app.dialogs then return end
+@@ -137,6 +138,10 @@
+     end
+     if runUiTasks and app.tasks then app.tasks.wakeup() end
+ 
++    if app.gcPending and not (rfsuite.session and rfsuite.session.mspBusy) then
++        if collectgarbage("step", GC_STEP_SIZE) then app.gcPending = false end
++    end
++
+     if app.ui and app.ui.wakeupAdminStatsOverlay then app.ui.wakeupAdminStatsOverlay() end
+ end
+ 
+@@ -149,6 +154,7 @@
+ 
+ function app.create()
+     app._closing = false
++    app.gcPending = false
+ 
+     if not app.initialized then
+ 
+@@ -520,6 +526,7 @@
+     if rfsuite.tasks.msp then rfsuite.tasks.msp.api.resetApidata() end
+     if rfsuite.tasks.msp and rfsuite.tasks.msp.mspQueue then rfsuite.tasks.msp.mspQueue:clear() end
+ 
++    app.gcPending = false
+     collectgarbage("collect")
+ 
+     rfsuite.utils.reportMemoryUsage("app.close", "end")
+--- a/src/rfsuite/app/lib/ui.lua
++++ b/src/rfsuite/app/lib/ui.lua
+@@ -30,6 +30,10 @@
+     for k in pairs(t) do t[k] = nil end
+ end
+ 
++local function requestIncrementalGc()
++    if app then app.gcPending = true end
++end
++
+ local function NOOP_PAINT() end
+ 
+ local MASK_CACHE_MAX = 16  -- a small cache for recently used masks; evict old entries to avoid unbounded memory growth.
+@@ -323,8 +327,14 @@
+ function ui.clearRuntimeCaches()
+     menuLookupCache = {menuRef = nil}
+     if clearFieldHandlerCache then clearFieldHandlerCache() end
+-    ui._helpCache = {}
+-    ui._helpExistsCache = {}
++    wipeTable(ui._helpCache)
++    wipeTable(ui._helpExistsCache)
++    wipeTable(ui._helpCacheOrder)
++
++    if tasks and tasks.msp and tasks.msp.api then
++        if tasks.msp.api.clearChunkCache then tasks.msp.api.clearChunkCache() end
++        if tasks.msp.api.clearHelpCache then tasks.msp.api.clearHelpCache() end
++    end
+ 
+     if app then
+         app._mainMenuPressHandlers = nil
+@@ -1262,17 +1272,11 @@
+ 
+     app.fieldHelpTxt = nil
+     app._fieldHelpSection = nil
+-    ui._helpCache = {}
+-    ui._helpExistsCache = {}
+-    if tasks and tasks.msp and tasks.msp.api and tasks.msp.api.clearHelpCache then
+-        tasks.msp.api.clearHelpCache()
+-    end
+ 
+     rfsuite.tasks.activePage = nil
+     app.Page = nil
+ 
+-    collectgarbage('collect')
+-    collectgarbage('collect')
++    requestIncrementalGc()
+ 
+     local dev = preferences and preferences.developer
+     local logMem = dev and dev.memstats == true
+@@ -1379,7 +1383,7 @@
+         for k in pairs(app.gfx_buttons) do if k ~= "mainmenu" then app.gfx_buttons[k] = nil end end
+     end
+ 
+-    collectgarbage('collect')
++    requestIncrementalGc()
+ end
+ 
+ local function openMenuSectionById(sectionId)
