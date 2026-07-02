@@ -1,0 +1,2318 @@
+--[[
+  Copyright (C) 2025 Rotorflight Project
+  GPLv3 — https://www.gnu.org/licenses/gpl-3.0.en.html
+]] --
+
+local rfsuite = require("rfsuite")
+local lcd = lcd
+local system = system
+local model = model
+
+local floor = math.floor
+local ceil = math.ceil
+local min = math.min
+local max = math.max
+local format = string.format
+local insert = table.insert
+local remove = table.remove
+local sort = table.sort
+local clock = os.clock
+local ipairs = ipairs
+local pairs = pairs
+local tostring = tostring
+local tonumber = tonumber
+
+local dashboard = {}
+
+local compile = loadfile
+
+local baseDir = rfsuite.config.baseDir
+local preferences = rfsuite.config.preferences
+local utils = rfsuite.utils
+local log = utils.log
+local tasks = rfsuite.tasks
+local themeLib
+local objectProfiler = false
+
+local function clearArray(t)
+    for i = #t, 1, -1 do
+        t[i] = nil
+    end
+end
+
+local EMPTY = {}
+
+local function resolveMaybe(val, ...)
+    return type(val) == "function" and val(...) or val
+end
+
+local function adjustDimension(dim, cells, padCount, pad)
+    return dim - ((dim - padCount * pad) % cells)
+end
+
+local function buildBoxTypeSig(bx, hbx, out)
+    local t = out or {}
+    clearArray(t)
+    for _, b in ipairs(bx or {}) do t[#t + 1] = tostring(b.type or "") end
+    for _, b in ipairs(hbx or {}) do t[#t + 1] = tostring(b.type or "") end
+    sort(t)
+    return t, #t
+end
+
+local function sigEquals(a, aN, b, bN)
+    if aN ~= bN then return false end
+    for i = 1, aN do
+        if a[i] ~= b[i] then return false end
+    end
+    return true
+end
+
+local function isDashboardLogPanelEnabled()
+    local dev = rfsuite.preferences and rfsuite.preferences.developer
+    return dev and dev.loglevel ~= nil and dev.loglevel ~= "off"
+end
+
+local function logMemCheckpoint(label)
+    local dev = rfsuite.preferences and rfsuite.preferences.developer
+    if dev and (dev.memstats or dev.overlaystats) then
+        log(string.format("[mem] %s: %dk", label, collectgarbage("count")), "info")
+    end
+end
+
+local WAKEUP_MIN_INTERVAL = 0.05    -- we do not wakeup more often than this
+-- Holding inactive themes resident smooths the first state transition, but
+-- costs a noticeable amount of Lua RAM. Keep it off by default on Ethos.
+local PRELOAD_INACTIVE_STATES = false
+-- Busy cadence: run dashboard wakeup on RUN_NUM of RUN_DEN ticks while MSP is busy.
+-- Lower RUN_NUM to yield more CPU to MSP; set RUN_NUM == RUN_DEN to disable this throttle.
+local BUSY_WAKEUP_RUN_NUM = 2
+local BUSY_WAKEUP_RUN_DEN = 3
+
+local supportedResolutions = {{784, 294}, {784, 316}, {800, 458}, {800, 480}, {472, 191}, {472, 210}, {480, 301}, {480, 320}, {630, 236}, {630, 258}, {640, 338}, {640, 360}}
+
+local lastFlightMode = nil
+
+local initTime = clock()
+
+local lastWakeup = clock()
+local busyWakeupTick = 0
+
+local isSliding = false
+local isSlidingStart = 0
+local lastFocusReset = 0
+local toolbarOpenedAt = 0
+
+local dashboardLibPath = "SCRIPTS:/" .. (baseDir or "default") .. "/widgets/dashboard/"
+local toolbar = compile(dashboardLibPath .. "lib/toolbar.lua")()
+local debugLogPanel = compile(dashboardLibPath .. "lib/debug_log_panel.lua")()
+local toolbarResetFlight = compile(dashboardLibPath .. "lib/toolbar_actions/reset_flight.lua")()
+local toolbarEraseBlackbox = compile(dashboardLibPath .. "lib/toolbar_actions/erase_blackbox.lua")()
+local toolbarLaunchApp = compile(dashboardLibPath .. "lib/toolbar_actions/launch_app.lua")()
+local toolbarBatteryType = compile(dashboardLibPath .. "lib/toolbar_actions/battery_profile.lua")()
+dashboard.toolbar_action_modules = {
+    reset_flight = toolbarResetFlight,
+    erase_blackbox = toolbarEraseBlackbox,
+    launch_app = toolbarLaunchApp,
+    battery_profile = toolbarBatteryType
+}
+dashboard.toolbar_actions = {
+    resetFlightModeAsk = toolbarResetFlight and toolbarResetFlight.resetFlightModeAsk or nil,
+    eraseBlackboxAsk = toolbarEraseBlackbox and toolbarEraseBlackbox.eraseBlackboxAsk or nil,
+    chooseBatteryType = toolbarBatteryType and toolbarBatteryType.chooseBatteryType or nil,
+    hasSelectableBatteryProfiles = toolbarBatteryType and toolbarBatteryType.hasSelectableBatteryProfiles or nil,
+    launchApp = toolbarLaunchApp and toolbarLaunchApp.launchApp or nil
+}
+
+
+-- Simple gesture tracking (top-down / bottom-up only)
+local gestureActive = false
+local gestureStartX = 0
+local gestureStartY = 0
+local gestureTriggered = false
+local gestureConsumeUntilTouchEnd = false
+local gestureConsumeStartedAt = 0
+local GESTURE_MIN_DY = 20
+local GESTURE_MAX_DX = 40
+local GESTURE_CONSUME_TIMEOUT = 0.75
+
+dashboard.toolbarVisible = dashboard.toolbarVisible or false
+dashboard.toolbarItems = dashboard.toolbarItems or nil
+dashboard.selectedToolbarIndex = dashboard.selectedToolbarIndex or nil
+dashboard.debugLogPanelVisible = dashboard.debugLogPanelVisible or false
+
+local LOADER_FONTS = {FONT_XL, FONT_L, FONT_M, FONT_S, FONT_XS}
+
+
+
+dashboard.DEFAULT_THEME = "system/default"
+
+local themesBasePath = "SCRIPTS:/" .. baseDir .. "/widgets/dashboard/themes/"
+local themesUserPath = "SCRIPTS:/" .. preferences .. "/dashboard/"
+local LEGACY_SYSTEM_THEME_FOLDERS = {"default", "rfstatus", "aerc", "aerc-n", "claude", "gismo", "rt-rc", "rt-rc-n", "srb-rc", "timer"}
+
+local loadedStateModules = {}
+local loadedStateThemes = {}
+
+
+local lastModelPath = model.path()
+local lastModelPathCheckAt = 0
+local PATH_CHECK_INTERVAL = 2.5
+
+local objectWakeupIndex = 1
+local objectWakeupsPerCycle = nil
+local objectsThreadedWakeupCount = 0
+local lastLoadedBoxCount = 0
+local lastBoxRectsCount = 0
+local lastLoadedBoxSigParts = nil
+local lastLoadedBoxSigCount = 0
+
+local statePreloadQueue = PRELOAD_INACTIVE_STATES and {"inflight", "postflight"} or EMPTY
+local statePreloadIndex = 1
+
+local unsupportedResolution = false
+
+dashboard._objectDirty = {}
+
+local scheduledBoxIndices = {}
+
+local firstWakeup = true
+local firstWakeupCustomTheme = true
+local firstRenderComplete = false
+
+dashboard.boxRects = {}
+dashboard.selectedBoxIndex = nil
+
+dashboard.themeFallbackUsed = {preflight = false, inflight = false, postflight = false}
+dashboard.themeFallbackTime = {preflight = 0, inflight = 0, postflight = 0}
+
+dashboard.flightmode = rfsuite.flightmode.current or "preflight"
+
+dashboard.currentWidgetPath = nil
+
+dashboard.overlayMessage = nil
+
+dashboard.objectsByType = {}
+
+local themeStateSignature = nil
+local nextThemeStateCheck = 0
+
+dashboard._moduleCache = dashboard._moduleCache or {}
+
+dashboard._hg_cycles_required = 2
+dashboard._hg_cycles = 0
+
+dashboard._loader_min_duration = 0
+dashboard._loader_start_time = nil
+
+dashboard._minPaintInterval = 0.12
+dashboard._minPaintIntervalMin = 0.06
+dashboard._minPaintIntervalMax = 0.12
+dashboard._lastInvalidateTime = 0
+dashboard._pendingInvalidates = {}
+dashboard._pendingInvalidatesPool = dashboard._pendingInvalidatesPool or {}
+dashboard._pendingInvalidatesPoolN = dashboard._pendingInvalidatesPoolN or 0
+
+local function _clearPendingInvalidates()
+    if not dashboard._pendingInvalidates then return end
+    for i = #dashboard._pendingInvalidates, 1, -1 do
+        dashboard._pendingInvalidates[i] = nil
+    end
+end
+
+
+local function _queueInvalidateRect(x, y, w, h)
+    if x == nil or y == nil or w == nil or h == nil then return end
+    if w <= 0 or h <= 0 then return end
+    dashboard._pendingInvalidates = dashboard._pendingInvalidates or {}
+    dashboard._pendingInvalidatesPoolN = dashboard._pendingInvalidatesPoolN or 0
+    local n = dashboard._pendingInvalidatesPoolN + 1
+    dashboard._pendingInvalidatesPoolN = n
+    local r = dashboard._pendingInvalidatesPool[n]
+    if not r then
+        r = {}
+        dashboard._pendingInvalidatesPool[n] = r
+    end
+    r.x, r.y, r.w, r.h = x, y, w, h
+    dashboard._pendingInvalidates[#dashboard._pendingInvalidates + 1] = r
+end
+
+local function _flushInvalidatesRespectingBudget()
+    local now = clock()
+    if not dashboard._pendingInvalidates then return false end
+    local interval = dashboard._minPaintInterval
+    local perf = rfsuite.performance
+    if perf and perf.cpuload then
+        local load = perf.cpuload
+        local minI = dashboard._minPaintIntervalMin or interval
+        local maxI = dashboard._minPaintIntervalMax or interval
+        local t = max(0, min(1, (load - 40) / 40))
+        interval = minI + (maxI - minI) * t
+    end
+    if #dashboard._pendingInvalidates <= 2 then
+        interval = min(interval, dashboard._minPaintIntervalMin or interval)
+    end
+    if (now - dashboard._lastInvalidateTime) < interval then return false end
+
+    if #dashboard._pendingInvalidates == 0 then return false end
+
+    if #dashboard._pendingInvalidates > 6 then
+        lcd.invalidate()
+        _clearPendingInvalidates()
+        dashboard._pendingInvalidatesPoolN = 0
+        dashboard._lastInvalidateTime = now
+        return true
+    end
+
+    local x1, y1, x2, y2 = 1e9, 1e9, -1e9, -1e9
+    for _, r in ipairs(dashboard._pendingInvalidates) do
+        if r.x < x1 then x1 = r.x end
+        if r.y < y1 then y1 = r.y end
+        if (r.x + r.w) > x2 then x2 = r.x + r.w end
+        if (r.y + r.h) > y2 then y2 = r.y + r.h end
+    end
+    if x2 <= x1 or y2 <= y1 then
+        _clearPendingInvalidates()
+        dashboard._pendingInvalidatesPoolN = 0
+        return false
+    end
+    lcd.invalidate(x1, y1, x2 - x1, y2 - y1)
+    _clearPendingInvalidates()
+    dashboard._pendingInvalidatesPoolN = 0
+    dashboard._lastInvalidateTime = now
+    return true
+end
+
+dashboard.prof = dashboard.prof or {enabled = true, reportEvery = 2.0, lastReport = 0, perId = {}, firstInventoryDone = false}
+
+local function _profStart()
+    if not (dashboard.prof and dashboard.prof.enabled) then return 0 end
+    return clock()
+end
+
+local function _profStop(kind, id, typ, t0)
+    if t0 == 0 then return end
+    local dt = clock() - t0
+    local rec = dashboard.prof.perId[id]
+    if not rec then
+        rec = {type = typ, paint = 0, wakeup = 0, pc = 0, wc = 0}
+        dashboard.prof.perId[id] = rec
+    end
+    if kind == "paint" then
+        rec.paint = rec.paint + dt
+        rec.pc = rec.pc + 1
+    else
+        rec.wakeup = rec.wakeup + dt
+        rec.wc = rec.wc + 1
+    end
+end
+
+local function _profIdFromRect(rect)
+    local b = rect.box or {}
+
+    local H = rect.isHeader and "H" or "B"
+    return format("%s@%s:%d,%d,%dx%d", b.type or "?", H, rect.x, rect.y, rect.w, rect.h)
+end
+
+local function _profReportIfDue()
+    local P = dashboard.prof
+    if not (P and P.enabled) then return end
+    local now = clock()
+    if P.lastReport == 0 then
+        P.lastReport = now
+        return
+    end
+    if (now - P.lastReport) < (P.reportEvery or 2.0) then return end
+
+    local rows, perTypeAgg = {}, {}
+    for id, v in pairs(P.perId) do
+        local tot = (v.paint + v.wakeup)
+        rows[#rows + 1] = {id = id, type = v.type, paint = v.paint, wake = v.wakeup, pc = v.pc, wc = v.wc, tot = tot}
+        local T = v.type or "?"
+        local agg = perTypeAgg[T] or {paint = 0, wake = 0, pc = 0, wc = 0, tot = 0}
+        agg.paint, agg.wake, agg.pc, agg.wc, agg.tot = agg.paint + v.paint, agg.wake + v.wakeup, agg.pc + v.pc, agg.wc + v.wc, agg.tot + tot
+        perTypeAgg[T] = agg
+    end
+    sort(rows, function(a, b) return a.tot > b.tot end)
+
+    log("--------------- OBJECT PROFILER (per instance) ---------------", "info")
+    for _, r in ipairs(rows) do
+        local pms, wms = r.paint * 1000, r.wake * 1000
+        local ap = r.pc > 0 and (pms / r.pc) or 0
+        local aw = r.wc > 0 and (wms / r.wc) or 0
+        log(format("[prof] %-40s | paint:%7.3fms (%4d, avg %6.3f) | wakeup:%7.3fms (%4d, avg %6.3f)", r.id, pms, r.pc, ap, wms, r.wc, aw), "info")
+
+        local rec = P.perId[r.id];
+        rec.paint, rec.wakeup, rec.pc, rec.wc = 0, 0, 0, 0
+    end
+    log("-------------------- per-type summary ------------------------", "info")
+    for T, a in pairs(perTypeAgg) do log(format("[sum ] %-18s | paint:%7.3fms | wakeup:%7.3fms | total:%7.3fms", T, a.paint * 1000, a.wake * 1000, a.tot * 1000), "info") end
+    log("--------------------------------------------------------------", "info")
+
+    P.lastReport = now
+end
+
+function dashboard.loader(x, y, w, h, txt)
+
+    if not dashboard.loaders then return end
+    dashboard.overlaystatic(x, y, w, h, txt)
+
+    _queueInvalidateRect(x, y, w, h)
+    _flushInvalidatesRespectingBudget()
+end
+
+local function forceInvalidateAllObjects()
+    for _, rect in ipairs(dashboard.boxRects or {}) do
+        if rect and rect.box then
+            local obj = dashboard.objectsByType[rect.box.type]
+            if obj and obj.dirty and obj.dirty(rect.box) then _queueInvalidateRect(rect.x, rect.y, rect.w, rect.h) end
+        end
+    end
+    _flushInvalidatesRespectingBudget()
+end
+
+local function clearTableKeys(t)
+    if not t then return end
+    for k in pairs(t) do
+        t[k] = nil
+    end
+end
+
+local function normalizeThemePath(path)
+    if type(path) ~= "string" then return path end
+    local src, folder = path:match("([^/]+)/(.+)")
+    if src == "system" and type(folder) == "string" and folder:sub(1, 1) == "@" then
+        return src .. "/" .. folder:sub(2)
+    end
+    return path
+end
+
+local function legacyThemePath(path)
+    if type(path) ~= "string" then return nil end
+    local src, folder = path:match("([^/]+)/(.+)")
+    if src == "system" and type(folder) == "string" and folder:sub(1, 1) ~= "@" then
+        return src .. "/@" .. folder
+    end
+    return nil
+end
+
+local function migrateThemePreferenceSection(path)
+    local prefs = rfsuite.session and rfsuite.session.modelPreferences
+    if type(prefs) ~= "table" or type(path) ~= "string" then return end
+    local legacy = legacyThemePath(path)
+    if legacy and prefs[path] == nil and type(prefs[legacy]) == "table" then
+        prefs[path] = prefs[legacy]
+    end
+end
+
+local function migrateLegacyThemePreferenceSections()
+    local prefs = rfsuite.session and rfsuite.session.modelPreferences
+    if type(prefs) ~= "table" then return end
+    for i = 1, #LEGACY_SYSTEM_THEME_FOLDERS do
+        local folder = LEGACY_SYSTEM_THEME_FOLDERS[i]
+        local current = "system/" .. folder
+        local legacy = "system/@" .. folder
+        if prefs[current] == nil and type(prefs[legacy]) == "table" then
+            prefs[current] = prefs[legacy]
+        end
+    end
+end
+
+local function clearDashboardRuntimeCaches()
+    dashboard.reset()
+
+    if dashboard.utils then
+        if dashboard.utils.clearProgressDialog then dashboard.utils.clearProgressDialog() end
+        if dashboard.utils.resetImageCache then dashboard.utils.resetImageCache() end
+    end
+
+    if toolbar and toolbar.clearCaches then toolbar.clearCaches(dashboard) end
+    if debugLogPanel and debugLogPanel.clearCaches then debugLogPanel.clearCaches(dashboard) end
+    if rfsuite.utils and rfsuite.utils.clearImageCaches then rfsuite.utils.clearImageCaches() end
+
+    local session = rfsuite.session
+    if session and session.dialImageCache then
+        clearTableKeys(session.dialImageCache)
+    end
+
+    clearTableKeys(loadedStateModules)
+    clearTableKeys(loadedStateThemes)
+    clearTableKeys(dashboard.renders)
+    clearTableKeys(dashboard.objectsByType)
+    clearTableKeys(dashboard._moduleCache)
+    clearTableKeys(dashboard._objectDirty)
+
+    if dashboard.boxRects then clearArray(dashboard.boxRects) end
+    if scheduledBoxIndices then clearArray(scheduledBoxIndices) end
+    if dashboard._onpressIndices then clearArray(dashboard._onpressIndices) end
+    if dashboard._pendingInvalidates then clearArray(dashboard._pendingInvalidates) end
+    if dashboard._pendingInvalidatesPool then clearArray(dashboard._pendingInvalidatesPool) end
+    if dashboard._headerGeoms then clearArray(dashboard._headerGeoms) end
+    if dashboard._headerGeomsPaint then clearArray(dashboard._headerGeomsPaint) end
+    if dashboard._allBoxes then clearArray(dashboard._allBoxes) end
+    if dashboard._boxSigScratch then clearArray(dashboard._boxSigScratch) end
+    if lastLoadedBoxSigParts then clearArray(lastLoadedBoxSigParts) end
+
+    objectWakeupIndex = 1
+    objectWakeupsPerCycle = nil
+    objectsThreadedWakeupCount = 0
+    lastLoadedBoxCount = 0
+    lastBoxRectsCount = 0
+    lastLoadedBoxSigCount = 0
+    lastFlightMode = nil
+    statePreloadIndex = 1
+
+    dashboard._pendingInvalidatesPoolN = 0
+    dashboard._onpressIndicesReady = false
+    dashboard._forceFullRepaint = true
+    dashboard._loader_start_time = nil
+    dashboard._toolbarCache = nil
+    dashboard._toolbarRects = nil
+    dashboard._toolbarItemsSorted = nil
+    dashboard._toolbarEnabled = nil
+    dashboard._layoutBounds = nil
+    dashboard._overlayQueue = nil
+    dashboard._overlayLastTxt = nil
+    dashboard._overlayDefaultLine = nil
+    dashboard._overlaySingleLine = nil
+    dashboard._overlayStaticOpts = nil
+    dashboard._overlayLogOpts = nil
+    dashboard._lastWH = nil
+    dashboard.selectedBoxIndex = nil
+    dashboard.toolbarVisible = false
+    dashboard.selectedToolbarIndex = nil
+    dashboard.debugLogPanelVisible = false
+    dashboard._debugLogPanelLastActive = 0
+    dashboard._debugLogPanelLastInvalidate = 0
+    dashboard._debugLogPanelLastStatsInvalidate = 0
+    dashboard._debugLogPanelSeq = nil
+    dashboard._debugLogPanelLevel = nil
+    gestureConsumeUntilTouchEnd = false
+    gestureConsumeStartedAt = 0
+    gestureActive = false
+    gestureTriggered = false
+    dashboard.currentWidgetPath = nil
+    dashboard.overlayMessage = nil
+    unsupportedResolution = false
+
+    dashboard.utils = nil
+    dashboard.loaders = nil
+end
+
+local function resetBoxRuntime(box)
+    if not box then return end
+    for k in pairs(box) do
+        if type(k) == "string" and k:sub(1, 1) == "_" then
+            box[k] = nil
+        end
+    end
+    box.xOffset = nil
+end
+
+local function resetModuleRuntimeState(mod)
+    if type(mod) ~= "table" then return end
+
+    local boxes = resolveMaybe(mod.boxes or EMPTY) or EMPTY
+    local headerBoxes = resolveMaybe(mod.header_boxes or EMPTY) or EMPTY
+
+    for _, box in ipairs(boxes) do
+        resetBoxRuntime(box)
+    end
+
+    for _, box in ipairs(headerBoxes) do
+        resetBoxRuntime(box)
+    end
+end
+
+local function activate_state_only(state)
+    resetModuleRuntimeState(loadedStateModules[state])
+
+    dashboard.currentWidgetPath = loadedStateThemes[state]
+    dashboard._loader_start_time = nil
+    dashboard._forceFullRepaint = true
+    objectWakeupIndex = 1
+    objectsThreadedWakeupCount = 0
+    objectWakeupsPerCycle = nil
+    lastLoadedBoxCount = 0
+    lastBoxRectsCount = 0
+    lastLoadedBoxSigCount = 0
+
+    if lastLoadedBoxSigParts then
+        clearArray(lastLoadedBoxSigParts)
+    end
+
+    if dashboard.boxRects then
+        clearArray(dashboard.boxRects)
+    else
+        dashboard.boxRects = {}
+    end
+
+    if scheduledBoxIndices then
+        clearArray(scheduledBoxIndices)
+    else
+        scheduledBoxIndices = {}
+    end
+
+    if dashboard._onpressIndices then
+        clearArray(dashboard._onpressIndices)
+    end
+
+    clearTableKeys(dashboard._objectDirty)
+    _clearPendingInvalidates()
+    dashboard._pendingInvalidatesPoolN = 0
+    dashboard._onpressIndicesReady = false
+    dashboard.selectedBoxIndex = nil
+
+    lcd.invalidate()
+end
+
+function dashboard.overlaystatic(x, y, w, h, txt)
+    local msg = txt
+    if not msg or msg == "" then
+        msg = (dashboard.computeOverlayMessage and dashboard.computeOverlayMessage()) or "Loading..."
+    end
+
+    local themeLoader = (rfsuite.preferences and rfsuite.preferences.general and rfsuite.preferences.general.theme_loader) or 0
+    local opts = dashboard._overlayStaticOpts
+    if not opts then
+        opts = {}
+        dashboard._overlayStaticOpts = opts
+    end
+    if themeLoader == 0 then
+        opts.panelWidthRatio = 0.5
+        opts.panelHeightRatio = 0.5
+        opts.fonts = LOADER_FONTS
+    elseif themeLoader == 1 then
+        opts.panelWidthRatio = 0.7
+        opts.panelHeightRatio = 0.5
+        opts.fonts = LOADER_FONTS
+    elseif themeLoader == 2 then
+        opts.panelWidthRatio = 0.9
+        opts.panelHeightRatio = 0.8
+        opts.fonts = LOADER_FONTS
+    end
+
+    -- This loader is intended to be "static". Keep the subtle dots by default
+    -- (it costs almost nothing), but allow callers to disable.
+    opts.animateDots = true
+
+    if not dashboard.loaders or not dashboard.loaders.staticLoader then return end
+    dashboard.loaders.staticLoader(dashboard, x, y, w, h, msg, opts)
+end
+
+function dashboard.overlaymessage(x, y, w, h, txt)
+    local MAX = 3
+
+    -- persistent queue stored on dashboard (keeps everything "contained")
+    dashboard._overlayQueue = dashboard._overlayQueue or {}
+    local q = dashboard._overlayQueue
+
+    local logmsg = rfsuite.tasks and rfsuite.tasks.logger and rfsuite.tasks.logger.getConnectLines(MAX)
+    if logmsg and type(logmsg) ~= "table" then
+        local single = dashboard._overlaySingleLine
+        if not single then
+            single = {}
+            dashboard._overlaySingleLine = single
+        end
+        single[1] = tostring(logmsg)
+        logmsg = single
+    end
+    if not dashboard.loaders or not dashboard.loaders.logsLoader then return end
+
+    if not logmsg then
+        if txt and txt ~= "" then
+            -- Only enqueue when the message changes; otherwise we churn strings/tables
+            -- every paint/wakeup while idle.
+            if dashboard._overlayLastTxt ~= txt then
+                dashboard._overlayLastTxt = txt
+                local prefix = format("[%.2f] ", clock())
+                q[#q + 1] = prefix .. txt
+                if #q > MAX then
+                    -- MAX is tiny (3) but avoid shifting on every call by only
+                    -- removing when we actually appended.
+                    remove(q, 1)
+                end
+            end
+            logmsg = q
+        else
+            -- no txt: show existing queue if we have it, else a static default line
+            dashboard._overlayDefaultLine = dashboard._overlayDefaultLine or {"Initializing Rotorflight Suite..."}
+            logmsg = (#q > 0) and q or dashboard._overlayDefaultLine
+        end
+    end
+
+    local themeLoader = (rfsuite.preferences and rfsuite.preferences.general and rfsuite.preferences.general.theme_loader) or 0
+    local opts = dashboard._overlayLogOpts
+    if not opts then
+        opts = {}
+        dashboard._overlayLogOpts = opts
+    end
+    if themeLoader == 0 then
+        opts.panelWidthRatio = 0.5
+        opts.panelHeightRatio = 0.5
+        opts.fontSize = FONT_XXS
+    elseif themeLoader == 1 then
+        opts.panelWidthRatio = 0.7
+        opts.panelHeightRatio = 0.5
+        opts.fontSize = FONT_XS
+    elseif themeLoader == 2 then
+        opts.panelWidthRatio = 0.9
+        opts.panelHeightRatio = 0.8
+        opts.fontSize = FONT_S
+    end
+
+
+    if not dashboard.loaders or not dashboard.loaders.logsLoader then return end
+    dashboard.loaders.logsLoader(dashboard, x, y, w, h, logmsg, opts)
+end
+
+
+local function computeObjectSchedulerPercentage(count)
+    -- clamp input
+    if count < 0 then count = 0 end
+    if count > 10 then count = 10 end
+
+    -- linear slide from 1.0 → 0.5 over 0..1
+    -- adjust ratio to suit performance needs
+    local ratio = 0.5
+    return 1.0 - (count / 10) * ratio
+end
+
+
+function dashboard.loadObjectType(box)
+    local typ = box and box.type
+    if type(typ) ~= "string" or typ == "" then return end
+
+    if dashboard._moduleCache[typ] == nil then
+        local bdir = baseDir or "default"
+        local objPath = "SCRIPTS:/" .. bdir .. "/widgets/dashboard/objects/" .. typ .. ".lua"
+
+        local chunk = compile(objPath)
+        if not chunk then
+            log("Failed to compile object: " .. tostring(typ), "info")
+            dashboard._moduleCache[typ] = false
+        else
+            local obj = chunk()
+            if type(obj) == "table" then
+                dashboard._moduleCache[typ] = obj
+            else
+                log("Failed to load object: " .. tostring(typ), "info")
+                dashboard._moduleCache[typ] = false
+            end
+        end
+    end
+
+    if dashboard._moduleCache[typ] then
+        dashboard.objectsByType[typ] = dashboard._moduleCache[typ]
+    end
+end
+
+
+function dashboard.loadAllObjects(boxConfigs)
+    local objectsByType = dashboard.objectsByType or {}
+    for k in pairs(objectsByType) do
+        objectsByType[k] = nil
+    end
+    dashboard.objectsByType = objectsByType
+
+    for _, box in ipairs(boxConfigs or {}) do
+        local typ = box and box.type
+        if type(typ) == "string" and typ ~= "" then
+            if dashboard._moduleCache[typ] == nil then
+                local bdir = baseDir or "default"
+                local objPath = "SCRIPTS:/" .. bdir .. "/widgets/dashboard/objects/" .. typ .. ".lua"
+
+                local chunk = compile(objPath)
+                if not chunk then
+                    log("Failed to compile object: " .. tostring(typ), "info")
+                    dashboard._moduleCache[typ] = false
+                else
+                    local obj = chunk()
+                    if type(obj) == "table" then
+                        dashboard._moduleCache[typ] = obj
+                    else
+                        log("Failed to load object: " .. tostring(typ), "info")
+                        dashboard._moduleCache[typ] = false
+                    end
+                end
+            end
+
+            if dashboard._moduleCache[typ] then
+                objectsByType[typ] = dashboard._moduleCache[typ]
+            end
+        end
+    end
+end
+
+
+local function getOnpressBoxIndices()
+    if dashboard._onpressIndicesReady and dashboard._onpressIndices then
+        return dashboard._onpressIndices
+    end
+
+    local indices = dashboard._onpressIndices or {}
+    dashboard._onpressIndices = indices
+    clearArray(indices)
+    for i, rect in ipairs(dashboard.boxRects or {}) do
+        if rect and rect.box and rect.box.onpress then
+            indices[#indices + 1] = i
+        end
+    end
+    dashboard._onpressIndicesReady = true
+    return indices
+end
+
+local function getStartupLogCloseMode()
+    local general = rfsuite.preferences and rfsuite.preferences.general
+    return tonumber(general and general.dashboard_startup_log_close) or 0
+end
+
+local function isStartupBatteryStepComplete(session)
+    if not session or session.showBatteryTypeStartup ~= true then return true end
+    return session.batteryDialogShown == true
+end
+
+local function shouldShowStartupOverlay(state)
+    local session = rfsuite.session
+    if not session or state == "postflight" then return false end
+    if not session.isConnected then return true end
+    return getStartupLogCloseMode() == 1 and
+        (session.postConnectComplete ~= true or not isStartupBatteryStepComplete(session))
+end
+
+function dashboard.computeOverlayMessage()
+
+    local state = dashboard.flightmode or "preflight"
+
+    if dashboard.themeFallbackUsed and dashboard.themeFallbackUsed[state] and (clock() - (dashboard.themeFallbackTime and dashboard.themeFallbackTime[state] or 0)) < 10 then
+        return "[ERROR] Failed to load theme, using fallback"
+    end
+
+    local elapsed = clock() - initTime
+    if elapsed > 10 then
+        if not tasks or not tasks.active or not tasks.active() then return "[ERROR] Background task is not enabled" end
+    end
+
+    if shouldShowStartupOverlay(state) then
+        local v = rfsuite.config.version
+        local verStr
+
+        if type(v) == "table" then
+            verStr = format(
+                "%d.%d.%d%s",
+                v.major or 0,
+                v.minor or 0,
+                v.revision or 0,
+                v.suffix and ("-" .. v.suffix) or ""
+            )
+        else
+            verStr = tostring(v or "unknown")
+        end
+
+        return "Initializing Rotorflight Suite [v" .. verStr .. "]"
+    end
+
+    return nil
+end
+
+local function getBoxSize(box, boxWidth, boxHeight, PADDING, WIDGET_W, WIDGET_H)
+    if box.w_pct and box.h_pct then
+        local wp = box.w_pct
+        local hp = box.h_pct
+        if wp > 1 then wp = wp / 100 end
+        if hp > 1 then hp = hp / 100 end
+        local w = floor(wp * WIDGET_W)
+        local h = floor(hp * WIDGET_H)
+        return w, h
+    elseif box.w and box.h then
+        return tonumber(box.w) or boxWidth, tonumber(box.h) or boxHeight
+    elseif box.colspan or box.rowspan then
+        local w = floor((box.colspan or 1) * boxWidth + ((box.colspan or 1) - 1) * PADDING)
+        local h = floor((box.rowspan or 1) * boxHeight + ((box.rowspan or 1) - 1) * PADDING)
+        return w, h
+    else
+        return boxWidth, boxHeight
+    end
+end
+
+local function getBoxPosition(box, w, h, boxWidth, boxHeight, PADDING, WIDGET_W, WIDGET_H)
+
+    if box.x_pct and box.y_pct then
+        local xp = box.x_pct
+        local yp = box.y_pct
+        if xp > 1 then xp = xp / 100 end
+        if yp > 1 then yp = yp / 100 end
+
+        local x = floor(xp * (WIDGET_W - (w or boxWidth)))
+        local y = floor(yp * (WIDGET_H - (h or boxHeight)))
+        return x, y
+    elseif box.x and box.y then
+        local x = tonumber(box.x) or 0
+        local y = tonumber(box.y) or 0
+        return x, y
+    elseif box.col and box.row then
+        local col = box.col or 1
+        local row = box.row or 1
+        local x = floor((col - 1) * (boxWidth + PADDING)) + (box.xOffset or 0)
+        local y = floor(PADDING + (row - 1) * (boxHeight + PADDING))
+        return x, y
+    else
+        return 0, 0
+    end
+end
+
+function dashboard.renderLayout(widget, config)
+    if not config then return end
+    if not dashboard.utils then return end
+    local utils = dashboard.utils
+
+    dashboard.boxRects = dashboard.boxRects or {}
+    scheduledBoxIndices = scheduledBoxIndices or {}
+    dashboard._objectDirty = dashboard._objectDirty or {}
+
+    local layout = resolveMaybe(config.layout) or EMPTY
+    local headerLayout = resolveMaybe(config.header_layout) or EMPTY
+    local boxes = resolveMaybe(config.boxes or layout.boxes or EMPTY) or EMPTY
+    local headerBoxes = resolveMaybe(config.header_boxes or EMPTY) or EMPTY
+
+    local sigScratch = dashboard._boxSigScratch
+    if not sigScratch then
+        sigScratch = {}
+        dashboard._boxSigScratch = sigScratch
+    end
+    local sigParts, sigCount = buildBoxTypeSig(boxes, headerBoxes, sigScratch)
+    local sigSame = lastLoadedBoxSigParts and sigEquals(sigParts, sigCount, lastLoadedBoxSigParts, lastLoadedBoxSigCount)
+
+    if ((#boxes + #headerBoxes) ~= lastLoadedBoxCount) or (not sigSame) then
+        local allBoxes = dashboard._allBoxes or {}
+        dashboard._allBoxes = allBoxes
+        clearArray(allBoxes)
+        for _, b in ipairs(boxes) do allBoxes[#allBoxes + 1] = b end
+        for _, b in ipairs(headerBoxes) do allBoxes[#allBoxes + 1] = b end
+        dashboard.loadAllObjects(allBoxes)
+        lastLoadedBoxCount = #boxes + #headerBoxes
+        if not lastLoadedBoxSigParts then
+            lastLoadedBoxSigParts = {}
+        end
+        clearArray(lastLoadedBoxSigParts)
+        for i = 1, sigCount do
+            lastLoadedBoxSigParts[i] = sigParts[i]
+        end
+        lastLoadedBoxSigCount = sigCount
+    end
+
+    for k in pairs(dashboard._objectDirty) do dashboard._objectDirty[k] = nil end
+
+    local W_raw, H_raw = lcd.getWindowSize()
+    local isFullScreen = utils.isFullScreen(W_raw, H_raw)
+    local cols = layout.cols or 1
+    local rows = layout.rows or 1
+    local pad = layout.padding or 0
+
+    local headerH = (isFullScreen and headerLayout and headerLayout.height and type(headerLayout.height) == "number") and headerLayout.height or 0
+    if headerH > 0 then H_raw = H_raw - headerH end
+
+    local W = adjustDimension(W_raw, cols, cols - 1, pad)
+    local H = adjustDimension(H_raw, rows, rows + 1, pad)
+    local xOffset = floor((W_raw - W) / 2)
+    local layoutBounds = dashboard._layoutBounds
+    if not layoutBounds then
+        layoutBounds = {}
+        dashboard._layoutBounds = layoutBounds
+    end
+    layoutBounds.x = xOffset
+    layoutBounds.y = headerH
+    layoutBounds.w = W
+    layoutBounds.h = H
+
+    local contentW = W - ((cols - 1) * pad)
+    local contentH = H - ((rows + 1) * pad)
+    local boxW = contentW / cols
+    local boxH = contentH / rows
+
+    if utils.setScreenBorderStyle then
+        utils.setScreenBorderStyle(config.screenBorderStyle)
+    end
+    utils.setBackgroundColourBasedOnTheme()
+
+    local rectCount = 0
+    local scheduledCount = 0
+    local onpressCount = 0
+    local boxRects = dashboard.boxRects
+    local onpressIndices = dashboard._onpressIndices or {}
+    dashboard._onpressIndices = onpressIndices
+
+    for _, box in ipairs(boxes) do
+        if box then
+            local w, h = getBoxSize(box, boxW, boxH, pad, W, H)
+            box.xOffset = xOffset
+            local x, y = getBoxPosition(box, w, h, boxW, boxH, pad, W, H)
+            if isFullScreen and headerLayout and headerLayout.height and type(headerLayout.height) == "number" then y = y + headerLayout.height end
+
+            rectCount = rectCount + 1
+            local rect = boxRects[rectCount]
+            if not rect then
+                rect = {}
+                boxRects[rectCount] = rect
+            end
+            rect.x = x
+            rect.y = y
+            rect.w = w
+            rect.h = h
+            rect.box = box
+            rect.isHeader = false
+
+            local rectIndex = rectCount
+            dashboard._objectDirty[rectIndex] = nil
+
+            if box.type then
+                local obj = dashboard.objectsByType[box.type]
+                if obj and obj.scheduler and obj.wakeup then
+                    scheduledCount = scheduledCount + 1
+                    scheduledBoxIndices[scheduledCount] = rectIndex
+                end
+            end
+            if box.onpress then
+                onpressCount = onpressCount + 1
+                onpressIndices[onpressCount] = rectIndex
+            end
+        end
+    end
+
+    if isFullScreen then
+        local headerGeoms = dashboard._headerGeoms or {}
+        dashboard._headerGeoms = headerGeoms
+        local rightmost_idx, rightmost_x = 1, 0
+        local headerBoxesCount = #headerBoxes
+        for idx, box in ipairs(headerBoxes) do
+            if box then
+                local w, h = getBoxSize(box, boxW, boxH, pad, W_raw, headerLayout.height)
+                local x, y = getBoxPosition(box, w, h, boxW, boxH, pad, W_raw, headerLayout.height)
+                local geom = headerGeoms[idx]
+                if not geom then
+                    geom = {}
+                    headerGeoms[idx] = geom
+                end
+                geom.x = x
+                geom.y = y
+                geom.w = w
+                geom.h = h
+                geom.box = box
+                if x > rightmost_x then
+                    rightmost_idx = idx
+                    rightmost_x = x
+                end
+            end
+        end
+        for i = headerBoxesCount + 1, #headerGeoms do headerGeoms[i] = nil end
+
+        for idx, geom in ipairs(headerGeoms) do
+            local w = geom.w
+            if idx == rightmost_idx then w = W_raw - geom.x end
+
+            rectCount = rectCount + 1
+            local rect = boxRects[rectCount]
+            if not rect then
+                rect = {}
+                boxRects[rectCount] = rect
+            end
+            rect.x = geom.x
+            rect.y = geom.y
+            rect.w = w
+            rect.h = geom.h
+            rect.box = geom.box
+            rect.isHeader = true
+            local idx_rect = rectCount
+            dashboard._objectDirty[idx_rect] = nil
+
+            if geom.box.type then
+                local obj = dashboard.objectsByType[geom.box.type]
+                if obj and obj.scheduler and obj.wakeup then
+                    scheduledCount = scheduledCount + 1
+                    scheduledBoxIndices[scheduledCount] = idx_rect
+                end
+            end
+            if geom.box.onpress then
+                onpressCount = onpressCount + 1
+                onpressIndices[onpressCount] = idx_rect
+            end
+        end
+    end
+    for i = rectCount + 1, #boxRects do boxRects[i] = nil end
+    for i = scheduledCount + 1, #scheduledBoxIndices do scheduledBoxIndices[i] = nil end
+    for i = onpressCount + 1, #onpressIndices do onpressIndices[i] = nil end
+    dashboard._onpressIndicesReady = true
+
+    if not objectWakeupsPerCycle or #dashboard.boxRects ~= lastBoxRectsCount then
+        local count = #dashboard.boxRects
+        local percentage = dashboard._spreadRatioOverride or computeObjectSchedulerPercentage(count)
+
+        if objectsThreadedWakeupCount < 1 then
+            percentage = 1.0
+            log("Accelerating first wakeup pass with 100% objects per cycle", "info")
+        end
+
+        objectWakeupsPerCycle = max(1, ceil(count * percentage))
+        lastBoxRectsCount = count
+
+        log("Object scheduler set to " .. objectWakeupsPerCycle .. " out of " .. count .. " boxes", "info")
+    end
+
+    dashboard._loader_start_time = dashboard._loader_start_time or clock()
+    local loaderElapsed = clock() - dashboard._loader_start_time
+    if objectsThreadedWakeupCount < 1 or loaderElapsed < dashboard._loader_min_duration then
+        local loaderY = (isFullScreen and headerLayout.height) or 0
+        dashboard.loader(0, loaderY, W, H - loaderY)
+        _queueInvalidateRect(0, loaderY, W, H - loaderY)
+        _flushInvalidatesRespectingBudget()
+        return
+    end
+
+    local selColor = layout.selectcolor or utils.resolveColor("yellow") or lcd.RGB(255, 255, 0)
+    local selBorder = layout.selectborder or 2
+
+    for i, rect in ipairs(dashboard.boxRects or {}) do
+        if not rect.isHeader then
+            local box = rect.box
+            if box then
+                local obj = dashboard.objectsByType[box.type]
+                if obj and obj.paint then
+                    if objectProfiler then
+                        local id = _profIdFromRect(rect)
+                        local t0 = _profStart()
+                        obj.paint(rect.x, rect.y, rect.w, rect.h, box)
+                        _profStop("paint", id, box.type, t0)
+                    else
+                        obj.paint(rect.x, rect.y, rect.w, rect.h, box)
+                    end
+                end
+
+                if dashboard.selectedBoxIndex == i and box.onpress then
+                    lcd.color(selColor)
+                    lcd.drawRectangle(rect.x, rect.y, rect.w, rect.h, selBorder)
+                end
+            end
+        end
+    end
+
+    if isFullScreen and config.header_layout and #headerBoxes > 0 then
+        local header = config.header_layout
+        local h_cols = header.cols or 1
+        local h_rows = header.rows or 1
+        local h_pad = header.padding or 0
+
+        local headerW = W_raw
+        local headerH = header.height or 0
+
+        local adjustedW = adjustDimension(headerW, h_cols, h_cols - 1, h_pad)
+        local adjustedH = adjustDimension(headerH, h_rows, h_rows - 1, h_pad)
+
+        local contentW = adjustedW - ((h_cols - 1) * h_pad)
+        local contentH = adjustedH - ((h_rows - 1) * h_pad)
+        local h_boxW = contentW / h_cols
+        local h_boxH = contentH / h_rows
+
+        local rightmost_idx, rightmost_x = 1, 0
+        local headerGeoms = dashboard._headerGeomsPaint or {}
+        dashboard._headerGeomsPaint = headerGeoms
+        for idx, box in ipairs(headerBoxes) do
+            local w, h = getBoxSize(box, h_boxW, h_boxH, h_pad, adjustedW, adjustedH)
+            local x, y = getBoxPosition(box, w, h, h_boxW, h_boxH, h_pad, adjustedW, adjustedH)
+            local geom = headerGeoms[idx]
+            if not geom then
+                geom = {}
+                headerGeoms[idx] = geom
+            end
+            geom.x = x
+            geom.y = y
+            geom.w = w
+            geom.h = h
+            geom.box = box
+            if x > rightmost_x then
+                rightmost_idx = idx
+                rightmost_x = x
+            end
+        end
+        for i = (#headerBoxes) + 1, #headerGeoms do headerGeoms[i] = nil end
+
+        for idx, geom in ipairs(headerGeoms) do
+            local w = geom.w
+            if idx == rightmost_idx then w = W_raw - geom.x end
+            if geom.box then
+                local obj = dashboard.objectsByType[geom.box.type]
+                if obj and obj.paint then
+                    if objectProfiler then
+                        local fakeRect = dashboard._profRectScratch
+                        if not fakeRect then
+                            fakeRect = {}
+                            dashboard._profRectScratch = fakeRect
+                        end
+                        fakeRect.x = geom.x
+                        fakeRect.y = geom.y
+                        fakeRect.w = w
+                        fakeRect.h = geom.h
+                        fakeRect.box = geom.box
+                        fakeRect.isHeader = true
+                        local id = _profIdFromRect(fakeRect)
+                        local t0 = _profStart()
+                        obj.paint(geom.x, geom.y, w, geom.h, geom.box)
+                        _profStop("paint", id, geom.box.type, t0)
+                    else
+                        obj.paint(geom.x, geom.y, w, geom.h, geom.box)
+                    end
+                end
+            end
+        end
+
+        if isFullScreen and headerLayout and headerLayout.showgrid then
+            lcd.color(headerLayout.showgrid)
+            lcd.pen(1)
+
+            for i = 1, h_cols - 1 do
+                local x = floor(i * (h_boxW + h_pad)) - floor(h_pad / 2)
+                lcd.drawLine(x, 0, x, headerLayout.height)
+            end
+
+            for i = 1, h_rows - 1 do
+                local y = floor(i * (h_boxH + h_pad)) - floor(h_pad / 2)
+                lcd.drawLine(0, y, W_raw, y)
+            end
+
+            lcd.pen(SOLID)
+        end
+
+    end
+
+    if layout.showgrid or rfsuite.preferences.developer.overlaygrid then
+        lcd.color(layout.showgrid)
+        lcd.pen(1)
+
+        local headerOffset = (isFullScreen and headerLayout and headerLayout.height) or 0
+
+        for i = 1, cols - 1 do
+            local x = floor(i * (boxW + pad)) + xOffset - floor(pad / 2)
+            lcd.drawLine(x, headerOffset, x, H_raw + headerOffset)
+        end
+
+        for i = 1, rows - 1 do
+            local y = floor(i * (boxH + pad)) + pad + headerOffset
+            lcd.drawLine(0, y, W_raw, y)
+        end
+
+        lcd.pen(SOLID)
+    end
+
+    if utils.drawScreenBorder then
+        utils.drawScreenBorder()
+    end
+
+    if layout.showstats or rfsuite.preferences.developer.overlaystats then
+        local headerOffset = (isFullScreen and headerLayout and headerLayout.height) or 0
+
+        local cpuUsage = (rfsuite.performance and rfsuite.performance.cpuload) or 0
+        local loopMs = (rfsuite.performance and rfsuite.performance.loop_ms) or 0
+        local budgetMs = (rfsuite.performance and rfsuite.performance.budget_ms) or 50
+        local tickMs = (rfsuite.performance and rfsuite.performance.tick_ms)
+        local headroomPct = max(0, 100 - (cpuUsage or 0))
+
+        local ramFreeKB = (rfsuite.performance and rfsuite.performance.luaRamKB) or 0
+        local ramUsedGC_KB = (rfsuite.performance and rfsuite.performance.usedram) or 0
+        local sysRamFreeKB = (rfsuite.performance and rfsuite.performance.ramKB) or 0
+        local bitmapRamFreeKB = (rfsuite.performance and rfsuite.performance.luaBitmapsRamKB) or 0
+        local mainStackKB = (rfsuite.performance and rfsuite.performance.mainStackKB) or 0
+
+        lcd.font(FONT_S)
+        local _, lineH = lcd.getTextSize("A")
+
+        local cfg = {padX = 8, padY = 6, colGap = 10, rowGap = 2, labelW = 170, valueW = 120, unitW = 30, sectionGap = 8, decimalsMS = 1, decimalsKB = 1, boxX = 4, boxY = 4 + headerOffset, bg = {0, 0, 0, 0.9}, fg = {255, 255, 255}, border = true, showActualPeriod = true}
+
+        local function fmtPct(n) return rfsuite.utils.round(n or 0, 0) end
+        local function fmtMS(n) return format("%." .. cfg.decimalsMS .. "f", n or 0) end
+        local function fmtKB(n) return format("%." .. cfg.decimalsKB .. "f", n or 0) end
+
+        local schedRows = {{"LOAD", fmtPct(cpuUsage), "%"}, {"LOAD (100ms window)", fmtPct(rfsuite.performance.cpuload_window100 or 0), "%"}, {"HEADROOM", fmtPct(headroomPct), "%"}, {"LOOP / BUDGET", fmtMS(loopMs) .. " / " .. fmtMS(budgetMs), "ms"}}
+        if cfg.showActualPeriod and tickMs then insert(schedRows, {"ACTUAL PERIOD", fmtMS(tickMs), "ms"}) end
+
+        local memRows = {{"LUA RAM FREE", fmtKB(ramFreeKB), "KB"}, {"LUA RAM USED (GC)", fmtKB(ramUsedGC_KB), "KB"}, {"SYSTEM RAM FREE", fmtKB(sysRamFreeKB), "KB"}, {"LUA BITMAP RAM", fmtKB(bitmapRamFreeKB), "KB"}}
+
+        local boxW = cfg.padX * 2 + cfg.labelW + cfg.colGap + cfg.valueW + cfg.colGap + cfg.unitW
+
+        local sectionHeaderH = lineH
+        local totalRows = #schedRows + #memRows
+        local boxH = cfg.padY * 2 + sectionHeaderH + (#schedRows * (lineH + cfg.rowGap)) + cfg.sectionGap + sectionHeaderH + (#memRows * (lineH + cfg.rowGap))
+
+        local screenW, screenH = lcd.getWindowSize()
+        local boxX = floor((screenW - boxW) / 2)
+        local boxY = floor((screenH - boxH) / 2)
+        local minY = 4 + headerOffset
+        if boxY < minY then boxY = minY end
+
+        lcd.color(lcd.RGB(cfg.bg[1], cfg.bg[2], cfg.bg[3], cfg.bg[4]))
+        lcd.drawFilledRectangle(boxX, boxY, boxW, boxH)
+        if cfg.border then
+            lcd.pen(1)
+            lcd.color(lcd.RGB(cfg.fg[1], cfg.fg[2], cfg.fg[3]))
+            lcd.drawRectangle(boxX, boxY, boxW, boxH)
+            lcd.pen(0)
+        end
+
+        local labelX = boxX + cfg.padX
+        local valueX = labelX + cfg.labelW + cfg.colGap
+        local unitX = valueX + cfg.valueW + cfg.colGap
+        local y = boxY + cfg.padY
+
+        local function drawSection(title, rows)
+
+            lcd.color(lcd.RGB(cfg.fg[1], cfg.fg[2], cfg.fg[3]))
+            lcd.font(FONT_S_BOLD)
+            lcd.drawText(labelX, y, title)
+            lcd.font(FONT_S)
+            y = y + sectionHeaderH + cfg.rowGap
+
+            for i = 1, #rows do
+                local label, value, unit = rows[i][1], rows[i][2], rows[i][3]
+                lcd.drawText(labelX, y, label)
+
+                local tw = lcd.getTextSize(tostring(value))
+                lcd.drawText(valueX + cfg.valueW - tw, y, tostring(value))
+                lcd.drawText(unitX, y, tostring(unit))
+                y = y + lineH + cfg.rowGap
+            end
+
+            y = y + cfg.sectionGap
+        end
+
+        drawSection("SCHEDULER", schedRows)
+        drawSection("MEMORY", memRows)
+    end
+
+    if dashboard.overlayMessage then dashboard._hg_cycles = dashboard._hg_cycles_required end
+    if dashboard._hg_cycles > 0 then
+        local loaderY = (isFullScreen and headerLayout.height) or 0
+        if dashboard.overlayMessage then
+            dashboard.overlaymessage(0, loaderY, W, H - loaderY, dashboard.overlayMessage)
+        else
+            dashboard.overlaystatic(0, loaderY, W, H - loaderY, nil)
+        end
+        dashboard._hg_cycles = dashboard._hg_cycles - 1
+        _queueInvalidateRect(0, loaderY, W, H - loaderY)
+        _flushInvalidatesRespectingBudget()
+        return
+    end
+
+    dashboard._forceFullRepaint = true
+end
+
+local function load_state_script(theme_folder, state, isFallback)
+    isFallback = isFallback or false
+    theme_folder = normalizeThemePath(theme_folder)
+
+    if not theme_folder or theme_folder == "" then
+        if not isFallback then return load_state_script(dashboard.DEFAULT_THEME, state, true) end
+        dashboard.themeFallbackUsed[state] = true
+        dashboard.themeFallbackTime[state] = clock()
+        return nil
+    end
+
+    local src, folder = theme_folder:match("([^/]+)/(.+)")
+    local base = (src == "user") and themesUserPath or themesBasePath
+
+    if not src or not folder then
+        if not isFallback then return load_state_script(dashboard.DEFAULT_THEME, state, true) end
+
+        dashboard.themeFallbackUsed[state] = true
+        dashboard.themeFallbackTime[state] = clock()
+        return nil
+    end
+
+    local function setPath() dashboard.currentWidgetPath = src .. "/" .. folder end
+    migrateLegacyThemePreferenceSections()
+    migrateThemePreferenceSection(src .. "/" .. folder)
+
+    local initPath = base .. folder .. "/init.lua"
+    local initChunk, initErr = compile(initPath)
+    if not initChunk then
+        if not isFallback then return load_state_script(dashboard.DEFAULT_THEME, state, true) end
+        dashboard.themeFallbackUsed[state] = true
+        dashboard.themeFallbackTime[state] = clock()
+        return nil
+    end
+
+    local ok, initTable = pcall(initChunk)
+    if not ok or type(initTable) ~= "table" then
+        if not isFallback then return load_state_script(dashboard.DEFAULT_THEME, state, true) end
+        dashboard.themeFallbackUsed[state] = true
+        dashboard.themeFallbackTime[state] = clock()
+        return nil
+    end
+
+    local scriptName = (type(initTable[state]) == "string" and initTable[state] ~= "") and initTable[state] or (state .. ".lua")
+    local scriptPath = base .. folder .. "/" .. scriptName
+
+    local chunk, chunkErr = compile(scriptPath)
+    if not chunk then
+        if not isFallback then return load_state_script(dashboard.DEFAULT_THEME, state, true) end
+
+        log("dashboard: Could not load " .. scriptName .. " for " .. folder .. " or default: " .. tostring(chunkErr), "info")
+        dashboard.themeFallbackUsed[state] = true
+        dashboard.themeFallbackTime[state] = clock()
+        return nil
+    end
+
+    dashboard.themeFallbackUsed[state] = (isFallback == true)
+    dashboard.themeFallbackTime[state] = isFallback and clock() or 0
+    loadedStateThemes[state] = src .. "/" .. folder
+    setPath()
+
+    if initTable.standalone then
+        return chunk
+    else
+        local ok2, module = pcall(chunk)
+        if not ok2 then
+            if not isFallback then return load_state_script(dashboard.DEFAULT_THEME, state, true) end
+            dashboard.themeFallbackUsed[state] = true
+            dashboard.themeFallbackTime[state] = clock()
+            return nil
+        end
+        return module
+    end
+end
+
+local function getThemeForState(state)
+    local modelPrefs = rfsuite.session.modelPreferences and rfsuite.session.modelPreferences.dashboard
+    local userPrefs = rfsuite.preferences.dashboard
+    local val = nil
+    if modelPrefs then
+        val = modelPrefs["theme_" .. state]
+        if val == "nil" then val = nil end
+    end
+    return normalizeThemePath(val or userPrefs["theme_" .. state] or dashboard.DEFAULT_THEME)
+end
+
+local function reload_state_only(state)
+    dashboard.utils.resetImageCache()
+    loadedStateModules[state] = load_state_script(getThemeForState(state), state)
+    lastLoadedBoxCount = 0
+    lastBoxRectsCount = 0
+    objectWakeupIndex = 1
+    objectsThreadedWakeupCount = 0
+    objectWakeupsPerCycle = nil
+    if dashboard.boxRects then
+        clearArray(dashboard.boxRects)
+    else
+        dashboard.boxRects = {}
+    end
+    dashboard._onpressIndicesReady = false
+    dashboard.selectedBoxIndex = nil
+    lcd.invalidate()
+end
+
+local function sync_loaded_themes_with_preferences()
+    local activeState = dashboard.flightmode or "preflight"
+    local states = {"preflight", "inflight", "postflight"}
+    local activeThemeChanged = false
+    local restartPreload = false
+
+    for i = 1, #states do
+        local state = states[i]
+        local loadedTheme = loadedStateThemes[state]
+        local resolvedTheme = getThemeForState(state)
+        if loadedTheme and loadedTheme ~= resolvedTheme then
+            if state == activeState then
+                activeThemeChanged = true
+            else
+                loadedStateModules[state] = nil
+                loadedStateThemes[state] = nil
+                restartPreload = true
+            end
+        end
+    end
+
+    if restartPreload then
+        statePreloadIndex = 1
+    end
+
+    if activeThemeChanged or not loadedStateModules[activeState] then
+        reload_state_only(activeState)
+        dashboard.applySchedulerSettings()
+        lcd.invalidate()
+        return true
+    end
+
+    return restartPreload
+end
+
+function dashboard.reload_active_theme_only(force)
+    dashboard.utils.resetImageCache()
+
+    if dashboard.utils and dashboard.utils.getThemeSignature then
+        themeStateSignature = dashboard.utils.getThemeSignature()
+        nextThemeStateCheck = 0
+    end
+
+    local state = dashboard.flightmode or "preflight"
+    local theme = getThemeForState(state)
+
+    if force or not loadedStateModules[state] or loadedStateThemes[state] ~= theme then
+        log("Reloading active theme: " .. theme, "info")
+        loadedStateModules[state] = load_state_script(theme, state)
+    else
+        log("Skipped reloading active theme: already loaded", "info")
+    end
+
+    firstWakeup = true
+    lcd.invalidate()
+
+    if dashboard.boxRects then
+        clearArray(dashboard.boxRects)
+    else
+        dashboard.boxRects = {}
+    end
+    dashboard._onpressIndicesReady = false
+    dashboard.selectedBoxIndex = nil
+    objectsThreadedWakeupCount = 0
+    objectWakeupIndex = 1
+    lastLoadedBoxCount = 0
+    lastBoxRectsCount = 0
+    objectWakeupsPerCycle = nil
+    lastLoadedBoxSigParts = nil
+    lastLoadedBoxSigCount = 0
+
+end
+
+function dashboard.applySchedulerSettings()
+
+    local active = dashboard.flightmode or "preflight"
+    local mod = loadedStateModules[active]
+    if mod and mod.scheduler then
+        local initTable = (type(mod.scheduler) == "function") and mod.scheduler() or mod.scheduler
+        if type(initTable) == "table" then
+
+            dashboard._useSpreadScheduling = (initTable.spread_scheduling ~= false)
+            dashboard._useSpreadSchedulingPaint = (initTable.spread_scheduling_paint ~= false)
+
+            dashboard._spreadRatioOverride = (type(initTable.spread_ratio) == "number" and initTable.spread_ratio > 0 and initTable.spread_ratio <= 1) and initTable.spread_ratio or nil
+        else
+            dashboard._useSpreadScheduling = true
+            dashboard._useSpreadSchedulingPaint = true
+            dashboard._spreadRatioOverride = nil
+        end
+    else
+        dashboard._useSpreadScheduling = true
+        dashboard._useSpreadSchedulingPaint = true
+        dashboard._spreadRatioOverride = nil
+    end
+
+end
+
+function dashboard.reload_themes(force)
+    local states = {"preflight", "inflight", "postflight"}
+
+    for i = 1, #states do
+        local state = states[i]
+        local resolvedTheme = getThemeForState(state)
+        if force or loadedStateThemes[state] ~= resolvedTheme then
+            loadedStateModules[state] = nil
+            loadedStateThemes[state] = nil
+        end
+    end
+
+    clearTableKeys(dashboard.renders)
+
+    if dashboard.utils and dashboard.utils.getThemeSignature then
+        themeStateSignature = dashboard.utils.getThemeSignature()
+        nextThemeStateCheck = 0
+    end
+
+    dashboard.reload_active_theme_only(force)
+
+    statePreloadIndex = 1
+
+    dashboard.applySchedulerSettings()
+
+    local boxes = {}
+    local mod = loadedStateModules[dashboard.flightmode or "preflight"]
+    if mod and mod.boxes then
+        local rawBoxes = type(mod.boxes) == "function" and mod.boxes() or mod.boxes
+        for _, box in ipairs(rawBoxes or {}) do insert(boxes, box) end
+    end
+    dashboard.loadAllObjects(boxes)
+
+    firstWakeup = true
+    dashboard._loader_start_time = nil
+    dashboard._hg_cycles = dashboard._hg_cycles_required
+
+    dashboard._forceFullRepaint = true
+    dashboard.selectedBoxIndex = nil
+    lastBoxRectsCount = 0
+    lastLoadedBoxCount = 0
+    objectWakeupIndex = 1
+    objectWakeupsPerCycle = nil
+    objectsThreadedWakeupCount = 0
+    lastLoadedBoxSigParts = nil
+    lastLoadedBoxSigCount = 0
+
+    local mod = loadedStateModules[dashboard.flightmode or "preflight"]
+    if type(mod) == "table" and mod.layout and mod.boxes then
+        log("Manually triggering renderLayout after theme reload", "info")
+        dashboard.renderLayout(nil, mod)
+    end
+
+end
+
+local function callStateFunc(funcName, widget, paintFallback)
+    local state = dashboard.flightmode or "preflight"
+    local module = loadedStateModules[state]
+
+    if not tasks or not tasks.active or not tasks.active() then return nil end
+
+    if type(module) == "table" and module.layout and funcName == "paint" then return module end
+
+    if module and type(module[funcName]) == "function" then return module[funcName](widget) end
+
+    if paintFallback then
+        local msg = "dashboard: " .. funcName .. " not implemented for " .. state .. "."
+        dashboard.utils.screenError(msg)
+    end
+end
+
+function dashboard.create()
+
+    if not dashboard.utils then dashboard.utils = assert(compile("SCRIPTS:/" .. rfsuite.config.baseDir .. "/widgets/dashboard/lib/utils.lua"))() end
+    if not dashboard.loaders then dashboard.loaders = assert(compile("SCRIPTS:/" .. rfsuite.config.baseDir .. "/widgets/dashboard/lib/loaders.lua"))() end
+    if not themeLib then themeLib = assert(compile("SCRIPTS:/" .. rfsuite.config.baseDir .. "/widgets/dashboard/lib/themes.lua"))() end
+
+    local bus = rfsuite.bus
+    if bus and bus.registerAction then
+        bus.registerAction("dashboard.reload_themes", function(data)
+            dashboard.reload_themes(data and data.force)
+        end)
+    end
+
+    os.mkdir("SCRIPTS:/" .. rfsuite.config.preferences .. "/dashboard/")
+
+    dashboard._pendingInvalidates = {}
+    dashboard._lastInvalidateTime = 0
+    dashboard._hg_cycles = 0
+    dashboard.overlayMessage = nil
+    themeStateSignature = dashboard.utils.getThemeSignature and dashboard.utils.getThemeSignature() or nil
+    nextThemeStateCheck = 0
+
+    firstWakeup = true
+    firstWakeupCustomTheme = true
+    objectWakeupIndex = 1
+    objectsThreadedWakeupCount = 0
+    objectWakeupsPerCycle = nil
+    if scheduledBoxIndices then
+        clearArray(scheduledBoxIndices)
+    else
+        scheduledBoxIndices = {}
+    end
+    if dashboard.boxRects then
+        clearArray(dashboard.boxRects)
+    else
+        dashboard.boxRects = {}
+    end
+    dashboard._onpressIndicesReady = false
+    dashboard.selectedBoxIndex = nil
+
+    lcd.invalidate()
+
+    return {value = 0}
+end
+
+function dashboard.close()
+    clearDashboardRuntimeCaches()
+end
+
+function dashboard.paint(widget)
+
+    if not dashboard.utils then return end
+
+    local isCompiledCheck = "true"
+    if isCompiledCheck ~= "true" and isCompiledCheck ~= "eurt" then
+        dashboard.utils.screenError("i18n not compiled - download a release version", true, 0.6)
+        return
+    end
+
+    if unsupportedResolution then
+
+        local W, H = lcd.getWindowSize()
+        local sys = system.getVersion()
+        if H < (sys.lcdHeight / 5) or W < (sys.lcdWidth / 10) then
+            dashboard.utils.screenError("TO SMALL", true, 0.4)
+        else
+            dashboard.overlaymessage(0, 0, W, H, "TO SMALL")
+        end
+        return
+    end
+
+    if firstWakeup then
+        local W, H = lcd.getWindowSize()
+        local loaderY = (isFullScreen and headerLayout.height) or 0
+        dashboard.loader(0, loaderY, W, H - loaderY)
+        return
+    end
+
+    if clock() - lastModelPathCheckAt >= PATH_CHECK_INTERVAL then
+        local newModelPath = model.path()
+        lastModelPathCheckAt = clock()
+        if newModelPath ~= lastModelPath then
+            lastModelPath = newModelPath
+
+            local W, H = lcd.getWindowSize()
+            local loaderY = (isFullScreen and headerLayout.height) or 0
+            dashboard.loader(0, loaderY, W, H - loaderY)
+            return
+        end
+    end
+
+    local state = dashboard.flightmode or "preflight"
+    local module = loadedStateModules[state]
+
+    if type(module) == "table" and module.layout and module.boxes then
+        dashboard.renderLayout(widget, module)
+        if type(module.paint) == "function" then module.paint(widget, module.layout, module.boxes) end
+    else
+        callStateFunc("paint", widget)
+    end
+
+    if not firstRenderComplete then
+        firstRenderComplete = true
+        logMemCheckpoint("after first render")
+    end
+
+    if toolbar and toolbar.draw then
+        toolbar.draw(dashboard, rfsuite, lcd, sort, max, FONT_XS, CENTERED, THEME_DEFAULT_COLOR, THEME_DEFAULT_BGCOLOR, THEME_FOCUS_COLOR, THEME_FOCUS_BGCOLOR)
+    end
+    if debugLogPanel and debugLogPanel.draw then
+        debugLogPanel.draw(dashboard, lcd, FONT_S, FONT_XS, FONT_XXS, CENTERED, THEME_DEFAULT_COLOR, THEME_DEFAULT_BGCOLOR)
+    end
+
+    if objectProfiler then _profReportIfDue() end
+end
+
+function dashboard.configure(widget) return callStateFunc("configure", widget) or widget end
+
+function dashboard.read(widget) return callStateFunc("read", widget) end
+
+function dashboard.write(widget) return callStateFunc("write", widget) end
+
+function dashboard.build(widget) return callStateFunc("build", widget) end
+
+function dashboard.reset(widget)
+    local actionModules = dashboard.toolbar_action_modules
+    if actionModules then
+        for _, mod in pairs(actionModules) do
+            if mod and type(mod.reset) == "function" then
+                mod.reset()
+            end
+        end
+    end
+end
+
+function dashboard.event(widget, category, value, x, y)
+
+    if rfsuite.preferences and rfsuite.preferences.developer and rfsuite.preferences.developer.logevents then
+        local events = rfsuite.ethos_events
+        if events and events.debug then
+            local line = events.debug("dashboard", category, value, x, y, {returnOnly = true})
+            if line then rfsuite.utils.log(line, "info") end
+        end
+    end
+
+    if category == EVT_KEY and value == KEY_PAGE_LONG and lcd.hasFocus() then
+        local now = clock()
+        if dashboard.debugLogPanelVisible then
+            dashboard.debugLogPanelVisible = false
+            dashboard._debugLogPanelLastActive = 0
+            if debugLogPanel and debugLogPanel.clearCaches then debugLogPanel.clearCaches(dashboard) end
+        end
+        dashboard.toolbarVisible = true
+        if not dashboard.selectedToolbarIndex then
+            dashboard.selectedToolbarIndex = 1
+        end
+        toolbarOpenedAt = now
+        dashboard._toolbarLastActive = now
+        dashboard._toolbarCloseAt = 0
+        lcd.invalidate(widget)
+        if system and system.killEvents then
+            system.killEvents(value)
+            if KEY_PAGE_UP ~= value then
+                system.killEvents(KEY_PAGE_UP)
+            end
+        end
+        return true
+    end
+
+
+    local state = dashboard.flightmode or "preflight"
+    local module = loadedStateModules[state]
+
+    if dashboard.selectedBoxIndex and (not dashboard.boxRects or dashboard.selectedBoxIndex > #(dashboard.boxRects or {})) then
+        dashboard.selectedBoxIndex = nil
+    end
+
+    if state == "postflight" and category == EVT_KEY and value == KEY_RTN_LONG then
+        rfsuite.widgets.dashboard.flightmode = "preflight"
+                local actions = dashboard.toolbar_actions
+                if actions and type(actions.resetFlightModeAsk) == "function" then
+                    actions.resetFlightModeAsk()
+                end
+    end
+
+    if gestureConsumeUntilTouchEnd and category == EVT_TOUCH then
+        local consumeNow = clock()
+        local staleConsume = gestureConsumeStartedAt > 0 and (consumeNow - gestureConsumeStartedAt) >= GESTURE_CONSUME_TIMEOUT
+        if value == TOUCH_START or staleConsume then
+            gestureConsumeUntilTouchEnd = false
+            gestureActive = false
+            gestureTriggered = false
+            gestureConsumeStartedAt = 0
+        else
+            if system and system.killEvents then
+                if TOUCH_START then system.killEvents(TOUCH_START) end
+                if TOUCH_MOVE then system.killEvents(TOUCH_MOVE) end
+                if TOUCH_END then system.killEvents(TOUCH_END) end
+            end
+            if value == TOUCH_END then
+                gestureConsumeUntilTouchEnd = false
+                gestureActive = false
+                gestureTriggered = false
+                gestureConsumeStartedAt = 0
+            end
+            return true
+        end
+    end
+
+    if toolbar and toolbar.handleEvent and toolbar.handleEvent(dashboard, widget, category, value, x, y, lcd) then
+        return true
+    end
+
+    -- Gesture start/end anywhere
+    if category == EVT_TOUCH and value == TOUCH_START and x and y then
+        gestureActive = true
+        gestureStartX = x or 0
+        gestureStartY = y or 0
+        gestureTriggered = false
+        gestureConsumeStartedAt = 0
+    elseif category == EVT_TOUCH and value == TOUCH_END then
+        gestureActive = false
+        gestureTriggered = false
+        gestureConsumeStartedAt = 0
+    end
+
+    if category == EVT_TOUCH and value == TOUCH_MOVE then
+        local now = clock()
+        isSliding = true
+        isSlidingStart = clock()
+
+        if not gestureActive and x and y then
+            gestureActive = true
+            gestureStartX = x or 0
+            gestureStartY = y or 0
+            gestureTriggered = false
+        end
+
+        if gestureActive and not gestureTriggered and x and y then
+            local dx = x - gestureStartX
+            local dy = y - gestureStartY
+            if math.abs(dx) <= GESTURE_MAX_DX then
+                if dy <= -GESTURE_MIN_DY then
+                    gestureTriggered = true
+                    gestureConsumeUntilTouchEnd = true
+                    gestureConsumeStartedAt = now
+                    if system and system.killEvents then
+                        if TOUCH_START then system.killEvents(TOUCH_START) end
+                        if TOUCH_MOVE then system.killEvents(TOUCH_MOVE) end
+                        if TOUCH_END then system.killEvents(TOUCH_END) end
+                    end
+                    if dashboard.debugLogPanelVisible then
+                        dashboard.debugLogPanelVisible = false
+                        dashboard._debugLogPanelLastActive = 0
+                        if debugLogPanel and debugLogPanel.clearCaches then debugLogPanel.clearCaches(dashboard) end
+                    else
+                        dashboard.toolbarVisible = true
+                        if not dashboard.selectedToolbarIndex then
+                            dashboard.selectedToolbarIndex = 1
+                        end
+                        toolbarOpenedAt = now
+                        dashboard._toolbarLastActive = now
+                        dashboard._toolbarCloseAt = 0
+                    end
+                    lcd.invalidate(widget)
+                    return true
+                elseif dy >= GESTURE_MIN_DY then
+                    gestureTriggered = true
+                    gestureConsumeUntilTouchEnd = true
+                    gestureConsumeStartedAt = now
+                    if system and system.killEvents then
+                        if TOUCH_START then system.killEvents(TOUCH_START) end
+                        if TOUCH_MOVE then system.killEvents(TOUCH_MOVE) end
+                        if TOUCH_END then system.killEvents(TOUCH_END) end
+                    end
+                    local wasToolbarVisible = dashboard.toolbarVisible
+                    dashboard.toolbarVisible = false
+                    dashboard.selectedToolbarIndex = nil
+                    toolbarOpenedAt = 0
+                    dashboard._toolbarLastActive = 0
+                    dashboard._toolbarCloseAt = 0
+                    if not wasToolbarVisible and isDashboardLogPanelEnabled() then
+                        dashboard.debugLogPanelVisible = true
+                        dashboard._debugLogPanelLastActive = now
+                        dashboard._debugLogPanelSeq = nil
+                    end
+                    lcd.invalidate(widget)
+                    return true
+                end
+            end
+        end
+    end
+
+    if debugLogPanel and debugLogPanel.handleEvent and debugLogPanel.handleEvent(dashboard, widget, category, value, x, y, lcd) then
+        if category == EVT_TOUCH and value == TOUCH_END then
+            gestureActive = false
+            gestureTriggered = false
+            gestureConsumeStartedAt = 0
+        end
+        return true
+    end
+
+    if (not dashboard.toolbarVisible) and category == EVT_KEY and lcd.hasFocus() then
+        local indices = getOnpressBoxIndices()
+        local count = #indices
+        if count == 0 then
+            dashboard.selectedBoxIndex = nil
+            return
+        end
+
+        local current = dashboard.selectedBoxIndex or 1
+        local pos = 1
+        for i, idx in ipairs(indices) do
+            if idx == current then
+                pos = i
+                break
+            end
+        end
+
+        if value == ROTARY_LEFT then
+            pos = pos - 1
+            if pos < 1 then pos = count end
+            dashboard.selectedBoxIndex = indices[pos]
+            lcd.invalidate(widget)
+            return true
+        elseif value == KEY_ROTARY_RIGHT then
+            pos = pos + 1
+            if pos > count then pos = 1 end
+            dashboard.selectedBoxIndex = indices[pos]
+            lcd.invalidate(widget)
+            return true
+        elseif value == KEY_ENTER_BREAK and category == EVT_KEY then
+            local inIndices = false
+            for i = 1, #indices do
+                if indices[i] == dashboard.selectedBoxIndex then
+                    inIndices = true
+                    break
+                end
+            end
+            if not inIndices then
+                dashboard.selectedBoxIndex = indices[1]
+                lcd.invalidate(widget)
+                return true
+            else
+                local idx = dashboard.selectedBoxIndex
+                local rects = dashboard.boxRects or {}
+                local rect = rects[idx]
+                if rect and rect.box and rect.box.onpress then
+                    rect.box.onpress(widget, rect.box, rect.x, rect.y, category, value)
+                    system.killEvents(KEY_ENTER_FIRST)
+                    return true
+                end
+            end
+        end
+    end
+    if value == KEY_DOWN_BREAK and dashboard.selectedBoxIndex then
+        dashboard.selectedBoxIndex = nil
+        lcd.invalidate(widget)
+        return true
+    end
+
+    if (not dashboard.toolbarVisible) and category == EVT_TOUCH and value == TOUCH_END and lcd.hasFocus() then
+        if x and y then
+            for i, rect in ipairs(dashboard.boxRects or {}) do
+                if x >= rect.x and x < rect.x + rect.w and y >= rect.y and y < rect.y + rect.h then
+                    if rect.box and rect.box.onpress then
+                        dashboard.selectedBoxIndex = i
+                        lcd.invalidate(widget)
+                        rect.box.onpress(widget, rect.box, x, y, category, value)
+                        system.killEvents(TOUCH_START)
+                        return true
+                    end
+                end
+            end
+        end
+    end
+
+    if type(module) == "table" and type(module.event) == "function" then return module.event(widget, category, value, x, y) end
+
+end
+
+function dashboard.wakeup_protected(widget)
+
+    local now = clock()
+
+    if lcd and lcd.resetFocusTimeout and (now - lastFocusReset) >= 5 then
+        lcd.resetFocusTimeout()
+        lastFocusReset = now
+    end
+
+    if rfsuite.session and rfsuite.session.dashboardInvalidatePending then
+        rfsuite.session.dashboardInvalidatePending = false
+        dashboard._forceFullRepaint = true
+        lcd.invalidate(widget)
+    end
+    if toolbarOpenedAt == nil then toolbarOpenedAt = 0 end
+    local lastActive = dashboard._toolbarLastActive or 0
+    if dashboard.toolbarVisible and toolbarOpenedAt == 0 then
+        toolbarOpenedAt = now
+    end
+    if dashboard.toolbarVisible and lastActive == 0 then
+        dashboard._toolbarLastActive = now
+        lastActive = now
+    end
+    local closeAt = dashboard._toolbarCloseAt or 0
+    if dashboard.toolbarVisible and closeAt > 0 and now >= closeAt then
+        dashboard.toolbarVisible = false
+        dashboard.selectedToolbarIndex = nil
+        toolbarOpenedAt = 0
+        dashboard._toolbarLastActive = 0
+        dashboard._toolbarCloseAt = 0
+        lcd.invalidate(widget)
+    end
+    local toolbarTimeout = (rfsuite.preferences and rfsuite.preferences.general and rfsuite.preferences.general.toolbar_timeout) or 10
+    if toolbarTimeout > 0 and dashboard.toolbarVisible and (now - lastActive) >= toolbarTimeout then
+        dashboard.toolbarVisible = false
+        dashboard.selectedToolbarIndex = nil
+        toolbarOpenedAt = 0
+        dashboard._toolbarLastActive = 0
+        lcd.invalidate(widget)
+    end
+
+    if dashboard.debugLogPanelVisible then
+        if (dashboard._debugLogPanelLastActive or 0) == 0 then
+            dashboard._debugLogPanelLastActive = now
+        end
+        local logger = rfsuite.tasks and rfsuite.tasks.logger or nil
+        local seq = logger and logger.getSessionSeq and logger.getSessionSeq() or 0
+        local level = rfsuite.preferences and rfsuite.preferences.developer and rfsuite.preferences.developer.loglevel or "off"
+        local seqChanged = seq ~= (dashboard._debugLogPanelSeq or -1)
+        local levelChanged = level ~= dashboard._debugLogPanelLevel
+        local statsDue = now - (dashboard._debugLogPanelLastStatsInvalidate or 0) >= 0.5
+        if (seqChanged or levelChanged or statsDue) and now - (dashboard._debugLogPanelLastInvalidate or 0) >= 0.25 then
+            dashboard._debugLogPanelSeq = seq
+            dashboard._debugLogPanelLevel = level
+            dashboard._debugLogPanelLastInvalidate = now
+            if statsDue then dashboard._debugLogPanelLastStatsInvalidate = now end
+            lcd.invalidate(widget)
+        end
+    end
+
+    if gestureConsumeUntilTouchEnd and gestureConsumeStartedAt > 0 and (now - gestureConsumeStartedAt) >= GESTURE_CONSUME_TIMEOUT then
+        gestureConsumeUntilTouchEnd = false
+        gestureActive = false
+        gestureTriggered = false
+        gestureConsumeStartedAt = 0
+    end
+
+    objectProfiler = rfsuite.preferences and rfsuite.preferences.developer and rfsuite.preferences.developer.logobjprof
+
+    if not dashboard.utils then return end
+
+    if rfsuite.session.isConnected and rfsuite.session.showBatteryTypeStartup and not rfsuite.session.batteryDialogShown then
+        if rfsuite.session.batteryConfig and rfsuite.session.modelPreferences and rfsuite.session.modelPreferences.dashboard then
+            rfsuite.session.batteryDialogShown = true
+            local actions = dashboard.toolbar_actions
+            if actions and type(actions.chooseBatteryType) == "function" then
+                local hasSelectable = type(actions.hasSelectableBatteryProfiles) ~= "function" or actions.hasSelectableBatteryProfiles()
+                if hasSelectable then
+                    actions.chooseBatteryType()
+                end
+            end
+        end
+    elseif not rfsuite.session.isConnected and rfsuite.session.batteryDialogShown then
+        rfsuite.session.batteryDialogShown = false
+    end
+
+    local W, H = lcd.getWindowSize()
+
+    dashboard.boxRects = dashboard.boxRects or {}
+    dashboard.objectsByType = dashboard.objectsByType or {}
+    scheduledBoxIndices = scheduledBoxIndices or {}
+
+    dashboard._lastWH = dashboard._lastWH or {w = nil, h = nil, supported = nil}
+
+    if W ~= dashboard._lastWH.w or H ~= dashboard._lastWH.h then
+        local supported = dashboard.utils.supportedResolution(W, H, supportedResolutions)
+        if supported ~= dashboard._lastWH.supported then
+            unsupportedResolution = not supported
+            dashboard._lastWH.supported = supported
+
+            lcd.invalidate(widget)
+        end
+        dashboard._lastWH.w, dashboard._lastWH.h = W, H
+    end
+
+    if unsupportedResolution then return end
+
+    local now = clock()
+    if now >= nextThemeStateCheck then
+        nextThemeStateCheck = now + 0.25
+        local currentThemeSignature = dashboard.utils.getThemeSignature and dashboard.utils.getThemeSignature() or nil
+        if currentThemeSignature ~= themeStateSignature then
+            themeStateSignature = currentThemeSignature
+            dashboard.reload_themes(true)
+        end
+    end
+
+    if firstWakeup then
+        firstWakeup = false
+        logMemCheckpoint("before first theme load")
+        local theme = getThemeForState("preflight")
+        log("Initial loading of preflight theme: " .. theme, "info")
+        loadedStateModules.preflight = load_state_script(theme, "preflight")
+        logMemCheckpoint("after load_state_script(preflight)")
+        dashboard.applySchedulerSettings()
+    end
+
+    if statePreloadIndex <= #statePreloadQueue then
+        local state = statePreloadQueue[statePreloadIndex]
+        if not loadedStateModules[state] then
+            local theme = getThemeForState(state)
+            log("Preloading theme: " .. theme .. " for " .. state, "info")
+            loadedStateModules[state] = load_state_script(theme, state)
+
+            local mod = loadedStateModules[state]
+            if mod and mod.boxes then
+                local boxes = type(mod.boxes) == "function" and mod.boxes() or mod.boxes
+                for _, box in ipairs(boxes or {}) do dashboard.loadObjectType(box) end
+            end
+        end
+        statePreloadIndex = statePreloadIndex + 1
+    end
+
+    if firstWakeupCustomTheme and rfsuite.session.mcu_id and rfsuite.session.modelPreferences and rfsuite.session.modelPreferences.dashboard then
+        firstWakeupCustomTheme = false
+
+        sync_loaded_themes_with_preferences()
+    end
+
+    local currentFlightMode = rfsuite.flightmode.current or "preflight"
+    if lastFlightMode ~= currentFlightMode then
+        dashboard.flightmode = currentFlightMode
+        local currentTheme = getThemeForState(currentFlightMode)
+        if (not loadedStateModules[currentFlightMode]) or (loadedStateThemes[currentFlightMode] ~= currentTheme) then
+            reload_state_only(currentFlightMode)
+        else
+            activate_state_only(currentFlightMode)
+        end
+        dashboard.applySchedulerSettings()
+        lastFlightMode = currentFlightMode
+        if dashboard._useSpreadSchedulingPaint then lcd.invalidate(widget) end
+    end
+
+    local newMessage = dashboard.computeOverlayMessage()
+    if dashboard.overlayMessage ~= newMessage then
+        dashboard.overlayMessage = newMessage
+        dashboard._hg_cycles = newMessage and dashboard._hg_cycles_required or 0
+        lcd.invalidate(widget)
+    end
+
+    local state = dashboard.flightmode or "preflight"
+    local module = loadedStateModules[state]
+
+    if module and type(module.wakeup) == "function" then
+        module.wakeup(widget)
+    else
+        callStateFunc("wakeup", widget)
+    end
+
+    local rectCount = #(dashboard.boxRects or {})
+    if rectCount > 0 then
+
+        for _, idx in ipairs(scheduledBoxIndices or {}) do
+            local rect = dashboard.boxRects[idx]
+            if rect and rect.box then
+                local obj = dashboard.objectsByType[rect.box.type]
+                if obj and obj.wakeup then
+                    if objectProfiler then
+                        local id = _profIdFromRect(rect)
+                        local t0 = _profStart()
+                        obj.wakeup(rect.box)
+                        _profStop("wakeup", id, rect.box.type, t0)
+                    else
+                        obj.wakeup(rect.box)
+                    end
+                end
+            end
+        end
+
+        local needsFullInvalidate = dashboard._forceFullRepaint or dashboard.overlayMessage or objectsThreadedWakeupCount < 1
+        local trackDirty = (dashboard._useSpreadSchedulingPaint == true) and (not needsFullInvalidate)
+
+        if dashboard._useSpreadScheduling == false then
+
+            for i, rect in ipairs(dashboard.boxRects or {}) do
+                if rect and rect.box then
+                    local obj = dashboard.objectsByType[rect.box.type]
+                    if obj and obj.wakeup and not obj.scheduler then obj.wakeup(rect.box) end
+                    if trackDirty then
+                        local dirtyFn = obj and obj.dirty
+                        if dirtyFn and dirtyFn(rect.box) then _queueInvalidateRect(rect.x - 1, rect.y - 1, rect.w + 2, rect.h + 2) end
+                    end
+                end
+            end
+
+        else
+
+            for i = 1, objectWakeupsPerCycle do
+                local idx = objectWakeupIndex
+                local rect = dashboard.boxRects[idx]
+                if rect and rect.box then
+                    local obj = dashboard.objectsByType[rect.box.type]
+                    if obj and obj.wakeup and not obj.scheduler then obj.wakeup(rect.box) end
+                    if trackDirty then
+                        local dirtyFn = obj and obj.dirty
+                        if dirtyFn and dirtyFn(rect.box) then _queueInvalidateRect(rect.x - 1, rect.y - 1, rect.w + 2, rect.h + 2) end
+                    end
+                end
+                objectWakeupIndex = (rectCount > 0) and ((objectWakeupIndex % rectCount) + 1) or 1
+            end
+
+        end
+
+        objectsThreadedWakeupCount = objectsThreadedWakeupCount + 1
+
+        if dashboard._useSpreadSchedulingPaint then
+            if needsFullInvalidate then
+
+                _queueInvalidateRect(0, 0, W, H)
+                dashboard._forceFullRepaint = false
+            end
+        else
+            _queueInvalidateRect(0, 0, W, H)
+        end
+
+        _flushInvalidatesRespectingBudget()
+    end
+
+    if not lcd.hasFocus(widget) and dashboard.selectedBoxIndex ~= nil then
+        log("Removing focus from box " .. tostring(dashboard.selectedBoxIndex), "info")
+        dashboard.selectedBoxIndex = nil
+        if dashboard._useSpreadSchedulingPaint then lcd.invalidate(widget) end
+    end
+
+    if not dashboard._useSpreadSchedulingPaint then lcd.invalidate() end
+
+    local actionModules = dashboard.toolbar_action_modules
+    if actionModules then
+        for _, mod in pairs(actionModules) do
+            if mod and type(mod.wakeup) == "function" then
+                mod.wakeup()
+            end
+        end
+    end
+end
+
+function dashboard.wakeup()
+
+    -- early returns happen before the pcall to wakeup_protected
+    local now = clock()
+    if lastWakeup and (now - lastWakeup) < WAKEUP_MIN_INTERVAL then return end
+
+    local visible = lcd.isVisible()
+    local admin = rfsuite.tasks.appRunning
+
+    if admin or not visible then
+
+        return
+    elseif isSliding then
+
+        if (now - isSlidingStart) > 1 then
+            isSliding = false
+        else
+            return
+        end
+    end
+
+    -- If MSP is busy, only run the tasks every N ticks to allow background processing to complete and avoid UI freezes.
+    local session = rfsuite.session
+    if session and session.mspBusy then
+        busyWakeupTick = (busyWakeupTick % BUSY_WAKEUP_RUN_DEN) + 1
+        if busyWakeupTick > BUSY_WAKEUP_RUN_NUM then
+            lastWakeup = now
+            return
+        end
+    else
+        busyWakeupTick = 0
+    end
+
+    if not dashboard.wakeup_protected then return end
+    local success, err = pcall(dashboard.wakeup_protected)
+    if not success then
+        print("Error in wakeup_protected: " .. tostring(err))
+    end
+    lastWakeup = now
+end
+
+function dashboard.listThemes()
+    if not themeLib then
+        themeLib = assert(compile("SCRIPTS:/" .. rfsuite.config.baseDir .. "/widgets/dashboard/lib/themes.lua"))()
+    end
+    return themeLib.listThemes()
+end
+
+
+function dashboard.getPreference(key)
+    if not rfsuite.session.modelPreferences or not dashboard.currentWidgetPath then return nil end
+    local section = dashboard.currentWidgetPath
+
+    if not rfsuite.tasks.appRunning then
+        local value = rfsuite.ini.getvalue(rfsuite.session.modelPreferences, section, key)
+        if value ~= nil then return value end
+        local legacy = legacyThemePath(section)
+        if legacy then return rfsuite.ini.getvalue(rfsuite.session.modelPreferences, legacy, key) end
+        return nil
+    else
+        section = normalizeThemePath(rfsuite.session.dashboardEditingTheme)
+        local value = rfsuite.ini.getvalue(rfsuite.session.modelPreferences, section, key)
+        if value ~= nil then return value end
+        local legacy = legacyThemePath(section)
+        if legacy then return rfsuite.ini.getvalue(rfsuite.session.modelPreferences, legacy, key) end
+        return nil
+    end
+end
+
+function dashboard.savePreference(key, value)
+    if not rfsuite.session.modelPreferences or not rfsuite.session.modelPreferencesFile or not dashboard.currentWidgetPath then return false end
+    if not rfsuite.tasks.appRunning then
+        rfsuite.ini.setvalue(rfsuite.session.modelPreferences, normalizeThemePath(dashboard.currentWidgetPath), key, value)
+        return rfsuite.ini.save_ini_file(rfsuite.session.modelPreferencesFile, rfsuite.session.modelPreferences)
+    else
+        rfsuite.ini.setvalue(rfsuite.session.modelPreferences, normalizeThemePath(rfsuite.session.dashboardEditingTheme), key, value)
+        return rfsuite.ini.save_ini_file(rfsuite.session.modelPreferencesFile, rfsuite.session.modelPreferences)
+    end
+end
+
+function dashboard.menu(widget)
+    local items = {}
+    local v = system and system.getVersion and system.getVersion() or nil
+    local board = v and v.board or ""
+    return items
+end
+
+dashboard.renders = dashboard.renders or {}
+
+dashboard.title = false
+
+dashboard.isSliding = function() return isSliding end
+
+return dashboard

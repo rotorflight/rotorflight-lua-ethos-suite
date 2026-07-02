@@ -1,0 +1,121 @@
+--[[
+  Copyright (C) 2025 Rotorflight Project
+  GPLv3 — https://www.gnu.org/licenses/gpl-3.0.en.html
+]] --
+
+--[[
+    wakeupinterval      : number                    -- Optional wakeup interval in seconds (set in wrapper)
+    title               : string                    -- (Optional) Title text
+    titlepos            : string                    -- (Optional) Title position ("top" or "bottom")
+    titlealign          : string                    -- (Optional) Title alignment ("center", "left", "right")
+    titlefont           : font                      -- (Optional) Title font (e.g., FONT_L, FONT_XL), dynamic by default
+    titlespacing        : number                    -- (Optional) Controls the vertical gap between title text and the value text, regardless of their paddings.
+    titlecolor          : color                     -- (Optional) Title text color (theme/text fallback if nil)
+    titlepadding        : number                    -- (Optional) Padding for title (all sides unless overridden)
+    titlepaddingleft    : number                    -- (Optional) Left padding for title
+    titlepaddingright   : number                    -- (Optional) Right padding for title
+    titlepaddingtop     : number                    -- (Optional) Top padding for title
+    titlepaddingbottom  : number                    -- (Optional) Bottom padding for title
+    unit                : string                    -- (Optional) Unit label to append to value
+    font                : font                      -- (Optional) Value font (e.g., FONT_L, FONT_XL), dynamic by default
+    valuealign          : string                    -- (Optional) Value alignment ("center", "left", "right")
+    textcolor           : color                     -- (Optional) Value text color (theme/text fallback if nil)
+    valuepadding        : number                    -- (Optional) Padding for value (all sides unless overridden)
+    valuepaddingleft    : number                    -- (Optional) Left padding for value
+    valuepaddingright   : number                    -- (Optional) Right padding for value
+    valuepaddingtop     : number                    -- (Optional) Top padding for value
+    valuepaddingbottom  : number                    -- (Optional) Bottom padding for value
+    bgcolor             : color                     -- (Optional) Widget background color (theme fallback if nil)
+]]
+
+local rfsuite = require("rfsuite")
+
+local floor = math.floor
+local format = string.format
+
+local render = {}
+
+local utils = rfsuite.widgets.dashboard.utils
+local getParam = utils.getParam
+local resolveThemeColor = utils.resolveThemeColor
+local lastValue = 0
+
+function render.invalidate(box) box._cfg = nil end
+
+function render.dirty(box)
+    if not rfsuite.session.telemetryState then return false end
+    return utils.dirtyOnDisplayValueChange(box)
+end
+
+local function ensureCfg(box)
+    return utils.ensureCfg(box, function(cfg, box)
+        cfg.title = getParam(box, "title")
+        cfg.titlepos = getParam(box, "titlepos")
+        cfg.titlealign = getParam(box, "titlealign")
+        cfg.titlefont = getParam(box, "titlefont")
+        cfg.titlespacing = getParam(box, "titlespacing")
+        cfg.titlecolor = resolveThemeColor("titlecolor", getParam(box, "titlecolor"))
+        cfg.titlepadding = getParam(box, "titlepadding")
+        cfg.titlepaddingleft = getParam(box, "titlepaddingleft")
+        cfg.titlepaddingright = getParam(box, "titlepaddingright")
+        cfg.titlepaddingtop = getParam(box, "titlepaddingtop")
+        cfg.titlepaddingbottom = getParam(box, "titlepaddingbottom")
+        cfg.unit = getParam(box, "unit")
+        cfg.font = getParam(box, "font")
+        cfg.valuealign = getParam(box, "valuealign")
+        cfg.textcolor = resolveThemeColor("textcolor", getParam(box, "textcolor"))
+        cfg.valuepadding = getParam(box, "valuepadding")
+        cfg.valuepaddingleft = getParam(box, "valuepaddingleft")
+        cfg.valuepaddingright = getParam(box, "valuepaddingright")
+        cfg.valuepaddingtop = getParam(box, "valuepaddingtop")
+        cfg.valuepaddingbottom = getParam(box, "valuepaddingbottom")
+        cfg.bgcolor = resolveThemeColor("bgcolor", getParam(box, "bgcolor"))
+    end)
+end
+
+function render.wakeup(box)
+
+    local session = rfsuite.session
+    local telemetryActive = session and session.telemetryState and session.isConnected
+    local inPostflight = (rfsuite.flightmode and rfsuite.flightmode.current == "postflight")
+
+    if not telemetryActive and not inPostflight then
+        box._lastDisplayValue = nil
+        lastValue = 0
+    end
+
+    local value
+    if telemetryActive and session and session.modelPreferences then
+        value = session.timer and session.timer.live or 0
+        lastValue = value
+    else
+        value = lastValue or 0
+    end
+
+    local displayValue
+
+    if type(value) == "number" and value > 0 then
+        local minutes = floor(value / 60)
+        local seconds = floor(value % 60)
+        displayValue = format("%02d:%02d", minutes, seconds)
+    else
+        displayValue = getParam(box, "novalue") or "00:00"
+    end
+
+    if displayValue == "00:00" and box._lastDisplayValue ~= nil then displayValue = box._lastDisplayValue end
+
+    box._currentDisplayValue = displayValue
+
+    ensureCfg(box)
+end
+
+function render.paint(x, y, w, h, box)
+    x, y = utils.applyOffset(x, y, box)
+    local c = box._cfg or {}
+
+    utils.box(x, y, w, h, c.title, c.titlepos, c.titlealign, c.titlefont, c.titlespacing, c.titlecolor, c.titlepadding, c.titlepaddingleft, c.titlepaddingright, c.titlepaddingtop, c.titlepaddingbottom, box._currentDisplayValue, c.unit, c.font, c.valuealign, c.textcolor, c.valuepadding, c.valuepaddingleft, c.valuepaddingright, c.valuepaddingtop, c.valuepaddingbottom, c.bgcolor)
+end
+
+render.scheduler = 0.5
+
+return render

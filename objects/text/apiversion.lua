@@ -1,0 +1,100 @@
+--[[
+  Copyright (C) 2025 Rotorflight Project
+  GPLv3 — https://www.gnu.org/licenses/gpl-3.0.en.html
+]] --
+
+--[[
+    wakeupinterval      : number                    -- Optional wakeup interval in seconds (set in wrapper)
+    title               : string                    -- (Optional) Title text
+    titlepos            : string                    -- (Optional) Title position ("top" or "bottom")
+    titlealign          : string                    -- (Optional) Title alignment ("center", "left", "right")
+    titlefont           : font                      -- (Optional) Title font (e.g., FONT_L, FONT_XL), dynamic by default
+    titlespacing        : number                    -- (Optional) Controls the vertical gap between title text and the value text, regardless of their paddings.
+    titlecolor          : color                     -- (Optional) Title text color (theme/text fallback if nil)
+    titlepadding        : number                    -- (Optional) Padding for title (all sides unless overridden)
+    titlepaddingleft    : number                    -- (Optional) Left padding for title
+    titlepaddingright   : number                    -- (Optional) Right padding for title
+    titlepaddingtop     : number                    -- (Optional) Top padding for title
+    titlepaddingbottom  : number                    -- (Optional) Bottom padding for title
+    value               : any                       -- (Optional) Static value to display if not present
+    novalue             : string                    -- (Optional) Text shown if telemetry value is missing (default: "-")
+    unit                : string                    -- (Optional) Unit label to append to value
+    font                : font                      -- (Optional) Value font (e.g., FONT_L, FONT_XL), dynamic by default
+    valuealign          : string                    -- (Optional) Value alignment ("center", "left", "right")
+    textcolor           : color                     -- (Optional) Value text color (theme/text fallback if nil)
+    valuepadding        : number                    -- (Optional) Padding for value (all sides unless overridden)
+    valuepaddingleft    : number                    -- (Optional) Left padding for value
+    valuepaddingright   : number                    -- (Optional) Right padding for value
+    valuepaddingtop     : number                    -- (Optional) Top padding for value
+    valuepaddingbottom  : number                    -- (Optional) Bottom padding for value
+    bgcolor             : color                     -- (Optional) Widget background color (theme fallback if nil)
+]] --
+
+local rfsuite = require("rfsuite")
+
+local tostring = tostring
+
+local render = {}
+
+local utils = rfsuite.widgets.dashboard.utils
+local getParam = utils.getParam
+local resolveThemeColor = utils.resolveThemeColor
+local getPulsingDots = utils.getPulsingDots
+
+function render.invalidate(box) box._cfg = nil end
+
+function render.dirty(box)
+    return utils.dirtyOnDisplayValueChange(box)
+end
+
+local function ensureCfg(box)
+    return utils.ensureCfg(box, function(cfg, box)
+        cfg.title = getParam(box, "title")
+        cfg.titlepos = getParam(box, "titlepos")
+        cfg.titlealign = getParam(box, "titlealign")
+        cfg.titlefont = getParam(box, "titlefont")
+        cfg.titlespacing = getParam(box, "titlespacing")
+        cfg.titlepadding = getParam(box, "titlepadding")
+        cfg.titlepaddingleft = getParam(box, "titlepaddingleft")
+        cfg.titlepaddingright = getParam(box, "titlepaddingright")
+        cfg.titlepaddingtop = getParam(box, "titlepaddingtop")
+        cfg.titlepaddingbottom = getParam(box, "titlepaddingbottom")
+        cfg.font = getParam(box, "font")
+        cfg.valuealign = getParam(box, "valuealign")
+        cfg.valuepadding = getParam(box, "valuepadding")
+        cfg.valuepaddingleft = getParam(box, "valuepaddingleft")
+        cfg.valuepaddingright = getParam(box, "valuepaddingright")
+        cfg.valuepaddingtop = getParam(box, "valuepaddingtop")
+        cfg.valuepaddingbottom = getParam(box, "valuepaddingbottom")
+        cfg.titlecolor = resolveThemeColor("titlecolor", getParam(box, "titlecolor"))
+        cfg.textcolor = resolveThemeColor("textcolor", getParam(box, "textcolor"))
+        cfg.bgcolor = resolveThemeColor("bgcolor", getParam(box, "bgcolor"))
+        cfg.unit = nil
+    end)
+end
+
+function render.wakeup(box)
+    local cfg = ensureCfg(box)
+
+    local value = rfsuite.session.apiVersion
+
+    local displayValue
+    if value == nil then
+        displayValue = getPulsingDots(box)
+    else
+        displayValue = tostring(value)
+    end
+
+    box._currentDisplayValue = displayValue
+end
+
+function render.paint(x, y, w, h, box)
+    x, y = utils.applyOffset(x, y, box)
+    local c = box._cfg or {}
+
+    utils.box(x, y, w, h, c.title, c.titlepos, c.titlealign, c.titlefont, c.titlespacing, c.titlecolor, c.titlepadding, c.titlepaddingleft, c.titlepaddingright, c.titlepaddingtop, c.titlepaddingbottom, box._currentDisplayValue, c.unit, c.font, c.valuealign, c.textcolor, c.valuepadding, c.valuepaddingleft, c.valuepaddingright, c.valuepaddingtop, c.valuepaddingbottom, c.bgcolor)
+end
+
+render.scheduler = 0.5
+
+return render
