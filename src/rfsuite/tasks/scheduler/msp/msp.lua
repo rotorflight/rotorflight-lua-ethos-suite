@@ -5,7 +5,6 @@
 
 local rfsuite = require("rfsuite")
 
-
 -- Optimized locals to reduce global/table lookups
 local os_clock = os.clock
 local utils = rfsuite.utils
@@ -14,45 +13,30 @@ local API_ENGINE_DEFAULT = "v2"
 
 local msp = {}
 
-msp.activeProtocol = nil      -- Current telemetry protocol type in use
-msp.onConnectChecksInit = true -- Flag to run initial checks on telemetry connect
+msp.activeProtocol = nil
+msp.onConnectChecksInit = true
 
 local protocol = assert(loadfile("SCRIPTS:/" .. rfsuite.config.baseDir .. "/tasks/scheduler/msp/protocols.lua"))()
 local helpers = assert(loadfile("SCRIPTS:/" .. rfsuite.config.baseDir .. "/tasks/scheduler/msp/helpers.lua"))()
-local proto_logger = nil -- resolved lazily on first enableProtoLog(true) call, see below
-
-local telemetryTypeChanged = false -- Set when switching CRSF/S.Port/etc.
-
+local proto_logger = nil
+local telemetryTypeChanged = false
 local mspQueue
 
 msp.bus = rfsuite.bus
 msp.genericActions = assert(loadfile("SCRIPTS:/" .. rfsuite.config.baseDir .. "/tasks/scheduler/msp/generic_actions.lua"))()
 msp.genericActions.register(msp.bus)
-
--- Protocol parameters for current telemetry type
 msp.protocol = protocol.getProtocol()
-
--- Expose helper functions
 msp.helpers = helpers
 
 local transportPaths = protocol.getTransports()
-
--- Load only the active transport module on demand.
 msp.protocolTransports = {}
 
 local function loadTransportModule(transportName)
     local transportModule = msp.protocolTransports[transportName]
     local transportPath
-
-    if transportModule then
-        return transportModule
-    end
-
+    if transportModule then return transportModule end
     transportPath = transportPaths[transportName]
-    if not transportPath then
-        return nil
-    end
-
+    if not transportPath then return nil end
     transportModule = assert(loadfile(transportPath))()
     msp.protocolTransports[transportName] = transportModule
     return transportModule
@@ -70,24 +54,31 @@ end
 local function bindActiveTransport()
     local transportName = msp.protocol and msp.protocol.mspProtocol
     local transport = transportName and loadTransportModule(transportName)
-
-    if not transport then
-        return nil
-    end
+    if not transport then return nil end
 
     clearInactiveTransports(transportName)
-    msp.protocol.mspRead  = transport.mspRead
-    msp.protocol.mspSend  = transport.mspSend
+    msp.protocol.mspRead = transport.mspRead
+    msp.protocol.mspSend = transport.mspSend
     msp.protocol.mspWrite = transport.mspWrite
-    msp.protocol.mspPoll  = transport.mspPoll
+
+    -- Treat every valid transport packet as reply progress. The queue's resend
+    -- backoff is measured from the latest fragment instead of only the original
+    -- request, preventing a long fragmented response from being restarted while
+    -- it is still arriving. No SD-card logging occurs in this hot path.
+    local rawPoll = transport.mspPoll
+    msp.protocol.mspPoll = function(...)
+        local packet = rawPoll(...)
+        if packet ~= nil and mspQueue and mspQueue.currentMessage then
+            mspQueue.lastTimeCommandSent = os_clock()
+        end
+        return packet
+    end
 
     return transport
 end
 
--- Bind protocol transport functions
 bindActiveTransport()
 
--- Load MSP queue with protocol settings
 mspQueue = assert(loadfile("SCRIPTS:/" .. rfsuite.config.baseDir .. "/tasks/scheduler/msp/mspQueue.lua"))()
 msp.mspQueue = mspQueue
 
@@ -99,6 +90,7 @@ local function applyProtocolQueueSettings()
     mspQueue.interMessageDelay = active.mspQueueInterMessageDelay or 0.05
     mspQueue.timeout = active.mspQueueTimeout or 2.0
     mspQueue.rxInactivityTimeout = active.mspRxInactivityTimeout or 0.9
+    mspQueue.retryBackoff = active.mspRxInactivityTimeout or 0.9
     mspQueue.drainAfterReplyMs = active.mspQueueDrainAfterReplyMs or 0.03
     mspQueue.drainMaxPolls = active.mspQueueDrainMaxPolls or 5
     mspQueue.busyWarningThreshold = active.mspQueueBusyWarning or 8
@@ -108,16 +100,13 @@ end
 
 applyProtocolQueueSettings()
 
--- Load helpers and API handlers
 msp.mspHelper = assert(loadfile("SCRIPTS:/" .. rfsuite.config.baseDir .. "/tasks/scheduler/msp/mspHelper.lua"))()
 local apiLoader = assert(loadfile("SCRIPTS:/" .. rfsuite.config.baseDir .. "/tasks/scheduler/msp/api.lua"))()
-msp.api       = apiLoader
+msp.api = apiLoader
 msp.apiEngine = "v2"
-msp.common    = assert(loadfile("SCRIPTS:/" .. rfsuite.config.baseDir .. "/tasks/scheduler/msp/common.lua"))()
--- Snapshot protocol version at load; later changes should call setProtocolVersion.
+msp.common = assert(loadfile("SCRIPTS:/" .. rfsuite.config.baseDir .. "/tasks/scheduler/msp/common.lua"))()
 msp.common.setProtocolVersion(MSP_PROTOCOL_VERSION or 1)
 
--- Lazily load (and cache) the shared MSP API core module used by tasks/scheduler/msp/api/*.lua
 function msp.getApiCore()
     if not msp.apicore then
         msp.apicore = assert(loadfile("SCRIPTS:/" .. rfsuite.config.baseDir .. "/tasks/scheduler/msp/api/core.lua"))()
@@ -125,7 +114,6 @@ function msp.getApiCore()
     return msp.apicore
 end
 
--- Expose protocol logger (stays nil/unloaded unless actually enabled)
 msp.proto_logger = nil
 
 function msp.enableProtoLog(on)
@@ -159,23 +147,17 @@ end
 
 msp.setApiEngine(API_ENGINE_DEFAULT)
 
-
--- Delay handling for clean protocol reset
-local delayDuration  = 2
+local delayDuration = 2
 local delayStartTime = nil
-local delayPending   = false
+local delayPending = false
 
--- Main MSP poll loop (called by script wakeups)
 function msp.wakeup()
-
     local session = rfsuite.session
-    -- enable logging
+    -- Optional protocol logging remains disabled by default.
     -- rfsuite.tasks.msp.enableProtoLog(true)
 
-    -- Nothing to do if no telemetry sensor
     if session.telemetrySensor == nil then return end
 
-    -- Apply delay after reset request
     if session.resetMSP and not delayPending then
         delayStartTime = os_clock()
         delayPending = true
@@ -184,7 +166,6 @@ function msp.wakeup()
         return
     end
 
-    -- Hold off processing while in delay period
     if delayPending then
         if os_clock() - delayStartTime >= delayDuration then
             utils.log("Delay complete; resuming msp wakeup", "info")
@@ -197,26 +178,20 @@ function msp.wakeup()
 
     msp.activeProtocol = session.telemetryType
 
-    -- Telemetry type changed (e.g., CRSF <-> S.Port)
     if telemetryTypeChanged == true then
-
         msp.protocol = protocol.getProtocol()
-
         bindActiveTransport()
         applyProtocolQueueSettings()
-
         utils.session()
         msp.onConnectChecksInit = true
         telemetryTypeChanged = false
     end
 
-    -- If telemetry was disconnected, re-run init handlers
     if session.telemetrySensor ~= nil and session.telemetryState == false then
         utils.session()
         msp.onConnectChecksInit = true
     end
 
-    -- Run queue when connected, otherwise clear it
     if session.telemetryState == true then
         mspQueue:processQueue()
     else
@@ -224,12 +199,10 @@ function msp.wakeup()
     end
 end
 
--- Mark that protocol should be reloaded on next wakeup
 function msp.setTelemetryTypeChanged()
     telemetryTypeChanged = true
 end
 
--- Reset MSP state and transport
 function msp.reset()
     mspQueue:clear()
     msp.activeProtocol = nil
