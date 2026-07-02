@@ -51,7 +51,19 @@ local function header_boxes()
                     local tw1, th = lcd.getTextSize(t1)
                     local tw2 = lcd.getTextSize(t2)
                     local tw3 = lcd.getTextSize(t3)
-                    local totalW = tw1 + tw2 + tw3
+
+                    local watermarkFont = utils.resolveFont("FONT_XS", nil)
+                    local watermarkText = "MWRC"
+                    local watermarkWidth, watermarkHeight = 0, 0
+                    if type(watermarkFont) == "number" then
+                        lcd.font(watermarkFont)
+                        watermarkWidth, watermarkHeight = lcd.getTextSize(watermarkText)
+                        lcd.font(font)
+                    end
+
+                    local titleW = tw1 + tw2 + tw3
+                    local dividerGap = watermarkWidth > 0 and 14 or 0
+                    local totalW = titleW + dividerGap + watermarkWidth
                     local tx = floor(x + (w - totalW) / 2)
                     local ty = floor(y + (h - th) / 2)
 
@@ -61,6 +73,15 @@ local function header_boxes()
                     lcd.drawText(tx + tw1, ty, t2)
                     lcd.color(C.white)
                     lcd.drawText(tx + tw1 + tw2, ty, t3)
+
+                    if watermarkWidth > 0 then
+                        local dividerX = tx + titleW + 6
+                        lcd.color(C.line2)
+                        lcd.drawLine(dividerX, y + 7, dividerX, y + h - 7)
+                        lcd.font(watermarkFont)
+                        lcd.color(C.cyan)
+                        lcd.drawText(dividerX + 7, floor(y + (h - watermarkHeight) / 2), watermarkText)
+                    end
                 end
             end
         end
@@ -136,6 +157,7 @@ local function sensor(telemetry, name, alias1, alias2)
     end
     return nil
 end
+
 
 local GOVERNOR_LABELS = {
     [0] = "OFF",
@@ -241,6 +263,7 @@ local function drawPanel(x, y, w, h, accent, title)
         drawTextAligned(x + 12, y + 7, w - 22, title, "FONT_XS", C.muted, "left")
     end
 end
+
 
 local function drawStateBadge(x, y, w, h, label, color)
     x, y, w, h = floor(x), floor(y), floor(w), floor(h)
