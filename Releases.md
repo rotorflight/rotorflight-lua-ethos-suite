@@ -1,3 +1,7 @@
+# 2.3.1
+
+- Resolve issue with i18n compilation for non english language releases
+
 # 2.3.0
 
 Release version for 2.3.0 Rotorflight
