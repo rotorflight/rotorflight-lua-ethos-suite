@@ -50,7 +50,7 @@ local function firstManifestMenuIdFromMainMenu()
 end
 
 local function loadManifest()
-    local chunk = assert(loadfile("app/modules/manifest_root.lua"))
+    local chunk = assert(loadfile("app/modules/manifest.lua"))
     local manifest = chunk()
     if type(manifest) ~= "table" then return {} end
     return manifest

@@ -6,12 +6,6 @@
 local shortcuts = {}
 local registryCache = nil
 local MAX_SHORTCUTS = 5
-local ITEM_ID = 1
-local ITEM_NAME = 2
-local ITEM_MENU_ID = 3
-local ITEM_SCRIPT = 4
-local ITEM_IMAGE = 5
-local ITEM_METADATA = 6
 
 local rfsuite = require("rfsuite")
 
@@ -81,18 +75,84 @@ local function pageVisible(page)
     return true
 end
 
-local function groupVisible(group)
-    local visibility = group and group.visibility
-    if type(visibility) ~= "table" then return true end
-    for _, spec in ipairs(visibility) do
-        if not pageVisible(spec) then return false end
+local function buildMenuOrderAndContext(manifest)
+    local menus = manifest.menus or {}
+    local order = {}
+    local queue = {}
+    local queued = {}
+    local visited = {}
+    local menuContextByMenuId = {}
+
+    local function enqueueMenu(menuId, contextId)
+        if type(menuId) ~= "string" or menuId == "" then return end
+        if type(contextId) == "string" and contextId ~= "" and menuContextByMenuId[menuId] == nil then
+            menuContextByMenuId[menuId] = contextId
+        end
+        if queued[menuId] then return end
+        queued[menuId] = true
+        queue[#queue + 1] = menuId
     end
-    return true
+
+    for _, group in ipairs(manifest.sections or {}) do
+        for _, section in ipairs(group.sections or {}) do
+            if type(section) == "table" and pageVisible(section) then
+                local menuId = section.menuId
+                if type(menuId) == "string" and menuId ~= "" then
+                    local contextId = (type(section.id) == "string" and section.id ~= "") and section.id or nil
+                    enqueueMenu(menuId, contextId)
+                end
+            end
+        end
+    end
+
+    local head = 1
+    while head <= #queue do
+        local menuId = queue[head]
+        head = head + 1
+
+        if not visited[menuId] then
+            visited[menuId] = true
+            order[#order + 1] = menuId
+
+            local menu = menus[menuId]
+            local contextId = menuContextByMenuId[menuId]
+            if type(menu) == "table" and type(menu.pages) == "table" then
+                for _, page in ipairs(menu.pages) do
+                    if type(page) == "table" and pageVisible(page) then
+                        local childMenuId = page.menuId
+                        if type(childMenuId) == "string" and childMenuId ~= "" then
+                            enqueueMenu(childMenuId, contextId)
+                        end
+                    end
+                end
+            end
+        end
+    end
+
+    return order, menuContextByMenuId
 end
 
-local function itemVisible(item)
-    local metadata = item and item[ITEM_METADATA]
-    return metadata == false or pageVisible(metadata)
+local function resolveScriptPath(scriptPrefix, script)
+    if type(script) ~= "string" or script == "" then return nil end
+    if script:sub(1, 4) == "app/" then return script end
+    return (scriptPrefix or "") .. script
+end
+
+local function resolveImagePath(iconPrefix, image)
+    if type(image) ~= "string" or image == "" then return nil end
+    if image:sub(1, 4) == "app/" then return image end
+    return (iconPrefix or "") .. image
+end
+
+local function normalizeShortcutId(value)
+    if type(value) ~= "string" then return nil end
+    local trimmed = value:match("^%s*(.-)%s*$")
+    if trimmed == "" then return nil end
+    return trimmed
+end
+
+local function resolveShortcutId(page)
+    return normalizeShortcutId(page and page.shortcutId)
 end
 
 local COPY_KEYS = {
@@ -112,16 +172,16 @@ local COPY_KEYS = {
     "script_default"
 }
 
-local function copyShortcutPage(item)
+local function resolvePage(menu, page)
+    local fallbackImage = "app/gfx/tools.png"
     local out = {
-        name = item[ITEM_NAME],
-        menuId = item[ITEM_MENU_ID] or nil,
-        script = item[ITEM_SCRIPT] or nil,
-        image = item[ITEM_IMAGE]
+        name = page.name,
+        menuId = page.menuId,
+        script = resolveScriptPath(menu.scriptPrefix, page.script),
+        image = resolveImagePath(menu.iconPrefix, page.image) or fallbackImage
     }
-    local metadata = item[ITEM_METADATA]
     for _, key in ipairs(COPY_KEYS) do
-        if type(metadata) == "table" and metadata[key] ~= nil then out[key] = metadata[key] end
+        if page[key] ~= nil then out[key] = page[key] end
     end
     return out
 end
@@ -131,26 +191,42 @@ function shortcuts.buildRegistry()
         return registryCache
     end
 
-    local chunk = loadfile("app/modules/manifest_shortcuts.lua")
-    local shortcutManifest = chunk and chunk() or {}
-    if type(shortcutManifest) ~= "table" then
+    local chunk = loadfile("app/modules/manifest.lua")
+    local manifest = chunk and chunk() or {}
+    if type(manifest) ~= "table" then
         registryCache = {groups = {}, items = {}, byId = {}}
         return registryCache
     end
+
+    local menus = manifest.menus or {}
+    local order, menuContextByMenuId = buildMenuOrderAndContext(manifest)
 
     local groups = {}
     local items = {}
     local byId = {}
 
-    for _, groupSpec in ipairs(shortcutManifest.groups or {}) do
-        if type(groupSpec) == "table" and groupVisible(groupSpec) then
-            local group = {title = groupSpec.title, menuId = groupSpec.menuId, menuContextId = groupSpec.menuContextId, items = {}}
+    for _, menuId in ipairs(order) do
+        local menu = menus[menuId]
+        if type(menu) == "table" and type(menu.pages) == "table" then
+            local group = {title = menu.title or menuId, menuId = menuId, menu = menu, items = {}}
 
-            for _, entry in ipairs(groupSpec.items or {}) do
-                if type(entry) == "table" and type(entry[ITEM_ID]) == "string" and type(entry[ITEM_NAME]) == "string" and entry[ITEM_NAME] ~= "" and itemVisible(entry) then
-                    group.items[#group.items + 1] = entry
-                    items[#items + 1] = entry
-                    byId[entry[ITEM_ID]] = entry
+            for _, page in ipairs(menu.pages) do
+                if type(page) == "table" and type(page.name) == "string" and page.name ~= "" and pageVisible(page) then
+                    local id = resolveShortcutId(page)
+                    if id then
+                        local entry = {
+                            id = id,
+                            name = page.name,
+                            menuId = menuId,
+                            groupTitle = group.title,
+                            menu = menu,
+                            page = page,
+                            menuContextId = menuContextByMenuId[menuId]
+                        }
+                        group.items[#group.items + 1] = entry
+                        items[#items + 1] = entry
+                        byId[id] = entry
+                    end
                 end
             end
 
@@ -169,14 +245,6 @@ function shortcuts.isSelected(prefs, id)
     return isTruthy(prefs[id])
 end
 
-function shortcuts.itemId(item)
-    return type(item) == "table" and item[ITEM_ID] or nil
-end
-
-function shortcuts.itemName(item)
-    return type(item) == "table" and item[ITEM_NAME] or nil
-end
-
 function shortcuts.getMaxSelected()
     return MAX_SHORTCUTS
 end
@@ -189,11 +257,10 @@ function shortcuts.limitSelectionMap(prefs, maxSelected)
     local limit = normalizeMaxSelected(maxSelected)
     local selectedCount = 0
     for _, item in ipairs(registry.items or {}) do
-        local id = item[ITEM_ID]
-        if shortcuts.isSelected(prefs, id) then
+        if shortcuts.isSelected(prefs, item.id) then
             selectedCount = selectedCount + 1
             if selectedCount <= limit then
-                selectedMap[id] = true
+                selectedMap[item.id] = true
             end
         end
     end
@@ -206,8 +273,8 @@ function shortcuts.buildSelectedPages(prefs)
     local selectedMap = shortcuts.limitSelectionMap(prefs, MAX_SHORTCUTS)
     local pages = {}
     for _, item in ipairs(registry.items) do
-        if selectedMap[item[ITEM_ID]] then
-            pages[#pages + 1] = copyShortcutPage(item)
+        if selectedMap[item.id] then
+            pages[#pages + 1] = resolvePage(item.menu or {}, item.page or {})
         end
     end
     return pages
@@ -229,47 +296,108 @@ function shortcuts.buildSelectedSections(prefs)
     local registry = shortcuts.buildRegistry()
     local selectedMap = shortcuts.limitSelectionMap(prefs, MAX_SHORTCUTS)
     local sections = {}
-    for _, group in ipairs(registry.groups) do
-        for _, item in ipairs(group.items) do
-            local id = item[ITEM_ID]
-            if selectedMap[id] then
-                local page = copyShortcutPage(item)
-                local section = {
-                    id = "shortcut_" .. id,
-                    title = page.name,
-                    image = page.image,
-                    loaderspeed = page.loaderspeed,
-                    offline = page.offline,
-                    bgtask = page.bgtask,
-                    group = "shortcuts",
-                    groupTitle = "@i18n(app.header_shortcuts)@",
-                    menuContextId = group.menuContextId,
-                    forceMenuToMain = true,
-                    clearReturnStack = true
-                }
+    for _, item in ipairs(registry.items) do
+        if selectedMap[item.id] then
+            local page = resolvePage(item.menu or {}, item.page or {})
+            local section = {
+                id = "shortcut_" .. item.id,
+                title = page.name,
+                image = page.image,
+                loaderspeed = page.loaderspeed,
+                offline = page.offline,
+                bgtask = page.bgtask,
+                group = "shortcuts",
+                groupTitle = "@i18n(app.header_shortcuts)@",
+                menuContextId = item.menuContextId,
+                forceMenuToMain = true,
+                clearReturnStack = true
+            }
 
-                for _, key in ipairs(COPY_KEYS) do
-                    if page[key] ~= nil then section[key] = page[key] end
-                end
+            for _, key in ipairs(COPY_KEYS) do
+                if page[key] ~= nil then section[key] = page[key] end
+            end
 
-                if type(page.menuId) == "string" and page.menuId ~= "" then
-                    section.menuId = page.menuId
+            if type(page.menuId) == "string" and page.menuId ~= "" then
+                section.menuId = page.menuId
+            else
+                local module, script = scriptToModuleAndScript(page.script)
+                if module and script then
+                    section.module = module
+                    section.script = script
                 else
-                    local module, script = scriptToModuleAndScript(page.script)
-                    if module and script then
-                        section.module = module
-                        section.script = script
-                    else
-                        section = nil
-                    end
+                    section = nil
                 end
+            end
 
-                if section then
-                    sections[#sections + 1] = section
-                end
+            if section then
+                sections[#sections + 1] = section
             end
         end
     end
+    return sections
+end
+
+function shortcuts.buildSelectedSectionsFromManifest(manifest, prefs)
+    if type(manifest) ~= "table" then return {} end
+    local selected = prefs or {}
+    local maxSelected = normalizeMaxSelected(MAX_SHORTCUTS)
+    local selectedCount = 0
+    local menus = manifest.menus or {}
+    local order, menuContextByMenuId = buildMenuOrderAndContext(manifest)
+
+    local sections = {}
+    for _, menuId in ipairs(order) do
+        local menu = menus[menuId]
+        if type(menu) == "table" and type(menu.pages) == "table" then
+            for _, page in ipairs(menu.pages) do
+                if type(page) == "table" and type(page.name) == "string" and page.name ~= "" and pageVisible(page) then
+                    local id = resolveShortcutId(page)
+                    if id and shortcuts.isSelected(selected, id) then
+                        selectedCount = selectedCount + 1
+                        if selectedCount > maxSelected then
+                            goto continue
+                        end
+                        local pageSpec = resolvePage(menu, page)
+                        local section = {
+                            id = "shortcut_" .. id,
+                            title = pageSpec.name,
+                            image = pageSpec.image,
+                            loaderspeed = pageSpec.loaderspeed,
+                            offline = pageSpec.offline,
+                            bgtask = pageSpec.bgtask,
+                            group = "shortcuts",
+                            groupTitle = "@i18n(app.header_shortcuts)@",
+                            menuContextId = menuContextByMenuId[menuId],
+                            forceMenuToMain = true,
+                            clearReturnStack = true
+                        }
+
+                        for _, key in ipairs(COPY_KEYS) do
+                            if pageSpec[key] ~= nil then section[key] = pageSpec[key] end
+                        end
+
+                        if type(pageSpec.menuId) == "string" and pageSpec.menuId ~= "" then
+                            section.menuId = pageSpec.menuId
+                        else
+                            local module, script = scriptToModuleAndScript(pageSpec.script)
+                            if module and script then
+                                section.module = module
+                                section.script = script
+                            else
+                                section = nil
+                            end
+                        end
+
+                        if section then
+                            sections[#sections + 1] = section
+                        end
+                    end
+                end
+                ::continue::
+            end
+        end
+    end
+
     return sections
 end
 

@@ -78,7 +78,7 @@ local function onSaveMenu()
         rfsuite.preferences.general = rfsuite.preferences.general or {}
         for key, value in pairs(config) do rfsuite.preferences.general[key] = value end
         rfsuite.ini.save_ini_file("SCRIPTS:/" .. rfsuite.config.preferences .. "/preferences.ini", rfsuite.preferences)
-        rfsuite.app.reloadMainMenu()
+        rfsuite.app.MainMenu = assert(loadfile("app/modules/init.lua"))()
         rfsuite.app.triggers.closeSave = true
         return true
     end

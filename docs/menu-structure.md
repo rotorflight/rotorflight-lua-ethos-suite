@@ -120,4 +120,3 @@
 
 - Shortcuts are user-configurable and can be shown in dock or mixed mode; they are not static manifest entries.
 - Some pages have API-gated script variants; those are listed under `variants` where applicable.
-- Runtime menu data is generated as a root manifest, compact shortcut registry, and one file per submenu so app startup does not construct the complete menu tree.

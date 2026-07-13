@@ -4,11 +4,11 @@
 ]] --
 
 local rfsuite = require("rfsuite")
+local shortcuts = assert(loadfile("app/lib/shortcuts.lua"))()
 
 local pages = {}
-local manifest = loadfile("app/modules/manifest_root.lua")()
+local manifest = loadfile("app/modules/manifest.lua")()
 local sections = {}
-local shortcuts = nil
 
 local function isTruthy(value)
     return value == true or value == "true" or value == 1 or value == "1"
@@ -120,14 +120,8 @@ end
 
 local function resolveShortcutSections()
     if shortcutSections ~= nil then return shortcutSections end
-    if not shortcutsEnabled() then
-        shortcutSections = {}
-        return shortcutSections
-    end
-
-    shortcuts = shortcuts or assert(loadfile("app/lib/shortcuts.lua"))()
     local prefs = rfsuite.preferences and rfsuite.preferences.shortcuts or {}
-    shortcutSections = shortcuts.buildSelectedSections(prefs)
+    shortcutSections = shortcuts.buildSelectedSectionsFromManifest(manifest, prefs)
     return shortcutSections
 end
 

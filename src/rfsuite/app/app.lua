@@ -70,14 +70,6 @@ end
 local arg = {...}
 local config = arg[1]
 
-function app.reloadMainMenu()
-    app.MainMenu = assert(compile("app/modules/init.lua"))()
-    if app.tasks and app.tasks.setMainMenuBuildApiVersion then
-        app.tasks.setMainMenuBuildApiVersion(rfsuite.session and rfsuite.session.apiVersion or nil)
-    end
-    return app.MainMenu
-end
-
 local function isMaxInstructionError(err)
     local msg = tostring(err)
     return msg:find("Max instructions count reached", 1, true) or msg:find("Max instructions count", 1, true)
@@ -283,7 +275,7 @@ function app.create()
 
         app.radio = assert(compile("app/radios.lua"))()
 
-        app.reloadMainMenu()
+        app.MainMenu = assert(compile("app/modules/init.lua"))()
 
         app.ui = assert(compile("app/lib/ui.lua"))(config)
         app.utils = assert(compile("app/lib/utils.lua"))(config)
@@ -296,7 +288,7 @@ function app.create()
     end
 
     if not app.MainMenu then
-        app.reloadMainMenu()
+        app.MainMenu = assert(compile("app/modules/init.lua"))()
     end
 
     rfsuite.tasks.uiCallbacks = {

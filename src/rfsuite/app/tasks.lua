@@ -162,7 +162,7 @@ local function mainMenuIconEnableDisable()
         lastMainMenuBuildApiVersion = nil
     elseif currentApiVersion ~= lastMainMenuBuildApiVersion then
         lastMainMenuBuildApiVersion = currentApiVersion
-        app.reloadMainMenu()
+        app.MainMenu = assert(loadfile("app/modules/init.lua"))()
     end
 
     if app.uiState == app.uiStatus.mainMenu then
@@ -616,10 +616,6 @@ function tasks.wakeup()
         taskAccumulator = taskAccumulator - 1
     end
 
-end
-
-function tasks.setMainMenuBuildApiVersion(apiVersion)
-    lastMainMenuBuildApiVersion = apiVersion
 end
 
 function tasks.reset()
