@@ -10288,6 +10288,30 @@
           "needs_translation": false,
           "translation": "Other"
         },
+        "feature_activelook": {
+          "english": "Rotorflight ActiveLook",
+          "max_length": 22,
+          "needs_translation": false,
+          "translation": "Rotorflight ActiveLook"
+        },
+        "feature_dashboard": {
+          "english": "Rotorflight Dashboard",
+          "max_length": 21,
+          "needs_translation": false,
+          "translation": "Rotorflight Dashboard"
+        },
+        "feature_toolbox": {
+          "english": "Rotorflight Toolbox",
+          "max_length": 19,
+          "needs_translation": false,
+          "translation": "Rotorflight Toolbox"
+        },
+        "features": {
+          "english": "Features",
+          "max_length": 8,
+          "needs_translation": false,
+          "translation": "Features"
+        },
         "panel_display": {
           "english": "Display",
           "max_length": 7,

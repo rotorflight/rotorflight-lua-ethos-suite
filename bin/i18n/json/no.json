@@ -11976,6 +11976,34 @@
           "max_length": 5,
           "reverse_text": false
         },
+        "feature_activelook": {
+          "english": "Rotorflight ActiveLook",
+          "translation": "Rotorflight ActiveLook",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 22
+        },
+        "feature_dashboard": {
+          "english": "Rotorflight Dashboard",
+          "translation": "Rotorflight Dashboard",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 21
+        },
+        "feature_toolbox": {
+          "english": "Rotorflight Toolbox",
+          "translation": "Rotorflight Toolbox",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 19
+        },
+        "features": {
+          "english": "Features",
+          "translation": "Features",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 8
+        },
         "panel_display": {
           "english": "Display",
           "translation": "Utstilling",

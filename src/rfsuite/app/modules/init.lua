@@ -78,9 +78,17 @@ local function includeByShortcuts(spec)
     return true
 end
 
+local function includeByFeature(spec)
+    local feature = spec and spec.feature
+    if feature == nil then return true end
+    if not rfsuite.features then return true end
+    return rfsuite.features.isEnabled(feature, rfsuite.preferences)
+end
+
 local function addSection(spec)
     if not includeByDeveloper(spec) then return nil end
     if not includeByShortcuts(spec) then return nil end
+    if not includeByFeature(spec) then return nil end
 
     local section = cloneShallow(spec)
     section.loaderspeed = resolveLoaderSpeed(section.loaderspeed)
@@ -95,6 +103,7 @@ end
 local function addLeafPage(sectionIndex, spec)
     if not includeByDeveloper(spec) then return end
     if not includeByShortcuts(spec) then return end
+    if not includeByFeature(spec) then return end
 
     local page = cloneShallow(spec)
     page.section = sectionIndex

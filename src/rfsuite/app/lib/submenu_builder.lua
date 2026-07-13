@@ -4,6 +4,7 @@
 ]] --
 
 local buildContainer = assert(loadfile("app/lib/menu_container.lua"))()
+local rfsuite = require("rfsuite")
 
 local submenu = {}
 local manifestPath = "app/modules/manifest.lua"
@@ -33,12 +34,21 @@ local function loadHooks(path)
 end
 
 local function resolvePages(opts, hooks)
+    local rawPages
     if type(hooks.getPages) == "function" then
         local pages = hooks.getPages(opts)
-        if type(pages) == "table" then return pages end
+        if type(pages) == "table" then rawPages = pages end
     end
-    if type(hooks.pages) == "table" then return hooks.pages end
-    return opts.pages or {}
+    if rawPages == nil and type(hooks.pages) == "table" then rawPages = hooks.pages end
+    rawPages = rawPages or opts.pages or {}
+
+    local filtered = {}
+    for _, page in ipairs(rawPages) do
+        if page.feature == nil or not rfsuite.features or rfsuite.features.isEnabled(page.feature, rfsuite.preferences) then
+            filtered[#filtered + 1] = page
+        end
+    end
+    return filtered
 end
 
 local function loadManifest()

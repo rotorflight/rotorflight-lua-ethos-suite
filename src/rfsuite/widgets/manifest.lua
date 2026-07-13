@@ -10,6 +10,7 @@ return {
     varname = "dashboard",
     key = "rf2sdh",
     folder = "dashboard",
+    feature = "dashboard",
     type = "widget",
   },
   [2] = {
@@ -18,6 +19,7 @@ return {
     varname = "rftlbx",
     key = "rftlbx",
     folder = "toolbox",
+    feature = "toolbox",
     type = "widget",    
   },
   [3] = {
@@ -26,6 +28,7 @@ return {
     varname = "rfactivelook",
     key = "rfalk",
     folder = "activelook",
+    feature = "activelook",
     type = "glasses",    
   },
 }

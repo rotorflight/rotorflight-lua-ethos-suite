@@ -788,7 +788,15 @@ return {
                     shortcutId = "s_settings_admin_tools_shortcuts_lua_7ef1a52bf9",
                 },
                 {
+                    image = "features.png",
+                    name = "@i18n(app.modules.settings.features)@",
+                    offline = true,
+                    script = "tools/features.lua",
+                    shortcutId = "s_settings_admin_tools_features_lua_0befe584ca",
+                },
+                {
                     bgtask = true,
+                    feature = "dashboard",
                     image = "dashboard.png",
                     name = "@i18n(app.modules.settings.dashboard)@",
                     offline = true,
@@ -797,6 +805,7 @@ return {
                 },
                 {
                     ethosversion = { 1, 7, 0 },
+                    feature = "activelook",
                     image = "activelook.png",
                     name = "ActiveLook",
                     offline = true,

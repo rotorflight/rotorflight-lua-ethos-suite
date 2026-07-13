@@ -11831,6 +11831,34 @@
           "reverse_text": true,
           "translation": "פרנהייט"
         },
+        "feature_activelook": {
+          "english": "Rotorflight ActiveLook",
+          "max_length": 22,
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "Rotorflight ActiveLook"
+        },
+        "feature_dashboard": {
+          "english": "Rotorflight Dashboard",
+          "max_length": 21,
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "Rotorflight Dashboard"
+        },
+        "feature_toolbox": {
+          "english": "Rotorflight Toolbox",
+          "max_length": 19,
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "Rotorflight Toolbox"
+        },
+        "features": {
+          "english": "Features",
+          "max_length": 8,
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "Features"
+        },
         "feet": {
           "english": "Feet",
           "max_length": 4,

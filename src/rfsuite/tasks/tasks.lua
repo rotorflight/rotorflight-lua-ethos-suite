@@ -1202,6 +1202,7 @@ optionalTaskWanted = function(name)
     end
 
     if name == "toolbox" then
+        if rfsuite.features and not rfsuite.features.isEnabled("toolbox", prefs) then return false end
         local session = rfsuite.session
         return session and session.toolbox ~= nil or false
     end
