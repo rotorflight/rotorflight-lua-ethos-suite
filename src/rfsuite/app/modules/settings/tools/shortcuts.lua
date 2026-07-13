@@ -11,6 +11,8 @@ local enableWakeup = false
 local config = {}
 local GROUP_PREF_KEY = "settings_shortcuts_group"
 local MAX_SHORTCUTS = (shortcuts.getMaxSelected and shortcuts.getMaxSelected()) or 5
+local getItemId = shortcuts.itemId
+local getItemName = shortcuts.itemName
 local shortcutMixedIn = false
 local registryItems = {}
 
@@ -42,10 +44,11 @@ local function buildLimitedSelection(configMap, orderedItems, limit)
     local selected = {}
     local selectedCount = 0
     for _, item in ipairs(orderedItems or {}) do
-        if configMap[item.id] == true then
+        local id = getItemId(item)
+        if configMap[id] == true then
             selectedCount = selectedCount + 1
             if selectedCount <= limit then
-                selected[item.id] = true
+                selected[id] = true
             end
         end
     end
@@ -80,7 +83,8 @@ local function openPage(opts)
     registryItems = registry.items or {}
     local saved = rfsuite.preferences.shortcuts or {}
     for _, item in ipairs(registryItems) do
-        config[item.id] = (prefBool(saved[item.id]) == true)
+        local id = getItemId(item)
+        config[id] = (prefBool(saved[id]) == true)
     end
 
     local prefs = rfsuite.preferences
@@ -137,8 +141,8 @@ local function openPage(opts)
             local panel = form.addExpansionPanel(group.title or "@i18n(app.menu_section_tools)@")
             panel:open(true)
             for _, item in ipairs(group.items) do
-                local itemId = item.id
-                local line = addFieldLine(panel, item.name)
+                local itemId = getItemId(item)
+                local line = addFieldLine(panel, getItemName(item))
                 rfsuite.app.formFields[formFieldCount] = form.addBooleanField(line, nil,
                     function() return config[itemId] == true end,
                     function(newValue)
@@ -176,12 +180,13 @@ local function onSaveMenu()
         local selectedMap = buildLimitedSelection(config, registryItems, MAX_SHORTCUTS)
         for key in pairs(prefs.shortcuts) do prefs.shortcuts[key] = nil end
         for _, item in ipairs(registryItems) do
-            if selectedMap[item.id] == true then
-                prefs.shortcuts[item.id] = true
+            local id = getItemId(item)
+            if selectedMap[id] == true then
+                prefs.shortcuts[id] = true
             end
         end
         rfsuite.ini.save_ini_file("SCRIPTS:/" .. rfsuite.config.preferences .. "/preferences.ini", prefs)
-        rfsuite.app.MainMenu = assert(loadfile("app/modules/init.lua"))()
+        rfsuite.app.reloadMainMenu()
         rfsuite.app.triggers.closeSave = true
         return true
     end

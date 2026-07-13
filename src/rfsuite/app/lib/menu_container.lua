@@ -117,8 +117,8 @@ function container.create(cfg)
     local enableWakeup = false
     local lastLinkState = nil
     local lastFieldEnabled = {}
-    app._menuContainerPressSpecs = app._menuContainerPressSpecs or {}
-    app._menuContainerPressHandlers = app._menuContainerPressHandlers or {}
+    local pressSpecs = {}
+    local pressHandlers = {}
 
     local function onNavMenuPress()
         if app.Page and app.Page.onNavMenu then
@@ -129,15 +129,10 @@ function container.create(cfg)
     end
 
     local function getPagePressHandler(index)
-        local handlersByModule = app._menuContainerPressHandlers
-        handlersByModule[moduleKey] = handlersByModule[moduleKey] or {}
-        local handlers = handlersByModule[moduleKey]
-        if handlers[index] then return handlers[index] end
+        if pressHandlers[index] then return pressHandlers[index] end
 
-        handlers[index] = function()
-            local specsByModule = app._menuContainerPressSpecs
-            local specs = specsByModule and specsByModule[moduleKey]
-            local spec = specs and specs[index]
+        pressHandlers[index] = function()
+            local spec = pressSpecs[index]
             if type(spec) ~= "table" then return end
 
             local item = spec.item
@@ -193,7 +188,7 @@ function container.create(cfg)
             end
         end
 
-        return handlers[index]
+        return pressHandlers[index]
     end
 
     local function openPage(opts)
@@ -284,8 +279,7 @@ function container.create(cfg)
 
         app.gfx_buttons[moduleKey] = app.gfx_buttons[moduleKey] or {}
         prefs.menulastselected[moduleKey] = prefs.menulastselected[moduleKey] or 1
-        app._menuContainerPressSpecs[moduleKey] = app._menuContainerPressSpecs[moduleKey] or {}
-        wipeTable(app._menuContainerPressSpecs[moduleKey])
+        wipeTable(pressSpecs)
 
         wipeTable(app.formFields)
         wipeTable(app.formLines)
@@ -322,7 +316,7 @@ function container.create(cfg)
                     app.gfx_buttons[moduleKey][i] = nil
                 end
 
-                app._menuContainerPressSpecs[moduleKey][i] = {
+                pressSpecs[i] = {
                     item = item,
                     pageTitle = pageTitle,
                     parentIdx = pidx,
@@ -411,12 +405,20 @@ function container.create(cfg)
         return navHandlers.event(widget, category, value)
     end
 
+    local function close()
+        enableWakeup = false
+        wipeTable(pressSpecs)
+        wipeTable(pressHandlers)
+        wipeTable(lastFieldEnabled)
+    end
+
     return {
         pages = pages,
         openPage = openPage,
         wakeup = wakeup,
         onNavMenu = navHandlers.onNavMenu,
         event = event,
+        close = close,
         API = cfg.API or {},
         navButtons = MENU_ONLY_NAV_BUTTONS
     }

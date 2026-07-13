@@ -9,8 +9,8 @@ local rfsuite = require("rfsuite")
 local submenu = {}
 local manifestPath = "app/modules/manifest.lua"
 local menuSpecPathPrefix = "app/modules/manifest_menus/"
-local manifestCache = nil
-local manifestMenuSpecCache = {}
+local activeManifestMenuId = nil
+local activeManifestMenuSpec = nil
 
 local function cloneShallow(src)
     local out = {}
@@ -52,39 +52,34 @@ local function resolvePages(opts, hooks)
 end
 
 local function loadManifest()
-    if type(manifestCache) == "table" then return manifestCache end
-
     local chunk = assert(loadfile(manifestPath))
     local manifest = chunk()
-    if type(manifest) ~= "table" then
-        manifestCache = {}
-    else
-        manifestCache = manifest
-    end
-
-    return manifestCache
+    if type(manifest) ~= "table" then return {} end
+    return manifest
 end
 
 local function loadManifestMenuSpec(menuId)
     if type(menuId) ~= "string" or menuId == "" then return nil end
 
-    local cached = manifestMenuSpecCache[menuId]
-    if cached ~= nil then
-        if cached == false then return nil end
-        return cached
+    if activeManifestMenuId == menuId then
+        if activeManifestMenuSpec == false then return nil end
+        return activeManifestMenuSpec
     end
 
     local chunk = loadfile(menuSpecPathPrefix .. menuId .. ".lua")
     if not chunk then
-        manifestMenuSpecCache[menuId] = false
+        activeManifestMenuId = menuId
+        activeManifestMenuSpec = false
         return nil
     end
     local ok, spec = pcall(chunk)
     if not ok or type(spec) ~= "table" then
-        manifestMenuSpecCache[menuId] = false
+        activeManifestMenuId = menuId
+        activeManifestMenuSpec = false
         return nil
     end
-    manifestMenuSpecCache[menuId] = spec
+    activeManifestMenuId = menuId
+    activeManifestMenuSpec = spec
     return spec
 end
 
@@ -158,6 +153,11 @@ function submenu.createFromManifest(opts)
     merged.id = nil
 
     return submenu.create(merged)
+end
+
+function submenu.clearCaches()
+    activeManifestMenuId = nil
+    activeManifestMenuSpec = nil
 end
 
 return submenu

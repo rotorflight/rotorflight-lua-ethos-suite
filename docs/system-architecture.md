@@ -41,7 +41,7 @@ app/modules/<module_name>/
   └─ <icon>.png     -- Icon displayed in navigation
 ```
 
-* **`init.lua`** returns a table. Modules are listed in `app/modules/manifest.lua` and assembled into menus in `app/modules/init.lua` using `app/modules/sections.lua`.
+* **`init.lua`** returns a table. The app starts from the generated `app/modules/manifest_root.lua`, loads `manifest_shortcuts.lua` only when shortcuts are selected, and loads individual submenu specifications from `app/modules/manifest_menus/`.
 * **Core Logic** (`<module>.lua`) implements a `Page` table with methods such as:
 
   * `Page:onEnter()` to initialize form data
@@ -208,5 +208,4 @@ This section describes the MSP API loader and its capabilities for parsing and i
   * Maintains an internal buffer offset (`buf.offset`).
 
 ---
-
 

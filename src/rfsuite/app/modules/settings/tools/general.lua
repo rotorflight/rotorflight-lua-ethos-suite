@@ -150,7 +150,7 @@ local function onSaveMenu()
         rfsuite.app.ui.progressDisplaySave(msg:gsub("%?$", "."))
         for key, value in pairs(config) do rfsuite.preferences.general[key] = value end
         rfsuite.ini.save_ini_file("SCRIPTS:/" .. rfsuite.config.preferences .. "/preferences.ini", rfsuite.preferences)
-        rfsuite.app.MainMenu = assert(loadfile("app/modules/init.lua"))()
+        rfsuite.app.reloadMainMenu()
         rfsuite.app.triggers.closeSave = true
         return true
     end

@@ -327,10 +327,12 @@ function ui.clearRuntimeCaches()
     ui._helpExistsCache = {}
 
     if app then
+        local submenuBuilder = app._submenuBuilder
+        if submenuBuilder and submenuBuilder.clearCaches then
+            submenuBuilder.clearCaches()
+        end
         app._mainMenuPressHandlers = nil
         app._mainMenuPressSpecs = nil
-        app._menuContainerPressHandlers = nil
-        app._menuContainerPressSpecs = nil
         app._navButtonContext = nil
         app.headerTitle = nil
         app.headerParentBreadcrumb = nil

@@ -20,6 +20,31 @@ from typing import Any, Iterable
 ROOT_KEY_ORDER = ("sections", "menus")
 LUA_IDENT_RE = re.compile(r"^[A-Za-z_][A-Za-z0-9_]*$")
 SLUG_RE = re.compile(r"[^a-z0-9]+")
+SHORTCUT_COPY_KEYS = (
+    "loaderspeed",
+    "offline",
+    "bgtask",
+    "disabled",
+    "mspversion",
+    "ethosversion",
+    "apiversion",
+    "apiversionlt",
+    "apiversiongt",
+    "apiversionlte",
+    "apiversiongte",
+    "script_by_mspversion",
+    "scriptByMspVersion",
+    "script_default",
+)
+VISIBILITY_KEYS = (
+    "mspversion",
+    "ethosversion",
+    "apiversion",
+    "apiversionlt",
+    "apiversiongt",
+    "apiversionlte",
+    "apiversiongte",
+)
 
 
 def lua_escape(text: str) -> str:
@@ -302,6 +327,114 @@ def render_manifest(runtime_manifest: dict[str, Any], source_rel: str) -> str:
     return generated_header(source_rel) + f"return {body}\n"
 
 
+def render_root_manifest(runtime_manifest: dict[str, Any], source_rel: str) -> str:
+    root_manifest = {"sections": runtime_manifest.get("sections", [])}
+    body = to_lua(root_manifest, indent=0, path=())
+    return generated_header(source_rel) + f"return {body}\n"
+
+
+def copy_keys(source: dict[str, Any], keys: Iterable[str]) -> dict[str, Any]:
+    return {key: source[key] for key in keys if key in source}
+
+
+def resolve_prefixed_path(prefix: Any, value: Any) -> str | None:
+    if not isinstance(value, str) or value == "":
+        return None
+    if value.startswith("app/"):
+        return value
+    return (prefix if isinstance(prefix, str) else "") + value
+
+
+def build_shortcut_manifest(runtime_manifest: dict[str, Any]) -> dict[str, Any]:
+    menus = runtime_manifest.get("menus")
+    if not isinstance(menus, dict):
+        return {"groups": []}
+
+    queue: list[tuple[str, str | None, list[dict[str, Any]]]] = []
+    queued: set[str] = set()
+
+    def enqueue(menu_id: Any, context_id: Any, visibility: list[dict[str, Any]]) -> None:
+        if not isinstance(menu_id, str) or menu_id == "" or menu_id in queued:
+            return
+        queued.add(menu_id)
+        context = context_id if isinstance(context_id, str) and context_id != "" else None
+        queue.append((menu_id, context, visibility))
+
+    for section_group in runtime_manifest.get("sections", []):
+        if not isinstance(section_group, dict):
+            continue
+        for section in section_group.get("sections", []):
+            if not isinstance(section, dict):
+                continue
+            condition = copy_keys(section, VISIBILITY_KEYS)
+            visibility = [condition] if condition else []
+            enqueue(section.get("menuId"), section.get("id"), visibility)
+
+    groups: list[dict[str, Any]] = []
+    head = 0
+    while head < len(queue):
+        menu_id, context_id, visibility = queue[head]
+        head += 1
+
+        menu = menus.get(menu_id)
+        if not isinstance(menu, dict):
+            continue
+
+        title = menu.get("title") if isinstance(menu.get("title"), str) else menu_id
+        group: dict[str, Any] = {
+            "title": title,
+            "menuId": menu_id,
+            "items": [],
+        }
+        if context_id is not None:
+            group["menuContextId"] = context_id
+        if visibility:
+            group["visibility"] = visibility
+
+        pages = menu.get("pages")
+        if not isinstance(pages, list):
+            continue
+
+        for page in pages:
+            if not isinstance(page, dict):
+                continue
+
+            target_menu_id = page.get("menuId")
+            child_condition = copy_keys(page, VISIBILITY_KEYS)
+            child_visibility = visibility + ([child_condition] if child_condition else [])
+            enqueue(target_menu_id, context_id, child_visibility)
+
+            shortcut_id = page.get("shortcutId")
+            name = page.get("name")
+            if not isinstance(shortcut_id, str) or not isinstance(name, str) or name == "":
+                continue
+
+            has_target_menu = isinstance(target_menu_id, str) and target_menu_id != ""
+            script = None if has_target_menu else resolve_prefixed_path(menu.get("scriptPrefix"), page.get("script"))
+            image = resolve_prefixed_path(menu.get("iconPrefix"), page.get("image"))
+            metadata = copy_keys(page, SHORTCUT_COPY_KEYS)
+            item = [
+                shortcut_id,
+                name,
+                target_menu_id if has_target_menu else False,
+                script or False,
+                image or "app/gfx/tools.png",
+                metadata or False,
+            ]
+            group["items"].append(item)
+
+        if group["items"]:
+            groups.append(group)
+
+    return {"groups": groups}
+
+
+def render_shortcut_manifest(runtime_manifest: dict[str, Any], source_rel: str) -> str:
+    shortcut_manifest = build_shortcut_manifest(runtime_manifest)
+    body = to_lua(shortcut_manifest, indent=0, path=())
+    return generated_header(source_rel) + f"return {body}\n"
+
+
 def render_menu_specs(runtime_manifest: dict[str, Any], source_rel: str) -> dict[str, str]:
     menus = runtime_manifest.get("menus")
     if not isinstance(menus, dict):
@@ -368,6 +501,31 @@ def print_diff(expected: str, actual: str, expected_name: str, actual_name: str)
         print(line)
 
 
+def sync_generated_file(path: Path, expected: str, check: bool) -> bool:
+    current = None
+    preferred_eol = "\n"
+    if path.is_file():
+        current_raw = path.read_bytes()
+        if b"\r\n" in current_raw:
+            preferred_eol = "\r\n"
+        current = current_raw.decode("utf-8").replace("\r\n", "\n").replace("\r", "\n")
+
+    if current == expected:
+        if not check:
+            print(f"[menu] No changes: {path}")
+        return True
+
+    if check:
+        print(f"[menu] Generated file is out of date: {path}")
+        print_diff(expected, current or "", "expected", "current")
+        return False
+
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_bytes(expected.replace("\n", preferred_eol).encode("utf-8"))
+    print(f"[menu] Wrote {path}")
+    return True
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description="Generate menu manifest Lua from JSON source.")
     parser.add_argument(
@@ -420,37 +578,26 @@ def main() -> int:
     apply_runtime_translation_fields(runtime_manifest)
 
     generated = render_manifest(runtime_manifest, source_rel)
+    generated_root = render_root_manifest(runtime_manifest, source_rel)
+    generated_shortcuts = render_shortcut_manifest(runtime_manifest, source_rel)
     generated_menu_specs = render_menu_specs(runtime_manifest, source_rel)
     menu_specs_dir = output_path.parent / "manifest_menus"
-
-    current = None
-    preferred_eol = "\n"
-    current_raw = None
-    if output_path.is_file():
-        current_raw = output_path.read_bytes()
-        if b"\r\n" in current_raw:
-            preferred_eol = "\r\n"
-        current = current_raw.decode("utf-8").replace("\r\n", "\n").replace("\r", "\n")
+    root_output_path = output_path.parent / "manifest_root.lua"
+    shortcuts_output_path = output_path.parent / "manifest_shortcuts.lua"
 
     if args.check:
+        manifest_ok = sync_generated_file(output_path, generated, check=True)
+        root_ok = sync_generated_file(root_output_path, generated_root, check=True)
+        shortcuts_ok = sync_generated_file(shortcuts_output_path, generated_shortcuts, check=True)
         menu_specs_ok = sync_menu_spec_files(menu_specs_dir, generated_menu_specs, check=True)
-        if current != generated:
-            print(f"[menu] Generated manifest is out of date: {output_path}")
-            print_diff(generated, current or "", "expected", "current")
+        if not (manifest_ok and root_ok and shortcuts_ok and menu_specs_ok):
             return 1
-        if not menu_specs_ok:
-            return 1
-        print(f"[menu] OK: {output_path} is up to date")
+        print(f"[menu] OK: generated menu files are up to date")
         return 0
 
-    output_path.parent.mkdir(parents=True, exist_ok=True)
-    if current != generated:
-        output_payload = generated.replace("\n", preferred_eol)
-        output_path.write_bytes(output_payload.encode("utf-8"))
-        print(f"[menu] Wrote {output_path}")
-    else:
-        print(f"[menu] No changes: {output_path}")
-
+    sync_generated_file(output_path, generated, check=False)
+    sync_generated_file(root_output_path, generated_root, check=False)
+    sync_generated_file(shortcuts_output_path, generated_shortcuts, check=False)
     sync_menu_spec_files(menu_specs_dir, generated_menu_specs, check=False)
     return 0
 

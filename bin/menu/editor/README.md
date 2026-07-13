@@ -5,8 +5,11 @@ Tk editor for the menu source manifest.
 Source of truth:
 - `bin/menu/manifest.source.json`
 
-Generated runtime file:
+Generated runtime files:
 - `src/rfsuite/app/modules/manifest.lua`
+- `src/rfsuite/app/modules/manifest_root.lua`
+- `src/rfsuite/app/modules/manifest_shortcuts.lua`
+- `src/rfsuite/app/modules/manifest_menus/*.lua`
 
 ## Run from source
 
@@ -31,6 +34,6 @@ This creates:
 3. For menu/section/group labels, keep `title` human-readable and set `translation` to the i18n tag.
 4. Use `Apply Node JSON` for advanced node-level JSON edits.
 5. Use `Save Source` to update `manifest.source.json`.
-6. Use `Generate Lua` (or `Save + Generate`) to write `manifest.lua`.
+6. Use `Generate Lua` (or `Save + Generate`) to write the runtime manifest files.
 
 The editor uses the same generator logic as `bin/menu/generate.py` for validation and generated output.
