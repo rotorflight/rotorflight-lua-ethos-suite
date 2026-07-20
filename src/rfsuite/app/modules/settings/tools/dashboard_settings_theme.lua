@@ -13,6 +13,29 @@ local page
 local pageIdx
 local onNavMenu
 
+-- Reuses app/lib/ui.lua's own page-chunk cache (ui._pageChunkCache) rather
+-- than a separate one here -- same reasoning: this theme settings page can
+-- be opened repeatedly (a different idx per theme button, see
+-- app/modules/settings/tools/dashboard_settings.lua), and each open used to
+-- re-parse themeScript from disk every single time via a plain loadfile().
+-- Caching the compiled chunk, not its call result, means `page` below is
+-- still built fresh (module-scope local, reassigned inside openPage() every
+-- call) on every visit -- only the disk-read+parse+compile step is skipped
+-- on repeat visits to the same theme.
+local function loadThemeChunk(modulePath)
+    local ui = rfsuite.app.ui
+    local cache = ui and ui._pageChunkCache
+    if not cache then
+        return assert(loadfile(modulePath))
+    end
+    local chunk = cache[modulePath]
+    if not chunk then
+        chunk = assert(loadfile(modulePath))
+        cache[modulePath] = chunk
+    end
+    return chunk
+end
+
 local function onSaveMenu()
     local buttons = {
         {
@@ -62,7 +85,7 @@ local function openPage(opts)
 
     local modulePath = themeScript
 
-    page = assert(loadfile(modulePath))(idx)
+    page = loadThemeChunk(modulePath)(idx)
 
     form.clear()
     rfsuite.app.ui.fieldHeader("@i18n(app.modules.settings.name)@" .. " / " .. title)

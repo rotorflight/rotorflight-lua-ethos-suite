@@ -32,6 +32,35 @@ end
 
 local function NOOP_PAINT() end
 
+-- Caches the *compiled chunk* loadfile() returns for each page module
+-- path, so repeat visits to the same page (or the same script opened
+-- with a different idx/opts -- see app/modules/settings/tools/
+-- dashboard_settings.lua, which opens dashboard_settings_theme.lua
+-- with a different idx per theme button) skip re-parsing the source
+-- from disk every single time. This does NOT cache the page instance
+-- itself (app.Page) -- ui.openPage() below still calls the cached
+-- chunk fresh on every open, exactly as it called a freshly-loaded one
+-- before, so every page still gets entirely new local state each visit
+-- (Lua's own function-call semantics guarantee a chunk's locals are
+-- fresh per call, identical whether that call happens on a
+-- just-compiled chunk or a cached one -- confirmed by checking that no
+-- page module captures its chunk-level `...` for anything meaningful;
+-- ui.cleanupCurrentPage() only ever tears down app.Page's own instance
+-- state, never anything chunk-level). Unbounded (no MASK_CACHE_MAX-style
+-- eviction, unlike ui._maskCache above) -- the set of distinct page
+-- script paths in the whole app is fixed and modest, and these are small
+-- compiled functions, not bitmap-sized assets.
+ui._pageChunkCache = ui._pageChunkCache or {}
+
+local function loadPageChunk(modulePath)
+    local chunk = ui._pageChunkCache[modulePath]
+    if not chunk then
+        chunk = assert(loadfile(modulePath))
+        ui._pageChunkCache[modulePath] = chunk
+    end
+    return chunk
+end
+
 local MASK_CACHE_MAX = 16  -- a small cache for recently used masks; evict old entries to avoid unbounded memory growth.
 ui._maskCache = ui._maskCache or {}
 ui._maskCacheOrder = ui._maskCacheOrder or {}
@@ -2205,7 +2234,7 @@ function ui.openPage(opts)
     if opts.openedFromShortcuts ~= nil then
         app._openedFromShortcuts = (opts.openedFromShortcuts == true)
     end
-    app.Page = assert(loadfile(modulePath))(idx)
+    app.Page = loadPageChunk(modulePath)(idx)
     app.utils.capturePageProfileState(app.Page)
     if app._openedFromShortcuts or app._forceMenuToMain then
         app.Page.onNavMenu = function()
