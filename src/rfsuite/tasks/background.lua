@@ -40,6 +40,9 @@ local TRANSPORT_RECHECK_INTERVAL = 2
 
 local protocol -- "sport"|"crsf", set at init and kept current by
                 -- checkTransportChange() below; see tasks/msp/transport_select.lua
+local moduleNumber -- RF module bay (0 = internal, 1 = external) the current "sport"
+                    -- transport is bound to; kept alongside protocol since two
+                    -- module bays can both report "sport" (see transport_select.lua)
 local transport -- kept current alongside protocol; passed through so session.lua can drive
                  -- protocol-specific sensor work (e.g. tasks/elrs_sensors.lua's
                  -- custom-telemetry frame pop) without a second loadfile of it
@@ -100,8 +103,8 @@ end
 -- presence, so polling it plainly can't cause the flapping the RSSI-
 -- presence version could.
 local function checkTransportChange()
-  local detected = mspTransportSelect.detect()
-  if detected == protocol then return end
+  local detected, detectedModule = mspTransportSelect.detect()
+  if detected == protocol and detectedModule == moduleNumber then return end
 
   -- Drop whatever the old transport had in flight before swapping -- a
   -- half-sent MSPv2 chunk (or its expected reply) means nothing to the new
@@ -109,14 +112,15 @@ local function checkTransportChange()
   -- set on mspCommon at this point) before setTransport() below replaces it.
   mspQueue:clear()
   protocol = detected
-  transport = mspTransportSelect.load(protocol)
+  moduleNumber = detectedModule
+  transport = mspTransportSelect.load(protocol, moduleNumber)
   mspCommon.setTransport(transport)
   if telemetrySensors then telemetrySensors.reset() end
-  print("[bgtask] transport changed: " .. tostring(protocol))
+  print("[bgtask] transport changed: " .. tostring(protocol) .. " (module " .. tostring(moduleNumber) .. ")")
 end
 
 local function taskInit()
-  transport, protocol = mspTransportSelect.select()
+  transport, protocol, moduleNumber = mspTransportSelect.select()
   mspCommon.setTransport(transport)
   session.setTelemetrySensors(telemetrySensors)
   logging.setTelemetrySensors(telemetrySensors)

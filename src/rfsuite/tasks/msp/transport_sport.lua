@@ -10,9 +10,13 @@
 -- Private to the background task subsystem -- nothing outside tasks/msp/
 -- should load this file directly.
 --
--- Known simplification vs. the full suite: always uses telemetry module 0
--- (no multi-module selection, since this lite rebuild has no session/
--- telemetry-config subsystem yet).
+-- moduleNumber (0 = internal, 1 = external) is passed in by
+-- tasks/msp/transport_select.lua's load() as this chunk's vararg -- an
+-- external module can itself speak S.Port (e.g. a TBS/TW-XLite-style
+-- external module), and its telemetry only arrives tagged with module 1.
+-- Binding sport.getSensor() to a hardcoded module 0 would silently drop
+-- that traffic (our custom sensors and MSP would just never see replies).
+local moduleNumber = ...
 
 local transport = {}
 
@@ -26,7 +30,7 @@ local sensor
 
 local function getSensor()
   if not sensor then
-    sensor = sport.getSensor({module = 0, primId = REPLY_FRAME_ID})
+    sensor = sport.getSensor({module = moduleNumber or 0, primId = REPLY_FRAME_ID})
   end
   return sensor
 end

@@ -32,28 +32,34 @@
 -- app/pages/diagnostics_rfstatus.lua's elrsSensor check).
 local SRC_CRSF = {crsfId = 0x14, subIdStart = 0, subIdEnd = 1}
 
+-- Second return value is the RF module bay (0 = internal, 1 = external)
+-- that the "sport" answer should bind its sport.getSensor() call to --
+-- an external module can itself speak S.Port (e.g. a TBS/TW-XLite-style
+-- external module), and its telemetry only arrives tagged with module 1,
+-- not module 0. Meaningless for "crsf" (crsf.getSensor() takes no module
+-- argument) but always returned for a uniform tuple.
 local function detect()
   local internalModule = model.getModule(0)
   local externalModule = model.getModule(1)
   if internalModule and internalModule:enable() then
-    return "sport"
+    return "sport", 0
   elseif externalModule and externalModule:enable() then
-    if system.getSource(SRC_CRSF) then return "crsf" end
-    return "sport"
+    if system.getSource(SRC_CRSF) then return "crsf", 1 end
+    return "sport", 1
   end
-  return "sport"
+  return "sport", 0
 end
 
-local function load(protocol)
+local function load(protocol, moduleNumber)
   if protocol == "crsf" then
     return assert(loadfile("tasks/msp/transport_crsf.lua"))()
   end
-  return assert(loadfile("tasks/msp/transport_sport.lua"))()
+  return assert(loadfile("tasks/msp/transport_sport.lua"))(moduleNumber or 0)
 end
 
 local function select()
-  local protocol = detect()
-  return load(protocol), protocol
+  local protocol, moduleNumber = detect()
+  return load(protocol, moduleNumber), protocol, moduleNumber
 end
 
 return {select = select, detect = detect, load = load}
