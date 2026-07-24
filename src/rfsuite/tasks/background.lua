@@ -33,11 +33,10 @@ local scheduler = Scheduler.new()
 
 local TASK_STATUS_INTERVAL = 0.5
 local MEMORY_LOG_INTERVAL = 5
--- Cheap presence check only (tasks/msp/transport_select.lua's detect()) --
--- fine to poll this often; a real change additionally loadfile()s a fresh
--- transport module, but that only happens on the (rare) tick it's actually
--- needed.
-local TRANSPORT_RECHECK_INTERVAL = 1
+-- Cheap: a couple of model.getModule()/:enable() field reads, no loadfile
+-- -- see checkTransportChange() below for why this can be polled instead
+-- of driven off a specific model/module-change event.
+local TRANSPORT_RECHECK_INTERVAL = 2
 
 local protocol -- "sport"|"crsf", set at init and kept current by
                 -- checkTransportChange() below; see tasks/msp/transport_select.lua
@@ -85,9 +84,21 @@ end
 -- not per model switch -- so if the radio's active model changes to one
 -- with a different receiver protocol (S.Port <-> CRSF/ELRS) without the
 -- background task itself reloading, `protocol`/`transport` would otherwise
--- stay stuck at whatever taskInit() first saw. Polled on an interval
--- (rather than driven off session.connected, which is private to
--- tasks/session.lua) so this doesn't need any new coupling between the two.
+-- stay stuck at whatever taskInit() first saw.
+--
+-- Detect-and-hold: only ACTS when detect()'s answer actually differs from
+-- the held `protocol` -- but still polls detect() itself every tick this
+-- runs (via TRANSPORT_RECHECK_INTERVAL), rather than gating that polling
+-- behind a separate model.path()/module-enable comparison. That gate was
+-- tried and reverted: detect() can legitimately return a *transient*
+-- "sport" fallback (external module enabled but its CRSF telemetry source
+-- not populated yet -- see tasks/msp/transport_select.lua) while
+-- model.path()/module-enable state itself never changes again, which would
+-- leave protocol wrongly stuck for the rest of the session with a gate in
+-- front of the retry. detect() itself now reads stable model-config values
+-- (which RF module bay is *enabled*), not a telemetry source's mere
+-- presence, so polling it plainly can't cause the flapping the RSSI-
+-- presence version could.
 local function checkTransportChange()
   local detected = mspTransportSelect.detect()
   if detected == protocol then return end
