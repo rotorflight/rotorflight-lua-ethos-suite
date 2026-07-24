@@ -72,11 +72,29 @@ function Queue:add(message)
   return true
 end
 
+-- Drops everything in-flight/queued -- called on transport swap (see
+-- tasks/background.lua's checkTransportChange()), which a mid-reboot
+-- telemetry-link dropout triggers just as readily as a real protocol
+-- change. Self-caught bug, found live: this used to wipe self.current/
+-- self.pending with no notification at all, so a page waiting on that
+-- message's callback (e.g. app/page_runtime.lua's performSave(), which
+-- only closes its "Saving..." dialog and re-enables Save/Reload from
+-- processReply/errorHandler) never heard back -- neither success nor
+-- error, no eventual max_retries timeout either, since the message was
+-- gone from the queue entirely, not merely slow. The dialog then had no
+-- event left that could ever close it, short of reloading the whole
+-- script. Snapshot both before resetting queue state so a handler that
+-- itself calls Queue:add() (e.g. a retry) lands in the already-cleared
+-- queue, not the one about to be discarded.
 function Queue:clear()
+  local droppedCurrent = self.current
+  local droppedPending = self.pending
   self.pending = {}
   self.current = nil
   self.lastSent = nil
   self.common.mspClearBufs()
+  if droppedCurrent then notifyError(droppedCurrent, "cleared") end
+  for i = 1, #droppedPending do notifyError(droppedPending[i], "cleared") end
   collectgarbage()
 end
 
@@ -115,6 +133,7 @@ function Queue:processQueue()
     if not msg.simulatorResponse then
       debugLog.msp("SIM", msg.command, msg.payload, "no_response")
       self:_finish()
+      notifyError(msg, "no_response")
       return
     end
     debugLog.msp("SIM>", msg.command, msg.payload)
