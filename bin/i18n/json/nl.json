@@ -119,6 +119,20 @@
       "max_length": 18,
       "reverse_text": false
     },
+    "msg_save_failed_title": {
+      "english": "Save failed",
+      "translation": "Save failed",
+      "needs_translation": true,
+      "reverse_text": false,
+      "max_length": 11
+    },
+    "msg_save_failed_body": {
+      "english": "Settings were not saved to the flight controller. Please try again.",
+      "translation": "Settings were not saved to the flight controller. Please try again.",
+      "needs_translation": true,
+      "reverse_text": false,
+      "max_length": 67
+    },
     "msg_background_task_missing_title": {
       "english": "Background task not running",
       "translation": "Background-taak wordt niet uitgevoerd",

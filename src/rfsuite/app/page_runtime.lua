@@ -79,6 +79,8 @@ local MSG_LOADING_TITLE = "@i18n(app.msg_loading)@"
 local MSG_LOADING_BODY = "@i18n(app.msg_loading_from_fbl)@"
 local MSG_SAVING_TITLE = "@i18n(app.msg_saving)@"
 local MSG_SAVING_BODY = "@i18n(app.msg_saving_settings)@"
+local MSG_SAVE_FAILED_TITLE = "@i18n(app.msg_save_failed_title)@"
+local MSG_SAVE_FAILED_BODY = "@i18n(app.msg_save_failed_body)@"
 
 local PageRuntime = {}
 PageRuntime.__index = PageRuntime
@@ -214,6 +216,15 @@ function PageRuntime.new(config)
   -- neither flag's actual dialog can open synchronously from where it's set.
   self.pendingReload = false
   self.pendingSaveConfirm = false
+  -- Set by performSave()'s own write/EEPROM error handlers, consumed by
+  -- the wakeup handler alongside pendingReload/pendingSaveConfirm --
+  -- opening the failure dialog straight from those handlers would be the
+  -- same class of bug documented on showDialog()/confirmSave() above:
+  -- they fire from the MSP queue's own callback chain (nested inside the
+  -- background task's wakeup), not this page's. Holds the failure reason
+  -- string (or true if none was given) until the wakeup tick opens the
+  -- dialog.
+  self.pendingSaveError = nil
   -- Same idea, for onLoaded (see its own config comment above) -- set by
   -- loadData()'s success branch, consumed by the wakeup handler alongside
   -- pendingReload/pendingSaveConfirm. See that handler's own comment for
@@ -468,7 +479,9 @@ function PageRuntime:performSave(focusFn)
       bus.publish("msp.request", eeprom.buildWriteMessage(function()
         finishSave()
         maybeReboot()
-      end, function()
+      end, function(reason)
+        self_:log("performSave: EEPROM_WRITE failed: " .. tostring(reason))
+        self_.pendingSaveError = reason or true
         finishSave()
       end))
       return
@@ -493,7 +506,9 @@ function PageRuntime:performSave(focusFn)
     bus.publish("msp.request", source.mspModule.buildWriteMessage(values, function()
       if self_.disposed then return end
       writeSource(index + 1)
-    end, function()
+    end, function(reason)
+      self_:log("performSave: write FAILED (" .. tostring(source.key) .. "): " .. tostring(reason))
+      self_.pendingSaveError = reason or true
       finishSave()
     end))
   end
@@ -528,6 +543,29 @@ function PageRuntime:confirmSave(focusFn)
         return true
       end},
       {label = BTN_CANCEL, action = function() return true end},
+    },
+    wakeup = function() end,
+    paint = function() end,
+  })
+end
+
+-- Shown from the wakeup tick (see pendingSaveError's own comment above)
+-- when any write in performSave()'s chain -- a source's MSP_SET_* or the
+-- final EEPROM_WRITE -- comes back with an error instead of an ack.
+-- Previously that failure just closed the saving dialog with nothing
+-- shown to the pilot: the FC could reject EEPROM_WRITE outright (e.g.
+-- while armed) and the save would silently no-op.
+function PageRuntime:showSaveError(focusFn)
+  if self.disposed then return end
+
+  form.openDialog({
+    title = MSG_SAVE_FAILED_TITLE,
+    message = MSG_SAVE_FAILED_BODY,
+    buttons = {
+      {label = BTN_OK, action = function()
+        if focusFn then focusFn() end
+        return true
+      end},
     },
     wakeup = function() end,
     paint = function() end,
@@ -706,6 +744,7 @@ function PageRuntime:dispose()
   self.initialData = nil
   self.pendingReload = false
   self.pendingSaveConfirm = false
+  self.pendingSaveError = nil
   self.pendingOnLoaded = false
   if self.pendingUiActions then
     clearTable(self.pendingUiActions)
@@ -843,6 +882,10 @@ function PageRuntime:buildChrome()
       if runtime.pendingSaveConfirm and runtime.loaded and not runtime.activeDialog then
         runtime.pendingSaveConfirm = false
         runtime:confirmSave(runtime.headerHandle.focusSave)
+      end
+      if runtime.pendingSaveError and not runtime.activeDialog then
+        runtime.pendingSaveError = nil
+        runtime:showSaveError(runtime.headerHandle and runtime.headerHandle.focusSave)
       end
       if runtime.pendingOnLoaded then
         runtime.pendingOnLoaded = false

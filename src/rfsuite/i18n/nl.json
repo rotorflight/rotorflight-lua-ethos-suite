@@ -7290,6 +7290,20 @@
       "reverse_text": false,
       "translation": "Sla huidige pagina op in de vliegcontroller?"
     },
+    "msg_save_failed_body": {
+      "english": "Settings were not saved to the flight controller. Please try again.",
+      "max_length": 67,
+      "needs_translation": true,
+      "reverse_text": false,
+      "translation": "Settings were not saved to the flight controller. Please try again."
+    },
+    "msg_save_failed_title": {
+      "english": "Save failed",
+      "max_length": 11,
+      "needs_translation": true,
+      "reverse_text": false,
+      "translation": "Save failed"
+    },
     "msg_save_settings": {
       "english": "Save settings",
       "max_length": 13,
