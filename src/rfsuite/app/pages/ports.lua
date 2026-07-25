@@ -228,6 +228,7 @@ local function open(opts)
   local dirty = false
   local loadError = nil
   local saveError = nil
+  local saveNotice = nil
   local needsRender = false
   local isArmed = nil
   local activeDialog = nil
@@ -310,6 +311,7 @@ local function open(opts)
     dirty = false
     loadError = nil
     saveError = nil
+    saveNotice = nil
     setBusy(true)
     activeDialog = openProgress(MSG_LOADING_TITLE, MSG_LOADING_BODY)
 
@@ -363,6 +365,7 @@ local function open(opts)
             setBusy(true)
             activeDialog = openProgress(MSG_SAVING_TITLE, MSG_SAVING_BODY)
             saveError = nil
+            saveNotice = nil
 
             local index = 1
             local function fail()
@@ -372,6 +375,24 @@ local function open(opts)
               closeDialog(headerHandle and headerHandle.focusSave)
               setBusy(false)
               needsRender = true
+            end
+            -- EEPROM_WRITE is rejected by the FC while armed -- not a real
+            -- failure, the per-port MSP_SET_SERIAL_CONFIG writes above
+            -- already landed and the FC commits them for real on disarm.
+            -- Mirrors app/page_runtime.lua's own performSave()/showSaveArmed().
+            local function failEeprom()
+              if disposed then return end
+              if isArmed == true then
+                loaded = true
+                dirty = false
+                portsOriginal = clonePorts(portsWorking)
+                saveNotice = "@i18n(app.modules.ports.save_armed)@"
+                closeDialog(headerHandle and headerHandle.focusSave)
+                setBusy(false)
+                needsRender = true
+                return
+              end
+              fail()
             end
             local function writeNext()
               if disposed then return end
@@ -385,7 +406,7 @@ local function open(opts)
                   if isArmed ~= true then
                     bus.publish("msp.request", reboot.buildWriteMessage())
                   end
-                end, fail))
+                end, failEeprom))
                 return
               end
               local port = portsWorking[index]
@@ -446,6 +467,9 @@ local function open(opts)
     end
     if saveError then
       form.addLine("@i18n(app.modules.ports.save_error_prefix)@ " .. tostring(saveError))
+    end
+    if saveNotice then
+      form.addLine(tostring(saveNotice))
     end
     if #portsWorking == 0 then
       form.addLine("@i18n(app.modules.ports.no_ports_reported)@")

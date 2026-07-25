@@ -81,6 +81,14 @@ local MSG_SAVING_TITLE = "@i18n(app.msg_saving)@"
 local MSG_SAVING_BODY = "@i18n(app.msg_saving_settings)@"
 local MSG_SAVE_FAILED_TITLE = "@i18n(app.msg_save_failed_title)@"
 local MSG_SAVE_FAILED_BODY = "@i18n(app.msg_save_failed_body)@"
+-- EEPROM_WRITE is rejected by the FC while armed -- not a real failure, the
+-- change already sits in RAM and commits on disarm. Matches the original
+-- suite's own trap (app/tasks.lua's armedSaveWarning(), fed by
+-- lib/utils.lua's "armed_blocked" reason from queueEepromWrite()): shown
+-- instead of MSG_SAVE_FAILED_* when the EEPROM write fails while
+-- self.isArmed is true (see performSave()'s errorHandler below).
+local MSG_SAVE_ARMED_TITLE = "@i18n(app.msg_save_not_commited)@"
+local MSG_SAVE_ARMED_BODY = "@i18n(app.msg_please_disarm_to_save_warning)@"
 
 local PageRuntime = {}
 PageRuntime.__index = PageRuntime
@@ -225,6 +233,9 @@ function PageRuntime.new(config)
   -- string (or true if none was given) until the wakeup tick opens the
   -- dialog.
   self.pendingSaveError = nil
+  -- Same idea, set instead of pendingSaveError when the EEPROM write fails
+  -- while self.isArmed is true -- see MSG_SAVE_ARMED_*'s own comment above.
+  self.pendingSaveArmed = false
   -- Same idea, for onLoaded (see its own config comment above) -- set by
   -- loadData()'s success branch, consumed by the wakeup handler alongside
   -- pendingReload/pendingSaveConfirm. See that handler's own comment for
@@ -481,7 +492,11 @@ function PageRuntime:performSave(focusFn)
         maybeReboot()
       end, function(reason)
         self_:log("performSave: EEPROM_WRITE failed: " .. tostring(reason))
-        self_.pendingSaveError = reason or true
+        if self_.isArmed == true then
+          self_.pendingSaveArmed = true
+        else
+          self_.pendingSaveError = reason or true
+        end
         finishSave()
       end))
       return
@@ -553,14 +568,38 @@ end
 -- when any write in performSave()'s chain -- a source's MSP_SET_* or the
 -- final EEPROM_WRITE -- comes back with an error instead of an ack.
 -- Previously that failure just closed the saving dialog with nothing
--- shown to the pilot: the FC could reject EEPROM_WRITE outright (e.g.
--- while armed) and the save would silently no-op.
+-- shown to the pilot: the FC could reject EEPROM_WRITE outright and the
+-- save would silently no-op. Armed-FC rejections are routed to
+-- showSaveArmed() below instead, since that's not actually a failure.
 function PageRuntime:showSaveError(focusFn)
   if self.disposed then return end
 
   form.openDialog({
     title = MSG_SAVE_FAILED_TITLE,
     message = MSG_SAVE_FAILED_BODY,
+    buttons = {
+      {label = BTN_OK, action = function()
+        if focusFn then focusFn() end
+        return true
+      end},
+    },
+    wakeup = function() end,
+    paint = function() end,
+  })
+end
+
+-- Shown from the wakeup tick instead of showSaveError() when the EEPROM
+-- write failed while self.isArmed was true. Not a real failure -- the
+-- FC firmware rejects EEPROM_WRITE outright while armed (flight-critical
+-- memory), but the values just written via MSP_SET_* already sit in RAM
+-- and commit for real on disarm. Matches the original suite's own
+-- armedSaveWarning() trap (app/tasks.lua).
+function PageRuntime:showSaveArmed(focusFn)
+  if self.disposed then return end
+
+  form.openDialog({
+    title = MSG_SAVE_ARMED_TITLE,
+    message = MSG_SAVE_ARMED_BODY,
     buttons = {
       {label = BTN_OK, action = function()
         if focusFn then focusFn() end
@@ -745,6 +784,7 @@ function PageRuntime:dispose()
   self.pendingReload = false
   self.pendingSaveConfirm = false
   self.pendingSaveError = nil
+  self.pendingSaveArmed = false
   self.pendingOnLoaded = false
   if self.pendingUiActions then
     clearTable(self.pendingUiActions)
@@ -886,6 +926,10 @@ function PageRuntime:buildChrome()
       if runtime.pendingSaveError and not runtime.activeDialog then
         runtime.pendingSaveError = nil
         runtime:showSaveError(runtime.headerHandle and runtime.headerHandle.focusSave)
+      end
+      if runtime.pendingSaveArmed and not runtime.activeDialog then
+        runtime.pendingSaveArmed = false
+        runtime:showSaveArmed(runtime.headerHandle and runtime.headerHandle.focusSave)
       end
       if runtime.pendingOnLoaded then
         runtime.pendingOnLoaded = false

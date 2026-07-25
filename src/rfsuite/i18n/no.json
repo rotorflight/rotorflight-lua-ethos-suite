@@ -5582,6 +5582,13 @@
           "reverse_text": false,
           "translation": "[RX]"
         },
+        "save_armed": {
+          "english": "Settings will only be saved to eeprom on disarm",
+          "max_length": 49,
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "Settings will only be saved to eeprom on disarm"
+        },
         "save_error_prefix": {
           "english": "Save error:",
           "max_length": 11,
@@ -7276,6 +7283,13 @@
       "reverse_text": false,
       "translation": "Laster data from flight controller..."
     },
+    "msg_please_disarm_to_save_warning": {
+      "english": "Settings will only be saved to eeprom on disarm",
+      "max_length": 49,
+      "needs_translation": true,
+      "reverse_text": false,
+      "translation": "Settings will only be saved to eeprom on disarm"
+    },
     "msg_reload_settings": {
       "english": "Reload data from flight controller?",
       "max_length": 35,
@@ -7303,6 +7317,13 @@
       "needs_translation": true,
       "reverse_text": false,
       "translation": "Save failed"
+    },
+    "msg_save_not_commited": {
+      "english": "Save not committed to EEPROM",
+      "max_length": 29,
+      "needs_translation": true,
+      "reverse_text": false,
+      "translation": "Save not committed to EEPROM"
     },
     "msg_save_settings": {
       "english": "Save settings",
