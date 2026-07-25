@@ -781,6 +781,7 @@ local function create()
     isArmed = nil,
     craftName = nil,
     mcuId = nil,
+    lastConnectedMcuId = nil,
     fcVersion = nil,
     rfVersion = nil,
     voltage = nil,
@@ -929,6 +930,24 @@ local function update(widget, snapshot)
   widget.bblUsed = snapshot.bblUsed
 
   if widget.mcuId ~= previousMcuId and widget.connected == true and widget.mcuId and widget.mcuId ~= "" then
+    if widget.lastConnectedMcuId and widget.lastConnectedMcuId ~= widget.mcuId then
+      -- A genuinely different aircraft just connected. session.lua nils
+      -- out mcuId on every disconnect, so previousMcuId (this tick's prior
+      -- value) is always nil right here and can't distinguish "same model
+      -- reconnecting" from "different model connected" -- lastConnectedMcuId
+      -- persists across that gap for the real comparison. Postflight/
+      -- inflight state, min/max stats, and timers from the previous model
+      -- must not bleed into the new one.
+      if widget.flightmode and type(widget.flightmode.reset) == "function" then
+        widget.flightmode:reset()
+      end
+      widget.headspeedVariancePct = nil
+      clearDashboardStats(widget.dashboardStats)
+      widget.timerLive = 0
+      widget.timerSession = 0
+    end
+    widget.lastConnectedMcuId = widget.mcuId
+
     local previousModelDashboard = widget.modelDashboard
     loadModelDashboard(widget)
     if not sameModelDashboard(previousModelDashboard, widget.modelDashboard) then
