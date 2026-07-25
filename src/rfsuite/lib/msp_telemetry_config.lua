@@ -16,11 +16,11 @@
 -- for API >= 12.0.8; this rebuild's floor is >= 12.09 (see AGENTS.md), so
 -- they're unconditionally present here -- no version-gated field list.
 --
--- The 12 header bytes are skipped rather than decoded into named fields:
--- nothing here needs telemetry_inverted/halfDuplex/enableSensors/pinSwap
--- yet, and the crsf_telemetry_* fields are for a future ELRS pass (see
--- AGENTS.md's open items) -- decoding them now with no consumer would just
--- be unused state.
+-- telemetry_inverted/halfDuplex/enableSensors/pinSwap have no consumer yet
+-- and just round-trip unchanged through the Setup -> Telemetry page's
+-- load/save; crsf_telemetry_mode does have one -- see app/pages/telemetry.lua's
+-- beforeSave, which forces it to CUSTOM so a CRSF receiver actually sends
+-- the slots this page writes.
 
 local mspcodec = assert(loadfile("lib/mspcodec.lua"))()
 

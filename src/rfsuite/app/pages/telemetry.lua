@@ -5,7 +5,8 @@
 -- it predates this lite app's shared runtime; here the core behavior is
 -- expressed as ordinary multi-source page data:
 --   FEATURE_CONFIG: ensure the Telemetry feature bit is enabled on save.
---   TELEMETRY_CONFIG: edit the 40 sensor slot assignments.
+--   TELEMETRY_CONFIG: edit the 40 sensor slot assignments, and force
+--   crsf_telemetry_mode to CUSTOM so a CRSF receiver actually sends them.
 --
 -- The page shows the original grouped boolean sensor list, preserves the
 -- FC's telemetry header bytes, writes up to 40 selected sensor IDs back to
@@ -21,6 +22,14 @@ local catalog = assert(loadfile("lib/telemetry_sensor_catalog.lua"))()
 local PAGE_TITLE = "@i18n(app.modules.telemetry.name)@"
 local BTN_OK = "@i18n(app.btn_ok)@"
 local BTN_CANCEL = "@i18n(app.btn_cancel)@"
+
+-- Firmware's CRSF_TELEMETRY_MODE_CUSTOM (src/main/pg/telemetry.h): with
+-- crsf_telemetry_mode left at its default NATIVE (0), the FC ignores
+-- telem_sensor_slot_1..40 entirely and sends its fixed built-in CRSF sensor
+-- set instead -- the slots this page writes below would silently have no
+-- effect over CRSF. Forcing CUSTOM here is harmless for non-CRSF receivers
+-- (crsf_telemetry_mode is only consulted by the CRSF telemetry driver).
+local CRSF_TELEMETRY_MODE_CUSTOM = 1
 
 local telemetryConfigPage = {
   buildReadMessage = telemetryConfig.buildReadConfigMessage,
@@ -140,6 +149,7 @@ local function open(opts)
       local telemetry = rt.data.telemetry
       if telemetry then
         telemetry.slots = selectedToSlots(selected, telemetry.slots)
+        telemetry.crsf_telemetry_mode = CRSF_TELEMETRY_MODE_CUSTOM
       end
     end,
     onTool = function(focusFn)
