@@ -64,6 +64,17 @@ local resolvedCache = {}
 local missRetryAt = {}
 local MISS_RETRY_INTERVAL = 5.0
 
+-- A resolved source is re-latched periodically rather than kept forever.
+-- getSource() picks the *first* candidate appId that resolves, which is
+-- permanent once cached -- if that first hit is a stale/unwired duplicate
+-- sensor (or a slot Ethos discovered before it ever carried a real reading),
+-- it was stuck at whatever value() returns (often 0) for the rest of the
+-- session, with no path back through the candidate list. Re-running the
+-- scan every REVALIDATE_INTERVAL seconds gives a better candidate that
+-- shows up later a chance to take over, without rescanning every wakeup.
+local revalidateAt = {}
+local REVALIDATE_INTERVAL = 8.0
+
 local telemetry_sensors = {}
 
 function telemetry_sensors.getSource(protocol, name)
@@ -73,13 +84,23 @@ function telemetry_sensors.getSource(protocol, name)
     resolvedCache[protocol] = byProtocol
   end
 
+  local now = os.clock()
+  local source = byProtocol[name]
+
+  if source then
+    local byProtocolRevalidate = revalidateAt[protocol]
+    local dueAt = byProtocolRevalidate and byProtocolRevalidate[name]
+    if dueAt and now >= dueAt then
+      byProtocol[name] = nil
+      source = nil
+    end
+  end
+
   -- Only a *successful* resolution is cached. A sensor that hasn't started
   -- broadcasting yet (common for consumption/smartfuel right after
   -- connect) must keep being retried, not be written off forever.
-  local source = byProtocol[name]
   if not source then
     local byProtocolMiss = missRetryAt[protocol]
-    local now = os.clock()
     if byProtocolMiss and byProtocolMiss[name] and now < byProtocolMiss[name] then
       return nil
     end
@@ -104,6 +125,13 @@ function telemetry_sensors.getSource(protocol, name)
       byProtocolMiss[name] = now + MISS_RETRY_INTERVAL
       return nil
     end
+
+    local byProtocolRevalidate = revalidateAt[protocol]
+    if not byProtocolRevalidate then
+      byProtocolRevalidate = {}
+      revalidateAt[protocol] = byProtocolRevalidate
+    end
+    byProtocolRevalidate[name] = now + REVALIDATE_INTERVAL
   end
 
   if source.state and source:state() == false then return nil end
@@ -119,6 +147,7 @@ end
 function telemetry_sensors.reset()
   resolvedCache = {}
   missRetryAt = {}
+  revalidateAt = {}
 end
 
 return telemetry_sensors
