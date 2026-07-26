@@ -7206,6 +7206,12 @@
           "needs_translation": false,
           "translation": "Precomp Bandwidth"
         },
+        "gov_rpm_filter": {
+          "english": "Headspeed Filter Cutoff",
+          "max_length": 23,
+          "needs_translation": false,
+          "translation": "Headspeed Filter Cutoff"
+        },
         "gov_pwr_filter": {
           "english": "Voltage Filter Cutoff",
           "max_length": 21,
