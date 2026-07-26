@@ -1492,6 +1492,7 @@ local widget = {
   read = read,
   write = write,
   close = close,
+  title = false,
 }
 
 local function init(opts)
