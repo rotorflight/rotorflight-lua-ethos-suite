@@ -72,6 +72,7 @@ local DASHBOARD_THEMES = {
   danielrc = true,
   default = true,
   gismo = true,
+  helihud_aon_v8 = true,
   kevd = true,
   rfstatus = true,
   ["rt-rc-n"] = true,

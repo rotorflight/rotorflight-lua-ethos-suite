@@ -23,6 +23,7 @@ local THEME_DEFS = {
   {label = "@i18n(app.modules.settings.dashboard_theme_danielrc)@", path = "system/danielrc"},
   {label = "@i18n(app.modules.settings.dashboard_theme_default)@", path = "system/default"},
   {label = "@i18n(app.modules.settings.dashboard_theme_gismo)@", path = "system/gismo"},
+  {label = "@i18n(app.modules.settings.dashboard_theme_helihud_aon_v8)@", path = "system/helihud_aon_v8"},
   {label = "@i18n(app.modules.settings.dashboard_theme_kevd)@", path = "system/kevd", minResolution = {x = 784, y = 294}},
   {label = "@i18n(app.modules.settings.dashboard_theme_rfstatus)@", path = "system/rfstatus"},
   {label = "@i18n(app.modules.settings.dashboard_theme_rt_rc)@", path = "system/rt-rc"},

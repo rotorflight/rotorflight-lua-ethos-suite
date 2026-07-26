@@ -1384,6 +1384,78 @@
           "translation": "On"
         }
       },
+      "copyprofiles": {
+        "dest_profile": {
+          "english": "Dest. Profile",
+          "max_length": 13,
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "Dest. Profile"
+        },
+        "help_p1": {
+          "english": "Copy PID profile or Rate profile from Source to Destination.",
+          "max_length": 60,
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "Copy PID profile or Rate profile from Source to Destination."
+        },
+        "help_p2": {
+          "english": "Choose the source and destinations and save to copy the profile.",
+          "max_length": 64,
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "Choose the source and destinations and save to copy the profile."
+        },
+        "msgbox_msg": {
+          "english": "Save current page to flight controller?",
+          "max_length": 39,
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "Save current page to flight controller?"
+        },
+        "msgbox_save": {
+          "english": "Save settings",
+          "max_length": 13,
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "Save settings"
+        },
+        "name": {
+          "english": "Copy Profiles",
+          "max_length": 13,
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "Copy Profiles"
+        },
+        "profile_type": {
+          "english": "Profile Type",
+          "max_length": 12,
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "Profile Type"
+        },
+        "profile_type_pid": {
+          "english": "PID",
+          "max_length": 3,
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "PID"
+        },
+        "profile_type_rate": {
+          "english": "Rate",
+          "max_length": 4,
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "Rate"
+        },
+        "source_profile": {
+          "english": "Source Profile",
+          "max_length": 14,
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "Source Profile"
+        }
+      },
       "diagnostics": {
         "configuration_state": {
           "english": "Configuration State",
@@ -5582,13 +5654,6 @@
           "reverse_text": false,
           "translation": "[RX]"
         },
-        "save_armed": {
-          "english": "Settings will only be saved to eeprom on disarm",
-          "max_length": 49,
-          "needs_translation": true,
-          "reverse_text": false,
-          "translation": "Settings will only be saved to eeprom on disarm"
-        },
         "save_error_prefix": {
           "english": "Save error:",
           "max_length": 11,
@@ -6636,6 +6701,13 @@
           "reverse_text": false,
           "translation": "Gismo"
         },
+        "dashboard_theme_helihud_aon_v8": {
+          "english": "HeliHUD AON V8",
+          "max_length": 14,
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "HeliHUD AON V8"
+        },
         "dashboard_theme_inflight": {
           "english": "Inflight Theme",
           "max_length": 14,
@@ -7283,13 +7355,6 @@
       "reverse_text": false,
       "translation": "Carico dati dal flight controller..."
     },
-    "msg_please_disarm_to_save_warning": {
-      "english": "Settings will only be saved to eeprom on disarm",
-      "max_length": 49,
-      "needs_translation": true,
-      "reverse_text": false,
-      "translation": "Settings will only be saved to eeprom on disarm"
-    },
     "msg_reload_settings": {
       "english": "Reload data from flight controller?",
       "max_length": 35,
@@ -7317,13 +7382,6 @@
       "needs_translation": true,
       "reverse_text": false,
       "translation": "Save failed"
-    },
-    "msg_save_not_commited": {
-      "english": "Save not committed to EEPROM",
-      "max_length": 29,
-      "needs_translation": true,
-      "reverse_text": false,
-      "translation": "Save not committed to EEPROM"
     },
     "msg_save_settings": {
       "english": "Save settings",

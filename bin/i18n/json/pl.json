@@ -2316,6 +2316,13 @@
           "reverse_text": false,
           "max_length": 5
         },
+        "dashboard_theme_helihud_aon_v8": {
+          "english": "HeliHUD AON V8",
+          "max_length": 14,
+          "needs_translation": true,
+          "translation": "HeliHUD AON V8",
+          "reverse_text": false
+        },
         "dashboard_theme_claude": {
           "english": "Claude",
           "translation": "Klaudiusz",
@@ -4486,6 +4493,78 @@
           "translation": "Rate Profil",
           "needs_translation": false,
           "max_length": 12,
+          "reverse_text": false
+        }
+      },
+      "copyprofiles": {
+        "dest_profile": {
+          "english": "Dest. Profile",
+          "max_length": 13,
+          "needs_translation": true,
+          "translation": "Dest. Profile",
+          "reverse_text": false
+        },
+        "help_p1": {
+          "english": "Copy PID profile or Rate profile from Source to Destination.",
+          "max_length": 60,
+          "needs_translation": true,
+          "translation": "Copy PID profile or Rate profile from Source to Destination.",
+          "reverse_text": false
+        },
+        "help_p2": {
+          "english": "Choose the source and destinations and save to copy the profile.",
+          "max_length": 64,
+          "needs_translation": true,
+          "translation": "Choose the source and destinations and save to copy the profile.",
+          "reverse_text": false
+        },
+        "msgbox_msg": {
+          "english": "Save current page to flight controller?",
+          "max_length": 39,
+          "needs_translation": true,
+          "translation": "Save current page to flight controller?",
+          "reverse_text": false
+        },
+        "msgbox_save": {
+          "english": "Save settings",
+          "max_length": 13,
+          "needs_translation": true,
+          "translation": "Save settings",
+          "reverse_text": false
+        },
+        "name": {
+          "english": "Copy Profiles",
+          "max_length": 13,
+          "needs_translation": true,
+          "translation": "Copy Profiles",
+          "reverse_text": false
+        },
+        "profile_type": {
+          "english": "Profile Type",
+          "max_length": 12,
+          "needs_translation": true,
+          "translation": "Profile Type",
+          "reverse_text": false
+        },
+        "profile_type_pid": {
+          "english": "PID",
+          "max_length": 3,
+          "needs_translation": true,
+          "translation": "PID",
+          "reverse_text": false
+        },
+        "profile_type_rate": {
+          "english": "Rate",
+          "max_length": 4,
+          "needs_translation": true,
+          "translation": "Rate",
+          "reverse_text": false
+        },
+        "source_profile": {
+          "english": "Source Profile",
+          "max_length": 14,
+          "needs_translation": true,
+          "translation": "Source Profile",
           "reverse_text": false
         }
       },

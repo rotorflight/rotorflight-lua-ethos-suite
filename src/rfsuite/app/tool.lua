@@ -192,6 +192,7 @@ local MENUS = {
   tools_menu = {
     title = "@i18n(app.menu_section_tools)@",
     entries = {
+      {title = "@i18n(app.modules.copyprofiles.name)@", icon = lcd.loadMask("app/gfx/copy_profiles.png"), script = "app/pages/copy_profiles.lua"},
       {title = "@i18n(app.modules.profile_select.name)@", icon = lcd.loadMask("app/gfx/profile_select.png"), script = "app/pages/profile_select.lua"},
       {title = "@i18n(app.modules.diagnostics.name)@", icon = lcd.loadMask("app/gfx/diagnostics.png"), menuId = "diagnostics_menu"},
       {title = "@i18n(app.modules.settings.txt_developer)@", icon = lcd.loadMask("app/gfx/developer.png"), menuId = "developer_menu", visibleWhen = function() return developerModeEnabled == true end},

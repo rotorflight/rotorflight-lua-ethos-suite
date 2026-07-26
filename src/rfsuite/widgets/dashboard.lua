@@ -20,6 +20,7 @@ local THEME_DIRS = {
   danielrc = "widgets/dashboard/themes/danielrc",
   default = "widgets/dashboard/themes/default",
   gismo = "widgets/dashboard/themes/gismo",
+  helihud_aon_v8 = "widgets/dashboard/themes/helihud_aon_v8",
   kevd = "widgets/dashboard/themes/kevd",
   rfstatus = "widgets/dashboard/themes/rfstatus",
   ["rt-rc-n"] = "widgets/dashboard/themes/rt-rc-n",
