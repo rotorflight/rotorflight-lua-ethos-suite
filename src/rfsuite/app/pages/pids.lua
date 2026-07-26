@@ -36,6 +36,7 @@ local COLUMNS = {
   "@i18n(app.modules.pids.f)@", "@i18n(app.modules.pids.o)@", "@i18n(app.modules.pids.b)@",
 }
 local COLUMN_SUFFIXES = {"p", "i", "d", "f", "o", "b"}
+local PID_STEP = 5
 local ROWS = {
   {label = "@i18n(app.modules.pids.roll)@", axis = "roll"},
   {label = "@i18n(app.modules.pids.pitch)@", axis = "pitch"},
@@ -95,6 +96,7 @@ local function open(opts)
         local field = form.addNumberField(line, slots[colIndex], meta.min, meta.max,
           function() return dataRef.data[key] end,
           function(value) dataRef.data[key] = value end)
+        if field.step then field:step(PID_STEP) end
         -- Ethos's own "reset to default" long-press gesture (added
         -- alpha14) resets to whatever :default() was last given -- 0 if
         -- never called -- so this is unconditional, same as
