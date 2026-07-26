@@ -267,5 +267,10 @@ function rate_curve_scale.displayBounds(rateType, role, axisClass)
   return 0, rate_curve_scale.toDisplayInt(255, rateType, role, axisClass), decimalsFor(rateType, role, axisClass)
 end
 
+function rate_curve_scale.displayStep(rateType, role, axisClass)
+  local step = rate_curve_scale.toDisplayInt(1, rateType, role, axisClass)
+  return step > 0 and step or 1
+end
+
 package.loaded["rfsuite.lib.rate_curve_scale"] = rate_curve_scale
 return rate_curve_scale

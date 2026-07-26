@@ -311,8 +311,13 @@ function field_layout.buildField(runtime, line, slot, spec)
       access.get,
       access.set)
     local suffix = spec.suffix or (meta and meta.suffix)
+    local step = spec.step or (meta and meta.step)
     if decimals then field:decimals(decimals) end
     if suffix then field:suffix(suffix) end
+    if step and field.step then
+      local displayStep = scaledValue(step, scale, decimals)
+      field:step(displayStep > 0 and displayStep or 1)
+    end
     field:default(scaledValue(spec.default or (meta and meta.default) or 0, scale, decimals))
   end
   runtime:registerField(registryKey(spec), field)

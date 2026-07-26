@@ -32,6 +32,7 @@ local function fieldSpec(mspModule, data, field)
     suffix = meta.suffix,
     decimals = meta.decimals,
     scale = meta.scale,
+    step = field.step or meta.step,
   }
 end
 

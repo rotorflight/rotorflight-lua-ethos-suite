@@ -226,6 +226,7 @@ local function open(opts)
           dataRef.data[key] = rateCurveScale.fromDisplayInt(value, dataRef.data.rates_type, column.role, row.axisClass)
         end)
       field:decimals(decimals)
+      if field.step then field:step(rateCurveScale.displayStep(nil, column.role, row.axisClass)) end
       runtime:registerField(key, field)
       curveFields[#curveFields + 1] = {field = field, role = column.role, axisClass = row.axisClass}
     end
@@ -243,6 +244,7 @@ local function open(opts)
       entry.field:minimum(minVal)
       entry.field:maximum(maxVal)
       entry.field:decimals(decimals)
+      if entry.field.step then entry.field:step(rateCurveScale.displayStep(rateType, entry.role, entry.axisClass)) end
     end
   end
 
