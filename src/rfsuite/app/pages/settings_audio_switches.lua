@@ -12,6 +12,7 @@ local MSG_SAVE_TITLE = "@i18n(app.msg_save_settings)@"
 local MSG_SAVE_BODY = "@i18n(app.msg_save_current_page)@"
 
 local SWITCH_SENSORS = {
+  {key = "altitude", name = "@i18n(telemetry.sensor_altitude)@"},
   {key = "bec_voltage", name = "@i18n(telemetry.sensor_bec_voltage)@"},
   {key = "consumption", name = "@i18n(telemetry.sensor_consumption)@"},
   {key = "current", name = "@i18n(telemetry.sensor_current)@"},

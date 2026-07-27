@@ -15,6 +15,9 @@
 -- protocols' tables regardless -- see that file's own header.
 
 return {
+  altitude = {
+    {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5016},
+  },
   voltage = {
     {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5002},
   },

@@ -6,6 +6,9 @@
 -- own header.
 
 return {
+  altitude = {
+    {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x0100},
+  },
   voltage = {
     {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x0210},
     {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x0211},

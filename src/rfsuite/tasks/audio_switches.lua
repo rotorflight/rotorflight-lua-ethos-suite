@@ -18,6 +18,7 @@ local STARTUP_GRACE_SECONDS = 5
 local REPEAT_SECONDS = 10
 
 local SWITCH_UNITS = {
+  altitude = UNIT_METER,
   voltage = UNIT_VOLT,
   current = UNIT_AMPERE,
   consumption = UNIT_MILLIAMPERE_HOUR,
