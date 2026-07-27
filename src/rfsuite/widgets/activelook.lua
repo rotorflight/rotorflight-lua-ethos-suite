@@ -75,6 +75,20 @@ local function formatDuration(seconds)
   return format("%02d:%02d", floor(total / 60), total % 60)
 end
 
+local function temperatureUnit(settings)
+  return settingsStore.temperatureUnit(settings) == 1 and 1 or 0
+end
+
+local function temperatureValue(widget, value)
+  if value == nil then return nil end
+  if widget and widget.temperatureUnit == 1 then return value * 1.8 + 32 end
+  return value
+end
+
+local function temperatureSuffix(widget)
+  return widget and widget.temperatureUnit == 1 and "°F" or "°C"
+end
+
 local function governorStateLabel(value)
   value = tonumber(value)
   if not value then return "UNKNOWN" end
@@ -134,8 +148,8 @@ local SENSOR_DEFS = {
   voltage = {label = "Voltage", value = function(widget) return sensor(widget, "voltage") end, decimals = 1, suffix = "V"},
   cell_voltage = {label = "Cell Voltage", value = function(widget) return sensor(widget, "cell_voltage") end, decimals = 2, suffix = "V"},
   headspeed = {label = "Headspeed", value = function(widget) return sensor(widget, "rpm") end, decimals = 0, suffix = ""},
-  temp_esc = {label = "ESC Temp", value = function(widget) return sensor(widget, "temp_esc") end, decimals = 0, suffix = "°"},
-  temp_mcu = {label = "MCU Temp", value = function(widget) return sensor(widget, "temp_mcu") end, decimals = 0, suffix = "°"},
+  temp_esc = {label = "ESC Temp", value = function(widget) return temperatureValue(widget, sensor(widget, "temp_esc")) end, decimals = 0, temperature = true},
+  temp_mcu = {label = "MCU Temp", value = function(widget) return temperatureValue(widget, sensor(widget, "temp_mcu")) end, decimals = 0, temperature = true},
   link = {label = "Link", value = function(widget) return sensor(widget, "link") end, decimals = 0, suffix = "dB"},
   fuel_min = {label = "Min Fuel", value = function(widget) return stat(widget, "fuel", "min") end, decimals = 0, suffix = "%"},
   fuel_max = {label = "Max Fuel", value = function(widget) return stat(widget, "fuel", "max") end, decimals = 0, suffix = "%"},
@@ -145,8 +159,8 @@ local SENSOR_DEFS = {
   voltage_max = {label = "Max Voltage", value = function(widget) return stat(widget, "voltage", "max") end, decimals = 1, suffix = "V"},
   headspeed_min = {label = "Min Headspeed", value = function(widget) return stat(widget, "rpm", "min") end, decimals = 0, suffix = ""},
   headspeed_max = {label = "Max Headspeed", value = function(widget) return stat(widget, "rpm", "max") end, decimals = 0, suffix = ""},
-  temp_esc_max = {label = "Max ESC Temp", value = function(widget) return stat(widget, "temp_esc", "max") end, decimals = 0, suffix = "°"},
-  temp_mcu_max = {label = "Max MCU Temp", value = function(widget) return stat(widget, "temp_mcu", "max") end, decimals = 0, suffix = "°"},
+  temp_esc_max = {label = "Max ESC Temp", value = function(widget) return temperatureValue(widget, stat(widget, "temp_esc", "max")) end, decimals = 0, temperature = true},
+  temp_mcu_max = {label = "Max MCU Temp", value = function(widget) return temperatureValue(widget, stat(widget, "temp_mcu", "max")) end, decimals = 0, temperature = true},
   link_min = {label = "Min Link", value = function(widget) return stat(widget, "link", "min") end, decimals = 0, suffix = "dB"},
   link_max = {label = "Max Link", value = function(widget) return stat(widget, "link", "max") end, decimals = 0, suffix = "dB"},
 }
@@ -304,7 +318,7 @@ local function valueFor(widget, modeKey, key)
   local def = SENSOR_DEFS[key] or SENSOR_DEFS.off
   local value = def.value and def.value(widget, modeKey) or nil
   if value == nil then return "-" end
-  if def.decimals ~= nil then return formatNumber(value, def.decimals, def.suffix) end
+  if def.decimals ~= nil then return formatNumber(value, def.decimals, def.temperature and temperatureSuffix(widget) or def.suffix) end
   return tostring(value)
 end
 
@@ -363,8 +377,10 @@ local function update(widget, snapshot)
 end
 
 local function create()
+  local settingsSnapshot = settingsStore.load()
   local widget = {
-    settings = settingsStore.activelook(settingsStore.load()),
+    settings = settingsStore.activelook(settingsSnapshot),
+    temperatureUnit = temperatureUnit(settingsSnapshot),
     flightmode = flightmode.new(),
     stats = {},
     lastDraw = 0,
@@ -373,6 +389,7 @@ local function create()
   widget.sessionHandler = bus.subscribe("session.update", function(snapshot) update(widget, snapshot) end)
   widget.settingsHandler = bus.subscribe("settings.update", function(snapshot)
     widget.settings = settingsStore.activelook(snapshot)
+    widget.temperatureUnit = temperatureUnit(snapshot)
     resetRuntime(widget)
   end)
   widget.controlHandler = bus.subscribe("activelook.control", function(action)

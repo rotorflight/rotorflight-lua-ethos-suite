@@ -49,6 +49,7 @@ end
 
 local utils = {}
 local dashboardPrefs = {}
+local tempThresholdCache = setmetatable({}, {__mode = "k"})
 local fmtCache = {}
 local paletteCache = {}
 local themeStateCache = {}
@@ -575,6 +576,59 @@ local function liveSensorValue(name)
   return source:value()
 end
 
+local function temperatureUnit()
+  local general = context.preferences and context.preferences.general
+  return tonumber(general and general.temperature_unit) == 1 and 1 or 0
+end
+
+local function temperatureUnitString(unit)
+  if unit == nil then unit = temperatureUnit() end
+  return unit == 1 and "°F" or "°C"
+end
+
+local function convertTemperature(value, unit)
+  if value == nil then return nil end
+  if unit == nil then unit = temperatureUnit() end
+  if unit == 1 then return value * 1.8 + 32 end
+  return value
+end
+
+local function convertTemperatureThresholds(thresholds, unit)
+  if type(thresholds) ~= "table" then return thresholds end
+  unit = unit or temperatureUnit()
+  if unit ~= 1 then return thresholds end
+
+  local cached = tempThresholdCache[thresholds]
+  if cached then return cached end
+
+  cached = {}
+  for i = 1, #thresholds do
+    local threshold = thresholds[i]
+    if type(threshold) == "table" then
+      local converted = {}
+      for key, value in pairs(threshold) do
+        converted[key] = key == "value" and convertTemperature(value, unit) or value
+      end
+      cached[i] = converted
+    else
+      cached[i] = threshold
+    end
+  end
+  tempThresholdCache[thresholds] = cached
+  return cached
+end
+
+local function temperaturePresentation(value, minValue, maxValue, thresholds)
+  local unit = temperatureUnit()
+  return convertTemperature(value, unit), temperatureUnitString(unit), convertTemperature(minValue, unit),
+    convertTemperature(maxValue, unit), convertTemperatureThresholds(thresholds, unit)
+end
+
+local function localizeTemperature(value, minValue, maxValue, thresholds)
+  local convertedValue, unit, convertedMin, convertedMax, convertedThresholds = temperaturePresentation(value, minValue, maxValue, thresholds)
+  return convertedValue, nil, unit, convertedMin, convertedMax, convertedThresholds
+end
+
 local function roundSigned(value)
   if value >= 0 then return math.floor(value + 0.5) end
   return -math.floor(-value + 0.5)
@@ -700,8 +754,8 @@ local function sensorValue(name)
   if name == "pid_profile" then return widget.pidProfile end
   if name == "rate_profile" then return widget.rateProfile end
   if name == "battery_profile" then return widget.batteryProfile end
-  if name == "temp_mcu" then return widget.tempMcu or liveSensorValue(name), "C" end
-  if name == "temp_esc" then return widget.tempEsc or liveSensorValue(name), "C" end
+  if name == "temp_mcu" then return widget.tempMcu or liveSensorValue(name), "°C" end
+  if name == "temp_esc" then return widget.tempEsc or liveSensorValue(name), "°C" end
   if name == "bec_voltage" then return widget.becVoltage or liveSensorValue(name), "V" end
   if name == "altitude" then return liveSensorValue(name), "m" end
   if name == "armflags" then
@@ -735,8 +789,8 @@ context.tasks.telemetry.sensorTable = {
   tailspeed = {unit_string = "rpm"},
   smartfuel = {unit_string = "%"},
   fuel = {unit_string = "%"},
-  temp_mcu = {unit_string = "C"},
-  temp_esc = {unit_string = "C"},
+  temp_mcu = {unit_string = "°C", localizations = localizeTemperature},
+  temp_esc = {unit_string = "°C", localizations = localizeTemperature},
   bec_voltage = {unit_string = "V"},
   altitude = {unit_string = "m"},
   watts = {unit_string = "W"},
@@ -745,6 +799,11 @@ context.tasks.telemetry.sensorTable = {
 function context.tasks.telemetry.getSensor(name, minValue, maxValue, thresholds)
   local value, unit = sensorValue(name)
   recordSensorStat(name, value)
+  local sensorDef = context.tasks.telemetry.sensorTable[name]
+  local localize = sensorDef and sensorDef.localizations
+  if type(localize) == "function" then
+    return localize(value, minValue, maxValue, thresholds)
+  end
   return value, nil, unit, minValue, maxValue, thresholds
 end
 
@@ -753,6 +812,33 @@ function context.tasks.telemetry.getSensorStats(name)
   local stats = widget and widget.dashboardStats
   if not stats then return nil end
   local entry = stats[statKey(name)]
+  if entry and (name == "temp_mcu" or name == "temp_esc") then
+    local unit = temperatureUnit()
+    local cacheRoot = stats._temperaturePresentation
+    if not cacheRoot then
+      cacheRoot = {}
+      stats._temperaturePresentation = cacheRoot
+    end
+    local cache = cacheRoot[name]
+    if not cache then
+      cache = {}
+      cacheRoot[name] = cache
+    end
+    if cache.unit ~= unit or cache.minRaw ~= entry.min or cache.maxRaw ~= entry.max or cache.sumRaw ~= entry.sum or cache.countRaw ~= entry.count or cache.avgRaw ~= entry.avg then
+      cache.unit = unit
+      cache.minRaw = entry.min
+      cache.maxRaw = entry.max
+      cache.sumRaw = entry.sum
+      cache.countRaw = entry.count
+      cache.avgRaw = entry.avg
+      cache.min = convertTemperature(entry.min, unit)
+      cache.max = convertTemperature(entry.max, unit)
+      cache.avg = convertTemperature(entry.avg, unit)
+      cache.sum = entry.sum
+      cache.count = entry.count
+    end
+    return cache
+  end
   if entry then return entry end
   local names = {
     voltage = "Voltage",
@@ -779,6 +865,11 @@ function context.tasks.telemetry.getSensorStats(name)
   if not suffix then return nil end
   local minValue = stats["min" .. suffix]
   local maxValue = stats["max" .. suffix]
+  if name == "temp_mcu" or name == "temp_esc" then
+    local unit = temperatureUnit()
+    minValue = convertTemperature(minValue, unit)
+    maxValue = convertTemperature(maxValue, unit)
+  end
   return {min = minValue, max = maxValue, avg = nil, sum = nil, count = nil}
 end
 

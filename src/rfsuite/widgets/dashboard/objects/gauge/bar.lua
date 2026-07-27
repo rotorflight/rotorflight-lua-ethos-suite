@@ -230,13 +230,27 @@ local compileTransform = utils.compileTransform
 local function getStatsValue(telemetry, source, statType)
     if source == nil then return nil end
     local stats = telemetry and telemetry.sensorStats and telemetry.sensorStats[source]
-    if stats and stats[statType] ~= nil then return stats[statType] end
+    if stats and stats[statType] ~= nil then
+        local value = stats[statType]
+        local sensorDef = telemetry and telemetry.sensorTable and telemetry.sensorTable[source]
+        local localize = sensorDef and sensorDef.localizations
+        if type(localize) == "function" then
+            local localizedValue = localize(value)
+            if localizedValue ~= nil then return localizedValue end
+        end
+        return value
+    end
     return nil
 end
 
 local function getSensorUnit(telemetry, source)
     if source == nil then return nil end
     local sensorDef = telemetry and telemetry.sensorTable and telemetry.sensorTable[source]
+    local localize = sensorDef and sensorDef.localizations
+    if type(localize) == "function" then
+        local _, _, localizedUnit = localize(nil)
+        if localizedUnit ~= nil then return localizedUnit end
+    end
     return sensorDef and sensorDef.unit_string or nil
 end
 

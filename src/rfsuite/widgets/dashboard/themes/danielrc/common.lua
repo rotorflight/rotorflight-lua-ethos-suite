@@ -328,8 +328,7 @@ local function readStats(spec, telemetry)
     if sensorDef then
         unit = sensorDef.unit_string
         if type(sensorDef.localizations) == "function" and value ~= nil then
-            local localizedValue, _, localizedUnit, _, _, thresholds = sensorDef.localizations(value, nil, nil, spec.thresholds)
-            if localizedValue ~= nil then value = localizedValue end
+            local _, _, localizedUnit, _, _, thresholds = sensorDef.localizations(value, nil, nil, spec.thresholds)
             if localizedUnit ~= nil then unit = localizedUnit end
             if thresholds ~= nil then localizedThresholds = thresholds end
         end

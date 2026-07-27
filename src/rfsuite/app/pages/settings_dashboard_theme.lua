@@ -21,6 +21,11 @@ local TXBATT_CHOICES = {
   {"@i18n(app.modules.settings.tx_battery_digital)@", 2},
 }
 
+local TEMPERATURE_UNIT_CHOICES = {
+  {"Celsius", 0},
+  {"Fahrenheit", 1},
+}
+
 local THEME_DEFS = {
   {label = "@i18n(app.modules.settings.dashboard_theme_aerc)@", path = "system/aerc"},
   {label = "@i18n(app.modules.settings.dashboard_theme_aerc_n)@", path = "system/aerc-n"},
@@ -149,6 +154,10 @@ local function txBattType(settings)
   return value
 end
 
+local function temperatureUnit(settings)
+  return settingsStore.temperatureUnit(settings)
+end
+
 local function copyPreflightToAll(dashboard, allowDisabled, pathById, idByPath, fallbackId)
   if type(dashboard) ~= "table" then return end
   local id = choiceForPath(dashboard.theme_preflight, idByPath, fallbackId, allowDisabled)
@@ -165,6 +174,7 @@ local function open(opts)
   local settings = settingsStore.load()
   local originalDashboard
   local originalTxBattType
+  local originalTemperatureUnit
   local modelPrefs
   local modelPath
   local modelDashboard = normalizeDashboard(nil, true)
@@ -179,7 +189,9 @@ local function open(opts)
   originalDashboard = copySection(settings.dashboard)
   settings.general = settings.general or {}
   settings.general.txbatt_type = txBattType(settings)
+  settings.general.temperature_unit = temperatureUnit(settings)
   originalTxBattType = settings.general.txbatt_type
+  originalTemperatureUnit = settings.general.temperature_unit
 
   local function modelEnabled()
     return session.connected == true and session.mcuId ~= nil and session.mcuId ~= ""
@@ -188,8 +200,9 @@ local function open(opts)
   local function isDirty()
     local globalDirty = not sameSection(normalizeDashboard(settings and settings.dashboard, false), originalDashboard)
     local txBattDirty = txBattType(settings) ~= originalTxBattType
+    local temperatureUnitDirty = temperatureUnit(settings) ~= originalTemperatureUnit
     local modelDirty = modelEnabled() and not sameSection(normalizeDashboard(modelDashboard, true), normalizeDashboard(originalModelDashboard, true))
-    return globalDirty or txBattDirty or modelDirty
+    return globalDirty or txBattDirty or temperatureUnitDirty or modelDirty
   end
 
   local function updateSaveEnabled()
@@ -270,6 +283,7 @@ local function open(opts)
     settings = nil
     originalDashboard = nil
     originalTxBattType = nil
+    originalTemperatureUnit = nil
     modelPrefs = nil
     modelDashboard = nil
     originalModelDashboard = nil
@@ -282,10 +296,12 @@ local function open(opts)
     settings.dashboard = normalizeDashboard(settings.dashboard, false)
     settings.general = settings.general or {}
     settings.general.txbatt_type = txBattType(settings)
+    settings.general.temperature_unit = temperatureUnit(settings)
     if settings.dashboard.use_same_theme then copyPreflightToAll(settings.dashboard, false, pathById, idByPath, fallbackId) end
     settingsStore.save(settings)
     originalDashboard = copySection(settings.dashboard)
     originalTxBattType = settings.general.txbatt_type
+    originalTemperatureUnit = settings.general.temperature_unit
 
     if modelEnabled() and modelPrefs and modelPath then
       modelDashboard = normalizeDashboard(modelDashboard, true)
@@ -430,6 +446,17 @@ local function open(opts)
       updateSaveEnabled()
     end)
 
+  fields.global_temperature_unit = form.addChoiceField(displayPanel:addLine("Temperature Unit"), nil, TEMPERATURE_UNIT_CHOICES,
+    function()
+      return temperatureUnit(settings)
+    end,
+    function(value)
+      if not settings then return end
+      settings.general = settings.general or {}
+      settings.general.temperature_unit = tonumber(value) or 0
+      updateSaveEnabled()
+    end)
+
   updateGlobalFields()
   updateModelFields()
 
@@ -457,6 +484,7 @@ local function open(opts)
       settings = nil
       originalDashboard = nil
       originalTxBattType = nil
+      originalTemperatureUnit = nil
       modelPrefs = nil
       modelDashboard = nil
       originalModelDashboard = nil

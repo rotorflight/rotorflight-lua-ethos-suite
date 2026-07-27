@@ -18,6 +18,7 @@ local DEFAULTS = {
     telemetry_logging = true,
     log_sample_interval = 1,
     txbatt_type = 0,
+    temperature_unit = 0,
   },
   developer = {
     developer_mode = false,
@@ -197,6 +198,7 @@ local function normalize(settings)
   settings.general.telemetry_logging = coerceBool(settings.general.telemetry_logging, DEFAULTS.general.telemetry_logging)
   settings.general.log_sample_interval = clampNumber(settings.general.log_sample_interval, DEFAULTS.general.log_sample_interval, 1, 10)
   settings.general.txbatt_type = clampNumber(settings.general.txbatt_type, DEFAULTS.general.txbatt_type, 0, 2)
+  settings.general.temperature_unit = clampNumber(settings.general.temperature_unit, DEFAULTS.general.temperature_unit, 0, 1)
 
   settings.developer = settings.developer or {}
   settings.developer.developer_mode = coerceBool(settings.developer.developer_mode, DEFAULTS.developer.developer_mode)
@@ -275,6 +277,12 @@ function settings_store.loggingSampleInterval(settings)
   local general = type(settings) == "table" and settings.general or nil
   local value = type(general) == "table" and general.log_sample_interval or nil
   return clampNumber(value, DEFAULTS.general.log_sample_interval, 1, 10)
+end
+
+function settings_store.temperatureUnit(settings)
+  local general = type(settings) == "table" and settings.general or nil
+  local value = type(general) == "table" and general.temperature_unit or nil
+  return clampNumber(value, DEFAULTS.general.temperature_unit, 0, 1)
 end
 
 function settings_store.developerModeEnabled(settings)
