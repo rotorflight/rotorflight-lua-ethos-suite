@@ -15,6 +15,7 @@ local OUTER_PADDING = 8
 local ICON_GAP = 8
 local LARGE_FONT = 3
 local SMALL_FONT = 2
+local COMPACT_FONT = 1
 local PREFLIGHT_TOP_FONT = 3
 local PREFLIGHT_BOTTOM_FONT = 1
 local fmtCache = {}
@@ -289,6 +290,7 @@ local function computeSlots(widget, modeKey, layoutChoice)
   end
   local largeFont = isPreflight and PREFLIGHT_TOP_FONT or LARGE_FONT
   local smallFont = isPreflight and PREFLIGHT_BOTTOM_FONT or SMALL_FONT
+  local compactFont = isPreflight and PREFLIGHT_BOTTOM_FONT or COMPACT_FONT
   local largeOffset = isPreflight and metrics.preflightTopOffset or metrics.largeOffset
   local smallOffset = isPreflight and metrics.preflightBottomOffset or metrics.smallOffset
   local boxW = metrics.boxW or 0
@@ -311,13 +313,13 @@ local function computeSlots(widget, modeKey, layoutChoice)
     add(1, active[1], leftX, midY, "large", largeFont, largeOffset, areaW, "center")
   elseif layoutChoice == "one_top_two_bottom" then
     add(1, active[1], leftX, topY, "large", largeFont, largeOffset, areaW, "center")
-    add(3, active[3], leftX, bottomY, "small", smallFont, smallOffset, boxW, isPreflight and "center" or nil)
-    add(4, active[4], rightX, bottomY, "small", smallFont, smallOffset, boxW, isPreflight and "center" or nil)
+    add(3, active[3], leftX, bottomY, "small", compactFont, smallOffset, boxW, isPreflight and "center" or nil)
+    add(4, active[4], rightX, bottomY, "small", compactFont, smallOffset, boxW, isPreflight and "center" or nil)
   else
     add(1, active[1], leftX, topY, "large", largeFont, largeOffset, boxW, isPreflight and "center" or nil)
     add(2, active[2], rightX, topY, "large", largeFont, largeOffset, boxW, isPreflight and "center" or nil)
-    add(3, active[3], leftX, bottomY, "small", smallFont, smallOffset, boxW, isPreflight and "center" or nil)
-    add(4, active[4], rightX, bottomY, "small", smallFont, smallOffset, boxW, isPreflight and "center" or nil)
+    add(3, active[3], leftX, bottomY, "small", compactFont, smallOffset, boxW, isPreflight and "center" or nil)
+    add(4, active[4], rightX, bottomY, "small", compactFont, smallOffset, boxW, isPreflight and "center" or nil)
   end
   return slots
 end
