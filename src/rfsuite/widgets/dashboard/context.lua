@@ -1711,6 +1711,9 @@ end
 
 function context.setWidget(widget)
   currentWidget = widget
+  local settings = widget and widget.settingsSnapshot
+  context.preferences.general = settings and settings.general or context.preferences.general
+  context.preferences.dashboard = settings and settings.dashboard or context.preferences.dashboard
   local telemetryState = widget and (widget.connected == true
     or widget.voltage ~= nil
     or widget.current ~= nil

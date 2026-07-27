@@ -17,6 +17,7 @@ local DEFAULTS = {
   general = {
     telemetry_logging = true,
     log_sample_interval = 1,
+    txbatt_type = 0,
   },
   developer = {
     developer_mode = false,
@@ -195,6 +196,7 @@ local function normalize(settings)
   settings.general = settings.general or {}
   settings.general.telemetry_logging = coerceBool(settings.general.telemetry_logging, DEFAULTS.general.telemetry_logging)
   settings.general.log_sample_interval = clampNumber(settings.general.log_sample_interval, DEFAULTS.general.log_sample_interval, 1, 10)
+  settings.general.txbatt_type = clampNumber(settings.general.txbatt_type, DEFAULTS.general.txbatt_type, 0, 2)
 
   settings.developer = settings.developer or {}
   settings.developer.developer_mode = coerceBool(settings.developer.developer_mode, DEFAULTS.developer.developer_mode)

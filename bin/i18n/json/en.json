@@ -2013,6 +2013,36 @@
           "translation": "DanielRC",
           "needs_translation": false,
           "max_length": 8
+        },
+        "tx_battery_options": {
+          "english": "Tx Battery Options",
+          "max_length": 18,
+          "needs_translation": false,
+          "translation": "Tx Battery Options"
+        },
+        "tx_battery_default": {
+          "english": "Default",
+          "max_length": 7,
+          "needs_translation": false,
+          "translation": "Default"
+        },
+        "tx_battery_text": {
+          "english": "Text",
+          "max_length": 4,
+          "needs_translation": false,
+          "translation": "Text"
+        },
+        "tx_battery_digital": {
+          "english": "Digital",
+          "max_length": 7,
+          "needs_translation": false,
+          "translation": "Digital"
+        },
+        "dashboard_display_panel": {
+          "english": "Display",
+          "max_length": 7,
+          "needs_translation": false,
+          "translation": "Display"
         }
       },
       "telemetry": {

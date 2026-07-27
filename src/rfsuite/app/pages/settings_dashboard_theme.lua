@@ -15,6 +15,12 @@ local MSG_SAVE_BODY = "@i18n(app.msg_save_current_page)@"
 local MODEL_DISABLED = "@i18n(app.modules.settings.dashboard_theme_panel_model_disabled)@"
 local DEFAULT_THEME = "system/default"
 
+local TXBATT_CHOICES = {
+  {"@i18n(app.modules.settings.tx_battery_default)@", 0},
+  {"@i18n(app.modules.settings.tx_battery_text)@", 1},
+  {"@i18n(app.modules.settings.tx_battery_digital)@", 2},
+}
+
 local THEME_DEFS = {
   {label = "@i18n(app.modules.settings.dashboard_theme_aerc)@", path = "system/aerc"},
   {label = "@i18n(app.modules.settings.dashboard_theme_aerc_n)@", path = "system/aerc-n"},
@@ -135,6 +141,14 @@ local function pathForChoice(value, pathById, allowDisabled)
   return pathById[value] or DEFAULT_THEME
 end
 
+local function txBattType(settings)
+  local general = settings and settings.general
+  local value = tonumber(general and general.txbatt_type) or 0
+  if value < 0 then return 0 end
+  if value > 2 then return 2 end
+  return value
+end
+
 local function copyPreflightToAll(dashboard, allowDisabled, pathById, idByPath, fallbackId)
   if type(dashboard) ~= "table" then return end
   local id = choiceForPath(dashboard.theme_preflight, idByPath, fallbackId, allowDisabled)
@@ -150,6 +164,7 @@ local function open(opts)
   local headerHandle
   local settings = settingsStore.load()
   local originalDashboard
+  local originalTxBattType
   local modelPrefs
   local modelPath
   local modelDashboard = normalizeDashboard(nil, true)
@@ -162,6 +177,9 @@ local function open(opts)
   local choices, modelChoices, pathById, idByPath, fallbackId = buildThemeChoices()
   settings.dashboard = normalizeDashboard(settings.dashboard, false)
   originalDashboard = copySection(settings.dashboard)
+  settings.general = settings.general or {}
+  settings.general.txbatt_type = txBattType(settings)
+  originalTxBattType = settings.general.txbatt_type
 
   local function modelEnabled()
     return session.connected == true and session.mcuId ~= nil and session.mcuId ~= ""
@@ -169,8 +187,9 @@ local function open(opts)
 
   local function isDirty()
     local globalDirty = not sameSection(normalizeDashboard(settings and settings.dashboard, false), originalDashboard)
+    local txBattDirty = txBattType(settings) ~= originalTxBattType
     local modelDirty = modelEnabled() and not sameSection(normalizeDashboard(modelDashboard, true), normalizeDashboard(originalModelDashboard, true))
-    return globalDirty or modelDirty
+    return globalDirty or txBattDirty or modelDirty
   end
 
   local function updateSaveEnabled()
@@ -250,6 +269,7 @@ local function open(opts)
     if opts.setCleanupHandler then opts.setCleanupHandler(nil) end
     settings = nil
     originalDashboard = nil
+    originalTxBattType = nil
     modelPrefs = nil
     modelDashboard = nil
     originalModelDashboard = nil
@@ -260,9 +280,12 @@ local function open(opts)
   local function save(focusFn)
     if disposed then return end
     settings.dashboard = normalizeDashboard(settings.dashboard, false)
+    settings.general = settings.general or {}
+    settings.general.txbatt_type = txBattType(settings)
     if settings.dashboard.use_same_theme then copyPreflightToAll(settings.dashboard, false, pathById, idByPath, fallbackId) end
     settingsStore.save(settings)
     originalDashboard = copySection(settings.dashboard)
+    originalTxBattType = settings.general.txbatt_type
 
     if modelEnabled() and modelPrefs and modelPath then
       modelDashboard = normalizeDashboard(modelDashboard, true)
@@ -306,7 +329,7 @@ local function open(opts)
   })
 
   local globalPanel = form.addExpansionPanel("@i18n(app.modules.settings.dashboard_theme_panel_global)@")
-  globalPanel:open(true)
+  globalPanel:open(false)
 
   fields.global_use_same = form.addBooleanField(globalPanel:addLine("@i18n(app.modules.settings.dashboard_theme_use_same)@"), nil,
     function()
@@ -393,6 +416,20 @@ local function open(opts)
       updateSaveEnabled()
     end)
 
+  local displayPanel = form.addExpansionPanel("@i18n(app.modules.settings.dashboard_display_panel)@")
+  displayPanel:open(false)
+
+  fields.global_txbatt_type = form.addChoiceField(displayPanel:addLine("@i18n(app.modules.settings.tx_battery_options)@"), nil, TXBATT_CHOICES,
+    function()
+      return txBattType(settings)
+    end,
+    function(value)
+      if not settings then return end
+      settings.general = settings.general or {}
+      settings.general.txbatt_type = tonumber(value) or 0
+      updateSaveEnabled()
+    end)
+
   updateGlobalFields()
   updateModelFields()
 
@@ -419,6 +456,7 @@ local function open(opts)
       if sessionHandler then bus.unsubscribe("session.update", sessionHandler); sessionHandler = nil end
       settings = nil
       originalDashboard = nil
+      originalTxBattType = nil
       modelPrefs = nil
       modelDashboard = nil
       originalModelDashboard = nil
