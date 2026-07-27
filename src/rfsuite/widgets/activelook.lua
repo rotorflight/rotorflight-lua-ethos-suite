@@ -17,6 +17,7 @@ local LARGE_FONT = 3
 local SMALL_FONT = 2
 local PREFLIGHT_TOP_FONT = 3
 local PREFLIGHT_BOTTOM_FONT = 1
+local fmtCache = {}
 
 local FONT_PX = {
   [1] = 24,
@@ -61,6 +62,13 @@ local function formatNumber(value, decimals, suffix)
     text = format("%.1f", value)
   elseif decimals == 0 then
     text = tostring(floor(value + 0.5))
+  elseif type(decimals) == "number" then
+    local fmt = fmtCache[decimals]
+    if not fmt then
+      fmt = "%." .. tostring(decimals) .. "f"
+      fmtCache[decimals] = fmt
+    end
+    text = format(fmt, value)
   else
     text = tostring(value)
   end
