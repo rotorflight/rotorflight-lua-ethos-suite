@@ -959,6 +959,9 @@ local function update(widget, snapshot)
   end
 
   if previousConnected == false and widget.connected == true then
+    if previousState == "postflight" and widget.flightmode and type(widget.flightmode.reset) == "function" then
+      widget.flightmode:reset()
+    end
     clearDashboardStats(widget.dashboardStats)
     widget.headspeedVariancePct = nil
   elseif previousConnected == true and widget.connected ~= true then
@@ -966,7 +969,7 @@ local function update(widget, snapshot)
   end
 
   widget.flightmodeState = widget.flightmode:update(widget)
-  if widget.flightmodeState == "inflight" and previousState ~= "inflight" then
+  if widget.flightmodeState == "inflight" and previousState ~= "inflight" and previousState ~= "postflight" then
     clearDashboardStats(widget.dashboardStats)
     widget.headspeedVariancePct = nil
   end

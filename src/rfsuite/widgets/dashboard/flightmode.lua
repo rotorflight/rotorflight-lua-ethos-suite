@@ -40,7 +40,7 @@ function Tracker:update(widget)
   if (current == "inflight" or current == "postflight") and not connected then
     self.hasBeenInFlight = true
     mode = "postflight"
-  elseif armed and not self.lastArmed then
+  elseif armed and not self.lastArmed and not self.hasBeenInFlight then
     self.hasBeenInFlight = false
     mode = "preflight"
   elseif inFlight(widget) then
