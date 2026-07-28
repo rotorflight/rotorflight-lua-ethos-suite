@@ -414,7 +414,8 @@ def scan_usb_drives_for_radio():
             except Exception:
                 pass
     else:
-        for base in ("/Volumes", "/media", "/mnt"):
+        userName = os.getenv('USER', '')
+        for base in ("/Volumes", "/media", f"/run/media/{userName}", "/mnt"):
             if not os.path.isdir(base):
                 continue
             for entry in os.listdir(base):
