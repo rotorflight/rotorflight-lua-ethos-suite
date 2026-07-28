@@ -3798,6 +3798,12 @@
           "needs_translation": false,
           "translation": "Voltage Filter Cutoff"
         },
+        "gov_rpm_filter": {
+          "english": "Headspeed Filter Cutoff",
+          "max_length": 23,
+          "needs_translation": false,
+          "translation": "Headspeed Filter Cutoff"
+        },
         "gov_tta_filter": {
           "english": "TTA Bandwidth",
           "max_length": 13,

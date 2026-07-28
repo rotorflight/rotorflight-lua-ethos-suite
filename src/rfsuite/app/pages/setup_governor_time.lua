@@ -20,6 +20,7 @@ local function open(opts)
   form.clear()
   runtime:buildChrome()
 
+  fieldLayout.buildSingle(runtime, "@i18n(app.modules.governor.startup_time)@", {key = "gov_startup_time"})
   fieldLayout.buildSingle(runtime, "@i18n(app.modules.governor.spoolup_time)@", {key = "gov_spoolup_time"})
   fieldLayout.buildSingle(runtime, "@i18n(app.modules.governor.spooldown_time)@", {key = "gov_spooldown_time"})
   fieldLayout.buildSingle(runtime, "@i18n(app.modules.governor.tracking_time)@", {key = "gov_tracking_time"})

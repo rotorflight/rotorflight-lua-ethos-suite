@@ -20,7 +20,7 @@ local function open(opts)
   form.clear()
   runtime:buildChrome()
 
-  fieldLayout.buildSingle(runtime, "@i18n(app.modules.governor.startup_time)@", {key = "gov_rpm_filter"})
+  fieldLayout.buildSingle(runtime, "@i18n(app.modules.governor.gov_rpm_filter)@", {key = "gov_rpm_filter"})
   fieldLayout.buildSingle(runtime, "@i18n(app.modules.governor.gov_pwr_filter)@", {key = "gov_pwr_filter"})
   fieldLayout.buildSingle(runtime, "@i18n(app.modules.governor.gov_tta_filter)@", {key = "gov_tta_filter"})
   fieldLayout.buildSingle(runtime, "@i18n(app.modules.governor.gov_ff_filter)@", {key = "gov_ff_filter"})
