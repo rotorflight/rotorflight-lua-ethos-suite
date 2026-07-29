@@ -2316,11 +2316,11 @@
           "reverse_text": true,
           "max_length": 5
         },
-        "dashboard_theme_helihud_aon_v8": {
-          "english": "HeliHUD AON V8",
+        "dashboard_theme_helihud": {
+          "english": "HeliHUD",
           "max_length": 14,
           "needs_translation": true,
-          "translation": "HeliHUD AON V8",
+          "translation": "HeliHUD",
           "reverse_text": false
         },
         "dashboard_theme_claude": {

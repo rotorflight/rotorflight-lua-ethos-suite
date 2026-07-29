@@ -1,8 +1,8 @@
---[[ HeliHUD AON V8 preflight.lua ]] --
+--[[ HeliHUD postflight.lua ]] --
 local rfsuite = assert(loadfile("widgets/dashboard/context.lua"))()
 local lcd = lcd
 
-local common = assert(loadfile("widgets/dashboard/themes/helihud_aon_v8/common.lua"))()
+local common = assert(loadfile("widgets/dashboard/themes/helihud/common.lua"))()
 
 local boxes_cache = nil
 local lastScreenW = nil
@@ -18,7 +18,7 @@ local function boxes()
     local W, H = lcd.getWindowSize()
     local themeSignature = common.getThemeSignature()
     if boxes_cache == nil or lastScreenW ~= W or lastScreenH ~= H or lastThemeSignature ~= themeSignature then
-        boxes_cache = common.buildCockpitBoxes()
+        boxes_cache = common.buildReportBoxes()
         lastScreenW = W
         lastScreenH = H
         lastThemeSignature = themeSignature

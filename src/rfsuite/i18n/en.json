@@ -5772,11 +5772,11 @@
           "needs_translation": false,
           "translation": "Gismo"
         },
-        "dashboard_theme_helihud_aon_v8": {
-          "english": "HeliHUD AON V8",
+        "dashboard_theme_helihud": {
+          "english": "HeliHUD",
           "max_length": 14,
           "needs_translation": false,
-          "translation": "HeliHUD AON V8"
+          "translation": "HeliHUD"
         },
         "dashboard_theme_inflight": {
           "english": "Inflight Theme",

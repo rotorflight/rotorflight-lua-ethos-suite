@@ -1,9 +1,9 @@
-HeliHUD AON V8 Polish / Temp Fix
+HeliHUD Polish / Temp Fix
 
 Install folder:
-/SCRIPTS/rfsuite/widgets/dashboard/themes/helihud_aon_v8/
+/SCRIPTS/rfsuite/widgets/dashboard/themes/helihud/
 
-Select: HeliHUD AON V8
+Select: HeliHUD
 
 Changes from V7:
 - Post-flight MAX ESC TEMP no longer uses RotorFlight temp_esc stats.
