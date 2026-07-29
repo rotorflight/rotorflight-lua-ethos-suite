@@ -1235,6 +1235,11 @@ function utils.getThemeState()
   return state
 end
 
+function utils.getThemeOutlineColor()
+  local state = getThemeStateInternal()
+  return state.primaryColor
+end
+
 function utils.getThemeSignature()
   local _, signature = getThemeStateInternal()
   return signature
