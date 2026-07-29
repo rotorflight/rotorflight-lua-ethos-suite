@@ -322,9 +322,9 @@ local function buildBoxes(W)
             valuepaddingbottom = opts.rpmvaluepadding,
             font = opts.font,
             unit = "",
-            textcolor = "black",
-            titlecolor = "black",
-            bgcolor = colorMode.textcolor,
+            textcolor = colorMode.textcolor,
+            titlecolor = colorMode.titlecolor,
+            bgcolor = colorMode.paneldarkbg,
         },
         {
             col = 11,
