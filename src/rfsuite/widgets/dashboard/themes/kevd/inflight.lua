@@ -156,7 +156,13 @@ end
 -- rs_* fields on one box instead of 8 separate offsetx/offsety values.
 local function rightStackPaint(x, y, w, h, box, c)
     c = c or {}
-    utils.drawBoxBackground(x, y, w, h, box.rs_bgstyle)
+    -- Use the inset-adjusted rect drawBoxBackground returns (it applies
+    -- rs_bgstyle's insetleft/insetright/etc.) instead of the raw box rect,
+    -- so the panel's content shrinks in lockstep with its border. Without
+    -- this, widening rs_bgstyle's insetright to add right-edge margin would
+    -- pull the border in while every right-aligned text row below stayed
+    -- anchored to the old (un-inset) right edge, overflowing past it.
+    x, y, w, h = utils.drawBoxBackground(x, y, w, h, box.rs_bgstyle)
 
     local rowH = h / 10
 
@@ -308,7 +314,7 @@ local function buildBoxes(W)
 
     local governorDisarmedTileBg = {
         backfillcolor = colorMode.tbbgcolor or colorMode.headerbgcolor or pageBgColor,
-        fillcolor = lcd.RGB(0x00, 0x00, 0x00),
+        fillcolor = colorMode.tbbgcolor or colorMode.headerbgcolor or pageBgColor, -- was a hardcoded black, which looked fine in dark themes but ignored the OS theme entirely (stood out as a jarring black box against a light theme); match the panel's own fill instead, same as every other tile
         bordercolor = colorMode.fillcritcolor,
         borderwidth = 6,
         roundradius = 6,
@@ -345,7 +351,7 @@ local function buildBoxes(W)
         inset = 4,
         insettop = 11,
         insetleft = -9,
-        insetright = -5,
+        insetright = 20, -- was -5 (which expanded the tile *past* its own box's right edge, right up against the screen edge with no margin); a positive value pulls the tile's right edge inward for real padding
         insetbottom = 8,
         contentpadding = 1
     }
@@ -394,7 +400,7 @@ local function buildBoxes(W)
             row = 1,
             colspan = 2,
             rowspan = 10,
-            offsetx = -30,
+            offsetx = -30, -- NOTE: currently a no-op -- the shared grid engine only positions boxes via col/row/colspan/rowspan. Right-edge margin is handled by rightStackTileBg's insetright instead.
             offsety = 0,
             type = "func",
             subtype = "func",
@@ -499,8 +505,8 @@ local function buildBoxes(W)
             row = 6,                         -- throttle tile grid row; lower = up, higher = down
             colspan = 3,                     -- throttle tile width; larger = wider tile/container
             rowspan = 5,                     -- throttle tile height; larger = taller tile/container
-            offsetx = 65,                    -- move entire throttle tile left/right; negative = left, positive = right
-            offsety = -65,                   -- move entire throttle tile up/down; negative = up, positive = down
+            offsetx = 65,                    -- move entire throttle tile left/right; negative = left, positive = right (NOTE: currently a no-op -- the shared grid engine only positions boxes via col/row/colspan/rowspan)
+            offsety = -65,                   -- move entire throttle tile up/down; negative = up, positive = down (NOTE: currently a no-op, see above)
             type = "gauge",
             subtype = "arc",
             source = "throttle_percent",
@@ -516,7 +522,7 @@ local function buildBoxes(W)
             font = "FONT_XL",                -- throttle main value font size
             maxfont = arcMaxFont,            -- throttle max value font size
             maxprefix = "Max: ",
-            maxpaddingtop = math.max(8, opts.maxpaddingtop), -- throttle max value vertical position
+            maxpaddingtop = 8, -- throttle max value vertical position; this tile sits flush against the bottom of the 10-row grid (row 6 + rowspan 5), so unlike the other two arcs it has no slack below it and needs the smallest legal value here to avoid the "Max: X%" text clipping past the tile's bottom edge
             maxpaddingleft = opts.maxpaddingleft - 12, -- moves throttle max text right 10 px
             gaugepadding = 17,               -- throttle arc size; larger = smaller arc, smaller = larger arc. 17 is 15% shrink
             gaugepaddingbottom = 8,          -- throttle arc bottom; larger = moves bottom edge up, smaller = extends lower
