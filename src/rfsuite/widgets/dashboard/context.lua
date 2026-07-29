@@ -346,9 +346,40 @@ local function resolveThemeConstant(name)
   return lcd.themeColor(key)
 end
 
+local THEME_COLOR_SIGNATURE_REFRESH_INTERVAL = 1.0
+local themeColorSignatureCache = {value = nil, checkedAt = -math.huge}
+
 local function buildThemeColorSignature()
-  if supportsSystemThemeColors() then return "ethos" end
-  return legacyDark() and "dark" or "light"
+  if not supportsSystemThemeColors() then return legacyDark() and "dark" or "light" end
+
+  -- getThemeStateInternal() calls this on *every* call just to check
+  -- whether its cache is still valid, not only when something changed --
+  -- so hashing every theme constant here unconditionally (a `lcd.themeColor()`
+  -- call per THEME_STATE_KEYS entry) turned a formerly-O(1) check into real,
+  -- frequent-enough cost to trip Ethos's Lua instruction-count limit.
+  -- Throttle the expensive part instead: reuse the last hash for up to
+  -- THEME_COLOR_SIGNATURE_REFRESH_INTERVAL seconds. A live theme switch is
+  -- still picked up within ~1s, which is effectively instant to a user, at
+  -- a tiny fraction of the cost of hashing on every call.
+  local now = os.clock()
+  if themeColorSignatureCache.value and (now - themeColorSignatureCache.checkedAt) < THEME_COLOR_SIGNATURE_REFRESH_INTERVAL then
+    return themeColorSignatureCache.value
+  end
+
+  local signature = 5381
+  local hasAnyThemeColor = false
+  for i = 1, #THEME_STATE_KEYS do
+    local color = resolveThemeConstant(THEME_STATE_KEYS[i][2])
+    if type(color) == "number" then
+      signature = ((signature * 33) + (color % 2147483647)) % 2147483647
+      hasAnyThemeColor = true
+    end
+  end
+
+  local result = hasAnyThemeColor and ("ethos:" .. tostring(signature)) or (legacyDark() and "dark" or "light")
+  themeColorSignatureCache.value = result
+  themeColorSignatureCache.checkedAt = now
+  return result
 end
 
 local function colorLuma(color)

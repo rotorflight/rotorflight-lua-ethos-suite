@@ -42,7 +42,7 @@ end
 common.layout = {cols = 1, rows = 1, padding = 0, showstats = false}
 
 common.basePalette = {
-    -- HeliHUD fixed colors: midnight black, metallic blue, pearl white, status green, and blue-primary instruments.
+    -- HeliHUD "night" fixed colors: midnight black, metallic blue, pearl white, status green, and blue-primary instruments.
     bg = rgb(1, 4, 8),
     bgalt = rgb(6, 14, 24),
     line = rgb(0, 132, 255),
@@ -53,6 +53,23 @@ common.basePalette = {
     orange = rgb(255, 145, 20),
     red = rgb(255, 54, 54),
     dim = rgb(28, 42, 55)
+}
+
+common.basePaletteLight = {
+    -- HeliHUD "day" variant: same avionics-HUD styling (fixed, high-contrast
+    -- symbology on a flat backdrop), not the OS theme's own colors -- just a
+    -- light backdrop with deep, saturated accents instead of neon-on-black,
+    -- the way real EFIS/HUD hardware offers a day mode alongside night mode.
+    bg = rgb(238, 240, 244),
+    bgalt = rgb(222, 226, 232),
+    line = rgb(0, 90, 200),
+    blue = rgb(0, 110, 210),
+    green = rgb(20, 140, 40),
+    white = rgb(20, 24, 30),
+    yellow = rgb(150, 100, 0),
+    orange = rgb(190, 90, 10),
+    red = rgb(190, 30, 30),
+    dim = rgb(195, 200, 208)
 }
 
 common.palette = common.basePalette
@@ -69,13 +86,49 @@ function common.getThemeSignature()
     return utils.getThemeSignature()
 end
 
-function common.getPalette()
-    -- V5 final polish pass:
-    -- Use a fixed HeliHUD palette instead of resolving the full EthOS theme colors every rebuild.
-    -- This keeps the look consistent and removes unnecessary theme-color work from this theme.
-    if paletteCache.palette then return paletteCache.palette end
+-- Self-contained luma check (deliberately not shared with context.lua's
+-- internal helper) so this theme can pick between its two curated palettes
+-- based on whether the active Ethos theme is light or dark, without
+-- adopting the OS theme's colors wholesale. Compares the theme's own
+-- background and text luma rather than an absolute brightness threshold:
+-- any usable theme keeps text and background at opposite ends of the
+-- brightness range for readability, so this stays correct even without
+-- knowing exactly how lcd.themeColor() packs its result.
+local function colorLuma(color)
+    if type(color) ~= "number" then return nil end
+    color = math.floor(color)
+    if color < 0 then return nil end
+    local r, g, b
+    if color > 0xFFFF then
+        r = (color >> 16) & 0xFF
+        g = (color >> 8) & 0xFF
+        b = color & 0xFF
+    else
+        r = ((color >> 11) & 0x1F) * 255 / 31
+        g = ((color >> 5) & 0x3F) * 255 / 63
+        b = (color & 0x1F) * 255 / 31
+    end
+    return r * 0.299 + g * 0.587 + b * 0.114
+end
 
-    local base = common.basePalette
+local function isSurfaceLight()
+    local colors = utils.themeColors()
+    local bgLuma = colorLuma(colors.bgcolor)
+    local textLuma = colorLuma(colors.textcolor)
+    if bgLuma and textLuma and bgLuma ~= textLuma then return bgLuma > textLuma end
+    return false
+end
+
+function common.getPalette()
+    -- V6: still a fixed HeliHUD look (not the OS theme's own colors) rather
+    -- than resolving full EthOS theme colors every rebuild, but now picks
+    -- between a curated dark ("night") and light ("day") variant based on
+    -- the active Ethos theme, so it's at least legible instead of forcing a
+    -- night-cockpit look onto a light OS theme.
+    local signature = utils.getThemeSignature()
+    if paletteCache.palette and paletteCache.signature == signature then return paletteCache.palette end
+
+    local base = isSurfaceLight() and common.basePaletteLight or common.basePalette
     local palette = {
         bg = base.bg,
         bgalt = base.bgalt,
@@ -90,7 +143,7 @@ function common.getPalette()
         dim = base.dim
     }
 
-    paletteCache.signature = "helihud_fixed_v5"
+    paletteCache.signature = signature
     paletteCache.palette = palette
     paletteCache.headerColorMode = {
         fillwarncolor = palette.yellow,

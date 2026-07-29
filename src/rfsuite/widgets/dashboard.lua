@@ -52,6 +52,16 @@ local GESTURE_CONSUME_TIMEOUT = 0.75
 local TOOLBAR_TIMEOUT = 10
 local STARTUP_PREP_OBJECTS_PER_TICK = 2
 local PREWARM_STATES = {"preflight", "inflight"}
+-- Live OS theme switches (no restart) are only picked up by polling
+-- utils.getThemeSignature() and forcing a reload on change -- master does
+-- this every 0.25s in its wakeup(); this rewrite never did it at all, so
+-- every theme (not just one) needed a full restart to pick up a live
+-- theme switch. 5s (vs master's 0.25s) trades a little detection latency
+-- for meaningfully less CPU load -- a live theme switch is a rare, human-
+-- paced action, not something that needs sub-second response.
+local THEME_STATE_CHECK_INTERVAL = 5.0
+local themeStateSignature = nil
+local nextThemeStateCheck = 0
 
 local TOOLBAR_ITEMS = {
   {name = "Reset", icon = "widgets/dashboard/gfx/toolbar_reset.png", action = "reset_flight"},
@@ -1363,6 +1373,24 @@ local function wakeup(widget)
       requestPaint(widget)
     end
     bus.subscribe("settings.update", widget.settingsHandler)
+  end
+
+  -- Poll for a live Ethos OS theme change (switching light/dark, or to a
+  -- different installed theme package) -- nothing else notifies us of this,
+  -- since it doesn't go through rfsuite's own "settings.update" bus event.
+  -- Matches master's dashboard.lua wakeup(), which does the same 0.25s poll.
+  local now = clock()
+  if now >= nextThemeStateCheck then
+    nextThemeStateCheck = now + THEME_STATE_CHECK_INTERVAL
+    local utils = dashboardUtils(true)
+    local currentThemeSignature = utils and utils.getThemeSignature and utils.getThemeSignature() or nil
+    if currentThemeSignature ~= themeStateSignature then
+      themeStateSignature = currentThemeSignature
+      clearThemeCache()
+      resetDashboardPrewarm(widget)
+      markStartupUnderlayDirty(widget)
+      requestPaint(widget)
+    end
   end
 
   if widget.needsPaint then
