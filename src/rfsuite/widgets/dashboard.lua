@@ -1076,7 +1076,7 @@ local function drawStartupOverlay(widget, w, h, hasBackground)
   local theme = utils and utils.getThemeState and utils.getThemeState() or {}
   local bg = theme.pageBgColor or theme.primaryBgColor or lcd.RGB(16, 16, 16, 1)
   local panel = theme.primaryBgColor or lcd.RGB(0, 0, 0, 1)
-  local border = lcd.RGB(255, 255, 255, 1)
+  local border = theme.buttonBorderActiveColor or theme.secondaryColor or lcd.RGB(255, 255, 255, 1)
   local text = theme.primaryColor or lcd.RGB(255, 255, 255, 1)
   local subtext = theme.secondaryColor or text
 
