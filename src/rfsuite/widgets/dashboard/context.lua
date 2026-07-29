@@ -441,7 +441,14 @@ local function resolveDashboardSurfaceBg(state)
 end
 
 local function resolveDashboardHeaderBg(state, surfaceBg)
-  return state and (state.pageBgColor or surfaceBg)
+  if not state then return nil end
+  local bg = state.pageBgColor or surfaceBg
+  -- pageBgColor and the surface it sits on can resolve to the same color on
+  -- some Ethos system themes, which would make the header/tile fill
+  -- invisible against its own background. Same collision guard as
+  -- resolveGaugeTrackBg below.
+  if bg == surfaceBg then return state.secondaryBgColor or state.disableColor or bg end
+  return bg
 end
 
 local function resolveDashboardHeaderTextColor(state)
@@ -452,9 +459,11 @@ local function resolveDashboardTitleColor(state)
   return state and (state.secondaryColor or state.primaryColor or state.defaultColor)
 end
 
-local function resolveDashboardPanelColors(state)
+local function resolveDashboardPanelColors(state, surfaceBg)
   if not state then return nil, nil, nil end
-  return state.pageBgColor, state.secondaryBgColor, state.pageBgColor
+  local panelBg = state.pageBgColor
+  if panelBg == surfaceBg then panelBg = state.secondaryBgColor or state.disableColor or panelBg end
+  return panelBg, state.secondaryBgColor, panelBg
 end
 
 local function resolveGaugeTrackBg(state, background)
@@ -983,7 +992,7 @@ function utils.themeColors()
   local headerGaugeTrackBg = resolveGaugeTrackBg(state, headerBg)
   local fillcolor, fillwarncolor, fillcritcolor = resolveGaugeThresholdPalette(state)
   local titleColor = resolveDashboardTitleColor(state)
-  local panelBg, panelAltBg, panelLine = resolveDashboardPanelColors(state)
+  local panelBg, panelAltBg, panelLine = resolveDashboardPanelColors(state, surfaceBg)
 
   cached = {
     textcolor = state.primaryColor,
@@ -1653,7 +1662,12 @@ end
 
 function utils.setBackgroundColourBasedOnTheme()
   local w, h = lcd.getWindowSize()
-  lcd.color(utils.getThemeState().pageBgColor)
+  -- Use the same background every themed box paints with (colorMode.bgcolor),
+  -- not the raw pageBgColor -- otherwise any gap in a theme's layout (e.g. a
+  -- box nudged up with offsety that doesn't fully cover the row above it)
+  -- shows a visibly different color where pageBgColor and primaryBgColor
+  -- diverge, instead of blending in like the rest of the screen.
+  lcd.color(utils.themeColors().bgcolor or utils.getThemeState().pageBgColor)
   lcd.drawFilledRectangle(0, 0, w, h)
 end
 
