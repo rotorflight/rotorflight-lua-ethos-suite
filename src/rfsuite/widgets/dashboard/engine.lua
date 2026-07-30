@@ -16,6 +16,11 @@ local preparedW = nil
 local preparedH = nil
 local preparedObjectsLoaded = false
 local wakeCursor = 1
+-- True once wakeObjects() has completed a full pass over the CURRENT
+-- boxRects (every box's own render.wakeup() has run at least once since
+-- boxRects was last (re)built). engine.paint() checks this before calling
+-- paintObjects() -- see its own comment for why.
+local layoutWoken = false
 
 local function clearArray(t)
   for i = #t, 1, -1 do t[i] = nil end
@@ -181,6 +186,7 @@ local function prepareLayout(config, screenW, screenH, skipObjectLoad)
     preparedW = screenW
     preparedH = screenH
     wakeCursor = 1
+    layoutWoken = false
     return
   end
 
@@ -188,6 +194,7 @@ local function prepareLayout(config, screenW, screenH, skipObjectLoad)
     loadPreparedObjects()
     preparedObjectsLoaded = true
     wakeCursor = 1
+    layoutWoken = false
   end
 end
 
@@ -204,12 +211,14 @@ local function wakeObjects(maxCount)
   local count = #boxRects
   if count == 0 then
     wakeCursor = 1
+    layoutWoken = true
     return true
   end
 
   if not maxCount or maxCount <= 0 or maxCount >= count then
     for i = 1, count do wakeOne(boxRects[i]) end
     wakeCursor = 1
+    layoutWoken = true
     return true
   end
 
@@ -222,6 +231,7 @@ local function wakeObjects(maxCount)
 
   if wakeCursor > count then
     wakeCursor = 1
+    layoutWoken = true
     return true
   end
 
@@ -280,6 +290,28 @@ local function paintObjects()
   end
 end
 
+-- Shown instead of paintObjects() when a host calls paint() without ever
+-- pairing it with a wakeup() pass for the current box layout (confirmed
+-- live in Ethos's "Configure screens" widget preview -- see gauge/arc.lua's
+-- and gauge/ring.lua's own guard comments for the bug this used to cause).
+-- No per-box state to read yet, so just the themed background (already
+-- painted by the caller) plus a centered logo -- loaded through the same
+-- utils.loadImage() cache every other logo use already shares, so this
+-- adds no RAM cost beyond what a normal startup overlay would already
+-- carry, and it's released the same way: on the next theme switch's
+-- clearCaches({images = true}).
+local function paintUnwokenFallback(screenW, screenH)
+  local utils = context.widgets.dashboard.utils
+  if not (utils.loadImage and lcd.drawBitmap) then return end
+  local bgcolor = utils.themeColors().bgcolor
+  local logoPath = utils.getLogoFallbackForBackground and utils.getLogoFallbackForBackground(bgcolor)
+  local logo = utils.loadImage(logoPath or "widgets/dashboard/gfx/logo-light.png")
+  if not logo then return end
+  local logoW = floor(math.min(screenW * 0.4, 230))
+  local logoH = floor(logoW * 0.23)
+  lcd.drawBitmap(floor((screenW - logoW) / 2 + 0.5), floor((screenH - logoH) / 2 + 0.5), logo, logoW, logoH)
+end
+
 function engine.paint(widget, themeDef, stateDef, state, screenW, screenH)
   context.setWidget(widget)
   if context.tasks and context.tasks.telemetry and context.tasks.telemetry.collectPresentationStats then
@@ -287,7 +319,11 @@ function engine.paint(widget, themeDef, stateDef, state, screenW, screenH)
   end
   prepareLayout(stateDef, screenW, screenH)
   context.widgets.dashboard.utils.setBackgroundColourBasedOnTheme()
-  paintObjects()
+  if layoutWoken then
+    paintObjects()
+  else
+    paintUnwokenFallback(screenW, screenH)
+  end
   context.widgets.dashboard.utils.drawScreenBorder()
 end
 
@@ -319,6 +355,7 @@ function engine.reset()
   preparedH = nil
   preparedObjectsLoaded = false
   wakeCursor = 1
+  layoutWoken = false
   for i = #boxRects, 1, -1 do boxRects[i] = nil end
 end
 
