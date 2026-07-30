@@ -319,7 +319,16 @@ local currentPaintHandler = nil
 -- subsystem's callback chain" for spawning new UI like a modal dialog).
 local currentWakeupHandler = nil
 
-local TASK_STATUS_TIMEOUT = 1.5
+-- Background task publishes "task.status" every 0.5s (tasks/background.lua's
+-- TASK_STATUS_INTERVAL) whenever its own wakeup fires -- but Ethos only calls
+-- that wakeup on its own schedule, and under heavy CPU load (big pcall'd
+-- work elsewhere, LCD paint spikes, etc.) a cycle or two can be skipped. A
+-- tight timeout here turned a transient scheduling delay into a false
+-- "background task missing" alert while the task was in fact still alive
+-- and about to catch up. Give it enough slack (~6 missed heartbeats) to
+-- ride out ordinary load spikes without masking a genuinely dead task for
+-- long.
+local TASK_STATUS_TIMEOUT = 3.0
 local TASK_ALERT_GRACE = 0.75
 local TASK_ALERT_TITLE = "@i18n(app.msg_background_task_missing_title)@"
 local TASK_ALERT_BODY = "@i18n(app.msg_background_task_missing_body)@"
