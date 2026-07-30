@@ -227,8 +227,15 @@ function render.wakeup(box)
 end
 
 function render.paint(x, y, w, h, box)
+    -- Matches objects/navigation/ah.lua's own guard: box._cache is only ever
+    -- populated by render.wakeup() below, so painting before the first
+    -- wakeup (e.g. a host context that calls paint() without ever pairing
+    -- it with wakeup()) must draw nothing, not fall through to a track arc
+    -- rendered from bare w/h defaults in legacyPalette()'s fallback color.
+    local c = box._cache
+    if not c then return end
+
     x, y = utils.applyOffset(x, y, box)
-    local c = box._cache or {}
 
     x, y, w, h = utils.drawBoxBackground(x, y, w, h, c.bgcolor)
 
