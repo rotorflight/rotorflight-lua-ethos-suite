@@ -170,10 +170,20 @@ local function mspPollReply()
   return nil, nil, nil
 end
 
+-- Drain stale replies out of the transport's incoming-frame queue. Bounded
+-- the same way mspPollReply() above is (a small wall-time slice, not an
+-- unconditional drain) -- frames can back up on a busy link, and for the
+-- S.Port transport a single transport.mspPoll() call already walks its
+-- whole native frame buffer looking for a match, so an uncapped `while
+-- transport.mspPoll() do end` here could otherwise churn through an
+-- unbounded backlog in one wakeup with no yield point. Any frames left
+-- over past the deadline are harmless leftovers -- nothing here acts on
+-- their contents, and the next mspPollReply() simply keeps draining them.
 local function mspClearBufs()
   mspClearTxBuf()
   if transport then
-    while transport.mspPoll() do end
+    local deadline = os_clock() + 0.01
+    while os_clock() < deadline and transport.mspPoll() do end
   end
 end
 
