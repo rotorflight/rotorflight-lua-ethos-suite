@@ -1718,8 +1718,8 @@ function utils.loadImage(image1, image2, image3)
   return context.utils.loadImage(image1, image2, image3)
 end
 
-function utils.isImageTooLarge(path)
-  return context.utils.isImageTooLarge(path)
+function utils.isImageTooLarge(path, maxBytes)
+  return context.utils.isImageTooLarge(path, maxBytes)
 end
 
 function utils.isElectricEngine()
@@ -1821,8 +1821,29 @@ function context.utils.loadImage(image1, image2, image3)
   return nil
 end
 
-function context.utils.isImageTooLarge()
-  return false
+-- Model-photo images (widgets/dashboard/objects/image/model.lua) are the
+-- only bitmaps this suite loads from a user-supplied, unconverted file
+-- rather than its own bundled assets. Decoding an oversized one happens
+-- synchronously inside that object's single wakeup() call -- which is only
+-- ever one of a handful budgeted per tick during dashboard warm-up (see
+-- dashboard.lua's STARTUP_PREP_OBJECTS_PER_TICK) -- so one big photo can by
+-- itself burn through Ethos's whole per-tick Lua instruction budget and
+-- trip its runaway-script guard, regardless of that per-tick object count
+-- limit. This was previously a stub that always returned false: the
+-- maxBytes plumbing already ran end to end (model.lua -> utils.isImageTooLarge
+-- -> here) but nothing ever checked an actual size, so nothing was ever
+-- rejected. No config surface currently supplies maxBytes (model.lua reads
+-- it from rfsuite.config.maxModelImageBytes, which is never set), hence the
+-- built-in default below.
+local DEFAULT_MAX_IMAGE_BYTES = 250 * 1024
+
+function context.utils.isImageTooLarge(path, maxBytes)
+  path = normalizeImagePath(path)
+  if not path or not os or not os.stat then return false end
+  local info = os.stat(path)
+  local size = info and tonumber(info.size)
+  if not size then return false end
+  return size > (tonumber(maxBytes) or DEFAULT_MAX_IMAGE_BYTES)
 end
 
 function context.utils.armingDisableFlagsToString()
