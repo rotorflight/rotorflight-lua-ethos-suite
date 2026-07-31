@@ -47,6 +47,21 @@ local msp_reboot = {
 -- called once the FC acknowledges the command (the FC then actually
 -- restarts -- callers shouldn't expect a live connection right after
 -- this); `onError(reason)` on failure/disconnect before that ack arrives.
+--
+-- maxRetries = 1 (one resend, two attempts total) rather than
+-- tasks/msp/queue.lua's generic default (5): a lost ack here is the
+-- *expected* outcome, not a communication failure -- the FC accepts this
+-- command and immediately starts resetting, so its reply routinely never
+-- makes it out before the link drops. The queue can't tell that apart from
+-- a genuine timeout, so with the generic default it would keep resending
+-- this same REBOOT command for up to 5 attempts -- and any resend that
+-- lands after the FC has already come back up and reconnected commands
+-- *another* reboot -- matching a real "FBL keeps rebooting" report seen
+-- after applying telemetry sensor changes (see app/pages/telemetry.lua's
+-- rebootAfterSave, though the mechanism is shared by every such page).
+-- Matches rotorflight-lua-ethos-suite's own tasks/scheduler/msp/mspQueue.lua,
+-- which special-cases command 68 (REBOOT) the same way: force-completed
+-- after retryCount == 2 regardless of whether a reply ever arrived.
 function msp_reboot.buildWriteMessage(onWritten, onError)
   return {
     command = WRITE_COMMAND,
@@ -56,6 +71,7 @@ function msp_reboot.buildWriteMessage(onWritten, onError)
       if onWritten then onWritten() end
     end,
     errorHandler = onError,
+    maxRetries = 1,
     simulatorResponse = {REBOOT_MODE_FIRMWARE},
   }
 end
