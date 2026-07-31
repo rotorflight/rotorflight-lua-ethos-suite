@@ -77,7 +77,7 @@ local function open(opts)
   local ringLine = form.addLine("@i18n(app.modules.rates_advanced.cyclic_ring)@")
   local ringField = form.addNumberField(ringLine, nil, 0, 250,
     function() return dataRef.data.cyclic_ring end,
-    function(value) dataRef.data.cyclic_ring = value end)
+    function(value) runtime:markDirty(); dataRef.data.cyclic_ring = value end)
   ringField:suffix("%")
   ringField:enable(false)
   runtime:registerField("cyclic_ring", ringField)
@@ -105,6 +105,7 @@ local function open(opts)
       return dataRef.data.cyclic_polarity
     end,
     function(value)
+      runtime:markDirty()
       dataRef.data.cyclic_polarity = value
       if value == 1 and (dataRef.data.cyclic_ring or 0) <= 0 then
         dataRef.data.cyclic_ring = CYCLIC_RING_DEFAULT

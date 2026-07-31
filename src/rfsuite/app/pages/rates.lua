@@ -223,6 +223,7 @@ local function open(opts)
           return rateCurveScale.toDisplayInt(dataRef.data[key], dataRef.data.rates_type, column.role, row.axisClass)
         end,
         function(value)
+          runtime:markDirty()
           dataRef.data[key] = rateCurveScale.fromDisplayInt(value, dataRef.data.rates_type, column.role, row.axisClass)
         end)
       field:decimals(decimals)

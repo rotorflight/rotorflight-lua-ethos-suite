@@ -223,6 +223,7 @@ local function open(opts)
               end
             end
 
+            runtime:markDirty()
             selected[sensorId] = value == true
             if form.invalidate then form.invalidate() end
           end)

@@ -95,7 +95,7 @@ local function open(opts)
         local meta = pidTuning.FIELD_META[key]
         local field = form.addNumberField(line, slots[colIndex], meta.min, meta.max,
           function() return dataRef.data[key] end,
-          function(value) dataRef.data[key] = value end)
+          function(value) runtime:markDirty(); dataRef.data[key] = value end)
         if field.step then field:step(PID_STEP) end
         -- Ethos's own "reset to default" long-press gesture (added
         -- alpha14) resets to whatever :default() was last given -- 0 if

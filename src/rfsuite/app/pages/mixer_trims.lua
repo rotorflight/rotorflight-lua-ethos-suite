@@ -134,6 +134,7 @@ local function openEditor(opts, initialMode)
     local field = form.addNumberField(line, nil, min, max,
       function() return formData[key] or 0 end,
       function(value)
+        runtime:markDirty()
         formData[key] = value
         lastChangeAt = os.clock()
       end)

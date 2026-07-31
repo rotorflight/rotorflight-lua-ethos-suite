@@ -133,6 +133,7 @@ local function open(opts)
     local field = form.addChoiceField(line, nil, choices,
       function() return formData[key] or 0 end,
       function(value)
+        runtime:markDirty()
         formData[key] = value
         if onChange then onChange(value) end
       end)
@@ -145,6 +146,7 @@ local function open(opts)
     local field = form.addNumberField(line, nil, min, max,
       function() return formData[key] or 0 end,
       function(value)
+        runtime:markDirty()
         formData[key] = value
       end)
     if suffix then field:suffix(suffix) end

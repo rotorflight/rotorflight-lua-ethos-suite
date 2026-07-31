@@ -117,6 +117,7 @@ local function open(opts)
     local field = form.addChoiceField(line, nil, choices,
       function() return formData[key] or 0 end,
       function(value)
+        runtime:markDirty()
         formData[key] = value
       end)
     runtime:registerField(key, field)

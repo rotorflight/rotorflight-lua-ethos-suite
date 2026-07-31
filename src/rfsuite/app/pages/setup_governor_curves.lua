@@ -117,6 +117,7 @@ local function open(opts)
     local field = form.addNumberField(nil, {x = x, y = bottomY, w = fieldW, h = fieldH}, 0, 100,
       function() return curve[index] or 0 end,
       function(value)
+        runtime:markDirty()
         curve[index] = clampPercent(value)
         requestRepaint()
       end)

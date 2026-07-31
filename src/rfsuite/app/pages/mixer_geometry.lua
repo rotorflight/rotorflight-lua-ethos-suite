@@ -216,7 +216,7 @@ local function open(opts)
     local line = form.addLine(spec.label)
     local field = form.addNumberField(line, nil, spec.min, spec.max,
       function() return formData[key] or 0 end,
-      function(value) formData[key] = value end)
+      function(value) runtime:markDirty(); formData[key] = value end)
     if spec.suffix then field:suffix(spec.suffix) end
     if spec.decimals then field:decimals(spec.decimals) end
     field:default(spec.default or 0)

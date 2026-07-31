@@ -75,6 +75,7 @@ local function open(opts)
   local dialog = nil
   local loaded = false
   local busy = false
+  local dirty = false
   local channels = cloneChannels()
   local original = cloneChannels()
   local fields = {}
@@ -98,10 +99,24 @@ local function open(opts)
     })
   end
 
+  -- Save only lights up once the page has finished loading, isn't mid
+  -- save/reload, and the pilot has actually changed a channel -- see
+  -- markDirty() below, called from both field setters.
+  local function updateSaveEnabled()
+    if not headerHandle then return end
+    headerHandle.setSaveEnabled(not busy and loaded and dirty)
+  end
+
+  local function markDirty()
+    if dirty then return end
+    dirty = true
+    updateSaveEnabled()
+  end
+
   local function applyBusy(value)
     busy = value == true
+    updateSaveEnabled()
     if headerHandle then
-      headerHandle.setSaveEnabled(not busy)
       headerHandle.setReloadEnabled(not busy)
     end
     for _, pair in ipairs(fields) do
@@ -135,6 +150,7 @@ local function open(opts)
       channels = cloneChannels(data.channels)
       original = cloneChannels(data.channels)
       loaded = true
+      dirty = false
       applyBusy(false)
       closeDialog(focusFn)
       if form.invalidate then form.invalidate() end
@@ -160,6 +176,7 @@ local function open(opts)
         bus.publish("msp.request", eeprom.buildWriteMessage(function()
           if disposed then return end
           original = cloneChannels(channels)
+          dirty = false
           applyBusy(false)
           closeDialog(focusFn)
         end, function()
@@ -241,12 +258,13 @@ local function open(opts)
     pair.mode = form.addChoiceField(line, slots[1], MODE_OPTIONS,
       function() return channels[i].mode end,
       function(value)
+        markDirty()
         channels[i].mode = value
         refreshEnabled()
       end)
     pair.value = form.addNumberField(line, slots[2], 875, 2125,
       function() return channels[i].value end,
-      function(value) channels[i].value = value end)
+      function(value) markDirty(); channels[i].value = value end)
     pair.value:suffix("us")
     if pair.value.step then pair.value:step(5) end
     pair.mode:enable(false)

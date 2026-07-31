@@ -95,6 +95,7 @@ local function open(opts)
       return normalizeProfile(runtime.data.profile and runtime.data.profile.batteryProfile) or 0
     end,
     function(value)
+      runtime:markDirty()
       if runtime.data.profile then runtime.data.profile.batteryProfile = normalizeProfile(value) or 0 end
       if form.invalidate then form.invalidate() end
     end)
@@ -108,6 +109,7 @@ local function open(opts)
       return battery[profileKey(selected)] or 0
     end,
     function(value)
+      runtime:markDirty()
       local selected = normalizeProfile(runtime.data.profile and runtime.data.profile.batteryProfile) or 0
       runtime.data.battery[profileKey(selected)] = clampCapacity(value)
     end)
