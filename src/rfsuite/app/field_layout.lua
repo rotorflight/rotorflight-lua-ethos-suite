@@ -291,11 +291,27 @@ end
 -- one -- app/lib/fields/choice.lua doesn't either -- since a choice's
 -- "default" is really just its first table entry, not a meaningful
 -- firmware-defined reset target the way a number range's is.
+
+-- Wraps a pooled slot's `set` in a fresh closure that marks `runtime`
+-- dirty first -- fresh per call (not pooled like the slot itself) since
+-- the slot outlives any one runtime (see configureChoiceSlot/
+-- configureNumberSlot's own pooling comment) but each field built against
+-- it belongs to exactly one runtime. Safe to call unconditionally: Ethos
+-- only invokes a field's setter on an actual pilot edit, never during
+-- construction or while polling the getter to display the current value,
+-- so this can never fire before the field is genuinely changed.
+local function withDirty(runtime, set)
+  return function(value)
+    runtime:markDirty()
+    set(value)
+  end
+end
+
 function field_layout.buildField(runtime, line, slot, spec)
   local field
   if spec.choices then
     local access = configureChoiceSlot(runtime, spec)
-    field = form.addChoiceField(line, slot, spec.choices, access.get, access.set)
+    field = form.addChoiceField(line, slot, spec.choices, access.get, withDirty(runtime, access.set))
   else
     local meta = metaFor(runtime, spec)
     local min = spec.min or (meta and meta.min)
@@ -309,7 +325,7 @@ function field_layout.buildField(runtime, line, slot, spec)
       scaledValue(min, scale, decimals),
       scaledValue(max, scale, decimals),
       access.get,
-      access.set)
+      withDirty(runtime, access.set))
     local suffix = spec.suffix or (meta and meta.suffix)
     local step = spec.step or (meta and meta.step)
     if decimals then field:decimals(decimals) end

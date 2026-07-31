@@ -210,6 +210,15 @@ function PageRuntime.new(config)
   self.dataRef = {data = self.data}
   self.controlRef = {runtime = self}
   self.loaded = false
+  -- True once any registered field's setter has run since the last
+  -- successful load/save -- gates the header Save button so it only
+  -- lights up once the pilot has actually changed something, matching
+  -- rotorflight-lua-ethos-suite's own save_dirty_only behavior. See
+  -- markDirty()/setDirty()/updateSaveEnabled() below and
+  -- app/field_layout.lua's buildField(), which is what actually calls
+  -- markDirty() for every field this runtime owns.
+  self.dirty = false
+  self.busy = false
   self.fields = {}
   self.activeDialog = nil
   self.headerHandle = nil
@@ -330,8 +339,37 @@ end
 -- run at a time -- disable both while either is in flight.
 function PageRuntime:setBusy(busy)
   if self.disposed or not self.headerHandle then return end
-  self.headerHandle.setSaveEnabled(not busy)
+  self.busy = busy and true or false
+  self:updateSaveEnabled()
   self.headerHandle.setReloadEnabled(not busy)
+end
+
+-- Save is only ever enabled once the page has a completed load, isn't
+-- mid save/reload, and has unsaved changes -- see self.dirty's own
+-- comment in PageRuntime.new().
+function PageRuntime:updateSaveEnabled()
+  if self.disposed or not self.headerHandle then return end
+  self.headerHandle.setSaveEnabled(self.loaded and self.dirty and not self.busy)
+end
+
+-- Called by every field this runtime owns (see app/field_layout.lua's
+-- buildField()) the moment its setter actually runs -- i.e. only on a
+-- real pilot edit, never during initial field construction/population,
+-- since Ethos only invokes a field's setter on user interaction, not
+-- when the field is built or its getter is polled for display.
+function PageRuntime:markDirty()
+  if self.disposed or self.dirty then return end
+  self.dirty = true
+  self:updateSaveEnabled()
+end
+
+-- Explicit reset, used once a load/save actually lands the page's data
+-- in sync with the flight controller again (see loadData()'s success
+-- branch and performSave()'s writeSource() success branches below).
+function PageRuntime:setDirty(dirty)
+  if self.disposed then return end
+  self.dirty = dirty and true or false
+  self:updateSaveEnabled()
 end
 
 -- Call once per field the page builds, right after creating it. Starts
@@ -386,6 +424,11 @@ function PageRuntime:loadData(focusFn)
         for _, field in pairs(self_.fields) do
           field:enable(true)
         end
+        -- Freshly-read data matches the flight controller again -- clears
+        -- any dirty state left over from edits abandoned by a manual
+        -- Reload, or from the automatic profile-switch reload discarding
+        -- whatever was on-screen for the old profile.
+        self_:setDirty(false)
         self_:setBusy(false)
         self_:closeDialog(focusFn)
         if self_.onLoaded then
@@ -483,11 +526,13 @@ function PageRuntime:performSave(focusFn)
     if self_.disposed then return end
     if index > #self_.sources then
       if not self_.eepromWrite then
+        self_:setDirty(false)
         finishSave()
         maybeReboot()
         return
       end
       bus.publish("msp.request", eeprom.buildWriteMessage(function()
+        self_:setDirty(false)
         finishSave()
         maybeReboot()
       end, function(reason)
@@ -778,6 +823,8 @@ function PageRuntime:dispose()
   self.onPaint = nil
   self.onDispose = nil
   self.loaded = false
+  self.dirty = false
+  self.busy = false
   self.lastProfile = nil
   self.loadedProfile = nil
   self.initialData = nil
@@ -982,6 +1029,7 @@ function PageRuntime:loadInitial()
     for _, field in pairs(self.fields) do
       field:enable(true)
     end
+    self:setDirty(false)
     self:setBusy(false)
     self.pendingOnLoaded = self.onLoaded ~= nil
     self.initialData = nil
