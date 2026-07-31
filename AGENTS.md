@@ -18,9 +18,10 @@ Keep behavior correct while minimizing runtime memory churn and CPU load on Etho
 - i18n sources and generators: `bin/i18n/`
 
 Reference docs:
-- `docs/system-architecture.md`
-- `docs/menu-structure.md`
+- `docs/memory-and-module-lifecycle.md` — loadfile() caching, subscription cleanup, why not to reach for collectgarbage()
 - `docs/i18n-locales.md`
+
+Note: `docs/system-architecture.md` and `docs/menu-structure.md` (referenced by older commits/comments) were deleted during the Lite-rewrite migration and were never replaced. Section 6 below ("Menu System Rules") describes the pre-rewrite manifest-generator system and may not reflect the current `app/pages/*.lua` + `MENUS` table structure — verify against the actual code before relying on it.
 
 ## 3) Non-Negotiables For Agent Changes
 
