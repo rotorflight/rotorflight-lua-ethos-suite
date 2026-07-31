@@ -448,12 +448,29 @@ local function build(widget)
   if widget and widget.settings and widget.settings.enabled == true then buildLayout(widget) end
 end
 
+local function close(widget)
+  if not widget then return end
+  if widget.sessionHandler then
+    bus.unsubscribe("session.update", widget.sessionHandler)
+    widget.sessionHandler = nil
+  end
+  if widget.settingsHandler then
+    bus.unsubscribe("settings.update", widget.settingsHandler)
+    widget.settingsHandler = nil
+  end
+  if widget.controlHandler then
+    bus.unsubscribe("activelook.control", widget.controlHandler)
+    widget.controlHandler = nil
+  end
+end
+
 local widgetDef = {
   key = "rfalk",
   name = "Rotorflight ActiveLook",
   create = create,
   build = build,
   wakeup = wakeup,
+  close = close,
 }
 
 local function init()
