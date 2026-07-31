@@ -214,7 +214,7 @@ local MENUS = {
       {title = "@i18n(app.modules.settings.dashboard)@", icon = lcd.loadMask("app/gfx/settings_dashboard.png"), menuId = "settings_dashboard_menu", offline = true},
       {title = "ActiveLook", icon = lcd.loadMask("app/gfx/settings_activelook.png"), menuId = "settings_activelook_menu", offline = true},
       {title = "@i18n(app.modules.settings.audio)@", icon = lcd.loadMask("app/gfx/settings_audio.png"), menuId = "settings_audio_menu", offline = true},
-      {title = "@i18n(app.modules.settings.txt_developer)@", icon = lcd.loadMask("app/gfx/developer.png"), script = "app/pages/developer_logging.lua", offline = true},
+      {title = "@i18n(app.modules.settings.txt_developer)@", icon = lcd.loadMask("app/gfx/developer.png"), script = "app/pages/developer_settings.lua", offline = true},
     },
   },
   settings_dashboard_menu = {
@@ -402,7 +402,14 @@ bus.subscribe("task.status", function(status)
 end)
 
 bus.subscribe("session.update", function(session)
-  sessionConnected = session and session.connected == true
+  -- An unsupported FC (wrong firmware family, or below this suite's own
+  -- MSP API floor -- see lib/msp_api_version.lua) must gate every
+  -- connection-only menu/tool the exact same way a dead link does: the
+  -- link being up doesn't mean any of the MSP traffic those pages depend
+  -- on can be trusted. apiVersionSupported ~= false (not a strict ==
+  -- true) so a not-yet-completed handshake doesn't wrongly lock out menus
+  -- before the version read has had a chance to answer.
+  sessionConnected = session and session.connected == true and session.apiVersionSupported ~= false
 end)
 
 local function updateDeveloperMode(settings)

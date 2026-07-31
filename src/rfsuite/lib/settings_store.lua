@@ -9,6 +9,7 @@ end
 
 local ini = assert(loadfile("lib/ini.lua"))()
 local activelookConfig = assert(loadfile("lib/activelook_config.lua"))()
+local mspApiVersion = assert(loadfile("lib/msp_api_version.lua"))()
 
 local SETTINGS_DIR = "SCRIPTS:/rfsuite.user"
 local SETTINGS_PATH = SETTINGS_DIR .. "/settings.ini"
@@ -25,6 +26,12 @@ local DEFAULTS = {
     debug_logs = false,
     log_msp = false,
     memory_logs = false,
+    -- Simulator-only (see tasks/session.lua's runHandshake()): which
+    -- fixture to hand the MSP_API_VERSION handshake read, to exercise the
+    -- dashboard's unsupported-firmware-family state on demand. "invalid"
+    -- or one of lib/msp_api_version.lua's own SIMULATABLE_VERSIONS
+    -- entries; defaults to the newest of those.
+    simulated_api_version = mspApiVersion.SIMULATABLE_VERSIONS[#mspApiVersion.SIMULATABLE_VERSIONS],
   },
   events = {
     armflags = true,
@@ -152,6 +159,16 @@ local function clampNumber(value, default, min, max)
   return value
 end
 
+local function coerceEnum(value, default, allowed)
+  if type(value) == "string" and allowed[value] then return value end
+  return default
+end
+
+local SIMULATED_API_VERSION_MODES = {invalid = true}
+for _, version in ipairs(mspApiVersion.SIMULATABLE_VERSIONS) do
+  SIMULATED_API_VERSION_MODES[version] = true
+end
+
 local function normalizeEvents(values)
   local events = copySection(DEFAULTS.events)
   values = type(values) == "table" and values or {}
@@ -205,6 +222,7 @@ local function normalize(settings)
   settings.developer.debug_logs = coerceBool(settings.developer.debug_logs, DEFAULTS.developer.debug_logs)
   settings.developer.log_msp = coerceBool(settings.developer.log_msp, DEFAULTS.developer.log_msp)
   settings.developer.memory_logs = coerceBool(settings.developer.memory_logs, DEFAULTS.developer.memory_logs)
+  settings.developer.simulated_api_version = coerceEnum(settings.developer.simulated_api_version, DEFAULTS.developer.simulated_api_version, SIMULATED_API_VERSION_MODES)
 
   settings.events = normalizeEvents(settings.events)
   settings.timer = normalizeTimer(settings.timer)
@@ -307,6 +325,12 @@ function settings_store.memoryLogsEnabled(settings)
   local developer = type(settings) == "table" and settings.developer or nil
   local value = type(developer) == "table" and developer.memory_logs or nil
   return coerceBool(value, DEFAULTS.developer.memory_logs) == true
+end
+
+function settings_store.simulatedApiVersionMode(settings)
+  local developer = type(settings) == "table" and settings.developer or nil
+  local value = type(developer) == "table" and developer.simulated_api_version or nil
+  return coerceEnum(value, DEFAULTS.developer.simulated_api_version, SIMULATED_API_VERSION_MODES)
 end
 
 function settings_store.audioEvents(settings)

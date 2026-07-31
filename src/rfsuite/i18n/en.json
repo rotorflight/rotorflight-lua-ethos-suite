@@ -6012,6 +6012,18 @@
           "needs_translation": false,
           "translation": "RX threshold"
         },
+        "simulated_api_version": {
+          "english": "Simulated API version",
+          "max_length": 21,
+          "needs_translation": false,
+          "translation": "Simulated API version"
+        },
+        "simulated_api_version_invalid": {
+          "english": "Invalid",
+          "max_length": 7,
+          "needs_translation": false,
+          "translation": "Invalid"
+        },
         "timer_alert_interval": {
           "english": "Alert interval",
           "max_length": 14,
@@ -7344,6 +7356,18 @@
         "max_length": 11,
         "needs_translation": false,
         "translation": "ROTORFLIGHT"
+      },
+      "startup_unsupported_version": {
+        "english": "Unsupported firmware",
+        "max_length": 21,
+        "needs_translation": false,
+        "translation": "Unsupported firmware"
+      },
+      "startup_unsupported_version_detail": {
+        "english": "MSP API version not supported:",
+        "max_length": 31,
+        "needs_translation": false,
+        "translation": "MSP API version not supported:"
       },
       "startup_waiting_task": {
         "english": "Starting background task",

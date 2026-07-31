@@ -22,6 +22,8 @@
 
 local bus = assert(loadfile("lib/bus.lua"))()
 local handshake = assert(loadfile("lib/msp_handshake.lua"))()
+local mspApiVersion = assert(loadfile("lib/msp_api_version.lua"))()
+local settingsStore = assert(loadfile("lib/settings_store.lua"))()
 local mspBattery = assert(loadfile("lib/msp_battery.lua"))()
 local dataflashSummary = assert(loadfile("lib/msp_dataflash_summary.lua"))()
 local governorConfig = assert(loadfile("lib/msp_governor_config.lua"))()
@@ -62,6 +64,11 @@ local session = {
   voltage = nil,
   fcVersion = nil,
   rfVersion = nil,
+  apiVersionMajor = nil,
+  apiVersionMinor = nil,
+  -- true/false once lib/msp_api_version.lua's read completes; nil while
+  -- still unknown (never reads as "unsupported" -- see its own isSupported()).
+  apiVersionSupported = nil,
   mcuId = nil,
   craftName = nil,
   clockSynced = false,
@@ -223,6 +230,9 @@ local function publish()
     voltage = session.voltage,
     fcVersion = session.fcVersion,
     rfVersion = session.rfVersion,
+    apiVersionMajor = session.apiVersionMajor,
+    apiVersionMinor = session.apiVersionMinor,
+    apiVersionSupported = session.apiVersionSupported,
     mcuId = session.mcuId,
     craftName = session.craftName,
     batteryConfig = copyBatteryConfig(session.batteryConfig),
@@ -389,6 +399,26 @@ end
 -- others -- there is no manifest/retry-queue runner here, only the
 -- queue's own per-message retry (see tasks/msp/queue.lua).
 local function runHandshake(mspQueue, protocol)
+  if session.apiVersionMajor == nil then
+    -- Developer-only, and only reachable in the simulator (real hardware
+    -- always ignores simulatorResponse -- see tasks/msp/queue.lua's isSim
+    -- branch): lets a dev exercise the "unsupported firmware family"
+    -- dashboard state on demand instead of needing incompatible real
+    -- hardware to test it against.
+    local simResponse = nil
+    if isSim then
+      local devSettings = settingsStore.load()
+      local mode = settingsStore.simulatedApiVersionMode(devSettings)
+      simResponse = mspApiVersion.simResponseForVersion(mode)
+    end
+    mspQueue:add(mspApiVersion.buildReadMessage(function(data)
+      session.apiVersionMajor = data.major
+      session.apiVersionMinor = data.minor
+      session.apiVersionSupported = mspApiVersion.isSupported(data.major, data.minor)
+      publish()
+    end, nil, simResponse))
+  end
+
   if not session.fcVersion then
     mspQueue:add(handshake.buildFcVersionReadMessage(function(data)
       session.fcVersion = data.fcVersion
@@ -504,6 +534,9 @@ local function setConnected(value, mspQueue, protocol)
     -- disconnect).
     session.fcVersion = nil
     session.rfVersion = nil
+    session.apiVersionMajor = nil
+    session.apiVersionMinor = nil
+    session.apiVersionSupported = nil
     session.mcuId = nil
     session.craftName = nil
     session.clockSynced = false

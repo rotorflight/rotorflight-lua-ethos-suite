@@ -1690,6 +1690,18 @@
           "needs_translation": false,
           "max_length": 11
         },
+        "simulated_api_version": {
+          "english": "Simulated API version",
+          "translation": "Simulated API version",
+          "needs_translation": false,
+          "max_length": 21
+        },
+        "simulated_api_version_invalid": {
+          "english": "Invalid",
+          "translation": "Invalid",
+          "needs_translation": false,
+          "max_length": 7
+        },
         "audio_event_state": {
           "english": "State callouts",
           "translation": "State callouts",
@@ -7254,6 +7266,18 @@
         "max_length": 30,
         "needs_translation": false,
         "translation": "Waiting for telemetry sensors."
+      },
+      "startup_unsupported_version": {
+        "english": "Unsupported firmware",
+        "max_length": 21,
+        "needs_translation": false,
+        "translation": "Unsupported firmware"
+      },
+      "startup_unsupported_version_detail": {
+        "english": "MSP API version not supported:",
+        "max_length": 31,
+        "needs_translation": false,
+        "translation": "MSP API version not supported:"
       },
       "startup_preparing_dashboard": {
         "english": "Preparing dashboard",

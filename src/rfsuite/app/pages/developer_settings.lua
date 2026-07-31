@@ -4,8 +4,20 @@ local bus = assert(loadfile("lib/bus.lua"))()
 local closeKey = assert(loadfile("app/close_key.lua"))()
 local header = assert(loadfile("app/header.lua"))()
 local settingsStore = assert(loadfile("lib/settings_store.lua"))()
+local mspApiVersion = assert(loadfile("lib/msp_api_version.lua"))()
 
 local PAGE_TITLE = "@i18n(app.modules.settings.txt_developer)@ / @i18n(app.modules.settings.developer_settings)@"
+
+-- Simulator-only (see tasks/session.lua's runHandshake() and
+-- lib/msp_api_version.lua): index 0 is the "wrong firmware family" case,
+-- index 1..N are lib/msp_api_version.lua's own SIMULATABLE_VERSIONS --
+-- extend that list, not this one, when a new MSP API version ships.
+local SIMULATED_API_VERSION_CHOICES = {
+  {"@i18n(app.modules.settings.simulated_api_version_invalid)@", 0},
+}
+for i, version in ipairs(mspApiVersion.SIMULATABLE_VERSIONS) do
+  SIMULATED_API_VERSION_CHOICES[#SIMULATED_API_VERSION_CHOICES + 1] = {version, i}
+end
 local BTN_OK = "@i18n(app.btn_ok)@"
 local BTN_CANCEL = "@i18n(app.btn_cancel)@"
 local MSG_SAVE_TITLE = "@i18n(app.msg_save_settings)@"
@@ -116,6 +128,22 @@ local function open(opts)
       if not settings then return end
       settings.developer = settings.developer or {}
       settings.developer.memory_logs = value == true
+      updateSaveEnabled()
+    end)
+
+  line = form.addLine("@i18n(app.modules.settings.simulated_api_version)@")
+  form.addChoiceField(line, nil, SIMULATED_API_VERSION_CHOICES,
+    function()
+      local value = settings and settings.developer and settings.developer.simulated_api_version
+      for i, version in ipairs(mspApiVersion.SIMULATABLE_VERSIONS) do
+        if version == value then return i end
+      end
+      return 0
+    end,
+    function(value)
+      if not settings then return end
+      settings.developer = settings.developer or {}
+      settings.developer.simulated_api_version = mspApiVersion.SIMULATABLE_VERSIONS[value] or "invalid"
       updateSaveEnabled()
     end)
 

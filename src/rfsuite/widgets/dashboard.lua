@@ -361,7 +361,10 @@ end
 
 local function isToolbarItemEnabled(widget, item)
   if not item then return false end
-  if item.isConnected == true and not (widget and widget.connected == true) then return false end
+  -- apiVersionSupported ~= false (not a strict == true) so a not-yet-read
+  -- version doesn't wrongly block a toolbar item before the handshake has
+  -- even had a chance to answer -- only a *confirmed* unsupported FC does.
+  if item.isConnected == true and not (widget and widget.connected == true and widget.apiVersionSupported ~= false) then return false end
   if item.requiresOpenPage == true and not canOpenSystemTool() then return false end
   if item.requiresBatteryProfiles == true and not hasSelectableBatteryProfiles(widget) then return false end
   return true
@@ -915,6 +918,9 @@ local function update(widget, snapshot)
   widget.mcuId = snapshot.mcuId
   widget.fcVersion = snapshot.fcVersion
   widget.rfVersion = snapshot.rfVersion
+  widget.apiVersionMajor = snapshot.apiVersionMajor
+  widget.apiVersionMinor = snapshot.apiVersionMinor
+  widget.apiVersionSupported = snapshot.apiVersionSupported
   widget.voltage = snapshot.voltage
   widget.batteryConfig = snapshot.batteryConfig
   widget.consumption = snapshot.consumption
@@ -1006,6 +1012,15 @@ end
 
 local function shouldShowStartupOverlay(widget)
   if not widget then return true end
+  -- Checked even ahead of startupComplete's latch below: an unsupported FC
+  -- must keep the overlay up regardless of whether a *previous* connection
+  -- this session already finished startup once. Without this, the
+  -- simulator's own always-on fake sensors (tasks/sim_sensors.lua runs
+  -- independent of the MSP handshake) satisfy hasTelemetryValues() below
+  -- no matter what the FC's version is, so the dashboard would proceed as
+  -- if nothing were wrong -- exactly the silent-hang bug this exists to
+  -- surface instead.
+  if widget.connected == true and widget.apiVersionSupported == false then return true end
   if widget.startupComplete == true then return false end
   if dashboardState(widget) == "postflight" then return false end
   if not hasTelemetryValues(widget) then return true end
@@ -1016,6 +1031,18 @@ local function startupOverlayMessage(widget)
   if not widget or widget.taskRunning ~= true then
     return "@i18n(widgets.dashboard.startup_waiting_task)@",
       "@i18n(widgets.dashboard.startup_waiting_task_detail)@"
+  end
+  -- Checked before the generic "waiting for telemetry" branch below: on an
+  -- unsupported/wrong-family FC, telemetry provisioning may never complete
+  -- at all (see tasks/session.lua's runHandshake()), which would otherwise
+  -- leave this stuck on that generic message forever with no explanation.
+  if widget.connected == true and widget.apiVersionSupported == false then
+    local detected = "?"
+    if widget.apiVersionMajor and widget.apiVersionMinor then
+      detected = string.format("%d.%02d", widget.apiVersionMajor, widget.apiVersionMinor)
+    end
+    return "@i18n(widgets.dashboard.startup_unsupported_version)@",
+      "@i18n(widgets.dashboard.startup_unsupported_version_detail)@ " .. detected
   end
   if widget.connected == true and not hasTelemetryValues(widget) then
     return "@i18n(widgets.dashboard.startup_waiting_telemetry)@",
