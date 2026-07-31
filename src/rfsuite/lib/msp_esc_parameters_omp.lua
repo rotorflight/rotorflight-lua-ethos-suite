@@ -1,5 +1,9 @@
 -- OMP forward-programming payload (MSP 217 read / 218 write).
 
+if package.loaded["rfsuite.lib.msp_esc_parameters_omp"] then
+  return package.loaded["rfsuite.lib.msp_esc_parameters_omp"]
+end
+
 local base = assert(loadfile("lib/msp_esc_parameters_xdfly.lua"))()
 
 local msp = {}
@@ -40,4 +44,5 @@ function msp.buildWriteMessage(data, onWritten, onError)
   return base.buildWriteMessage(data, onWritten, onError)
 end
 
+package.loaded["rfsuite.lib.msp_esc_parameters_omp"] = msp
 return msp
