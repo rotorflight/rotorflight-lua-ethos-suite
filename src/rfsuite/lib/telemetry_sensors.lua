@@ -144,10 +144,14 @@ function telemetry_sensors.getValue(protocol, name)
   return source:value()
 end
 
+local function clearTable(t)
+  for key in pairs(t) do t[key] = nil end
+end
+
 function telemetry_sensors.reset()
-  resolvedCache = {}
-  missRetryAt = {}
-  revalidateAt = {}
+  clearTable(resolvedCache)
+  clearTable(missRetryAt)
+  clearTable(revalidateAt)
 end
 
 return telemetry_sensors
