@@ -671,18 +671,19 @@ local function updateProfiles(protocol)
     publish()
   end
 
-  -- Matches the original's own armFlagsToIsArmed(): raw value 1 or 3
-  -- means armed, 0 or 2 disarmed (bit 0 of the flags), anything else
-  -- (including the sensor not broadcasting yet, nil) is left alone --
-  -- session.isArmed keeps its last known value rather than guessing at
-  -- one, same "don't overwrite a real reading with a guess" reasoning
+  -- Bit 0 (ARMED, firmware src/main/fc/runtime_config.h) is the only bit
+  -- that reflects current arm state -- bits 1 (WAS_EVER_ARMED) and 2
+  -- (WAS_ARMED_WITH_PREARM) are historical and accumulate over a session,
+  -- so a whole-byte whitelist (armFlags == 1 or 3) stops matching once
+  -- either has been set (e.g. PREARM users see 5, then 7 -- both still
+  -- armed). When the sensor hasn't reported yet (nil), session.isArmed
+  -- keeps its last known value rather than guessing at one, same "don't
+  -- overwrite a real reading with a guess" reasoning
   -- lib/telemetry_sensors.lua's own miss-retry cache already uses.
   local armFlags = telemetrySensors.getValue(protocol, "armflags")
   local isArmed
-  if armFlags == 1 or armFlags == 3 then
-    isArmed = true
-  elseif armFlags == 0 or armFlags == 2 then
-    isArmed = false
+  if armFlags ~= nil then
+    isArmed = (math.floor(armFlags) & 1) == 1
   end
   if isArmed ~= nil and isArmed ~= session.isArmed then
     session.isArmed = isArmed

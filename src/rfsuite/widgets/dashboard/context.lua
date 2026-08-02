@@ -1897,10 +1897,17 @@ local ARMING_DISABLE_FLAG_TAG = {
   [25] = "@i18n(app.modules.fblstatus.arming_disable_flag_25)@",
 }
 
+-- Bit 0 (ARMED) is the only bit that reflects current arm state -- bits 1
+-- (WAS_EVER_ARMED) and 2 (WAS_ARMED_WITH_PREARM, firmware
+-- src/main/fc/runtime_config.h) are historical/informational and get set
+-- alongside ARMED once a model has been armed at least once (and,
+-- separately, once PREARM has ever been used), so a whole-byte whitelist
+-- like {1, 3} stops matching as soon as either of those accumulates (e.g.
+-- PREARM users see 5, then 7 -- both still armed, bit 0 still set).
 function context.utils.armFlagsToIsArmed(value)
-  if value == 1 or value == 3 then return true end
-  if value == 0 or value == 2 then return false end
-  return nil
+  value = tonumber(value)
+  if value == nil then return nil end
+  return (math.floor(value) & 1) == 1
 end
 
 function context.utils.armingDisableFlagsToString(flags)

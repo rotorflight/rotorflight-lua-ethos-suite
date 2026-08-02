@@ -427,7 +427,11 @@ local function readArmflags(telemetry, showReason)
     end
 
     if value == nil then return nil end
-    if value == 1 or value == 3 then return "ARMED" end
+    -- Bit 0 (ARMED, firmware runtime_config.h) is the only bit that
+    -- reflects current arm state -- bits 1/2 accumulate over a session
+    -- (e.g. PREARM users see 5, then 7), so a whole-value check like
+    -- value == 1 or 3 stops matching once either has been set.
+    if (floor(value) & 1) == 1 then return "ARMED" end
     return "DISARMED"
 end
 

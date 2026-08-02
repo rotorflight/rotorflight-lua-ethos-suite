@@ -104,7 +104,12 @@ function render.wakeup(box)
 
     if not showReason then
         if value ~= nil then
-            if value == 1 or value == 3 then
+            -- Bit 0 (ARMED, firmware runtime_config.h) is the only bit
+            -- that reflects current arm state -- bits 1/2 accumulate over
+            -- a session (e.g. PREARM users see 5, then 7), so a
+            -- whole-value check like value == 1 or 3 stops matching once
+            -- either has been set.
+            if (floor(value) & 1) == 1 then
                 displayValue = "@i18n(widgets.governor.ARMED)@"
             else
                 displayValue = "@i18n(widgets.governor.DISARMED)@"
