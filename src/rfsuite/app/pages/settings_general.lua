@@ -1,23 +1,23 @@
--- Developer settings and logging toggles.
+-- Settings -> General.
 
 local bus = assert(loadfile("lib/bus.lua"))()
 local closeKey = assert(loadfile("app/close_key.lua"))()
 local header = assert(loadfile("app/header.lua"))()
 local settingsStore = assert(loadfile("lib/settings_store.lua"))()
-local mspApiVersion = assert(loadfile("lib/msp_api_version.lua"))()
 
-local PAGE_TITLE = "@i18n(app.modules.settings.txt_developer)@ / @i18n(app.modules.settings.developer_settings)@"
+local PAGE_TITLE = "@i18n(app.modules.settings.name)@ / @i18n(app.modules.settings.txt_general)@"
 
--- Simulator-only (see tasks/session.lua's runHandshake() and
--- lib/msp_api_version.lua): index 0 is the "wrong firmware family" case,
--- index 1..N are lib/msp_api_version.lua's own SIMULATABLE_VERSIONS --
--- extend that list, not this one, when a new MSP API version ships.
-local SIMULATED_API_VERSION_CHOICES = {
-  {"@i18n(app.modules.settings.simulated_api_version_invalid)@", 0},
+local TXBATT_CHOICES = {
+  {"@i18n(app.modules.settings.tx_battery_default)@", 0},
+  {"@i18n(app.modules.settings.tx_battery_text)@", 1},
+  {"@i18n(app.modules.settings.tx_battery_digital)@", 2},
 }
-for i, version in ipairs(mspApiVersion.SIMULATABLE_VERSIONS) do
-  SIMULATED_API_VERSION_CHOICES[#SIMULATED_API_VERSION_CHOICES + 1] = {version, i}
-end
+
+local TEMPERATURE_UNIT_CHOICES = {
+  {"Celsius", 0},
+  {"Fahrenheit", 1},
+}
+
 local BTN_OK = "@i18n(app.btn_ok)@"
 local BTN_CANCEL = "@i18n(app.btn_cancel)@"
 local MSG_SAVE_TITLE = "@i18n(app.msg_save_settings)@"
@@ -81,59 +81,56 @@ local function open(opts)
     onSave = function() confirmSave(headerHandle and headerHandle.focusSave) end,
   })
 
+  settings.general = settings.general or {}
+
+  local displayPanel = form.addExpansionPanel("@i18n(app.modules.settings.dashboard_display_panel)@")
+  displayPanel:open(true)
+
+  form.addChoiceField(displayPanel:addLine("@i18n(app.modules.settings.tx_battery_options)@"), nil, TXBATT_CHOICES,
+    function()
+      return settings and settings.general and settings.general.txbatt_type or 0
+    end,
+    function(value)
+      if not settings then return end
+      settings.general = settings.general or {}
+      settings.general.txbatt_type = tonumber(value) or 0
+      updateSaveEnabled()
+    end)
+
+  form.addChoiceField(displayPanel:addLine("@i18n(app.modules.settings.temperature_unit)@"), nil, TEMPERATURE_UNIT_CHOICES,
+    function()
+      return settings and settings.general and settings.general.temperature_unit or 0
+    end,
+    function(value)
+      if not settings then return end
+      settings.general = settings.general or {}
+      settings.general.temperature_unit = tonumber(value) or 0
+      updateSaveEnabled()
+    end)
+
+  local developmentPanel = form.addExpansionPanel("@i18n(app.modules.settings.txt_developer)@")
+  developmentPanel:open(false)
+
   settings.developer = settings.developer or {}
 
-  local line = form.addLine("@i18n(app.modules.settings.debug_logs)@")
-  form.addBooleanField(line, nil,
+  form.addBooleanField(developmentPanel:addLine("@i18n(app.modules.settings.developer_mode)@"), nil,
     function()
-      return settings and settings.developer and settings.developer.debug_logs == true
+      return settings and settings.developer and settings.developer.developer_mode == true
     end,
     function(value)
       if not settings then return end
       settings.developer = settings.developer or {}
-      settings.developer.debug_logs = value == true
+      settings.developer.developer_mode = value == true
       updateSaveEnabled()
     end)
 
-  line = form.addLine("@i18n(app.modules.settings.log_msp_data)@")
-  form.addBooleanField(line, nil,
-    function()
-      return settings and settings.developer and settings.developer.log_msp == true
-    end,
-    function(value)
-      if not settings then return end
-      settings.developer = settings.developer or {}
-      settings.developer.log_msp = value == true
-      updateSaveEnabled()
-    end)
+  local safetyPanel = form.addExpansionPanel("@i18n(app.modules.settings.panel_safety_prompts)@")
+  safetyPanel:open(false)
+  form.addStaticText(safetyPanel:addLine(""), nil, "@i18n(app.modules.settings.panel_coming_soon)@")
 
-  line = form.addLine("@i18n(app.modules.settings.memory_logs)@")
-  form.addBooleanField(line, nil,
-    function()
-      return settings and settings.developer and settings.developer.memory_logs == true
-    end,
-    function(value)
-      if not settings then return end
-      settings.developer = settings.developer or {}
-      settings.developer.memory_logs = value == true
-      updateSaveEnabled()
-    end)
-
-  line = form.addLine("@i18n(app.modules.settings.simulated_api_version)@")
-  form.addChoiceField(line, nil, SIMULATED_API_VERSION_CHOICES,
-    function()
-      local value = settings and settings.developer and settings.developer.simulated_api_version
-      for i, version in ipairs(mspApiVersion.SIMULATABLE_VERSIONS) do
-        if version == value then return i end
-      end
-      return 0
-    end,
-    function(value)
-      if not settings then return end
-      settings.developer = settings.developer or {}
-      settings.developer.simulated_api_version = mspApiVersion.SIMULATABLE_VERSIONS[value] or "invalid"
-      updateSaveEnabled()
-    end)
+  local integrationPanel = form.addExpansionPanel("@i18n(app.modules.settings.panel_integration)@")
+  integrationPanel:open(false)
+  form.addStaticText(integrationPanel:addLine(""), nil, "@i18n(app.modules.settings.panel_coming_soon)@")
 
   updateSaveEnabled()
 

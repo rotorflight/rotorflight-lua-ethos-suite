@@ -4419,6 +4419,13 @@
           "reverse_text": false,
           "translation": "Voltage Filter Afkap"
         },
+        "gov_rpm_filter": {
+          "english": "Headspeed Filter Cutoff",
+          "max_length": 23,
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "Headspeed Filter Cutoff"
+        },
         "gov_tta_filter": {
           "english": "TTA Bandwidth",
           "max_length": 13,
@@ -6649,6 +6656,7 @@
           "english": "Display",
           "max_length": 7,
           "needs_translation": false,
+          "reverse_text": false,
           "translation": "Display"
         },
         "dashboard_settings": {
@@ -6709,7 +6717,7 @@
         },
         "dashboard_theme_helihud": {
           "english": "HeliHUD",
-          "max_length": 14,
+          "max_length": 7,
           "needs_translation": true,
           "reverse_text": false,
           "translation": "HeliHUD"
@@ -6945,13 +6953,6 @@
           "reverse_text": false,
           "translation": "Geheugenlogboeken"
         },
-        "model_announcement": {
-          "english": "Model announcement",
-          "max_length": 18,
-          "needs_translation": true,
-          "reverse_text": false,
-          "translation": "Model announcement"
-        },
         "name": {
           "english": "Settings",
           "max_length": 8,
@@ -6965,6 +6966,27 @@
           "needs_translation": false,
           "reverse_text": false,
           "translation": "Geen themes beschikbaar om in te stellen"
+        },
+        "panel_coming_soon": {
+          "english": "Coming soon",
+          "max_length": 11,
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "Coming soon"
+        },
+        "panel_integration": {
+          "english": "Integration",
+          "max_length": 11,
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "Integration"
+        },
+        "panel_safety_prompts": {
+          "english": "Safety Prompts",
+          "max_length": 14,
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "Safety Prompts"
         },
         "pid_profile": {
           "english": "PID profile",
@@ -6993,6 +7015,27 @@
           "needs_translation": false,
           "reverse_text": false,
           "translation": "RX-drempel"
+        },
+        "simulated_api_version": {
+          "english": "Simulated API version",
+          "max_length": 21,
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "Simulated API version"
+        },
+        "simulated_api_version_invalid": {
+          "english": "Invalid",
+          "max_length": 7,
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "Invalid"
+        },
+        "temperature_unit": {
+          "english": "Temperature Unit",
+          "max_length": 16,
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "Temperature Unit"
         },
         "timer_alert_interval": {
           "english": "Alert interval",
@@ -7089,24 +7132,28 @@
           "english": "Default",
           "max_length": 7,
           "needs_translation": false,
+          "reverse_text": false,
           "translation": "Default"
         },
         "tx_battery_digital": {
           "english": "Digital",
           "max_length": 7,
           "needs_translation": false,
+          "reverse_text": false,
           "translation": "Digital"
         },
         "tx_battery_options": {
           "english": "Tx Battery Options",
           "max_length": 18,
           "needs_translation": false,
+          "reverse_text": false,
           "translation": "Tx Battery Options"
         },
         "tx_battery_text": {
           "english": "Text",
           "max_length": 4,
           "needs_translation": false,
+          "reverse_text": false,
           "translation": "Text"
         },
         "txt_audio_events": {
@@ -7136,6 +7183,13 @@
           "needs_translation": false,
           "reverse_text": false,
           "translation": "Ontwikkelaar"
+        },
+        "txt_general": {
+          "english": "General",
+          "max_length": 7,
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "General"
         },
         "voltage": {
           "english": "Voltage",
@@ -8541,6 +8595,20 @@
         "needs_translation": false,
         "reverse_text": false,
         "translation": "ROTORVLUCHT"
+      },
+      "startup_unsupported_version": {
+        "english": "Unsupported firmware",
+        "max_length": 20,
+        "needs_translation": true,
+        "reverse_text": false,
+        "translation": "Unsupported firmware"
+      },
+      "startup_unsupported_version_detail": {
+        "english": "MSP API version not supported:",
+        "max_length": 30,
+        "needs_translation": true,
+        "reverse_text": false,
+        "translation": "MSP API version not supported:"
       },
       "startup_waiting_task": {
         "english": "Starting background task",

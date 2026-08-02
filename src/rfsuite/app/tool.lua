@@ -211,6 +211,7 @@ local MENUS = {
   settings_menu = {
     title = "@i18n(app.modules.settings.name)@",
     entries = {
+      {title = "@i18n(app.modules.settings.txt_general)@", icon = lcd.loadMask("app/gfx/settings.png"), script = "app/pages/settings_general.lua", offline = true},
       {title = "@i18n(app.modules.settings.dashboard)@", icon = lcd.loadMask("app/gfx/settings_dashboard.png"), menuId = "settings_dashboard_menu", offline = true},
       {title = "ActiveLook", icon = lcd.loadMask("app/gfx/settings_activelook.png"), menuId = "settings_activelook_menu", offline = true},
       {title = "@i18n(app.modules.settings.audio)@", icon = lcd.loadMask("app/gfx/settings_audio.png"), menuId = "settings_audio_menu", offline = true},

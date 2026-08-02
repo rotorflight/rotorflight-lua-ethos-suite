@@ -2010,7 +2010,7 @@
         },
         "dashboard_theme_helihud": {
           "english": "HeliHUD",
-          "max_length": 14,
+          "max_length": 7,
           "needs_translation": false,
           "translation": "HeliHUD"
         },
@@ -2061,6 +2061,36 @@
           "max_length": 7,
           "needs_translation": false,
           "translation": "Display"
+        },
+        "txt_general": {
+          "english": "General",
+          "max_length": 7,
+          "needs_translation": false,
+          "translation": "General"
+        },
+        "panel_safety_prompts": {
+          "english": "Safety Prompts",
+          "max_length": 14,
+          "needs_translation": false,
+          "translation": "Safety Prompts"
+        },
+        "panel_integration": {
+          "english": "Integration",
+          "max_length": 11,
+          "needs_translation": false,
+          "translation": "Integration"
+        },
+        "panel_coming_soon": {
+          "english": "Coming soon",
+          "max_length": 11,
+          "needs_translation": false,
+          "translation": "Coming soon"
+        },
+        "temperature_unit": {
+          "english": "Temperature Unit",
+          "max_length": 16,
+          "needs_translation": false,
+          "translation": "Temperature Unit"
         }
       },
       "telemetry": {
@@ -7269,13 +7299,13 @@
       },
       "startup_unsupported_version": {
         "english": "Unsupported firmware",
-        "max_length": 21,
+        "max_length": 20,
         "needs_translation": false,
         "translation": "Unsupported firmware"
       },
       "startup_unsupported_version_detail": {
         "english": "MSP API version not supported:",
-        "max_length": 31,
+        "max_length": 30,
         "needs_translation": false,
         "translation": "MSP API version not supported:"
       },

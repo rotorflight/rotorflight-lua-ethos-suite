@@ -5774,7 +5774,7 @@
         },
         "dashboard_theme_helihud": {
           "english": "HeliHUD",
-          "max_length": 14,
+          "max_length": 7,
           "needs_translation": false,
           "translation": "HeliHUD"
         },
@@ -5976,12 +5976,6 @@
           "needs_translation": false,
           "translation": "Memory logs"
         },
-        "model_announcement": {
-          "english": "Model announcement",
-          "max_length": 18,
-          "needs_translation": false,
-          "translation": "Model announcement"
-        },
         "name": {
           "english": "Settings",
           "max_length": 8,
@@ -5993,6 +5987,24 @@
           "max_length": 47,
           "needs_translation": false,
           "translation": "No configurable themes installed on this device"
+        },
+        "panel_coming_soon": {
+          "english": "Coming soon",
+          "max_length": 11,
+          "needs_translation": false,
+          "translation": "Coming soon"
+        },
+        "panel_integration": {
+          "english": "Integration",
+          "max_length": 11,
+          "needs_translation": false,
+          "translation": "Integration"
+        },
+        "panel_safety_prompts": {
+          "english": "Safety Prompts",
+          "max_length": 14,
+          "needs_translation": false,
+          "translation": "Safety Prompts"
         },
         "pid_profile": {
           "english": "PID profile",
@@ -6029,6 +6041,12 @@
           "max_length": 7,
           "needs_translation": false,
           "translation": "Invalid"
+        },
+        "temperature_unit": {
+          "english": "Temperature Unit",
+          "max_length": 16,
+          "needs_translation": false,
+          "translation": "Temperature Unit"
         },
         "timer_alert_interval": {
           "english": "Alert interval",
@@ -6155,6 +6173,12 @@
           "max_length": 9,
           "needs_translation": false,
           "translation": "Developer"
+        },
+        "txt_general": {
+          "english": "General",
+          "max_length": 7,
+          "needs_translation": false,
+          "translation": "General"
         },
         "voltage": {
           "english": "Voltage",
@@ -7365,13 +7389,13 @@
       },
       "startup_unsupported_version": {
         "english": "Unsupported firmware",
-        "max_length": 21,
+        "max_length": 20,
         "needs_translation": false,
         "translation": "Unsupported firmware"
       },
       "startup_unsupported_version_detail": {
         "english": "MSP API version not supported:",
-        "max_length": 31,
+        "max_length": 30,
         "needs_translation": false,
         "translation": "MSP API version not supported:"
       },

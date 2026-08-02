@@ -638,6 +638,13 @@
           "max_length": 21,
           "reverse_text": false
         },
+        "gov_rpm_filter": {
+          "english": "Headspeed Filter Cutoff",
+          "translation": "Headspeed Filter Cutoff",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 23
+        },
         "gov_tta_filter": {
           "english": "TTA Bandwidth",
           "translation": "Bande passante TTA",
@@ -1959,6 +1966,20 @@
           "reverse_text": false,
           "max_length": 11
         },
+        "simulated_api_version": {
+          "english": "Simulated API version",
+          "translation": "Simulated API version",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 21
+        },
+        "simulated_api_version_invalid": {
+          "english": "Invalid",
+          "translation": "Invalid",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 7
+        },
         "audio_event_state": {
           "english": "State callouts",
           "translation": "Appels d'état",
@@ -2318,7 +2339,7 @@
         },
         "dashboard_theme_helihud": {
           "english": "HeliHUD",
-          "max_length": 14,
+          "max_length": 7,
           "needs_translation": true,
           "translation": "HeliHUD",
           "reverse_text": false
@@ -2348,31 +2369,71 @@
           "english": "Tx Battery Options",
           "max_length": 18,
           "needs_translation": false,
-          "translation": "Tx Battery Options"
+          "translation": "Tx Battery Options",
+          "reverse_text": false
         },
         "tx_battery_default": {
           "english": "Default",
           "max_length": 7,
           "needs_translation": false,
-          "translation": "Default"
+          "translation": "Default",
+          "reverse_text": false
         },
         "tx_battery_text": {
           "english": "Text",
           "max_length": 4,
           "needs_translation": false,
-          "translation": "Text"
+          "translation": "Text",
+          "reverse_text": false
         },
         "tx_battery_digital": {
           "english": "Digital",
           "max_length": 7,
           "needs_translation": false,
-          "translation": "Digital"
+          "translation": "Digital",
+          "reverse_text": false
         },
         "dashboard_display_panel": {
           "english": "Display",
           "max_length": 7,
           "needs_translation": false,
-          "translation": "Display"
+          "translation": "Display",
+          "reverse_text": false
+        },
+        "txt_general": {
+          "english": "General",
+          "translation": "General",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 7
+        },
+        "panel_safety_prompts": {
+          "english": "Safety Prompts",
+          "translation": "Safety Prompts",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 14
+        },
+        "panel_integration": {
+          "english": "Integration",
+          "translation": "Integration",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 11
+        },
+        "panel_coming_soon": {
+          "english": "Coming soon",
+          "translation": "Coming soon",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 11
+        },
+        "temperature_unit": {
+          "english": "Temperature Unit",
+          "translation": "Temperature Unit",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 16
         }
       },
       "telemetry": {
@@ -8427,6 +8488,20 @@
         "english": "Waiting for telemetry sensors.",
         "translation": "En attente des capteurs de télémétrie.",
         "needs_translation": false,
+        "reverse_text": false,
+        "max_length": 30
+      },
+      "startup_unsupported_version": {
+        "english": "Unsupported firmware",
+        "translation": "Unsupported firmware",
+        "needs_translation": true,
+        "reverse_text": false,
+        "max_length": 20
+      },
+      "startup_unsupported_version_detail": {
+        "english": "MSP API version not supported:",
+        "translation": "MSP API version not supported:",
+        "needs_translation": true,
         "reverse_text": false,
         "max_length": 30
       },
