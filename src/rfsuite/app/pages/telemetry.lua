@@ -159,6 +159,7 @@ local function open(opts)
         message = "@i18n(app.modules.telemetry.msg_set_defaults)@",
         buttons = {
           {label = BTN_OK, action = function()
+            runtime:markDirty()
             applyDefaultSelection(selected)
             previousConflictState = {}
             refreshConflictFields()
