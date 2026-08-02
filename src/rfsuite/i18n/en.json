@@ -5976,6 +5976,12 @@
           "needs_translation": false,
           "translation": "Memory logs"
         },
+        "model_announcement": {
+          "english": "Model announcement",
+          "max_length": 18,
+          "needs_translation": false,
+          "translation": "Model announcement"
+        },
         "name": {
           "english": "Settings",
           "max_length": 8,
