@@ -20,6 +20,12 @@ local DEFAULTS = {
     log_sample_interval = 1,
     txbatt_type = 0,
     temperature_unit = 0,
+    -- Default true (always confirm) to match this rewrite's own prior
+    -- unconditional behavior in app/page_runtime.lua's confirmSave()/
+    -- confirmReload() -- adding these as real toggles must not silently
+    -- change what a pilot who never opens Settings sees.
+    save_confirm = true,
+    reload_confirm = true,
   },
   developer = {
     developer_mode = false,
@@ -218,6 +224,8 @@ local function normalize(settings)
   settings.general.log_sample_interval = clampNumber(settings.general.log_sample_interval, DEFAULTS.general.log_sample_interval, 1, 10)
   settings.general.txbatt_type = clampNumber(settings.general.txbatt_type, DEFAULTS.general.txbatt_type, 0, 2)
   settings.general.temperature_unit = clampNumber(settings.general.temperature_unit, DEFAULTS.general.temperature_unit, 0, 1)
+  settings.general.save_confirm = coerceBool(settings.general.save_confirm, DEFAULTS.general.save_confirm)
+  settings.general.reload_confirm = coerceBool(settings.general.reload_confirm, DEFAULTS.general.reload_confirm)
 
   settings.developer = settings.developer or {}
   settings.developer.developer_mode = coerceBool(settings.developer.developer_mode, DEFAULTS.developer.developer_mode)
@@ -303,6 +311,18 @@ function settings_store.temperatureUnit(settings)
   local general = type(settings) == "table" and settings.general or nil
   local value = type(general) == "table" and general.temperature_unit or nil
   return clampNumber(value, DEFAULTS.general.temperature_unit, 0, 1)
+end
+
+function settings_store.saveConfirmEnabled(settings)
+  local general = type(settings) == "table" and settings.general or nil
+  local value = type(general) == "table" and general.save_confirm or nil
+  return coerceBool(value, DEFAULTS.general.save_confirm) == true
+end
+
+function settings_store.reloadConfirmEnabled(settings)
+  local general = type(settings) == "table" and settings.general or nil
+  local value = type(general) == "table" and general.reload_confirm or nil
+  return coerceBool(value, DEFAULTS.general.reload_confirm) == true
 end
 
 function settings_store.developerModeEnabled(settings)

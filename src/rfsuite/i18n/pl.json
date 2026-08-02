@@ -7191,6 +7191,20 @@
           "reverse_text": false,
           "translation": "General"
         },
+        "txt_reload_confirm": {
+          "english": "Reload confirm",
+          "max_length": 14,
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "Reload confirm"
+        },
+        "txt_save_confirm": {
+          "english": "Save confirm",
+          "max_length": 12,
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "Save confirm"
+        },
         "voltage": {
           "english": "Voltage",
           "max_length": 7,

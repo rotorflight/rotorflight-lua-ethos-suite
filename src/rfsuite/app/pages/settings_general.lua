@@ -126,7 +126,28 @@ local function open(opts)
 
   local safetyPanel = form.addExpansionPanel("@i18n(app.modules.settings.panel_safety_prompts)@")
   safetyPanel:open(false)
-  form.addStaticText(safetyPanel:addLine(""), nil, "@i18n(app.modules.settings.panel_coming_soon)@")
+
+  form.addBooleanField(safetyPanel:addLine("@i18n(app.modules.settings.txt_save_confirm)@"), nil,
+    function()
+      return settings and settings.general and settings.general.save_confirm ~= false
+    end,
+    function(value)
+      if not settings then return end
+      settings.general = settings.general or {}
+      settings.general.save_confirm = value == true
+      updateSaveEnabled()
+    end)
+
+  form.addBooleanField(safetyPanel:addLine("@i18n(app.modules.settings.txt_reload_confirm)@"), nil,
+    function()
+      return settings and settings.general and settings.general.reload_confirm ~= false
+    end,
+    function(value)
+      if not settings then return end
+      settings.general = settings.general or {}
+      settings.general.reload_confirm = value == true
+      updateSaveEnabled()
+    end)
 
   local integrationPanel = form.addExpansionPanel("@i18n(app.modules.settings.panel_integration)@")
   integrationPanel:open(false)

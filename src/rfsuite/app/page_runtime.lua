@@ -55,6 +55,7 @@ local reboot = assert(loadfile("lib/msp_reboot.lua"))()
 local closeKey = assert(loadfile("app/close_key.lua"))()
 local header = assert(loadfile("app/header.lua"))()
 local memstats = assert(loadfile("lib/memstats.lua"))()
+local settingsStore = assert(loadfile("lib/settings_store.lua"))()
 local debugLog = assert(loadfile("lib/debug_log.lua"))()
 local progressDialog = assert(loadfile("app/progress_dialog.lua"))()
 
@@ -577,15 +578,21 @@ function PageRuntime:performSave(focusFn)
 end
 
 -- Mirrors the original suite's app/tasks.lua:288-314 (`save_confirm`
--- preference): before actually writing to the flight controller, confirm
--- with the pilot. This rebuild has no preferences/settings subsystem to
--- gate that on, so it's unconditional here rather than invented just for
--- this one toggle -- the original's own default expectation for
--- something that writes flight-critical FC memory. Title/message/button
--- labels are the same generic MSG_SAVE_*/BTN_* for every page -- see the
--- constants' own comment above for why per-page text was dropped.
+-- preference, Settings -> General -> Safety Prompts): before actually
+-- writing to the flight controller, confirm with the pilot. Defaults true
+-- (see lib/settings_store.lua's DEFAULTS.general.save_confirm) so this
+-- stays unconditional -- the original's own default expectation for
+-- something that writes flight-critical FC memory -- unless a pilot
+-- explicitly opts out. Title/message/button labels are the same generic
+-- MSG_SAVE_*/BTN_* for every page -- see the constants' own comment above
+-- for why per-page text was dropped.
 function PageRuntime:confirmSave(focusFn)
   if self.disposed then return end
+
+  if not settingsStore.saveConfirmEnabled(settingsStore.load()) then
+    self:performSave(focusFn)
+    return
+  end
 
   local controlRef = self.controlRef
   local message = MSG_SAVE_BODY
@@ -657,15 +664,22 @@ function PageRuntime:showSaveArmed(focusFn)
 end
 
 -- Mirrors the original's `reload_confirm` preference (app/tasks.lua:414-
--- 441) the same way confirmSave() mirrors `save_confirm`. Only ever
--- called for the *manual* on-screen Reload button (see buildChrome()) --
--- the original distinguishes a prompted `triggerReload` from a silent
--- `triggerReloadNoPrompt` used by automatic paths, and this runtime's own
--- automatic profile-switch reload (pendingReload, see the wakeup handler
--- in buildChrome()) is exactly that silent case -- it must not stop and
--- wait on a dialog the pilot never asked for.
+-- 441, Settings -> General -> Safety Prompts) the same way confirmSave()
+-- mirrors `save_confirm` -- see its own comment for the default-true
+-- reasoning. Only ever called for the *manual* on-screen Reload button
+-- (see buildChrome()) -- the original distinguishes a prompted
+-- `triggerReload` from a silent `triggerReloadNoPrompt` used by automatic
+-- paths, and this runtime's own automatic profile-switch reload
+-- (pendingReload, see the wakeup handler in buildChrome()) is exactly
+-- that silent case -- it must not stop and wait on a dialog the pilot
+-- never asked for.
 function PageRuntime:confirmReload(focusFn)
   if self.disposed then return end
+
+  if not settingsStore.reloadConfirmEnabled(settingsStore.load()) then
+    self:loadData(focusFn)
+    return
+  end
 
   local controlRef = self.controlRef
   form.openDialog({
