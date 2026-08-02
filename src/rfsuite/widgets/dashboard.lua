@@ -51,19 +51,6 @@ local GESTURE_MAX_DX = 40
 local GESTURE_CONSUME_TIMEOUT = 0.75
 local TOOLBAR_TIMEOUT = 10
 local STARTUP_PREP_OBJECTS_PER_TICK = 2
--- Budget for the *first* build+wake of a dashboard state after a live
--- flightmode switch (preflight/inflight/postflight) -- see the
--- liveDashboardState/liveDashboardReady handling below for why this is
--- needed even though prewarmDashboardState() already runs for
--- PREWARM_STATES: that only preloads each object *type*'s module
--- (engine.lua's engine.preload(), a cheap loadfile() per type, additive
--- across states), never the actual per-state box layout or each box's own
--- wakeup() -- engine.lua only ever keeps *one* state's layout/wake state
--- resident (preparedConfig/boxRects are module-level, not per-state), so
--- switching states always costs a real rebuild+wake the first time,
--- previously done in one unbudgeted pass (every box's wakeup() in a single
--- tick) right at the moment of the switch.
-local LIVE_STATE_PREP_OBJECTS_PER_TICK = 2
 local PREWARM_STATES = {"preflight", "inflight"}
 -- Live OS theme switches (no restart) are only picked up by polling
 -- utils.getThemeSignature() and forcing a reload on change -- master does
@@ -236,7 +223,6 @@ local function markStartupUnderlayDirty(widget)
   widget.startupDashboardPrepared = false
   widget.startupShellPrepared = false
   widget.startupUnderlayDirty = true
-  widget.liveDashboardReady = false
 end
 
 local function invalidateWidget(widget)
@@ -853,8 +839,6 @@ local function create()
     startupShellPrepared = false,
     startupDashboardPrepared = false,
     startupUnderlayDirty = false,
-    liveDashboardState = nil,
-    liveDashboardReady = false,
     dashboardPrewarmIndex = 1,
     dashboardPrewarmed = {},
     toolbarVisible = false,
@@ -1437,21 +1421,9 @@ local function wakeup(widget)
     end
   end
 
-  local liveState = dashboardState(widget)
-  if liveState ~= widget.liveDashboardState then
-    widget.liveDashboardState = liveState
-    widget.liveDashboardReady = false
-  end
-
   if widget.needsPaint then
     widget.needsPaint = false
-    if widget.liveDashboardReady then
-      prepareDashboard(widget)
-    else
-      local ready = prepareDashboard(widget, false, LIVE_STATE_PREP_OBJECTS_PER_TICK)
-      widget.liveDashboardReady = ready == true
-      if not widget.liveDashboardReady then requestPaint(widget) end
-    end
+    prepareDashboard(widget)
     invalidateWidget(widget)
   end
 
