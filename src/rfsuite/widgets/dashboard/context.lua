@@ -802,6 +802,7 @@ local function sensorValue(name)
     if widget.isArmed == true then return 1 end
     if widget.isArmed == false then return 0 end
   end
+  if name == "armdisableflags" then return widget.armDisableFlags end
   return nil
 end
 
@@ -1737,7 +1738,28 @@ end
 
 function context.utils.getGovernorState(value)
   value = tonumber(value)
-  return GOVERNOR_LABELS[value] or "UNKNOWN"
+
+  local telemetry = context.tasks.telemetry
+  local armflags = telemetry and telemetry.getSensor and telemetry.getSensor("armflags")
+  local isArmed = context.utils.armFlagsToIsArmed(armflags)
+
+  local returnvalue
+  if value == nil and isArmed ~= nil then
+    -- No governor telemetry sensor at all (feature disabled/unsupported on this
+    -- craft) -- fall back to basic arm state instead of leaving this blank.
+    returnvalue = isArmed and "ARMED" or "DISARMED"
+  else
+    if isArmed == false then value = 101 end
+    returnvalue = GOVERNOR_LABELS[value] or "UNKNOWN"
+  end
+
+  local disableflags = telemetry and telemetry.getSensor and telemetry.getSensor("armdisableflags")
+  if disableflags ~= nil then
+    local armstring = context.utils.armingDisableFlagsToString(math.floor(disableflags))
+    if armstring ~= "OK" then returnvalue = armstring end
+  end
+
+  return returnvalue
 end
 
 local function normalizeImagePath(path)
@@ -1846,8 +1868,60 @@ function context.utils.isImageTooLarge(path, maxBytes)
   return size > (tonumber(maxBytes) or DEFAULT_MAX_IMAGE_BYTES)
 end
 
-function context.utils.armingDisableFlagsToString()
-  return "OK"
+local ARMING_DISABLE_FLAG_TAG = {
+  [0] = "@i18n(app.modules.fblstatus.arming_disable_flag_0)@",
+  [1] = "@i18n(app.modules.fblstatus.arming_disable_flag_1)@",
+  [2] = "@i18n(app.modules.fblstatus.arming_disable_flag_2)@",
+  [3] = "@i18n(app.modules.fblstatus.arming_disable_flag_3)@",
+  [4] = "@i18n(app.modules.fblstatus.arming_disable_flag_4)@",
+  [5] = "@i18n(app.modules.fblstatus.arming_disable_flag_5)@",
+  [6] = "@i18n(app.modules.fblstatus.arming_disable_flag_6)@",
+  [7] = "@i18n(app.modules.fblstatus.arming_disable_flag_7)@",
+  [8] = "@i18n(app.modules.fblstatus.arming_disable_flag_8)@",
+  [9] = "@i18n(app.modules.fblstatus.arming_disable_flag_9)@",
+  [10] = "@i18n(app.modules.fblstatus.arming_disable_flag_10)@",
+  [11] = "@i18n(app.modules.fblstatus.arming_disable_flag_11)@",
+  [12] = "@i18n(app.modules.fblstatus.arming_disable_flag_12)@",
+  [13] = "@i18n(app.modules.fblstatus.arming_disable_flag_13)@",
+  [14] = "@i18n(app.modules.fblstatus.arming_disable_flag_14)@",
+  [15] = "@i18n(app.modules.fblstatus.arming_disable_flag_15)@",
+  [16] = "@i18n(app.modules.fblstatus.arming_disable_flag_16)@",
+  [17] = "@i18n(app.modules.fblstatus.arming_disable_flag_17)@",
+  [18] = "@i18n(app.modules.fblstatus.arming_disable_flag_18)@",
+  [19] = "@i18n(app.modules.fblstatus.arming_disable_flag_19)@",
+  [20] = "@i18n(app.modules.fblstatus.arming_disable_flag_20)@",
+  [21] = "@i18n(app.modules.fblstatus.arming_disable_flag_21)@",
+  [22] = "@i18n(app.modules.fblstatus.arming_disable_flag_22)@",
+  [23] = "@i18n(app.modules.fblstatus.arming_disable_flag_23)@",
+  [24] = "@i18n(app.modules.fblstatus.arming_disable_flag_24)@",
+  [25] = "@i18n(app.modules.fblstatus.arming_disable_flag_25)@",
+}
+
+function context.utils.armFlagsToIsArmed(value)
+  if value == 1 or value == 3 then return true end
+  if value == 0 or value == 2 then return false end
+  return nil
+end
+
+function context.utils.armingDisableFlagsToString(flags)
+  flags = tonumber(flags)
+  if flags == nil or flags == 0 then return "OK" end
+
+  -- Arithmetic bit test, not native `&`/`<<` -- same portability
+  -- convention as lib/mspcodec.lua and app/field_layout.lua's getBit():
+  -- works unmodified regardless of the Ethos Lua runtime's bitwise-
+  -- operator support.
+  local names = {}
+  for i = 0, 25 do
+    if math.floor(flags / (2 ^ i)) % 2 == 1 then
+      local name = ARMING_DISABLE_FLAG_TAG[i]
+      if name and name ~= "" then names[#names + 1] = name end
+    end
+  end
+
+  if #names == 0 then return "OK" end
+
+  return table.concat(names, ", ")
 end
 
 function context.widgets.dashboard.getPreference(key)
