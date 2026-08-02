@@ -62,13 +62,18 @@
 -- even if the pilot changes rates_type (via app/pages/rates_type.lua)
 -- and this exact page's data reloads without being closed and reopened.
 --
--- One further deliberate simplification vs. the original, unrelated to
--- the above: no polar-mode row relabeling -- the original hides the Roll
--- row and renumbers Pitch/Yaw/Collective as Cyclic/Yaw/Collective when
--- `cyclic_polarity` is on (app/modules/rates/ratetables/layout.lua).
--- This rebuild always shows all 4 axes; on a polar (single-cyclic) setup
--- the Roll row simply isn't conventionally used, but the field still
--- exists on the wire and stays editable.
+-- One remaining simplification vs. the original: no polar-mode row
+-- *relabeling* -- the original hides the Roll row entirely and renumbers
+-- Pitch/Yaw/Collective as Cyclic/Yaw/Collective when `cyclic_polarity`
+-- is on (app/modules/rates/ratetables/layout.lua), which needs a
+-- dynamically rebuildable grid this rebuild's fixed-at-construction one
+-- doesn't have (see "Fields are built upfront" above). What *is* ported:
+-- the Roll row's 3 fields become non-editable (disabled, matching this
+-- page's grayed-out-until-loaded convention) whenever cyclic_polarity is
+-- on, same as the original's own hidden/inert Roll row -- the row simply
+-- stays visible and labeled "Roll" rather than disappearing. See
+-- syncPolarState() below, called from onLoaded alongside
+-- correctGridPrecision() for the same reason that one's own comment gives.
 --
 -- Everything else -- dialog/busy/save/reload/confirm state, long-press-
 -- save, profile-switch-reload -- comes from app/page_runtime.lua, shared
@@ -119,11 +124,12 @@ end
 -- event()/wakeup()/close() reach a page.
 local function open(opts)
   -- Forward-declared: PageRuntime.new()'s onLoaded callback is built
-  -- before updateRateTableLabel()/correctGridPrecision() themselves exist
-  -- (they need dataRef/the built fields, which aren't ready until later
-  -- in this function) -- assigned below, once those do.
+  -- before updateRateTableLabel()/correctGridPrecision()/syncPolarState()
+  -- themselves exist (they need dataRef/the built fields, which aren't
+  -- ready until later in this function) -- assigned below, once those do.
   local updateRateTableLabel
   local correctGridPrecision
+  local syncPolarState
 
   local runtime = pageRuntime.new({
     pageTitle = PAGE_TITLE,
@@ -150,6 +156,9 @@ local function open(opts)
       end
       if correctGridPrecision then
         correctGridPrecision()
+      end
+      if syncPolarState then
+        syncPolarState()
       end
     end,
   })
@@ -206,6 +215,8 @@ local function open(opts)
   -- can re-derive each one's correct bounds/decimals once the real
   -- rates_type is known, without needing to rebuild anything.
   local curveFields = {}
+  -- Roll row's 3 fields specifically -- see syncPolarState() below.
+  local rollFields = {}
 
   for _, row in ipairs(ROWS) do
     local line = form.addLine(row.label)
@@ -230,6 +241,9 @@ local function open(opts)
       if field.step then field:step(rateCurveScale.displayStep(nil, column.role, row.axisClass)) end
       runtime:registerField(key, field)
       curveFields[#curveFields + 1] = {field = field, role = column.role, axisClass = row.axisClass}
+      if row.axis == 1 then
+        rollFields[#rollFields + 1] = field
+      end
     end
   end
 
@@ -246,6 +260,23 @@ local function open(opts)
       entry.field:maximum(maxVal)
       entry.field:decimals(decimals)
       if entry.field.step then entry.field:step(rateCurveScale.displayStep(rateType, entry.role, entry.axisClass)) end
+    end
+  end
+
+  -- Assigns the forward-declared local from pageRuntime.new()'s onLoaded
+  -- above. Matches the original's own polar-mode behavior for the Roll
+  -- row (see this file's own header comment): a single shared cyclic
+  -- axis makes the Roll-specific curve meaningless while
+  -- `cyclic_polarity` is on, so its 3 fields go non-editable rather than
+  -- silently keeping a value nothing on the FC actually reads through
+  -- roll's own control path. Runs on every successful load, same as
+  -- correctGridPrecision(), so a live cyclic_polarity change (edited on
+  -- app/pages/rates_cyclic.lua, this page's own Reload/profile-switch
+  -- picks it up) re-syncs without needing this page closed and reopened.
+  syncPolarState = function()
+    local polarEnabled = (dataRef.data.cyclic_polarity or 0) == 1
+    for _, field in ipairs(rollFields) do
+      field:enable(not polarEnabled)
     end
   end
 
