@@ -301,58 +301,60 @@ function settings_store.loggingEnabled(settings)
   return true
 end
 
+-- `type(section) == "table" and section.key or nil` looks equivalent to an
+-- explicit index but isn't: when section.key is itself boolean false, `and`
+-- short-circuits to false, and `false or nil` then discards it in favor of
+-- nil -- silently losing a real "off" value to whatever the caller's own
+-- default happens to be. Every getter below reads a field that can
+-- legitimately be false, so they go through this instead.
+local function fieldValue(section, key)
+  if type(section) ~= "table" then return nil end
+  return section[key]
+end
+
 function settings_store.loggingSampleInterval(settings)
   local general = type(settings) == "table" and settings.general or nil
-  local value = type(general) == "table" and general.log_sample_interval or nil
-  return clampNumber(value, DEFAULTS.general.log_sample_interval, 1, 10)
+  return clampNumber(fieldValue(general, "log_sample_interval"), DEFAULTS.general.log_sample_interval, 1, 10)
 end
 
 function settings_store.temperatureUnit(settings)
   local general = type(settings) == "table" and settings.general or nil
-  local value = type(general) == "table" and general.temperature_unit or nil
-  return clampNumber(value, DEFAULTS.general.temperature_unit, 0, 1)
+  return clampNumber(fieldValue(general, "temperature_unit"), DEFAULTS.general.temperature_unit, 0, 1)
 end
 
 function settings_store.saveConfirmEnabled(settings)
   local general = type(settings) == "table" and settings.general or nil
-  local value = type(general) == "table" and general.save_confirm or nil
-  return coerceBool(value, DEFAULTS.general.save_confirm) == true
+  return coerceBool(fieldValue(general, "save_confirm"), DEFAULTS.general.save_confirm) == true
 end
 
 function settings_store.reloadConfirmEnabled(settings)
   local general = type(settings) == "table" and settings.general or nil
-  local value = type(general) == "table" and general.reload_confirm or nil
-  return coerceBool(value, DEFAULTS.general.reload_confirm) == true
+  return coerceBool(fieldValue(general, "reload_confirm"), DEFAULTS.general.reload_confirm) == true
 end
 
 function settings_store.developerModeEnabled(settings)
   local developer = type(settings) == "table" and settings.developer or nil
-  local value = type(developer) == "table" and developer.developer_mode or nil
-  return coerceBool(value, DEFAULTS.developer.developer_mode) == true
+  return coerceBool(fieldValue(developer, "developer_mode"), DEFAULTS.developer.developer_mode) == true
 end
 
 function settings_store.debugLogsEnabled(settings)
   local developer = type(settings) == "table" and settings.developer or nil
-  local value = type(developer) == "table" and developer.debug_logs or nil
-  return coerceBool(value, DEFAULTS.developer.debug_logs) == true
+  return coerceBool(fieldValue(developer, "debug_logs"), DEFAULTS.developer.debug_logs) == true
 end
 
 function settings_store.mspLogsEnabled(settings)
   local developer = type(settings) == "table" and settings.developer or nil
-  local value = type(developer) == "table" and developer.log_msp or nil
-  return coerceBool(value, DEFAULTS.developer.log_msp) == true
+  return coerceBool(fieldValue(developer, "log_msp"), DEFAULTS.developer.log_msp) == true
 end
 
 function settings_store.memoryLogsEnabled(settings)
   local developer = type(settings) == "table" and settings.developer or nil
-  local value = type(developer) == "table" and developer.memory_logs or nil
-  return coerceBool(value, DEFAULTS.developer.memory_logs) == true
+  return coerceBool(fieldValue(developer, "memory_logs"), DEFAULTS.developer.memory_logs) == true
 end
 
 function settings_store.simulatedApiVersionMode(settings)
   local developer = type(settings) == "table" and settings.developer or nil
-  local value = type(developer) == "table" and developer.simulated_api_version or nil
-  return coerceEnum(value, DEFAULTS.developer.simulated_api_version, SIMULATED_API_VERSION_MODES)
+  return coerceEnum(fieldValue(developer, "simulated_api_version"), DEFAULTS.developer.simulated_api_version, SIMULATED_API_VERSION_MODES)
 end
 
 function settings_store.audioEvents(settings)
