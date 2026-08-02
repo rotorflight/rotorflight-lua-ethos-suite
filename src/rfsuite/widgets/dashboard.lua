@@ -50,8 +50,9 @@ local GESTURE_MIN_DY = 20
 local GESTURE_MAX_DX = 40
 local GESTURE_CONSUME_TIMEOUT = 0.75
 local TOOLBAR_TIMEOUT = 10
-local STARTUP_PREP_OBJECTS_PER_TICK = 2
-local PREWARM_STATES = {"preflight", "inflight"}
+-- Master keeps inactive dashboard-state preloading disabled by default:
+-- it saves RAM and avoids loading a non-visible theme during startup.
+local PREWARM_STATES = {}
 -- Live OS theme switches (no restart) are only picked up by polling
 -- utils.getThemeSignature() and forcing a reload on change -- master does
 -- this every 0.25s in its wakeup(); this rewrite never did it at all, so
@@ -220,9 +221,6 @@ end
 local function markStartupUnderlayDirty(widget)
   if not widget then return end
   widget.startupComplete = false
-  widget.startupDashboardPrepared = false
-  widget.startupShellPrepared = false
-  widget.startupUnderlayDirty = true
 end
 
 local function invalidateWidget(widget)
@@ -834,11 +832,7 @@ local function create()
     taskRunning = false,
     taskProtocol = nil,
     needsPaint = true,
-    startupOverlayPainted = false,
     startupComplete = false,
-    startupShellPrepared = false,
-    startupDashboardPrepared = false,
-    startupUnderlayDirty = false,
     dashboardPrewarmIndex = 1,
     dashboardPrewarmed = {},
     toolbarVisible = false,
@@ -997,35 +991,16 @@ local function dashboardState(widget)
   return widget.flightmodeState or "preflight"
 end
 
-local function hasTelemetryValues(widget)
-  return widget
-    and (widget.voltage ~= nil
-      or widget.current ~= nil
-      or widget.consumption ~= nil
-      or widget.throttlePercent ~= nil
-      or widget.rpm ~= nil
-      or widget.linkQuality ~= nil
-      or widget.tempEsc ~= nil
-      or widget.tempMcu ~= nil
-      or widget.becVoltage ~= nil
-      or widget.fuelPercent ~= nil)
-end
-
 local function shouldShowStartupOverlay(widget)
   if not widget then return true end
-  -- Checked even ahead of startupComplete's latch below: an unsupported FC
-  -- must keep the overlay up regardless of whether a *previous* connection
-  -- this session already finished startup once. Without this, the
-  -- simulator's own always-on fake sensors (tasks/sim_sensors.lua runs
-  -- independent of the MSP handshake) satisfy hasTelemetryValues() below
-  -- no matter what the FC's version is, so the dashboard would proceed as
-  -- if nothing were wrong -- exactly the silent-hang bug this exists to
-  -- surface instead.
+  -- Checked ahead of startupComplete's latch so an unsupported FC still
+  -- surfaces if a previous connection in this widget session completed.
   if widget.connected == true and widget.apiVersionSupported == false then return true end
   if widget.startupComplete == true then return false end
   if dashboardState(widget) == "postflight" then return false end
-  if not hasTelemetryValues(widget) then return true end
-  return widget.startupDashboardPrepared ~= true or widget.startupUnderlayDirty == true
+  if widget.taskRunning ~= true then return true end
+  if widget.connected ~= true then return true end
+  return false
 end
 
 local function startupOverlayMessage(widget)
@@ -1033,10 +1008,6 @@ local function startupOverlayMessage(widget)
     return "@i18n(widgets.dashboard.startup_waiting_task)@",
       "@i18n(widgets.dashboard.startup_waiting_task_detail)@"
   end
-  -- Checked before the generic "waiting for telemetry" branch below: on an
-  -- unsupported/wrong-family FC, telemetry provisioning may never complete
-  -- at all (see tasks/session.lua's runHandshake()), which would otherwise
-  -- leave this stuck on that generic message forever with no explanation.
   if widget.connected == true and widget.apiVersionSupported == false then
     local detected = "?"
     if widget.apiVersionMajor and widget.apiVersionMinor then
@@ -1044,10 +1015,6 @@ local function startupOverlayMessage(widget)
     end
     return "@i18n(widgets.dashboard.startup_unsupported_version)@",
       "@i18n(widgets.dashboard.startup_unsupported_version_detail)@ " .. detected
-  end
-  if widget.connected == true and not hasTelemetryValues(widget) then
-    return "@i18n(widgets.dashboard.startup_waiting_telemetry)@",
-      "@i18n(widgets.dashboard.startup_waiting_telemetry_detail)@"
   end
   if widget.connected ~= true then
     return "@i18n(widgets.dashboard.startup_no_link)@",
@@ -1192,40 +1159,10 @@ end
 local function paint(widget)
   local w, h = lcd.getWindowSize()
   if shouldShowStartupOverlay(widget) then
-    -- With no link at all, shouldShowStartupOverlay() stays true forever
-    -- (hasTelemetryValues() can never become true), so this branch used to
-    -- run every single paint tick indefinitely -- and, once the box cache
-    -- warmed up, paid for a *full* paintDashboard() (engine.paint() ->
-    -- paintObjects() iterating every box, including each box's own live
-    -- sensor read + value formatting) plus the overlay draw on top of it,
-    -- every frame, forever: strictly more expensive than the normal
-    -- connected steady state (paintDashboard() alone), not less.
-    --
-    -- There's still real value in showing the *themed* look while
-    -- waiting, though -- drawStartupOverlay()'s own bg/panel colors come
-    -- from context.lua's getThemeState(), which reflects Ethos's own
-    -- system theme (or a dark/light legacy fallback), NOT the per-model
-    -- dashboard theme the user actually picked -- that only comes from
-    -- painting the boxes themselves. paintDashboardShell() already exists
-    -- for exactly this "cheap themed preview" need: per-box themed
-    -- background + title only (utils.resolveThemeColor +
-    -- drawBoxBackground), no live sensor reads/value formatting/threshold
-    -- colors. It also does its own layout prep independent of the
-    -- wakeup()-side incremental object warm-up disabled below (shell mode
-    -- never touches per-box object instances), so calling it here with no
-    -- link doesn't reintroduce that cost.
-    if widget.connected == true then
-      local hasDashboard = widget.startupDashboardPrepared == true and widget.startupUnderlayDirty ~= true
-      if hasDashboard then
-        paintDashboard(widget, w, h)
-      else
-        paintDashboardShell(widget, w, h)
-      end
-    else
-      paintDashboardShell(widget, w, h)
-    end
+    -- Keep blocking startup states cheap: draw only the themed shell behind
+    -- the overlay, not the live object/value pipeline.
+    paintDashboardShell(widget, w, h)
     drawStartupOverlay(widget, w, h, true)
-    widget.startupOverlayPainted = true
     drawToolbar(widget, w, h)
     return
   end
@@ -1437,29 +1374,13 @@ local function wakeup(widget)
   end
 
   if shouldShowStartupOverlay(widget) then
-    -- Only worth incrementally warming the *full-content* box cache while
-    -- connected -- paint() only ever uses the lightweight shell paint (see
-    -- its own comment) with no link, which never touches per-object
-    -- instances, so preparing them here would just be wasted work, every
-    -- tick, for as long as there's no link.
-    if widget.connected == true and widget.startupOverlayPainted == true and
-      (widget.startupDashboardPrepared ~= true or widget.startupUnderlayDirty == true) then
-      local ready, shellReady = prepareDashboard(widget, true, STARTUP_PREP_OBJECTS_PER_TICK)
-      widget.startupShellPrepared = shellReady == true
-      widget.startupDashboardPrepared = ready == true
-      widget.startupUnderlayDirty = ready ~= true
-      requestPaint(widget)
-      invalidateWidget(widget)
-    end
+    -- Blocking startup states are rendered by paintDashboardShell(); avoid
+    -- warming full live objects until the dashboard can be shown.
   else
     widget.startupComplete = true
-    widget.startupOverlayPainted = false
-    widget.startupShellPrepared = false
-    widget.startupDashboardPrepared = false
-    widget.startupUnderlayDirty = false
   end
 
-  if widget.startupDashboardPrepared == true or widget.startupComplete == true then
+  if widget.startupComplete == true then
     prewarmDashboardState(widget)
   end
 

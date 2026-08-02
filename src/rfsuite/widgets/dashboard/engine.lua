@@ -16,11 +16,7 @@ local preparedW = nil
 local preparedH = nil
 local preparedObjectsLoaded = false
 local wakeCursor = 1
--- True once wakeObjects() has completed a full pass over the CURRENT
--- boxRects (every box's own render.wakeup() has run at least once since
--- boxRects was last (re)built). engine.paint() checks this before calling
--- paintObjects() -- see its own comment for why.
-local layoutWoken = false
+local wakePassCount = 0
 
 local function clearArray(t)
   for i = #t, 1, -1 do t[i] = nil end
@@ -106,6 +102,25 @@ local function loadPreparedObjects()
   for i = 1, #typeScratch do loadObjectType(typeScratch[i]) end
 end
 
+local function schedulerSettings(config)
+  local scheduler = resolveMaybe((config or {}).scheduler)
+  if type(scheduler) ~= "table" then return true, nil end
+  local ratio = scheduler.spread_ratio
+  if type(ratio) ~= "number" or ratio <= 0 or ratio > 1 then ratio = nil end
+  return scheduler.spread_scheduling ~= false, ratio
+end
+
+local function defaultWakeRatio(count)
+  if count < 0 then count = 0 end
+  if count > 10 then count = 10 end
+  return 1.0 - (count / 10) * 0.5
+end
+
+local function wakeupsPerCycle(count, ratio)
+  if count <= 0 then return 0 end
+  return max(1, ceil(count * (ratio or defaultWakeRatio(count))))
+end
+
 local function addBoxRect(rectCount, box, x, y, w, h, isHeader)
   rectCount = rectCount + 1
   local rect = boxRects[rectCount]
@@ -186,7 +201,7 @@ local function prepareLayout(config, screenW, screenH, skipObjectLoad)
     preparedW = screenW
     preparedH = screenH
     wakeCursor = 1
-    layoutWoken = false
+    wakePassCount = 0
     return
   end
 
@@ -194,7 +209,7 @@ local function prepareLayout(config, screenW, screenH, skipObjectLoad)
     loadPreparedObjects()
     preparedObjectsLoaded = true
     wakeCursor = 1
-    layoutWoken = false
+    wakePassCount = 0
   end
 end
 
@@ -207,19 +222,26 @@ local function wakeOne(rect)
   end
 end
 
-local function wakeObjects(maxCount)
+local function finishWakePass()
+  wakeCursor = 1
+  wakePassCount = wakePassCount + 1
+  return true
+end
+
+local function wakeObjects(maxCount, config)
   local count = #boxRects
-  if count == 0 then
-    wakeCursor = 1
-    layoutWoken = true
-    return true
+  if count == 0 then return finishWakePass() end
+
+  local spreadScheduling, spreadRatio = schedulerSettings(config)
+  if wakePassCount < 1 or spreadScheduling == false then
+    maxCount = nil
+  elseif not maxCount or maxCount <= 0 then
+    maxCount = wakeupsPerCycle(count, spreadRatio)
   end
 
   if not maxCount or maxCount <= 0 or maxCount >= count then
     for i = 1, count do wakeOne(boxRects[i]) end
-    wakeCursor = 1
-    layoutWoken = true
-    return true
+    return finishWakePass()
   end
 
   local processed = 0
@@ -230,9 +252,7 @@ local function wakeObjects(maxCount)
   end
 
   if wakeCursor > count then
-    wakeCursor = 1
-    layoutWoken = true
-    return true
+    return finishWakePass()
   end
 
   return false
@@ -290,40 +310,15 @@ local function paintObjects()
   end
 end
 
--- Shown instead of paintObjects() when a host calls paint() without ever
--- pairing it with a wakeup() pass for the current box layout (confirmed
--- live in Ethos's "Configure screens" widget preview -- see gauge/arc.lua's
--- and gauge/ring.lua's own guard comments for the bug this used to cause).
--- No per-box state to read yet, so just the themed background (already
--- painted by the caller) plus a centered logo -- loaded through the same
--- utils.loadImage() cache every other logo use already shares, so this
--- adds no RAM cost beyond what a normal startup overlay would already
--- carry, and it's released the same way: on the next theme switch's
--- clearCaches({images = true}).
-local function paintUnwokenFallback(screenW, screenH)
-  local utils = context.widgets.dashboard.utils
-  if not (utils.loadImage and lcd.drawBitmap) then return end
-  local bgcolor = utils.themeColors().bgcolor
-  local logoPath = utils.getLogoFallbackForBackground and utils.getLogoFallbackForBackground(bgcolor)
-  local logo = utils.loadImage(logoPath or "widgets/dashboard/gfx/logo-light.png")
-  if not logo then return end
-  local logoW = floor(math.min(screenW * 0.4, 230))
-  local logoH = floor(logoW * 0.23)
-  lcd.drawBitmap(floor((screenW - logoW) / 2 + 0.5), floor((screenH - logoH) / 2 + 0.5), logo, logoW, logoH)
-end
-
 function engine.paint(widget, themeDef, stateDef, state, screenW, screenH)
   context.setWidget(widget)
   if context.tasks and context.tasks.telemetry and context.tasks.telemetry.collectPresentationStats then
     context.tasks.telemetry.collectPresentationStats()
   end
   prepareLayout(stateDef, screenW, screenH)
+  if wakePassCount < 1 then wakeObjects(nil, stateDef) end
   context.widgets.dashboard.utils.setBackgroundColourBasedOnTheme()
-  if layoutWoken then
-    paintObjects()
-  else
-    paintUnwokenFallback(screenW, screenH)
-  end
+  paintObjects()
   context.widgets.dashboard.utils.drawScreenBorder()
 end
 
@@ -346,7 +341,7 @@ end
 function engine.wakeup(widget, stateDef, screenW, screenH, options)
   context.setWidget(widget)
   prepareLayout(stateDef, screenW, screenH)
-  return wakeObjects(options and options.maxObjects), true
+  return wakeObjects(options and options.maxObjects, stateDef), true
 end
 
 function engine.reset()
@@ -355,7 +350,7 @@ function engine.reset()
   preparedH = nil
   preparedObjectsLoaded = false
   wakeCursor = 1
-  layoutWoken = false
+  wakePassCount = 0
   for i = #boxRects, 1, -1 do boxRects[i] = nil end
 end
 
