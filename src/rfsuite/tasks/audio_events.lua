@@ -14,6 +14,7 @@ local initialized = false
 local adjWavs = nil
 
 local lastAlertAt = {}
+local craftNameAnnounced = false
 local lastSmartfuelAnnounced = nil
 local lastLowFuelAnnounced = false
 local lastLowFuelRepeatAt = 0
@@ -53,6 +54,7 @@ local SMARTFUEL_THRESHOLDS = {
 
 local AUDIO_SESSION_KEYS = {
   "connected",
+  "craftName",
   "isArmed",
   "pidProfile",
   "rateProfile",
@@ -192,6 +194,33 @@ local function ensureSettings()
   end
   if not timer then
     timer = settingsStore.audioTimer(settings)
+  end
+end
+
+-- Plays a pilot-recorded "/audio/<craft name>.wav" once per connect, if
+-- one exists -- matches the original suite's own postconnect
+-- announceCraftname.lua. Checked every wakeup (not just the first tick
+-- after connecting) since session.craftName arrives asynchronously from
+-- its own MSP read and may not be known yet on that first tick;
+-- craftNameAnnounced latches true the first time both the setting is on
+-- and the name is known, so this only ever plays (or gives up trying)
+-- once per connection.
+local function announceCraftName()
+  if craftNameAnnounced then return end
+  if not events.craft_name then return end
+  local craftName = session.craftName
+  if not craftName or craftName == "" then return end
+
+  craftNameAnnounced = true
+  local candidates = {
+    "/audio/" .. craftName .. ".wav",
+    "/audio/" .. craftName:gsub(" ", "_") .. ".wav",
+  }
+  for i = 1, #candidates do
+    if fileExists(candidates[i]) then
+      system.playFile(candidates[i])
+      return
+    end
   end
 end
 
@@ -562,6 +591,7 @@ function audio_events.wakeup()
   local now = os.clock()
   if session.connected ~= true then
     initialized = false
+    craftNameAnnounced = false
     lastSmartfuelAnnounced = nil
     adjWavs = nil
     resetLowFuel()
@@ -581,6 +611,7 @@ function audio_events.wakeup()
     return
   end
 
+  announceCraftName()
   announceArmed()
   announceProfile("pidProfile", events.pid_profile, "profile.wav")
   announceProfile("rateProfile", events.rate_profile, "rates.wav")
@@ -597,6 +628,7 @@ end
 
 function audio_events.reset()
   initialized = false
+  craftNameAnnounced = false
   adjWavs = nil
   for key in pairs(previous) do previous[key] = nil end
   for key in pairs(lastAlertAt) do lastAlertAt[key] = nil end

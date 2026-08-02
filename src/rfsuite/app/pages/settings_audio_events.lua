@@ -226,6 +226,13 @@ local function open(opts)
   if eventFields.smartfuelrepeats and eventFields.smartfuelrepeats.suffix then eventFields.smartfuelrepeats:suffix("x") end
   eventFields.smartfuelhaptic = addBool(fuelPanel, "@i18n(app.modules.settings.fuel_haptic_below)@", "smartfuelhaptic")
 
+  -- Plays SD:/audio/<model name>.wav (spaces also tried as underscores)
+  -- once per connect, if the pilot has recorded one -- see
+  -- tasks/audio_events.lua's announceCraftName().
+  local otherPanel = form.addExpansionPanel("@i18n(app.modules.settings.model_announcement)@")
+  otherPanel:open(settings.events.craft_name == true)
+  addBool(otherPanel, "@i18n(app.modules.settings.model_announcement)@", "craft_name")
+
   updateVoltageFields()
   updateEscFields()
   updateBecRxFields()
