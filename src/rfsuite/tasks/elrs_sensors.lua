@@ -13,9 +13,9 @@
 --   - No live-reconfiguration support for the relevant-SID set: this
 --     rebuild's tasks/session.lua only reads telemetry slots once per
 --     connection (never re-reads mid-session), so the set is built once,
---     the first time slots become available, and reset alongside a full
---     disconnect or a real FC-side telemetry stall (see reset() below) --
---     no slot-signature/rebuild tracking needed.
+--     the first time slots become available, and reset only alongside a
+--     full disconnect (see reset() below) -- no slot-signature/rebuild
+--     tracking needed.
 --   - Each relevant SID gets its own lib/diy_sensor.lua instance instead
 --     of a bespoke sensorCache/negativeCache/lastValue/lastPush table --
 --     that primitive already does resolve-once + skip-unchanged +
@@ -229,84 +229,34 @@ local function parseFrame(data)
   end
 end
 
--- Real FC-side telemetry staleness detection, independent of
--- tasks/session.lua's own disconnect handling. That reset() below
--- normally only runs from session.lua's setConnected(false), gated on
--- Ethos's TELEMETRY_ACTIVE flag -- the RF link to the receiver, not the
--- FC's own responsiveness. Those are genuinely different signals on
--- CRSF/ELRS: the receiver can stay bound and keep transmitting its own
--- link-layer telemetry (RSSI/LQ) even after the FC itself hangs, reboots,
--- or otherwise stops sending custom-telemetry (frame type 0x88) entirely
--- -- TELEMETRY_ACTIVE never drops in that case, so the discovery state
--- below would otherwise never get a chance to reset.
---
--- The obvious-looking fix -- checking each DiySensor's own Ethos
--- `:state()` -- doesn't work: the unconditional refresh() sweep below
--- re-pushes every sensor's last known value into Ethos every
--- STALE_REFRESH_SECONDS (lib/diy_sensor.lua) *regardless of whether a
--- real frame has actually arrived recently*, which is exactly what keeps
--- Ethos's own staleness tracking from ever noticing a real stop. So the
--- one honest signal is this module's own record of when it last actually
--- popped a real frame off the transport.
-local FRAME_STALE_SECONDS = 3.0
-local lastFrameAt = 0
-local declaredStale = false
-
--- Called on disconnect (mirrors tasks/session.lua's own field resets) and
--- internally from wakeup() below once real frames have genuinely stopped
--- arriving: forget the relevant-SID set (rebuilt fresh from the next
--- connection's own TELEMETRY_CONFIG read) and every resolved sensor's
--- cached value, in case a different aircraft is now connected. The Ethos
--- sensor objects themselves are left alone -- see lib/diy_sensor.lua's
--- own reasoning for why lib/frsky_sensors.lua doesn't tear those down
--- either. Defined ahead of wakeup() (rather than forward-declared) since
--- nothing here needs anything wakeup()-local.
-local function reset()
-  relevantSids = nil
-  lastFrameAt = 0
-  declaredStale = false
-  for _, sensor in pairs(sensors) do sensor:reset() end
-end
-
 local function wakeup(transport, telemetrySlots)
   if not transport or not transport.popCustomTelemetryFrame then return end
   if not sensorTable then buildSensorTable() end
   if telemetrySlots and not relevantSids then buildRelevantSids(telemetrySlots) end
 
-  local now = os_clock()
-  local sawFrame = false
-  local deadline = now + POP_BUDGET_SECONDS
+  local deadline = os_clock() + POP_BUDGET_SECONDS
   while os_clock() < deadline do
     local command, data = transport.popCustomTelemetryFrame()
     if not command then break end
-    sawFrame = true
     parseFrame(data)
   end
 
-  if sawFrame then
-    lastFrameAt = now
-    declaredStale = false
-  elseif lastFrameAt > 0 and not declaredStale and (now - lastFrameAt) >= FRAME_STALE_SECONDS then
-    -- No real frame in FRAME_STALE_SECONDS, having previously seen at
-    -- least one this connection -- the FC's own custom telemetry has
-    -- genuinely stopped. Reset the same way a full disconnect would (see
-    -- reset() above), so a later real frame -- whether this same FC
-    -- recovering or a full reconnect -- re-discovers cleanly instead of
-    -- silently keeping stale relevance/sensor state around. Also stops
-    -- this tick's refresh() sweep below, so Ethos's own sensor state
-    -- finally reflects reality instead of being artificially kept alive.
-    debugLog.print("[elrs] no custom-telemetry frame for " .. FRAME_STALE_SECONDS .. "s -- resetting discovery")
-    declaredStale = true
-    reset()
-    return
-  end
-
-  -- Unconditional (while not stale), every wakeup, regardless of whether
-  -- any frame arrived this specific tick -- see lib/diy_sensor.lua's
-  -- refresh() for why this sweep is needed at all here. Cheap: each entry
-  -- is a no-op unless its own STALE_REFRESH_SECONDS window has actually
-  -- elapsed.
+  -- Unconditional, every wakeup, regardless of whether any frame arrived
+  -- this tick -- see lib/diy_sensor.lua's refresh() for why this sweep is
+  -- needed at all here. Cheap: each entry is a no-op unless its own
+  -- STALE_REFRESH_SECONDS window has actually elapsed.
   for _, sensor in pairs(sensors) do sensor:refresh() end
+end
+
+-- Called on disconnect (mirrors tasks/session.lua's own field resets):
+-- forget the relevant-SID set (rebuilt fresh from the next connection's
+-- own TELEMETRY_CONFIG read) and every resolved sensor's cached value, in
+-- case a different aircraft is now connected. The Ethos sensor objects
+-- themselves are left alone -- see lib/diy_sensor.lua's own reasoning for
+-- why lib/frsky_sensors.lua doesn't tear those down either.
+local function reset()
+  relevantSids = nil
+  for _, sensor in pairs(sensors) do sensor:reset() end
 end
 
 return {wakeup = wakeup, reset = reset}
