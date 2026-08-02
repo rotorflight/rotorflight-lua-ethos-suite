@@ -206,6 +206,14 @@ local function open(opts)
   -- dataRef -- unlike the full runtime -- gets its contents cleared on
   -- dispose, so whatever Ethos keeps alive stays small).
   local dataRef = runtime.dataRef
+  -- Same reasoning, for markDirty(): controlRef.runtime gets nilled on
+  -- dispose, so a retained closure here only pins this tiny table, never
+  -- the disposed PageRuntime itself.
+  local controlRef = runtime.controlRef
+  local function markDirty()
+    local rt = controlRef.runtime
+    if rt then rt:markDirty() end
+  end
 
   -- Assigns the forward-declared local from pageRuntime.new()'s onLoaded
   -- above -- see this file's own header comment for why every field is
@@ -225,7 +233,7 @@ local function open(opts)
         return craftName and craftName.name or ""
       end,
       function(value)
-        runtime:markDirty()
+        markDirty()
         local craftName = dataRef.data.craftName
         if craftName then craftName.name = value or "" end
       end)
@@ -249,7 +257,7 @@ local function open(opts)
         return adv and adv.pid_process_denom
       end,
       function(value)
-        runtime:markDirty()
+        markDirty()
         local adv = dataRef.data.advancedConfig
         if adv then adv.pid_process_denom = value end
       end)

@@ -105,6 +105,18 @@ local function open(opts)
 
   form.clear()
   runtime:buildChrome()
+  -- Captured instead of closing over `runtime` directly in each field
+  -- setter below -- matching app/pages/pids.lua's own dataRef convention
+  -- (see its comment): Ethos retains some form callback closures past
+  -- this page's own lifetime, and controlRef.runtime gets nilled on
+  -- dispose (app/page_runtime.lua's own PageRuntime:dispose()), so
+  -- whatever gets retained here stays small instead of pinning the whole
+  -- disposed PageRuntime.
+  local controlRef = runtime.controlRef
+  local function markDirty()
+    local rt = controlRef.runtime
+    if rt then rt:markDirty() end
+  end
 
   local w, h = windowSize()
   local margin = 34
@@ -117,7 +129,7 @@ local function open(opts)
     local field = form.addNumberField(nil, {x = x, y = bottomY, w = fieldW, h = fieldH}, 0, 100,
       function() return curve[index] or 0 end,
       function(value)
-        runtime:markDirty()
+        markDirty()
         curve[index] = clampPercent(value)
         requestRepaint()
       end)

@@ -129,12 +129,25 @@ local function openEditor(opts, initialMode)
     end,
   })
 
+  -- Captured instead of closing over `runtime` directly in the field
+  -- setter below -- matching app/pages/pids.lua's own dataRef convention
+  -- (see its comment): Ethos retains some form callback closures past
+  -- this page's own lifetime, and controlRef.runtime gets nilled on
+  -- dispose (app/page_runtime.lua's own PageRuntime:dispose()), so
+  -- whatever gets retained here stays small instead of pinning the whole
+  -- disposed PageRuntime.
+  local controlRef = runtime.controlRef
+  local function markDirty()
+    local rt = controlRef.runtime
+    if rt then rt:markDirty() end
+  end
+
   local function addNumber(label, key, min, max, suffix, decimals)
     local line = form.addLine(label)
     local field = form.addNumberField(line, nil, min, max,
       function() return formData[key] or 0 end,
       function(value)
-        runtime:markDirty()
+        markDirty()
         formData[key] = value
         lastChangeAt = os.clock()
       end)

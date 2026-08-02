@@ -73,11 +73,19 @@ local function open(opts)
   -- dataRef -- unlike the full runtime -- gets its contents cleared on
   -- dispose, so whatever Ethos keeps alive stays small).
   local dataRef = runtime.dataRef
+  -- Same reasoning, for markDirty(): controlRef.runtime gets nilled on
+  -- dispose, so a retained closure here only pins this tiny table, never
+  -- the disposed PageRuntime itself.
+  local controlRef = runtime.controlRef
+  local function markDirty()
+    local rt = controlRef.runtime
+    if rt then rt:markDirty() end
+  end
 
   local ringLine = form.addLine("@i18n(app.modules.rates_advanced.cyclic_ring)@")
   local ringField = form.addNumberField(ringLine, nil, 0, 250,
     function() return dataRef.data.cyclic_ring end,
-    function(value) runtime:markDirty(); dataRef.data.cyclic_ring = value end)
+    function(value) markDirty(); dataRef.data.cyclic_ring = value end)
   ringField:suffix("%")
   ringField:enable(false)
   runtime:registerField("cyclic_ring", ringField)
@@ -105,7 +113,7 @@ local function open(opts)
       return dataRef.data.cyclic_polarity
     end,
     function(value)
-      runtime:markDirty()
+      markDirty()
       dataRef.data.cyclic_polarity = value
       if value == 1 and (dataRef.data.cyclic_ring or 0) <= 0 then
         dataRef.data.cyclic_ring = CYCLIC_RING_DEFAULT

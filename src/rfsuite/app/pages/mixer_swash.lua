@@ -112,12 +112,25 @@ local function open(opts)
     end,
   })
 
+  -- Captured instead of closing over `runtime` directly in each field
+  -- setter below -- matching app/pages/pids.lua's own dataRef convention
+  -- (see its comment): Ethos retains some form callback closures past
+  -- this page's own lifetime, and controlRef.runtime gets nilled on
+  -- dispose (app/page_runtime.lua's own PageRuntime:dispose()), so
+  -- whatever gets retained here stays small instead of pinning the whole
+  -- disposed PageRuntime.
+  local controlRef = runtime.controlRef
+  local function markDirty()
+    local rt = controlRef.runtime
+    if rt then rt:markDirty() end
+  end
+
   local function addChoice(label, key, choices)
     local line = form.addLine(label)
     local field = form.addChoiceField(line, nil, choices,
       function() return formData[key] or 0 end,
       function(value)
-        runtime:markDirty()
+        markDirty()
         formData[key] = value
       end)
     runtime:registerField(key, field)

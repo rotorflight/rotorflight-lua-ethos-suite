@@ -68,6 +68,18 @@ local function open(opts)
   form.clear()
   runtime:buildChrome()
   local dataRef = runtime.dataRef
+  -- Captured instead of `runtime` itself in every field setter below --
+  -- same "small indirection table, not the full runtime" convention this
+  -- file already uses for dataRef (see its own comment above): Ethos
+  -- retains some closures past this page's own lifetime, and controlRef.
+  -- runtime gets nilled on dispose (app/page_runtime.lua's own
+  -- PageRuntime:dispose()), so whatever gets retained here stays small
+  -- instead of pinning the whole disposed PageRuntime.
+  local controlRef = runtime.controlRef
+  local function markDirty()
+    local rt = controlRef.runtime
+    if rt then rt:markDirty() end
+  end
 
   -- A blank-but-non-empty label (" ", not "") so this line reserves the
   -- same row-label gutter width as the "Roll"/"Pitch"/"Yaw" lines below --
@@ -95,7 +107,7 @@ local function open(opts)
         local meta = pidTuning.FIELD_META[key]
         local field = form.addNumberField(line, slots[colIndex], meta.min, meta.max,
           function() return dataRef.data[key] end,
-          function(value) runtime:markDirty(); dataRef.data[key] = value end)
+          function(value) markDirty(); dataRef.data[key] = value end)
         if field.step then field:step(PID_STEP) end
         -- Ethos's own "reset to default" long-press gesture (added
         -- alpha14) resets to whatever :default() was last given -- 0 if

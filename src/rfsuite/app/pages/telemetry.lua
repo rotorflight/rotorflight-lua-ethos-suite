@@ -154,12 +154,20 @@ local function open(opts)
     end,
     onTool = function(focusFn)
       if not runtime.loaded then return end
+      -- Captured here, not closed over directly in the dialog button's
+      -- own action below -- matching app/page_runtime.lua's own
+      -- confirmSave()/confirmReload() dialogs (see their comments): a
+      -- dialog button's action is handed straight to Ethos same as a
+      -- field setter is, so it gets the same small-indirection-table
+      -- treatment.
+      local controlRef = runtime.controlRef
       form.openDialog({
         title = PAGE_TITLE,
         message = "@i18n(app.modules.telemetry.msg_set_defaults)@",
         buttons = {
           {label = BTN_OK, action = function()
-            runtime:markDirty()
+            local rt = controlRef and controlRef.runtime
+            if rt then rt:markDirty() end
             applyDefaultSelection(selected)
             previousConflictState = {}
             refreshConflictFields()
@@ -180,6 +188,18 @@ local function open(opts)
 
   form.clear()
   runtime:buildChrome()
+  -- Captured instead of closing over `runtime` directly in the checkbox
+  -- setter below -- matching app/pages/pids.lua's own dataRef convention
+  -- (see its comment): Ethos retains some form callback closures past
+  -- this page's own lifetime, and controlRef.runtime gets nilled on
+  -- dispose (app/page_runtime.lua's own PageRuntime:dispose()), so
+  -- whatever gets retained here stays small instead of pinning the whole
+  -- disposed PageRuntime.
+  local controlRef = runtime.controlRef
+  local function markDirty()
+    local rt = controlRef.runtime
+    if rt then rt:markDirty() end
+  end
 
   for _, groupKey in ipairs(catalog.GROUP_ORDER) do
     local group = catalog.SENSOR_GROUPS[groupKey]
@@ -224,7 +244,7 @@ local function open(opts)
               end
             end
 
-            runtime:markDirty()
+            markDirty()
             selected[sensorId] = value == true
             if form.invalidate then form.invalidate() end
           end)
