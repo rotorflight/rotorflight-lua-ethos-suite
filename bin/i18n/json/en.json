@@ -2092,6 +2092,12 @@
           "needs_translation": false,
           "translation": "Integration"
         },
+        "txt_syncname": {
+          "english": "Sync model name",
+          "max_length": 15,
+          "needs_translation": false,
+          "translation": "Sync model name"
+        },
         "panel_coming_soon": {
           "english": "Coming soon",
           "max_length": 11,

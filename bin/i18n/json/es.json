@@ -2435,6 +2435,13 @@
           "reverse_text": false,
           "max_length": 11
         },
+        "txt_syncname": {
+          "english": "Sync model name",
+          "translation": "Sync model name",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 15
+        },
         "panel_coming_soon": {
           "english": "Coming soon",
           "translation": "Coming soon",

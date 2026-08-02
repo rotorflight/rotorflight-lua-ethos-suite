@@ -151,6 +151,18 @@ local function open(opts)
 
   local integrationPanel = form.addExpansionPanel("@i18n(app.modules.settings.panel_integration)@")
   integrationPanel:open(false)
+
+  form.addBooleanField(integrationPanel:addLine("@i18n(app.modules.settings.txt_syncname)@"), nil,
+    function()
+      return settings and settings.general and settings.general.syncname == true
+    end,
+    function(value)
+      if not settings then return end
+      settings.general = settings.general or {}
+      settings.general.syncname = value == true
+      updateSaveEnabled()
+    end)
+
   form.addStaticText(integrationPanel:addLine(""), nil, "@i18n(app.modules.settings.panel_coming_soon)@")
 
   updateSaveEnabled()

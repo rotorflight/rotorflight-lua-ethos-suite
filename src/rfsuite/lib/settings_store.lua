@@ -26,6 +26,10 @@ local DEFAULTS = {
     -- change what a pilot who never opens Settings sees.
     save_confirm = true,
     reload_confirm = true,
+    -- Default false, matching master's own default (main.lua) -- overwriting
+    -- the pilot's Ethos model name with the FC's craft name is a real,
+    -- visible side effect that shouldn't happen until opted into.
+    syncname = false,
   },
   developer = {
     developer_mode = false,
@@ -226,6 +230,7 @@ local function normalize(settings)
   settings.general.temperature_unit = clampNumber(settings.general.temperature_unit, DEFAULTS.general.temperature_unit, 0, 1)
   settings.general.save_confirm = coerceBool(settings.general.save_confirm, DEFAULTS.general.save_confirm)
   settings.general.reload_confirm = coerceBool(settings.general.reload_confirm, DEFAULTS.general.reload_confirm)
+  settings.general.syncname = coerceBool(settings.general.syncname, DEFAULTS.general.syncname)
 
   settings.developer = settings.developer or {}
   settings.developer.developer_mode = coerceBool(settings.developer.developer_mode, DEFAULTS.developer.developer_mode)
@@ -330,6 +335,11 @@ end
 function settings_store.reloadConfirmEnabled(settings)
   local general = type(settings) == "table" and settings.general or nil
   return coerceBool(fieldValue(general, "reload_confirm"), DEFAULTS.general.reload_confirm) == true
+end
+
+function settings_store.syncNameEnabled(settings)
+  local general = type(settings) == "table" and settings.general or nil
+  return coerceBool(fieldValue(general, "syncname"), DEFAULTS.general.syncname) == true
 end
 
 function settings_store.developerModeEnabled(settings)

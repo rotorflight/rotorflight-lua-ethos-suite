@@ -173,6 +173,11 @@ local statsWriteInFlight = false
 local blackboxReadInFlight = false
 local pendingStatsSync = false
 local pendingStatsSyncAt = nil
+-- The Ethos model's own name, as it was before settings.general.syncname
+-- last overwrote it with the FC's craft name -- captured once per connect
+-- (see the craft-name handshake below) and restored on disconnect, same
+-- round-trip as master's own postconnect/craftname.lua + lib/utils.lua.
+local originalModelName = nil
 
 local function resetScheduler()
   for key in pairs(nextScheduledAt) do
@@ -445,6 +450,20 @@ local function runHandshake(mspQueue, protocol)
   if not session.craftName then
     mspQueue:add(handshake.buildNameReadMessage(function(name)
       session.craftName = name
+      -- Mirrors master's postconnect/craftname.lua: overwrite the pilot's
+      -- own Ethos model name with the FC's craft name, opt-in only (see
+      -- lib/settings_store.lua's syncname). originalModelName is captured
+      -- once per connect (not per handshake retry -- `not originalModelName`
+      -- guards that) and restored in setConnected(false) below, same
+      -- round-trip as master's own lib/utils.lua.
+      if settingsStore.syncNameEnabled(settingsStore.load()) and model and model.name
+        and session.craftName and session.craftName ~= "" then
+        if not originalModelName then
+          local ok, current = pcall(model.name)
+          if ok then originalModelName = current end
+        end
+        pcall(model.name, session.craftName)
+      end
       publish()
     end))
   end
@@ -534,6 +553,14 @@ local function setConnected(value, mspQueue, protocol)
     runHandshake(mspQueue, protocol)
   else
     debugLog.print("[session] disconnected")
+    -- Restore whatever the Ethos model name was before syncname (see the
+    -- craft-name handshake above) last overwrote it -- must run before
+    -- session.craftName is wiped below, since it's this connect's own
+    -- captured originalModelName that's being restored, not a fresh read.
+    if originalModelName and model and model.name then
+      pcall(model.name, originalModelName)
+    end
+    originalModelName = nil
     -- Forget everything the handshake fetched so it re-runs in full on the
     -- next connect (a stale FC version/UID/battery config from a previous
     -- session -- or a different aircraft entirely -- must not survive a

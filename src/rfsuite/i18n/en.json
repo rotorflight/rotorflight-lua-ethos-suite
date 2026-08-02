@@ -6192,6 +6192,12 @@
           "needs_translation": false,
           "translation": "Save confirm"
         },
+        "txt_syncname": {
+          "english": "Sync model name",
+          "max_length": 15,
+          "needs_translation": false,
+          "translation": "Sync model name"
+        },
         "voltage": {
           "english": "Voltage",
           "max_length": 7,
