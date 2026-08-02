@@ -913,6 +913,7 @@ local function update(widget, snapshot)
   local previousMcuId = widget.mcuId
   widget.connected = snapshot.connected == true
   widget.isArmed = snapshot.isArmed
+  widget.armDisableFlags = snapshot.armDisableFlags
 
   widget.craftName = snapshot.craftName
   widget.mcuId = snapshot.mcuId

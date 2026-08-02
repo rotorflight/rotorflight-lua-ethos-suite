@@ -5,9 +5,9 @@
 -- lib/telemetry_sensors_sport.lua/lib/telemetry_sensors_crsf.lua get an
 -- entry here; sim sensors with no real-hardware counterpart (fuel,
 -- altitude, cell_count, accx/y/z, attpitch/roll/yaw, groundspeed,
--- armdisableflags, tailspeed) are still created and visible to
--- dashboards/telemetry pages via Ethos's own sensor picker, just not looked
--- up through this table -- nothing here needs them yet.
+-- tailspeed) are still created and visible to dashboards/telemetry pages
+-- via Ethos's own sensor picker, just not looked up through this table --
+-- nothing here needs them yet.
 --
 -- Split into its own file (rather than a sub-table of one big CANDIDATES
 -- literal) so lib/telemetry_sensors.lua can loadfile() only the protocol
@@ -62,5 +62,10 @@ return {
   },
   armflags = {
     {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5001},
+  },
+  -- Fabricated by tasks/sim_sensors.lua's own SENSORS.armdisableflags
+  -- entry, same uid.
+  armdisableflags = {
+    {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5015},
   },
 }

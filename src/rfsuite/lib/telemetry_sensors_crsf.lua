@@ -68,4 +68,10 @@ return {
   armflags = {
     {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1202},
   },
+  -- Why-can't-arm bitmask (see lib/msp_status.lua's own arming_disable_flags
+  -- and widgets/dashboard/context.lua's armingDisableFlagsToString()) --
+  -- broadcast at the appId right after armflags's own.
+  armdisableflags = {
+    {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1203},
+  },
 }
