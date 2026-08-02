@@ -206,6 +206,25 @@ local function rememberRuntimeSlot(runtime, id)
   list[#list + 1] = id
 end
 
+-- Pools a slot's dirty-marking setter wrapper the same way slot.get/
+-- slot.set themselves are pooled -- created once per slot, not once per
+-- buildField() call, and reads slot.controlRef dynamically (updated below
+-- on every claim, same lifecycle as slot.dataRef) rather than closing over
+-- `runtime` directly. `controlRef` -- not the full runtime -- is what's
+-- safe to hold indefinitely in this permanently-pooled table: page_runtime.
+-- lua's own PageRuntime:dispose() nils controlRef.runtime specifically so
+-- closures like this one that outlive the page still only pin a tiny
+-- emptied indirection table, never the disposed runtime (and everything
+-- it references) itself. See this file's own module comment for why
+-- fresh-per-visit closures matter here at all.
+local function makeSetWithDirty(slot)
+  return function(value)
+    local runtime = slot.controlRef and slot.controlRef.runtime
+    if runtime then runtime:markDirty() end
+    slot.set(value)
+  end
+end
+
 local function configureChoiceSlot(runtime, spec)
   local id = slotId(runtime, spec, spec.bit and "bit" or "choice")
   local slot = accessorSlots[id]
@@ -231,9 +250,11 @@ local function configureChoiceSlot(runtime, spec)
         refDataTable(slot.dataRef, slot.source)[slot.key] = value
       end
     end
+    slot.setWithDirty = makeSetWithDirty(slot)
     accessorSlots[id] = slot
   end
   slot.dataRef = runtime.dataRef
+  slot.controlRef = runtime.controlRef
   slot.source = spec.source
   slot.key = spec.key
   slot.bit = spec.bit
@@ -254,9 +275,11 @@ local function configureNumberSlot(runtime, spec, scale, decimals)
       if not slot.dataRef then return end
       refDataTable(slot.dataRef, slot.source)[slot.key] = unscaledValue(value, slot.scale, slot.decimals)
     end
+    slot.setWithDirty = makeSetWithDirty(slot)
     accessorSlots[id] = slot
   end
   slot.dataRef = runtime.dataRef
+  slot.controlRef = runtime.controlRef
   slot.source = spec.source
   slot.key = spec.key
   slot.scale = scale
@@ -272,6 +295,9 @@ function field_layout.releaseRuntime(runtime)
     local slot = accessorSlots[list[i]]
     if slot and slot.dataRef == runtime.dataRef then
       slot.dataRef = nil
+    end
+    if slot and slot.controlRef == runtime.controlRef then
+      slot.controlRef = nil
     end
     list[i] = nil
   end
@@ -292,26 +318,11 @@ end
 -- "default" is really just its first table entry, not a meaningful
 -- firmware-defined reset target the way a number range's is.
 
--- Wraps a pooled slot's `set` in a fresh closure that marks `runtime`
--- dirty first -- fresh per call (not pooled like the slot itself) since
--- the slot outlives any one runtime (see configureChoiceSlot/
--- configureNumberSlot's own pooling comment) but each field built against
--- it belongs to exactly one runtime. Safe to call unconditionally: Ethos
--- only invokes a field's setter on an actual pilot edit, never during
--- construction or while polling the getter to display the current value,
--- so this can never fire before the field is genuinely changed.
-local function withDirty(runtime, set)
-  return function(value)
-    runtime:markDirty()
-    set(value)
-  end
-end
-
 function field_layout.buildField(runtime, line, slot, spec)
   local field
   if spec.choices then
     local access = configureChoiceSlot(runtime, spec)
-    field = form.addChoiceField(line, slot, spec.choices, access.get, withDirty(runtime, access.set))
+    field = form.addChoiceField(line, slot, spec.choices, access.get, access.setWithDirty)
   else
     local meta = metaFor(runtime, spec)
     local min = spec.min or (meta and meta.min)
@@ -325,7 +336,7 @@ function field_layout.buildField(runtime, line, slot, spec)
       scaledValue(min, scale, decimals),
       scaledValue(max, scale, decimals),
       access.get,
-      withDirty(runtime, access.set))
+      access.setWithDirty)
     local suffix = spec.suffix or (meta and meta.suffix)
     local step = spec.step or (meta and meta.step)
     if decimals then field:decimals(decimals) end
