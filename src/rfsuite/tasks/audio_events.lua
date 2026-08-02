@@ -331,6 +331,14 @@ local function announceVoltage(now)
   local warnCell = tonumber(config and config.vbatWarningCell)
   if voltage == nil or cellCount == nil or cellCount <= 0 or warnCell == nil or warnCell <= 0 then return end
 
+  -- Below 1V total is implausible for a connected battery (e.g. running on
+  -- USB power alone with no pack attached) -- don't let a near-zero noise
+  -- reading trigger the low-voltage alarm.
+  if voltage < 1 then
+    lastAlertAt.voltage = nil
+    return
+  end
+
   local cellVoltage = voltage / cellCount
   if cellVoltage >= warnCell then
     lastAlertAt.voltage = nil
