@@ -2098,12 +2098,6 @@
           "needs_translation": false,
           "translation": "Sync model name"
         },
-        "panel_coming_soon": {
-          "english": "Coming soon",
-          "max_length": 11,
-          "needs_translation": false,
-          "translation": "Coming soon"
-        },
         "temperature_unit": {
           "english": "Temperature Unit",
           "max_length": 16,
@@ -3965,18 +3959,6 @@
           "max_length": 13,
           "needs_translation": false,
           "translation": "Dest. Profile"
-        },
-        "help_p1": {
-          "english": "Copy PID profile or Rate profile from Source to Destination.",
-          "max_length": 60,
-          "needs_translation": false,
-          "translation": "Copy PID profile or Rate profile from Source to Destination."
-        },
-        "help_p2": {
-          "english": "Choose the source and destinations and save to copy the profile.",
-          "max_length": 64,
-          "needs_translation": false,
-          "translation": "Choose the source and destinations and save to copy the profile."
         },
         "msgbox_msg": {
           "english": "Save current page to flight controller?",
@@ -7302,18 +7284,6 @@
         "max_length": 29,
         "needs_translation": false,
         "translation": "Waiting for Rotorflight task."
-      },
-      "startup_waiting_telemetry": {
-        "english": "Link established",
-        "max_length": 16,
-        "needs_translation": false,
-        "translation": "Link established"
-      },
-      "startup_waiting_telemetry_detail": {
-        "english": "Waiting for telemetry sensors.",
-        "max_length": 30,
-        "needs_translation": false,
-        "translation": "Waiting for telemetry sensors."
       },
       "startup_unsupported_version": {
         "english": "Unsupported firmware",

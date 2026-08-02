@@ -163,8 +163,6 @@ local function open(opts)
       updateSaveEnabled()
     end)
 
-  form.addStaticText(integrationPanel:addLine(""), nil, "@i18n(app.modules.settings.panel_coming_soon)@")
-
   updateSaveEnabled()
 
   if opts.setEventHandler then

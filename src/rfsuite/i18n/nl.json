@@ -1392,20 +1392,6 @@
           "reverse_text": false,
           "translation": "Dest. Profile"
         },
-        "help_p1": {
-          "english": "Copy PID profile or Rate profile from Source to Destination.",
-          "max_length": 60,
-          "needs_translation": true,
-          "reverse_text": false,
-          "translation": "Copy PID profile or Rate profile from Source to Destination."
-        },
-        "help_p2": {
-          "english": "Choose the source and destinations and save to copy the profile.",
-          "max_length": 64,
-          "needs_translation": true,
-          "reverse_text": false,
-          "translation": "Choose the source and destinations and save to copy the profile."
-        },
         "msgbox_msg": {
           "english": "Save current page to flight controller?",
           "max_length": 39,
@@ -6967,13 +6953,6 @@
           "reverse_text": false,
           "translation": "Geen themes beschikbaar om in te stellen"
         },
-        "panel_coming_soon": {
-          "english": "Coming soon",
-          "max_length": 11,
-          "needs_translation": true,
-          "reverse_text": false,
-          "translation": "Coming soon"
-        },
         "panel_integration": {
           "english": "Integration",
           "max_length": 11,
@@ -8644,20 +8623,6 @@
         "needs_translation": false,
         "reverse_text": false,
         "translation": "Wachten op taak Rotorflight."
-      },
-      "startup_waiting_telemetry": {
-        "english": "Link established",
-        "max_length": 16,
-        "needs_translation": false,
-        "reverse_text": false,
-        "translation": "Verbinding tot stand gebracht"
-      },
-      "startup_waiting_telemetry_detail": {
-        "english": "Waiting for telemetry sensors.",
-        "max_length": 30,
-        "needs_translation": false,
-        "reverse_text": false,
-        "translation": "Wachten op telemetriesensoren."
       },
       "throttle": {
         "english": "Throttle",

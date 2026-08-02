@@ -2442,13 +2442,6 @@
           "reverse_text": false,
           "max_length": 15
         },
-        "panel_coming_soon": {
-          "english": "Coming soon",
-          "translation": "Coming soon",
-          "needs_translation": true,
-          "reverse_text": false,
-          "max_length": 11
-        },
         "temperature_unit": {
           "english": "Temperature Unit",
           "translation": "Temperature Unit",
@@ -4614,20 +4607,6 @@
           "max_length": 13,
           "needs_translation": true,
           "translation": "Dest. Profile",
-          "reverse_text": false
-        },
-        "help_p1": {
-          "english": "Copy PID profile or Rate profile from Source to Destination.",
-          "max_length": 60,
-          "needs_translation": true,
-          "translation": "Copy PID profile or Rate profile from Source to Destination.",
-          "reverse_text": false
-        },
-        "help_p2": {
-          "english": "Choose the source and destinations and save to copy the profile.",
-          "max_length": 64,
-          "needs_translation": true,
-          "translation": "Choose the source and destinations and save to copy the profile.",
           "reverse_text": false
         },
         "msgbox_msg": {
@@ -8497,20 +8476,6 @@
         "needs_translation": false,
         "reverse_text": false,
         "max_length": 29
-      },
-      "startup_waiting_telemetry": {
-        "english": "Link established",
-        "translation": "Połączenie ustanowione",
-        "needs_translation": false,
-        "reverse_text": false,
-        "max_length": 16
-      },
-      "startup_waiting_telemetry_detail": {
-        "english": "Waiting for telemetry sensors.",
-        "translation": "Oczekiwanie na czujniki telemetryczne.",
-        "needs_translation": false,
-        "reverse_text": false,
-        "max_length": 30
       },
       "startup_unsupported_version": {
         "english": "Unsupported firmware",
