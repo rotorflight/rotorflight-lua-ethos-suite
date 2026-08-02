@@ -87,16 +87,29 @@ local function open(opts)
 
   form.clear()
   runtime:buildChrome()
+  -- Captured instead of closing over `runtime` directly in the field
+  -- getters/setters below -- matching app/pages/pids.lua's own dataRef/
+  -- controlRef convention (see its comment): Ethos retains some form
+  -- callback closures past this page's own lifetime, and dataRef.data/
+  -- controlRef.runtime both get cleared on dispose (app/page_runtime.lua's
+  -- own PageRuntime:dispose()), so whatever gets retained here stays small
+  -- instead of pinning the whole disposed PageRuntime.
+  local dataRef = runtime.dataRef
+  local controlRef = runtime.controlRef
+  local function markDirty()
+    local rt = controlRef.runtime
+    if rt then rt:markDirty() end
+  end
 
   form.addLine("@i18n(telemetry.group_profiles)@")
   local line = form.addLine("    @i18n(app.modules.power.selected)@")
   profileField = form.addChoiceField(line, nil, batteryProfile.PROFILE_CHOICES,
     function()
-      return normalizeProfile(runtime.data.profile and runtime.data.profile.batteryProfile) or 0
+      return normalizeProfile(dataRef.data.profile and dataRef.data.profile.batteryProfile) or 0
     end,
     function(value)
-      runtime:markDirty()
-      if runtime.data.profile then runtime.data.profile.batteryProfile = normalizeProfile(value) or 0 end
+      markDirty()
+      if dataRef.data.profile then dataRef.data.profile.batteryProfile = normalizeProfile(value) or 0 end
       if form.invalidate then form.invalidate() end
     end)
   runtime:registerField("profile:batteryProfile", profileField)
@@ -104,14 +117,14 @@ local function open(opts)
   line = form.addLine("    @i18n(app.modules.power.capacity)@")
   capacityField = form.addNumberField(line, nil, 0, 40000,
     function()
-      local selected = normalizeProfile(runtime.data.profile and runtime.data.profile.batteryProfile) or 0
-      local battery = runtime.data.battery or {}
+      local selected = normalizeProfile(dataRef.data.profile and dataRef.data.profile.batteryProfile) or 0
+      local battery = dataRef.data.battery or {}
       return battery[profileKey(selected)] or 0
     end,
     function(value)
-      runtime:markDirty()
-      local selected = normalizeProfile(runtime.data.profile and runtime.data.profile.batteryProfile) or 0
-      runtime.data.battery[profileKey(selected)] = clampCapacity(value)
+      markDirty()
+      local selected = normalizeProfile(dataRef.data.profile and dataRef.data.profile.batteryProfile) or 0
+      dataRef.data.battery[profileKey(selected)] = clampCapacity(value)
     end)
   capacityField:suffix("mAh")
   capacityField:default(0)
