@@ -58,6 +58,15 @@ local GESTURE_MIN_DY = 20
 local GESTURE_MAX_DX = 40
 local GESTURE_CONSUME_TIMEOUT = 0.75
 local TOOLBAR_TIMEOUT = 10
+-- Paces the cold-start object warm-up (each box's object-type/subtype
+-- module load, first sensor-source resolution, any images) across many
+-- wakeup ticks instead of paying for it all in a single burst the moment
+-- the startup overlay drops -- af92913d dropped this pacing, which turned
+-- first-load into one uncontrolled burst that Ethos's own per-tick
+-- instruction budget then had to throttle anyway (see the runaway-script
+-- guard comment on context.lua's isImageTooLarge), making the whole radio
+-- feel laggy for as long as that burst took to grind through.
+local STARTUP_PREP_OBJECTS_PER_TICK = 2
 -- Master keeps inactive dashboard-state preloading disabled by default:
 -- it saves RAM and avoids loading a non-visible theme during startup.
 local PREWARM_STATES = {}
@@ -1004,6 +1013,20 @@ local function dashboardState(widget)
   return widget.flightmodeState or "preflight"
 end
 
+local function hasTelemetryValues(widget)
+  return widget
+    and (widget.voltage ~= nil
+      or widget.current ~= nil
+      or widget.consumption ~= nil
+      or widget.throttlePercent ~= nil
+      or widget.rpm ~= nil
+      or widget.linkQuality ~= nil
+      or widget.tempEsc ~= nil
+      or widget.tempMcu ~= nil
+      or widget.becVoltage ~= nil
+      or widget.fuelPercent ~= nil)
+end
+
 local function shouldShowStartupOverlay(widget)
   if not widget then return true end
   -- Checked ahead of startupComplete's latch so an unsupported FC still
@@ -1013,6 +1036,13 @@ local function shouldShowStartupOverlay(widget)
   if dashboardState(widget) == "postflight" then return false end
   if widget.taskRunning ~= true then return true end
   if widget.connected ~= true then return true end
+  -- Wait for real sensor data, not just a live task/link, before switching
+  -- to the full dashboard -- otherwise the very first wakeOne() per box
+  -- resolves its sensor source before anything is actually broadcasting,
+  -- which caches a miss and (lib/telemetry_sensors.lua's MISS_RETRY_INTERVAL
+  -- / context.lua's LIVE_MISS_RETRY_INTERVAL) blocks retrying for 5s --
+  -- exactly the "values take forever to appear" symptom this avoids.
+  if not hasTelemetryValues(widget) then return true end
   return false
 end
 
@@ -1398,8 +1428,17 @@ local function wakeup(widget)
   end
 
   if shouldShowStartupOverlay(widget) then
-    -- Blocking startup states are rendered by paintDashboardShell(); avoid
-    -- warming full live objects until the dashboard can be shown.
+    -- paint() only ever shows the lightweight shell while the overlay is up
+    -- (see its own comment), so this can't paint anything premature -- but
+    -- it's still worth incrementally warming the *full-content* box cache
+    -- here, a few objects per tick, so that by the time real telemetry
+    -- arrives and the overlay drops, every box's object-type module and
+    -- sensor source are already resolved instead of all needing it at once.
+    if widget.connected == true then
+      prepareDashboard(widget, true, STARTUP_PREP_OBJECTS_PER_TICK)
+      requestPaint(widget)
+      invalidateWidget(widget)
+    end
   else
     widget.startupComplete = true
   end

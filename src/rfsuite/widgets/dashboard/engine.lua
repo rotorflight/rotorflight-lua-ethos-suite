@@ -232,11 +232,21 @@ local function wakeObjects(maxCount, config)
   local count = #boxRects
   if count == 0 then return finishWakePass() end
 
-  local spreadScheduling, spreadRatio = schedulerSettings(config)
-  if wakePassCount < 1 or spreadScheduling == false then
-    maxCount = nil
-  elseif not maxCount or maxCount <= 0 then
-    maxCount = wakeupsPerCycle(count, spreadRatio)
+  -- An explicit maxCount (dashboard.lua's own STARTUP_PREP_OBJECTS_PER_TICK
+  -- pacing during cold-start warm-up) is always honored, first pass or not
+  -- -- that pacing exists specifically to keep the *first* pass, the most
+  -- expensive one (every box's object-type module load, first sensor-
+  -- source resolution), from happening as a single burst. Only a caller
+  -- that passes no preference (nil) gets the default policy below: full
+  -- pass on the very first call (so paint() has real content immediately
+  -- once it's the one requesting wake), spread-ratio afterward.
+  if maxCount == nil or maxCount <= 0 then
+    local spreadScheduling, spreadRatio = schedulerSettings(config)
+    if wakePassCount >= 1 and spreadScheduling ~= false then
+      maxCount = wakeupsPerCycle(count, spreadRatio)
+    else
+      maxCount = nil
+    end
   end
 
   if not maxCount or maxCount <= 0 or maxCount >= count then
