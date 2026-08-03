@@ -46,6 +46,14 @@ local loadedTheme = nil
 local loadedState = nil
 local systemToolHandle = nil
 local clock = os.clock
+-- Set true while app/tool.lua's full-screen tool owns the display (see its
+-- create()/close()) -- matches master's rfsuite.tasks.appRunning gate on
+-- dashboard.lua's own wakeup(): a background-screen widget doing full
+-- object-wakeup/paint-prep work while a *different* screen is the one
+-- actually on the display is pure wasted CPU, every tick, for as long as
+-- the tool stays open.
+local appRunning = false
+bus.subscribe("app.state", function(state) appRunning = state and state.running == true end)
 local GESTURE_MIN_DY = 20
 local GESTURE_MAX_DX = 40
 local GESTURE_CONSUME_TIMEOUT = 0.75
@@ -438,7 +446,6 @@ local function applyResetFlight(widget)
   end
 
   setToolbarVisible(widget, false)
-  clearThemeCache()
   resetDashboardPrewarm(widget)
   markStartupUnderlayDirty(widget)
   requestPaint(widget)
@@ -459,7 +466,12 @@ local function askResetFlight(widget)
       {
         label = "@i18n(app.btn_ok)@",
         action = function()
-          applyResetFlight(widget)
+          -- Close the dialog immediately and do the actual reset (which
+          -- includes a native model.resetFlight() call) on the next
+          -- wakeup tick -- applyResetFlight() used to run synchronously
+          -- right here, so the dialog visibly hung on "OK" for however
+          -- long that native call took.
+          widget.pendingResetFlight = true
           return true
         end,
       },
@@ -842,6 +854,7 @@ local function create()
     selectedToolbarIndex = nil,
     toolbarRects = {},
     toolbarMasks = nil,
+    pendingResetFlight = false,
     eraseDialog = nil,
     eraseActive = false,
     eraseStartedAt = 0,
@@ -1299,6 +1312,17 @@ local function event(widget, category, value, x, y)
 end
 
 local function wakeup(widget)
+  -- Skip all work while a different screen is actually on the display --
+  -- either this tool's own full-screen app/menu (appRunning) or simply
+  -- some other Ethos screen (lcd.isVisible() false). Matches master's
+  -- dashboard.wakeup() early return; see appRunning's own comment above.
+  if appRunning or not lcd.isVisible() then return end
+
+  if widget.pendingResetFlight then
+    widget.pendingResetFlight = false
+    applyResetFlight(widget)
+  end
+
   if not widget.dashboardSettings then
     widget.settingsSnapshot = settingsStore.load()
     widget.dashboardSettings = settingsStore.dashboard(widget.settingsSnapshot)

@@ -19,8 +19,12 @@
 -- "session.update" is retained because late-opening widgets/pages need the
 -- current connection/profile snapshot even if the aircraft is idle.
 -- "task.status" is retained so the app can tell whether the background task
--- has ever run before it lets pilots open MSP-backed pages. Transient command
--- topics such as "msp.request" must NOT be retained: those payloads carry
+-- has ever run before it lets pilots open MSP-backed pages. "app.state" is
+-- retained so a dashboard widget instantiated (or reloaded) while the
+-- full-screen app/tool already happens to be open still learns that
+-- immediately, instead of defaulting to "not running" until the next
+-- open/close toggle. Transient command topics such as "msp.request" must
+-- NOT be retained: those payloads carry
 -- per-page callback closures, and retaining the last one would keep a closed
 -- page alive after navigation.
 
@@ -36,6 +40,7 @@ local lastPublished = {}
 local retainedTopics = {
   ["session.update"] = true,
   ["task.status"] = true,
+  ["app.state"] = true,
 }
 
 local function subscribe(topic, handler)

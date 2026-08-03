@@ -442,6 +442,10 @@ local function create()
   taskAlertShown = false
   updateDeveloperMode()
   menuContainer.openRoot(nav, ROOT_ENTRIES, setEventHandler, setWakeupHandler, setPaintHandler, setCleanupHandler, MENUS, taskGuard)
+  -- Lets background-screen widgets (widgets/dashboard.lua) skip their own
+  -- wakeup work while this full-screen tool owns the display -- matches
+  -- master's rfsuite.tasks.appRunning gate (dashboard.lua's wakeup()).
+  bus.publish("app.state", {running = true})
   return {}
 end
 
@@ -486,6 +490,7 @@ local function close(state)
   setEventHandler(nil)
   setWakeupHandler(nil)
   setPaintHandler(nil)
+  bus.publish("app.state", {running = false})
   for _, key in ipairs(APP_SESSION_PACKAGE_KEYS) do
     package.loaded[key] = nil
   end
