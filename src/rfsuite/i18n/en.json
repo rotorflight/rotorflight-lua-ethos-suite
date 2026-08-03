@@ -6174,6 +6174,12 @@
           "needs_translation": false,
           "translation": "Save confirm"
         },
+        "txt_show_battery_profile_connect": {
+          "english": "Battery Type on connect",
+          "max_length": 23,
+          "needs_translation": false,
+          "translation": "Battery Type on connect"
+        },
         "txt_syncname": {
           "english": "Sync model name",
           "max_length": 15,

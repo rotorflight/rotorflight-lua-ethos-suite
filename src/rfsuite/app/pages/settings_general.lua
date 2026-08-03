@@ -163,6 +163,17 @@ local function open(opts)
       updateSaveEnabled()
     end)
 
+  form.addBooleanField(integrationPanel:addLine("@i18n(app.modules.settings.txt_show_battery_profile_connect)@"), nil,
+    function()
+      return settings and settings.general and settings.general.battery_profile_startup ~= false
+    end,
+    function(value)
+      if not settings then return end
+      settings.general = settings.general or {}
+      settings.general.battery_profile_startup = value == true
+      updateSaveEnabled()
+    end)
+
   updateSaveEnabled()
 
   if opts.setEventHandler then

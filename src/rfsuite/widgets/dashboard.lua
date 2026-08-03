@@ -877,6 +877,7 @@ local function create()
     batteryProgressValue = 0,
     batteryDone = false,
     batteryError = false,
+    batteryDialogShown = false,
     gestureActive = false,
     gestureStartX = 0,
     gestureStartY = 0,
@@ -999,6 +1000,11 @@ local function update(widget, snapshot)
     widget.headspeedVariancePct = nil
   elseif previousConnected == true and widget.connected ~= true then
     markStartupUnderlayDirty(widget)
+    -- Re-arm the startup battery-profile prompt for the next connection
+    -- (matches master's own reset of session.batteryDialogShown on
+    -- disconnect) -- otherwise reconnecting the same craft would never
+    -- prompt again for the rest of this widget's lifetime.
+    widget.batteryDialogShown = false
   end
 
   widget.flightmodeState = widget.flightmode:update(widget)
@@ -1392,6 +1398,26 @@ local function wakeup(widget)
       requestPaint(widget)
     end
     bus.subscribe("settings.update", widget.settingsHandler)
+  end
+
+  -- Auto-prompt the battery-profile chooser once per connection, matching
+  -- master's own showBatteryTypeStartup behavior -- gated on the Settings
+  -- > General > Integration toggle, and only actually opened when more
+  -- than one profile is configured (a single-profile craft has nothing to
+  -- choose, same as the toolbar's own battery icon staying disabled --
+  -- see isToolbarItemEnabled()'s requiresBatteryProfiles check). Waits for
+  -- widget.batteryConfig to have actually arrived (async, via
+  -- session.update) rather than firing the instant `connected` flips true,
+  -- and latches batteryDialogShown so it only ever fires once per
+  -- connection -- reset on disconnect above.
+  if widget.connected == true
+      and not widget.batteryDialogShown
+      and widget.batteryConfig
+      and settingsStore.batteryProfileStartupEnabled(widget.settingsSnapshot) then
+    widget.batteryDialogShown = true
+    if hasSelectableBatteryProfiles(widget) then
+      chooseBatteryProfile(widget)
+    end
   end
 
   -- Poll for a live Ethos OS theme change (switching light/dark, or to a

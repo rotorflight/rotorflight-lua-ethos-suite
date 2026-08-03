@@ -26,6 +26,10 @@ local DEFAULTS = {
     -- change what a pilot who never opens Settings sees.
     save_confirm = true,
     reload_confirm = true,
+    -- Default true, matching master's own default (main.lua) -- the
+    -- battery-profile chooser auto-prompts on connect when more than one
+    -- profile is configured, same as master's showBatteryTypeStartup.
+    battery_profile_startup = true,
     -- Default false, matching master's own default (main.lua) -- overwriting
     -- the pilot's Ethos model name with the FC's craft name is a real,
     -- visible side effect that shouldn't happen until opted into.
@@ -230,6 +234,7 @@ local function normalize(settings)
   settings.general.temperature_unit = clampNumber(settings.general.temperature_unit, DEFAULTS.general.temperature_unit, 0, 1)
   settings.general.save_confirm = coerceBool(settings.general.save_confirm, DEFAULTS.general.save_confirm)
   settings.general.reload_confirm = coerceBool(settings.general.reload_confirm, DEFAULTS.general.reload_confirm)
+  settings.general.battery_profile_startup = coerceBool(settings.general.battery_profile_startup, DEFAULTS.general.battery_profile_startup)
   settings.general.syncname = coerceBool(settings.general.syncname, DEFAULTS.general.syncname)
 
   settings.developer = settings.developer or {}
@@ -335,6 +340,11 @@ end
 function settings_store.reloadConfirmEnabled(settings)
   local general = type(settings) == "table" and settings.general or nil
   return coerceBool(fieldValue(general, "reload_confirm"), DEFAULTS.general.reload_confirm) == true
+end
+
+function settings_store.batteryProfileStartupEnabled(settings)
+  local general = type(settings) == "table" and settings.general or nil
+  return coerceBool(fieldValue(general, "battery_profile_startup"), DEFAULTS.general.battery_profile_startup) == true
 end
 
 function settings_store.syncNameEnabled(settings)
