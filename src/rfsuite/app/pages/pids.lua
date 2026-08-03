@@ -36,7 +36,6 @@ local COLUMNS = {
   "@i18n(app.modules.pids.f)@", "@i18n(app.modules.pids.o)@", "@i18n(app.modules.pids.b)@",
 }
 local COLUMN_SUFFIXES = {"p", "i", "d", "f", "o", "b"}
-local PID_STEP = 5
 local ROWS = {
   {label = "@i18n(app.modules.pids.roll)@", axis = "roll"},
   {label = "@i18n(app.modules.pids.pitch)@", axis = "pitch"},
@@ -108,7 +107,14 @@ local function open(opts)
         local field = form.addNumberField(line, slots[colIndex], meta.min, meta.max,
           function() return dataRef.data[key] end,
           function(value) markDirty(); dataRef.data[key] = value end)
-        if field.step then field:step(PID_STEP) end
+        -- No :step() call -- self-caught bug, found live: this used to
+        -- hardcode :step(5) for every P/I/D/F/O/B cell on every axis.
+        -- Cross-checked against both master's own tasks/scheduler/msp/
+        -- api/PID_TUNING.lua (no per-field step override on any of the
+        -- 17 pid_N_X fields) and rotorflight-configurator's own
+        -- src/tabs/profiles.html (every PID grid cell is step="1") --
+        -- the correct step for all of these is Ethos's own implicit
+        -- default (1), not a shared constant.
         -- Ethos's own "reset to default" long-press gesture (added
         -- alpha14) resets to whatever :default() was last given -- 0 if
         -- never called -- so this is unconditional, same as
