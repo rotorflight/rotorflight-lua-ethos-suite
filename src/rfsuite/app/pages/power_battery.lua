@@ -7,11 +7,19 @@ local batteryProfile = assert(loadfile("lib/msp_battery_profile.lua"))()
 
 local PAGE_TITLE = "@i18n(app.modules.power.battery_name)@"
 
+-- All values flowing through this file are already 0-based (choice field
+-- values from PROFILE_CHOICES, session.batteryProfile from tasks/session.lua,
+-- and the raw MSP_BATTERY_PROFILE decode) -- unlike
+-- tasks/session.lua's own normalizeBatteryProfile(), which additionally
+-- has to cope with a possibly-1-based raw telemetry sensor reading, this
+-- just validates/clamps rather than guessing at a base. Self-caught bug,
+-- found live: this used to also accept 1-6 and subtract 1, which silently
+-- collapsed an already-0-based selection of "2" (value 1) back down to
+-- "1" (value 0) -- profile 3-6 selections were corrupted the same way.
 local function normalizeProfile(value)
   local n = tonumber(value)
   if not n then return nil end
   n = math.floor(n)
-  if n >= 1 and n <= 6 then return n - 1 end
   if n >= 0 and n <= 5 then return n end
   return nil
 end
