@@ -1069,6 +1069,14 @@ local function startupOverlayMessage(widget)
     return "@i18n(widgets.dashboard.startup_no_link)@",
       "@i18n(widgets.dashboard.startup_no_link_detail)@"
   end
+  -- Reached once connected/taskRunning are both true but hasTelemetryValues()
+  -- still isn't -- the link is up (the connect beep has already played) but
+  -- the FC hasn't started streaming individual sensor values yet, which on
+  -- S.Port's round-robin polling can visibly lag the link itself by a
+  -- couple of seconds (see shouldShowStartupOverlay()'s own comment on
+  -- this same wait). Worded around that specifically, rather than the
+  -- previous generic "preparing/loading theme" text, which had nothing to
+  -- do with what this phase is actually waiting on.
   return "@i18n(widgets.dashboard.startup_preparing_dashboard)@",
     "@i18n(widgets.dashboard.startup_preparing_dashboard_detail)@"
 end
@@ -1348,17 +1356,34 @@ local function event(widget, category, value, x, y)
 end
 
 local function wakeup(widget)
-  -- Skip all work while a different screen is actually on the display --
-  -- either this tool's own full-screen app/menu (appRunning) or simply
-  -- some other Ethos screen (lcd.isVisible() false). Matches master's
-  -- dashboard.wakeup() early return; see appRunning's own comment above.
-  if appRunning or not lcd.isVisible() then return end
-
-  if widget.pendingResetFlight then
-    widget.pendingResetFlight = false
-    applyResetFlight(widget)
-  end
-
+  -- Self-caught bug, found live: these three bus subscriptions (plus the
+  -- one-time settings load) used to sit *after* the appRunning/isVisible
+  -- early-return below, back when that guard was the very first line of
+  -- this function. That meant widget.connected/widget.taskRunning could
+  -- only ever be set by processing a "session.update"/"task.status" bus
+  -- event from inside a wakeup() call that actually got past the guard --
+  -- so if the widget's very first few ticks after a fresh script load
+  -- happened to land while lcd.isVisible() was still settling (Ethos
+  -- deciding which screen is foreground right after boot), the guard
+  -- tripped every time, these subscribe() calls never ran, and
+  -- widget.connected stayed stuck at create()'s "false" default
+  -- regardless of what the FC/session actually did in the meantime --
+  -- observed live as the startup overlay freezing on "No telemetry link
+  -- detected" for a stretch after the real connect (audible beep and
+  -- all), then jumping straight to the fully-loaded dashboard the moment
+  -- wakeup() finally got a tick that passed the guard, with none of the
+  -- intermediate startupOverlayMessage() states ever visibly appearing
+  -- in between -- both retained bus topics (session.update, task.status)
+  -- replay synchronously on that first successful subscribe (see
+  -- lib/bus.lua's subscribe()), so everything caught up in one jump. A
+  -- reconnect within the same already-running widget instance never hit
+  -- this, since by then lcd.isVisible() was already reliably true on
+  -- every tick, which is why the freeze only ever showed up once, right
+  -- after a fresh boot/script load.
+  --
+  -- Moved above the guard so state tracking is never gated behind a
+  -- visibility check that only exists to skip *expensive* per-tick
+  -- painting/prep work -- everything below this point still is.
   if not widget.dashboardSettings then
     widget.settingsSnapshot = settingsStore.load()
     widget.dashboardSettings = settingsStore.dashboard(widget.settingsSnapshot)
@@ -1398,6 +1423,18 @@ local function wakeup(widget)
       requestPaint(widget)
     end
     bus.subscribe("settings.update", widget.settingsHandler)
+  end
+
+  -- Skip the rest -- expensive per-tick prep/paint-adjacent work -- while
+  -- a different screen is actually on the display: either this tool's own
+  -- full-screen app/menu (appRunning) or simply some other Ethos screen
+  -- (lcd.isVisible() false). Matches master's dashboard.wakeup() early
+  -- return; see appRunning's own comment above.
+  if appRunning or not lcd.isVisible() then return end
+
+  if widget.pendingResetFlight then
+    widget.pendingResetFlight = false
+    applyResetFlight(widget)
   end
 
   -- Auto-prompt the battery-profile chooser once per connection, matching

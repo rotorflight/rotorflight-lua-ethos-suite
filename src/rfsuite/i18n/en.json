@@ -7376,16 +7376,16 @@
         "translation": "Power model and wait for telemetry."
       },
       "startup_preparing_dashboard": {
-        "english": "Preparing dashboard",
-        "max_length": 19,
-        "needs_translation": false,
-        "translation": "Preparing dashboard"
+        "english": "Waiting for telemetry data",
+        "max_length": 27,
+        "needs_translation": true,
+        "translation": "Waiting for telemetry data"
       },
       "startup_preparing_dashboard_detail": {
-        "english": "Loading the selected theme.",
-        "max_length": 27,
-        "needs_translation": false,
-        "translation": "Loading the selected theme."
+        "english": "Link found. Waiting for sensor data.",
+        "max_length": 37,
+        "needs_translation": true,
+        "translation": "Link found. Waiting for sensor data."
       },
       "startup_title": {
         "english": "ROTORFLIGHT",
