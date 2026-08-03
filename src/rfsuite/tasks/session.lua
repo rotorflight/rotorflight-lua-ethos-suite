@@ -832,6 +832,44 @@ end
 
 bus.subscribe("model.timer.update", onModelTimerUpdate)
 
+-- Setup > Power > Battery / SmartFuel each write straight to the FC (see
+-- app/pages/power_battery.lua and app/pages/power_smartfuel.lua's own
+-- onSaved hooks), but session.batteryConfig/smartfuelMode were only ever
+-- fetched once, at connect (see runHandshake() above) and never re-polled
+-- -- without this, SmartFuel (and anything else reading session.batteryConfig,
+-- e.g. the dashboard) kept computing off the pre-edit values for the rest
+-- of the connection.
+local function onBatteryConfigSaved()
+  if not session.connected then return end
+  bus.publish("msp.request", mspBattery.buildBatteryConfigReadMessage(function(data)
+    session.batteryConfig = data
+    -- The local estimator's chargeLevel/initialChargeLevel were seeded
+    -- against the *old* min/full cell voltage, and update()'s own clamp
+    -- only ever lets fuel fall, never rise -- without a reset, a saved
+    -- change here could never be reflected upward for the rest of this
+    -- connection.
+    localSmartFuel:reset()
+    publish()
+  end))
+end
+bus.subscribe("battery.config.saved", onBatteryConfigSaved)
+
+local function onSmartfuelConfigSaved()
+  if not session.connected then return end
+  bus.publish("msp.request", mspBattery.buildSmartfuelConfigReadMessage(function(data)
+    session.smartfuelMode = data.mode
+    session.smartfuelVoltageFallPerSecond = data.voltageFallPerSecond
+    session.smartfuelChargeDropPerSecond = data.chargeDropPerSecond
+    localSmartFuel:reset()
+    publish()
+  end, function()
+    session.smartfuelMode = 0
+    localSmartFuel:reset()
+    publish()
+  end))
+end
+bus.subscribe("smartfuel.config.saved", onSmartfuelConfigSaved)
+
 -- If the FC computes smartfuel itself (smartfuelMode > 0), just mirror its
 -- broadcast sensor. Otherwise run the local sigmoid/slew estimator
 -- (lib/smartfuel_calc.lua) against live voltage/consumption telemetry.

@@ -4,6 +4,7 @@ local pageRuntime = assert(loadfile("app/page_runtime.lua"))()
 local fieldLayout = assert(loadfile("app/field_layout.lua"))()
 local batteryConfig = assert(loadfile("lib/msp_battery_config.lua"))()
 local batteryProfile = assert(loadfile("lib/msp_battery_profile.lua"))()
+local bus = assert(loadfile("lib/bus.lua"))()
 
 local PAGE_TITLE = "@i18n(app.modules.power.battery_name)@"
 
@@ -72,6 +73,14 @@ local function open(opts)
         local key = profileKey(selected)
         rt.data.battery[key] = clampCapacity(rt.data.battery[key])
       end
+    end,
+    -- tasks/session.lua reads BATTERY_CONFIG once at connect and caches it
+    -- (session.batteryConfig) for the rest of the connection -- SmartFuel's
+    -- local estimator and other consumers were still seeing pre-edit
+    -- min/max/full cell voltage, capacity, and reserve % after a save here
+    -- until reconnect. This tells session.lua to refetch immediately.
+    onSaved = function()
+      bus.publish("battery.config.saved")
     end,
     onWakeup = function(rt)
       local active = normalizeProfile(rt.lastProfile)

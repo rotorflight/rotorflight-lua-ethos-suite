@@ -136,6 +136,13 @@ end
 --                               -- deferred dialog/reload work.
 --   onPaint,                    -- optional; called from app/tool.lua's paint callback while page is open.
 --   onDispose,                  -- optional; called from dispose() before fields/data are cleared.
+--   onSaved,                    -- optional; called once, after performSave()'s write(s) (+ EEPROM
+--                               -- commit, if eepromWrite) have actually succeeded -- for a page whose
+--                               -- data is also cached elsewhere (e.g. tasks/session.lua's
+--                               -- session.batteryConfig, read once at connect and never re-polled)
+--                               -- that needs telling to refetch rather than keep serving a now-stale
+--                               -- copy for the rest of the connection. Not called on a save error or
+--                               -- an armed-FC EEPROM rejection.
 --   rebootAfterSave,            -- optional; if true, performSave() publishes lib/msp_reboot.lua's
 --                               MSP_REBOOT write right after the EEPROM write acks, matching
 --                               rotorflight-lua-ethos-suite's own rebootFc() (called from the same
@@ -179,6 +186,7 @@ function PageRuntime.new(config)
   self.onWakeup = config.onWakeup
   self.onPaint = config.onPaint
   self.onDispose = config.onDispose
+  self.onSaved = config.onSaved
   self.rebootAfterSave = config.rebootAfterSave
   self.initialData = config.initialData
   -- Kept in sync from every "session.update" (see onSessionUpdate()
@@ -528,12 +536,14 @@ function PageRuntime:performSave(focusFn)
     if index > #self_.sources then
       if not self_.eepromWrite then
         self_:setDirty(false)
+        if self_.onSaved then self_.onSaved(self_) end
         finishSave()
         maybeReboot()
         return
       end
       bus.publish("msp.request", eeprom.buildWriteMessage(function()
         self_:setDirty(false)
+        if self_.onSaved then self_.onSaved(self_) end
         finishSave()
         maybeReboot()
       end, function(reason)
@@ -836,6 +846,7 @@ function PageRuntime:dispose()
   self.onWakeup = nil
   self.onPaint = nil
   self.onDispose = nil
+  self.onSaved = nil
   self.loaded = false
   self.dirty = false
   self.busy = false

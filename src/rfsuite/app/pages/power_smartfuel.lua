@@ -3,6 +3,7 @@
 local pageRuntime = assert(loadfile("app/page_runtime.lua"))()
 local fieldLayout = assert(loadfile("app/field_layout.lua"))()
 local smartfuelConfig = assert(loadfile("lib/msp_smartfuel_config.lua"))()
+local bus = assert(loadfile("lib/bus.lua"))()
 
 local PAGE_TITLE = "@i18n(app.modules.power.smartfuel_name)@"
 
@@ -35,6 +36,15 @@ local function open(opts)
     onLoaded = function()
       lastEnabled = nil
       refreshTuning(runtime)
+    end,
+    -- Same staleness problem as app/pages/power_battery.lua's own onSaved --
+    -- tasks/session.lua caches SMARTFUEL_CONFIG once at connect
+    -- (session.smartfuelMode/session.smartfuelVoltageFallPerSecond/
+    -- session.smartfuelChargeDropPerSecond), so a mode/tuning change here
+    -- would otherwise keep driving the fuel estimate with pre-edit values
+    -- until reconnect.
+    onSaved = function()
+      bus.publish("smartfuel.config.saved")
     end,
     onWakeup = function(rt)
       local enabled = tuningActive(rt)
