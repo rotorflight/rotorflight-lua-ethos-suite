@@ -62,7 +62,24 @@ end
 -- (once per wakeup) don't re-scan candidates every time.
 local resolvedCache = {}
 local missRetryAt = {}
-local MISS_RETRY_INTERVAL = 5.0
+local missCount = {}
+-- Self-caught bug: a flat 5s lockout from the *first* miss meant that right
+-- after a fresh connect -- when every one of these names typically misses
+-- once together, before S.Port/CRSF's round-robin telemetry has cycled
+-- round to any of them yet -- every field session.lua reads through here
+-- (voltage, current, link, etc.) got locked out for the same full 5s, all
+-- at once. widgets/dashboard.lua's shouldShowStartupOverlay() waits on
+-- hasTelemetryValues(), which ORs across exactly those fields, so this
+-- surfaced as the startup overlay appearing to hang until "every sensor"
+-- was ready, when it was really just this shared cooldown expiring and
+-- most/all of them resolving on the very next attempt together. Backing off
+-- exponentially (starting fast, capping at the old flat interval) keeps the
+-- original CPU-saving intent for a sensor that's genuinely never going to
+-- exist on this build, while a sensor that's simply late to broadcast gets
+-- retried within a fraction of a second instead of up to 5.
+local MISS_RETRY_INITIAL = 0.5
+local MISS_RETRY_MAX = 5.0
+local MISS_RETRY_MULTIPLIER = 2
 
 -- A resolved source is re-latched periodically rather than kept forever.
 -- getSource() picks the *first* candidate appId that resolves, which is
@@ -114,6 +131,8 @@ function telemetry_sensors.getSource(protocol, name)
         source = candidate
         byProtocol[name] = source
         if byProtocolMiss then byProtocolMiss[name] = nil end
+        local byProtocolMissCount = missCount[protocol]
+        if byProtocolMissCount then byProtocolMissCount[name] = nil end
         break
       end
     end
@@ -122,7 +141,15 @@ function telemetry_sensors.getSource(protocol, name)
         byProtocolMiss = {}
         missRetryAt[protocol] = byProtocolMiss
       end
-      byProtocolMiss[name] = now + MISS_RETRY_INTERVAL
+      local byProtocolMissCount = missCount[protocol]
+      if not byProtocolMissCount then
+        byProtocolMissCount = {}
+        missCount[protocol] = byProtocolMissCount
+      end
+      local count = (byProtocolMissCount[name] or 0) + 1
+      byProtocolMissCount[name] = count
+      local interval = math.min(MISS_RETRY_INITIAL * (MISS_RETRY_MULTIPLIER ^ (count - 1)), MISS_RETRY_MAX)
+      byProtocolMiss[name] = now + interval
       return nil
     end
 
@@ -151,6 +178,7 @@ end
 function telemetry_sensors.reset()
   clearTable(resolvedCache)
   clearTable(missRetryAt)
+  clearTable(missCount)
   clearTable(revalidateAt)
 end
 

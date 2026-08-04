@@ -238,6 +238,14 @@ end
 local function markStartupUnderlayDirty(widget)
   if not widget then return end
   widget.startupComplete = false
+  -- Also re-arm the pre-link warm-up latch (see wakeup()'s own comment).
+  -- Some callers of this function also clearThemeCache() -> engine.reset(),
+  -- which throws away the engine's own "fully warmed" bookkeeping
+  -- (pendingTypeQueue/wakePassCount) and genuinely does need this re-armed;
+  -- others (plain disconnect, reset-flight) leave the engine cache alone,
+  -- so this is a harmless one-tick recheck there rather than a real
+  -- redo -- simpler than tracking which callers actually need it.
+  widget.startupWarmupDone = false
 end
 
 local function invalidateWidget(widget)
@@ -854,6 +862,7 @@ local function create()
     taskProtocol = nil,
     needsPaint = true,
     startupComplete = false,
+    startupWarmupDone = false,
     dashboardPrewarmIndex = 1,
     dashboardPrewarmed = {},
     toolbarVisible = false,
@@ -1033,7 +1042,11 @@ local function hasTelemetryValues(widget)
       or widget.fuelPercent ~= nil)
 end
 
+-- TEMP: startup overlay disabled for testing -- flip to false to restore it.
+local STARTUP_OVERLAY_DISABLED = false
+
 local function shouldShowStartupOverlay(widget)
+  if STARTUP_OVERLAY_DISABLED then return false end
   if not widget then return true end
   -- Checked ahead of startupComplete's latch so an unsupported FC still
   -- surfaces if a previous connection in this widget session completed.
@@ -1045,9 +1058,11 @@ local function shouldShowStartupOverlay(widget)
   -- Wait for real sensor data, not just a live task/link, before switching
   -- to the full dashboard -- otherwise the very first wakeOne() per box
   -- resolves its sensor source before anything is actually broadcasting,
-  -- which caches a miss and (lib/telemetry_sensors.lua's MISS_RETRY_INTERVAL
-  -- / context.lua's LIVE_MISS_RETRY_INTERVAL) blocks retrying for 5s --
-  -- exactly the "values take forever to appear" symptom this avoids.
+  -- which caches a miss (lib/telemetry_sensors.lua / context.lua's
+  -- liveSensorSource()) and used to block retrying for a flat 5s -- exactly
+  -- the "values take forever to appear" symptom this avoids. Both caches now
+  -- back off exponentially from a fast first retry instead, so this miss
+  -- window is normally a fraction of a second, not a full 5s stall.
   if not hasTelemetryValues(widget) then return true end
   return false
 end
@@ -1497,10 +1512,31 @@ local function wakeup(widget)
     -- here, a few objects per tick, so that by the time real telemetry
     -- arrives and the overlay drops, every box's object-type module and
     -- sensor source are already resolved instead of all needing it at once.
-    if widget.connected == true then
-      prepareDashboard(widget, true, STARTUP_PREP_OBJECTS_PER_TICK)
+    --
+    -- Self-caught bug: this used to be gated on widget.connected == true --
+    -- added back when the concern was specifically the overlay's own
+    -- lifecycle, without noticing that gate also meant the warm-up couldn't
+    -- even *start* until link detection, so a fresh connect still paid the
+    -- full paced ramp-up (loadfile per object type, first sensor-source
+    -- resolution) right when the pilot is watching for the dashboard to
+    -- appear -- the "loads slowly" feel. None of this work actually depends
+    -- on being connected (engine.lua's object.wakeup() already has to
+    -- tolerate nil sensor values -- that's the normal "connected but no data
+    -- yet" case), so there's nothing to gain by waiting: running it from the
+    -- moment the widget is first visible spends the same paced, capped cost
+    -- on otherwise-idle overlay-shell ticks instead, so the cache is usually
+    -- already warm by the time a real link shows up.
+    --
+    -- Latched once a full pass completes so this doesn't turn into an
+    -- indefinite background cost while just sitting disconnected (a radio
+    -- powered on without a craft attached could otherwise re-wake 2 boxes'
+    -- worth of sensor resolution every tick forever) -- markStartupUnderlayDirty()
+    -- re-arms this wherever the overlay/engine state actually needs redoing.
+    if not widget.startupWarmupDone then
+      local passComplete = prepareDashboard(widget, true, STARTUP_PREP_OBJECTS_PER_TICK)
       requestPaint(widget)
       invalidateWidget(widget)
+      if passComplete then widget.startupWarmupDone = true end
     end
   else
     widget.startupComplete = true

@@ -17,6 +17,23 @@ local preparedH = nil
 local preparedObjectsLoaded = false
 local wakeCursor = 1
 local wakePassCount = 0
+-- Self-caught bug: dashboard.lua's STARTUP_PREP_OBJECTS_PER_TICK exists
+-- specifically to pace "each box's object-type/subtype module load" across
+-- many wakeup ticks (see its own comment) -- but that pacing only ever
+-- reached wakeObjects() below, which paces *wakeOne()* (a box's own
+-- object.wakeup(), mostly first sensor-source resolution). The actual
+-- loadfile() of every distinct object type on screen happened synchronously,
+-- all at once, inside prepareLayout() (via loadObjects()/loadPreparedObjects()
+-- below) on whichever single tick first needed real objects -- for a theme
+-- with a dozen-plus distinct box types, that's a dozen-plus loadfile+pcall
+-- calls back to back in one frame, which is exactly the "radio hangs for a
+-- moment" feel right after the very first connect of a session (later
+-- reconnects don't show it, since objectsByType below never gets cleared,
+-- so almost every type is already cached by then). pendingTypeQueue/
+-- pendingTypeCursor let that loadfile burst itself be paced the same
+-- maxCount-per-call way wakeObjects() already paces per-box wakeup.
+local pendingTypeQueue = {}
+local pendingTypeCursor = 1
 
 local function clearArray(t)
   for i = #t, 1, -1 do t[i] = nil end
@@ -92,14 +109,59 @@ local function loadObjects(boxes, headerBoxes)
   for i = 1, #types do loadObjectType(types[i]) end
 end
 
-local function loadPreparedObjects()
+-- Rebuilds pendingTypeQueue with only the distinct, not-yet-loaded object
+-- types this layout actually uses, and rewinds the drain cursor -- called
+-- whenever the layout (config/screen size) changes, so a fresh set of types
+-- may need loading again.
+local function rebuildPendingTypeQueue(types)
+  clearArray(pendingTypeQueue)
+  for i = 1, #types do
+    local objectType = types[i]
+    if objectType and not objectsByType[objectType] then
+      pendingTypeQueue[#pendingTypeQueue + 1] = objectType
+    end
+  end
+  pendingTypeCursor = 1
+end
+
+local function buildPendingTypeQueueFromBoxes(boxes, headerBoxes)
+  rebuildPendingTypeQueue(buildBoxTypeList(boxes, headerBoxes))
+end
+
+local function buildPendingTypeQueueFromRects()
   clearArray(typeScratch)
   for _, rect in ipairs(boxRects) do
     local box = rect.box
     if box and box.type then typeScratch[#typeScratch + 1] = box.type end
   end
   sort(typeScratch)
-  for i = 1, #typeScratch do loadObjectType(typeScratch[i]) end
+  rebuildPendingTypeQueue(typeScratch)
+end
+
+-- Loads up to maxCount not-yet-loaded object types, leaving the rest queued
+-- for a later call. A nil/non-positive maxCount means "no pacing" -- drain
+-- the whole queue now (matches wakeObjects()'s own nil-means-unpaced
+-- convention, and preserves the original all-at-once behavior for any
+-- caller that isn't the startup-warmup path). Returns true once the queue is
+-- fully drained.
+local function drainPendingTypes(maxCount)
+  local count = #pendingTypeQueue
+  if pendingTypeCursor > count then return true end
+
+  if not maxCount or maxCount <= 0 then
+    for i = pendingTypeCursor, count do loadObjectType(pendingTypeQueue[i]) end
+    pendingTypeCursor = count + 1
+    return true
+  end
+
+  local processed = 0
+  while pendingTypeCursor <= count and processed < maxCount do
+    loadObjectType(pendingTypeQueue[pendingTypeCursor])
+    pendingTypeCursor = pendingTypeCursor + 1
+    processed = processed + 1
+  end
+
+  return pendingTypeCursor > count
 end
 
 local function schedulerSettings(config)
@@ -186,30 +248,41 @@ local function buildRects(config, screenW, screenH)
   return boxes, headerBoxes
 end
 
-local function prepareLayout(config, screenW, screenH, skipObjectLoad)
+-- maxTypesToLoad paces the *loadfile* step the same way wakeObjects() paces
+-- per-box wakeup -- nil/omitted means "load whatever's left right now" (used
+-- by paint()/preload(), which need a complete frame this tick), a positive
+-- number means "load at most this many not-yet-loaded types this call,
+-- however many calls that takes" (used by dashboard.lua's startup warm-up).
+local function prepareLayout(config, screenW, screenH, skipObjectLoad, maxTypesToLoad)
   config = config or {}
   local sameLayout = preparedConfig == config and preparedW == screenW and preparedH == screenH
   if not sameLayout then
     local boxes, headerBoxes = buildRects(config, screenW, screenH)
-    if not skipObjectLoad then
-      loadObjects(boxes, headerBoxes)
-      preparedObjectsLoaded = true
-    else
-      preparedObjectsLoaded = false
-    end
+    -- Queued up front regardless of skipObjectLoad, so a later call that
+    -- flips skipObjectLoad off (dashboard.lua's shell-only overlay phase
+    -- handing off to the real startup warm-up the moment it connects) can
+    -- resume draining the same queue instead of rescanning boxRects again.
+    buildPendingTypeQueueFromBoxes(boxes, headerBoxes)
     preparedConfig = config
     preparedW = screenW
     preparedH = screenH
     wakeCursor = 1
     wakePassCount = 0
+    if skipObjectLoad then
+      preparedObjectsLoaded = false
+    else
+      preparedObjectsLoaded = drainPendingTypes(maxTypesToLoad)
+    end
     return
   end
 
   if not skipObjectLoad and not preparedObjectsLoaded then
-    loadPreparedObjects()
-    preparedObjectsLoaded = true
-    wakeCursor = 1
-    wakePassCount = 0
+    if pendingTypeCursor > #pendingTypeQueue then buildPendingTypeQueueFromRects() end
+    preparedObjectsLoaded = drainPendingTypes(maxTypesToLoad)
+    if preparedObjectsLoaded then
+      wakeCursor = 1
+      wakePassCount = 0
+    end
   end
 end
 
@@ -350,8 +423,17 @@ end
 
 function engine.wakeup(widget, stateDef, screenW, screenH, options)
   context.setWidget(widget)
-  prepareLayout(stateDef, screenW, screenH)
-  return wakeObjects(options and options.maxObjects, stateDef), true
+  local maxObjects = options and options.maxObjects
+  prepareLayout(stateDef, screenW, screenH, false, maxObjects)
+  -- Spend this tick's budget on loading any still-pending object types
+  -- before ever calling wakeObjects() -- otherwise a paced caller (dashboard.
+  -- lua's startup warm-up) would still take the full loadfile burst up
+  -- front via prepareLayout() and only have *wakeObjects()* paced on top of
+  -- that, which is the bug this whole queue exists to close. An unpaced
+  -- caller (maxObjects nil) always finds preparedObjectsLoaded already true
+  -- here, since prepareLayout() just drained the whole queue synchronously.
+  if not preparedObjectsLoaded then return false, true end
+  return wakeObjects(maxObjects, stateDef), true
 end
 
 function engine.reset()
@@ -361,6 +443,8 @@ function engine.reset()
   preparedObjectsLoaded = false
   wakeCursor = 1
   wakePassCount = 0
+  clearArray(pendingTypeQueue)
+  pendingTypeCursor = 1
   for i = #boxRects, 1, -1 do boxRects[i] = nil end
 end
 

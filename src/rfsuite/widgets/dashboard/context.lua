@@ -60,7 +60,17 @@ local imagePathCache = {}
 local imageBitmapCache = {}
 local liveSourceCache = {}
 local liveMissRetryAt = {}
-local LIVE_MISS_RETRY_INTERVAL = 5.0
+local liveMissCount = {}
+-- Same fix as lib/telemetry_sensors.lua's own MISS_RETRY_INITIAL/_MAX: a flat
+-- 5s lockout from the first miss meant a box whose sensor simply hadn't
+-- broadcast yet (common right after connect) stayed blank for up to 5s
+-- rather than the fraction of a second it actually took to start
+-- broadcasting. Exponential backoff keeps the same eventual 5s cap for a
+-- sensor that's genuinely absent on this build, while resolving a merely-late
+-- one much sooner.
+local LIVE_MISS_RETRY_INITIAL = 0.5
+local LIVE_MISS_RETRY_MAX = 5.0
+local LIVE_MISS_RETRY_MULTIPLIER = 2
 local DASHBOARD_RESOLUTION_TOLERANCE = 12
 local DASHBOARD_SUPPORTED_RESOLUTIONS = {
   {784, 294}, {784, 316}, {800, 458}, {800, 480},
@@ -597,6 +607,8 @@ local function liveSensorSource(protocol, name)
     if source then
       byProtocol[name] = source
       if misses then misses[name] = nil end
+      local missCounts = liveMissCount[protocol]
+      if missCounts then missCounts[name] = nil end
       return source
     end
   end
@@ -605,7 +617,15 @@ local function liveSensorSource(protocol, name)
     misses = {}
     liveMissRetryAt[protocol] = misses
   end
-  misses[name] = now + LIVE_MISS_RETRY_INTERVAL
+  local missCounts = liveMissCount[protocol]
+  if not missCounts then
+    missCounts = {}
+    liveMissCount[protocol] = missCounts
+  end
+  local count = (missCounts[name] or 0) + 1
+  missCounts[name] = count
+  local interval = math.min(LIVE_MISS_RETRY_INITIAL * (LIVE_MISS_RETRY_MULTIPLIER ^ (count - 1)), LIVE_MISS_RETRY_MAX)
+  misses[name] = now + interval
   return nil
 end
 
@@ -1339,6 +1359,7 @@ function context.widgets.dashboard.clearCaches(options)
   if options.liveSources then
     clearTable(liveSourceCache)
     clearTable(liveMissRetryAt)
+    clearTable(liveMissCount)
   end
 end
 
