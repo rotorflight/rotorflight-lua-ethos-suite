@@ -10,13 +10,11 @@
 --   - No sag compensation (needs live RC stick input; this rebuild doesn't
 --     read RC channels yet). Voltage sag under load will show as a
 --     slightly lower estimate rather than being compensated out.
---   - No arm-state-gated slew activation or flight-mode-based mid-session
---     battery-swap detection (this rebuild doesn't track arm state yet).
---     Slew limiting is always active from the first sample, and the
---     estimator is reset wholesale whenever tasks/session.lua detects a
---     fresh connection, rather than on a live voltage-jump heuristic.
---   - No voltage-stability sampling window before seeding the initial
---     estimate -- the first sample seeds it directly.
+--   - No flight-mode-based mid-session battery-swap detection (this rebuild
+--     doesn't track flight mode here). It does still wait for a stable
+--     voltage window before seeding the initial estimate, gates the charge
+--     slew while disarmed, and resets on a disarmed voltage jump, matching
+--     the original local-mode behaviours that protect usable-capacity math.
 --   - Always blends in a consumption sensor when present (matching the
 --     original's COMBINED mode); pure voltage-only otherwise. No separate
 --     user-selectable VOLTAGE/CURRENT/COMBINED preference.
@@ -36,6 +34,9 @@ SmartFuel.__index = SmartFuel
 
 local DEFAULT_VOLTAGE_FALL_PER_SECOND = 0.01 -- V/s
 local DEFAULT_CHARGE_DROP_PER_SECOND = 0.005 -- fraction/s
+local STABILIZE_DELAY_SECONDS = 1.5
+local STABLE_WINDOW_VOLTS = 0.15
+local MAX_VOLTAGE_SAMPLES = 5
 
 function SmartFuel.new()
   return setmetatable({
@@ -44,6 +45,18 @@ function SmartFuel.new()
     lastCellVoltage = 0.0,
     initialConsumption = nil,
     lastTimestamp = nil,
+    wasEverArmed = false,
+    lastPackVoltage = nil,
+    voltageStabilised = false,
+    stabilizeNotBefore = nil,
+    voltageSamples = {},
+    voltageSampleCount = 0,
+    voltageSampleIndex = 0,
+    configCellCount = nil,
+    configPackCapacity = nil,
+    configMinV = nil,
+    configFullV = nil,
+    configWarningPercent = nil,
   }, SmartFuel)
 end
 
@@ -53,6 +66,20 @@ function SmartFuel:reset()
   self.lastCellVoltage = 0.0
   self.initialConsumption = nil
   self.lastTimestamp = nil
+  self.wasEverArmed = false
+  self.lastPackVoltage = nil
+  self.voltageStabilised = false
+  self.stabilizeNotBefore = nil
+  for i = 1, MAX_VOLTAGE_SAMPLES do
+    self.voltageSamples[i] = nil
+  end
+  self.voltageSampleCount = 0
+  self.voltageSampleIndex = 0
+  self.configCellCount = nil
+  self.configPackCapacity = nil
+  self.configMinV = nil
+  self.configFullV = nil
+  self.configWarningPercent = nil
 end
 
 -- Only permits the value to fall at maxDrop per call; rises are instant.
@@ -74,6 +101,66 @@ local function chargeLevelFromVoltage(cellVoltage, minV, fullV)
   return math_max(0.0, math_min(1.0, 1.0 / (1.0 + math_exp(-12.0 * (scaledV - 3.7)))))
 end
 
+local function resetVoltageTracking(self)
+  for i = 1, MAX_VOLTAGE_SAMPLES do
+    self.voltageSamples[i] = nil
+  end
+  self.voltageSampleCount = 0
+  self.voltageSampleIndex = 0
+  self.voltageStabilised = false
+end
+
+local function resetFuelState(self, now)
+  self.chargeLevel = 0.0
+  self.initialChargeLevel = 0.0
+  self.lastCellVoltage = 0.0
+  self.initialConsumption = nil
+  self.lastTimestamp = nil
+  self.wasEverArmed = false
+  self.lastPackVoltage = nil
+  self.stabilizeNotBefore = now and (now + STABILIZE_DELAY_SECONDS) or nil
+  resetVoltageTracking(self)
+end
+
+local function isVoltageStable(self)
+  if self.voltageSampleCount < MAX_VOLTAGE_SAMPLES then return false end
+  local samples = self.voltageSamples
+  local vmin = samples[1]
+  local vmax = vmin
+  for i = 2, MAX_VOLTAGE_SAMPLES do
+    local v = samples[i]
+    if v < vmin then vmin = v end
+    if v > vmax then vmax = v end
+  end
+  return (vmax - vmin) <= STABLE_WINDOW_VOLTS
+end
+
+local function addVoltageSample(self, voltage)
+  local nextIndex = self.voltageSampleIndex + 1
+  if nextIndex > MAX_VOLTAGE_SAMPLES then nextIndex = 1 end
+  self.voltageSampleIndex = nextIndex
+  self.voltageSamples[nextIndex] = voltage
+  if self.voltageSampleCount < MAX_VOLTAGE_SAMPLES then
+    self.voltageSampleCount = self.voltageSampleCount + 1
+  end
+end
+
+local function configChanged(self, cellCount, packCapacity, minV, fullV, warningPercent)
+  return self.configCellCount ~= cellCount
+    or self.configPackCapacity ~= packCapacity
+    or self.configMinV ~= minV
+    or self.configFullV ~= fullV
+    or self.configWarningPercent ~= warningPercent
+end
+
+local function rememberConfig(self, cellCount, packCapacity, minV, fullV, warningPercent)
+  self.configCellCount = cellCount
+  self.configPackCapacity = packCapacity
+  self.configMinV = minV
+  self.configFullV = fullV
+  self.configWarningPercent = warningPercent
+end
+
 -- inputs: {
 --   voltage, consumption,          -- live telemetry (consumption optional)
 --   cellCount, minV, fullV, packCapacity, warningPercent, -- from BATTERY_CONFIG
@@ -84,14 +171,44 @@ function SmartFuel:update(inputs)
   local voltage = inputs.voltage
   local cellCount = inputs.cellCount
   local packCapacity = inputs.packCapacity
+  local minV = inputs.minV
+  local fullV = inputs.fullV
+  local warningPercent = inputs.warningPercent
 
   if not voltage or voltage < 2 or not cellCount or cellCount == 0
     or not packCapacity or packCapacity < 10
-    or not inputs.minV or not inputs.fullV or inputs.fullV <= inputs.minV then
+    or not minV or not fullV or fullV <= minV then
+    resetVoltageTracking(self)
+    self.stabilizeNotBefore = nil
     return nil
   end
 
   local now = os_clock()
+  if configChanged(self, cellCount, packCapacity, minV, fullV, warningPercent) then
+    rememberConfig(self, cellCount, packCapacity, minV, fullV, warningPercent)
+    resetFuelState(self, now)
+  end
+
+  if self.voltageStabilised and inputs.isArmed == false and self.lastPackVoltage
+    and voltage > self.lastPackVoltage + STABLE_WINDOW_VOLTS then
+    resetFuelState(self, now)
+    return nil
+  end
+
+  if self.stabilizeNotBefore and now < self.stabilizeNotBefore then
+    self.lastPackVoltage = voltage
+    return nil
+  end
+
+  addVoltageSample(self, voltage)
+  if not self.voltageStabilised then
+    if not isVoltageStable(self) then
+      self.lastPackVoltage = voltage
+      return nil
+    end
+    self.voltageStabilised = true
+  end
+
   local dt = (self.lastTimestamp and now > self.lastTimestamp) and (now - self.lastTimestamp) or 0
 
   local cellVoltage = voltage / cellCount
@@ -103,7 +220,7 @@ function SmartFuel:update(inputs)
   end
   self.lastCellVoltage = cellVoltage
 
-  local estimation = chargeLevelFromVoltage(cellVoltage, inputs.minV, inputs.fullV)
+  local estimation = chargeLevelFromVoltage(cellVoltage, minV, fullV)
 
   if self.initialChargeLevel == 0 then
     self.chargeLevel = estimation
@@ -114,10 +231,17 @@ function SmartFuel:update(inputs)
   end
   estimation = math_min(self.initialChargeLevel, estimation)
 
-  local nextChargeLevel = slewDownLimit(
-    self.chargeLevel, estimation,
-    (inputs.chargeDropPerSecond or DEFAULT_CHARGE_DROP_PER_SECOND) * dt
-  )
+  if inputs.isArmed == true then self.wasEverArmed = true end
+
+  local nextChargeLevel
+  if inputs.isArmed == true or self.wasEverArmed then
+    nextChargeLevel = slewDownLimit(
+      self.chargeLevel, estimation,
+      (inputs.chargeDropPerSecond or DEFAULT_CHARGE_DROP_PER_SECOND) * dt
+    )
+  else
+    nextChargeLevel = estimation
+  end
 
   if inputs.consumption ~= nil and self.initialConsumption ~= nil then
     local used = inputs.consumption - self.initialConsumption
@@ -129,8 +253,9 @@ function SmartFuel:update(inputs)
   nextChargeLevel = math_min(nextChargeLevel, self.chargeLevel)
   self.chargeLevel = math_max(0.0, math_min(nextChargeLevel, self.initialChargeLevel))
   self.lastTimestamp = now
+  self.lastPackVoltage = voltage
 
-  return smartfuel_reserve.applyPercent(math_min(1.0, self.chargeLevel) * 100, inputs.warningPercent)
+  return smartfuel_reserve.applyPercent(math_min(1.0, self.chargeLevel) * 100, warningPercent)
 end
 
 return SmartFuel

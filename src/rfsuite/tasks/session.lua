@@ -225,6 +225,20 @@ local function normalizeBatteryProfile(value)
   return nil
 end
 
+local function batteryProfileCapacity(config, profile)
+  if type(config) ~= "table" then return nil end
+  local capacity = tonumber(config.batteryCapacity)
+  local active = normalizeBatteryProfile(profile)
+  local profiles = config.profiles
+  if active ~= nil and type(profiles) == "table" then
+    local profileCapacity = tonumber(profiles[active])
+    if profileCapacity and profileCapacity > 0 then
+      capacity = profileCapacity
+    end
+  end
+  return capacity
+end
+
 local function copyStats(stats)
   if type(stats) ~= "table" then return nil end
   return {
@@ -911,10 +925,11 @@ local function updateFuel(protocol)
       cellCount = bc.cellCount,
       minV = bc.vbatMinCell,
       fullV = bc.vbatFullCell,
-      packCapacity = bc.batteryCapacity,
+      packCapacity = batteryProfileCapacity(bc, session.batteryProfile),
       voltageFallPerSecond = session.smartfuelVoltageFallPerSecond,
       chargeDropPerSecond = session.smartfuelChargeDropPerSecond,
       warningPercent = bc.consumptionWarningPercentage,
+      isArmed = session.isArmed,
     })
   end
 
