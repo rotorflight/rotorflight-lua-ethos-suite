@@ -248,6 +248,26 @@ local function markStartupUnderlayDirty(widget)
   widget.startupWarmupDone = false
 end
 
+local function requestThemeReload(widget, restoreAfterReload)
+  local wasComplete = widget and (widget.startupComplete == true or widget.dashboardEverPainted == true)
+  clearThemeCache()
+  resetDashboardPrewarm(widget)
+  markStartupUnderlayDirty(widget)
+  if widget then
+    widget.themeReloadPending = true
+    widget.themeReloadWasComplete = wasComplete or restoreAfterReload == true
+  end
+  requestPaint(widget)
+end
+
+local function finishThemeReload(widget)
+  if not widget then return end
+  widget.startupWarmupDone = true
+  widget.themeReloadPending = false
+  widget.themeReloadWasComplete = false
+  widget.startupComplete = true
+end
+
 local function invalidateWidget(widget)
   if not lcd or not lcd.invalidate then return end
   local ok = pcall(lcd.invalidate, widget)
@@ -861,6 +881,9 @@ local function create()
     taskRunning = false,
     taskProtocol = nil,
     needsPaint = true,
+    dashboardEverPainted = false,
+    themeReloadPending = false,
+    themeReloadWasComplete = false,
     startupComplete = false,
     startupWarmupDone = false,
     dashboardPrewarmIndex = 1,
@@ -995,9 +1018,7 @@ local function update(widget, snapshot)
     local previousModelDashboard = widget.modelDashboard
     loadModelDashboard(widget)
     if not sameModelDashboard(previousModelDashboard, widget.modelDashboard) then
-      clearThemeCache()
-      resetDashboardPrewarm(widget)
-      markStartupUnderlayDirty(widget)
+      requestThemeReload(widget)
     end
   end
 
@@ -1051,6 +1072,7 @@ local function shouldShowStartupOverlay(widget)
   -- Checked ahead of startupComplete's latch so an unsupported FC still
   -- surfaces if a previous connection in this widget session completed.
   if widget.connected == true and widget.apiVersionSupported == false then return true end
+  if widget.themeReloadPending == true then return true end
   if widget.startupComplete == true then return false end
   if dashboardState(widget) == "postflight" then return false end
   if widget.taskRunning ~= true then return true end
@@ -1212,6 +1234,7 @@ local function paintDashboard(widget, w, h)
   local theme = selectedThemeForState(widget, state)
   setDashboardPreferences(widget, theme)
   ensureDashboardEngine().paint(widget, loadThemeDef(theme), loadStateDef(theme, state), state, w, h)
+  if widget then widget.dashboardEverPainted = true end
 end
 
 local function prewarmDashboardState(widget)
@@ -1235,6 +1258,9 @@ end
 
 local function paint(widget)
   local w, h = lcd.getWindowSize()
+  if widget and widget.themeReloadPending == true then
+    if widget.themeReloadWasComplete == true and prepareDashboard(widget, true) then finishThemeReload(widget) end
+  end
   if shouldShowStartupOverlay(widget) then
     -- Keep blocking startup states cheap: draw only the themed shell behind
     -- the overlay, not the live object/value pipeline.
@@ -1437,10 +1463,7 @@ local function wakeup(widget)
       widget.settingsSnapshot = settingsStore.clone(snapshot)
       widget.dashboardSettings = settingsStore.dashboard(snapshot)
       loadModelDashboard(widget)
-      clearThemeCache()
-      resetDashboardPrewarm(widget)
-      markStartupUnderlayDirty(widget)
-      requestPaint(widget)
+      requestThemeReload(widget, true)
     end
     bus.subscribe("settings.update", widget.settingsHandler)
   end
@@ -1488,10 +1511,7 @@ local function wakeup(widget)
     local currentThemeSignature = utils and utils.getThemeSignature and utils.getThemeSignature() or nil
     if currentThemeSignature ~= themeStateSignature then
       themeStateSignature = currentThemeSignature
-      clearThemeCache()
-      resetDashboardPrewarm(widget)
-      markStartupUnderlayDirty(widget)
-      requestPaint(widget)
+      requestThemeReload(widget)
     end
   end
 
@@ -1537,11 +1557,21 @@ local function wakeup(widget)
     -- powered on without a craft attached could otherwise re-wake 2 boxes'
     -- worth of sensor resolution every tick forever) -- markStartupUnderlayDirty()
     -- re-arms this wherever the overlay/engine state actually needs redoing.
-    if not widget.startupWarmupDone then
+    if widget.themeReloadPending == true or not widget.startupWarmupDone then
       local passComplete = prepareDashboard(widget, true, STARTUP_PREP_OBJECTS_PER_TICK)
       requestPaint(widget)
       invalidateWidget(widget)
-      if passComplete then widget.startupWarmupDone = true end
+      if passComplete then
+        local reloadWasComplete = widget.themeReloadWasComplete == true
+        if reloadWasComplete then
+          finishThemeReload(widget)
+        else
+          widget.startupWarmupDone = true
+          widget.themeReloadPending = false
+          widget.themeReloadWasComplete = false
+          if not shouldShowStartupOverlay(widget) then widget.startupComplete = true end
+        end
+      end
     end
   else
     widget.startupComplete = true
