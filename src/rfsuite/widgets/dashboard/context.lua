@@ -81,6 +81,13 @@ local DASHBOARD_THEME_WIDTHS = {800, 784, 640, 630, 480, 472}
 local ETHOS_THEME_MIN_VERSION = {26, 1, 0}
 local LOGO_DARK_FALLBACK = "widgets/dashboard/gfx/logo-dark.png"
 local LOGO_LIGHT_FALLBACK = "widgets/dashboard/gfx/logo-light.png"
+local FONT_LISTS_BY_RESOLUTION = {
+  ["800x480"] = {value_default = {FONT_XXS, FONT_XS, FONT_S, FONT_STD, FONT_L, FONT_XL, FONT_XXL, FONT_XXXXL}, value_reduced = {FONT_XXS, FONT_XS, FONT_S, FONT_STD, FONT_L}, value_title = {FONT_XXS, FONT_XS, FONT_S, FONT_STD}},
+  ["480x320"] = {value_default = {FONT_XXS, FONT_XS, FONT_S, FONT_STD, FONT_L, FONT_XL}, value_reduced = {FONT_XXS, FONT_XS, FONT_S, FONT_STD, FONT_L}, value_title = {FONT_XXS, FONT_XS, FONT_S}},
+  ["480x272"] = {value_default = {FONT_XXS, FONT_XS, FONT_S, FONT_STD}, value_reduced = {FONT_XXS, FONT_XS, FONT_S}, value_title = {FONT_XXS, FONT_XS, FONT_S}},
+  ["640x360"] = {value_default = {FONT_XXS, FONT_XS, FONT_S, FONT_STD, FONT_L, FONT_XL}, value_reduced = {FONT_XXS, FONT_XS, FONT_S, FONT_STD, FONT_L}, value_title = {FONT_XXS, FONT_XS, FONT_S}},
+}
+local DEFAULT_FONT_LISTS = {value_default = {FONT_XXS, FONT_XS, FONT_S, FONT_STD, FONT_L, FONT_XL, FONT_XXL, FONT_XXXXL}, value_reduced = {FONT_XXS, FONT_XS, FONT_S, FONT_STD, FONT_L}, value_title = {FONT_XXS, FONT_XS, FONT_S, FONT_STD}}
 local THEME_STATE_KEYS = {
   {"defaultColor", "THEME_DEFAULT_COLOR"},
   {"defaultBgColor", "THEME_DEFAULT_BGCOLOR"},
@@ -1450,18 +1457,7 @@ function utils.getFontListsForResolution()
   local width = version.lcdWidth or liveW or 800
   local height = version.lcdHeight or liveH or 480
   local resolution = tostring(width) .. "x" .. tostring(height)
-  local radios = {
-    ["800x480"] = {value_default = {FONT_XXS, FONT_XS, FONT_S, FONT_STD, FONT_L, FONT_XL, FONT_XXL, FONT_XXXXL}, value_reduced = {FONT_XXS, FONT_XS, FONT_S, FONT_STD, FONT_L}, value_title = {FONT_XXS, FONT_XS, FONT_S, FONT_STD}},
-    ["480x320"] = {value_default = {FONT_XXS, FONT_XS, FONT_S, FONT_STD, FONT_L, FONT_XL}, value_reduced = {FONT_XXS, FONT_XS, FONT_S, FONT_STD, FONT_L}, value_title = {FONT_XXS, FONT_XS, FONT_S}},
-    ["480x272"] = {value_default = {FONT_XXS, FONT_XS, FONT_S, FONT_STD}, value_reduced = {FONT_XXS, FONT_XS, FONT_S}, value_title = {FONT_XXS, FONT_XS, FONT_S}},
-    ["640x360"] = {value_default = {FONT_XXS, FONT_XS, FONT_S, FONT_STD, FONT_L, FONT_XL}, value_reduced = {FONT_XXS, FONT_XS, FONT_S, FONT_STD, FONT_L}, value_title = {FONT_XXS, FONT_XS, FONT_S}},
-  }
-  if radios[resolution] then return radios[resolution] end
-  return {
-    value_default = {FONT_XXS, FONT_XS, FONT_S, FONT_STD, FONT_L, FONT_XL, FONT_XXL, FONT_XXXXL},
-    value_reduced = {FONT_XXS, FONT_XS, FONT_S, FONT_STD, FONT_L},
-    value_title = {FONT_XXS, FONT_XS, FONT_S, FONT_STD},
-  }
+  return FONT_LISTS_BY_RESOLUTION[resolution] or DEFAULT_FONT_LISTS
 end
 
 -- Restored from this suite's own pre-rewrite widgets/dashboard/lib/utils.lua
@@ -1649,9 +1645,11 @@ function utils.box(x, y, w, h, title, titlepos, titlealign, titlefont, titlespac
     if not resolvedValueFont then
       local fonts = utils.getFontListsForResolution().value_default
       resolvedValueFont = fonts[#fonts]
+      local fitValue = value
+      if string.find(fitValue, "%%", 1, true) then fitValue = fitValue:gsub("%%", "W") end
       for _, candidate in ipairs(fonts) do
         lcd.font(candidate)
-        local tw, th = lcd.getTextSize((value:gsub("%%", "W")))
+        local tw, th = lcd.getTextSize(fitValue)
         if tw <= regionW and th <= regionH then
           resolvedValueFont = candidate
         end

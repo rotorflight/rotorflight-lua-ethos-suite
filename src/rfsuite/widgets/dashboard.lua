@@ -1259,7 +1259,14 @@ end
 local function paint(widget)
   local w, h = lcd.getWindowSize()
   if widget and widget.themeReloadPending == true then
-    if widget.themeReloadWasComplete == true and prepareDashboard(widget, true) then finishThemeReload(widget) end
+    if widget.themeReloadWasComplete == true and prepareDashboard(widget, true, STARTUP_PREP_OBJECTS_PER_TICK) then
+      finishThemeReload(widget)
+      requestPaint(widget)
+      invalidateWidget(widget)
+      paintDashboardShell(widget, w, h)
+      drawToolbar(widget, w, h)
+      return
+    end
   end
   if shouldShowStartupOverlay(widget) then
     -- Keep blocking startup states cheap: draw only the themed shell behind
