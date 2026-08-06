@@ -1720,12 +1720,8 @@ end
 
 function utils.setBackgroundColourBasedOnTheme()
   local w, h = lcd.getWindowSize()
-  -- Use the same background every themed box paints with (colorMode.bgcolor),
-  -- not the raw pageBgColor -- otherwise any gap in a theme's layout (e.g. a
-  -- box nudged up with offsety that doesn't fully cover the row above it)
-  -- shows a visibly different color where pageBgColor and primaryBgColor
-  -- diverge, instead of blending in like the rest of the screen.
-  lcd.color(utils.themeColors().bgcolor or utils.getThemeState().pageBgColor)
+  local colors = utils.themeColors()
+  lcd.color(colors.panelbg or colors.bgcolor or utils.getThemeState().pageBgColor)
   lcd.drawFilledRectangle(0, 0, w, h)
 end
 
