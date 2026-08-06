@@ -248,7 +248,24 @@ local function copyStats(stats)
   }
 end
 
+-- Every session-state mutator below calls publish() when its own field
+-- changes, rather than hitting the bus directly. Telemetry-driven fields
+-- (voltage, current, rpm, link quality, profiles, arm flags, ...) can flip
+-- several times within the same wakeup() tick -- updateProfiles() alone can
+-- change five fields in one call -- and each change used to trigger its own
+-- full ~30-field table rebuild + bus dispatch. publish() now just marks
+-- `dirty`; wakeup() flushes at most once per tick (see its own end), which
+-- collapses N publishes-per-tick into 1 without changing what subscribers
+-- see -- they only ever read the latest snapshot, never an intermediate
+-- one. This is the source of the Lua-heap sawtooth visible in the
+-- "[bgtask mem] lua=" background log.
+local dirty = false
+
 local function publish()
+  dirty = true
+end
+
+local function flush()
   bus.publish("session.update", {
     connected = session.connected,
     voltage = session.voltage,
@@ -1009,6 +1026,18 @@ local function wakeup(mspQueue, protocol, transport, simSensors)
     syncStatsWithFc(mspQueue)
   end
 
+  -- Single flush point for every publish() this tick coalesced (including
+  -- ones queued by mspQueue callbacks that fired during this same
+  -- background-task tick, before scheduler:wakeup() reached this task --
+  -- see tasks/background.lua's taskWakeup(): processQueue() always runs
+  -- first). Session runs at a 0.05s scheduler interval, so anything marked
+  -- dirty outside this tick (e.g. from a "battery.config.saved" handler
+  -- firing off the app's own event, not this task's) is still picked up
+  -- within ~50ms on the next tick.
+  if dirty then
+    dirty = false
+    flush()
+  end
 end
 
 local function setTelemetrySensors(instance)
