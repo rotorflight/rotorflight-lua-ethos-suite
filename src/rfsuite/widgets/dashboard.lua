@@ -1064,6 +1064,11 @@ local function shouldShowStartupOverlay(widget)
   -- back off exponentially from a fast first retry instead, so this miss
   -- window is normally a fraction of a second, not a full 5s stall.
   if not hasTelemetryValues(widget) then return true end
+  -- Keep the full object/value paint path hidden until the paced cold-start
+  -- warm-up has completed. Otherwise a fast link can make the first real
+  -- paint drain the remaining object loads and wakeups in one instruction
+  -- budget, which is visible on heavier themes.
+  if widget.startupWarmupDone ~= true then return true end
   return false
 end
 
