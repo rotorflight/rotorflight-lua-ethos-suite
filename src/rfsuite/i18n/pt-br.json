@@ -6939,6 +6939,13 @@
           "reverse_text": false,
           "translation": "Registros de memória"
         },
+        "model_announcement": {
+          "english": "Model announcement",
+          "max_length": 18,
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "Model announcement"
+        },
         "name": {
           "english": "Settings",
           "max_length": 8,

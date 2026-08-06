@@ -2183,6 +2183,13 @@
           "reverse_text": false,
           "max_length": 15
         },
+        "model_announcement": {
+          "english": "Model announcement",
+          "translation": "Model announcement",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 18
+        },
         "timer_alerting": {
           "english": "Timer audio",
           "translation": "Timer-Alarmierung",
