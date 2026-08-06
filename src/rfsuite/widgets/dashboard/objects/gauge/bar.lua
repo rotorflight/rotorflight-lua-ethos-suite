@@ -227,6 +227,48 @@ end
 
 local compileTransform = utils.compileTransform
 
+local function prepareGeometry(x, y, w, h, box, c)
+    local g = box._geom
+    local needGeo = (not g) or g.x ~= x or g.y ~= y or g.w ~= w or g.h ~= h or g.title ~= c.title or g.titlefont ~= c.titlefont or g.titlespacing ~= (c.titlespacing or 0) or g.titlepaddingtop ~= (c.titlepaddingtop or 0) or g.titlepaddingbottom ~= (c.titlepaddingbottom or 0) or g.titlepos ~= c.titlepos or g.gpad_left ~= (c.gpad_left or 0) or g.gpad_right ~= (c.gpad_right or 0) or g.gpad_top ~= (c.gpad_top or 0) or g.gpad_bottom ~= (c.gpad_bottom or 0)
+
+    if not needGeo then return g end
+
+    g = g or {}
+    g.x, g.y = x, y
+    g.w, g.h = w, h
+    g.title, g.titlefont = c.title, c.titlefont
+    g.titlespacing = c.titlespacing or 0
+    g.titlepaddingtop = c.titlepaddingtop or 0
+    g.titlepaddingbottom = c.titlepaddingbottom or 0
+    g.titlepos = c.titlepos
+    g.gpad_left = c.gpad_left or 0
+    g.gpad_right = c.gpad_right or 0
+    g.gpad_top = c.gpad_top or 0
+    g.gpad_bottom = c.gpad_bottom or 0
+
+    local title_area_top = 0
+    local title_area_bottom = 0
+    if c.title and c.title ~= "" then
+        lcd.font(resolveFont(c.titlefont, FONT_XS))
+        local _, tsizeH = lcd.getTextSize(c.title)
+        if c.titlepos == "bottom" then
+            title_area_bottom = (tsizeH or 0) + (c.titlepaddingtop or 0) + (c.titlepaddingbottom or 0) + (c.titlespacing or 0)
+        else
+            title_area_top = (tsizeH or 0) + (c.titlepaddingtop or 0) + (c.titlepaddingbottom or 0) + (c.titlespacing or 0)
+        end
+    end
+    g.title_area_top = title_area_top
+    g.title_area_bottom = title_area_bottom
+
+    g.gauge_x = x + g.gpad_left
+    g.gauge_y = y + g.gpad_top + g.title_area_top
+    g.gauge_w = w - g.gpad_left - g.gpad_right
+    g.gauge_h = h - g.gpad_top - g.gpad_bottom - g.title_area_top - g.title_area_bottom
+
+    box._geom = g
+    return g
+end
+
 local function getStatsValue(telemetry, source, statType)
     if source == nil then return nil end
     local stats = telemetry and telemetry.sensorStats and telemetry.sensorStats[source]
@@ -602,6 +644,11 @@ function render.wakeup(box)
     c.cappaddingright = cfg.cappaddingright
     c.cappaddingtop = cfg.cappaddingtop
     c.cappaddingbottom = cfg.cappaddingbottom
+
+    if box._dashboardRectW and box._dashboardRectH then
+        local gx, gy = utils.applyOffset(box._dashboardRectX or 0, box._dashboardRectY or 0, box)
+        prepareGeometry(gx, gy, box._dashboardRectW, box._dashboardRectH, box, c)
+    end
 end
 
 function render.paint(x, y, w, h, box)
@@ -610,43 +657,7 @@ function render.paint(x, y, w, h, box)
 
     x, y, w, h = utils.drawBoxBackground(x, y, w, h, c.bgcolor)
 
-    local g = box._geom
-    local needGeo = (not g) or g.w ~= w or g.h ~= h or g.title ~= c.title or g.titlefont ~= c.titlefont or g.titlespacing ~= (c.titlespacing or 0) or g.titlepaddingtop ~= (c.titlepaddingtop or 0) or g.titlepaddingbottom ~= (c.titlepaddingbottom or 0) or g.titlepos ~= c.titlepos or g.gpad_left ~= (c.gpad_left or 0) or g.gpad_right ~= (c.gpad_right or 0) or g.gpad_top ~= (c.gpad_top or 0) or g.gpad_bottom ~= (c.gpad_bottom or 0)
-
-    if needGeo then
-        g = g or {}
-        g.w, g.h = w, h
-        g.title, g.titlefont = c.title, c.titlefont
-        g.titlespacing = c.titlespacing or 0
-        g.titlepaddingtop = c.titlepaddingtop or 0
-        g.titlepaddingbottom = c.titlepaddingbottom or 0
-        g.titlepos = c.titlepos
-        g.gpad_left = c.gpad_left or 0
-        g.gpad_right = c.gpad_right or 0
-        g.gpad_top = c.gpad_top or 0
-        g.gpad_bottom = c.gpad_bottom or 0
-
-        local title_area_top = 0
-        local title_area_bottom = 0
-        if c.title and c.title ~= "" then
-            lcd.font(resolveFont(c.titlefont, FONT_XS))
-            local _, tsizeH = lcd.getTextSize(c.title)
-            if c.titlepos == "bottom" then
-                title_area_bottom = (tsizeH or 0) + (c.titlepaddingtop or 0) + (c.titlepaddingbottom or 0) + (c.titlespacing or 0)
-            else
-                title_area_top = (tsizeH or 0) + (c.titlepaddingtop or 0) + (c.titlepaddingbottom or 0) + (c.titlespacing or 0)
-            end
-        end
-        g.title_area_top = title_area_top
-        g.title_area_bottom = title_area_bottom
-
-        g.gauge_x = x + g.gpad_left
-        g.gauge_y = y + g.gpad_top + g.title_area_top
-        g.gauge_w = w - g.gpad_left - g.gpad_right
-        g.gauge_h = h - g.gpad_top - g.gpad_bottom - g.title_area_top - g.title_area_bottom
-
-        box._geom = g
-    end
+    local g = prepareGeometry(x, y, w, h, box, c)
 
     local gauge_x, gauge_y, gauge_w, gauge_h = g.gauge_x, g.gauge_y, g.gauge_w, g.gauge_h
 

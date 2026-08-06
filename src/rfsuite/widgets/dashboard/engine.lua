@@ -290,6 +290,10 @@ local function wakeOne(rect)
   local box = rect and rect.box
   local object = box and box.type and loadObjectType(box.type)
   if object and object.wakeup then
+    box._dashboardRectX = rect.x
+    box._dashboardRectY = rect.y
+    box._dashboardRectW = rect.w
+    box._dashboardRectH = rect.h
     local ok, err = pcall(object.wakeup, box)
     if not ok then print("[dashboard] object wakeup failed: " .. tostring(err)) end
   end

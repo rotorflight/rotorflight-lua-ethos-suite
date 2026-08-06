@@ -75,6 +75,62 @@ end
 local drawArc = utils.drawArc
 local compileTransform = utils.compileTransform
 
+local function prepareGeometry(x, y, w, h, box, c)
+    local g = box._geom
+    local needGeo = (not g) or g.x ~= x or g.y ~= y or g.w ~= w or g.h ~= h or g.title ~= c.title or g.titlefont ~= c.titlefont or g.titlespacing ~= (c.titlespacing or 0) or g.titlepaddingtop ~= (c.titlepaddingtop or 0) or g.titlepaddingbottom ~= (c.titlepaddingbottom or 0) or g.titlepos ~= c.titlepos or g.thickness ~= (c.thickness or 0) or g.gaugepadding ~= (c.gaugepadding or 0) or g.gaugepaddingbottom ~= (c.gaugepaddingbottom or 0)
+
+    if not needGeo then return g end
+
+    g = g or {}
+    g.x, g.y = x, y
+    g.w, g.h = w, h
+    g.title, g.titlefont = c.title, c.titlefont
+    g.titlespacing = c.titlespacing or 0
+    g.titlepaddingtop = c.titlepaddingtop or 0
+    g.titlepaddingbottom = c.titlepaddingbottom or 0
+    g.titlepos = c.titlepos
+    g.thickness = c.thickness or math.max(6, math.min(w, h) * 0.07)
+    g.gaugepadding = c.gaugepadding or 0
+    g.gaugepaddingbottom = c.gaugepaddingbottom or 0
+
+    local titleHeight = 0
+    if c.title then
+        lcd.font(resolveFont(c.titlefont, FONT_XS))
+        local _, th = lcd.getTextSize(c.title)
+        titleHeight = (th or 0) + g.titlespacing + g.titlepaddingtop + g.titlepaddingbottom
+    end
+
+    local arcRegionY, arcRegionH, cy
+    if c.titlepos == "top" then
+        arcRegionY = y + titleHeight
+        arcRegionH = h - titleHeight - g.gaugepaddingbottom
+        cy = arcRegionY + arcRegionH * 0.5
+    elseif c.titlepos == "bottom" then
+        arcRegionY = y
+        arcRegionH = h - titleHeight - g.gaugepaddingbottom
+        cy = arcRegionY + arcRegionH * 0.6
+    else
+        arcRegionY = y
+        arcRegionH = h - g.gaugepaddingbottom
+        cy = arcRegionY + arcRegionH * 0.55
+    end
+
+    local thickness = g.thickness
+    local maxRadius = (arcRegionH / 2) - (thickness / 2)
+    local radius = math.min((w / 2) - g.gaugepadding, maxRadius + 8)
+
+    g.cx = x + w / 2
+    g.cy = cy
+    g.radius = radius
+
+    local startAngle = 225
+    g.startAngle = startAngle
+    g.endAngleFull = (startAngle + 270) % 360
+
+    box._geom = g
+    return g
+end
+
 function render.wakeup(box)
     local telemetry = rfsuite.tasks.telemetry
 
@@ -224,6 +280,11 @@ function render.wakeup(box)
     c.maxpaddingtop = cfg.maxpaddingtop
     c.gaugepadding = cfg.gaugepadding
     c.gaugepaddingbottom = cfg.gaugepaddingbottom
+
+    if box._dashboardRectW and box._dashboardRectH then
+        local gx, gy = utils.applyOffset(box._dashboardRectX or 0, box._dashboardRectY or 0, box)
+        prepareGeometry(gx, gy, box._dashboardRectW, box._dashboardRectH, box, c)
+    end
 end
 
 function render.paint(x, y, w, h, box)
@@ -239,57 +300,7 @@ function render.paint(x, y, w, h, box)
 
     x, y, w, h = utils.drawBoxBackground(x, y, w, h, c.bgcolor)
 
-    local g = box._geom
-    local needGeo = (not g) or g.w ~= w or g.h ~= h or g.title ~= c.title or g.titlefont ~= c.titlefont or g.titlespacing ~= (c.titlespacing or 0) or g.titlepaddingtop ~= (c.titlepaddingtop or 0) or g.titlepaddingbottom ~= (c.titlepaddingbottom or 0) or g.titlepos ~= c.titlepos or g.thickness ~= (c.thickness or 0) or g.gaugepadding ~= (c.gaugepadding or 0) or g.gaugepaddingbottom ~= (c.gaugepaddingbottom or 0)
-
-    if needGeo then
-        g = g or {}
-        g.w, g.h = w, h
-        g.title, g.titlefont = c.title, c.titlefont
-        g.titlespacing = c.titlespacing or 0
-        g.titlepaddingtop = c.titlepaddingtop or 0
-        g.titlepaddingbottom = c.titlepaddingbottom or 0
-        g.titlepos = c.titlepos
-        g.thickness = c.thickness or math.max(6, math.min(w, h) * 0.07)
-        g.gaugepadding = c.gaugepadding or 0
-        g.gaugepaddingbottom = c.gaugepaddingbottom or 0
-
-        local titleHeight = 0
-        if c.title then
-            lcd.font(resolveFont(c.titlefont, FONT_XS))
-            local _, th = lcd.getTextSize(c.title)
-            titleHeight = (th or 0) + g.titlespacing + g.titlepaddingtop + g.titlepaddingbottom
-        end
-
-        local arcRegionY, arcRegionH, cy
-        if c.titlepos == "top" then
-            arcRegionY = y + titleHeight
-            arcRegionH = h - titleHeight - g.gaugepaddingbottom
-            cy = arcRegionY + arcRegionH * 0.5
-        elseif c.titlepos == "bottom" then
-            arcRegionY = y
-            arcRegionH = h - titleHeight - g.gaugepaddingbottom
-            cy = arcRegionY + arcRegionH * 0.6
-        else
-            arcRegionY = y
-            arcRegionH = h - g.gaugepaddingbottom
-            cy = arcRegionY + arcRegionH * 0.55
-        end
-
-        local thickness = g.thickness
-        local maxRadius = (arcRegionH / 2) - (thickness / 2)
-        local radius = math.min((w / 2) - g.gaugepadding, maxRadius + 8)
-
-        g.cx = x + w / 2
-        g.cy = cy
-        g.radius = radius
-
-        local startAngle = 225
-        g.startAngle = startAngle
-        g.endAngleFull = (startAngle + 270) % 360
-
-        box._geom = g
-    end
+    local g = prepareGeometry(x, y, w, h, box, c)
 
     drawArc(g.cx, g.cy, g.radius, c.thickness, g.startAngle, g.endAngleFull, c.fillbgcolor)
 
