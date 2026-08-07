@@ -331,8 +331,56 @@ local function toolbarColors()
 end
 
 local function toolbarBounds(widget, w, h)
-  local barH = math.floor(math.max(h * 0.24, math.min(h * 0.40, w * 0.16)))
+  local lowRes = w <= 640
+  local widthRatio = lowRes and 0.22 or 0.16
+  local minRatio = lowRes and 0.28 or 0.24
+  local maxRatio = lowRes and 0.42 or 0.40
+  local minIconBarH = lowRes and math.min(96, h * 0.48) or 0
+  local barH = math.floor(math.max(h * minRatio, minIconBarH, math.min(h * maxRatio, w * widthRatio)))
   return 0, h - barH, w, barH
+end
+
+local function fitToolbarLabel(widget, item, maxW, font)
+  local label = item and item.name
+  if type(label) ~= "string" or label == "" then return label end
+  widget.toolbarLabelCache = widget.toolbarLabelCache or {}
+  local cached = widget.toolbarLabelCache[item]
+  if cached and cached.label == label and cached.maxW == maxW and cached.font == font then
+    return cached.text, cached.h
+  end
+
+  local tw, th = lcd.getTextSize(label)
+  local fitted = label
+  local ellipsis = "..."
+  if tw > maxW then
+    local ellW = lcd.getTextSize(ellipsis)
+    if ellW >= maxW then
+      fitted = ellipsis
+    else
+      local trimmed = label
+      while #trimmed > 1 do
+        trimmed = trimmed:sub(1, #trimmed - 1)
+        tw = lcd.getTextSize(trimmed)
+        if tw + ellW <= maxW then
+          fitted = trimmed .. ellipsis
+          break
+        end
+      end
+      if fitted == label then fitted = ellipsis end
+    end
+  end
+
+  if fitted ~= label then _, th = lcd.getTextSize(fitted) end
+  if not cached then
+    cached = {}
+    widget.toolbarLabelCache[item] = cached
+  end
+  cached.label = label
+  cached.maxW = maxW
+  cached.font = font
+  cached.text = fitted
+  cached.h = th or 0
+  return fitted, cached.h
 end
 
 local function loadToolbarMask(widget, path)
@@ -423,14 +471,20 @@ local function drawToolbar(widget, w, h)
   local colors = toolbarColors()
   local slots = 6
   local itemW = barW / slots
-  local slotPad = 12
-  local iconSize = math.min(55, math.floor(barH * 0.42))
+  local lowRes = barW <= 640
+  local slotPad = lowRes and 6 or 12
+  local groupPadTop = lowRes and 4 or 6
+  local textPadTop = lowRes and 3 or 6
+  local iconBottomPad = lowRes and 5 or 8
+  local iconGap = lowRes and 3 or 6
+  local iconSize = 55
+  local labelFont = (lowRes and FONT_XXS) or FONT_XS
 
   lcd.color(colors.surfaceBg)
   lcd.drawFilledRectangle(x, y, barW, barH)
   lcd.color(colors.line)
-  lcd.drawFilledRectangle(x, y, barW, 4)
-  lcd.font(FONT_XS)
+  lcd.drawFilledRectangle(x, y, barW, lowRes and 3 or 4)
+  lcd.font(labelFont)
 
   widget.toolbarRects = widget.toolbarRects or {}
   for key in pairs(widget.toolbarRects) do widget.toolbarRects[key] = nil end
@@ -438,9 +492,9 @@ local function drawToolbar(widget, w, h)
   for i, item in ipairs(TOOLBAR_ITEMS) do
     local ix = x + (i - 1) * itemW
     local bx = ix + slotPad
-    local by = y + slotPad + 6
+    local by = y + slotPad + groupPadTop
     local bw = itemW - (slotPad * 2)
-    local bh = barH - (slotPad * 2) - 6
+    local bh = barH - (slotPad * 2) - groupPadTop
     local enabled = isToolbarItemEnabled(widget, item)
     widget.toolbarRects[i] = {x = ix, y = y, w = itemW, h = barH, item = item, enabled = enabled}
 
@@ -448,12 +502,17 @@ local function drawToolbar(widget, w, h)
     lcd.color((selected and enabled) and colors.selectedFill or colors.tileFill)
     lcd.drawFilledRectangle(bx, by, bw, bh)
     lcd.color((selected and enabled) and colors.selectedText or colors.text)
-    lcd.drawText(bx + (bw * 0.5), by + 6, item.name, CENTERED)
+    local label, labelH = fitToolbarLabel(widget, item, math.floor(bw - 4), labelFont)
+    local labelY = by + textPadTop
+    lcd.drawText(bx + (bw * 0.5), labelY, label, CENTERED)
 
     local mask = loadToolbarMask(widget, item.icon)
     if mask and lcd.drawMask then
       lcd.color((selected and enabled) and colors.selectedText or colors.text)
-      lcd.drawMask(math.floor(bx + (bw - iconSize) / 2 + 0.5), math.floor(by + bh - iconSize - 8 + 0.5), mask)
+      local minIconY = labelY + (labelH or 0) + iconGap
+      local iconY = by + bh - iconSize - iconBottomPad
+      if iconY < minIconY then iconY = minIconY end
+      lcd.drawMask(math.floor(bx + (bw - iconSize) / 2 + 0.5), math.floor(iconY + 0.5), mask)
     end
     if not enabled then
       lcd.color(lcd.RGB(0, 0, 0, 0.65))

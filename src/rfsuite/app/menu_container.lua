@@ -27,18 +27,11 @@
 -- fresh tile row, wrapping to further rows within that group once it
 -- fills the screen's width (see numPerRow below).
 --
--- Tile sizing/count-per-row: the original computes both from a table of
--- per-radio-model constants (app/radios.lua -- buttonWidth/buttonHeight/
--- buttonsPerRow, a different entry per physical screen resolution,
--- picked per the pilot's `iconsize` preference: 0=text-only/1=small/
--- 2=large) -- this rebuild has neither that table nor a preferences
--- subsystem (see the loadfile-trap section's repeated "no per-radio
--- template constants" note). Approximated instead by measuring the
--- actual screen via lcd.getWindowSize() (already used elsewhere in this
--- rebuild, see widgets/dashboard.lua) and computing how many
--- fixed-size TILE_SIZE tiles fit per row -- adapts to whatever screen
--- it's actually running on without needing a per-model table, at the
--- cost of not matching the original's exact curated per-radio sizing.
+-- Tile sizing/count-per-row: the original computes both from per-radio
+-- constants (app/radios.lua) and a pilot `iconsize` preference. This
+-- rebuild keeps the useful per-resolution large/small profiles, but
+-- chooses between them automatically from the current screen and menu
+-- density.
 --
 -- The *first* group is the exception: rather than a generic screen title
 -- ("Rotorflight") immediately followed by a same-looking group line
@@ -71,9 +64,13 @@ local closeKey = assert(loadfile("app/close_key.lua"))()
 local header = assert(loadfile("app/header.lua"))()
 local memstats = assert(loadfile("lib/memstats.lua"))()
 
-local TILE_MIN_SIZE = 112
-local TILE_PADDING = 10
-local TILE_MAX_COLUMNS = 6
+local MENU_TILE_MIN_WIDTH = 84
+
+local MENU_PROFILES = {
+  {w = 784, h = 406, large = {w = 120, h = 120, pad = 10, perRow = 6}, small = {w = 105, h = 110, pad = 6, perRow = 7}},
+  {w = 632, h = 314, large = {w = 118, h = 124, pad = 7, perRow = 5}, small = {w = 97, h = 120, pad = 8, perRow = 6}},
+  {w = 472, h = 288, large = {w = 110, h = 118, pad = 8, perRow = 4}, small = {w = 89, h = 104, pad = 5, perRow = 5}},
+}
 
 local menu_container = {}
 
@@ -103,12 +100,76 @@ local function loadPage(path)
   return assert(loadfile(path))()
 end
 
-local function gridMetrics(windowWidth)
-  local numPerRow = math.max(1, math.floor((windowWidth - TILE_PADDING) / (TILE_MIN_SIZE + TILE_PADDING)))
-  if numPerRow > TILE_MAX_COLUMNS then numPerRow = TILE_MAX_COLUMNS end
-  local tileSize = math.floor((windowWidth - (TILE_PADDING * (numPerRow + 1))) / numPerRow)
-  if tileSize < TILE_MIN_SIZE then tileSize = TILE_MIN_SIZE end
-  return numPerRow, tileSize
+local isEntryVisible
+
+local function closestMenuProfile(windowWidth, windowHeight)
+  local bestProfile, bestDistance
+  for i = 1, #MENU_PROFILES do
+    local profile = MENU_PROFILES[i]
+    local distance = math.abs(profile.w - windowWidth) + math.abs(profile.h - windowHeight)
+    if not bestDistance or distance < bestDistance then
+      bestProfile = profile
+      bestDistance = distance
+    end
+  end
+  return bestProfile or MENU_PROFILES[#MENU_PROFILES]
+end
+
+local function visibleMenuStats(entries)
+  local visibleCount = 0
+  local maxGroupCount = 0
+  local lastGroup = nil
+  local currentGroupCount = 0
+
+  for i = 1, #entries do
+    local entry = entries[i]
+    if isEntryVisible(entry) then
+      if visibleCount == 0 or entry.group ~= lastGroup then
+        if currentGroupCount > maxGroupCount then maxGroupCount = currentGroupCount end
+        lastGroup = entry.group
+        currentGroupCount = 0
+      end
+      currentGroupCount = currentGroupCount + 1
+      visibleCount = visibleCount + 1
+    end
+  end
+
+  if currentGroupCount > maxGroupCount then maxGroupCount = currentGroupCount end
+  return visibleCount, maxGroupCount
+end
+
+local function chooseMenuSpec(profile, entries)
+  local visibleCount, maxGroupCount = visibleMenuStats(entries)
+  local large = profile.large
+
+  if maxGroupCount <= large.perRow and visibleCount <= large.perRow * 2 then
+    return large, FONT_S
+  end
+  return profile.small, FONT_XS
+end
+
+local function fitMenuSpecToWindow(spec, windowWidth)
+  local perRow = spec.perRow
+  while perRow > 1 and math.floor((windowWidth - (spec.pad * (perRow - 1))) / perRow) < MENU_TILE_MIN_WIDTH do
+    perRow = perRow - 1
+  end
+
+  local tileW = spec.w
+  local tileH = spec.h
+  local availableTileW = math.floor((windowWidth - (spec.pad * (perRow - 1))) / perRow)
+  if availableTileW < tileW then
+    tileW = availableTileW
+    tileH = math.floor((spec.h * tileW / spec.w) + 0.5)
+  end
+  if tileW < MENU_TILE_MIN_WIDTH then tileW = MENU_TILE_MIN_WIDTH end
+  return perRow, tileW, tileH, spec.pad
+end
+
+local function gridMetrics(windowWidth, windowHeight, entries)
+  local profile = closestMenuProfile(windowWidth, windowHeight)
+  local spec, tileFont = chooseMenuSpec(profile, entries)
+  local numPerRow, tileW, tileH, tilePadding = fitMenuSpecToWindow(spec, windowWidth)
+  return numPerRow, tileW, tileH, tilePadding, tileFont
 end
 
 local function canOpenEntry(entry, taskGuard)
@@ -124,7 +185,7 @@ local function entryGuardAllows(entry, menuGuard)
   return true
 end
 
-local function isEntryVisible(entry)
+isEntryVisible = function(entry)
   if entry and entry.visibleWhen then
     return entry.visibleWhen() == true
   end
@@ -224,13 +285,13 @@ local function openScreen(nav, menus, rootEntries, screen, setEventHandler, setW
 
   -- At least 1 even on an implausibly narrow screen -- a numPerRow of 0
   -- would divide-by-zero-equivalent (infinite tiles on one "row") below.
-  local windowWidth = ({lcd.getWindowSize()})[1]
-  local numPerRow, tileSize = gridMetrics(windowWidth)
+  local windowWidth, windowHeight = lcd.getWindowSize()
+  local numPerRow, tileW, tileH, tilePadding, tileFont = gridMetrics(windowWidth, windowHeight, entries)
 
   -- form.height() reflects the header line's actual rendered height, so
   -- the tile grid starts right below it regardless of the radio's line
   -- height -- no hardcoded offset to get wrong.
-  local x, y = TILE_PADDING, form.height() + TILE_PADDING
+  local x, y = 0, form.height() + tilePadding
   local lastGroup = firstGroup
   local col = 0
   local key = screenKey(screen)
@@ -240,22 +301,19 @@ local function openScreen(nav, menus, rootEntries, screen, setEventHandler, setW
       lastGroup = entry.group
       if lastGroup then
         form.addLine(lastGroup)
-        y = form.height() + TILE_PADDING
+        y = form.height() + tilePadding
       end
-      x = TILE_PADDING
+      x = 0
       col = 0
     end
 
     if isEntryVisible(entry) then
-      -- FONT_S matches the original's own tile-button styling (see
-      -- rotorflight-lua-ethos-suite's app/lib/menu_container.lua) --
-      -- without it Ethos renders the label in a larger default font that
-      -- clips long titles ("PID Contro...") well before the tile's own
-      -- width would actually require it.
-      tileButtons[i] = form.addButton(nil, {x = x, y = y, w = tileSize, h = tileSize}, {
+      -- Keep tile labels explicit; Ethos's default font clips long
+      -- titles well before the tile's own width would require it.
+      tileButtons[i] = form.addButton(nil, {x = x, y = y, w = tileW, h = tileH}, {
         text = entry.title,
         icon = entry.icon,
-        options = FONT_S,
+        options = tileFont,
         press = function()
           if not canOpenEntry(entry, taskGuard) then
             if taskGuard and (not taskGuard.isRunning()) and taskGuard.requestAlert then
@@ -285,10 +343,10 @@ local function openScreen(nav, menus, rootEntries, screen, setEventHandler, setW
       col = col + 1
       if col >= numPerRow then
         col = 0
-        x = TILE_PADDING
-        y = y + tileSize + TILE_PADDING
+        x = 0
+        y = y + tileH + tilePadding
       else
-        x = x + tileSize + TILE_PADDING
+        x = x + tileW + tilePadding
       end
     end
   end

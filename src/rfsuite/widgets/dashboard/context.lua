@@ -1588,11 +1588,48 @@ function utils.box(x, y, w, h, title, titlepos, titlealign, titlefont, titlespac
   titlespacing = titlespacing or 6
 
   local titleH = 0
-  local resolvedTitleFont = utils.resolveFont(titlefont, FONT_XS)
+  local titleW = 0
+  local titleTextH = 0
+  local resolvedTitleFont = nil
   if title then
-    lcd.font(resolvedTitleFont)
-    local _, th = lcd.getTextSize(title)
-    titleH = (th or 0) + titlepaddingtop + titlepaddingbottom + titlespacing
+    local explicitTitleFont = utils.resolveFont(titlefont, nil)
+    if explicitTitleFont then
+      resolvedTitleFont = explicitTitleFont
+      lcd.font(resolvedTitleFont)
+      titleW, titleTextH = lcd.getTextSize(title)
+    else
+      local fontLists = utils.getFontListsForResolution()
+      local titleFonts = fontLists.value_title or DEFAULT_FONT_LISTS.value_title
+      local valueFonts = fontLists.value_default or DEFAULT_FONT_LISTS.value_default
+      local minValueFontH = 9999
+
+      for i = 1, #valueFonts do
+        lcd.font(valueFonts[i])
+        local _, vh = lcd.getTextSize("8")
+        if vh and vh < minValueFontH then minValueFontH = vh end
+      end
+
+      local maxTitleW = w - titlepaddingleft - titlepaddingright
+      for i = 1, #titleFonts do
+        local candidate = titleFonts[i]
+        lcd.font(candidate)
+        local tw, th = lcd.getTextSize(title)
+        local remH = h - titlepaddingtop - th - titlepaddingbottom - valuepaddingtop - valuepaddingbottom
+        if tw <= maxTitleW and th > 0 and remH >= minValueFontH then
+          resolvedTitleFont = candidate
+          titleW = tw
+          titleTextH = th
+          break
+        end
+      end
+
+      if not resolvedTitleFont then
+        resolvedTitleFont = titleFonts[#titleFonts] or FONT_XS
+        lcd.font(resolvedTitleFont)
+        titleW, titleTextH = lcd.getTextSize(title)
+      end
+    end
+    titleH = titleTextH + titlepaddingtop + titlepaddingbottom + titlespacing
   end
 
   local regionX = x + valuepaddingleft
@@ -1666,12 +1703,11 @@ function utils.box(x, y, w, h, title, titlepos, titlealign, titlefont, titlespac
 
   if title then
     lcd.font(resolvedTitleFont)
-    local tw, th = lcd.getTextSize(title)
     local regionW = w - titlepaddingleft - titlepaddingright
-    local sx = x + titlepaddingleft + (regionW - tw) / 2
+    local sx = x + titlepaddingleft + (regionW - titleW) / 2
     if titlealign == "left" then sx = x + titlepaddingleft end
-    if titlealign == "right" then sx = x + titlepaddingleft + regionW - tw end
-    local sy = titlepos == "bottom" and (y + h - titlepaddingbottom - th) or (y + titlepaddingtop)
+    if titlealign == "right" then sx = x + titlepaddingleft + regionW - titleW end
+    local sy = titlepos == "bottom" and (y + h - titlepaddingbottom - titleTextH) or (y + titlepaddingtop)
     lcd.color(utils.resolveThemeColor("titlecolor", titlecolor))
     lcd.drawText(sx, sy, title)
   end
