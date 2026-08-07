@@ -29,9 +29,8 @@
 --
 -- Tile sizing/count-per-row: the original computes both from per-radio
 -- constants (app/radios.lua) and a pilot `iconsize` preference. This
--- rebuild keeps the useful per-resolution large/small profiles, but
--- chooses between them automatically from the current screen and menu
--- density.
+-- rebuild keeps the useful per-resolution profiles, chosen only from
+-- the current screen size so every menu on a given radio is consistent.
 --
 -- The *first* group is the exception: rather than a generic screen title
 -- ("Rotorflight") immediately followed by a same-looking group line
@@ -63,14 +62,7 @@
 local closeKey = assert(loadfile("app/close_key.lua"))()
 local header = assert(loadfile("app/header.lua"))()
 local memstats = assert(loadfile("lib/memstats.lua"))()
-
-local MENU_TILE_MIN_WIDTH = 84
-
-local MENU_PROFILES = {
-  {w = 784, h = 406, large = {w = 120, h = 120, pad = 10, perRow = 6}, small = {w = 105, h = 110, pad = 6, perRow = 7}},
-  {w = 632, h = 314, large = {w = 118, h = 124, pad = 7, perRow = 5}, small = {w = 97, h = 120, pad = 8, perRow = 6}},
-  {w = 472, h = 288, large = {w = 110, h = 118, pad = 8, perRow = 4}, small = {w = 89, h = 104, pad = 5, perRow = 5}},
-}
+local tileGrid = assert(loadfile("app/tile_grid.lua"))()
 
 local menu_container = {}
 
@@ -100,78 +92,6 @@ local function loadPage(path)
   return assert(loadfile(path))()
 end
 
-local isEntryVisible
-
-local function closestMenuProfile(windowWidth, windowHeight)
-  local bestProfile, bestDistance
-  for i = 1, #MENU_PROFILES do
-    local profile = MENU_PROFILES[i]
-    local distance = math.abs(profile.w - windowWidth) + math.abs(profile.h - windowHeight)
-    if not bestDistance or distance < bestDistance then
-      bestProfile = profile
-      bestDistance = distance
-    end
-  end
-  return bestProfile or MENU_PROFILES[#MENU_PROFILES]
-end
-
-local function visibleMenuStats(entries)
-  local visibleCount = 0
-  local maxGroupCount = 0
-  local lastGroup = nil
-  local currentGroupCount = 0
-
-  for i = 1, #entries do
-    local entry = entries[i]
-    if isEntryVisible(entry) then
-      if visibleCount == 0 or entry.group ~= lastGroup then
-        if currentGroupCount > maxGroupCount then maxGroupCount = currentGroupCount end
-        lastGroup = entry.group
-        currentGroupCount = 0
-      end
-      currentGroupCount = currentGroupCount + 1
-      visibleCount = visibleCount + 1
-    end
-  end
-
-  if currentGroupCount > maxGroupCount then maxGroupCount = currentGroupCount end
-  return visibleCount, maxGroupCount
-end
-
-local function chooseMenuSpec(profile, entries)
-  local visibleCount, maxGroupCount = visibleMenuStats(entries)
-  local large = profile.large
-
-  if maxGroupCount <= large.perRow and visibleCount <= large.perRow * 2 then
-    return large, FONT_S
-  end
-  return profile.small, FONT_XS
-end
-
-local function fitMenuSpecToWindow(spec, windowWidth)
-  local perRow = spec.perRow
-  while perRow > 1 and math.floor((windowWidth - (spec.pad * (perRow - 1))) / perRow) < MENU_TILE_MIN_WIDTH do
-    perRow = perRow - 1
-  end
-
-  local tileW = spec.w
-  local tileH = spec.h
-  local availableTileW = math.floor((windowWidth - (spec.pad * (perRow - 1))) / perRow)
-  if availableTileW < tileW then
-    tileW = availableTileW
-    tileH = math.floor((spec.h * tileW / spec.w) + 0.5)
-  end
-  if tileW < MENU_TILE_MIN_WIDTH then tileW = MENU_TILE_MIN_WIDTH end
-  return perRow, tileW, tileH, spec.pad
-end
-
-local function gridMetrics(windowWidth, windowHeight, entries)
-  local profile = closestMenuProfile(windowWidth, windowHeight)
-  local spec, tileFont = chooseMenuSpec(profile, entries)
-  local numPerRow, tileW, tileH, tilePadding = fitMenuSpecToWindow(spec, windowWidth)
-  return numPerRow, tileW, tileH, tilePadding, tileFont
-end
-
 local function canOpenEntry(entry, taskGuard)
   if not taskGuard then return true end
   if not taskGuard.isRunning() then return false end
@@ -185,7 +105,7 @@ local function entryGuardAllows(entry, menuGuard)
   return true
 end
 
-isEntryVisible = function(entry)
+local function isEntryVisible(entry)
   if entry and entry.visibleWhen then
     return entry.visibleWhen() == true
   end
@@ -286,7 +206,7 @@ local function openScreen(nav, menus, rootEntries, screen, setEventHandler, setW
   -- At least 1 even on an implausibly narrow screen -- a numPerRow of 0
   -- would divide-by-zero-equivalent (infinite tiles on one "row") below.
   local windowWidth, windowHeight = lcd.getWindowSize()
-  local numPerRow, tileW, tileH, tilePadding, tileFont = gridMetrics(windowWidth, windowHeight, entries)
+  local numPerRow, tileW, tileH, tilePadding, tileFont = tileGrid.metrics(windowWidth, windowHeight)
 
   -- form.height() reflects the header line's actual rendered height, so
   -- the tile grid starts right below it regardless of the radio's line

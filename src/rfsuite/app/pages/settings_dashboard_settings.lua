@@ -7,15 +7,12 @@
 local bus = assert(loadfile("lib/bus.lua"))()
 local closeKey = assert(loadfile("app/close_key.lua"))()
 local header = assert(loadfile("app/header.lua"))()
+local tileGrid = assert(loadfile("app/tile_grid.lua"))()
 local settingsStore = assert(loadfile("lib/settings_store.lua"))()
 local dashboardContext = assert(loadfile("widgets/dashboard/context.lua"))()
 
 local PAGE_TITLE = "@i18n(app.modules.settings.name)@ / @i18n(app.modules.settings.dashboard)@ / @i18n(app.modules.settings.dashboard_settings)@"
 local NO_THEMES = "@i18n(app.modules.settings.no_themes_available_to_configure)@"
-
-local TILE_MIN_SIZE = 112
-local TILE_PADDING = 10
-local TILE_MAX_COLUMNS = 6
 
 local THEME_DEFS = {
   {label = "@i18n(app.modules.settings.dashboard_theme_aerc)@", folder = "aerc"},
@@ -60,14 +57,6 @@ local function configuredThemes()
     end
   end
   return themes
-end
-
-local function gridMetrics(windowWidth)
-  local numPerRow = math.max(1, math.floor((windowWidth - TILE_PADDING) / (TILE_MIN_SIZE + TILE_PADDING)))
-  if numPerRow > TILE_MAX_COLUMNS then numPerRow = TILE_MAX_COLUMNS end
-  local tileSize = math.floor((windowWidth - (TILE_PADDING * (numPerRow + 1))) / numPerRow)
-  if tileSize < TILE_MIN_SIZE then tileSize = TILE_MIN_SIZE end
-  return numPerRow, tileSize
 end
 
 local function saveThemePrefs(settings, themeModule, folder)
@@ -155,17 +144,17 @@ local function open(opts)
 
     local gridHeader = header.build(PAGE_TITLE, {onBack = goBack})
     local themes = configuredThemes()
-    local windowWidth = ({lcd.getWindowSize()})[1]
-    local numPerRow, tileSize = gridMetrics(windowWidth)
-    local x, y = TILE_PADDING, form.height() + TILE_PADDING
+    local windowWidth, windowHeight = lcd.getWindowSize()
+    local numPerRow, tileW, tileH, tilePadding, tileFont = tileGrid.metrics(windowWidth, windowHeight)
+    local x, y = 0, form.height() + tilePadding
     local col = 0
     local buttons = {}
 
     for i, theme in ipairs(themes) do
-      buttons[i] = form.addButton(nil, {x = x, y = y, w = tileSize, h = tileSize}, {
+      buttons[i] = form.addButton(nil, {x = x, y = y, w = tileW, h = tileH}, {
         text = theme.label,
         icon = lcd.loadMask(theme.icon),
-        options = FONT_S,
+        options = tileFont,
         press = function()
           lastSelected = i
           openTheme(theme)
@@ -175,15 +164,15 @@ local function open(opts)
       col = col + 1
       if col >= numPerRow then
         col = 0
-        x = TILE_PADDING
-        y = y + tileSize + TILE_PADDING
+        x = 0
+        y = y + tileH + tilePadding
       else
-        x = x + tileSize + TILE_PADDING
+        x = x + tileW + tilePadding
       end
     end
 
     if #themes == 0 then
-      form.addStaticText(nil, {x = TILE_PADDING, y = form.height() + TILE_PADDING, w = windowWidth - (2 * TILE_PADDING), h = 32}, NO_THEMES, CENTERED)
+      form.addStaticText(nil, {x = tilePadding, y = form.height() + tilePadding, w = windowWidth - (2 * tilePadding), h = 32}, NO_THEMES, CENTERED)
       gridHeader.focusMenu()
       return
     end

@@ -11,6 +11,7 @@ local closeKey = assert(loadfile("app/close_key.lua"))()
 local fieldLayout = assert(loadfile("app/field_layout.lua"))()
 local header = assert(loadfile("app/header.lua"))()
 local pageRuntime = assert(loadfile("app/page_runtime.lua"))()
+local tileGrid = assert(loadfile("app/tile_grid.lua"))()
 local progressDialog = assert(loadfile("app/progress_dialog.lua"))()
 local eeprom = assert(loadfile("lib/msp_eeprom.lua"))()
 local mixerConfig = assert(loadfile("lib/msp_mixer_config.lua"))()
@@ -30,18 +31,7 @@ local YES_NO = {
   {"@i18n(app.modules.servos.tbl_yes)@", 1},
 }
 
-local TILE_MIN_SIZE = 112
-local TILE_PADDING = 10
-local TILE_MAX_COLUMNS = 6
 local LIVE_SETTLE = 0.05
-
-local function gridMetrics(windowWidth)
-  local numPerRow = math.max(1, math.floor((windowWidth - TILE_PADDING) / (TILE_MIN_SIZE + TILE_PADDING)))
-  if numPerRow > TILE_MAX_COLUMNS then numPerRow = TILE_MAX_COLUMNS end
-  local tileSize = math.floor((windowWidth - (TILE_PADDING * (numPerRow + 1))) / numPerRow)
-  if tileSize < TILE_MIN_SIZE then tileSize = TILE_MIN_SIZE end
-  return numPerRow, tileSize
-end
 
 local function servoTitle(index)
   return "@i18n(app.modules.servos.servo_prefix)@" .. index
@@ -280,17 +270,17 @@ openList = function(opts, listState)
     end)
   end
 
-  local windowWidth = ({lcd.getWindowSize()})[1]
-  local numPerRow, tileSize = gridMetrics(windowWidth)
-  local x, y = TILE_PADDING, form.height() + TILE_PADDING
+  local windowWidth, windowHeight = lcd.getWindowSize()
+  local numPerRow, tileW, tileH, tilePadding, tileFont = tileGrid.metrics(windowWidth, windowHeight)
+  local x, y = 0, form.height() + tilePadding
   local col = 0
   local buttons = {}
 
   for i, row in ipairs(rows) do
-    buttons[i] = form.addButton(nil, {x = x, y = y, w = tileSize, h = tileSize}, {
+    buttons[i] = form.addButton(nil, {x = x, y = y, w = tileW, h = tileH}, {
       text = row.title,
       icon = lcd.loadMask("app/gfx/" .. row.icon),
-      options = FONT_S,
+      options = tileFont,
       press = function()
         listState.selected = i
         openEditor(opts, listState, row)
@@ -299,10 +289,10 @@ openList = function(opts, listState)
     col = col + 1
     if col >= numPerRow then
       col = 0
-      x = TILE_PADDING
-      y = y + tileSize + TILE_PADDING
+      x = 0
+      y = y + tileH + tilePadding
     else
-      x = x + tileSize + TILE_PADDING
+      x = x + tileW + tilePadding
     end
   end
 

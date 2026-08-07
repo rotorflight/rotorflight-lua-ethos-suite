@@ -3,12 +3,10 @@
 local closeKey = assert(loadfile("app/close_key.lua"))()
 local header = assert(loadfile("app/header.lua"))()
 local ini = assert(loadfile("lib/ini.lua"))()
+local tileGrid = assert(loadfile("app/tile_grid.lua"))()
 
 local PAGE_TITLE = "@i18n(app.modules.logs.name)@"
 local BASE_DIR = "LOGS:/rfsuite/telemetry"
-local TILE_PADDING = 10
-local TILE_MIN_SIZE = 112
-local TILE_MAX_COLUMNS = 6
 local LOG_PADDING = 5
 local LOG_CHUNK_SIZE = 1000
 local SAMPLE_RATE = 1
@@ -112,14 +110,6 @@ local function extractShortTimestamp(filename)
   local date, time = tostring(filename or ""):match(".-(%d%d%d%d%-%d%d%-%d%d)_(%d%d%-%d%d%-%d%d)")
   if date and time then return date:gsub("%-", "/") .. " " .. time:gsub("%-", ":") end
   return filename or ""
-end
-
-local function gridMetrics(windowWidth)
-  local numPerRow = math.max(1, math.floor((windowWidth - TILE_PADDING) / (TILE_MIN_SIZE + TILE_PADDING)))
-  if numPerRow > TILE_MAX_COLUMNS then numPerRow = TILE_MAX_COLUMNS end
-  local tileSize = math.floor((windowWidth - (TILE_PADDING * (numPerRow + 1))) / numPerRow)
-  if tileSize < TILE_MIN_SIZE then tileSize = TILE_MIN_SIZE end
-  return numPerRow, tileSize
 end
 
 local function addCenteredMessage(text)
@@ -349,9 +339,9 @@ local function open(opts)
   end
 
   local function addTileGrid(entries, icon, press)
-    local windowWidth = ({lcd.getWindowSize()})[1]
-    local numPerRow, tileSize = gridMetrics(windowWidth)
-    local x, y = TILE_PADDING, form.height() + TILE_PADDING
+    local windowWidth, windowHeight = lcd.getWindowSize()
+    local numPerRow, tileW, tileH, tilePadding, tileFont = tileGrid.metrics(windowWidth, windowHeight)
+    local x, y = 0, form.height() + tilePadding
     local col = 0
     local lastGroup = nil
     local firstButton = nil
@@ -360,24 +350,24 @@ local function open(opts)
       if entry.group and entry.group ~= lastGroup then
         lastGroup = entry.group
         form.addLine(dateTitle(lastGroup))
-        x = TILE_PADDING
-        y = form.height() + TILE_PADDING
+        x = 0
+        y = form.height() + tilePadding
         col = 0
       end
-      local button = form.addButton(nil, {x = x, y = y, w = tileSize, h = tileSize}, {
+      local button = form.addButton(nil, {x = x, y = y, w = tileW, h = tileH}, {
         text = entry.title,
         icon = icon,
-        options = FONT_S,
+        options = tileFont,
         press = function() press(entry) end,
       })
       if not firstButton then firstButton = button end
       col = col + 1
       if col >= numPerRow then
         col = 0
-        x = TILE_PADDING
-        y = y + tileSize + TILE_PADDING
+        x = 0
+        y = y + tileH + tilePadding
       else
-        x = x + tileSize + TILE_PADDING
+        x = x + tileW + tilePadding
       end
     end
     if firstButton then firstButton:focus() end
