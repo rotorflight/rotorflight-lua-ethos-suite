@@ -659,6 +659,35 @@ function render.wakeup(box)
             boxUnit = nil
         end
         prepareTextLayout(box, gx, gy, gw, gh, c.title, c.titlepos, c.titlealign, c.titlefont, c.titlespacing, c.titlepadding, c.titlepaddingleft, c.titlepaddingright, c.titlepaddingtop, c.titlepaddingbottom, boxValue, boxUnit, c.font, c.valuealign, c.valuepadding, c.valuepaddingleft, c.valuepaddingright, c.valuepaddingtop, c.valuepaddingbottom)
+
+        if c.battadv and box._batteryLines then
+            local battadvpaddingleft = tonumber(c.battadvpaddingleft) or 0
+            local battadvpaddingright = tonumber(c.battadvpaddingright) or 0
+            local battadvpaddingtop = tonumber(c.battadvpaddingtop) or 0
+            local battadvpaddingbottom = tonumber(c.battadvpaddingbottom) or 0
+            local battadvgap = tonumber(c.battadvgap) or 5
+            local line1 = box._batteryLines.line1 or ""
+            local line2 = box._batteryLines.line2 or ""
+
+            lcd.font(resolveFont(c.battadvfont, FONT_S))
+            local w1, h1 = lcd.getTextSize(line1)
+            local w2, h2 = lcd.getTextSize(line2)
+            local blockW = max(w1, w2) + battadvpaddingleft + battadvpaddingright
+            local blockH = h1 + h2 + battadvpaddingtop + battadvpaddingbottom + battadvgap
+
+            local startY = gy + max(0, floor((gh - blockH) / 2 + 0.5))
+            local startX
+            if c.battadvblockalign == "left" then
+                startX = gx
+            elseif c.battadvblockalign == "center" then
+                startX = gx + floor((gw - blockW) / 2 + 0.5)
+            else
+                startX = gx + gw - blockW
+            end
+
+            prepareTextLayout(box, startX + battadvpaddingleft, startY + battadvpaddingtop, blockW - battadvpaddingleft - battadvpaddingright, h1, nil, nil, c.battadvvaluealign, c.battadvfont, 0, 0, 0, 0, 0, 0, line1, nil, c.battadvfont, c.battadvvaluealign, 0, 0, 0, 0, 0, "_battadvLayout1")
+            prepareTextLayout(box, startX + battadvpaddingleft, startY + battadvpaddingtop + h1 + battadvgap, blockW - battadvpaddingleft - battadvpaddingright, h2, nil, nil, c.battadvvaluealign, c.battadvfont, 0, 0, 0, 0, 0, 0, line2, nil, c.battadvfont, c.battadvvaluealign, 0, 0, 0, 0, 0, "_battadvLayout2")
+        end
     end
 end
 
@@ -751,9 +780,11 @@ function render.paint(x, y, w, h, box)
             startX = x + w - blockW
         end
 
-        utils.box(startX + c.battadvpaddingleft, startY + c.battadvpaddingtop, blockW - c.battadvpaddingleft - c.battadvpaddingright, h1, nil, nil, c.battadvvaluealign, c.battadvfont, 0, textColor, 0, 0, 0, 0, 0, line1, nil, c.battadvfont, c.battadvvaluealign, textColor, 0, 0, 0, 0, 0, nil)
+        local layout1 = prepareTextLayout(box, startX + c.battadvpaddingleft, startY + c.battadvpaddingtop, blockW - c.battadvpaddingleft - c.battadvpaddingright, h1, nil, nil, c.battadvvaluealign, c.battadvfont, 0, 0, 0, 0, 0, 0, line1, nil, c.battadvfont, c.battadvvaluealign, 0, 0, 0, 0, 0, "_battadvLayout1")
+        paintTextLayout(layout1, textColor, textColor)
 
-        utils.box(startX + c.battadvpaddingleft, startY + c.battadvpaddingtop + h1 + c.battadvgap, blockW - c.battadvpaddingleft - c.battadvpaddingright, h2, nil, nil, c.battadvvaluealign, c.battadvfont, 0, textColor, 0, 0, 0, 0, 0, line2, nil, c.battadvfont, c.battadvvaluealign, textColor, 0, 0, 0, 0, 0, nil)
+        local layout2 = prepareTextLayout(box, startX + c.battadvpaddingleft, startY + c.battadvpaddingtop + h1 + c.battadvgap, blockW - c.battadvpaddingleft - c.battadvpaddingright, h2, nil, nil, c.battadvvaluealign, c.battadvfont, 0, 0, 0, 0, 0, 0, line2, nil, c.battadvfont, c.battadvvaluealign, 0, 0, 0, 0, 0, "_battadvLayout2")
+        paintTextLayout(layout2, textColor, textColor)
     end
 end
 

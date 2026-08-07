@@ -1588,6 +1588,51 @@ function utils.boxContentRect(x, y, w, h, bgcolor)
   return boxContentRect(x, y, w, h, bgcolor)
 end
 
+-- Draws `image` (a path string, resolved+cached through imageCache like
+-- utils.box() always has, or an already-loaded bitmap handle) fitted/aligned
+-- inside the given rect. Extracted from utils.box()'s own image branch so
+-- title-only callers (objects/image/{image,model}.lua) can draw their image
+-- against utils.prepareTextLayout()'s cached content region without going
+-- through utils.box()'s (uncached) title-measurement path a second time.
+local function drawImageInRect(regionX, regionY, regionW, regionH, image, imagewidth, imageheight, imagealign, bgcolor)
+  local bitmap = nil
+  if type(image) == "string" then
+    local fallbackLogo = utils.getLogoFallbackForBackground and utils.getLogoFallbackForBackground(bgcolor)
+    local cacheKey = image .. "|" .. tostring(fallbackLogo or "")
+    bitmap = imageCache[cacheKey]
+    if bitmap == nil then
+      bitmap = context.utils.loadImage(image, nil, fallbackLogo) or false
+      imageCache[cacheKey] = bitmap
+    end
+    if bitmap == false then bitmap = nil end
+  else
+    bitmap = image
+  end
+
+  if bitmap and regionW > 0 and regionH > 0 and lcd.drawBitmap then
+    local imgW = tonumber(imagewidth) or regionW
+    local imgH = tonumber(imageheight) or regionH
+    local align = imagealign or "center"
+    local imgX = regionX
+    local imgY = regionY
+    if align == "right" then
+      imgX = regionX + regionW - imgW
+    elseif align ~= "left" then
+      imgX = regionX + (regionW - imgW) / 2
+    end
+    if align == "bottom" then
+      imgY = regionY + regionH - imgH
+    elseif align ~= "top" then
+      imgY = regionY + (regionH - imgH) / 2
+    end
+    lcd.drawBitmap(math.floor(imgX + 0.5), math.floor(imgY + 0.5), bitmap, math.floor(imgW + 0.5), math.floor(imgH + 0.5))
+  end
+end
+
+function utils.drawImageInRect(x, y, w, h, image, imagewidth, imageheight, imagealign, bgcolor)
+  return drawImageInRect(x, y, w, h, image, imagewidth, imageheight, imagealign, bgcolor)
+end
+
 function utils.box(x, y, w, h, title, titlepos, titlealign, titlefont, titlespacing, titlecolor, titlepadding, titlepaddingleft, titlepaddingright, titlepaddingtop, titlepaddingbottom, displayValue, unit, valuefont, valuealign, textcolor, valuepadding, valuepaddingleft, valuepaddingright, valuepaddingtop, valuepaddingbottom, bgcolor, image, imagewidth, imageheight, imagealign)
   -- Unconditional (not `if bgcolor ~= nil`): drawBoxBackground() itself
   -- handles a nil/plain bgcolor by returning x/y/w/h unchanged, and a
@@ -1667,38 +1712,7 @@ function utils.box(x, y, w, h, title, titlepos, titlealign, titlefont, titlespac
   end
 
   if image then
-    local bitmap = nil
-    if type(image) == "string" then
-      local fallbackLogo = utils.getLogoFallbackForBackground and utils.getLogoFallbackForBackground(bgcolor)
-      local cacheKey = image .. "|" .. tostring(fallbackLogo or "")
-      bitmap = imageCache[cacheKey]
-      if bitmap == nil then
-        bitmap = context.utils.loadImage(image, nil, fallbackLogo) or false
-        imageCache[cacheKey] = bitmap
-      end
-      if bitmap == false then bitmap = nil end
-    else
-      bitmap = image
-    end
-
-    if bitmap and regionW > 0 and regionH > 0 and lcd.drawBitmap then
-      local imgW = tonumber(imagewidth) or regionW
-      local imgH = tonumber(imageheight) or regionH
-      local align = imagealign or "center"
-      local imgX = regionX
-      local imgY = regionY
-      if align == "right" then
-        imgX = regionX + regionW - imgW
-      elseif align ~= "left" then
-        imgX = regionX + (regionW - imgW) / 2
-      end
-      if align == "bottom" then
-        imgY = regionY + regionH - imgH
-      elseif align ~= "top" then
-        imgY = regionY + (regionH - imgH) / 2
-      end
-      lcd.drawBitmap(math.floor(imgX + 0.5), math.floor(imgY + 0.5), bitmap, math.floor(imgW + 0.5), math.floor(imgH + 0.5))
-    end
+    drawImageInRect(regionX, regionY, regionW, regionH, image, imagewidth, imageheight, imagealign, bgcolor)
   elseif value then
 
     local resolvedValueFont = utils.resolveFont(valuefont, nil)
@@ -1768,7 +1782,15 @@ local function valueText(displayValue, unit)
   return tostring(displayValue) .. (unit or "")
 end
 
-local function prepareTextLayout(box, x, y, w, h, titleIn, titlepos, titlealign, titlefont, titlespacing, titlepadding, titlepaddingleft, titlepaddingright, titlepaddingtop, titlepaddingbottom, displayValue, unit, valuefont, valuealign, valuepadding, valuepaddingleft, valuepaddingright, valuepaddingtop, valuepaddingbottom)
+local function prepareTextLayout(box, x, y, w, h, titleIn, titlepos, titlealign, titlefont, titlespacing, titlepadding, titlepaddingleft, titlepaddingright, titlepaddingtop, titlepaddingbottom, displayValue, unit, valuefont, valuealign, valuepadding, valuepaddingleft, valuepaddingright, valuepaddingtop, valuepaddingbottom, cacheField)
+  -- cacheField lets a box keep more than one independently-cached layout
+  -- (defaults to box._textLayout) -- needed by callers that draw several
+  -- separate title/value blocks in one paint() (e.g. gauge/bar.lua's
+  -- battadv overlay, which draws two extra text lines alongside its own
+  -- main title/value label). Reusing a single slot across such calls would
+  -- have each one evict the last, so every one of them would cache-miss on
+  -- every paint() -- the exact problem this function exists to avoid.
+  cacheField = cacheField or "_textLayout"
   local title = textOrNil(titleIn)
   local value = valueText(displayValue, unit)
 
@@ -1784,7 +1806,7 @@ local function prepareTextLayout(box, x, y, w, h, titleIn, titlepos, titlealign,
   valuepaddingbottom = valuepaddingbottom or vp
   titlespacing = titlespacing or 6
 
-  local layout = box._textLayout
+  local layout = box[cacheField]
   if layout
       and layout.x == x and layout.y == y and layout.w == w and layout.h == h
       and layout.title == title and layout.value == value
@@ -1875,6 +1897,11 @@ local function prepareTextLayout(box, x, y, w, h, titleIn, titlepos, titlealign,
     regionH = regionH - titleH
   end
 
+  -- Exposed for callers that draw something other than value text in the
+  -- leftover (title-adjusted) content area -- e.g. objects/image/{image,
+  -- model}.lua drawing an image there via utils.drawImageInRect().
+  layout.regionX, layout.regionY, layout.regionW, layout.regionH = regionX, regionY, regionW, regionH
+
   layout.valueDraw = false
   if value then
     local resolvedValueFont = utils.resolveFont(valuefont, nil)
@@ -1918,12 +1945,12 @@ local function prepareTextLayout(box, x, y, w, h, titleIn, titlepos, titlealign,
     layout.titleY = sy
   end
 
-  box._textLayout = layout
+  box[cacheField] = layout
   return layout
 end
 
-function utils.prepareTextLayout(box, x, y, w, h, title, titlepos, titlealign, titlefont, titlespacing, titlepadding, titlepaddingleft, titlepaddingright, titlepaddingtop, titlepaddingbottom, displayValue, unit, valuefont, valuealign, valuepadding, valuepaddingleft, valuepaddingright, valuepaddingtop, valuepaddingbottom)
-  return prepareTextLayout(box, x, y, w, h, title, titlepos, titlealign, titlefont, titlespacing, titlepadding, titlepaddingleft, titlepaddingright, titlepaddingtop, titlepaddingbottom, displayValue, unit, valuefont, valuealign, valuepadding, valuepaddingleft, valuepaddingright, valuepaddingtop, valuepaddingbottom)
+function utils.prepareTextLayout(box, x, y, w, h, title, titlepos, titlealign, titlefont, titlespacing, titlepadding, titlepaddingleft, titlepaddingright, titlepaddingtop, titlepaddingbottom, displayValue, unit, valuefont, valuealign, valuepadding, valuepaddingleft, valuepaddingright, valuepaddingtop, valuepaddingbottom, cacheField)
+  return prepareTextLayout(box, x, y, w, h, title, titlepos, titlealign, titlefont, titlespacing, titlepadding, titlepaddingleft, titlepaddingright, titlepaddingtop, titlepaddingbottom, displayValue, unit, valuefont, valuealign, valuepadding, valuepaddingleft, valuepaddingright, valuepaddingtop, valuepaddingbottom, cacheField)
 end
 
 function utils.paintTextLayout(layout, valuecolor, titlecolor)
