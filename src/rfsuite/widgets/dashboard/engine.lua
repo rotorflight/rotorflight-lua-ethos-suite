@@ -36,6 +36,10 @@ local pendingTypeQueue = {}
 local pendingTypeCursor = 1
 local INSTRUCTION_BUDGET_ERROR = "Max instructions count reached"
 
+local function isInstructionBudgetError(err)
+  return type(err) == "string" and string.find(err, INSTRUCTION_BUDGET_ERROR, 1, true) ~= nil
+end
+
 local function clearArray(t)
   for i = #t, 1, -1 do t[i] = nil end
 end
@@ -287,6 +291,12 @@ local function prepareLayout(config, screenW, screenH, skipObjectLoad, maxTypesT
   end
 end
 
+-- Returns false (plus the error) on an instruction-budget error specifically,
+-- so wakeObjects() below can pause the whole pass right there instead of
+-- swallowing it and ploughing on into the next box with almost no budget
+-- left -- the same distinction paintObjects() already draws via
+-- isInstructionBudgetError(). Any other error is logged and treated as this
+-- one box's problem only, same as before.
 local function wakeOne(rect)
   local box = rect and rect.box
   local object = box and box.type and loadObjectType(box.type)
@@ -296,8 +306,12 @@ local function wakeOne(rect)
     box._dashboardRectW = rect.w
     box._dashboardRectH = rect.h
     local ok, err = pcall(object.wakeup, box)
-    if not ok then print("[dashboard] object wakeup failed: " .. tostring(err)) end
+    if not ok then
+      if isInstructionBudgetError(err) then return false, err end
+      print("[dashboard] object wakeup failed: " .. tostring(err))
+    end
   end
+  return true
 end
 
 local function finishWakePass()
@@ -327,14 +341,27 @@ local function wakeObjects(maxCount, config)
     end
   end
 
+  -- Not a separate unpaced branch anymore: a "full pass" is just maxCount
+  -- clamped to `count`, so it still runs through the same loop below and
+  -- gets the same instruction-budget pause/resume behavior. A dense theme's
+  -- first post-invalidate pass (every box's wakeup at once, including each
+  -- box's own text-layout/geometry pre-warm) can plausibly exceed even
+  -- wakeup()'s own -- looser than paint()'s, but still finite -- budget;
+  -- without this, wakeOne()'s pcall silently swallowed that per-box and
+  -- the *next* box in the same loop inherited an already-near-exhausted
+  -- budget for the rest of the pass, cascading into most/all of the
+  -- remaining boxes failing their first wakeup in one tick.
   if not maxCount or maxCount <= 0 or maxCount >= count then
-    for i = 1, count do wakeOne(boxRects[i]) end
-    return finishWakePass()
+    maxCount = count
   end
 
   local processed = 0
   while wakeCursor <= count and processed < maxCount do
-    wakeOne(boxRects[wakeCursor])
+    local ok, err = wakeOne(boxRects[wakeCursor])
+    if not ok then
+      print("[dashboard] object wakeup budget exhausted; retrying next tick: " .. tostring(err))
+      return false
+    end
     wakeCursor = wakeCursor + 1
     processed = processed + 1
   end
@@ -385,10 +412,6 @@ end
 
 local function paintShellObjects()
   for _, rect in ipairs(boxRects) do drawBoxShell(rect) end
-end
-
-local function isInstructionBudgetError(err)
-  return type(err) == "string" and string.find(err, INSTRUCTION_BUDGET_ERROR, 1, true) ~= nil
 end
 
 local function paintObjects(widget)
