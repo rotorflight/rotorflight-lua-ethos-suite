@@ -34,6 +34,7 @@ local wakePassCount = 0
 -- maxCount-per-call way wakeObjects() already paces per-box wakeup.
 local pendingTypeQueue = {}
 local pendingTypeCursor = 1
+local INSTRUCTION_BUDGET_ERROR = "Max instructions count reached"
 
 local function clearArray(t)
   for i = #t, 1, -1 do t[i] = nil end
@@ -386,15 +387,47 @@ local function paintShellObjects()
   for _, rect in ipairs(boxRects) do drawBoxShell(rect) end
 end
 
-local function paintObjects()
-  for _, rect in ipairs(boxRects) do
+local function isInstructionBudgetError(err)
+  return type(err) == "string" and string.find(err, INSTRUCTION_BUDGET_ERROR, 1, true) ~= nil
+end
+
+local function paintObjects(widget)
+  local startIndex = widget and widget.dashboardPaintRetryIndex or 1
+  if startIndex < 1 then startIndex = 1 end
+  if startIndex > #boxRects then
+    if widget then
+      widget.dashboardPaintRetryIndex = nil
+      widget.dashboardInstructionBudgetRetryLogged = false
+    end
+    return true
+  end
+
+  for i = startIndex, #boxRects do
+    local rect = boxRects[i]
     local box = rect.box
+    if widget then widget.dashboardPaintRetryIndex = i end
     local object = box and box.type and loadObjectType(box.type)
     if object and object.paint then
       local ok, err = pcall(object.paint, rect.x, rect.y, rect.w, rect.h, box)
-      if not ok then print("[dashboard] object paint failed: " .. tostring(err)) end
+      if not ok then
+        if isInstructionBudgetError(err) then
+          if widget then widget.dashboardPaintRetryIndex = i end
+          if not widget or widget.dashboardInstructionBudgetRetryLogged ~= true then
+            print("[dashboard] object paint budget exhausted; retrying next tick: " .. tostring(err))
+            if widget then widget.dashboardInstructionBudgetRetryLogged = true end
+          end
+          return false
+        end
+        print("[dashboard] object paint failed: " .. tostring(err))
+      end
     end
+    if widget then widget.dashboardPaintRetryIndex = i + 1 end
   end
+  if widget then
+    widget.dashboardPaintRetryIndex = nil
+    widget.dashboardInstructionBudgetRetryLogged = false
+  end
+  return true
 end
 
 function engine.paint(widget, themeDef, stateDef, state, screenW, screenH)
@@ -404,9 +437,11 @@ function engine.paint(widget, themeDef, stateDef, state, screenW, screenH)
   end
   prepareLayout(stateDef, screenW, screenH)
   if wakePassCount < 1 then wakeObjects(nil, stateDef) end
-  context.widgets.dashboard.utils.setBackgroundColourBasedOnTheme()
-  paintObjects()
+  local resumePaint = widget and widget.dashboardPaintRetryIndex and widget.dashboardPaintRetryIndex > 1
+  if not resumePaint then context.widgets.dashboard.utils.setBackgroundColourBasedOnTheme() end
+  local ok = paintObjects(widget)
   context.widgets.dashboard.utils.drawScreenBorder()
+  return ok
 end
 
 function engine.paintShell(widget, stateDef, screenW, screenH)

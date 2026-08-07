@@ -80,6 +80,7 @@ local PREWARM_STATES = {}
 local THEME_STATE_CHECK_INTERVAL = 5.0
 local themeStateSignature = nil
 local nextThemeStateCheck = 0
+local INSTRUCTION_BUDGET_ERROR = "Max instructions count reached"
 
 local TOOLBAR_ITEMS = {
   {name = "Reset", icon = "widgets/dashboard/gfx/toolbar_reset.png", action = "reset_flight"},
@@ -227,6 +228,17 @@ local function requestPaint(widget)
   if widget then widget.needsPaint = true end
 end
 
+local function resetDashboardPaintRetry(widget)
+  if not widget then return end
+  widget.dashboardPaintRetryPending = false
+  widget.dashboardPaintRetryIndex = nil
+  widget.dashboardInstructionBudgetRetryLogged = false
+end
+
+local function isInstructionBudgetError(err)
+  return type(err) == "string" and string.find(err, INSTRUCTION_BUDGET_ERROR, 1, true) ~= nil
+end
+
 local function resetDashboardPrewarm(widget)
   if not widget then return end
   widget.dashboardPrewarmIndex = 1
@@ -252,6 +264,7 @@ local function requestThemeReload(widget, restoreAfterReload)
   local wasComplete = widget and (widget.startupComplete == true or widget.dashboardEverPainted == true)
   clearThemeCache()
   resetDashboardPrewarm(widget)
+  resetDashboardPaintRetry(widget)
   markStartupUnderlayDirty(widget)
   if widget then
     widget.themeReloadPending = true
@@ -271,7 +284,12 @@ end
 local function invalidateWidget(widget)
   if not lcd or not lcd.invalidate then return end
   local ok = pcall(lcd.invalidate, widget)
-  if not ok then lcd.invalidate() end
+  if not ok then pcall(lcd.invalidate) end
+end
+
+local function invalidateWidgetGlobal(widget)
+  invalidateWidget(widget)
+  if lcd and lcd.invalidate then pcall(lcd.invalidate) end
 end
 
 local function clearToolbarMasks(widget)
@@ -941,6 +959,9 @@ local function create()
     taskProtocol = nil,
     needsPaint = true,
     dashboardEverPainted = false,
+    dashboardPaintRetryPending = false,
+    dashboardPaintRetryIndex = nil,
+    dashboardInstructionBudgetRetryLogged = false,
     themeReloadPending = false,
     themeReloadWasComplete = false,
     startupComplete = false,
@@ -1292,8 +1313,30 @@ local function paintDashboard(widget, w, h)
   local state = dashboardState(widget)
   local theme = selectedThemeForState(widget, state)
   setDashboardPreferences(widget, theme)
-  ensureDashboardEngine().paint(widget, loadThemeDef(theme), loadStateDef(theme, state), state, w, h)
-  if widget then widget.dashboardEverPainted = true end
+  local ok, result = pcall(ensureDashboardEngine().paint, widget, loadThemeDef(theme), loadStateDef(theme, state), state, w, h)
+  if not ok then
+    if isInstructionBudgetError(result) then
+      if widget and widget.dashboardInstructionBudgetRetryLogged ~= true then
+        print("[dashboard] paint budget exhausted; retrying next tick: " .. tostring(result))
+        widget.dashboardInstructionBudgetRetryLogged = true
+      end
+      if widget then widget.dashboardPaintRetryPending = true end
+      return false
+    end
+    print("[dashboard] paint failed: " .. tostring(result))
+    if widget then widget.dashboardPaintRetryPending = false end
+    return true
+  end
+  ok = result
+  if ok == false then
+    if widget then widget.dashboardPaintRetryPending = true end
+    return false
+  end
+  if widget then
+    widget.dashboardPaintRetryPending = false
+    widget.dashboardEverPainted = true
+  end
+  return true
 end
 
 local function prewarmDashboardState(widget)
@@ -1328,7 +1371,11 @@ local function paint(widget)
     drawToolbar(widget, w, h)
     return
   end
-  paintDashboard(widget, w, h)
+  if paintDashboard(widget, w, h) == false then
+    requestPaint(widget)
+    invalidateWidgetGlobal(widget)
+    return
+  end
   drawToolbar(widget, w, h)
 end
 
@@ -1574,10 +1621,19 @@ local function wakeup(widget)
     end
   end
 
+  local forcePaintRetry = widget.dashboardPaintRetryPending == true
+  if forcePaintRetry then
+    widget.needsPaint = true
+  end
+
   if widget.needsPaint then
     widget.needsPaint = false
     prepareDashboard(widget)
-    invalidateWidget(widget)
+    if forcePaintRetry then
+      invalidateWidgetGlobal(widget)
+    else
+      invalidateWidget(widget)
+    end
   end
 
   if widget.toolbarVisible then
