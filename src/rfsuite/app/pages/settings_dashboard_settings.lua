@@ -40,7 +40,19 @@ local function themeVisible(theme)
   return not (w and h and (w < (minRes.x or 0) or h < (minRes.y or 0)))
 end
 
+-- Session-cached (mirrors objects/dial/image.lua's rfsuite.session.dialImageCache):
+-- this page module is loadfile()'d fresh on every visit (no require()-style
+-- caching -- see docs/memory-and-module-lifecycle.md), so a plain local
+-- wouldn't survive a second open(). Which themes ship a configure.lua and
+-- which are hidden by minResolution can't change while the script is
+-- running, so probing that via loadfile() (a full compile of each theme's
+-- configure.lua, thrown away immediately after) on every single page visit
+-- was pure repeat waste -- a real, previously observed contributor to
+-- Ethos's "Max instructions count reached" on dashboard-theme navigation.
 local function configuredThemes()
+  local cached = dashboardContext.session.dashboardConfiguredThemes
+  if cached then return cached end
+
   local themes = {}
   for _, theme in ipairs(THEME_DEFS) do
     if themeVisible(theme) then
@@ -56,6 +68,7 @@ local function configuredThemes()
       end
     end
   end
+  dashboardContext.session.dashboardConfiguredThemes = themes
   return themes
 end
 
@@ -150,10 +163,21 @@ local function open(opts)
     local col = 0
     local buttons = {}
 
+    local iconCache = dashboardContext.session.dashboardThemeIconCache
+    if not iconCache then
+      iconCache = {}
+      dashboardContext.session.dashboardThemeIconCache = iconCache
+    end
+
     for i, theme in ipairs(themes) do
+      local icon = iconCache[theme.icon]
+      if icon == nil then
+        icon = lcd.loadMask(theme.icon) or false
+        iconCache[theme.icon] = icon
+      end
       buttons[i] = form.addButton(nil, {x = x, y = y, w = tileW, h = tileH}, {
         text = theme.label,
-        icon = lcd.loadMask(theme.icon),
+        icon = icon or nil,
         options = tileFont,
         press = function()
           lastSelected = i
