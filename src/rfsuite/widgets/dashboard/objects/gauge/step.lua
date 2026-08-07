@@ -61,9 +61,80 @@ local resolveThemeColor = utils.resolveThemeColor
 local resolveThresholdColor = utils.resolveThresholdColor
 local resolveFont = utils.resolveFont
 local getPulsingDots = utils.getPulsingDots
+local prepareTextLayout = utils.prepareTextLayout
+local paintTextLayout = utils.paintTextLayout
 
 function render.dirty(box)
     return utils.dirtyOnDisplayValueChange(box)
+end
+
+-- Caches title-area height + step-bar geometry, keyed on everything that can
+-- change it. Previously all of this (including a font measurement for the
+-- title) was recomputed unconditionally in paint() on every screen redraw --
+-- see context.lua's utils.prepareTextLayout() for the fuller explanation of
+-- why that's specifically a paint()-budget problem on Ethos.
+local function prepareGeometry(x, y, w, h, box, c)
+    local g = box._geom
+    local barpadding = c.barpadding or 0
+    local barpaddingleft = c.barpaddingleft or barpadding
+    local barpaddingright = c.barpaddingright or barpadding
+    local barpaddingtop = c.barpaddingtop or barpadding
+    local barpaddingbottom = c.barpaddingbottom or barpadding
+    local stepgap = c.stepgap or 1
+    local stepcount = c.stepcount or 4
+
+    local needGeo = (not g) or g.x ~= x or g.y ~= y or g.w ~= w or g.h ~= h
+        or g.title ~= c.title or g.titlefont ~= c.titlefont or g.titlespacing ~= (c.titlespacing or 0)
+        or g.titlepaddingtop ~= (c.titlepaddingtop or 0) or g.titlepaddingbottom ~= (c.titlepaddingbottom or 0)
+        or g.titlepos ~= c.titlepos
+        or g.barpaddingleft ~= barpaddingleft or g.barpaddingright ~= barpaddingright
+        or g.barpaddingtop ~= barpaddingtop or g.barpaddingbottom ~= barpaddingbottom
+        or g.stepgap ~= stepgap or g.stepcount ~= stepcount
+
+    if not needGeo then return g end
+
+    g = g or {}
+    g.x, g.y, g.w, g.h = x, y, w, h
+    g.title, g.titlefont = c.title, c.titlefont
+    g.titlespacing = c.titlespacing or 0
+    g.titlepaddingtop = c.titlepaddingtop or 0
+    g.titlepaddingbottom = c.titlepaddingbottom or 0
+    g.titlepos = c.titlepos
+    g.barpaddingleft, g.barpaddingright = barpaddingleft, barpaddingright
+    g.barpaddingtop, g.barpaddingbottom = barpaddingtop, barpaddingbottom
+    g.stepgap, g.stepcount = stepgap, stepcount
+
+    local title = g.title
+    local titlepos = g.titlepos or (title and "top" or nil)
+    local title_area_top = 0
+    local title_area_bottom = 0
+    if title and title ~= "" then
+        lcd.font(resolveFont(g.titlefont, FONT_XS))
+        local _, tsizeH = lcd.getTextSize(title)
+        if titlepos == "bottom" then
+            title_area_bottom = (tsizeH or 0) + g.titlepaddingtop + g.titlepaddingbottom + g.titlespacing
+        else
+            title_area_top = (tsizeH or 0) + g.titlepaddingtop + g.titlepaddingbottom + g.titlespacing
+        end
+    end
+
+    local barX = x + barpaddingleft
+    local barY = y + title_area_top + barpaddingtop
+    local barW = w - barpaddingleft - barpaddingright
+    local barH = h - title_area_top - title_area_bottom - barpaddingtop - barpaddingbottom
+
+    local minStepW = 4
+    local minStepH = 6
+    local maxFitSteps = math.max(2, floor((barW + stepgap) / (minStepW + stepgap)))
+    local steps = math.min(stepcount, maxFitSteps)
+    local stepW = (barW - (steps - 1) * stepgap) / steps
+    local maxStepH = math.max(minStepH, barH)
+
+    g.barX, g.barY, g.barW, g.barH = barX, barY, barW, barH
+    g.steps, g.stepW, g.maxStepH = steps, stepW, maxStepH
+
+    box._geom = g
+    return g
 end
 
 function render.wakeup(box)
@@ -160,6 +231,14 @@ function render.wakeup(box)
     c.hidevalue = getParam(box, "hidevalue")
     c.thresholds = thresholds
     c.stepgap = getParam(box, "stepgap") or 1
+
+    if box._dashboardRectW and box._dashboardRectH then
+        local gx, gy = utils.applyOffset(box._dashboardRectX or 0, box._dashboardRectY or 0, box)
+        local gw, gh
+        gx, gy, gw, gh = utils.boxContentRect(gx, gy, box._dashboardRectW, box._dashboardRectH, c.bgcolor)
+        prepareGeometry(gx, gy, gw, gh, box, c)
+        prepareTextLayout(box, gx, gy, gw, gh, c.title, c.titlepos, c.titlealign, c.titlefont, c.titlespacing, c.titlepadding, c.titlepaddingleft, c.titlepaddingright, c.titlepaddingtop, c.titlepaddingbottom, c.displayValue, c.unit, c.font, c.valuealign, c.valuepadding, c.valuepaddingleft, c.valuepaddingright, c.valuepaddingtop, c.valuepaddingbottom)
+    end
 end
 
 function render.paint(x, y, w, h, box)
@@ -168,54 +247,19 @@ function render.paint(x, y, w, h, box)
 
     x, y, w, h = utils.drawBoxBackground(x, y, w, h, c.bgcolor)
 
-    local title = c.title
-    local titlefont = c.titlefont
-    local titlespacing = c.titlespacing or 0
-    local titlepos = c.titlepos or (title and "top" or nil)
-    local title_area_top = 0
-    local title_area_bottom = 0
+    local g = prepareGeometry(x, y, w, h, box, c)
 
-    if title and title ~= "" then
-        lcd.font(resolveFont(titlefont, FONT_XS))
-        local _, tsizeH = lcd.getTextSize(title)
-        if titlepos == "bottom" then
-            title_area_bottom = (tsizeH or 0) + (c.titlepaddingtop or 0) + (c.titlepaddingbottom or 0) + titlespacing
-        else
-            title_area_top = (tsizeH or 0) + (c.titlepaddingtop or 0) + (c.titlepaddingbottom or 0) + titlespacing
-        end
-    end
-
-    local stepGap = c.stepgap or 1
-    local minStepW = 4
-    local minStepH = 6
-
-    local barpadding = c.barpadding or 0
-    local barpaddingleft = c.barpaddingleft or barpadding
-    local barpaddingright = c.barpaddingright or barpadding
-    local barpaddingtop = c.barpaddingtop or barpadding
-    local barpaddingbottom = c.barpaddingbottom or barpadding
-
-    local barX = x + barpaddingleft
-    local barY = y + title_area_top + barpaddingtop
-    local barW = w - barpaddingleft - barpaddingright
-    local barH = h - title_area_top - title_area_bottom - barpaddingtop - barpaddingbottom
-
-    local reqSteps = c.stepcount or 4
-    local maxFitSteps = math.max(2, floor((barW + stepGap) / (minStepW + stepGap)))
-    local steps = math.min(reqSteps, maxFitSteps)
-    local stepW = (barW - (steps - 1) * stepGap) / steps
-    local maxStepH = math.max(minStepH, barH)
-    local activeSteps = floor((c.percent or 0) * steps + 0.5)
-
-    for i = 1, steps do
-        local stepH = floor((maxStepH / steps) * i)
-        local stepY = barY + maxStepH - stepH
-        local stepX = barX + (i - 1) * (stepW + stepGap)
+    local activeSteps = floor((c.percent or 0) * g.steps + 0.5)
+    for i = 1, g.steps do
+        local stepH = floor((g.maxStepH / g.steps) * i)
+        local stepY = g.barY + g.maxStepH - stepH
+        local stepX = g.barX + (i - 1) * (g.stepW + g.stepgap)
         lcd.color(i <= activeSteps and c.fillcolor or c.fillbgcolor)
-        lcd.drawFilledRectangle(stepX, stepY, stepW, stepH)
+        lcd.drawFilledRectangle(stepX, stepY, g.stepW, stepH)
     end
 
-    utils.box(x, y, w, h, c.title, c.titlepos, c.titlealign, c.titlefont, c.titlespacing, c.titlecolor, c.titlepadding, c.titlepaddingleft, c.titlepaddingright, c.titlepaddingtop, c.titlepaddingbottom, c.displayValue, c.unit, c.font, c.valuealign, c.textcolor, c.valuepadding, c.valuepaddingleft, c.valuepaddingright, c.valuepaddingtop, c.valuepaddingbottom, nil)
+    local layout = prepareTextLayout(box, x, y, w, h, c.title, c.titlepos, c.titlealign, c.titlefont, c.titlespacing, c.titlepadding, c.titlepaddingleft, c.titlepaddingright, c.titlepaddingtop, c.titlepaddingbottom, c.displayValue, c.unit, c.font, c.valuealign, c.valuepadding, c.valuepaddingleft, c.valuepaddingright, c.valuepaddingtop, c.valuepaddingbottom)
+    paintTextLayout(layout, c.textcolor, c.titlecolor)
 end
 
 return render

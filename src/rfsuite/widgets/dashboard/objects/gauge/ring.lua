@@ -70,6 +70,8 @@ local resolveThemeColor = utils.resolveThemeColor
 local resolveThresholdColor = utils.resolveThresholdColor
 local resolveFont = utils.resolveFont
 local getPulsingDots = utils.getPulsingDots
+local prepareTextLayout = utils.prepareTextLayout
+local paintTextLayout = utils.paintTextLayout
 local lastDisplayValue = nil
 
 function render.dirty(box)
@@ -77,6 +79,63 @@ function render.dirty(box)
 end
 
 local drawArc = utils.drawArc
+
+-- Caches the ring's center/radius/thickness (which needs a title font
+-- measurement to derive) so paint() -- Ethos's tight-instruction-budget path
+-- -- doesn't redo that measurement every redraw. See context.lua's
+-- utils.prepareTextLayout() for the fuller rationale.
+local function prepareGeometry(x, y, w, h, box, c)
+    local g = box._geom
+    -- g.thicknessParam is the raw (possibly nil) c.thickness, used as the
+    -- cache key; g.thickness is the resolved value used for drawing. Keeping
+    -- these separate matters -- see arc.lua's prepareGeometry for why
+    -- comparing the resolved value against the raw param breaks the cache.
+    local needGeo = (not g) or g.x ~= x or g.y ~= y or g.w ~= w or g.h ~= h
+        or g.title ~= c.title or g.titlefont ~= c.titlefont or g.titlespacing ~= (c.titlespacing or 0)
+        or g.titlepaddingtop ~= (c.titlepaddingtop or 0) or g.titlepaddingbottom ~= (c.titlepaddingbottom or 0)
+        or g.titlepos ~= c.titlepos or g.thicknessParam ~= (c.thickness or 0)
+
+    if not needGeo then return g end
+
+    g = g or {}
+    g.x, g.y, g.w, g.h = x, y, w, h
+    g.title, g.titlefont = c.title, c.titlefont
+    g.titlespacing = c.titlespacing or 0
+    g.titlepaddingtop = c.titlepaddingtop or 0
+    g.titlepaddingbottom = c.titlepaddingbottom or 0
+    g.titlepos = c.titlepos
+    g.thicknessParam = c.thickness or 0
+
+    local titleHeight = 0
+    if c.title then
+        lcd.font(resolveFont(c.titlefont, FONT_XS))
+        local _, th = lcd.getTextSize(c.title)
+        titleHeight = (th or 0) + g.titlespacing + g.titlepaddingtop + g.titlepaddingbottom
+    end
+
+    local cy
+    if c.titlepos == "top" then
+        cy = y + titleHeight + (h - titleHeight) * 0.45
+    elseif c.titlepos == "bottom" then
+        cy = y + (h - titleHeight) * 0.5
+    else
+        cy = y + h * 0.5
+    end
+
+    local ringPadding = 2
+    local baseSize = min(w, h - (c.title and ringPadding * 2 or 0))
+    local ringSize = min(0.88 * (c.title and 1 or 1.05), 1.0)
+    local radius = baseSize * 0.5 * ringSize
+    local thickness = c.thickness or max(8, radius * 0.18)
+
+    g.cx = x + w / 2
+    g.cy = cy
+    g.radius = radius
+    g.thickness = thickness
+
+    box._geom = g
+    return g
+end
 
 function render.wakeup(box)
 
@@ -181,6 +240,13 @@ function render.wakeup(box)
     c.ringbattsubpaddingbottom = getParam(box, "ringbattsubpaddingbottom")
     c.ringbattsubfont = getParam(box, "ringbattsubfont") or "FONT_XS"
 
+    if box._dashboardRectW and box._dashboardRectH then
+        local gx, gy = utils.applyOffset(box._dashboardRectX or 0, box._dashboardRectY or 0, box)
+        local gw, gh
+        gx, gy, gw, gh = utils.boxContentRect(gx, gy, box._dashboardRectW, box._dashboardRectH, c.bgcolor)
+        prepareGeometry(gx, gy, gw, gh, box, c)
+        prepareTextLayout(box, gx, gy, gw, gh, c.title, c.titlepos, c.titlealign, c.titlefont, c.titlespacing, c.titlepadding, c.titlepaddingleft, c.titlepaddingright, c.titlepaddingtop, c.titlepaddingbottom, c.displayValue, c.unit, c.font, c.valuealign, c.valuepadding, c.valuepaddingleft, c.valuepaddingright, c.valuepaddingtop, c.valuepaddingbottom)
+    end
 end
 
 function render.paint(x, y, w, h, box)
@@ -196,29 +262,8 @@ function render.paint(x, y, w, h, box)
 
     x, y, w, h = utils.drawBoxBackground(x, y, w, h, c.bgcolor)
 
-    local cx = x + w / 2
-
-    local titleHeight = 0
-    if c.title then
-        lcd.font(resolveFont(c.titlefont, FONT_XS))
-        local _, th = lcd.getTextSize(c.title)
-        titleHeight = (th or 0) + (c.titlespacing or 0) + (c.titlepaddingtop or 0) + (c.titlepaddingbottom or 0)
-    end
-
-    local cy
-    if c.titlepos == "top" then
-        cy = y + titleHeight + (h - titleHeight) * 0.45
-    elseif c.titlepos == "bottom" then
-        cy = y + (h - titleHeight) * 0.5
-    else
-        cy = y + h * 0.5
-    end
-
-    local ringPadding = 2
-    local baseSize = min(w, h - (c.title and ringPadding * 2 or 0))
-    local ringSize = min(0.88 * (c.title and 1 or 1.05), 1.0)
-    local radius = baseSize * 0.5 * ringSize
-    local thickness = c.thickness or max(8, radius * 0.18)
+    local g = prepareGeometry(x, y, w, h, box, c)
+    local cx, cy, radius, thickness = g.cx, g.cy, g.radius, g.thickness
 
     if c.ringbatt then
 
@@ -263,7 +308,8 @@ function render.paint(x, y, w, h, box)
         lcd.drawText(textX, textY, c.mahUnit)
     end
 
-    utils.box(x, y, w, h, c.title, c.titlepos, c.titlealign, c.titlefont, c.titlespacing, c.titlecolor, c.titlepadding, c.titlepaddingleft, c.titlepaddingright, c.titlepaddingtop, c.titlepaddingbottom, c.displayValue, c.unit, c.font, c.valuealign, c.textcolor, c.valuepadding, c.valuepaddingleft, c.valuepaddingright, c.valuepaddingtop, c.valuepaddingbottom, nil)
+    local layout = prepareTextLayout(box, x, y, w, h, c.title, c.titlepos, c.titlealign, c.titlefont, c.titlespacing, c.titlepadding, c.titlepaddingleft, c.titlepaddingright, c.titlepaddingtop, c.titlepaddingbottom, c.displayValue, c.unit, c.font, c.valuealign, c.valuepadding, c.valuepaddingleft, c.valuepaddingright, c.valuepaddingtop, c.valuepaddingbottom)
+    paintTextLayout(layout, c.textcolor, c.titlecolor)
 end
 
 return render

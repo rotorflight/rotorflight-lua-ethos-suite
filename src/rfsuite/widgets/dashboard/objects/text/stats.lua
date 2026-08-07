@@ -53,6 +53,8 @@ local getParam = utils.getParam
 local resolveThemeColor = utils.resolveThemeColor
 local getPulsingDots = utils.getPulsingDots
 local compileTransform = utils.compileTransform
+local prepareTextLayout = utils.prepareTextLayout
+local paintTextLayout = utils.paintTextLayout
 local lastDisplayValue = nil
 
 function render.dirty(box)
@@ -172,13 +174,22 @@ function render.wakeup(box)
     c.valuepaddingtop = cfg.valuepaddingtop
     c.valuepaddingbottom = cfg.valuepaddingbottom
     c.bgcolor = cfg.bgcolor
+
+    if box._dashboardRectW and box._dashboardRectH then
+        local px, py = utils.applyOffset(box._dashboardRectX or 0, box._dashboardRectY or 0, box)
+        local pw, ph
+        px, py, pw, ph = utils.boxContentRect(px, py, box._dashboardRectW, box._dashboardRectH, c.bgcolor)
+        prepareTextLayout(box, px, py, pw, ph, c.title, c.titlepos, c.titlealign, c.titlefont, c.titlespacing, c.titlepadding, c.titlepaddingleft, c.titlepaddingright, c.titlepaddingtop, c.titlepaddingbottom, c.displayValue, c.unit, c.font, c.valuealign, c.valuepadding, c.valuepaddingleft, c.valuepaddingright, c.valuepaddingtop, c.valuepaddingbottom)
+    end
 end
 
 function render.paint(x, y, w, h, box)
     x, y = utils.applyOffset(x, y, box)
     local c = box._cache or {}
 
-    utils.box(x, y, w, h, c.title, c.titlepos, c.titlealign, c.titlefont, c.titlespacing, c.titlecolor, c.titlepadding, c.titlepaddingleft, c.titlepaddingright, c.titlepaddingtop, c.titlepaddingbottom, c.displayValue, c.unit, c.font, c.valuealign, c.textcolor, c.valuepadding, c.valuepaddingleft, c.valuepaddingright, c.valuepaddingtop, c.valuepaddingbottom, c.bgcolor)
+    x, y, w, h = utils.drawBoxBackground(x, y, w, h, c.bgcolor)
+    local layout = prepareTextLayout(box, x, y, w, h, c.title, c.titlepos, c.titlealign, c.titlefont, c.titlespacing, c.titlepadding, c.titlepaddingleft, c.titlepaddingright, c.titlepaddingtop, c.titlepaddingbottom, c.displayValue, c.unit, c.font, c.valuealign, c.valuepadding, c.valuepaddingleft, c.valuepaddingright, c.valuepaddingtop, c.valuepaddingbottom)
+    paintTextLayout(layout, c.textcolor, c.titlecolor)
 end
 
 return render

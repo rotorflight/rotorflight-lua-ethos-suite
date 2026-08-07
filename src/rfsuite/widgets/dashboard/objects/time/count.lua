@@ -40,8 +40,13 @@ local utils = rfsuite.widgets.dashboard.utils
 local getParam = utils.getParam
 local resolveThemeColor = utils.resolveThemeColor
 local getPulsingDots = utils.getPulsingDots
+local prepareTextLayout = utils.prepareTextLayout
+local paintTextLayout = utils.paintTextLayout
 
-function render.invalidate(box) box._cfg = nil end
+function render.invalidate(box)
+    box._cfg = nil
+    box._textLayout = nil
+end
 
 function render.dirty(box)
     return utils.dirtyOnDisplayValueChange(box)
@@ -100,7 +105,16 @@ function render.wakeup(box)
 
     box._currentDisplayValue = displayValue
 
-    ensureCfg(box)
+    local cfg = ensureCfg(box)
+
+    if box._dashboardRectW and box._dashboardRectH then
+        local unitForPaint = cfg.unit
+        if box._currentDisplayValue == "." or box._currentDisplayValue == ".." or box._currentDisplayValue == "..." then unitForPaint = nil end
+        local x, y = utils.applyOffset(box._dashboardRectX or 0, box._dashboardRectY or 0, box)
+        local w, h
+        x, y, w, h = utils.boxContentRect(x, y, box._dashboardRectW, box._dashboardRectH, cfg.bgcolor)
+        prepareTextLayout(box, x, y, w, h, cfg.title, cfg.titlepos, cfg.titlealign, cfg.titlefont, cfg.titlespacing, cfg.titlepadding, cfg.titlepaddingleft, cfg.titlepaddingright, cfg.titlepaddingtop, cfg.titlepaddingbottom, box._currentDisplayValue, unitForPaint, cfg.font, cfg.valuealign, cfg.valuepadding, cfg.valuepaddingleft, cfg.valuepaddingright, cfg.valuepaddingtop, cfg.valuepaddingbottom)
+    end
 end
 
 function render.paint(x, y, w, h, box)
@@ -111,7 +125,9 @@ function render.paint(x, y, w, h, box)
 
     if box._currentDisplayValue == "." or box._currentDisplayValue == ".." or box._currentDisplayValue == "..." then unitForPaint = nil end
 
-    utils.box(x, y, w, h, c.title, c.titlepos, c.titlealign, c.titlefont, c.titlespacing, c.titlecolor, c.titlepadding, c.titlepaddingleft, c.titlepaddingright, c.titlepaddingtop, c.titlepaddingbottom, box._currentDisplayValue, unitForPaint, c.font, c.valuealign, c.textcolor, c.valuepadding, c.valuepaddingleft, c.valuepaddingright, c.valuepaddingtop, c.valuepaddingbottom, c.bgcolor)
+    x, y, w, h = utils.drawBoxBackground(x, y, w, h, c.bgcolor)
+    local layout = prepareTextLayout(box, x, y, w, h, c.title, c.titlepos, c.titlealign, c.titlefont, c.titlespacing, c.titlepadding, c.titlepaddingleft, c.titlepaddingright, c.titlepaddingtop, c.titlepaddingbottom, box._currentDisplayValue, unitForPaint, c.font, c.valuealign, c.valuepadding, c.valuepaddingleft, c.valuepaddingright, c.valuepaddingtop, c.valuepaddingbottom)
+    paintTextLayout(layout, c.textcolor, c.titlecolor)
 end
 
 render.scheduler = 0.5

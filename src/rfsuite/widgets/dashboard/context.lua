@@ -1497,6 +1497,30 @@ local function drawRoundedFilledRectSafe(x, y, w, h, radius, color)
   lcd.drawFilledCircle(x + w - radius - 1, y + h - radius - 1, radius)
 end
 
+local function boxContentRect(x, y, w, h, bgcolor)
+  if type(bgcolor) ~= "table" then
+    return x, y, w, h
+  end
+
+  local inset = tonumber(bgcolor.inset or bgcolor.margin) or 0
+  local insetleft = tonumber(bgcolor.insetleft or bgcolor.inset_left) or inset
+  local insetright = tonumber(bgcolor.insetright or bgcolor.inset_right) or inset
+  local insettop = tonumber(bgcolor.insettop or bgcolor.inset_top) or inset
+  local insetbottom = tonumber(bgcolor.insetbottom or bgcolor.inset_bottom) or inset
+  local borderwidth = tonumber(bgcolor.borderwidth) or 0
+
+  local bw = w - insetleft - insetright
+  local bh = h - insettop - insetbottom
+  if bw <= 0 or bh <= 0 then return x, y, w, h end
+
+  local contentPad = tonumber(bgcolor.contentpadding) or 0
+  local innerLeft = insetleft + borderwidth + contentPad
+  local innerRight = insetright + borderwidth + contentPad
+  local innerTop = insettop + borderwidth + contentPad
+  local innerBottom = insetbottom + borderwidth + contentPad
+  return x + innerLeft, y + innerTop, w - innerLeft - innerRight, h - innerTop - innerBottom
+end
+
 local function drawBoxBackground(x, y, w, h, bgcolor)
   if type(bgcolor) ~= "table" then
     -- No `or legacyPalette().bgcolor` fallback here (unlike this
@@ -1553,16 +1577,15 @@ local function drawBoxBackground(x, y, w, h, bgcolor)
     drawRoundedFilledRectSafe(bx, by, bw, bh, radius, fillcolor)
   end
 
-  local contentPad = tonumber(bgcolor.contentpadding) or 0
-  local innerLeft = insetleft + borderwidth + contentPad
-  local innerRight = insetright + borderwidth + contentPad
-  local innerTop = insettop + borderwidth + contentPad
-  local innerBottom = insetbottom + borderwidth + contentPad
-  return x + innerLeft, y + innerTop, w - innerLeft - innerRight, h - innerTop - innerBottom
+  return boxContentRect(x, y, w, h, bgcolor)
 end
 
 function utils.drawBoxBackground(x, y, w, h, bgcolor)
   return drawBoxBackground(x, y, w, h, bgcolor)
+end
+
+function utils.boxContentRect(x, y, w, h, bgcolor)
+  return boxContentRect(x, y, w, h, bgcolor)
 end
 
 function utils.box(x, y, w, h, title, titlepos, titlealign, titlefont, titlespacing, titlecolor, titlepadding, titlepaddingleft, titlepaddingright, titlepaddingtop, titlepaddingbottom, displayValue, unit, valuefont, valuealign, textcolor, valuepadding, valuepaddingleft, valuepaddingright, valuepaddingtop, valuepaddingbottom, bgcolor, image, imagewidth, imageheight, imagealign)
@@ -1710,6 +1733,210 @@ function utils.box(x, y, w, h, title, titlepos, titlealign, titlefont, titlespac
     local sy = titlepos == "bottom" and (y + h - titlepaddingbottom - titleTextH) or (y + titlepaddingtop)
     lcd.color(utils.resolveThemeColor("titlecolor", titlecolor))
     lcd.drawText(sx, sy, title)
+  end
+end
+
+-- Cached counterpart to utils.box()'s title/value text layout.
+--
+-- utils.box() re-runs its font-fit search (looping every candidate font in
+-- the resolution's font list, calling lcd.font/lcd.getTextSize per
+-- candidate) on *every* paint() call, not just every wakeup(). paint()
+-- runs on every screen redraw regardless of an object's `render.scheduler`,
+-- and Ethos grants paint() a much tighter instruction budget than wakeup()
+-- -- so that loop is exactly the kind of work that should happen once in
+-- wakeup() (looser budget) and be reused, unchanged, across paint() calls
+-- (tight budget) until something affecting layout actually changes.
+--
+-- utils.prepareTextLayout() does the measuring/positioning only (no
+-- drawing) and caches the result on box._textLayout, keyed on every input
+-- that can change what it computes -- geometry, title/value text, fonts,
+-- alignment, padding. Call it from both render.wakeup() (to pre-warm the
+-- cache while the budget is loose) and render.paint() (which will get a
+-- cache hit for free whenever wakeup() already ran with the same content
+-- rect this frame -- see utils.boxContentRect()). utils.paintTextLayout()
+-- then does the actual (cheap) drawing from that cached layout.
+--
+-- Extracted from objects/text/telemetry.lua's original private
+-- implementation; see that object for the pattern this generalizes.
+local function textOrNil(value)
+  if type(value) == "string" or type(value) == "number" then return tostring(value) end
+  return nil
+end
+
+local function valueText(displayValue, unit)
+  if displayValue == nil then return nil end
+  return tostring(displayValue) .. (unit or "")
+end
+
+local function prepareTextLayout(box, x, y, w, h, titleIn, titlepos, titlealign, titlefont, titlespacing, titlepadding, titlepaddingleft, titlepaddingright, titlepaddingtop, titlepaddingbottom, displayValue, unit, valuefont, valuealign, valuepadding, valuepaddingleft, valuepaddingright, valuepaddingtop, valuepaddingbottom)
+  local title = textOrNil(titleIn)
+  local value = valueText(displayValue, unit)
+
+  local tp = titlepadding or 0
+  local vp = valuepadding or 6
+  titlepaddingleft = titlepaddingleft or tp
+  titlepaddingright = titlepaddingright or tp
+  titlepaddingtop = titlepaddingtop or tp
+  titlepaddingbottom = titlepaddingbottom or tp
+  valuepaddingleft = valuepaddingleft or vp
+  valuepaddingright = valuepaddingright or vp
+  valuepaddingtop = valuepaddingtop or vp
+  valuepaddingbottom = valuepaddingbottom or vp
+  titlespacing = titlespacing or 6
+
+  local layout = box._textLayout
+  if layout
+      and layout.x == x and layout.y == y and layout.w == w and layout.h == h
+      and layout.title == title and layout.value == value
+      and layout.titlepos == titlepos and layout.titlealign == titlealign
+      and layout.titlefont == titlefont and layout.valuefont == valuefont
+      and layout.valuealign == valuealign
+      and layout.titlepaddingleft == titlepaddingleft
+      and layout.titlepaddingright == titlepaddingright
+      and layout.titlepaddingtop == titlepaddingtop
+      and layout.titlepaddingbottom == titlepaddingbottom
+      and layout.valuepaddingleft == valuepaddingleft
+      and layout.valuepaddingright == valuepaddingright
+      and layout.valuepaddingtop == valuepaddingtop
+      and layout.valuepaddingbottom == valuepaddingbottom
+      and layout.titlespacing == titlespacing then
+    return layout
+  end
+
+  layout = layout or {}
+  layout.x, layout.y, layout.w, layout.h = x, y, w, h
+  layout.title, layout.value = title, value
+  layout.titlepos, layout.titlealign = titlepos, titlealign
+  layout.titlefont, layout.valuefont = titlefont, valuefont
+  layout.valuealign = valuealign
+  layout.titlepaddingleft = titlepaddingleft
+  layout.titlepaddingright = titlepaddingright
+  layout.titlepaddingtop = titlepaddingtop
+  layout.titlepaddingbottom = titlepaddingbottom
+  layout.valuepaddingleft = valuepaddingleft
+  layout.valuepaddingright = valuepaddingright
+  layout.valuepaddingtop = valuepaddingtop
+  layout.valuepaddingbottom = valuepaddingbottom
+  layout.titlespacing = titlespacing
+
+  local titleH = 0
+  local titleW = 0
+  local titleTextH = 0
+  local resolvedTitleFont = nil
+  if title then
+    local explicitTitleFont = utils.resolveFont(titlefont, nil)
+    if explicitTitleFont then
+      resolvedTitleFont = explicitTitleFont
+      lcd.font(resolvedTitleFont)
+      titleW, titleTextH = lcd.getTextSize(title)
+    else
+      local fontLists = utils.getFontListsForResolution()
+      local titleFonts = fontLists.value_title
+      local valueFonts = fontLists.value_default
+      local minValueFontH = 9999
+
+      for i = 1, #valueFonts do
+        lcd.font(valueFonts[i])
+        local _, vh = lcd.getTextSize("8")
+        if vh and vh < minValueFontH then minValueFontH = vh end
+      end
+
+      local maxTitleW = w - titlepaddingleft - titlepaddingright
+      for i = 1, #titleFonts do
+        local candidate = titleFonts[i]
+        lcd.font(candidate)
+        local tw, th = lcd.getTextSize(title)
+        local remH = h - titlepaddingtop - th - titlepaddingbottom - valuepaddingtop - valuepaddingbottom
+        if tw <= maxTitleW and th > 0 and remH >= minValueFontH then
+          resolvedTitleFont = candidate
+          titleW = tw
+          titleTextH = th
+          break
+        end
+      end
+
+      if not resolvedTitleFont then
+        resolvedTitleFont = titleFonts[#titleFonts] or FONT_XS
+        lcd.font(resolvedTitleFont)
+        titleW, titleTextH = lcd.getTextSize(title)
+      end
+    end
+    titleH = titleTextH + titlepaddingtop + titlepaddingbottom + titlespacing
+  end
+
+  local regionX = x + valuepaddingleft
+  local regionY = y + valuepaddingtop
+  local regionW = w - valuepaddingleft - valuepaddingright
+  local regionH = h - valuepaddingtop - valuepaddingbottom
+  if title and titlepos == "bottom" then
+    regionH = regionH - titleH
+  elseif title then
+    regionY = regionY + titleH
+    regionH = regionH - titleH
+  end
+
+  layout.valueDraw = false
+  if value then
+    local resolvedValueFont = utils.resolveFont(valuefont, nil)
+    if not resolvedValueFont then
+      local fonts = utils.getFontListsForResolution().value_default
+      resolvedValueFont = fonts[#fonts]
+      local fitValue = value
+      if string.find(fitValue, "%%", 1, true) then fitValue = fitValue:gsub("%%", "W") end
+      for i = 1, #fonts do
+        local candidate = fonts[i]
+        lcd.font(candidate)
+        local tw, th = lcd.getTextSize(fitValue)
+        if tw <= regionW and th <= regionH then resolvedValueFont = candidate end
+      end
+    end
+    lcd.font(resolvedValueFont)
+    local valueW, valueH = lcd.getTextSize(value)
+    local sx = regionX
+    local align = valuealign or "center"
+    if align == "right" then
+      sx = regionX + regionW - valueW
+    elseif align ~= "left" then
+      sx = regionX + (regionW - valueW) / 2
+    end
+    layout.valueDraw = true
+    layout.valueFont = resolvedValueFont
+    layout.valueX = sx
+    layout.valueY = regionY + (regionH - valueH) / 2
+  end
+
+  layout.titleDraw = false
+  if title then
+    local regionTitleW = w - titlepaddingleft - titlepaddingright
+    local sx = x + titlepaddingleft + (regionTitleW - titleW) / 2
+    if titlealign == "left" then sx = x + titlepaddingleft end
+    if titlealign == "right" then sx = x + titlepaddingleft + regionTitleW - titleW end
+    local sy = titlepos == "bottom" and (y + h - titlepaddingbottom - titleTextH) or (y + titlepaddingtop)
+    layout.titleDraw = true
+    layout.titleFont = resolvedTitleFont
+    layout.titleX = sx
+    layout.titleY = sy
+  end
+
+  box._textLayout = layout
+  return layout
+end
+
+function utils.prepareTextLayout(box, x, y, w, h, title, titlepos, titlealign, titlefont, titlespacing, titlepadding, titlepaddingleft, titlepaddingright, titlepaddingtop, titlepaddingbottom, displayValue, unit, valuefont, valuealign, valuepadding, valuepaddingleft, valuepaddingright, valuepaddingtop, valuepaddingbottom)
+  return prepareTextLayout(box, x, y, w, h, title, titlepos, titlealign, titlefont, titlespacing, titlepadding, titlepaddingleft, titlepaddingright, titlepaddingtop, titlepaddingbottom, displayValue, unit, valuefont, valuealign, valuepadding, valuepaddingleft, valuepaddingright, valuepaddingtop, valuepaddingbottom)
+end
+
+function utils.paintTextLayout(layout, valuecolor, titlecolor)
+  if not layout then return end
+  if layout.valueDraw then
+    lcd.font(layout.valueFont)
+    lcd.color(utils.resolveThemeColor("textcolor", valuecolor))
+    lcd.drawText(layout.valueX, layout.valueY, layout.value)
+  end
+  if layout.titleDraw then
+    lcd.font(layout.titleFont)
+    lcd.color(utils.resolveThemeColor("titlecolor", titlecolor))
+    lcd.drawText(layout.titleX, layout.titleY, layout.title)
   end
 end
 

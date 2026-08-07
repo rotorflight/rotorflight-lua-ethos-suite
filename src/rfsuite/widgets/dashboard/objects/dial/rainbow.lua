@@ -65,6 +65,8 @@ local resolveThemeColor = utils.resolveThemeColor
 local resolveThemeColorArray = utils.resolveThemeColorArray
 local resolveFont = utils.resolveFont
 local getPulsingDots = utils.getPulsingDots
+local prepareTextLayout = utils.prepareTextLayout
+local paintTextLayout = utils.paintTextLayout
 local lastDisplayValue = nil
 
 local DEFAULT_BAND_LABELS = {"Low", "Med", "High"}
@@ -97,6 +99,58 @@ local function drawRainbowArc(cx, cy, radius, thickness, startAngle, endAngle, c
 end
 
 local function calDialAngle(percent, startAngle, sweepAngle) return (startAngle or 135) + (sweepAngle or 270) * (percent or 0) end
+
+-- Caches the arc's center/radius/thickness (needs a title + band-label font
+-- measurement to derive) so paint() doesn't redo that work every redraw.
+-- See context.lua's utils.prepareTextLayout() for the fuller rationale.
+local function prepareGeometry(x, y, w, h, box, c)
+    local g = box._geom
+    -- g.thicknessParam is the raw (possibly nil) c.thickness, used as the
+    -- cache key; g.thickness is the resolved value used for drawing --
+    -- see arc.lua's prepareGeometry for why these must stay separate.
+    local needGeo = (not g) or g.x ~= x or g.y ~= y or g.w ~= w or g.h ~= h
+        or g.title ~= c.title or g.titlefont ~= c.titlefont or g.titlespacing ~= (c.titlespacing or 0)
+        or g.titlepaddingtop ~= (c.titlepaddingtop or 0) or g.titlepaddingbottom ~= (c.titlepaddingbottom or 0)
+        or g.bandlabelfont ~= c.bandlabelfont or g.thicknessParam ~= (c.thickness or 0)
+
+    if not needGeo then return g end
+
+    g = g or {}
+    g.x, g.y, g.w, g.h = x, y, w, h
+    g.title, g.titlefont = c.title, c.titlefont
+    g.titlespacing = c.titlespacing or 0
+    g.titlepaddingtop = c.titlepaddingtop or 0
+    g.titlepaddingbottom = c.titlepaddingbottom or 0
+    g.bandlabelfont = c.bandlabelfont
+    g.thicknessParam = c.thickness or 0
+
+    lcd.font(resolveFont(c.bandlabelfont, FONT_XS))
+    local subtextHeight = select(2, lcd.getTextSize("Med")) + 2
+
+    local titleHeight = 0
+    if c.title then
+        lcd.font(resolveFont(c.titlefont, FONT_XS))
+        local _, th = lcd.getTextSize(c.title)
+        titleHeight = (th or 0) + g.titlespacing + g.titlepaddingtop + g.titlepaddingbottom
+    end
+
+    local arcRegionY = y + subtextHeight
+    local arcRegionH = h - subtextHeight - titleHeight
+    local arcMargin = 2
+    local usableW = w - arcMargin * 2
+    local usableH = arcRegionH - arcMargin
+    local thickness = c.thickness or math.max(6, math.min(usableW, usableH) * 0.25)
+    local radius = math.min(usableW / 2, usableH) - (thickness / 2)
+    if radius < 8 then radius = 8 end
+
+    g.cx = x + w / 2
+    g.cy = arcRegionY + arcRegionH / 2 + 15
+    g.radius = radius
+    g.thickness = thickness
+
+    box._geom = g
+    return g
+end
 
 function render.wakeup(box)
 
@@ -186,6 +240,14 @@ function render.wakeup(box)
     c.needlestartangle = getParam(box, "needlestartangle") or 150
     c.needlesweepangle = getParam(box, "needlesweepangle") or 240
     c.accentcolor = resolveThemeColor("accentcolor", getParam(box, "accentcolor"))
+
+    if box._dashboardRectW and box._dashboardRectH then
+        local gx, gy = utils.applyOffset(box._dashboardRectX or 0, box._dashboardRectY or 0, box)
+        local gw, gh
+        gx, gy, gw, gh = utils.boxContentRect(gx, gy, box._dashboardRectW, box._dashboardRectH, c.bgcolor)
+        prepareGeometry(gx, gy, gw, gh, box, c)
+        prepareTextLayout(box, gx, gy, gw, gh, c.title, c.titlepos, c.titlealign, c.titlefont, c.titlespacing, c.titlepadding, c.titlepaddingleft, c.titlepaddingright, c.titlepaddingtop, c.titlepaddingbottom, c.showvalue ~= false and c.displayValue or nil, c.showvalue ~= false and c.unit or nil, c.font, c.valuealign, c.valuepadding, c.valuepaddingleft, c.valuepaddingright, c.valuepaddingtop, c.valuepaddingbottom)
+    end
 end
 
 function render.paint(x, y, w, h, box)
@@ -194,26 +256,8 @@ function render.paint(x, y, w, h, box)
 
     x, y, w, h = utils.drawBoxBackground(x, y, w, h, c.bgcolor)
 
-    lcd.font(resolveFont(c.bandlabelfont, FONT_XS))
-    local subtextHeight = select(2, lcd.getTextSize("Med")) + 2
-
-    local titleHeight = 0
-    if c.title then
-        lcd.font(resolveFont(c.titlefont, FONT_XS))
-        local _, th = lcd.getTextSize(c.title)
-        titleHeight = (th or 0) + (c.titlespacing or 0) + (c.titlepaddingtop or 0) + (c.titlepaddingbottom or 0)
-    end
-
-    local arcRegionY = y + subtextHeight
-    local arcRegionH = h - subtextHeight - titleHeight
-    local arcMargin = 2
-    local usableW = w - arcMargin * 2
-    local usableH = arcRegionH - arcMargin
-    local thickness = c.thickness or math.max(6, math.min(usableW, usableH) * 0.25)
-    local radius = math.min(usableW / 2, usableH) - (thickness / 2)
-    if radius < 8 then radius = 8 end
-    local cx = x + w / 2
-    local cy = arcRegionY + arcRegionH / 2 + 15
+    local g = prepareGeometry(x, y, w, h, box, c)
+    local cx, cy, radius, thickness = g.cx, g.cy, g.radius, g.thickness
 
     local bandCount = #c.bandlabels
     local startAngle = 240
@@ -259,7 +303,8 @@ function render.paint(x, y, w, h, box)
         end
     end
 
-    utils.box(x, y, w, h, c.title, c.titlepos, c.titlealign, c.titlefont, c.titlespacing, c.titlecolor, c.titlepadding, c.titlepaddingleft, c.titlepaddingright, c.titlepaddingtop, c.titlepaddingbottom, c.showvalue ~= false and c.displayValue or nil, c.showvalue ~= false and c.unit or nil, c.font, c.valuealign, c.textcolor, c.valuepadding, c.valuepaddingleft, c.valuepaddingright, c.valuepaddingtop, c.valuepaddingbottom, nil)
+    local layout = prepareTextLayout(box, x, y, w, h, c.title, c.titlepos, c.titlealign, c.titlefont, c.titlespacing, c.titlepadding, c.titlepaddingleft, c.titlepaddingright, c.titlepaddingtop, c.titlepaddingbottom, c.showvalue ~= false and c.displayValue or nil, c.showvalue ~= false and c.unit or nil, c.font, c.valuealign, c.valuepadding, c.valuepaddingleft, c.valuepaddingright, c.valuepaddingtop, c.valuepaddingbottom)
+    paintTextLayout(layout, c.textcolor, c.titlecolor)
 end
 
 return render

@@ -101,6 +101,8 @@ local getParam = utils.getParam
 local resolveThemeColor = utils.resolveThemeColor
 local resolveThresholdColor = utils.resolveThresholdColor
 local resolveFont = utils.resolveFont
+local prepareTextLayout = utils.prepareTextLayout
+local paintTextLayout = utils.paintTextLayout
 local lastDisplayValue = nil
 local LOADING_DOTS = {".", "..", "...", "."}
 
@@ -647,7 +649,16 @@ function render.wakeup(box)
 
     if box._dashboardRectW and box._dashboardRectH then
         local gx, gy = utils.applyOffset(box._dashboardRectX or 0, box._dashboardRectY or 0, box)
-        prepareGeometry(gx, gy, box._dashboardRectW, box._dashboardRectH, box, c)
+        local gw, gh
+        gx, gy, gw, gh = utils.boxContentRect(gx, gy, box._dashboardRectW, box._dashboardRectH, c.bgcolor)
+        prepareGeometry(gx, gy, gw, gh, box, c)
+
+        local boxValue, boxUnit = c.displayValue, c.unit
+        if c.hidevalue then
+            boxValue = nil
+            boxUnit = nil
+        end
+        prepareTextLayout(box, gx, gy, gw, gh, c.title, c.titlepos, c.titlealign, c.titlefont, c.titlespacing, c.titlepadding, c.titlepaddingleft, c.titlepaddingright, c.titlepaddingtop, c.titlepaddingbottom, boxValue, boxUnit, c.font, c.valuealign, c.valuepadding, c.valuepaddingleft, c.valuepaddingright, c.valuepaddingtop, c.valuepaddingbottom)
     end
 end
 
@@ -710,7 +721,8 @@ function render.paint(x, y, w, h, box)
         boxValue = nil
         boxUnit = nil
     end
-    utils.box(x, y, w, h, c.title, c.titlepos, c.titlealign, c.titlefont, c.titlespacing, c.titlecolor, c.titlepadding, c.titlepaddingleft, c.titlepaddingright, c.titlepaddingtop, c.titlepaddingbottom, boxValue, boxUnit, c.font, c.valuealign, c.textcolor, c.valuepadding, c.valuepaddingleft, c.valuepaddingright, c.valuepaddingtop, c.valuepaddingbottom, nil)
+    local layout = prepareTextLayout(box, x, y, w, h, c.title, c.titlepos, c.titlealign, c.titlefont, c.titlespacing, c.titlepadding, c.titlepaddingleft, c.titlepaddingright, c.titlepaddingtop, c.titlepaddingbottom, boxValue, boxUnit, c.font, c.valuealign, c.valuepadding, c.valuepaddingleft, c.valuepaddingright, c.valuepaddingtop, c.valuepaddingbottom)
+    paintTextLayout(layout, c.textcolor, c.titlecolor)
 
     c.battadvpaddingleft = tonumber(c.battadvpaddingleft) or 0
     c.battadvpaddingright = tonumber(c.battadvpaddingright) or 0

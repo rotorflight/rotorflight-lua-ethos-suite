@@ -66,6 +66,8 @@ local resolveThemeColor = utils.resolveThemeColor
 local resolveThresholdColor = utils.resolveThresholdColor
 local resolveFont = utils.resolveFont
 local getPulsingDots = utils.getPulsingDots
+local prepareTextLayout = utils.prepareTextLayout
+local paintTextLayout = utils.paintTextLayout
 local lastDisplayValue = nil
 
 function render.dirty(box)
@@ -77,7 +79,13 @@ local compileTransform = utils.compileTransform
 
 local function prepareGeometry(x, y, w, h, box, c)
     local g = box._geom
-    local needGeo = (not g) or g.x ~= x or g.y ~= y or g.w ~= w or g.h ~= h or g.title ~= c.title or g.titlefont ~= c.titlefont or g.titlespacing ~= (c.titlespacing or 0) or g.titlepaddingtop ~= (c.titlepaddingtop or 0) or g.titlepaddingbottom ~= (c.titlepaddingbottom or 0) or g.titlepos ~= c.titlepos or g.thickness ~= (c.thickness or 0) or g.gaugepadding ~= (c.gaugepadding or 0) or g.gaugepaddingbottom ~= (c.gaugepaddingbottom or 0)
+    -- g.thicknessParam (the raw, possibly-nil c.thickness) is the cache key;
+    -- g.thickness below is the *resolved* value used for drawing. Comparing
+    -- the resolved value against the raw param here (as this used to) would
+    -- never match whenever thickness is left at its auto default -- the
+    -- resolved default is never exactly `c.thickness or 0` -- so needGeo was
+    -- true on every single paint() and the cache never actually cached.
+    local needGeo = (not g) or g.x ~= x or g.y ~= y or g.w ~= w or g.h ~= h or g.title ~= c.title or g.titlefont ~= c.titlefont or g.titlespacing ~= (c.titlespacing or 0) or g.titlepaddingtop ~= (c.titlepaddingtop or 0) or g.titlepaddingbottom ~= (c.titlepaddingbottom or 0) or g.titlepos ~= c.titlepos or g.thicknessParam ~= (c.thickness or 0) or g.gaugepadding ~= (c.gaugepadding or 0) or g.gaugepaddingbottom ~= (c.gaugepaddingbottom or 0)
 
     if not needGeo then return g end
 
@@ -89,6 +97,7 @@ local function prepareGeometry(x, y, w, h, box, c)
     g.titlepaddingtop = c.titlepaddingtop or 0
     g.titlepaddingbottom = c.titlepaddingbottom or 0
     g.titlepos = c.titlepos
+    g.thicknessParam = c.thickness or 0
     g.thickness = c.thickness or math.max(6, math.min(w, h) * 0.07)
     g.gaugepadding = c.gaugepadding or 0
     g.gaugepaddingbottom = c.gaugepaddingbottom or 0
@@ -283,7 +292,10 @@ function render.wakeup(box)
 
     if box._dashboardRectW and box._dashboardRectH then
         local gx, gy = utils.applyOffset(box._dashboardRectX or 0, box._dashboardRectY or 0, box)
-        prepareGeometry(gx, gy, box._dashboardRectW, box._dashboardRectH, box, c)
+        local gw, gh
+        gx, gy, gw, gh = utils.boxContentRect(gx, gy, box._dashboardRectW, box._dashboardRectH, c.bgcolor)
+        prepareGeometry(gx, gy, gw, gh, box, c)
+        prepareTextLayout(box, gx, gy, gw, gh, c.title, c.titlepos, c.titlealign, c.titlefont, c.titlespacing, c.titlepadding, c.titlepaddingleft, c.titlepaddingright, c.titlepaddingtop, c.titlepaddingbottom, c.displayValue, c.unit, c.font, c.valuealign, c.valuepadding, c.valuepaddingleft, c.valuepaddingright, c.valuepaddingtop, c.valuepaddingbottom)
     end
 end
 
@@ -316,7 +328,8 @@ function render.paint(x, y, w, h, box)
         drawArc(g.cx, g.cy, innerRadius, innerThickness, g.startAngle, maxEndAngle, c.maxfillcolor)
     end
 
-    utils.box(x, y, w, h, c.title, c.titlepos, c.titlealign, c.titlefont, c.titlespacing, c.titlecolor, c.titlepadding, c.titlepaddingleft, c.titlepaddingright, c.titlepaddingtop, c.titlepaddingbottom, c.displayValue, c.unit, c.font, c.valuealign, c.textcolor, c.valuepadding, c.valuepaddingleft, c.valuepaddingright, c.valuepaddingtop, c.valuepaddingbottom, nil)
+    local layout = prepareTextLayout(box, x, y, w, h, c.title, c.titlepos, c.titlealign, c.titlefont, c.titlespacing, c.titlepadding, c.titlepaddingleft, c.titlepaddingright, c.titlepaddingtop, c.titlepaddingbottom, c.displayValue, c.unit, c.font, c.valuealign, c.valuepadding, c.valuepaddingleft, c.valuepaddingright, c.valuepaddingtop, c.valuepaddingbottom)
+    paintTextLayout(layout, c.textcolor, c.titlecolor)
 
     if c.arcmax and c.maxval then
         local maxStr = tostring(c.maxprefix or "") .. (c.displayMaxValue or c.maxval) .. (c.unit or "")
