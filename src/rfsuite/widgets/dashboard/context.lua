@@ -61,6 +61,7 @@ local imageBitmapCache = {}
 local liveSourceCache = {}
 local liveMissRetryAt = {}
 local liveMissCount = {}
+local liveRevalidateAt = {}
 -- Same fix as lib/telemetry_sensors.lua's own MISS_RETRY_INITIAL/_MAX: a flat
 -- 5s lockout from the first miss meant a box whose sensor simply hadn't
 -- broadcast yet (common right after connect) stayed blank for up to 5s
@@ -71,6 +72,18 @@ local liveMissCount = {}
 local LIVE_MISS_RETRY_INITIAL = 0.5
 local LIVE_MISS_RETRY_MAX = 5.0
 local LIVE_MISS_RETRY_MULTIPLIER = 2
+-- Same fix as lib/telemetry_sensors.lua's own REVALIDATE_INTERVAL, ported
+-- here after noticing this cache never got it: liveSensorSource() picks the
+-- *first* candidate that resolves and, unlike the miss path above, kept it
+-- forever with no way back through the candidate list. If that first hit is
+-- a stale/unwired duplicate sensor slot -- or one Ethos discovered before it
+-- ever carried a real reading -- the box using it (e.g. the header's rssi
+-- step-gauge) gets stuck showing that slot's value (often 0/nil) for the
+-- rest of the session, exactly the "populates once, then stops updating"
+-- symptom lib/telemetry_sensors.lua's own comment describes. Re-running the
+-- scan every LIVE_REVALIDATE_INTERVAL seconds gives a better candidate that
+-- shows up later a chance to take over, without rescanning every wakeup.
+local LIVE_REVALIDATE_INTERVAL = 8.0
 local DASHBOARD_RESOLUTION_TOLERANCE = 12
 local DASHBOARD_SUPPORTED_RESOLUTIONS = {
   {784, 294}, {784, 316}, {800, 458}, {800, 480},
@@ -168,8 +181,21 @@ local LIVE_SENSOR_CANDIDATES = {
     },
   },
   crsf = {
+    -- subId=2 is the dedicated Link Quality field on firmware that broadcasts
+    -- Rotorflight's newer CRSF telemetry frame (probed pre-rewrite via a
+    -- 0xEE01 marker sensor -- see tasks/scheduler/telemetry/telemetry.lua's
+    -- detectSourceMode() in the pre-rewrite tree). Older firmware without
+    -- that marker never exposed subId=2 at all and instead used this
+    -- subIdStart/subIdEnd range (see that same tree's
+    -- sources/crsf_legacy.lua), which is what "link" below also uses as its
+    -- structured candidate. Kept as a plain fallback here rather than fully
+    -- reviving the old two-table firmware-format split: it stops rssi being
+    -- permanently stuck on nil for old-firmware users, though the range's
+    -- value is raw antenna RSSI rather than a true 0-100 LQ%, so it may not
+    -- land on this box's step gauge as cleanly as subId=2 does.
     rssi = {
       {crsfId = 0x14, subId = 2},
+      {crsfId = 0x14, subIdStart = 0, subIdEnd = 1},
     },
     voltage = {
       {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1011},
@@ -198,8 +224,12 @@ local LIVE_SENSOR_CANDIDATES = {
       {crsfId = 0x14, subIdStart = 0, subIdEnd = 1},
       "Rx RSSI1",
     },
+    -- Same rssi/subId=2 fallback reasoning as above -- vfr mirrors rssi
+    -- one-for-one in this table (see sensorValue()'s `name == "rssi" or
+    -- name == "vfr"` branch, which already treats them identically).
     vfr = {
       {crsfId = 0x14, subId = 2},
+      {crsfId = 0x14, subIdStart = 0, subIdEnd = 1},
     },
     smartfuel = {
       {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1014},
@@ -600,11 +630,20 @@ local function liveSensorSource(protocol, name)
     liveSourceCache[protocol] = byProtocol
   end
 
+  local now = os.clock()
   local source = byProtocol[name]
-  if source then return source end
+  if source then
+    local revalidate = liveRevalidateAt[protocol]
+    local dueAt = revalidate and revalidate[name]
+    if not dueAt or now < dueAt then return source end
+    -- Due for a recheck: fall through and re-scan candidates instead of
+    -- trusting this cached source forever (see LIVE_REVALIDATE_INTERVAL's
+    -- comment above).
+    byProtocol[name] = nil
+    source = nil
+  end
 
   local misses = liveMissRetryAt[protocol]
-  local now = os.clock()
   if misses and misses[name] and now < misses[name] then return nil end
 
   local candidates = LIVE_SENSOR_CANDIDATES[protocol] and LIVE_SENSOR_CANDIDATES[protocol][name]
@@ -616,6 +655,12 @@ local function liveSensorSource(protocol, name)
       if misses then misses[name] = nil end
       local missCounts = liveMissCount[protocol]
       if missCounts then missCounts[name] = nil end
+      local revalidate = liveRevalidateAt[protocol]
+      if not revalidate then
+        revalidate = {}
+        liveRevalidateAt[protocol] = revalidate
+      end
+      revalidate[name] = now + LIVE_REVALIDATE_INTERVAL
       return source
     end
   end
