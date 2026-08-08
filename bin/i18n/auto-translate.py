@@ -68,10 +68,7 @@ Hard rules:
 5. If a string is a proper noun, brand name, or abbreviation with no natural translation (e.g. "FrSky F.BUS"), keep it as-is.
 6. Do not add explanations, notes, or commentary — translate only.
 7. Respond with a single JSON object: {{"0": "...", "1": "...", ...}} — one key per input entry.
-""".format(
-    language="{language}",
-    no_translate=", ".join(NO_TRANSLATE_TERMS),
-)
+"""
 
 
 def read_json(filepath: Path) -> OrderedDict:
@@ -163,7 +160,10 @@ def translate_batch(
     response = client.messages.create(
         model=MODEL,
         max_tokens=4096,
-        system=SYSTEM_PROMPT.format(language=language),
+        system=SYSTEM_PROMPT.format(
+            language=language,
+            no_translate=", ".join(NO_TRANSLATE_TERMS),
+        ),
         messages=[{"role": "user", "content": user_message}],
     )
 
