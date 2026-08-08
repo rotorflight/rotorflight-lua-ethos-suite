@@ -1366,9 +1366,33 @@ local function paint(widget)
   if shouldShowStartupOverlay(widget) then
     -- Keep blocking startup states cheap: draw only the themed shell behind
     -- the overlay, not the live object/value pipeline.
-    paintDashboardShell(widget, w, h)
-    drawStartupOverlay(widget, w, h, true)
-    drawToolbar(widget, w, h)
+    --
+    -- This trio used to run unprotected, unlike paintDashboard() below which
+    -- has always retried gracefully on an instruction-budget error. Full-
+    -- screen layouts (extra header boxes, see engine.lua's isFullScreen) plus
+    -- protocols that take longer to report full telemetry (CRSF/ELRS -- see
+    -- shouldShowStartupOverlay()'s own comment) meant this branch could stay
+    -- on-screen, and get re-entered, for long enough that it hit the same
+    -- per-tick instruction cap paintDashboard() already knows how to survive
+    -- -- except here it surfaced as an uncaught "Max instructions count
+    -- reached" script error instead of a quiet retry next tick.
+    local ok, err = pcall(function()
+      paintDashboardShell(widget, w, h)
+      drawStartupOverlay(widget, w, h, true)
+      drawToolbar(widget, w, h)
+    end)
+    if not ok then
+      if isInstructionBudgetError(err) then
+        if widget and widget.dashboardInstructionBudgetRetryLogged ~= true then
+          print("[dashboard] startup paint budget exhausted; retrying next tick: " .. tostring(err))
+          widget.dashboardInstructionBudgetRetryLogged = true
+        end
+        requestPaint(widget)
+        invalidateWidgetGlobal(widget)
+        return
+      end
+      print("[dashboard] startup paint failed: " .. tostring(err))
+    end
     return
   end
   if paintDashboard(widget, w, h) == false then
