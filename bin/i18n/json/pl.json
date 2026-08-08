@@ -121,15 +121,15 @@
     },
     "msg_save_failed_title": {
       "english": "Save failed",
-      "translation": "Save failed",
-      "needs_translation": true,
+      "translation": "Zapis nie",
+      "needs_translation": false,
       "reverse_text": false,
       "max_length": 11
     },
     "msg_save_failed_body": {
       "english": "Settings were not saved to the flight controller. Please try again.",
-      "translation": "Settings were not saved to the flight controller. Please try again.",
-      "needs_translation": true,
+      "translation": "Ustawienia nie zostały zapisane w kontrolerze lotu. Spróbuj",
+      "needs_translation": false,
       "reverse_text": false,
       "max_length": 67
     },
@@ -640,8 +640,8 @@
         },
         "gov_rpm_filter": {
           "english": "Headspeed Filter Cutoff",
-          "translation": "Headspeed Filter Cutoff",
-          "needs_translation": true,
+          "translation": "Cutoff filtra",
+          "needs_translation": false,
           "reverse_text": false,
           "max_length": 23
         },
@@ -1968,15 +1968,15 @@
         },
         "simulated_api_version": {
           "english": "Simulated API version",
-          "translation": "Simulated API version",
-          "needs_translation": true,
+          "translation": "Symulowana wersja API",
+          "needs_translation": false,
           "reverse_text": false,
           "max_length": 21
         },
         "simulated_api_version_invalid": {
           "english": "Invalid",
-          "translation": "Invalid",
-          "needs_translation": true,
+          "translation": "Niepraw",
+          "needs_translation": false,
           "reverse_text": false,
           "max_length": 7
         },
@@ -2185,8 +2185,8 @@
         },
         "model_announcement": {
           "english": "Model announcement",
-          "translation": "Model announcement",
-          "needs_translation": true,
+          "translation": "Ogłoszenie modelu",
+          "needs_translation": false,
           "reverse_text": false,
           "max_length": 18
         },
@@ -2347,7 +2347,7 @@
         "dashboard_theme_helihud": {
           "english": "HeliHUD",
           "max_length": 7,
-          "needs_translation": true,
+          "needs_translation": false,
           "translation": "HeliHUD",
           "reverse_text": false
         },
@@ -2409,50 +2409,50 @@
         },
         "txt_general": {
           "english": "General",
-          "translation": "General",
-          "needs_translation": true,
+          "translation": "Ogólne",
+          "needs_translation": false,
           "reverse_text": false,
           "max_length": 7
         },
         "panel_safety_prompts": {
           "english": "Safety Prompts",
-          "translation": "Safety Prompts",
-          "needs_translation": true,
+          "translation": "Podpowiedzi",
+          "needs_translation": false,
           "reverse_text": false,
           "max_length": 14
         },
         "txt_save_confirm": {
           "english": "Save confirm",
-          "translation": "Save confirm",
-          "needs_translation": true,
+          "translation": "Potwierdz",
+          "needs_translation": false,
           "reverse_text": false,
           "max_length": 12
         },
         "txt_reload_confirm": {
           "english": "Reload confirm",
-          "translation": "Reload confirm",
-          "needs_translation": true,
+          "translation": "Potwierdz",
+          "needs_translation": false,
           "reverse_text": false,
           "max_length": 14
         },
         "panel_integration": {
           "english": "Integration",
-          "translation": "Integration",
-          "needs_translation": true,
+          "translation": "Integracja",
+          "needs_translation": false,
           "reverse_text": false,
           "max_length": 11
         },
         "txt_syncname": {
           "english": "Sync model name",
-          "translation": "Sync model name",
-          "needs_translation": true,
+          "translation": "Synchronizuj",
+          "needs_translation": false,
           "reverse_text": false,
           "max_length": 15
         },
         "temperature_unit": {
           "english": "Temperature Unit",
-          "translation": "Temperature Unit",
-          "needs_translation": true,
+          "translation": "Jednostka",
+          "needs_translation": false,
           "reverse_text": false,
           "max_length": 16
         }
@@ -4612,57 +4612,57 @@
         "dest_profile": {
           "english": "Dest. Profile",
           "max_length": 13,
-          "needs_translation": true,
-          "translation": "Dest. Profile",
+          "needs_translation": false,
+          "translation": "Profil docelo",
           "reverse_text": false
         },
         "msgbox_msg": {
           "english": "Save current page to flight controller?",
           "max_length": 39,
-          "needs_translation": true,
-          "translation": "Save current page to flight controller?",
+          "needs_translation": false,
+          "translation": "Zapisać bieżącą stronę do FC?",
           "reverse_text": false
         },
         "msgbox_save": {
           "english": "Save settings",
           "max_length": 13,
-          "needs_translation": true,
-          "translation": "Save settings",
+          "needs_translation": false,
+          "translation": "Zapisz ustawi",
           "reverse_text": false
         },
         "name": {
           "english": "Copy Profiles",
           "max_length": 13,
-          "needs_translation": true,
-          "translation": "Copy Profiles",
+          "needs_translation": false,
+          "translation": "Kopiuj profil",
           "reverse_text": false
         },
         "profile_type": {
           "english": "Profile Type",
           "max_length": 12,
-          "needs_translation": true,
-          "translation": "Profile Type",
+          "needs_translation": false,
+          "translation": "Typ profilu",
           "reverse_text": false
         },
         "profile_type_pid": {
           "english": "PID",
           "max_length": 3,
-          "needs_translation": true,
+          "needs_translation": false,
           "translation": "PID",
           "reverse_text": false
         },
         "profile_type_rate": {
           "english": "Rate",
           "max_length": 4,
-          "needs_translation": true,
-          "translation": "Rate",
+          "needs_translation": false,
+          "translation": "Temp",
           "reverse_text": false
         },
         "source_profile": {
           "english": "Source Profile",
           "max_length": 14,
-          "needs_translation": true,
-          "translation": "Source Profile",
+          "needs_translation": false,
+          "translation": "Profil źródła",
           "reverse_text": false
         }
       },
@@ -5090,281 +5090,281 @@
       "elrs_telemetry": {
         "action": {
           "english": "Action",
-          "translation": "Action",
-          "needs_translation": true,
+          "translation": "Akcja",
+          "needs_translation": false,
           "reverse_text": false,
           "max_length": 6
         },
         "action_elrs_to_rf": {
           "english": "ELRS -> RF",
           "translation": "ELRS -> RF",
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
           "max_length": 10
         },
         "action_probe": {
           "english": "Probe",
-          "translation": "Probe",
-          "needs_translation": true,
+          "translation": "Sonda",
+          "needs_translation": false,
           "reverse_text": false,
           "max_length": 5
         },
         "action_probe_only": {
           "english": "Probe only",
-          "translation": "Probe only",
-          "needs_translation": true,
+          "translation": "Tylko sond",
+          "needs_translation": false,
           "reverse_text": false,
           "max_length": 10
         },
         "action_rf_to_elrs": {
           "english": "RF -> ELRS",
           "translation": "RF -> ELRS",
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
           "max_length": 10
         },
         "elrs_module": {
           "english": "ELRS Module",
-          "translation": "ELRS Module",
-          "needs_translation": true,
+          "translation": "Moduł ELRS",
+          "needs_translation": false,
           "reverse_text": false,
           "max_length": 11
         },
         "mode_custom": {
           "english": "custom",
-          "translation": "custom",
-          "needs_translation": true,
+          "translation": "własny",
+          "needs_translation": false,
           "reverse_text": false,
           "max_length": 6
         },
         "mode_native": {
           "english": "native",
-          "translation": "native",
-          "needs_translation": true,
+          "translation": "natywn",
+          "needs_translation": false,
           "reverse_text": false,
           "max_length": 6
         },
         "name": {
           "english": "ELRS Telemetry",
-          "translation": "ELRS Telemetry",
-          "needs_translation": true,
+          "translation": "Telemetria",
+          "needs_translation": false,
           "reverse_text": false,
           "max_length": 14
         },
         "rotorflight": {
           "english": "Rotorflight",
           "translation": "Rotorflight",
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
           "max_length": 11
         },
         "status": {
           "english": "Status",
           "translation": "Status",
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
           "max_length": 6
         },
         "status_connect_first": {
           "english": "Connect to a model first",
-          "translation": "Connect to a model first",
-          "needs_translation": true,
+          "translation": "Połącz się z modelem",
+          "needs_translation": false,
           "reverse_text": false,
           "max_length": 24
         },
         "status_elrs_matches_rf": {
           "english": "ELRS module already matches Rotorflight",
-          "translation": "ELRS module already matches Rotorflight",
-          "needs_translation": true,
+          "translation": "Moduł ELRS zgodny z",
+          "needs_translation": false,
           "reverse_text": false,
           "max_length": 39
         },
         "status_elrs_probe_complete": {
           "english": "ELRS module probe complete",
-          "translation": "ELRS module probe complete",
-          "needs_translation": true,
+          "translation": "Sonda modułu ELRS",
+          "needs_translation": false,
           "reverse_text": false,
           "max_length": 26
         },
         "status_elrs_updated": {
           "english": "ELRS module updated from Rotorflight",
-          "translation": "ELRS module updated from Rotorflight",
-          "needs_translation": true,
+          "translation": "Moduł ELRS zaktualizowany",
+          "needs_translation": false,
           "reverse_text": false,
           "max_length": 36
         },
         "status_idle": {
           "english": "Idle",
-          "translation": "Idle",
-          "needs_translation": true,
+          "translation": "Bieg",
+          "needs_translation": false,
           "reverse_text": false,
           "max_length": 4
         },
         "status_no_module": {
           "english": "No ELRS TX module responded",
-          "translation": "No ELRS TX module responded",
-          "needs_translation": true,
+          "translation": "Brak odpowiedzi modułu TX",
+          "needs_translation": false,
           "reverse_text": false,
           "max_length": 27
         },
         "status_not_probed": {
           "english": "Not probed yet",
-          "translation": "Not probed yet",
-          "needs_translation": true,
+          "translation": "Jeszcze nie",
+          "needs_translation": false,
           "reverse_text": false,
           "max_length": 14
         },
         "status_pinging_module": {
           "english": "Pinging ELRS module",
-          "translation": "Pinging ELRS module",
-          "needs_translation": true,
+          "translation": "Pingowanie modułu",
+          "needs_translation": false,
           "reverse_text": false,
           "max_length": 19
         },
         "status_probe_complete": {
           "english": "Probe complete",
-          "translation": "Probe complete",
-          "needs_translation": true,
+          "translation": "Skanowanie",
+          "needs_translation": false,
           "reverse_text": false,
           "max_length": 14
         },
         "status_probe_requested": {
           "english": "Probe requested",
-          "translation": "Probe requested",
-          "needs_translation": true,
+          "translation": "Skanowanie",
+          "needs_translation": false,
           "reverse_text": false,
           "max_length": 15
         },
         "status_read_timeout": {
           "english": "ELRS module read timed out",
-          "translation": "ELRS module read timed out",
-          "needs_translation": true,
+          "translation": "Timeout odczytu modułu",
+          "needs_translation": false,
           "reverse_text": false,
           "max_length": 26
         },
         "status_reading_module": {
           "english": "Reading ELRS module parameters",
-          "translation": "Reading ELRS module parameters",
-          "needs_translation": true,
+          "translation": "Odczyt parametrów modułu ELRS",
+          "needs_translation": false,
           "reverse_text": false,
           "max_length": 30
         },
         "status_requires_active_link": {
           "english": "This tool requires an active CRSF link",
-          "translation": "This tool requires an active CRSF link",
-          "needs_translation": true,
+          "translation": "Narzędzie wymaga aktywnego łącza CRSF",
+          "needs_translation": false,
           "reverse_text": false,
           "max_length": 38
         },
         "status_requires_crsf": {
           "english": "This tool requires CRSF telemetry",
-          "translation": "This tool requires CRSF telemetry",
-          "needs_translation": true,
+          "translation": "Narzędzie wymaga telemetrii CRSF",
+          "needs_translation": false,
           "reverse_text": false,
           "max_length": 33
         },
         "status_rf_matches_elrs": {
           "english": "Rotorflight already matches ELRS",
-          "translation": "Rotorflight already matches ELRS",
-          "needs_translation": true,
+          "translation": "Rotorflight już pasuje do ELRS",
+          "needs_translation": false,
           "reverse_text": false,
           "max_length": 32
         },
         "status_rotorflight_config_not_ready": {
           "english": "Rotorflight telemetry config was not ready",
-          "translation": "Rotorflight telemetry config was not ready",
-          "needs_translation": true,
+          "translation": "Konfiguracja telemetrii Rotorflight nie",
+          "needs_translation": false,
           "reverse_text": false,
           "max_length": 42
         },
         "status_rotorflight_save_failed": {
           "english": "Rotorflight sync failed while saving",
-          "translation": "Rotorflight sync failed while saving",
-          "needs_translation": true,
+          "translation": "Synchronizacja Rotorflight nie",
+          "needs_translation": false,
           "reverse_text": false,
           "max_length": 36
         },
         "status_rotorflight_updated": {
           "english": "Rotorflight updated from ELRS",
-          "translation": "Rotorflight updated from ELRS",
-          "needs_translation": true,
+          "translation": "Rotorflight zaktualizowany z",
+          "needs_translation": false,
           "reverse_text": false,
           "max_length": 29
         },
         "status_rotorflight_write_failed": {
           "english": "Rotorflight sync write failed",
-          "translation": "Rotorflight sync write failed",
-          "needs_translation": true,
+          "translation": "Zapis synchronizacji",
+          "needs_translation": false,
           "reverse_text": false,
           "max_length": 29
         },
         "status_saving_rotorflight": {
           "english": "Saving Rotorflight telemetry",
-          "translation": "Saving Rotorflight telemetry",
-          "needs_translation": true,
+          "translation": "Zapisywanie telemetrii",
+          "needs_translation": false,
           "reverse_text": false,
           "max_length": 28
         },
         "status_sensor_unavailable": {
           "english": "CRSF sensor unavailable",
-          "translation": "CRSF sensor unavailable",
-          "needs_translation": true,
+          "translation": "Czujnik CRSF",
+          "needs_translation": false,
           "reverse_text": false,
           "max_length": 23
         },
         "status_sync_requested": {
           "english": "Sync requested: ",
-          "translation": "Sync requested: ",
-          "needs_translation": true,
+          "translation": "Synchronizacja",
+          "needs_translation": false,
           "reverse_text": false,
           "max_length": 16
         },
         "status_unavailable_armed": {
           "english": "Unavailable while armed",
-          "translation": "Unavailable while armed",
-          "needs_translation": true,
+          "translation": "Niedostępne w locie",
+          "needs_translation": false,
           "reverse_text": false,
           "max_length": 23
         },
         "status_unavailable_simulation": {
           "english": "Unavailable in simulation",
-          "translation": "Unavailable in simulation",
-          "needs_translation": true,
+          "translation": "Niedostępne w symulacji",
+          "needs_translation": false,
           "reverse_text": false,
           "max_length": 25
         },
         "status_waiting_rotorflight_config": {
           "english": "Waiting for Rotorflight telemetry config",
-          "translation": "Waiting for Rotorflight telemetry config",
-          "needs_translation": true,
+          "translation": "Oczekiwanie na konfigurację telemetrii",
+          "needs_translation": false,
           "reverse_text": false,
           "max_length": 40
         },
         "status_waiting_telemetry_config": {
           "english": "Waiting for telemetry config",
-          "translation": "Waiting for telemetry config",
-          "needs_translation": true,
+          "translation": "Oczekiwanie na konfigurację",
+          "needs_translation": false,
           "reverse_text": false,
           "max_length": 28
         },
         "status_writing_elrs": {
           "english": "Writing ELRS module settings",
-          "translation": "Writing ELRS module settings",
-          "needs_translation": true,
+          "translation": "Zapisywanie ustawień modułu",
+          "needs_translation": false,
           "reverse_text": false,
           "max_length": 28
         },
         "status_writing_prefix": {
           "english": "Writing ",
-          "translation": "Writing ",
-          "needs_translation": true,
+          "translation": "Zapis",
+          "needs_translation": false,
           "reverse_text": false,
           "max_length": 8
         },
         "status_writing_rotorflight": {
           "english": "Writing Rotorflight telemetry settings",
-          "translation": "Writing Rotorflight telemetry settings",
-          "needs_translation": true,
+          "translation": "Zapis ustawień telemetrii Rotorflight",
+          "needs_translation": false,
           "reverse_text": false,
           "max_length": 38
         }
@@ -8486,15 +8486,15 @@
       },
       "startup_unsupported_version": {
         "english": "Unsupported firmware",
-        "translation": "Unsupported firmware",
-        "needs_translation": true,
+        "translation": "Nieobsługiwane",
+        "needs_translation": false,
         "reverse_text": false,
         "max_length": 20
       },
       "startup_unsupported_version_detail": {
         "english": "MSP API version not supported:",
-        "translation": "MSP API version not supported:",
-        "needs_translation": true,
+        "translation": "Wersja MSP API nieobsługiwana:",
+        "needs_translation": false,
         "reverse_text": false,
         "max_length": 30
       },
