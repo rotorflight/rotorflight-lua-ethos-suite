@@ -1,6 +1,7 @@
 -- Per-flight-controller model preferences stored on the radio.
 
 local ini = assert(loadfile("lib/ini.lua"))()
+local tableClone = assert(loadfile("lib/table_clone.lua"))()
 
 local ROOT_DIR = "SCRIPTS:/rfsuite.user"
 local MODELS_DIR = ROOT_DIR .. "/models"
@@ -40,20 +41,6 @@ local function sanitizeId(value)
   value = value:gsub("[^%w%._%-]", "_")
   if value == "" then value = "unknown" end
   return value
-end
-
-local function copySection(source)
-  local target = {}
-  for key, value in pairs(source or {}) do target[key] = value end
-  return target
-end
-
-local function copyPrefs(source)
-  local target = {}
-  for section, values in pairs(source or {}) do
-    target[section] = copySection(values)
-  end
-  return target
 end
 
 local function clampNumber(value, default, min, max)
@@ -115,7 +102,7 @@ function model_preferences.save(path, prefs)
 end
 
 function model_preferences.clone(prefs)
-  return copyPrefs(model_preferences.withDefaults(prefs))
+  return tableClone.nested(model_preferences.withDefaults(prefs))
 end
 
 function model_preferences.stats(prefs)

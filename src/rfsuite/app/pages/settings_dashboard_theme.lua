@@ -5,6 +5,7 @@ local closeKey = assert(loadfile("app/close_key.lua"))()
 local header = assert(loadfile("app/header.lua"))()
 local modelPreferences = assert(loadfile("lib/model_preferences.lua"))()
 local settingsStore = assert(loadfile("lib/settings_store.lua"))()
+local tableClone = assert(loadfile("lib/table_clone.lua"))()
 
 local PAGE_TITLE = "@i18n(app.modules.settings.name)@ / @i18n(app.modules.settings.dashboard)@ / @i18n(app.modules.settings.dashboard_theme)@"
 local BTN_OK = "@i18n(app.btn_ok)@"
@@ -30,13 +31,6 @@ local THEME_DEFS = {
   {label = "@i18n(app.modules.settings.dashboard_theme_rt_rc_n)@", path = "system/rt-rc-n"},
   {label = "@i18n(app.modules.settings.dashboard_theme_srb_rc)@", path = "system/srb-rc"},
 }
-
-local function copySection(source)
-  local target = {}
-  if type(source) ~= "table" then return target end
-  for key, value in pairs(source) do target[key] = value end
-  return target
-end
 
 local function coerceBool(value, default)
   if value == nil then return default end
@@ -95,7 +89,7 @@ local function normalizeThemePath(path, allowDisabled, defaultPath)
 end
 
 local function normalizeDashboard(dashboard, allowDisabled)
-  dashboard = copySection(dashboard)
+  dashboard = tableClone.shallow(dashboard)
   local defaultPath = allowDisabled and "nil" or DEFAULT_THEME
   dashboard.use_same_theme = coerceBool(dashboard.use_same_theme, true)
   dashboard.theme_preflight = normalizeThemePath(dashboard.theme_preflight or dashboard.theme, allowDisabled, defaultPath)
@@ -161,7 +155,7 @@ local function open(opts)
 
   local choices, modelChoices, pathById, idByPath, fallbackId = buildThemeChoices()
   settings.dashboard = normalizeDashboard(settings.dashboard, false)
-  originalDashboard = copySection(settings.dashboard)
+  originalDashboard = tableClone.shallow(settings.dashboard)
 
   local function modelEnabled()
     return session.connected == true and session.mcuId ~= nil and session.mcuId ~= ""
@@ -217,7 +211,7 @@ local function open(opts)
     modelPrefs, modelPath = modelPreferences.load(session.mcuId)
     modelPrefs.dashboard = normalizeDashboard(modelPrefs.dashboard, true)
     modelDashboard = modelPrefs.dashboard
-    originalModelDashboard = copySection(modelDashboard)
+    originalModelDashboard = tableClone.shallow(modelDashboard)
   end
 
   local function applySession(snapshot)
@@ -262,14 +256,14 @@ local function open(opts)
     settings.dashboard = normalizeDashboard(settings.dashboard, false)
     if settings.dashboard.use_same_theme then copyPreflightToAll(settings.dashboard, false, pathById, idByPath, fallbackId) end
     settingsStore.save(settings)
-    originalDashboard = copySection(settings.dashboard)
+    originalDashboard = tableClone.shallow(settings.dashboard)
 
     if modelEnabled() and modelPrefs and modelPath then
       modelDashboard = normalizeDashboard(modelDashboard, true)
       if modelDashboard.use_same_theme then copyPreflightToAll(modelDashboard, true, pathById, idByPath, fallbackId) end
       modelPrefs.dashboard = modelDashboard
       modelPreferences.save(modelPath, modelPrefs)
-      originalModelDashboard = copySection(modelDashboard)
+      originalModelDashboard = tableClone.shallow(modelDashboard)
     end
 
     bus.publish("settings.update", settingsStore.clone(settings))

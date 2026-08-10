@@ -10,6 +10,7 @@ end
 local ini = assert(loadfile("lib/ini.lua"))()
 local activelookConfig = assert(loadfile("lib/activelook_config.lua"))()
 local mspApiVersion = assert(loadfile("lib/msp_api_version.lua"))()
+local tableClone = assert(loadfile("lib/table_clone.lua"))()
 
 local SETTINGS_DIR = "SCRIPTS:/rfsuite.user"
 local SETTINGS_PATH = SETTINGS_DIR .. "/settings.ini"
@@ -141,24 +142,6 @@ local function safeMkdir(path)
   if os and os.mkdir then pcall(os.mkdir, path) end
 end
 
-local function copySection(source)
-  local target = {}
-  if type(source) ~= "table" then return target end
-  for key, value in pairs(source or {}) do
-    target[key] = value
-  end
-  return target
-end
-
-local function copySettings(source)
-  local target = {}
-  if type(source) ~= "table" then return target end
-  for section, values in pairs(source or {}) do
-    target[section] = copySection(values)
-  end
-  return target
-end
-
 local function coerceBool(value, default)
   if value == nil then return default end
   if value == true or value == "true" or value == 1 or value == "1" then return true end
@@ -185,7 +168,7 @@ for _, version in ipairs(mspApiVersion.SIMULATABLE_VERSIONS) do
 end
 
 local function normalizeEvents(values)
-  local events = copySection(DEFAULTS.events)
+  local events = tableClone.shallow(DEFAULTS.events)
   values = type(values) == "table" and values or {}
   for key, value in pairs(values) do events[key] = value end
   events.armflags = coerceBool(events.armflags, DEFAULTS.events.armflags)
@@ -212,7 +195,7 @@ local function normalizeEvents(values)
 end
 
 local function normalizeTimer(values)
-  local timer = copySection(DEFAULTS.timer)
+  local timer = tableClone.shallow(DEFAULTS.timer)
   values = type(values) == "table" and values or {}
   for key, value in pairs(values) do timer[key] = value end
   timer.timeraudioenable = coerceBool(timer.timeraudioenable, DEFAULTS.timer.timeraudioenable)
@@ -264,7 +247,7 @@ local function normalize(settings)
 end
 
 function settings_store.withDefaults(settings)
-  local merged = copySettings(DEFAULTS)
+  local merged = tableClone.nested(DEFAULTS)
   settings = settings or {}
   for section, values in pairs(settings) do
     merged[section] = merged[section] or {}
@@ -288,7 +271,7 @@ function settings_store.save(settings)
 end
 
 function settings_store.clone(settings)
-  return copySettings(settings_store.withDefaults(settings))
+  return tableClone.nested(settings_store.withDefaults(settings))
 end
 
 function settings_store.same(a, b)
@@ -388,28 +371,28 @@ end
 function settings_store.audioSwitches(settings)
   -- The switches section has no defaults to merge. Keep this cheap because the
   -- background audio-switch task calls it from a tight Ethos scheduler slice.
-  return copySection(type(settings) == "table" and settings.switches or nil)
+  return tableClone.shallow(type(settings) == "table" and settings.switches or nil)
 end
 
 function settings_store.dashboard(settings)
   settings = settings_store.withDefaults(settings)
-  return copySection(settings.dashboard)
+  return tableClone.shallow(settings.dashboard)
 end
 
 function settings_store.dashboardTheme(settings, theme)
   settings = settings_store.withDefaults(settings)
-  return copySection(settings["dashboard." .. tostring(theme or "")])
+  return tableClone.shallow(settings["dashboard." .. tostring(theme or "")])
 end
 
 function settings_store.setDashboardTheme(settings, theme, values)
   if type(settings) ~= "table" then return end
   local section = "dashboard." .. tostring(theme or "")
-  settings[section] = copySection(values)
+  settings[section] = tableClone.shallow(values)
 end
 
 function settings_store.activelook(settings)
   settings = settings_store.withDefaults(settings)
-  return copySection(settings.activelook)
+  return tableClone.shallow(settings.activelook)
 end
 
 package.loaded["rfsuite.lib.settings_store"] = settings_store
