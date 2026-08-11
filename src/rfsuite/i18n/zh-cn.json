@@ -1388,58 +1388,58 @@
         "dest_profile": {
           "english": "Dest. Profile",
           "max_length": 13,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
-          "translation": "Dest. Profile"
+          "translation": "目标配置"
         },
         "msgbox_msg": {
           "english": "Save current page to flight controller?",
           "max_length": 39,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
-          "translation": "Save current page to flight controller?"
+          "translation": "保存当前页面到飞控?"
         },
         "msgbox_save": {
           "english": "Save settings",
           "max_length": 13,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
-          "translation": "Save settings"
+          "translation": "保存设置"
         },
         "name": {
           "english": "Copy Profiles",
           "max_length": 13,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
-          "translation": "Copy Profiles"
+          "translation": "复制配置"
         },
         "profile_type": {
           "english": "Profile Type",
           "max_length": 12,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
-          "translation": "Profile Type"
+          "translation": "配置类型"
         },
         "profile_type_pid": {
           "english": "PID",
           "max_length": 3,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
           "translation": "PID"
         },
         "profile_type_rate": {
           "english": "Rate",
           "max_length": 4,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
-          "translation": "Rate"
+          "translation": "速率"
         },
         "source_profile": {
           "english": "Source Profile",
           "max_length": 14,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
-          "translation": "Source Profile"
+          "translation": "源配置文件"
         }
       },
       "diagnostics": {
@@ -1511,282 +1511,282 @@
         "action": {
           "english": "Action",
           "max_length": 6,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
-          "translation": "Action"
+          "translation": "动作"
         },
         "action_elrs_to_rf": {
           "english": "ELRS -> RF",
           "max_length": 10,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
           "translation": "ELRS -> RF"
         },
         "action_probe": {
           "english": "Probe",
           "max_length": 5,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
-          "translation": "Probe"
+          "translation": "探测"
         },
         "action_probe_only": {
           "english": "Probe only",
           "max_length": 10,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
-          "translation": "Probe only"
+          "translation": "仅探测"
         },
         "action_rf_to_elrs": {
           "english": "RF -> ELRS",
           "max_length": 10,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
           "translation": "RF -> ELRS"
         },
         "elrs_module": {
           "english": "ELRS Module",
           "max_length": 11,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
-          "translation": "ELRS Module"
+          "translation": "ELRS 模块"
         },
         "mode_custom": {
           "english": "custom",
           "max_length": 6,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
-          "translation": "custom"
+          "translation": "自定义"
         },
         "mode_native": {
           "english": "native",
           "max_length": 6,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
-          "translation": "native"
+          "translation": "原生"
         },
         "name": {
           "english": "ELRS Telemetry",
           "max_length": 14,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
-          "translation": "ELRS Telemetry"
+          "translation": "ELRS 遥测"
         },
         "rotorflight": {
           "english": "Rotorflight",
           "max_length": 11,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
           "translation": "Rotorflight"
         },
         "status": {
           "english": "Status",
           "max_length": 6,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
-          "translation": "Status"
+          "translation": "状态"
         },
         "status_connect_first": {
           "english": "Connect to a model first",
           "max_length": 24,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
-          "translation": "Connect to a model first"
+          "translation": "先连接机型"
         },
         "status_elrs_matches_rf": {
           "english": "ELRS module already matches Rotorflight",
           "max_length": 39,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
-          "translation": "ELRS module already matches Rotorflight"
+          "translation": "ELRS模块已匹配"
         },
         "status_elrs_probe_complete": {
           "english": "ELRS module probe complete",
           "max_length": 26,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
-          "translation": "ELRS module probe complete"
+          "translation": "ELRS模块探测完成"
         },
         "status_elrs_updated": {
           "english": "ELRS module updated from Rotorflight",
           "max_length": 36,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
-          "translation": "ELRS module updated from Rotorflight"
+          "translation": "ELRS模块已更新"
         },
         "status_idle": {
           "english": "Idle",
           "max_length": 4,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
-          "translation": "Idle"
+          "translation": "怠速"
         },
         "status_no_module": {
           "english": "No ELRS TX module responded",
           "max_length": 27,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
-          "translation": "No ELRS TX module responded"
+          "translation": "无ELRS发射模块响应"
         },
         "status_not_probed": {
           "english": "Not probed yet",
           "max_length": 14,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
-          "translation": "Not probed yet"
+          "translation": "尚未探测"
         },
         "status_pinging_module": {
           "english": "Pinging ELRS module",
           "max_length": 19,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
-          "translation": "Pinging ELRS module"
+          "translation": "正在ping ELRS模块"
         },
         "status_probe_complete": {
           "english": "Probe complete",
           "max_length": 14,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
-          "translation": "Probe complete"
+          "translation": "探测完成"
         },
         "status_probe_requested": {
           "english": "Probe requested",
           "max_length": 15,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
-          "translation": "Probe requested"
+          "translation": "已请求探测"
         },
         "status_read_timeout": {
           "english": "ELRS module read timed out",
           "max_length": 26,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
-          "translation": "ELRS module read timed out"
+          "translation": "ELRS模块读取超时"
         },
         "status_reading_module": {
           "english": "Reading ELRS module parameters",
           "max_length": 30,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
-          "translation": "Reading ELRS module parameters"
+          "translation": "正在读取ELRS模块参数"
         },
         "status_requires_active_link": {
           "english": "This tool requires an active CRSF link",
           "max_length": 38,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
-          "translation": "This tool requires an active CRSF link"
+          "translation": "此工具需要活跃CRSF链接"
         },
         "status_requires_crsf": {
           "english": "This tool requires CRSF telemetry",
           "max_length": 33,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
-          "translation": "This tool requires CRSF telemetry"
+          "translation": "此工具需要CRSF遥测"
         },
         "status_rf_matches_elrs": {
           "english": "Rotorflight already matches ELRS",
           "max_length": 32,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
-          "translation": "Rotorflight already matches ELRS"
+          "translation": "Rotorflight已与ELRS匹配"
         },
         "status_rotorflight_config_not_ready": {
           "english": "Rotorflight telemetry config was not ready",
           "max_length": 42,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
-          "translation": "Rotorflight telemetry config was not ready"
+          "translation": "Rotorflight遥测配置未就绪"
         },
         "status_rotorflight_save_failed": {
           "english": "Rotorflight sync failed while saving",
           "max_length": 36,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
-          "translation": "Rotorflight sync failed while saving"
+          "translation": "Rotorflight保存时同步失败"
         },
         "status_rotorflight_updated": {
           "english": "Rotorflight updated from ELRS",
           "max_length": 29,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
-          "translation": "Rotorflight updated from ELRS"
+          "translation": "Rotorflight已从ELRS更新"
         },
         "status_rotorflight_write_failed": {
           "english": "Rotorflight sync write failed",
           "max_length": 29,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
-          "translation": "Rotorflight sync write failed"
+          "translation": "Rotorflight同步写入失败"
         },
         "status_saving_rotorflight": {
           "english": "Saving Rotorflight telemetry",
           "max_length": 28,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
-          "translation": "Saving Rotorflight telemetry"
+          "translation": "正在保存Rotorflight遥测"
         },
         "status_sensor_unavailable": {
           "english": "CRSF sensor unavailable",
           "max_length": 23,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
-          "translation": "CRSF sensor unavailable"
+          "translation": "CRSF传感器不可用"
         },
         "status_sync_requested": {
           "english": "Sync requested: ",
           "max_length": 16,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
-          "translation": "Sync requested: "
+          "translation": "已请求同步："
         },
         "status_unavailable_armed": {
           "english": "Unavailable while armed",
           "max_length": 23,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
-          "translation": "Unavailable while armed"
+          "translation": "武装时不可用"
         },
         "status_unavailable_simulation": {
           "english": "Unavailable in simulation",
           "max_length": 25,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
-          "translation": "Unavailable in simulation"
+          "translation": "仿真中不可用"
         },
         "status_waiting_rotorflight_config": {
           "english": "Waiting for Rotorflight telemetry config",
           "max_length": 40,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
-          "translation": "Waiting for Rotorflight telemetry config"
+          "translation": "等待Rotorflight遥测配置"
         },
         "status_waiting_telemetry_config": {
           "english": "Waiting for telemetry config",
           "max_length": 28,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
-          "translation": "Waiting for telemetry config"
+          "translation": "等待遥测配置"
         },
         "status_writing_elrs": {
           "english": "Writing ELRS module settings",
           "max_length": 28,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
-          "translation": "Writing ELRS module settings"
+          "translation": "正在写入ELRS模块设置"
         },
         "status_writing_prefix": {
           "english": "Writing ",
           "max_length": 8,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
-          "translation": "Writing "
+          "translation": "写入中"
         },
         "status_writing_rotorflight": {
           "english": "Writing Rotorflight telemetry settings",
           "max_length": 38,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
-          "translation": "Writing Rotorflight telemetry settings"
+          "translation": "写入 Rotorflight 遥测设置"
         }
       },
       "esc_motors": {
@@ -4408,9 +4408,9 @@
         "gov_rpm_filter": {
           "english": "Headspeed Filter Cutoff",
           "max_length": 23,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
-          "translation": "Headspeed Filter Cutoff"
+          "translation": "头速滤波截断频率"
         },
         "gov_tta_filter": {
           "english": "TTA Bandwidth",
@@ -6704,7 +6704,7 @@
         "dashboard_theme_helihud": {
           "english": "HeliHUD",
           "max_length": 7,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
           "translation": "HeliHUD"
         },
@@ -6942,9 +6942,9 @@
         "model_announcement": {
           "english": "Model announcement",
           "max_length": 18,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
-          "translation": "Model announcement"
+          "translation": "型号播报"
         },
         "name": {
           "english": "Settings",
@@ -6963,16 +6963,16 @@
         "panel_integration": {
           "english": "Integration",
           "max_length": 11,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
-          "translation": "Integration"
+          "translation": "集成"
         },
         "panel_safety_prompts": {
           "english": "Safety Prompts",
           "max_length": 14,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
-          "translation": "Safety Prompts"
+          "translation": "安全提示"
         },
         "pid_profile": {
           "english": "PID profile",
@@ -7005,23 +7005,23 @@
         "simulated_api_version": {
           "english": "Simulated API version",
           "max_length": 21,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
-          "translation": "Simulated API version"
+          "translation": "模拟 API 版本"
         },
         "simulated_api_version_invalid": {
           "english": "Invalid",
           "max_length": 7,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
-          "translation": "Invalid"
+          "translation": "无效"
         },
         "temperature_unit": {
           "english": "Temperature Unit",
           "max_length": 16,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
-          "translation": "Temperature Unit"
+          "translation": "温度单位"
         },
         "timer_alert_interval": {
           "english": "Alert interval",
@@ -7173,30 +7173,37 @@
         "txt_general": {
           "english": "General",
           "max_length": 7,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
-          "translation": "General"
+          "translation": "通用"
         },
         "txt_reload_confirm": {
           "english": "Reload confirm",
           "max_length": 14,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
-          "translation": "Reload confirm"
+          "translation": "重新加载确认"
         },
         "txt_save_confirm": {
           "english": "Save confirm",
           "max_length": 12,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "保存确认"
+        },
+        "txt_show_battery_profile_connect": {
+          "english": "Show battery profile on connect",
+          "max_length": 31,
           "needs_translation": true,
           "reverse_text": false,
-          "translation": "Save confirm"
+          "translation": "Show battery profile on connect"
         },
         "txt_syncname": {
           "english": "Sync model name",
           "max_length": 15,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
-          "translation": "Sync model name"
+          "translation": "同步模型名称"
         },
         "voltage": {
           "english": "Voltage",
@@ -7470,16 +7477,16 @@
     "msg_save_failed_body": {
       "english": "Settings were not saved to the flight controller. Please try again.",
       "max_length": 67,
-      "needs_translation": true,
+      "needs_translation": false,
       "reverse_text": false,
-      "translation": "Settings were not saved to the flight controller. Please try again."
+      "translation": "设置未保存到飞控。请重试。"
     },
     "msg_save_failed_title": {
       "english": "Save failed",
       "max_length": 11,
-      "needs_translation": true,
+      "needs_translation": false,
       "reverse_text": false,
-      "translation": "Save failed"
+      "translation": "保存失败"
     },
     "msg_save_settings": {
       "english": "Save settings",
@@ -8606,16 +8613,16 @@
       "startup_unsupported_version": {
         "english": "Unsupported firmware",
         "max_length": 20,
-        "needs_translation": true,
+        "needs_translation": false,
         "reverse_text": false,
-        "translation": "Unsupported firmware"
+        "translation": "不支持的固件"
       },
       "startup_unsupported_version_detail": {
         "english": "MSP API version not supported:",
         "max_length": 30,
-        "needs_translation": true,
+        "needs_translation": false,
         "reverse_text": false,
-        "translation": "MSP API version not supported:"
+        "translation": "不支持的 MSP API 版本:"
       },
       "startup_waiting_task": {
         "english": "Starting background task",

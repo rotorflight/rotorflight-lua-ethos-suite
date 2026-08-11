@@ -2104,6 +2104,12 @@
           "needs_translation": false,
           "translation": "Sync model name"
         },
+        "txt_show_battery_profile_connect": {
+          "english": "Show battery profile on connect",
+          "max_length": 31,
+          "needs_translation": false,
+          "translation": "Show battery profile on connect"
+        },
         "temperature_unit": {
           "english": "Temperature Unit",
           "max_length": 16,

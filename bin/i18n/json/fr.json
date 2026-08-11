@@ -2449,6 +2449,13 @@
           "reverse_text": false,
           "max_length": 15
         },
+        "txt_show_battery_profile_connect": {
+          "english": "Show battery profile on connect",
+          "translation": "Show battery profile on connect",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 31
+        },
         "temperature_unit": {
           "english": "Temperature Unit",
           "translation": "Unité températur",
