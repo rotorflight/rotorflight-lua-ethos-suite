@@ -1301,6 +1301,25 @@ local function prepareDashboard(widget, allowStartupOverlay, maxObjects)
   return true
 end
 
+local function handleDashboardResize(widget)
+  if not widget or not lcd or not lcd.getWindowSize then return end
+  local w, h = lcd.getWindowSize()
+  local previousW = widget.dashboardWindowW
+  local previousH = widget.dashboardWindowH
+  if previousW == w and previousH == h then return end
+
+  widget.dashboardWindowW = w
+  widget.dashboardWindowH = h
+  if previousW == nil or previousH == nil then return end
+
+  if widget.startupComplete ~= true or widget.dashboardEverPainted ~= true or widget.themeReloadPending == true then
+    resetDashboardPrewarm(widget)
+    resetDashboardPaintRetry(widget)
+    markStartupUnderlayDirty(widget)
+    requestPaint(widget)
+  end
+end
+
 local function paintDashboardShell(widget, w, h)
   local state = dashboardState(widget)
   local theme = selectedThemeForState(widget, state)
@@ -1604,6 +1623,7 @@ local function wakeup(widget)
   -- (lcd.isVisible() false). Matches master's dashboard.wakeup() early
   -- return; see appRunning's own comment above.
   if appRunning or not lcd.isVisible() then return end
+  handleDashboardResize(widget)
 
   if widget.pendingResetFlight then
     widget.pendingResetFlight = false
