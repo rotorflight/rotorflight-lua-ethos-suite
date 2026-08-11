@@ -41,6 +41,8 @@ local TELEMETRY_VALUE_INTERVAL = 0.5
 local PROFILE_INTERVAL = 0.5
 local ADJUSTMENT_INTERVAL = 0.2
 local ELRS_SENSOR_INTERVAL = 0.18
+local TELEMETRY_CONFIG_RETRY_INTERVAL = 5
+local FRSKY_PROVISION_RETRY_INTERVAL = 2
 local BLACKBOX_INTERVAL = 20
 local SENSOR_CHECKS_ENABLED = true
 
@@ -171,6 +173,7 @@ local nextScheduledAt = {}
 local statsReadInFlight = false
 local statsWriteInFlight = false
 local blackboxReadInFlight = false
+local telemetryConfigReadInFlight = false
 local pendingStatsSync = false
 local pendingStatsSyncAt = nil
 -- The Ethos model's own name, as it was before settings.general.syncname
@@ -435,6 +438,41 @@ local function playConnectBeep()
   system.playFile("audio/beep.wav")
 end
 
+local function provisionFrskySensors(protocol)
+  if protocol ~= "sport" or isSim or not session.telemetrySlots then return true end
+  return ensureFrskySensors():provision(session.telemetrySlots)
+end
+
+local function requestTelemetryConfig(mspQueue, protocol)
+  if not mspQueue or telemetryConfigReadInFlight or session.telemetrySlots then return end
+
+  telemetryConfigReadInFlight = true
+  local queued = mspQueue:add(telemetryConfig.buildReadMessage(function(slots)
+    telemetryConfigReadInFlight = false
+    session.telemetrySlots = slots
+    local assigned = 0
+    for i = 1, #slots do
+      if slots[i] and slots[i] ~= 0 then assigned = assigned + 1 end
+    end
+    debugLog.print("[session] TELEMETRY_CONFIG read ok: " .. assigned .. "/" .. #slots .. " slots assigned")
+    -- Skipped in the simulator: tasks/sim_sensors.lua already creates its
+    -- own pid_profile/rate_profile/battery_profile/etc. sensors at their
+    -- own appIds, and there's no real S.Port wire here for these
+    -- placeholders to ever receive a value on -- provisioning them too
+    -- just left duplicate "PID Profile"/"Rate Profile"/"Battery Profile"
+    -- sensors sitting alongside the sim ones.
+    provisionFrskySensors(protocol)
+    publish()
+  end, function(reason)
+    telemetryConfigReadInFlight = false
+    debugLog.print("[session] TELEMETRY_CONFIG read failed: " .. tostring(reason))
+  end))
+
+  if queued == false then
+    telemetryConfigReadInFlight = false
+  end
+end
+
 -- Runs once per genuine disconnect -> connect transition. Each read is
 -- independently gated on "don't already have it", so a slow/failed
 -- individual read just leaves that one field nil rather than blocking the
@@ -547,30 +585,9 @@ local function runHandshake(mspQueue, protocol)
   end
 
   -- Fetched regardless of protocol (cheap, and tasks/elrs_sensors.lua wants
-  -- the same slot data for its own SID-relevance filtering on CRSF) --
-  -- provisioning itself only happens for S.Port here; see wakeup() below
-  -- for where the CRSF side of this gets used.
-  if not session.telemetrySlots then
-    mspQueue:add(telemetryConfig.buildReadMessage(function(slots)
-      session.telemetrySlots = slots
-      local assigned = 0
-      for i = 1, #slots do
-        if slots[i] and slots[i] ~= 0 then assigned = assigned + 1 end
-      end
-      debugLog.print("[session] TELEMETRY_CONFIG read ok: " .. assigned .. "/" .. #slots .. " slots assigned")
-      -- Skipped in the simulator: tasks/sim_sensors.lua already creates its
-      -- own pid_profile/rate_profile/battery_profile/etc. sensors at their
-      -- own appIds, and there's no real S.Port wire here for these
-      -- placeholders to ever receive a value on -- provisioning them too
-      -- just left duplicate "PID Profile"/"Rate Profile"/"Battery Profile"
-      -- sensors sitting alongside the sim ones.
-      if protocol == "sport" and not isSim then
-        ensureFrskySensors():provision(slots)
-      end
-    end, function()
-      debugLog.print("[session] TELEMETRY_CONFIG read failed")
-    end))
-  end
+  -- the same slot data for its own SID-relevance filtering on CRSF) -- retry
+  -- in wakeup() if the first read exhausts the queue's own per-message tries.
+  requestTelemetryConfig(mspQueue, protocol)
 end
 
 local function setConnected(value, mspQueue, protocol)
@@ -639,6 +656,7 @@ local function setConnected(value, mspQueue, protocol)
     statsReadInFlight = false
     statsWriteInFlight = false
     blackboxReadInFlight = false
+    telemetryConfigReadInFlight = false
     pendingStatsSync = false
     pendingStatsSyncAt = nil
     flightTimer.reset()
@@ -1011,6 +1029,16 @@ local function wakeup(mspQueue, protocol, transport, simSensors)
 
     if shouldRunScheduled("blackbox", BLACKBOX_INTERVAL, now) then
       updateBlackboxSummary(mspQueue)
+    end
+
+    if session.connected and not session.telemetrySlots
+        and shouldRunScheduled("telemetry_config", TELEMETRY_CONFIG_RETRY_INTERVAL, now) then
+      requestTelemetryConfig(mspQueue, protocol)
+    end
+
+    if session.connected and session.telemetrySlots and protocol == "sport" and not isSim
+        and shouldRunScheduled("frsky_provision", FRSKY_PROVISION_RETRY_INTERVAL, now) then
+      provisionFrskySensors(protocol)
     end
 
     if protocol == "crsf" and session.connected and shouldRunScheduled("elrs", ELRS_SENSOR_INTERVAL, now) then

@@ -157,8 +157,17 @@ end
 -- entry an FC-internal sensor-ID slot value, 0 = slot unused). Runs at
 -- most once per connection -- see tasks/session.lua.
 function FrskySensors:provision(slots)
-  if self.provisioned then return end
+  if self.provisioned then return true end
+  if system.isSensorDiscoverActive and system.isSensorDiscoverActive() then
+    if not self.discoveryDeferLogged then
+      self.discoveryDeferLogged = true
+      debugLog.print("[frsky] sensor discovery active; deferring provisioning")
+    end
+    return false
+  end
+
   self.provisioned = true
+  self.discoveryDeferLogged = false
 
   local created, existing, renamed = 0, 0, 0
 
@@ -187,6 +196,7 @@ function FrskySensors:provision(slots)
   end
 
   debugLog.format("[frsky] provisioned: %d created, %d already present, %d renamed", created, existing, renamed)
+  return true
 end
 
 -- Called on disconnect so the next connection re-provisions from scratch
@@ -194,6 +204,7 @@ end
 -- (or reconnected to a different aircraft) since the last read.
 function FrskySensors:reset()
   self.provisioned = false
+  self.discoveryDeferLogged = false
 end
 
 return FrskySensors
