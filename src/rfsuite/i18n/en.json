@@ -7369,6 +7369,12 @@
         "needs_translation": false,
         "translation": "RPM Min"
       },
+      "startup_invalid_device": {
+        "english": "Invalid device connected",
+        "max_length": 24,
+        "needs_translation": false,
+        "translation": "Invalid device connected"
+      },
       "startup_no_link": {
         "english": "No telemetry link detected",
         "max_length": 26,

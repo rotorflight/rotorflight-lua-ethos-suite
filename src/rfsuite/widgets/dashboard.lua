@@ -43,6 +43,19 @@ local function ensureBatteryProfileMsp()
   return batteryProfileMsp
 end
 
+-- Same lazy, not-primed treatment as the three above: only needed to
+-- classify *why* a connection is unsupported (see drawApiVersionWarning()
+-- below), which most sessions -- talking to firmware this suite actually
+-- supports -- never hit at all.
+local mspApiVersion = nil
+
+local function ensureMspApiVersion()
+  if not mspApiVersion then
+    mspApiVersion = assert(loadfile("lib/msp_api_version.lua"))()
+  end
+  return mspApiVersion
+end
+
 -- modelPreferences/ethosVersion are also loadfile()'d lazily -- neither is
 -- used by create()/paint()'s own first-tick work either (modelPreferences
 -- only once a model actually connects, ethosVersion only once the toolbar
@@ -1263,6 +1276,47 @@ local function prewarmDashboardState(widget)
   widget.dashboardPrewarmed[key] = true
 end
 
+-- "Connected to invalid/unsupported firmware" warning -- see
+-- lib/msp_api_version.lua's classifyUnsupported() for the two states this
+-- distinguishes ("invalid": a different firmware family entirely, wrong
+-- product, not just an old version of this one; "unsupported": right
+-- family, minor below this rebuild's own floor, needs a firmware update).
+-- Deliberately lightweight: a single-line strip across the top of the
+-- screen, drawn on top of whatever the theme/toolbar already painted
+-- there, not a modal dialog or a restructuring of the normal paint
+-- layout. Stays up for as long as the condition holds, not a timed toast
+-- -- the underlying problem doesn't clear itself.
+local API_VERSION_WARNING_BG = lcd.RGB(180, 20, 20, 1)
+local API_VERSION_WARNING_TEXT = lcd.RGB(255, 255, 255, 1)
+
+local function apiVersionWarningText(widget)
+  local reason, familyName = ensureMspApiVersion().classifyUnsupported(widget.apiVersionMajor, widget.apiVersionMinor)
+  if not reason then return nil end
+  local version = tostring(widget.apiVersionMajor) .. "." .. tostring(widget.apiVersionMinor)
+  if reason == "invalid" then
+    if familyName then
+      return "@i18n(widgets.dashboard.startup_invalid_device)@: " .. familyName .. " (MSP " .. version .. ")"
+    end
+    return "@i18n(widgets.dashboard.startup_invalid_device)@ (MSP " .. version .. ")"
+  end
+  return "@i18n(widgets.dashboard.startup_unsupported_version)@ (MSP " .. version .. ")"
+end
+
+local function drawApiVersionWarning(widget, w, h)
+  if not (widget and widget.connected == true and widget.apiVersionSupported == false) then return end
+  local text = apiVersionWarningText(widget)
+  if not text then return end
+
+  lcd.font(w <= 640 and FONT_XS or FONT_S)
+  local _, textH = lcd.getTextSize(text)
+  local bannerH = textH + (w <= 640 and 8 or 12)
+
+  lcd.color(API_VERSION_WARNING_BG)
+  lcd.drawFilledRectangle(0, 0, w, bannerH)
+  lcd.color(API_VERSION_WARNING_TEXT)
+  lcd.drawText(w * 0.5, (bannerH - textH) * 0.5, text, CENTERED)
+end
+
 local function paint(widget)
   local w, h = lcd.getWindowSize()
   if widget and widget.themeReloadPending == true then
@@ -1274,6 +1328,7 @@ local function paint(widget)
     return
   end
   drawToolbar(widget, w, h)
+  drawApiVersionWarning(widget, w, h)
 end
 
 local function consumeTouchEvents()

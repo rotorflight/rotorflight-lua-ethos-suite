@@ -43,6 +43,18 @@ local SIMULATABLE_VERSIONS = {"12.09", "12.10"}
 -- to catch.
 local INVALID_SIM_RESPONSE = {0, 22, 0}
 
+-- Known MSP API major-version "epochs" claimed by other firmware
+-- families/projects, for classifyUnsupported() below to name *what* was
+-- actually detected instead of just a bare major number. Deliberately
+-- excludes EXPECTED_API_MAJOR (this rebuild's own family) -- an
+-- unrecognized major just falls back to no name, caller's own choice what
+-- to show. iNav's own epoch isn't confirmed yet, so it's not listed --
+-- add it here once known, nothing else needs to change.
+local KNOWN_FAMILY_NAMES = {
+  [22] = "Wingflight",
+  [1] = "Betaflight",
+}
+
 local msp_api_version = {
   READ_COMMAND = READ_COMMAND,
   EXPECTED_API_MAJOR = EXPECTED_API_MAJOR,
@@ -57,6 +69,24 @@ function msp_api_version.isSupported(major, minor)
   if major == nil or minor == nil then return nil end
   if major ~= EXPECTED_API_MAJOR then return false end
   return minor >= MIN_API_MINOR
+end
+
+-- Classifies *why* isSupported() returned false, for UI messaging (see
+-- widgets/dashboard.lua's boot-time error overlay): "invalid" when major
+-- doesn't match this rebuild's own family at all -- a genuinely different
+-- product, not just an old version of this one -- with familyName filled
+-- in when that other major is a recognized family (nil otherwise);
+-- "unsupported" when major matches but minor is below this rebuild's own
+-- floor -- same family, just needs a firmware update, so no familyName
+-- (nothing to name, it's already this one). Returns nil when
+-- isSupported() would also return nil (still unread) or true (supported --
+-- nothing to classify).
+function msp_api_version.classifyUnsupported(major, minor)
+  if msp_api_version.isSupported(major, minor) ~= false then return nil end
+  if major ~= EXPECTED_API_MAJOR then
+    return "invalid", KNOWN_FAMILY_NAMES[major]
+  end
+  return "unsupported", nil
 end
 
 -- Builds the {mspProtocolVersion, major, minor} simulator fixture for a
