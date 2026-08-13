@@ -1341,7 +1341,7 @@ local BG_TASK_STATUS_TIMEOUT = 3.0
 -- its first "task.status" publish -- see app/tool.lua's own
 -- TASK_ALERT_GRACE for the full reasoning (BOOT_DEFER_S plus staged-load
 -- time, 3-4s+ end to end); kept in sync with that same value.
-local BG_TASK_ALERT_GRACE = 6.0
+local BG_TASK_ALERT_GRACE = 10.0
 
 local function isBackgroundTaskRunning(widget)
   return widget.taskStatusAt ~= nil and (os.clock() - widget.taskStatusAt) <= BG_TASK_STATUS_TIMEOUT

@@ -339,8 +339,9 @@ local TASK_STATUS_TIMEOUT = 3.0
 -- having the dashboard on screen) within the first few seconds of a
 -- completely normal boot fired this alert as a false positive, well
 -- before the background task's own deliberate startup delay had even
--- finished -- looked exactly like a dead task from here.
-local TASK_ALERT_GRACE = 6.0
+-- finished -- looked exactly like a dead task from here. 10s widens that
+-- margin further still.
+local TASK_ALERT_GRACE = 10.0
 local TASK_ALERT_TITLE = "@i18n(app.msg_background_task_missing_title)@"
 local TASK_ALERT_BODY = "@i18n(app.msg_background_task_missing_body)@"
 local BTN_OK = "@i18n(app.btn_ok)@"
