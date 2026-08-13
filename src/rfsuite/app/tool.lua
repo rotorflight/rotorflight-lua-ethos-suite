@@ -330,7 +330,17 @@ local currentWakeupHandler = nil
 -- ride out ordinary load spikes without masking a genuinely dead task for
 -- long.
 local TASK_STATUS_TIMEOUT = 3.0
-local TASK_ALERT_GRACE = 0.75
+-- Must comfortably outlast tasks/background.lua's own worst-case time to
+-- its first "task.status" publish: BOOT_DEFER_S (2s, deliberately does
+-- nothing at all before this) plus however long its staged loadSteps then
+-- take to actually finish (measured 0.68s-1.8s+ across several on-device
+-- boots, see that file's own header comment) -- easily 3-4s+ end to end.
+-- Self-caught live: with the old 0.75s value, opening this tool (or just
+-- having the dashboard on screen) within the first few seconds of a
+-- completely normal boot fired this alert as a false positive, well
+-- before the background task's own deliberate startup delay had even
+-- finished -- looked exactly like a dead task from here.
+local TASK_ALERT_GRACE = 6.0
 local TASK_ALERT_TITLE = "@i18n(app.msg_background_task_missing_title)@"
 local TASK_ALERT_BODY = "@i18n(app.msg_background_task_missing_body)@"
 local BTN_OK = "@i18n(app.btn_ok)@"

@@ -44,7 +44,7 @@ local function ensureBatteryProfileMsp()
 end
 
 -- Same lazy, not-primed treatment as the three above: only needed to
--- classify *why* a connection is unsupported (see drawApiVersionWarning()
+-- classify *why* a connection is unsupported (see apiVersionWarningText()
 -- below), which most sessions -- talking to firmware this suite actually
 -- supports -- never hit at all.
 local mspApiVersion = nil
@@ -1023,6 +1023,11 @@ local function create()
     taskHandler = nil,
     taskRunning = false,
     taskProtocol = nil,
+    -- Per-instance (not module-level, unlike app/tool.lua's own equivalent
+    -- singleton fields) since this widget can have more than one
+    -- simultaneous instance -- see drawBackgroundTaskWarning() below.
+    createdAt = os.clock(),
+    taskStatusAt = nil,
     needsPaint = true,
     dashboardEverPainted = false,
     dashboardPaintRetryPending = false,
@@ -1276,24 +1281,40 @@ local function prewarmDashboardState(widget)
   widget.dashboardPrewarmed[key] = true
 end
 
--- "Connected to invalid/unsupported firmware" warning -- see
--- lib/msp_api_version.lua's classifyUnsupported() for the two states this
--- distinguishes ("invalid": a different firmware family entirely, wrong
--- product, not just an old version of this one; "unsupported": right
--- family, minor below this rebuild's own floor, needs a firmware update).
--- Deliberately lightweight: a single-line strip across the footer (bottom
--- edge) of the screen, drawn on top of whatever the theme/toolbar already
--- painted there, not a modal dialog or a restructuring of the normal
--- paint layout. Footer rather than header: keeps the top of the screen
--- (craft name/link status, in most themes) clear. Stays up for as long as
--- the condition holds, not a timed toast -- the underlying problem
+-- Lightweight dashboard error overlays -- currently two: "connected to
+-- invalid/unsupported firmware" and "background task not running". Both
+-- share this same single-line strip across the footer (bottom edge) of
+-- the screen, drawn on top of whatever the theme/toolbar already painted
+-- there, not a modal dialog or a restructuring of the normal paint
+-- layout. Footer rather than header: keeps the top of the screen (craft
+-- name/link status, in most themes) clear. Each stays up for as long as
+-- its own condition holds, not a timed toast -- the underlying problem
 -- doesn't clear itself. Can visually stack with the toolbar (also
 -- footer-anchored, see toolbarBounds()) if the pilot manually swipes it
--- open while this is showing -- an intentionally unhandled rare overlap,
--- not worth the complexity for how lightweight this is meant to stay.
-local API_VERSION_WARNING_BG = lcd.RGB(180, 20, 20, 1)
-local API_VERSION_WARNING_TEXT = lcd.RGB(255, 255, 255, 1)
+-- open while one of these is showing -- an intentionally unhandled rare
+-- overlap, not worth the complexity for how lightweight this is meant to
+-- stay. At most one shows at a time -- see drawFooterAlert()'s own
+-- priority ordering.
+local FOOTER_ALERT_BG = lcd.RGB(180, 20, 20, 1)
+local FOOTER_ALERT_TEXT = lcd.RGB(255, 255, 255, 1)
 
+local function drawFooterBanner(w, h, text)
+  lcd.font(w <= 640 and FONT_XS or FONT_S)
+  local _, textH = lcd.getTextSize(text)
+  local bannerH = textH + (w <= 640 and 8 or 12)
+  local bannerY = h - bannerH
+
+  lcd.color(FOOTER_ALERT_BG)
+  lcd.drawFilledRectangle(0, bannerY, w, bannerH)
+  lcd.color(FOOTER_ALERT_TEXT)
+  lcd.drawText(w * 0.5, bannerY + (bannerH - textH) * 0.5, text, CENTERED)
+end
+
+-- See lib/msp_api_version.lua's classifyUnsupported() for the two states
+-- this distinguishes ("invalid": a different firmware family entirely,
+-- wrong product, not just an old version of this one; "unsupported":
+-- right family, minor below this rebuild's own floor, needs a firmware
+-- update).
 local function apiVersionWarningText(widget)
   local reason, familyName = ensureMspApiVersion().classifyUnsupported(widget.apiVersionMajor, widget.apiVersionMinor)
   if not reason then return nil end
@@ -1307,20 +1328,48 @@ local function apiVersionWarningText(widget)
   return "@i18n(widgets.dashboard.startup_unsupported_version)@ (MSP " .. version .. ")"
 end
 
-local function drawApiVersionWarning(widget, w, h)
-  if not (widget and widget.connected == true and widget.apiVersionSupported == false) then return end
-  local text = apiVersionWarningText(widget)
-  if not text then return end
+-- Mirrors app/tool.lua's own isBackgroundTaskRunning()/TASK_ALERT_GRACE
+-- watchdog (kept independent, per-widget-instance state rather than
+-- shared -- see this file's header comment on why the three subsystems
+-- never touch each other's internals directly), tracking "task.status"
+-- staleness the same way. Needed here too, not just in app/tool.lua's own
+-- popup: a pilot watching the dashboard (not the full-screen tool) gets
+-- no other indication the background task -- which owns the MSP link/
+-- session/telemetry this whole widget depends on -- has stopped running.
+local BG_TASK_STATUS_TIMEOUT = 3.0
+-- Must comfortably outlast tasks/background.lua's own worst-case time to
+-- its first "task.status" publish -- see app/tool.lua's own
+-- TASK_ALERT_GRACE for the full reasoning (BOOT_DEFER_S plus staged-load
+-- time, 3-4s+ end to end); kept in sync with that same value.
+local BG_TASK_ALERT_GRACE = 6.0
 
-  lcd.font(w <= 640 and FONT_XS or FONT_S)
-  local _, textH = lcd.getTextSize(text)
-  local bannerH = textH + (w <= 640 and 8 or 12)
-  local bannerY = h - bannerH
+local function isBackgroundTaskRunning(widget)
+  return widget.taskStatusAt ~= nil and (os.clock() - widget.taskStatusAt) <= BG_TASK_STATUS_TIMEOUT
+end
 
-  lcd.color(API_VERSION_WARNING_BG)
-  lcd.drawFilledRectangle(0, bannerY, w, bannerH)
-  lcd.color(API_VERSION_WARNING_TEXT)
-  lcd.drawText(w * 0.5, bannerY + (bannerH - textH) * 0.5, text, CENTERED)
+local function backgroundTaskGraceExpired(widget)
+  return widget.createdAt ~= nil and (os.clock() - widget.createdAt) >= BG_TASK_ALERT_GRACE
+end
+
+-- Priority order: background-task-down first (the more fundamental
+-- problem -- without it, session/MSP state can never resolve either way,
+-- so widget.connected can never even become true), then invalid/
+-- unsupported firmware. In practice these are close to mutually
+-- exclusive already (widget.connected requires the background task to be
+-- alive), but keeping an explicit order costs nothing and avoids ever
+-- drawing both at once.
+local function drawFooterAlert(widget, w, h)
+  if not widget then return end
+  if not isBackgroundTaskRunning(widget) then
+    if not backgroundTaskGraceExpired(widget) then return end
+    drawFooterBanner(w, h, "@i18n(app.msg_background_task_missing_title)@")
+    return
+  end
+
+  if widget.connected == true and widget.apiVersionSupported == false then
+    local text = apiVersionWarningText(widget)
+    if text then drawFooterBanner(w, h, text) end
+  end
 end
 
 local function paint(widget)
@@ -1334,7 +1383,7 @@ local function paint(widget)
     return
   end
   drawToolbar(widget, w, h)
-  drawApiVersionWarning(widget, w, h)
+  drawFooterAlert(widget, w, h)
 end
 
 local function consumeTouchEvents()
@@ -1488,6 +1537,15 @@ local function wakeup(widget)
       status = status or {}
       local running = status.running == true
       local protocol = status.protocol
+      -- Tracks staleness, not just "has this ever fired" -- see
+      -- drawBackgroundTaskWarning() below, same reasoning as app/tool.lua's
+      -- own isBackgroundTaskRunning(). "task.status" is retained (see
+      -- lib/bus.lua's header), so a late subscriber's very first callback
+      -- here is a replay of whatever was last published, not necessarily
+      -- fresh -- but background.lua only ever publishes running=true, so
+      -- there's nothing to distinguish "replay of an old true" from "fresh
+      -- true" other than this timestamp, updated every time either way.
+      if running then widget.taskStatusAt = os.clock() end
       if running ~= widget.taskRunning or protocol ~= widget.taskProtocol then
         widget.taskRunning = running
         widget.taskProtocol = protocol
