@@ -1281,11 +1281,16 @@ end
 -- distinguishes ("invalid": a different firmware family entirely, wrong
 -- product, not just an old version of this one; "unsupported": right
 -- family, minor below this rebuild's own floor, needs a firmware update).
--- Deliberately lightweight: a single-line strip across the top of the
--- screen, drawn on top of whatever the theme/toolbar already painted
--- there, not a modal dialog or a restructuring of the normal paint
--- layout. Stays up for as long as the condition holds, not a timed toast
--- -- the underlying problem doesn't clear itself.
+-- Deliberately lightweight: a single-line strip across the footer (bottom
+-- edge) of the screen, drawn on top of whatever the theme/toolbar already
+-- painted there, not a modal dialog or a restructuring of the normal
+-- paint layout. Footer rather than header: keeps the top of the screen
+-- (craft name/link status, in most themes) clear. Stays up for as long as
+-- the condition holds, not a timed toast -- the underlying problem
+-- doesn't clear itself. Can visually stack with the toolbar (also
+-- footer-anchored, see toolbarBounds()) if the pilot manually swipes it
+-- open while this is showing -- an intentionally unhandled rare overlap,
+-- not worth the complexity for how lightweight this is meant to stay.
 local API_VERSION_WARNING_BG = lcd.RGB(180, 20, 20, 1)
 local API_VERSION_WARNING_TEXT = lcd.RGB(255, 255, 255, 1)
 
@@ -1310,11 +1315,12 @@ local function drawApiVersionWarning(widget, w, h)
   lcd.font(w <= 640 and FONT_XS or FONT_S)
   local _, textH = lcd.getTextSize(text)
   local bannerH = textH + (w <= 640 and 8 or 12)
+  local bannerY = h - bannerH
 
   lcd.color(API_VERSION_WARNING_BG)
-  lcd.drawFilledRectangle(0, 0, w, bannerH)
+  lcd.drawFilledRectangle(0, bannerY, w, bannerH)
   lcd.color(API_VERSION_WARNING_TEXT)
-  lcd.drawText(w * 0.5, (bannerH - textH) * 0.5, text, CENTERED)
+  lcd.drawText(w * 0.5, bannerY + (bannerH - textH) * 0.5, text, CENTERED)
 end
 
 local function paint(widget)

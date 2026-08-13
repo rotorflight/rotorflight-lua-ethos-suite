@@ -435,10 +435,21 @@ local function updateBlackboxSummary(mspQueue)
 end
 
 -- Matches rfsuite.utils.playConnectBeep() in the original suite: play
--- audio/beep.wav (the same asset, copied from that project) right after a
--- successful connect, debounced to at most once every 2 seconds. There is
--- no equivalent disconnect chime at this layer in the original either, so
--- setConnected(false) below stays silent.
+-- audio/beep.wav (the same asset, copied from that project), debounced to
+-- at most once every 2 seconds. There is no equivalent disconnect chime
+-- at this layer in the original either, so setConnected(false) stays
+-- silent.
+--
+-- Deliberately NOT called from setConnected() itself (raw telemetry-link
+-- up, before the handshake has even started) -- see runHandshake()'s own
+-- API_VERSION read below, which is where this actually gets called. A
+-- link can come up against any MSP-speaking firmware, including ones this
+-- suite can't talk to (wrong family, or the right family but too old --
+-- see lib/msp_api_version.lua's classifyUnsupported() and
+-- widgets/dashboard.lua's error overlay for that case); a "connected!"
+-- chime that fires on the raw link rather than a confirmed-compatible one
+-- is misleading in exactly that case, self-caught testing against a
+-- Wingflight FC with an rfsuite build.
 local function playConnectBeep()
   local now = os.clock()
   if (now - lastBeepAt) < 2.0 then return end
@@ -503,6 +514,12 @@ local function runHandshake(mspQueue, protocol)
       session.apiVersionMajor = data.major
       session.apiVersionMinor = data.minor
       session.apiVersionSupported = mspApiVersion.isSupported(data.major, data.minor)
+      -- Only now, once the MSP link is confirmed to actually be a
+      -- compatible one -- see playConnectBeep()'s own comment for why
+      -- this moved off the raw telemetry-link-up transition.
+      if session.apiVersionSupported == true then
+        playConnectBeep()
+      end
       publish()
     end, nil, simResponse))
   end
@@ -605,7 +622,6 @@ local function setConnected(value, mspQueue, protocol)
 
   if value then
     debugLog.print("[session] connected (protocol=" .. tostring(protocol) .. ")")
-    playConnectBeep()
     runHandshake(mspQueue, protocol)
   else
     debugLog.print("[session] disconnected")
@@ -1016,7 +1032,28 @@ local function wakeup(mspQueue, protocol, transport, simSensors)
   -- behaviour, not sensor-value lookup.
   local sensorProtocol = isSim and "sim" or protocol
 
-  if SENSOR_CHECKS_ENABLED then
+  -- apiVersionSupported ~= false (not runHandshake()'s one-time reads,
+  -- which must still run in order to determine this in the first place --
+  -- only this block, everything below that re-issues MSP requests on
+  -- every interval for as long as connected) -- so nil (still unread,
+  -- give it a chance) and true (confirmed compatible) both proceed as
+  -- before, but a confirmed-incompatible FC (wrong family, or the right
+  -- family but too old -- see lib/msp_api_version.lua's
+  -- classifyUnsupported()) stops here. Self-caught live: talking to a
+  -- Wingflight FC with an rfsuite build left the radio visibly sluggish --
+  -- every one of these MSP reads/re-reads (telemetry/profiles/governor/
+  -- adjustment/blackbox, telemetry_config retried every
+  -- TELEMETRY_CONFIG_RETRY_INTERVAL for as long as session.telemetrySlots
+  -- stays nil, frsky provision retried similarly) was failing or timing
+  -- out against firmware that can never answer them, and mspQueue retries
+  -- each one internally before giving up -- constant, pointless churn.
+  -- session.connected itself stays true throughout (still a real
+  -- telemetry link -- see setConnected()), and apiVersionSupported resets
+  -- to nil on disconnect (setConnected(false) below), so this
+  -- automatically "starts over" and gives the next connection a fresh
+  -- chance the moment there's a genuine link-loss/reconnect, not just a
+  -- one-way latch.
+  if SENSOR_CHECKS_ENABLED and session.apiVersionSupported ~= false then
     if shouldRunScheduled("telemetry", TELEMETRY_VALUE_INTERVAL, now) then
       updateVoltage(sensorProtocol)
       updateRfStatusTelemetry(sensorProtocol)
