@@ -4,10 +4,8 @@
 -- while loading only the selected theme and current state page.
 
 local bus = assert(loadfile("lib/bus.lua"))()
-local modelPreferences = assert(loadfile("lib/model_preferences.lua"))()
 local settingsStore = assert(loadfile("lib/settings_store.lua"))()
 local flightmode = assert(loadfile("widgets/dashboard/flightmode.lua"))()
-local ethosVersion = assert(loadfile("lib/ethos_version.lua"))()
 
 -- dataflashErase/dataflashSummary/batteryProfileMsp are loadfile()'d lazily,
 -- on first actual need (matching ensureDashboardContext()/
@@ -17,6 +15,9 @@ local ethosVersion = assert(loadfile("lib/ethos_version.lua"))()
 -- own first-tick work, since the toolbar starts hidden
 -- (toolbarVisible = false). Cuts three loadfile() calls' worth of
 -- disk-open/compile cost off this widget's own eager boot-time load.
+-- Deliberately NOT primed (see wakeup()'s primeSteps below): genuinely
+-- rare, explicit-user-action-only, so priming them would spend the load
+-- cost anyway even in sessions that never touch the toolbar.
 local dataflashErase = nil
 local dataflashSummary = nil
 local batteryProfileMsp = nil
@@ -41,6 +42,47 @@ local function ensureBatteryProfileMsp()
   end
   return batteryProfileMsp
 end
+
+-- modelPreferences/ethosVersion are also loadfile()'d lazily -- neither is
+-- used by create()/paint()'s own first-tick work either (modelPreferences
+-- only once a model actually connects, ethosVersion only once the toolbar
+-- is shown or system-tool launch is checked) -- but unlike the three
+-- above, both are common/soon-needed rather than rare, so wakeup()'s
+-- primeSteps below opportunistically warms them ahead of actual need at a
+-- throttled cadence. That's purely a performance nicety layered on top:
+-- every real call site still goes through these same ensureX() functions,
+-- so correctness never depends on priming having finished (or having run
+-- at all -- e.g. the widget closing before it gets the chance).
+local modelPreferences = nil
+local ethosVersion = nil
+
+local function ensureModelPreferences()
+  if not modelPreferences then
+    modelPreferences = assert(loadfile("lib/model_preferences.lua"))()
+  end
+  return modelPreferences
+end
+
+local function ensureEthosVersion()
+  if not ethosVersion then
+    ethosVersion = assert(loadfile("lib/ethos_version.lua"))()
+  end
+  return ethosVersion
+end
+
+-- Priming: wakeup() (see below) opportunistically runs one of these at a
+-- time, no faster than PRIME_INTERVAL apart, regardless of visibility --
+-- same spirit as tasks/background.lua's staged loadfile() chain (spread
+-- disk-IO-heavy loadfile() cost across ticks instead of one block), but
+-- throttled by wall time rather than run-to-completion, since unlike the
+-- background task this widget's paint() can legitimately be called at any
+-- moment and nothing here may assume priming has caught up -- every real
+-- call site still goes through ensureModelPreferences()/ensureEthosVersion()
+-- directly, so this is pure warm-up, never a correctness dependency.
+local PRIME_INTERVAL = 0.25
+local nextPrimeAt = 0
+local primeStepIndex = 1
+local primeSteps = {ensureModelPreferences, ensureEthosVersion}
 
 local THEME_DIRS = {
   ["aerc-n"] = "widgets/dashboard/themes/aerc-n",
@@ -101,6 +143,14 @@ local THEME_STATE_CHECK_INTERVAL = 5.0
 local themeStateSignature = nil
 local nextThemeStateCheck = 0
 local INSTRUCTION_BUDGET_ERROR = "Max instructions count reached"
+-- Throttle, not a hard skip, for wakeup()'s prep/paint-adjacent work while
+-- some other Ethos screen is on display (lcd.isVisible() false) -- see
+-- wakeup() itself. Keeps resize handling/theme-load priming/paint-prep
+-- warm ahead of time at a low cadence instead of either paying it all in
+-- one block on the first tick the dashboard becomes visible again, or
+-- (the every-tick alternative) burning CPU on it constantly while hidden.
+local NOT_VISIBLE_WAKEUP_INTERVAL = 0.25
+local nextNotVisibleWakeupAt = 0
 
 local TOOLBAR_ITEMS = {
   {name = "Reset", icon = "widgets/dashboard/gfx/toolbar_reset.png", action = "reset_flight"},
@@ -240,7 +290,7 @@ local function loadModelDashboard(widget)
     return
   end
 
-  local prefs = modelPreferences.load(widget.mcuId)
+  local prefs = ensureModelPreferences().load(widget.mcuId)
   widget.modelDashboard = normalizeModelDashboard(prefs and prefs.dashboard)
 end
 
@@ -319,7 +369,7 @@ local function setToolbarVisible(widget, visible)
 end
 
 local function resolveToolbarThemeColor(themeColorKey, fallback)
-  if type(themeColorKey) == "number" and type(lcd.themeColor) == "function" and ethosVersion.atLeast({26, 1, 0}) then
+  if type(themeColorKey) == "number" and type(lcd.themeColor) == "function" and ensureEthosVersion().atLeast({26, 1, 0}) then
     return lcd.themeColor(themeColorKey)
   end
   return fallback
@@ -333,7 +383,7 @@ local function toolbarColors()
   local defaultBg = resolveToolbarThemeColor(THEME_DEFAULT_BGCOLOR, themeState.primaryBgColor or lcd.RGB(255, 255, 255, 1))
   local focusBg = resolveToolbarThemeColor(THEME_FOCUS_BGCOLOR, themeState.focusBgColor or lcd.RGB(230, 230, 230, 1))
   local pageBg = resolveToolbarThemeColor(THEME_PAGE_BGCOLOR, themeState.pageBgColor or defaultBg)
-  local surfaceBg = (type(lcd.themeColor) == "function" and ethosVersion.atLeast({26, 1, 0})) and pageBg or defaultBg
+  local surfaceBg = (type(lcd.themeColor) == "function" and ensureEthosVersion().atLeast({26, 1, 0})) and pageBg or defaultBg
   local lineColor = resolveToolbarThemeColor(THEME_BUTTON_BORDER_COLOR, themeState.buttonBorderColor or defaultColor)
   if lineColor == surfaceBg then
     lineColor = resolveToolbarThemeColor(THEME_SECONDARY_COLOR, themeState.secondaryColor or defaultColor)
@@ -421,7 +471,7 @@ local function canOpenSystemTool()
   return systemToolHandle ~= nil
     and system
     and type(system.openPage) == "function"
-    and ethosVersion.atLeast({26, 1, 0})
+    and ensureEthosVersion().atLeast({26, 1, 0})
 end
 
 local function normalizeBatteryProfile(value)
@@ -1396,12 +1446,34 @@ local function wakeup(widget)
     bus.subscribe("settings.update", widget.settingsHandler)
   end
 
-  -- Skip the rest -- expensive per-tick prep/paint-adjacent work -- while
-  -- a different screen is actually on the display: either this tool's own
-  -- full-screen app/menu (appRunning) or simply some other Ethos screen
-  -- (lcd.isVisible() false). Matches master's dashboard.wakeup() early
-  -- return; see appRunning's own comment above.
-  if appRunning or not lcd.isVisible() then return end
+  -- See primeSteps' own comment above -- kept above the visibility guard
+  -- deliberately, like the subscriptions above, so this widget stays
+  -- "warm" even while some other screen is the one actually on display,
+  -- not just once it becomes visible.
+  if primeStepIndex <= #primeSteps then
+    local now = clock()
+    if now >= nextPrimeAt then
+      nextPrimeAt = now + PRIME_INTERVAL
+      primeSteps[primeStepIndex]()
+      primeStepIndex = primeStepIndex + 1
+    end
+  end
+
+  -- appRunning (this tool's own full-screen app/menu open) stays a hard
+  -- skip: that's this same subsystem owning the display, not some other
+  -- screen the dashboard might become visible behind at any moment, so
+  -- there's no priming value in doing any of the below while it's open.
+  if appRunning then return end
+
+  -- Everything below is throttled, not hard-skipped, while some other
+  -- Ethos screen is actually on display (lcd.isVisible() false) -- see
+  -- NOT_VISIBLE_WAKEUP_INTERVAL's own comment above for why.
+  local isVisible = lcd.isVisible()
+  if not isVisible then
+    local now = clock()
+    if now < nextNotVisibleWakeupAt then return end
+    nextNotVisibleWakeupAt = now + NOT_VISIBLE_WAKEUP_INTERVAL
+  end
   handleDashboardResize(widget)
 
   if widget.pendingResetFlight then
@@ -1419,7 +1491,16 @@ local function wakeup(widget)
   -- session.update) rather than firing the instant `connected` flips true,
   -- and latches batteryDialogShown so it only ever fires once per
   -- connection -- reset on disconnect above.
-  if widget.connected == true
+  --
+  -- Gated on isVisible specifically, not just the throttle above:
+  -- form.openDialog() would otherwise pop this dialog over whatever
+  -- screen genuinely is on display right now, the instant a battery-config
+  -- event happens to land during a background prep tick. Skipping it while
+  -- hidden just delays the prompt to whenever the dashboard is actually
+  -- shown again -- batteryDialogShown/the conditions below are unaffected,
+  -- so it still fires exactly once per connection either way.
+  if isVisible
+      and widget.connected == true
       and not widget.batteryDialogShown
       and widget.batteryConfig
       and settingsStore.batteryProfileStartupEnabled(widget.settingsSnapshot) then
