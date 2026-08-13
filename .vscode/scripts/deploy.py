@@ -856,7 +856,7 @@ def _simulator_scripts_dest(git_src, firmware=None, version=None):
 DEFAULT_SERIAL_VID = "0483"
 DEFAULT_SERIAL_PID = "5750"
 DEFAULT_SERIAL_BAUD = 115200
-DEFAULT_SERIAL_RETRIES = 10
+DEFAULT_SERIAL_RETRIES = 30
 DEFAULT_SERIAL_DELAY = 1.0
 
 def ethos_serial(ethossuite_bin, action, radio=None):
