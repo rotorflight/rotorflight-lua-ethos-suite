@@ -15,13 +15,75 @@
 -- it does is via lib/bus.lua's "msp.request" topic, and only indirectly,
 -- via whichever page is currently open.
 
-local navigation = assert(loadfile("app/navigation.lua"))()
-local menuContainer = assert(loadfile("app/menu_container.lua"))()
-local memstats = assert(loadfile("lib/memstats.lua"))()
+-- bus is the only one of this file's own dependencies loaded eagerly:
+-- system.registerSystemTool() below does not render anything on its own --
+-- Ethos only calls create() once the pilot actually opens this tool from
+-- the system menu, which may be late in a session or never at all -- but
+-- the bus.subscribe() calls a little further down (task.status/
+-- session.update/settings.update) must be live from boot regardless, so
+-- isBackgroundTaskRunning()/sessionConnected/developerModeEnabled stay
+-- current for whenever the tool *does* open.
+--
+-- Everything else below is loadfile()'d lazily instead, on first actual
+-- need (matching the same ensureX() pattern already used in
+-- widgets/dashboard.lua): navigation/menuContainer are only needed once
+-- create() actually runs, memstats only in close(), and the two protocol
+-- guards only get attached to MENUS right before create()'s own
+-- menuContainer.openRoot() call. Deferring menuContainer's own load this
+-- way also defers its own further eager chain (app/close_key.lua,
+-- app/header.lua, a second lib/memstats.lua load, app/tile_grid.lua) to
+-- that same first-open moment instead of paying all of it at boot for
+-- pilots who may never open this tool in a given session.
 local bus = assert(loadfile("lib/bus.lua"))()
-local escProtocolGuard = assert(loadfile("app/esc_protocol_guard.lua"))()
-local servoBusGuard = assert(loadfile("app/servo_bus_guard.lua"))()
-local settingsStore = assert(loadfile("lib/settings_store.lua"))()
+
+local navigation = nil
+local menuContainer = nil
+local memstats = nil
+local escProtocolGuard = nil
+local servoBusGuard = nil
+local settingsStore = nil
+
+local function ensureNavigation()
+  if not navigation then
+    navigation = assert(loadfile("app/navigation.lua"))()
+  end
+  return navigation
+end
+
+local function ensureMenuContainer()
+  if not menuContainer then
+    menuContainer = assert(loadfile("app/menu_container.lua"))()
+  end
+  return menuContainer
+end
+
+local function ensureMemstats()
+  if not memstats then
+    memstats = assert(loadfile("lib/memstats.lua"))()
+  end
+  return memstats
+end
+
+local function ensureEscProtocolGuard()
+  if not escProtocolGuard then
+    escProtocolGuard = assert(loadfile("app/esc_protocol_guard.lua"))()
+  end
+  return escProtocolGuard
+end
+
+local function ensureServoBusGuard()
+  if not servoBusGuard then
+    servoBusGuard = assert(loadfile("app/servo_bus_guard.lua"))()
+  end
+  return servoBusGuard
+end
+
+local function ensureSettingsStore()
+  if not settingsStore then
+    settingsStore = assert(loadfile("lib/settings_store.lua"))()
+  end
+  return settingsStore
+end
 
 local developerModeEnabled = false
 
@@ -306,7 +368,17 @@ local MENUS = {
   },
 }
 
-local nav = navigation.new()
+-- nav itself is also lazy, not just navigation.lua's own loadfile() --
+-- ensureNav() below constructs it on first call rather than unconditionally
+-- here, since this file's module-load time must stay near-instant.
+local nav = nil
+local function ensureNav()
+  if not nav then
+    nav = ensureNavigation().new()
+  end
+  return nav
+end
+
 local currentEventHandler = nil
 local currentCleanupHandler = nil
 local currentPaintHandler = nil
@@ -382,17 +454,25 @@ local taskGuard = {
   requestAlert = requestBackgroundTaskAlert,
 }
 
-MENUS.esc_forward_menu.guard = escProtocolGuard.new({
-  canRequest = function()
-    return isBackgroundTaskRunning() and sessionConnected == true
-  end,
-})
-
-MENUS.servos_menu.guard = servoBusGuard.new({
-  canRequest = function()
-    return isBackgroundTaskRunning() and sessionConnected == true
-  end,
-})
+-- Attached to MENUS lazily, from create(), not here -- see this file's
+-- header comment on why esc_protocol_guard.lua/servo_bus_guard.lua don't
+-- loadfile() until then.
+local function ensureMenuGuards()
+  if not MENUS.esc_forward_menu.guard then
+    MENUS.esc_forward_menu.guard = ensureEscProtocolGuard().new({
+      canRequest = function()
+        return isBackgroundTaskRunning() and sessionConnected == true
+      end,
+    })
+  end
+  if not MENUS.servos_menu.guard then
+    MENUS.servos_menu.guard = ensureServoBusGuard().new({
+      canRequest = function()
+        return isBackgroundTaskRunning() and sessionConnected == true
+      end,
+    })
+  end
+end
 
 bus.subscribe("task.status", function(status)
   if status and status.running then
@@ -414,7 +494,8 @@ bus.subscribe("session.update", function(session)
 end)
 
 local function updateDeveloperMode(settings)
-  developerModeEnabled = settingsStore.developerModeEnabled(settings or settingsStore.load())
+  local store = ensureSettingsStore()
+  developerModeEnabled = store.developerModeEnabled(settings or store.load())
 end
 
 bus.subscribe("settings.update", updateDeveloperMode)
@@ -441,7 +522,8 @@ local function create()
   taskAlertOpen = false
   taskAlertShown = false
   updateDeveloperMode()
-  menuContainer.openRoot(nav, ROOT_ENTRIES, setEventHandler, setWakeupHandler, setPaintHandler, setCleanupHandler, MENUS, taskGuard)
+  ensureMenuGuards()
+  ensureMenuContainer().openRoot(ensureNav(), ROOT_ENTRIES, setEventHandler, setWakeupHandler, setPaintHandler, setCleanupHandler, MENUS, taskGuard)
   -- Lets background-screen widgets (widgets/dashboard.lua) skip their own
   -- wakeup work while this full-screen tool owns the display -- matches
   -- master's rfsuite.tasks.appRunning gate (dashboard.lua's wakeup()).
@@ -481,12 +563,12 @@ end
 -- run after form mutation has already been forbidden, and Ethos owns final
 -- form teardown during app exit.
 local function close(state)
-  memstats.print("app.close (start)")
+  ensureMemstats().print("app.close (start)")
   if currentCleanupHandler then
     currentCleanupHandler()
     currentCleanupHandler = nil
   end
-  nav.clear()
+  ensureNav().clear()
   setEventHandler(nil)
   setWakeupHandler(nil)
   setPaintHandler(nil)
@@ -495,7 +577,7 @@ local function close(state)
     package.loaded[key] = nil
   end
   collectgarbage("collect")
-  memstats.print("app.close (end)")
+  ensureMemstats().print("app.close (end)")
 end
 
 local tool = {
