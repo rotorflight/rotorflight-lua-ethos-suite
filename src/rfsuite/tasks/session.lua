@@ -7,6 +7,16 @@
 -- frame pop on CRSF -- also never loadfile'd a second time; this file is
 -- its sole owner, same as lib/frsky_sensors.lua's FrskySensors instance).
 --
+-- bus/settingsStore/debugLog below are likewise the instances
+-- tasks/background.lua already loaded for itself, passed in as the three
+-- args to this chunk (loadfile("tasks/session.lua")(bus, settingsStore,
+-- debugLog)) rather than loadfile()'d again here. All three self-cache via
+-- package.loaded, so a second loadfile() wouldn't have been a correctness
+-- bug -- but loadfile() pays real disk-open/compile cost every call
+-- regardless of that cache, and on device that cost is the dominant
+-- contributor to background.lua's eager-load time (see main.lua's boot
+-- timing), not any one file's parse cost.
+--
 -- Owns a private `session` table -- nothing outside tasks/ ever gets a
 -- reference to it. Other subsystems learn about connection/battery changes
 -- only by subscribing to lib/bus.lua's "session.update" topic, which
@@ -20,10 +30,9 @@
 -- -- the MSP-calling subset of the original suite's onconnect/postconnect
 -- task manifests. There is no idle MSP heartbeat.
 
-local bus = assert(loadfile("lib/bus.lua"))()
+local bus, settingsStore, debugLog = ...
 local handshake = assert(loadfile("lib/msp_handshake.lua"))()
 local mspApiVersion = assert(loadfile("lib/msp_api_version.lua"))()
-local settingsStore = assert(loadfile("lib/settings_store.lua"))()
 local mspBattery = assert(loadfile("lib/msp_battery.lua"))()
 local dataflashSummary = assert(loadfile("lib/msp_dataflash_summary.lua"))()
 local governorConfig = assert(loadfile("lib/msp_governor_config.lua"))()
@@ -35,7 +44,6 @@ local SmartFuel = assert(loadfile("lib/smartfuel_calc.lua"))()
 local DiySensor = assert(loadfile("lib/diy_sensor.lua"))()
 local telemetryConfig = assert(loadfile("lib/msp_telemetry_config.lua"))()
 local flightTimer = assert(loadfile("tasks/flight_timer.lua"))()
-local debugLog = assert(loadfile("lib/debug_log.lua"))()
 
 local TELEMETRY_VALUE_INTERVAL = 0.5
 local PROFILE_INTERVAL = 0.5

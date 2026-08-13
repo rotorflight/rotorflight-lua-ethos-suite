@@ -32,24 +32,58 @@
 -- print itself is noise.
 local bootStartAt = os.clock()
 
+-- Per-component timing, reported alongside the overall total below. Each
+-- entry is [label, seconds]; printed in the order recorded so the eager
+-- loadfile() cost (module-load time) and the init() cost (registration
+-- work) are visible separately per subsystem, not just as one combined
+-- number.
+local bootSteps = {}
+local function mark(label, startedAt)
+  bootSteps[#bootSteps + 1] = {label, os.clock() - startedAt}
+end
+
 -- Parsed by bin/package/build_package.py (MAIN_VERSION_RE/MAIN_SUFFIX_RE) to
 -- derive the packaged manifest version; the suffix segment is rewritten
 -- per-build. The literal name/shape of this table is load-bearing for that
 -- regex. Keep this in sync with lib/build_info.lua's runtime-visible copy.
 local version = {major = 2, minor = 3, revision = 1, suffix = ""}
 
+local t0 = os.clock()
 local background_task = assert(loadfile("tasks/background.lua"))()
+mark("tasks/background.lua load", t0)
+
+t0 = os.clock()
 local system_tool = assert(loadfile("app/tool.lua"))()
+mark("app/tool.lua load", t0)
+
+t0 = os.clock()
 local dashboard_widget = assert(loadfile("widgets/dashboard.lua"))()
+mark("widgets/dashboard.lua load", t0)
+
 local activelook_widget = nil
 
 local function init()
+  t0 = os.clock()
   background_task.init()
+  mark("background_task.init", t0)
+
+  t0 = os.clock()
   local systemToolHandle = system_tool.init()
+  mark("system_tool.init", t0)
+
+  t0 = os.clock()
   dashboard_widget.init({systemToolHandle = systemToolHandle})
+  mark("dashboard_widget.init", t0)
+
   if system.registerGlassesWidget then
+    t0 = os.clock()
     activelook_widget = assert(loadfile("widgets/activelook.lua"))()
     activelook_widget.init()
+    mark("activelook_widget load+init", t0)
+  end
+
+  for _, step in ipairs(bootSteps) do
+    print(string.format("[boot] %s: %.3fs", step[1], step[2]))
   end
   print(string.format("[boot] main.lua load+init: %.3fs", os.clock() - bootStartAt))
 end

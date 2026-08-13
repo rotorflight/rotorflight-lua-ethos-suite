@@ -19,6 +19,16 @@
 -- created once by tasks/background.lua and handed to both setTransport() and
 -- this queue.
 --
+-- Queue.new()'s second argument (debugLog) is the same lib/debug_log.lua
+-- instance tasks/background.lua already loaded for itself -- not a second
+-- loadfile()'d copy. debugLog.lua self-caches via package.loaded so a
+-- second loadfile() wouldn't have been a *correctness* bug, but loadfile()
+-- pays real disk-open/compile cost every call regardless of that cache;
+-- on device that cost is the dominant contributor to background.lua's
+-- ~1.5s eager-load time (see main.lua's boot timing), so every module
+-- loaded directly by tasks/background.lua takes its shared instances as
+-- constructor/parameter arguments instead.
+--
 -- Message shape: {
 --   command = <MSP command id>,
 --   payload = {...} | nil,              -- omit/{} for parameterless reads
@@ -33,7 +43,7 @@
 
 local Queue = {}
 Queue.__index = Queue
-local debugLog = assert(loadfile("lib/debug_log.lua"))()
+local debugLog -- set by Queue.new(common, debugLog) -- see the header comment above
 
 local DEFAULT_RETRY_DELAY = 0.8
 local DEFAULT_MAX_RETRIES = 5
@@ -48,7 +58,8 @@ local function notifyError(message, reason)
   end
 end
 
-function Queue.new(common)
+function Queue.new(common, sharedDebugLog)
+  debugLog = sharedDebugLog
   return setmetatable({
     common = common,
     pending = {},

@@ -1,12 +1,21 @@
 -- Settings-backed developer debug print gate. Self-cached so callers share one
 -- bus subscription and one small settings snapshot.
+--
+-- bus/settingsStore may be passed in as this chunk's two args by a caller
+-- that already has its own instances in scope (e.g. tasks/background.lua),
+-- to skip loadfile()'ing a third copy -- loadfile() pays real disk-open/
+-- compile cost every call regardless of these modules' own package.loaded
+-- caching. Optional, not required: every other caller keeps calling this
+-- with no args, which falls back to loadfile()'ing them here exactly as
+-- before.
 
 if package.loaded["rfsuite.lib.debug_log"] then
   return package.loaded["rfsuite.lib.debug_log"]
 end
 
-local bus = assert(loadfile("lib/bus.lua"))()
-local settingsStore = assert(loadfile("lib/settings_store.lua"))()
+local bus, settingsStore = ...
+bus = bus or assert(loadfile("lib/bus.lua"))()
+settingsStore = settingsStore or assert(loadfile("lib/settings_store.lua"))()
 
 local settings = nil
 
