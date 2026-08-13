@@ -7,10 +7,40 @@ local bus = assert(loadfile("lib/bus.lua"))()
 local modelPreferences = assert(loadfile("lib/model_preferences.lua"))()
 local settingsStore = assert(loadfile("lib/settings_store.lua"))()
 local flightmode = assert(loadfile("widgets/dashboard/flightmode.lua"))()
-local dataflashErase = assert(loadfile("lib/msp_dataflash_erase.lua"))()
-local dataflashSummary = assert(loadfile("lib/msp_dataflash_summary.lua"))()
-local batteryProfileMsp = assert(loadfile("lib/msp_battery_profile.lua"))()
 local ethosVersion = assert(loadfile("lib/ethos_version.lua"))()
+
+-- dataflashErase/dataflashSummary/batteryProfileMsp are loadfile()'d lazily,
+-- on first actual need (matching ensureDashboardContext()/
+-- ensureDashboardEngine() below), rather than eagerly here: all three are
+-- only ever used by rare toolbar actions (erase blackbox, its post-erase
+-- readback, battery profile write) -- never by create()/paint()/wakeup()'s
+-- own first-tick work, since the toolbar starts hidden
+-- (toolbarVisible = false). Cuts three loadfile() calls' worth of
+-- disk-open/compile cost off this widget's own eager boot-time load.
+local dataflashErase = nil
+local dataflashSummary = nil
+local batteryProfileMsp = nil
+
+local function ensureDataflashErase()
+  if not dataflashErase then
+    dataflashErase = assert(loadfile("lib/msp_dataflash_erase.lua"))()
+  end
+  return dataflashErase
+end
+
+local function ensureDataflashSummary()
+  if not dataflashSummary then
+    dataflashSummary = assert(loadfile("lib/msp_dataflash_summary.lua"))()
+  end
+  return dataflashSummary
+end
+
+local function ensureBatteryProfileMsp()
+  if not batteryProfileMsp then
+    batteryProfileMsp = assert(loadfile("lib/msp_battery_profile.lua"))()
+  end
+  return batteryProfileMsp
+end
 
 local THEME_DIRS = {
   ["aerc-n"] = "widgets/dashboard/themes/aerc-n",
@@ -619,7 +649,7 @@ end
 local function readBlackboxSummaryAfterErase(widget)
   if not widget or widget.eraseReadPending ~= true then return end
   widget.eraseReadPending = false
-  bus.publish("msp.request", dataflashSummary.buildReadMessage(function(data)
+  bus.publish("msp.request", ensureDataflashSummary().buildReadMessage(function(data)
     widget.bblFlags = data and data.flags or widget.bblFlags
     widget.bblSize = data and data.total or widget.bblSize
     widget.bblUsed = data and data.used or widget.bblUsed
@@ -652,7 +682,7 @@ local function doEraseBlackbox(widget)
     end
   end
 
-  bus.publish("msp.request", dataflashErase.buildWriteMessage(function()
+  bus.publish("msp.request", ensureDataflashErase().buildWriteMessage(function()
     widget.eraseReadPending = true
   end, function()
     widget.eraseError = true
@@ -778,7 +808,7 @@ local function writeBatteryProfile(widget, profileIndex, profileName)
     end
   end
 
-  local message = batteryProfileMsp.buildWriteMessage({batteryProfile = profileIndex}, function()
+  local message = ensureBatteryProfileMsp().buildWriteMessage({batteryProfile = profileIndex}, function()
     widget.batteryProfile = profileIndex
     widget.batteryDone = true
   end, function()
