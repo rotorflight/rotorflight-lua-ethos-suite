@@ -17,6 +17,21 @@ local preparedH = nil
 local preparedObjectsLoaded = false
 local wakeCursor = 1
 local wakePassCount = 0
+-- Hybrid safety cap on the very first wake pass (see wakeObjects()'s own
+-- comment on why that pass is otherwise a full, unpaced sweep of every
+-- box): still backstopped by wakeOne()'s own instruction-budget catch
+-- below for whatever this doesn't already prevent, but proactively caps
+-- the attempt so a dense theme's first tick isn't the one place that
+-- catch actually has to fire. Deliberately higher than any per-tick
+-- steady-state pace would be (this is a one-off, not a recurring cost),
+-- and only ever a ceiling -- a theme with fewer boxes than this still
+-- completes its first pass in one tick exactly as before (see
+-- wakeObjects()'s own maxCount >= count clamp). Self-caught: RT-RC
+-- theme's 8-box preflight layout was tripping paintObjects()'s own
+-- per-object retry on first load because this pass, run unpaced right
+-- before it in the same tick, was already eating into that tick's
+-- instruction budget before paint() got a turn.
+local FIRST_WAKE_PASS_MAX = 4
 -- Self-caught bug: dashboard.lua's STARTUP_PREP_OBJECTS_PER_TICK exists
 -- specifically to pace "each box's object-type/subtype module load" across
 -- many wakeup ticks (see its own comment) -- but that pacing only ever
@@ -459,7 +474,7 @@ function engine.paint(widget, themeDef, stateDef, state, screenW, screenH)
     context.tasks.telemetry.collectPresentationStats()
   end
   prepareLayout(stateDef, screenW, screenH)
-  if wakePassCount < 1 then wakeObjects(nil, stateDef) end
+  if wakePassCount < 1 then wakeObjects(FIRST_WAKE_PASS_MAX, stateDef) end
   local resumePaint = widget and widget.dashboardPaintRetryIndex and widget.dashboardPaintRetryIndex > 1
   if not resumePaint then context.widgets.dashboard.utils.setBackgroundColourBasedOnTheme() end
   local ok = paintObjects(widget)
