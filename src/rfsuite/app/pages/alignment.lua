@@ -119,19 +119,15 @@ local function open(opts)
     pendingAt = 0,
     lastAttitudeAt = 0,
     lastInvalidateAt = 0,
-    -- Was 0.08 (12.5Hz). tasks/msp/queue.lua is strictly single-in-flight
-    -- (one request out at a time, one processQueue() call per background-
-    -- task tick -- see its own header comment), shared with everything
-    -- tasks/session.lua polls continuously in the background (telemetry
-    -- every 0.5s, adjustments every 0.2s, ELRS sensor every 0.18s, etc.).
-    -- The real bottleneck live-testing pointed to is link speed, not this
-    -- page's own logic -- 12.5Hz was never actually achievable end to
-    -- end, just requested that often, adding queue pressure (and risking
-    -- MAX_PENDING=20 rejections, silently swallowed by requestAttitude()'s
-    -- own error handler below) for updates that couldn't land that fast
-    -- anyway. 0.2s (5Hz) is still smooth for a slow physical-alignment
-    -- readout and cuts this page's own request rate by 60%.
-    attitudeSamplePeriod = 0.2,
+    -- Was 0.08 (12.5Hz), then 0.2 (5Hz) -- still too hot in practice.
+    -- tasks/msp/queue.lua is strictly single-in-flight (one request out at
+    -- a time, one processQueue() call per background-task tick -- see its
+    -- own header comment), shared with everything tasks/session.lua polls
+    -- continuously in the background (telemetry every 0.5s, adjustments
+    -- every 0.2s, ELRS sensor every 0.18s, etc.). Live-testing showed even
+    -- 5Hz still contends and drops/retries on this link. 0.4s (2.5Hz) is
+    -- still smooth enough for a slow physical-alignment readout.
+    attitudeSamplePeriod = 0.4,
     pendingTimeout = 1.0,
   }
 
