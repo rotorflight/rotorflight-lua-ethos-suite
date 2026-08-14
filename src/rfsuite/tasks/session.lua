@@ -168,6 +168,15 @@ end
 
 local telemetrySensors = nil
 
+-- Mirrors widgets/dashboard.lua's own "app.state" subscription (see its
+-- appRunning comment there): true while app/tool.lua's full-screen
+-- page/menu system owns the display, false back at the plain dashboard.
+-- Used below to skip the recurring blackbox-summary poll while a page
+-- (e.g. the alignment page) is actively contending for the same
+-- single-in-flight mspQueue -- see updateBlackboxSummary()'s own comment.
+local appRunning = false
+bus.subscribe("app.state", function(state) appRunning = state and state.running == true end)
+
 local lastBeepAt = 0
 local nextScheduledAt = {}
 local statsReadInFlight = false
@@ -412,6 +421,16 @@ end
 local function updateBlackboxSummary(mspQueue)
   if not mspQueue or blackboxReadInFlight then return end
   if session.connected ~= true or session.isArmed == true then return end
+  -- Skip while a page/menu is open (app/tool.lua's "app.state" -- see
+  -- appRunning's own comment above): this is a "nice to have, eventually"
+  -- background refresh, not something any page depends on, and it was
+  -- found live re-firing every BLACKBOX_INTERVAL regardless of what else
+  -- was contending for the same single-in-flight mspQueue -- e.g. the
+  -- alignment page's own attitude polling. The scheduler slot still ticks
+  -- on its normal cadence below (nextScheduledAt isn't touched here), so
+  -- this simply skips that turn rather than rescheduling -- the read
+  -- resumes on its own the next time this fires with the app closed.
+  if appRunning then return end
 
   blackboxReadInFlight = true
   mspQueue:add(dataflashSummary.buildReadMessage(function(summary)
