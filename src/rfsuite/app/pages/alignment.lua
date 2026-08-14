@@ -119,15 +119,19 @@ local function open(opts)
     pendingAt = 0,
     lastAttitudeAt = 0,
     lastInvalidateAt = 0,
-    -- Was 0.08 (12.5Hz), then 0.2 (5Hz) -- still too hot in practice.
-    -- tasks/msp/queue.lua is strictly single-in-flight (one request out at
-    -- a time, one processQueue() call per background-task tick -- see its
-    -- own header comment), shared with everything tasks/session.lua polls
-    -- continuously in the background (telemetry every 0.5s, adjustments
-    -- every 0.2s, ELRS sensor every 0.18s, etc.). Live-testing showed even
-    -- 5Hz still contends and drops/retries on this link. 0.4s (2.5Hz) is
-    -- still smooth enough for a slow physical-alignment readout.
-    attitudeSamplePeriod = 0.4,
+    -- Was 0.08 (12.5Hz), then 0.2 (5Hz) -- both too hot in practice on
+    -- their own. tasks/msp/queue.lua is strictly single-in-flight (one
+    -- request out at a time, one processQueue() call per background-task
+    -- tick -- see its own header comment), shared with everything
+    -- tasks/session.lua polls continuously in the background (telemetry
+    -- every 0.5s, adjustments every 0.2s, ELRS sensor every 0.18s, etc.).
+    -- 0.4s (2.5Hz) confirmed working live once paired with two other
+    -- fixes: lib/msp_attitude.lua's wider per-request retry budget (was
+    -- failing every single attempt outright, unrelated to this rate), and
+    -- tasks/session.lua's blackbox-summary poll no longer firing while a
+    -- page is open (see its own appRunning comment). With that contention
+    -- gone there's headroom to nudge this back up a bit; 0.3s (~3.3Hz).
+    attitudeSamplePeriod = 0.3,
     -- Must clear a stuck pendingAttitude flag only *after* the underlying
     -- queued message has had its own fair chance to succeed or fail, or
     -- this page would fire a duplicate requestAttitude() while the first
