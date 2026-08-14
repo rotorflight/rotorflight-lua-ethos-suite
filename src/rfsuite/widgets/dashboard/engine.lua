@@ -534,16 +534,33 @@ end
 
 function engine.wakeup(widget, stateDef, screenW, screenH, options)
   context.setWidget(widget)
-  local maxObjects = options and options.maxObjects
-  prepareLayout(stateDef, screenW, screenH, false, maxObjects)
+  -- Type-load side defaults to FIRST_TYPE_LOAD_MAX rather than "no options
+  -- means unpaced" -- dashboard.lua's own wakeup() callback (see
+  -- prepareDashboard()) is this function's only caller and has never
+  -- actually passed options, so that old convention meant this path ran
+  -- just as unpaced as engine.paint()'s first call used to. Self-caught:
+  -- fixing paint()'s own internal calls alone just moved the same
+  -- instruction-budget trip here instead, since wakeup() typically runs
+  -- before paint() in the same tick once the dashboard first becomes
+  -- visible. Safe to default unconditionally (every call, not just the
+  -- first): prepareLayout() already no-ops once preparedObjectsLoaded is
+  -- true, so this only ever matters while the type queue is still
+  -- draining.
+  local maxTypes = (options and options.maxTypes) or FIRST_TYPE_LOAD_MAX
+  prepareLayout(stateDef, screenW, screenH, false, maxTypes)
   -- Spend this tick's budget on loading any still-pending object types
   -- before ever calling wakeObjects() -- otherwise a paced caller (dashboard.
   -- lua's startup warm-up) would still take the full loadfile burst up
   -- front via prepareLayout() and only have *wakeObjects()* paced on top of
-  -- that, which is the bug this whole queue exists to close. An unpaced
-  -- caller (maxObjects nil) always finds preparedObjectsLoaded already true
-  -- here, since prepareLayout() just drained the whole queue synchronously.
+  -- that, which is the bug this whole queue exists to close.
   if not preparedObjectsLoaded then return false, true end
+  -- Wake side only defaults on the first pass (mirrors engine.paint()'s
+  -- own `if wakePassCount < 1` guard around its wakeObjects() call) --
+  -- past that, wakeObjects()'s own nil-means-unpaced convention needs to
+  -- reach its existing ratio-based steady-state pacing (wakeupsPerCycle),
+  -- which a permanent default here would silently override on every
+  -- subsequent tick instead of just the cold-start one.
+  local maxObjects = (options and options.maxObjects) or (wakePassCount < 1 and FIRST_WAKE_PASS_MAX or nil)
   return wakeObjects(maxObjects, stateDef), true
 end
 
