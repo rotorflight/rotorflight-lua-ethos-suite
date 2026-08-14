@@ -32,6 +32,33 @@ local wakePassCount = 0
 -- before it in the same tick, was already eating into that tick's
 -- instruction budget before paint() got a turn.
 local FIRST_WAKE_PASS_MAX = 4
+-- Turned out NOT to be the dominant cost -- see FIRST_TYPE_LOAD_MAX below,
+-- which is. Left in place regardless: it's still correct pacing for
+-- wakeOne()'s own per-box work, just not what was actually tripping
+-- paintObjects() on RT-RC's theme.
+--
+-- The real cost: prepareLayout() below drains pendingTypeQueue (one real
+-- loadfile()+pcall() per distinct object TYPE the theme uses -- e.g.
+-- "image/model", "gauge/bar" -- not per box instance) fully unpaced on
+-- engine.paint()'s own first call, *before* wakeObjects()/paintObjects()
+-- ever get a turn. Each individual loadObjectType() call is small enough
+-- that none of them trips the instruction-budget guard on its own, but
+-- Ethos's per-tick budget is spent across the whole paint() callback, not
+-- reset per statement -- so a theme with enough distinct types (RT-RC's
+-- preflight layout) can burn most of that budget in this one drain alone,
+-- leaving paintObjects() starting box 1 (whichever box is first in layout
+-- order -- RT-RC's is the image/model logo) with almost nothing left.
+-- That's why capping FIRST_WAKE_PASS_MAX alone didn't fix RT-RC's report:
+-- the trip was never in wakeObjects() to begin with.
+--
+-- Same hybrid approach: cap it, but let paint() explicitly defer to next
+-- tick (via its own preparedObjectsLoaded check below) rather than run
+-- paintObjects() against a still-incomplete type set -- cleaner than
+-- relying on the per-object instruction-budget catch to save a partially-
+-- warmed-up frame, and matches engine.wakeup()'s own pre-existing
+-- preparedObjectsLoaded gate (see there) instead of inventing a second
+-- convention.
+local FIRST_TYPE_LOAD_MAX = 2
 -- Self-caught bug: dashboard.lua's STARTUP_PREP_OBJECTS_PER_TICK exists
 -- specifically to pace "each box's object-type/subtype module load" across
 -- many wakeup ticks (see its own comment) -- but that pacing only ever
@@ -473,7 +500,14 @@ function engine.paint(widget, themeDef, stateDef, state, screenW, screenH)
   if context.tasks and context.tasks.telemetry and context.tasks.telemetry.collectPresentationStats then
     context.tasks.telemetry.collectPresentationStats()
   end
-  prepareLayout(stateDef, screenW, screenH)
+  prepareLayout(stateDef, screenW, screenH, false, FIRST_TYPE_LOAD_MAX)
+  -- Not loaded yet (this call's cap didn't cover the whole queue): defer
+  -- the rest of this frame to the next tick outright, same "false means
+  -- not ready, try again" contract paintDashboard() already honors for an
+  -- instruction-budget retry -- just reached here proactively instead of
+  -- reactively, and before paintObjects() risks starting box 1 with an
+  -- already-half-spent budget.
+  if not preparedObjectsLoaded then return false end
   if wakePassCount < 1 then wakeObjects(FIRST_WAKE_PASS_MAX, stateDef) end
   local resumePaint = widget and widget.dashboardPaintRetryIndex and widget.dashboardPaintRetryIndex > 1
   if not resumePaint then context.widgets.dashboard.utils.setBackgroundColourBasedOnTheme() end
