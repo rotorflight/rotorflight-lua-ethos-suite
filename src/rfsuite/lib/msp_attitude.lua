@@ -42,8 +42,24 @@ function msp_attitude.buildReadMessage(onData, onError)
     end,
     errorHandler = onError,
     simulatorResponse = buildSimulatorResponse(),
-    retryDelay = -0.6,
-    maxRetries = 1,
+    -- Used to be retryDelay = -0.6 (0.2s per attempt), maxRetries = 1 (0.4s
+    -- total budget) -- tuned for the alignment page's old 12.5Hz polling,
+    -- where failing fast mattered because another request was coming right
+    -- behind it. Live-testing on a contended link showed that budget is
+    -- just too short: MSP_BOARD_ALIGNMENT_CONFIG (cmd 38, same link, same
+    -- session) routinely needed a 3rd attempt at the *default* 0.8s
+    -- spacing to get a reply, so attitude's 0.2s retries were giving up
+    -- before a reply would have arrived at all -- every single attitude
+    -- request failed via max_retries, never once succeeding after the
+    -- page's first read. Now that the alignment page throttles its own
+    -- request rate (attitudeSamplePeriod = 0.4s, see app/pages/alignment.lua)
+    -- there's no reason to also starve each individual request of retry
+    -- time: use the default 0.8s spacing, with maxRetries = 2 (3 attempts,
+    -- ~1.6s worst case) to give this link the same margin cmd 38 needed.
+    -- Keep app/pages/alignment.lua's pendingTimeout comfortably above that
+    -- worst case so its own safety net doesn't preempt these retries and
+    -- pile up duplicate in-flight requests.
+    maxRetries = 2,
   }
 end
 

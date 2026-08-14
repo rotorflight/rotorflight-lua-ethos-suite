@@ -128,7 +128,14 @@ local function open(opts)
     -- 5Hz still contends and drops/retries on this link. 0.4s (2.5Hz) is
     -- still smooth enough for a slow physical-alignment readout.
     attitudeSamplePeriod = 0.4,
-    pendingTimeout = 1.0,
+    -- Must clear a stuck pendingAttitude flag only *after* the underlying
+    -- queued message has had its own fair chance to succeed or fail, or
+    -- this page would fire a duplicate requestAttitude() while the first
+    -- one is still legitimately retrying, piling up redundant in-flight
+    -- messages. lib/msp_attitude.lua's buildReadMessage() now allows up to
+    -- 3 attempts at the default 0.8s spacing (~1.6s worst case) -- see its
+    -- own comment for why. 3.0s gives that comfortable headroom.
+    pendingTimeout = 3.0,
   }
 
   local runtime
