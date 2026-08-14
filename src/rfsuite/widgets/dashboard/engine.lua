@@ -6,7 +6,6 @@ local context = assert(loadfile("widgets/dashboard/context.lua"))()
 local floor = math.floor
 local ceil = math.ceil
 local max = math.max
-local min = math.min
 local sort = table.sort
 
 local objectsByType = {}
@@ -502,13 +501,28 @@ function engine.paint(widget, themeDef, stateDef, state, screenW, screenH)
     context.tasks.telemetry.collectPresentationStats()
   end
   prepareLayout(stateDef, screenW, screenH, false, FIRST_TYPE_LOAD_MAX)
-  -- Not loaded yet (this call's cap didn't cover the whole queue): defer
-  -- the rest of this frame to the next tick outright, same "false means
-  -- not ready, try again" contract paintDashboard() already honors for an
-  -- instruction-budget retry -- just reached here proactively instead of
-  -- reactively, and before paintObjects() risks starting box 1 with an
-  -- already-half-spent budget.
-  if not preparedObjectsLoaded then return false end
+  -- Not loaded yet (this call's cap didn't cover the whole queue): draw
+  -- the shell (background + box titles only, via paintShellObjects()
+  -- below -- getParam() lookups on each box's own config, no
+  -- loadObjectType()/object.paint() involved, so it can't itself
+  -- contribute to the type-load cost it's standing in for) and defer the
+  -- rest of this frame to the next tick, same "false means not ready, try
+  -- again" contract paintDashboard() already honors for an instruction-
+  -- budget retry -- just reached here proactively instead of reactively,
+  -- and before paintObjects() risks starting box 1 with an already-half-
+  -- spent budget. Self-caught: an earlier version of this fix left the
+  -- screen blank (or drew one static logo) for the whole warm-up instead
+  -- -- once real content starts arriving box-by-box on top of that, each
+  -- one's first appearance reads as a glitch popping in from nothing.
+  -- Painting the shell first means every box's own background/title is
+  -- already on screen throughout warm-up, so real content filling in
+  -- over it afterward reads as content loading, not boxes appearing.
+  if not preparedObjectsLoaded then
+    context.widgets.dashboard.utils.setBackgroundColourBasedOnTheme()
+    paintShellObjects()
+    context.widgets.dashboard.utils.drawScreenBorder()
+    return false
+  end
   if wakePassCount < 1 then wakeObjects(FIRST_WAKE_PASS_MAX, stateDef) end
   local resumePaint = widget and widget.dashboardPaintRetryIndex and widget.dashboardPaintRetryIndex > 1
   if not resumePaint then context.widgets.dashboard.utils.setBackgroundColourBasedOnTheme() end
@@ -563,40 +577,6 @@ function engine.wakeup(widget, stateDef, screenW, screenH, options)
   -- subsequent tick instead of just the cold-start one.
   local maxObjects = (options and options.maxObjects) or (wakePassCount < 1 and FIRST_WAKE_PASS_MAX or nil)
   return wakeObjects(maxObjects, stateDef), true
-end
-
--- Cold-start placeholder for the ticks spent draining pendingTypeQueue/
--- doing the first wakeObjects() pass (see FIRST_TYPE_LOAD_MAX/
--- FIRST_WAKE_PASS_MAX above): dashboard.lua's own paint() currently just
--- returns without drawing anything at all on those ticks (screen keeps
--- showing whatever was on it before -- blank on a true cold start), which
--- reads as "did this hang?" even though it's working exactly as intended
--- and self-resolves in a handful of ticks. Deliberately independent of
--- the paced object-type system this is standing in for: a theme-aware
--- background fill (utils.setBackgroundColourBasedOnTheme()/themeColors(),
--- pure palette lookups, no loadfile() involved) plus one already-bundled,
--- already-small logo asset (utils.getLogoFallbackForBackground() --
--- light/dark picked from the same background, matches the existing
--- last-resort fallback objects/image/model.lua itself falls to), not a
--- user's model photo -- so this carries none of the decode-cost risk
--- that asset does. Caller (dashboard.lua's paint()) is expected to only
--- invoke this before the dashboard's first real paint has ever
--- succeeded; once it has, a paintDashboard() == false is an ordinary
--- instruction-budget retry mid-session and should just leave the
--- previous frame's real content on screen instead of flashing this over
--- it.
-function engine.paintPlaceholder(widget, screenW, screenH)
-  context.setWidget(widget)
-  local utils = context.widgets.dashboard.utils
-  utils.setBackgroundColourBasedOnTheme()
-  local bgcolor = utils.themeColors and utils.themeColors().bgcolor
-  local logo = utils.getLogoFallbackForBackground and utils.getLogoFallbackForBackground(bgcolor)
-  if not logo then return end
-  local size = floor(min(screenW, screenH) * 0.35)
-  if size <= 0 then return end
-  local x = floor((screenW - size) / 2)
-  local y = floor((screenH - size) / 2)
-  utils.drawImageInRect(x, y, size, size, logo, size, size, "center", bgcolor)
 end
 
 function engine.reset()
