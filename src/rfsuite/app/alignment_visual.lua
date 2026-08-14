@@ -3,7 +3,10 @@
 -- Stateless renderer for app/pages/alignment.lua. It keeps the original
 -- module's important behavior: live attitude text, configured offset text,
 -- nose-direction cue, and a projected heli model whose orientation follows
--- MSP_ATTITUDE plus the configured board offsets.
+-- MSP_ATTITUDE plus any *unsaved* edits to the board offset fields (see
+-- state.baseline in app/pages/alignment.lua -- the offsets already saved
+-- on the FC are subtracted back out, since MSP_ATTITUDE already includes
+-- them).
 
 if package.loaded["rfsuite.app.alignment_visual"] then
   return package.loaded["rfsuite.app.alignment_visual"]
@@ -151,7 +154,8 @@ local POINTS = {
 local alignment_visual = {}
 
 function alignment_visual.recenterYaw(state)
-  state.viewYawOffset = (tonumber(state.live.yaw) or 0) + (tonumber(state.display.yaw_degrees) or 0)
+  local baseline = state.baseline or {}
+  state.viewYawOffset = (tonumber(state.live.yaw) or 0) + (tonumber(state.display.yaw_degrees) or 0) - (tonumber(baseline.yaw_degrees) or 0)
 end
 
 function alignment_visual.draw(state)
@@ -181,9 +185,19 @@ function alignment_visual.draw(state)
   lcd.color(grid)
   lcd.drawRectangle(panelX, panelY, panelW, panelH)
 
-  local pitchR = rad(-((state.live.pitch or 0) + (state.display.pitch_degrees or 0)))
-  local yawR = rad(-(((state.live.yaw or 0) + (state.display.yaw_degrees or 0)) - (state.viewYawOffset or 0)))
-  local rollR = rad(-((state.live.roll or 0) + (state.display.roll_degrees or 0)))
+  -- MSP_ATTITUDE already reflects the board-alignment offsets currently
+  -- saved on the FC (alignment is applied to the sensor data before
+  -- attitude is computed), so state.baseline -- the offsets in effect
+  -- when this page opened -- must be subtracted back out before adding
+  -- state.display (the, possibly still unsaved, offsets shown in the
+  -- fields). Adding state.display on its own double-counts whatever was
+  -- already saved, e.g. a correctly-configured upside-down mount (board
+  -- roll 180) renders upside down here even though live attitude is
+  -- already level.
+  local baseline = state.baseline or {}
+  local pitchR = rad(-((state.live.pitch or 0) + (state.display.pitch_degrees or 0) - (baseline.pitch_degrees or 0)))
+  local yawR = rad(-(((state.live.yaw or 0) + (state.display.yaw_degrees or 0) - (baseline.yaw_degrees or 0)) - (state.viewYawOffset or 0)))
+  local rollR = rad(-((state.live.roll or 0) + (state.display.roll_degrees or 0) - (baseline.roll_degrees or 0)))
 
   local leftPanelW = clamp(floor(panelW * 0.40), 150, floor(panelW * 0.70))
   local infoX = panelX + 1

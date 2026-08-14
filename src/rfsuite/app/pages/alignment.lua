@@ -94,6 +94,20 @@ local function open(opts)
       yaw_degrees = 0,
       mag_alignment = 0,
     },
+    -- Board offsets as currently saved on the FC at the moment this page
+    -- opened -- i.e. the offsets already baked into every MSP_ATTITUDE
+    -- sample below, since board alignment is applied to the sensor data
+    -- before attitude is computed (rebootAfterSave = true: nothing typed
+    -- into the roll/pitch/yaw fields here takes effect until saved and
+    -- rebooted). Captured once, on the first syncDisplayFromData() call,
+    -- and never touched again for the life of this page instance -- see
+    -- its use in alignment_visual.draw()/recenterYaw().
+    baseline = {
+      roll_degrees = 0,
+      pitch_degrees = 0,
+      yaw_degrees = 0,
+    },
+    baselineCaptured = false,
     live = {
       roll = 0,
       pitch = 0,
@@ -158,6 +172,12 @@ local function open(opts)
     state.display.pitch_degrees = board.pitch_degrees or 0
     state.display.yaw_degrees = board.yaw_degrees or 0
     state.display.mag_alignment = sensor.mag_alignment or 0
+    if not state.baselineCaptured then
+      state.baseline.roll_degrees = state.display.roll_degrees
+      state.baseline.pitch_degrees = state.display.pitch_degrees
+      state.baseline.yaw_degrees = state.display.yaw_degrees
+      state.baselineCaptured = true
+    end
   end
 
   runtime = pageRuntime.new({
