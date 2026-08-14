@@ -1284,15 +1284,6 @@ local function paint(widget)
     if prepareDashboard(widget) then finishThemeReload(widget) end
   end
   if paintDashboard(widget, w, h) == false then
-    -- Only on a true cold start: past the first real paint, a false here
-    -- is an ordinary instruction-budget retry mid-session (see
-    -- paintDashboard()), and the previous frame's real content already
-    -- on screen is a better "still working" signal than flashing this
-    -- placeholder over it every time one of those happens.
-    if widget and widget.dashboardEverPainted ~= true then
-      local engine = ensureDashboardEngine()
-      if engine.paintPlaceholder then engine.paintPlaceholder(widget, w, h) end
-    end
     requestPaint(widget)
     invalidateWidgetGlobal(widget)
     return
