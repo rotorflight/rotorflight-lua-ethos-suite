@@ -6,6 +6,7 @@ local context = assert(loadfile("widgets/dashboard/context.lua"))()
 local floor = math.floor
 local ceil = math.ceil
 local max = math.max
+local min = math.min
 local sort = table.sort
 
 local objectsByType = {}
@@ -562,6 +563,40 @@ function engine.wakeup(widget, stateDef, screenW, screenH, options)
   -- subsequent tick instead of just the cold-start one.
   local maxObjects = (options and options.maxObjects) or (wakePassCount < 1 and FIRST_WAKE_PASS_MAX or nil)
   return wakeObjects(maxObjects, stateDef), true
+end
+
+-- Cold-start placeholder for the ticks spent draining pendingTypeQueue/
+-- doing the first wakeObjects() pass (see FIRST_TYPE_LOAD_MAX/
+-- FIRST_WAKE_PASS_MAX above): dashboard.lua's own paint() currently just
+-- returns without drawing anything at all on those ticks (screen keeps
+-- showing whatever was on it before -- blank on a true cold start), which
+-- reads as "did this hang?" even though it's working exactly as intended
+-- and self-resolves in a handful of ticks. Deliberately independent of
+-- the paced object-type system this is standing in for: a theme-aware
+-- background fill (utils.setBackgroundColourBasedOnTheme()/themeColors(),
+-- pure palette lookups, no loadfile() involved) plus one already-bundled,
+-- already-small logo asset (utils.getLogoFallbackForBackground() --
+-- light/dark picked from the same background, matches the existing
+-- last-resort fallback objects/image/model.lua itself falls to), not a
+-- user's model photo -- so this carries none of the decode-cost risk
+-- that asset does. Caller (dashboard.lua's paint()) is expected to only
+-- invoke this before the dashboard's first real paint has ever
+-- succeeded; once it has, a paintDashboard() == false is an ordinary
+-- instruction-budget retry mid-session and should just leave the
+-- previous frame's real content on screen instead of flashing this over
+-- it.
+function engine.paintPlaceholder(widget, screenW, screenH)
+  context.setWidget(widget)
+  local utils = context.widgets.dashboard.utils
+  utils.setBackgroundColourBasedOnTheme()
+  local bgcolor = utils.themeColors and utils.themeColors().bgcolor
+  local logo = utils.getLogoFallbackForBackground and utils.getLogoFallbackForBackground(bgcolor)
+  if not logo then return end
+  local size = floor(min(screenW, screenH) * 0.35)
+  if size <= 0 then return end
+  local x = floor((screenW - size) / 2)
+  local y = floor((screenH - size) / 2)
+  utils.drawImageInRect(x, y, size, size, logo, size, size, "center", bgcolor)
 end
 
 function engine.reset()
