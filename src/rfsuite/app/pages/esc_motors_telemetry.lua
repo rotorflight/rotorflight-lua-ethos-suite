@@ -1,8 +1,9 @@
 -- Setup -> ESC & Motors -> Telemetry page.
 
-local pageRuntime = assert(loadfile("app/page_runtime.lua"))()
-local fieldLayout = assert(loadfile("app/field_layout.lua"))()
-local escSensorConfig = assert(loadfile("lib/msp_esc_sensor_config.lua"))()
+local requireModule = assert(loadfile("lib/require.lua"))()
+local pageRuntime = requireModule("app/page_runtime.lua")
+local fieldLayout = requireModule("app/field_layout.lua")
+local escSensorConfig = requireModule("lib/msp_esc_sensor_config.lua")
 
 local PAGE_TITLE = "@i18n(app.modules.esc_motors.telemetry)@"
 

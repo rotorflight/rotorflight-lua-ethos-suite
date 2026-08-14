@@ -31,7 +31,8 @@
 local os_clock = os.clock
 local system_getSource = system.getSource
 local model_createSensor = model.createSensor
-local debugLog = assert(loadfile("lib/debug_log.lua"))()
+local requireModule = assert(loadfile("lib/require.lua"))()
+local debugLog = requireModule("lib/debug_log.lua")
 
 -- Ethos before 26.1 only supports :value(v); 26.1+ wants :rawValue(v)
 -- instead. This can't be a runtime capability probe (`if sensor.rawValue
@@ -41,7 +42,7 @@ local debugLog = assert(loadfile("lib/debug_log.lua"))()
 -- but the value never actually populates. Needs an explicit version gate
 -- instead, same as rotorflight-lua-ethos-suite's master branch
 -- (tasks/scheduler/sensors/*.lua's own `useRawValue`).
-local ethosVersion = assert(loadfile("lib/ethos_version.lua"))()
+local ethosVersion = requireModule("lib/ethos_version.lua")
 local useRawValue = ethosVersion.atLeast({26, 1, 0})
 
 local function pushValue(sensor, v)

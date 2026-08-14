@@ -9,7 +9,8 @@
 -- `profiles[0]..profiles[5]` so the dashboard can offer the same battery
 -- profile selector without loading the heavier app page.
 
-local mspcodec = assert(loadfile("lib/mspcodec.lua"))()
+local requireModule = assert(loadfile("lib/require.lua"))()
+local mspcodec = requireModule("lib/mspcodec.lua")
 
 local msp_battery = {}
 

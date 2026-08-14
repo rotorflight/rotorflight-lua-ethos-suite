@@ -1,6 +1,7 @@
 -- Controls -> Blackbox -> Configuration page.
 
-local blackboxPage = assert(loadfile("app/pages/blackbox_edit_page.lua"))()
+local requireModule = assert(loadfile("lib/require.lua"))()
+local blackboxPage = requireModule("app/pages/blackbox_edit_page.lua")
 
 return blackboxPage.new({
   kind = "config",

@@ -1,8 +1,9 @@
 -- Servos submenu gate: BUS output is only valid when Ports has an
 -- SBUS/FBUS output function configured.
 
-local bus = assert(loadfile("lib/bus.lua"))()
-local serialConfig = assert(loadfile("lib/msp_serial_config.lua"))()
+local requireModule = assert(loadfile("lib/require.lua"))()
+local bus = requireModule("lib/bus.lua")
+local serialConfig = requireModule("lib/msp_serial_config.lua")
 
 local servo_bus_guard = {}
 

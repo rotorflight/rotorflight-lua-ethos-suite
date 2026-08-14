@@ -1,7 +1,8 @@
 -- Setup -> ESC & Motors -> Forward Programming -> OMP.
 
-local vendorPage = assert(loadfile("app/pages/esc_forward_vendor.lua"))()
-local msp = assert(loadfile("lib/msp_esc_parameters_omp.lua"))()
+local requireModule = assert(loadfile("lib/require.lua"))()
+local vendorPage = requireModule("app/pages/esc_forward_vendor.lua")
+local msp = requireModule("lib/msp_esc_parameters_omp.lua")
 
 local PAGE_TITLE = "@i18n(app.modules.esc_tools.mfg.omp.name)@"
 

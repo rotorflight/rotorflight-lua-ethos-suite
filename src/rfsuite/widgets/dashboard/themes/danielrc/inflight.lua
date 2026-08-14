@@ -3,10 +3,11 @@
   GPLv3 — https://www.gnu.org/licenses/gpl-3.0.en.html
 ]] --
 
-local rfsuite = assert(loadfile("widgets/dashboard/context.lua"))()
+local requireModule = assert(loadfile("lib/require.lua"))()
+local rfsuite = requireModule("widgets/dashboard/context.lua")
 local lcd = lcd
 
-local common = assert(loadfile("SCRIPTS:/" .. rfsuite.config.baseDir .. "/widgets/dashboard/themes/danielrc/common.lua"))()
+local common = requireModule("SCRIPTS:/" .. rfsuite.config.baseDir .. "/widgets/dashboard/themes/danielrc/common.lua")
 
 local boxes_cache = nil
 local lastScreenW = nil

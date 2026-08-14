@@ -4,7 +4,8 @@ if package.loaded["rfsuite.lib.msp_battery_config"] then
   return package.loaded["rfsuite.lib.msp_battery_config"]
 end
 
-local mspcodec = assert(loadfile("lib/mspcodec.lua"))()
+local requireModule = assert(loadfile("lib/require.lua"))()
+local mspcodec = requireModule("lib/mspcodec.lua")
 
 local READ_COMMAND = 32
 local WRITE_COMMAND = 33

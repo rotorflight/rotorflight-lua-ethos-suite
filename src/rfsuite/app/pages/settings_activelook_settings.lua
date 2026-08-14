@@ -1,7 +1,8 @@
 -- Settings -> ActiveLook -> Settings.
 
-local pageCommon = assert(loadfile("app/pages/settings_activelook_common.lua"))()
-local activeConfig = assert(loadfile("lib/activelook_config.lua"))()
+local requireModule = assert(loadfile("lib/require.lua"))()
+local pageCommon = requireModule("app/pages/settings_activelook_common.lua")
+local activeConfig = requireModule("lib/activelook_config.lua")
 
 local PAGE_TITLE = "@i18n(app.modules.settings.name)@ / ActiveLook / @i18n(app.modules.settings.activelook_settings)@"
 

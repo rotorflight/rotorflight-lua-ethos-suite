@@ -7,10 +7,11 @@ if package.loaded["rfsuite.lib.settings_store"] then
   return package.loaded["rfsuite.lib.settings_store"]
 end
 
-local ini = assert(loadfile("lib/ini.lua"))()
-local activelookConfig = assert(loadfile("lib/activelook_config.lua"))()
-local mspApiVersion = assert(loadfile("lib/msp_api_version.lua"))()
-local tableClone = assert(loadfile("lib/table_clone.lua"))()
+local requireModule = assert(loadfile("lib/require.lua"))()
+local ini = requireModule("lib/ini.lua")
+local activelookConfig = requireModule("lib/activelook_config.lua")
+local mspApiVersion = requireModule("lib/msp_api_version.lua")
+local tableClone = requireModule("lib/table_clone.lua")
 
 local SETTINGS_DIR = "SCRIPTS:/rfsuite.user"
 local SETTINGS_PATH = SETTINGS_DIR .. "/settings.ini"

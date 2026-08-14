@@ -42,10 +42,11 @@ if package.loaded["rfsuite.lib.elrslink_task"] then
   return package.loaded["rfsuite.lib.elrslink_task"]
 end
 
-local bus = assert(loadfile("lib/bus.lua"))()
-local telemetryConfig = assert(loadfile("lib/msp_telemetry_config.lua"))()
-local eeprom = assert(loadfile("lib/msp_eeprom.lua"))()
-local debugLog = assert(loadfile("lib/debug_log.lua"))()
+local requireModule = assert(loadfile("lib/require.lua"))()
+local bus = requireModule("lib/bus.lua")
+local telemetryConfig = requireModule("lib/msp_telemetry_config.lua")
+local eeprom = requireModule("lib/msp_eeprom.lua")
+local debugLog = requireModule("lib/debug_log.lua")
 
 local elrslink = {}
 

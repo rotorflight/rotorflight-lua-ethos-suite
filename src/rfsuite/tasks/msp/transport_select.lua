@@ -52,7 +52,8 @@ end
 
 local function load(protocol, moduleNumber)
   if protocol == "crsf" then
-    return assert(loadfile("tasks/msp/transport_crsf.lua"))()
+    local requireModule = assert(loadfile("lib/require.lua"))()
+    return requireModule("tasks/msp/transport_crsf.lua")
   end
   return assert(loadfile("tasks/msp/transport_sport.lua"))(moduleNumber or 0)
 end

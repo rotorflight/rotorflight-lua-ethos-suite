@@ -59,10 +59,11 @@
 -- that means exit. See app/navigation.lua's pop() for why those two are
 -- deliberately not the same check.
 
-local closeKey = assert(loadfile("app/close_key.lua"))()
-local header = assert(loadfile("app/header.lua"))()
-local memstats = assert(loadfile("lib/memstats.lua"))()
-local tileGrid = assert(loadfile("app/tile_grid.lua"))()
+local requireModule = assert(loadfile("lib/require.lua"))()
+local closeKey = requireModule("app/close_key.lua")
+local header = requireModule("app/header.lua")
+local memstats = requireModule("lib/memstats.lua")
+local tileGrid = requireModule("app/tile_grid.lua")
 
 local menu_container = {}
 

@@ -1,11 +1,12 @@
 -- Tools -> Copy Profiles page.
 
-local bus = assert(loadfile("lib/bus.lua"))()
-local closeKey = assert(loadfile("app/close_key.lua"))()
-local header = assert(loadfile("app/header.lua"))()
-local progressDialog = assert(loadfile("app/progress_dialog.lua"))()
-local copyProfile = assert(loadfile("lib/msp_copy_profile.lua"))()
-local eeprom = assert(loadfile("lib/msp_eeprom.lua"))()
+local requireModule = assert(loadfile("lib/require.lua"))()
+local bus = requireModule("lib/bus.lua")
+local closeKey = requireModule("app/close_key.lua")
+local header = requireModule("app/header.lua")
+local progressDialog = requireModule("app/progress_dialog.lua")
+local copyProfile = requireModule("lib/msp_copy_profile.lua")
+local eeprom = requireModule("lib/msp_eeprom.lua")
 
 local PAGE_TITLE = "@i18n(app.modules.copyprofiles.name)@"
 local BTN_OK = "@i18n(app.btn_ok_long)@"

@@ -1,8 +1,9 @@
 -- Shared Settings -> ActiveLook mode layout page.
 
-local bus = assert(loadfile("lib/bus.lua"))()
-local pageCommon = assert(loadfile("app/pages/settings_activelook_common.lua"))()
-local activeConfig = assert(loadfile("lib/activelook_config.lua"))()
+local requireModule = assert(loadfile("lib/require.lua"))()
+local bus = requireModule("lib/bus.lua")
+local pageCommon = requireModule("app/pages/settings_activelook_common.lua")
+local activeConfig = requireModule("lib/activelook_config.lua")
 
 local modePage = {}
 

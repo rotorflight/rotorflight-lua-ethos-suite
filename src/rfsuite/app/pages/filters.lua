@@ -26,9 +26,10 @@
 -- save, profile-switch-reload -- comes from app/page_runtime.lua, shared
 -- with every page. Field/row building comes from app/field_layout.lua.
 
-local pageRuntime = assert(loadfile("app/page_runtime.lua"))()
-local fieldLayout = assert(loadfile("app/field_layout.lua"))()
-local filterConfig = assert(loadfile("lib/msp_filter_config.lua"))()
+local requireModule = assert(loadfile("lib/require.lua"))()
+local pageRuntime = requireModule("app/page_runtime.lua")
+local fieldLayout = requireModule("app/field_layout.lua")
+local filterConfig = requireModule("lib/msp_filter_config.lua")
 
 local PAGE_TITLE = "@i18n(app.modules.filters.name)@"
 

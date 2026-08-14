@@ -1,7 +1,8 @@
 -- Old dashboard render flow adapted to Lite's isolated widget.
 
 local engine = {}
-local context = assert(loadfile("widgets/dashboard/context.lua"))()
+local requireModule = assert(loadfile("lib/require.lua"))()
+local context = requireModule("widgets/dashboard/context.lua")
 
 local floor = math.floor
 local ceil = math.ceil

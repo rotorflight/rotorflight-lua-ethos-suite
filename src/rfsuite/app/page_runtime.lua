@@ -49,15 +49,16 @@ if package.loaded["rfsuite.app.page_runtime"] then
   return package.loaded["rfsuite.app.page_runtime"]
 end
 
-local bus = assert(loadfile("lib/bus.lua"))()
-local eeprom = assert(loadfile("lib/msp_eeprom.lua"))()
-local reboot = assert(loadfile("lib/msp_reboot.lua"))()
-local closeKey = assert(loadfile("app/close_key.lua"))()
-local header = assert(loadfile("app/header.lua"))()
-local memstats = assert(loadfile("lib/memstats.lua"))()
-local settingsStore = assert(loadfile("lib/settings_store.lua"))()
-local debugLog = assert(loadfile("lib/debug_log.lua"))()
-local progressDialog = assert(loadfile("app/progress_dialog.lua"))()
+local requireModule = assert(loadfile("lib/require.lua"))()
+local bus = requireModule("lib/bus.lua")
+local eeprom = requireModule("lib/msp_eeprom.lua")
+local reboot = requireModule("lib/msp_reboot.lua")
+local closeKey = requireModule("app/close_key.lua")
+local header = requireModule("app/header.lua")
+local memstats = requireModule("lib/memstats.lua")
+local settingsStore = requireModule("lib/settings_store.lua")
+local debugLog = requireModule("lib/debug_log.lua")
+local progressDialog = requireModule("app/progress_dialog.lua")
 
 -- Generic dialog/progress text, matching rotorflight-lua-ethos-suite's own
 -- actual strings (app/tasks.lua's triggerSaveDialogs()/triggerReloadDialogs(),

@@ -1,7 +1,8 @@
 -- Per-flight-controller model preferences stored on the radio.
 
-local ini = assert(loadfile("lib/ini.lua"))()
-local tableClone = assert(loadfile("lib/table_clone.lua"))()
+local requireModule = assert(loadfile("lib/require.lua"))()
+local ini = requireModule("lib/ini.lua")
+local tableClone = requireModule("lib/table_clone.lua")
 
 local ROOT_DIR = "SCRIPTS:/rfsuite.user"
 local MODELS_DIR = ROOT_DIR .. "/models"

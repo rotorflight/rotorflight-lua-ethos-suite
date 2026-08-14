@@ -5,11 +5,12 @@
 -- edits without EEPROM while it is enabled. Save still commits the current
 -- values to EEPROM through page_runtime's normal flow.
 
-local bus = assert(loadfile("lib/bus.lua"))()
-local pageRuntime = assert(loadfile("app/page_runtime.lua"))()
-local mixerConfig = assert(loadfile("lib/msp_mixer_config.lua"))()
-local mixerInputFactory = assert(loadfile("lib/msp_mixer_input.lua"))()
-local mixerOverride = assert(loadfile("lib/msp_mixer_override.lua"))()
+local requireModule = assert(loadfile("lib/require.lua"))()
+local bus = requireModule("lib/bus.lua")
+local pageRuntime = requireModule("app/page_runtime.lua")
+local mixerConfig = requireModule("lib/msp_mixer_config.lua")
+local mixerInputFactory = requireModule("lib/msp_mixer_input.lua")
+local mixerOverride = requireModule("lib/msp_mixer_override.lua")
 
 local PAGE_TITLE = "@i18n(app.modules.mixer.geometry)@"
 local BTN_OK = "@i18n(app.btn_ok)@"

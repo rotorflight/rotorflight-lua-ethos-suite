@@ -47,9 +47,10 @@
 -- save, profile-switch-reload -- comes from app/page_runtime.lua, shared
 -- with every page.
 
-local pageRuntime = assert(loadfile("app/page_runtime.lua"))()
-local fieldLayout = assert(loadfile("app/field_layout.lua"))()
-local rcTuning = assert(loadfile("lib/msp_rc_tuning.lua"))()
+local requireModule = assert(loadfile("lib/require.lua"))()
+local pageRuntime = requireModule("app/page_runtime.lua")
+local fieldLayout = requireModule("app/field_layout.lua")
+local rcTuning = requireModule("lib/msp_rc_tuning.lua")
 
 local PAGE_TITLE = "@i18n(app.modules.rates_advanced.name)@"
 

@@ -1,8 +1,9 @@
 -- Setup -> Power -> Sources page.
 
-local pageRuntime = assert(loadfile("app/page_runtime.lua"))()
-local fieldLayout = assert(loadfile("app/field_layout.lua"))()
-local batteryConfig = assert(loadfile("lib/msp_battery_config.lua"))()
+local requireModule = assert(loadfile("lib/require.lua"))()
+local pageRuntime = requireModule("app/page_runtime.lua")
+local fieldLayout = requireModule("app/field_layout.lua")
+local batteryConfig = requireModule("lib/msp_battery_config.lua")
 
 local PAGE_TITLE = "@i18n(app.modules.power.source_name)@"
 

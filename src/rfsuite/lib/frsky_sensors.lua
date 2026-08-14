@@ -26,8 +26,9 @@
 
 local system_getSource = system.getSource
 local model_createSensor = model.createSensor
-local sidLookup = assert(loadfile("lib/frsky_sid_lookup.lua"))()
-local debugLog = assert(loadfile("lib/debug_log.lua"))()
+local requireModule = assert(loadfile("lib/require.lua"))()
+local sidLookup = requireModule("lib/frsky_sid_lookup.lua")
+local debugLog = requireModule("lib/debug_log.lua")
 
 -- Fixed physId/module every created sensor uses. 27 (0x1B) is
 -- SPORT_REMOTE_SENSOR_ID (see tasks/msp/transport_sport.lua) -- there's no

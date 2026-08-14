@@ -13,10 +13,11 @@
 -- summaries) lives in lib/elrslink_task.lua, not here -- this page only
 -- polls its accessors and renders them.
 
-local bus = assert(loadfile("lib/bus.lua"))()
-local closeKey = assert(loadfile("app/close_key.lua"))()
-local header = assert(loadfile("app/header.lua"))()
-local elrsTask = assert(loadfile("lib/elrslink_task.lua"))()
+local requireModule = assert(loadfile("lib/require.lua"))()
+local bus = requireModule("lib/bus.lua")
+local closeKey = requireModule("app/close_key.lua")
+local header = requireModule("app/header.lua")
+local elrsTask = requireModule("lib/elrslink_task.lua")
 
 local PAGE_TITLE = "@i18n(app.modules.diagnostics.name)@ / @i18n(app.modules.elrs_telemetry.name)@"
 

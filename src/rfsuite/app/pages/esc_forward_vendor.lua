@@ -4,14 +4,15 @@ if package.loaded["rfsuite.app.pages.esc_forward_vendor"] then
   return package.loaded["rfsuite.app.pages.esc_forward_vendor"]
 end
 
-local pageRuntime = assert(loadfile("app/page_runtime.lua"))()
-local fieldLayout = assert(loadfile("app/field_layout.lua"))()
-local fourWay = assert(loadfile("lib/msp_4wif_esc_fwd_prog.lua"))()
-local bus = assert(loadfile("lib/bus.lua"))()
-local closeKey = assert(loadfile("app/close_key.lua"))()
-local header = assert(loadfile("app/header.lua"))()
-local escError = assert(loadfile("app/esc_error.lua"))()
-local progressDialog = assert(loadfile("app/progress_dialog.lua"))()
+local requireModule = assert(loadfile("lib/require.lua"))()
+local pageRuntime = requireModule("app/page_runtime.lua")
+local fieldLayout = requireModule("app/field_layout.lua")
+local fourWay = requireModule("lib/msp_4wif_esc_fwd_prog.lua")
+local bus = requireModule("lib/bus.lua")
+local closeKey = requireModule("app/close_key.lua")
+local header = requireModule("app/header.lua")
+local escError = requireModule("app/esc_error.lua")
+local progressDialog = requireModule("app/progress_dialog.lua")
 
 local esc_forward_vendor = {}
 

@@ -5,12 +5,13 @@
 -- The Tool button sends MSP_ACC_CALIBRATION (cmd 205), then commits with
 -- EEPROM_WRITE and plays the shared beep.wav once the EEPROM ack lands.
 
-local bus = assert(loadfile("lib/bus.lua"))()
-local pageRuntime = assert(loadfile("app/page_runtime.lua"))()
-local fieldLayout = assert(loadfile("app/field_layout.lua"))()
-local eeprom = assert(loadfile("lib/msp_eeprom.lua"))()
-local accTrim = assert(loadfile("lib/msp_acc_trim.lua"))()
-local accCalibration = assert(loadfile("lib/msp_acc_calibration.lua"))()
+local requireModule = assert(loadfile("lib/require.lua"))()
+local bus = requireModule("lib/bus.lua")
+local pageRuntime = requireModule("app/page_runtime.lua")
+local fieldLayout = requireModule("app/field_layout.lua")
+local eeprom = requireModule("lib/msp_eeprom.lua")
+local accTrim = requireModule("lib/msp_acc_trim.lua")
+local accCalibration = requireModule("lib/msp_acc_calibration.lua")
 
 local PAGE_TITLE = "@i18n(app.modules.accelerometer.name)@"
 local BTN_OK = "@i18n(app.btn_ok)@"

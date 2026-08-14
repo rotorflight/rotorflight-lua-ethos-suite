@@ -1,8 +1,9 @@
 -- Small shared placeholder for Settings sections whose menu shape now exists
 -- but whose real editor is still to be built.
 
-local closeKey = assert(loadfile("app/close_key.lua"))()
-local header = assert(loadfile("app/header.lua"))()
+local requireModule = assert(loadfile("lib/require.lua"))()
+local closeKey = requireModule("app/close_key.lua")
+local header = requireModule("app/header.lua")
 
 local placeholder = {}
 

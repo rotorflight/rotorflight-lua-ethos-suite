@@ -5,12 +5,13 @@
 -- four-step read, full-slot sequential writes, and wakeup-driven live AUX
 -- pulse display/auto-detect behavior.
 
-local bus = assert(loadfile("lib/bus.lua"))()
-local closeKey = assert(loadfile("app/close_key.lua"))()
-local header = assert(loadfile("app/header.lua"))()
-local eeprom = assert(loadfile("lib/msp_eeprom.lua"))()
-local progressDialog = assert(loadfile("app/progress_dialog.lua"))()
-local mspModes = assert(loadfile("lib/msp_modes.lua"))()
+local requireModule = assert(loadfile("lib/require.lua"))()
+local bus = requireModule("lib/bus.lua")
+local closeKey = requireModule("app/close_key.lua")
+local header = requireModule("app/header.lua")
+local eeprom = requireModule("lib/msp_eeprom.lua")
+local progressDialog = requireModule("app/progress_dialog.lua")
+local mspModes = requireModule("lib/msp_modes.lua")
 
 local PAGE_TITLE = "@i18n(app.modules.modes.name)@"
 local BTN_ADD = "@i18n(app.btn_add)@"

@@ -105,12 +105,13 @@
 -- Everything else -- dialog/busy/save/reload/confirm state, long-press-
 -- save -- comes from app/page_runtime.lua, shared with every page.
 
-local pageRuntime = assert(loadfile("app/page_runtime.lua"))()
-local fieldLayout = assert(loadfile("app/field_layout.lua"))()
-local mspName = assert(loadfile("lib/msp_name.lua"))()
-local advancedConfig = assert(loadfile("lib/msp_advanced_config.lua"))()
-local featureConfig = assert(loadfile("lib/msp_feature_config.lua"))()
-local mspStatus = assert(loadfile("lib/msp_status.lua"))()
+local requireModule = assert(loadfile("lib/require.lua"))()
+local pageRuntime = requireModule("app/page_runtime.lua")
+local fieldLayout = requireModule("app/field_layout.lua")
+local mspName = requireModule("lib/msp_name.lua")
+local advancedConfig = requireModule("lib/msp_advanced_config.lua")
+local featureConfig = requireModule("lib/msp_feature_config.lua")
+local mspStatus = requireModule("lib/msp_status.lua")
 
 local PAGE_TITLE = "@i18n(app.modules.configuration.name)@"
 

@@ -1,10 +1,11 @@
 -- Setup -> Power -> Battery page.
 
-local pageRuntime = assert(loadfile("app/page_runtime.lua"))()
-local fieldLayout = assert(loadfile("app/field_layout.lua"))()
-local batteryConfig = assert(loadfile("lib/msp_battery_config.lua"))()
-local batteryProfile = assert(loadfile("lib/msp_battery_profile.lua"))()
-local bus = assert(loadfile("lib/bus.lua"))()
+local requireModule = assert(loadfile("lib/require.lua"))()
+local pageRuntime = requireModule("app/page_runtime.lua")
+local fieldLayout = requireModule("app/field_layout.lua")
+local batteryConfig = requireModule("lib/msp_battery_config.lua")
+local batteryProfile = requireModule("lib/msp_battery_profile.lua")
+local bus = requireModule("lib/bus.lua")
 
 local PAGE_TITLE = "@i18n(app.modules.power.battery_name)@"
 

@@ -15,20 +15,21 @@
 -- tasks/session.lua). This module never reads or writes anything
 -- belonging to the system tool or the dashboard widget.
 
-local bus = assert(loadfile("lib/bus.lua"))()
-local settingsStore = assert(loadfile("lib/settings_store.lua"))()
-local mspCommon = assert(loadfile("tasks/msp/common.lua"))()
-local mspTransportSelect = assert(loadfile("tasks/msp/transport_select.lua"))()
-local Scheduler = assert(loadfile("tasks/scheduler.lua"))()
-local telemetrySensors = assert(loadfile("lib/telemetry_sensors.lua"))()
+local requireModule = assert(loadfile("lib/require.lua"))()
+local bus = requireModule("lib/bus.lua")
+local settingsStore = requireModule("lib/settings_store.lua")
+local mspCommon = requireModule("tasks/msp/common.lua")
+local mspTransportSelect = requireModule("tasks/msp/transport_select.lua")
+local Scheduler = requireModule("tasks/scheduler.lua")
+local telemetrySensors = requireModule("lib/telemetry_sensors.lua")
 -- mspQueue is constructed with mspCommon explicitly, and handed to
 -- session.lua the same way -- see the comment atop tasks/msp/queue.lua for
 -- why nothing here may loadfile() its own second copy of either.
-local mspQueue = assert(loadfile("tasks/msp/queue.lua"))().new(mspCommon)
-local session = assert(loadfile("tasks/session.lua"))()
-local logging = assert(loadfile("tasks/logging.lua"))()
-local audioEvents = assert(loadfile("tasks/audio_events.lua"))()
-local audioSwitches = assert(loadfile("tasks/audio_switches.lua"))()
+local mspQueue = requireModule("tasks/msp/queue.lua").new(mspCommon)
+local session = requireModule("tasks/session.lua")
+local logging = requireModule("tasks/logging.lua")
+local audioEvents = requireModule("tasks/audio_events.lua")
+local audioSwitches = requireModule("tasks/audio_switches.lua")
 local scheduler = Scheduler.new()
 
 local TASK_STATUS_INTERVAL = 0.5
@@ -166,7 +167,7 @@ local function taskInit()
   -- Only ever loadfile'd/scheduled here, behind this one check -- see
   -- tasks/sim_sensors.lua's own header for why it costs nothing otherwise.
   if system.getVersion().simulation == true then
-    simSensors = simSensors or assert(loadfile("tasks/sim_sensors.lua"))()
+    simSensors = simSensors or requireModule("tasks/sim_sensors.lua")
     scheduler:add("sim_sensors", 2, function()
       simSensors.wakeup()
     end)

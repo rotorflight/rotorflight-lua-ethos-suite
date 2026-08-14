@@ -1,6 +1,7 @@
 -- Tools -> Diagnostics -> Status page.
 
-local common = assert(loadfile("app/diagnostics_common.lua"))()
+local requireModule = assert(loadfile("lib/require.lua"))()
+local common = requireModule("app/diagnostics_common.lua")
 
 local PAGE_TITLE = "@i18n(app.modules.diagnostics.name)@ / @i18n(app.modules.rfstatus.name)@"
 

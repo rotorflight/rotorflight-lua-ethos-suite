@@ -33,7 +33,8 @@
 
 local Queue = {}
 Queue.__index = Queue
-local debugLog = assert(loadfile("lib/debug_log.lua"))()
+local requireModule = assert(loadfile("lib/require.lua"))()
+local debugLog = requireModule("lib/debug_log.lua")
 
 local DEFAULT_RETRY_DELAY = 0.8
 local DEFAULT_MAX_RETRIES = 5

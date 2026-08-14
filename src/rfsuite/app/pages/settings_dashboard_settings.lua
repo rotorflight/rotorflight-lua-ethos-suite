@@ -4,12 +4,13 @@
 -- of dashboard themes that expose a configure.lua, with each tile opening
 -- that theme's own configuration form.
 
-local bus = assert(loadfile("lib/bus.lua"))()
-local closeKey = assert(loadfile("app/close_key.lua"))()
-local header = assert(loadfile("app/header.lua"))()
-local tileGrid = assert(loadfile("app/tile_grid.lua"))()
-local settingsStore = assert(loadfile("lib/settings_store.lua"))()
-local dashboardContext = assert(loadfile("widgets/dashboard/context.lua"))()
+local requireModule = assert(loadfile("lib/require.lua"))()
+local bus = requireModule("lib/bus.lua")
+local closeKey = requireModule("app/close_key.lua")
+local header = requireModule("app/header.lua")
+local tileGrid = requireModule("app/tile_grid.lua")
+local settingsStore = requireModule("lib/settings_store.lua")
+local dashboardContext = requireModule("widgets/dashboard/context.lua")
 
 local PAGE_TITLE = "@i18n(app.modules.settings.name)@ / @i18n(app.modules.settings.dashboard)@ / @i18n(app.modules.settings.dashboard_settings)@"
 local NO_THEMES = "@i18n(app.modules.settings.no_themes_available_to_configure)@"

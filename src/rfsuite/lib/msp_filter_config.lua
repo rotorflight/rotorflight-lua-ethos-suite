@@ -33,7 +33,8 @@ if package.loaded["rfsuite.lib.msp_filter_config"] then
   return package.loaded["rfsuite.lib.msp_filter_config"]
 end
 
-local mspcodec = assert(loadfile("lib/mspcodec.lua"))()
+local requireModule = assert(loadfile("lib/require.lua"))()
+local mspcodec = requireModule("lib/mspcodec.lua")
 
 local READ_COMMAND = 92
 local WRITE_COMMAND = 93

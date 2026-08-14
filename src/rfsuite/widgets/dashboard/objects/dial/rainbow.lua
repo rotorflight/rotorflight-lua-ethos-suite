@@ -48,7 +48,8 @@ needle styling
     needlehubsize           : number    -- (Optional) Needle hub circle radius (default: 7)
 ]]
 
-local rfsuite = assert(loadfile("widgets/dashboard/context.lua"))()
+local requireModule = assert(loadfile("lib/require.lua"))()
+local rfsuite = requireModule("widgets/dashboard/context.lua")
 local lcd = lcd
 
 local sin = math.sin

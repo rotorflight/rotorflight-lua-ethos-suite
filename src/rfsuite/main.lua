@@ -49,15 +49,16 @@ end
 local version = {major = 2, minor = 3, revision = 1, suffix = ""}
 
 local t0 = os.clock()
-local background_task = assert(loadfile("tasks/background.lua"))()
+local requireModule = assert(loadfile("lib/require.lua"))()
+local background_task = requireModule("tasks/background.lua")
 mark("tasks/background.lua load", t0)
 
 t0 = os.clock()
-local system_tool = assert(loadfile("app/tool.lua"))()
+local system_tool = requireModule("app/tool.lua")
 mark("app/tool.lua load", t0)
 
 t0 = os.clock()
-local dashboard_widget = assert(loadfile("widgets/dashboard.lua"))()
+local dashboard_widget = requireModule("widgets/dashboard.lua")
 mark("widgets/dashboard.lua load", t0)
 
 local activelook_widget = nil
@@ -77,7 +78,7 @@ local function init()
 
   if system.registerGlassesWidget then
     t0 = os.clock()
-    activelook_widget = assert(loadfile("widgets/activelook.lua"))()
+    activelook_widget = requireModule("widgets/activelook.lua")
     activelook_widget.init()
     mark("activelook_widget load+init", t0)
   end

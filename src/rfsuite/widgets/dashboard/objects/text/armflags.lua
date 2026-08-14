@@ -38,7 +38,8 @@ thresholds = {
 }
 ]]--
 
-local rfsuite = assert(loadfile("widgets/dashboard/context.lua"))()
+local requireModule = assert(loadfile("lib/require.lua"))()
+local rfsuite = requireModule("widgets/dashboard/context.lua")
 
 local floor = math.floor
 

@@ -18,9 +18,10 @@
 -- true` return flag. page_runtime.lua applies the same armed-state safety
 -- gate already used by Configuration.
 
-local pageRuntime = assert(loadfile("app/page_runtime.lua"))()
-local fieldLayout = assert(loadfile("app/field_layout.lua"))()
-local rcConfig = assert(loadfile("lib/msp_rc_config.lua"))()
+local requireModule = assert(loadfile("lib/require.lua"))()
+local pageRuntime = requireModule("app/page_runtime.lua")
+local fieldLayout = requireModule("app/field_layout.lua")
+local rcConfig = requireModule("lib/msp_rc_config.lua")
 
 local PAGE_TITLE = "@i18n(app.modules.radio_config.name)@"
 

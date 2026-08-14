@@ -1,8 +1,9 @@
 -- Setup -> Governor -> Filters page.
 
-local pageRuntime = assert(loadfile("app/page_runtime.lua"))()
-local fieldLayout = assert(loadfile("app/field_layout.lua"))()
-local governorConfig = assert(loadfile("lib/msp_governor_config.lua"))()
+local requireModule = assert(loadfile("lib/require.lua"))()
+local pageRuntime = requireModule("app/page_runtime.lua")
+local fieldLayout = requireModule("app/field_layout.lua")
+local governorConfig = requireModule("lib/msp_governor_config.lua")
 
 local PAGE_TITLE = "@i18n(app.modules.governor.menu_filters)@"
 

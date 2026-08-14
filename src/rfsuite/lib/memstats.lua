@@ -25,8 +25,9 @@ if package.loaded["rfsuite.lib.memstats"] then
 end
 
 local memstats = {}
-local bus = assert(loadfile("lib/bus.lua"))()
-local settingsStore = assert(loadfile("lib/settings_store.lua"))()
+local requireModule = assert(loadfile("lib/require.lua"))()
+local bus = requireModule("lib/bus.lua")
+local settingsStore = requireModule("lib/settings_store.lua")
 
 local settings = nil
 

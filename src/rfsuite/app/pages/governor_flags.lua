@@ -34,9 +34,10 @@
 -- save, profile-switch-reload -- comes from app/page_runtime.lua, shared
 -- with every page.
 
-local pageRuntime = assert(loadfile("app/page_runtime.lua"))()
-local fieldLayout = assert(loadfile("app/field_layout.lua"))()
-local governorProfile = assert(loadfile("lib/msp_governor_profile.lua"))()
+local requireModule = assert(loadfile("lib/require.lua"))()
+local pageRuntime = requireModule("app/page_runtime.lua")
+local fieldLayout = requireModule("app/field_layout.lua")
+local governorProfile = requireModule("lib/msp_governor_profile.lua")
 
 local PAGE_TITLE = "@i18n(app.modules.governor.name)@"
 

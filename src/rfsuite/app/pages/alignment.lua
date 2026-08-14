@@ -7,13 +7,14 @@
 -- fields; this page keeps that behavior while routing MSP traffic through
 -- this rebuild's bus/page_runtime architecture.
 
-local bus = assert(loadfile("lib/bus.lua"))()
-local pageRuntime = assert(loadfile("app/page_runtime.lua"))()
-local fieldLayout = assert(loadfile("app/field_layout.lua"))()
-local visual = assert(loadfile("app/alignment_visual.lua"))()
-local attitude = assert(loadfile("lib/msp_attitude.lua"))()
-local boardAlignment = assert(loadfile("lib/msp_board_alignment_config.lua"))()
-local sensorAlignment = assert(loadfile("lib/msp_sensor_alignment.lua"))()
+local requireModule = assert(loadfile("lib/require.lua"))()
+local bus = requireModule("lib/bus.lua")
+local pageRuntime = requireModule("app/page_runtime.lua")
+local fieldLayout = requireModule("app/field_layout.lua")
+local visual = requireModule("app/alignment_visual.lua")
+local attitude = requireModule("lib/msp_attitude.lua")
+local boardAlignment = requireModule("lib/msp_board_alignment_config.lua")
+local sensorAlignment = requireModule("lib/msp_sensor_alignment.lua")
 
 local PAGE_TITLE = "@i18n(app.modules.alignment.name)@"
 local floor = math.floor

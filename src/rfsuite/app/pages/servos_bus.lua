@@ -6,19 +6,20 @@
 --   config write index         = UI index + (servo_count - 18)
 -- Keep those translations local and explicit here.
 
-local bus = assert(loadfile("lib/bus.lua"))()
-local closeKey = assert(loadfile("app/close_key.lua"))()
-local fieldLayout = assert(loadfile("app/field_layout.lua"))()
-local header = assert(loadfile("app/header.lua"))()
-local pageRuntime = assert(loadfile("app/page_runtime.lua"))()
-local tileGrid = assert(loadfile("app/tile_grid.lua"))()
-local progressDialog = assert(loadfile("app/progress_dialog.lua"))()
-local eeprom = assert(loadfile("lib/msp_eeprom.lua"))()
-local mixerConfig = assert(loadfile("lib/msp_mixer_config.lua"))()
-local servoCenter = assert(loadfile("lib/msp_servo_center.lua"))()
-local servoConfig = assert(loadfile("lib/msp_servo_config.lua"))()
-local servoOverride = assert(loadfile("lib/msp_servo_override.lua"))()
-local status = assert(loadfile("lib/msp_status.lua"))()
+local requireModule = assert(loadfile("lib/require.lua"))()
+local bus = requireModule("lib/bus.lua")
+local closeKey = requireModule("app/close_key.lua")
+local fieldLayout = requireModule("app/field_layout.lua")
+local header = requireModule("app/header.lua")
+local pageRuntime = requireModule("app/page_runtime.lua")
+local tileGrid = requireModule("app/tile_grid.lua")
+local progressDialog = requireModule("app/progress_dialog.lua")
+local eeprom = requireModule("lib/msp_eeprom.lua")
+local mixerConfig = requireModule("lib/msp_mixer_config.lua")
+local servoCenter = requireModule("lib/msp_servo_center.lua")
+local servoConfig = requireModule("lib/msp_servo_config.lua")
+local servoOverride = requireModule("lib/msp_servo_override.lua")
+local status = requireModule("lib/msp_status.lua")
 
 local PAGE_TITLE = "@i18n(app.modules.servos.bus)@"
 local MSG_LOADING_TITLE = "@i18n(app.msg_loading)@"

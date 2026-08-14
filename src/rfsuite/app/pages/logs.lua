@@ -1,9 +1,10 @@
 -- System -> Logs browser/viewer.
 
-local closeKey = assert(loadfile("app/close_key.lua"))()
-local header = assert(loadfile("app/header.lua"))()
-local ini = assert(loadfile("lib/ini.lua"))()
-local tileGrid = assert(loadfile("app/tile_grid.lua"))()
+local requireModule = assert(loadfile("lib/require.lua"))()
+local closeKey = requireModule("app/close_key.lua")
+local header = requireModule("app/header.lua")
+local ini = requireModule("lib/ini.lua")
+local tileGrid = requireModule("app/tile_grid.lua")
 
 local PAGE_TITLE = "@i18n(app.modules.logs.name)@"
 local BASE_DIR = "LOGS:/rfsuite/telemetry"

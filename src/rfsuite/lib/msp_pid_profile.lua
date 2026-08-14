@@ -40,7 +40,8 @@ if package.loaded["rfsuite.lib.msp_pid_profile"] then
   return package.loaded["rfsuite.lib.msp_pid_profile"]
 end
 
-local mspcodec = assert(loadfile("lib/mspcodec.lua"))()
+local requireModule = assert(loadfile("lib/require.lua"))()
+local mspcodec = requireModule("lib/mspcodec.lua")
 
 local READ_COMMAND = 94
 local WRITE_COMMAND = 95

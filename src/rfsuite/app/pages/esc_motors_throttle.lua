@@ -1,8 +1,9 @@
 -- Setup -> ESC & Motors -> Throttle page.
 
-local pageRuntime = assert(loadfile("app/page_runtime.lua"))()
-local fieldLayout = assert(loadfile("app/field_layout.lua"))()
-local motorConfig = assert(loadfile("lib/msp_motor_config.lua"))()
+local requireModule = assert(loadfile("lib/require.lua"))()
+local pageRuntime = requireModule("app/page_runtime.lua")
+local fieldLayout = requireModule("app/field_layout.lua")
+local motorConfig = requireModule("lib/msp_motor_config.lua")
 
 local PAGE_TITLE = "@i18n(app.modules.esc_motors.throttle)@"
 

@@ -4,7 +4,8 @@ if package.loaded["rfsuite.lib.msp_esc_parameters_hw5"] then
   return package.loaded["rfsuite.lib.msp_esc_parameters_hw5"]
 end
 
-local mspcodec = assert(loadfile("lib/mspcodec.lua"))()
+local requireModule = assert(loadfile("lib/require.lua"))()
+local mspcodec = requireModule("lib/mspcodec.lua")
 
 local READ_COMMAND = 217
 local WRITE_COMMAND = 218

@@ -4,15 +4,16 @@ if package.loaded["rfsuite.app.pages.blackbox_edit_page"] then
   return package.loaded["rfsuite.app.pages.blackbox_edit_page"]
 end
 
-local bus = assert(loadfile("lib/bus.lua"))()
-local closeKey = assert(loadfile("app/close_key.lua"))()
-local header = assert(loadfile("app/header.lua"))()
-local progressDialog = assert(loadfile("app/progress_dialog.lua"))()
-local eeprom = assert(loadfile("lib/msp_eeprom.lua"))()
-local blackboxConfig = assert(loadfile("lib/msp_blackbox_config.lua"))()
-local dataflashSummary = assert(loadfile("lib/msp_dataflash_summary.lua"))()
-local sdcardSummary = assert(loadfile("lib/msp_sdcard_summary.lua"))()
-local featureConfig = assert(loadfile("lib/msp_feature_config.lua"))()
+local requireModule = assert(loadfile("lib/require.lua"))()
+local bus = requireModule("lib/bus.lua")
+local closeKey = requireModule("app/close_key.lua")
+local header = requireModule("app/header.lua")
+local progressDialog = requireModule("app/progress_dialog.lua")
+local eeprom = requireModule("lib/msp_eeprom.lua")
+local blackboxConfig = requireModule("lib/msp_blackbox_config.lua")
+local dataflashSummary = requireModule("lib/msp_dataflash_summary.lua")
+local sdcardSummary = requireModule("lib/msp_sdcard_summary.lua")
+local featureConfig = requireModule("lib/msp_feature_config.lua")
 
 local BTN_OK = "@i18n(app.btn_ok)@"
 local BTN_CANCEL = "@i18n(app.btn_cancel)@"

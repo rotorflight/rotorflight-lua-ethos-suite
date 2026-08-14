@@ -1,8 +1,9 @@
 -- Flight telemetry CSV logger, owned by the background task.
 
-local bus = assert(loadfile("lib/bus.lua"))()
-local settingsStore = assert(loadfile("lib/settings_store.lua"))()
-local debugLog = assert(loadfile("lib/debug_log.lua"))()
+local requireModule = assert(loadfile("lib/require.lua"))()
+local bus = requireModule("lib/bus.lua")
+local settingsStore = requireModule("lib/settings_store.lua")
+local debugLog = requireModule("lib/debug_log.lua")
 
 local FLUSH_INTERVAL = 2.5
 local FLUSH_QUEUE_SIZE = 20

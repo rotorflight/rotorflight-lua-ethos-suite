@@ -1,9 +1,10 @@
 -- Tools -> Diagnostics -> FBL Status page.
 
-local bus = assert(loadfile("lib/bus.lua"))()
-local common = assert(loadfile("app/diagnostics_common.lua"))()
-local mspStatus = assert(loadfile("lib/msp_status.lua"))()
-local dataflashSummary = assert(loadfile("lib/msp_dataflash_summary.lua"))()
+local requireModule = assert(loadfile("lib/require.lua"))()
+local bus = requireModule("lib/bus.lua")
+local common = requireModule("app/diagnostics_common.lua")
+local mspStatus = requireModule("lib/msp_status.lua")
+local dataflashSummary = requireModule("lib/msp_dataflash_summary.lua")
 
 local PAGE_TITLE = "@i18n(app.modules.diagnostics.name)@ / @i18n(app.modules.fblstatus.name)@"
 

@@ -16,7 +16,8 @@
 -- isSim branch for why the simulator override below only ever matters
 -- there -- real hardware ignores simulatorResponse entirely.
 
-local mspcodec = assert(loadfile("lib/mspcodec.lua"))()
+local requireModule = assert(loadfile("lib/require.lua"))()
+local mspcodec = requireModule("lib/mspcodec.lua")
 
 local READ_COMMAND = 1
 

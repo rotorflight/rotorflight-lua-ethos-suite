@@ -22,7 +22,8 @@
 -- beforeSave, which forces it to CUSTOM so a CRSF receiver actually sends
 -- the slots this page writes.
 
-local mspcodec = assert(loadfile("lib/mspcodec.lua"))()
+local requireModule = assert(loadfile("lib/require.lua"))()
+local mspcodec = requireModule("lib/mspcodec.lua")
 
 if package.loaded["rfsuite.lib.msp_telemetry_config"] then
   return package.loaded["rfsuite.lib.msp_telemetry_config"]

@@ -1,7 +1,8 @@
 -- Setup -> ESC & Motors -> Forward Programming -> Scorpion.
 
-local vendorPage = assert(loadfile("app/pages/esc_forward_vendor.lua"))()
-local msp = assert(loadfile("lib/msp_esc_parameters_scorpion.lua"))()
+local requireModule = assert(loadfile("lib/require.lua"))()
+local vendorPage = requireModule("app/pages/esc_forward_vendor.lua")
+local msp = requireModule("lib/msp_esc_parameters_scorpion.lua")
 
 local PAGE_TITLE = "@i18n(app.modules.esc_tools.mfg.scorp.name)@"
 local EXTRA_SAVE_MESSAGE = "@i18n(app.modules.esc_tools.mfg.scorp.extra_msg_save)@"

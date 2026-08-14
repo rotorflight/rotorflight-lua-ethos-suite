@@ -3,15 +3,16 @@
 -- Lite keeps the old dashboard's preflight/inflight/postflight theme shape,
 -- while loading only the selected theme and current state page.
 
-local bus = assert(loadfile("lib/bus.lua"))()
-local modelPreferences = assert(loadfile("lib/model_preferences.lua"))()
-local settingsStore = assert(loadfile("lib/settings_store.lua"))()
-local flightmode = assert(loadfile("widgets/dashboard/flightmode.lua"))()
-local dataflashErase = assert(loadfile("lib/msp_dataflash_erase.lua"))()
-local dataflashSummary = assert(loadfile("lib/msp_dataflash_summary.lua"))()
-local batteryProfileMsp = assert(loadfile("lib/msp_battery_profile.lua"))()
-local ethosVersion = assert(loadfile("lib/ethos_version.lua"))()
-local mspApiVersion = assert(loadfile("lib/msp_api_version.lua"))()
+local requireModule = assert(loadfile("lib/require.lua"))()
+local bus = requireModule("lib/bus.lua")
+local modelPreferences = requireModule("lib/model_preferences.lua")
+local settingsStore = requireModule("lib/settings_store.lua")
+local flightmode = requireModule("widgets/dashboard/flightmode.lua")
+local dataflashErase = requireModule("lib/msp_dataflash_erase.lua")
+local dataflashSummary = requireModule("lib/msp_dataflash_summary.lua")
+local batteryProfileMsp = requireModule("lib/msp_battery_profile.lua")
+local ethosVersion = requireModule("lib/ethos_version.lua")
+local mspApiVersion = requireModule("lib/msp_api_version.lua")
 
 local THEME_DIRS = {
   ["aerc-n"] = "widgets/dashboard/themes/aerc-n",
@@ -98,7 +99,7 @@ end
 
 local function ensureDashboardContext()
   if not dashboardContext then
-    dashboardContext = assert(loadfile("widgets/dashboard/context.lua"))()
+    dashboardContext = requireModule("widgets/dashboard/context.lua")
   end
   return dashboardContext
 end
@@ -114,7 +115,7 @@ end
 
 local function ensureDashboardEngine()
   if not dashboardEngine then
-    dashboardEngine = assert(loadfile("widgets/dashboard/engine.lua"))()
+    dashboardEngine = requireModule("widgets/dashboard/engine.lua")
   end
   return dashboardEngine
 end

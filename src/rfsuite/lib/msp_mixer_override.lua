@@ -5,7 +5,8 @@ if package.loaded["rfsuite.lib.msp_mixer_override"] then
   return package.loaded["rfsuite.lib.msp_mixer_override"]
 end
 
-local mspcodec = assert(loadfile("lib/mspcodec.lua"))()
+local requireModule = assert(loadfile("lib/require.lua"))()
+local mspcodec = requireModule("lib/mspcodec.lua")
 
 local WRITE_COMMAND = 191
 local OVERRIDE_OFF = 2501

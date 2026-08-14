@@ -6,7 +6,8 @@
   Pilots can set their helicopter's max headspeed and override the voltage range.
 ]] --
 
-local rfsuite = assert(loadfile("widgets/dashboard/context.lua"))()
+local requireModule = assert(loadfile("lib/require.lua"))()
+local rfsuite = requireModule("widgets/dashboard/context.lua")
 
 local floor    = math.floor
 local pairs    = pairs

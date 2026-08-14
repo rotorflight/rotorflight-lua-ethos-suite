@@ -5,9 +5,10 @@
 -- roll/pitch/collective mixer input rates; magnitudes and limits are
 -- preserved exactly as read from the FC.
 
-local pageRuntime = assert(loadfile("app/page_runtime.lua"))()
-local mixerConfig = assert(loadfile("lib/msp_mixer_config.lua"))()
-local mixerInputFactory = assert(loadfile("lib/msp_mixer_input.lua"))()
+local requireModule = assert(loadfile("lib/require.lua"))()
+local pageRuntime = requireModule("app/page_runtime.lua")
+local mixerConfig = requireModule("lib/msp_mixer_config.lua")
+local mixerInputFactory = requireModule("lib/msp_mixer_input.lua")
 
 local PAGE_TITLE = "@i18n(app.modules.mixer.swash)@"
 

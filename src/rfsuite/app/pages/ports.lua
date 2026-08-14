@@ -5,15 +5,16 @@
 -- writes a single port record, and the original suite writes one packet
 -- per reported port before EEPROM_WRITE + reboot.
 
-local bus = assert(loadfile("lib/bus.lua"))()
-local header = assert(loadfile("app/header.lua"))()
-local closeKey = assert(loadfile("app/close_key.lua"))()
-local memstats = assert(loadfile("lib/memstats.lua"))()
-local progressDialog = assert(loadfile("app/progress_dialog.lua"))()
-local serialConfig = assert(loadfile("lib/msp_serial_config.lua"))()
-local rxConfig = assert(loadfile("lib/msp_rx_config.lua"))()
-local eeprom = assert(loadfile("lib/msp_eeprom.lua"))()
-local reboot = assert(loadfile("lib/msp_reboot.lua"))()
+local requireModule = assert(loadfile("lib/require.lua"))()
+local bus = requireModule("lib/bus.lua")
+local header = requireModule("app/header.lua")
+local closeKey = requireModule("app/close_key.lua")
+local memstats = requireModule("lib/memstats.lua")
+local progressDialog = requireModule("app/progress_dialog.lua")
+local serialConfig = requireModule("lib/msp_serial_config.lua")
+local rxConfig = requireModule("lib/msp_rx_config.lua")
+local eeprom = requireModule("lib/msp_eeprom.lua")
+local reboot = requireModule("lib/msp_reboot.lua")
 
 local PAGE_TITLE = "@i18n(app.modules.ports.name)@"
 local MSG_SAVE_TITLE = "@i18n(app.msg_save_settings)@"

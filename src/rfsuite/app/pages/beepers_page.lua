@@ -7,12 +7,13 @@ if package.loaded["rfsuite.app.pages.beepers_page"] then
   return package.loaded["rfsuite.app.pages.beepers_page"]
 end
 
-local bus = assert(loadfile("lib/bus.lua"))()
-local closeKey = assert(loadfile("app/close_key.lua"))()
-local header = assert(loadfile("app/header.lua"))()
-local progressDialog = assert(loadfile("app/progress_dialog.lua"))()
-local eeprom = assert(loadfile("lib/msp_eeprom.lua"))()
-local beeperConfig = assert(loadfile("lib/msp_beeper_config.lua"))()
+local requireModule = assert(loadfile("lib/require.lua"))()
+local bus = requireModule("lib/bus.lua")
+local closeKey = requireModule("app/close_key.lua")
+local header = requireModule("app/header.lua")
+local progressDialog = requireModule("app/progress_dialog.lua")
+local eeprom = requireModule("lib/msp_eeprom.lua")
+local beeperConfig = requireModule("lib/msp_beeper_config.lua")
 
 local BTN_OK = "@i18n(app.btn_ok)@"
 local BTN_CANCEL = "@i18n(app.btn_cancel)@"

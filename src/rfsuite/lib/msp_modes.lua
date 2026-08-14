@@ -7,7 +7,8 @@ if package.loaded["rfsuite.lib.msp_modes"] then
   return package.loaded["rfsuite.lib.msp_modes"]
 end
 
-local mspcodec = assert(loadfile("lib/mspcodec.lua"))()
+local requireModule = assert(loadfile("lib/require.lua"))()
+local mspcodec = requireModule("lib/mspcodec.lua")
 
 local msp_modes = {
   BOXIDS_COMMAND = 119,

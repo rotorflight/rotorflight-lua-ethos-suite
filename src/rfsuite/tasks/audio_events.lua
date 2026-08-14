@@ -1,7 +1,8 @@
 -- Lightweight session-driven audio events.
 
-local bus = assert(loadfile("lib/bus.lua"))()
-local settingsStore = assert(loadfile("lib/settings_store.lua"))()
+local requireModule = assert(loadfile("lib/require.lua"))()
+local bus = requireModule("lib/bus.lua")
+local settingsStore = requireModule("lib/settings_store.lua")
 
 local audio_events = {}
 
@@ -297,7 +298,7 @@ local function announceGovernor()
 end
 
 local function ensureAdjWavs()
-  if not adjWavs then adjWavs = assert(loadfile("tasks/adjfunctions/wavs.lua"))() end
+  if not adjWavs then adjWavs = requireModule("tasks/adjfunctions/wavs.lua") end
   return adjWavs
 end
 

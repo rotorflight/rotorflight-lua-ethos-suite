@@ -1,9 +1,10 @@
 -- Setup -> Power -> Alerts page.
 
-local bus = assert(loadfile("lib/bus.lua"))()
-local closeKey = assert(loadfile("app/close_key.lua"))()
-local header = assert(loadfile("app/header.lua"))()
-local modelPreferences = assert(loadfile("lib/model_preferences.lua"))()
+local requireModule = assert(loadfile("lib/require.lua"))()
+local bus = requireModule("lib/bus.lua")
+local closeKey = requireModule("app/close_key.lua")
+local header = requireModule("app/header.lua")
+local modelPreferences = requireModule("lib/model_preferences.lua")
 
 local PAGE_TITLE = "@i18n(app.modules.power.alert_name)@"
 local BTN_OK = "@i18n(app.btn_ok)@"

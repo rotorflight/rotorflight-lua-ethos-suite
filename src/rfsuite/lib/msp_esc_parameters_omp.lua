@@ -4,7 +4,8 @@ if package.loaded["rfsuite.lib.msp_esc_parameters_omp"] then
   return package.loaded["rfsuite.lib.msp_esc_parameters_omp"]
 end
 
-local base = assert(loadfile("lib/msp_esc_parameters_xdfly.lua"))()
+local requireModule = assert(loadfile("lib/require.lua"))()
+local base = requireModule("lib/msp_esc_parameters_xdfly.lua")
 
 local msp = {}
 for key, value in pairs(base) do msp[key] = value end

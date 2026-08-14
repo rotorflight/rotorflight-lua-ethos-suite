@@ -28,9 +28,10 @@
 -- file once app/pages/tail_rotor.lua needed the identical helpers. This
 -- file now only owns the MSP_PID_PROFILE codec and which fields to show.
 
-local pageRuntime = assert(loadfile("app/page_runtime.lua"))()
-local fieldLayout = assert(loadfile("app/field_layout.lua"))()
-local pidProfile = assert(loadfile("lib/msp_pid_profile.lua"))()
+local requireModule = assert(loadfile("lib/require.lua"))()
+local pageRuntime = requireModule("app/page_runtime.lua")
+local fieldLayout = requireModule("app/field_layout.lua")
+local pidProfile = requireModule("lib/msp_pid_profile.lua")
 
 local PAGE_TITLE = "@i18n(app.modules.pid_controller.name)@"
 

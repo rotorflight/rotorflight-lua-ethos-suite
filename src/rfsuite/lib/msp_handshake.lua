@@ -17,7 +17,8 @@
 -- flightmode/modelpreferences/sensorstats/timer/rateprofile, which in the
 -- original are local bookkeeping with no MSP traffic at all.
 
-local mspcodec = assert(loadfile("lib/mspcodec.lua"))()
+local requireModule = assert(loadfile("lib/require.lua"))()
+local mspcodec = requireModule("lib/mspcodec.lua")
 
 local msp_handshake = {}
 

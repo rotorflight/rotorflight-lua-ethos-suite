@@ -4,13 +4,14 @@ if package.loaded["rfsuite.app.pages.esc_forward_4way"] then
   return package.loaded["rfsuite.app.pages.esc_forward_4way"]
 end
 
-local fourWay = assert(loadfile("lib/msp_4wif_esc_fwd_prog.lua"))()
-local motorConfig = assert(loadfile("lib/msp_motor_config.lua"))()
-local bus = assert(loadfile("lib/bus.lua"))()
-local closeKey = assert(loadfile("app/close_key.lua"))()
-local header = assert(loadfile("app/header.lua"))()
-local escError = assert(loadfile("app/esc_error.lua"))()
-local progressDialog = assert(loadfile("app/progress_dialog.lua"))()
+local requireModule = assert(loadfile("lib/require.lua"))()
+local fourWay = requireModule("lib/msp_4wif_esc_fwd_prog.lua")
+local motorConfig = requireModule("lib/msp_motor_config.lua")
+local bus = requireModule("lib/bus.lua")
+local closeKey = requireModule("app/close_key.lua")
+local header = requireModule("app/header.lua")
+local escError = requireModule("app/esc_error.lua")
+local progressDialog = requireModule("app/progress_dialog.lua")
 
 local SELECT_ESC = "@i18n(app.modules.esc_tools.select_esc)@"
 local OPEN_LABEL = "@i18n(app.modules.esc_tools.open)@"

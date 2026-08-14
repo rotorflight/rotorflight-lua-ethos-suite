@@ -1,6 +1,7 @@
 -- Controls -> Beepers -> ESC Beacon page.
 
-local beepersPage = assert(loadfile("app/pages/beepers_page.lua"))()
+local requireModule = assert(loadfile("lib/require.lua"))()
+local beepersPage = requireModule("app/pages/beepers_page.lua")
 
 local page = beepersPage.new({
   title = "@i18n(app.modules.beepers.name)@ / @i18n(app.modules.beepers.menu_dshot)@",

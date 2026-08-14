@@ -32,10 +32,11 @@
 -- This file only owns which two MSP codecs to use and which fields to
 -- show from each.
 
-local pageRuntime = assert(loadfile("app/page_runtime.lua"))()
-local fieldLayout = assert(loadfile("app/field_layout.lua"))()
-local pidProfile = assert(loadfile("lib/msp_pid_profile.lua"))()
-local governorProfile = assert(loadfile("lib/msp_governor_profile.lua"))()
+local requireModule = assert(loadfile("lib/require.lua"))()
+local pageRuntime = requireModule("app/page_runtime.lua")
+local fieldLayout = requireModule("app/field_layout.lua")
+local pidProfile = requireModule("lib/msp_pid_profile.lua")
+local governorProfile = requireModule("lib/msp_governor_profile.lua")
 
 local PAGE_TITLE = "@i18n(app.modules.tail_rotor.name)@"
 

@@ -1,7 +1,8 @@
 -- ESC forward-programming menu gate, based on MSP_ESC_SENSOR_CONFIG.protocol.
 
-local bus = assert(loadfile("lib/bus.lua"))()
-local escSensorConfig = assert(loadfile("lib/msp_esc_sensor_config.lua"))()
+local requireModule = assert(loadfile("lib/require.lua"))()
+local bus = requireModule("lib/bus.lua")
+local escSensorConfig = requireModule("lib/msp_esc_sensor_config.lua")
 
 local esc_protocol_guard = {}
 

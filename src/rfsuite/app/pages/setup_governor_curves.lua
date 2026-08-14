@@ -1,7 +1,8 @@
 -- Setup -> Governor -> Bypass Curve page.
 
-local pageRuntime = assert(loadfile("app/page_runtime.lua"))()
-local governorConfig = assert(loadfile("lib/msp_governor_config.lua"))()
+local requireModule = assert(loadfile("lib/require.lua"))()
+local pageRuntime = requireModule("app/page_runtime.lua")
+local governorConfig = requireModule("lib/msp_governor_config.lua")
 
 local PAGE_TITLE = "@i18n(app.modules.governor.menu_curves_long)@"
 local FIELD_COUNT = 9

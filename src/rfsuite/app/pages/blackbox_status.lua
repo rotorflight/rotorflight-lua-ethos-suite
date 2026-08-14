@@ -1,12 +1,13 @@
 -- Controls -> Blackbox -> Status page.
 
-local bus = assert(loadfile("lib/bus.lua"))()
-local closeKey = assert(loadfile("app/close_key.lua"))()
-local header = assert(loadfile("app/header.lua"))()
-local progressDialog = assert(loadfile("app/progress_dialog.lua"))()
-local dataflashSummary = assert(loadfile("lib/msp_dataflash_summary.lua"))()
-local sdcardSummary = assert(loadfile("lib/msp_sdcard_summary.lua"))()
-local dataflashErase = assert(loadfile("lib/msp_dataflash_erase.lua"))()
+local requireModule = assert(loadfile("lib/require.lua"))()
+local bus = requireModule("lib/bus.lua")
+local closeKey = requireModule("app/close_key.lua")
+local header = requireModule("app/header.lua")
+local progressDialog = requireModule("app/progress_dialog.lua")
+local dataflashSummary = requireModule("lib/msp_dataflash_summary.lua")
+local sdcardSummary = requireModule("lib/msp_sdcard_summary.lua")
+local dataflashErase = requireModule("lib/msp_dataflash_erase.lua")
 
 local PAGE_TITLE = "@i18n(app.modules.blackbox.name)@ / @i18n(app.modules.blackbox.menu_status)@"
 local BTN_OK = "@i18n(app.btn_ok)@"

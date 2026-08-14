@@ -5,12 +5,13 @@
 -- without EEPROM so the pilot can trim servos interactively. Save still
 -- commits through the normal page_runtime EEPROM path.
 
-local bus = assert(loadfile("lib/bus.lua"))()
-local pageRuntime = assert(loadfile("app/page_runtime.lua"))()
-local header = assert(loadfile("app/header.lua"))()
-local closeKey = assert(loadfile("app/close_key.lua"))()
-local mixerConfig = assert(loadfile("lib/msp_mixer_config.lua"))()
-local mixerOverride = assert(loadfile("lib/msp_mixer_override.lua"))()
+local requireModule = assert(loadfile("lib/require.lua"))()
+local bus = requireModule("lib/bus.lua")
+local pageRuntime = requireModule("app/page_runtime.lua")
+local header = requireModule("app/header.lua")
+local closeKey = requireModule("app/close_key.lua")
+local mixerConfig = requireModule("lib/msp_mixer_config.lua")
+local mixerOverride = requireModule("lib/msp_mixer_override.lua")
 
 local PAGE_TITLE = "@i18n(app.modules.mixer.trims)@"
 local MSG_LOADING = "@i18n(app.msg_loading)@"

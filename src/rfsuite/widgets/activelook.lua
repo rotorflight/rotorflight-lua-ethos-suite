@@ -1,9 +1,10 @@
 -- Rotorflight ActiveLook widget.
 
-local bus = assert(loadfile("lib/bus.lua"))()
-local settingsStore = assert(loadfile("lib/settings_store.lua"))()
-local activeConfig = assert(loadfile("lib/activelook_config.lua"))()
-local flightmode = assert(loadfile("widgets/dashboard/flightmode.lua"))()
+local requireModule = assert(loadfile("lib/require.lua"))()
+local bus = requireModule("lib/bus.lua")
+local settingsStore = requireModule("lib/settings_store.lua")
+local activeConfig = requireModule("lib/activelook_config.lua")
+local flightmode = requireModule("widgets/dashboard/flightmode.lua")
 
 local os_clock = os.clock
 local floor = math.floor

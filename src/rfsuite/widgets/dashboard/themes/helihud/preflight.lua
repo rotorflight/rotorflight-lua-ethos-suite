@@ -1,8 +1,9 @@
 --[[ HeliHUD preflight.lua ]] --
-local rfsuite = assert(loadfile("widgets/dashboard/context.lua"))()
+local requireModule = assert(loadfile("lib/require.lua"))()
+local rfsuite = requireModule("widgets/dashboard/context.lua")
 local lcd = lcd
 
-local common = assert(loadfile("widgets/dashboard/themes/helihud/common.lua"))()
+local common = requireModule("widgets/dashboard/themes/helihud/common.lua")
 
 local boxes_cache = nil
 local lastScreenW = nil

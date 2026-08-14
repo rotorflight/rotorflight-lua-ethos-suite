@@ -21,8 +21,9 @@
 -- "armed" safety check yet, since this lite rebuild has no connection/
 -- telemetry-state subsystem to check against.
 
-local pageRuntime = assert(loadfile("app/page_runtime.lua"))()
-local pidTuning = assert(loadfile("lib/msp_pid_tuning.lua"))()
+local requireModule = assert(loadfile("lib/require.lua"))()
+local pageRuntime = requireModule("app/page_runtime.lua")
+local pidTuning = requireModule("lib/msp_pid_tuning.lua")
 
 local PAGE_TITLE = "@i18n(app.modules.pids.name)@"
 

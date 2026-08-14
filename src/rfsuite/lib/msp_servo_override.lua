@@ -5,7 +5,8 @@ if package.loaded["rfsuite.lib.msp_servo_override"] then
   return package.loaded["rfsuite.lib.msp_servo_override"]
 end
 
-local mspcodec = assert(loadfile("lib/mspcodec.lua"))()
+local requireModule = assert(loadfile("lib/require.lua"))()
+local mspcodec = requireModule("lib/mspcodec.lua")
 
 local WRITE_COMMAND = 193
 local WRITE_ALL_COMMAND = 196

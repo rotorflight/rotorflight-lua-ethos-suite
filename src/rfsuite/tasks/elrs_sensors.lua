@@ -40,10 +40,11 @@
 -- standalone (non-aggregate) wire SID would use instead, not what the
 -- aggregate path itself does.
 
-local elrsDecode = assert(loadfile("lib/elrs_decode_primitives.lua"))()
-local sidLookup = assert(loadfile("lib/elrs_sid_lookup.lua"))()
-local DiySensor = assert(loadfile("lib/diy_sensor.lua"))()
-local debugLog = assert(loadfile("lib/debug_log.lua"))()
+local requireModule = assert(loadfile("lib/require.lua"))()
+local elrsDecode = requireModule("lib/elrs_decode_primitives.lua")
+local sidLookup = requireModule("lib/elrs_sid_lookup.lua")
+local DiySensor = requireModule("lib/diy_sensor.lua")
+local debugLog = requireModule("lib/debug_log.lua")
 
 -- ELRS/CRSF DIY sensors use module 1 (external RF module bay), matching
 -- the original's own hardcoded choice for this protocol -- see
@@ -157,7 +158,7 @@ end
 
 local function buildSensorTable()
   if sensorTable then return end
-  local factory = assert(loadfile("lib/elrs_sensor_table.lua"))()
+  local factory = requireModule("lib/elrs_sensor_table.lua")
   sensorTable = factory({
     decNil = elrsDecode.decNil,
     decU8 = elrsDecode.decU8,

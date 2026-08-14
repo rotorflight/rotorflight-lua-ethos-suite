@@ -54,7 +54,8 @@ Battery Ring Mode (Optional fuel-based battery style)
     ringbattsubpaddingbottom : number    -- (Optional) Bottom padding override for subtext
 ]]
 
-local rfsuite = assert(loadfile("widgets/dashboard/context.lua"))()
+local requireModule = assert(loadfile("lib/require.lua"))()
+local rfsuite = requireModule("widgets/dashboard/context.lua")
 local lcd = lcd
 
 local floor = math.floor

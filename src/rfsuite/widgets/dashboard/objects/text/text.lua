@@ -32,7 +32,8 @@ This widget is for **static or label text only**. It does not support live telem
 If you need dynamic stats or telemetry (min/max/live), use `stats.lua` or other appropriate widgets.
 ]]
 
-local rfsuite = assert(loadfile("widgets/dashboard/context.lua"))()
+local requireModule = assert(loadfile("lib/require.lua"))()
+local rfsuite = requireModule("widgets/dashboard/context.lua")
 
 local tostring = tostring
 

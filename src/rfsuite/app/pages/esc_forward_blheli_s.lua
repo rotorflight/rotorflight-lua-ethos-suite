@@ -1,8 +1,9 @@
 -- Setup -> ESC & Motors -> Forward Programming -> BLHeli_S.
 
-local vendorPage = assert(loadfile("app/pages/esc_forward_vendor.lua"))()
-local fourWayPage = assert(loadfile("app/pages/esc_forward_4way.lua"))()
-local msp = assert(loadfile("lib/msp_esc_parameters_blheli_s.lua"))()
+local requireModule = assert(loadfile("lib/require.lua"))()
+local vendorPage = requireModule("app/pages/esc_forward_vendor.lua")
+local fourWayPage = requireModule("app/pages/esc_forward_4way.lua")
+local msp = requireModule("lib/msp_esc_parameters_blheli_s.lua")
 
 local PAGE_TITLE = "@i18n(app.modules.esc_tools.mfg.blheli_s.name)@"
 

@@ -1,9 +1,10 @@
 -- Setup -> ESC & Motors -> RPM page.
 
-local pageRuntime = assert(loadfile("app/page_runtime.lua"))()
-local fieldLayout = assert(loadfile("app/field_layout.lua"))()
-local featureConfig = assert(loadfile("lib/msp_feature_config.lua"))()
-local motorConfig = assert(loadfile("lib/msp_motor_config.lua"))()
+local requireModule = assert(loadfile("lib/require.lua"))()
+local pageRuntime = requireModule("app/page_runtime.lua")
+local fieldLayout = requireModule("app/field_layout.lua")
+local featureConfig = requireModule("lib/msp_feature_config.lua")
+local motorConfig = requireModule("lib/msp_motor_config.lua")
 
 local PAGE_TITLE = "@i18n(app.modules.esc_motors.rpm)@"
 

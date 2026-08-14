@@ -15,13 +15,14 @@
 -- it does is via lib/bus.lua's "msp.request" topic, and only indirectly,
 -- via whichever page is currently open.
 
-local navigation = assert(loadfile("app/navigation.lua"))()
-local menuContainer = assert(loadfile("app/menu_container.lua"))()
-local memstats = assert(loadfile("lib/memstats.lua"))()
-local bus = assert(loadfile("lib/bus.lua"))()
-local escProtocolGuard = assert(loadfile("app/esc_protocol_guard.lua"))()
-local servoBusGuard = assert(loadfile("app/servo_bus_guard.lua"))()
-local settingsStore = assert(loadfile("lib/settings_store.lua"))()
+local requireModule = assert(loadfile("lib/require.lua"))()
+local navigation = requireModule("app/navigation.lua")
+local menuContainer = requireModule("app/menu_container.lua")
+local memstats = requireModule("lib/memstats.lua")
+local bus = requireModule("lib/bus.lua")
+local escProtocolGuard = requireModule("app/esc_protocol_guard.lua")
+local servoBusGuard = requireModule("app/servo_bus_guard.lua")
+local settingsStore = requireModule("lib/settings_store.lua")
 
 local developerModeEnabled = false
 

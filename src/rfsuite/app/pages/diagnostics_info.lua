@@ -1,7 +1,8 @@
 -- Tools -> Diagnostics -> Info page.
 
-local common = assert(loadfile("app/diagnostics_common.lua"))()
-local buildInfo = assert(loadfile("lib/build_info.lua"))()
+local requireModule = assert(loadfile("lib/require.lua"))()
+local common = requireModule("app/diagnostics_common.lua")
+local buildInfo = requireModule("lib/build_info.lua")
 
 local PAGE_TITLE = "@i18n(app.modules.diagnostics.name)@ / @i18n(app.modules.info.name)@"
 local SUPPORTED_MSP = "12.09+"

@@ -14,10 +14,11 @@
 -- EEPROM write and reboot-after-save path. The header Tool button applies
 -- the original default sensor set.
 
-local pageRuntime = assert(loadfile("app/page_runtime.lua"))()
-local featureConfig = assert(loadfile("lib/msp_feature_config.lua"))()
-local telemetryConfig = assert(loadfile("lib/msp_telemetry_config.lua"))()
-local catalog = assert(loadfile("lib/telemetry_sensor_catalog.lua"))()
+local requireModule = assert(loadfile("lib/require.lua"))()
+local pageRuntime = requireModule("app/page_runtime.lua")
+local featureConfig = requireModule("lib/msp_feature_config.lua")
+local telemetryConfig = requireModule("lib/msp_telemetry_config.lua")
+local catalog = requireModule("lib/telemetry_sensor_catalog.lua")
 
 local PAGE_TITLE = "@i18n(app.modules.telemetry.name)@"
 local BTN_OK = "@i18n(app.btn_ok)@"
