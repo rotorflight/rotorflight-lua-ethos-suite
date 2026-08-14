@@ -168,12 +168,25 @@ local function open(opts)
     state.display.pitch_degrees = board.pitch_degrees or 0
     state.display.yaw_degrees = board.yaw_degrees or 0
     state.display.mag_alignment = sensor.mag_alignment or 0
-    if not state.baselineCaptured then
-      state.baseline.roll_degrees = state.display.roll_degrees
-      state.baseline.pitch_degrees = state.display.pitch_degrees
-      state.baseline.yaw_degrees = state.display.yaw_degrees
-      state.baselineCaptured = true
-    end
+  end
+
+  -- Deliberately NOT folded into syncDisplayFromData() above: that runs
+  -- from onPaint too, and Ethos calls a freshly-built field's paint (so
+  -- this page's onPaint, hence syncDisplayFromData()) before loadInitial()
+  -- has gotten anywhere -- see page_runtime.lua's PageRuntime.new() comment
+  -- on why self.data[source.key] is pre-seeded to {}. Capturing baseline
+  -- there would latch it onto that pre-seeded {roll=0,pitch=0,yaw=0}
+  -- forever, before the real saved offsets ever arrive, silently turning
+  -- the live+display-baseline math back into plain live+display -- the
+  -- exact double-count bug this baseline exists to fix. Only call this
+  -- from onLoaded, which page_runtime.lua defers until after loadData()'s
+  -- full read has actually landed in runtime.data.
+  local function captureBaselineIfNeeded()
+    if state.baselineCaptured then return end
+    state.baseline.roll_degrees = state.display.roll_degrees
+    state.baseline.pitch_degrees = state.display.pitch_degrees
+    state.baseline.yaw_degrees = state.display.yaw_degrees
+    state.baselineCaptured = true
   end
 
   runtime = pageRuntime.new({
@@ -194,6 +207,7 @@ local function open(opts)
     },
     onLoaded = function()
       syncDisplayFromData()
+      captureBaselineIfNeeded()
       if state.autoRecenterPending then
         recenterYaw()
       end
