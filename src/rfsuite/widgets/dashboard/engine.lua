@@ -17,48 +17,6 @@ local preparedH = nil
 local preparedObjectsLoaded = false
 local wakeCursor = 1
 local wakePassCount = 0
--- Hybrid safety cap on the very first wake pass (see wakeObjects()'s own
--- comment on why that pass is otherwise a full, unpaced sweep of every
--- box): still backstopped by wakeOne()'s own instruction-budget catch
--- below for whatever this doesn't already prevent, but proactively caps
--- the attempt so a dense theme's first tick isn't the one place that
--- catch actually has to fire. Deliberately higher than any per-tick
--- steady-state pace would be (this is a one-off, not a recurring cost),
--- and only ever a ceiling -- a theme with fewer boxes than this still
--- completes its first pass in one tick exactly as before (see
--- wakeObjects()'s own maxCount >= count clamp). Self-caught: RT-RC
--- theme's 8-box preflight layout was tripping paintObjects()'s own
--- per-object retry on first load because this pass, run unpaced right
--- before it in the same tick, was already eating into that tick's
--- instruction budget before paint() got a turn.
-local FIRST_WAKE_PASS_MAX = 4
--- Turned out NOT to be the dominant cost -- see FIRST_TYPE_LOAD_MAX below,
--- which is. Left in place regardless: it's still correct pacing for
--- wakeOne()'s own per-box work, just not what was actually tripping
--- paintObjects() on RT-RC's theme.
---
--- The real cost: prepareLayout() below drains pendingTypeQueue (one real
--- loadfile()+pcall() per distinct object TYPE the theme uses -- e.g.
--- "image/model", "gauge/bar" -- not per box instance) fully unpaced on
--- engine.paint()'s own first call, *before* wakeObjects()/paintObjects()
--- ever get a turn. Each individual loadObjectType() call is small enough
--- that none of them trips the instruction-budget guard on its own, but
--- Ethos's per-tick budget is spent across the whole paint() callback, not
--- reset per statement -- so a theme with enough distinct types (RT-RC's
--- preflight layout) can burn most of that budget in this one drain alone,
--- leaving paintObjects() starting box 1 (whichever box is first in layout
--- order -- RT-RC's is the image/model logo) with almost nothing left.
--- That's why capping FIRST_WAKE_PASS_MAX alone didn't fix RT-RC's report:
--- the trip was never in wakeObjects() to begin with.
---
--- Same hybrid approach: cap it, but let paint() explicitly defer to next
--- tick (via its own preparedObjectsLoaded check below) rather than run
--- paintObjects() against a still-incomplete type set -- cleaner than
--- relying on the per-object instruction-budget catch to save a partially-
--- warmed-up frame, and matches engine.wakeup()'s own pre-existing
--- preparedObjectsLoaded gate (see there) instead of inventing a second
--- convention.
-local FIRST_TYPE_LOAD_MAX = 2
 -- Self-caught bug: dashboard.lua's STARTUP_PREP_OBJECTS_PER_TICK exists
 -- specifically to pace "each box's object-type/subtype module load" across
 -- many wakeup ticks (see its own comment) -- but that pacing only ever
@@ -500,15 +458,8 @@ function engine.paint(widget, themeDef, stateDef, state, screenW, screenH)
   if context.tasks and context.tasks.telemetry and context.tasks.telemetry.collectPresentationStats then
     context.tasks.telemetry.collectPresentationStats()
   end
-  prepareLayout(stateDef, screenW, screenH, false, FIRST_TYPE_LOAD_MAX)
-  -- Not loaded yet (this call's cap didn't cover the whole queue): defer
-  -- the rest of this frame to the next tick outright, same "false means
-  -- not ready, try again" contract paintDashboard() already honors for an
-  -- instruction-budget retry -- just reached here proactively instead of
-  -- reactively, and before paintObjects() risks starting box 1 with an
-  -- already-half-spent budget.
-  if not preparedObjectsLoaded then return false end
-  if wakePassCount < 1 then wakeObjects(FIRST_WAKE_PASS_MAX, stateDef) end
+  prepareLayout(stateDef, screenW, screenH)
+  if wakePassCount < 1 then wakeObjects(nil, stateDef) end
   local resumePaint = widget and widget.dashboardPaintRetryIndex and widget.dashboardPaintRetryIndex > 1
   if not resumePaint then context.widgets.dashboard.utils.setBackgroundColourBasedOnTheme() end
   local ok = paintObjects(widget)
@@ -534,33 +485,16 @@ end
 
 function engine.wakeup(widget, stateDef, screenW, screenH, options)
   context.setWidget(widget)
-  -- Type-load side defaults to FIRST_TYPE_LOAD_MAX rather than "no options
-  -- means unpaced" -- dashboard.lua's own wakeup() callback (see
-  -- prepareDashboard()) is this function's only caller and has never
-  -- actually passed options, so that old convention meant this path ran
-  -- just as unpaced as engine.paint()'s first call used to. Self-caught:
-  -- fixing paint()'s own internal calls alone just moved the same
-  -- instruction-budget trip here instead, since wakeup() typically runs
-  -- before paint() in the same tick once the dashboard first becomes
-  -- visible. Safe to default unconditionally (every call, not just the
-  -- first): prepareLayout() already no-ops once preparedObjectsLoaded is
-  -- true, so this only ever matters while the type queue is still
-  -- draining.
-  local maxTypes = (options and options.maxTypes) or FIRST_TYPE_LOAD_MAX
-  prepareLayout(stateDef, screenW, screenH, false, maxTypes)
+  local maxObjects = options and options.maxObjects
+  prepareLayout(stateDef, screenW, screenH, false, maxObjects)
   -- Spend this tick's budget on loading any still-pending object types
   -- before ever calling wakeObjects() -- otherwise a paced caller (dashboard.
   -- lua's startup warm-up) would still take the full loadfile burst up
   -- front via prepareLayout() and only have *wakeObjects()* paced on top of
-  -- that, which is the bug this whole queue exists to close.
+  -- that, which is the bug this whole queue exists to close. An unpaced
+  -- caller (maxObjects nil) always finds preparedObjectsLoaded already true
+  -- here, since prepareLayout() just drained the whole queue synchronously.
   if not preparedObjectsLoaded then return false, true end
-  -- Wake side only defaults on the first pass (mirrors engine.paint()'s
-  -- own `if wakePassCount < 1` guard around its wakeObjects() call) --
-  -- past that, wakeObjects()'s own nil-means-unpaced convention needs to
-  -- reach its existing ratio-based steady-state pacing (wakeupsPerCycle),
-  -- which a permanent default here would silently override on every
-  -- subsequent tick instead of just the cold-start one.
-  local maxObjects = (options and options.maxObjects) or (wakePassCount < 1 and FIRST_WAKE_PASS_MAX or nil)
   return wakeObjects(maxObjects, stateDef), true
 end
 
