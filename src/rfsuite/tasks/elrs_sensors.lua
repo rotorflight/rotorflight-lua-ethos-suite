@@ -40,7 +40,7 @@
 -- standalone (non-aggregate) wire SID would use instead, not what the
 -- aggregate path itself does.
 
-local requireModule = assert(loadfile("lib/require.lua"))()
+local requireModule = package.loaded["rfsuite.lib.require"] or assert(loadfile("lib/require.lua"))()
 local elrsDecode = requireModule("lib/elrs_decode_primitives.lua")
 local sidLookup = requireModule("lib/elrs_sid_lookup.lua")
 local DiySensor = requireModule("lib/diy_sensor.lua")

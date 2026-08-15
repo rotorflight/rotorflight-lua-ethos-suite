@@ -5,7 +5,7 @@
 -- edits without EEPROM while it is enabled. Save still commits the current
 -- values to EEPROM through page_runtime's normal flow.
 
-local requireModule = assert(loadfile("lib/require.lua"))()
+local requireModule = package.loaded["rfsuite.lib.require"] or assert(loadfile("lib/require.lua"))()
 local bus = requireModule("lib/bus.lua")
 local pageRuntime = requireModule("app/page_runtime.lua")
 local mixerConfig = requireModule("lib/msp_mixer_config.lua")

@@ -4,7 +4,7 @@ if package.loaded["rfsuite.app.pages.esc_forward_4way"] then
   return package.loaded["rfsuite.app.pages.esc_forward_4way"]
 end
 
-local requireModule = assert(loadfile("lib/require.lua"))()
+local requireModule = package.loaded["rfsuite.lib.require"] or assert(loadfile("lib/require.lua"))()
 local fourWay = requireModule("lib/msp_4wif_esc_fwd_prog.lua")
 local motorConfig = requireModule("lib/msp_motor_config.lua")
 local bus = requireModule("lib/bus.lua")

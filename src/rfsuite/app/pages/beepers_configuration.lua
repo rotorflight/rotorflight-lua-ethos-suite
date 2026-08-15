@@ -1,6 +1,6 @@
 -- Controls -> Beepers -> Configuration page.
 
-local requireModule = assert(loadfile("lib/require.lua"))()
+local requireModule = package.loaded["rfsuite.lib.require"] or assert(loadfile("lib/require.lua"))()
 local beepersPage = requireModule("app/pages/beepers_page.lua")
 
 local page = beepersPage.new({

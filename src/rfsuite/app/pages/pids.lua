@@ -21,7 +21,7 @@
 -- "armed" safety check yet, since this lite rebuild has no connection/
 -- telemetry-state subsystem to check against.
 
-local requireModule = assert(loadfile("lib/require.lua"))()
+local requireModule = package.loaded["rfsuite.lib.require"] or assert(loadfile("lib/require.lua"))()
 local pageRuntime = requireModule("app/page_runtime.lua")
 local pidTuning = requireModule("lib/msp_pid_tuning.lua")
 

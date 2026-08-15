@@ -1,6 +1,6 @@
 -- Flight telemetry CSV logger, owned by the background task.
 
-local requireModule = assert(loadfile("lib/require.lua"))()
+local requireModule = package.loaded["rfsuite.lib.require"] or assert(loadfile("lib/require.lua"))()
 local bus = requireModule("lib/bus.lua")
 local settingsStore = requireModule("lib/settings_store.lua")
 local debugLog = requireModule("lib/debug_log.lua")

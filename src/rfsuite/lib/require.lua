@@ -26,8 +26,29 @@
 -- copy, same as the very first load ever did.
 --
 -- Usage (replaces `local bus = assert(loadfile("lib/bus.lua"))()`):
---   local requireModule = assert(loadfile("lib/require.lua"))()
+--   local requireModule = package.loaded["rfsuite.lib.require"] or assert(loadfile("lib/require.lua"))()
 --   local bus = requireModule("lib/bus.lua")
+--
+-- The `package.loaded[...] or` half of that bootstrap line matters just
+-- as much as requireModule() itself: a live trace after the first version
+-- of this file shipped (which had every call site do the simpler
+-- `local requireModule = assert(loadfile("lib/require.lua"))()`) showed
+-- lib/require.lua itself as the single most-loadfile()'d file in the
+-- whole boot -- the guard on lines 38-40 below skips re-running *this*
+-- file's own body, but every call site's raw loadfile("lib/require.lua")
+-- still paid its own disk-read+parse cost first, same blind spot this
+-- module exists to fix for every *other* file. package.loaded is a real
+-- Lua global (not a per-chunk-local), and the whole rest of this scheme
+-- already depends on it being shared process-wide -- every module's own
+-- self-cache guard only works because a module loaded from one subsystem
+-- (say tasks/background.lua) is correctly seen by another (app/tool.lua,
+-- widgets/dashboard.lua) -- so reading it directly, before ever calling
+-- loadfile(), is safe by the same evidence that already validated this
+-- file's core idea in production. Only the *first* call in the whole
+-- process (main.lua's own top-level bootstrap line, guaranteed to run
+-- before anything else loads) actually pays for a real loadfile() here;
+-- every call after that anywhere else in the codebase is a plain table
+-- lookup.
 --
 -- Only for static, literal paths known at the call site. A handful of
 -- call sites resolve their path at runtime (dashboard theme/state

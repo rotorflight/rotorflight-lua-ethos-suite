@@ -1,7 +1,7 @@
 -- Old dashboard render flow adapted to Lite's isolated widget.
 
 local engine = {}
-local requireModule = assert(loadfile("lib/require.lua"))()
+local requireModule = package.loaded["rfsuite.lib.require"] or assert(loadfile("lib/require.lua"))()
 local context = requireModule("widgets/dashboard/context.lua")
 
 local floor = math.floor

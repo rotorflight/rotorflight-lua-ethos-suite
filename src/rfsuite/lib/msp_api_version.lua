@@ -16,7 +16,7 @@
 -- isSim branch for why the simulator override below only ever matters
 -- there -- real hardware ignores simulatorResponse entirely.
 
-local requireModule = assert(loadfile("lib/require.lua"))()
+local requireModule = package.loaded["rfsuite.lib.require"] or assert(loadfile("lib/require.lua"))()
 local mspcodec = requireModule("lib/mspcodec.lua")
 
 local READ_COMMAND = 1

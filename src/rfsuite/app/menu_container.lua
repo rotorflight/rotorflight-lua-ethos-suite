@@ -59,7 +59,7 @@
 -- that means exit. See app/navigation.lua's pop() for why those two are
 -- deliberately not the same check.
 
-local requireModule = assert(loadfile("lib/require.lua"))()
+local requireModule = package.loaded["rfsuite.lib.require"] or assert(loadfile("lib/require.lua"))()
 local closeKey = requireModule("app/close_key.lua")
 local header = requireModule("app/header.lua")
 local memstats = requireModule("lib/memstats.lua")

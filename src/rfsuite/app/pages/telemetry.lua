@@ -14,7 +14,7 @@
 -- EEPROM write and reboot-after-save path. The header Tool button applies
 -- the original default sensor set.
 
-local requireModule = assert(loadfile("lib/require.lua"))()
+local requireModule = package.loaded["rfsuite.lib.require"] or assert(loadfile("lib/require.lua"))()
 local pageRuntime = requireModule("app/page_runtime.lua")
 local featureConfig = requireModule("lib/msp_feature_config.lua")
 local telemetryConfig = requireModule("lib/msp_telemetry_config.lua")

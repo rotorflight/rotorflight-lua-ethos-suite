@@ -5,7 +5,7 @@
 -- center trim in degrees, while motorized/bidirectional tails expose tail
 -- idle and use raw percent-like yaw limits.
 
-local requireModule = assert(loadfile("lib/require.lua"))()
+local requireModule = package.loaded["rfsuite.lib.require"] or assert(loadfile("lib/require.lua"))()
 local pageRuntime = requireModule("app/page_runtime.lua")
 local mixerConfig = requireModule("lib/msp_mixer_config.lua")
 local mixerInputFactory = requireModule("lib/msp_mixer_input.lua")

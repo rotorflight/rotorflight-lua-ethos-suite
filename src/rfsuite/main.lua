@@ -49,7 +49,7 @@ end
 local version = {major = 2, minor = 3, revision = 1, suffix = ""}
 
 local t0 = os.clock()
-local requireModule = assert(loadfile("lib/require.lua"))()
+local requireModule = package.loaded["rfsuite.lib.require"] or assert(loadfile("lib/require.lua"))()
 local background_task = requireModule("tasks/background.lua")
 mark("tasks/background.lua load", t0)
 

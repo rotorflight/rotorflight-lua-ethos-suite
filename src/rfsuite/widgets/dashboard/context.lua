@@ -6,7 +6,7 @@
 local cached = package.loaded["rfsuite.dashboard.context"]
 if cached then return cached end
 
-local requireModule = assert(loadfile("lib/require.lua"))()
+local requireModule = package.loaded["rfsuite.lib.require"] or assert(loadfile("lib/require.lua"))()
 local buildInfo = requireModule("lib/build_info.lua")
 local ethosVersion = requireModule("lib/ethos_version.lua")
 

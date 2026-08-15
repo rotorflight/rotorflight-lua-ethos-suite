@@ -3,7 +3,7 @@
 -- Lite keeps the old dashboard's preflight/inflight/postflight theme shape,
 -- while loading only the selected theme and current state page.
 
-local requireModule = assert(loadfile("lib/require.lua"))()
+local requireModule = package.loaded["rfsuite.lib.require"] or assert(loadfile("lib/require.lua"))()
 local bus = requireModule("lib/bus.lua")
 local modelPreferences = requireModule("lib/model_preferences.lua")
 local settingsStore = requireModule("lib/settings_store.lua")

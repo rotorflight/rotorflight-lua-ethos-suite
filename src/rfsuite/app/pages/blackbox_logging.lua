@@ -1,6 +1,6 @@
 -- Controls -> Blackbox -> Logging page.
 
-local requireModule = assert(loadfile("lib/require.lua"))()
+local requireModule = package.loaded["rfsuite.lib.require"] or assert(loadfile("lib/require.lua"))()
 local blackboxPage = requireModule("app/pages/blackbox_edit_page.lua")
 
 return blackboxPage.new({

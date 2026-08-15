@@ -13,7 +13,7 @@
 -- summaries) lives in lib/elrslink_task.lua, not here -- this page only
 -- polls its accessors and renders them.
 
-local requireModule = assert(loadfile("lib/require.lua"))()
+local requireModule = package.loaded["rfsuite.lib.require"] or assert(loadfile("lib/require.lua"))()
 local bus = requireModule("lib/bus.lua")
 local closeKey = requireModule("app/close_key.lua")
 local header = requireModule("app/header.lua")

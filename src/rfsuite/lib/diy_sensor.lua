@@ -31,7 +31,7 @@
 local os_clock = os.clock
 local system_getSource = system.getSource
 local model_createSensor = model.createSensor
-local requireModule = assert(loadfile("lib/require.lua"))()
+local requireModule = package.loaded["rfsuite.lib.require"] or assert(loadfile("lib/require.lua"))()
 local debugLog = requireModule("lib/debug_log.lua")
 
 -- Ethos before 26.1 only supports :value(v); 26.1+ wants :rawValue(v)

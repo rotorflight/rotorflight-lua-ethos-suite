@@ -29,7 +29,7 @@
 -- wakeup (not cached) so edits made there show up live without a script
 -- reload.
 
-local requireModule = assert(loadfile("lib/require.lua"))()
+local requireModule = package.loaded["rfsuite.lib.require"] or assert(loadfile("lib/require.lua"))()
 local DiySensor = requireModule("lib/diy_sensor.lua")
 
 -- key -> {uid, unit, dec, min, max}, copied from

@@ -5,7 +5,7 @@
 -- The Tool button sends MSP_ACC_CALIBRATION (cmd 205), then commits with
 -- EEPROM_WRITE and plays the shared beep.wav once the EEPROM ack lands.
 
-local requireModule = assert(loadfile("lib/require.lua"))()
+local requireModule = package.loaded["rfsuite.lib.require"] or assert(loadfile("lib/require.lua"))()
 local bus = requireModule("lib/bus.lua")
 local pageRuntime = requireModule("app/page_runtime.lua")
 local fieldLayout = requireModule("app/field_layout.lua")

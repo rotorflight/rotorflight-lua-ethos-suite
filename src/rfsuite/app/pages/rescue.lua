@@ -16,7 +16,7 @@
 -- save, profile-switch-reload -- comes from app/page_runtime.lua, shared
 -- with every page. Field/row building comes from app/field_layout.lua.
 
-local requireModule = assert(loadfile("lib/require.lua"))()
+local requireModule = package.loaded["rfsuite.lib.require"] or assert(loadfile("lib/require.lua"))()
 local pageRuntime = requireModule("app/page_runtime.lua")
 local fieldLayout = requireModule("app/field_layout.lua")
 local rescueProfile = requireModule("lib/msp_rescue_profile.lua")

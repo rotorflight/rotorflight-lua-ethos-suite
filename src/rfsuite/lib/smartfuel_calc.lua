@@ -27,7 +27,7 @@ local math_max = math.max
 local math_exp = math.exp
 local os_clock = os.clock
 
-local requireModule = assert(loadfile("lib/require.lua"))()
+local requireModule = package.loaded["rfsuite.lib.require"] or assert(loadfile("lib/require.lua"))()
 local smartfuel_reserve = requireModule("lib/smartfuel_reserve.lua")
 
 local SmartFuel = {}

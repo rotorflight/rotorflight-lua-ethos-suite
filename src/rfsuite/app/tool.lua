@@ -15,7 +15,7 @@
 -- it does is via lib/bus.lua's "msp.request" topic, and only indirectly,
 -- via whichever page is currently open.
 
-local requireModule = assert(loadfile("lib/require.lua"))()
+local requireModule = package.loaded["rfsuite.lib.require"] or assert(loadfile("lib/require.lua"))()
 local navigation = requireModule("app/navigation.lua")
 local menuContainer = requireModule("app/menu_container.lua")
 local memstats = requireModule("lib/memstats.lua")

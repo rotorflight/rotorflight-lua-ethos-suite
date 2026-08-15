@@ -1,6 +1,6 @@
 -- Tools -> Diagnostics -> Info page.
 
-local requireModule = assert(loadfile("lib/require.lua"))()
+local requireModule = package.loaded["rfsuite.lib.require"] or assert(loadfile("lib/require.lua"))()
 local common = requireModule("app/diagnostics_common.lua")
 local buildInfo = requireModule("lib/build_info.lua")
 

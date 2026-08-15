@@ -1,6 +1,6 @@
 -- System -> Logs browser/viewer.
 
-local requireModule = assert(loadfile("lib/require.lua"))()
+local requireModule = package.loaded["rfsuite.lib.require"] or assert(loadfile("lib/require.lua"))()
 local closeKey = requireModule("app/close_key.lua")
 local header = requireModule("app/header.lua")
 local ini = requireModule("lib/ini.lua")

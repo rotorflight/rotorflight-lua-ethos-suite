@@ -5,7 +5,7 @@
 -- roll/pitch/collective mixer input rates; magnitudes and limits are
 -- preserved exactly as read from the FC.
 
-local requireModule = assert(loadfile("lib/require.lua"))()
+local requireModule = package.loaded["rfsuite.lib.require"] or assert(loadfile("lib/require.lua"))()
 local pageRuntime = requireModule("app/page_runtime.lua")
 local mixerConfig = requireModule("lib/msp_mixer_config.lua")
 local mixerInputFactory = requireModule("lib/msp_mixer_input.lua")

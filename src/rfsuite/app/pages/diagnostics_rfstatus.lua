@@ -1,6 +1,6 @@
 -- Tools -> Diagnostics -> Status page.
 
-local requireModule = assert(loadfile("lib/require.lua"))()
+local requireModule = package.loaded["rfsuite.lib.require"] or assert(loadfile("lib/require.lua"))()
 local common = requireModule("app/diagnostics_common.lua")
 
 local PAGE_TITLE = "@i18n(app.modules.diagnostics.name)@ / @i18n(app.modules.rfstatus.name)@"

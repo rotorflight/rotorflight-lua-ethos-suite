@@ -7,7 +7,7 @@
   Six-column stat grid — same proven approach as gismo's postflight.
 ]] --
 
-local requireModule = assert(loadfile("lib/require.lua"))()
+local requireModule = package.loaded["rfsuite.lib.require"] or assert(loadfile("lib/require.lua"))()
 local rfsuite = requireModule("widgets/dashboard/context.lua")
 local lcd     = lcd
 

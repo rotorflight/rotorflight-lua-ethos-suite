@@ -1,7 +1,7 @@
 -- Small shared placeholder for Settings sections whose menu shape now exists
 -- but whose real editor is still to be built.
 
-local requireModule = assert(loadfile("lib/require.lua"))()
+local requireModule = package.loaded["rfsuite.lib.require"] or assert(loadfile("lib/require.lua"))()
 local closeKey = requireModule("app/close_key.lua")
 local header = requireModule("app/header.lua")
 

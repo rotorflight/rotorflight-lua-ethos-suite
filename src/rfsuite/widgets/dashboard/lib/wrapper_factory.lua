@@ -7,7 +7,7 @@ if package.loaded["rfsuite.widgets.dashboard.wrapper_factory"] then
     return package.loaded["rfsuite.widgets.dashboard.wrapper_factory"]
 end
 
-local requireModule = assert(loadfile("lib/require.lua"))()
+local requireModule = package.loaded["rfsuite.lib.require"] or assert(loadfile("lib/require.lua"))()
 local rfsuite = requireModule("widgets/dashboard/context.lua")
 
 local clock = os.clock

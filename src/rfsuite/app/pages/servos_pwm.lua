@@ -6,7 +6,7 @@
 -- via SET_SERVO_CENTER and the other fields are locked, matching the
 -- original suite's safety shape without its global session table.
 
-local requireModule = assert(loadfile("lib/require.lua"))()
+local requireModule = package.loaded["rfsuite.lib.require"] or assert(loadfile("lib/require.lua"))()
 local bus = requireModule("lib/bus.lua")
 local closeKey = requireModule("app/close_key.lua")
 local fieldLayout = requireModule("app/field_layout.lua")

@@ -7,7 +7,7 @@
 -- fields; this page keeps that behavior while routing MSP traffic through
 -- this rebuild's bus/page_runtime architecture.
 
-local requireModule = assert(loadfile("lib/require.lua"))()
+local requireModule = package.loaded["rfsuite.lib.require"] or assert(loadfile("lib/require.lua"))()
 local bus = requireModule("lib/bus.lua")
 local pageRuntime = requireModule("app/page_runtime.lua")
 local fieldLayout = requireModule("app/field_layout.lua")

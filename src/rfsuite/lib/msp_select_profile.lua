@@ -4,7 +4,7 @@ if package.loaded["rfsuite.lib.msp_select_profile"] then
   return package.loaded["rfsuite.lib.msp_select_profile"]
 end
 
-local requireModule = assert(loadfile("lib/require.lua"))()
+local requireModule = package.loaded["rfsuite.lib.require"] or assert(loadfile("lib/require.lua"))()
 local mspcodec = requireModule("lib/mspcodec.lua")
 
 local WRITE_COMMAND = 210

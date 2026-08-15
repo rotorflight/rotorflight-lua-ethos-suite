@@ -49,7 +49,7 @@ if package.loaded["rfsuite.app.page_runtime"] then
   return package.loaded["rfsuite.app.page_runtime"]
 end
 
-local requireModule = assert(loadfile("lib/require.lua"))()
+local requireModule = package.loaded["rfsuite.lib.require"] or assert(loadfile("lib/require.lua"))()
 local bus = requireModule("lib/bus.lua")
 local eeprom = requireModule("lib/msp_eeprom.lua")
 local reboot = requireModule("lib/msp_reboot.lua")

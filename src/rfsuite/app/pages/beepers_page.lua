@@ -7,7 +7,7 @@ if package.loaded["rfsuite.app.pages.beepers_page"] then
   return package.loaded["rfsuite.app.pages.beepers_page"]
 end
 
-local requireModule = assert(loadfile("lib/require.lua"))()
+local requireModule = package.loaded["rfsuite.lib.require"] or assert(loadfile("lib/require.lua"))()
 local bus = requireModule("lib/bus.lua")
 local closeKey = requireModule("app/close_key.lua")
 local header = requireModule("app/header.lua")

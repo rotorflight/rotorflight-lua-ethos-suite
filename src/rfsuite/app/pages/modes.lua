@@ -5,7 +5,7 @@
 -- four-step read, full-slot sequential writes, and wakeup-driven live AUX
 -- pulse display/auto-detect behavior.
 
-local requireModule = assert(loadfile("lib/require.lua"))()
+local requireModule = package.loaded["rfsuite.lib.require"] or assert(loadfile("lib/require.lua"))()
 local bus = requireModule("lib/bus.lua")
 local closeKey = requireModule("app/close_key.lua")
 local header = requireModule("app/header.lua")

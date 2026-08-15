@@ -18,7 +18,7 @@
 -- true` return flag. page_runtime.lua applies the same armed-state safety
 -- gate already used by Configuration.
 
-local requireModule = assert(loadfile("lib/require.lua"))()
+local requireModule = package.loaded["rfsuite.lib.require"] or assert(loadfile("lib/require.lua"))()
 local pageRuntime = requireModule("app/page_runtime.lua")
 local fieldLayout = requireModule("app/field_layout.lua")
 local rcConfig = requireModule("lib/msp_rc_config.lua")

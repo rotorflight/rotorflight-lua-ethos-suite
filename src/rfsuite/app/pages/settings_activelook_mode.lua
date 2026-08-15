@@ -1,6 +1,6 @@
 -- Shared Settings -> ActiveLook mode layout page.
 
-local requireModule = assert(loadfile("lib/require.lua"))()
+local requireModule = package.loaded["rfsuite.lib.require"] or assert(loadfile("lib/require.lua"))()
 local bus = requireModule("lib/bus.lua")
 local pageCommon = requireModule("app/pages/settings_activelook_common.lua")
 local activeConfig = requireModule("lib/activelook_config.lua")

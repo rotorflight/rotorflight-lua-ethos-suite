@@ -1,7 +1,7 @@
 -- Servos submenu gate: BUS output is only valid when Ports has an
 -- SBUS/FBUS output function configured.
 
-local requireModule = assert(loadfile("lib/require.lua"))()
+local requireModule = package.loaded["rfsuite.lib.require"] or assert(loadfile("lib/require.lua"))()
 local bus = requireModule("lib/bus.lua")
 local serialConfig = requireModule("lib/msp_serial_config.lua")
 

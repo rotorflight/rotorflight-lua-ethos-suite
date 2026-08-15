@@ -20,7 +20,7 @@
 -- -- the MSP-calling subset of the original suite's onconnect/postconnect
 -- task manifests. There is no idle MSP heartbeat.
 
-local requireModule = assert(loadfile("lib/require.lua"))()
+local requireModule = package.loaded["rfsuite.lib.require"] or assert(loadfile("lib/require.lua"))()
 local bus = requireModule("lib/bus.lua")
 local handshake = requireModule("lib/msp_handshake.lua")
 local mspApiVersion = requireModule("lib/msp_api_version.lua")

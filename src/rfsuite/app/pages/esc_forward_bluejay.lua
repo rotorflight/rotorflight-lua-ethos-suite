@@ -1,6 +1,6 @@
 -- Setup -> ESC & Motors -> Forward Programming -> Bluejay.
 
-local requireModule = assert(loadfile("lib/require.lua"))()
+local requireModule = package.loaded["rfsuite.lib.require"] or assert(loadfile("lib/require.lua"))()
 local vendorPage = requireModule("app/pages/esc_forward_vendor.lua")
 local fourWayPage = requireModule("app/pages/esc_forward_4way.lua")
 local msp = requireModule("lib/msp_esc_parameters_bluejay.lua")

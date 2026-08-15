@@ -7,7 +7,7 @@ if package.loaded["rfsuite.lib.settings_store"] then
   return package.loaded["rfsuite.lib.settings_store"]
 end
 
-local requireModule = assert(loadfile("lib/require.lua"))()
+local requireModule = package.loaded["rfsuite.lib.require"] or assert(loadfile("lib/require.lua"))()
 local ini = requireModule("lib/ini.lua")
 local activelookConfig = requireModule("lib/activelook_config.lua")
 local mspApiVersion = requireModule("lib/msp_api_version.lua")

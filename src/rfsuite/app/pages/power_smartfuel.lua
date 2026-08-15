@@ -1,6 +1,6 @@
 -- Setup -> Power -> SmartFuel page.
 
-local requireModule = assert(loadfile("lib/require.lua"))()
+local requireModule = package.loaded["rfsuite.lib.require"] or assert(loadfile("lib/require.lua"))()
 local pageRuntime = requireModule("app/page_runtime.lua")
 local fieldLayout = requireModule("app/field_layout.lua")
 local smartfuelConfig = requireModule("lib/msp_smartfuel_config.lua")

@@ -5,7 +5,7 @@
 -- writes a single port record, and the original suite writes one packet
 -- per reported port before EEPROM_WRITE + reboot.
 
-local requireModule = assert(loadfile("lib/require.lua"))()
+local requireModule = package.loaded["rfsuite.lib.require"] or assert(loadfile("lib/require.lua"))()
 local bus = requireModule("lib/bus.lua")
 local header = requireModule("app/header.lua")
 local closeKey = requireModule("app/close_key.lua")

@@ -33,7 +33,7 @@
 
 local Queue = {}
 Queue.__index = Queue
-local requireModule = assert(loadfile("lib/require.lua"))()
+local requireModule = package.loaded["rfsuite.lib.require"] or assert(loadfile("lib/require.lua"))()
 local debugLog = requireModule("lib/debug_log.lua")
 
 local DEFAULT_RETRY_DELAY = 0.8

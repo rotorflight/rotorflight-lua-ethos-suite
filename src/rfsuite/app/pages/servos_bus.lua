@@ -6,7 +6,7 @@
 --   config write index         = UI index + (servo_count - 18)
 -- Keep those translations local and explicit here.
 
-local requireModule = assert(loadfile("lib/require.lua"))()
+local requireModule = package.loaded["rfsuite.lib.require"] or assert(loadfile("lib/require.lua"))()
 local bus = requireModule("lib/bus.lua")
 local closeKey = requireModule("app/close_key.lua")
 local fieldLayout = requireModule("app/field_layout.lua")

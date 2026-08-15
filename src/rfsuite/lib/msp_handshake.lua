@@ -17,7 +17,7 @@
 -- flightmode/modelpreferences/sensorstats/timer/rateprofile, which in the
 -- original are local bookkeeping with no MSP traffic at all.
 
-local requireModule = assert(loadfile("lib/require.lua"))()
+local requireModule = package.loaded["rfsuite.lib.require"] or assert(loadfile("lib/require.lua"))()
 local mspcodec = requireModule("lib/mspcodec.lua")
 
 local msp_handshake = {}

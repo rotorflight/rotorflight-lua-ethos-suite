@@ -26,7 +26,7 @@
 
 local system_getSource = system.getSource
 local model_createSensor = model.createSensor
-local requireModule = assert(loadfile("lib/require.lua"))()
+local requireModule = package.loaded["rfsuite.lib.require"] or assert(loadfile("lib/require.lua"))()
 local sidLookup = requireModule("lib/frsky_sid_lookup.lua")
 local debugLog = requireModule("lib/debug_log.lua")
 

@@ -1,6 +1,6 @@
 -- Setup -> ESC & Motors -> Forward Programming -> FlyRotor.
 
-local requireModule = assert(loadfile("lib/require.lua"))()
+local requireModule = package.loaded["rfsuite.lib.require"] or assert(loadfile("lib/require.lua"))()
 local vendorPage = requireModule("app/pages/esc_forward_vendor.lua")
 local msp = requireModule("lib/msp_esc_parameters_flyrotor.lua")
 

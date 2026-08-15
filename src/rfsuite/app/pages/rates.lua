@@ -89,7 +89,7 @@
 -- PIDs); rates_type is which table convention that slot's raw bytes are
 -- interpreted under.
 
-local requireModule = assert(loadfile("lib/require.lua"))()
+local requireModule = package.loaded["rfsuite.lib.require"] or assert(loadfile("lib/require.lua"))()
 local pageRuntime = requireModule("app/page_runtime.lua")
 local rcTuning = requireModule("lib/msp_rc_tuning.lua")
 local rateCurveScale = requireModule("lib/rate_curve_scale.lua")

@@ -1,6 +1,6 @@
 -- Setup -> Governor -> Ramp Time page.
 
-local requireModule = assert(loadfile("lib/require.lua"))()
+local requireModule = package.loaded["rfsuite.lib.require"] or assert(loadfile("lib/require.lua"))()
 local pageRuntime = requireModule("app/page_runtime.lua")
 local fieldLayout = requireModule("app/field_layout.lua")
 local governorConfig = requireModule("lib/msp_governor_config.lua")

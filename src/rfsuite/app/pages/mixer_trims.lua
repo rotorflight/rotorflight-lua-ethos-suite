@@ -5,7 +5,7 @@
 -- without EEPROM so the pilot can trim servos interactively. Save still
 -- commits through the normal page_runtime EEPROM path.
 
-local requireModule = assert(loadfile("lib/require.lua"))()
+local requireModule = package.loaded["rfsuite.lib.require"] or assert(loadfile("lib/require.lua"))()
 local bus = requireModule("lib/bus.lua")
 local pageRuntime = requireModule("app/page_runtime.lua")
 local header = requireModule("app/header.lua")

@@ -44,7 +44,7 @@ The widget only displays stat values (not live telemetry). "source" and "stattyp
 To display min stats, set stattype = "min"; for max, omit or set stattype = "max".
 ]]
 
-local requireModule = assert(loadfile("lib/require.lua"))()
+local requireModule = package.loaded["rfsuite.lib.require"] or assert(loadfile("lib/require.lua"))()
 local rfsuite = requireModule("widgets/dashboard/context.lua")
 
 local render = {}

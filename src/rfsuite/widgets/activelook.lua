@@ -1,6 +1,6 @@
 -- Rotorflight ActiveLook widget.
 
-local requireModule = assert(loadfile("lib/require.lua"))()
+local requireModule = package.loaded["rfsuite.lib.require"] or assert(loadfile("lib/require.lua"))()
 local bus = requireModule("lib/bus.lua")
 local settingsStore = requireModule("lib/settings_store.lua")
 local activeConfig = requireModule("lib/activelook_config.lua")

@@ -4,7 +4,7 @@ if package.loaded["rfsuite.app.pages.esc_forward_vendor"] then
   return package.loaded["rfsuite.app.pages.esc_forward_vendor"]
 end
 
-local requireModule = assert(loadfile("lib/require.lua"))()
+local requireModule = package.loaded["rfsuite.lib.require"] or assert(loadfile("lib/require.lua"))()
 local pageRuntime = requireModule("app/page_runtime.lua")
 local fieldLayout = requireModule("app/field_layout.lua")
 local fourWay = requireModule("lib/msp_4wif_esc_fwd_prog.lua")

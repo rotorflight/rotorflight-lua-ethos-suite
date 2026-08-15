@@ -9,7 +9,7 @@
 -- `profiles[0]..profiles[5]` so the dashboard can offer the same battery
 -- profile selector without loading the heavier app page.
 
-local requireModule = assert(loadfile("lib/require.lua"))()
+local requireModule = package.loaded["rfsuite.lib.require"] or assert(loadfile("lib/require.lua"))()
 local mspcodec = requireModule("lib/mspcodec.lua")
 
 local msp_battery = {}

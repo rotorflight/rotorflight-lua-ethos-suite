@@ -1,6 +1,6 @@
 -- Per-flight-controller model preferences stored on the radio.
 
-local requireModule = assert(loadfile("lib/require.lua"))()
+local requireModule = package.loaded["rfsuite.lib.require"] or assert(loadfile("lib/require.lua"))()
 local ini = requireModule("lib/ini.lua")
 local tableClone = requireModule("lib/table_clone.lua")
 

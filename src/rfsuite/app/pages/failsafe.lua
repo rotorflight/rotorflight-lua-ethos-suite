@@ -4,7 +4,7 @@
 -- field is enabled only when that channel's mode is SET, matching the
 -- original suite's wakeup-driven enable rule.
 
-local requireModule = assert(loadfile("lib/require.lua"))()
+local requireModule = package.loaded["rfsuite.lib.require"] or assert(loadfile("lib/require.lua"))()
 local bus = requireModule("lib/bus.lua")
 local closeKey = requireModule("app/close_key.lua")
 local header = requireModule("app/header.lua")

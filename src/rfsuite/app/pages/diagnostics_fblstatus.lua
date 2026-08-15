@@ -1,6 +1,6 @@
 -- Tools -> Diagnostics -> FBL Status page.
 
-local requireModule = assert(loadfile("lib/require.lua"))()
+local requireModule = package.loaded["rfsuite.lib.require"] or assert(loadfile("lib/require.lua"))()
 local bus = requireModule("lib/bus.lua")
 local common = requireModule("app/diagnostics_common.lua")
 local mspStatus = requireModule("lib/msp_status.lua")

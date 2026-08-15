@@ -4,7 +4,7 @@
 -- per-slot prefetch paths; this lite port keeps the same editable surface
 -- on top of the bulk read and changed-slot writes to minimize moving parts.
 
-local requireModule = assert(loadfile("lib/require.lua"))()
+local requireModule = package.loaded["rfsuite.lib.require"] or assert(loadfile("lib/require.lua"))()
 local bus = requireModule("lib/bus.lua")
 local closeKey = requireModule("app/close_key.lua")
 local header = requireModule("app/header.lua")
