@@ -483,9 +483,9 @@ function app.close()
         end
     end
 
-    if app.themeBridge and app.themeBridge.clearPage then
-        local ok, err = pcall(app.themeBridge.clearPage)
-        if not ok then log("app.close themeBridge page clear failed: " .. tostring(err), "debug") end
+    if app.themeBridge and app.themeBridge.clearCache then
+        local ok, err = pcall(app.themeBridge.clearCache)
+        if not ok then log("app.close themeBridge cache clear failed: " .. tostring(err), "debug") end
     end
 
     app.MainMenu = nil
