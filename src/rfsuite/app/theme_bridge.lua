@@ -83,6 +83,27 @@ local EDITABLE_THEME_METADATA = {
   zafira = true,
 }
 
+-- Keep selection behavior aligned with widgets/dashboard.lua. These themes
+-- are always part of the current suite; separately maintained themes are
+-- available only when their branch has installed a valid appTheme metadata
+-- table. Unsupported and user paths must resolve to Default, just as the
+-- dashboard does, so the configurator never claims to follow an absent theme.
+local BUILTIN_DASHBOARD_THEMES = {
+  ["aerc-n"] = true,
+  aerc = true,
+  claude = true,
+  danielrc = true,
+  default = true,
+  gismo = true,
+  helihud = true,
+  kevd = true,
+  rfstatus = true,
+  ["rt-rc-n"] = true,
+  ["rt-rc"] = true,
+  ["srb-rc"] = true,
+  timer = true,
+}
+
 local NATIVE_THEME_KEYS = {
   "THEME_PAGE_BGCOLOR",
   "THEME_PRIMARY_BGCOLOR",
@@ -199,13 +220,6 @@ local function phaseTheme(dashboard, phase)
   return value
 end
 
-local function selectedThemePath(phase)
-  local modelTheme = phaseTheme(modelDashboard, phase)
-  if modelTheme then return normalizeThemePath(modelTheme) end
-  local dashboard = settings and settings.dashboard
-  return normalizeThemePath(phaseTheme(dashboard, phase) or "system/default")
-end
-
 local function rawValue(raw, phaseRaw, key)
   if type(phaseRaw) == "table" and phaseRaw[key] ~= nil then return phaseRaw[key] end
   return type(raw) == "table" and raw[key] or nil
@@ -229,19 +243,37 @@ local function loadThemeMetadata(path, folder)
   return appTheme
 end
 
-local function resolveThemeMetadata(path, folder)
-  local source = path:match("^([^/]+)/")
-  local preferInstalled = source == "user" or EDITABLE_THEME_METADATA[folder] == true
-  local registered = paletteRegistry.get(folder)
-  if not preferInstalled and registered then return registered end
-
+local function installedThemeMetadata(path, folder)
   local cached = metadataCache[path]
   if cached == nil then
     cached = loadThemeMetadata(path, folder) or false
     metadataCache[path] = cached
   end
   if cached ~= false then return cached end
+  return nil
+end
+
+local function resolveThemeMetadata(path, folder)
+  local registered = paletteRegistry.get(folder)
+  if EDITABLE_THEME_METADATA[folder] == true then
+    return installedThemeMetadata(path, folder) or registered
+  end
   return registered
+end
+
+local function availableThemePath(path)
+  local source, folder = path:match("^([^/]+)/(.+)$")
+  if source ~= "system" or not folder then return "system/default" end
+  if BUILTIN_DASHBOARD_THEMES[folder] then return path end
+  if EDITABLE_THEME_METADATA[folder] and installedThemeMetadata(path, folder) then return path end
+  return "system/default"
+end
+
+local function selectedThemePath(phase)
+  local modelTheme = phaseTheme(modelDashboard, phase)
+  if modelTheme then return availableThemePath(normalizeThemePath(modelTheme)) end
+  local dashboard = settings and settings.dashboard
+  return availableThemePath(normalizeThemePath(phaseTheme(dashboard, phase) or "system/default"))
 end
 
 local function nativeThemeSignature(now, isDark, force)
@@ -535,7 +567,13 @@ function bridge.open(initialSettings)
     modelLoadPending = loadedMcuId ~= nil
     updateFlightPhase(session)
   end
-  refreshPalette(true, clock())
+
+  -- Use a cheap native palette while the root menu is being constructed.
+  -- Optional custom-theme files are resolved later by the throttled wakeup,
+  -- keeping file I/O out of both the create path and every paint frame.
+  activeEnabled = settingsStore.followDashboardThemeEnabled(settings)
+  activeDark = darkMode()
+  activePalette = nativePalette(activeDark)
   rebuildGeometry()
 end
 
