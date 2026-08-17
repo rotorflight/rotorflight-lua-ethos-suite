@@ -35,6 +35,7 @@ local lcdRGB = lcd.RGB
 local bridge = {}
 local tracker = flightmode.new()
 local paletteCache = {}
+local metadataCache = {}
 local chromeRects = {}
 local titleFields = {}
 local railSegments = {}
@@ -55,6 +56,7 @@ local activePath
 local activePhase = "preflight"
 local activePalettePhase
 local activeDark
+local activeNativeSignature
 local activePalette
 local geometryDirty = true
 local canvasWidth = 0
@@ -63,8 +65,39 @@ local headerBottom = 0
 
 local CHECK_INTERVAL = 0.50
 local MODEL_RETRY_INTERVAL = 5.0
+local NATIVE_SIGNATURE_INTERVAL = 1.0
 local FADE_STEPS = 12
 local GRADIENT_STEPS = 32
+
+-- The separately maintained theme branches keep appTheme in their small
+-- init.lua. Prefer that installed metadata so a theme author can edit their
+-- own branch without also changing this bridge. Master's built-ins use the
+-- registry directly: some of their init.lua files load the full dashboard
+-- context and are too expensive to probe just for a palette.
+local EDITABLE_THEME_METADATA = {
+  aegis = true,
+  america250 = true,
+  libertyops250 = true,
+  mwrc = true,
+  singularity = true,
+  zafira = true,
+}
+
+local NATIVE_THEME_KEYS = {
+  "THEME_PAGE_BGCOLOR",
+  "THEME_PRIMARY_BGCOLOR",
+  "THEME_SECONDARY_BGCOLOR",
+  "THEME_DEFAULT_COLOR",
+  "THEME_DISABLE_COLOR",
+  "THEME_PRIMARY_COLOR",
+  "THEME_FOCUS_COLOR",
+  "THEME_WARNING_COLOR",
+  "THEME_ERROR_COLOR",
+  "THEME_BUTTON_BORDER_COLOR",
+}
+local nativeSignatureCache
+local nativeSignatureDark
+local nextNativeSignatureCheck = 0
 
 local FALLBACK_DARK = {
   name = "ETHOS Dark",
@@ -196,15 +229,52 @@ local function loadThemeMetadata(path, folder)
   return appTheme
 end
 
-local function compilePalette(path, phase, isDark)
+local function resolveThemeMetadata(path, folder)
+  local source = path:match("^([^/]+)/")
+  local preferInstalled = source == "user" or EDITABLE_THEME_METADATA[folder] == true
+  local registered = paletteRegistry.get(folder)
+  if not preferInstalled and registered then return registered end
+
+  local cached = metadataCache[path]
+  if cached == nil then
+    cached = loadThemeMetadata(path, folder) or false
+    metadataCache[path] = cached
+  end
+  if cached ~= false then return cached end
+  return registered
+end
+
+local function nativeThemeSignature(now, isDark, force)
+  if not force and nativeSignatureCache ~= nil and nativeSignatureDark == isDark and now < nextNativeSignatureCheck then
+    return nativeSignatureCache
+  end
+
+  local signature = isDark and 5381 or 7919
+  if type(lcd.themeColor) == "function" then
+    for index = 1, #NATIVE_THEME_KEYS do
+      local themeIndex = _G[NATIVE_THEME_KEYS[index]]
+      if type(themeIndex) == "number" then
+        local ok, color = pcall(lcd.themeColor, themeIndex)
+        if ok and type(color) == "number" then
+          signature = ((signature * 33) + (color % 2147483647)) % 2147483647
+        end
+      end
+    end
+  end
+  nativeSignatureCache = signature
+  nativeSignatureDark = isDark
+  nextNativeSignatureCheck = now + NATIVE_SIGNATURE_INTERVAL
+  return signature
+end
+
+local function compilePalette(path, phase, isDark, nativeSignature)
   local byPhase = paletteCache[path]
-  if byPhase and byPhase[phase] and byPhase[phase][isDark] then
-    return byPhase[phase][isDark]
+  if byPhase and byPhase[phase] and byPhase[phase][nativeSignature] then
+    return byPhase[phase][nativeSignature]
   end
 
   local folder = path:match("^[^/]+/(.+)$") or "default"
-  local raw = paletteRegistry.get(folder)
-  if not raw then raw = loadThemeMetadata(path, folder) end
+  local raw = resolveThemeMetadata(path, folder)
 
   local native = nativePalette(isDark)
   local phaseRaw = type(raw) == "table" and raw[phase] or nil
@@ -247,7 +317,7 @@ local function compilePalette(path, phase, isDark)
   paletteCache[path] = byPhase
   local byMode = byPhase[phase] or {}
   byPhase[phase] = byMode
-  byMode[isDark] = palette
+  byMode[nativeSignature] = palette
   return palette
 end
 
@@ -269,12 +339,15 @@ local function applyTitles()
   end
 end
 
-local function refreshPalette(force)
+local function refreshPalette(force, now)
+  now = now or clock()
   local phase = activePhase or "preflight"
   local path = selectedThemePath(phase)
   local isDark = darkMode()
+  local nativeSignature = nativeThemeSignature(now, isDark, force)
   local enabled = settingsStore.followDashboardThemeEnabled(settings)
-  if not force and path == activePath and phase == activePalettePhase and isDark == activeDark and enabled == activeEnabled and activePalette then
+  if not force and path == activePath and phase == activePalettePhase and isDark == activeDark
+      and nativeSignature == activeNativeSignature and enabled == activeEnabled and activePalette then
     return false
   end
 
@@ -282,7 +355,8 @@ local function refreshPalette(force)
   activePath = path
   activePalettePhase = phase
   activeDark = isDark
-  activePalette = enabled and compilePalette(path, phase, isDark) or nativePalette(isDark)
+  activeNativeSignature = nativeSignature
+  activePalette = enabled and compilePalette(path, phase, isDark, nativeSignature) or nativePalette(isDark)
   geometryDirty = true
   applyTitles()
   if lcd.invalidate then pcall(lcd.invalidate) end
@@ -374,6 +448,17 @@ local function rebuildGeometry()
   end
 end
 
+local function updateFlightPhase(snapshot)
+  if not snapshot then
+    activePhase = "preflight"
+    return
+  end
+  if snapshot.timerFlightCounted == true or (tonumber(snapshot.timerSession) or 0) > 0 then
+    tracker.hasBeenInFlight = true
+  end
+  activePhase = tracker:update(snapshot)
+end
+
 local function applyPending(now)
   if pendingSettings then
     settings = pendingSettings
@@ -395,14 +480,7 @@ local function applyPending(now)
     session = nextSession
   end
 
-  if session then
-    if session.timerFlightCounted == true or (tonumber(session.timerSession) or 0) > 0 then
-      tracker.hasBeenInFlight = true
-    end
-    activePhase = tracker:update(session)
-  else
-    activePhase = "preflight"
-  end
+  updateFlightPhase(session)
 
   if modelLoadPending and loadedMcuId and now >= modelRetryAt then
     modelLoadPending = false
@@ -455,9 +533,9 @@ function bridge.open(initialSettings)
     pendingSession = nil
     loadedMcuId = session.connected == true and session.mcuId or nil
     modelLoadPending = loadedMcuId ~= nil
-    activePhase = tracker:update(session)
+    updateFlightPhase(session)
   end
-  refreshPalette(true)
+  refreshPalette(true, clock())
   rebuildGeometry()
 end
 
@@ -468,7 +546,7 @@ function bridge.wakeup()
   if now < nextCheck then return end
   nextCheck = now + CHECK_INTERVAL
   local loadedModel = applyPending(now)
-  if not loadedModel then refreshPalette(false) end
+  if not loadedModel then refreshPalette(false, now) end
   if geometryDirty then rebuildGeometry() end
 end
 
@@ -553,6 +631,7 @@ function bridge.clearCache()
   end
   opened = false
   wipe(paletteCache)
+  wipe(metadataCache)
   bridge.clearPage()
   wipe(railSegments)
   tracker:reset()
@@ -570,11 +649,15 @@ function bridge.clearCache()
   activePhase = "preflight"
   activePalettePhase = nil
   activeDark = nil
+  activeNativeSignature = nil
   activePalette = nil
   canvasWidth = 0
   canvasHeight = 0
   headerBottom = 0
   geometryDirty = true
+  nativeSignatureCache = nil
+  nativeSignatureDark = nil
+  nextNativeSignatureCheck = 0
 end
 
 package.loaded["rfsuite.app.theme_bridge"] = bridge
