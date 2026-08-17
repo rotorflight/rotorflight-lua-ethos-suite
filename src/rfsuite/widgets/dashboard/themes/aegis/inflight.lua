@@ -347,7 +347,10 @@ local function inflightWakeup(box, telemetry)
 
     c.rpm = sensor(telemetry, "rpm", "headspeed", "erpm")
     local rpmStats = telemetry and telemetry.sensorStats and telemetry.sensorStats.rpm
-    c.maxRpm = max(c.rpm or 0, tonumber(rpmStats and rpmStats.max) or 0)
+    c.maxRpm = tonumber(rpmStats and rpmStats.max)
+    if c.rpm ~= nil and (c.maxRpm == nil or c.rpm > c.maxRpm) then
+        c.maxRpm = c.rpm
+    end
     c.throttle = sensor(telemetry, "throttle_percent", "throttle") or 0
     c.esc, c.escUnit, c.escWarn, c.escMax = temperatureSensor(telemetry, escWarnC, escMaxC)
     c.fuel = sensor(telemetry, "smartfuel")
@@ -433,7 +436,6 @@ local function drawVerticalMeter(x, y, w, h, title, value, maximum, color, value
 end
 
 local function inflightPaint(x, y, w, h, box, c, telemetry)
-    x, y = utils.applyOffset(x, y, box)
     c = c or box._cache or {}
 
     -- Safety net: if paint() runs before the first wakeup() cycle has

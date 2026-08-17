@@ -462,7 +462,6 @@ local function drawCheckRow(x, y, w, label, value, stateColor)
 end
 
 local function preflightPaint(x, y, w, h, box, c, telemetry)
-    x, y = utils.applyOffset(x, y, box)
     c = c or box._cache or {}
 
     -- Safety net: if paint() runs before the first wakeup() cycle has
