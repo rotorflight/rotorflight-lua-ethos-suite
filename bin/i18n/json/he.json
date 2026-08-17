@@ -2446,7 +2446,7 @@
           "english": "Follow dashboard theme",
           "translation": "Follow dashboard theme",
           "needs_translation": true,
-          "reverse_text": true,
+          "reverse_text": false,
           "max_length": 22
         },
         "txt_syncname": {

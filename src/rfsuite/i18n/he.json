@@ -7174,7 +7174,7 @@
           "english": "Follow dashboard theme",
           "max_length": 22,
           "needs_translation": true,
-          "reverse_text": true,
+          "reverse_text": false,
           "translation": "Follow dashboard theme"
         },
         "txt_general": {
