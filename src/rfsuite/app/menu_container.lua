@@ -63,6 +63,7 @@ local requireModule = package.loaded["rfsuite.lib.require"] or assert(loadfile("
 local closeKey = requireModule("app/close_key.lua")
 local header = requireModule("app/header.lua")
 local memstats = requireModule("lib/memstats.lua")
+local themeBridge = requireModule("app/theme_bridge.lua")
 local tileGrid = requireModule("app/tile_grid.lua")
 
 local menu_container = {}
@@ -231,7 +232,8 @@ local function openScreen(nav, menus, rootEntries, screen, setEventHandler, setW
     if isEntryVisible(entry) then
       -- Keep tile labels explicit; Ethos's default font clips long
       -- titles well before the tile's own width would require it.
-      tileButtons[i] = form.addButton(nil, {x = x, y = y, w = tileW, h = tileH}, {
+      local tileRect = {x = x, y = y, w = tileW, h = tileH}
+      tileButtons[i] = form.addButton(nil, tileRect, {
         text = entry.title,
         icon = entry.icon,
         options = tileFont,
@@ -260,6 +262,7 @@ local function openScreen(nav, menus, rootEntries, screen, setEventHandler, setW
           end
         end,
       })
+      themeBridge.registerChromeRect(tileRect, "tile")
 
       col = col + 1
       if col >= numPerRow then
