@@ -349,6 +349,10 @@ local function compilePalette(path, phase, isDark, nativeSignature)
   paletteCache[path] = byPhase
   local byMode = byPhase[phase] or {}
   byPhase[phase] = byMode
+  -- A live ETHOS theme change produces a new native signature. Retain only
+  -- the current compiled palette so repeated theme switches cannot grow this
+  -- embedded cache for the lifetime of the open tool.
+  wipe(byMode)
   byMode[nativeSignature] = palette
   return palette
 end
