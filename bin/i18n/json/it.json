@@ -2442,6 +2442,13 @@
           "reverse_text": false,
           "max_length": 11
         },
+        "txt_follow_dashboard_theme": {
+          "english": "Follow dashboard theme",
+          "translation": "Follow dashboard theme",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 22
+        },
         "txt_syncname": {
           "english": "Sync model name",
           "translation": "Sincronizza",

@@ -1,11 +1,10 @@
 -- Dashboard palette metadata used by the configurator theme bridge.
 --
 -- Keep this registry independent from dashboard theme modules. The app can
--- resolve all shipped and separately-maintained radio themes without loading a
--- dashboard init.lua during paint (or loading a theme that is not installed on
--- this branch). Unknown user themes may still provide an appTheme table in
--- their init.lua; app/theme_bridge.lua probes that file from its throttled
--- wakeup path only.
+-- resolve all shipped and separately maintained radio themes without loading a
+-- dashboard init.lua during paint or probing a theme that is not installed on
+-- this branch. The six editable system themes publish appTheme in init.lua;
+-- app/theme_bridge.lua probes those files from its throttled wakeup path only.
 
 if package.loaded["rfsuite.app.theme_palettes"] then
   return package.loaded["rfsuite.app.theme_palettes"]

@@ -6162,6 +6162,12 @@
           "needs_translation": false,
           "translation": "Developer"
         },
+        "txt_follow_dashboard_theme": {
+          "english": "Follow dashboard theme",
+          "max_length": 22,
+          "needs_translation": false,
+          "translation": "Follow dashboard theme"
+        },
         "txt_general": {
           "english": "General",
           "max_length": 7,

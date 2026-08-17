@@ -2098,6 +2098,12 @@
           "needs_translation": false,
           "translation": "Integration"
         },
+        "txt_follow_dashboard_theme": {
+          "english": "Follow dashboard theme",
+          "max_length": 22,
+          "needs_translation": false,
+          "translation": "Follow dashboard theme"
+        },
         "txt_syncname": {
           "english": "Sync model name",
           "max_length": 15,

@@ -153,7 +153,7 @@ local function open(opts)
   local integrationPanel = form.addExpansionPanel("@i18n(app.modules.settings.panel_integration)@")
   integrationPanel:open(false)
 
-  form.addBooleanField(integrationPanel:addLine("Follow dashboard theme"), nil,
+  form.addBooleanField(integrationPanel:addLine("@i18n(app.modules.settings.txt_follow_dashboard_theme)@"), nil,
     function()
       return settings and settings.general and settings.general.follow_dashboard_theme ~= false
     end,
