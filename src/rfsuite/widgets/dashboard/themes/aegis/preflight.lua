@@ -159,6 +159,16 @@ local function sensor(telemetry, name, alias1, alias2)
     return nil
 end
 
+local function temperatureSensor(telemetry, warning, maximum)
+    telemetry = telemetry or (rfsuite.tasks and rfsuite.tasks.telemetry)
+    if not (telemetry and telemetry.getSensor) then
+        return nil, "°C", warning, maximum
+    end
+
+    local value, _, unit, displayWarning, displayMaximum = telemetry.getSensor("temp_esc", warning, maximum)
+    return tonumber(value), unit or "°C", tonumber(displayWarning) or warning, tonumber(displayMaximum) or maximum
+end
+
 
 local GOVERNOR_LABELS = {
     [0] = "OFF",
@@ -230,6 +240,15 @@ local function fmt(value, decimals, suffix, missing)
         text = tostring(floor(value + 0.5))
     end
     return text .. (suffix or "")
+end
+
+local function cacheText(c, textKey, valueKey, unitKey, value, decimals, suffix)
+    suffix = suffix or ""
+    if c[valueKey] ~= value or c[unitKey] ~= suffix or c[textKey] == nil then
+        c[valueKey] = value
+        c[unitKey] = suffix
+        c[textKey] = fmt(value, decimals, suffix)
+    end
 end
 
 local function resolveFont(name)
@@ -342,10 +361,17 @@ local function preflightWakeup(box, telemetry)
     local c = box._cache or {}
     box._cache = c
 
+    c.fuelWarn = getThemeValue("fuel_warn")
+    c.becMin = getThemeValue("bec_min")
+    c.becWarn = getThemeValue("bec_warn")
+    local escWarnC = getThemeValue("esc_warn")
+    local escMaxC = getThemeValue("esc_max")
+    c.linkWarn = getThemeValue("link_warn")
+
     c.fuel = sensor(telemetry, "smartfuel")
     c.bec = sensor(telemetry, "bec_voltage", "bec")
-    c.esc = sensor(telemetry, "temp_esc", "esc_temp")
-    c.link = sensor(telemetry, "link", "vfr")
+    c.esc, c.escUnit, c.escWarn, c.escMax = temperatureSensor(telemetry, escWarnC, escMaxC)
+    c.link = sensor(telemetry, "vfr")
     c.rate = sensor(telemetry, "rate_profile")
     c.pid = sensor(telemetry, "pid_profile")
     c.voltage = sensor(telemetry, "voltage")
@@ -354,45 +380,45 @@ local function preflightWakeup(box, telemetry)
     local available = 0
     local faults = 0
     local warnings = 0
-    local issues = {}
+    local firstIssue
 
     if c.fuel ~= nil then
         available = available + 1
-        if c.fuel <= getThemeValue("fuel_warn") then
+        if c.fuel <= c.fuelWarn then
             faults = faults + 1
-            issues[#issues + 1] = "SMART FUEL " .. fmt(c.fuel, 0, "%") .. " AT RESERVE"
+            if firstIssue == nil then firstIssue = "SMART FUEL " .. fmt(c.fuel, 0, "%") .. " AT RESERVE" end
         end
     end
     if c.bec ~= nil then
         available = available + 1
-        if c.bec < getThemeValue("bec_min") then
+        if c.bec < c.becMin then
             faults = faults + 1
-            issues[#issues + 1] = "BEC " .. fmt(c.bec, 1, "V") .. " BELOW " .. fmt(getThemeValue("bec_min"), 1, "V")
-        elseif c.bec < getThemeValue("bec_warn") then
+            if firstIssue == nil then firstIssue = "BEC " .. fmt(c.bec, 1, "V") .. " BELOW " .. fmt(c.becMin, 1, "V") end
+        elseif c.bec < c.becWarn then
             warnings = warnings + 1
-            issues[#issues + 1] = "BEC " .. fmt(c.bec, 1, "V") .. " BELOW " .. fmt(getThemeValue("bec_warn"), 1, "V")
+            if firstIssue == nil then firstIssue = "BEC " .. fmt(c.bec, 1, "V") .. " BELOW " .. fmt(c.becWarn, 1, "V") end
         end
     end
     if c.esc ~= nil then
         available = available + 1
-        if c.esc >= getThemeValue("esc_max") then
+        if c.esc >= c.escMax then
             faults = faults + 1
-            issues[#issues + 1] = "ESC " .. fmt(c.esc, 0, "°C") .. " AT LIMIT"
-        elseif c.esc >= getThemeValue("esc_warn") then
+            if firstIssue == nil then firstIssue = "ESC " .. fmt(c.esc, 0, c.escUnit) .. " AT LIMIT" end
+        elseif c.esc >= c.escWarn then
             warnings = warnings + 1
-            issues[#issues + 1] = "ESC " .. fmt(c.esc, 0, "°C") .. " ABOVE WARNING"
+            if firstIssue == nil then firstIssue = "ESC " .. fmt(c.esc, 0, c.escUnit) .. " ABOVE WARNING" end
         end
     end
     if c.link ~= nil then
         available = available + 1
-        if c.link < getThemeValue("link_warn") then
+        if c.link < c.linkWarn then
             warnings = warnings + 1
-            issues[#issues + 1] = "LINK " .. fmt(c.link, 0, "%") .. " BELOW " .. fmt(getThemeValue("link_warn"), 0, "%")
+            if firstIssue == nil then firstIssue = "LINK " .. fmt(c.link, 0, "%") .. " BELOW " .. fmt(c.linkWarn, 0, "%") end
         end
     end
 
     local issueCount = faults + warnings
-    c.issueText = issues[1]
+    c.issueText = firstIssue
     if issueCount > 1 and c.issueText then
         c.issueText = c.issueText .. "  +" .. tostring(issueCount - 1) .. " MORE"
     end
@@ -417,14 +443,13 @@ local function preflightWakeup(box, telemetry)
         c.issueText = nil
     end
 
-    -- Cache theme thresholds here (wakeup runs at a bounded rate) instead of
-    -- calling getThemeValue() from paint(), which runs on every invalidate.
-    c.fuelWarn = getThemeValue("fuel_warn")
-    c.becMin = getThemeValue("bec_min")
-    c.becWarn = getThemeValue("bec_warn")
-    c.escMax = getThemeValue("esc_max")
-    c.escWarn = getThemeValue("esc_warn")
-    c.linkWarn = getThemeValue("link_warn")
+    cacheText(c, "becText", "_becTextValue", "_becTextUnit", c.bec, 1, " V")
+    cacheText(c, "linkText", "_linkTextValue", "_linkTextUnit", c.link, 0, "%")
+    cacheText(c, "fuelText", "_fuelTextValue", "_fuelTextUnit", c.fuel, 0, "%")
+    cacheText(c, "escText", "_escTextValue", "_escTextUnit", c.esc, 0, c.escUnit)
+    cacheText(c, "rateText", "_rateTextValue", "_rateTextUnit", c.rate, 0, "")
+    cacheText(c, "pidText", "_pidTextValue", "_pidTextUnit", c.pid, 0, "")
+    cacheText(c, "voltageText", "_voltageTextValue", "_voltageTextUnit", c.voltage, 1, " V")
 
     return c
 end
@@ -436,7 +461,7 @@ local function drawCheckRow(x, y, w, label, value, stateColor)
     drawTextAligned(x + w * 0.48, y, w * 0.52, value, "FONT_S", C.white, "right")
 end
 
-local function preflightPaint(x, y, w, h, box, c)
+local function preflightPaint(x, y, w, h, box, c, telemetry)
     x, y = utils.applyOffset(x, y, box)
     c = c or box._cache or {}
 
@@ -446,8 +471,12 @@ local function preflightPaint(x, y, w, h, box, c)
     c.fuelWarn = c.fuelWarn or getThemeValue("fuel_warn")
     c.becMin = c.becMin or getThemeValue("bec_min")
     c.becWarn = c.becWarn or getThemeValue("bec_warn")
-    c.escMax = c.escMax or getThemeValue("esc_max")
-    c.escWarn = c.escWarn or getThemeValue("esc_warn")
+    if c.escMax == nil or c.escWarn == nil then
+        local escWarnC = getThemeValue("esc_warn")
+        local escMaxC = getThemeValue("esc_max")
+        local _, unit, displayWarn, displayMax = temperatureSensor(telemetry, escWarnC, escMaxC)
+        c.escUnit, c.escWarn, c.escMax = unit, displayWarn, displayMax
+    end
     c.linkWarn = c.linkWarn or getThemeValue("link_warn")
 
     lcd.color(C.bg)
@@ -468,15 +497,15 @@ local function preflightPaint(x, y, w, h, box, c)
 
     local cardH = floor((bodyH - pad) / 2)
     local fuel = c.fuel or 0
-    local fuelColor = fuel <= c.fuelWarn and C.red or (fuel <= 50 and C.amber or C.green)
+    local fuelColor = c.fuel == nil and C.muted or (fuel <= c.fuelWarn and C.red or (fuel <= 50 and C.amber or C.green))
     local becColor = c.bec and (c.bec < c.becMin and C.red or (c.bec < c.becWarn and C.amber or C.cyan)) or C.muted
     local escColor = c.esc and (c.esc >= c.escMax and C.red or (c.esc >= c.escWarn and C.amber or C.green)) or C.muted
     local linkColor = c.link and (c.link < c.linkWarn and C.amber or C.cyan) or C.muted
 
-    drawMetric(leftX, bodyY, sideW, cardH, "BEC POWER", fmt(c.bec, 1, " V"), becColor, "regulated supply")
+    drawMetric(leftX, bodyY, sideW, cardH, "BEC POWER", c.becText or "--", becColor, "regulated supply")
     drawProgress(leftX + 12, bodyY + cardH - 36, sideW - 24, 9, c.bec and c.bec / 15 or 0, becColor)
 
-    drawMetric(leftX, bodyY + cardH + pad, sideW, cardH, "RADIO LINK", fmt(c.link, 0, "%"), linkColor, "frame quality")
+    drawMetric(leftX, bodyY + cardH + pad, sideW, cardH, "RADIO LINK", c.linkText or "--", linkColor, "frame quality")
     drawProgress(leftX + 12, bodyY + cardH * 2 + pad - 36, sideW - 24, 9, c.link and c.link / 100 or 0, linkColor)
 
     drawPanel(centerX, bodyY, centerW, bodyH, c.statusColor or C.muted, nil)
@@ -495,7 +524,7 @@ local function preflightPaint(x, y, w, h, box, c)
 
     local segY = bodyY + bodyH - 86
     drawTextAligned(centerX + 18, segY - 22, centerW - 36, "SMART FUEL", "FONT_XS", C.muted, "left")
-    drawTextAligned(centerX + 18, segY - 24, centerW - 36, fmt(c.fuel, 0, "%"), "FONT_S", C.white, "right")
+    drawTextAligned(centerX + 18, segY - 24, centerW - 36, c.fuelText or "--", "FONT_S", C.white, "right")
     drawSegments(centerX + 18, segY, centerW - 42, 18, fuel, 12, fuelColor, C.line)
     lcd.color(fuelColor)
     lcd.drawFilledRectangle(floor(centerX + centerW - 20), floor(segY + 5), 5, 8)
@@ -503,13 +532,13 @@ local function preflightPaint(x, y, w, h, box, c)
     -- Put the arm/governor state directly below the Smart Fuel battery.
     drawStateBadge(centerX + 18, segY + 31, centerW - 36, 27, c.flightState, c.flightStateColor)
 
-    drawMetric(rightX, bodyY, sideW, cardH, "ESC THERMAL", fmt(c.esc, 0, "°C"), escColor, "controller temperature")
+    drawMetric(rightX, bodyY, sideW, cardH, "ESC THERMAL", c.escText or "--", escColor, "controller temperature")
     drawProgress(rightX + 12, bodyY + cardH - 36, sideW - 24, 9, c.esc and c.esc / c.escMax or 0, escColor)
 
     drawPanel(rightX, bodyY + cardH + pad, sideW, cardH, C.violet, "FLIGHT PROFILE")
-    drawCheckRow(rightX + 14, bodyY + cardH + pad + 38, sideW - 28, "RATES", fmt(c.rate, 0, ""), C.violet)
-    drawCheckRow(rightX + 14, bodyY + cardH + pad + 70, sideW - 28, "PID BANK", fmt(c.pid, 0, ""), C.violet)
-    drawCheckRow(rightX + 14, bodyY + cardH + pad + 102, sideW - 28, "PACK", fmt(c.voltage, 1, " V"), C.cyan)
+    drawCheckRow(rightX + 14, bodyY + cardH + pad + 38, sideW - 28, "RATES", c.rateText or "--", C.violet)
+    drawCheckRow(rightX + 14, bodyY + cardH + pad + 70, sideW - 28, "PID BANK", c.pidText or "--", C.violet)
+    drawCheckRow(rightX + 14, bodyY + cardH + pad + 102, sideW - 28, "PACK", c.voltageText or "--", C.cyan)
 end
 
 local boxes_cache = nil

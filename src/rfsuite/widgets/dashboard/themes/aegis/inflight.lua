@@ -159,6 +159,16 @@ local function sensor(telemetry, name, alias1, alias2)
     return nil
 end
 
+local function temperatureSensor(telemetry, warning, maximum)
+    telemetry = telemetry or (rfsuite.tasks and rfsuite.tasks.telemetry)
+    if not (telemetry and telemetry.getSensor) then
+        return nil, "°C", warning, maximum
+    end
+
+    local value, _, unit, displayWarning, displayMaximum = telemetry.getSensor("temp_esc", warning, maximum)
+    return tonumber(value), unit or "°C", tonumber(displayWarning) or warning, tonumber(displayMaximum) or maximum
+end
+
 
 local GOVERNOR_LABELS = {
     [0] = "OFF",
@@ -230,6 +240,15 @@ local function fmt(value, decimals, suffix, missing)
         text = tostring(floor(value + 0.5))
     end
     return text .. (suffix or "")
+end
+
+local function cacheText(c, textKey, valueKey, unitKey, value, decimals, suffix, prefix)
+    suffix = suffix or ""
+    if c[valueKey] ~= value or c[unitKey] ~= suffix or c[textKey] == nil then
+        c[valueKey] = value
+        c[unitKey] = suffix
+        c[textKey] = (prefix or "") .. fmt(value, decimals, suffix)
+    end
 end
 
 local function resolveFont(name)
@@ -306,90 +325,88 @@ local function drawSegments(x, y, w, h, percent, count, activeColor, emptyColor)
     end
 end
 
-local function drawProgress(x, y, w, h, percent, color)
-    percent = max(0, min(1, percent or 0))
-    lcd.color(C.line)
-    lcd.drawRectangle(floor(x), floor(y), floor(w), floor(h), 1)
-    if percent > 0 then
-        lcd.color(color)
-        lcd.drawFilledRectangle(floor(x + 2), floor(y + 2), floor((w - 4) * percent), max(1, floor(h - 4)))
-    end
-end
-
-local HEX_UNIT = {}
-for i = 0, 5 do
-    local a = rad(30 + i * 60)
-    HEX_UNIT[i + 1] = {cos(a), sin(a)}
-end
-
-local function drawHex(x, y, radius, color)
-    local points = {}
-    for i = 1, 6 do
-        local u = HEX_UNIT[i]
-        points[i] = {x + u[1] * radius, y + u[2] * radius}
-    end
-    lcd.color(color)
-    for i = 1, 6 do
-        local a = points[i]
-        local b = points[(i % 6) + 1]
-        lcd.drawLine(floor(a[1]), floor(a[2]), floor(b[1]), floor(b[2]))
-    end
-end
-
 local layout = {cols = 12, rows = 12, padding = 0}
 local screenBorderStyle = {enabled = false}
 
-local function flightTimeText()
+local function updateFlightTime(c)
     local session = rfsuite and rfsuite.session
     local seconds = session and session.timer and tonumber(session.timer.live) or 0
-    seconds = max(0, seconds)
-    return format("%02d:%02d", floor(seconds / 60), floor(seconds % 60))
+    seconds = floor(max(0, seconds))
+    if c._timerSecond ~= seconds then
+        c._timerSecond = seconds
+        c.timer = format("%02d:%02d", floor(seconds / 60), seconds % 60)
+    end
 end
 
 local function inflightWakeup(box, telemetry)
-    local c = box._cache or {maxRpm = 0}
+    local c = box._cache or {}
     box._cache = c
 
-    c.rpm = sensor(telemetry, "rpm", "headspeed", "erpm") or 0
-    c.maxRpm = max(c.maxRpm or 0, c.rpm)
+    local escWarnC = getThemeValue("esc_warn")
+    local escMaxC = getThemeValue("esc_max")
+
+    c.rpm = sensor(telemetry, "rpm", "headspeed", "erpm")
+    local rpmStats = telemetry and telemetry.sensorStats and telemetry.sensorStats.rpm
+    c.maxRpm = max(c.rpm or 0, tonumber(rpmStats and rpmStats.max) or 0)
     c.throttle = sensor(telemetry, "throttle_percent", "throttle") or 0
-    c.esc = sensor(telemetry, "temp_esc", "esc_temp")
+    c.esc, c.escUnit, c.escWarn, c.escMax = temperatureSensor(telemetry, escWarnC, escMaxC)
     c.fuel = sensor(telemetry, "smartfuel")
     c.current = sensor(telemetry, "current")
     c.bec = sensor(telemetry, "bec_voltage", "bec")
-    c.link = sensor(telemetry, "link", "vfr")
+    c.link = sensor(telemetry, "vfr")
     c.consumed = sensor(telemetry, "smartconsumption", "consumption")
     c.flightState, c.flightStateColor = getFlightState(telemetry)
-    c.timer = flightTimeText()
+    updateFlightTime(c)
 
     -- Cache theme thresholds here (wakeup runs at a bounded rate) instead of
     -- calling getThemeValue() from paint(), which runs on every invalidate.
-    c.escMax = getThemeValue("esc_max")
-    c.escWarn = getThemeValue("esc_warn")
     c.fuelWarn = getThemeValue("fuel_warn")
     c.becMin = getThemeValue("bec_min")
     c.becWarn = getThemeValue("bec_warn")
     c.linkWarn = getThemeValue("link_warn")
     c.rpmMax = getThemeValue("rpm_max")
 
+    cacheText(c, "rpmText", "_rpmTextValue", "_rpmTextUnit", c.rpm, 0, "")
+    cacheText(c, "maxRpmText", "_maxRpmTextValue", "_maxRpmTextUnit", c.maxRpm, 0, " RPM", "MAX ")
+    cacheText(c, "rpmLimitText", "_rpmLimitTextValue", "_rpmLimitTextUnit", c.rpmMax, 0, " RPM", "LIMIT ")
+    cacheText(c, "escText", "_escTextValue", "_escTextUnit", c.esc, 0, c.escUnit)
+    cacheText(c, "throttleText", "_throttleTextValue", "_throttleTextUnit", c.throttle, 0, "%")
+    cacheText(c, "fuelText", "_fuelTextValue", "_fuelTextUnit", c.fuel, 0, "%")
+    cacheText(c, "currentText", "_currentTextValue", "_currentTextUnit", c.current, 1, " A")
+    cacheText(c, "becText", "_becTextValue", "_becTextUnit", c.bec, 1, " V")
+    cacheText(c, "linkText", "_linkTextValue", "_linkTextUnit", c.link, 0, "%")
+    cacheText(c, "consumedText", "_consumedTextValue", "_consumedTextUnit", c.consumed, 0, " mAh")
+    if c._becLinkBecText ~= c.becText or c._becLinkLinkText ~= c.linkText then
+        c._becLinkBecText = c.becText
+        c._becLinkLinkText = c.linkText
+        c.becLinkText = c.becText .. "   " .. c.linkText
+    end
+
     return c
 end
 
-local function drawRadialGauge(cx, cy, radius, value, maximum, color)
-    local startA = 140
-    local sweep = 260
-    local ticks = 32
-    local pct = maximum > 0 and max(0, min(1, value / maximum)) or 0
-    local active = floor(ticks * pct + 0.5)
+local GAUGE_TICKS = 32
+local GAUGE_COS = {}
+local GAUGE_SIN = {}
+for i = 0, GAUGE_TICKS - 1 do
+    local angle = rad(140 + 260 * i / (GAUGE_TICKS - 1))
+    GAUGE_COS[i + 1] = cos(angle)
+    GAUGE_SIN[i + 1] = sin(angle)
+end
 
-    for i = 0, ticks - 1 do
-        local a = rad(startA + sweep * i / (ticks - 1))
-        local r1 = radius - 14
-        local r2 = radius
-        local x1 = cx + cos(a) * r1
-        local y1 = cy + sin(a) * r1
-        local x2 = cx + cos(a) * r2
-        local y2 = cy + sin(a) * r2
+local function drawRadialGauge(cx, cy, radius, value, maximum, color)
+    local pct = maximum > 0 and max(0, min(1, value / maximum)) or 0
+    local active = floor(GAUGE_TICKS * pct + 0.5)
+    local r1 = radius - 14
+    local r2 = radius
+
+    for i = 0, GAUGE_TICKS - 1 do
+        local unitCos = GAUGE_COS[i + 1]
+        local unitSin = GAUGE_SIN[i + 1]
+        local x1 = cx + unitCos * r1
+        local y1 = cy + unitSin * r1
+        local x2 = cx + unitCos * r2
+        local y2 = cy + unitSin * r2
         lcd.color(i < active and color or C.line)
         lcd.drawLine(floor(x1), floor(y1), floor(x2), floor(y2))
     end
@@ -398,7 +415,7 @@ local function drawRadialGauge(cx, cy, radius, value, maximum, color)
     lcd.drawLine(floor(cx - radius * 0.68), floor(cy + radius * 0.72), floor(cx + radius * 0.68), floor(cy + radius * 0.72))
 end
 
-local function drawVerticalMeter(x, y, w, h, title, value, maximum, color, unit)
+local function drawVerticalMeter(x, y, w, h, title, value, maximum, color, valueText)
     drawPanel(x, y, w, h, color, title)
     local barX = x + 15
     local barY = y + 34
@@ -412,18 +429,22 @@ local function drawVerticalMeter(x, y, w, h, title, value, maximum, color, unit)
         lcd.color(color)
         lcd.drawFilledRectangle(floor(barX + 2), floor(barY + barH - 2 - fillH), floor(barW - 4), fillH)
     end
-    drawTextAligned(x + 38, y + 44, w - 50, fmt(value, 0, unit), "FONT_L", C.white, "left")
+    drawTextAligned(x + 38, y + 44, w - 50, valueText or "--", "FONT_L", C.white, "left")
 end
 
-local function inflightPaint(x, y, w, h, box, c)
+local function inflightPaint(x, y, w, h, box, c, telemetry)
     x, y = utils.applyOffset(x, y, box)
     c = c or box._cache or {}
 
     -- Safety net: if paint() runs before the first wakeup() cycle has
     -- populated the cache (e.g. very first frame), fall back to a live
     -- lookup so we never compare a number against a nil threshold.
-    c.escMax = c.escMax or getThemeValue("esc_max")
-    c.escWarn = c.escWarn or getThemeValue("esc_warn")
+    if c.escMax == nil or c.escWarn == nil then
+        local escWarnC = getThemeValue("esc_warn")
+        local escMaxC = getThemeValue("esc_max")
+        local _, unit, displayWarn, displayMax = temperatureSensor(telemetry, escWarnC, escMaxC)
+        c.escUnit, c.escWarn, c.escMax = unit, displayWarn, displayMax
+    end
     c.fuelWarn = c.fuelWarn or getThemeValue("fuel_warn")
     c.becMin = c.becMin or getThemeValue("bec_min")
     c.becWarn = c.becWarn or getThemeValue("bec_warn")
@@ -449,13 +470,13 @@ local function inflightPaint(x, y, w, h, box, c)
     local escColor = c.esc and (c.esc >= c.escMax and C.red or (c.esc >= c.escWarn and C.amber or C.green)) or C.muted
     local throttleColor = (c.throttle or 0) >= 90 and C.amber or C.cyan
     local fuel = c.fuel or 0
-    local fuelColor = fuel <= c.fuelWarn and C.red or (fuel <= 50 and C.amber or C.green)
+    local fuelColor = c.fuel == nil and C.muted or (fuel <= c.fuelWarn and C.red or (fuel <= 50 and C.amber or C.green))
     local becColor = c.bec and (c.bec < c.becMin and C.red or (c.bec < c.becWarn and C.amber or C.cyan)) or C.muted
     local linkColor = c.link and (c.link < c.linkWarn and C.amber or C.cyan) or C.muted
 
     local halfH = floor((bodyH - pad) / 2)
-    drawVerticalMeter(leftX, bodyY, leftW, halfH, "ESC TEMP", c.esc, c.escMax, escColor, "°")
-    drawVerticalMeter(leftX, bodyY + halfH + pad, leftW, halfH, "THROTTLE", c.throttle, 100, throttleColor, "%")
+    drawVerticalMeter(leftX, bodyY, leftW, halfH, "ESC TEMP", c.esc, c.escMax, escColor, c.escText)
+    drawVerticalMeter(leftX, bodyY + halfH + pad, leftW, halfH, "THROTTLE", c.throttle, 100, throttleColor, c.throttleText)
 
     drawPanel(centerX, bodyY, centerW, bodyH, C.cyan, nil)
     local cx = centerX + centerW / 2
@@ -464,14 +485,14 @@ local function inflightPaint(x, y, w, h, box, c)
     local rpmMax = c.rpmMax
     local rpmColor = (c.rpm or 0) > rpmMax and C.red or C.cyan
     drawRadialGauge(cx, cy, radius, c.rpm or 0, rpmMax, rpmColor)
-    drawTextAligned(centerX, cy - 44, centerW, fmt(c.rpm, 0, ""), "FONT_XXL", C.white, "center")
+    drawTextAligned(centerX, cy - 44, centerW, c.rpmText or "--", "FONT_XXL", C.white, "center")
     drawTextAligned(centerX, cy + 10, centerW, "HEADSPEED  RPM", "FONT_XS", C.muted, "center")
-    drawTextAligned(centerX + 22, bodyY + bodyH - 33, centerW - 44, "MAX " .. fmt(c.maxRpm, 0, " RPM"), "FONT_XS", C.amber, "left")
-    drawTextAligned(centerX + 22, bodyY + bodyH - 33, centerW - 44, "LIMIT " .. fmt(rpmMax, 0, " RPM"), "FONT_XS", C.muted, "right")
+    drawTextAligned(centerX + 22, bodyY + bodyH - 33, centerW - 44, c.maxRpmText or "MAX --", "FONT_XS", C.amber, "left")
+    drawTextAligned(centerX + 22, bodyY + bodyH - 33, centerW - 44, c.rpmLimitText or "LIMIT --", "FONT_XS", C.muted, "right")
 
     local fuelH = floor(bodyH * 0.34)
     drawPanel(rightX, bodyY, rightW, fuelH, fuelColor, "SMART FUEL")
-    drawTextAligned(rightX + 12, bodyY + 34, rightW - 24, fmt(c.fuel, 0, "%"), "FONT_XL", C.white, "right")
+    drawTextAligned(rightX + 12, bodyY + 34, rightW - 24, c.fuelText or "--", "FONT_XL", C.white, "right")
     drawSegments(rightX + 12, bodyY + fuelH - 39, rightW - 32, 16, fuel, 10, fuelColor, C.line)
     lcd.color(fuelColor)
     lcd.drawFilledRectangle(floor(rightX + rightW - 16), floor(bodyY + fuelH - 35), 4, 8)
@@ -484,8 +505,8 @@ local function inflightPaint(x, y, w, h, box, c)
 
     local smallY = stateY + stateH + stateGap
     local smallH = floor((bodyY + bodyH - smallY - pad) / 2)
-    drawMetric(rightX, smallY, rightW, smallH, "CURRENT LOAD", fmt(c.current, 1, " A"), C.violet, "instantaneous")
-    drawMetric(rightX, smallY + smallH + pad, rightW, smallH, "BEC / LINK", fmt(c.bec, 1, " V") .. "   " .. fmt(c.link, 0, "%"), becColor == C.red and C.red or linkColor, "power and RF health")
+    drawMetric(rightX, smallY, rightW, smallH, "CURRENT LOAD", c.currentText or "--", C.violet, "instantaneous")
+    drawMetric(rightX, smallY + smallH + pad, rightW, smallH, "BEC / LINK", c.becLinkText or "--   --", becColor == C.red and C.red or linkColor, "power and RF health")
 
     -- Keep consumed capacity inside the throttle card as two centered rows.
     -- Separating the label and value prevents overlap in the narrow X20 Pro panel.
@@ -495,7 +516,7 @@ local function inflightPaint(x, y, w, h, box, c)
     local consumedLabelY = throttleY + halfH - 64
     local consumedValueY = consumedLabelY + 18
     drawTextAligned(consumedX, consumedLabelY, consumedW, "CONSUMED", "FONT_XXS", C.muted, "center")
-    drawTextAligned(consumedX, consumedValueY, consumedW, fmt(c.consumed, 0, " mAh"), "FONT_XS", C.white, "center")
+    drawTextAligned(consumedX, consumedValueY, consumedW, c.consumedText or "--", "FONT_XS", C.white, "center")
 
     local monitorY = y + h - 22
     drawTextAligned(x + w * 0.67, monitorY, w * 0.31 - pad, "AEGIS MONITORING", "FONT_XXS", C.line2, "right")
