@@ -8463,6 +8463,13 @@
         "max_length": 8,
         "reverse_text": false
       },
+      "startup_invalid_device": {
+        "english": "Invalid device connected",
+        "translation": "Invalid device connected",
+        "needs_translation": true,
+        "reverse_text": false,
+        "max_length": 24
+      },
       "startup_no_link": {
         "english": "No telemetry link detected",
         "translation": "No se detectó ningún enlace de telemetría",
