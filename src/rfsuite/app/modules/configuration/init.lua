@@ -4,7 +4,7 @@
 ]] --
 
 local init = {
-    title = "@i18n(app.modules.configuration.name)@",
+    title = "Configuration",
     section = "hardware",
     script = "configuration.lua",
     image = "configuration.png",

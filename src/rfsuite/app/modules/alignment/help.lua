@@ -6,9 +6,9 @@
 local data = {}
 data.help = {}
 data.help.default = {
-    "@i18n(app.modules.alignment.help_p1)@",
-    "@i18n(app.modules.alignment.help_p2)@",
-    "@i18n(app.modules.alignment.help_p3)@"
+    "Set board roll, pitch and yaw mounting offsets.",
+    "Set magnetometer alignment and save to write EEPROM.",
+    "The visual below follows live attitude from MSP."
 }
 
 return data

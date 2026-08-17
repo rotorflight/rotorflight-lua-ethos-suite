@@ -333,7 +333,7 @@ local function drawKey(name, keyunit, keyminmax, keyfloor, color, minimum, maxim
         lcd.color(COLOR_BLACK)
     end
 
-    local min_trunc
+    local min_trunc, max_trunc
     if keyunit == "rpm" and (minimum >= 10000 or maximum >= 10000) then
         min_trunc = string.format("%.1fK", minimum / 10000)
         max_trunc = string.format("%.1fK", maximum / 10000)
@@ -346,7 +346,7 @@ local function drawKey(name, keyunit, keyminmax, keyfloor, color, minimum, maxim
         max_str = " ↑ " .. (max_trunc or maximum) .. keyunit
     else
         min_str = ""
-        max_str = "↑ " .. (max_trun or maximum) .. keyunit
+        max_str = "↑ " .. (max_trunc or maximum) .. keyunit
     end
 
     local mmY = y + boxHeight + 2
@@ -537,7 +537,7 @@ local function openPage(opts)
     local zoomButtonWidth = (graphPos['key_width'] / 2) - 20
 
     local posField = {x = graphPos['width'], y = graphPos['slider_y'], w = zoomButtonWidth, h = 40}
-    app.formFields[2] = form.addButton(line, posField, {
+    app.formFields[2] = form.addButton(nil, posField, {
         text = "-",
         icon = nil,
         options = FONT_STD,
@@ -559,7 +559,7 @@ local function openPage(opts)
     app.formFields[2]:enable(false)
 
     local posField = {x = graphPos['width'] + zoomButtonWidth + 10, y = graphPos['slider_y'], w = zoomButtonWidth, h = 40}
-    app.formFields[3] = form.addButton(line, posField, {
+    app.formFields[3] = form.addButton(nil, posField, {
         text = "+",
         icon = nil,
         options = FONT_STD,

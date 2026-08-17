@@ -65,12 +65,12 @@ local function doErase()
         return
     end
     logInfo("Dataflash erase: queue MSP erase command")
-    eraseProgress = openProgressDialog("@i18n(app.msg_saving)@", "@i18n(app.msg_saving_to_fbl)@")
+    eraseProgress = openProgressDialog("Saving...", "Saving data to flight controller...")
     eraseProgress:value(0)
     eraseProgress:closeAllowed(false)
     eraseProgressCounter = 0
     eraseProgressStart = os.clock()
-    eraseProgressBaseMessage = "@i18n(app.msg_saving_to_fbl)@"
+    eraseProgressBaseMessage = "Saving data to flight controller..."
     eraseProgressMspStatusLast = nil
     local function readDataflashSummary()
         if not (rfsuite.tasks and rfsuite.tasks.msp and rfsuite.tasks.msp.api and rfsuite.tasks.msp.api.load) then return end
@@ -123,10 +123,10 @@ end
 
 function M.eraseBlackboxAsk()
     local buttons = {
-        {label = "@i18n(app.btn_ok)@", action = function() doErase(); return true end},
-        {label = "@i18n(app.btn_cancel)@", action = function() return true end}
+        {label = "          OK           ", action = function() doErase(); return true end},
+        {label = "CANCEL", action = function() return true end}
     }
-    form.openDialog({title = "@i18n(widgets.bbl.erase_dataflash)@", message = "@i18n(widgets.bbl.erase_dataflash)@" .. "?", buttons = buttons, options = TEXT_LEFT})
+    form.openDialog({title = "Erase dataflash", message = "Erase dataflash" .. "?", buttons = buttons, options = TEXT_LEFT})
 end
 
 function M.wakeup()

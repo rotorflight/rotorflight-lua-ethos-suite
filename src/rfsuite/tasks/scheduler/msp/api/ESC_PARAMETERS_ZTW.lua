@@ -10,19 +10,19 @@ local API_NAME = "ESC_PARAMETERS_ZTW"
 local MSP_SIGNATURE = 0xDD
 local MSP_HEADER_BYTES = 2
 
-local govMode = {"@i18n(api.ESC_PARAMETERS_ZTW.tbl_escgov)@", "@i18n(api.ESC_PARAMETERS_ZTW.tbl_extgov)@", "@i18n(api.ESC_PARAMETERS_ZTW.tbl_fwgov)@"}
-local lowVoltage = {"@i18n(api.ESC_PARAMETERS_ZTW.tbl_off)@", "2.7V", "3.0V", "3.2V", "3.4V", "3.6V", "3.8V"}
-local timing = {"@i18n(api.ESC_PARAMETERS_ZTW.tbl_auto)@", "@i18n(api.ESC_PARAMETERS_ZTW.tbl_low)@", "@i18n(api.ESC_PARAMETERS_ZTW.tbl_medium)@", "@i18n(api.ESC_PARAMETERS_ZTW.tbl_high)@"}
+local govMode = {"ESC Governor", "External Governor", "Fixed Wing"}
+local lowVoltage = {"Off", "2.7V", "3.0V", "3.2V", "3.4V", "3.6V", "3.8V"}
+local timing = {"Auto", "Low", "Medium", "High"}
 local becLvVoltage = {"6.0V", "7.4V", "8.4V"}
-local motorDirection = {"@i18n(api.ESC_PARAMETERS_ZTW.tbl_cw)@", "@i18n(api.ESC_PARAMETERS_ZTW.tbl_ccw)@"}
-local accel = {"@i18n(api.ESC_PARAMETERS_ZTW.tbl_fast)@", "@i18n(api.ESC_PARAMETERS_ZTW.tbl_normal)@", "@i18n(api.ESC_PARAMETERS_ZTW.tbl_slow)@", "@i18n(api.ESC_PARAMETERS_ZTW.tbl_vslow)@"}
-local autoRestart = {"@i18n(api.ESC_PARAMETERS_ZTW.tbl_off)@", "90s"}
+local motorDirection = {"CW", "CCW"}
+local accel = {"Fast", "Normal", "Slow", "Very Slow"}
+local autoRestart = {"Off", "90s"}
 local becHvVoltage = {"6.0V", "6.2V", "6.4V", "6.6V", "6.8V", "7.0V", "7.2V", "7.4V", "7.6V", "7.8V", "8.0V", "8.2V", "8.4V", "8.6V", "8.8V", "9.0V", "9.2V", "9.4V", "9.6V", "9.8V", "10.0V", "10.2V", "10.4V", "10.6V", "10.8V", "11.0V", "11.2V", "11.4V", "11.6V", "11.8V", "12.0V"}
-local startupPower = {"@i18n(api.ESC_PARAMETERS_ZTW.tbl_low)@", "@i18n(api.ESC_PARAMETERS_ZTW.tbl_medium)@", "@i18n(api.ESC_PARAMETERS_ZTW.tbl_high)@"}
-local brakeType = {"@i18n(api.ESC_PARAMETERS_ZTW.tbl_normal)@", "@i18n(api.ESC_PARAMETERS_ZTW.tbl_reverse)@"}
-local srFunc = {"@i18n(api.ESC_PARAMETERS_ZTW.tbl_on)@", "@i18n(api.ESC_PARAMETERS_ZTW.tbl_off)@"}
-local ledColor = {"@i18n(api.ESC_PARAMETERS_ZTW.tbl_red)@", "@i18n(api.ESC_PARAMETERS_ZTW.tbl_yellow)@", "@i18n(api.ESC_PARAMETERS_ZTW.tbl_orange)@", "@i18n(api.ESC_PARAMETERS_ZTW.tbl_green)@", "@i18n(api.ESC_PARAMETERS_ZTW.tbl_jadegreen)@", "@i18n(api.ESC_PARAMETERS_ZTW.tbl_blue)@", "@i18n(api.ESC_PARAMETERS_ZTW.tbl_cyan)@", "@i18n(api.ESC_PARAMETERS_ZTW.tbl_purple)@", "@i18n(api.ESC_PARAMETERS_ZTW.tbl_pink)@", "@i18n(api.ESC_PARAMETERS_ZTW.tbl_white)@"}
-local fanControl = {"@i18n(api.ESC_PARAMETERS_ZTW.tbl_on)@", "@i18n(api.ESC_PARAMETERS_ZTW.tbl_off)@"}
+local startupPower = {"Low", "Medium", "High"}
+local brakeType = {"Normal", "Reverse"}
+local srFunc = {"On", "Off"}
+local ledColor = {"Red", "YELLOW", "ORANGE", "GREEN", "JADE GREEN", "BLUE", "CYAN", "PURPLE", "PINK", "WHITE"}
+local fanControl = {"On", "Off"}
 
 -- Tuple layout:
 --   field, type, min, max, default, unit,

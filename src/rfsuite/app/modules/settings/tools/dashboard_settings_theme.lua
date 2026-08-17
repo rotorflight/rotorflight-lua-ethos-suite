@@ -13,25 +13,48 @@ local page
 local pageIdx
 local onNavMenu
 
+-- Reuses app/lib/ui.lua's own page-chunk cache (ui._pageChunkCache) rather
+-- than a separate one here -- same reasoning: this theme settings page can
+-- be opened repeatedly (a different idx per theme button, see
+-- app/modules/settings/tools/dashboard_settings.lua), and each open used to
+-- re-parse themeScript from disk every single time via a plain loadfile().
+-- Caching the compiled chunk, not its call result, means `page` below is
+-- still built fresh (module-scope local, reassigned inside openPage() every
+-- call) on every visit -- only the disk-read+parse+compile step is skipped
+-- on repeat visits to the same theme.
+local function loadThemeChunk(modulePath)
+    local ui = rfsuite.app.ui
+    local cache = ui and ui._pageChunkCache
+    if not cache then
+        return assert(loadfile(modulePath))
+    end
+    local chunk = cache[modulePath]
+    if not chunk then
+        chunk = assert(loadfile(modulePath))
+        cache[modulePath] = chunk
+    end
+    return chunk
+end
+
 local function onSaveMenu()
     local buttons = {
         {
-            label = "@i18n(app.btn_ok_long)@",
+            label = "                OK                ",
             action = function()
-                local msg = "@i18n(app.modules.profile_select.save_prompt_local)@"
+                local msg = "Save current page to radio?"
                 rfsuite.app.ui.progressDisplaySave(msg:gsub("%?$", "."))
                 if page and page.write then page.write() end
                 rfsuite.bus.notify("dashboard.reload_themes", {})
                 rfsuite.app.triggers.closeSave = true
                 return true
             end
-        }, {label = "@i18n(app.modules.profile_select.cancel)@", action = function() return true end}
+        }, {label = "CANCEL", action = function() return true end}
     }
 
     form.openDialog({
         width = nil,
-        title = "@i18n(app.modules.profile_select.save_settings)@",
-        message = "@i18n(app.modules.profile_select.save_prompt_local)@",
+        title = "Save settings",
+        message = "Save current page to radio?",
         buttons = buttons,
         wakeup = function() end,
         paint = function() end,
@@ -62,10 +85,10 @@ local function openPage(opts)
 
     local modulePath = themeScript
 
-    page = assert(loadfile(modulePath))(idx)
+    page = loadThemeChunk(modulePath)(idx)
 
     form.clear()
-    rfsuite.app.ui.fieldHeader("@i18n(app.modules.settings.name)@" .. " / " .. title)
+    rfsuite.app.ui.fieldHeader("Settings" .. " / " .. title)
 
     rfsuite.app.uiState = rfsuite.app.uiStatus.pages
     enableWakeup = true
@@ -112,7 +135,6 @@ local function wakeup()
 end
 
 return {
-    pages = pages,
     openPage = openPage,
     API = {},
     navButtons = {menu = true, save = true, reload = false, tool = false, help = false},

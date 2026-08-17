@@ -7,8 +7,8 @@ local data = {}
 
 data["help"] = {}
 data["help"]["default"] = {
-    "@i18n(app.modules.beepers.help_p1)@",
-    "@i18n(app.modules.beepers.help_p2)@"
+    "Configure analog beeper conditions and DShot beacon behavior.",
+    "ESC Beacon page controls beacon tone and conditions."
 }
 
 return data

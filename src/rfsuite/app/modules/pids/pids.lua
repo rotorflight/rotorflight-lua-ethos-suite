@@ -14,17 +14,17 @@ local apidata = {
     formdata = {
         labels = {},
         rows = {
-            "@i18n(app.modules.pids.roll)@",
-            "@i18n(app.modules.pids.pitch)@",
-            "@i18n(app.modules.pids.yaw)@"
+            "Roll",
+            "Pitch",
+            "Yaw"
         },
         cols = {
-            "@i18n(app.modules.pids.p)@",
-            "@i18n(app.modules.pids.i)@",
-            "@i18n(app.modules.pids.d)@",
-            "@i18n(app.modules.pids.f)@",
-            "@i18n(app.modules.pids.o)@",
-            "@i18n(app.modules.pids.b)@"
+            "P",
+            "I",
+            "D",
+            "FF",
+            "O",
+            "B"
         },
         fields = {
             {row = 1, col = 1, mspapi = 1, apikey = "pid_0_P"},
@@ -157,4 +157,4 @@ local function wakeup()
     end
 end
 
-return {apidata = apidata, title = "@i18n(app.modules.pids.name)@", reboot = false, eepromWrite = true, refreshOnProfileChange = true, postLoad = postLoad, openPage = openPage, wakeup = wakeup, canSave = canSave, API = {}}
+return {apidata = apidata, title = "PIDs", reboot = false, eepromWrite = true, refreshOnProfileChange = true, postLoad = postLoad, openPage = openPage, wakeup = wakeup, canSave = canSave, API = {}}

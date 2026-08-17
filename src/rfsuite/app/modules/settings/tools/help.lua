@@ -8,6 +8,6 @@ local data = {}
 
 data['help'] = {}
 
-data['help']['audio_events'] = {"@i18n(app.modules.settings.help_audio_events)@"}
+data['help']['audio_events'] = {"Use this section to configure which system events and telemetry values will trigger voice announcements or alerts.."}
 
 return data

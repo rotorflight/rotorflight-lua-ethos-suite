@@ -18,21 +18,21 @@ return {
     pages = {
         {
             image = "pids/pids.png",
-            name = "@i18n(app.modules.pids.name)@",
+            name = "PIDs",
             order = 1,
             script = "pids/pids.lua",
             shortcutId = "s_flight_tuning_menu_pids_pids_lua_e97a40faab",
         },
         {
             image = "rates/rates.png",
-            name = "@i18n(app.modules.rates.name)@",
+            name = "Rates",
             order = 2,
             script = "rates/rates.lua",
             shortcutId = "s_flight_tuning_menu_rates_rates_lua_853c5751ea",
         },
         {
             image = "profile_governor/governor.png",
-            name = "@i18n(app.modules.profile_governor.name)@",
+            name = "Governor",
             order = 3,
             script = "profile_governor/governor.lua",
             script_by_mspversion = {
@@ -53,11 +53,11 @@ return {
         {
             image = "app/gfx/advanced.png",
             menuId = "advanced_menu",
-            name = "@i18n(app.menu_section_advanced)@",
+            name = "Advanced",
             order = 4,
             shortcutId = "s_flight_tuning_menu_advanced_menu_2abad2cdec",
         },
     },
     scriptPrefix = "app/modules/",
-    title = "@i18n(app.menu_section_flight_tuning)@",
+    title = "Flight Tuning",
 }

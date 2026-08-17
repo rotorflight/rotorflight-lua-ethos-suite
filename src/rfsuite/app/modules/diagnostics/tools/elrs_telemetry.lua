@@ -21,22 +21,22 @@ local fields = {}
 local fieldCache = {}
 local buttonCache = {}
 local T = {
-    title = "@i18n(app.modules.elrs_telemetry.name)@",
-    status = "@i18n(app.modules.elrs_telemetry.status)@",
-    rotorflight = "@i18n(app.modules.elrs_telemetry.rotorflight)@",
-    elrsModule = "@i18n(app.modules.elrs_telemetry.elrs_module)@",
-    action = "@i18n(app.modules.elrs_telemetry.action)@",
-    actions = "@i18n(app.modules.elrs_telemetry.actions)@",
-    probe = "@i18n(app.modules.elrs_telemetry.action_probe)@",
-    probeOnly = "@i18n(app.modules.elrs_telemetry.action_probe_only)@",
-    rfToElrs = "@i18n(app.modules.elrs_telemetry.action_rf_to_elrs)@",
-    elrsToRf = "@i18n(app.modules.elrs_telemetry.action_elrs_to_rf)@",
-    connectFirst = "@i18n(app.modules.elrs_telemetry.status_connect_first)@",
-    requiresCrsf = "@i18n(app.modules.elrs_telemetry.status_requires_crsf)@",
-    waitingTelemetryConfig = "@i18n(app.modules.elrs_telemetry.status_waiting_telemetry_config)@",
-    notProbed = "@i18n(app.modules.elrs_telemetry.status_not_probed)@",
-    modeNative = "@i18n(app.modules.elrs_telemetry.mode_native)@",
-    modeCustom = "@i18n(app.modules.elrs_telemetry.mode_custom)@"
+    title = "ELRS Telemetry",
+    status = "Status",
+    rotorflight = "Rotorflight",
+    elrsModule = "ELRS Module",
+    action = "Action",
+    actions = "Actions",
+    probe = "Probe",
+    probeOnly = "Probe only",
+    rfToElrs = "RF -> ELRS",
+    elrsToRf = "ELRS -> RF",
+    connectFirst = "Connect to a model first",
+    requiresCrsf = "This tool requires CRSF telemetry",
+    waitingTelemetryConfig = "Waiting for telemetry config",
+    notProbed = "Not probed yet",
+    modeNative = "native",
+    modeCustom = "custom"
 }
 
 local screenW = lcd.getWindowSize()
@@ -204,7 +204,7 @@ local function openPage(opts)
     elrsTask.reset()
     lastRefreshAt = 0
 
-    app.ui.fieldHeader("@i18n(app.modules.diagnostics.name)@ / " .. T.title)
+    app.ui.fieldHeader("Diagnostics / " .. T.title)
     app.formLineCnt = 0
 
     addLine("status", T.status, elrsTask.getStatus())

@@ -18,12 +18,12 @@ local apidata = {
     formdata = {
         labels = {},
         fields = {
-            {t = "@i18n(app.modules.esc_tools.mfg.flrtr.throttle_protocol)@",     mspapi = 1, apikey = "throttle_protocol",     type = 1},
-            {t = "@i18n(app.modules.esc_tools.mfg.flrtr.telemetry_protocol)@",    mspapi = 1, apikey = "telemetry_protocol",    type = 1},
-            {t = "@i18n(app.modules.esc_tools.mfg.flrtr.led_color)@",             mspapi = 1, apikey = "led_color_index",        type = 1},
-            {t = "@i18n(app.modules.esc_tools.mfg.flrtr.motor_temp_sensor)@",     mspapi = 1, apikey = "motor_temp_sensor",      type = 1},
-            {t = "@i18n(app.modules.esc_tools.mfg.flrtr.motor_temp)@",            mspapi = 1, apikey = "motor_temp"},
-            {t = "@i18n(app.modules.esc_tools.mfg.flrtr.battery_capacity)@",      mspapi = 1, apikey = "battery_capacity"}
+            {t = "Throttle Protocol",     mspapi = 1, apikey = "throttle_protocol",     type = 1},
+            {t = "Telemetry Protocol",    mspapi = 1, apikey = "telemetry_protocol",    type = 1},
+            {t = "LED Color",             mspapi = 1, apikey = "led_color_index",        type = 1},
+            {t = "Motor Temperture Sensor",     mspapi = 1, apikey = "motor_temp_sensor",      type = 1},
+            {t = "Motor Temperture Limit",            mspapi = 1, apikey = "motor_temp"},
+            {t = "Capacity Limit",      mspapi = 1, apikey = "battery_capacity"}
         }
     }
 }
@@ -53,13 +53,12 @@ return {
     apidata = apidata,
     eepromWrite = true,
     reboot = false,
-    escinfo = escinfo,
-    postLoad = postLoad,
+        postLoad = postLoad,
     simulatorResponse = simulatorResponse,
     navButtons = navHandlers.navButtons,
     onNavMenu = navHandlers.onNavMenu,
     event = navHandlers.event,
-    pageTitle = "@i18n(app.modules.esc_tools.name)@" .. " / " .. "@i18n(app.modules.esc_tools.mfg.flrtr.name)@" .. " / " .. "@i18n(app.modules.esc_tools.mfg.flrtr.other)@",
+    pageTitle = "Esc Programing" .. " / " .. "FLYROTOR" .. " / " .. "Other",
     headerLine = rfsuite.escHeaderLineText,
     progressCounter = 0.5
 }

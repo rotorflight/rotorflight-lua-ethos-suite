@@ -543,7 +543,7 @@ local function header_boxes()
     if rfsuite and rfsuite.preferences and rfsuite.preferences.general then txbatt_type = rfsuite.preferences.general.txbatt_type or 0 end
 
     if header_boxes_cache == nil or last_txbatt_type ~= txbatt_type then
-        local boxes = utils.standardHeaderBoxes(i18n, colorMode, headeropts, txbatt_type)
+        local boxes = utils.standardHeaderBoxes(colorMode, headeropts, txbatt_type)
         local headerBgColor = "transparent"
         for _, box in ipairs(boxes) do
             box.bgcolor = headerBgColor

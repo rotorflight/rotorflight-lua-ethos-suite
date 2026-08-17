@@ -4,7 +4,7 @@
 ]] --
 
 local init = {
-    title = "@i18n(app.modules.ports.name)@",
+    title = "Ports",
     section = "hardware",
     script = "ports.lua",
     image = "ports.png",

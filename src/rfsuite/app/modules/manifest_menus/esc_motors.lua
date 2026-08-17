@@ -27,31 +27,31 @@ return {
     pages = {
         {
             image = "throttle.png",
-            name = "@i18n(app.modules.esc_motors.throttle)@",
+            name = "Throttle",
             script = "throttle.lua",
             shortcutId = "s_esc_motors_throttle_lua_17f21fa300",
         },
         {
             image = "telemetry.png",
-            name = "@i18n(app.modules.esc_motors.telemetry)@",
+            name = "Telemetry",
             script = "telemetry.lua",
             shortcutId = "s_esc_motors_telemetry_lua_a9d9e2a50a",
         },
         {
             image = "rpm.png",
-            name = "@i18n(app.modules.esc_motors.rpm)@",
+            name = "RPM",
             script = "rpm.lua",
             shortcutId = "s_esc_motors_rpm_lua_19b6337da0",
         },
         {
             image = "app/modules/esc_tools/esc.png",
             loaderspeed = false,
-            name = "@i18n(app.modules.esc_tools.name)@",
+            name = "Esc Programing",
             offline = false,
             script = "app/modules/esc_tools/tools/esc.lua",
             shortcutId = "s_powertrain_menu_esc_tools_tools_esc_0ded099fe9",
         },
     },
     scriptPrefix = "esc_motors/tools/",
-    title = "@i18n(app.modules.esc_motors.name)@",
+    title = "ESC & Motors",
 }

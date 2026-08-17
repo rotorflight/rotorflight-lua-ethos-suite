@@ -416,12 +416,6 @@ function render.wakeup(box)
         value = getParam(box, "value")
     end
 
-    local getSensor = telemetry and telemetry.getSensor
-    local voltage = getSensor and getSensor("voltage") or 0
-    local cellCount = utils.getBatteryCellCount(0)
-    local consumed = getSensor and getSensor("smartconsumption") or 0
-    local perCellVoltage = (cellCount > 0) and (voltage / cellCount) or 0
-
     local manualUnit = cfg.manualUnit
     local unit
 
@@ -479,6 +473,14 @@ function render.wakeup(box)
 
     local battadv = cfg.battadv
     if battadv then
+        -- These three telemetry reads plus the cell-count lookup only feed the
+        -- advanced battery lines below, so they were being done on every wakeup
+        -- of every bar gauge even with battadv off.
+        local getSensor = telemetry and telemetry.getSensor
+        local voltage = getSensor and getSensor("voltage") or 0
+        local cellCount = utils.getBatteryCellCount(0)
+        local consumed = getSensor and getSensor("smartconsumption") or 0
+        local perCellVoltage = (cellCount > 0) and (voltage / cellCount) or 0
         local lines = box._batteryLines
         if not lines then
             lines = {}
@@ -521,10 +523,6 @@ function render.wakeup(box)
     c.min = vmin
     c.max = vmax
     c.percent = percent
-    c.voltage = voltage
-    c.cellCount = cellCount
-    c.consumed = consumed
-    c.perCellVoltage = perCellVoltage
     c.battadv = battadv
     local thresholdValue = displayValue
     if type(thresholdValue) ~= "number" then thresholdValue = value end

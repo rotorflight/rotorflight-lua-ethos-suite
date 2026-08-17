@@ -226,7 +226,7 @@ local function openPage(opts)
     app.lastTitle = opts.title
     app.lastScript = opts.script
 
-    app.ui.fieldHeader("@i18n(app.modules.diagnostics.name)@" .. " / " .. "@i18n(app.modules.power.smartfuel_name)@")
+    app.ui.fieldHeader("Diagnostics" .. " / " .. "SmartFuel")
 
     app.formLineCnt = 0
     app.formFieldCount = 0

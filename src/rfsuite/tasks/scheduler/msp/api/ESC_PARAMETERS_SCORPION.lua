@@ -10,11 +10,11 @@ local API_NAME = "ESC_PARAMETERS_SCORPION"
 local MSP_SIGNATURE = 0x53
 local MSP_HEADER_BYTES = 2
 
-local escMode = {"@i18n(api.ESC_PARAMETERS_SCORPION.tbl_heligov)@", "@i18n(api.ESC_PARAMETERS_SCORPION.tbl_helistore)@", "@i18n(api.ESC_PARAMETERS_SCORPION.tbl_vbargov)@", "@i18n(api.ESC_PARAMETERS_SCORPION.tbl_extgov)@", "@i18n(api.ESC_PARAMETERS_SCORPION.tbl_airplane)@", "@i18n(api.ESC_PARAMETERS_SCORPION.tbl_boat)@", "@i18n(api.ESC_PARAMETERS_SCORPION.tbl_quad)@"}
-local rotation = {"@i18n(api.ESC_PARAMETERS_SCORPION.tbl_ccw)@", "@i18n(api.ESC_PARAMETERS_SCORPION.tbl_cw)@"}
+local escMode = {"Heli Governor", "Heli Governor (stored)", "VBar Governor", "External Governor", "Airplane mode", "Boat mode", "Quad mode"}
+local rotation = {"CCW", "CW"}
 local becVoltage = {"5.1 V", "6.1 V", "7.3 V", "8.3 V", "Disabled"}
-local teleProtocol = {"@i18n(api.ESC_PARAMETERS_SCORPION.tbl_standard)@", "@i18n(api.ESC_PARAMETERS_SCORPION.tbl_vbar)@", "@i18n(api.ESC_PARAMETERS_SCORPION.tbl_exbus)@", "@i18n(api.ESC_PARAMETERS_SCORPION.tbl_unsolicited)@", "@i18n(api.ESC_PARAMETERS_SCORPION.tbl_futsbus)@"}
-local onOff = {"@i18n(api.ESC_PARAMETERS_SCORPION.tbl_on)@", "@i18n(api.ESC_PARAMETERS_SCORPION.tbl_off)@"}
+local teleProtocol = {"Standard", "VBar", "Jeti Exbus", "Unsolicited", "Futaba SBUS"}
+local onOff = {"On", "Off"}
 
 -- Tuple layout:
 --   field, type, min, max, default, unit,

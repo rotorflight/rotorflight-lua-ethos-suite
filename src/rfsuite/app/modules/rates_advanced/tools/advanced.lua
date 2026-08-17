@@ -16,18 +16,18 @@ if rfsuite.session.activeRateTable == nil then rfsuite.session.activeRateTable =
 local rows
 if rfsuite.utils.apiVersionCompare(">=", {12, 0, 8}) then
     rows = {
-        "@i18n(app.modules.rates_advanced.response_time)@",
-        "@i18n(app.modules.rates_advanced.acc_limit)@",
-        "@i18n(app.modules.rates_advanced.setpoint_boost_gain)@",
-        "@i18n(app.modules.rates_advanced.setpoint_boost_cutoff)@",
-        "@i18n(app.modules.rates_advanced.dyn_ceiling_gain)@",
-        "@i18n(app.modules.rates_advanced.dyn_deadband_gain)@",
-        "@i18n(app.modules.rates_advanced.dyn_deadband_filter)@"
+        "Response Time",
+        "Accelerometer Limit",
+        "Setpoint boost gain",
+        "Setpoint boost cutoff",
+        "Dynamic ceiling gain",
+        "Dynamic deadband gain",
+        "Dynamic deadband filter"
     }
 else
     rows = {
-        "@i18n(app.modules.rates_advanced.response_time)@",
-        "@i18n(app.modules.rates_advanced.acc_limit)@"
+        "Response Time",
+        "Accelerometer Limit"
     }
 end
 
@@ -36,14 +36,14 @@ local apidata = {
         {id = 1, name = "RC_TUNING", enableDeltaCache = false, rebuildOnWrite = true},
     },
     formdata = {
-        name = "@i18n(app.modules.rates_advanced.dynamics)@",
+        name = "Dynamics",
         labels = {},
         rows = rows,
         cols = {
-            "@i18n(app.modules.rates_advanced.roll)@",
-            "@i18n(app.modules.rates_advanced.pitch)@",
-            "@i18n(app.modules.rates_advanced.yaw)@",
-            "@i18n(app.modules.rates_advanced.col)@"
+            "Roll",
+            "Pitch",
+            "Yaw",
+            "Col"
         },
         fields = {
             {row = 1, col = 1, mspapi = 1, apikey = "response_time_1"},
@@ -275,4 +275,4 @@ local function canSave()
     return rfsuite.app.pageDirty == true
 end
 
-return {apidata = apidata, title = "@i18n(app.modules.rates_advanced.name)@", onNavMenu = navHandlers.onNavMenu, event = navHandlers.event, reboot = false, openPage = openPage, eepromWrite = true, refreshOnRateChange = true, rTableName = rTableName, postLoad = postLoad, wakeup = wakeup, API = {}, onToolMenu = onToolMenu, canSave = canSave, navButtons = {menu = true, save = true, reload = true, tool = false, help = true}}
+return {apidata = apidata, title = "Rates", onNavMenu = navHandlers.onNavMenu, event = navHandlers.event, reboot = false, openPage = openPage, eepromWrite = true, refreshOnRateChange = true, postLoad = postLoad, wakeup = wakeup, API = {}, onToolMenu = onToolMenu, canSave = canSave, navButtons = {menu = true, save = true, reload = true, tool = false, help = true}}

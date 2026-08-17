@@ -26,6 +26,8 @@ local battery
 local log = rfsuite.utils.log
 local tasks = rfsuite.tasks
 
+local isSimulation = (system and system.getVersion and system.getVersion().simulation) == true
+
 local function ensureHelperModule(path, current)
     if current ~= nil then return current end
     return assert(loadfile(path))(config)
@@ -51,6 +53,11 @@ local function getBatteryModule()
     return battery
 end
 
+-- Hoisted: loadSensorModule runs every sensors tick and apiVersionCompare
+-- re-parses its argument each call, so the inline literal was a throwaway
+-- table per tick.
+local FRSKY_API_MIN = {12, 0, 8}
+
 local function loadSensorModule()
     if not tasks.active() then return nil end
     if not rfsuite.session.apiVersion then return nil end
@@ -58,12 +65,12 @@ local function loadSensorModule()
 
     local protocol = tasks.msp.protocol.mspProtocol
 
-    if system:getVersion().simulation == true then
+    if isSimulation then
         if not loadedSensorModule or loadedSensorModule.name ~= "sim" then loadedSensorModule = {name = "sim", module = assert(loadfile("tasks/scheduler/sensors/sim.lua"))(config)} end
     elseif protocol == "crsf" then
         if not loadedSensorModule or loadedSensorModule.name ~= "elrs" then loadedSensorModule = {name = "elrs", module = assert(loadfile("tasks/scheduler/sensors/elrs.lua"))(config)} end
     elseif protocol == "sport" then
-        if rfsuite.utils.apiVersionCompare(">=", {12, 0, 8}) then
+        if rfsuite.utils.apiVersionCompare(">=", FRSKY_API_MIN) then
             if not loadedSensorModule or loadedSensorModule.name ~= "frsky" then loadedSensorModule = {name = "frsky", module = assert(loadfile("tasks/scheduler/sensors/frsky.lua"))(config)} end
         else
             if not loadedSensorModule or loadedSensorModule.name ~= "frsky_legacy" then loadedSensorModule = {name = "frsky_legacy", module = assert(loadfile("tasks/scheduler/sensors/frsky_legacy.lua"))(config)} end

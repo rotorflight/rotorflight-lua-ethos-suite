@@ -11,8 +11,8 @@ local app = rfsuite.app
 local tasks = rfsuite.tasks
 
 local DSHOT_FIELDS = {
-    { bit = 1, label = "@i18n(app.modules.beepers.field_rx_lost)@" },
-    { bit = 9, label = "@i18n(app.modules.beepers.field_rx_set)@" }
+    { bit = 1, label = "RX lost" },
+    { bit = 9, label = "RX set" }
 }
 
 local state = {
@@ -31,7 +31,7 @@ local state = {
         toggles = {}
     }
 }
-local pageTitle = "@i18n(app.modules.beepers.name)@ / @i18n(app.modules.beepers.menu_dshot)@"
+local pageTitle = "Beepers / ESC Beacon"
 
 local function copyTable(src)
     if type(src) ~= "table" then return src end
@@ -95,15 +95,15 @@ end
 local function renderLoading(message)
     form.clear()
     app.ui.fieldHeader(pageTitle)
-    local line = form.addLine("@i18n(app.modules.beepers.status)@")
-    form.addStaticText(line, nil, message or "@i18n(app.msg_loading)@")
+    local line = form.addLine("Status")
+    form.addStaticText(line, nil, message or "Loading...")
 end
 
 local function renderForm()
     form.clear()
     app.ui.fieldHeader(pageTitle)
 
-    local line = form.addLine("@i18n(app.modules.beepers.dshot_tone)@")
+    local line = form.addLine("ESC beacon tone")
     state.form.tone = form.addChoiceField(line, nil, toneTable(), function() return state.cfg.dshotBeaconTone end, function(v)
         state.cfg.dshotBeaconTone = v
         markDirty()
@@ -163,7 +163,7 @@ local function requestData(forceApiRead)
     state.loaded = false
     state.dirty = false
 
-    renderLoading("@i18n(app.modules.beepers.loading)@")
+    renderLoading("Loading beeper configuration...")
 
     if not forceApiRead and loadFromSessionSnapshot() then
         state.loading = false
@@ -201,7 +201,7 @@ local function performSave()
     if useDirtySave() and (not state.dirty) then return end
 
     state.saving = true
-    app.ui.progressDisplaySave("@i18n(app.modules.beepers.saving)@")
+    app.ui.progressDisplaySave("Saving Beepers...")
 
     local API = tasks.msp.api.loadPage("BEEPER_CONFIG")
     API.setUUID("beepers-dshot-write")
@@ -253,22 +253,22 @@ local function onSaveMenu()
 
     local buttons = {
         {
-            label = "@i18n(app.btn_ok_long)@",
+            label = "                OK                ",
             action = function()
                 performSave()
                 return true
             end
         },
         {
-            label = "@i18n(app.btn_cancel)@",
+            label = "CANCEL",
             action = function() return true end
         }
     }
 
     form.openDialog({
         width = nil,
-        title = "@i18n(app.msg_save_settings)@",
-        message = "@i18n(app.msg_save_current_page)@",
+        title = "Save settings",
+        message = "Save current page to flight controller?",
         buttons = buttons,
         wakeup = function() end,
         paint = function() end,

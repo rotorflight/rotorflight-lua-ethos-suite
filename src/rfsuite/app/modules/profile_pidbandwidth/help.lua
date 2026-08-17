@@ -8,7 +8,7 @@ local data = {}
 
 data['help'] = {}
 
-data['help']['default'] = {"@i18n(app.modules.profile_pidbandwidth.help_p1)@", "@i18n(app.modules.profile_pidbandwidth.help_p2)@", "@i18n(app.modules.profile_pidbandwidth.help_p3)@"}
+data['help']['default'] = {"PID Bandwidth: Overall bandwidth in HZ used by the PID loop.", "D-term cutoff: D-term cutoff frequency in HZ.", "B-term cutoff: B-term cutoff frequency in HZ."}
 
 data['fields'] = {}
 

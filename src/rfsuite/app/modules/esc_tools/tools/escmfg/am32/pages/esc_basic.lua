@@ -28,14 +28,14 @@ local apidata = {
         labels = {
         },
         fields = {
-            [FIELD_IDX.motor_direction] = {t = "@i18n(app.modules.esc_tools.mfg.am32.direction)@", type = 1, mspapi = 1, apikey = "motor_direction"},
-            [FIELD_IDX.motor_kv] = {t = "@i18n(app.modules.esc_tools.mfg.am32.motorkv)@", mspapi = 1, apikey = "motor_kv"},
-            [FIELD_IDX.motor_poles] = {t = "@i18n(app.modules.esc_tools.mfg.am32.motorpoles)@", mspapi = 1, apikey = "motor_poles"},
-            [FIELD_IDX.startup_power] = {t = "@i18n(app.modules.esc_tools.mfg.am32.startuppower)@", mspapi = 1, apikey = "startup_power"},
-            [FIELD_IDX.brake_on_stop] = {t = "@i18n(app.modules.esc_tools.mfg.am32.brakeonstop)@", type = 1, mspapi = 1, apikey = "brake_on_stop"},
-            [FIELD_IDX.brake_strength] = {t = "@i18n(app.modules.esc_tools.mfg.am32.brakestrength)@", mspapi = 1, apikey = "brake_strength"},
-            [FIELD_IDX.running_brake_level] = {t = "@i18n(app.modules.esc_tools.mfg.am32.runningbrake)@", mspapi = 1, apikey = "running_brake_level"},
-            [FIELD_IDX.beep_volume] = {t = "@i18n(app.modules.esc_tools.mfg.am32.beepvolume)@", mspapi = 1, apikey = "beep_volume"},
+            [FIELD_IDX.motor_direction] = {t = "Direction", type = 1, mspapi = 1, apikey = "motor_direction"},
+            [FIELD_IDX.motor_kv] = {t = "Motor KV", mspapi = 1, apikey = "motor_kv"},
+            [FIELD_IDX.motor_poles] = {t = "Motor Poles", mspapi = 1, apikey = "motor_poles"},
+            [FIELD_IDX.startup_power] = {t = "Startup Power", mspapi = 1, apikey = "startup_power"},
+            [FIELD_IDX.brake_on_stop] = {t = "Brake on Stop", type = 1, mspapi = 1, apikey = "brake_on_stop"},
+            [FIELD_IDX.brake_strength] = {t = "Brake Strength", mspapi = 1, apikey = "brake_strength"},
+            [FIELD_IDX.running_brake_level] = {t = "Running Brake", mspapi = 1, apikey = "running_brake_level"},
+            [FIELD_IDX.beep_volume] = {t = "Beep Volume", mspapi = 1, apikey = "beep_volume"},
 
         }
     }                 
@@ -44,6 +44,10 @@ local apidata = {
 local function postLoad()
     rfsuite.app.triggers.closeProgressLoader = true
 end
+
+-- Forward-declared so close() below captures the local rather than a nil
+-- global; the assignment happens further down, after escToolsPage is used.
+local isolatedSave
 
 local function close()
     if isolatedSave then isolatedSave.close() end
@@ -63,7 +67,7 @@ end
 
 local navHandlers = escToolsPage.createSubmenuHandlers(folder)
 local postSave = escToolsPage.createEsc4WayPostSaveHandler(folder, ESC)
-local isolatedSave = escToolsPage.createIsolatedSaveMenuHandler(folder, ESC)
+isolatedSave = escToolsPage.createIsolatedSaveMenuHandler(folder, ESC)
 
 return {
     apidata = apidata,
@@ -77,7 +81,7 @@ return {
     navButtons = navHandlers.navButtons,
     onNavMenu = navHandlers.onNavMenu,
     event = navHandlers.event,
-    pageTitle = "@i18n(app.modules.esc_tools.name)@" .. " / " .. "@i18n(app.modules.esc_tools.mfg.am32.name)@" .. " / " .. "@i18n(app.modules.esc_tools.mfg.am32.basic)@",
+    pageTitle = "Esc Programing" .. " / " .. "AM32" .. " / " .. "Basic",
     headerLine = rfsuite.escHeaderLineText,
     progressCounter = 0.5
 }

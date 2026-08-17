@@ -51,7 +51,7 @@ function render.dirty(box)
         box._lastDisplayValue = box._currentDisplayValue
         return true
     end
-    return true
+    return false
 end
 
 local function ensureCfg(box)

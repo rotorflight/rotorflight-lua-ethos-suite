@@ -24,6 +24,11 @@ local SDCARD_STATE = {
 }
 
 local wakeupScheduler = 0
+-- Last text written to each status field, so the per-tick call below only
+-- touches the form when the rendered string actually changed. Reset in
+-- postLoad because form fields are rebuilt on every page open.
+local lastDataflashText
+local lastSdcardText
 local dataflashAPI
 local sdcardAPI
 local eraseAPI
@@ -53,8 +58,8 @@ local apidata = {
     formdata = {
         labels = {},
         fields = {
-            {t = "@i18n(app.modules.blackbox.dataflash)@", value = "-", type = 0, disable = true, mspapi = 1, apikey = "blackbox_supported"},
-            {t = "@i18n(app.modules.blackbox.sdcard)@", value = "-", type = 0, disable = true, mspapi = 1, apikey = "blackbox_supported"}
+            {t = "Dataflash", value = "-", type = 0, disable = true, mspapi = 1, apikey = "blackbox_supported"},
+            {t = "SD Card", value = "-", type = 0, disable = true, mspapi = 1, apikey = "blackbox_supported"}
         }
     }
 }
@@ -71,27 +76,27 @@ local function formatSize(bytes)
 end
 
 local function formatDataflashStatus()
-    if not status.dataflash.supported then return "@i18n(app.modules.blackbox.not_supported)@" end
-    if status.eraseInProgress or not status.dataflash.ready then return "@i18n(app.modules.blackbox.erasing_busy)@" end
+    if not status.dataflash.supported then return "Not supported" end
+    if status.eraseInProgress or not status.dataflash.ready then return "Erasing / busy..." end
     local total = status.dataflash.totalSize or 0
     local used = status.dataflash.usedSize or 0
-    return string.format("@i18n(app.modules.blackbox.used_fmt)@", formatSize(used), formatSize(total))
+    return string.format("Used %s / %s", formatSize(used), formatSize(total))
 end
 
 local function formatSDCardStatus()
-    if not status.sdcard.supported then return "@i18n(app.modules.blackbox.not_supported)@" end
+    if not status.sdcard.supported then return "Not supported" end
     local state = status.sdcard.state or SDCARD_STATE.NOT_PRESENT
-    if state == SDCARD_STATE.NOT_PRESENT then return "@i18n(app.modules.blackbox.no_card)@" end
-    if state == SDCARD_STATE.FATAL then return string.format("@i18n(app.modules.blackbox.error_code_fmt)@", status.sdcard.filesystemLastError or 0) end
-    if state == SDCARD_STATE.CARD_INIT then return "@i18n(app.modules.blackbox.initializing_card)@" end
-    if state == SDCARD_STATE.FS_INIT then return "@i18n(app.modules.blackbox.initializing_filesystem)@" end
+    if state == SDCARD_STATE.NOT_PRESENT then return "No card" end
+    if state == SDCARD_STATE.FATAL then return string.format("Error (code %d)", status.sdcard.filesystemLastError or 0) end
+    if state == SDCARD_STATE.CARD_INIT then return "Initializing card..." end
+    if state == SDCARD_STATE.FS_INIT then return "Initializing filesystem..." end
     if state == SDCARD_STATE.READY then
         local totalKB = status.sdcard.totalSizeKB or 0
         local freeKB = status.sdcard.freeSizeKB or 0
         local usedKB = math.max(totalKB - freeKB, 0)
-        return string.format("@i18n(app.modules.blackbox.used_fmt)@", formatSize(usedKB * 1024), formatSize(totalKB * 1024))
+        return string.format("Used %s / %s", formatSize(usedKB * 1024), formatSize(totalKB * 1024))
     end
-    return string.format("@i18n(app.modules.blackbox.unknown_state_fmt)@", state)
+    return string.format("Unknown state (%d)", state)
 end
 
 local function ensureApis()
@@ -147,11 +152,15 @@ local function syncStatusFromApis()
 end
 
 local function updateStatusFields()
-    if app.formFields[FIELD.DATAFLASH] and app.formFields[FIELD.DATAFLASH].value then
-        app.formFields[FIELD.DATAFLASH]:value(formatDataflashStatus())
+    local f = app.formFields[FIELD.DATAFLASH]
+    if f and f.value then
+        local text = formatDataflashStatus()
+        if text ~= lastDataflashText then lastDataflashText = text; f:value(text) end
     end
-    if app.formFields[FIELD.SDCARD] and app.formFields[FIELD.SDCARD].value then
-        app.formFields[FIELD.SDCARD]:value(formatSDCardStatus())
+    f = app.formFields[FIELD.SDCARD]
+    if f and f.value then
+        local text = formatSDCardStatus()
+        if text ~= lastSdcardText then lastSdcardText = text; f:value(text) end
     end
 end
 
@@ -174,6 +183,7 @@ end
 local function postLoad()
     ensureApis()
     wakeupScheduler = 0
+    lastDataflashText, lastSdcardText = nil, nil
     pollDataflashSummary()
     pollSDCardSummary()
     app.triggers.closeProgressLoader = true
@@ -202,24 +212,24 @@ end
 local function onToolMenu()
     local buttons = {
         {
-            label = "@i18n(app.btn_ok_long)@",
+            label = "                OK                ",
             action = function()
                 status.eraseInProgress = true
                 eraseDataflash()
-                app.ui.progressDisplay("@i18n(app.modules.blackbox.name)@", "@i18n(app.modules.blackbox.erasing_dataflash)@")
+                app.ui.progressDisplay("Blackbox", "Erasing dataflash...")
                 return true
             end
         },
         {
-            label = "@i18n(app.btn_cancel)@",
+            label = "CANCEL",
             action = function() return true end
         }
     }
 
     form.openDialog({
         width = nil,
-        title = "@i18n(app.modules.blackbox.name)@",
-        message = "@i18n(app.modules.blackbox.erase_prompt)@",
+        title = "Blackbox",
+        message = "Erase onboard dataflash logs?",
         buttons = buttons,
         wakeup = function() end,
         paint = function() end,

@@ -68,7 +68,7 @@ local function header_boxes()
     if rfsuite and rfsuite.preferences and rfsuite.preferences.general then txbatt_type = rfsuite.preferences.general.txbatt_type or 0 end
 
     if header_boxes_cache == nil or last_txbatt_type ~= txbatt_type then
-        header_boxes_cache = utils.standardHeaderBoxes(i18n, colorMode, headeropts, txbatt_type)
+        header_boxes_cache = utils.standardHeaderBoxes(colorMode, headeropts, txbatt_type)
         last_txbatt_type = txbatt_type
     end
     return header_boxes_cache
@@ -88,7 +88,7 @@ local function buildBoxes(W)
             type = "text",
             subtype = "telemetry",
             source = "rate_profile",
-            title = "@i18n(widgets.dashboard.rates):upper()@",
+            title = "RATES",
             titlepos = "bottom",
             font = opts.brfont,
             titlefont = opts.titlefont,
@@ -105,7 +105,7 @@ local function buildBoxes(W)
             type = "text",
             subtype = "telemetry",
             source = "pid_profile",
-            title = "@i18n(widgets.dashboard.profile):upper()@",
+            title = "PROFILE",
             titlepos = "bottom",
             font = opts.brfont,
             titlefont = opts.titlefont,
@@ -114,7 +114,7 @@ local function buildBoxes(W)
             titlecolor = colorMode.titlecolor,
             transform = "floor",
             thresholds = {{value = 1.5, textcolor = "blue"}, {value = 2.5, textcolor = colorMode.fillwarncolor}, {value = 6, textcolor = colorMode.fillcolor}}
-        }, {col = 3, row = 11, rowspan = 2, type = "time", subtype = "count", title = "@i18n(widgets.dashboard.flights):upper()@", titlepos = "bottom", font = opts.brfont, titlefont = opts.titlefont, valuepaddingbottom = opts.brvaluepaddingbottom, bgcolor = colorMode.bgcolor, titlecolor = colorMode.titlecolor, textcolor = colorMode.textcolor}, {
+        }, {col = 3, row = 11, rowspan = 2, type = "time", subtype = "count", title = "FLIGHTS", titlepos = "bottom", font = opts.brfont, titlefont = opts.titlefont, valuepaddingbottom = opts.brvaluepaddingbottom, bgcolor = colorMode.bgcolor, titlecolor = colorMode.titlecolor, textcolor = colorMode.textcolor}, {
             col = 4,
             row = 1,
             colspan = 4,
@@ -152,7 +152,7 @@ local function buildBoxes(W)
             type = "gauge",
             subtype = "arc",
             source = "bec_voltage",
-            title = "@i18n(widgets.dashboard.bec_voltage):upper()@",
+            title = "BEC VOLTAGE",
             titlepos = "bottom",
             decimals = 1,
             titlepaddingbottom = opts.titlepaddingbottom,
@@ -173,7 +173,7 @@ local function buildBoxes(W)
             rowspan = 2,
             type = "text",
             subtype = "blackbox",
-            title = "@i18n(widgets.dashboard.blackbox):upper()@",
+            title = "BLACKBOX",
             titlepos = "bottom",
             font = opts.brfont,
             titlefont = opts.titlefont,
@@ -191,7 +191,7 @@ local function buildBoxes(W)
             type = "gauge",
             subtype = "arc",
             source = "temp_esc",
-            title = "@i18n(widgets.dashboard.esc_temp):upper()@",
+            title = "ESC TEMP",
             titlepos = "bottom",
             font = opts.font,
             min = 0,
@@ -213,7 +213,7 @@ local function buildBoxes(W)
             rowspan = 2,
             type = "text",
             subtype = "governor",
-            title = "@i18n(widgets.dashboard.governor):upper()@",
+            title = "GOVERNOR",
             titlepos = "bottom",
             font = opts.brfont,
             titlefont = opts.titlefont,
@@ -221,7 +221,7 @@ local function buildBoxes(W)
             bgcolor = colorMode.bgcolor,
             titlecolor = colorMode.titlecolor,
             thresholds = {
-                {value = "@i18n(widgets.governor.DISARMED)@", textcolor = colorMode.fillcritcolor}, {value = "@i18n(widgets.governor.OFF)@", textcolor = colorMode.fillcritcolor}, {value = "@i18n(widgets.governor.IDLE)@", textcolor = "blue"}, {value = "@i18n(widgets.governor.SPOOLUP)@", textcolor = "blue"}, {value = "@i18n(widgets.governor.RECOVERY)@", textcolor = colorMode.fillwarncolor}, {value = "@i18n(widgets.governor.ACTIVE)@", textcolor = colorMode.fillcolor},
+                {value = "DISARMED", textcolor = colorMode.fillcritcolor}, {value = "OFF", textcolor = colorMode.fillcritcolor}, {value = "IDLE", textcolor = "blue"}, {value = "SPOOLUP", textcolor = "blue"}, {value = "RECOVERY", textcolor = colorMode.fillwarncolor}, {value = "ACTIVE", textcolor = colorMode.fillcolor},
                 {value = "@i18n(widgets.governor.THR-OFF)@", textcolor = colorMode.fillcritcolor}
             }
         }

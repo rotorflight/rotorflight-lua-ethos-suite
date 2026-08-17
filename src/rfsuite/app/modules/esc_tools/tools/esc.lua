@@ -73,7 +73,7 @@ end
 
 local function showEntryWarningDialog(title)
     closeEntryWarningDialog()
-    entryWarningDialog = openProgressDialog(title, "@i18n(app.modules.esc_tools.remove_blades_warning)@")
+    entryWarningDialog = openProgressDialog(title, "Please remove blades from heli")
     if not entryWarningDialog then return end
     entryWarningStartedAt = osClock()
     if entryWarningDialog.value then
@@ -119,14 +119,14 @@ end
 local MFG_INDEX = {
     {folder = "am32",  toolName = "AM32",                                         image = "am32.jpg",      apiversion = {12, 0, 9}, script = FOUR_WAY_TOOL_SCRIPT},
     {folder = "blheli_s", toolName = "BLHeli_S",                                  image = "blheli_s.jpg",  apiversion = {12, 0, 9}, script = FOUR_WAY_TOOL_SCRIPT},
-    {folder = "bluejay", toolName = "@i18n(app.modules.esc_tools.mfg.bluejay.name)@", image = "blheli_s.jpg",  apiversion = {12, 0, 9}, script = FOUR_WAY_TOOL_SCRIPT},
-    {folder = "flrtr", toolName = "@i18n(app.modules.esc_tools.mfg.flrtr.name)@", image = "flrtr.png",     apiversion = {12, 0, 7}},
-    {folder = "hw5",   toolName = "@i18n(app.modules.esc_tools.mfg.hw5.name)@",   image = "hobbywing.png", apiversion = {12, 0, 6}},
-    {folder = "omp",   toolName = "@i18n(app.modules.esc_tools.mfg.omp.name)@",   image = "omp.png",       apiversion = {12, 0, 9}},
-    {folder = "scorp", toolName = "@i18n(app.modules.esc_tools.mfg.scorp.name)@", image = "scorpion.png",  apiversion = {12, 0, 6}},
-    {folder = "xdfly", toolName = "@i18n(app.modules.esc_tools.mfg.xdfly.name)@", image = "xdfly.png",     apiversion = {12, 0, 8}},
-    {folder = "yge",   toolName = "@i18n(app.modules.esc_tools.mfg.yge.name)@",   image = "yge.png",       apiversion = {12, 0, 6}},
-    {folder = "ztw",   toolName = "@i18n(app.modules.esc_tools.mfg.ztw.name)@",   image = "ztw.png",       apiversion = {12, 0, 9}}
+    {folder = "bluejay", toolName = "Bluejay", image = "blheli_s.jpg",  apiversion = {12, 0, 9}, script = FOUR_WAY_TOOL_SCRIPT},
+    {folder = "flrtr", toolName = "FLYROTOR", image = "flrtr.png",     apiversion = {12, 0, 7}},
+    {folder = "hw5",   toolName = "Hobbywing V5",   image = "hobbywing.png", apiversion = {12, 0, 6}},
+    {folder = "omp",   toolName = "OMP",   image = "omp.png",       apiversion = {12, 0, 9}},
+    {folder = "scorp", toolName = "Scorpion", image = "scorpion.png",  apiversion = {12, 0, 6}},
+    {folder = "xdfly", toolName = "XDFLY", image = "xdfly.png",     apiversion = {12, 0, 8}},
+    {folder = "yge",   toolName = "YGE",   image = "yge.png",       apiversion = {12, 0, 6}},
+    {folder = "ztw",   toolName = "ZTW",   image = "ztw.png",       apiversion = {12, 0, 9}}
 }
 
 local function resolveModulePath(script)
@@ -590,7 +590,7 @@ local function wakeup()
         return
     end
 
-    local title = entryWarningTitle or rfsuite.app.lastTitle or "@i18n(app.modules.esc_tools.name)@"
+    local title = entryWarningTitle or rfsuite.app.lastTitle or "Esc Programing"
     clearEntryWarningState()
     showEntryWarningDialog(title)
 end

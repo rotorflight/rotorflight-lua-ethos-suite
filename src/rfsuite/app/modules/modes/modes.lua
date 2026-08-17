@@ -16,7 +16,7 @@ local RANGE_SNAP_DELTA_US = 50
 local MODULE_LOADER_SPEED = 0.05
 
 local state = {
-    title = "@i18n(app.modules.modes.name)@",
+    title = "Modes",
     modeNames = {},
     modeIds = {},
     modeRanges = {},
@@ -190,12 +190,12 @@ local function addModeRangeLine(rangeIndex, modeRange)
 
     -- Keep the two rows visually grouped: no separator after header row,
     -- separator after controls row.
-    local lineTop = form.addLine("@i18n(app.modules.modes.range)@ " .. tostring(rangeIndex), nil, false)
+    local lineTop = form.addLine("Range " .. tostring(rangeIndex), nil, false)
     local liveText = form.addStaticText(lineTop, {x = xLive, y = y, w = wLive, h = h}, "--")
     if liveText and liveText.value then state.liveRangeFields[slot] = liveText end
 
     form.addButton(lineTop, {x = xSet, y = y, w = wSet, h = h}, {
-        text = "@i18n(app.modules.modes.set)@",
+        text = "Set",
         icon = nil,
         options = FONT_S,
         paint = function() end,
@@ -204,8 +204,8 @@ local function addModeRangeLine(rangeIndex, modeRange)
                 local buttons = {{label = "OK", action = function() return true end}}
                 form.openDialog({
                     width = nil,
-                    title = "@i18n(app.modules.modes.name)@",
-                    message = "@i18n(app.modules.modes.msg_auto_detect_lock_first)@",
+                    title = "Modes",
+                    message = "Auto-detect is active for this row. Toggle to lock AUX first.",
                     buttons = buttons,
                     wakeup = function() end,
                     paint = function() end,
@@ -219,8 +219,8 @@ local function addModeRangeLine(rangeIndex, modeRange)
                 local buttons = {{label = "OK", action = function() return true end}}
                 form.openDialog({
                     width = nil,
-                    title = "@i18n(app.modules.modes.name)@",
-                    message = "@i18n(app.modules.modes.msg_live_channel_unavailable)@",
+                    title = "Modes",
+                    message = "Live channel value unavailable.",
                     buttons = buttons,
                     wakeup = function() end,
                     paint = function() end,
@@ -239,7 +239,7 @@ local function addModeRangeLine(rangeIndex, modeRange)
 
             local buttons = {
                 {
-                    label = "@i18n(app.btn_ok_long)@",
+                    label = "                OK                ",
                     action = function()
                         rawRange.range.start = targetStart
                         rawRange.range["end"] = targetEnd
@@ -248,13 +248,13 @@ local function addModeRangeLine(rangeIndex, modeRange)
                         return true
                     end
                 },
-                {label = "@i18n(app.btn_cancel)@", action = function() return true end}
+                {label = "CANCEL", action = function() return true end}
             }
 
             form.openDialog({
                 width = nil,
-                title = "@i18n(app.modules.modes.set_range_title)@",
-                message = "@i18n(app.modules.modes.msg_use_current)@ " .. tostring(us) .. "us?\n\n@i18n(app.modules.modes.min_label)@: " .. tostring(targetStart) .. "us\n@i18n(app.modules.modes.max_label)@: " .. tostring(targetEnd) .. "us",
+                title = "Set Range",
+                message = "Use current value " .. tostring(us) .. "us?\n\nMin: " .. tostring(targetStart) .. "us\nMax: " .. tostring(targetEnd) .. "us",
                 buttons = buttons,
                 wakeup = function() end,
                 paint = function() end,
@@ -508,7 +508,7 @@ local function startLoad()
     state.needsRender = true
     local page = rfsuite.app and rfsuite.app.Page or nil
     local speed = page and tonumber(page.loaderspeed) or MODULE_LOADER_SPEED
-    rfsuite.app.ui.progressDisplay("@i18n(app.modules.modes.name)@", "@i18n(app.modules.modes.loading_config)@", speed)
+    rfsuite.app.ui.progressDisplay("Modes", "Loading mode configuration", speed)
     readBoxIds()
 end
 
@@ -541,8 +541,8 @@ local function addRangeToSelectedMode()
         local buttons = {{label = "OK", action = function() return true end}}
         form.openDialog({
             width = nil,
-            title = "@i18n(app.modules.modes.name)@",
-            message = "@i18n(app.modules.modes.msg_no_free_slots)@",
+            title = "Modes",
+            message = "No free mode slots remain. Delete an existing range first.",
             buttons = buttons,
             wakeup = function() end,
             paint = function() end,
@@ -575,17 +575,17 @@ local function render()
     app.ui.fieldHeader(state.title)
 
     if state.loading then
-        form.addLine("@i18n(app.modules.modes.loading)@")
+        form.addLine("Loading mode data...")
         return
     end
 
     if state.loadError then
-        form.addLine("@i18n(app.modules.modes.load_error)@ " .. tostring(state.loadError))
+        form.addLine("Load error: " .. tostring(state.loadError))
         return
     end
 
     if #state.modes == 0 then
-        form.addLine("@i18n(app.modules.modes.no_modes)@")
+        form.addLine("No modes reported by FC.")
         return
     end
 
@@ -602,7 +602,7 @@ local function render()
     end
     local modeOptionsTbl = buildChoiceTable(modeOptions, 0)
 
-    local modeLine = form.addLine("@i18n(app.modules.modes.mode)@")
+    local modeLine = form.addLine("Mode")
     local modeChoice = form.addChoiceField(
         modeLine,
         {x = width - rightPadding - math.floor(width * 0.5), y = y, w = math.floor(width * 0.5), h = h},
@@ -619,12 +619,12 @@ local function render()
 
     local selectedMode = getSelectedMode()
     local ranges = selectedMode and selectedMode.ranges or {}
-    local infoLine = form.addLine("@i18n(app.modules.modes.active_ranges)@ " .. tostring(#ranges) .. " / " .. tostring(#state.modeRanges))
+    local infoLine = form.addLine("Active ranges: " .. tostring(#ranges) .. " / " .. tostring(#state.modeRanges))
     if state.dirty then
         local statusW = math.floor(width * 0.32)
         local statusX = width - rightPadding - statusW
         local statusBtn = form.addButton(infoLine, {x = statusX, y = y, w = statusW, h = h}, {
-            text = "@i18n(app.modules.modes.unsaved_changes)@",
+            text = "Unsaved changes",
             icon = nil,
             options = FONT_S,
             paint = function() end,
@@ -632,12 +632,12 @@ local function render()
         })
         if statusBtn and statusBtn.enable then statusBtn:enable(false) end
     end
-    if hasActiveAutoDetect() then form.addLine("@i18n(app.modules.modes.auto_detect_active)@") end
-    if state.saveError then form.addLine("@i18n(app.modules.modes.save_error)@ " .. tostring(state.saveError)) end
+    if hasActiveAutoDetect() then form.addLine("Auto-detect active: toggle desired AUX channel") end
+    if state.saveError then form.addLine("Save error: " .. tostring(state.saveError)) end
 
     local actionLine = form.addLine("")
     local addBtn = form.addButton(actionLine, {x = width - rightPadding - buttonW, y = y, w = buttonW, h = buttonH}, {
-        text = "@i18n(app.btn_add)@",
+        text = "Add",
         icon = nil,
         options = FONT_S,
         paint = function() end,
@@ -646,7 +646,7 @@ local function render()
     if addBtn and addBtn.enable then addBtn:enable(true) end
 
     if #ranges == 0 then
-        form.addLine("@i18n(app.modules.modes.no_ranges)@")
+        form.addLine("No ranges configured for this mode.")
         return
     end
 
@@ -765,7 +765,7 @@ end
 local function saveAllRanges()
     state.saving = true
     state.saveError = nil
-    rfsuite.app.ui.progressDisplay("@i18n(app.modules.modes.name)@", "@i18n(app.modules.modes.saving_config)@")
+    rfsuite.app.ui.progressDisplay("Modes", "Saving mode configuration")
 
     local slot = 1
     local total = #state.modeRanges
@@ -808,8 +808,8 @@ local function onSaveMenu()
         local buttons = {{label = "OK", action = function() return true end}}
         form.openDialog({
             width = nil,
-            title = "@i18n(app.modules.modes.name)@",
-            message = "@i18n(app.modules.modes.msg_auto_detect_lock_save)@",
+            title = "Modes",
+            message = "Auto-detect is active. Toggle the desired AUX channel first.",
             buttons = buttons,
             wakeup = function() end,
             paint = function() end,
@@ -824,13 +824,13 @@ local function onSaveMenu()
     end
 
     local buttons = {
-        {label = "@i18n(app.btn_ok_long)@", action = function() saveAllRanges(); return true end},
-        {label = "@i18n(app.btn_cancel)@", action = function() return true end}
+        {label = "                OK                ", action = function() saveAllRanges(); return true end},
+        {label = "CANCEL", action = function() return true end}
     }
     form.openDialog({
         width = nil,
-        title = "@i18n(app.msg_save_settings)@",
-        message = "@i18n(app.msg_save_current_page)@",
+        title = "Save settings",
+        message = "Save current page to flight controller?",
         buttons = buttons,
         wakeup = function() end,
         paint = function() end,
@@ -856,7 +856,7 @@ end
 
 local function openPage(opts)
     local idx = opts.idx
-    state.title = opts.title or "@i18n(app.modules.modes.name)@"
+    state.title = opts.title or "Modes"
 
     rfsuite.app.lastIdx = idx
     rfsuite.app.lastTitle = state.title
@@ -868,7 +868,7 @@ local function openPage(opts)
 end
 
 return {
-    title = "@i18n(app.modules.modes.name)@",
+    title = "Modes",
     openPage = openPage,
     wakeup = wakeup,
     onSaveMenu = onSaveMenu,

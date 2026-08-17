@@ -68,7 +68,7 @@ local function header_boxes()
     if rfsuite and rfsuite.preferences and rfsuite.preferences.general then txbatt_type = rfsuite.preferences.general.txbatt_type or 0 end
 
     if header_boxes_cache == nil or last_txbatt_type ~= txbatt_type then
-        header_boxes_cache = utils.standardHeaderBoxes(i18n, colorMode, headeropts, txbatt_type)
+        header_boxes_cache = utils.standardHeaderBoxes(colorMode, headeropts, txbatt_type)
         last_txbatt_type = txbatt_type
     end
     return header_boxes_cache
@@ -82,35 +82,35 @@ local function buildBoxes(W)
 
     return {
 
-        {col = 1, colspan = 2, row = 1, rowspan = 3, type = "text", subtype = "telemetry", source = "throttle_percent", title = "@i18n(widgets.dashboard.throttle):upper()@", titlepos = "bottom", font = opts.font, transform = "floor", bgcolor = colorMode.bgcolor, titlecolor = colorMode.titlecolor, textcolor = colorMode.textcolor, thresholds = {{value = 20, textcolor = colorMode.textcolor}, {value = 80, textcolor = colorMode.fillwarncolor}, {value = 100, textcolor = colorMode.fillcritcolor}}},
-        {col = 1, colspan = 2, row = 4, rowspan = 3, type = "text", subtype = "telemetry", source = "rpm", title = "@i18n(widgets.dashboard.headspeed):upper()@", titlepos = "bottom", font = opts.font, unit = " rpm", transform = "floor", bgcolor = colorMode.bgcolor, titlecolor = colorMode.titlecolor, textcolor = colorMode.textcolor},
-        {col = 1, colspan = 2, row = 7, rowspan = 3, type = "text", subtype = "blackbox", title = "@i18n(widgets.dashboard.blackbox):upper()@", titlepos = "bottom", font = opts.font, decimals = 0, bgcolor = colorMode.bgcolor, titlecolor = colorMode.titlecolor, textcolor = colorMode.textcolor, transform = "floor", thresholds = {{value = 80, textcolor = colorMode.textcolor}, {value = 90, textcolor = colorMode.fillwarncolor}, {value = 100, textcolor = colorMode.fillcritcolor}}}, {
+        {col = 1, colspan = 2, row = 1, rowspan = 3, type = "text", subtype = "telemetry", source = "throttle_percent", title = "THROTTLE", titlepos = "bottom", font = opts.font, transform = "floor", bgcolor = colorMode.bgcolor, titlecolor = colorMode.titlecolor, textcolor = colorMode.textcolor, thresholds = {{value = 20, textcolor = colorMode.textcolor}, {value = 80, textcolor = colorMode.fillwarncolor}, {value = 100, textcolor = colorMode.fillcritcolor}}},
+        {col = 1, colspan = 2, row = 4, rowspan = 3, type = "text", subtype = "telemetry", source = "rpm", title = "HEADSPEED", titlepos = "bottom", font = opts.font, unit = " rpm", transform = "floor", bgcolor = colorMode.bgcolor, titlecolor = colorMode.titlecolor, textcolor = colorMode.textcolor},
+        {col = 1, colspan = 2, row = 7, rowspan = 3, type = "text", subtype = "blackbox", title = "BLACKBOX", titlepos = "bottom", font = opts.font, decimals = 0, bgcolor = colorMode.bgcolor, titlecolor = colorMode.titlecolor, textcolor = colorMode.textcolor, transform = "floor", thresholds = {{value = 80, textcolor = colorMode.textcolor}, {value = 90, textcolor = colorMode.fillwarncolor}, {value = 100, textcolor = colorMode.fillcritcolor}}}, {
             col = 1,
             colspan = 2,
             row = 10,
             rowspan = 3,
             type = "text",
             subtype = "governor",
-            title = "@i18n(widgets.dashboard.governor):upper()@",
+            title = "GOVERNOR",
             titlepos = "bottom",
             font = opts.font,
             bgcolor = colorMode.bgcolor,
             titlecolor = colorMode.titlecolor,
             thresholds = {
-                {value = "@i18n(widgets.governor.DISARMED)@", textcolor = colorMode.fillcritcolor}, {value = "@i18n(widgets.governor.OFF)@", textcolor = colorMode.fillcritcolor}, {value = "@i18n(widgets.governor.IDLE)@", textcolor = "blue"}, {value = "@i18n(widgets.governor.SPOOLUP)@", textcolor = "blue"}, {value = "@i18n(widgets.governor.RECOVERY)@", textcolor = colorMode.fillwarncolor}, {value = "@i18n(widgets.governor.ACTIVE)@", textcolor = colorMode.fillcolor},
+                {value = "DISARMED", textcolor = colorMode.fillcritcolor}, {value = "OFF", textcolor = colorMode.fillcritcolor}, {value = "IDLE", textcolor = "blue"}, {value = "SPOOLUP", textcolor = "blue"}, {value = "RECOVERY", textcolor = colorMode.fillwarncolor}, {value = "ACTIVE", textcolor = colorMode.fillcolor},
                 {value = "@i18n(widgets.governor.THR-OFF)@", textcolor = colorMode.fillcritcolor}
             }
         }, {col = 3, row = 1, colspan = 3, rowspan = 9, type = "image", subtype = "model", bgcolor = colorMode.bgcolor},
-        {col = 3, row = 10, rowspan = 3, type = "text", subtype = "telemetry", source = "rate_profile", title = "@i18n(widgets.dashboard.rates):upper()@", titlepos = "bottom", font = opts.font, transform = "floor", bgcolor = colorMode.bgcolor, titlecolor = colorMode.titlecolor, thresholds = {{value = 1.5, textcolor = "blue"}, {value = 2.5, textcolor = colorMode.fillwarncolor}, {value = 6, textcolor = colorMode.fillcolor}}},
-        {col = 4, row = 10, rowspan = 3, type = "text", subtype = "telemetry", source = "pid_profile", title = "@i18n(widgets.dashboard.profile):upper()@", titlepos = "bottom", font = opts.font, transform = "floor", bgcolor = colorMode.bgcolor, titlecolor = colorMode.titlecolor, thresholds = {{value = 1.5, textcolor = "blue"}, {value = 2.5, textcolor = colorMode.fillwarncolor}, {value = 6, textcolor = colorMode.fillcolor}}},
-        {col = 5, row = 10, rowspan = 3, type = "time", subtype = "count", title = "@i18n(widgets.dashboard.flights):upper()@", titlepos = "bottom", font = opts.font, bgcolor = colorMode.bgcolor, titlecolor = colorMode.titlecolor, textcolor = colorMode.textcolor}, {
+        {col = 3, row = 10, rowspan = 3, type = "text", subtype = "telemetry", source = "rate_profile", title = "RATES", titlepos = "bottom", font = opts.font, transform = "floor", bgcolor = colorMode.bgcolor, titlecolor = colorMode.titlecolor, thresholds = {{value = 1.5, textcolor = "blue"}, {value = 2.5, textcolor = colorMode.fillwarncolor}, {value = 6, textcolor = colorMode.fillcolor}}},
+        {col = 4, row = 10, rowspan = 3, type = "text", subtype = "telemetry", source = "pid_profile", title = "PROFILE", titlepos = "bottom", font = opts.font, transform = "floor", bgcolor = colorMode.bgcolor, titlecolor = colorMode.titlecolor, thresholds = {{value = 1.5, textcolor = "blue"}, {value = 2.5, textcolor = colorMode.fillwarncolor}, {value = 6, textcolor = colorMode.fillcolor}}},
+        {col = 5, row = 10, rowspan = 3, type = "time", subtype = "count", title = "FLIGHTS", titlepos = "bottom", font = opts.font, bgcolor = colorMode.bgcolor, titlecolor = colorMode.titlecolor, textcolor = colorMode.textcolor}, {
             col = 6,
             colspan = 1,
             row = 1,
             rowspan = 12,
             type = "gauge",
             source = "bec_voltage",
-            title = "@i18n(widgets.dashboard.voltage):upper()@",
+            title = "VOLTAGE",
             titlepos = "bottom",
             gaugeorientation = "vertical",
             gaugepaddingright = 10,

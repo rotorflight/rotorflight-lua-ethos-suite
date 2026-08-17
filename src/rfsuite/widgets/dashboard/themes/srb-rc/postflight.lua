@@ -114,7 +114,7 @@ local function header_boxes()
     end
 
     if header_boxes_cache == nil or last_txbatt_type ~= txbatt_type then
-        header_boxes_cache = utils.standardHeaderBoxes(i18n, colorMode, headeropts, txbatt_type)
+        header_boxes_cache = utils.standardHeaderBoxes(colorMode, headeropts, txbatt_type)
         last_txbatt_type = txbatt_type
     end
     return header_boxes_cache

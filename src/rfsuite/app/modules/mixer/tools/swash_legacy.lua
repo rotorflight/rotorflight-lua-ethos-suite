@@ -14,11 +14,11 @@ local apidata = {
         labels = {
         },
         fields = {
-            {t = "@i18n(app.modules.mixer.geo_correction)@",                    api = "MIXER_CONFIG:swash_geo_correction"},
-            {t = "@i18n(app.modules.mixer.swash_pitch_limit)@",                 api = "MIXER_CONFIG:swash_pitch_limit"},
-            {t = "@i18n(app.modules.mixer.collective_tilt_correction_pos)@",    api = "MIXER_CONFIG:collective_tilt_correction_pos", apiversiongte = {12, 0, 8}},
-            {t = "@i18n(app.modules.mixer.collective_tilt_correction_neg)@",    api = "MIXER_CONFIG:collective_tilt_correction_neg", apiversiongte = {12, 0, 8}},
-            {t = "@i18n(app.modules.mixer.swash_phase)@",                       api = "MIXER_CONFIG:swash_phase"},
+            {t = "Geo Correction",                    api = "MIXER_CONFIG:swash_geo_correction"},
+            {t = "Total Pitch Limit",                 api = "MIXER_CONFIG:swash_pitch_limit"},
+            {t = "Collective Tilt Correction +",    api = "MIXER_CONFIG:collective_tilt_correction_pos", apiversiongte = {12, 0, 8}},
+            {t = "Collective Tilt Correction -",    api = "MIXER_CONFIG:collective_tilt_correction_neg", apiversiongte = {12, 0, 8}},
+            {t = "Phase Angle",                       api = "MIXER_CONFIG:swash_phase"},
         }
     }
 }

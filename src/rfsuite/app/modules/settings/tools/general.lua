@@ -37,7 +37,7 @@ local function openPage(opts)
     rfsuite.app.lastTitle = title
     rfsuite.app.lastScript = script
 
-    rfsuite.app.ui.fieldHeader("@i18n(app.modules.settings.name)@" .. " / " .. "@i18n(app.modules.settings.txt_general)@")
+    rfsuite.app.ui.fieldHeader("Settings" .. " / " .. "General")
     rfsuite.app.formLineCnt = 0
     local formFieldCount = 0
 
@@ -53,28 +53,33 @@ local function openPage(opts)
         return line
     end
 
-    local displayPanel = form.addExpansionPanel("@i18n(app.modules.settings.panel_display)@")
-    local safetyPanel = form.addExpansionPanel("@i18n(app.modules.settings.panel_safety_prompts)@")
-    local integrationPanel = form.addExpansionPanel("@i18n(app.modules.settings.panel_integration)@")
-    local developerPanel = form.addExpansionPanel("@i18n(app.modules.settings.txt_development)@")
+    local displayPanel = form.addExpansionPanel("Display")
+    local safetyPanel = form.addExpansionPanel("Safety & Prompts")
+    local integrationPanel = form.addExpansionPanel("Integration")
+    local developerPanel = form.addExpansionPanel("Development")
 
-    local line = addFieldLine(displayPanel, "@i18n(app.modules.settings.txt_iconsize)@")
-    rfsuite.app.formFields[formFieldCount] = form.addChoiceField(line, nil, {{"@i18n(app.modules.settings.txt_text)@", 0}, {"@i18n(app.modules.settings.txt_small)@", 1}, {"@i18n(app.modules.settings.txt_large)@", 2}}, function() return config.iconsize ~= nil and config.iconsize or 1 end, function(newValue) config.iconsize = newValue end)
+    local line = addFieldLine(displayPanel, "Icon Size")
+    rfsuite.app.formFields[formFieldCount] = form.addChoiceField(line, nil, {{"TEXT", 0}, {"SMALL", 1}, {"LARGE", 2}}, function() return config.iconsize ~= nil and config.iconsize or 1 end, function(newValue) config.iconsize = newValue end)
 
-    line = addFieldLine(displayPanel, "@i18n(app.modules.settings.txt_batttype)@")
-    local txbattChoices = {{"@i18n(app.modules.settings.txt_battdef)@", 0}, {"@i18n(app.modules.settings.txt_batttext)@", 1}, {"@i18n(app.modules.settings.txt_battdig)@", 2}}
+    line = addFieldLine(displayPanel, "Follow dashboard theme")
+    rfsuite.app.formFields[formFieldCount] = form.addBooleanField(line, nil, function()
+        return prefBool(config.follow_dashboard_theme, true)
+    end, function(newValue) config.follow_dashboard_theme = newValue end)
+
+    line = addFieldLine(displayPanel, "Tx Battery Options")
+    local txbattChoices = {{"Default", 0}, {"Text", 1}, {"Digital", 2}}
     rfsuite.app.formFields[formFieldCount] = form.addChoiceField(line, nil, txbattChoices, function() return config.txbatt_type ~= nil and config.txbatt_type or 0 end, function(newValue) config.txbatt_type = newValue end)
 
-    line = addFieldLine(displayPanel, "@i18n(app.modules.settings.dashboard_loader_loader_style_select)@")
-    rfsuite.app.formFields[formFieldCount] = form.addChoiceField(line, nil, {{"@i18n(app.modules.settings.loader_style_small)@", 0}, {"@i18n(app.modules.settings.loader_style_medium)@", 1}, {"@i18n(app.modules.settings.loader_style_large)@", 2}}, function() return config.theme_loader ~= nil and config.theme_loader or 1 end, function(newValue) config.theme_loader = newValue end)
+    line = addFieldLine(displayPanel, "Theme loader style")
+    rfsuite.app.formFields[formFieldCount] = form.addChoiceField(line, nil, {{"SMALL", 0}, {"MEDIUM", 1}, {"LARGE", 2}}, function() return config.theme_loader ~= nil and config.theme_loader or 1 end, function(newValue) config.theme_loader = newValue end)
 
-    line = addFieldLine(displayPanel, "@i18n(app.modules.settings.txt_hs_loader)@")
-    rfsuite.app.formFields[formFieldCount] = form.addChoiceField(line, nil, {{"@i18n(app.modules.settings.txt_hs_loader_fastclose)@", 0}, {"@i18n(app.modules.settings.txt_hs_loader_wait)@", 1}}, function() return config.hs_loader ~= nil and config.hs_loader or 1 end, function(newValue) config.hs_loader = newValue end)
+    line = addFieldLine(displayPanel, "Progress Loader")
+    rfsuite.app.formFields[formFieldCount] = form.addChoiceField(line, nil, {{"CLOSE ASAP", 0}, {"CLOSE AT 100%", 1}}, function() return config.hs_loader ~= nil and config.hs_loader or 1 end, function(newValue) config.hs_loader = newValue end)
 
-    line = addFieldLine(displayPanel, "@i18n(app.modules.settings.txt_dashboard_startup_log_close)@")
-    rfsuite.app.formFields[formFieldCount] = form.addChoiceField(line, nil, {{"@i18n(app.modules.settings.txt_dashboard_startup_log_close_connected)@", 0}, {"@i18n(app.modules.settings.txt_dashboard_startup_log_close_ready)@", 1}}, function() return tonumber(config.dashboard_startup_log_close) or 0 end, function(newValue) config.dashboard_startup_log_close = newValue end)
+    line = addFieldLine(displayPanel, "Dashboard startup log")
+    rfsuite.app.formFields[formFieldCount] = form.addChoiceField(line, nil, {{"CONNECTION", 0}, {"READY", 1}}, function() return tonumber(config.dashboard_startup_log_close) or 0 end, function(newValue) config.dashboard_startup_log_close = newValue end)
 
-    line = addFieldLine(displayPanel, "@i18n(app.modules.settings.txt_toolbar_timeout)@")
+    line = addFieldLine(displayPanel, "Dash-bar auto-close")
     rfsuite.app.formFields[formFieldCount] = form.addNumberField(line, nil, 5, 30, function()
         if config.toolbar_timeout == nil then return 10 end
         return config.toolbar_timeout
@@ -83,54 +88,54 @@ local function openPage(opts)
     rfsuite.app.formFields[formFieldCount]:minimum(5)
     rfsuite.app.formFields[formFieldCount]:maximum(30)
 
-    line = addFieldLine(displayPanel, "@i18n(app.modules.settings.txt_collapse_unused_menu_entries)@")
+    line = addFieldLine(displayPanel, "Collapse Navigation")
     rfsuite.app.formFields[formFieldCount] = form.addBooleanField(line, nil, function()
         return prefBool(config.collapse_unused_menu_entries, false)
     end, function(newValue) config.collapse_unused_menu_entries = newValue end)
 
-    line = addFieldLine(safetyPanel, "@i18n(app.modules.settings.txt_save_confirm)@")
+    line = addFieldLine(safetyPanel, "Confirm on save")
     rfsuite.app.formFields[formFieldCount] = form.addBooleanField(line, nil, function() return config.save_confirm or false end, function(newValue) config.save_confirm = newValue end)
 
-    line = addFieldLine(safetyPanel, "@i18n(app.modules.settings.txt_save_requires_changes)@")
+    line = addFieldLine(safetyPanel, "Save requires changes")
     rfsuite.app.formFields[formFieldCount] = form.addBooleanField(line, nil, function()
         if config.save_dirty_only == nil then return true end
         return config.save_dirty_only
     end, function(newValue) config.save_dirty_only = newValue end)
 
-    line = addFieldLine(safetyPanel, "@i18n(app.modules.settings.txt_save_armed_warning)@")
+    line = addFieldLine(safetyPanel, "Show disarm-to-save warning")
     rfsuite.app.formFields[formFieldCount] = form.addBooleanField(line, nil, function()
         if config.save_armed_warning == nil then return true end
         return config.save_armed_warning
     end, function(newValue) config.save_armed_warning = newValue end)
 
-    line = addFieldLine(safetyPanel, "@i18n(app.modules.settings.txt_reload_confirm)@")
+    line = addFieldLine(safetyPanel, "Confirm on reload")
     rfsuite.app.formFields[formFieldCount] = form.addBooleanField(line, nil, function() return config.reload_confirm or false end, function(newValue) config.reload_confirm = newValue end)
 
-    line = addFieldLine(safetyPanel, "@i18n(app.modules.settings.txt_show_battery_profile_connect)@")
+    line = addFieldLine(safetyPanel, "Battery Type on connect")
     rfsuite.app.formFields[formFieldCount] = form.addBooleanField(line, nil, function()
         return prefBool(config.show_battery_profile_startup, true)
     end, function(newValue) config.show_battery_profile_startup = newValue end)
 
-    line = addFieldLine(safetyPanel, "@i18n(app.modules.settings.txt_show_confirmation_dialog)@")
+    line = addFieldLine(safetyPanel, "Battery Type confirmation")
     rfsuite.app.formFields[formFieldCount] = form.addBooleanField(line, nil, function()
         return prefBool(config.show_confirmation_dialog, true)
     end, function(newValue) config.show_confirmation_dialog = newValue end)
 
-    line = addFieldLine(safetyPanel, "@i18n(app.modules.settings.txt_show_esc_tools_warning)@")
+    line = addFieldLine(safetyPanel, "ESC tools safety prompt")
     rfsuite.app.formFields[formFieldCount] = form.addBooleanField(line, nil, function()
         return prefBool(config.show_esc_tools_warning, true)
     end, function(newValue) config.show_esc_tools_warning = newValue end)
 
-    line = addFieldLine(integrationPanel, "@i18n(app.modules.settings.txt_syncname)@")
+    line = addFieldLine(integrationPanel, "Sync model name")
     rfsuite.app.formFields[formFieldCount] = form.addBooleanField(line, nil, function() return config.syncname or false end, function(newValue) config.syncname = newValue end)
 
-    line = addFieldLine(integrationPanel, "@i18n(app.modules.settings.txt_mspstatusdialog)@")
+    line = addFieldLine(integrationPanel, "MSP Activity Display")
     rfsuite.app.formFields[formFieldCount] = form.addBooleanField(line, nil, function()
         if config.mspstatusdialog == nil then return true end
         return config.mspstatusdialog
     end, function(newValue) config.mspstatusdialog = newValue end)
 
-    line = addFieldLine(developerPanel, "@i18n(app.modules.settings.txt_developer_tools)@")
+    line = addFieldLine(developerPanel, "Developer Tools")
     rfsuite.app.formFields[formFieldCount] = form.addBooleanField(line, nil, function() return config.developer_tools or false end, function(newValue) config.developer_tools = newValue end)
 
 
@@ -146,11 +151,15 @@ end
 local function onSaveMenu()
 
     local function doSave()
-        local msg = "@i18n(app.modules.profile_select.save_prompt_local)@"
+        local msg = "Save current page to radio?"
         rfsuite.app.ui.progressDisplaySave(msg:gsub("%?$", "."))
         for key, value in pairs(config) do rfsuite.preferences.general[key] = value end
         rfsuite.ini.save_ini_file("SCRIPTS:/" .. rfsuite.config.preferences .. "/preferences.ini", rfsuite.preferences)
-        rfsuite.app.MainMenu = assert(loadfile("app/modules/init.lua"))()
+        -- Invalidate rather than rebuild inline: reparsing the manifest here would stack
+        -- on top of this same tick's file I/O and can exceed Ethos's per-tick instruction
+        -- budget. The next screen that needs app.MainMenu rebuilds it lazily instead.
+        rfsuite.app.MainMenu = nil
+        if rfsuite.app.themeBridge and rfsuite.app.themeBridge.invalidate then rfsuite.app.themeBridge.invalidate() end
         rfsuite.app.triggers.closeSave = true
         return true
     end
@@ -162,15 +171,15 @@ local function onSaveMenu()
 
     local buttons = {
         {
-            label = "@i18n(app.btn_ok_long)@",
+            label = "                OK                ",
             action = function()
                 doSave()
                 return true
             end
-        }, {label = "@i18n(app.modules.profile_select.cancel)@", action = function() return true end}
+        }, {label = "CANCEL", action = function() return true end}
     }
 
-    form.openDialog({width = nil, title = "@i18n(app.modules.profile_select.save_settings)@", message = "@i18n(app.modules.profile_select.save_prompt_local)@", buttons = buttons, wakeup = function() end, paint = function() end, options = TEXT_LEFT})
+    form.openDialog({width = nil, title = "Save settings", message = "Save current page to radio?", buttons = buttons, wakeup = function() end, paint = function() end, options = TEXT_LEFT})
 end
 
 local function event(widget, category, value, x, y)

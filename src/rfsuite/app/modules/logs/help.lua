@@ -8,9 +8,9 @@ local data = {}
 
 data['help'] = {}
 
-data['help']['default'] = {"@i18n(app.modules.logs.help_logs_p1)@", "@i18n(app.modules.logs.help_logs_p2)@", "@i18n(app.modules.logs.help_logs_p3)@"}
+data['help']['default'] = {"Please select a log file from the list below.", "Note. To enable logging it is essential for you to have the following sensors enabled.", "- arm status, voltage, headspeed, current, esc temperature"}
 
-data['help']['logs_tool'] = {"@i18n(app.modules.logs.help_logs_tool_p1)@"}
+data['help']['logs_tool'] = {"Please use the slider to navigate the graph."}
 
 data['fields'] = {}
 

@@ -13,6 +13,29 @@ local function loadMask(path)
     return lcd.loadMask(path)
 end
 
+-- Caches the compiled chunk for each manufacturer's escmfg/<folder>/
+-- init.lua and pages.lua -- openPage() below still CALLS the cached
+-- chunk fresh every time (same as before: assert(loadfile(path))()),
+-- so ESC/ESC.pages are still built brand new on every open; only the
+-- disk-read+parse+compile step is skipped on repeat visits to the same
+-- ESC folder. Reuses app/lib/ui.lua's own ui._pageChunkCache rather than
+-- a separate table, same reasoning as
+-- app/modules/settings/tools/dashboard_settings_theme.lua's own
+-- loadThemeChunk().
+local function loadEscChunk(modulePath)
+    local ui = rfsuite.app and rfsuite.app.ui
+    local cache = ui and ui._pageChunkCache
+    if not cache then
+        return assert(loadfile(modulePath))
+    end
+    local chunk = cache[modulePath]
+    if not chunk then
+        chunk = assert(loadfile(modulePath))
+        cache[modulePath] = chunk
+    end
+    return chunk
+end
+
 local mspSignature
 local mspBytes
 local escDetails = {}
@@ -377,7 +400,7 @@ local function openPage(opts)
     escDetailsApi = nil
     escDetailsApiName = nil
 
-    ESC = assert(loadfile("app/modules/esc_tools/tools/escmfg/" .. folder .. "/init.lua"))()
+    ESC = loadEscChunk("app/modules/esc_tools/tools/escmfg/" .. folder .. "/init.lua")()
 
     if rfsuite.app and rfsuite.app.Page and ESC and ESC.mspapi then
         rfsuite.app.Page.apidata = rfsuite.app.Page.apidata or {}
@@ -409,11 +432,11 @@ local function openPage(opts)
 
     local headerTitle = title
     if type(headerTitle) ~= "string" or headerTitle == "" then
-        headerTitle = "@i18n(app.modules.esc_tools.name)@" .. " / " .. ESC.toolName
+        headerTitle = "Esc Programing" .. " / " .. ESC.toolName
     end
     rfsuite.app.ui.fieldHeader(headerTitle)
 
-    ESC.pages = assert(loadfile("app/modules/esc_tools/tools/escmfg/" .. folder .. "/pages.lua"))()
+    ESC.pages = loadEscChunk("app/modules/esc_tools/tools/escmfg/" .. folder .. "/pages.lua")()
 
     modelLine = form.addLine("")
     modelText = form.addStaticText(modelLine, modelTextPos, "")
@@ -617,7 +640,7 @@ local function wakeup()
         rfsuite.app.dialogs.progressDisplay = false
         rfsuite.app.triggers.isReady = true
 
-        if ESC and ESC.powerCycle ~= true then setModelHeaderText("@i18n(app.modules.esc_tools.unknown)@") end
+        if ESC and ESC.powerCycle ~= true then setModelHeaderText("UNKNOWN") end
 
         if ESC and ESC.powerCycle == true then showPowerCycleLoader = true end
 
@@ -638,7 +661,7 @@ local function wakeup()
             if powercycleLoaderCounter >= 100 then
                 powercycleLoader:close()
                 rfsuite.app.ui.clearProgressDialog(powercycleLoader)
-                setModelHeaderText("@i18n(app.modules.esc_tools.unknown)@")
+                setModelHeaderText("UNKNOWN")
                 showPowerCycleLoaderInProgress = false
                 rfsuite.app.triggers.disableRssiTimeout = false
                 showPowerCycleLoader = false
@@ -658,10 +681,10 @@ local function wakeup()
             showPowerCycleLoaderInProgress = true
             rfsuite.app.audio.playEscPowerCycle = true
             rfsuite.app.triggers.disableRssiTimeout = true
-            powercycleLoader = openProgressDialog("@i18n(app.modules.esc_tools.searching)@", "@i18n(app.modules.esc_tools.please_powercycle)@")
+            powercycleLoader = openProgressDialog("Searching", "Please power cycle the ESC...")
             powercycleLoader:value(0)
             powercycleLoader:closeAllowed(false)
-            powercycleLoaderBaseMessage = "@i18n(app.modules.esc_tools.please_powercycle)@"
+            powercycleLoaderBaseMessage = "Please power cycle the ESC..."
             updatePowercycleLoaderMessage()
             rfsuite.app.ui.registerProgressDialog(powercycleLoader, powercycleLoaderBaseMessage)
         end

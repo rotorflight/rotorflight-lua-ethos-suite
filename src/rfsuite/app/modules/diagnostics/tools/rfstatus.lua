@@ -41,10 +41,10 @@ local function setStatus(field, ok, dashIfNil)
         return
     end
     if ok then
-        field:value("@i18n(app.modules.rfstatus.ok)@")
+        field:value("OK")
         field:color(GREEN)
     else
-        field:value("@i18n(app.modules.rfstatus.error)@")
+        field:value("ERROR")
         field:color(RED)
     end
 end
@@ -82,7 +82,7 @@ local function openPage(opts)
     app.lastTitle = title
     app.lastScript = script
 
-    app.ui.fieldHeader("@i18n(app.modules.diagnostics.name)@" .. " / " .. "@i18n(app.modules.rfstatus.name)@")
+    app.ui.fieldHeader("Diagnostics" .. " / " .. "Status")
 
     app.formLineCnt = 0
     app.formFieldCount = 0
@@ -90,21 +90,21 @@ local function openPage(opts)
     if app.formFields then for k in pairs(app.formFields) do app.formFields[k] = nil end end
     if app.formLines then for k in pairs(app.formLines) do app.formLines[k] = nil end end
 
-    addStatusLine("@i18n(app.modules.fblstatus.cpu_load)@", string.format("%.1f%%", rfsuite.performance.cpuload or 0))
+    addStatusLine("CPU Load", string.format("%.1f%%", rfsuite.performance.cpuload or 0))
 
-    addStatusLine("@i18n(app.modules.msp_speed.memory_free)@", string.format("%.1f kB", rfsuite.performance.freeram or 0))
+    addStatusLine("Memory free", string.format("%.1f kB", rfsuite.performance.freeram or 0))
 
-    addStatusLine("@i18n(app.modules.rfstatus.bgtask)@", tasks.active() and "@i18n(app.modules.rfstatus.ok)@" or "@i18n(app.modules.rfstatus.error)@")
+    addStatusLine("Background Task", tasks.active() and "OK" or "ERROR")
 
-    addStatusLine("@i18n(app.modules.rfstatus.rfmodule)@", moduleEnabled() and "@i18n(app.modules.rfstatus.ok)@" or "@i18n(app.modules.rfstatus.error)@")
+    addStatusLine("RF Module", moduleEnabled() and "OK" or "ERROR")
 
-    addStatusLine("@i18n(app.modules.rfstatus.mspsensor)@", haveMspSensor() and "@i18n(app.modules.rfstatus.ok)@" or "@i18n(app.modules.rfstatus.error)@")
+    addStatusLine("MSP Sensor", haveMspSensor() and "OK" or "ERROR")
 
-    addStatusLine("@i18n(app.modules.rfstatus.telemetrysensors)@", "-")
+    addStatusLine("Telemetry Sensors", "-")
 
-    addStatusLine("@i18n(app.modules.rfstatus.fblconnected)@", "-")
+    addStatusLine("FBL Connected", "-")
 
-    addStatusLine("@i18n(app.modules.rfstatus.apiversion)@", "-")
+    addStatusLine("MSP API Version", "-")
 
     enableWakeup = true
 end
@@ -181,13 +181,13 @@ local function wakeup()
 
 end
 
-local function event(widget, category, value, x, y)
-    return pageRuntime.handleCloseEvent(category, value, {onClose = onNavMenu})
-end
-
 local function onNavMenu()
     pageRuntime.openMenuContext()
     return true
+end
+
+local function event(widget, category, value, x, y)
+    return pageRuntime.handleCloseEvent(category, value, {onClose = onNavMenu})
 end
 
 return {reboot = false, eepromWrite = false, minBytes = 0, wakeup = wakeup, refreshswitch = false, simulatorResponse = {}, postLoad = postLoad, postRead = postRead, openPage = openPage, onNavMenu = onNavMenu, event = event, navButtons = {menu = true, save = false, reload = false, tool = false, help = false}, API = {}}

@@ -15,8 +15,8 @@ local apidata = {
   formdata = {
     labels = {},
     fields = {
-      { t = "@i18n(app.modules.stats.flightcount)@", mspapi = 1, apikey = "flightcount" } ,       
-      { t = "@i18n(app.modules.stats.totalflighttime)@", mspapi = 1, apikey = "totalflighttime" }
+      { t = "Flight Count", mspapi = 1, apikey = "flightcount" } ,       
+      { t = "Total Flight Time", mspapi = 1, apikey = "totalflighttime" }
     }
   }
 }

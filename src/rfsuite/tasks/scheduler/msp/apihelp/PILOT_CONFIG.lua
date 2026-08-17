@@ -6,7 +6,7 @@
 return {
     ["model_id"] = "@i18n(api.PILOT_CONFIG.model_id)@",
     ["model_param1_type"] = "@i18n(api.PILOT_CONFIG.model_param1_type)@",
-    ["model_param1_value"] = "@i18n(api.PILOT_CONFIG.model_param1_value)@",
+    ["model_param1_value"] = "Set this to the expected flight time in seconds.  The transmitter will beep when the flight time is reached.",
     ["model_param2_type"] = "@i18n(api.PILOT_CONFIG.model_param2_type)@",
     ["model_param2_value"] = "@i18n(api.PILOT_CONFIG.model_param2_value)@",
     ["model_param3_type"] = "@i18n(api.PILOT_CONFIG.model_param3_type)@",

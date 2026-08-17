@@ -4,7 +4,7 @@
 ]] --
 
 local MSP_API = "ESC_PARAMETERS_FLYROTOR"
-local toolName = "@i18n(app.modules.esc_tools.mfg.flrtr.name)@"
+local toolName = "FLYROTOR"
 
 local function getUInt(page, vals)
     local v = 0

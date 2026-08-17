@@ -68,7 +68,7 @@ local function header_boxes()
     if rfsuite and rfsuite.preferences and rfsuite.preferences.general then txbatt_type = rfsuite.preferences.general.txbatt_type or 0 end
 
     if header_boxes_cache == nil or last_txbatt_type ~= txbatt_type then
-        header_boxes_cache = utils.standardHeaderBoxes(i18n, colorMode, headeropts, txbatt_type)
+        header_boxes_cache = utils.standardHeaderBoxes(colorMode, headeropts, txbatt_type)
         last_txbatt_type = txbatt_type
     end
     return header_boxes_cache
@@ -91,7 +91,7 @@ local function buildBoxes(W)
             subtype = "arc",
             source = "rpm",
             arcmax = true,
-            title = "@i18n(widgets.dashboard.headspeed):upper()@",
+            title = "HEADSPEED",
             titlepos = "bottom",
             min = 0,
             max = getThemeValue("rpm_max"),
@@ -118,7 +118,7 @@ local function buildBoxes(W)
             rowspan = 10,
             type = "gauge",
             source = "bec_voltage",
-            title = "@i18n(widgets.dashboard.voltage):upper()@",
+            title = "VOLTAGE",
             titlepos = "bottom",
             font = "FONT_XL",
             gaugeorientation = "vertical",
@@ -146,7 +146,7 @@ local function buildBoxes(W)
             subtype = "arc",
             source = "throttle_percent",
             arcmax = true,
-            title = "@i18n(widgets.dashboard.throttle):upper()@",
+            title = "THROTTLE",
             titlepos = "bottom",
             transform = "floor",
             thickness = opts.thickness,

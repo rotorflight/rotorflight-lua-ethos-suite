@@ -58,7 +58,7 @@ local function header_boxes()
     local txbatt_type = 0
     if rfsuite and rfsuite.preferences and rfsuite.preferences.general then txbatt_type = rfsuite.preferences.general.txbatt_type or 0 end
     if header_boxes_cache == nil or last_txbatt_type ~= txbatt_type then
-        header_boxes_cache = utils.standardHeaderBoxes(i18n, colorMode, headeropts, txbatt_type)
+        header_boxes_cache = utils.standardHeaderBoxes(colorMode, headeropts, txbatt_type)
         last_txbatt_type = txbatt_type
     end
     return header_boxes_cache
@@ -148,12 +148,12 @@ local function buildBoxes(W)
          titlepaddingtop = opts.titlepaddingtop, valuepaddingtop = opts.valuepaddingtop,
          textcolor = colorMode.textcolor, titlecolor = colorMode.titlecolor, bgcolor = colorMode.paneldarkbg,
          thresholds = {
-             {value = "@i18n(widgets.governor.DISARMED)@", textcolor = colorMode.fillcritcolor},
-             {value = "@i18n(widgets.governor.OFF)@",      textcolor = colorMode.fillcritcolor},
-             {value = "@i18n(widgets.governor.IDLE)@",     textcolor = "blue"},
-             {value = "@i18n(widgets.governor.SPOOLUP)@",  textcolor = "blue"},
-             {value = "@i18n(widgets.governor.RECOVERY)@", textcolor = colorMode.fillwarncolor},
-             {value = "@i18n(widgets.governor.ACTIVE)@",   textcolor = colorMode.fillcolor},
+             {value = "DISARMED", textcolor = colorMode.fillcritcolor},
+             {value = "OFF",      textcolor = colorMode.fillcritcolor},
+             {value = "IDLE",     textcolor = "blue"},
+             {value = "SPOOLUP",  textcolor = "blue"},
+             {value = "RECOVERY", textcolor = colorMode.fillwarncolor},
+             {value = "ACTIVE",   textcolor = colorMode.fillcolor},
              {value = "@i18n(widgets.governor.THR-OFF)@",  textcolor = colorMode.fillcritcolor},
          }},
 

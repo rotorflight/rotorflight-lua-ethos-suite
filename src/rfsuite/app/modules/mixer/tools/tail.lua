@@ -53,15 +53,15 @@ if isTailMotorizedMode() then
     }
 
     LAYOUT = {
-            [LAYOUTINDEX.TAIL_ROTOR_MODE] = {t = "@i18n(app.modules.mixer.tail_rotor_mode)@", table = {"@i18n(api.MIXER_CONFIG.tbl_tail_variable_pitch)@", "@i18n(api.MIXER_CONFIG.tbl_tail_motororized_tail)@", "@i18n(api.MIXER_CONFIG.tbl_tail_bidirectional)@"}, tableIdxInc = -1, onChange = function() tailChanged() end}, 
-            [LAYOUTINDEX.YAW_DIRECTION] = {t = "@i18n(app.modules.mixer.yaw_direction)@",    table = {[0] = "@i18n(api.MIXER_INPUT.tbl_reversed)@", [1] = "@i18n(api.MIXER_INPUT.tbl_normal)@"}}, -- GET_MIXER_INPUT_YAW
-            [LAYOUTINDEX.TAIL_CENTER_TRIM] = {t = "@i18n(app.modules.mixer.tail_center_offset)@",  unit = "%", default = 0, min = -500, max = 500, decimals = 1},
+            [LAYOUTINDEX.TAIL_ROTOR_MODE] = {t = "Tail Mode", table = {"Variable Pitch", "Motorized Tail", "Bidirectional"}, tableIdxInc = -1, onChange = function() tailChanged() end}, 
+            [LAYOUTINDEX.YAW_DIRECTION] = {t = "Yaw Direction",    table = {[0] = "Reversed", [1] = "Normal"}}, -- GET_MIXER_INPUT_YAW
+            [LAYOUTINDEX.TAIL_CENTER_TRIM] = {t = "Tail Center Offset",  unit = "%", default = 0, min = -500, max = 500, decimals = 1},
 
-            [LAYOUTINDEX.YAW_CALIBRATION] = {t = "@i18n(app.modules.mixer.yaw_calibration)@",    default = 400, step = 1, decimals = 1, min = 200, max = 2000, unit = "%"  },           -- GET_MIXER_INPUT_YAW
-            [LAYOUTINDEX.YAW_CW_LIMIT] = {t = "@i18n(app.modules.mixer.yaw_cw_limit)@", unit = "%"  ,  default = 125, decimals = 1 , min = 0, max = 2000       },                         -- GET_MIXER_INPUT_YAW
-            [LAYOUTINDEX.YAW_CCW_LIMIT] = {t = "@i18n(app.modules.mixer.yaw_ccw_limit)@",  unit = "%" , default = 125, decimals = 1 , min = 0, max = 2000     },                          -- GET_MIXER_INPUT_YAW 
+            [LAYOUTINDEX.YAW_CALIBRATION] = {t = "Yaw Calibration",    default = 400, step = 1, decimals = 1, min = 200, max = 2000, unit = "%"  },           -- GET_MIXER_INPUT_YAW
+            [LAYOUTINDEX.YAW_CW_LIMIT] = {t = "Yaw CW Limit", unit = "%"  ,  default = 125, decimals = 1 , min = 0, max = 2000       },                         -- GET_MIXER_INPUT_YAW
+            [LAYOUTINDEX.YAW_CCW_LIMIT] = {t = "Yaw CCW Limit",  unit = "%" , default = 125, decimals = 1 , min = 0, max = 2000     },                          -- GET_MIXER_INPUT_YAW 
             
-            [LAYOUTINDEX.TAIL_ROTOR_IDLE] = {t = "@i18n(app.modules.mixer.tail_motor_idle)@", unit="%", min=0, max=250, step=1, decimals = 1},
+            [LAYOUTINDEX.TAIL_ROTOR_IDLE] = {t = "Tail Idle Thr%", unit="%", min=0, max=250, step=1, decimals = 1},
         }
 else
 
@@ -76,14 +76,14 @@ else
     }    
 
     LAYOUT = {
-            [LAYOUTINDEX.TAIL_ROTOR_MODE] = {t = "@i18n(app.modules.mixer.tail_rotor_mode)@", table = {"@i18n(api.MIXER_CONFIG.tbl_tail_variable_pitch)@", "@i18n(api.MIXER_CONFIG.tbl_tail_motororized_tail)@", "@i18n(api.MIXER_CONFIG.tbl_tail_bidirectional)@"}, tableIdxInc = -1, onChange = function() tailChanged() end}, 
-            [LAYOUTINDEX.YAW_DIRECTION] = {t = "@i18n(app.modules.mixer.yaw_direction)@",    table = {[0] = "@i18n(api.MIXER_INPUT.tbl_reversed)@", [1] = "@i18n(api.MIXER_INPUT.tbl_normal)@"}}, -- GET_MIXER_INPUT_YAW
-            [LAYOUTINDEX.TAIL_CENTER_TRIM] = {t = "@i18n(app.modules.mixer.yaw_center_trim)@",  unit = "%", default = 0, min = -250, max = 250, decimals = 1},
+            [LAYOUTINDEX.TAIL_ROTOR_MODE] = {t = "Tail Mode", table = {"Variable Pitch", "Motorized Tail", "Bidirectional"}, tableIdxInc = -1, onChange = function() tailChanged() end}, 
+            [LAYOUTINDEX.YAW_DIRECTION] = {t = "Yaw Direction",    table = {[0] = "Reversed", [1] = "Normal"}}, -- GET_MIXER_INPUT_YAW
+            [LAYOUTINDEX.TAIL_CENTER_TRIM] = {t = "Yaw Center Trim",  unit = "%", default = 0, min = -250, max = 250, decimals = 1},
 
             
-            [LAYOUTINDEX.YAW_CALIBRATION] = {t = "@i18n(app.modules.mixer.yaw_calibration)@",    default = 400, step = 1, decimals = 1, min = 200, max = 2000, unit = "%"  },           -- GET_MIXER_INPUT_YAW
-            [LAYOUTINDEX.YAW_CW_LIMIT] = {t = "@i18n(app.modules.mixer.yaw_cw_limit)@", unit = "°"  ,  default = 20, decimals = 1 , min = 0, max = 600       },                         -- GET_MIXER_INPUT_YAW
-            [LAYOUTINDEX.YAW_CCW_LIMIT] = {t = "@i18n(app.modules.mixer.yaw_ccw_limit)@",  unit = "°" , default = 20, decimals = 1 , min = 0, max = 600     },                          -- GET_MIXER_INPUT_YAW 
+            [LAYOUTINDEX.YAW_CALIBRATION] = {t = "Yaw Calibration",    default = 400, step = 1, decimals = 1, min = 200, max = 2000, unit = "%"  },           -- GET_MIXER_INPUT_YAW
+            [LAYOUTINDEX.YAW_CW_LIMIT] = {t = "Yaw CW Limit", unit = "°"  ,  default = 20, decimals = 1 , min = 0, max = 600       },                         -- GET_MIXER_INPUT_YAW
+            [LAYOUTINDEX.YAW_CCW_LIMIT] = {t = "Yaw CCW Limit",  unit = "°" , default = 20, decimals = 1 , min = 0, max = 600     },                          -- GET_MIXER_INPUT_YAW 
                 
 
         }    
@@ -118,7 +118,7 @@ end
 
 -- we take the raw data from APIDATA and process it into FORMDATA for easier use in the form
 -- the reverse is done in the save step
-function apiDataToFormData() 
+local function apiDataToFormData() 
 
     -- get raw data from api table
     local TAIL_ROTOR_MODE = APIDATA["MIXER_CONFIG"]["values"].tail_rotor_mode
@@ -129,7 +129,7 @@ function apiDataToFormData()
     local YAW_CCW_LIMIT = APIDATA["GET_MIXER_INPUT_YAW"]["values"].max_stabilized_yaw
 
     -- determine directions
-    YAW_DIRECTION = rateToDir(APIDATA["GET_MIXER_INPUT_YAW"]["values"].rate_stabilized_yaw)
+    local YAW_DIRECTION = rateToDir(APIDATA["GET_MIXER_INPUT_YAW"]["values"].rate_stabilized_yaw)
 
     -- transforms
     YAW_CALIBRATION = u16_to_s16(YAW_CALIBRATION)
@@ -180,7 +180,7 @@ function apiDataToFormData()
 end
 
 -- the reverse of apiDataToFormData: take the values from FORMDATA and convert them back into raw API values
-function copyFormToApiValues()
+local function copyFormToApiValues()
     local apiValues = APIDATA
     if not apiValues then return false end
 
@@ -485,13 +485,13 @@ local function onSaveMenu()
 
     local buttons = {
         {
-            label = "@i18n(app.btn_ok_long)@",
+            label = "                OK                ",
             action = function()
                 triggerSave = true
                 return true
             end
         }, {
-            label = "@i18n(app.btn_cancel)@",
+            label = "CANCEL",
             action = function()
                 triggerSave = false
                 return true
@@ -499,7 +499,7 @@ local function onSaveMenu()
         }
     }
 
-    form.openDialog({width = nil, title = "@i18n(app.modules.profile_select.save_settings)@", message = "@i18n(app.modules.profile_select.save_prompt)@", buttons = buttons, wakeup = function() end, paint = function() end, options = TEXT_LEFT})
+    form.openDialog({width = nil, title = "Save settings", message = "Save current page to flight controller?", buttons = buttons, wakeup = function() end, paint = function() end, options = TEXT_LEFT})
 
     triggerSave = false
 end
@@ -516,7 +516,7 @@ local function wakeup()
     end    
 
     if triggerSave then
-        rfsuite.app.ui.progressDisplay("@i18n(app.msg_saving_settings)@","@i18n(app.msg_saving_to_fbl)@")
+        rfsuite.app.ui.progressDisplay("Saving settings...","Saving data to flight controller...")
         save.start()
         triggerSave = false
     end   
@@ -530,7 +530,6 @@ return {
     openPage = openPage, 
     onNavMenu=onNavMenu, 
     onSaveMenu = onSaveMenu, 
-    postLoad = postLoad, 
     wakeup = wakeup, 
     onReloadMenu = onReloadMenu,
     navButtons = {

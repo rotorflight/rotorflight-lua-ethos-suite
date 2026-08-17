@@ -29,7 +29,7 @@ local function openPage(opts)
     rfsuite.app.lastTitle = title
     rfsuite.app.lastScript = script
 
-    rfsuite.app.ui.fieldHeader("@i18n(app.modules.settings.name)@" .. " / " .. "@i18n(app.modules.settings.features)@")
+    rfsuite.app.ui.fieldHeader("Settings" .. " / " .. "Features")
     rfsuite.app.formLineCnt = 0
     local formFieldCount = 0
 
@@ -47,17 +47,17 @@ local function openPage(opts)
         return line
     end
 
-    local line = addFieldLine("@i18n(app.modules.settings.feature_dashboard)@")
+    local line = addFieldLine("Rotorflight Dashboard")
     rfsuite.app.formFields[formFieldCount] = form.addBooleanField(line, nil, function()
         return prefBool(config.feature_dashboard, true)
     end, function(newValue) config.feature_dashboard = newValue end)
 
-    line = addFieldLine("@i18n(app.modules.settings.feature_toolbox)@")
+    line = addFieldLine("Rotorflight Toolbox")
     rfsuite.app.formFields[formFieldCount] = form.addBooleanField(line, nil, function()
         return prefBool(config.feature_toolbox, false)
     end, function(newValue) config.feature_toolbox = newValue end)
 
-    line = addFieldLine("@i18n(app.modules.settings.feature_activelook)@")
+    line = addFieldLine("Rotorflight ActiveLook")
     rfsuite.app.formFields[formFieldCount] = form.addBooleanField(line, nil, function()
         return prefBool(config.feature_activelook, false)
     end, function(newValue) config.feature_activelook = newValue end)
@@ -73,7 +73,7 @@ end
 
 local function onSaveMenu()
     local function doSave()
-        local msg = "@i18n(app.modules.profile_select.save_prompt_local)@"
+        local msg = "Save current page to radio?"
         rfsuite.app.ui.progressDisplaySave(msg:gsub("%?$", "."))
         rfsuite.preferences.general = rfsuite.preferences.general or {}
         for key, value in pairs(config) do rfsuite.preferences.general[key] = value end
@@ -91,15 +91,15 @@ local function onSaveMenu()
 
     local buttons = {
         {
-            label = "@i18n(app.btn_ok_long)@",
+            label = "                OK                ",
             action = function()
                 doSave()
                 return true
             end
-        }, {label = "@i18n(app.modules.profile_select.cancel)@", action = function() return true end}
+        }, {label = "CANCEL", action = function() return true end}
     }
 
-    form.openDialog({width = nil, title = "@i18n(app.modules.profile_select.save_settings)@", message = "@i18n(app.modules.profile_select.save_prompt_local)@", buttons = buttons, wakeup = function() end, paint = function() end, options = TEXT_LEFT})
+    form.openDialog({width = nil, title = "Save settings", message = "Save current page to radio?", buttons = buttons, wakeup = function() end, paint = function() end, options = TEXT_LEFT})
 end
 
 local function event(widget, category, value, x, y)

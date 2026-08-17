@@ -37,11 +37,11 @@ local LAYOUTINDEX = {
     }
 
 local LAYOUT = {
-        [LAYOUTINDEX.SWASH_TYPE] = {t = "@i18n(app.modules.mixer.swash_type)@",   table = {"None", "Direct", "CPPM 120", "CPPM 135", "CPPM 140", "FPM 90 L", "FPM 90 V"}, tableIdxInc = -1, onChange = function() needsReboot = true end},   -- MIXER_CONFIG
-        [LAYOUTINDEX.ROTOR_DIRECTION] = {t = "@i18n(app.modules.mixer.main_rotor_dir)@",   table = {[0] = "@i18n(api.MIXER_CONFIG.tbl_cw)@", [1] = "@i18n(api.MIXER_CONFIG.tbl_ccw)@"}},           -- MIXER_CONFIG
-        [LAYOUTINDEX.AIL_DIRECTION] = {t = "@i18n(app.modules.mixer.aileron_direction)@",   table = {[0] = "@i18n(api.MIXER_INPUT.tbl_reversed)@", [1] = "@i18n(api.MIXER_INPUT.tbl_normal)@"}},   -- GET_MIXER_INPUT_ROLL
-        [LAYOUTINDEX.ELE_DIRECTION] = {t = "@i18n(app.modules.mixer.elevator_direction)@",    table = {[0] = "@i18n(api.MIXER_INPUT.tbl_reversed)@", [1] = "@i18n(api.MIXER_INPUT.tbl_normal)@"}}, -- GET_MIXER_INPUT_PITCH
-        [LAYOUTINDEX.COL_DIRECTION] = {t = "@i18n(app.modules.mixer.collective_direction)@",  table = {[0] = "@i18n(api.MIXER_INPUT.tbl_reversed)@", [1] = "@i18n(api.MIXER_INPUT.tbl_normal)@"}}, -- GET_MIXER_INPUT_COLLECTIVE
+        [LAYOUTINDEX.SWASH_TYPE] = {t = "Swash Type",   table = {"None", "Direct", "CPPM 120", "CPPM 135", "CPPM 140", "FPM 90 L", "FPM 90 V"}, tableIdxInc = -1, onChange = function() needsReboot = true end},   -- MIXER_CONFIG
+        [LAYOUTINDEX.ROTOR_DIRECTION] = {t = "Rotor Direction",   table = {[0] = "CW", [1] = "CCW"}},           -- MIXER_CONFIG
+        [LAYOUTINDEX.AIL_DIRECTION] = {t = "Aileron Direction",   table = {[0] = "Reversed", [1] = "Normal"}},   -- GET_MIXER_INPUT_ROLL
+        [LAYOUTINDEX.ELE_DIRECTION] = {t = "Elevator Direction",    table = {[0] = "Reversed", [1] = "Normal"}}, -- GET_MIXER_INPUT_PITCH
+        [LAYOUTINDEX.COL_DIRECTION] = {t = "Collective Direction",  table = {[0] = "Reversed", [1] = "Normal"}}, -- GET_MIXER_INPUT_COLLECTIVE
     }
 
 
@@ -73,7 +73,7 @@ end
 
 -- we take the raw data from APIDATA and process it into FORMDATA for easier use in the form
 -- the reverse is done in the save step
-function apiDataToFormData() 
+local function apiDataToFormData() 
 
     -- get raw data from api table
     local SWASH_TYPE = APIDATA["MIXER_CONFIG"]["values"].swash_type
@@ -95,7 +95,7 @@ function apiDataToFormData()
 end
 
 -- the reverse of apiDataToFormData: take the values from FORMDATA and convert them back into raw API values
-function copyFormToApiValues()
+local function copyFormToApiValues()
     local apiValues = APIDATA
     if not apiValues then return false end
 
@@ -390,13 +390,13 @@ local function onSaveMenu()
 
     local buttons = {
         {
-            label = "@i18n(app.btn_ok_long)@",
+            label = "                OK                ",
             action = function()
                 triggerSave = true
                 return true
             end
         }, {
-            label = "@i18n(app.btn_cancel)@",
+            label = "CANCEL",
             action = function()
                 triggerSave = false
                 return true
@@ -404,7 +404,7 @@ local function onSaveMenu()
         }
     }
 
-    form.openDialog({width = nil, title = "@i18n(app.modules.profile_select.save_settings)@", message = "@i18n(app.modules.profile_select.save_prompt)@", buttons = buttons, wakeup = function() end, paint = function() end, options = TEXT_LEFT})
+    form.openDialog({width = nil, title = "Save settings", message = "Save current page to flight controller?", buttons = buttons, wakeup = function() end, paint = function() end, options = TEXT_LEFT})
 
     triggerSave = false
 end
@@ -415,7 +415,7 @@ local function wakeup()
     end 
 
     if triggerSave then
-        rfsuite.app.ui.progressDisplay("@i18n(app.msg_saving_settings)@","@i18n(app.msg_saving_to_fbl)@")
+        rfsuite.app.ui.progressDisplay("Saving settings...","Saving data to flight controller...")
         save.start()
         triggerSave = false
     end   
@@ -429,7 +429,6 @@ return {
     openPage = openPage, 
     onNavMenu=onNavMenu, 
     onSaveMenu = onSaveMenu, 
-    postLoad = postLoad, 
     wakeup = wakeup, 
     onReloadMenu = onReloadMenu,
     navButtons = {

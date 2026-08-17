@@ -48,7 +48,7 @@ local function makePage(modeKey, modeLabel)
         rfsuite.app.lastTitle = title
         rfsuite.app.lastScript = script
 
-        rfsuite.app.ui.fieldHeader("@i18n(app.modules.settings.name)@" .. " / ActiveLook / " .. modeLabel)
+        rfsuite.app.ui.fieldHeader("Settings" .. " / ActiveLook / " .. modeLabel)
         rfsuite.app.formLineCnt = 0
         local formFieldCount = 0
 

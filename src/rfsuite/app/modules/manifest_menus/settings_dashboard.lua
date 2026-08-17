@@ -28,7 +28,7 @@ return {
         {
             bgtask = true,
             image = "dashboard_theme.png",
-            name = "@i18n(app.modules.settings.dashboard_theme)@",
+            name = "Theme",
             offline = true,
             script = "dashboard_theme.lua",
             shortcutId = "s_settings_dashboard_dashboard_theme_l_356eb135bd",
@@ -36,12 +36,12 @@ return {
         {
             bgtask = true,
             image = "dashboard_settings.png",
-            name = "@i18n(app.modules.settings.dashboard_settings)@",
+            name = "Settings",
             offline = false,
             script = "dashboard_settings.lua",
             shortcutId = "s_settings_dashboard_dashboard_setting_46c08bc7ee",
         },
     },
     scriptPrefix = "settings/tools/",
-    title = "@i18n(app.modules.settings.name)@ / @i18n(app.modules.settings.dashboard)@",
+    title = "Settings / Dashboard",
 }

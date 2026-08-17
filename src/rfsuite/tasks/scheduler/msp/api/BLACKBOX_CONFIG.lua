@@ -11,8 +11,8 @@ local MSP_API_CMD_READ = 80
 local MSP_API_CMD_WRITE = 81
 
 local TBL_OFF_ON = {
-    "@i18n(api.MOTOR_CONFIG.tbl_off)@",
-    "@i18n(api.MOTOR_CONFIG.tbl_on)@"
+    "OFF",
+    "ON"
 }
 
 local BLACKBOX_FIELDS_BITMAP = {

@@ -25,7 +25,7 @@ local function openPage(opts)
     rfsuite.app.lastTitle = title
     rfsuite.app.lastScript = script
 
-    rfsuite.app.ui.fieldHeader("@i18n(app.modules.settings.name)@" .. " / " .. "@i18n(app.modules.settings.audio)@" .. " / " .. "@i18n(app.modules.settings.txt_audio_timer)@")
+    rfsuite.app.ui.fieldHeader("Settings" .. " / " .. "Audio" .. " / " .. "Timer")
 
     rfsuite.app.formLineCnt = 0
     local formFieldCount = 0
@@ -40,7 +40,7 @@ local function openPage(opts)
 
     formFieldCount = formFieldCount + 1
     rfsuite.app.formLineCnt = rfsuite.app.formLineCnt + 1
-    rfsuite.app.formLines[rfsuite.app.formLineCnt] = form.addLine("@i18n(app.modules.settings.timer_alerting)@")
+    rfsuite.app.formLines[rfsuite.app.formLineCnt] = form.addLine("Timer Alerting")
     rfsuite.app.formFields[formFieldCount] = form.addBooleanField(rfsuite.app.formLines[rfsuite.app.formLineCnt], nil, function() return config.timeraudioenable or false end, function(newValue)
         config.timeraudioenable = newValue
         rfsuite.app.formFields[idxChoice]:enable(newValue)
@@ -55,16 +55,16 @@ local function openPage(opts)
 
     formFieldCount = formFieldCount + 1
     rfsuite.app.formLineCnt = rfsuite.app.formLineCnt + 1
-    rfsuite.app.formLines[rfsuite.app.formLineCnt] = form.addLine("@i18n(app.modules.settings.timer_elapsed_alert_mode)@")
-    rfsuite.app.formFields[formFieldCount] = form.addChoiceField(rfsuite.app.formLines[rfsuite.app.formLineCnt], nil, {{"@i18n(app.modules.settings.timer_elapsed_beep)@", 0}, {"@i18n(app.modules.settings.timer_elapsed_multi_beep)@", 1}, {"@i18n(app.modules.settings.timer_elapsed_elapsed)@", 2}, {"@i18n(app.modules.settings.timer_elapsed_seconds)@", 3}}, function() return config.elapsedalertmode or 0 end, function(newValue) config.elapsedalertmode = newValue end)
+    rfsuite.app.formLines[rfsuite.app.formLineCnt] = form.addLine("Timer Elapsed Alert")
+    rfsuite.app.formFields[formFieldCount] = form.addChoiceField(rfsuite.app.formLines[rfsuite.app.formLineCnt], nil, {{"Beep", 0}, {"Multi Beep", 1}, {"Timer Elapsed", 2}, {"Timer Seconds", 3}}, function() return config.elapsedalertmode or 0 end, function(newValue) config.elapsedalertmode = newValue end)
     idxChoice = formFieldCount
 
-    local prePanel = form.addExpansionPanel("@i18n(app.modules.settings.timer_prealert_options)@")
+    local prePanel = form.addExpansionPanel("Pre-timer Alert Options")
     prePanel:open(config.prealerton or false)
 
     formFieldCount = formFieldCount + 1
     idxPre = formFieldCount
-    rfsuite.app.formFields[formFieldCount] = form.addBooleanField(prePanel:addLine("@i18n(app.modules.settings.timer_prealert)@"), nil, function() return config.prealerton or false end, function(newValue)
+    rfsuite.app.formFields[formFieldCount] = form.addBooleanField(prePanel:addLine("Pre-timer Alert"), nil, function() return config.prealerton or false end, function(newValue)
         config.prealerton = newValue
         local audioEnabled = config.timeraudioenable or false
         rfsuite.app.formFields[idxPrePeriod]:enable(audioEnabled and newValue)
@@ -73,20 +73,20 @@ local function openPage(opts)
 
     formFieldCount = formFieldCount + 1
     idxPrePeriod = formFieldCount
-    rfsuite.app.formFields[formFieldCount] = form.addChoiceField(prePanel:addLine("@i18n(app.modules.settings.timer_alert_period)@"), nil, periodChoices, function() return config.prealertperiod or 30 end, function(newValue) config.prealertperiod = newValue end)
+    rfsuite.app.formFields[formFieldCount] = form.addChoiceField(prePanel:addLine("Alert Period"), nil, periodChoices, function() return config.prealertperiod or 30 end, function(newValue) config.prealertperiod = newValue end)
     rfsuite.app.formFields[formFieldCount]:enable((config.timeraudioenable or false) and (config.prealerton or false))
 
     formFieldCount = formFieldCount + 1
     idxPreInterval = formFieldCount
-    rfsuite.app.formFields[formFieldCount] = form.addChoiceField(prePanel:addLine("@i18n(app.modules.settings.timer_alert_interval)@"), nil, intervalChoices, function() return config.prealertinterval or 10 end, function(newValue) config.prealertinterval = newValue end)
+    rfsuite.app.formFields[formFieldCount] = form.addChoiceField(prePanel:addLine("Alert Interval"), nil, intervalChoices, function() return config.prealertinterval or 10 end, function(newValue) config.prealertinterval = newValue end)
     rfsuite.app.formFields[formFieldCount]:enable((config.timeraudioenable or false) and (config.prealerton or false))
 
-    local postPanel = form.addExpansionPanel("@i18n(app.modules.settings.timer_postalert_options)@")
+    local postPanel = form.addExpansionPanel("Post-timer Alert Options")
     postPanel:open(config.postalerton or false)
 
     formFieldCount = formFieldCount + 1
     idxPost = formFieldCount
-    rfsuite.app.formFields[formFieldCount] = form.addBooleanField(postPanel:addLine("@i18n(app.modules.settings.timer_postalert)@"), nil, function() return config.postalerton or false end, function(newValue)
+    rfsuite.app.formFields[formFieldCount] = form.addBooleanField(postPanel:addLine("Post-timer Alert"), nil, function() return config.postalerton or false end, function(newValue)
         config.postalerton = newValue
         local audioEnabled = config.timeraudioenable or false
         rfsuite.app.formFields[idxPostPeriod]:enable(audioEnabled and newValue)
@@ -95,12 +95,12 @@ local function openPage(opts)
 
     formFieldCount = formFieldCount + 1
     idxPostPeriod = formFieldCount
-    rfsuite.app.formFields[formFieldCount] = form.addChoiceField(postPanel:addLine("@i18n(app.modules.settings.timer_alert_period)@"), nil, periodChoices, function() return config.postalertperiod or 60 end, function(newValue) config.postalertperiod = newValue end)
+    rfsuite.app.formFields[formFieldCount] = form.addChoiceField(postPanel:addLine("Alert Period"), nil, periodChoices, function() return config.postalertperiod or 60 end, function(newValue) config.postalertperiod = newValue end)
     rfsuite.app.formFields[formFieldCount]:enable((config.timeraudioenable or false) and (config.postalerton or false))
 
     formFieldCount = formFieldCount + 1
     idxPostInterval = formFieldCount
-    rfsuite.app.formFields[formFieldCount] = form.addChoiceField(postPanel:addLine("@i18n(app.modules.settings.timer_postalert_interval)@"), nil, intervalChoices, function() return config.postalertinterval or 10 end, function(newValue) config.postalertinterval = newValue end)
+    rfsuite.app.formFields[formFieldCount] = form.addChoiceField(postPanel:addLine("Alert Interval"), nil, intervalChoices, function() return config.postalertinterval or 10 end, function(newValue) config.postalertinterval = newValue end)
     rfsuite.app.formFields[formFieldCount]:enable((config.timeraudioenable or false) and (config.postalerton or false))
 
     rfsuite.app.formFields[idxChoice]:enable(config.timeraudioenable or false)
@@ -116,7 +116,7 @@ end
 local function onSaveMenu()
 
     local function doSave()
-        local msg = "@i18n(app.modules.profile_select.save_prompt_local)@"
+        local msg = "Save current page to radio?"
         rfsuite.app.ui.progressDisplaySave(msg:gsub("%?$", "."))
         for key, value in pairs(config) do rfsuite.preferences.timer[key] = value end
         rfsuite.ini.save_ini_file("SCRIPTS:/" .. rfsuite.config.preferences .. "/preferences.ini", rfsuite.preferences)
@@ -130,15 +130,15 @@ local function onSaveMenu()
 
     local buttons = {
         {
-            label = "@i18n(app.btn_ok_long)@",
+            label = "                OK                ",
             action = function()
                 doSave()
                 return true
             end
-        }, {label = "@i18n(app.modules.profile_select.cancel)@", action = function() return true end}
+        }, {label = "CANCEL", action = function() return true end}
     }
 
-    form.openDialog({width = nil, title = "@i18n(app.modules.profile_select.save_settings)@", message = "@i18n(app.modules.profile_select.save_prompt_local)@", buttons = buttons, wakeup = function() end, paint = function() end, options = TEXT_LEFT})
+    form.openDialog({width = nil, title = "Save settings", message = "Save current page to radio?", buttons = buttons, wakeup = function() end, paint = function() end, options = TEXT_LEFT})
 end
 
 local function event(widget, category, value, x, y)

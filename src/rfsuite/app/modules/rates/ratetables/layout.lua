@@ -9,15 +9,15 @@ local layout = {}
 
 local RATE_ROWS = {
     standard = {
-        "@i18n(app.modules.rates.roll)@",
-        "@i18n(app.modules.rates.pitch)@",
-        "@i18n(app.modules.rates.yaw)@",
-        "@i18n(app.modules.rates.collective)@"
+        "Roll",
+        "Pitch",
+        "Yaw",
+        "Col"
     },
     polar = {
-        "@i18n(app.modules.rates.cyclic)@",
-        "@i18n(app.modules.rates.yaw)@",
-        "@i18n(app.modules.rates.collective)@"
+        "Cyclic",
+        "Yaw",
+        "Col"
     }
 }
 

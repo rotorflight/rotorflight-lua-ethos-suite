@@ -15,20 +15,20 @@ local INI_SECTION = "battery"
 
 -- Field index 1: source selector (different field/API per version)
 local sourceField = useFirmwareSmartFuel
-    and {t = "@i18n(sensors.smartfuel)@", mspapi = 1, apikey = "smartfuel_mode", type = 1}
-    or  {t = "@i18n(sensors.smartfuel)@", mspapi = 1, apikey = "smartfuel_source",        type = 1}
+    and {t = "Smart Fuel", mspapi = 1, apikey = "smartfuel_mode", type = 1}
+    or  {t = "Smart Fuel", mspapi = 1, apikey = "smartfuel_source",        type = 1}
 
 local firmwareFields = {
     sourceField,
-    {t = "@i18n(app.modules.power.smartfuel_voltage_drop_rate)@", mspapi = 1, apikey = "voltage_drop_rate"},
-    {t = "@i18n(app.modules.power.smartfuel_charge_drop_rate)@",  mspapi = 1, apikey = "charge_drop_rate"},
-    {t = "@i18n(app.modules.power.smartfuel_sag_gain)@",          mspapi = 1, apikey = "sag_gain"},
+    {t = "Voltage Drop Rate", mspapi = 1, apikey = "voltage_drop_rate"},
+    {t = "Charge Drop Rate",  mspapi = 1, apikey = "charge_drop_rate"},
+    {t = "Sag Gain",          mspapi = 1, apikey = "sag_gain"},
 }
 
 local legacyFields = {
-    {t = "@i18n(app.modules.power.smartfuel_voltage_drop_rate)@", mspapi = 1, apikey = "voltage_drop_rate"},
-    {t = "@i18n(app.modules.power.smartfuel_charge_drop_rate)@",  mspapi = 1, apikey = "charge_drop_rate"},
-    {t = "@i18n(app.modules.power.smartfuel_sag_gain)@",          mspapi = 1, apikey = "sag_gain"},
+    {t = "Voltage Drop Rate", mspapi = 1, apikey = "voltage_drop_rate"},
+    {t = "Charge Drop Rate",  mspapi = 1, apikey = "charge_drop_rate"},
+    {t = "Sag Gain",          mspapi = 1, apikey = "sag_gain"},
 }
 
 local apidata = {

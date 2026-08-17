@@ -23,10 +23,10 @@ local apidata = {
     formdata = {
         labels = {},
         fields = {
-            {t = "@i18n(app.modules.profile_governor.fallback_precomp)@", mspapi = 1, apikey = "governor_flags->fallback_precomp", type = 1},
-            {t = "@i18n(app.modules.profile_governor.pid_spoolup)@", mspapi = 1, apikey = "governor_flags->pid_spoolup", type = 1}, 
-            {t = "@i18n(app.modules.profile_governor.voltage_comp)@", mspapi = 1, apikey = "governor_flags->voltage_comp", type = 1}, 
-            {t = "@i18n(app.modules.profile_governor.dyn_min_throttle)@", mspapi = 1, apikey = "governor_flags->dyn_min_throttle", type = 1},
+            {t = "Fallback Precomp", mspapi = 1, apikey = "governor_flags->fallback_precomp", type = 1},
+            {t = "Governed Spoolup", mspapi = 1, apikey = "governor_flags->pid_spoolup", type = 1}, 
+            {t = "Voltage Compensation", mspapi = 1, apikey = "governor_flags->voltage_comp", type = 1}, 
+            {t = "Dyn. Min Throttle", mspapi = 1, apikey = "governor_flags->dyn_min_throttle", type = 1},
         }
     }
 }
@@ -109,4 +109,4 @@ local function onNavMenu()
     return navHandlers.onNavMenu()
 end
 
-return {apidata = apidata, title = "@i18n(app.modules.profile_governor.name)@", reboot = false, event = event, onNavMenu = onNavMenu, refreshOnProfileChange = true, eepromWrite = true, postLoad = postLoad, wakeup = wakeup, canSave = canSave, API = {}}
+return {apidata = apidata, title = "Governor", reboot = false, event = event, onNavMenu = onNavMenu, refreshOnProfileChange = true, eepromWrite = true, postLoad = postLoad, wakeup = wakeup, canSave = canSave, API = {}}

@@ -23,7 +23,7 @@ local apidata = {
         formdata = {
                 labels = {}, 
                 fields = {
-                    {t = "@i18n(app.modules.rates_advanced.rate_table)@", mspapi = 1, apikey = "rates_type", type = 1, ratetype = 1, postEdit = function(self) self.flagRateChange(self, true) end}
+                    {t = "Rate Table", mspapi = 1, apikey = "rates_type", type = 1, ratetype = 1, postEdit = function(self) self.flagRateChange(self, true) end}
                 }
         }
     }
@@ -160,7 +160,7 @@ local function flagRateChange(self)
         rfsuite.app.ui.enableAllFields()
         resetRates = false
     else
-        self.extraMsgOnSave = "@i18n(app.modules.rates_advanced.msg_reset_to_defaults)@"
+        self.extraMsgOnSave = "Rate type changed. Values will be reset to defaults."
         resetRates = true
         rfsuite.app.ui.disableAllFields()
         rfsuite.app.formFields[1]:enable(true)
@@ -170,4 +170,4 @@ end
 
 local function postEepromWrite(self) if resetRates == true then doFullReload = true end end
 
-return {apidata = apidata, title = "@i18n(app.modules.rates_advanced.rates_type)@", onNavMenu = navHandlers.onNavMenu, event = navHandlers.event, reboot = false, eepromWrite = true, refreshOnRateChange = true, rTableName = rTableName, flagRateChange = flagRateChange, postLoad = postLoad, wakeup = wakeup, preSave = preSave, postEepromWrite = postEepromWrite, extraMsgOnSave = extraMsgOnSave, API = {}}
+return {apidata = apidata, title = "Rates Type", onNavMenu = navHandlers.onNavMenu, event = navHandlers.event, reboot = false, eepromWrite = true, refreshOnRateChange = true, flagRateChange = flagRateChange, postLoad = postLoad, wakeup = wakeup, preSave = preSave, postEepromWrite = postEepromWrite, extraMsgOnSave = extraMsgOnSave, API = {}}

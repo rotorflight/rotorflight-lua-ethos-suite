@@ -46,17 +46,17 @@ common.SENSOR_CHOICES = {
     {"Off", 1},
     {"Flight Mode", 2},
     {"Timer", 3},
-    {"@i18n(sensors.governor)@", 4},
+    {"Governor State", 4},
     {"Arm Status", 5},
-    {"@i18n(sensors.esc_temp)@", 6},
-    {"@i18n(sensors.mcu_temp)@", 7},
-    {"@i18n(sensors.link)@", 8},
-    {"@i18n(sensors.fuel)@", 9},
-    {"@i18n(sensors.current)@", 10},
-    {"@i18n(sensors.voltage)@", 11},
+    {"ESC Temperature", 6},
+    {"MCU Temperature", 7},
+    {"Link Quality", 8},
+    {"Fuel", 9},
+    {"Current", 10},
+    {"Voltage", 11},
     {"Cell Voltage", 12},
-    {"@i18n(sensors.headspeed)@", 13},
-    {"@i18n(widgets.dashboard.consumed_mah)@", 14},
+    {"Headspeed", 13},
+    {"Consumed mAh", 14},
     {"Max ESC Temp", 15},
     {"Max MCU Temp", 16},
     {"Min Link", 17},
@@ -178,7 +178,7 @@ function common.layoutPreview(layoutKey)
 end
 
 function common.saveConfig(config)
-    local msg = "@i18n(app.modules.profile_select.save_prompt_local)@"
+    local msg = "Save current page to radio?"
     rfsuite.app.ui.progressDisplaySave(msg:gsub("%?$", "."))
 
     rfsuite.preferences.activelook = rfsuite.preferences.activelook or {}
@@ -207,22 +207,22 @@ function common.confirmedSave(config)
 
     local buttons = {
         {
-            label = "@i18n(app.btn_ok_long)@",
+            label = "                OK                ",
             action = function()
                 common.saveConfig(config)
                 return true
             end
         },
         {
-            label = "@i18n(app.modules.profile_select.cancel)@",
+            label = "CANCEL",
             action = function() return true end
         }
     }
 
     form.openDialog({
         width = nil,
-        title = "@i18n(app.modules.profile_select.save_settings)@",
-        message = "@i18n(app.modules.profile_select.save_prompt_local)@",
+        title = "Save settings",
+        message = "Save current page to radio?",
         buttons = buttons,
         wakeup = function() end,
         paint = function() end,

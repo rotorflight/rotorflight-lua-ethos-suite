@@ -68,7 +68,7 @@ local function header_boxes()
     if rfsuite and rfsuite.preferences and rfsuite.preferences.general then txbatt_type = rfsuite.preferences.general.txbatt_type or 0 end
 
     if header_boxes_cache == nil or last_txbatt_type ~= txbatt_type then
-        header_boxes_cache = utils.standardHeaderBoxes(i18n, colorMode, headeropts, txbatt_type)
+        header_boxes_cache = utils.standardHeaderBoxes(colorMode, headeropts, txbatt_type)
         last_txbatt_type = txbatt_type
     end
     return header_boxes_cache
@@ -79,8 +79,8 @@ local function buildBoxes(W)
     local opts = themeOptions[getThemeOptionKey(W)] or themeOptions.unknown
 
     return {
-        {col = 1, row = 1, type = "time", subtype = "flight", title = "@i18n(widgets.dashboard.flight_time):upper()@", titlepos = "bottom", font = "FONT_XXL", bgcolor = colorMode.bgcolor, titlecolor = colorMode.titlecolor, textcolor = colorMode.titlecolor},
-        {col = 1, row = 2, type = "text", subtype = "telemetry", source = "link", unit = "dB", title = "@i18n(widgets.dashboard.lq):upper()@", titlepos = "bottom", transform = "floor", titlecolor = colorMode.titlecolor, textcolor = colorMode.titlecolor, bgcolor = colorMode.bgcolor}, {
+        {col = 1, row = 1, type = "time", subtype = "flight", title = "FLIGHT TIME", titlepos = "bottom", font = "FONT_XXL", bgcolor = colorMode.bgcolor, titlecolor = colorMode.titlecolor, textcolor = colorMode.titlecolor},
+        {col = 1, row = 2, type = "text", subtype = "telemetry", source = "link", unit = "dB", title = "LQ", titlepos = "bottom", transform = "floor", titlecolor = colorMode.titlecolor, textcolor = colorMode.titlecolor, bgcolor = colorMode.bgcolor}, {
             col = 2,
             row = 1,
             rowspan = 2,
@@ -88,7 +88,7 @@ local function buildBoxes(W)
             subtype = "arc",
             source = "voltage",
             fillbgcolor = colorMode.fillbgcolor,
-            title = "@i18n(widgets.dashboard.voltage):upper()@",
+            title = "VOLTAGE",
             font = "FONT_XXL",
             thickness = opts.thickness,
             titlepos = "bottom",

@@ -187,8 +187,17 @@ end
 
 local function setActiveSourceMode(mode)
     if not mode then
-        clearRuntimeCaches()
-        activeSourceMode, activeSourceTable = nil, nil
+        -- Only tear the caches down on the transition INTO "transport unknown".
+        -- getSensorSource() calls this on every single lookup, and
+        -- clearRuntimeCaches() allocates five tables plus a weak metatable, so
+        -- repeating it for the whole time the link is down was an allocation
+        -- storm on the hottest read path in the product. Nothing repopulates
+        -- those caches while mode is nil: every sensors[name] write below sits
+        -- behind getSensorSource's `if not sourceTable then return nil end`.
+        if activeSourceMode ~= nil or activeSourceTable ~= nil then
+            clearRuntimeCaches()
+            activeSourceMode, activeSourceTable = nil, nil
+        end
         return nil
     end
 

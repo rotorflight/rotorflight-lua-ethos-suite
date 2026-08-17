@@ -11,6 +11,7 @@ local fields = {}
 
 local triggerOverRide = false
 local inOverRide = false
+local inFocus = false
 local lastChangeTime = os.clock()
 local currentRollTrim
 local currentRollTrimLast
@@ -39,10 +40,10 @@ local apidata = {
     formdata = {
         labels = {},
         fields = {
-            {t = "@i18n(app.modules.trim.roll_trim)@",         mspapi = 1, apikey = "swash_trim_0", },
-            {t = "@i18n(app.modules.trim.pitch_trim)@",        mspapi = 1, apikey = "swash_trim_1"},
-            {t = "@i18n(app.modules.trim.collective_trim)@",    mspapi = 1, apikey = "swash_trim_2"},
-            {t = "@i18n(app.modules.trim.yaw_trim)@",          mspapi = 1, apikey = "tail_center_trim", enablefunction = function() return (rfsuite.session.tailMode == 0) end},
+            {t = "Roll trim %",         mspapi = 1, apikey = "swash_trim_0", },
+            {t = "Pitch trim %",        mspapi = 1, apikey = "swash_trim_1"},
+            {t = "Col. trim %",    mspapi = 1, apikey = "swash_trim_2"},
+            {t = "Yaw. trim %",          mspapi = 1, apikey = "tail_center_trim", enablefunction = function() return (rfsuite.session.tailMode == 0) end},
         }
     }
 }
@@ -187,7 +188,7 @@ local function wakeup(self)
 
             rfsuite.app.audio.playMixerOverideEnable = true
 
-            rfsuite.app.ui.progressDisplay("@i18n(app.modules.trim.mixer_override)@", "@i18n(app.modules.trim.mixer_override_enabling)@")
+            rfsuite.app.ui.progressDisplay("Mixer Override", "Enabling mixer override...")
 
             rfsuite.app.Page.mixerOn(self)
             inOverRide = true
@@ -195,7 +196,7 @@ local function wakeup(self)
 
             rfsuite.app.audio.playMixerOverideDisable = true
 
-            rfsuite.app.ui.progressDisplay("@i18n(app.modules.trim.mixer_override)@", "@i18n(app.modules.trim.mixer_override_disabling)@")
+            rfsuite.app.ui.progressDisplay("Mixer Override", "Disabling mixer override...")
 
             rfsuite.app.Page.mixerOff(self)
             inOverRide = false
@@ -208,22 +209,22 @@ local function onToolMenu(self)
 
     local buttons = {
         {
-            label = "@i18n(app.btn_ok)@",
+            label = "          OK           ",
             action = function()
 
                 triggerOverRide = true
                 return true
             end
-        }, {label = "@i18n(app.btn_cancel)@", action = function() return true end}
+        }, {label = "CANCEL", action = function() return true end}
     }
     local message
     local title
     if inOverRide == false then
-        title = "@i18n(app.modules.trim.enable_mixer_override)@"
-        message = "@i18n(app.modules.trim.enable_mixer_message)@"
+        title = "Enable mixer override"
+        message = "Set all servos to their configured center position. \n\nThis will result in all values on this page being saved when adjusting the servo trim."
     else
-        title = "@i18n(app.modules.trim.disable_mixer_override)@"
-        message = "@i18n(app.modules.trim.disable_mixer_message)@"
+        title = "Disable mixer override"
+        message = "Return control of the servos to the flight controller."
     end
 
     form.openDialog({width = nil, title = title, message = message, buttons = buttons, wakeup = function() end, paint = function() end, options = TEXT_LEFT})
@@ -238,7 +239,7 @@ local function onNavMenu(self)
         inOverRide = false
         inFocus = false
 
-        rfsuite.app.ui.progressDisplay("@i18n(app.modules.trim.mixer_override)@", "@i18n(app.modules.trim.mixer_override_disabling)@")
+        rfsuite.app.ui.progressDisplay("Mixer Override", "Disabling mixer override...")
 
         mixerOff(self)
         rfsuite.app.triggers.closeProgressLoader = true

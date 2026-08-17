@@ -9,18 +9,18 @@ local apidata = {
         {id = 1, name = "RC_TUNING", enableDeltaCache = false, rebuildOnWrite = true},
     },
     formdata = {
-        name = "@i18n(app.modules.rates.betaflight)@",
+        name = "BETAFLIGHT",
         labels = {},
         rows = {
-            "@i18n(app.modules.rates.roll)@",
-            "@i18n(app.modules.rates.pitch)@",
-            "@i18n(app.modules.rates.yaw)@",
-            "@i18n(app.modules.rates.collective)@"
+            "Roll",
+            "Pitch",
+            "Yaw",
+            "Col"
         },
         cols = {
-            "@i18n(app.modules.rates.rc_rate)@",
-            "@i18n(app.modules.rates.superrate)@",
-            "@i18n(app.modules.rates.expo)@"
+            "RC Rate",
+            "SuperRate",
+            "Expo"
         },
         fields = {
             -- RC Rate column

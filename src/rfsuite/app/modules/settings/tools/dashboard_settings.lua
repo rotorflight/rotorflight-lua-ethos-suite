@@ -35,11 +35,11 @@ local function openPage(opts)
 
     for i in pairs(rfsuite.app.gfx_buttons) do if i ~= "settings_dashboard_themes" then rfsuite.app.gfx_buttons[i] = nil end end
 
-    rfsuite.app.lastIdx = pageIdx
+    rfsuite.app.lastIdx = pidx
     rfsuite.app.lastTitle = title
     rfsuite.app.lastScript = script
 
-    rfsuite.app.ui.fieldHeader("@i18n(app.modules.settings.name)@" .. " / " .. "@i18n(app.modules.settings.dashboard)@" .. " / " .. "@i18n(app.modules.settings.dashboard_settings)@")
+    rfsuite.app.ui.fieldHeader("Settings" .. " / " .. "Dashboard" .. " / " .. "Settings")
 
     local buttonW, buttonH, padding, numPerRow
     if rfsuite.preferences.general.iconsize == 0 then
@@ -126,7 +126,7 @@ local function openPage(opts)
 
     if n == 0 then
         local w, h = lcd.getWindowSize()
-        local msg = "@i18n(app.modules.settings.no_themes_available_to_configure)@"
+        local msg = "No configurable themes installed on this device"
         local tw, th = lcd.getTextSize(msg)
         local x = w / 2 - tw / 2
         local y = h / 2 - th / 2
@@ -164,4 +164,4 @@ local function wakeup()
     end
 end
 
-return {pages = pages, openPage = openPage, API = {}, navButtons = {menu = true, save = false, reload = false, tool = false, help = false}, event = event, onNavMenu = onNavMenu, wakeup = wakeup}
+return {openPage = openPage, API = {}, navButtons = {menu = true, save = false, reload = false, tool = false, help = false}, event = event, onNavMenu = onNavMenu, wakeup = wakeup}

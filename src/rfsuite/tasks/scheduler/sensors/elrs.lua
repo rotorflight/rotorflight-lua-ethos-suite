@@ -90,12 +90,6 @@ local sidLookup = loadSidLookup()
 elrs._relevantSig = nil
 elrs._relevantSidSet = nil
 
-local function telemetrySlotsSignature(slots)
-    local parts = {}
-    for i, v in ipairs(slots) do parts[#parts + 1] = tostring(v or 0) end
-    return table.concat(parts, ",")
-end
-
 local function resetSensors()
     sensors['uid'] = {}
     sensors['lastvalue'] = {}
@@ -112,11 +106,14 @@ local function rebuildRelevantSidSet()
         return
     end
 
-    local sig = telemetrySlotsSignature(cfg)
-    if elrs._relevantSidSet ~= nil and elrs._relevantSig == sig then return end
+    -- rfsuite.session.telemetryConfig is only ever replaced with a fresh table
+    -- (never mutated in place, see sensors/lib/telemetryconfig.lua), so a cheap
+    -- reference check is equivalent to comparing a rebuilt signature string and
+    -- avoids allocating/concatenating on every popped frame and wakeup tick.
+    if elrs._relevantSidSet ~= nil and elrs._relevantSig == cfg then return end
 
     elrs._relevantSidSet = {}
-    elrs._relevantSig = sig
+    elrs._relevantSig = cfg
 
     for _, slotId in ipairs(cfg) do
         local apps = sidLookup[slotId]
@@ -570,7 +567,6 @@ function elrs.reset()
     resetSensors()
     elrs._relevantSidSet = nil
     elrs._relevantSig = nil
-    _lastSlotsSig = nil
     sensorsList = {}
     activeSensorsListSig = nil
     elrs.telemetryFrameId = 0

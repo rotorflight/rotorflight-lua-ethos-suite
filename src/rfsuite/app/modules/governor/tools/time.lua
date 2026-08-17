@@ -12,11 +12,11 @@ local apidata = {
     formdata = {
         labels = {},
         fields = {
-        --{t = "@i18n(app.modules.governor.startup_time)@", mspapi = 1, apikey = "gov_startup_time"}, 
-        {t = "@i18n(app.modules.governor.spoolup_time)@", mspapi = 1, apikey = "gov_spoolup_time"}, 
-        {t = "@i18n(app.modules.governor.spooldown_time)@", mspapi = 1, apikey = "gov_spooldown_time"}, 
-        {t = "@i18n(app.modules.governor.tracking_time)@", mspapi = 1, apikey = "gov_tracking_time"}, 
-        {t = "@i18n(app.modules.governor.recovery_time)@", mspapi = 1, apikey = "gov_recovery_time"}}
+        --{t = "Startup time", mspapi = 1, apikey = "gov_startup_time"}, 
+        {t = "Spoolup time", mspapi = 1, apikey = "gov_spoolup_time"}, 
+        {t = "Spooldown time", mspapi = 1, apikey = "gov_spooldown_time"}, 
+        {t = "Tracking time", mspapi = 1, apikey = "gov_tracking_time"}, 
+        {t = "Recovery time", mspapi = 1, apikey = "gov_recovery_time"}}
     }
 }
 

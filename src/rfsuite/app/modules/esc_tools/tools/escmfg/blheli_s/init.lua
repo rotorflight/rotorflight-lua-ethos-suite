@@ -6,7 +6,7 @@
 local rfsuite = require("rfsuite")
 
 local MSP_API = "ESC_PARAMETERS_BLHELI_S"
-local toolName = "@i18n(app.modules.esc_tools.mfg.blheli_s.name)@"
+local toolName = "BLHeli_S"
 local ESC1_TARGET = 0
 local ESC2_TARGET = 1
 local BLHELI_S_MAIN_REVISION = 16
@@ -90,7 +90,7 @@ return {
     isolatedSaveProgressProcessingCap = 90,
     isolatedSaveProgressIdleStep = 1,
     isolatedSaveProgressIdleCap = 97,
-    isolatedSaveWaitEscMessage = "@i18n(app.modules.esc_tools.mfg.blheli_s.waitingforesc)@",
+    isolatedSaveWaitEscMessage = "Waiting for ESC...",
     isolatedSaveGcCollect = true,
     isolatedSaveGcPasses = 1,
     escDetailsPollInterval = 0.6,

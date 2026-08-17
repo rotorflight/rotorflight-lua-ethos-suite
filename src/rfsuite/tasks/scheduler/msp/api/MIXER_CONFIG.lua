@@ -14,8 +14,8 @@ local MSP_API_CMD_WRITE = 43
 --   field, type, min, max, default, unit,
 --   decimals, scale, step, mult, table, tableIdxInc, mandatory, byteorder, tableEthos
 local FIELD_SPEC = {
-    {"main_rotor_dir", "U8", nil, nil, nil, nil, nil, nil, nil, nil, {"@i18n(api.MIXER_CONFIG.tbl_cw)@", "@i18n(api.MIXER_CONFIG.tbl_ccw)@"}, -1},
-    {"tail_rotor_mode", "U8", nil, nil, nil, nil, nil, nil, nil, nil, {"@i18n(api.MIXER_CONFIG.tbl_tail_variable_pitch)@", "@i18n(api.MIXER_CONFIG.tbl_tail_motororized_tail)@", "@i18n(api.MIXER_CONFIG.tbl_tail_bidirectional)@"}, -1},
+    {"main_rotor_dir", "U8", nil, nil, nil, nil, nil, nil, nil, nil, {"CW", "CCW"}, -1},
+    {"tail_rotor_mode", "U8", nil, nil, nil, nil, nil, nil, nil, nil, {"Variable Pitch", "Motorized Tail", "Bidirectional"}, -1},
     {"tail_motor_idle", "U8", 0, 250, 0, "%", 1, 10},
     {"tail_center_trim", "S16", -500, 500, 0, "%", 1, 10, nil, 0.239923224568138},
     {"swash_type", "U8", nil, nil, nil, nil, nil, nil, nil, nil, {"None", "Direct", "CPPM 120", "CPPM 135", "CPPM 140", "FPM 90 L", "FPM 90 V"}, -1},

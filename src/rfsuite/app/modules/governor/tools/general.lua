@@ -25,13 +25,13 @@ local apidata = {
     formdata = {
         labels = {},
         fields = {
-            [FIELDS["GOVERNOR_MODE"]] = {t = "@i18n(app.modules.governor.mode)@", mspapi = 1, apikey = "gov_mode", xpostEdit = function(self) self.setGovernorMode(self) end, type = 1}, 
-            [FIELDS["GOVERNOR_THROTTLE_TYPE"]] = {t = "@i18n(app.modules.governor.throttle_type)@", mspapi = 1, apikey = "gov_throttle_type", type = 1}, 
-            [FIELDS["GOVERNOR_IDLE_THROTTLE"]] = {t = "@i18n(app.modules.profile_governor.idle_throttle)@", mspapi = 1, apikey = "governor_idle_throttle", xenablefunction = function() return (rfsuite.session.governorMode >= 1) end,}, 
-            [FIELDS["GOVERNOR_AUTO_THROTTLE"]] = {t = "@i18n(app.modules.profile_governor.auto_throttle)@", mspapi = 1, apikey = "governor_auto_throttle", xenablefunction = function() return (rfsuite.session.governorMode >= 1) end},
-            [FIELDS["GOV_HANDOVER_THROTTLE"]] = {t = "@i18n(app.modules.governor.handover_throttle)@", mspapi = 1, apikey = "gov_handover_throttle"}, 
-            [FIELDS["GOV_THROTTLE_HOLD_TIMEOUT"]] = {t = "@i18n(app.modules.governor.throttle_hold_timeout)@", mspapi = 1, apikey = "gov_throttle_hold_timeout"},
-            [FIELDS["GOV_AUTO_TIMEOUT"]] = {t = "@i18n(app.modules.governor.auto_timeout)@", mspapi = 1, apikey = "gov_autorotation_timeout"},
+            [FIELDS["GOVERNOR_MODE"]] = {t = "Mode", mspapi = 1, apikey = "gov_mode", xpostEdit = function(self) self.setGovernorMode(self) end, type = 1}, 
+            [FIELDS["GOVERNOR_THROTTLE_TYPE"]] = {t = "Throttle type", mspapi = 1, apikey = "gov_throttle_type", type = 1}, 
+            [FIELDS["GOVERNOR_IDLE_THROTTLE"]] = {t = "Idle throttle", mspapi = 1, apikey = "governor_idle_throttle", xenablefunction = function() return (rfsuite.session.governorMode >= 1) end,}, 
+            [FIELDS["GOVERNOR_AUTO_THROTTLE"]] = {t = "Auto throttle", mspapi = 1, apikey = "governor_auto_throttle", xenablefunction = function() return (rfsuite.session.governorMode >= 1) end},
+            [FIELDS["GOV_HANDOVER_THROTTLE"]] = {t = "Handover throttle%", mspapi = 1, apikey = "gov_handover_throttle"}, 
+            [FIELDS["GOV_THROTTLE_HOLD_TIMEOUT"]] = {t = "Throttle hold timeout", mspapi = 1, apikey = "gov_throttle_hold_timeout"},
+            [FIELDS["GOV_AUTO_TIMEOUT"]] = {t = "Autorotation Timeout", mspapi = 1, apikey = "gov_autorotation_timeout"},
         }
     }
 }
@@ -120,4 +120,4 @@ local function onNavMenu()
     return navHandlers.onNavMenu()
 end
 
-return {apidata = apidata, reboot = true, eepromWrite = true, setGovernorMode = setGovernorMode, postLoad = postLoad, postSave = postSave, onNavMenu = onNavMenu, event = event, wakeup = wakeup}
+return {apidata = apidata, reboot = true, eepromWrite = true, postLoad = postLoad, postSave = postSave, onNavMenu = onNavMenu, event = event, wakeup = wakeup}

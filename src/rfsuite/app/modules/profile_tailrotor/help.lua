@@ -11,18 +11,18 @@ local data = {}
 data['help'] = {}
 
 local defaultHelp = {
-    "@i18n(app.modules.profile_tailrotor.help_p1)@",
-    "@i18n(app.modules.profile_tailrotor.help_p2)@",
-    "@i18n(app.modules.profile_tailrotor.help_p3)@",
-    "@i18n(app.modules.profile_tailrotor.help_p4)@"
+    "Yaw Stop Gain: Higher stop gain will make the tail stop more aggressively but may cause oscillations if too high. Adjust CW or CCW to make the yaw stops even.",
+    "Precomp Cutoff: Frequency limit for all yaw precompensation actions.",
+    "Cyclic FF Gain: Tail precompensation for cyclic inputs.",
+    "Collective FF Gain: Tail precompensation for collective inputs."
 }
 
 if rfsuite.utils.apiVersionCompare("<=", {12, 0, 7}) then
-    defaultHelp[#defaultHelp + 1] = "@i18n(app.modules.profile_tailrotor.help_p5)@"
+    defaultHelp[#defaultHelp + 1] = "Collective Impulse FF: Impulse tail precompensation for collective inputs. If you need extra tail precompensation at the beginning of collective input."
 end
 
 if rfsuite.utils.apiVersionCompare(">=", {12, 0, 9}) then
-    defaultHelp[#defaultHelp + 1] = "@i18n(app.modules.profile_governor.help_p6)@"
+    defaultHelp[#defaultHelp + 1] = "Tail Torque Assist: For motorized tails. Gain and limit of headspeed increase when using main rotor torque for yaw assist."
 end
 
 data['help']['default'] = defaultHelp

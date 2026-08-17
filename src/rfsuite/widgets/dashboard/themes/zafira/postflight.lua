@@ -287,7 +287,7 @@ local function header_boxes()
         txbatt_type = rfsuite.preferences.general.txbatt_type or 0
     end
     if header_boxes_cache == nil or last_txbatt_type ~= txbatt_type then
-        local boxes = utils.standardHeaderBoxes(i18n, colorMode, headeropts, txbatt_type)
+        local boxes = utils.standardHeaderBoxes(colorMode, headeropts, txbatt_type)
         for _, b in ipairs(boxes) do
             b.bgcolor = C.bg
             if b.type == "image" then

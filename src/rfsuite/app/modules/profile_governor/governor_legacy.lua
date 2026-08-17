@@ -30,24 +30,24 @@ local apidata = {
     },    
     formdata = {
         labels = {
-            {t = "@i18n(app.modules.profile_governor.gains)@", label = 1, inline_size = 8.15},
-            {t = "@i18n(app.modules.profile_governor.precomp)@", label = 2, inline_size = 8.15},
-            {t = "@i18n(app.modules.profile_governor.tail_torque_assist)@", label = 3}
+            {t = "Gains", label = 1, inline_size = 8.15},
+            {t = "Precomp", label = 2, inline_size = 8.15},
+            {t = "Tail Torque Assist", label = 3}
         },
         fields = {
-            [FIELDS.FULL_HEADSPEED] = {t = "@i18n(app.modules.profile_governor.full_headspeed)@", mspapi = 1, apikey = "governor_headspeed"},
-            [FIELDS.MIN_THROTTLE] = {t = "@i18n(app.modules.profile_governor.min_throttle)@", mspapi = 1, apikey = "governor_min_throttle"},
-            [FIELDS.MAX_THROTTLE] = {t = "@i18n(app.modules.profile_governor.max_throttle)@", mspapi = 1, apikey = "governor_max_throttle"},
-            [FIELDS.GAIN] = {t = "@i18n(app.modules.profile_governor.gain)@", mspapi = 1, apikey = "governor_gain"},
-            [FIELDS.P_GAIN] = {t = "@i18n(app.modules.profile_governor.p)@", inline = 4, label = 1, mspapi = 1, apikey = "governor_p_gain"},
-            [FIELDS.I_GAIN] = {t = "@i18n(app.modules.profile_governor.i)@", inline = 3, label = 1, mspapi = 1, apikey = "governor_i_gain"},
-            [FIELDS.D_GAIN] = {t = "@i18n(app.modules.profile_governor.d)@", inline = 2, label = 1, mspapi = 1, apikey = "governor_d_gain"},
-            [FIELDS.F_GAIN] = {t = "@i18n(app.modules.profile_governor.f)@", inline = 1, label = 1, mspapi = 1, apikey = "governor_f_gain"},
-            [FIELDS.YAW_WEIGHT] = {t = "@i18n(app.modules.profile_governor.yaw)@", inline = 3, label = 2, mspapi = 1, apikey = "governor_yaw_ff_weight"},
-            [FIELDS.CYCLIC_WEIGHT] = {t = "@i18n(app.modules.profile_governor.cyc)@", inline = 2, label = 2, mspapi = 1, apikey = "governor_cyclic_ff_weight"},
-            [FIELDS.COLLECTIVE_WEIGHT] = {t = "@i18n(app.modules.profile_governor.col)@", inline = 1, label = 2, mspapi = 1, apikey = "governor_collective_ff_weight"},
-            [FIELDS.TTA_GAIN] = {t = "@i18n(app.modules.profile_governor.tta_gain)@", inline = 2, label = 3, mspapi = 1, apikey = "governor_tta_gain"},
-            [FIELDS.TTA_LIMIT] = {t = "@i18n(app.modules.profile_governor.tta_limit)@", inline = 1, label = 3, mspapi = 1, apikey = "governor_tta_limit"}
+            [FIELDS.FULL_HEADSPEED] = {t = "Full headspeed", mspapi = 1, apikey = "governor_headspeed"},
+            [FIELDS.MIN_THROTTLE] = {t = "Min throttle", mspapi = 1, apikey = "governor_min_throttle"},
+            [FIELDS.MAX_THROTTLE] = {t = "Max throttle", mspapi = 1, apikey = "governor_max_throttle"},
+            [FIELDS.GAIN] = {t = "PID master gain", mspapi = 1, apikey = "governor_gain"},
+            [FIELDS.P_GAIN] = {t = "P", inline = 4, label = 1, mspapi = 1, apikey = "governor_p_gain"},
+            [FIELDS.I_GAIN] = {t = "I", inline = 3, label = 1, mspapi = 1, apikey = "governor_i_gain"},
+            [FIELDS.D_GAIN] = {t = "D", inline = 2, label = 1, mspapi = 1, apikey = "governor_d_gain"},
+            [FIELDS.F_GAIN] = {t = "FF", inline = 1, label = 1, mspapi = 1, apikey = "governor_f_gain"},
+            [FIELDS.YAW_WEIGHT] = {t = "Yaw", inline = 3, label = 2, mspapi = 1, apikey = "governor_yaw_ff_weight"},
+            [FIELDS.CYCLIC_WEIGHT] = {t = "Cyc", inline = 2, label = 2, mspapi = 1, apikey = "governor_cyclic_ff_weight"},
+            [FIELDS.COLLECTIVE_WEIGHT] = {t = "Col", inline = 1, label = 2, mspapi = 1, apikey = "governor_collective_ff_weight"},
+            [FIELDS.TTA_GAIN] = {t = "Gain", inline = 2, label = 3, mspapi = 1, apikey = "governor_tta_gain"},
+            [FIELDS.TTA_LIMIT] = {t = "Limit", inline = 1, label = 3, mspapi = 1, apikey = "governor_tta_limit"}
         }
     }
 }
@@ -110,4 +110,4 @@ local function wakeup()
 
 end
 
-return {apidata = apidata, title = "@i18n(app.modules.profile_governor.name)@", reboot = false, refreshOnProfileChange = true, eepromWrite = true, postLoad = postLoad, wakeup = wakeup, API = {}}
+return {apidata = apidata, title = "Governor", reboot = false, refreshOnProfileChange = true, eepromWrite = true, postLoad = postLoad, wakeup = wakeup, API = {}}

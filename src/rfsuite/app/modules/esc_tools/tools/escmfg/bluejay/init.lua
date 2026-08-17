@@ -6,7 +6,7 @@
 local rfsuite = require("rfsuite")
 
 local MSP_API = "ESC_PARAMETERS_BLUEJAY"
-local toolName = "@i18n(app.modules.esc_tools.mfg.bluejay.name)@"
+local toolName = "Bluejay"
 local ESC1_TARGET = 0
 local ESC2_TARGET = 1
 local BLUEJAY_MAIN_REVISION = 0
@@ -113,7 +113,7 @@ return {
     isolatedSaveProgressProcessingCap = 90,
     isolatedSaveProgressIdleStep = 1,
     isolatedSaveProgressIdleCap = 97,
-    isolatedSaveWaitEscMessage = "@i18n(app.modules.esc_tools.mfg.bluejay.waitingforesc)@",
+    isolatedSaveWaitEscMessage = "Waiting for ESC...",
     isolatedSaveGcCollect = true,
     isolatedSaveGcPasses = 1,
     escDetailsPollInterval = 0.6,

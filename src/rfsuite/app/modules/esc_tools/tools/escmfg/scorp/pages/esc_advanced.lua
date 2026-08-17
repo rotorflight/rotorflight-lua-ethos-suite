@@ -15,12 +15,12 @@ local apidata = {
     formdata = {
         labels = {},
         fields = {
-            {t = "@i18n(app.modules.esc_tools.mfg.scorp.soft_start_time)@",     mspapi = 1, apikey = "soft_start_time"},
-            {t = "@i18n(app.modules.esc_tools.mfg.scorp.runup_time)@",          mspapi = 1, apikey = "runup_time"},
-            {t = "@i18n(app.modules.esc_tools.mfg.scorp.bailout)@",             mspapi = 1, apikey = "bailout"},
-            {t = "@i18n(app.modules.esc_tools.mfg.scorp.gov_proportional)@",    mspapi = 1, apikey = "gov_proportional"},
-            {t = "@i18n(app.modules.esc_tools.mfg.scorp.gov_integral)@",        mspapi = 1, apikey = "gov_integral"},
-            {t = "@i18n(app.modules.esc_tools.mfg.scorp.motor_startup_sound)@", mspapi = 1, apikey = "motor_startup_sound", type = 1}
+            {t = "Soft Start Time",     mspapi = 1, apikey = "soft_start_time"},
+            {t = "Runup Time",          mspapi = 1, apikey = "runup_time"},
+            {t = "Bailout",             mspapi = 1, apikey = "bailout"},
+            {t = "Gov Proportional",    mspapi = 1, apikey = "gov_proportional"},
+            {t = "Gov Integral",        mspapi = 1, apikey = "gov_integral"},
+            {t = "Motor Startup Sound", mspapi = 1, apikey = "motor_startup_sound", type = 1}
         }
     }
 }
@@ -34,7 +34,6 @@ return {
     apidata = apidata,
     eepromWrite = false,
     reboot = false,
-    escinfo = escinfo,
     svFlags = 0,
     preSavePayload = function(payload)
         payload[2] = 0
@@ -44,7 +43,7 @@ return {
     navButtons = navHandlers.navButtons,
     onNavMenu = navHandlers.onNavMenu,
     event = navHandlers.event,
-    pageTitle = "@i18n(app.modules.esc_tools.name)@" .. " / " .. "@i18n(app.modules.esc_tools.mfg.scorp.name)@" .. " / " .. "@i18n(app.modules.esc_tools.mfg.scorp.advanced)@",
+    pageTitle = "Esc Programing" .. " / " .. "Scorpion" .. " / " .. "Advanced",
     headerLine = rfsuite.escHeaderLineText,
-    extraMsgOnSave = "@i18n(app.modules.esc_tools.mfg.scorp.extra_msg_save)@"
+    extraMsgOnSave = "Please reboot the ESC to apply the changes"
 }

@@ -72,10 +72,14 @@ function render.wakeup(box)
 
     local cfg = ensureCfg(box)
 
+    -- Only rebuild the formatted string when the wall-clock second actually
+    -- changes; wakeups can outpace the 1 Hz scheduler hint, and os.date()
+    -- allocates a new string every call.
     local now = os.time()
-    local displayValue = os.date("%H:%M:%S", now)
-
-    box._currentDisplayValue = displayValue
+    if box._lastClockTime ~= now then
+        box._lastClockTime = now
+        box._currentDisplayValue = os.date("%H:%M:%S", now)
+    end
 end
 
 function render.paint(x, y, w, h, box)

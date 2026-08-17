@@ -387,7 +387,7 @@ local function drawOverlayBackground(cx, cy, innerR, bg)
 end
 
 local function renderOverlayText(dashboard, cx, cy, innerR, fg)
-    local message = dashboard._overlay_text or "@i18n(widgets.dashboard.loading)@"
+    local message = dashboard._overlay_text or "ROTORFLIGHT"
     local fonts = dashboard.utils.getFontListsForResolution().value_default
     local linesOut = dashboard and dashboard._overlayWrapLines
     local lines, chosenFont, lineH = getWrappedTextLines(message, fonts, innerR * 2 * 0.9, innerR * 2 * 0.8, linesOut)
@@ -708,9 +708,9 @@ function loaders.staticLoader(dashboard, x, y, w, h, message, opts)
         -- (4-state dot animation, but still "static" enough.)
         local msg = message
         if (not msg or msg == "") and dashboard then
-            msg = dashboard._overlay_text or dashboard.overlayMessage or "@i18n(app.msg_loading)@"
+            msg = dashboard._overlay_text or dashboard.overlayMessage or "Loading..."
         end
-        msg = tostring(msg or "@i18n(app.msg_loading)@")
+        msg = tostring(msg or "Loading...")
 
         if opts.animateDots ~= false then
             local phase = floor((clock() * (opts.dotRate or 1.4)) % 4)

@@ -8,8 +8,6 @@ package.loaded.rfsuite = rfsuite
 
 local _ENV = setmetatable({rfsuite = rfsuite}, {__index = _G, __newindex = function(_, k) print("attempt to create global '" .. tostring(k) .. "'", 2) end})
 
-if not FONT_STD then FONT_STD = FONT_STD end
-
 -- LuaFormatter off
 local config = {
     toolName = "Rotorflight",
@@ -459,7 +457,7 @@ local function init()
         return
     end
 
-    local isCompiledCheck = "@i18n(iscompiledcheck)@"
+    local isCompiledCheck = "true"
     if isCompiledCheck ~= "true" and isCompiledCheck ~= "eurt" then
         system.registerSystemTool(unsupported_i18n())
     else

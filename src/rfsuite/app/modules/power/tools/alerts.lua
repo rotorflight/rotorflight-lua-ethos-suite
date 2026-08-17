@@ -19,10 +19,10 @@ local apidata = {
     formdata = {
         labels = {},
         fields = {
-            {t = "@i18n(app.modules.power.timer)@",                      mspapi = 1, apikey = "flighttime"},
-            {t = "@i18n(app.modules.power.alert_type)@",                 mspapi = 1, apikey = "alert_type", type = 1},
-            {t = "@i18n(app.modules.power.bec_voltage_alert)@",          mspapi = 1, apikey = "becalertvalue"},
-            {t = "@i18n(app.modules.power.rx_voltage_alert)@",           mspapi = 1, apikey = "rxalertvalue"}
+            {t = "Flight Time Alarm",                      mspapi = 1, apikey = "flighttime"},
+            {t = "Rx Voltage Alert",                 mspapi = 1, apikey = "alert_type", type = 1},
+            {t = "BEC Alert Value",          mspapi = 1, apikey = "becalertvalue"},
+            {t = "RxBatt Alert Value",           mspapi = 1, apikey = "rxalertvalue"}
         }
     }
 }

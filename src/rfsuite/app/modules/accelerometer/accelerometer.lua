@@ -22,8 +22,8 @@ local apidata = {
     formdata = {
         labels = {},
         fields = {
-            { t = "@i18n(app.modules.accelerometer.roll)@",  mspapi = 1, apikey = "roll" },
-            { t = "@i18n(app.modules.accelerometer.pitch)@", mspapi = 1, apikey = "pitch" }
+            { t = "Roll",  mspapi = 1, apikey = "roll" },
+            { t = "Pitch", mspapi = 1, apikey = "pitch" }
         }
     }
 }
@@ -32,7 +32,7 @@ local function onToolMenu(self)
 
     local buttons = {
         {
-            label = "@i18n(app.btn_ok)@",
+            label = "          OK           ",
             action = function()
 
                 calibrate = true
@@ -41,10 +41,10 @@ local function onToolMenu(self)
                 eepromQueued = false
                 return true
             end
-        }, {label = "@i18n(app.btn_cancel)@", action = function() return true end}
+        }, {label = "CANCEL", action = function() return true end}
     }
 
-    form.openDialog({width = nil, title = "@i18n(app.modules.accelerometer.name)@", message = "@i18n(app.modules.accelerometer.msg_calibrate)@", buttons = buttons, wakeup = function() end, paint = function() end, options = TEXT_LEFT})
+    form.openDialog({width = nil, title = "Accelerometer", message = "Calibrate the accelerometer?", buttons = buttons, wakeup = function() end, paint = function() end, options = TEXT_LEFT})
 
 end
 

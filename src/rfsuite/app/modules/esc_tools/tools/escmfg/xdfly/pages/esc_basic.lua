@@ -16,12 +16,12 @@ local apidata = {
     formdata = {
         labels = {},
         fields = {
-            {t = "@i18n(app.modules.esc_tools.mfg.xdfly.lv_bec_voltage)@", activeFieldPos =  5, type = 1, mspapi = 1, apikey = "lv_bec_voltage"},
-            {t = "@i18n(app.modules.esc_tools.mfg.xdfly.hv_bec_voltage)@", activeFieldPos = 11, type = 1, mspapi = 1, apikey = "hv_bec_voltage"},
-            {t = "@i18n(app.modules.esc_tools.mfg.xdfly.motor_direction)@", activeFieldPos =  6, type = 1, mspapi = 1, apikey = "motor_direction"},
-            {t = "@i18n(app.modules.esc_tools.mfg.xdfly.startup_power)@", activeFieldPos = 12, type = 1, mspapi = 1, apikey = "startup_power"},
-            {t = "@i18n(app.modules.esc_tools.mfg.xdfly.led_color)@", activeFieldPos = 18, type = 1, mspapi = 1, apikey = "led_color"},
-            {t = "@i18n(app.modules.esc_tools.mfg.xdfly.smart_fan)@", activeFieldPos = 19, type = 1, mspapi = 1, apikey = "smart_fan"}
+            {t = "LV BEC Voltage", activeFieldPos =  5, type = 1, mspapi = 1, apikey = "lv_bec_voltage"},
+            {t = "HV BEC Voltage", activeFieldPos = 11, type = 1, mspapi = 1, apikey = "hv_bec_voltage"},
+            {t = "Motor Direction", activeFieldPos =  6, type = 1, mspapi = 1, apikey = "motor_direction"},
+            {t = "Startup Power", activeFieldPos = 12, type = 1, mspapi = 1, apikey = "startup_power"},
+            {t = "LED Color", activeFieldPos = 18, type = 1, mspapi = 1, apikey = "led_color"},
+            {t = "Smart Fan", activeFieldPos = 19, type = 1, mspapi = 1, apikey = "smart_fan"}
         }
     }
 }
@@ -42,5 +42,5 @@ local navHandlers = escToolsPage.createSubmenuHandlers(folder)
 local function wakeup(self) if activateWakeup == true and rfsuite.tasks.msp.mspQueue:isProcessed() then activateWakeup = false end end
 
 
-return {apidata = apidata, eepromWrite = false, reboot = false, escinfo = escinfo, svFlags = 0, postLoad = postLoad, navButtons = navHandlers.navButtons, onNavMenu = navHandlers.onNavMenu, event = navHandlers.event, pageTitle = "@i18n(app.modules.esc_tools.name)@" .. " / " .. "@i18n(app.modules.esc_tools.mfg.xdfly.name)@" .. " / " .. "@i18n(app.modules.esc_tools.mfg.xdfly.basic)@", headerLine = rfsuite.escHeaderLineText, wakeup = wakeup}
+return {apidata = apidata, eepromWrite = false, reboot = false, svFlags = 0, postLoad = postLoad, navButtons = navHandlers.navButtons, onNavMenu = navHandlers.onNavMenu, event = navHandlers.event, pageTitle = "Esc Programing" .. " / " .. "XDFLY" .. " / " .. "Basic", headerLine = rfsuite.escHeaderLineText, wakeup = wakeup}
 

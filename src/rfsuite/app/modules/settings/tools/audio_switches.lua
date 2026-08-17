@@ -30,7 +30,7 @@ local function openPage(opts)
     rfsuite.app.lastTitle = title
     rfsuite.app.lastScript = script
 
-    rfsuite.app.ui.fieldHeader("@i18n(app.modules.settings.name)@" .. " / " .. "@i18n(app.modules.settings.audio)@" .. " / " .. "@i18n(app.modules.settings.txt_audio_switches)@")
+    rfsuite.app.ui.fieldHeader("Settings" .. " / " .. "Audio" .. " / " .. "Switches")
     rfsuite.app.formLineCnt = 0
 
     local formFieldCount = 0
@@ -82,7 +82,7 @@ end
 local function onSaveMenu()
 
     local function doSave()
-        local msg = "@i18n(app.modules.profile_select.save_prompt_local)@"
+        local msg = "Save current page to radio?"
         rfsuite.app.ui.progressDisplaySave(msg:gsub("%?$", "."))
         for key, value in pairs(config) do rfsuite.preferences.switches[key] = value end
         rfsuite.ini.save_ini_file("SCRIPTS:/" .. rfsuite.config.preferences .. "/preferences.ini", rfsuite.preferences)
@@ -97,15 +97,15 @@ local function onSaveMenu()
 
     local buttons = {
         {
-            label = "@i18n(app.btn_ok_long)@",
+            label = "                OK                ",
             action = function()
                 doSave()
                 return true
             end
-        }, {label = "@i18n(app.modules.profile_select.cancel)@", action = function() return true end}
+        }, {label = "CANCEL", action = function() return true end}
     }
 
-    form.openDialog({width = nil, title = "@i18n(app.modules.profile_select.save_settings)@", message = "@i18n(app.modules.profile_select.save_prompt_local)@", buttons = buttons, wakeup = function() end, paint = function() end, options = TEXT_LEFT})
+    form.openDialog({width = nil, title = "Save settings", message = "Save current page to radio?", buttons = buttons, wakeup = function() end, paint = function() end, options = TEXT_LEFT})
 end
 
 local function event(widget, category, value, x, y)

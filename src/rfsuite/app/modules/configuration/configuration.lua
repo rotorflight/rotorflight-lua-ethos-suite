@@ -16,7 +16,7 @@ local LOAD_STALL_TIMEOUT_SECONDS = 5.5
 local LOAD_MAX_RETRIES = 1
 
 local state = {
-    title = "@i18n(app.modules.configuration.name)@",
+    title = "Configuration",
     loading = false,
     loaded = false,
     saving = false,
@@ -106,16 +106,16 @@ local function render()
     app.ui.fieldHeader(state.title)
 
     if state.loading then
-        form.addLine("@i18n(app.modules.configuration.loading)@")
+        form.addLine("Loading configuration...")
         return
     end
 
     if state.loadError then
-        form.addLine("@i18n(app.modules.configuration.load_error_prefix)@ " .. tostring(state.loadError))
+        form.addLine("Load error: " .. tostring(state.loadError))
     end
 
     if state.saveError then
-        form.addLine("@i18n(app.modules.configuration.save_error_prefix)@ " .. tostring(state.saveError))
+        form.addLine("Save error: " .. tostring(state.saveError))
     end
 
     local lineY = app.radio.linePaddingTop
@@ -127,7 +127,7 @@ local function render()
     local textX = width - rightPad - textW
     local boolX = width - rightPad - boolW
 
-    local lineName = form.addLine("@i18n(app.modules.configuration.craft_name)@")
+    local lineName = form.addLine("Craft name")
     form.addTextField(
         lineName,
         {x = textX, y = lineY, w = textW, h = fieldH},
@@ -141,7 +141,7 @@ local function render()
         end
     )
 
-    local linePid = form.addLine("@i18n(app.modules.configuration.pid_loop_speed)@")
+    local linePid = form.addLine("PID loop speed")
     form.addChoiceField(
         linePid,
         {x = textX, y = lineY, w = textW, h = fieldH},
@@ -156,7 +156,7 @@ local function render()
         end
     )
 
-    local lineGps = form.addLine("@i18n(app.modules.configuration.feature_gps)@")
+    local lineGps = form.addLine("GPS")
     form.addBooleanField(
         lineGps,
         {x = boolX, y = lineY, w = boolW, h = fieldH},
@@ -168,7 +168,7 @@ local function render()
         end
     )
 
-    local lineLed = form.addLine("@i18n(app.modules.configuration.feature_led_strip)@")
+    local lineLed = form.addLine("LED_STRIP")
     form.addBooleanField(
         lineLed,
         {x = boolX, y = lineY, w = boolW, h = fieldH},
@@ -180,7 +180,7 @@ local function render()
         end
     )
 
-    local lineCms = form.addLine("@i18n(app.modules.configuration.feature_cms)@")
+    local lineCms = form.addLine("CMS")
     form.addBooleanField(
         lineCms,
         {x = boolX, y = lineY, w = boolW, h = fieldH},
@@ -272,11 +272,11 @@ local function startLoad()
     state.pidBaseHz = 0
     state.needsRender = true
 
-    rfsuite.app.ui.progressDisplay("@i18n(app.modules.configuration.name)@", "@i18n(app.modules.configuration.progress_loading)@", 0.08)
+    rfsuite.app.ui.progressDisplay("Configuration", "Loading configuration", 0.08)
 
     startRead(rfsuite.tasks.msp.api.loadPage("NAME"), {
-        apiUnavailableError = "@i18n(app.modules.configuration.error_name_api_unavailable)@",
-        readError = "@i18n(app.modules.configuration.error_name_read_failed)@",
+        apiUnavailableError = "NAME API unavailable",
+        readError = "NAME read failed",
         onComplete = function(api)
             local parsed = api.data() and api.data().parsed or nil
             state.currentName = parsed and tostring(parsed.name or "") or ""
@@ -284,8 +284,8 @@ local function startLoad()
     }, generation)
 
     startRead(rfsuite.tasks.msp.api.loadPage("ADVANCED_CONFIG"), {
-        apiUnavailableError = "@i18n(app.modules.configuration.error_advanced_api_unavailable)@",
-        readError = "@i18n(app.modules.configuration.error_advanced_read_failed)@",
+        apiUnavailableError = "ADVANCED_CONFIG API unavailable",
+        readError = "ADVANCED_CONFIG read failed",
         onComplete = function(api)
             local parsed = api.data() and api.data().parsed or nil
             state.currentPidLoop = tonumber(parsed and parsed.pid_process_denom or 1) or 1
@@ -293,8 +293,8 @@ local function startLoad()
     }, generation)
 
     startRead(rfsuite.tasks.msp.api.loadPage("FEATURE_CONFIG"), {
-        apiUnavailableError = "@i18n(app.modules.configuration.error_feature_api_unavailable)@",
-        readError = "@i18n(app.modules.configuration.error_feature_read_failed)@",
+        apiUnavailableError = "FEATURE_CONFIG API unavailable",
+        readError = "FEATURE_CONFIG read failed",
         onComplete = function(api)
             local parsed = api.data() and api.data().parsed or nil
             state.currentFeatures = tonumber(parsed and parsed.enabledFeatures or 0) or 0
@@ -346,7 +346,7 @@ end
 
 local function saveFailed(msg)
     state.saving = false
-    state.saveError = msg or "@i18n(app.modules.configuration.error_save_failed)@"
+    state.saveError = msg or "Save failed"
     state.needsRender = true
     rfsuite.app.triggers.closeProgressLoader = true
 end
@@ -355,40 +355,40 @@ local function performSave()
     if not canSave() then return end
     state.saving = true
     state.saveError = nil
-    rfsuite.app.ui.progressDisplaySave("@i18n(app.modules.configuration.progress_saving)@")
+    rfsuite.app.ui.progressDisplaySave("Saving configuration")
 
     local nameApi = rfsuite.tasks.msp.api.loadPage("NAME")
     if not nameApi then
-        saveFailed("@i18n(app.modules.configuration.error_name_api_unavailable)@")
+        saveFailed("NAME API unavailable")
         return
     end
 
     local advApi = rfsuite.tasks.msp.api.loadPage("ADVANCED_CONFIG")
     if not advApi then
-        saveFailed("@i18n(app.modules.configuration.error_advanced_api_unavailable)@")
+        saveFailed("ADVANCED_CONFIG API unavailable")
         return
     end
 
     local featureApi = rfsuite.tasks.msp.api.loadPage("FEATURE_CONFIG")
     if not featureApi then
-        saveFailed("@i18n(app.modules.configuration.error_feature_api_unavailable)@")
+        saveFailed("FEATURE_CONFIG API unavailable")
         return
     end
 
     local eepromApi = rfsuite.tasks.msp.api.loadPage("EEPROM_WRITE")
     if not eepromApi then
-        saveFailed("@i18n(app.modules.configuration.error_eeprom_api_unavailable)@")
+        saveFailed("EEPROM_WRITE API unavailable")
         return
     end
 
     eepromApi.setCompleteHandler(function() saveDone() end)
-    eepromApi.setErrorHandler(function() saveFailed("@i18n(app.modules.configuration.error_eeprom_write_failed)@") end)
+    eepromApi.setErrorHandler(function() saveFailed("EEPROM write failed") end)
 
     featureApi.setCompleteHandler(function()
         eepromApi.write()
     end)
     featureApi.setErrorHandler(function()
-        saveFailed("@i18n(app.modules.configuration.error_feature_write_failed)@")
+        saveFailed("FEATURE_CONFIG write failed")
     end)
 
     advApi.setCompleteHandler(function()
@@ -396,7 +396,7 @@ local function performSave()
         featureApi.write()
     end)
     advApi.setErrorHandler(function()
-        saveFailed("@i18n(app.modules.configuration.error_advanced_write_failed)@")
+        saveFailed("ADVANCED_CONFIG write failed")
     end)
 
     nameApi.setCompleteHandler(function()
@@ -410,7 +410,7 @@ local function performSave()
         advApi.write()
     end)
     nameApi.setErrorHandler(function()
-        saveFailed("@i18n(app.modules.configuration.error_name_write_failed)@")
+        saveFailed("NAME write failed")
     end)
 
     nameApi.setValue("name", state.currentName or "")
@@ -426,14 +426,14 @@ local function onSaveMenu()
     end
 
     local buttons = {
-        {label = "@i18n(app.btn_ok_long)@", action = function() performSave(); return true end},
-        {label = "@i18n(app.btn_cancel)@", action = function() return true end}
+        {label = "                OK                ", action = function() performSave(); return true end},
+        {label = "CANCEL", action = function() return true end}
     }
 
     form.openDialog({
         width = nil,
-        title = "@i18n(app.msg_save_settings)@",
-        message = "@i18n(app.msg_save_current_page)@",
+        title = "Save settings",
+        message = "Save current page to flight controller?",
         buttons = buttons,
         wakeup = function() end,
         paint = function() end,
@@ -447,7 +447,7 @@ local function onReloadMenu()
 end
 
 local function openPage(opts)
-    state.title = opts.title or "@i18n(app.modules.configuration.name)@"
+    state.title = opts.title or "Configuration"
     rfsuite.app.lastIdx = opts.idx
     rfsuite.app.lastTitle = state.title
     rfsuite.app.lastScript = opts.script
@@ -470,7 +470,7 @@ local function wakeup()
 end
 
 return {
-    title = "@i18n(app.modules.configuration.name)@",
+    title = "Configuration",
     openPage = openPage,
     wakeup = wakeup,
     onSaveMenu = onSaveMenu,

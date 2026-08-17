@@ -10,9 +10,9 @@ local API_NAME = "RXFAIL_CONFIG"
 local MAX_SUPPORTED_RC_CHANNEL_COUNT = 18
 
 local modeTable = {
-    [0] = "@i18n(api.RXFAIL_CONFIG.tbl_auto)@",
-    [1] = "@i18n(api.RXFAIL_CONFIG.tbl_hold)@",
-    [2] = "@i18n(api.RXFAIL_CONFIG.tbl_set)@"
+    [0] = "Auto",
+    [1] = "Hold",
+    [2] = "Set"
 }
 
 -- Tuple layout:

@@ -27,12 +27,12 @@ local apidata = {
         labels = {
         },
         fields = {
-            [FIELDKEY.PROTOCOL] = {t = "@i18n(app.modules.esc_motors.throttle_protocol)@",      api = "MOTOR_CONFIG:motor_pwm_protocol", type = 1},
-            [FIELDKEY.PWM_RATE] = {t = "@i18n(app.modules.esc_motors.motor_pwm_rate)@",         api = "MOTOR_CONFIG:motor_pwm_rate"},
-            [FIELDKEY.MINCOMMAND] = {t = "@i18n(app.modules.esc_motors.mincommand)@",           api = "MOTOR_CONFIG:mincommand"},
-            [FIELDKEY.MINTHROTTLE] = {t = "@i18n(app.modules.esc_motors.min_throttle)@",        api = "MOTOR_CONFIG:minthrottle"},
-            [FIELDKEY.MAXTHROTTLE] = {t = "@i18n(app.modules.esc_motors.max_throttle)@",        api = "MOTOR_CONFIG:maxthrottle"},
-            [FIELDKEY.UNSYNCED] = {t = "@i18n(app.modules.esc_motors.unsynced)@",               api = "MOTOR_CONFIG:use_unsynced_pwm", type = 1},
+            [FIELDKEY.PROTOCOL] = {t = "Throttle Protocol",      api = "MOTOR_CONFIG:motor_pwm_protocol", type = 1},
+            [FIELDKEY.PWM_RATE] = {t = "Update frequency",         api = "MOTOR_CONFIG:motor_pwm_rate"},
+            [FIELDKEY.MINCOMMAND] = {t = "Motor Stop PWM Value",           api = "MOTOR_CONFIG:mincommand"},
+            [FIELDKEY.MINTHROTTLE] = {t = "0% Throttle PWM Value",        api = "MOTOR_CONFIG:minthrottle"},
+            [FIELDKEY.MAXTHROTTLE] = {t = "100% Throttle PWM value",        api = "MOTOR_CONFIG:maxthrottle"},
+            [FIELDKEY.UNSYNCED] = {t = "Unsynced ESC Update",               api = "MOTOR_CONFIG:use_unsynced_pwm", type = 1},
         }
     }
 }

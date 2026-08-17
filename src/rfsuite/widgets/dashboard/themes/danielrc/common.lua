@@ -355,12 +355,12 @@ local function readArmflags(telemetry, showReason)
 
     if showReason and disableflags ~= nil and rfsuite.utils.armingDisableFlagsToString then
         local reason = rfsuite.utils.armingDisableFlagsToString(floor(disableflags))
-        if reason and reason ~= "OK" then return reason end
+        if reason and reason ~= rfsuite.utils.ARMING_OK_TEXT then return reason end
     end
 
     if value == nil then return nil end
-    if value == 1 or value == 3 then return "@i18n(widgets.governor.ARMED)@" end
-    return "@i18n(widgets.governor.DISARMED)@"
+    if value == 1 or value == 3 then return "ARMED" end
+    return "DISARMED"
 end
 
 local function formatTimeSeconds(seconds, withHours)
@@ -399,6 +399,7 @@ local function readSpec(box, spec, telemetry, slotKey)
     local session = rfsuite.session or {}
     local kind = spec.kind or "telemetry"
     local rawValue, displayValue, dynamicUnit, thresholds = nil, nil, nil, spec.thresholds
+    local _
 
     if kind == "telemetry" then
         rawValue, _, dynamicUnit, _, _, thresholds = readTelemetry(spec, telemetry)
@@ -821,7 +822,7 @@ function common.headerBoxes(cache)
     end
 
     if cache.boxes == nil or cache.txbatt_type ~= txbatt_type or cache.theme_signature ~= signature then
-        cache.boxes = utils.standardHeaderBoxes(i18n, common.getHeaderColorMode(), utils.getHeaderOptions(), txbatt_type)
+        cache.boxes = utils.standardHeaderBoxes(common.getHeaderColorMode(), utils.getHeaderOptions(), txbatt_type)
         cache.txbatt_type = txbatt_type
         cache.theme_signature = signature
     end
@@ -1115,8 +1116,8 @@ function common.buildCockpitBoxes()
         valuealign = "center",
         bgcolor = p.bg,
         thresholds = {
-            {value = "@i18n(widgets.governor.ARMED)@", textcolor = p.yellow},
-            {value = "@i18n(widgets.governor.DISARMED)@", textcolor = p.line}
+            {value = "ARMED", textcolor = p.yellow},
+            {value = "DISARMED", textcolor = p.line}
         }
     }))
 
@@ -1385,8 +1386,8 @@ function common.buildReportBoxes()
         valuealign = "center",
         bgcolor = p.bg,
         thresholds = {
-            {value = "@i18n(widgets.governor.ARMED)@", textcolor = p.yellow},
-            {value = "@i18n(widgets.governor.DISARMED)@", textcolor = p.line}
+            {value = "ARMED", textcolor = p.yellow},
+            {value = "DISARMED", textcolor = p.line}
         }
     }))
 

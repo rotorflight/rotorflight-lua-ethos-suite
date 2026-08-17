@@ -28,15 +28,15 @@ end
 function M.resetFlightModeAsk()
     local buttons = {
         {
-            label = "@i18n(app.btn_ok)@",
+            label = "          OK           ",
             action = function()
                 applyReset()
                 return true
             end
-        }, {label = "@i18n(app.btn_cancel)@", action = function() return true end}
+        }, {label = "CANCEL", action = function() return true end}
     }
 
-    form.openDialog({width = nil, title = "@i18n(widgets.dashboard.reset_flight_ask_title)@", message = "@i18n(widgets.dashboard.reset_flight_ask_text)@", buttons = buttons, wakeup = function() end, paint = function() end, options = TEXT_LEFT})
+    form.openDialog({width = nil, title = "Reset flight", message = "Are you sure you want to reset the flight?", buttons = buttons, wakeup = function() end, paint = function() end, options = TEXT_LEFT})
 end
 
 function M.wakeup()

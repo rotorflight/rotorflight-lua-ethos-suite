@@ -7,6 +7,14 @@ local rfsuite = require("rfsuite")
 
 local utils = {}
 
+-- The "no arming flags" sentinel returned by armingDisableFlagsToString is a
+-- BUILD-SUBSTITUTED, LOCALIZED string. Comparing it against the English
+-- literal "OK" silently failed in every locale that translates the key --
+-- he ("\u05d0\u05d9\u05e9\u05d5\u05e8") and zh-cn ("\u786e\u5b9a") -- so the OK text was reported as a
+-- fault reason. Callers outside this file must compare against this.
+local ARMING_OK_TEXT = "OK"
+utils.ARMING_OK_TEXT = ARMING_OK_TEXT
+
 local arg = {...}
 local config = arg[1]
 
@@ -145,9 +153,9 @@ end
 
 function utils.getArmedSaveBlockedMessage()
     if utils.apiVersionCompare(">=", {12, 0, 8}) then
-        return "@i18n(app.msg_please_disarm_to_save_warning)@"
+        return "Settings will only be saved to eeprom on disarm"
     end
-    return "@i18n(app.msg_please_disarm_to_save)@"
+    return "Please disarm to save"
 end
 
 function utils.queueEepromWrite(opts)
@@ -254,38 +262,42 @@ function utils.getEffectiveEscSensorProtocol(value)
     return math.floor(value)
 end
 
+-- Constant. Hoisted out of armingDisableFlagsToString, which is called from
+-- dashboard object wakeups (objects/text/armflags.lua) and so rebuilt this
+-- 26-entry table on every tick.
+local ARMING_DISABLE_FLAG_TAG = {
+    [0] = "NO GYRO",
+    [1] = "FAIL SAFE",
+    [2] = "RX FAIL SAFE",
+    [3] = "BAD RX RECOVERY",
+    [4] = "BOX FAIL SAFE",
+    [5] = "GOVERNOR",
+    [6] = "RPM SIGNAL",
+    [7] = "THROTTLE",
+    [8] = "ANGLE",
+    [9] = "BOOT GRACE TIME",
+    [10] = "NO PRE ARM",
+    [11] = "LOAD",
+    [12] = "CALIBRATING",
+    [13] = "CLI",
+    [14] = "CMS MENU",
+    [15] = "BST",
+    [16] = "MSP",
+    [17] = "PARALYZE",
+    [18] = "GPS",
+    [19] = "RESC",
+    [20] = "RPM FILTER",
+    [21] = "REBOOT REQUIRED",
+    [22] = "DSHOT BITBANG",
+    [23] = "ACC CALIBRATION",
+    [24] = "MOTOR PROTOCOL",
+    [25] = "ARM SWITCH"
+}
+
 function utils.armingDisableFlagsToString(flags)
 
-    local ARMING_DISABLE_FLAG_TAG = {
-        [0] = "@i18n(app.modules.fblstatus.arming_disable_flag_0):upper()@",
-        [1] = "@i18n(app.modules.fblstatus.arming_disable_flag_1):upper()@",
-        [2] = "@i18n(app.modules.fblstatus.arming_disable_flag_2):upper()@",
-        [3] = "@i18n(app.modules.fblstatus.arming_disable_flag_3):upper()@",
-        [4] = "@i18n(app.modules.fblstatus.arming_disable_flag_4):upper()@",
-        [5] = "@i18n(app.modules.fblstatus.arming_disable_flag_5):upper()@",
-        [6] = "@i18n(app.modules.fblstatus.arming_disable_flag_6):upper()@",
-        [7] = "@i18n(app.modules.fblstatus.arming_disable_flag_7):upper()@",
-        [8] = "@i18n(app.modules.fblstatus.arming_disable_flag_8):upper()@",
-        [9] = "@i18n(app.modules.fblstatus.arming_disable_flag_9):upper()@",
-        [10] = "@i18n(app.modules.fblstatus.arming_disable_flag_10):upper()@",
-        [11] = "@i18n(app.modules.fblstatus.arming_disable_flag_11):upper()@",
-        [12] = "@i18n(app.modules.fblstatus.arming_disable_flag_12):upper()@",
-        [13] = "@i18n(app.modules.fblstatus.arming_disable_flag_13):upper()@",
-        [14] = "@i18n(app.modules.fblstatus.arming_disable_flag_14):upper()@",
-        [15] = "@i18n(app.modules.fblstatus.arming_disable_flag_15):upper()@",
-        [16] = "@i18n(app.modules.fblstatus.arming_disable_flag_16):upper()@",
-        [17] = "@i18n(app.modules.fblstatus.arming_disable_flag_17):upper()@",
-        [18] = "@i18n(app.modules.fblstatus.arming_disable_flag_18):upper()@",
-        [19] = "@i18n(app.modules.fblstatus.arming_disable_flag_19):upper()@",
-        [20] = "@i18n(app.modules.fblstatus.arming_disable_flag_20):upper()@",
-        [21] = "@i18n(app.modules.fblstatus.arming_disable_flag_21):upper()@",
-        [22] = "@i18n(app.modules.fblstatus.arming_disable_flag_22):upper()@",
-        [23] = "@i18n(app.modules.fblstatus.arming_disable_flag_23):upper()@",
-        [24] = "@i18n(app.modules.fblstatus.arming_disable_flag_24):upper()@",
-        [25] = "@i18n(app.modules.fblstatus.arming_disable_flag_25):upper()@"
-    }
 
-    if flags == nil or flags == 0 then return "@i18n(app.modules.fblstatus.ok):upper()@" end
+    if flags == nil or flags == 0 then return ARMING_OK_TEXT end
 
     local names = {}
     for i = 0, 25 do
@@ -295,46 +307,49 @@ function utils.armingDisableFlagsToString(flags)
         end
     end
 
-    if #names == 0 then return "@i18n(app.modules.fblstatus.ok):upper()@" end
+    if #names == 0 then return ARMING_OK_TEXT end
 
     return table.concat(names, ", ")
 end
 
+-- Constant. Hoisted out of getGovernorState, called from objects/text/governor.lua
+-- and several theme wakeups, which rebuilt this 11-entry table on every tick.
+local GOVERNOR_STATE_TAG = {
+    [0] = "OFF",
+    [1] = "IDLE",
+    [2] = "SPOOLUP",
+    [3] = "RECOVERY",
+    [4] = "ACTIVE",
+    [5] = "THR-OFF",
+    [6] = "LOST-HS",
+    [7] = "AUTOROT",
+    [8] = "BAILOUT",
+    [100] = "DISABLED",
+    [101] = "DISARMED"
+}
+
 function utils.getGovernorState(value)
     local returnvalue
 
-    if not rfsuite.tasks.telemetry then return "@i18n(widgets.governor.UNKNOWN)@" end
+    if not rfsuite.tasks.telemetry then return "UNKNOWN" end
 
-    local map = {
-        [0] = "@i18n(widgets.governor.OFF):upper()@",
-        [1] = "@i18n(widgets.governor.IDLE):upper()@",
-        [2] = "@i18n(widgets.governor.SPOOLUP):upper()@",
-        [3] = "@i18n(widgets.governor.RECOVERY):upper()@",
-        [4] = "@i18n(widgets.governor.ACTIVE):upper()@",
-        [5] = "@i18n(widgets.governor.THROFF):upper()@",
-        [6] = "@i18n(widgets.governor.LOSTHS):upper()@",
-        [7] = "@i18n(widgets.governor.AUTOROT):upper()@",
-        [8] = "@i18n(widgets.governor.BAILOUT):upper()@",
-        [100] = "@i18n(widgets.governor.DISABLED):upper()@",
-        [101] = "@i18n(widgets.governor.DISARMED):upper()@"
-    }
 
     if rfsuite.session and rfsuite.session.apiVersion and rfsuite.utils.apiVersionCompare(">", {12, 0, 7}) then
         local armflags = rfsuite.tasks.telemetry.getSensor("armflags")
         if utils.armFlagsToIsArmed(armflags) == false then value = 101 end
     end
 
-    if map[value] then
-        returnvalue = map[value]
+    if GOVERNOR_STATE_TAG[value] then
+        returnvalue = GOVERNOR_STATE_TAG[value]
     else
-        returnvalue = "@i18n(widgets.governor.UNKNOWN):upper()@"
+        returnvalue = "UNKNOWN"
     end
 
     local armdisableflags = rfsuite.tasks.telemetry.getSensor("armdisableflags")
     if armdisableflags ~= nil then
         armdisableflags = math.floor(armdisableflags)
         local armstring = utils.armingDisableFlagsToString(armdisableflags)
-        if armstring ~= "OK" then returnvalue = armstring end
+        if armstring ~= ARMING_OK_TEXT then returnvalue = armstring end
     end
 
     return returnvalue
@@ -612,10 +627,15 @@ function utils.loadImage(image1, image2, image3)
     return getCachedBitmap(image1, candidates(image1)) or getCachedBitmap(image2, candidates(image2)) or getCachedBitmap(image3, candidates(image3))
 end
 
+local simSensorsDirReady = false
+
 function utils.simSensors(id)
-    os.mkdir("LOGS:")
-    os.mkdir("LOGS:/rfsuite")
-    os.mkdir("LOGS:/rfsuite/sensors")
+    if not simSensorsDirReady then
+        os.mkdir("LOGS:")
+        os.mkdir("LOGS:/rfsuite")
+        os.mkdir("LOGS:/rfsuite/sensors")
+        simSensorsDirReady = true
+    end
 
     if id == nil then
         return 0
@@ -743,8 +763,23 @@ local function versionParts(value)
     return parts
 end
 
+-- rfsuite.session.apiVersion is set once per connection and read very frequently
+-- (every sensors.wakeup tick plus 100+ call sites), so cache its parsed form
+-- rather than re-parsing the same string with gmatch on every call.
+local _apiVersionCacheKey = nil
+local _apiVersionCacheParts = nil
+
 function utils.apiVersionCompare(op, req)
-    local a, b = versionParts(rfsuite.session.apiVersion or "12.06"), versionParts(req)
+    local verStr = rfsuite.session.apiVersion or "12.06"
+    local a
+    if _apiVersionCacheKey == verStr then
+        a = _apiVersionCacheParts
+    else
+        a = versionParts(verStr)
+        _apiVersionCacheKey = verStr
+        _apiVersionCacheParts = a
+    end
+    local b = versionParts(req)
     if #a == 0 or #b == 0 then return false end
 
     local len = math.max(#a, #b)

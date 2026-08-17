@@ -34,6 +34,60 @@ local CAMERA_DIST = 7.0
 local CAMERA_NEAR_EPS = 0.25
 local SHOW_BACKGROUND_GRID = false
 local HIGH_DETAIL_MODEL = false
+
+-- Constant model geometry. Hoisted out of drawVisual(), which paint() calls
+-- directly and wakeup() re-arms at ~12.5 fps: these 46 three-element tables
+-- depend on nothing computed per frame (only cx/cy/scale and the three
+-- rotation scalars vary), and rotatePoint/collectTriangle3D only read them.
+local nose = {2.35, 0.0, -0.02}
+local tail = {-2.65, 0.0, 0.03}
+local lf = {1.10, -0.62, 0.02}
+local rf = {1.10, 0.62, 0.02}
+local lb = {-0.55, -0.46, 0.05}
+local rb = {-0.55, 0.46, 0.05}
+local top = {0.05, 0.0, 0.84}
+local podAftTop = {-0.66, 0.0, 0.56}
+local podAftBot = {-0.66, 0.0, -0.12}
+local podAftL = {-0.66, -0.30, 0.14}
+local podAftR = {-0.66, 0.30, 0.14}
+local mast = {0.0, 0.0, 1.02}
+local finU = {-2.25, 0.0, 0.45}
+local finD = {-2.25, 0.0, -0.18}
+local boomSL = {-0.88, -0.10, 0.11}
+local boomSR = {-0.88, 0.10, 0.11}
+local boomSU = {-0.88, 0.0, 0.18}
+local boomSD = {-0.88, 0.0, 0.06}
+local boomEL = {-2.35, -0.06, 0.08}
+local boomER = {-2.35, 0.06, 0.08}
+local boomEU = {-2.35, 0.0, 0.12}
+local boomED = {-2.35, 0.0, 0.05}
+local stabL = {-2.35, -0.30, 0.10}
+local stabR = {-2.35, 0.30, 0.10}
+
+local skidL1 = {1.12, -0.66, -0.69}
+local skidL2 = {0.76, -0.66, -0.64}
+local skidL3 = {0.00, -0.66, -0.62}
+local skidL4 = {-0.96, -0.66, -0.63}
+local skidL5 = {-1.24, -0.66, -0.67}
+local skidR1 = {1.12, 0.66, -0.69}
+local skidR2 = {0.76, 0.66, -0.64}
+local skidR3 = {0.00, 0.66, -0.62}
+local skidR4 = {-0.96, 0.66, -0.63}
+local skidR5 = {-1.24, 0.66, -0.67}
+
+local strutLFTop = {0.52, -0.50, -0.12}
+local strutLFBot = {0.48, -0.66, -0.63}
+local strutLBTop = {-0.52, -0.44, -0.10}
+local strutLBBot = {-0.58, -0.66, -0.63}
+local strutRFTop = {0.52, 0.50, -0.12}
+local strutRFBot = {0.48, 0.66, -0.63}
+local strutRBTop = {-0.52, 0.44, -0.10}
+local strutRBBot = {-0.58, 0.66, -0.63}
+
+local rotorA = {0.0, -1.9, 1.02}
+local rotorB = {0.0, 1.9, 1.02}
+local rotorC = {-1.9, 0.0, 1.02}
+local rotorD = {1.9, 0.0, 1.02}
 local attitudeAPI
 local lastAttitudeData
 
@@ -72,16 +126,16 @@ local state = {
 }
 
 local magAlignChoices = {
-    {"@i18n(app.modules.alignment.mag_default)@", 1},
-    {"@i18n(app.modules.alignment.mag_cw_0)@", 2},
-    {"@i18n(app.modules.alignment.mag_cw_90)@", 3},
-    {"@i18n(app.modules.alignment.mag_cw_180)@", 4},
-    {"@i18n(app.modules.alignment.mag_cw_270)@", 5},
-    {"@i18n(app.modules.alignment.mag_cw_0_flip)@", 6},
-    {"@i18n(app.modules.alignment.mag_cw_90_flip)@", 7},
-    {"@i18n(app.modules.alignment.mag_cw_180_flip)@", 8},
-    {"@i18n(app.modules.alignment.mag_cw_270_flip)@", 9},
-    {"@i18n(app.modules.alignment.mag_custom)@", 10}
+    {"Default", 1},
+    {"CW 0 deg", 2},
+    {"CW 90 deg", 3},
+    {"CW 180 deg", 4},
+    {"CW 270 deg", 5},
+    {"CW 0 deg flip", 6},
+    {"CW 90 deg flip", 7},
+    {"CW 180 deg flip", 8},
+    {"CW 270 deg flip", 9},
+    {"Custom", 10}
 }
 
 local function toSigned16(v)
@@ -231,7 +285,7 @@ local function writeData()
     state.saving = true
     pauseMovement()
 
-    app.ui.progressDisplay("@i18n(app.msg_saving_settings)@", "@i18n(app.msg_saving_to_fbl)@")
+    app.ui.progressDisplay("Saving settings...", "Saving data to flight controller...")
     clearMspQueue()
 
     local boardAPI = tasks.msp.api.loadPage("BOARD_ALIGNMENT_CONFIG")
@@ -404,9 +458,11 @@ local function collectTriangle3D(list, a, b, c, cx, cy, scale, pitchR, yawR, rol
     }
 end
 
+local function zLess(a, b) return a.z < b.z end
+
 local function drawTriangleList(list)
     if #list == 0 then return end
-    t_sort(list, function(a, b) return a.z < b.z end)
+    t_sort(list, zLess)
     for i = 1, #list do
         local t = list[i]
         lcd.color(t.color)
@@ -476,8 +532,8 @@ local function drawVisual()
     end
 
     lcd.font(FONT_XS)
-    local liveText = string.format("@i18n(app.modules.alignment.live_fmt)@", state.live.roll, state.live.pitch, state.live.yaw)
-    local offsText = string.format("@i18n(app.modules.alignment.offset_fmt)@", state.display.roll_degrees, state.display.pitch_degrees, state.display.yaw_degrees, state.display.mag_alignment)
+    local liveText = string.format("Live  R:%0.1f  P:%0.1f  Y:%0.1f", state.live.roll, state.live.pitch, state.live.yaw)
+    local offsText = string.format("Offset R:%d  P:%d  Y:%d  Mag:%d", state.display.roll_degrees, state.display.pitch_degrees, state.display.yaw_degrees, state.display.mag_alignment)
     local _, th1 = lcd.getTextSize(liveText)
     local _, th2 = lcd.getTextSize(offsText)
     local textPad = 2
@@ -487,7 +543,7 @@ local function drawVisual()
     lcd.color(mainColor)
     lcd.drawText(textX, textY, liveText, LEFT)
     lcd.drawText(textX, textY + th1 + textPad, offsText, LEFT)
-    lcd.drawText(textX, textY + th1 + th2 + 14, string.format("@i18n(app.modules.alignment.view_yaw_fmt)@", state.viewYawOffset), LEFT)
+    lcd.drawText(textX, textY + th1 + th2 + 14, string.format("View Yaw:%0.1f", state.viewYawOffset), LEFT)
 
     local miniX = infoX + 8
     local miniY = textY + th1 + th2 + 46
@@ -498,7 +554,7 @@ local function drawVisual()
         lcd.drawRectangle(miniX, miniY, miniW, miniH)
 
         lcd.color(mainColor)
-        lcd.drawText(miniX + 4, miniY + 2, "@i18n(app.modules.alignment.nose_direction)@", LEFT)
+        lcd.drawText(miniX + 4, miniY + 2, "Nose Direction", LEFT)
 
         local mx = miniX + floor(miniW * 0.5)
         local my = miniY + floor(miniH * 0.60)
@@ -519,13 +575,13 @@ local function drawVisual()
                 if ux > 0.35 then htxt = "left" elseif ux < -0.35 then htxt = "right" end
                 if uy > 0.35 then vtxt = "up" elseif uy < -0.35 then vtxt = "down" end
 
-                local primary = "@i18n(app.modules.alignment.nose_level)@"
-                if vtxt == "up" then primary = "@i18n(app.modules.alignment.nose_up)@" end
-                if vtxt == "down" then primary = "@i18n(app.modules.alignment.nose_down)@" end
+                local primary = "Nose Level"
+                if vtxt == "up" then primary = "Nose Up" end
+                if vtxt == "down" then primary = "Nose Down" end
 
                 local secondary = ""
-                if htxt == "left" then secondary = "@i18n(app.modules.alignment.leaning_left)@" end
-                if htxt == "right" then secondary = "@i18n(app.modules.alignment.leaning_right)@" end
+                if htxt == "left" then secondary = "Leaning Left" end
+                if htxt == "right" then secondary = "Leaning Right" end
 
                 lcd.font(FONT_STD)
                 lcd.color(accent)
@@ -544,56 +600,6 @@ local function drawVisual()
     local scale = max(8, min(gw0, gh0) * 0.2112)
 
     -- Simplified heli wireframe for clearer orientation cues.
-    local nose = {2.35, 0.0, -0.02}
-    local tail = {-2.65, 0.0, 0.03}
-    local lf = {1.10, -0.62, 0.02}
-    local rf = {1.10, 0.62, 0.02}
-    local lb = {-0.55, -0.46, 0.05}
-    local rb = {-0.55, 0.46, 0.05}
-    local top = {0.05, 0.0, 0.84}
-    local podAftTop = {-0.66, 0.0, 0.56}
-    local podAftBot = {-0.66, 0.0, -0.12}
-    local podAftL = {-0.66, -0.30, 0.14}
-    local podAftR = {-0.66, 0.30, 0.14}
-    local mast = {0.0, 0.0, 1.02}
-    local finU = {-2.25, 0.0, 0.45}
-    local finD = {-2.25, 0.0, -0.18}
-    local boomSL = {-0.88, -0.10, 0.11}
-    local boomSR = {-0.88, 0.10, 0.11}
-    local boomSU = {-0.88, 0.0, 0.18}
-    local boomSD = {-0.88, 0.0, 0.06}
-    local boomEL = {-2.35, -0.06, 0.08}
-    local boomER = {-2.35, 0.06, 0.08}
-    local boomEU = {-2.35, 0.0, 0.12}
-    local boomED = {-2.35, 0.0, 0.05}
-    local stabL = {-2.35, -0.30, 0.10}
-    local stabR = {-2.35, 0.30, 0.10}
-
-    local skidL1 = {1.12, -0.66, -0.69}
-    local skidL2 = {0.76, -0.66, -0.64}
-    local skidL3 = {0.00, -0.66, -0.62}
-    local skidL4 = {-0.96, -0.66, -0.63}
-    local skidL5 = {-1.24, -0.66, -0.67}
-    local skidR1 = {1.12, 0.66, -0.69}
-    local skidR2 = {0.76, 0.66, -0.64}
-    local skidR3 = {0.00, 0.66, -0.62}
-    local skidR4 = {-0.96, 0.66, -0.63}
-    local skidR5 = {-1.24, 0.66, -0.67}
-
-    local strutLFTop = {0.52, -0.50, -0.12}
-    local strutLFBot = {0.48, -0.66, -0.63}
-    local strutLBTop = {-0.52, -0.44, -0.10}
-    local strutLBBot = {-0.58, -0.66, -0.63}
-    local strutRFTop = {0.52, 0.50, -0.12}
-    local strutRFBot = {0.48, 0.66, -0.63}
-    local strutRBTop = {-0.52, 0.44, -0.10}
-    local strutRBBot = {-0.58, 0.66, -0.63}
-
-    local rotorA = {0.0, -1.9, 1.02}
-    local rotorB = {0.0, 1.9, 1.02}
-    local rotorC = {-1.9, 0.0, 1.02}
-    local rotorD = {1.9, 0.0, 1.02}
-
     local fuselage = {}
     collectTriangle3D(fuselage, nose, lf, top, cx, cy, scale, pitchR, yawR, rollR, bodyLight)
     collectTriangle3D(fuselage, nose, top, rf, cx, cy, scale, pitchR, yawR, rollR, bodyLight)
@@ -689,7 +695,7 @@ end
 local function openPage(opts)
     state.wakeupEnabled = false
     state.pageIdx = opts.idx
-    local title = opts.title or "@i18n(app.modules.alignment.name)@"
+    local title = opts.title or "Alignment"
 
     app.lastIdx = opts.idx
     app.lastTitle = opts.title
@@ -729,10 +735,10 @@ local function openPage(opts)
     local slotGap = gap
     local slotW = floor((fieldW - (slotGap * 3)) / 4)
     local labels = {
-        "@i18n(app.modules.alignment.roll)@",
-        "@i18n(app.modules.alignment.pitch)@",
-        "@i18n(app.modules.alignment.yaw)@",
-        "@i18n(app.modules.alignment.mag)@"
+        "Roll",
+        "Pitch",
+        "Yaw",
+        "Mag"
     }
 
     lcd.font(FONT_STD)
@@ -803,18 +809,18 @@ local function onSaveMenu()
     end
 
     form.openDialog({
-        title = "@i18n(app.modules.profile_select.save_settings)@",
-        message = "@i18n(app.modules.profile_select.save_prompt)@",
+        title = "Save settings",
+        message = "Save current page to flight controller?",
         buttons = {
             {
-                label = "@i18n(app.btn_ok_long)@",
+                label = "                OK                ",
                 action = function()
                     state.triggerSave = true
                     return true
                 end
             },
             {
-                label = "@i18n(app.btn_cancel)@",
+                label = "CANCEL",
                 action = function()
                     state.triggerSave = false
                     return true
@@ -832,18 +838,18 @@ end
 
 local function onToolMenu()
     form.openDialog({
-        title = "@i18n(app.modules.alignment.name)@",
-        message = "@i18n(app.modules.alignment.msg_reset_tail_view)@",
+        title = "Alignment",
+        message = "Reset view yaw so the tail faces you?",
         buttons = {
             {
-                label = "@i18n(app.btn_ok_long)@",
+                label = "                OK                ",
                 action = function()
                     recenterYawView()
                     return true
                 end
             },
             {
-                label = "@i18n(app.btn_cancel)@",
+                label = "CANCEL",
                 action = function()
                     return true
                 end

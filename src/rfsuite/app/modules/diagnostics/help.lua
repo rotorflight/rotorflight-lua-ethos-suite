@@ -7,7 +7,7 @@ local data = {}
 
 data['help'] = {}
 
-data['help']['default'] = {"@i18n(app.modules.validate_sensors.help_p1)@", "@i18n(app.modules.validate_sensors.help_p2)@"}
+data['help']['default'] = {"This tool attempts to list all the sensors that you are not receiving in a concise list.", "Use this tool to ensure you are sending the correct sensors."}
 
 data['fields'] = {}
 

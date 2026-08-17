@@ -7,7 +7,7 @@ local data = {}
 
 data['help'] = {}
 
-data['help']['default'] = {"@i18n(app.modules.esc_motors.help_p1)@"}
+data['help']['default'] = {"Configure the motor and speed controller features."}
 
 data['fields'] = {}
 

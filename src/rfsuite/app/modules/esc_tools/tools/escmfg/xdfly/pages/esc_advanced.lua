@@ -15,13 +15,13 @@ local apidata = {
     formdata = {
         labels = {},
         fields = {
-            {t = "@i18n(app.modules.esc_tools.mfg.xdfly.timing)@",            activeFieldPos = 4,  mspapi = 1, type = 1, apikey = "timing"},
-            {t = "@i18n(app.modules.esc_tools.mfg.xdfly.acceleration)@",      activeFieldPos = 9,  mspapi = 1, type = 1, apikey = "acceleration"},
-            {t = "@i18n(app.modules.esc_tools.mfg.xdfly.brake_force)@",       activeFieldPos = 14, mspapi = 1,         apikey = "brake_force"},
-            {t = "@i18n(app.modules.esc_tools.mfg.xdfly.sr_function)@",        activeFieldPos = 15, mspapi = 1, type = 1, apikey = "sr_function"},
-            {t = "@i18n(app.modules.esc_tools.mfg.xdfly.capacity_correction)@", activeFieldPos = 16, mspapi = 1,         apikey = "capacity_correction"},
-            {t = "@i18n(app.modules.esc_tools.mfg.xdfly.auto_restart_time)@",  activeFieldPos = 10, mspapi = 1, type = 1, apikey = "auto_restart_time"},
-            {t = "@i18n(app.modules.esc_tools.mfg.xdfly.cell_cutoff)@",        activeFieldPos = 11, mspapi = 1, type = 1, apikey = "cell_cutoff"}
+            {t = "Timing",            activeFieldPos = 4,  mspapi = 1, type = 1, apikey = "timing"},
+            {t = "Acceleration",      activeFieldPos = 9,  mspapi = 1, type = 1, apikey = "acceleration"},
+            {t = "Brake Force",       activeFieldPos = 14, mspapi = 1,         apikey = "brake_force"},
+            {t = "SR Function",        activeFieldPos = 15, mspapi = 1, type = 1, apikey = "sr_function"},
+            {t = "Capacity Correction", activeFieldPos = 16, mspapi = 1,         apikey = "capacity_correction"},
+            {t = "Auto Restart Time",  activeFieldPos = 10, mspapi = 1, type = 1, apikey = "auto_restart_time"},
+            {t = "Cell Cutoff",        activeFieldPos = 11, mspapi = 1, type = 1, apikey = "cell_cutoff"}
         }
     }
 }
@@ -42,4 +42,4 @@ local navHandlers = escToolsPage.createSubmenuHandlers(folder)
 
 local function wakeup(self) if activateWakeup == true and rfsuite.tasks.msp.mspQueue:isProcessed() then activateWakeup = false end end
 
-return {apidata = apidata, eepromWrite = true, reboot = false, escinfo = escinfo, svTiming = 0, svFlags = 0, postLoad = postLoad, navButtons = navHandlers.navButtons, onNavMenu = navHandlers.onNavMenu, event = navHandlers.event, pageTitle = "@i18n(app.modules.esc_tools.name)@" .. " / " .. "@i18n(app.modules.esc_tools.mfg.xdfly.name)@" .. " / " .. "@i18n(app.modules.esc_tools.mfg.xdfly.advanced)@", headerLine = rfsuite.escHeaderLineText, wakeup = wakeup}
+return {apidata = apidata, eepromWrite = true, reboot = false, svTiming = 0, svFlags = 0, postLoad = postLoad, navButtons = navHandlers.navButtons, onNavMenu = navHandlers.onNavMenu, event = navHandlers.event, pageTitle = "Esc Programing" .. " / " .. "XDFLY" .. " / " .. "Advanced", headerLine = rfsuite.escHeaderLineText, wakeup = wakeup}

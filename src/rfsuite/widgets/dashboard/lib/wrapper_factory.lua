@@ -59,7 +59,7 @@ function factory.createObjectWrapper(objectType, defaultSubtype)
 
     function wrapper.dirty(box)
         if not utils.isModelPrefsReady() then return false end
-        local subtype = box.subtype or "flight"
+        local subtype = box.subtype or defaultSubtype
         local render = renders[subtype]
         return render and render.dirty and render.dirty(box) or false
     end

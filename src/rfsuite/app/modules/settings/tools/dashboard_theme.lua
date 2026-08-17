@@ -95,7 +95,7 @@ local function generateThemeList()
     end
     if defaultThemeId == 0 then defaultThemeId = fallbackThemeId end
 
-    table.insert(formattedThemesModel, {"@i18n(app.modules.settings.dashboard_theme_panel_model_disabled)@", 0})
+    table.insert(formattedThemesModel, {"Disabled", 0})
     for i, theme in ipairs(themeList) do
         local themeId = tonumber(theme.idx) or i
         local themeName = theme.name or ("Theme " .. tostring(i))
@@ -199,7 +199,7 @@ local function openPage(opts)
     rfsuite.app.lastTitle = title
     rfsuite.app.lastScript = script
 
-    rfsuite.app.ui.fieldHeader("@i18n(app.modules.settings.name)@" .. " / " .. "@i18n(app.modules.settings.dashboard)@" .. " / " .. "@i18n(app.modules.settings.dashboard_theme)@")
+    rfsuite.app.ui.fieldHeader("Settings" .. " / " .. "Dashboard" .. " / " .. "Theme")
     rfsuite.app.formLineCnt = 0
 
     local formFieldCount = 0
@@ -217,12 +217,12 @@ local function openPage(opts)
         modelUseSameOverride = nil
     end
 
-    local global_panel = form.addExpansionPanel("@i18n(app.modules.settings.dashboard_theme_panel_global)@")
+    local global_panel = form.addExpansionPanel("Default theme for all models")
     global_panel:open(true)
 
     formFieldCount = formFieldCount + 1
     rfsuite.app.formLineCnt = rfsuite.app.formLineCnt + 1
-    rfsuite.app.formLines[rfsuite.app.formLineCnt] = global_panel:addLine("@i18n(app.modules.settings.dashboard_theme_use_same)@")
+    rfsuite.app.formLines[rfsuite.app.formLineCnt] = global_panel:addLine("Use same theme")
     rfsuite.app.formFields[formFieldCount] = form.addBooleanField(rfsuite.app.formLines[rfsuite.app.formLineCnt], nil, function()
         return globalUseSameTheme()
     end, function(newValue)
@@ -235,7 +235,7 @@ local function openPage(opts)
 
     formFieldCount = formFieldCount + 1
     rfsuite.app.formLineCnt = rfsuite.app.formLineCnt + 1
-    rfsuite.app.formLines[rfsuite.app.formLineCnt] = global_panel:addLine("@i18n(app.modules.settings.dashboard_theme_preflight)@")
+    rfsuite.app.formLines[rfsuite.app.formLineCnt] = global_panel:addLine("Preflight Theme")
 
     rfsuite.app.formFields[formFieldCount] = form.addChoiceField(rfsuite.app.formLines[rfsuite.app.formLineCnt], nil, formattedThemes, function()
         if rfsuite.preferences and rfsuite.preferences.dashboard then
@@ -254,7 +254,7 @@ local function openPage(opts)
 
     formFieldCount = formFieldCount + 1
     rfsuite.app.formLineCnt = rfsuite.app.formLineCnt + 1
-    rfsuite.app.formLines[rfsuite.app.formLineCnt] = global_panel:addLine("@i18n(app.modules.settings.dashboard_theme_inflight)@")
+    rfsuite.app.formLines[rfsuite.app.formLineCnt] = global_panel:addLine("Inflight Theme")
 
     rfsuite.app.formFields[formFieldCount] = form.addChoiceField(rfsuite.app.formLines[rfsuite.app.formLineCnt], nil, formattedThemes, function()
         if rfsuite.preferences and rfsuite.preferences.dashboard then
@@ -271,7 +271,7 @@ local function openPage(opts)
 
     formFieldCount = formFieldCount + 1
     rfsuite.app.formLineCnt = rfsuite.app.formLineCnt + 1
-    rfsuite.app.formLines[rfsuite.app.formLineCnt] = global_panel:addLine("@i18n(app.modules.settings.dashboard_theme_postflight)@")
+    rfsuite.app.formLines[rfsuite.app.formLineCnt] = global_panel:addLine("Postflight Theme")
 
     rfsuite.app.formFields[formFieldCount] = form.addChoiceField(rfsuite.app.formLines[rfsuite.app.formLineCnt], nil, formattedThemes, function()
         if rfsuite.preferences and rfsuite.preferences.dashboard then
@@ -287,12 +287,12 @@ local function openPage(opts)
     fieldIds.global_postflight = formFieldCount
     updateGlobalPhaseFields()
 
-    local model_panel = form.addExpansionPanel("@i18n(app.modules.settings.dashboard_theme_panel_model)@")
+    local model_panel = form.addExpansionPanel("Optional theme for this model")
     model_panel:open(false)
 
     formFieldCount = formFieldCount + 1
     rfsuite.app.formLineCnt = rfsuite.app.formLineCnt + 1
-    rfsuite.app.formLines[rfsuite.app.formLineCnt] = model_panel:addLine("@i18n(app.modules.settings.dashboard_theme_use_same)@")
+    rfsuite.app.formLines[rfsuite.app.formLineCnt] = model_panel:addLine("Use same theme")
     rfsuite.app.formFields[formFieldCount] = form.addBooleanField(rfsuite.app.formLines[rfsuite.app.formLineCnt], nil, function()
         return modelUseSameTheme()
     end, function(newValue)
@@ -305,7 +305,7 @@ local function openPage(opts)
 
     formFieldCount = formFieldCount + 1
     rfsuite.app.formLineCnt = rfsuite.app.formLineCnt + 1
-    rfsuite.app.formLines[rfsuite.app.formLineCnt] = model_panel:addLine("@i18n(app.modules.settings.dashboard_theme_preflight)@")
+    rfsuite.app.formLines[rfsuite.app.formLineCnt] = model_panel:addLine("Preflight Theme")
 
     rfsuite.app.formFields[formFieldCount] = form.addChoiceField(rfsuite.app.formLines[rfsuite.app.formLineCnt], nil, formattedThemesModel, function()
         if type(settings_model) == "table" then
@@ -324,7 +324,7 @@ local function openPage(opts)
 
     formFieldCount = formFieldCount + 1
     rfsuite.app.formLineCnt = rfsuite.app.formLineCnt + 1
-    rfsuite.app.formLines[rfsuite.app.formLineCnt] = model_panel:addLine("@i18n(app.modules.settings.dashboard_theme_inflight)@")
+    rfsuite.app.formLines[rfsuite.app.formLineCnt] = model_panel:addLine("Inflight Theme")
 
     rfsuite.app.formFields[formFieldCount] = form.addChoiceField(rfsuite.app.formLines[rfsuite.app.formLineCnt], nil, formattedThemesModel, function()
         if type(settings_model) == "table" then
@@ -341,7 +341,7 @@ local function openPage(opts)
 
     formFieldCount = formFieldCount + 1
     rfsuite.app.formLineCnt = rfsuite.app.formLineCnt + 1
-    rfsuite.app.formLines[rfsuite.app.formLineCnt] = model_panel:addLine("@i18n(app.modules.settings.dashboard_theme_postflight)@")
+    rfsuite.app.formLines[rfsuite.app.formLineCnt] = model_panel:addLine("Postflight Theme")
 
     rfsuite.app.formFields[formFieldCount] = form.addChoiceField(rfsuite.app.formLines[rfsuite.app.formLineCnt], nil, formattedThemesModel, function()
         if type(settings_model) == "table" then
@@ -367,7 +367,7 @@ end
 local function onSaveMenu()
 
     local function doSave()
-        local msg = "@i18n(app.modules.profile_select.save_prompt_local)@"
+        local msg = "Save current page to radio?"
         rfsuite.app.ui.progressDisplaySave(msg:gsub("%?$", "."))
 
         if globalUseSameTheme() then copyPreflightThemeToAllPhases(settings, false) end
@@ -396,15 +396,15 @@ local function onSaveMenu()
 
     local buttons = {
         {
-            label = "@i18n(app.btn_ok_long)@",
+            label = "                OK                ",
             action = function()
                 doSave()
                 return true
             end
-        }, {label = "@i18n(app.modules.profile_select.cancel)@", action = function() return true end}
+        }, {label = "CANCEL", action = function() return true end}
     }
 
-    form.openDialog({width = nil, title = "@i18n(app.modules.profile_select.save_settings)@", message = "@i18n(app.modules.profile_select.save_prompt_local)@", buttons = buttons, wakeup = function() end, paint = function() end, options = TEXT_LEFT})
+    form.openDialog({width = nil, title = "Save settings", message = "Save current page to radio?", buttons = buttons, wakeup = function() end, paint = function() end, options = TEXT_LEFT})
 end
 
 local function event(widget, category, value, x, y)

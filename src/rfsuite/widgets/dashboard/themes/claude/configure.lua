@@ -46,11 +46,11 @@ local function configure()
     formFields[#formFields]:step(50)
 
     -- ── Voltage range (leave at 0 to auto-detect from battery config) ──
-    local v_panel = form.addExpansionPanel("@i18n(widgets.dashboard.voltage)@")
+    local v_panel = form.addExpansionPanel("Voltage")
     v_panel:open(false)
 
     -- Helper note: 0 = auto-detect
-    local v_min_line = v_panel:addLine("@i18n(widgets.dashboard.min)@ (0 = auto)")
+    local v_min_line = v_panel:addLine("Min (0 = auto)")
     formFields[#formFields + 1] = form.addNumberField(v_min_line, nil, 0, 650, function()
         return floor(((config.v_min or 0) * 10) + 0.5)
     end, function(val)
@@ -59,7 +59,7 @@ local function configure()
     formFields[#formFields]:decimals(1)
     formFields[#formFields]:suffix("V")
 
-    local v_max_line = v_panel:addLine("@i18n(widgets.dashboard.max)@ (0 = auto)")
+    local v_max_line = v_panel:addLine("Max (0 = auto)")
     formFields[#formFields + 1] = form.addNumberField(v_max_line, nil, 0, 650, function()
         return floor(((config.v_max or 0) * 10) + 0.5)
     end, function(val)

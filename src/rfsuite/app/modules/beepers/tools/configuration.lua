@@ -11,25 +11,25 @@ local app = rfsuite.app
 local tasks = rfsuite.tasks
 
 local BEEPER_FIELDS = {
-    { bit = 0, label = "@i18n(app.modules.beepers.field_gyro_calibrated)@" },
-    { bit = 1, label = "@i18n(app.modules.beepers.field_rx_lost)@" },
-    { bit = 2, label = "@i18n(app.modules.beepers.field_rx_lost_landing)@" },
-    { bit = 3, label = "@i18n(app.modules.beepers.field_disarming)@" },
-    { bit = 4, label = "@i18n(app.modules.beepers.field_arming)@" },
-    { bit = 5, label = "@i18n(app.modules.beepers.field_arming_gps_fix)@" },
-    { bit = 6, label = "@i18n(app.modules.beepers.field_bat_crit_low)@" },
-    { bit = 7, label = "@i18n(app.modules.beepers.field_bat_low)@" },
-    { bit = 8, label = "@i18n(app.modules.beepers.field_gps_status)@" },
-    { bit = 9, label = "@i18n(app.modules.beepers.field_rx_set)@" },
-    { bit = 10, label = "@i18n(app.modules.beepers.field_acc_calibration)@" },
-    { bit = 11, label = "@i18n(app.modules.beepers.field_acc_calibration_fail)@" },
-    { bit = 12, label = "@i18n(app.modules.beepers.field_ready_beep)@" },
-    { bit = 14, label = "@i18n(app.modules.beepers.field_disarm_repeat)@" },
-    { bit = 15, label = "@i18n(app.modules.beepers.field_armed)@" },
-    { bit = 16, label = "@i18n(app.modules.beepers.field_system_init)@" },
-    { bit = 17, label = "@i18n(app.modules.beepers.field_usb)@" },
-    { bit = 18, label = "@i18n(app.modules.beepers.field_blackbox_erase)@" },
-    { bit = 21, label = "@i18n(app.modules.beepers.field_arming_gps_no_fix)@" }
+    { bit = 0, label = "Gyro calibrated" },
+    { bit = 1, label = "RX lost" },
+    { bit = 2, label = "RX lost landing" },
+    { bit = 3, label = "Disarming" },
+    { bit = 4, label = "Arming" },
+    { bit = 5, label = "Arming GPS fix" },
+    { bit = 6, label = "Battery critical low" },
+    { bit = 7, label = "Battery low" },
+    { bit = 8, label = "GPS status" },
+    { bit = 9, label = "RX set" },
+    { bit = 10, label = "ACC calibration" },
+    { bit = 11, label = "ACC calibration fail" },
+    { bit = 12, label = "Ready beep" },
+    { bit = 14, label = "Disarm repeat" },
+    { bit = 15, label = "Armed" },
+    { bit = 16, label = "System init" },
+    { bit = 17, label = "USB" },
+    { bit = 18, label = "Blackbox erase" },
+    { bit = 21, label = "Arming GPS no fix" }
 }
 
 local state = {
@@ -47,7 +47,7 @@ local state = {
         toggles = {}
     }
 }
-local pageTitle = "@i18n(app.modules.beepers.name)@ / @i18n(app.modules.beepers.menu_configuration)@"
+local pageTitle = "Beepers / Configuration"
 
 local function copyTable(src)
     if type(src) ~= "table" then return src end
@@ -101,8 +101,8 @@ end
 local function renderLoading(message)
     form.clear()
     app.ui.fieldHeader(pageTitle)
-    local line = form.addLine("@i18n(app.modules.beepers.status)@")
-    form.addStaticText(line, nil, message or "@i18n(app.msg_loading)@")
+    local line = form.addLine("Status")
+    form.addStaticText(line, nil, message or "Loading...")
 end
 
 local function renderForm()
@@ -162,7 +162,7 @@ local function requestData(forceApiRead)
     state.loaded = false
     state.dirty = false
 
-    renderLoading("@i18n(app.modules.beepers.loading)@")
+    renderLoading("Loading beeper configuration...")
 
     if not forceApiRead and loadFromSessionSnapshot() then
         state.loading = false
@@ -199,7 +199,7 @@ local function performSave()
     if useDirtySave() and (not state.dirty) then return end
 
     state.saving = true
-    app.ui.progressDisplaySave("@i18n(app.modules.beepers.saving)@")
+    app.ui.progressDisplaySave("Saving Beepers...")
 
     local API = tasks.msp.api.loadPage("BEEPER_CONFIG")
     API.setUUID("beepers-config-write")
@@ -251,22 +251,22 @@ local function onSaveMenu()
 
     local buttons = {
         {
-            label = "@i18n(app.btn_ok_long)@",
+            label = "                OK                ",
             action = function()
                 performSave()
                 return true
             end
         },
         {
-            label = "@i18n(app.btn_cancel)@",
+            label = "CANCEL",
             action = function() return true end
         }
     }
 
     form.openDialog({
         width = nil,
-        title = "@i18n(app.msg_save_settings)@",
-        message = "@i18n(app.msg_save_current_page)@",
+        title = "Save settings",
+        message = "Save current page to flight controller?",
         buttons = buttons,
         wakeup = function() end,
         paint = function() end,

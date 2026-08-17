@@ -44,23 +44,23 @@ local apidata = {
     },  
     formdata = {
         labels = {
-            { t = "@i18n(app.modules.profile_tailrotor.yaw_stop_gain)@", label = 1, inline_size = 13.6 },
-            { t = "@i18n(app.modules.profile_tailrotor.inertia_precomp)@", label = 2, inline_size = 13.6, apiversiongte = {12, 0, 8} },
-            { t = "@i18n(app.modules.profile_tailrotor.collective_impulse_ff)@", label = 3, inline_size = 13.6, apiversionlte = {12, 0, 7} },
-            { t = "@i18n(app.modules.profile_governor.tail_torque_assist)@", label = 4, inline_size = 13.6, apiversiongte = {12, 0, 9} },
+            { t = "Yaw stop gain", label = 1, inline_size = 13.6 },
+            { t = "Inertia Precomp", label = 2, inline_size = 13.6, apiversiongte = {12, 0, 8} },
+            { t = "Collective Impulse FF", label = 3, inline_size = 13.6, apiversionlte = {12, 0, 7} },
+            { t = "Tail Torque Assist", label = 4, inline_size = 13.6, apiversiongte = {12, 0, 9} },
         },
         fields = {
-            [FIELDS.YAW_CW_STOP_GAIN] = { t = "@i18n(app.modules.profile_tailrotor.cw)@", inline = 2, label = 1, mspapi = 1, apikey = "yaw_cw_stop_gain" },
-            [FIELDS.YAW_CCW_STOP_GAIN] = { t = "@i18n(app.modules.profile_tailrotor.ccw)@", inline = 1, label = 1, mspapi = 1, apikey = "yaw_ccw_stop_gain" },
-            [FIELDS.YAW_PRECOMP_CUTOFF] = { t = "@i18n(app.modules.profile_tailrotor.precomp_cutoff)@", mspapi = 1, apikey = "yaw_precomp_cutoff" },
-            [FIELDS.YAW_CYCLIC_FF_GAIN] = { t = "@i18n(app.modules.profile_tailrotor.cyclic_ff_gain)@", mspapi = 1, apikey = "yaw_cyclic_ff_gain" },
-            [FIELDS.YAW_COLLECTIVE_FF_GAIN] = { t = "@i18n(app.modules.profile_tailrotor.collective_ff_gain)@", mspapi = 1, apikey = "yaw_collective_ff_gain" },
-            [FIELDS.YAW_INERTIA_PRECOMP_GAIN] = { t = "@i18n(app.modules.profile_tailrotor.gain)@", inline = 2, label = 2, mspapi = 1, apikey = "yaw_inertia_precomp_gain", apiversiongte = {12, 0, 8} },
-            [FIELDS.YAW_INERTIA_PRECOMP_CUTOFF] = { t = "@i18n(app.modules.profile_tailrotor.cutoff)@", inline = 1, label = 2, mspapi = 1, apikey = "yaw_inertia_precomp_cutoff", apiversiongte = {12, 0, 8} },
-            [FIELDS.YAW_COLLECTIVE_DYNAMIC_GAIN] = { t = "@i18n(app.modules.profile_tailrotor.gain)@", inline = 2, label = 3, mspapi = 1, apikey = "yaw_collective_dynamic_gain", apiversionlte = {12, 0, 7} },
-            [FIELDS.YAW_COLLECTIVE_DYNAMIC_DECAY] = { t = "@i18n(app.modules.profile_tailrotor.decay)@", inline = 1, label = 3, mspapi = 1, apikey = "yaw_collective_dynamic_decay", apiversionlte = {12, 0, 7} },
-            [FIELDS.GOVERNOR_TTA_GAIN] = { t = "@i18n(app.modules.profile_governor.tta_gain)@", inline = 2, label = 4, mspapi = 2, apikey = "governor_tta_gain", apiversiongte = {12, 0, 9} },
-            [FIELDS.GOVERNOR_TTA_LIMIT] = { t = "@i18n(app.modules.profile_governor.tta_limit)@", inline = 1, label = 4, mspapi = 2, apikey = "governor_tta_limit", apiversiongte = {12, 0, 9} },
+            [FIELDS.YAW_CW_STOP_GAIN] = { t = "CW", inline = 2, label = 1, mspapi = 1, apikey = "yaw_cw_stop_gain" },
+            [FIELDS.YAW_CCW_STOP_GAIN] = { t = "CCW", inline = 1, label = 1, mspapi = 1, apikey = "yaw_ccw_stop_gain" },
+            [FIELDS.YAW_PRECOMP_CUTOFF] = { t = "Precomp Cutoff", mspapi = 1, apikey = "yaw_precomp_cutoff" },
+            [FIELDS.YAW_CYCLIC_FF_GAIN] = { t = "Cyclic FF gain", mspapi = 1, apikey = "yaw_cyclic_ff_gain" },
+            [FIELDS.YAW_COLLECTIVE_FF_GAIN] = { t = "Collective FF gain", mspapi = 1, apikey = "yaw_collective_ff_gain" },
+            [FIELDS.YAW_INERTIA_PRECOMP_GAIN] = { t = "Gain", inline = 2, label = 2, mspapi = 1, apikey = "yaw_inertia_precomp_gain", apiversiongte = {12, 0, 8} },
+            [FIELDS.YAW_INERTIA_PRECOMP_CUTOFF] = { t = "Cutoff", inline = 1, label = 2, mspapi = 1, apikey = "yaw_inertia_precomp_cutoff", apiversiongte = {12, 0, 8} },
+            [FIELDS.YAW_COLLECTIVE_DYNAMIC_GAIN] = { t = "Gain", inline = 2, label = 3, mspapi = 1, apikey = "yaw_collective_dynamic_gain", apiversionlte = {12, 0, 7} },
+            [FIELDS.YAW_COLLECTIVE_DYNAMIC_DECAY] = { t = "Decay", inline = 1, label = 3, mspapi = 1, apikey = "yaw_collective_dynamic_decay", apiversionlte = {12, 0, 7} },
+            [FIELDS.GOVERNOR_TTA_GAIN] = { t = "Gain", inline = 2, label = 4, mspapi = 2, apikey = "governor_tta_gain", apiversiongte = {12, 0, 9} },
+            [FIELDS.GOVERNOR_TTA_LIMIT] = { t = "Limit", inline = 1, label = 4, mspapi = 2, apikey = "governor_tta_limit", apiversiongte = {12, 0, 9} },
         }
     }
 }
@@ -92,4 +92,4 @@ local function wakeup()
     end
 end
 
-return {apidata = apidata, title = "@i18n(app.modules.profile_tailrotor.name)@", refreshOnProfileChange = true, reboot = false, eepromWrite = true, postLoad = postLoad, wakeup = wakeup, API = {}}
+return {apidata = apidata, title = "Tail Rotor", refreshOnProfileChange = true, reboot = false, eepromWrite = true, postLoad = postLoad, wakeup = wakeup, API = {}}

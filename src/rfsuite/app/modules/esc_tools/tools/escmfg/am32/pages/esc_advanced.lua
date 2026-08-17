@@ -35,19 +35,19 @@ local apidata = {
         labels = {
         },
         fields = {
-            [FIELD_IDX.timing_advance] = {t = "@i18n(app.modules.esc_tools.mfg.am32.timing)@",  mspapi = 1, type = 1, apikey = "timing_advance"},
-            [FIELD_IDX.stuck_rotor_protection] = {t = "@i18n(app.modules.esc_tools.mfg.am32.stuckrotorprotection)@",  mspapi = 1, type = 1, apikey = "stuck_rotor_protection"},
-            [FIELD_IDX.sinusoidal_startup] = {t = "@i18n(app.modules.esc_tools.mfg.am32.sinusoidalstartup)@",  mspapi = 1, type = 1, apikey = "sinusoidal_startup"},
-            [FIELD_IDX.sine_mode_power] = {t = "@i18n(app.modules.esc_tools.mfg.am32.sinepowermode)@",  mspapi = 1, apikey = "sine_mode_power"},
-            [FIELD_IDX.sine_mode_range] = {t = "@i18n(app.modules.esc_tools.mfg.am32.sinemoderange)@",  mspapi = 1, apikey = "sine_mode_range"},
-            [FIELD_IDX.bidirectional_mode] = {t = "@i18n(app.modules.esc_tools.mfg.am32.bidirectionalmode)@",  mspapi = 1, type = 1, apikey = "bidirectional_mode"},
-            [FIELD_IDX.esc_protocol] = {t = "@i18n(app.modules.esc_tools.mfg.am32.protocol)@",  mspapi = 1, type = 1, apikey = "esc_protocol"},
-            [FIELD_IDX.stall_protection] = {t = "@i18n(app.modules.esc_tools.mfg.am32.stallprotection)@", mspapi = 1, type = 1, apikey = "stall_protection"},
-            [FIELD_IDX.interval_telemetry] = {t = "@i18n(app.modules.esc_tools.mfg.am32.telemetryinterval)@", mspapi = 1, type = 1, apikey = "interval_telemetry"},
-            [FIELD_IDX.auto_advance] = {t = "@i18n(app.modules.esc_tools.mfg.am32.autoadvance)@", mspapi = 1, type = 1, apikey = "auto_advance"},
-            [FIELD_IDX.complementary_pwm] = {t = "@i18n(app.modules.esc_tools.mfg.am32.complementary_pwm)@", type = 1, mspapi = 1, apikey = "complementary_pwm"},
-            [FIELD_IDX.variable_pwm_frequency] = {t = "@i18n(app.modules.esc_tools.mfg.am32.variablepwmfrequency)@", mspapi = 1, type = 1, apikey = "variable_pwm_frequency"},
-            [FIELD_IDX.pwm_frequency] = {t = "@i18n(app.modules.esc_tools.mfg.am32.pwmfrequency)@", mspapi = 1, apikey = "pwm_frequency"},
+            [FIELD_IDX.timing_advance] = {t = "Timing",  mspapi = 1, type = 1, apikey = "timing_advance"},
+            [FIELD_IDX.stuck_rotor_protection] = {t = "Stuck Rotor Protection",  mspapi = 1, type = 1, apikey = "stuck_rotor_protection"},
+            [FIELD_IDX.sinusoidal_startup] = {t = "Sinusoidal Startup",  mspapi = 1, type = 1, apikey = "sinusoidal_startup"},
+            [FIELD_IDX.sine_mode_power] = {t = "Sine Power Mode",  mspapi = 1, apikey = "sine_mode_power"},
+            [FIELD_IDX.sine_mode_range] = {t = "Sine Mode Range",  mspapi = 1, apikey = "sine_mode_range"},
+            [FIELD_IDX.bidirectional_mode] = {t = "Bidirectional Mode",  mspapi = 1, type = 1, apikey = "bidirectional_mode"},
+            [FIELD_IDX.esc_protocol] = {t = "Protocol",  mspapi = 1, type = 1, apikey = "esc_protocol"},
+            [FIELD_IDX.stall_protection] = {t = "Stall Protection", mspapi = 1, type = 1, apikey = "stall_protection"},
+            [FIELD_IDX.interval_telemetry] = {t = "Telemetry Interval", mspapi = 1, type = 1, apikey = "interval_telemetry"},
+            [FIELD_IDX.auto_advance] = {t = "Auto Advance", mspapi = 1, type = 1, apikey = "auto_advance"},
+            [FIELD_IDX.complementary_pwm] = {t = "Complementary PWM", type = 1, mspapi = 1, apikey = "complementary_pwm"},
+            [FIELD_IDX.variable_pwm_frequency] = {t = "Variable PWM Frequency", mspapi = 1, type = 1, apikey = "variable_pwm_frequency"},
+            [FIELD_IDX.pwm_frequency] = {t = "PWM Frequency", mspapi = 1, apikey = "pwm_frequency"},
         }
     }                 
 }
@@ -107,7 +107,7 @@ return {
     navButtons = navHandlers.navButtons,
     onNavMenu = navHandlers.onNavMenu,
     event = navHandlers.event,
-    pageTitle = "@i18n(app.modules.esc_tools.name)@" .. " / " .. "@i18n(app.modules.esc_tools.mfg.am32.name)@" .. " / " .. "@i18n(app.modules.esc_tools.mfg.am32.advanced)@",
+    pageTitle = "Esc Programing" .. " / " .. "AM32" .. " / " .. "Advanced",
     headerLine = rfsuite.escHeaderLineText,
     progressCounter = 0.5,
     wakeup = wakeup

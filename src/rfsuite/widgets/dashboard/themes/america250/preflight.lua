@@ -27,7 +27,7 @@ local function header_boxes()
     end
 
     if header_boxes_cache == nil or last_txbatt_type ~= txbatt_type then
-        local boxes = utils.standardHeaderBoxes(i18n, colorMode, headeropts, txbatt_type)
+        local boxes = utils.standardHeaderBoxes(colorMode, headeropts, txbatt_type)
 
         -- Replace the stock Rotorflight logo with the MWRC-style title while
         -- keeping the radio's native header surface and battery/RSSI widgets.
@@ -448,19 +448,21 @@ for i = 0, 9 do
 end
 
 local function drawStar(cx, cy, outerRadius, innerRadius, color)
+    -- Streams the vertices instead of building a point list: this ran 13 times
+    -- per drawStarRing call, so the old form cost 143 throwaway tables a frame.
+    -- Same closed 10-gon (edges 1-2..9-10,10-1), same per-point floor.
     innerRadius = innerRadius or outerRadius * 0.45
-    local points = {}
+    lcd.color(color)
+    local firstx, firsty, px, py
     for i = 0, 9 do
         local radius = (i % 2 == 0) and outerRadius or innerRadius
         local u = STAR_UNIT[i + 1]
-        points[i + 1] = {cx + u[1] * radius, cy + u[2] * radius}
+        local sx = floor(cx + u[1] * radius)
+        local sy = floor(cy + u[2] * radius)
+        if i == 0 then firstx, firsty = sx, sy else lcd.drawLine(px, py, sx, sy) end
+        px, py = sx, sy
     end
-    lcd.color(color)
-    for i = 1, 10 do
-        local a = points[i]
-        local b = points[(i % 10) + 1]
-        lcd.drawLine(floor(a[1]), floor(a[2]), floor(b[1]), floor(b[2]))
-    end
+    lcd.drawLine(px, py, firstx, firsty)
 end
 
 local function drawStarRing(cx, cy, radius, count, color)

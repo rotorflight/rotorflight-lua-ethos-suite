@@ -134,8 +134,8 @@ local function startTest(duration)
     startTestTime = os.clock()
 
     testLoader = openProgressDialog({
-        title = "@i18n(app.modules.msp_speed.testing)@",
-        message = "@i18n(app.modules.msp_speed.testing_performance)@",
+        title = "Testing",
+        message = "Testing MSP performance...",
         close = function()
             updateStats()
             testLoader = nil
@@ -182,7 +182,7 @@ local function startTest(duration)
     })
 
     testLoader:value(0)
-    testLoaderBaseMessage = "@i18n(app.modules.msp_speed.testing_performance)@"
+    testLoaderBaseMessage = "Testing MSP performance..."
     testLoaderMspStatusLast = nil
     updateTestLoaderMessage()
     app.ui.registerProgressDialog(testLoader, testLoaderBaseMessage)
@@ -195,32 +195,32 @@ end
 local function openSpeedTestDialog()
     local buttons = {
         {
-            label = "@i18n(app.modules.msp_speed.seconds_600)@",
+            label = "  600S  ",
             action = function()
                 startTest(600)
                 return true
             end
         }, {
-            label = "@i18n(app.modules.msp_speed.seconds_300)@",
+            label = "  300S  ",
             action = function()
                 startTest(300)
                 return true
             end
         }, {
-            label = "@i18n(app.modules.msp_speed.seconds_120)@",
+            label = "  120S  ",
             action = function()
                 startTest(120)
                 return true
             end
         }, {
-            label = "@i18n(app.modules.msp_speed.seconds_30)@",
+            label = "  30S  ",
             action = function()
                 startTest(30)
                 return true
             end
         }
     }
-    form.openDialog({title = "@i18n(app.modules.msp_speed.start)@", message = "@i18n(app.modules.msp_speed.start_prompt)@", buttons = buttons, options = TEXT_LEFT})
+    form.openDialog({title = "Start", message = "Would you like to start the test? Choose the test run time below.", buttons = buttons, options = TEXT_LEFT})
 end
 
 local function openPage(opts)
@@ -238,38 +238,38 @@ local function openPage(opts)
 
     form.clear()
 
-    app.ui.fieldHeader("Developer / " .. "@i18n(app.modules.msp_speed.name)@")
+    app.ui.fieldHeader("Developer / " .. "MSP Speed")
 
     local posText = {x = w - 220, y = app.radio.linePaddingTop, w = 200, h = app.radio.navbuttonHeight}
 
-    line['rf'] = form.addLine("@i18n(app.modules.msp_speed.rf_protocol)@")
+    line['rf'] = form.addLine("RF protocol")
     fields['rf'] = form.addStaticText(line['rf'], posText, string.upper(tasks.msp.protocol.mspProtocol))
 
-    line['runtime'] = form.addLine("@i18n(app.modules.msp_speed.test_length)@")
+    line['runtime'] = form.addLine("Test length")
     fields['runtime'] = form.addStaticText(line['runtime'], posText, "-")
 
-    line['total'] = form.addLine("@i18n(app.modules.msp_speed.total_queries)@")
+    line['total'] = form.addLine("Total queries")
     fields['total'] = form.addStaticText(line['total'], posText, "-")
 
-    line['success'] = form.addLine("@i18n(app.modules.msp_speed.successful_queries)@")
+    line['success'] = form.addLine("Successful queries")
     fields['success'] = form.addStaticText(line['success'], posText, "-")
 
-    line['timeouts'] = form.addLine("@i18n(app.modules.msp_speed.timeouts)@")
+    line['timeouts'] = form.addLine("Timeouts")
     fields['timeouts'] = form.addStaticText(line['timeouts'], posText, "-")
 
-    line['retries'] = form.addLine("@i18n(app.modules.msp_speed.retries)@")
+    line['retries'] = form.addLine("Retries")
     fields['retries'] = form.addStaticText(line['retries'], posText, "-")
 
-    line['checksum'] = form.addLine("@i18n(app.modules.msp_speed.checksum_errors)@")
+    line['checksum'] = form.addLine("Checksum errors")
     fields['checksum'] = form.addStaticText(line['checksum'], posText, "-")
 
-    line['mintime'] = form.addLine("@i18n(app.modules.msp_speed.min_query_time)@")
+    line['mintime'] = form.addLine("Minimum query time")
     fields['mintime'] = form.addStaticText(line['mintime'], posText, "-")
 
-    line['maxtime'] = form.addLine("@i18n(app.modules.msp_speed.max_query_time)@")
+    line['maxtime'] = form.addLine("Maximum query time")
     fields['maxtime'] = form.addStaticText(line['maxtime'], posText, "-")
 
-    line['time'] = form.addLine("@i18n(app.modules.msp_speed.avg_query_time)@")
+    line['time'] = form.addLine("Average query time")
     fields['time'] = form.addStaticText(line['time'], posText, "-")
 
     formLoaded = true

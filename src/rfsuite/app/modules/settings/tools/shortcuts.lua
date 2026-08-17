@@ -54,8 +54,8 @@ end
 
 local function showShortcutLimitDialog()
     local message = string.format("No more than %d shortcuts can be selected.", MAX_SHORTCUTS)
-    local buttons = {{label = "@i18n(app.btn_ok)@", action = function() return true end}}
-    form.openDialog({width = nil, title = "@i18n(app.modules.settings.shortcuts)@", message = message, buttons = buttons, wakeup = function() end, paint = function() end, options = TEXT_LEFT})
+    local buttons = {{label = "          OK           ", action = function() return true end}}
+    form.openDialog({width = nil, title = "Shortcuts", message = message, buttons = buttons, wakeup = function() end, paint = function() end, options = TEXT_LEFT})
 end
 
 local function openPage(opts)
@@ -71,7 +71,7 @@ local function openPage(opts)
     rfsuite.app.lastTitle = title
     rfsuite.app.lastScript = script
 
-    rfsuite.app.ui.fieldHeader("@i18n(app.modules.settings.name)@" .. " / " .. "@i18n(app.modules.settings.shortcuts)@")
+    rfsuite.app.ui.fieldHeader("Settings" .. " / " .. "Shortcuts")
     rfsuite.app.formLineCnt = 0
     local formFieldCount = 0
 
@@ -117,14 +117,14 @@ local function openPage(opts)
         end)
 
     if #registry.groups == 0 then
-        rfsuite.app.formLines[#rfsuite.app.formLines + 1] = form.addLine("@i18n(app.modules.settings.shortcuts_none)@")
+        rfsuite.app.formLines[#rfsuite.app.formLines + 1] = form.addLine("No shortcut sources available.")
     else
         local groupChoices = {}
         for i, group in ipairs(registry.groups) do
-            groupChoices[#groupChoices + 1] = {group.title or "@i18n(app.menu_section_tools)@", i}
+            groupChoices[#groupChoices + 1] = {group.title or "Tools", i}
         end
 
-        local groupLine = addFieldLine(form, "@i18n(app.modules.settings.shortcuts_group)@")
+        local groupLine = addFieldLine(form, "Category")
         rfsuite.app.formFields[formFieldCount] = form.addChoiceField(groupLine, nil, groupChoices,
             function() return selectedGroup end,
             function(newValue)
@@ -134,7 +134,7 @@ local function openPage(opts)
 
         local group = registry.groups[selectedGroup]
         if group then
-            local panel = form.addExpansionPanel(group.title or "@i18n(app.menu_section_tools)@")
+            local panel = form.addExpansionPanel(group.title or "Tools")
             panel:open(true)
             for _, item in ipairs(group.items) do
                 local itemId = item.id
@@ -181,7 +181,10 @@ local function onSaveMenu()
             end
         end
         rfsuite.ini.save_ini_file("SCRIPTS:/" .. rfsuite.config.preferences .. "/preferences.ini", prefs)
-        rfsuite.app.MainMenu = assert(loadfile("app/modules/init.lua"))()
+        -- Invalidate rather than rebuild inline: reparsing the manifest here would stack
+        -- on top of this same tick's file I/O and can exceed Ethos's per-tick instruction
+        -- budget. The next screen that needs app.MainMenu rebuilds it lazily instead.
+        rfsuite.app.MainMenu = nil
         rfsuite.app.triggers.closeSave = true
         return true
     end
@@ -194,15 +197,15 @@ local function onSaveMenu()
 
     local buttons = {
         {
-            label = "@i18n(app.btn_ok_long)@",
+            label = "                OK                ",
             action = function()
                 doSave()
                 return true
             end
-        }, {label = "@i18n(app.modules.profile_select.cancel)@", action = function() return true end}
+        }, {label = "CANCEL", action = function() return true end}
     }
 
-    form.openDialog({width = nil, title = "@i18n(app.modules.profile_select.save_settings)@", message = "@i18n(app.modules.profile_select.save_prompt_local)@", buttons = buttons, wakeup = function() end, paint = function() end, options = TEXT_LEFT})
+    form.openDialog({width = nil, title = "Save settings", message = "Save current page to radio?", buttons = buttons, wakeup = function() end, paint = function() end, options = TEXT_LEFT})
 end
 
 local function event(widget, category, value, x, y)

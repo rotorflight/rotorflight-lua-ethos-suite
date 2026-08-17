@@ -29,10 +29,10 @@ local RAM_CRITICAL_FREE_KB = 150
 local RAM_CRITICAL_RECOVERY_KB = 180
 local RAM_CRITICAL_HOLD_S = 10
 local RAM_CRITICAL_CHECK_INTERVAL_S = 1.0
-local RAM_CRITICAL_DIALOG_TITLE = "@i18n(app.msg_lua_memory_critical_title)@"
-local RAM_CRITICAL_DIALOG_MESSAGE = "@i18n(app.msg_lua_memory_critical_restart_radio)@"
+local RAM_CRITICAL_DIALOG_TITLE = "Lua memory critically low"
+local RAM_CRITICAL_DIALOG_MESSAGE = "Please powercycle the radio to ensure system stability"
 local RAM_CRITICAL_DIALOG_BUTTONS = {{
-    label = "@i18n(app.btn_ok)@",
+    label = "          OK           ",
     action = function() return true end
 }}
 local ramCriticalLastCheckAt = 0
@@ -280,7 +280,7 @@ local function triggerSaveDialogs()
             return
         end
 
-        local saveMessage = "@i18n(app.msg_save_current_page)@"
+        local saveMessage = "Save current page to flight controller?"
         if page.extraMsgOnSave then
             saveMessage = saveMessage .. "\n\n" .. page.extraMsgOnSave
         end
@@ -288,11 +288,11 @@ local function triggerSaveDialogs()
         if rfsuite.preferences.general.save_confirm == true or rfsuite.preferences.general.save_confirm == "true" then
             form.openDialog({
                 width = nil,
-                title = "@i18n(app.msg_save_settings)@",
+                title = "Save settings",
                 message = saveMessage,
                 buttons = {
                     {
-                        label = "@i18n(app.btn_ok)@",
+                        label = "          OK           ",
                         action = function()
                             if not app.Page and app.uiState == app.uiStatus.pages and page then
                                 app.Page = page
@@ -306,7 +306,7 @@ local function triggerSaveDialogs()
                             app.ui.saveSettings(page)
                             return true
                         end
-                    }, {label = "@i18n(app.btn_cancel)@", action = function() return true end}
+                    }, {label = "CANCEL", action = function() return true end}
                 },
                 wakeup = function() end,
                 paint = function() end,
@@ -390,7 +390,7 @@ local function armedSaveWarning()
         app.dialogs.progressCounter = 0
         local key = rfsuite.utils.getArmedSaveBlockedMessage()
 
-        app.ui.progressDisplay("@i18n(app.msg_save_not_commited)@", key)
+        app.ui.progressDisplay("Save not committed to EEPROM", key)
     end
     if app.dialogs.progressCounter >= 100 then
         local progress = app.dialogs.progress
@@ -425,16 +425,16 @@ local function triggerReloadDialogs()
             return
         else 
             form.openDialog({
-                title = "@i18n(reload)@",
-                message = "@i18n(app.msg_reload_settings)@",
+                title = "Reload",
+                message = "Reload data from flight controller?",
                 buttons = {
                     {
-                        label = "@i18n(app.btn_ok)@",
+                        label = "          OK           ",
                         action = function()
                             app.triggers.reload = true;
                             return true
                         end
-                    }, {label = "@i18n(app.btn_cancel)@", action = function() return true end}
+                    }, {label = "CANCEL", action = function() return true end}
                 },
                 options = TEXT_LEFT
             })
@@ -446,16 +446,16 @@ local function triggerReloadDialogs()
             return
         else         
             form.openDialog({
-                title = "@i18n(reload)@",
-                message = "@i18n(app.msg_reload_settings)@",
+                title = "Reload",
+                message = "Reload data from flight controller?",
                 buttons = {
                     {
-                        label = "@i18n(app.btn_ok)@",
+                        label = "          OK           ",
                         action = function()
                             app.triggers.reloadFull = true;
                             return true
                         end
-                    }, {label = "@i18n(app.btn_cancel)@", action = function() return true end}
+                    }, {label = "CANCEL", action = function() return true end}
                 },
                 options = TEXT_LEFT
             })

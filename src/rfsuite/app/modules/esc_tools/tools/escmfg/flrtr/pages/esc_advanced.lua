@@ -14,10 +14,10 @@ local apidata = {
     formdata = {
         labels = {},
         fields = {
-            {t = "@i18n(app.modules.esc_tools.mfg.flrtr.auto_restart_time)@", mspapi = 1, apikey = "auto_restart_time"},
-            {t = "@i18n(app.modules.esc_tools.mfg.flrtr.restart_acc)@",        mspapi = 1, apikey = "restart_acc"},
-            {t = "@i18n(app.modules.esc_tools.mfg.flrtr.active_freewheel)@",   mspapi = 1, apikey = "active_freewheel", type = 1},
-            {t = "@i18n(app.modules.esc_tools.mfg.flrtr.drive_freq)@",         mspapi = 1, apikey = "drive_freq"}
+            {t = "Auto Bailout Time", mspapi = 1, apikey = "auto_restart_time"},
+            {t = "Auto Bailout Accel",        mspapi = 1, apikey = "restart_acc"},
+            {t = "Active Freewheeling",   mspapi = 1, apikey = "active_freewheel", type = 1},
+            {t = "Drive Frequency",         mspapi = 1, apikey = "drive_freq"}
         }
     }
 }
@@ -31,13 +31,12 @@ return {
     apidata = apidata,
     eepromWrite = true,
     reboot = false,
-    escinfo = escinfo,
-    svTiming = 0,
+        svTiming = 0,
     svFlags = 0,
     postLoad = postLoad,
     navButtons = navHandlers.navButtons,
     onNavMenu = navHandlers.onNavMenu,
     event = navHandlers.event,
-    pageTitle = "@i18n(app.modules.esc_tools.name)@" .. " / " .. "@i18n(app.modules.esc_tools.mfg.flrtr.name)@" .. " / " .. "@i18n(app.modules.esc_tools.mfg.flrtr.advanced)@",
+    pageTitle = "Esc Programing" .. " / " .. "FLYROTOR" .. " / " .. "Advanced",
     headerLine = rfsuite.escHeaderLineText, progressCounter = 0.5
 }

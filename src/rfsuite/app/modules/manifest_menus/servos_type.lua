@@ -28,17 +28,17 @@ return {
     pages = {
         {
             image = "pwm.png",
-            name = "@i18n(app.modules.servos.pwm)@",
+            name = "PWM Output",
             script = "pwm.lua",
             shortcutId = "s_servos_type_pwm_lua_401567fa69",
         },
         {
             image = "bus.png",
-            name = "@i18n(app.modules.servos.bus)@",
+            name = "BUS Output",
             script = "bus.lua",
             shortcutId = "s_servos_type_bus_lua_a5236c586f",
         },
     },
     scriptPrefix = "servos/tools/",
-    title = "@i18n(app.modules.servos.name)@",
+    title = "Servos",
 }

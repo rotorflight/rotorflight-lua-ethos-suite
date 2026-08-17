@@ -60,15 +60,15 @@ local LAYOUTINDEX = {
     }
 
 local LAYOUT = {
-        [LAYOUTINDEX.CYCLIC_CALIBRATION] = {t = "@i18n(app.modules.mixer.cyclic_calibration)@",    default = 400, step = 1, decimals = 1, min = 200, max = 2000, unit = "%"  },           -- GET_MIXER_INPUT_PITCH
-        [LAYOUTINDEX.COLLECTIVE_CALIBRATION] = {t = "@i18n(app.modules.mixer.collective_calibration)@",    default = 400, step = 1, decimals = 1, min = 200, max = 2000, unit = "%"   },  -- GET_MIXER_INPUT_COLLECTIVE
-        [LAYOUTINDEX.GEO_CORRECTION] = {t = "@i18n(app.modules.mixer.geo_correction)@",  unit = "%", step = 2, default = 0, min = -250, max = 250, decimals = 1    },                     -- MIXER_CONFIG
-        [LAYOUTINDEX.CYCLIC_PITCH_LIMIT] = {t = "@i18n(app.modules.mixer.cyclic_pitch_limit)@", unit = "°"  ,  default = 20, decimals = 1 , min = 0, max = 200       },                   -- GET_MIXER_INPUT_PITCH
-        [LAYOUTINDEX.COLLECTIVE_PITCH_LIMIT] = {t = "@i18n(app.modules.mixer.collective_pitch_limit)@",  unit = "°" , default = 20, decimals = 1 , min = 0, max = 200     },              -- GET_MIXER_INPUT_COLLECTIVE  
-        [LAYOUTINDEX.SWASH_PITCH_LIMIT] = {t = "@i18n(app.modules.mixer.swash_pitch_limit)@", unit = "°" , default = 200,    decimals = 1 , min = 0, max = 360      },                    -- MIXER_CONFIG
-        [LAYOUTINDEX.SWASH_PHASE] = {t = "@i18n(app.modules.mixer.swash_phase)@", unit = "°",  min = -1800, max = 1800 , decimals = 1,                   },                               -- MIXER_CONFIG
-        [LAYOUTINDEX.COL_TILT_COR_POS] = {t = "@i18n(app.modules.mixer.collective_tilt_correction_pos)@",    unit = "%", min = -100, max = 100},                                          -- MIXER_CONFIG
-        [LAYOUTINDEX.COL_TILT_COR_NEG] = {t = "@i18n(app.modules.mixer.collective_tilt_correction_neg)@",    unit = "%", min = -100, max = 100},                                          -- MIXER_CONFIG
+        [LAYOUTINDEX.CYCLIC_CALIBRATION] = {t = "Cyclic Calibration",    default = 400, step = 1, decimals = 1, min = 200, max = 2000, unit = "%"  },           -- GET_MIXER_INPUT_PITCH
+        [LAYOUTINDEX.COLLECTIVE_CALIBRATION] = {t = "Collective Calibration",    default = 400, step = 1, decimals = 1, min = 200, max = 2000, unit = "%"   },  -- GET_MIXER_INPUT_COLLECTIVE
+        [LAYOUTINDEX.GEO_CORRECTION] = {t = "Geo Correction",  unit = "%", step = 2, default = 0, min = -250, max = 250, decimals = 1    },                     -- MIXER_CONFIG
+        [LAYOUTINDEX.CYCLIC_PITCH_LIMIT] = {t = "Cyclic Pitch Limit", unit = "°"  ,  default = 20, decimals = 1 , min = 0, max = 200       },                   -- GET_MIXER_INPUT_PITCH
+        [LAYOUTINDEX.COLLECTIVE_PITCH_LIMIT] = {t = "Collective Pitch Limit",  unit = "°" , default = 20, decimals = 1 , min = 0, max = 200     },              -- GET_MIXER_INPUT_COLLECTIVE  
+        [LAYOUTINDEX.SWASH_PITCH_LIMIT] = {t = "Total Pitch Limit", unit = "°" , default = 200,    decimals = 1 , min = 0, max = 360      },                    -- MIXER_CONFIG
+        [LAYOUTINDEX.SWASH_PHASE] = {t = "Phase Angle", unit = "°",  min = -1800, max = 1800 , decimals = 1,                   },                               -- MIXER_CONFIG
+        [LAYOUTINDEX.COL_TILT_COR_POS] = {t = "Collective Tilt Correction +",    unit = "%", min = -100, max = 100},                                          -- MIXER_CONFIG
+        [LAYOUTINDEX.COL_TILT_COR_NEG] = {t = "Collective Tilt Correction -",    unit = "%", min = -100, max = 100},                                          -- MIXER_CONFIG
     }
 
 
@@ -196,7 +196,7 @@ end
 
 -- we take the raw data from APIDATA and process it into FORMDATA for easier use in the form
 -- the reverse is done in the save step
-function apiDataToFormData() 
+local function apiDataToFormData() 
 
     -- get raw data from api table
     local CYCLIC_CALIBRATION = APIDATA["GET_MIXER_INPUT_PITCH"]["values"].rate_stabilized_pitch
@@ -257,7 +257,7 @@ function apiDataToFormData()
 end
 
 -- the reverse of apiDataToFormData: take the values from FORMDATA and convert them back into raw API values
-function copyFormToApiValues()
+local function copyFormToApiValues()
     local apiValues = APIDATA
     if not apiValues then return false end
 
@@ -652,7 +652,7 @@ local function disableOverrideForExit(showDialog)
     end
     inOverRide = false
     if showDialog then
-        rfsuite.app.ui.progressDisplay("@i18n(app.modules.mixer.swash_override)@", "@i18n(app.modules.mixer.swash_override_disabling)@")
+        rfsuite.app.ui.progressDisplay("Swash Setup Mode", "Disabling swash setup mode...")
     end
     mixerOff()
 end
@@ -666,22 +666,22 @@ local function onToolMenu(self)
 
     local buttons = {
         {
-            label = "@i18n(app.btn_ok)@",
+            label = "          OK           ",
             action = function()
                 triggerOverRide = true
                 return true
             end
-        }, {label = "@i18n(app.btn_cancel)@", action = function() return true end}
+        }, {label = "CANCEL", action = function() return true end}
     }
 
     local message
     local title
     if inOverRide == false then
-        title = "@i18n(app.modules.mixer.enable_swash_override)@"
-        message = "@i18n(app.modules.mixer.enable_swash_override_message)@"
+        title = "Enable swash setup mode"
+        message = "Enable passthrough mixer override so you can move the sticks while adjusting swash geometry. \n\nLive changes from this page are sent to the flight controller."
     else
-        title = "@i18n(app.modules.mixer.disable_swash_override)@"
-        message = "@i18n(app.modules.mixer.disable_swash_override_message)@"
+        title = "Disable swash setup mode"
+        message = "Disable swash setup mode and return mixer control to the flight controller."
     end
 
     form.openDialog({width = nil, title = title, message = message, buttons = buttons, wakeup = function() end, paint = function() end, options = TEXT_LEFT})
@@ -696,13 +696,13 @@ local function onSaveMenu()
 
     local buttons = {
         {
-            label = "@i18n(app.btn_ok_long)@",
+            label = "                OK                ",
             action = function()
                 triggerSave = true
                 return true
             end
         }, {
-            label = "@i18n(app.btn_cancel)@",
+            label = "CANCEL",
             action = function()
                 triggerSave = false
                 return true
@@ -710,7 +710,7 @@ local function onSaveMenu()
         }
     }
 
-    form.openDialog({width = nil, title = "@i18n(app.modules.profile_select.save_settings)@", message = "@i18n(app.modules.profile_select.save_prompt)@", buttons = buttons, wakeup = function() end, paint = function() end, options = TEXT_LEFT})
+    form.openDialog({width = nil, title = "Save settings", message = "Save current page to flight controller?", buttons = buttons, wakeup = function() end, paint = function() end, options = TEXT_LEFT})
 
     triggerSave = false
 end
@@ -725,14 +725,14 @@ local function wakeup(self)
 
         if inOverRide == false then
 
-            rfsuite.app.ui.progressDisplay("@i18n(app.modules.mixer.swash_override)@", "@i18n(app.modules.mixer.swash_override_enabling)@")
+            rfsuite.app.ui.progressDisplay("Swash Setup Mode", "Enabling swash setup mode...")
             mixerOn()
             inOverRide = true
             lastAppliedDigest = formDigest()
             lastAppliedFields = snapshotFormFields()
         else
 
-            rfsuite.app.ui.progressDisplay("@i18n(app.modules.mixer.swash_override)@", "@i18n(app.modules.mixer.swash_override_disabling)@")
+            rfsuite.app.ui.progressDisplay("Swash Setup Mode", "Disabling swash setup mode...")
             mixerOff()
             inOverRide = false
         end
@@ -742,7 +742,7 @@ local function wakeup(self)
         if saveBusy then
             return
         end
-        rfsuite.app.ui.progressDisplay("@i18n(app.msg_saving_settings)@","@i18n(app.msg_saving_to_fbl)@")
+        rfsuite.app.ui.progressDisplay("Saving settings...","Saving data to flight controller...")
         if save.start(true) then
             triggerSave = false
         end
@@ -777,7 +777,6 @@ return {
     onToolMenu = onToolMenu,
     mixerOn = mixerOn,
     mixerOff = mixerOff,
-    postLoad = postLoad, 
     wakeup = wakeup, 
     onReloadMenu = onReloadMenu,
     close = close,

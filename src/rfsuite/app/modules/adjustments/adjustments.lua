@@ -8,11 +8,11 @@ local pageRuntime = assert(loadfile("app/lib/page_runtime.lua"))()
 local navHandlers = pageRuntime.createMenuHandlers({defaultSection = "hardware"})
 
 local ADJUST_TYPE_OPTIONS = {
-    "@i18n(app.modules.adjustments.type_off)@",
-    "@i18n(app.modules.adjustments.type_mapped)@",
-    "@i18n(app.modules.adjustments.type_stepped)@"
+    "OFF",
+    "MAPPED",
+    "STEPPED"
 }
-local MODULE_TITLE = "@i18n(app.modules.adjustments.name)@"
+local MODULE_TITLE = "Adjustments"
 local ALWAYS_ON_CHANNEL = 255
 local AUX_CHANNEL_COUNT_FALLBACK = 20
 
@@ -29,89 +29,89 @@ local ADJUSTMENT_RANGE_DEFAULT_COUNT = 42
 local MSP_FUNCTION_NAME_PREFETCH_MIN_API = "12.09"
 
 local ADJUST_FUNCTIONS = {
-    {id = 0, name = "@i18n(app.modules.adjustments.fn_none)@", min = 0, max = 100},
-    {id = 1, name = "@i18n(app.modules.adjustments.fn_rate_profile)@", min = 1, max = 6},
-    {id = 2, name = "@i18n(app.modules.adjustments.fn_pid_profile)@", min = 1, max = 6},
-    {id = 3, name = "@i18n(app.modules.adjustments.fn_led_profile)@", min = 1, max = 4},
-    {id = 4, name = "@i18n(app.modules.adjustments.fn_osd_profile)@", min = 1, max = 3},
-    {id = 5, name = "@i18n(app.modules.adjustments.fn_pitch_rate)@", min = 0, max = 255},
-    {id = 6, name = "@i18n(app.modules.adjustments.fn_roll_rate)@", min = 0, max = 255},
-    {id = 7, name = "@i18n(app.modules.adjustments.fn_yaw_rate)@", min = 0, max = 255},
-    {id = 8, name = "@i18n(app.modules.adjustments.fn_pitch_rc_rate)@", min = 0, max = 255},
-    {id = 9, name = "@i18n(app.modules.adjustments.fn_roll_rc_rate)@", min = 0, max = 255},
-    {id = 10, name = "@i18n(app.modules.adjustments.fn_yaw_rc_rate)@", min = 0, max = 255},
-    {id = 11, name = "@i18n(app.modules.adjustments.fn_pitch_rc_expo)@", min = 0, max = 100},
-    {id = 12, name = "@i18n(app.modules.adjustments.fn_roll_rc_expo)@", min = 0, max = 100},
-    {id = 13, name = "@i18n(app.modules.adjustments.fn_yaw_rc_expo)@", min = 0, max = 100},
-    {id = 14, name = "@i18n(app.modules.adjustments.fn_pitch_p)@", min = 0, max = 250},
-    {id = 15, name = "@i18n(app.modules.adjustments.fn_pitch_i)@", min = 0, max = 250},
-    {id = 16, name = "@i18n(app.modules.adjustments.fn_pitch_d)@", min = 0, max = 250},
-    {id = 17, name = "@i18n(app.modules.adjustments.fn_pitch_f)@", min = 0, max = 250},
-    {id = 18, name = "@i18n(app.modules.adjustments.fn_roll_p)@", min = 0, max = 250},
-    {id = 19, name = "@i18n(app.modules.adjustments.fn_roll_i)@", min = 0, max = 250},
-    {id = 20, name = "@i18n(app.modules.adjustments.fn_roll_d)@", min = 0, max = 250},
-    {id = 21, name = "@i18n(app.modules.adjustments.fn_roll_f)@", min = 0, max = 250},
-    {id = 22, name = "@i18n(app.modules.adjustments.fn_yaw_p)@", min = 0, max = 250},
-    {id = 23, name = "@i18n(app.modules.adjustments.fn_yaw_i)@", min = 0, max = 250},
-    {id = 24, name = "@i18n(app.modules.adjustments.fn_yaw_d)@", min = 0, max = 250},
-    {id = 25, name = "@i18n(app.modules.adjustments.fn_yaw_f)@", min = 0, max = 250},
-    {id = 26, name = "@i18n(app.modules.adjustments.fn_yaw_cw_stop_gain)@", min = 25, max = 250},
-    {id = 27, name = "@i18n(app.modules.adjustments.fn_yaw_ccw_stop_gain)@", min = 25, max = 250},
-    {id = 28, name = "@i18n(app.modules.adjustments.fn_yaw_cyclic_ff)@", min = 0, max = 250},
-    {id = 29, name = "@i18n(app.modules.adjustments.fn_yaw_collective_ff)@", min = 0, max = 250},
-    {id = 30, name = "@i18n(app.modules.adjustments.fn_yaw_collective_dyn)@", min = -125, max = 125, maxApi = {12, 0, 7}},
-    {id = 31, name = "@i18n(app.modules.adjustments.fn_yaw_collective_decay)@", min = 1, max = 250, maxApi = {12, 0, 7}},
-    {id = 32, name = "@i18n(app.modules.adjustments.fn_pitch_collective_ff)@", min = 0, max = 250},
-    {id = 33, name = "@i18n(app.modules.adjustments.fn_pitch_gyro_cutoff)@", min = 0, max = 250},
-    {id = 34, name = "@i18n(app.modules.adjustments.fn_roll_gyro_cutoff)@", min = 0, max = 250},
-    {id = 35, name = "@i18n(app.modules.adjustments.fn_yaw_gyro_cutoff)@", min = 0, max = 250},
-    {id = 36, name = "@i18n(app.modules.adjustments.fn_pitch_dterm_cutoff)@", min = 0, max = 250},
-    {id = 37, name = "@i18n(app.modules.adjustments.fn_roll_dterm_cutoff)@", min = 0, max = 250},
-    {id = 38, name = "@i18n(app.modules.adjustments.fn_yaw_dterm_cutoff)@", min = 0, max = 250},
-    {id = 39, name = "@i18n(app.modules.adjustments.fn_rescue_climb_collective)@", min = 0, max = 1000},
-    {id = 40, name = "@i18n(app.modules.adjustments.fn_rescue_hover_collective)@", min = 0, max = 1000},
-    {id = 41, name = "@i18n(app.modules.adjustments.fn_rescue_hover_altitude)@", min = 0, max = 2500},
-    {id = 42, name = "@i18n(app.modules.adjustments.fn_rescue_alt_p)@", min = 0, max = 250},
-    {id = 43, name = "@i18n(app.modules.adjustments.fn_rescue_alt_i)@", min = 0, max = 250},
-    {id = 44, name = "@i18n(app.modules.adjustments.fn_rescue_alt_d)@", min = 0, max = 250},
-    {id = 45, name = "@i18n(app.modules.adjustments.fn_angle_level_gain)@", min = 0, max = 200},
-    {id = 46, name = "@i18n(app.modules.adjustments.fn_horizon_level_gain)@", min = 0, max = 200},
-    {id = 47, name = "@i18n(app.modules.adjustments.fn_acro_trainer_gain)@", min = 25, max = 255},
-    {id = 48, name = "@i18n(app.modules.adjustments.fn_governor_gain)@", min = 0, max = 250},
-    {id = 49, name = "@i18n(app.modules.adjustments.fn_governor_p)@", min = 0, max = 250},
-    {id = 50, name = "@i18n(app.modules.adjustments.fn_governor_i)@", min = 0, max = 250},
-    {id = 51, name = "@i18n(app.modules.adjustments.fn_governor_d)@", min = 0, max = 250},
-    {id = 52, name = "@i18n(app.modules.adjustments.fn_governor_f)@", min = 0, max = 250},
-    {id = 53, name = "@i18n(app.modules.adjustments.fn_governor_tta)@", min = 0, max = 250},
-    {id = 54, name = "@i18n(app.modules.adjustments.fn_governor_cyclic_ff)@", min = 0, max = 250},
-    {id = 55, name = "@i18n(app.modules.adjustments.fn_governor_collective_ff)@", min = 0, max = 250},
-    {id = 56, name = "@i18n(app.modules.adjustments.fn_pitch_b)@", min = 0, max = 250},
-    {id = 57, name = "@i18n(app.modules.adjustments.fn_roll_b)@", min = 0, max = 250},
-    {id = 58, name = "@i18n(app.modules.adjustments.fn_yaw_b)@", min = 0, max = 250},
-    {id = 59, name = "@i18n(app.modules.adjustments.fn_pitch_o)@", min = 0, max = 250},
-    {id = 60, name = "@i18n(app.modules.adjustments.fn_roll_o)@", min = 0, max = 250},
-    {id = 61, name = "@i18n(app.modules.adjustments.fn_cross_coupling_gain)@", min = 0, max = 250},
-    {id = 62, name = "@i18n(app.modules.adjustments.fn_cross_coupling_ratio)@", min = 0, max = 250},
-    {id = 63, name = "@i18n(app.modules.adjustments.fn_cross_coupling_cutoff)@", min = 0, max = 250},
-    {id = 64, name = "@i18n(app.modules.adjustments.fn_acc_trim_pitch)@", min = -300, max = 300},
-    {id = 65, name = "@i18n(app.modules.adjustments.fn_acc_trim_roll)@", min = -300, max = 300},
-    {id = 66, name = "@i18n(app.modules.adjustments.fn_yaw_inertia_precomp_gain)@", min = 0, max = 250, minApi = {12, 0, 8}},
-    {id = 67, name = "@i18n(app.modules.adjustments.fn_yaw_inertia_precomp_cutoff)@", min = 0, max = 250, minApi = {12, 0, 8}},
-    {id = 68, name = "@i18n(app.modules.adjustments.fn_pitch_setpoint_boost_gain)@", min = 0, max = 255, minApi = {12, 0, 8}},
-    {id = 69, name = "@i18n(app.modules.adjustments.fn_roll_setpoint_boost_gain)@", min = 0, max = 255, minApi = {12, 0, 8}},
-    {id = 70, name = "@i18n(app.modules.adjustments.fn_yaw_setpoint_boost_gain)@", min = 0, max = 255, minApi = {12, 0, 8}},
-    {id = 71, name = "@i18n(app.modules.adjustments.fn_col_setpoint_boost_gain)@", min = 0, max = 255, minApi = {12, 0, 8}},
-    {id = 72, name = "@i18n(app.modules.adjustments.fn_yaw_dyn_ceiling_gain)@", min = 0, max = 250, minApi = {12, 0, 8}},
-    {id = 73, name = "@i18n(app.modules.adjustments.fn_yaw_dyn_deadband_gain)@", min = 0, max = 250, minApi = {12, 0, 8}},
-    {id = 74, name = "@i18n(app.modules.adjustments.fn_yaw_dyn_deadband_filter)@", min = 0, max = 250, minApi = {12, 0, 8}},
-    {id = 75, name = "@i18n(app.modules.adjustments.fn_yaw_precomp_cutoff)@", min = 0, max = 250, minApi = {12, 0, 8}},
-    {id = 76, name = "@i18n(app.modules.adjustments.fn_gov_idle_throttle)@", min = 0, max = 250, minApi = {12, 0, 9}},
-    {id = 77, name = "@i18n(app.modules.adjustments.fn_gov_auto_throttle)@", min = 0, max = 250, minApi = {12, 0, 9}},
-    {id = 78, name = "@i18n(app.modules.adjustments.fn_gov_max_throttle)@", min = 0, max = 100, minApi = {12, 0, 9}},
-    {id = 79, name = "@i18n(app.modules.adjustments.fn_gov_min_throttle)@", min = 0, max = 100, minApi = {12, 0, 9}},
-    {id = 80, name = "@i18n(app.modules.adjustments.fn_gov_headspeed)@", min = 0, max = 10000, minApi = {12, 0, 9}},
-    {id = 81, name = "@i18n(app.modules.adjustments.fn_gov_yaw_ff)@", min = 0, max = 250, minApi = {12, 0, 9}},
-    {id = 82, name = "@i18n(app.modules.adjustments.fn_battery_profile)@", min = 1, max = 6},
+    {id = 0, name = "None", min = 0, max = 100},
+    {id = 1, name = "Rate Profile", min = 1, max = 6},
+    {id = 2, name = "PID Profile", min = 1, max = 6},
+    {id = 3, name = "LED Profile", min = 1, max = 4},
+    {id = 4, name = "OSD Profile", min = 1, max = 3},
+    {id = 5, name = "Pitch Rate", min = 0, max = 255},
+    {id = 6, name = "Roll Rate", min = 0, max = 255},
+    {id = 7, name = "Yaw Rate", min = 0, max = 255},
+    {id = 8, name = "Pitch RC Rate", min = 0, max = 255},
+    {id = 9, name = "Roll RC Rate", min = 0, max = 255},
+    {id = 10, name = "Yaw RC Rate", min = 0, max = 255},
+    {id = 11, name = "Pitch RC Expo", min = 0, max = 100},
+    {id = 12, name = "Roll RC Expo", min = 0, max = 100},
+    {id = 13, name = "Yaw RC Expo", min = 0, max = 100},
+    {id = 14, name = "Pitch P", min = 0, max = 250},
+    {id = 15, name = "Pitch I", min = 0, max = 250},
+    {id = 16, name = "Pitch D", min = 0, max = 250},
+    {id = 17, name = "Pitch F", min = 0, max = 250},
+    {id = 18, name = "Roll P", min = 0, max = 250},
+    {id = 19, name = "Roll I", min = 0, max = 250},
+    {id = 20, name = "Roll D", min = 0, max = 250},
+    {id = 21, name = "Roll F", min = 0, max = 250},
+    {id = 22, name = "Yaw P", min = 0, max = 250},
+    {id = 23, name = "Yaw I", min = 0, max = 250},
+    {id = 24, name = "Yaw D", min = 0, max = 250},
+    {id = 25, name = "Yaw F", min = 0, max = 250},
+    {id = 26, name = "Yaw CW Stop Gain", min = 25, max = 250},
+    {id = 27, name = "Yaw CCW Stop Gain", min = 25, max = 250},
+    {id = 28, name = "Yaw Cyclic FF", min = 0, max = 250},
+    {id = 29, name = "Yaw Collective FF", min = 0, max = 250},
+    {id = 30, name = "Yaw Collective Dyn", min = -125, max = 125, maxApi = {12, 0, 7}},
+    {id = 31, name = "Yaw Collective Decay", min = 1, max = 250, maxApi = {12, 0, 7}},
+    {id = 32, name = "Pitch Collective FF", min = 0, max = 250},
+    {id = 33, name = "Pitch Gyro Cutoff", min = 0, max = 250},
+    {id = 34, name = "Roll Gyro Cutoff", min = 0, max = 250},
+    {id = 35, name = "Yaw Gyro Cutoff", min = 0, max = 250},
+    {id = 36, name = "Pitch Dterm Cutoff", min = 0, max = 250},
+    {id = 37, name = "Roll Dterm Cutoff", min = 0, max = 250},
+    {id = 38, name = "Yaw Dterm Cutoff", min = 0, max = 250},
+    {id = 39, name = "Rescue Climb Collective", min = 0, max = 1000},
+    {id = 40, name = "Rescue Hover Collective", min = 0, max = 1000},
+    {id = 41, name = "Rescue Hover Altitude", min = 0, max = 2500},
+    {id = 42, name = "Rescue Alt P", min = 0, max = 250},
+    {id = 43, name = "Rescue Alt I", min = 0, max = 250},
+    {id = 44, name = "Rescue Alt D", min = 0, max = 250},
+    {id = 45, name = "Angle Level Gain", min = 0, max = 200},
+    {id = 46, name = "Horizon Level Gain", min = 0, max = 200},
+    {id = 47, name = "Acro Trainer Gain", min = 25, max = 255},
+    {id = 48, name = "Governor Gain", min = 0, max = 250},
+    {id = 49, name = "Governor P", min = 0, max = 250},
+    {id = 50, name = "Governor I", min = 0, max = 250},
+    {id = 51, name = "Governor D", min = 0, max = 250},
+    {id = 52, name = "Governor F", min = 0, max = 250},
+    {id = 53, name = "Governor TTA", min = 0, max = 250},
+    {id = 54, name = "Governor Cyclic FF", min = 0, max = 250},
+    {id = 55, name = "Governor Collective FF", min = 0, max = 250},
+    {id = 56, name = "Pitch B", min = 0, max = 250},
+    {id = 57, name = "Roll B", min = 0, max = 250},
+    {id = 58, name = "Yaw B", min = 0, max = 250},
+    {id = 59, name = "Pitch O", min = 0, max = 250},
+    {id = 60, name = "Roll O", min = 0, max = 250},
+    {id = 61, name = "Cross Coupling Gain", min = 0, max = 250},
+    {id = 62, name = "Cross Coupling Ratio", min = 0, max = 250},
+    {id = 63, name = "Cross Coupling Cutoff", min = 0, max = 250},
+    {id = 64, name = "Acc Trim Pitch", min = -300, max = 300},
+    {id = 65, name = "Acc Trim Roll", min = -300, max = 300},
+    {id = 66, name = "Yaw Inertia Precomp Gain", min = 0, max = 250, minApi = {12, 0, 8}},
+    {id = 67, name = "Yaw Inertia Precomp Cutoff", min = 0, max = 250, minApi = {12, 0, 8}},
+    {id = 68, name = "Pitch Setpoint Boost Gain", min = 0, max = 255, minApi = {12, 0, 8}},
+    {id = 69, name = "Roll Setpoint Boost Gain", min = 0, max = 255, minApi = {12, 0, 8}},
+    {id = 70, name = "Yaw Setpoint Boost Gain", min = 0, max = 255, minApi = {12, 0, 8}},
+    {id = 71, name = "Col Setpoint Boost Gain", min = 0, max = 255, minApi = {12, 0, 8}},
+    {id = 72, name = "Yaw Dyn Ceiling Gain", min = 0, max = 250, minApi = {12, 0, 8}},
+    {id = 73, name = "Yaw Dyn Deadband Gain", min = 0, max = 250, minApi = {12, 0, 8}},
+    {id = 74, name = "Yaw Dyn Deadband Filter", min = 0, max = 250, minApi = {12, 0, 8}},
+    {id = 75, name = "Yaw Precomp Cutoff", min = 0, max = 250, minApi = {12, 0, 8}},
+    {id = 76, name = "Gov Idle Throttle", min = 0, max = 250, minApi = {12, 0, 9}},
+    {id = 77, name = "Gov Auto Throttle", min = 0, max = 250, minApi = {12, 0, 9}},
+    {id = 78, name = "Gov Max Throttle", min = 0, max = 100, minApi = {12, 0, 9}},
+    {id = 79, name = "Gov Min Throttle", min = 0, max = 100, minApi = {12, 0, 9}},
+    {id = 80, name = "Gov Headspeed", min = 0, max = 10000, minApi = {12, 0, 9}},
+    {id = 81, name = "Gov Yaw FF", min = 0, max = 250, minApi = {12, 0, 9}},
+    {id = 82, name = "Battery Profile", min = 1, max = 6},
 }
 
 local state = {
@@ -283,7 +283,7 @@ local function buildFunctionOptions(currentId)
     end
 
     if currentId ~= nil and byId[currentId] == nil then
-        local fallback = {id = currentId, name = "@i18n(app.modules.adjustments.function_label)@ " .. tostring(currentId), min = -32768, max = 32767}
+        local fallback = {id = currentId, name = "Function " .. tostring(currentId), min = -32768, max = 32767}
         entries[#entries + 1] = {name = fallback.name, id = fallback.id}
         byId[currentId] = fallback
     end
@@ -317,7 +317,7 @@ end
 local function getFunctionDisplayName(fnId)
     local fn = getFunctionById(math.floor(fnId or 0))
     if fn and fn.name then return fn.name end
-    return "@i18n(app.modules.adjustments.function_label)@ " .. tostring(math.floor(fnId or 0))
+    return "Function " .. tostring(math.floor(fnId or 0))
 end
 
 local function getFunctionChoiceIndex(fnId)
@@ -342,7 +342,7 @@ local function hasAssignedFunction(adjRange)
 end
 
 local function buildRangeSlotLabel(slotIndex, adjRange)
-    local label = "@i18n(app.modules.adjustments.range)@ " .. tostring(slotIndex)
+    local label = "Range " .. tostring(slotIndex)
     if not state.showFunctionNamesInRangeSelector then return label end
     if not hasAssignedFunction(adjRange) then return label end
 
@@ -368,10 +368,10 @@ end
 
 local function buildAuxOptions(includeAuto, includeAlways)
     local options = {}
-    if includeAuto then options[#options + 1] = "@i18n(app.modules.adjustments.channel_auto)@" end
-    if includeAlways then options[#options + 1] = "@i18n(app.modules.adjustments.channel_always)@" end
+    if includeAuto then options[#options + 1] = "AUTO" end
+    if includeAlways then options[#options + 1] = "Always" end
     for i = 1, AUX_CHANNEL_COUNT_FALLBACK do
-        options[#options + 1] = "@i18n(app.modules.adjustments.channel_aux_prefix)@" .. tostring(i)
+        options[#options + 1] = "AUX " .. tostring(i)
     end
     return options
 end
@@ -708,7 +708,7 @@ local function readAdjustmentRanges()
                 state.loadedSlots[i] = true
             end
             state.loadError = nil
-            state.infoMessage = messageOverride or (usedDefaultFallback and "@i18n(app.modules.adjustments.info_default_slots)@" or nil)
+            state.infoMessage = messageOverride or (usedDefaultFallback and "No ranges returned by FC. Showing default slot list." or nil)
             state.needsRender = true
             rfsuite.app.triggers.closeProgressLoader = true
         end
@@ -784,7 +784,7 @@ local function readAdjustmentRanges()
     end, function()
         -- Older FC builds may not support per-slot get. Fall back to legacy bulk read.
         readAdjustmentRangesBulk(function(ranges)
-            finalizeWithRanges(ranges, "@i18n(app.modules.adjustments.info_legacy_load)@")
+            finalizeWithRanges(ranges, "Loaded using legacy adjustment range read.")
         end, function()
             finalizeFallbackLocked()
         end)
@@ -793,11 +793,11 @@ end
 
 local function addRangeSlot()
     if #state.adjustmentRanges >= ADJUSTMENT_RANGE_MAX then
-        local buttons = {{label = "@i18n(app.btn_ok_long)@", action = function() return true end}}
+        local buttons = {{label = "                OK                ", action = function() return true end}}
         form.openDialog({
             width = nil,
             title = MODULE_TITLE,
-            message = "@i18n(app.modules.adjustments.msg_no_free_slots)@",
+            message = "No free adjustment slots remain.",
             buttons = buttons,
             wakeup = function() end,
             paint = function() end,
@@ -828,7 +828,7 @@ local function startLoad()
     state.loadedSlots = {}
     state.pendingSlotLoads = {}
     state.needsRender = true
-    rfsuite.app.ui.progressDisplay(MODULE_TITLE, "@i18n(app.modules.adjustments.loading_ranges)@")
+    rfsuite.app.ui.progressDisplay(MODULE_TITLE, "Loading adjustment ranges")
     readAdjustmentRanges()
 end
 
@@ -883,7 +883,7 @@ local function setFunctionForRange(adjRange, fnId)
 end
 
 local function showInfoDialog(title, message)
-    local buttons = {{label = "@i18n(app.btn_ok_long)@", action = function() return true end}}
+    local buttons = {{label = "                OK                ", action = function() return true end}}
     form.openDialog({
         width = nil,
         title = title,
@@ -897,8 +897,8 @@ end
 
 local function confirmRangeSet(title, message, onConfirm)
     local buttons = {
-        {label = "@i18n(app.btn_ok_long)@", action = function() if onConfirm then onConfirm() end; return true end},
-        {label = "@i18n(app.btn_cancel)@", action = function() return true end}
+        {label = "                OK                ", action = function() if onConfirm then onConfirm() end; return true end},
+        {label = "CANCEL", action = function() return true end}
     }
 
     form.openDialog({
@@ -940,13 +940,13 @@ end
 
 local function getChannelUsForRangeSet(channelIndex, autoTable, slot)
     if autoTable and autoTable[slot] then
-        showInfoDialog(MODULE_TITLE, "@i18n(app.modules.adjustments.msg_auto_detect_lock_first)@")
+        showInfoDialog(MODULE_TITLE, "Auto-detect is active for this row. Toggle to lock AUX first.")
         return nil
     end
 
     local us = getAuxPulseUs(channelIndex or 0)
     if not us then
-        showInfoDialog(MODULE_TITLE, "@i18n(app.modules.adjustments.msg_live_channel_unavailable)@")
+        showInfoDialog(MODULE_TITLE, "Live channel value unavailable.")
         return nil
     end
     return us
@@ -963,10 +963,10 @@ local function applyRangeSetFromChannel(title, rangeTable, us, slotIndex)
 
     confirmRangeSet(
         title,
-        "@i18n(app.modules.adjustments.confirm_use_current)@ "
+        "Use current value "
             .. tostring(us) .. "us?\n\n"
-            .. "@i18n(app.modules.adjustments.min_label)@: " .. tostring(targetStart) .. "us\n"
-            .. "@i18n(app.modules.adjustments.max_label)@: " .. tostring(targetEnd) .. "us",
+            .. "Min: " .. tostring(targetStart) .. "us\n"
+            .. "Max: " .. tostring(targetEnd) .. "us",
         function()
             rangeTable.start = targetStart
             rangeTable["end"] = targetEnd
@@ -1074,10 +1074,10 @@ local function updateLiveFields()
             syncEnableControls(adjRange)
             enaUs = us
         else
-            if state.liveFields.ena and state.liveFields.ena.value then state.liveFields.ena:value("@i18n(app.modules.adjustments.channel_auto_detecting)@") end
+            if state.liveFields.ena and state.liveFields.ena.value then state.liveFields.ena:value("AUTO...") end
         end
     elseif adjRange.enaChannel == ALWAYS_ON_CHANNEL then
-        if state.liveFields.ena and state.liveFields.ena.value then state.liveFields.ena:value("@i18n(app.modules.adjustments.channel_always)@") end
+        if state.liveFields.ena and state.liveFields.ena.value then state.liveFields.ena:value("Always") end
         enaUs = 1500
     else
         enaUs = getAuxPulseUs(adjRange.enaChannel or 0)
@@ -1100,7 +1100,7 @@ local function updateLiveFields()
             markDirty(slot)
             adjUs = us
         else
-            if state.liveFields.adj and state.liveFields.adj.value then state.liveFields.adj:value("@i18n(app.modules.adjustments.channel_auto_detecting)@") end
+            if state.liveFields.adj and state.liveFields.adj.value then state.liveFields.adj:value("AUTO...") end
         end
     else
         adjUs = getAuxPulseUs(adjRange.adjChannel or 0)
@@ -1113,17 +1113,16 @@ local function updateLiveFields()
         end
     end
 
-    if state.liveFields.preview and state.liveFields.preview.value then
+    -- calcPreview and getAdjustmentType are pure over adjRange, so the two
+    -- blocks below were computing an identical result twice per tick.
+    local hasPreview = state.liveFields.preview and state.liveFields.preview.value
+    local hasPreviewCompact = state.liveFields.previewCompact and state.liveFields.previewCompact.value
+    if hasPreview or hasPreviewCompact then
         local preview = calcPreview(adjRange, getAdjustmentType(adjRange), enaUs, adjUs)
         local valueText = preview.text
         if preview.active then valueText = valueText .. "*" end
-        state.liveFields.preview:value("Output: " .. valueText)
-    end
-    if state.liveFields.previewCompact and state.liveFields.previewCompact.value then
-        local preview = calcPreview(adjRange, getAdjustmentType(adjRange), enaUs, adjUs)
-        local valueText = preview.text
-        if preview.active then valueText = valueText .. "*" end
-        state.liveFields.previewCompact:value("O:" .. valueText)
+        if hasPreview then state.liveFields.preview:value("Output: " .. valueText) end
+        if hasPreviewCompact then state.liveFields.previewCompact:value("O:" .. valueText) end
     end
 end
 
@@ -1137,23 +1136,23 @@ local function render()
     app.ui.fieldHeader(state.title)
 
     if state.loading then
-        form.addLine("@i18n(app.modules.adjustments.loading_ranges_detail)@")
+        form.addLine("Loading adjustment ranges...")
         return
     end
 
     if state.loadError then
-        form.addLine("@i18n(app.modules.adjustments.load_error)@ " .. tostring(state.loadError))
+        form.addLine("Load error: " .. tostring(state.loadError))
         return
     end
 
     if state.readFallbackLocked then
-        form.addLine("@i18n(app.modules.adjustments.read_timeout)@")
-        form.addLine("@i18n(app.modules.adjustments.editing_disabled_reload_back)@")
+        form.addLine("Adjustment read timed out.")
+        form.addLine("Editing is disabled. Use Reload or Back.")
         return
     end
 
     if #state.adjustmentRanges == 0 then
-        form.addLine("@i18n(app.modules.adjustments.no_ranges_reported)@")
+        form.addLine("No adjustment ranges reported by FC.")
         return
     end
 
@@ -1179,7 +1178,7 @@ local function render()
     end
 
     local activeCount = countActiveRanges()
-    local infoLine = form.addLine("@i18n(app.modules.adjustments.active_ranges)@ " .. tostring(activeCount) .. " / " .. tostring(#state.adjustmentRanges))
+    local infoLine = form.addLine("Active ranges: " .. tostring(activeCount) .. " / " .. tostring(#state.adjustmentRanges))
     local previewW = math.max(48, math.floor(width * 0.16))
     local previewX = width - rightPadding - previewW
 
@@ -1187,7 +1186,7 @@ local function render()
         local statusW = math.max(76, math.floor(width * 0.22))
         local statusX = previewX - gap - statusW
         local statusBtn = form.addButton(infoLine, {x = statusX, y = y, w = statusW, h = h}, {
-            text = "@i18n(app.modules.adjustments.unsaved_changes)@",
+            text = "Unsaved changes",
             icon = nil,
             options = FONT_S,
             paint = function() end,
@@ -1198,8 +1197,8 @@ local function render()
     local preview = form.addStaticText(infoLine, {x = previewX, y = y, w = previewW, h = h}, "Output: -")
     if preview and preview.value then state.liveFields.preview = preview end
 
-    if hasActiveAutoDetect() then form.addLine("@i18n(app.modules.adjustments.auto_detect_active_toggle)@") end
-    if state.saveError then form.addLine("@i18n(app.modules.adjustments.save_error)@ " .. tostring(state.saveError)) end
+    if hasActiveAutoDetect() then form.addLine("Auto-detect active: toggle desired AUX channel") end
+    if state.saveError then form.addLine("Save error: " .. tostring(state.saveError)) end
     if state.infoMessage then form.addLine(state.infoMessage) end
 
     local slotOptionsTbl = buildRangeSlotOptions()
@@ -1209,7 +1208,7 @@ local function render()
     buildFunctionOptions(adjRange.adjFunction)
     local adjType = getAdjustmentType(adjRange)
 
-    local slotLine = form.addLine("@i18n(app.modules.adjustments.range)@")
+    local slotLine = form.addLine("Range")
     local slotChoiceW = wRightColumn
     if not state.showFunctionNamesInRangeSelector then
         slotChoiceW = math.max(96, math.floor(wRightColumn * 0.5))
@@ -1225,7 +1224,7 @@ local function render()
             requestSlotLoad(state.selectedRangeIndex, function()
                 state.needsRender = true
             end, function(reason)
-                state.infoMessage = reason or "@i18n(app.modules.adjustments.load_error)@"
+                state.infoMessage = reason or "Load error:"
                 state.needsRender = true
             end)
             state.needsRender = true
@@ -1244,7 +1243,7 @@ local function render()
         end
     end
 
-    local typeLine = form.addLine("@i18n(app.modules.adjustments.type)@", nil, true)
+    local typeLine = form.addLine("Type", nil, true)
     local typeChoice = form.addChoiceField(
         typeLine,
         {x = xChoice, y = y, w = wRightColumn, h = h},
@@ -1273,7 +1272,7 @@ local function render()
     local enaSetBtn
     local enaStart
     local enaEnd
-    local enaChannelLine = form.addLine("@i18n(app.modules.adjustments.enable_channel)@", nil, false)
+    local enaChannelLine = form.addLine("Enable Channel", nil, false)
     local enaChoice = form.addChoiceField(
         enaChannelLine,
         {x = xChoice, y = y, w = wChoice, h = h},
@@ -1305,13 +1304,13 @@ local function render()
     local enaLive = form.addStaticText(enaChannelLine, {x = xLive, y = y, w = wLive, h = h}, " --")
     if enaLive and enaLive.value then state.liveFields.ena = enaLive end
     enaSetBtn = form.addButton(enaChannelLine, {x = xSet, y = y, w = wSet, h = h}, {
-        text = "@i18n(app.modules.adjustments.set)@",
+        text = "Set",
         icon = nil,
         options = FONT_S,
         paint = function() end,
         press = function()
             if adjRange.enaChannel == ALWAYS_ON_CHANNEL then
-                confirmRangeSet("@i18n(app.modules.adjustments.set_enable_range)@", "@i18n(app.modules.adjustments.always_fixed_1500_confirm)@", function()
+                confirmRangeSet("Set Enable Range", "Always mode uses fixed 1500us. Set Min/Max to 1500us?", function()
                     adjRange.enaRange.start = 1500
                     adjRange.enaRange["end"] = 1500
                     markDirty()
@@ -1320,12 +1319,12 @@ local function render()
             end
             local us = getChannelUsForRangeSet(adjRange.enaChannel, state.autoDetectEnaSlots, state.selectedRangeIndex)
             if not us then return end
-            applyRangeSetFromChannel("@i18n(app.modules.adjustments.set_enable_range)@", adjRange.enaRange, us)
+            applyRangeSetFromChannel("Set Enable Range", adjRange.enaRange, us)
         end
     })
     state.liveFields.enaSetBtn = enaSetBtn
 
-    local enaRangeLine = form.addLine("@i18n(app.modules.adjustments.enable_range)@", nil, true)
+    local enaRangeLine = form.addLine("Enable Range", nil, true)
     enaStart = form.addNumberField(
         enaRangeLine,
         {x = xStart, y = y, w = wNum, h = h},
@@ -1356,7 +1355,7 @@ local function render()
     if enaEnd and enaEnd.suffix then enaEnd:suffix("us") end
     syncEnableControls(adjRange)
 
-    local adjChannelLine = form.addLine("@i18n(app.modules.adjustments.value_channel)@", nil, false)
+    local adjChannelLine = form.addLine("Value Channel", nil, false)
     local adjChoice = form.addChoiceField(
         adjChannelLine,
         {x = xChoice, y = y, w = wChoice, h = h},
@@ -1382,7 +1381,7 @@ local function render()
     if adjLive and adjLive.value then state.liveFields.adj = adjLive end
 
     if adjType == 2 then
-        local stepLine = form.addLine("@i18n(app.modules.adjustments.step_size)@", nil, false)
+        local stepLine = form.addLine("Step Size", nil, false)
         local stepField = form.addNumberField(
             stepLine,
             {x = xEnd, y = y, w = wNum, h = h},
@@ -1397,7 +1396,7 @@ local function render()
         if stepField and stepField.enable then stepField:enable(true) end
     end
 
-    local range1Label = adjType == 2 and "@i18n(app.modules.adjustments.decrease_range)@" or "@i18n(app.modules.adjustments.adjust_range)@"
+    local range1Label = adjType == 2 and "Decrease Range" or "Adjust Range"
     local range1Line = form.addLine(range1Label, nil, adjType ~= 2)
     local range1Start = form.addNumberField(
         range1Line,
@@ -1426,20 +1425,20 @@ local function render()
     if range1Start and range1Start.suffix then range1Start:suffix("us") end
     if range1End and range1End.suffix then range1End:suffix("us") end
     form.addButton(range1Line, {x = xSet, y = y, w = wSet, h = h}, {
-        text = "@i18n(app.modules.adjustments.set)@",
+        text = "Set",
         icon = nil,
         options = FONT_S,
         paint = function() end,
         press = function()
             local us = getChannelUsForRangeSet(adjRange.adjChannel, state.autoDetectAdjSlots, state.selectedRangeIndex)
             if not us then return end
-            local title = (adjType == 2) and "@i18n(app.modules.adjustments.set_decrease_range)@" or "@i18n(app.modules.adjustments.set_adjust_range)@"
+            local title = (adjType == 2) and "Set Decrease Range" or "Set Adjust Range"
             applyRangeSetFromChannel(title, adjRange.adjRange1, us)
         end
     })
 
     if adjType == 2 then
-        local range2Line = form.addLine("@i18n(app.modules.adjustments.increase_range)@", nil, true)
+        local range2Line = form.addLine("Increase Range", nil, true)
         local range2Start = form.addNumberField(
             range2Line,
             {x = xStart, y = y, w = wNum, h = h},
@@ -1467,19 +1466,19 @@ local function render()
         if range2Start and range2Start.suffix then range2Start:suffix("us") end
         if range2End and range2End.suffix then range2End:suffix("us") end
         form.addButton(range2Line, {x = xSet, y = y, w = wSet, h = h}, {
-            text = "@i18n(app.modules.adjustments.set)@",
+            text = "Set",
             icon = nil,
             options = FONT_S,
             paint = function() end,
             press = function()
                 local us = getChannelUsForRangeSet(adjRange.adjChannel, state.autoDetectAdjSlots, state.selectedRangeIndex)
                 if not us then return end
-                applyRangeSetFromChannel("@i18n(app.modules.adjustments.set_increase_range)@", adjRange.adjRange2, us)
+                applyRangeSetFromChannel("Set Increase Range", adjRange.adjRange2, us)
             end
         })
     end
 
-    local functionLine = form.addLine("@i18n(app.modules.adjustments.function)@", nil, false)
+    local functionLine = form.addLine("Function", nil, false)
     local functionChoice = form.addChoiceField(
         functionLine,
         {x = xChoice, y = y, w = wChoice, h = h},
@@ -1513,7 +1512,7 @@ local function render()
     local valueMin = valueCfg and valueCfg.min or -32768
     local valueMax = valueCfg and valueCfg.max or 32767
 
-    local valRangeLine = form.addLine("@i18n(app.modules.adjustments.value_range)@", nil, true)
+    local valRangeLine = form.addLine("Value Range", nil, true)
     local valStart = form.addNumberField(
         valRangeLine,
         {x = xStart, y = y, w = wNum, h = h},
@@ -1637,7 +1636,7 @@ local function saveAllRanges()
 
     state.saving = true
     state.infoMessage = nil
-    rfsuite.app.ui.progressDisplay(MODULE_TITLE, "@i18n(app.modules.adjustments.saving_changed_ranges)@")
+    rfsuite.app.ui.progressDisplay(MODULE_TITLE, "Saving changed ranges")
 
     local slotPos = 1
 
@@ -1680,11 +1679,11 @@ local function onSaveMenu()
     if requireDirty and (not state.dirty) then return end
 
     if hasActiveAutoDetect() then
-        local buttons = {{label = "@i18n(app.btn_ok_long)@", action = function() return true end}}
+        local buttons = {{label = "                OK                ", action = function() return true end}}
         form.openDialog({
             width = nil,
             title = MODULE_TITLE,
-            message = "@i18n(app.modules.adjustments.msg_auto_detect_lock_save)@",
+            message = "Auto-detect is active. Toggle the desired AUX channel first.",
             buttons = buttons,
             wakeup = function() end,
             paint = function() end,
@@ -1699,14 +1698,14 @@ local function onSaveMenu()
     end
 
     local buttons = {
-        {label = "@i18n(app.btn_ok_long)@", action = function() saveAllRanges(); return true end},
-        {label = "@i18n(app.btn_cancel)@", action = function() return true end}
+        {label = "                OK                ", action = function() saveAllRanges(); return true end},
+        {label = "CANCEL", action = function() return true end}
     }
 
     form.openDialog({
         width = nil,
-        title = "@i18n(app.msg_save_settings)@",
-        message = "@i18n(app.msg_save_current_page)@",
+        title = "Save settings",
+        message = "Save current page to flight controller?",
         buttons = buttons,
         wakeup = function() end,
         paint = function() end,

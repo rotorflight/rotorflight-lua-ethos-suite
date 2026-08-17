@@ -44,7 +44,7 @@ function ini.load_ini_file(fileName)
                 data[section] = data[section] or {}
             end
         else
-            local param, value = line:match("^([%w_]+)%s-=%s-(.*)$")
+            local param, value = line:match("^([%w_]+)%s*=%s*(.*)$")
             if param and value then
                 param = tonumber(param) or param
 

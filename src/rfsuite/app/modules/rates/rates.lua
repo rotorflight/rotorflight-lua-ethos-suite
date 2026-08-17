@@ -18,7 +18,7 @@ local RATE_TABLES = {
 }
 
 local page = {
-    title = "@i18n(app.modules.rates.name)@",
+    title = "Rates",
     reboot = false,
     eepromWrite = true,
     refreshOnRateChange = true,
@@ -26,7 +26,7 @@ local page = {
 }
 
 local state = {
-    title = "@i18n(app.modules.rates.name)@",
+    title = "Rates",
     loading = false,
     loaded = false,
     loadError = nil,
@@ -132,13 +132,13 @@ end
 local function renderLoading()
     form.clear()
     rfsuite.app.ui.fieldHeader(state.title)
-    form.addLine("@i18n(app.msg_loading)@")
+    form.addLine("Loading...")
 end
 
 local function renderError()
     form.clear()
     rfsuite.app.ui.fieldHeader(state.title)
-    form.addLine(tostring(state.loadError or "@i18n(app.error_timed_out)@"))
+    form.addLine(tostring(state.loadError or "Error: timed out"))
 end
 
 local function renderForm()
@@ -267,7 +267,7 @@ local function startLoad()
     local api = rfsuite.tasks and rfsuite.tasks.msp and rfsuite.tasks.msp.api and rfsuite.tasks.msp.api.loadPage and rfsuite.tasks.msp.api.loadPage("RC_TUNING")
     if not api then
         state.loading = false
-        state.loadError = "@i18n(app.error_timed_out)@"
+        state.loadError = "Error: timed out"
         state.needsRender = true
         rfsuite.app.triggers.closeProgressLoader = true
         return
@@ -299,7 +299,7 @@ local function startLoad()
 
         state.loading = false
         state.loaded = false
-        state.loadError = "@i18n(app.error_timed_out)@"
+        state.loadError = "Error: timed out"
         state.needsRender = true
         rfsuite.app.triggers.closeProgressLoader = true
     end)
@@ -310,7 +310,7 @@ local function startLoad()
 
         state.loading = false
         state.loaded = false
-        state.loadError = tostring(reason or "@i18n(app.error_timed_out)@")
+        state.loadError = tostring(reason or "Error: timed out")
         state.needsRender = true
         rfsuite.app.triggers.closeProgressLoader = true
     end

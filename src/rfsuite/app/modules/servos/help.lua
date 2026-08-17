@@ -8,19 +8,19 @@ local data = {}
 
 data['help'] = {}
 
-data['help']['default'] = {"@i18n(app.modules.servos.help_default_p1)@", "@i18n(app.modules.servos.help_default_p2)@", "@i18n(app.modules.servos.help_default_p3)@"}
+data['help']['default'] = {"Please select the servo you would like to configure from the list below.", "Primary flight controls that use the rotorflight mixer will display in the section called 'mixer'.", "Any other servos that are not controlled by the primary flight mixer will be displayed in the section called 'Other servos'."}
 
-data['help']['servos_tool'] = {"@i18n(app.modules.servos.help_tool_p1)@", "@i18n(app.modules.servos.help_tool_p2)@", "@i18n(app.modules.servos.help_tool_p3)@", "@i18n(app.modules.servos.help_tool_p4)@", "@i18n(app.modules.servos.help_tool_p5)@", "@i18n(app.modules.servos.help_tool_p6)@"}
+data['help']['servos_tool'] = {"Override: [*] Enable override to allow real-time updates of servo center point.", "Center: Adjust the center position of the servo.", "Minimum/Maximum: Adjust the end points of the selected servo.", "Scale: Adjust the amount the servo moves for a given input.", "Rate: The frequency the servo runs best at - check with manufacturer.", "Speed: The speed the servo moves. Generally only used for the cyclic servos to help the swash move evenly. Optional - leave all at 0 if unsure."}
 
 data['fields'] = {
-    servoMid = {t = "@i18n(app.modules.servos.help_fields_mid)@"},
-    servoMin = {t = "@i18n(app.modules.servos.help_fields_min)@"},
-    servoMax = {t = "@i18n(app.modules.servos.help_fields_max)@"},
-    servoScaleNeg = {t = "@i18n(app.modules.servos.help_fields_scale_neg)@"},
-    servoScalePos = {t = "@i18n(app.modules.servos.help_fields_scale_pos)@"},
-    servoRate = {t = "@i18n(app.modules.servos.help_fields_rate)@"},
-    servoSpeed = {t = "@i18n(app.modules.servos.help_fields_speed)@"},
-    servoFlags = {t = "@i18n(app.modules.servos.help_fields_flags)@"}
+    servoMid = {t = "Servo center position pulse width."},
+    servoMin = {t = "Servo negative travel limit."},
+    servoMax = {t = "Servo positive travel limit."},
+    servoScaleNeg = {t = "Servo negative scaling."},
+    servoScalePos = {t = "Servo positive scaling."},
+    servoRate = {t = "Servo PWM rate."},
+    servoSpeed = {t = "Servo motion speed in milliseconds."},
+    servoFlags = {t = "0 = Default, 1=Reverse, 2 = Geo Correction, 3 = Reverse + Geo Correction"}
 }
 
 return data

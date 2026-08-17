@@ -68,7 +68,7 @@ local function header_boxes()
     if rfsuite and rfsuite.preferences and rfsuite.preferences.general then txbatt_type = rfsuite.preferences.general.txbatt_type or 0 end
 
     if header_boxes_cache == nil or last_txbatt_type ~= txbatt_type then
-        header_boxes_cache = utils.standardHeaderBoxes(i18n, colorMode, headeropts, txbatt_type)
+        header_boxes_cache = utils.standardHeaderBoxes(colorMode, headeropts, txbatt_type)
         last_txbatt_type = txbatt_type
     end
     return header_boxes_cache
@@ -80,7 +80,7 @@ local function buildBoxes(W)
 
     return {
 
-        {col = 1, row = 1, rowspan = 2, type = "time", subtype = "flight", font = opts.font, title = "@i18n(widgets.dashboard.flight_time):upper()@", titlepos = "bottom", bgcolor = colorMode.bgcolor, titlecolor = colorMode.titlecolor, textcolor = colorMode.textcolor}, {
+        {col = 1, row = 1, rowspan = 2, type = "time", subtype = "flight", font = opts.font, title = "FLIGHT TIME", titlepos = "bottom", bgcolor = colorMode.bgcolor, titlecolor = colorMode.titlecolor, textcolor = colorMode.textcolor}, {
             col = 2,
             row = 1,
             colspan = 2,
@@ -109,7 +109,7 @@ local function buildBoxes(W)
             subtype = "arc",
             source = "throttle_percent",
             arcmax = true,
-            title = "@i18n(widgets.dashboard.throttle):upper()@",
+            title = "THROTTLE",
             titlepos = "bottom",
             thickness = opts.thickness,
             font = opts.font,
@@ -134,7 +134,7 @@ local function buildBoxes(W)
             subtype = "arc",
             source = "rpm",
             arcmax = true,
-            title = "@i18n(widgets.dashboard.headspeed):upper()@",
+            title = "HEADSPEED",
             titlepos = "bottom",
             min = 0,
             max = getThemeValue("rpm_max"),
@@ -162,7 +162,7 @@ local function buildBoxes(W)
             subtype = "arc",
             source = "temp_esc",
             arcmax = true,
-            title = "@i18n(widgets.dashboard.esc_temp):upper()@",
+            title = "ESC TEMP",
             titlepos = "bottom",
             min = 0,
             max = getThemeValue("esctemp_max"),

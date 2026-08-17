@@ -7,7 +7,7 @@ local data = {}
 
 data['help'] = {}
 
-data['help']['default'] = {"@i18n(app.modules.copyprofiles.help_p1)@", "@i18n(app.modules.copyprofiles.help_p2)@"}
+data['help']['default'] = {"Copy PID profile or Rate profile from Source to Destination.", "Choose the source and destinations and save to copy the profile."}
 
 data['fields'] = {}
 

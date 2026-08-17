@@ -50,9 +50,9 @@ local apidata = {
     formdata = {
         labels = {},
         fields = {
-            {t = "@i18n(app.modules.info.version)@", value = version, type = displayType, disable = disableType, position = displayPos}, {t = "@i18n(app.modules.info.ethos_version)@", value = ethosVersion, type = displayType, disable = disableType, position = displayPos}, {t = "@i18n(app.modules.info.rf_version)@", value = rfVersion, type = displayType, disable = disableType, position = displayPos},
-            {t = "@i18n(app.modules.info.fc_version)@", value = fcVersion, type = displayType, disable = disableType, position = displayPos}, {t = "@i18n(app.modules.info.msp_version)@", value = apiVersion, type = displayType, disable = disableType, position = displayPos}, {t = "@i18n(app.modules.info.msp_transport)@", value = string.upper(mspTransport), type = displayType, disable = disableType, position = displayPos},
-            {t = "@i18n(app.modules.info.supported_versions)@", value = supportedMspVersion, type = displayType, disable = disableType, position = displayPos}, {t = "@i18n(app.modules.info.simulation)@", value = simulation, type = displayType, disable = disableType, position = displayPos}
+            {t = "Version", value = version, type = displayType, disable = disableType, position = displayPos}, {t = "Ethos Version", value = ethosVersion, type = displayType, disable = disableType, position = displayPos}, {t = "Rotorflight Version", value = rfVersion, type = displayType, disable = disableType, position = displayPos},
+            {t = "FC Version", value = fcVersion, type = displayType, disable = disableType, position = displayPos}, {t = "MSP Version", value = apiVersion, type = displayType, disable = disableType, position = displayPos}, {t = "MSP Transport", value = string.upper(mspTransport), type = displayType, disable = disableType, position = displayPos},
+            {t = "Supported MSP Versions", value = supportedMspVersion, type = displayType, disable = disableType, position = displayPos}, {t = "Simulation", value = simulation, type = displayType, disable = disableType, position = displayPos}
         }
     }
 }
@@ -64,13 +64,13 @@ local function wakeup()
     end
 end
 
-local function event(widget, category, value, x, y)
-    return pageRuntime.handleCloseEvent(category, value, {onClose = onNavMenu})
-end
-
 local function onNavMenu()
     pageRuntime.openMenuContext()
     return true
+end
+
+local function event(widget, category, value, x, y)
+    return pageRuntime.handleCloseEvent(category, value, {onClose = onNavMenu})
 end
 
 return {apidata = apidata, reboot = false, eepromWrite = false, minBytes = 0, wakeup = wakeup, refreshswitch = false, simulatorResponse = {}, onNavMenu = onNavMenu, event = event, navButtons = {menu = true, save = false, reload = false, tool = false, help = false}, API = {}}

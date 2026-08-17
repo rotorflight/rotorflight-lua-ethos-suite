@@ -8,8 +8,8 @@ local MAX_SUPPORTED_RC_CHANNEL_COUNT = 18
 local help = {}
 
 for i = 1, MAX_SUPPORTED_RC_CHANNEL_COUNT do
-    help["channel_" .. i .. "_mode"] = "@i18n(api.RXFAIL_CONFIG.channel_mode)@"
-    help["channel_" .. i .. "_value"] = "@i18n(api.RXFAIL_CONFIG.channel_value)@"
+    help["channel_" .. i .. "_mode"] = "Select how each channel behaves when signal is lost: Auto, Hold, or Set."
+    help["channel_" .. i .. "_value"] = "Channel value used only when mode is Set."
 end
 
 return help

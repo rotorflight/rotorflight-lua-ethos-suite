@@ -18,11 +18,11 @@ local apidata = {
     formdata = {
         labels = {},
         fields = {
-            {t = "@i18n(app.modules.esc_tools.mfg.flrtr.esc_mode)@",        mspapi = 1, apikey = "esc_mode",        type = 1},
-            {t = "@i18n(app.modules.esc_tools.mfg.flrtr.soft_start)@",      mspapi = 1, apikey = "soft_start"},
-            {t = "@i18n(app.modules.esc_tools.mfg.flrtr.gov_p)@",          mspapi = 1, apikey = "gov_p"},
-            {t = "@i18n(app.modules.esc_tools.mfg.flrtr.gov_i)@",          mspapi = 1, apikey = "gov_i"},
-            {t = "@i18n(app.modules.esc_tools.mfg.flrtr.motor_erpm_max)@", mspapi = 1, apikey = "motor_erpm_max"}
+            {t = "ESC Mode",        mspapi = 1, apikey = "esc_mode",        type = 1},
+            {t = "Soft Start Time",      mspapi = 1, apikey = "soft_start"},
+            {t = "Governor P",          mspapi = 1, apikey = "gov_p"},
+            {t = "Governor I",          mspapi = 1, apikey = "gov_i"},
+            {t = "Maximum Motor ERPM", mspapi = 1, apikey = "motor_erpm_max"}
         }
     }
 }
@@ -35,12 +35,11 @@ return {
     apidata = apidata,
     eepromWrite = true,
     reboot = false,
-    escinfo = escinfo,
-    postLoad = postLoad,
+        postLoad = postLoad,
     simulatorResponse = simulatorResponse, 
     navButtons = navHandlers.navButtons,
     onNavMenu = navHandlers.onNavMenu,
     event = navHandlers.event,
-    pageTitle = "@i18n(app.modules.esc_tools.name)@" .. " / " .. "@i18n(app.modules.esc_tools.mfg.flrtr.name)@" .. " / " .. "@i18n(app.modules.esc_tools.mfg.flrtr.governor)@",
+    pageTitle = "Esc Programing" .. " / " .. "FLYROTOR" .. " / " .. "Governor",
     headerLine = rfsuite.escHeaderLineText, progressCounter = 0.5
 }

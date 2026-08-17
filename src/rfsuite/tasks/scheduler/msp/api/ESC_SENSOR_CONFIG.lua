@@ -16,8 +16,8 @@ local TBL_ESC_TYPES = {
     "GRAUPNER", "XDFLY", "FrSky F.BUS", "RECORD"
 }
 local TBL_OFF_ON = {
-    "@i18n(api.ESC_SENSOR_CONFIG.tbl_off)@",
-    "@i18n(api.ESC_SENSOR_CONFIG.tbl_on)@"
+    "Off",
+    "On"
 }
 
 -- Tuple layout:

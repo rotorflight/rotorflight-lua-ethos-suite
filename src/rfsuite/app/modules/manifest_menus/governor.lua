@@ -27,29 +27,29 @@ return {
     pages = {
         {
             image = "general.png",
-            name = "@i18n(app.modules.governor.menu_general)@",
+            name = "General",
             script = "general.lua",
             shortcutId = "s_governor_general_lua_bb876f329d",
         },
         {
             image = "time.png",
-            name = "@i18n(app.modules.governor.menu_time)@",
+            name = "Ramp Time",
             script = "time.lua",
             shortcutId = "s_governor_time_lua_3fa58c3610",
         },
         {
             image = "filters.png",
-            name = "@i18n(app.modules.governor.menu_filters)@",
+            name = "Filters",
             script = "filters.lua",
             shortcutId = "s_governor_filters_lua_258e16a592",
         },
         {
             image = "curves.png",
-            name = "@i18n(app.modules.governor.menu_curves)@",
+            name = "Bypass Curve",
             script = "curves.lua",
             shortcutId = "s_governor_curves_lua_a8f9b2b504",
         },
     },
     scriptPrefix = "governor/tools/",
-    title = "@i18n(app.modules.governor.name)@",
+    title = "Governor",
 }

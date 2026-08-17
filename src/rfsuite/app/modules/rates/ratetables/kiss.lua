@@ -9,10 +9,10 @@ local apidata = {
         {id = 1, name = "RC_TUNING", enableDeltaCache = false, rebuildOnWrite = true},
     },
     formdata = {
-        name = "@i18n(app.modules.rates.kiss)@",
+        name = "KISS",
         labels = {},
-        rows = {"@i18n(app.modules.rates.roll)@", "@i18n(app.modules.rates.pitch)@", "@i18n(app.modules.rates.yaw)@", "@i18n(app.modules.rates.collective)@"},
-        cols = {"@i18n(app.modules.rates.rc_rate)@", "@i18n(app.modules.rates.rate)@", "@i18n(app.modules.rates.rc_curve)@"},
+        rows = {"Roll", "Pitch", "Yaw", "Col"},
+        cols = {"RC Rate", "Rate", "RC Curve"},
         fields = {
             -- RC Rate
             {row = 1, col = 1, min = 0,   max = 255, default = 120, decimals = 2, scale = 100, mspapi = 1, apikey = "rcRates_1"},

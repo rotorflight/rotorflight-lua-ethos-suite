@@ -81,7 +81,7 @@ local function header_boxes()
     if rfsuite and rfsuite.preferences and rfsuite.preferences.general then txbatt_type = rfsuite.preferences.general.txbatt_type or 0 end
 
     if header_boxes_cache == nil or last_txbatt_type ~= txbatt_type then
-        header_boxes_cache = utils.standardHeaderBoxes(i18n, colorMode, headeropts, txbatt_type)
+        header_boxes_cache = utils.standardHeaderBoxes(colorMode, headeropts, txbatt_type)
         last_txbatt_type = txbatt_type
     end
     return header_boxes_cache
@@ -100,22 +100,22 @@ local function buildBoxes(W)
             rowspan = 3,
             type = "text",
             subtype = "governor",
-            title = "@i18n(widgets.dashboard.governor):upper()@",
+            title = "GOVERNOR",
             titlepos = "bottom",
             bgcolor = colorMode.bgcolor,
             titlecolor = colorMode.titlecolor,
             textcolor = colorMode.titlecolor,
             thresholds = {
-                {value = "@i18n(widgets.governor.DISARMED)@", textcolor = colorMode.fillcritcolor}, {value = "@i18n(widgets.governor.OFF)@", textcolor = colorMode.fillcritcolor}, {value = "@i18n(widgets.governor.IDLE)@", textcolor = "blue"}, {value = "@i18n(widgets.governor.SPOOLUP)@", textcolor = "blue"}, {value = "@i18n(widgets.governor.RECOVERY)@", textcolor = colorMode.fillwarncolor}, {value = "@i18n(widgets.governor.ACTIVE)@", textcolor = colorMode.fillcolor},
+                {value = "DISARMED", textcolor = colorMode.fillcritcolor}, {value = "OFF", textcolor = colorMode.fillcritcolor}, {value = "IDLE", textcolor = "blue"}, {value = "SPOOLUP", textcolor = "blue"}, {value = "RECOVERY", textcolor = colorMode.fillwarncolor}, {value = "ACTIVE", textcolor = colorMode.fillcolor},
                 {value = "@i18n(widgets.governor.THR-OFF)@", textcolor = colorMode.fillcritcolor}
             }
-        }, {col = 5, row = 4, colspan = 4, rowspan = 3, type = "text", subtype = "telemetry", source = "rpm", unit = "", transform = "floor", title = "@i18n(widgets.dashboard.headspeed):upper()@", titlepos = "bottom", titlecolor = colorMode.titlecolor, textcolor = colorMode.titlecolor, bgcolor = colorMode.bgcolor},
-        {col = 1, row = 7, colspan = 2, rowspan = 2, type = "text", subtype = "telemetry", source = "pid_profile", title = "@i18n(widgets.dashboard.profile):upper()@", titlepos = "bottom", transform = "floor", titlecolor = colorMode.titlecolor, textcolor = colorMode.titlecolor, bgcolor = colorMode.bgcolor},
-        {col = 3, row = 7, colspan = 2, rowspan = 2, type = "text", subtype = "telemetry", source = "rate_profile", title = "@i18n(widgets.dashboard.rates):upper()@", titlepos = "bottom", transform = "floor", titlecolor = colorMode.titlecolor, textcolor = colorMode.titlecolor, bgcolor = colorMode.bgcolor},
-        {col = 5, row = 7, colspan = 2, rowspan = 2, type = "time", subtype = "count", title = "@i18n(widgets.dashboard.flights):upper()@", titlepos = "bottom", titlecolor = colorMode.titlecolor, textcolor = colorMode.titlecolor, bgcolor = colorMode.bgcolor},
-        {col = 7, row = 7, colspan = 2, rowspan = 2, type = "text", subtype = "telemetry", source = "link", unit = "dB", title = "@i18n(widgets.dashboard.lq):upper()@", titlepos = "bottom", transform = "floor", titlecolor = colorMode.titlecolor, textcolor = colorMode.titlecolor, bgcolor = colorMode.bgcolor},
-        {col = 9, row = 7, colspan = 6, rowspan = 2, type = "time", subtype = "flight", title = "@i18n(widgets.dashboard.time):upper()@", titlepos = "bottom", titlecolor = colorMode.titlecolor, textcolor = colorMode.titlecolor, bgcolor = colorMode.bgcolor},
-        {col = 15, row = 7, colspan = 6, rowspan = 2, type = "text", subtype = "blackbox", title = "@i18n(widgets.dashboard.blackbox):upper()@", titlepos = "bottom", decimals = 0, titlecolor = colorMode.titlecolor, textcolor = colorMode.titlecolor, bgcolor = colorMode.bgcolor}, {
+        }, {col = 5, row = 4, colspan = 4, rowspan = 3, type = "text", subtype = "telemetry", source = "rpm", unit = "", transform = "floor", title = "HEADSPEED", titlepos = "bottom", titlecolor = colorMode.titlecolor, textcolor = colorMode.titlecolor, bgcolor = colorMode.bgcolor},
+        {col = 1, row = 7, colspan = 2, rowspan = 2, type = "text", subtype = "telemetry", source = "pid_profile", title = "PROFILE", titlepos = "bottom", transform = "floor", titlecolor = colorMode.titlecolor, textcolor = colorMode.titlecolor, bgcolor = colorMode.bgcolor},
+        {col = 3, row = 7, colspan = 2, rowspan = 2, type = "text", subtype = "telemetry", source = "rate_profile", title = "RATES", titlepos = "bottom", transform = "floor", titlecolor = colorMode.titlecolor, textcolor = colorMode.titlecolor, bgcolor = colorMode.bgcolor},
+        {col = 5, row = 7, colspan = 2, rowspan = 2, type = "time", subtype = "count", title = "FLIGHTS", titlepos = "bottom", titlecolor = colorMode.titlecolor, textcolor = colorMode.titlecolor, bgcolor = colorMode.bgcolor},
+        {col = 7, row = 7, colspan = 2, rowspan = 2, type = "text", subtype = "telemetry", source = "link", unit = "dB", title = "LQ", titlepos = "bottom", transform = "floor", titlecolor = colorMode.titlecolor, textcolor = colorMode.titlecolor, bgcolor = colorMode.bgcolor},
+        {col = 9, row = 7, colspan = 6, rowspan = 2, type = "time", subtype = "flight", title = "TIME", titlepos = "bottom", titlecolor = colorMode.titlecolor, textcolor = colorMode.titlecolor, bgcolor = colorMode.bgcolor},
+        {col = 15, row = 7, colspan = 6, rowspan = 2, type = "text", subtype = "blackbox", title = "BLACKBOX", titlepos = "bottom", decimals = 0, titlecolor = colorMode.titlecolor, textcolor = colorMode.titlecolor, bgcolor = colorMode.bgcolor}, {
             type = "gauge",
             subtype = "arc",
             col = 9,
@@ -132,7 +132,7 @@ local function buildBoxes(W)
             gaugepadding = opts.gaugepadding,
             valuepaddingtop = opts.valuepaddingtop,
             fillbgcolor = colorMode.fillbgcolor,
-            title = function() return utils.isElectricEngine() and "@i18n(widgets.dashboard.battery):upper()@" or "@i18n(widgets.dashboard.fuel):upper()@" end,
+            title = function() return utils.isElectricEngine() and "BATTERY" or "FUEL" end,
             titlepos = "bottom",
             titlecolor = colorMode.titlecolor,
             textcolor = colorMode.titlecolor,
@@ -147,7 +147,7 @@ local function buildBoxes(W)
             subtype = "arc",
             source = "voltage",
             fillbgcolor = colorMode.fillbgcolor,
-            title = "@i18n(widgets.dashboard.voltage):upper()@",
+            title = "VOLTAGE",
             font = opts.font,
             thickness = opts.thickness,
             titlepos = "bottom",

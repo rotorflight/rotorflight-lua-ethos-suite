@@ -81,6 +81,8 @@ rfsuite.tasks.appRunning = false
 function app.paint()
     if app.Page and app.Page.paint then app.Page.paint(app.Page) end
 
+    if app.themeBridge and app.themeBridge.paint then app.themeBridge.paint() end
+
     if app.ui and app.ui.adminStatsOverlay then app.ui.adminStatsOverlay() end
 
 end
@@ -136,6 +138,8 @@ function app.wakeup_protected()
         busyUiTick = 0
     end
     if runUiTasks and app.tasks then app.tasks.wakeup() end
+
+    if app.themeBridge and app.themeBridge.wakeup then app.themeBridge.wakeup() end
 
     if app.ui and app.ui.wakeupAdminStatsOverlay then app.ui.wakeupAdminStatsOverlay() end
 end
@@ -279,6 +283,7 @@ function app.create()
 
         app.ui = assert(compile("app/lib/ui.lua"))(config)
         app.utils = assert(compile("app/lib/utils.lua"))(config)
+        app.themeBridge = assert(compile("app/lib/theme_bridge.lua"))()
 
         app.initialized = true
     end
@@ -476,6 +481,11 @@ function app.close()
         if not ok then
             log("app.close clearRuntimeCaches failed: " .. tostring(err), "debug")
         end
+    end
+
+    if app.themeBridge and app.themeBridge.clearPage then
+        local ok, err = pcall(app.themeBridge.clearPage)
+        if not ok then log("app.close themeBridge page clear failed: " .. tostring(err), "debug") end
     end
 
     app.MainMenu = nil

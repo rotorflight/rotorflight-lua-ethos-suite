@@ -54,8 +54,8 @@ local apidata = {
     formdata = {
         labels = {},
         fields = {
-            {t = "@i18n(app.modules.fblstatus.fbl_date)@", value = "-", type = displayType, disable = disableType, position = displayPos}, {t = "@i18n(app.modules.fblstatus.fbl_time)@", value = "-", type = displayType, disable = disableType, position = displayPos}, {t = "@i18n(app.modules.fblstatus.arming_flags)@", value = "-", type = displayType, disable = disableType, position = displayPos},
-            {t = "@i18n(app.modules.fblstatus.dataflash_free_space)@", value = "-", type = displayType, disable = disableType, position = displayPos}, {t = "@i18n(app.modules.fblstatus.real_time_load)@", value = "-", type = displayType, disable = disableType, position = displayPos}, {t = "@i18n(app.modules.fblstatus.cpu_load)@", value = "-", type = displayType, disable = disableType, position = displayPos}
+            {t = "Date", value = "-", type = displayType, disable = disableType, position = displayPos}, {t = "Time", value = "-", type = displayType, disable = disableType, position = displayPos}, {t = "Arming Flags", value = "-", type = displayType, disable = disableType, position = displayPos},
+            {t = "Dataflash Free Space", value = "-", type = displayType, disable = disableType, position = displayPos}, {t = "Real-time Load", value = "-", type = displayType, disable = disableType, position = displayPos}, {t = "CPU Load", value = "-", type = displayType, disable = disableType, position = displayPos}
         }
     }
 }
@@ -134,9 +134,9 @@ end
 local function postRead(self) rfutils.log("postRead", "debug") end
 
 local function getFreeDataflashSpace()
-    if not summary.supported then return "@i18n(app.modules.fblstatus.unsupported)@" end
+    if not summary.supported then return "Unsupported" end
     local freeSpace = summary.totalSize - summary.usedSize
-    return string.format("%.1f " .. "@i18n(app.modules.fblstatus.megabyte)@", freeSpace / (1024 * 1024))
+    return string.format("%.1f " .. "MB", freeSpace / (1024 * 1024))
 end
 
 local function syncStatus()
@@ -190,7 +190,7 @@ local function wakeup()
         triggerEraseDataFlash = false
 
         if app and app.ui then
-            app.ui.progressDisplay("@i18n(app.modules.fblstatus.erasing)@", "@i18n(app.modules.fblstatus.erasing_dataflash)@")
+            app.ui.progressDisplay("Erasing", "Erasing dataflash...")
         end
         if page and page.eraseDataflash then
             page.eraseDataflash()
@@ -234,12 +234,12 @@ local function wakeup()
                 if status.realTimeLoad ~= nil then
                     local value = math.floor(status.realTimeLoad / 10)
                     setFieldValue(5, tostring(value) .. "%")
-                    if value >= 60 then setFieldColor(4, RED) end
+                    if value >= 60 then setFieldColor(5, RED) end
                 end
                 if status.cpuLoad ~= nil then
                     local value = status.cpuLoad / 10
                     setFieldValue(6, tostring(value) .. "%")
-                    if value >= 60 then setFieldColor(4, RED) end
+                    if value >= 60 then setFieldColor(6, RED) end
                 end
 
             end
@@ -255,31 +255,31 @@ local function onToolMenu(self)
 
     local buttons = {
         {
-            label = "@i18n(app.btn_ok_long)@",
+            label = "                OK                ",
             action = function()
 
                 triggerEraseDataFlash = true
                 return true
             end
-        }, {label = "@i18n(app.btn_cancel)@", action = function() return true end}
+        }, {label = "CANCEL", action = function() return true end}
     }
     local message
     local title
 
-    title = "@i18n(app.modules.fblstatus.erase)@"
-    message = "@i18n(app.modules.fblstatus.erase_prompt)@"
+    title = "Erase"
+    message = "Would you like to erase the dataflash?"
 
     form.openDialog({width = nil, title = title, message = message, buttons = buttons, wakeup = function() end, paint = function() end, options = TEXT_LEFT})
 
 end
 
-local function event(widget, category, value, x, y)
-    return pageRuntime.handleCloseEvent(category, value, {onClose = onNavMenu})
-end
-
 local function onNavMenu()
     pageRuntime.openMenuContext()
     return true
+end
+
+local function event(widget, category, value, x, y)
+    return pageRuntime.handleCloseEvent(category, value, {onClose = onNavMenu})
 end
 
 return {apidata = apidata, reboot = false, eepromWrite = false, minBytes = 0, wakeup = wakeup, refreshswitch = false, simulatorResponse = {}, postLoad = postLoad, postRead = postRead, eraseDataflash = eraseDataflash, onToolMenu = onToolMenu, onNavMenu = onNavMenu, event = event, navButtons = {menu = true, save = false, reload = false, tool = false, help = false}, API = {}}

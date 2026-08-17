@@ -14,7 +14,7 @@ local MAX_PROFILE_COUNT = 6
 local PROFILE_LABELS = {"1", "2", "3", "4", "5", "6"}
 local profileChoiceTables = {}
 
-local apidata = {api = {[1] = "STATUS"}, formdata = {labels = {}, fields = {{t = "@i18n(app.modules.profile_select.pid_profile)@", value = 0, min = 0, max = 5, tableIdxInc = -1, table = PROFILE_LABELS, type = 1, mspapi = 1, apikey = "current_pid_profile_index"}, {t = "@i18n(app.modules.profile_select.rate_profile)@", value = 0, min = 0, max = 5, tableIdxInc = -1, table = PROFILE_LABELS, type = 1, mspapi = 1, apikey = "current_control_rate_profile_index"}}}}
+local apidata = {api = {[1] = "STATUS"}, formdata = {labels = {}, fields = {{t = "PID profile", value = 0, min = 0, max = 5, tableIdxInc = -1, table = PROFILE_LABELS, type = 1, mspapi = 1, apikey = "current_pid_profile_index"}, {t = "Rate Profile", value = 0, min = 0, max = 5, tableIdxInc = -1, table = PROFILE_LABELS, type = 1, mspapi = 1, apikey = "current_control_rate_profile_index"}}}}
 
 local function profileChoiceTable(count)
     count = tonumber(count) or MAX_PROFILE_COUNT
@@ -121,13 +121,13 @@ local function onSaveMenu()
 
     local buttons = {
         {
-            label = "@i18n(app.btn_ok_long)@",
+            label = "                OK                ",
             action = function()
                 triggerSave = true
                 return true
             end
         }, {
-            label = "@i18n(app.modules.profile_select.cancel)@",
+            label = "CANCEL",
             action = function()
                 triggerSave = false
                 return true
@@ -135,7 +135,7 @@ local function onSaveMenu()
         }
     }
 
-    form.openDialog({width = nil, title = "@i18n(app.modules.profile_select.save_settings)@", message = "@i18n(app.modules.profile_select.save_prompt)@", buttons = buttons, wakeup = function() end, paint = function() end, options = TEXT_LEFT})
+    form.openDialog({width = nil, title = "Save settings", message = "Save current page to flight controller?", buttons = buttons, wakeup = function() end, paint = function() end, options = TEXT_LEFT})
 
     triggerSave = false
 

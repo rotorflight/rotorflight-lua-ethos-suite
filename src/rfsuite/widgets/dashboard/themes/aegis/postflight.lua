@@ -27,7 +27,7 @@ local function header_boxes()
     end
 
     if header_boxes_cache == nil or last_txbatt_type ~= txbatt_type then
-        local boxes = utils.standardHeaderBoxes(i18n, colorMode, headeropts, txbatt_type)
+        local boxes = utils.standardHeaderBoxes(colorMode, headeropts, txbatt_type)
 
         -- Replace the stock Rotorflight logo with the MWRC-style title while
         -- keeping the radio's native header surface and battery/RSSI widgets.

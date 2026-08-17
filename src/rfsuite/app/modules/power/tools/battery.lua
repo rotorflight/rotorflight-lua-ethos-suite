@@ -25,16 +25,16 @@ local SESSION_BATTERY_FIELDS = {
 }
 
 local fields = {
-    {t = "@i18n(telemetry.group_profiles)@", type = 0, apikey = "profilesGroupHeader", value = ""},
-    {t = "    @i18n(app.modules.power.selected)@", mspapi = 2, apikey = "batteryProfile", type = 1},
-    {t = "    @i18n(app.modules.power.capacity)@", mspapi = 1, apikey = "batteryCapacityActive", min = CAPACITY_PROFILE_MIN, max = CAPACITY_PROFILE_MAX, step = 10, unit = "mAh"},
-    {t = "@i18n(telemetry.group_battery)@", type = 0, apikey = "batteryGroupHeader", value = ""},
-    {t = "    @i18n(app.modules.power.max_cell_voltage)@", mspapi = 1, apikey = "vbatmaxcellvoltage"},
-    {t = "    @i18n(app.modules.power.full_cell_voltage)@", mspapi = 1, apikey = "vbatfullcellvoltage"},
-    {t = "    @i18n(app.modules.power.warn_cell_voltage)@", mspapi = 1, apikey = "vbatwarningcellvoltage"},
-    {t = "    @i18n(app.modules.power.min_cell_voltage)@", mspapi = 1, apikey = "vbatmincellvoltage"},
-    {t = "    @i18n(app.modules.power.cell_count)@", mspapi = 1, apikey = "batteryCellCount"},
-    {t = "    @i18n(app.modules.power.consumption_warning_percentage)@", min = 15, max = 60, mspapi = 1, apikey = "consumptionWarningPercentage"}
+    {t = "Profiles", type = 0, apikey = "profilesGroupHeader", value = ""},
+    {t = "    Selected", mspapi = 2, apikey = "batteryProfile", type = 1},
+    {t = "    Capacity", mspapi = 1, apikey = "batteryCapacityActive", min = CAPACITY_PROFILE_MIN, max = CAPACITY_PROFILE_MAX, step = 10, unit = "mAh"},
+    {t = "Battery", type = 0, apikey = "batteryGroupHeader", value = ""},
+    {t = "    Max Cell Voltage", mspapi = 1, apikey = "vbatmaxcellvoltage"},
+    {t = "    Full Cell Voltage", mspapi = 1, apikey = "vbatfullcellvoltage"},
+    {t = "    Warn Cell Voltage", mspapi = 1, apikey = "vbatwarningcellvoltage"},
+    {t = "    Min Cell Voltage", mspapi = 1, apikey = "vbatmincellvoltage"},
+    {t = "    Cell Count", mspapi = 1, apikey = "batteryCellCount"},
+    {t = "    Consumption Warning %", min = 15, max = 60, mspapi = 1, apikey = "consumptionWarningPercentage"}
 }
 
 local apidata = {

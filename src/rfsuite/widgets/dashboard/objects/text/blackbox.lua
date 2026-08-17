@@ -43,7 +43,7 @@ local utils = rfsuite.widgets.dashboard.utils
 local getParam = utils.getParam
 local resolveThemeColor = utils.resolveThemeColor
 local LOADING_DOTS = {".", "..", "...", "."}
-local BLACKBOX_UNIT_LABEL = "@i18n(app.modules.fblstatus.megabyte)@"
+local BLACKBOX_UNIT_LABEL = "MB"
 
 function render.invalidate(box) box._cfg = nil end
 

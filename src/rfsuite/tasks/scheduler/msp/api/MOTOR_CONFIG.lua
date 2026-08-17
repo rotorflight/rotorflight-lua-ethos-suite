@@ -18,8 +18,8 @@ else
 end
 
 local onoff = {
-    "@i18n(api.MOTOR_CONFIG.tbl_off)@",
-    "@i18n(api.MOTOR_CONFIG.tbl_on)@"
+    "OFF",
+    "ON"
 }
 
 -- Tuple layout:

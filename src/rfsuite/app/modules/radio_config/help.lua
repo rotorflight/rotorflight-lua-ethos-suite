@@ -8,7 +8,7 @@ local data = {}
 
 data['help'] = {}
 
-data['help']['default'] = {"@i18n(app.modules.radio_config.help_p1)@"}
+data['help']['default'] = {"Configure your radio settings. Stick center, arm, throttle hold, and throttle cut."}
 
 data['fields'] = {}
 

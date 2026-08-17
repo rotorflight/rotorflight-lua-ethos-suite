@@ -26,17 +26,17 @@ return {
     pages = {
         {
             image = "general.png",
-            name = "@i18n(app.modules.governor.menu_general)@",
+            name = "General",
             script = "general.lua",
             shortcutId = "s_profile_governor_general_lua_3a27cf6764",
         },
         {
             image = "flags.png",
-            name = "@i18n(app.modules.governor.menu_flags)@",
+            name = "Behaviour",
             script = "flags.lua",
             shortcutId = "s_profile_governor_flags_lua_3992e9f64d",
         },
     },
     scriptPrefix = "profile_governor/tools/",
-    title = "@i18n(app.modules.profile_governor.name)@",
+    title = "Governor",
 }

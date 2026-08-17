@@ -165,16 +165,16 @@ local function onSaveMenu()
 
     local buttons = {
         {
-            label = "@i18n(app.btn_ok_long)@",
+            label = "                OK                ",
             action = function()
                 isSaving = true
 
                 return true
             end
-        }, {label = "@i18n(app.btn_cancel)@", action = function() return true end}
+        }, {label = "CANCEL", action = function() return true end}
     }
-    local theTitle = "@i18n(app.msg_save_settings)@"
-    local theMsg = "@i18n(app.msg_save_current_page)@"
+    local theTitle = "Save settings"
+    local theMsg = "Save current page to flight controller?"
 
     form.openDialog({width = nil, title = theTitle, message = theMsg, buttons = buttons, wakeup = function() end, paint = function() end, options = TEXT_LEFT})
 
@@ -264,7 +264,7 @@ local function wakeup(self)
 
         if rfsuite.session.servoOverride == false then
             rfsuite.app.audio.playServoOverideEnable = true
-            rfsuite.app.ui.progressDisplay("@i18n(app.modules.servos.servo_override)@", "@i18n(app.modules.servos.enabling_servo_override)@")
+            rfsuite.app.ui.progressDisplay("Servo Override", "Enabling servo override...")
             rfsuite.app.Page.servoCenterFocusAllOn(self)
             rfsuite.session.servoOverride = true
 
@@ -273,7 +273,7 @@ local function wakeup(self)
         else
 
             rfsuite.app.audio.playServoOverideDisable = true
-            rfsuite.app.ui.progressDisplay("@i18n(app.modules.servos.servo_override)@", "@i18n(app.modules.servos.disabling_servo_override)@")
+            rfsuite.app.ui.progressDisplay("Servo Override", "Disabling servo override...")
             rfsuite.app.Page.servoCenterFocusAllOff(self)
             rfsuite.session.servoOverride = false
 
@@ -387,7 +387,7 @@ local function openPage(opts)
     end
 
 
-    rfsuite.app.ui.fieldHeader("@i18n(app.modules.servos.pwm)@" .. " / " .. rfsuite.app.utils.titleCase(configs[servoIndex]['name']))
+    rfsuite.app.ui.fieldHeader("PWM Output" .. " / " .. rfsuite.app.utils.titleCase(configs[servoIndex]['name']))
     rfsuite.app.ui.setPageDirty(false)
 
     if rfsuite.app.Page.headerLine ~= nil then
@@ -406,7 +406,7 @@ local function openPage(opts)
         local suffix = nil
         local helpTxt = getFieldHelpText('servoMid')
 
-        rfsuite.app.formLines[idx] = form.addLine("@i18n(app.modules.servos.center)@")
+        rfsuite.app.formLines[idx] = form.addLine("Center")
         rfsuite.app.formFields[idx] = form.addNumberField(rfsuite.app.formLines[idx], nil, minValue, maxValue, function() return configs[servoIndex]['mid'] end, function(value)
             configs[servoIndex]['mid'] = value
             rfsuite.app.ui.markPageDirty()
@@ -422,7 +422,7 @@ local function openPage(opts)
         local maxValue = 1000
         local defaultValue = -700
         local suffix = nil
-        rfsuite.app.formLines[idx] = form.addLine("@i18n(app.modules.servos.minimum)@")
+        rfsuite.app.formLines[idx] = form.addLine("Minimum")
         local helpTxt = getFieldHelpText('servoMin')
         rfsuite.app.formFields[idx] = form.addNumberField(rfsuite.app.formLines[idx], nil, minValue, maxValue, function() return configs[servoIndex]['min'] end, function(value)
             configs[servoIndex]['min'] = value
@@ -441,7 +441,7 @@ local function openPage(opts)
         local defaultValue = 700
         local suffix = nil
         local helpTxt = getFieldHelpText('servoMax')
-        rfsuite.app.formLines[idx] = form.addLine("@i18n(app.modules.servos.maximum)@")
+        rfsuite.app.formLines[idx] = form.addLine("Maximum")
         rfsuite.app.formFields[idx] = form.addNumberField(rfsuite.app.formLines[idx], nil, minValue, maxValue, function() return configs[servoIndex]['max'] end, function(value)
             configs[servoIndex]['max'] = value
             rfsuite.app.ui.markPageDirty()
@@ -459,7 +459,7 @@ local function openPage(opts)
         local defaultValue = 500
         local suffix = nil
         local helpTxt = getFieldHelpText('servoScaleNeg')
-        rfsuite.app.formLines[idx] = form.addLine("@i18n(app.modules.servos.scale_negative)@")
+        rfsuite.app.formLines[idx] = form.addLine("Scale Negative")
         rfsuite.app.formFields[idx] = form.addNumberField(rfsuite.app.formLines[idx], nil, minValue, maxValue, function() return configs[servoIndex]['scaleNeg'] end, function(value)
             configs[servoIndex]['scaleNeg'] = value
             rfsuite.app.ui.markPageDirty()
@@ -477,7 +477,7 @@ local function openPage(opts)
         local defaultValue = 500
         local suffix = nil
         local helpTxt = getFieldHelpText('servoScalePos')
-        rfsuite.app.formLines[idx] = form.addLine("@i18n(app.modules.servos.scale_positive)@")
+        rfsuite.app.formLines[idx] = form.addLine("Scale Positive")
         rfsuite.app.formFields[idx] = form.addNumberField(rfsuite.app.formLines[idx], nil, minValue, maxValue, function() return configs[servoIndex]['scalePos'] end, function(value)
             configs[servoIndex]['scalePos'] = value
             rfsuite.app.ui.markPageDirty()
@@ -493,9 +493,9 @@ local function openPage(opts)
         local minValue = 50
         local maxValue = 5000
         local defaultValue = 333
-        local suffix = "@i18n(app.unit_hertz)@"
+        local suffix = "Hz"
         local helpTxt = getFieldHelpText('servoRate')
-        rfsuite.app.formLines[idx] = form.addLine("@i18n(app.modules.servos.rate)@")
+        rfsuite.app.formLines[idx] = form.addLine("Rate")
         rfsuite.app.formFields[idx] = form.addNumberField(rfsuite.app.formLines[idx], nil, minValue, maxValue, function() return configs[servoIndex]['rate'] end, function(value)
             configs[servoIndex]['rate'] = value
             rfsuite.app.ui.markPageDirty()
@@ -513,7 +513,7 @@ local function openPage(opts)
         local defaultValue = 0
         local suffix = "ms"
         local helpTxt = getFieldHelpText('servoSpeed')
-        rfsuite.app.formLines[idx] = form.addLine("@i18n(app.modules.servos.speed)@")
+        rfsuite.app.formLines[idx] = form.addLine("Speed")
         rfsuite.app.formFields[idx] = form.addNumberField(rfsuite.app.formLines[idx], nil, minValue, maxValue, function() return configs[servoIndex]['speed'] end, function(value)
             configs[servoIndex]['speed'] = value
             rfsuite.app.ui.markPageDirty()
@@ -528,10 +528,10 @@ local function openPage(opts)
         local idx = 9
         local minValue = 0
         local maxValue = 1000
-        local table = {"@i18n(app.modules.servos.tbl_no)@", "@i18n(app.modules.servos.tbl_yes)@"}
+        local table = {"NO", "YES"}
         local tableIdxInc = -1
         local value
-        rfsuite.app.formLines[idx] = form.addLine("@i18n(app.modules.servos.reverse)@")
+        rfsuite.app.formLines[idx] = form.addLine("Reverse")
         rfsuite.app.formFields[idx] = form.addChoiceField(rfsuite.app.formLines[idx], nil, rfsuite.app.utils.convertPageValueTable(table, tableIdxInc), function() return configs[servoIndex]['reverse'] end, function(value)
             configs[servoIndex]['reverse'] = value
             rfsuite.app.ui.markPageDirty()
@@ -543,10 +543,10 @@ local function openPage(opts)
         local idx = 10
         local minValue = 0
         local maxValue = 1000
-        local table = {"@i18n(app.modules.servos.tbl_no)@", "@i18n(app.modules.servos.tbl_yes)@"}
+        local table = {"NO", "YES"}
         local tableIdxInc = -1
         local value
-        rfsuite.app.formLines[idx] = form.addLine("@i18n(app.modules.servos.geometry)@")
+        rfsuite.app.formLines[idx] = form.addLine("Geometry")
         rfsuite.app.formFields[idx] = form.addChoiceField(rfsuite.app.formLines[idx], nil, rfsuite.app.utils.convertPageValueTable(table, tableIdxInc), function() return configs[servoIndex]['geometry'] end, function(value)
             configs[servoIndex]['geometry'] = value
             rfsuite.app.ui.markPageDirty()
@@ -573,35 +573,35 @@ local function onToolMenu(self)
     if rfsuite.session.servoOverride == false then
         buttons = {
             {
-                label = "@i18n(app.btn_ok_long)@",
+                label = "                OK                ",
                 action = function()
 
                     triggerOverRide = true
                     triggerOverRideAll = true
                     return true
                 end
-            }, {label = "@i18n(app.btn_cancel)@", action = function() return true end}
+            }, {label = "CANCEL", action = function() return true end}
         }
     else
         buttons = {
             {
-                label = "@i18n(app.btn_ok_long)@",
+                label = "                OK                ",
                 action = function()
 
                     triggerOverRide = true
                     return true
                 end
-            }, {label = "@i18n(app.btn_cancel)@", action = function() return true end}
+            }, {label = "CANCEL", action = function() return true end}
         }
     end
     local message
     local title
     if rfsuite.session.servoOverride == false then
-        title = "@i18n(app.modules.servos.enable_servo_override)@"
-        message = "@i18n(app.modules.servos.enable_servo_override_msg)@"
+        title = "Enable servo override"
+        message = "Servo override allows you to 'trim' your servo center point in real time."
     else
-        title = "@i18n(app.modules.servos.disable_servo_override)@"
-        message = "@i18n(app.modules.servos.disable_servo_override_msg)@"
+        title = "Disable servo override"
+        message = "Return control of the servos to the flight controller."
     end
 
     form.openDialog({width = nil, title = title, message = message, buttons = buttons, wakeup = function() end, paint = function() end, options = TEXT_LEFT})
@@ -627,8 +627,6 @@ return {
     reboot = false,
     event = event,
     close = close,
-    setValues = setValues,
-    servoChanged = servoChanged,
     servoCenterFocusOn = servoCenterFocusOn,
     servoCenterFocusOff = servoCenterFocusOff,
     servoCenterFocusAllOn = servoCenterFocusAllOn,

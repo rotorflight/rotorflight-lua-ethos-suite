@@ -4,7 +4,7 @@
 ]] --
 
 local init = {
-    title = "@i18n(app.modules.alignment.name)@",
+    title = "Alignment",
     section = "hardware",
     script = "alignment.lua",
     image = "alignment.png",

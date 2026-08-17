@@ -7,7 +7,7 @@ local data = {}
 
 data['help'] = {}
 
-data['help']['default'] = {"@i18n(app.modules.stats.help_p1)@"}
+data['help']['default'] = {"Use this module to update the recorded flight statistics on the flight controller."}
 
 data['fields'] = {}
 

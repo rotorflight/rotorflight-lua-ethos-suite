@@ -15,8 +15,8 @@ local tonumber = tonumber
 local pairs = pairs
 local math_floor = math.floor
 
-local alertTypes = {"@i18n(api.BATTERY_INI.alert_off)@", "@i18n(api.BATTERY_INI.alert_bec)@", "@i18n(api.BATTERY_INI.alert_rxbatt)@"}
-local modelTypes = {"@i18n(api.BATTERY_INI.tbl_auto)@", "@i18n(api.BATTERY_INI.tbl_electric)@", "@i18n(api.BATTERY_INI.tbl_nitro)@"}
+local alertTypes = {"Off", "BEC", "RXBatt"}
+local modelTypes = {"Auto", "Electric", "Nitro"}
 local smartFuelLocalSources = {"CURRENT", "VOLTAGE", "COMBINED"}
 
 -- Tuple layout:
@@ -117,7 +117,7 @@ return core.createCustomAPI({
         return true
     end,
     customWrite = function(_, state, emitComplete, emitError)
-        local msg = "@i18n(app.modules.profile_select.save_prompt_local)@"
+        local msg = "Save current page to radio?"
         local cb = rfsuite.tasks.uiCallbacks
         if cb and cb.progressDisplaySave then cb.progressDisplaySave(msg:gsub("%?$", ".")) end
 

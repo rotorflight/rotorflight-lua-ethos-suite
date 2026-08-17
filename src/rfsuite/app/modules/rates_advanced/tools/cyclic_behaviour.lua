@@ -13,8 +13,8 @@ local FIELD_CYCLIC_POLAR = 1
 local FIELD_CYCLIC_RING_ENABLE = 2
 local FIELD_CYCLIC_RING_VALUE = 3
 local OFF_ON = {
-    "@i18n(api.RC_TUNING.tbl_off)@",
-    "@i18n(api.RC_TUNING.tbl_on)@"
+    "OFF",
+    "ON"
 }
 
 local function getFields()
@@ -87,9 +87,9 @@ local apidata = {
     formdata = {
         labels = {},
         fields = {
-            [FIELD_CYCLIC_POLAR] = {t = "@i18n(app.modules.rates_advanced.cyclic_polarity)@", mspapi = 1, apikey = "cyclic_polarity", type = 1, apiversiongte = {12, 0, 9}},
-            [FIELD_CYCLIC_RING_ENABLE] = {t = "@i18n(app.modules.rates_advanced.cyclic_ring)@", type = 1, value = 0, table = OFF_ON, tableIdxInc = -1, apiversiongte = {12, 0, 9}, postEdit = handleCyclicRingToggle},
-            [FIELD_CYCLIC_RING_VALUE] = {t = "@i18n(app.modules.rates_advanced.cyclic_ring)@ %", mspapi = 1, apikey = "cyclic_ring", apiversiongte = {12, 0, 9}, postEdit = syncCyclicRingState}
+            [FIELD_CYCLIC_POLAR] = {t = "Polar coordinates", mspapi = 1, apikey = "cyclic_polarity", type = 1, apiversiongte = {12, 0, 9}},
+            [FIELD_CYCLIC_RING_ENABLE] = {t = "Cyclic ring", type = 1, value = 0, table = OFF_ON, tableIdxInc = -1, apiversiongte = {12, 0, 9}, postEdit = handleCyclicRingToggle},
+            [FIELD_CYCLIC_RING_VALUE] = {t = "Cyclic ring %", mspapi = 1, apikey = "cyclic_ring", apiversiongte = {12, 0, 9}, postEdit = syncCyclicRingState}
         }
     }
 }
@@ -112,4 +112,4 @@ local function wakeup()
     end
 end
 
-return {apidata = apidata, title = "@i18n(app.modules.rates_advanced.cyclic_behaviour)@", onNavMenu = navHandlers.onNavMenu, event = navHandlers.event, reboot = false, eepromWrite = true, refreshOnRateChange = true, postLoad = postLoad, wakeup = wakeup, API = {}}
+return {apidata = apidata, title = "Cyclic Behaviour", onNavMenu = navHandlers.onNavMenu, event = navHandlers.event, reboot = false, eepromWrite = true, refreshOnRateChange = true, postLoad = postLoad, wakeup = wakeup, API = {}}

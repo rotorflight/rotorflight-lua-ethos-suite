@@ -11,13 +11,13 @@ local MSP_API_CMD_READ = 146
 local MSP_API_CMD_WRITE = 147
 
 local TBL_RESCUE_MODE = {
-    [0] = "@i18n(api.RESCUE_PROFILE.tbl_off)@",
-    "@i18n(api.RESCUE_PROFILE.tbl_on)@"
+    [0] = "OFF",
+    "ON"
 }
 
 local TBL_RESCUE_FLIP = {
-    [0] = "@i18n(api.RESCUE_PROFILE.tbl_noflip)@",
-    "@i18n(api.RESCUE_PROFILE.tbl_flip)@"
+    [0] = "NO FLIP",
+    "FLIP"
 }
 
 -- Tuple layout:

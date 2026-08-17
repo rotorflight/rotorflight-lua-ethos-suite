@@ -12314,6 +12314,13 @@
           "reverse_text": false,
           "translation": "Desenvolv."
         },
+        "txt_follow_dashboard_theme": {
+          "english": "Follow dashboard theme",
+          "max_length": 23,
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "Follow dashboard theme"
+        },
         "txt_general": {
           "english": "General",
           "max_length": 7,

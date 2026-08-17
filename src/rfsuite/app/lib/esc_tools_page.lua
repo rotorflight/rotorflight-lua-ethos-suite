@@ -398,7 +398,7 @@ function escToolsPage.createIsolatedSaveMenuHandler(folder, escConfig)
     if idleCap == nil then idleCap = 97 end
     if idleCap < processingCap then idleCap = processingCap end
     if idleCap > 99 then idleCap = 99 end
-    local saveMessage = ESC.isolatedSaveMessage or "@i18n(app.msg_saving_settings)@"
+    local saveMessage = ESC.isolatedSaveMessage or "Saving settings..."
     local waitEscMessage = ESC.isolatedSaveWaitEscMessage or "Waiting for ESC..."
     local gcAfterSave = ESC.isolatedSaveGcCollect ~= false
     local gcPasses = tonumber(ESC.isolatedSaveGcPasses)
@@ -489,7 +489,7 @@ function escToolsPage.createIsolatedSaveMenuHandler(folder, escConfig)
         app.triggers.closeSaveFake = false
         app.triggers.isSaving = false
 
-        local title = "@i18n(app.msg_saving)@"
+        local title = "Saving..."
         local message = saveMessage
         saveState.dialog = openLocalProgressDialog({
             title = title,
@@ -508,7 +508,7 @@ function escToolsPage.createIsolatedSaveMenuHandler(folder, escConfig)
                     if rfsuite.utils and rfsuite.utils.log then
                         rfsuite.utils.log("ESC isolated save failed", "info")
                     end
-                    dialog:message("@i18n(app.error_timed_out)@")
+                    dialog:message("Error: timed out")
                     dialog:closeAllowed(true)
                     dialog:value(100)
                     closeSaveDialog()
@@ -525,7 +525,7 @@ function escToolsPage.createIsolatedSaveMenuHandler(folder, escConfig)
                     if rfsuite.utils and rfsuite.utils.log then
                         rfsuite.utils.log("ESC isolated save timeout", "info")
                     end
-                    dialog:message("@i18n(app.error_timed_out)@")
+                    dialog:message("Error: timed out")
                     dialog:closeAllowed(true)
                     dialog:value(100)
                     closeSaveDialog()
@@ -575,11 +575,11 @@ function escToolsPage.createIsolatedSaveMenuHandler(folder, escConfig)
 
         form.openDialog({
             width = nil,
-            title = "@i18n(app.msg_save_settings)@",
-            message = "@i18n(app.msg_save_current_page)@",
+            title = "Save settings",
+            message = "Save current page to flight controller?",
             buttons = {
                 {
-                    label = "@i18n(app.btn_ok_long)@",
+                    label = "                OK                ",
                     action = function()
                         local appNow = rfsuite.app
                         if appNow and not appNow.Page and appNow.uiState == appNow.uiStatus.pages and targetPage then
@@ -590,7 +590,7 @@ function escToolsPage.createIsolatedSaveMenuHandler(folder, escConfig)
                     end
                 },
                 {
-                    label = "@i18n(app.btn_cancel)@",
+                    label = "CANCEL",
                     action = function() return true end
                 }
             },

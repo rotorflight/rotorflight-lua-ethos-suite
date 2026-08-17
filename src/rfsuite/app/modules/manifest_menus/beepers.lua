@@ -26,17 +26,17 @@ return {
     pages = {
         {
             image = "configuration.png",
-            name = "@i18n(app.modules.beepers.menu_configuration)@",
+            name = "Configuration",
             script = "configuration.lua",
             shortcutId = "s_beepers_configuration_lua_3d60a90251",
         },
         {
             image = "dshot.png",
-            name = "@i18n(app.modules.beepers.menu_dshot)@",
+            name = "ESC Beacon",
             script = "dshot.lua",
             shortcutId = "s_beepers_dshot_lua_f1e47cbff2",
         },
     },
     scriptPrefix = "beepers/tools/",
-    title = "@i18n(app.modules.beepers.name)@",
+    title = "Beepers",
 }

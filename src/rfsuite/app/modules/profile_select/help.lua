@@ -8,7 +8,7 @@ local data = {}
 
 data['help'] = {}
 
-data['help']['default'] = {"@i18n(app.modules.profile_select.help_p1)@", "@i18n(app.modules.profile_select.help_p2)@"}
+data['help']['default'] = {"Set the current flight profile or rate profile you would like to use.", "If you use a switch on your radio to change flight or rate modes, this will override this choice as soon as you toggle the switch."}
 
 data['fields'] = {}
 

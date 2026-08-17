@@ -8,7 +8,7 @@ local data = {}
 
 data['help'] = {}
 
-data['help']['default'] = {"@i18n(app.modules.governor.help_p1)@", "@i18n(app.modules.governor.help_p2)@"}
+data['help']['default'] = {"These parameters apply globally to the governor regardless of the profile in use.", "Each parameter is simply a time value in seconds for each governor action."}
 
 data['fields'] = {}
 

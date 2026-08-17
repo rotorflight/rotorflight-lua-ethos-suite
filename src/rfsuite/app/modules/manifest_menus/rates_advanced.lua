@@ -27,23 +27,23 @@ return {
     pages = {
         {
             image = "advanced.png",
-            name = "@i18n(app.modules.rates_advanced.advanced)@",
+            name = "Advanced",
             script = "advanced.lua",
             shortcutId = "s_rates_advanced_advanced_lua_5673f8caee",
         },
         {
             image = "cyclic_behaviour.png",
-            name = "@i18n(app.modules.rates_advanced.cyclic_behaviour)@",
+            name = "Cyclic Behaviour",
             script = "cyclic_behaviour.lua",
             shortcutId = "s_rates_advanced_cyclic_behaviour_lua_df5de615f1",
         },
         {
             image = "table.png",
-            name = "@i18n(app.modules.rates_advanced.table)@",
+            name = "Rate Table",
             script = "table.lua",
             shortcutId = "s_rates_advanced_table_lua_7e2b9c5584",
         },
     },
     scriptPrefix = "rates_advanced/tools/",
-    title = "@i18n(app.modules.rates_advanced.name)@",
+    title = "Rates",
 }

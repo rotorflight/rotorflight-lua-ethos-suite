@@ -8,9 +8,9 @@ local rfsuite = require("rfsuite")
 local labels = {}
 local fields = {}
 
-fields[#fields + 1] = {t = "@i18n(app.modules.copyprofiles.profile_type)@", value = 0, min = 0, max = 1, table = {[0] = "@i18n(app.modules.copyprofiles.profile_type_pid)@", "@i18n(app.modules.copyprofiles.profile_type_rate)@"}}
-fields[#fields + 1] = {t = "@i18n(app.modules.copyprofiles.source_profile)@", value = 0, min = 0, max = 5, tableIdxInc = -1, table = {"1", "2", "3", "4", "5", "6"}}
-fields[#fields + 1] = {t = "@i18n(app.modules.copyprofiles.dest_profile)@", value = 0, min = 0, max = 5, tableIdxInc = -1, table = {"1", "2", "3", "4", "5", "6"}}
+fields[#fields + 1] = {t = "Profile Type", value = 0, min = 0, max = 1, table = {[0] = "PID", "Rate"}}
+fields[#fields + 1] = {t = "Source Profile", value = 0, min = 0, max = 5, tableIdxInc = -1, table = {"1", "2", "3", "4", "5", "6"}}
+fields[#fields + 1] = {t = "Dest. Profile", value = 0, min = 0, max = 5, tableIdxInc = -1, table = {"1", "2", "3", "4", "5", "6"}}
 
 local doSave = false
 
@@ -46,21 +46,21 @@ local function onSaveMenu()
 
     local buttons = {
         {
-            label = "@i18n(app.btn_ok)@",
+            label = "          OK           ",
             action = function()
 
                 doSave = true
 
                 return true
             end
-        }, {label = "@i18n(app.btn_cancel)@", action = function() return true end}
+        }, {label = "CANCEL", action = function() return true end}
     }
-    local theTitle = "@i18n(app.modules.copyprofiles.msgbox_save)@"
+    local theTitle = "Save settings"
     local theMsg
     if rfsuite.app.Page.extraMsgOnSave then
-        theMsg = "@i18n(app.modules.copyprofiles.msgbox_msg)@" .. "\n\n" .. rfsuite.app.Page.extraMsgOnSave
+        theMsg = "Save current page to flight controller?" .. "\n\n" .. rfsuite.app.Page.extraMsgOnSave
     else
-        theMsg = "@i18n(app.modules.copyprofiles.msgbox_msg)@"
+        theMsg = "Save current page to flight controller?"
     end
 
     form.openDialog({width = nil, title = theTitle, message = theMsg, buttons = buttons, wakeup = function() end, paint = function() end, options = TEXT_LEFT})

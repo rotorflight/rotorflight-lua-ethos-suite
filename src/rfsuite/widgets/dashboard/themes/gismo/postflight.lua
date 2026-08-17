@@ -45,7 +45,7 @@ local function header_boxes()
     local txbatt_type = 0
     if rfsuite and rfsuite.preferences and rfsuite.preferences.general then txbatt_type = rfsuite.preferences.general.txbatt_type or 0 end
     if header_boxes_cache == nil or last_txbatt_type ~= txbatt_type then
-        header_boxes_cache = utils.standardHeaderBoxes(i18n, colorMode, headeropts, txbatt_type)
+        header_boxes_cache = utils.standardHeaderBoxes(colorMode, headeropts, txbatt_type)
         last_txbatt_type = txbatt_type
     end
     return header_boxes_cache
@@ -56,64 +56,64 @@ local function buildBoxes(W)
 
     return {
         {col = 1, row = 1,  colspan = 2, rowspan = 3, type = "time",  subtype = "flight",
-         title = "@i18n(widgets.dashboard.flight_duration)@",  titlepos = "bottom",
+         title = "Flight Duration",  titlepos = "bottom",
          bgcolor = colorMode.panelbg, textcolor = colorMode.textcolor, titlecolor = colorMode.titlecolor,
          valuepaddingtop = opts.valuepaddingtop, font = opts.font, titlefont = opts.titlefont},
 
         {col = 1, row = 4,  colspan = 2, rowspan = 3, type = "time",  subtype = "total",
-         title = "@i18n(widgets.dashboard.total_flight_duration)@", titlepos = "bottom",
+         title = "Total Model Flight Duration", titlepos = "bottom",
          bgcolor = colorMode.paneldarkbg, textcolor = colorMode.textcolor, titlecolor = colorMode.titlecolor,
          valuepaddingtop = opts.valuepaddingtop, font = opts.font, titlefont = opts.titlefont},
 
         {col = 1, row = 7,  colspan = 2, rowspan = 3, type = "text", subtype = "stats", stattype = "min", source = "rpm",
-         title = "@i18n(widgets.dashboard.rpm_min)@", unit = " rpm", titlepos = "bottom",
+         title = "RPM Min", unit = " rpm", titlepos = "bottom",
          bgcolor = colorMode.panelbg, transform = "floor", textcolor = colorMode.textcolor, titlecolor = colorMode.titlecolor,
          valuepaddingtop = opts.valuepaddingtop, font = opts.font, titlefont = opts.titlefont},
 
         {col = 1, row = 10, colspan = 2, rowspan = 3, type = "text", subtype = "stats", source = "rpm",
-         title = "@i18n(widgets.dashboard.rpm_max)@", unit = " rpm", titlepos = "bottom",
+         title = "RPM Max", unit = " rpm", titlepos = "bottom",
          bgcolor = colorMode.paneldarkbg, transform = "floor", textcolor = colorMode.textcolor, titlecolor = colorMode.titlecolor,
          valuepaddingtop = opts.valuepaddingtop, font = opts.font, titlefont = opts.titlefont},
 
         {col = 3, row = 1,  colspan = 2, rowspan = 3, type = "text", subtype = "stats", source = "throttle_percent",
-         title = "@i18n(widgets.dashboard.throttle_max)@", titlepos = "bottom",
+         title = "Throttle Max", titlepos = "bottom",
          bgcolor = colorMode.paneldarkbg, transform = "floor", textcolor = colorMode.textcolor, titlecolor = colorMode.titlecolor,
          valuepaddingtop = opts.valuepaddingtop, font = opts.font, titlefont = opts.titlefont},
 
         {col = 3, row = 4,  colspan = 2, rowspan = 3, type = "text", subtype = "stats", source = "current",
-         title = "@i18n(widgets.dashboard.current_max)@", titlepos = "bottom",
+         title = "Current Max", titlepos = "bottom",
          bgcolor = colorMode.panelbg, transform = "floor", textcolor = colorMode.textcolor, titlecolor = colorMode.titlecolor,
          valuepaddingtop = opts.valuepaddingtop, font = opts.font, titlefont = opts.titlefont},
 
         {col = 3, row = 7,  colspan = 2, rowspan = 3, type = "text", subtype = "stats", source = "temp_esc",
-         title = "@i18n(widgets.dashboard.esc_max_temp)@", titlepos = "bottom",
+         title = "ESC Temp Max", titlepos = "bottom",
          bgcolor = colorMode.paneldarkbg, transform = "floor", textcolor = colorMode.textcolor, titlecolor = colorMode.titlecolor,
          valuepaddingtop = opts.valuepaddingtop, font = opts.font, titlefont = opts.titlefont},
 
         {col = 3, row = 10, colspan = 2, rowspan = 3, type = "text", subtype = "watts", source = "max",
-         title = "@i18n(widgets.dashboard.watts_max)@", unit = "W", titlepos = "bottom",
+         title = "Max Watts", unit = "W", titlepos = "bottom",
          bgcolor = colorMode.panelbg, transform = "floor", textcolor = colorMode.textcolor, titlecolor = colorMode.titlecolor,
          valuepaddingtop = opts.valuepaddingtop, font = opts.font, titlefont = opts.titlefont},
 
         {col = 5, row = 1,  colspan = 2, rowspan = 3, type = "text", subtype = "stats", stattype = "max", source = "smartconsumption",
-         title = "@i18n(widgets.dashboard.consumed_mah)@", titlepos = "bottom",
+         title = "Consumed mAh", titlepos = "bottom",
          bgcolor = colorMode.panelbg, transform = "floor", textcolor = colorMode.textcolor, titlecolor = colorMode.titlecolor,
          valuepaddingtop = opts.valuepaddingtop, font = opts.font, titlefont = opts.titlefont},
 
         {col = 5, row = 4,  colspan = 2, rowspan = 3, type = "text", subtype = "stats", stattype = "min", source = "smartfuel",
-         title = "@i18n(widgets.dashboard.fuel_remaining)@", titlepos = "bottom",
+         title = "Fuel Remaining", titlepos = "bottom",
          bgcolor = colorMode.paneldarkbg, transform = "floor", textcolor = colorMode.textcolor, titlecolor = colorMode.titlecolor,
          valuepaddingtop = opts.valuepaddingtop, font = opts.font, titlefont = opts.titlefont},
 
         {col = 5, row = 7,  colspan = 2, rowspan = 3, type = "text", subtype = "stats", stattype = "min", source = "voltage",
-         title = "@i18n(widgets.dashboard.min_volts_cell)@", titlepos = "bottom",
+         title = "Min Volts per cell", titlepos = "bottom",
          bgcolor = colorMode.panelbg, unit = "V",
          transform = function(v) return maxVoltageToCellVoltage(v) end,
          textcolor = colorMode.textcolor, titlecolor = colorMode.titlecolor,
          valuepaddingtop = opts.valuepaddingtop, font = opts.font, titlefont = opts.titlefont},
 
         {col = 5, row = 10, colspan = 2, rowspan = 3, type = "text", subtype = "telemetry", source = "voltage",
-         title = "@i18n(widgets.dashboard.volts_per_cell)@", titlepos = "bottom",
+         title = "Volts per cell", titlepos = "bottom",
          bgcolor = colorMode.paneldarkbg, unit = "V",
          transform = function(v) return maxVoltageToCellVoltage(v) end,
          textcolor = colorMode.textcolor, titlecolor = colorMode.titlecolor,

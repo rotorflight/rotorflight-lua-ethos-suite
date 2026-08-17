@@ -4,6 +4,6 @@
 ]] --
 
 return {
-    ["pitch"] = "@i18n(api.ACC_TRIM.pitch)@",
-    ["roll"] = "@i18n(api.ACC_TRIM.roll)@",
+    ["pitch"] = "Use to trim if the heli drifts in one of the stabilized modes (angle, horizon, etc.).",
+    ["roll"] = "Use to trim if the heli drifts in one of the stabilized modes (angle, horizon, etc.).",
 }

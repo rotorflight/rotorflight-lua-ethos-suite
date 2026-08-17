@@ -14,6 +14,10 @@ local utils = rfsuite.widgets.dashboard.utils
 
 local headeropts = utils.getHeaderOptions()
 local colorMode = utils.themeColors()
+-- Resolved once per module load like colorMode above; a theme-signature
+-- change re-executes this chunk via reload_themes(true). Calling it from
+-- the box paint cost 22 lcd.themeColor() host calls per frame.
+local outlineColor = utils.getThemeOutlineColor()
 
 local theme_section = "system/srb-rc"
 
@@ -152,7 +156,7 @@ local function header_boxes()
     end
 
     if header_boxes_cache == nil or last_txbatt_type ~= txbatt_type then
-        header_boxes_cache = utils.standardHeaderBoxes(i18n, colorMode, headeropts, txbatt_type)
+        header_boxes_cache = utils.standardHeaderBoxes(colorMode, headeropts, txbatt_type)
         last_txbatt_type = txbatt_type
     end
     return header_boxes_cache
@@ -383,7 +387,7 @@ local function buildBoxes(W)
             type = "func",
             subtype = "func",
             paint = function(x, y, w, h, box, cache, t)
-                lcd.color(utils.getThemeOutlineColor())
+                lcd.color(outlineColor)
                 lcd.drawRectangle(x, y, w, h, battbpad)
             end,
         },

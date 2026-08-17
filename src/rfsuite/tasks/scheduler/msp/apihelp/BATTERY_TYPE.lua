@@ -4,5 +4,5 @@
 ]] --
 
 return {
-    ["batteryProfile"] = "@i18n(api.BATTERY_CONFIG.batteryProfile)@",
+    ["batteryProfile"] = "Selected battery profile (1-6)",
 }

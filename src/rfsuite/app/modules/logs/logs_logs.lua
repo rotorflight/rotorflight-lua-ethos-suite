@@ -62,7 +62,7 @@ local function openPage(opts)
 
         local buttons = {
             {
-                label = "@i18n(app.btn_ok)@",
+                label = "          OK           ",
                 action = function()
 
                     app.triggers.exitAPP = true
@@ -72,7 +72,7 @@ local function openPage(opts)
             }
         }
 
-        form.openDialog({width = nil, title = "@i18n(error)@", message = "@i18n(app.check_bg_task)@", buttons = buttons, wakeup = function() end, paint = function() end, options = TEXT_LEFT})
+        form.openDialog({width = nil, title = "error", message = "Please enable the background task.", buttons = buttons, wakeup = function() end, paint = function() end, options = TEXT_LEFT})
 
     end
 
@@ -158,16 +158,16 @@ local function openPage(opts)
     if #dates == 0 then
 
         LCD_W, LCD_H = lcd.getWindowSize()
-        local str = "@i18n(app.modules.logs.msg_no_logs_found)@"
+        local str = "NO LOG FILES FOUND"
         local ew = LCD_W
         local eh = LCD_H
         local etsizeW, etsizeH = lcd.getTextSize(str)
         local eposX = ew / 2 - etsizeW / 2
         local eposY = eh / 2 - etsizeH / 2
 
-        local posErr = {w = etsizeW, h = app.radio.navbuttonHeight, x = eposX, y = ePosY}
+        local posErr = {w = etsizeW, h = app.radio.navbuttonHeight, x = eposX, y = eposY}
 
-        line = form.addLine("", nil, false)
+        local line = form.addLine("", nil, false)
         form.addStaticText(line, posErr, str)
 
     else
@@ -195,7 +195,7 @@ local function openPage(opts)
                     app.gfx_buttons["logs_logs"][currentButtonIndex] = nil
                 end
 
-                app.formFields[currentButtonIndex] = form.addButton(line, {x = x, y = y, w = buttonW, h = buttonH}, {
+                app.formFields[currentButtonIndex] = form.addButton(nil, {x = x, y = y, w = buttonW, h = buttonH}, {
                     text = extractHourMinute(pageName),
                     icon = app.gfx_buttons["logs_logs"][currentButtonIndex],
                     options = FONT_S,

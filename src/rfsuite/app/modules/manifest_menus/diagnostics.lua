@@ -19,7 +19,7 @@ return {
         {
             bgtask = false,
             image = "rfstatus.png",
-            name = "@i18n(app.modules.rfstatus.name)@",
+            name = "Status",
             offline = true,
             script = "rfstatus.lua",
             shortcutId = "s_diagnostics_rfstatus_lua_ac6fe96c58",
@@ -27,7 +27,7 @@ return {
         {
             bgtask = true,
             image = "elrs_link.png",
-            name = "@i18n(app.modules.elrs_telemetry.name)@",
+            name = "ELRS Telemetry",
             offline = false,
             script = "elrs_telemetry.lua",
             shortcutId = "s_diagnostics_elrs_telemetry_lua_5af0394dfc",
@@ -35,7 +35,7 @@ return {
         {
             bgtask = true,
             image = "sensors.png",
-            name = "@i18n(app.modules.validate_sensors.name)@",
+            name = "Sensors",
             offline = true,
             script = "sensors.lua",
             shortcutId = "s_diagnostics_sensors_lua_0010694864",
@@ -43,7 +43,7 @@ return {
         {
             bgtask = true,
             image = "smartfuel.png",
-            name = "@i18n(app.modules.power.smartfuel_name)@",
+            name = "SmartFuel",
             offline = false,
             script = "smartfuel.lua",
             shortcutId = "s_diagnostics_smartfuel_lua_b5746f8b8c",
@@ -51,7 +51,7 @@ return {
         {
             bgtask = true,
             image = "fblsensors.png",
-            name = "@i18n(app.modules.fblsensors.name)@",
+            name = "FBL Sensors",
             offline = false,
             script = "fblsensors.lua",
             shortcutId = "s_diagnostics_fblsensors_lua_05321e9f3c",
@@ -59,7 +59,7 @@ return {
         {
             bgtask = true,
             image = "fblstatus.png",
-            name = "@i18n(app.modules.fblstatus.name)@",
+            name = "FBL Status",
             offline = false,
             script = "fblstatus.lua",
             shortcutId = "s_diagnostics_fblstatus_lua_d9afde0a7c",
@@ -67,7 +67,7 @@ return {
         {
             bgtask = true,
             image = "info.png",
-            name = "@i18n(app.modules.info.name)@",
+            name = "Info",
             offline = true,
             script = "info.lua",
             shortcutId = "s_diagnostics_info_lua_5025a3d5b5",
@@ -82,5 +82,5 @@ return {
         },
     },
     scriptPrefix = "diagnostics/tools/",
-    title = "@i18n(app.modules.diagnostics.name)@",
+    title = "Diagnostics",
 }

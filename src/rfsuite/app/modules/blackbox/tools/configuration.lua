@@ -4,6 +4,9 @@
 ]] --
 
 local rfsuite = require("rfsuite")
+
+-- Hoisted: apiVersionCompare re-parses its argument, and these run per tick.
+local API_12_0_8 = {12, 0, 8}
 local pageRuntime = assert(loadfile("app/lib/page_runtime.lua"))()
 local navHandlers = pageRuntime.createMenuHandlers({defaultSection = "hardware"})
 
@@ -34,21 +37,21 @@ local state = {
     },
     form = {}
 }
-local pageTitle = "@i18n(app.modules.blackbox.name)@ / @i18n(app.modules.blackbox.menu_configuration)@"
+local pageTitle = "Blackbox / Configuration"
 
 local function onoffTable()
     return {
-        {"@i18n(app.modules.blackbox.off)@", 0},
-        {"@i18n(app.modules.blackbox.on)@", 1}
+        {"Off", 0},
+        {"On", 1}
     }
 end
 
 local function modeTable()
     return {
-        {"@i18n(app.modules.blackbox.mode_off)@", 0},
-        {"@i18n(app.modules.blackbox.mode_normal)@", 1},
-        {"@i18n(app.modules.blackbox.mode_armed)@", 2},
-        {"@i18n(app.modules.blackbox.mode_switch)@", 3}
+        {"Off", 0},
+        {"Normal", 1},
+        {"Armed", 2},
+        {"Switch", 3}
     }
 end
 
@@ -76,17 +79,17 @@ local function denomTable(currentDenom)
     end
 
     if not seen then
-        tbl[#tbl + 1] = {string.format("@i18n(app.modules.blackbox.rate_custom)@", formatRateHz(current), current), current}
+        tbl[#tbl + 1] = {string.format("Custom %s [1/%d]", formatRateHz(current), current), current}
     end
 
     return tbl
 end
 
 local function deviceTable()
-    local t = {{"@i18n(app.modules.blackbox.device_disabled)@", 0}}
-    if state.media.dataflashSupported then t[#t + 1] = {"@i18n(app.modules.blackbox.device_onboard_flash)@", 1} end
-    if state.media.sdcardSupported then t[#t + 1] = {"@i18n(app.modules.blackbox.device_sdcard)@", 2} end
-    t[#t + 1] = {"@i18n(app.modules.blackbox.device_serial_port)@", 3}
+    local t = {{"Disabled", 0}}
+    if state.media.dataflashSupported then t[#t + 1] = {"Onboard Flash", 1} end
+    if state.media.sdcardSupported then t[#t + 1] = {"SD Card", 2} end
+    t[#t + 1] = {"Serial Port", 3}
     return t
 end
 
@@ -138,15 +141,15 @@ local function updateVisibility()
     if state.form.mode and state.form.mode.enable then state.form.mode:enable(edit) end
 
     if state.form.initialErase and state.form.initialErase.enable then
-        state.form.initialErase:enable(edit and device == 1 and rfsuite.utils.apiVersionCompare(">=", {12, 0, 8}))
+        state.form.initialErase:enable(edit and device == 1 and rfsuite.utils.apiVersionCompare(">=", API_12_0_8))
     end
 
     if state.form.rollingErase and state.form.rollingErase.enable then
-        state.form.rollingErase:enable(edit and device == 1 and rfsuite.utils.apiVersionCompare(">=", {12, 0, 8}))
+        state.form.rollingErase:enable(edit and device == 1 and rfsuite.utils.apiVersionCompare(">=", API_12_0_8))
     end
 
     if state.form.gracePeriod and state.form.gracePeriod.enable then
-        state.form.gracePeriod:enable(edit and device ~= 0 and (mode == 1 or mode == 2) and rfsuite.utils.apiVersionCompare(">=", {12, 0, 8}))
+        state.form.gracePeriod:enable(edit and device ~= 0 and (mode == 1 or mode == 2) and rfsuite.utils.apiVersionCompare(">=", API_12_0_8))
     end
 
     updateSaveEnabled()
@@ -155,8 +158,8 @@ end
 local function renderLoading(message)
     form.clear()
     app.ui.fieldHeader(pageTitle)
-    local line = form.addLine("@i18n(app.modules.blackbox.status)@")
-    form.addStaticText(line, nil, message or "@i18n(app.msg_loading)@")
+    local line = form.addLine("Status")
+    form.addStaticText(line, nil, message or "Loading...")
 end
 
 local function renderForm()
@@ -168,28 +171,28 @@ local function renderForm()
         state.cfg.device = 0
     end
 
-    local line = form.addLine("@i18n(app.modules.blackbox.device)@")
+    local line = form.addLine("Logging device")
     state.form.device = form.addChoiceField(line, nil, deviceChoices, function() return state.cfg.device end, function(v)
         state.cfg.device = v
         markDirty()
         updateVisibility()
     end)
 
-    line = form.addLine("@i18n(app.modules.blackbox.logging_mode)@")
+    line = form.addLine("Logging mode")
     state.form.mode = form.addChoiceField(line, nil, modeTable(), function() return state.cfg.mode end, function(v)
         state.cfg.mode = v
         markDirty()
         updateVisibility()
     end)
 
-    line = form.addLine("@i18n(app.modules.blackbox.logging_rate)@")
+    line = form.addLine("Logging rate")
     state.form.denom = form.addChoiceField(line, nil, denomTable(state.cfg.denom), function() return state.cfg.denom end, function(v)
         state.cfg.denom = v
         markDirty()
         updateSaveEnabled()
     end)
 
-    line = form.addLine("@i18n(app.modules.blackbox.disarm_grace_period)@")
+    line = form.addLine("Disarm grace period")
     state.form.gracePeriod = form.addNumberField(line, nil, 0, 255, function() return state.cfg.gracePeriod end, function(v)
         state.cfg.gracePeriod = v
         markDirty()
@@ -197,7 +200,7 @@ local function renderForm()
     end)
     if state.form.gracePeriod and state.form.gracePeriod.suffix then state.form.gracePeriod:suffix("s") end
 
-    line = form.addLine("@i18n(app.modules.blackbox.initial_erase)@")
+    line = form.addLine("Initial erase")
     state.form.initialErase = form.addNumberField(line, nil, 0, 65535, function() return state.cfg.initialEraseFreeSpaceKiB end, function(v)
         state.cfg.initialEraseFreeSpaceKiB = v
         markDirty()
@@ -205,7 +208,7 @@ local function renderForm()
     end)
     if state.form.initialErase and state.form.initialErase.suffix then state.form.initialErase:suffix("KiB") end
 
-    line = form.addLine("@i18n(app.modules.blackbox.rolling_erase)@")
+    line = form.addLine("Rolling erase")
     state.form.rollingErase = form.addBooleanField(line, nil, function()
         return tonumber(state.cfg.rollingErase or 0) == 1
     end, function(v)
@@ -289,7 +292,7 @@ local function requestData(forceApiRead)
     state.media.sdcardSupported = true
     seedMediaFromSession()
 
-    renderLoading("@i18n(app.modules.blackbox.loading_feature_config)@")
+    renderLoading("Loading feature/config...")
 
     local seededFromSession = false
     if not forceApiRead then
@@ -347,7 +350,7 @@ local function performSave()
     if useDirtySave() and (not state.dirty) then return end
 
     state.saving = true
-    app.ui.progressDisplaySave("@i18n(app.modules.blackbox.saving)@")
+    app.ui.progressDisplaySave("Saving Blackbox...")
 
     local API = tasks.msp.api.loadPage("BLACKBOX_CONFIG")
     API.setUUID("blackbox-config-write")
@@ -418,22 +421,22 @@ local function onSaveMenu()
 
     local buttons = {
         {
-            label = "@i18n(app.btn_ok_long)@",
+            label = "                OK                ",
             action = function()
                 performSave()
                 return true
             end
         },
         {
-            label = "@i18n(app.btn_cancel)@",
+            label = "CANCEL",
             action = function() return true end
         }
     }
 
     form.openDialog({
         width = nil,
-        title = "@i18n(app.msg_save_settings)@",
-        message = "@i18n(app.msg_save_current_page)@",
+        title = "Save settings",
+        message = "Save current page to flight controller?",
         buttons = buttons,
         wakeup = function() end,
         paint = function() end,

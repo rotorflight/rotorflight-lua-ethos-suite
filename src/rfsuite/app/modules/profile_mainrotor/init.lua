@@ -4,6 +4,6 @@
 ]] --
 
 
-local init = {title = "@i18n(app.modules.profile_mainrotor.name)@", section = "advanced", script = "mainrotor.lua", image = "mainrotor.png", order = 3, ethosversion = {1, 6, 2}}
+local init = {title = "Main Rotor", section = "advanced", script = "mainrotor.lua", image = "mainrotor.png", order = 3, ethosversion = {1, 6, 2}}
 
 return init

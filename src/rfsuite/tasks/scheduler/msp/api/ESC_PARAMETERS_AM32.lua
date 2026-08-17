@@ -14,9 +14,9 @@ local motorDirection = {"Normal", "Reversed"}
 local timingAdvance = {"0°", "7.5°", "15°", "22.5°"}
 local onOff = {"Off", "On"}
 local protocol = {"Auto", "Dshot 300-600", "Servo 1-2ms", "Serial", "BF Safe Arming"}
-local brakeOnStop = {"@i18n(app.modules.esc_tools.mfg.am32.tbl_brake_off)@", "@i18n(app.modules.esc_tools.mfg.am32.tbl_brake_brake)@", "@i18n(app.modules.esc_tools.mfg.am32.tbl_brake_active)@"}
-local variablePwm = {"@i18n(app.modules.esc_tools.mfg.am32.tbl_pwm_fixed)@", "@i18n(app.modules.esc_tools.mfg.am32.tbl_pwm_variable)@", "@i18n(app.modules.esc_tools.mfg.am32.tbl_pwm_rpm)@"}
-local lowVoltageCutoff = {"@i18n(app.modules.esc_tools.mfg.am32.tbl_lvc_off)@", "@i18n(app.modules.esc_tools.mfg.am32.tbl_lvc_cell)@", "@i18n(app.modules.esc_tools.mfg.am32.tbl_lvc_abs)@"}
+local brakeOnStop = {"Off", "Brake", "Active Brake"}
+local variablePwm = {"Fixed", "Variable", "By RPM"}
+local lowVoltageCutoff = {"Off", "Cell Based", "Absolute"}
 
 -- Tuple layout:
 --   field, type, min, max, default, unit,

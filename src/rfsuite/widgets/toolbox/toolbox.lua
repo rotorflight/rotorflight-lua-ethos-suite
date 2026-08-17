@@ -14,7 +14,7 @@ local LCD_W, LCD_H
 local BUSY_WAKEUP_RUN_NUM = 2
 local BUSY_WAKEUP_RUN_DEN = 3
 
-local toolBoxList = {[1] = {object = "armflags", name = "@i18n(widgets.armflags.name)@"}, [2] = {object = "bbl", name = "@i18n(widgets.bbl.name)@"}, [3] = {object = "craftname", name = "@i18n(widgets.craftname.name)@"}, [4] = {object = "governor", name = "@i18n(widgets.governor.name)@"}, [5] = {object = "craftimage", name = "@i18n(widgets.craftimage.name)@"}, [6] = {object = "timer", name = "@i18n(widgets.dashboard.flight_time)@"}}
+local toolBoxList = {[1] = {object = "armflags", name = "Arming Flags"}, [2] = {object = "bbl", name = "Black Box"}, [3] = {object = "craftname", name = "Craft Name"}, [4] = {object = "governor", name = "Governor"}, [5] = {object = "craftimage", name = "Craft Image"}, [6] = {object = "timer", name = "Flight Time"}}
 local themeColorCache = {usesThemeColors = nil, primary = nil, secondary = nil, colors = nil, legacyDark = nil, legacyColors = nil}
 
 local function rgb(r, g, b, a) return lcd.RGB(r, g, b, a or 1) end
@@ -157,7 +157,7 @@ function toolbox.paint(widget)
         return
     end
 
-    local isCompiledCheck = "@i18n(iscompiledcheck)@"
+    local isCompiledCheck = "true"
     if isCompiledCheck ~= "true" and isCompiledCheck ~= "eurt" then
         screenError("i18n not compiled", true, 0.6)
         return
@@ -255,7 +255,7 @@ function toolbox.wakeup(widget)
         widget.loadedWidget.wakeup(widget)
     end
 
-    local isCompiledCheck = "@i18n(iscompiledcheck1)@"
+    local isCompiledCheck = "true"
     if isCompiledCheck ~= "true" and isCompiledCheck ~= "eurt" then
         lcd.invalidate()
         return
@@ -307,7 +307,7 @@ function toolbox.configure(widget)
     local formFieldCount = 0
 
     formLineCnt = formLineCnt + 1
-    formLines[formLineCnt] = form.addLine("@i18n(widgets.toolbox.configure_title)@")
+    formLines[formLineCnt] = form.addLine("Title")
     formFieldCount = formFieldCount + 1
     formFields[formFieldCount] = form.addBooleanField(formLines[formLineCnt], nil, function() return widget.title end, function(newValue)
         if widget.title and widget.title ~= newValue then
@@ -319,7 +319,7 @@ function toolbox.configure(widget)
     end)
 
     formLineCnt = formLineCnt + 1
-    formLines[formLineCnt] = form.addLine("@i18n(widgets.toolbox.configure_widget_type)@")
+    formLines[formLineCnt] = form.addLine("Widget type")
     formFieldCount = formFieldCount + 1
     formFields[formFieldCount] = form.addChoiceField(formLines[formLineCnt], nil, generateWidgetList(toolBoxList), function()
         if not widget.object then widget.object = 1 end

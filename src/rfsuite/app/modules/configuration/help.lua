@@ -7,8 +7,8 @@ local data = {}
 
 data.help = {}
 data.help.default = {
-    "@i18n(app.modules.configuration.help_p1)@",
-    "@i18n(app.modules.configuration.help_p2)@"
+    "Use this page for system-level setup such as craft name, PID loop speed, and feature flags.",
+    "Saving writes these values to EEPROM and reboots the flight controller."
 }
 
 data.fields = {}

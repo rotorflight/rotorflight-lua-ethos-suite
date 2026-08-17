@@ -3,7 +3,7 @@
   GPLv3 — https://www.gnu.org/licenses/gpl-3.0.en.html
 ]] --
 
-local toolName = "@i18n(app.modules.esc_tools.mfg.yge.name)@"
+local toolName = "YGE"
 
 local mspHeaderBytes = 2
 

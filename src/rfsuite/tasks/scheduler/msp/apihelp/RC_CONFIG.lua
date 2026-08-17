@@ -4,11 +4,11 @@
 ]] --
 
 return {
-    ["rc_center"] = "@i18n(api.RC_CONFIG.rc_center)@",
-    ["rc_deflection"] = "@i18n(api.RC_CONFIG.rc_deflection)@",
-    ["rc_arm_throttle"] = "@i18n(api.RC_CONFIG.rc_arm_throttle)@",
-    ["rc_min_throttle"] = "@i18n(api.RC_CONFIG.rc_min_throttle)@",
-    ["rc_max_throttle"] = "@i18n(api.RC_CONFIG.rc_max_throttle)@",
-    ["rc_deadband"] = "@i18n(api.RC_CONFIG.rc_deadband)@",
-    ["rc_yaw_deadband"] = "@i18n(api.RC_CONFIG.rc_yaw_deadband)@",
+    ["rc_center"] = "Stick center in microseconds (us).",
+    ["rc_deflection"] = "Stick deflection from center in microseconds (us).",
+    ["rc_arm_throttle"] = "Throttle must be at or below this value in microseconds (us) to allow arming. Must be at least 10us lower than minimum throttle.",
+    ["rc_min_throttle"] = "Minimum throttle (0% throttle output) expected from radio, in microseconds (us).",
+    ["rc_max_throttle"] = "Maximum throttle (100% throttle output) expected from radio, in microseconds (us).",
+    ["rc_deadband"] = "Deadband for cyclic control in microseconds (us).",
+    ["rc_yaw_deadband"] = "Deadband for yaw control in microseconds (us).",
 }

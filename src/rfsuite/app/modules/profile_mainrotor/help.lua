@@ -8,7 +8,7 @@ local data = {}
 
 data['help'] = {}
 
-data['help']['default'] = {"@i18n(app.modules.profile_mainrotor.help_p1)@", "@i18n(app.modules.profile_mainrotor.help_p2)@", "@i18n(app.modules.profile_mainrotor.help_p3)@", "@i18n(app.modules.profile_mainrotor.help_p4)@"}
+data['help']['default'] = {"Collective Pitch Compensation: Increasing will compensate for the pitching motion caused by tail drag when climbing.", "Cross Coupling Gain: Removes roll coupling when only elevator is applied.", "Cross Coupling Ratio: Amount of compensation (pitch vs roll) to apply.", "Cross Coupling Freq. Limit: Frequency limit for the compensation, higher value will make the compensation action faster."}
 
 data['fields'] = {}
 

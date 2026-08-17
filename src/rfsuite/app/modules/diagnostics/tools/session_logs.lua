@@ -10,7 +10,7 @@ local os_clock = os.clock
 local app = rfsuite.app
 local tasks = rfsuite.tasks
 
-local PAGE_TITLE = "@i18n(app.modules.diagnostics.name)@ / Session Logs"
+local PAGE_TITLE = "Diagnostics / Session Logs"
 local EMPTY_TEXT = "No session log entries"
 local MAX_LINES = 80
 local REFRESH_INTERVAL = 0.25

@@ -8,7 +8,7 @@ local data = {}
 
 data['help'] = {}
 
-data['help']['default'] = {"@i18n(app.modules.failsafe.help_p1)@"}
+data['help']['default'] = {"Configure the failsafe settings for loss of RC signal."}
 
 data['fields'] = {}
 

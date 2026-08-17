@@ -14,25 +14,25 @@ local osClock = os.clock
 local floor = math.floor
 
 local SOURCES = {
-    {label = "@i18n(app.modules.fblsensors.sensor_gyro_x)@", packet = "RAW_IMU", field = "gyro_1", scale = 4 / 16.4},
-    {label = "@i18n(app.modules.fblsensors.sensor_gyro_y)@", packet = "RAW_IMU", field = "gyro_2", scale = 4 / 16.4},
-    {label = "@i18n(app.modules.fblsensors.sensor_gyro_z)@", packet = "RAW_IMU", field = "gyro_3", scale = 4 / 16.4},
-    {label = "@i18n(app.modules.fblsensors.sensor_accel_x)@", packet = "RAW_IMU", field = "accel_1", scale = 1 / 512},
-    {label = "@i18n(app.modules.fblsensors.sensor_accel_y)@", packet = "RAW_IMU", field = "accel_2", scale = 1 / 512},
-    {label = "@i18n(app.modules.fblsensors.sensor_accel_z)@", packet = "RAW_IMU", field = "accel_3", scale = 1 / 512},
-    {label = "@i18n(app.modules.fblsensors.sensor_mag_x)@", packet = "RAW_IMU", field = "mag_1", scale = 1 / 1090},
-    {label = "@i18n(app.modules.fblsensors.sensor_mag_y)@", packet = "RAW_IMU", field = "mag_2", scale = 1 / 1090},
-    {label = "@i18n(app.modules.fblsensors.sensor_mag_z)@", packet = "RAW_IMU", field = "mag_3", scale = 1 / 1090},
-    {label = "@i18n(app.modules.fblsensors.sensor_altitude)@", packet = "ALTITUDE", field = "altitude_cm", scale = 0.01},
-    {label = "@i18n(app.modules.fblsensors.sensor_sonar)@", packet = "SONAR", field = "sonar"},
-    {label = "@i18n(app.modules.fblsensors.sensor_debug_0)@", packet = "DEBUG", field = "debug_1"},
-    {label = "@i18n(app.modules.fblsensors.sensor_debug_1)@", packet = "DEBUG", field = "debug_2"},
-    {label = "@i18n(app.modules.fblsensors.sensor_debug_2)@", packet = "DEBUG", field = "debug_3"},
-    {label = "@i18n(app.modules.fblsensors.sensor_debug_3)@", packet = "DEBUG", field = "debug_4"},
-    {label = "@i18n(app.modules.fblsensors.sensor_debug_4)@", packet = "DEBUG", field = "debug_5"},
-    {label = "@i18n(app.modules.fblsensors.sensor_debug_5)@", packet = "DEBUG", field = "debug_6"},
-    {label = "@i18n(app.modules.fblsensors.sensor_debug_6)@", packet = "DEBUG", field = "debug_7"},
-    {label = "@i18n(app.modules.fblsensors.sensor_debug_7)@", packet = "DEBUG", field = "debug_8"},
+    {label = "Gyro X", packet = "RAW_IMU", field = "gyro_1", scale = 4 / 16.4},
+    {label = "Gyro Y", packet = "RAW_IMU", field = "gyro_2", scale = 4 / 16.4},
+    {label = "Gyro Z", packet = "RAW_IMU", field = "gyro_3", scale = 4 / 16.4},
+    {label = "Accel X", packet = "RAW_IMU", field = "accel_1", scale = 1 / 512},
+    {label = "Accel Y", packet = "RAW_IMU", field = "accel_2", scale = 1 / 512},
+    {label = "Accel Z", packet = "RAW_IMU", field = "accel_3", scale = 1 / 512},
+    {label = "Mag X", packet = "RAW_IMU", field = "mag_1", scale = 1 / 1090},
+    {label = "Mag Y", packet = "RAW_IMU", field = "mag_2", scale = 1 / 1090},
+    {label = "Mag Z", packet = "RAW_IMU", field = "mag_3", scale = 1 / 1090},
+    {label = "Altitude", packet = "ALTITUDE", field = "altitude_cm", scale = 0.01},
+    {label = "Sonar", packet = "SONAR", field = "sonar"},
+    {label = "Debug 0", packet = "DEBUG", field = "debug_1"},
+    {label = "Debug 1", packet = "DEBUG", field = "debug_2"},
+    {label = "Debug 2", packet = "DEBUG", field = "debug_3"},
+    {label = "Debug 3", packet = "DEBUG", field = "debug_4"},
+    {label = "Debug 4", packet = "DEBUG", field = "debug_5"},
+    {label = "Debug 5", packet = "DEBUG", field = "debug_6"},
+    {label = "Debug 6", packet = "DEBUG", field = "debug_7"},
+    {label = "Debug 7", packet = "DEBUG", field = "debug_8"},
 }
 
 local state = {
@@ -279,9 +279,9 @@ local function openPage(opts)
     if app.formLines then for k in pairs(app.formLines) do app.formLines[k] = nil end end
 
     form.clear()
-    app.ui.fieldHeader("@i18n(app.modules.diagnostics.name)@ / @i18n(app.modules.fblsensors.name)@")
+    app.ui.fieldHeader("Diagnostics / FBL Sensors")
 
-    local line = form.addLine("@i18n(app.modules.fblsensors.source)@")
+    local line = form.addLine("Source")
     app.formFields[1] = form.addChoiceField(line, nil, state.sourceChoices, function()
         return state.selectedSourceIdx
     end, function(v)

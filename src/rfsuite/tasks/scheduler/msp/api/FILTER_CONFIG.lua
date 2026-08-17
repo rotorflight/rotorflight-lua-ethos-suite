@@ -11,15 +11,15 @@ local MSP_API_CMD_READ = 92
 local MSP_API_CMD_WRITE = 93
 
 local TBL_GYRO_FILTER_TYPE = {
-    [0] = "@i18n(api.FILTER_CONFIG.tbl_none)@",
-    [1] = "@i18n(api.FILTER_CONFIG.tbl_1st)@",
-    [2] = "@i18n(api.FILTER_CONFIG.tbl_2nd)@"
+    [0] = "NONE",
+    [1] = "1ST",
+    [2] = "2ND"
 }
 local TBL_RPM_PRESET = {
-    "@i18n(api.FILTER_CONFIG.tbl_custom)@",
-    "@i18n(api.FILTER_CONFIG.tbl_low)@",
-    "@i18n(api.FILTER_CONFIG.tbl_medium)@",
-    "@i18n(api.FILTER_CONFIG.tbl_high)@"
+    "CUSTOM",
+    "LOW",
+    "MEDIUM",
+    "HIGH"
 }
 
 -- Tuple layout:

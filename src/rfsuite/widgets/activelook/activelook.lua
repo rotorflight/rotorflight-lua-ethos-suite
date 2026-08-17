@@ -95,13 +95,13 @@ local SENSOR_DEFS = {
         value = function()
             local session = rfsuite.session
             if session and session.isArmed ~= nil then
-                if session.isArmed then return "@i18n(widgets.governor.ARMED):upper()@" end
-                return "@i18n(widgets.governor.DISARMED):upper()@"
+                if session.isArmed then return "ARMED" end
+                return "DISARMED"
             end
             local flags = getSensorValue("armflags")
-            if flags == 1 or flags == 3 then return "@i18n(widgets.governor.ARMED):upper()@" end
-            if flags == 0 or flags == 2 then return "@i18n(widgets.governor.DISARMED):upper()@" end
-            return "@i18n(widgets.governor.UNKNOWN):upper()@"
+            if flags == 1 or flags == 3 then return "ARMED" end
+            if flags == 0 or flags == 2 then return "DISARMED" end
+            return "UNKNOWN"
         end
     },
     fuel = {
@@ -627,6 +627,14 @@ end
 
 local function computeSlots(context, modeKey, layoutChoice)
     local metrics = context.layoutMetrics or {}
+    -- Slots depend only on (modeKey, layoutChoice, metrics); metrics is only ever
+    -- replaced (not mutated) by buildLayout, so a reference check is enough to
+    -- avoid rebuilding the slot tables (and the addSlot closure) on every redraw
+    -- tick (20 Hz) when nothing has actually changed.
+    if context._slotsCacheModeKey == modeKey and context._slotsCacheLayoutChoice == layoutChoice and context._slotsCacheMetrics == metrics and context._slotsCache then
+        return context._slotsCache
+    end
+
     local slots = {}
     local active = LAYOUT_ACTIVE[layoutChoice] or LAYOUT_ACTIVE.two_top_two_bottom
     local areaW = metrics.areaW or 0
@@ -682,6 +690,11 @@ local function computeSlots(context, modeKey, layoutChoice)
         addSlot(3, active[3], leftX, bottomY, "small", isPreflight and PREFLIGHT_BOTTOM_FONT or SMALL_FONT, isPreflight and preBottomOffset or smallOffset, boxW, isPreflight and "center" or nil)
         addSlot(4, active[4], rightX, bottomY, "small", isPreflight and PREFLIGHT_BOTTOM_FONT or SMALL_FONT, isPreflight and preBottomOffset or smallOffset, boxW, isPreflight and "center" or nil)
     end
+
+    context._slotsCacheModeKey = modeKey
+    context._slotsCacheLayoutChoice = layoutChoice
+    context._slotsCacheMetrics = metrics
+    context._slotsCache = slots
 
     return slots
 end

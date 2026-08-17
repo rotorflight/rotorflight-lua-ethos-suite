@@ -26,23 +26,23 @@ return {
     pages = {
         {
             image = "configuration.png",
-            name = "@i18n(app.modules.blackbox.menu_configuration)@",
+            name = "Configuration",
             script = "configuration.lua",
             shortcutId = "s_blackbox_configuration_lua_1b07855e2c",
         },
         {
             image = "logging.png",
-            name = "@i18n(app.modules.blackbox.menu_logging)@",
+            name = "Logging",
             script = "logging.lua",
             shortcutId = "s_blackbox_logging_lua_6216852e49",
         },
         {
             image = "status.png",
-            name = "@i18n(app.modules.blackbox.menu_status)@",
+            name = "Status",
             script = "status.lua",
             shortcutId = "s_blackbox_status_lua_6d398bae79",
         },
     },
     scriptPrefix = "blackbox/tools/",
-    title = "@i18n(app.modules.blackbox.name)@",
+    title = "Blackbox",
 }

@@ -16,6 +16,14 @@ local type = type
 local pcall = pcall
 
 -- Optional protocol trace logger (raw frames). Inert unless enabled.
+-- Cheap pre-check so callers can skip building the (string-concat heavy) "extra"
+-- argument entirely when tracing is off, instead of paying for it every TX/RX cycle.
+local function plogEnabled()
+    local m = rfsuite.tasks and rfsuite.tasks.msp
+    local logger = m and m.proto_logger
+    return (logger and logger.enabled and logger.log) and true or false
+end
+
 local function plog(dir, cmd, payload, extra)
     local m = rfsuite.tasks and rfsuite.tasks.msp
     local logger = m and m.proto_logger
@@ -55,15 +63,17 @@ local function setProtocolVersion(v)
     _mspVersion = (v == 2) and 2 or 1
 end
 
+-- These tuning knobs determine how aggressively polling scales. Hoisted to file
+-- scope: they are constants, and pollBudget() runs per MSP poll, so building the
+-- table inside it was one throwaway allocation per poll.
+local TUNE = {
+    threshold_windows = 6,   -- Boost after N poll windows
+    step_seconds      = 0.03,-- Extra seconds per window beyond threshold
+    cap_seconds       = 0.35 -- Hard max
+}
+
 -- Computes poll timeout budget dynamically based on message size
 local function pollBudget()
-    -- These tuning knobs determine how aggressively polling scales
-    local TUNE = {
-        threshold_windows = 6,   -- Boost after N poll windows
-        step_seconds      = 0.03,-- Extra seconds per window beyond threshold
-        cap_seconds       = 0.35 -- Hard max
-    }
-
     -- Protocol-specific throughput
     local proto   = rfsuite.tasks and rfsuite.tasks.msp and rfsuite.tasks.msp.protocol or {}
     -- Default poll budget: keep this modest to reduce instruction burn on the radio.
@@ -133,18 +143,18 @@ local function mspProcessTxQ()
             payload[i] = mspTxCRC
             for j = i + 1, limit do payload[j] = 0 end
             mspTxBuf, mspTxIdx, mspTxCRC = {}, 1, 0
-            plog("TX", mspLastReq, payload, "ST=" .. tostring(payload[1] or 0) .. " TXIDX=" .. tostring(mspTxIdx) .. " TXBUF=" .. tostring(#mspTxBuf))
+            if plogEnabled() then plog("TX", mspLastReq, payload, "ST=" .. tostring(payload[1] or 0) .. " TXIDX=" .. tostring(mspTxIdx) .. " TXBUF=" .. tostring(#mspTxBuf)) end
             proto().mspSend(payload)
             return false
         else
-            plog("TX", mspLastReq, payload, "ST=" .. tostring(payload[1] or 0) .. " TXIDX=" .. tostring(mspTxIdx) .. " TXBUF=" .. tostring(#mspTxBuf))
+            if plogEnabled() then plog("TX", mspLastReq, payload, "ST=" .. tostring(payload[1] or 0) .. " TXIDX=" .. tostring(mspTxIdx) .. " TXBUF=" .. tostring(#mspTxBuf)) end
             proto().mspSend(payload)
             return true
         end
     else
         -- V2 pads unused bytes but CRC is handled differently
         for j = i, limit do payload[j] = payload[j] or 0 end
-            plog("TX", mspLastReq, payload, "ST=" .. tostring(payload[1] or 0) .. " TXIDX=" .. tostring(mspTxIdx) .. " TXBUF=" .. tostring(#mspTxBuf))
+            if plogEnabled() then plog("TX", mspLastReq, payload, "ST=" .. tostring(payload[1] or 0) .. " TXIDX=" .. tostring(mspTxIdx) .. " TXBUF=" .. tostring(#mspTxBuf)) end
             proto().mspSend(payload)
         if mspTxIdx > #mspTxBuf then
             mspTxBuf, mspTxIdx, mspTxCRC = {}, 1, 0
@@ -345,12 +355,12 @@ local function mspPollReply()
 
             -- Defensive: if transport ever returns non-table, treat as junk/no-data.
             if type(pkt) == "table" then
-                plog("RX", mspLastReq, pkt, "ST=" .. tostring(pkt[1] or 0))
+                if plogEnabled() then plog("RX", mspLastReq, pkt, "ST=" .. tostring(pkt[1] or 0)) end
                 -- Catch rare decode hard-fails without killing the script.
                 -- IMPORTANT: On decode error we *do not* reset mspLastReq or state; next wakeup can continue.
                 local ok, done = pcall(receivedReply, pkt)
                 if ok and done then
-                    plog("RXDONE", mspRxReq, mspRxBuf, "ERR=" .. tostring(mspRxError) .. " SIZE=" .. tostring(#mspRxBuf))
+                    if plogEnabled() then plog("RXDONE", mspRxReq, mspRxBuf, "ERR=" .. tostring(mspRxError) .. " SIZE=" .. tostring(#mspRxBuf)) end
                     mspLastReq = 0
                     return mspRxReq, mspRxBuf, mspRxError
                 end

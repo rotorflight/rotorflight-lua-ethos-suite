@@ -307,7 +307,7 @@ function shortcuts.buildSelectedSections(prefs)
                 offline = page.offline,
                 bgtask = page.bgtask,
                 group = "shortcuts",
-                groupTitle = "@i18n(app.header_shortcuts)@",
+                groupTitle = "Shortcuts",
                 menuContextId = item.menuContextId,
                 forceMenuToMain = true,
                 clearReturnStack = true
@@ -366,7 +366,7 @@ function shortcuts.buildSelectedSectionsFromManifest(manifest, prefs)
                             offline = pageSpec.offline,
                             bgtask = pageSpec.bgtask,
                             group = "shortcuts",
-                            groupTitle = "@i18n(app.header_shortcuts)@",
+                            groupTitle = "Shortcuts",
                             menuContextId = menuContextByMenuId[menuId],
                             forceMenuToMain = true,
                             clearReturnStack = true

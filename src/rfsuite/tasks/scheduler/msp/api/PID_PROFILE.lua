@@ -10,11 +10,11 @@ local API_NAME = "PID_PROFILE"
 local MSP_API_CMD_READ = 94
 local MSP_API_CMD_WRITE = 95
 
-local TBL_OFF_ON = {[0] = "@i18n(api.PID_PROFILE.tbl_off)@", "@i18n(api.PID_PROFILE.tbl_on)@"}
+local TBL_OFF_ON = {[0] = "OFF", "ON"}
 local TBL_ITERM_RELAX = {
-    [0] = "@i18n(api.PID_PROFILE.tbl_off)@",
-    "@i18n(api.PID_PROFILE.tbl_rp)@",
-    "@i18n(api.PID_PROFILE.tbl_rpy)@"
+    [0] = "OFF",
+    "RP",
+    "RPY"
 }
 
 -- Tuple layout:

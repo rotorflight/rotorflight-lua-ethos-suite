@@ -18,8 +18,8 @@ else
 end
 
 local TBL_OFF_ON = {
-    "@i18n(api.RC_TUNING.tbl_off)@",
-    "@i18n(api.RC_TUNING.tbl_on)@"
+    "OFF",
+    "ON"
 }
 
 -- Tuple layout:

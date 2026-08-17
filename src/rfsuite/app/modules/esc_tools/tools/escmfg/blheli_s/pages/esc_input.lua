@@ -23,9 +23,9 @@ local apidata = {
         labels = {
         },
         fields = {
-            [FIELD_IDX.ppm_min_throttle] = {t = "@i18n(app.modules.esc_tools.mfg.blheli_s.ppmminthrottle)@", mspapi = 1, apikey = "ppm_min_throttle"},
-            [FIELD_IDX.ppm_max_throttle] = {t = "@i18n(app.modules.esc_tools.mfg.blheli_s.ppmmaxthrottle)@", mspapi = 1, apikey = "ppm_max_throttle"},
-            [FIELD_IDX.ppm_center_throttle] = {t = "@i18n(app.modules.esc_tools.mfg.blheli_s.ppmcenterthrottle)@", mspapi = 1, apikey = "ppm_center_throttle"},
+            [FIELD_IDX.ppm_min_throttle] = {t = "PPM Min Throttle", mspapi = 1, apikey = "ppm_min_throttle"},
+            [FIELD_IDX.ppm_max_throttle] = {t = "PPM Max Throttle", mspapi = 1, apikey = "ppm_max_throttle"},
+            [FIELD_IDX.ppm_center_throttle] = {t = "PPM Center Throttle", mspapi = 1, apikey = "ppm_center_throttle"},
         }
     }
 }
@@ -68,7 +68,7 @@ return {
     navButtons = navHandlers.navButtons,
     onNavMenu = navHandlers.onNavMenu,
     event = navHandlers.event,
-    pageTitle = "@i18n(app.modules.esc_tools.name)@" .. " / " .. "@i18n(app.modules.esc_tools.mfg.blheli_s.name)@" .. " / " .. "@i18n(app.modules.esc_tools.mfg.blheli_s.input)@",
+    pageTitle = "Esc Programing" .. " / " .. "BLHeli_S" .. " / " .. "Input",
     headerLine = rfsuite.escHeaderLineText,
     progressCounter = 0.5
 }

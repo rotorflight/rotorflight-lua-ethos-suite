@@ -9,8 +9,8 @@ local core = rfsuite.tasks.msp.getApiCore()
 local API_NAME = "MIXER_INPUT"
 
 local directionTableEthos = {
-    [1] = {"@i18n(api.MIXER_INPUT.tbl_normal)@", 250},
-    [2] = {"@i18n(api.MIXER_INPUT.tbl_reversed)@", 65286}
+    [1] = {"Normal", 250},
+    [2] = {"Reversed", 65286}
 }
 
 -- Each entry is:

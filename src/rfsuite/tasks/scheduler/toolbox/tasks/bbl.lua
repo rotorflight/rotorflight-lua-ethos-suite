@@ -26,7 +26,7 @@ function bbl.wakeup()
         local decimals = 1
         local transformedUsed = usedMB
         local transformedTotal = totalMB
-        displayValue = string_format("%." .. decimals .. "f/%." .. decimals .. "f %s", transformedUsed, transformedTotal, "@i18n(app.modules.fblstatus.megabyte)@")
+        displayValue = string_format("%." .. decimals .. "f/%." .. decimals .. "f %s", transformedUsed, transformedTotal, "MB")
     else
         displayValue = "-"
         percentUsed = nil

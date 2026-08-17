@@ -23,6 +23,8 @@ local DEFAULT_BUSY_STATUS_COOLDOWN_SECONDS = 0.35
 local MAX_MSP_LOG_BYTES = 96
 local QUEUE_COMPACT_THRESHOLD = 64
 local MspQueueController = {}
+
+local isSimulation = (system and system.getVersion and system.getVersion().simulation) == true
 MspQueueController.__index = MspQueueController
 
 local lastQueueCount = 0 -- for queue size logging
@@ -283,7 +285,7 @@ function MspQueueController.new(opts)
     self.timeout = opts.timeout or 2.0
 
     -- Minimum seconds between re-sends of the same message (prevents pipelined retries)
-    self.retryBackoff = opts.retryBackoff or RETRY_BACKOFF_SECONDS or DEFAULT_RETRY_BACKOFF_SECONDS
+    self.retryBackoff = opts.retryBackoff or DEFAULT_RETRY_BACKOFF_SECONDS
 
     -- After a successful reply, briefly poll to drain any duplicate/late replies for the same cmd
     -- (common with slow/bursty links when retries were attempted).
@@ -394,7 +396,7 @@ function MspQueueController:processQueue()
     local lastTimeInterval = (mspProtocol and mspProtocol.mspIntervalOveride) or 0.25
     if lastTimeInterval == nil then lastTimeInterval = 1 end
 
-    if not system.getVersion().simulation then
+    if not isSimulation then
         -- Real MSP: send once, then wait; only resend after backoff/timeout
         if self.currentMessage then
             local now2 = os_clock()
@@ -403,7 +405,7 @@ function MspQueueController:processQueue()
             local canSendByInterval = (not self.lastTimeCommandSent) or ((self.lastTimeCommandSent + lastTimeInterval) < now2)
 
             -- Retry/backoff gate: we only resend if we've either never sent, or we've waited long enough.
-            local backoff = (self.currentMessage.retryBackoff or self.retryBackoff or RETRY_BACKOFF_SECONDS or DEFAULT_RETRY_BACKOFF_SECONDS)
+            local backoff = (self.currentMessage.retryBackoff or self.retryBackoff or DEFAULT_RETRY_BACKOFF_SECONDS)
             local canSendByBackoff = (self.retryCount == 0) or ((self.lastTimeCommandSent and (now2 - self.lastTimeCommandSent) >= backoff) or false)
 
             if canSendByInterval and canSendByBackoff and (self.retryCount <= self.maxRetries) then
@@ -592,7 +594,7 @@ function MspQueueController:processQueue()
         end
 
         -- After a successful completion, briefly drain duplicate/late replies for this cmd
-        if not system.getVersion().simulation then
+        if not isSimulation then
             local completedCommand = self.currentMessage and self.currentMessage.command
             if completedCommand ~= nil then
                 drainAfterSuccess(self, completedCommand)

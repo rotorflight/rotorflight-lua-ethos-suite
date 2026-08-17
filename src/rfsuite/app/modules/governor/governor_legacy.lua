@@ -15,13 +15,13 @@ local apidata = {
     formdata = {
         labels = {},
         fields = {
-            { t = "@i18n(app.modules.governor.mode)@",                  mspapi = 1, apikey = "gov_mode",                  postEdit = function(self) self.setGovernorMode(self) end, type = 1 },
-            { t = "@i18n(app.modules.governor.handover_throttle)@",    mspapi = 1, apikey = "gov_handover_throttle" },
-            { t = "@i18n(app.modules.governor.startup_time)@",          mspapi = 1, apikey = "gov_startup_time" },
-            { t = "@i18n(app.modules.governor.spoolup_time)@",         mspapi = 1, apikey = "gov_spoolup_time" },
-            { t = "@i18n(app.modules.governor.spoolup_min_throttle)@", mspapi = 1, apikey = "gov_spoolup_min_throttle", apiversion = {12, 0, 8} },
-            { t = "@i18n(app.modules.governor.tracking_time)@",        mspapi = 1, apikey = "gov_tracking_time" },
-            { t = "@i18n(app.modules.governor.recovery_time)@",        mspapi = 1, apikey = "gov_recovery_time" }
+            { t = "Mode",                  mspapi = 1, apikey = "gov_mode",                  postEdit = function(self) self.setGovernorMode(self) end, type = 1 },
+            { t = "Handover throttle%",    mspapi = 1, apikey = "gov_handover_throttle" },
+            { t = "Startup time",          mspapi = 1, apikey = "gov_startup_time" },
+            { t = "Spoolup time",         mspapi = 1, apikey = "gov_spoolup_time" },
+            { t = "Spoolup min throttle%", mspapi = 1, apikey = "gov_spoolup_min_throttle", apiversion = {12, 0, 8} },
+            { t = "Tracking time",        mspapi = 1, apikey = "gov_tracking_time" },
+            { t = "Recovery time",        mspapi = 1, apikey = "gov_recovery_time" }
         }
     }
 }
@@ -62,9 +62,10 @@ local function wakeup(self)
 
 
     if session.governorMode == nil then
+        local tasks = rfsuite.tasks
         if tasks and tasks.msp and tasks.msp.helpers then
             tasks.msp.helpers.governorMode(function(governorMode)
-                utils.log("Received governor mode: " .. tostring(governorMode), "info")
+                rfsuite.utils.log("Received governor mode: " .. tostring(governorMode), "info")
             end, rfsuite.app and rfsuite.app.lastScript)
         end
     else 
@@ -77,4 +78,4 @@ local function wakeup(self)
 end
 
 
-return {apidata = apidata, reboot = true, eepromWrite = true, labels = labels, setGovernorMode = setGovernorMode, fields = fields, postLoad = postLoad, postSave = postSave, wakeup = wakeup}
+return {apidata = apidata, reboot = true, eepromWrite = true, setGovernorMode = setGovernorMode, postLoad = postLoad, postSave = postSave, wakeup = wakeup}

@@ -80,8 +80,8 @@ local function createSensor(physId, primId, appId, frameValue)
                 frsky_legacy.createSensorCache[appId]:physId(physId)
                 frsky_legacy.createSensorCache[appId]:module(rfsuite.session.telemetrySensor:module())
 
-                frsky_legacy.createSensorCache[appId]:minimum(min or -1000000000)
-                frsky_legacy.createSensorCache[appId]:maximum(max or 2147483647)
+                frsky_legacy.createSensorCache[appId]:minimum(v.min or -1000000000)
+                frsky_legacy.createSensorCache[appId]:maximum(v.max or 2147483647)
                 if v.unit ~= nil then
                     frsky_legacy.createSensorCache[appId]:unit(v.unit)
                     frsky_legacy.createSensorCache[appId]:protocolUnit(v.unit)

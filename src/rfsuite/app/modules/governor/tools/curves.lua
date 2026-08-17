@@ -172,7 +172,7 @@ local function openPage(opts)
 
     form.clear()
 
-    app.ui.fieldHeader(title or "@i18n(app.modules.governor.menu_curves_long)@")
+    app.ui.fieldHeader(title or "Governor Bypass Curve")
 
 
     local res = system.getVersion()
@@ -259,8 +259,8 @@ local function wakeup()
 
     if triggerSave then
         app.ui.progressDisplay(
-            "@i18n(app.msg_saving_settings)@",
-            "@i18n(app.msg_saving_to_fbl)@"
+            "Saving settings...",
+            "Saving data to flight controller..."
         )
         saveData()
         triggerSave = false
@@ -373,18 +373,18 @@ local function onSaveMenu()
     end   
 
     form.openDialog({
-        title   = "@i18n(app.modules.profile_select.save_settings)@",
-        message = "@i18n(app.modules.profile_select.save_prompt)@",
+        title   = "Save settings",
+        message = "Save current page to flight controller?",
         buttons = {
             {
-                label = "@i18n(app.btn_ok_long)@",
+                label = "                OK                ",
                 action = function()
                     triggerSave = true
                     return true
                 end
             },
             {
-                label = "@i18n(app.btn_cancel)@",
+                label = "CANCEL",
                 action = function()
                     triggerSave = false
                     return true
@@ -399,4 +399,4 @@ local function onReloadMenu()
     app.triggers.triggerReloadFull = true
 end
 
-return {apidata = apidata, reboot = true, onSaveMenu = onSaveMenu, onReloadMenu = onReloadMenu, eepromWrite = true, paint = paint, openPage = openPage, postSave = postSave, onNavMenu = onNavMenu, event = event, wakeup = wakeup, navButtons = {menu = true, save = true, reload = true, tool = false, help = false}}
+return {apidata = apidata, reboot = true, onSaveMenu = onSaveMenu, onReloadMenu = onReloadMenu, eepromWrite = true, paint = paint, openPage = openPage, onNavMenu = onNavMenu, event = event, wakeup = wakeup, navButtons = {menu = true, save = true, reload = true, tool = false, help = false}}

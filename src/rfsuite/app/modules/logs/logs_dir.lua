@@ -63,7 +63,7 @@ local function openPage(opts)
     local folders = utils.getLogsDir(logDir)
 
     if #folders == 0 then
-        local msg = "@i18n(app.modules.logs.msg_no_logs_found)@"
+        local msg = "NO LOG FILES FOUND"
         local tw, th = lcd.getTextSize(msg)
         local x = w / 2 - tw / 2
         local y = h / 2 - th / 2

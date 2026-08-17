@@ -25,11 +25,11 @@ local apidata = {
         labels = {
         },
         fields = {
-            [FIELD_IDX.motor_direction] = {t = "@i18n(app.modules.esc_tools.mfg.blheli_s.motordirection)@", type = 1, mspapi = 1, apikey = "motor_direction"},
-            [FIELD_IDX.startup_power] = {t = "@i18n(app.modules.esc_tools.mfg.blheli_s.startuppower)@", type = 1, mspapi = 1, apikey = "startup_power"},
-            [FIELD_IDX.commutation_timing] = {t = "@i18n(app.modules.esc_tools.mfg.blheli_s.motortiming)@", type = 1, mspapi = 1, apikey = "commutation_timing"},
-            [FIELD_IDX.demag_compensation] = {t = "@i18n(app.modules.esc_tools.mfg.blheli_s.demagcompensation)@", type = 1, mspapi = 1, apikey = "demag_compensation"},
-            [FIELD_IDX.brake_on_stop] = {t = "@i18n(app.modules.esc_tools.mfg.blheli_s.brakeonstop)@", type = 1, mspapi = 1, apikey = "brake_on_stop"},
+            [FIELD_IDX.motor_direction] = {t = "Motor Direction", type = 1, mspapi = 1, apikey = "motor_direction"},
+            [FIELD_IDX.startup_power] = {t = "Startup Power", type = 1, mspapi = 1, apikey = "startup_power"},
+            [FIELD_IDX.commutation_timing] = {t = "Motor Timing", type = 1, mspapi = 1, apikey = "commutation_timing"},
+            [FIELD_IDX.demag_compensation] = {t = "Demag Compensation", type = 1, mspapi = 1, apikey = "demag_compensation"},
+            [FIELD_IDX.brake_on_stop] = {t = "Brake on Stop", type = 1, mspapi = 1, apikey = "brake_on_stop"},
         }
     }
 }
@@ -72,7 +72,7 @@ return {
     navButtons = navHandlers.navButtons,
     onNavMenu = navHandlers.onNavMenu,
     event = navHandlers.event,
-    pageTitle = "@i18n(app.modules.esc_tools.name)@" .. " / " .. "@i18n(app.modules.esc_tools.mfg.blheli_s.name)@" .. " / " .. "@i18n(app.modules.esc_tools.mfg.blheli_s.basic)@",
+    pageTitle = "Esc Programing" .. " / " .. "BLHeli_S" .. " / " .. "Basic",
     headerLine = rfsuite.escHeaderLineText,
     progressCounter = 0.5
 }

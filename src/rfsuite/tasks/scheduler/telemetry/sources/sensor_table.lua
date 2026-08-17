@@ -37,7 +37,7 @@ end
 return {
 
     rssi = {
-        name = "@i18n(sensors.rssi)@",
+        name = "RSSI",
         mandatory = true,
         stats = true,
         switch_alerts = true,
@@ -46,7 +46,7 @@ return {
     },
 
     link = {
-        name = "@i18n(sensors.link)@",
+        name = "Link Quality",
         mandatory = true,
         stats = true,
         switch_alerts = true,
@@ -55,7 +55,7 @@ return {
     },
 
     vfr = {
-        name = "@i18n(sensors.vfr)@",
+        name = "VFR",
         mandatory = false,
         stats = true,
         switch_alerts = true,
@@ -64,7 +64,7 @@ return {
     },
 
     armflags = {
-        name = "@i18n(sensors.arming_flags)@",
+        name = "Arming Flags",
         mandatory = true,
         stats = false,
         set_telemetry_sensors = 90,
@@ -77,7 +77,7 @@ return {
     },
 
     voltage = {
-        name = "@i18n(sensors.voltage)@",
+        name = "Voltage",
         mandatory = true,
         stats = true,
         set_telemetry_sensors = 3,
@@ -97,7 +97,7 @@ return {
     },
 
     rpm = {
-        name = "@i18n(sensors.headspeed)@",
+        name = "Headspeed",
         mandatory = true,
         stats = true,
         set_telemetry_sensors = 60,
@@ -107,7 +107,7 @@ return {
     },
 
     tailspeed = {
-        name = "@i18n(telemetry.sensor_tailspeed)@",
+        name = "Tailspeed",
         mandatory = false,
         stats = true,
         set_telemetry_sensors = 61,
@@ -117,7 +117,7 @@ return {
     },
 
     current = {
-        name = "@i18n(sensors.current)@",
+        name = "Current",
         mandatory = true,
         stats = true,
         set_telemetry_sensors = 4,
@@ -127,7 +127,7 @@ return {
     },
 
     temp_esc = {
-        name = "@i18n(sensors.esc_temp)@",
+        name = "ESC Temperature",
         mandatory = true,
         stats = true,
         set_telemetry_sensors = 23,
@@ -152,7 +152,7 @@ return {
     },
 
     temp_mcu = {
-        name = "@i18n(sensors.mcu_temp)@",
+        name = "MCU Temperature",
         mandatory = false,
         stats = true,
         set_telemetry_sensors = 52,
@@ -175,7 +175,7 @@ return {
     },
 
     fuel = {
-        name = "@i18n(sensors.fuel)@",
+        name = "Fuel",
         mandatory = false,
         stats = true,
         set_telemetry_sensors = 6,
@@ -186,7 +186,7 @@ return {
     },
 
     smartfuel = {
-        name = "@i18n(sensors.smartfuel)@",
+        name = "Smart Fuel",
         mandatory = false,
         stats = true,
         switch_alerts = true,
@@ -201,7 +201,7 @@ return {
     },
 
     smartconsumption = {
-        name = "@i18n(sensors.smartconsumption)@",
+        name = "Smart Consumption",
         mandatory = false,
         stats = true,
         switch_alerts = true,
@@ -210,7 +210,7 @@ return {
     },
 
     consumption = {
-        name = "@i18n(sensors.consumption)@",
+        name = "Consumption",
         mandatory = true,
         stats = true,
         set_telemetry_sensors = 5,
@@ -220,41 +220,41 @@ return {
     },
 
     governor = {
-        name = "@i18n(sensors.governor)@",
+        name = "Governor State",
         mandatory = true,
         stats = false,
         set_telemetry_sensors = 93,
     },
 
     adj_f = {
-        name = "@i18n(sensors.adj_func)@",
+        name = "Adj (Function)",
         mandatory = true,
         stats = false,
         set_telemetry_sensors = 99,
     },
 
     adj_v = {
-        name = "@i18n(sensors.adj_val)@",
+        name = "Adj (Value)",
         mandatory = true,
         stats = false,
     },
 
     pid_profile = {
-        name = "@i18n(sensors.pid_profile)@",
+        name = "PID Profile",
         mandatory = true,
         stats = false,
         set_telemetry_sensors = 95,
     },
 
     rate_profile = {
-        name = "@i18n(sensors.rate_profile)@",
+        name = "Rate Profile",
         mandatory = true,
         stats = false,
         set_telemetry_sensors = 96,
     },
 
     throttle_percent = {
-        name = "@i18n(sensors.throttle_pct)@",
+        name = "Throttle %",
         mandatory = true,
         stats = true,
         set_telemetry_sensors = 15,
@@ -263,14 +263,14 @@ return {
     },
 
     armdisableflags = {
-        name = "@i18n(sensors.armdisableflags)@",
+        name = "Arming Disable",
         mandatory = true,
         stats = false,
         set_telemetry_sensors = 91,
     },
 
     altitude = {
-        name = "@i18n(sensors.altitude)@",
+        name = "Altitude",
         mandatory = false,
         stats = true,
         switch_alerts = true,
@@ -286,7 +286,7 @@ return {
     },
 
     bec_voltage = {
-        name              = "@i18n(sensors.bec_voltage)@",
+        name              = "Bec Voltage",
         mandatory         = true,
         stats             = true,
         set_telemetry_sensors = 43,
@@ -296,55 +296,55 @@ return {
     },
 
     cell_count = {
-        name = "@i18n(sensors.cell_count)@",
+        name = "Cell count",
         mandatory = false,
         stats = false,
     },
 
     accx = {
-        name = "@i18n(sensors.accx)@",
+        name = "Accel X",
         mandatory = false,
         stats = false,
     },
 
     accy = {
-        name = "@i18n(sensors.accy)@",
+        name = "Accel Y",
         mandatory = false,
         stats = false,
     },
 
     accz = {
-        name = "@i18n(sensors.accz)@",
+        name = "Accel Z",
         mandatory = false,
         stats = false,
     },
 
     attyaw = {
-        name = "@i18n(sensors.attyaw)@",
+        name = "Y.angle",
         mandatory = false,
         stats = false,
     },
 
     attroll = {
-        name = "@i18n(sensors.attroll)@",
+        name = "R.angle",
         mandatory = false,
         stats = false,
     },
 
     attpitch = {
-        name = "@i18n(sensors.attpitch)@",
+        name = "P.angle",
         mandatory = false,
         stats = false,
     },
 
     groundspeed = {
-        name = "@i18n(sensors.groundspeed)@",
+        name = "Ground Speed",
         mandatory = false,
         stats = false,
     },
 
     battery_profile = {
-        name = "@i18n(sensors.battery_profile)@",
+        name = "Battery Profile",
         mandatory = true,
         stats = false,
         set_telemetry_sensors = 97,

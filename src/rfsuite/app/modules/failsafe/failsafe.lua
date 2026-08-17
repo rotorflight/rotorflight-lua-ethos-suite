@@ -11,24 +11,24 @@ local MODE_SET = 2
 local pidx, title
 
 local channelLabels = {
-    "@i18n(app.modules.failsafe.roll)@",
-    "@i18n(app.modules.failsafe.pitch)@",
-    "@i18n(app.modules.failsafe.yaw)@",
-    "@i18n(app.modules.failsafe.collective)@",
-    "@i18n(app.modules.failsafe.throttle)@",
-    "@i18n(app.modules.failsafe.aux1)@",
-    "@i18n(app.modules.failsafe.aux2)@",
-    "@i18n(app.modules.failsafe.aux3)@",
-    "@i18n(app.modules.failsafe.aux4)@",
-    "@i18n(app.modules.failsafe.aux5)@",
-    "@i18n(app.modules.failsafe.aux6)@",
-    "@i18n(app.modules.failsafe.aux7)@",
-    "@i18n(app.modules.failsafe.aux8)@",
-    "@i18n(app.modules.failsafe.aux9)@",
-    "@i18n(app.modules.failsafe.aux10)@",
-    "@i18n(app.modules.failsafe.aux11)@",
-    "@i18n(app.modules.failsafe.aux12)@",
-    "@i18n(app.modules.failsafe.aux13)@"
+    "Roll",
+    "Pitch",
+    "Yaw",
+    "Collective",
+    "Throttle",
+    "AUX 1",
+    "AUX 2",
+    "AUX 3",
+    "AUX 4",
+    "AUX 5",
+    "AUX 6",
+    "AUX 7",
+    "AUX 8",
+    "AUX 9",
+    "AUX 10",
+    "AUX 11",
+    "AUX 12",
+    "AUX 13"
 }
 
 local fields = {}
@@ -179,4 +179,4 @@ local function wakeup(self)
     end
 end
 
-return {apidata = apidata, title = "@i18n(app.modules.failsafe.name)@", reboot = false, eepromWrite = true, openPage = openPage, postLoad = postLoad, wakeup = wakeup, API = {}}
+return {apidata = apidata, title = "Failsafe", reboot = false, eepromWrite = true, openPage = openPage, postLoad = postLoad, wakeup = wakeup, API = {}}

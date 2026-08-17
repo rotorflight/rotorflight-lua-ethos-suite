@@ -26,16 +26,18 @@ local sensor
 -- Localize session for faster access
 local session = rfsuite.session
 
--- Convert a 16-bit dataId + 32-bit value into 6 bytes as per FrSky subframe format
+-- Convert a 16-bit dataId + 32-bit value into 6 bytes as per FrSky subframe format.
+-- Reuses a scratch buffer (mirrors msp/crsf.lua's rxBuf) since the caller consumes
+-- the bytes immediately and never retains the table across polls.
+local subframeBuf = {}
 local function _map_subframe(dataId, value)
-    return {
-        dataId & 0xFF,
-        (dataId >> 8) & 0xFF,
-        value & 0xFF,
-        (value >> 8) & 0xFF,
-        (value >> 16) & 0xFF,
-        (value >> 24) & 0xFF,
-    }
+    subframeBuf[1] = dataId & 0xFF
+    subframeBuf[2] = (dataId >> 8) & 0xFF
+    subframeBuf[3] = value & 0xFF
+    subframeBuf[4] = (value >> 8) & 0xFF
+    subframeBuf[5] = (value >> 16) & 0xFF
+    subframeBuf[6] = (value >> 24) & 0xFF
+    return subframeBuf
 end
 
 -- Push a telemetry frame using FrSky SPORT / FPort API

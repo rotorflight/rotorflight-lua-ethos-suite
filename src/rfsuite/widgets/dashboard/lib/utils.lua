@@ -902,7 +902,21 @@ local function txDigitalBox(colorMode, headeropts, txbatt_min, txbatt_max, txbat
     }
 end
 
-function utils.standardHeaderBoxes(i18n, colorMode, headeropts, txbatt_type)
+-- Boxes for the standard 7-column header strip.
+--
+-- This used to take an unused i18n table as its first parameter. Every caller
+-- in this repository passed an undefined global for it, so it was always nil
+-- and the body never read it. Out-of-tree user themes reach this through
+-- rfsuite.widgets.dashboard.utils and copied the same call shape, so both
+-- forms are accepted: when the first argument is not a colorMode table the
+-- call is treated as the legacy (i18n, colorMode, headeropts, txbatt_type)
+-- form and the arguments are shifted. Every colorMode carries tbbgcolor,
+-- which is what makes the two forms distinguishable.
+function utils.standardHeaderBoxes(colorMode, headeropts, txbatt_type, legacyTxbattType)
+    if not (type(colorMode) == "table" and colorMode.tbbgcolor ~= nil) then
+        colorMode, headeropts, txbatt_type = headeropts, txbatt_type, legacyTxbattType
+    end
+
     local txbatt_min, txbatt_max = utils.getTxBatteryVoltageRange()
     local txbatt_warn = txbatt_min + 0.2
     txbatt_type = tonumber(txbatt_type) or 0

@@ -54,7 +54,7 @@ local function header_boxes()
     if rfsuite and rfsuite.preferences and rfsuite.preferences.general then txbatt_type = rfsuite.preferences.general.txbatt_type or 0 end
 
     if header_boxes_cache == nil or last_txbatt_type ~= txbatt_type then
-        header_boxes_cache = utils.standardHeaderBoxes(i18n, colorMode, headeropts, txbatt_type)
+        header_boxes_cache = utils.standardHeaderBoxes(colorMode, headeropts, txbatt_type)
         last_txbatt_type = txbatt_type
     end
     return header_boxes_cache
@@ -66,12 +66,12 @@ local function buildBoxes(W)
 
     return {
 
-        {col = 1, row = 1, type = "text", subtype = "stats", source = "voltage", stattype = "min", font = opts.font, title = "@i18n(widgets.dashboard.min_voltage):upper()@", titlepos = "bottom", textcolor = colorMode.textcolor, titlecolor = colorMode.textcolor},
-        {col = 2, row = 1, type = "text", subtype = "stats", source = "voltage", stattype = "max", font = opts.font, title = "@i18n(widgets.dashboard.max_voltage):upper()@", titlepos = "bottom", textcolor = colorMode.textcolor, titlecolor = colorMode.textcolor},
-        {col = 1, row = 2, type = "text", subtype = "stats", source = "current", stattype = "min", font = opts.font, title = "@i18n(widgets.dashboard.min_current):upper()@", titlepos = "bottom", transform = "floor", textcolor = colorMode.textcolor, titlecolor = colorMode.textcolor},
-        {col = 2, row = 2, type = "text", subtype = "stats", source = "current", stattype = "max", font = opts.font, title = "@i18n(widgets.dashboard.max_current):upper()@", titlepos = "bottom", transform = "floor", textcolor = colorMode.textcolor, titlecolor = colorMode.textcolor},
-        {col = 1, row = 3, type = "text", subtype = "stats", source = "temp_mcu", stattype = "max", font = opts.font, title = "@i18n(widgets.dashboard.max_tmcu):upper()@", titlepos = "bottom", transform = "floor", textcolor = colorMode.textcolor, titlecolor = colorMode.textcolor},
-        {col = 2, row = 3, type = "text", subtype = "stats", source = "temp_esc", stattype = "max", font = opts.font, title = "@i18n(widgets.dashboard.max_emcu):upper()@", titlepos = "bottom", transform = "floor", textcolor = colorMode.textcolor, titlecolor = colorMode.textcolor}
+        {col = 1, row = 1, type = "text", subtype = "stats", source = "voltage", stattype = "min", font = opts.font, title = "MIN VOLTAGE", titlepos = "bottom", textcolor = colorMode.textcolor, titlecolor = colorMode.textcolor},
+        {col = 2, row = 1, type = "text", subtype = "stats", source = "voltage", stattype = "max", font = opts.font, title = "MAX VOLTAGE", titlepos = "bottom", textcolor = colorMode.textcolor, titlecolor = colorMode.textcolor},
+        {col = 1, row = 2, type = "text", subtype = "stats", source = "current", stattype = "min", font = opts.font, title = "MIN CURRENT", titlepos = "bottom", transform = "floor", textcolor = colorMode.textcolor, titlecolor = colorMode.textcolor},
+        {col = 2, row = 2, type = "text", subtype = "stats", source = "current", stattype = "max", font = opts.font, title = "MAX CURRENT", titlepos = "bottom", transform = "floor", textcolor = colorMode.textcolor, titlecolor = colorMode.textcolor},
+        {col = 1, row = 3, type = "text", subtype = "stats", source = "temp_mcu", stattype = "max", font = opts.font, title = "MAX T.MCU", titlepos = "bottom", transform = "floor", textcolor = colorMode.textcolor, titlecolor = colorMode.textcolor},
+        {col = 2, row = 3, type = "text", subtype = "stats", source = "temp_esc", stattype = "max", font = opts.font, title = "MAX E.MCU", titlepos = "bottom", transform = "floor", textcolor = colorMode.textcolor, titlecolor = colorMode.textcolor}
 
     }
 end

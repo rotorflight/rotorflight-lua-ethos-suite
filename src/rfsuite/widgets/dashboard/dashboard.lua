@@ -166,6 +166,52 @@ local lastBoxRectsCount = 0
 local lastLoadedBoxSigParts = nil
 local lastLoadedBoxSigCount = 0
 
+-- Structure/geometry caches for renderLayout (runs on every paint).
+--
+-- Themes hand back the same boxes/header_boxes tables frame after frame,
+-- rebuilding them only when the screen size or theme signature changes (see
+-- each state module's boxes() cache), so table identity plus element count is
+-- a sound "did the box set change" test. A theme that genuinely rebuilds per
+-- frame just misses these caches and recomputes exactly as before.
+--
+-- structSig* gates the box-type signature rebuild, which sorts a scratch array
+-- every frame purely to decide whether loadAllObjects() needs re-running.
+local structSigBoxes = nil
+local structSigHeaderBoxes = nil
+local structSigBoxCount = -1
+local structSigHeaderCount = -1
+
+-- geom* gates the per-box size/position pass. Every existing invalidation path
+-- (theme reload, state change, resolution change, cache clear) calls
+-- clearArray(dashboard.boxRects), so the rect-count check below picks those up
+-- without each of those sites needing to know this cache exists.
+local geomBoxes = nil
+local geomHeaderBoxes = nil
+local geomBoxCount, geomHeaderCount = -1, -1
+local geomWRaw, geomHRaw = -1, -1
+local geomCols, geomRows, geomPad = -1, -1, -1
+local geomHeaderH = -1
+local geomFullScreen = nil
+local geomXOffset = -1
+local geomRectCount = -1
+
+-- Drop both caches. Call this anywhere lastLoadedBoxCount is reset to force an
+-- object reload: dashboard.objectsByType can be emptied independently of the
+-- box tables, and the structural check above would otherwise skip the
+-- loadAllObjects() call that refills it.
+local function invalidateLayoutCaches()
+    structSigBoxes, structSigHeaderBoxes = nil, nil
+    structSigBoxCount, structSigHeaderCount = -1, -1
+    geomBoxes, geomHeaderBoxes = nil, nil
+    geomBoxCount, geomHeaderCount = -1, -1
+    geomWRaw, geomHRaw = -1, -1
+    geomCols, geomRows, geomPad = -1, -1, -1
+    geomHeaderH = -1
+    geomFullScreen = nil
+    geomXOffset = -1
+    geomRectCount = -1
+end
+
 local statePreloadQueue = PRELOAD_INACTIVE_STATES and {"inflight", "postflight"} or EMPTY
 local statePreloadIndex = 1
 
@@ -447,7 +493,6 @@ local function clearDashboardRuntimeCaches()
     if dashboard._pendingInvalidates then clearArray(dashboard._pendingInvalidates) end
     if dashboard._pendingInvalidatesPool then clearArray(dashboard._pendingInvalidatesPool) end
     if dashboard._headerGeoms then clearArray(dashboard._headerGeoms) end
-    if dashboard._headerGeomsPaint then clearArray(dashboard._headerGeomsPaint) end
     if dashboard._allBoxes then clearArray(dashboard._allBoxes) end
     if dashboard._boxSigScratch then clearArray(dashboard._boxSigScratch) end
     if lastLoadedBoxSigParts then clearArray(lastLoadedBoxSigParts) end
@@ -456,6 +501,7 @@ local function clearDashboardRuntimeCaches()
     objectWakeupsPerCycle = nil
     objectsThreadedWakeupCount = 0
     lastLoadedBoxCount = 0
+    invalidateLayoutCaches()
     lastBoxRectsCount = 0
     lastLoadedBoxSigCount = 0
     lastFlightMode = nil
@@ -533,6 +579,7 @@ local function activate_state_only(state)
     objectsThreadedWakeupCount = 0
     objectWakeupsPerCycle = nil
     lastLoadedBoxCount = 0
+    invalidateLayoutCaches()
     lastBoxRectsCount = 0
     lastLoadedBoxSigCount = 0
 
@@ -568,7 +615,7 @@ end
 function dashboard.overlaystatic(x, y, w, h, txt)
     local msg = txt
     if not msg or msg == "" then
-        msg = (dashboard.computeOverlayMessage and dashboard.computeOverlayMessage()) or "@i18n(app.msg_loading)@"
+        msg = (dashboard.computeOverlayMessage and dashboard.computeOverlayMessage()) or "Loading..."
     end
 
     local themeLoader = (rfsuite.preferences and rfsuite.preferences.general and rfsuite.preferences.general.theme_loader) or 0
@@ -860,6 +907,61 @@ local function getBoxPosition(box, w, h, boxWidth, boxHeight, PADDING, WIDGET_W,
     end
 end
 
+-- Header boxes sit on their own grid (header_layout's cols/rows/padding over
+-- the header strip), not the body grid, so their geometry has to be derived
+-- from header_layout. Both the rect pass and the paint pass below consume the
+-- result, which is why this returns a single shared table rather than each
+-- side computing its own: they previously disagreed, leaving the hit-test and
+-- partial-invalidate rects at body-grid coordinates while the boxes were drawn
+-- at header-grid ones.
+--
+-- The rightmost box is stretched to the screen edge here, once, so callers can
+-- use geom.w directly.
+local function buildHeaderGeoms(headerBoxes, headerLayout, W_raw)
+    local geoms = dashboard._headerGeoms or {}
+    dashboard._headerGeoms = geoms
+
+    local h_cols = headerLayout.cols or 1
+    local h_rows = headerLayout.rows or 1
+    local h_pad = headerLayout.padding or 0
+    local headerH = headerLayout.height or 0
+
+    local adjustedW = adjustDimension(W_raw, h_cols, h_cols - 1, h_pad)
+    local adjustedH = adjustDimension(headerH, h_rows, h_rows - 1, h_pad)
+    local h_boxW = (adjustedW - ((h_cols - 1) * h_pad)) / h_cols
+    local h_boxH = (adjustedH - ((h_rows - 1) * h_pad)) / h_rows
+
+    local rightmost_idx, rightmost_x = 1, 0
+    local count = 0
+    for idx, box in ipairs(headerBoxes) do
+        if box then
+            local w, h = getBoxSize(box, h_boxW, h_boxH, h_pad, adjustedW, adjustedH)
+            local x, y = getBoxPosition(box, w, h, h_boxW, h_boxH, h_pad, adjustedW, adjustedH)
+            local geom = geoms[idx]
+            if not geom then
+                geom = {}
+                geoms[idx] = geom
+            end
+            geom.x = x
+            geom.y = y
+            geom.w = w
+            geom.h = h
+            geom.box = box
+            count = idx
+            if x > rightmost_x then
+                rightmost_idx = idx
+                rightmost_x = x
+            end
+        end
+    end
+    for i = count + 1, #geoms do geoms[i] = nil end
+
+    local last = geoms[rightmost_idx]
+    if last then last.w = W_raw - last.x end
+
+    return geoms
+end
+
 function dashboard.renderLayout(widget, config)
     if not config then return end
     if not dashboard.utils then return end
@@ -874,30 +976,44 @@ function dashboard.renderLayout(widget, config)
     local boxes = resolveMaybe(config.boxes or layout.boxes or EMPTY) or EMPTY
     local headerBoxes = resolveMaybe(config.header_boxes or EMPTY) or EMPTY
 
-    local sigScratch = dashboard._boxSigScratch
-    if not sigScratch then
-        sigScratch = {}
-        dashboard._boxSigScratch = sigScratch
-    end
-    local sigParts, sigCount = buildBoxTypeSig(boxes, headerBoxes, sigScratch)
-    local sigSame = lastLoadedBoxSigParts and sigEquals(sigParts, sigCount, lastLoadedBoxSigParts, lastLoadedBoxSigCount)
+    local boxCount, headerBoxCount = #boxes, #headerBoxes
 
-    if ((#boxes + #headerBoxes) ~= lastLoadedBoxCount) or (not sigSame) then
-        local allBoxes = dashboard._allBoxes or {}
-        dashboard._allBoxes = allBoxes
-        clearArray(allBoxes)
-        for _, b in ipairs(boxes) do allBoxes[#allBoxes + 1] = b end
-        for _, b in ipairs(headerBoxes) do allBoxes[#allBoxes + 1] = b end
-        dashboard.loadAllObjects(allBoxes)
-        lastLoadedBoxCount = #boxes + #headerBoxes
-        if not lastLoadedBoxSigParts then
-            lastLoadedBoxSigParts = {}
+    -- The type signature exists only to decide whether loadAllObjects() must
+    -- re-run, and it costs a sort of a scratch array every frame. The set of
+    -- box types cannot change while both tables keep the same identity and
+    -- length, so only rebuild it when that structural check fails.
+    if structSigBoxes ~= boxes or structSigHeaderBoxes ~= headerBoxes or structSigBoxCount ~= boxCount or structSigHeaderCount ~= headerBoxCount then
+
+        local sigScratch = dashboard._boxSigScratch
+        if not sigScratch then
+            sigScratch = {}
+            dashboard._boxSigScratch = sigScratch
         end
-        clearArray(lastLoadedBoxSigParts)
-        for i = 1, sigCount do
-            lastLoadedBoxSigParts[i] = sigParts[i]
+        local sigParts, sigCount = buildBoxTypeSig(boxes, headerBoxes, sigScratch)
+        local sigSame = lastLoadedBoxSigParts and sigEquals(sigParts, sigCount, lastLoadedBoxSigParts, lastLoadedBoxSigCount)
+
+        if ((boxCount + headerBoxCount) ~= lastLoadedBoxCount) or (not sigSame) then
+            local allBoxes = dashboard._allBoxes or {}
+            dashboard._allBoxes = allBoxes
+            clearArray(allBoxes)
+            for _, b in ipairs(boxes) do allBoxes[#allBoxes + 1] = b end
+            for _, b in ipairs(headerBoxes) do allBoxes[#allBoxes + 1] = b end
+            dashboard.loadAllObjects(allBoxes)
+            lastLoadedBoxCount = boxCount + headerBoxCount
+            if not lastLoadedBoxSigParts then
+                lastLoadedBoxSigParts = {}
+            end
+            clearArray(lastLoadedBoxSigParts)
+            for i = 1, sigCount do
+                lastLoadedBoxSigParts[i] = sigParts[i]
+            end
+            lastLoadedBoxSigCount = sigCount
         end
-        lastLoadedBoxSigCount = sigCount
+
+        structSigBoxes = boxes
+        structSigHeaderBoxes = headerBoxes
+        structSigBoxCount = boxCount
+        structSigHeaderCount = headerBoxCount
     end
 
     for k in pairs(dashboard._objectDirty) do dashboard._objectDirty[k] = nil end
@@ -941,105 +1057,103 @@ function dashboard.renderLayout(widget, config)
     local onpressIndices = dashboard._onpressIndices or {}
     dashboard._onpressIndices = onpressIndices
 
-    for _, box in ipairs(boxes) do
-        if box then
-            local w, h = getBoxSize(box, boxW, boxH, pad, W, H)
-            box.xOffset = xOffset
-            local x, y = getBoxPosition(box, w, h, boxW, boxH, pad, W, H)
-            if isFullScreen and headerLayout and headerLayout.height and type(headerLayout.height) == "number" then y = y + headerLayout.height end
+    -- Box rects, the scheduled-object index list and the onpress index list are
+    -- pure functions of the box tables and the grid geometry below, none of
+    -- which change between most paints. The final #boxRects test also covers
+    -- every clearArray(dashboard.boxRects) invalidation elsewhere in this file.
+    local geomValid = geomBoxes == boxes and geomHeaderBoxes == headerBoxes and geomBoxCount == boxCount and geomHeaderCount == headerBoxCount and geomWRaw == W_raw and geomHRaw == H_raw and geomCols == cols and geomRows == rows and geomPad == pad and geomHeaderH == headerH and geomFullScreen == isFullScreen and geomXOffset == xOffset and geomRectCount == #boxRects
 
-            rectCount = rectCount + 1
-            local rect = boxRects[rectCount]
-            if not rect then
-                rect = {}
-                boxRects[rectCount] = rect
-            end
-            rect.x = x
-            rect.y = y
-            rect.w = w
-            rect.h = h
-            rect.box = box
-            rect.isHeader = false
+    if not geomValid then
 
-            local rectIndex = rectCount
-            dashboard._objectDirty[rectIndex] = nil
-
-            if box.type then
-                local obj = dashboard.objectsByType[box.type]
-                if obj and obj.scheduler and obj.wakeup then
-                    scheduledCount = scheduledCount + 1
-                    scheduledBoxIndices[scheduledCount] = rectIndex
-                end
-            end
-            if box.onpress then
-                onpressCount = onpressCount + 1
-                onpressIndices[onpressCount] = rectIndex
-            end
-        end
-    end
-
-    if isFullScreen then
-        local headerGeoms = dashboard._headerGeoms or {}
-        dashboard._headerGeoms = headerGeoms
-        local rightmost_idx, rightmost_x = 1, 0
-        local headerBoxesCount = #headerBoxes
-        for idx, box in ipairs(headerBoxes) do
+        for _, box in ipairs(boxes) do
             if box then
-                local w, h = getBoxSize(box, boxW, boxH, pad, W_raw, headerLayout.height)
-                local x, y = getBoxPosition(box, w, h, boxW, boxH, pad, W_raw, headerLayout.height)
-                local geom = headerGeoms[idx]
-                if not geom then
-                    geom = {}
-                    headerGeoms[idx] = geom
+                local w, h = getBoxSize(box, boxW, boxH, pad, W, H)
+                box.xOffset = xOffset
+                local x, y = getBoxPosition(box, w, h, boxW, boxH, pad, W, H)
+                if isFullScreen and headerLayout and headerLayout.height and type(headerLayout.height) == "number" then y = y + headerLayout.height end
+
+                rectCount = rectCount + 1
+                local rect = boxRects[rectCount]
+                if not rect then
+                    rect = {}
+                    boxRects[rectCount] = rect
                 end
-                geom.x = x
-                geom.y = y
-                geom.w = w
-                geom.h = h
-                geom.box = box
-                if x > rightmost_x then
-                    rightmost_idx = idx
-                    rightmost_x = x
+                rect.x = x
+                rect.y = y
+                rect.w = w
+                rect.h = h
+                rect.box = box
+                rect.isHeader = false
+
+                local rectIndex = rectCount
+                dashboard._objectDirty[rectIndex] = nil
+
+                if box.type then
+                    local obj = dashboard.objectsByType[box.type]
+                    if obj and obj.scheduler and obj.wakeup then
+                        scheduledCount = scheduledCount + 1
+                        scheduledBoxIndices[scheduledCount] = rectIndex
+                    end
+                end
+                if box.onpress then
+                    onpressCount = onpressCount + 1
+                    onpressIndices[onpressCount] = rectIndex
                 end
             end
         end
-        for i = headerBoxesCount + 1, #headerGeoms do headerGeoms[i] = nil end
 
-        for idx, geom in ipairs(headerGeoms) do
-            local w = geom.w
-            if idx == rightmost_idx then w = W_raw - geom.x end
+        if isFullScreen then
+            local headerGeoms = buildHeaderGeoms(headerBoxes, headerLayout, W_raw)
 
-            rectCount = rectCount + 1
-            local rect = boxRects[rectCount]
-            if not rect then
-                rect = {}
-                boxRects[rectCount] = rect
-            end
-            rect.x = geom.x
-            rect.y = geom.y
-            rect.w = w
-            rect.h = geom.h
-            rect.box = geom.box
-            rect.isHeader = true
-            local idx_rect = rectCount
-            dashboard._objectDirty[idx_rect] = nil
+            for _, geom in ipairs(headerGeoms) do
+                rectCount = rectCount + 1
+                local rect = boxRects[rectCount]
+                if not rect then
+                    rect = {}
+                    boxRects[rectCount] = rect
+                end
+                rect.x = geom.x
+                rect.y = geom.y
+                rect.w = geom.w
+                rect.h = geom.h
+                rect.box = geom.box
+                rect.isHeader = true
+                local idx_rect = rectCount
+                dashboard._objectDirty[idx_rect] = nil
 
-            if geom.box.type then
-                local obj = dashboard.objectsByType[geom.box.type]
-                if obj and obj.scheduler and obj.wakeup then
-                    scheduledCount = scheduledCount + 1
-                    scheduledBoxIndices[scheduledCount] = idx_rect
+                if geom.box.type then
+                    local obj = dashboard.objectsByType[geom.box.type]
+                    if obj and obj.scheduler and obj.wakeup then
+                        scheduledCount = scheduledCount + 1
+                        scheduledBoxIndices[scheduledCount] = idx_rect
+                    end
+                end
+                if geom.box.onpress then
+                    onpressCount = onpressCount + 1
+                    onpressIndices[onpressCount] = idx_rect
                 end
             end
-            if geom.box.onpress then
-                onpressCount = onpressCount + 1
-                onpressIndices[onpressCount] = idx_rect
-            end
         end
-    end
-    for i = rectCount + 1, #boxRects do boxRects[i] = nil end
-    for i = scheduledCount + 1, #scheduledBoxIndices do scheduledBoxIndices[i] = nil end
-    for i = onpressCount + 1, #onpressIndices do onpressIndices[i] = nil end
+        for i = rectCount + 1, #boxRects do boxRects[i] = nil end
+        for i = scheduledCount + 1, #scheduledBoxIndices do scheduledBoxIndices[i] = nil end
+        for i = onpressCount + 1, #onpressIndices do onpressIndices[i] = nil end
+
+        geomBoxes = boxes
+        geomHeaderBoxes = headerBoxes
+        geomBoxCount = boxCount
+        geomHeaderCount = headerBoxCount
+        geomWRaw = W_raw
+        geomHRaw = H_raw
+        geomCols = cols
+        geomRows = rows
+        geomPad = pad
+        geomHeaderH = headerH
+        geomFullScreen = isFullScreen
+        geomXOffset = xOffset
+        geomRectCount = rectCount
+
+    end -- not geomValid
+
     dashboard._onpressIndicesReady = true
 
     if not objectWakeupsPerCycle or #dashboard.boxRects ~= lastBoxRectsCount then
@@ -1094,49 +1208,17 @@ function dashboard.renderLayout(widget, config)
         end
     end
 
+    -- Guard on config.header_layout, not the resolved headerLayout: the latter
+    -- falls back to EMPTY (truthy), which would start painting header boxes for
+    -- a theme that declares header_boxes without a header_layout. No shipped
+    -- theme does that, but a user theme could.
     if isFullScreen and config.header_layout and #headerBoxes > 0 then
-        local header = config.header_layout
-        local h_cols = header.cols or 1
-        local h_rows = header.rows or 1
-        local h_pad = header.padding or 0
+        -- Reuse the geometry the rect pass already built (and cached) rather
+        -- than deriving a second, independent copy per paint.
+        local headerGeoms = dashboard._headerGeoms or EMPTY
 
-        local headerW = W_raw
-        local headerH = header.height or 0
-
-        local adjustedW = adjustDimension(headerW, h_cols, h_cols - 1, h_pad)
-        local adjustedH = adjustDimension(headerH, h_rows, h_rows - 1, h_pad)
-
-        local contentW = adjustedW - ((h_cols - 1) * h_pad)
-        local contentH = adjustedH - ((h_rows - 1) * h_pad)
-        local h_boxW = contentW / h_cols
-        local h_boxH = contentH / h_rows
-
-        local rightmost_idx, rightmost_x = 1, 0
-        local headerGeoms = dashboard._headerGeomsPaint or {}
-        dashboard._headerGeomsPaint = headerGeoms
-        for idx, box in ipairs(headerBoxes) do
-            local w, h = getBoxSize(box, h_boxW, h_boxH, h_pad, adjustedW, adjustedH)
-            local x, y = getBoxPosition(box, w, h, h_boxW, h_boxH, h_pad, adjustedW, adjustedH)
-            local geom = headerGeoms[idx]
-            if not geom then
-                geom = {}
-                headerGeoms[idx] = geom
-            end
-            geom.x = x
-            geom.y = y
-            geom.w = w
-            geom.h = h
-            geom.box = box
-            if x > rightmost_x then
-                rightmost_idx = idx
-                rightmost_x = x
-            end
-        end
-        for i = (#headerBoxes) + 1, #headerGeoms do headerGeoms[i] = nil end
-
-        for idx, geom in ipairs(headerGeoms) do
+        for _, geom in ipairs(headerGeoms) do
             local w = geom.w
-            if idx == rightmost_idx then w = W_raw - geom.x end
             if geom.box then
                 local obj = dashboard.objectsByType[geom.box.type]
                 if obj and obj.paint then
@@ -1163,7 +1245,17 @@ function dashboard.renderLayout(widget, config)
             end
         end
 
-        if isFullScreen and headerLayout and headerLayout.showgrid then
+        if headerLayout.showgrid then
+            -- Debug overlay only; derive the header grid here rather than
+            -- keeping those values live through the hot path above.
+            local h_cols = headerLayout.cols or 1
+            local h_rows = headerLayout.rows or 1
+            local h_pad = headerLayout.padding or 0
+            local adjustedW = adjustDimension(W_raw, h_cols, h_cols - 1, h_pad)
+            local adjustedH = adjustDimension(headerLayout.height or 0, h_rows, h_rows - 1, h_pad)
+            local h_boxW = (adjustedW - ((h_cols - 1) * h_pad)) / h_cols
+            local h_boxH = (adjustedH - ((h_rows - 1) * h_pad)) / h_rows
+
             lcd.color(headerLayout.showgrid)
             lcd.pen(1)
 
@@ -1183,7 +1275,9 @@ function dashboard.renderLayout(widget, config)
     end
 
     if layout.showgrid or rfsuite.preferences.developer.overlaygrid then
-        lcd.color(layout.showgrid)
+        -- The developer overlaygrid preference can be on while no theme sets
+        -- layout.showgrid, which passed nil straight to lcd.color.
+        lcd.color(layout.showgrid or utils.resolveColor("grey") or lcd.RGB(128, 128, 128))
         lcd.pen(1)
 
         local headerOffset = (isFullScreen and headerLayout and headerLayout.height) or 0
@@ -1392,6 +1486,7 @@ local function reload_state_only(state)
     dashboard.utils.resetImageCache()
     loadedStateModules[state] = load_state_script(getThemeForState(state), state)
     lastLoadedBoxCount = 0
+    invalidateLayoutCaches()
     lastBoxRectsCount = 0
     objectWakeupIndex = 1
     objectsThreadedWakeupCount = 0
@@ -1472,6 +1567,7 @@ function dashboard.reload_active_theme_only(force)
     objectsThreadedWakeupCount = 0
     objectWakeupIndex = 1
     lastLoadedBoxCount = 0
+    invalidateLayoutCaches()
     lastBoxRectsCount = 0
     objectWakeupsPerCycle = nil
     lastLoadedBoxSigParts = nil
@@ -1545,6 +1641,7 @@ function dashboard.reload_themes(force)
     dashboard.selectedBoxIndex = nil
     lastBoxRectsCount = 0
     lastLoadedBoxCount = 0
+    invalidateLayoutCaches()
     objectWakeupIndex = 1
     objectWakeupsPerCycle = nil
     objectsThreadedWakeupCount = 0
@@ -1624,11 +1721,24 @@ function dashboard.close()
     clearDashboardRuntimeCaches()
 end
 
+-- Loader sits below the header strip on a fullscreen layout, same rule
+-- renderLayout() applies. Both call sites below previously read isFullScreen
+-- and headerLayout as globals, which do not exist in this scope -- the `and`
+-- short-circuited on nil, so the offset was always 0 and the loader painted
+-- over the header.
+local function loaderOffsetY(W, H)
+    if not dashboard.utils.isFullScreen(W, H) then return 0 end
+    local module = loadedStateModules[dashboard.flightmode or "preflight"]
+    local headerLayout = module and resolveMaybe(module.header_layout)
+    local height = headerLayout and headerLayout.height
+    return (type(height) == "number") and height or 0
+end
+
 function dashboard.paint(widget)
 
     if not dashboard.utils then return end
 
-    local isCompiledCheck = "@i18n(iscompiledcheck)@"
+    local isCompiledCheck = "true"
     if isCompiledCheck ~= "true" and isCompiledCheck ~= "eurt" then
         dashboard.utils.screenError("i18n not compiled - download a release version", true, 0.6)
         return
@@ -1639,16 +1749,16 @@ function dashboard.paint(widget)
         local W, H = lcd.getWindowSize()
         local sys = system.getVersion()
         if H < (sys.lcdHeight / 5) or W < (sys.lcdWidth / 10) then
-            dashboard.utils.screenError("@i18n(widgets.dashboard.unsupported_resolution)@", true, 0.4)
+            dashboard.utils.screenError("TO SMALL", true, 0.4)
         else
-            dashboard.overlaymessage(0, 0, W, H, "@i18n(widgets.dashboard.unsupported_resolution)@")
+            dashboard.overlaymessage(0, 0, W, H, "TO SMALL")
         end
         return
     end
 
     if firstWakeup then
         local W, H = lcd.getWindowSize()
-        local loaderY = (isFullScreen and headerLayout.height) or 0
+        local loaderY = loaderOffsetY(W, H)
         dashboard.loader(0, loaderY, W, H - loaderY)
         return
     end
@@ -1660,7 +1770,7 @@ function dashboard.paint(widget)
             lastModelPath = newModelPath
 
             local W, H = lcd.getWindowSize()
-            local loaderY = (isFullScreen and headerLayout.height) or 0
+            local loaderY = loaderOffsetY(W, H)
             dashboard.loader(0, loaderY, W, H - loaderY)
             return
         end

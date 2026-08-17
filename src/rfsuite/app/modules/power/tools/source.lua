@@ -20,8 +20,8 @@ local apidata = {
     formdata = {
         labels = {},
         fields = {
-              [FIELDS.voltageMeterSource] = {t = "@i18n(app.modules.power.voltage_meter_source)@",       mspapi = 1, apikey = "voltageMeterSource", type = 1},
-              [FIELDS.currentMeterSource] = {t = "@i18n(app.modules.power.current_meter_source)@",       mspapi = 1, apikey = "currentMeterSource", type = 1}
+              [FIELDS.voltageMeterSource] = {t = "Voltage Source",       mspapi = 1, apikey = "voltageMeterSource", type = 1},
+              [FIELDS.currentMeterSource] = {t = "Current Source",       mspapi = 1, apikey = "currentMeterSource", type = 1}
         }
     }
 }

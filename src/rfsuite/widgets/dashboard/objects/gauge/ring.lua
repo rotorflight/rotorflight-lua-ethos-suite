@@ -96,7 +96,16 @@ function render.wakeup(box)
         fuel = telemetry.getSensor("fuel") or 0
         consumption = telemetry.getSensor("consumption") or 0
         percent = max(0, min(1, fuel / 100))
-        mahUnit = format("%dmah", floor(consumption + 0.5))
+        local qConsumption = floor(consumption + 0.5)
+        local cc = box._cache
+        if cc and cc._qConsumption == qConsumption and cc._mahStr then
+            mahUnit = cc._mahStr
+        else
+            mahUnit = format("%dmah", qConsumption)
+            if not cc then cc = {}; box._cache = cc end
+            cc._qConsumption = qConsumption
+            cc._mahStr = mahUnit
+        end
 
         local override = getParam(box, "ringbattsubtext")
         if override == "" or override == false then
@@ -217,8 +226,13 @@ function render.paint(x, y, w, h, box)
 
         drawArc(cx, cy, radius, thickness, 0, 360, c.fillbgcolor)
 
-        local startAngle = 360 - (c.percent * 360)
-        drawArc(cx, cy, radius, thickness, startAngle, 360, c.fillcolor)
+        -- drawArc normalises both angles mod 360, so percent == 0 yields
+        -- startAngle 0 / endAngle 0 -> a full 360 sweep, i.e. a ring that
+        -- reads as completely full when fuel is 0 or the sensor is missing.
+        if c.percent and c.percent > 0 then
+            local startAngle = 360 - (c.percent * 360)
+            drawArc(cx, cy, radius, thickness, startAngle, 360, c.fillcolor)
+        end
 
         drawArc(cx, cy, radius - thickness, c.innerringthickness, 0, 360, c.innerringcolor)
     else

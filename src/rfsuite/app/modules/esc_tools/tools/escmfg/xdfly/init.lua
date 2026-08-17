@@ -4,7 +4,7 @@
 ]] --
 
 local MSP_API = "ESC_PARAMETERS_XDFLY"
-local toolName = "@i18n(app.modules.esc_tools.mfg.xdfly.name)@"
+local toolName = "XDFLY"
 
 local function getPageValue(page, index) return page[index] end
 

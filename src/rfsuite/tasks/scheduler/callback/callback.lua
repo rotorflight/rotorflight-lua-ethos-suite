@@ -14,6 +14,9 @@ local callback = {}
 local os_clock = os.clock
 local table_insert = table.insert
 local table_remove = table.remove
+local pcall = pcall
+
+local log = rfsuite.utils and rfsuite.utils.log
 
 callback._queue = {}
 
@@ -55,7 +58,10 @@ function callback.wakeup()
         end
         local entry = queue[i]
         if not entry.time or entry.time <= now then
-            entry.func()
+            local ok, err = pcall(entry.func)
+            if not ok and log then
+                log("callback error: " .. tostring(err), "info")
+            end
             if entry.repeat_interval then
                 entry.time = now + entry.repeat_interval
                 i = i + 1

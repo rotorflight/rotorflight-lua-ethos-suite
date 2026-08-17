@@ -26,18 +26,18 @@ local FIELD_SPEC = {
     {"esc_hardware", "U8"},
     {"throttle_min", "U16", nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, "big"},
     {"throttle_max", "U16", nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, "big"},
-    {"esc_mode", "U8", nil, nil, nil, nil, nil, nil, nil, nil, {"@i18n(api.ESC_PARAMETERS_FLYROTOR.tbl_escgov)@", "@i18n(api.ESC_PARAMETERS_FLYROTOR.tbl_linear_thr)@", "@i18n(api.ESC_PARAMETERS_FLYROTOR.tbl_rf_gov)@"}, -1},
+    {"esc_mode", "U8", nil, nil, nil, nil, nil, nil, nil, nil, {"ESC Governor", "Linear Throttle", "RF Gyro Governor"}, -1},
     {"cell_count", "U8", 4, 14, 6},
     {"low_voltage_protection", "U8", 28, 38, 30, "V", 1, 10},
     {"temperature_protection", "U8", 50, 135, 125, "°"},
-    {"bec_voltage", "U8", nil, nil, nil, nil, nil, nil, nil, nil, {"@i18n(api.ESC_PARAMETERS_FLYROTOR.tbl_disabled)@", "7.5V", "8.0V", "8.5V", "12.0V"}, -1},
-    {"electrical_angle", "U8", nil, nil, nil, nil, nil, nil, nil, nil, {"@i18n(api.ESC_PARAMETERS_FLYROTOR.tbl_auto)@", "1°", "2°", "3°", "4°", "5°", "6°", "7°", "8°", "9°", "10°"}, -1},
-    {"motor_direction", "U8", nil, nil, nil, nil, nil, nil, nil, nil, {"@i18n(api.ESC_PARAMETERS_FLYROTOR.tbl_cw)@", "@i18n(api.ESC_PARAMETERS_FLYROTOR.tbl_ccw)@"}, -1},
+    {"bec_voltage", "U8", nil, nil, nil, nil, nil, nil, nil, nil, {"Disabled", "7.5V", "8.0V", "8.5V", "12.0V"}, -1},
+    {"electrical_angle", "U8", nil, nil, nil, nil, nil, nil, nil, nil, {"Automatic", "1°", "2°", "3°", "4°", "5°", "6°", "7°", "8°", "9°", "10°"}, -1},
+    {"motor_direction", "U8", nil, nil, nil, nil, nil, nil, nil, nil, {"Normal", "Reversed"}, -1},
     {"starting_torque", "U8", 1, 15, 3},
     {"response_speed", "U8", 1, 15, 5},
     {"buzzer_volume", "U8", 1, 5, 2},
     {"current_gain", "S8", 0, 40, 20, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, -20},
-    {"fan_control", "U8", nil, nil, nil, nil, nil, nil, nil, nil, {"@i18n(api.ESC_PARAMETERS_FLYROTOR.tbl_automatic)@", "@i18n(api.ESC_PARAMETERS_FLYROTOR.tbl_alwayson)@", "@i18n(api.ESC_PARAMETERS_FLYROTOR.tbl_alwaysoff)@"}, -1},
+    {"fan_control", "U8", nil, nil, nil, nil, nil, nil, nil, nil, {"Temp Control", "Always On", "Always Off"}, -1},
     {"soft_start", "U8", 5, 55, 15, "s"},
     {"auto_restart_time", "U8", 0, 100, 30, "s"},
     {"restart_acc", "U8", 1, 10, 5},
@@ -46,7 +46,7 @@ local FIELD_SPEC = {
 }
 
 if rfsuite.utils.apiVersionCompare(">=", {12, 0, 8}) then
-    FIELD_SPEC[#FIELD_SPEC + 1] = {"active_freewheel", "U8", 0, 1, nil, nil, nil, nil, nil, nil, {"@i18n(api.ESC_PARAMETERS_FLYROTOR.tbl_disabled)@", "@i18n(api.ESC_PARAMETERS_FLYROTOR.tbl_enabled)@"}, -1}
+    FIELD_SPEC[#FIELD_SPEC + 1] = {"active_freewheel", "U8", 0, 1, nil, nil, nil, nil, nil, nil, {"Disabled", "Enabled"}, -1}
 end
 
 FIELD_SPEC[#FIELD_SPEC + 1] = {"drive_freq", "U8", 10, 24, 16, "KHz"}
@@ -57,7 +57,7 @@ if rfsuite.utils.apiVersionCompare(">=", {12, 0, 8}) then
     FIELD_SPEC[#FIELD_SPEC + 1] = {"telemetry_protocol", "U8", 0, 0, nil, nil, nil, nil, nil, nil, {"FLYROTOR"}, -1}
     FIELD_SPEC[#FIELD_SPEC + 1] = {"led_color_index", "U8", 0, #tblLed - 1, nil, nil, nil, nil, nil, nil, tblLed, -1}
     FIELD_SPEC[#FIELD_SPEC + 1] = {"led_color_rgb", "U24"}
-    FIELD_SPEC[#FIELD_SPEC + 1] = {"motor_temp_sensor", "U8", 0, 1, nil, nil, nil, nil, nil, nil, {"@i18n(api.ESC_PARAMETERS_FLYROTOR.tbl_disabled)@", "@i18n(api.ESC_PARAMETERS_FLYROTOR.tbl_enabled)@"}, -1}
+    FIELD_SPEC[#FIELD_SPEC + 1] = {"motor_temp_sensor", "U8", 0, 1, nil, nil, nil, nil, nil, nil, {"Disabled", "Enabled"}, -1}
     FIELD_SPEC[#FIELD_SPEC + 1] = {"motor_temp", "U8", 50, 150, nil, "°"}
     FIELD_SPEC[#FIELD_SPEC + 1] = {"battery_capacity", "U16", 0, 50000, nil, "mAh", nil, nil, 100, nil, nil, nil, nil, "big"}
 end

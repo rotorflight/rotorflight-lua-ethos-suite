@@ -69,6 +69,23 @@ local function ensureCfg(box)
     end)
 end
 
+-- Hoisted out of render.wakeup: these were rebuilt as closures on every wakeup
+-- for every watts box. Their captures are now passed as arguments.
+local function currentWatts(telemetry)
+    local v = telemetry and telemetry.getSensor and telemetry.getSensor("voltage")
+    local i = telemetry and telemetry.getSensor and telemetry.getSensor("current")
+    if v and i then return v * i end
+    return nil
+end
+
+local function statsWatts(vStats, iStats, kind)
+    if not (vStats and iStats) then return nil end
+    if kind == "min" and vStats.min and iStats.min then return vStats.min * iStats.min end
+    if kind == "max" and vStats.max and iStats.max then return vStats.max * iStats.max end
+    if kind == "avg" and vStats.avg and iStats.avg then return vStats.avg * iStats.avg end
+    return nil
+end
+
 function render.wakeup(box)
     local cfg = ensureCfg(box)
     local telemetry = rfsuite.tasks.telemetry
@@ -78,26 +95,12 @@ function render.wakeup(box)
 
     local telemetryActive = rfsuite.session and rfsuite.session.isConnected and rfsuite.session.telemetryState
 
-    local function currentWatts()
-        local v = telemetry and telemetry.getSensor and telemetry.getSensor("voltage")
-        local i = telemetry and telemetry.getSensor and telemetry.getSensor("current")
-        if v and i then return v * i end
-        return nil
-    end
-
-    local function statsWatts(kind)
-        if not (vStats and iStats) then return nil end
-        if kind == "min" and vStats.min and iStats.min then return vStats.min * iStats.min end
-        if kind == "max" and vStats.max and iStats.max then return vStats.max * iStats.max end
-        if kind == "avg" and vStats.avg and iStats.avg then return vStats.avg * iStats.avg end
-        return nil
-    end
 
     local value
     if cfg.source == "current" then
-        value = currentWatts()
+        value = currentWatts(telemetry)
     elseif cfg.source == "min" or cfg.source == "max" or cfg.source == "avg" then
-        value = statsWatts(cfg.source)
+        value = statsWatts(vStats, iStats, cfg.source)
     else
         value = nil
     end

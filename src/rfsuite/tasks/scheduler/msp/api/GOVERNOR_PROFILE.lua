@@ -16,8 +16,8 @@ local GOVERNOR_FLAGS_BITMAP = nil
 
 if rfsuite.utils.apiVersionCompare(">=", {12, 0, 9}) then
     local tblOffOn = {
-        "@i18n(api.GOVERNOR_PROFILE.tbl_off)@",
-        "@i18n(api.GOVERNOR_PROFILE.tbl_on)@"
+        "OFF",
+        "ON"
     }
 
     GOVERNOR_FLAGS_BITMAP = {

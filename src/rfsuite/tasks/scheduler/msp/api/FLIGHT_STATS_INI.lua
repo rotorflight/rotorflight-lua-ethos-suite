@@ -58,7 +58,7 @@ return core.createCustomAPI({
         return true
     end,
     customWrite = function(_, state, emitComplete, emitError)
-        local msg = "@i18n(app.modules.profile_select.save_prompt_local)@"
+        local msg = "Save current page to radio?"
         local cb = rfsuite.tasks.uiCallbacks
         if cb and cb.progressDisplaySave then cb.progressDisplaySave(msg:gsub("%?$", ".")) end
 

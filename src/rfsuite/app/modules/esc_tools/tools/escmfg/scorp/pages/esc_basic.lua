@@ -15,9 +15,9 @@ local apidata = {
     formdata = {
         labels = {},
         fields = {
-            { t = "@i18n(app.modules.esc_tools.mfg.scorp.esc_mode)@",      type = 1, mspapi = 1, apikey = "esc_mode" },
-            { t = "@i18n(app.modules.esc_tools.mfg.scorp.rotation)@",      type = 1, mspapi = 1, apikey = "rotation" },
-            { t = "@i18n(app.modules.esc_tools.mfg.scorp.bec_voltage)@",   type = 1, mspapi = 1, apikey = "bec_voltage" }
+            { t = "ESC Mode",      type = 1, mspapi = 1, apikey = "esc_mode" },
+            { t = "Rotation",      type = 1, mspapi = 1, apikey = "rotation" },
+            { t = "BEC Voltage",   type = 1, mspapi = 1, apikey = "bec_voltage" }
         }
     }
 }
@@ -40,7 +40,7 @@ return {
     navButtons = navHandlers.navButtons,
     onNavMenu = navHandlers.onNavMenu,
     event = navHandlers.event,
-    pageTitle = "@i18n(app.modules.esc_tools.name)@" .. " / " .. "@i18n(app.modules.esc_tools.mfg.scorp.name)@" .. " / " .. "@i18n(app.modules.esc_tools.mfg.scorp.basic)@",
+    pageTitle = "Esc Programing" .. " / " .. "Scorpion" .. " / " .. "Basic",
     headerLine = rfsuite.escHeaderLineText,
-    extraMsgOnSave = "@i18n(app.modules.esc_tools.mfg.scorp.extra_msg_save)@"
+    extraMsgOnSave = "Please reboot the ESC to apply the changes"
 }

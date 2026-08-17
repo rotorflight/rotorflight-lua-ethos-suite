@@ -33,15 +33,30 @@ local function getGovernorFlags()
     return nil
 end
 
-local function decodeGovernorFlags(flags)
-    local governor_flags_bitmap = {{field = "fc_throttle_curve"}, {field = "tx_precomp_curve"}, {field = "fallback_precomp"}, {field = "voltage_comp"}, {field = "pid_spoolup"}, {field = "hs_adjustment"}, {field = "dyn_min_throttle"}, {field = "autorotation"}, {field = "suspend"}, {field = "bypass"}}
+-- Constant bit order, and a reused decode buffer. decodeGovernorFlags runs on
+-- every wakeup tick; it previously built an 11-table bitmap plus a result table
+-- each time. The buffer never escapes the calling tick.
+local GOVERNOR_FLAG_FIELDS = {
+    "fc_throttle_curve", "tx_precomp_curve", "fallback_precomp", "voltage_comp", "pid_spoolup",
+    "hs_adjustment", "dyn_min_throttle", "autorotation", "suspend", "bypass"
+}
+local decodedFlagsBuf = {}
 
-    local decoded = {}
-    for bitIndex, info in ipairs(governor_flags_bitmap) do
-        local mask = 2 ^ (bitIndex - 1)
-        decoded[info.field] = (flags & mask) ~= 0
+local function decodeGovernorFlags(flags)
+    for bitIndex = 1, #GOVERNOR_FLAG_FIELDS do
+        decodedFlagsBuf[GOVERNOR_FLAG_FIELDS[bitIndex]] = (flags & (1 << (bitIndex - 1))) ~= 0
     end
-    return decoded
+    return decodedFlagsBuf
+end
+
+-- app.formFields[i] is a bare {} when a field fails its enablefunction (see
+-- ui.lua: `valid` folds in enablefunction(), and the else branch stores {}).
+-- Every field this page toggles is gated on governorMode >= 2, so on an FC in
+-- governor mode 0 or 1 the unguarded :enable() below raised
+-- "attempt to call a nil value (method 'enable')" on every wakeup tick.
+local function setFieldEnabled(idx, enabled)
+    local f = rfsuite.app.formFields[idx]
+    if f and f.enable then f:enable(enabled) end
 end
 
 apidata = {
@@ -50,16 +65,16 @@ apidata = {
     },    
     formdata = {
         labels = {
-            {t = "@i18n(app.modules.profile_governor.gains)@", label = 1, inline_size = 8.15}, 
-            {t = "@i18n(app.modules.profile_governor.precomp)@", label = 2, inline_size = 8.15}, 
+            {t = "Gains", label = 1, inline_size = 8.15}, 
+            {t = "Precomp", label = 2, inline_size = 8.15}, 
         },
         fields = {
-            {t = "@i18n(app.modules.profile_governor.full_headspeed)@", mspapi = 1, apikey = "governor_headspeed", enablefunction = function() return (rfsuite.session.governorMode >= 2) end}, {t = "@i18n(app.modules.profile_governor.min_throttle)@", mspapi = 1, apikey = "governor_min_throttle", enablefunction = function() return (rfsuite.session.governorMode >= 2) end},
-            {t = "@i18n(app.modules.profile_governor.max_throttle)@", mspapi = 1, apikey = "governor_max_throttle", enablefunction = function() return (rfsuite.session.governorMode >= 1) end}, {t = "@i18n(app.modules.profile_governor.fallback_drop)@", mspapi = 1, apikey = "governor_fallback_drop", enablefunction = function() return (rfsuite.session.governorMode >= 1) end},
-            {t = "@i18n(app.modules.profile_governor.gain)@", mspapi = 1, apikey = "governor_gain", enablefunction = function() return (rfsuite.session.governorMode >= 2) end}, {t = "@i18n(app.modules.profile_governor.p)@", inline = 4, label = 1, mspapi = 1, apikey = "governor_p_gain", enablefunction = function() return (rfsuite.session.governorMode >= 2) end},
-            {t = "@i18n(app.modules.profile_governor.i)@", inline = 3, label = 1, mspapi = 1, apikey = "governor_i_gain", enablefunction = function() return (rfsuite.session.governorMode >= 2) end}, {t = "@i18n(app.modules.profile_governor.d)@", inline = 2, label = 1, mspapi = 1, apikey = "governor_d_gain", enablefunction = function() return (rfsuite.session.governorMode >= 2) end},
-            {t = "@i18n(app.modules.profile_governor.f)@", inline = 1, label = 1, mspapi = 1, apikey = "governor_f_gain", enablefunction = function() return (rfsuite.session.governorMode >= 2) end}, {t = "@i18n(app.modules.profile_governor.yaw)@", inline = 3, label = 2, mspapi = 1, apikey = "governor_yaw_weight", enablefunction = function() return (rfsuite.session.governorMode >= 2) end},
-            {t = "@i18n(app.modules.profile_governor.cyc)@", inline = 2, label = 2, mspapi = 1, apikey = "governor_cyclic_weight", enablefunction = function() return (rfsuite.session.governorMode >= 2) end}, {t = "@i18n(app.modules.profile_governor.col)@", inline = 1, label = 2, mspapi = 1, apikey = "governor_collective_weight", enablefunction = function() return (rfsuite.session.governorMode >= 2) end},
+            {t = "Full headspeed", mspapi = 1, apikey = "governor_headspeed", enablefunction = function() return (rfsuite.session.governorMode >= 2) end}, {t = "Min throttle", mspapi = 1, apikey = "governor_min_throttle", enablefunction = function() return (rfsuite.session.governorMode >= 2) end},
+            {t = "Max throttle", mspapi = 1, apikey = "governor_max_throttle", enablefunction = function() return (rfsuite.session.governorMode >= 1) end}, {t = "Thr. Fallback drop", mspapi = 1, apikey = "governor_fallback_drop", enablefunction = function() return (rfsuite.session.governorMode >= 1) end},
+            {t = "PID master gain", mspapi = 1, apikey = "governor_gain", enablefunction = function() return (rfsuite.session.governorMode >= 2) end}, {t = "P", inline = 4, label = 1, mspapi = 1, apikey = "governor_p_gain", enablefunction = function() return (rfsuite.session.governorMode >= 2) end},
+            {t = "I", inline = 3, label = 1, mspapi = 1, apikey = "governor_i_gain", enablefunction = function() return (rfsuite.session.governorMode >= 2) end}, {t = "D", inline = 2, label = 1, mspapi = 1, apikey = "governor_d_gain", enablefunction = function() return (rfsuite.session.governorMode >= 2) end},
+            {t = "FF", inline = 1, label = 1, mspapi = 1, apikey = "governor_f_gain", enablefunction = function() return (rfsuite.session.governorMode >= 2) end}, {t = "Yaw", inline = 3, label = 2, mspapi = 1, apikey = "governor_yaw_weight", enablefunction = function() return (rfsuite.session.governorMode >= 2) end},
+            {t = "Cyc", inline = 2, label = 2, mspapi = 1, apikey = "governor_cyclic_weight", enablefunction = function() return (rfsuite.session.governorMode >= 2) end}, {t = "Col", inline = 1, label = 2, mspapi = 1, apikey = "governor_collective_weight", enablefunction = function() return (rfsuite.session.governorMode >= 2) end},
         }
     }
 }
@@ -98,18 +113,11 @@ local function wakeup()
         if flags == nil then return end
         local decodedFlags = decodeGovernorFlags(flags)
 
-        if decodedFlags["tx_precomp_curve"] then
-            rfsuite.app.formFields[FIELD_F_GAIN]:enable(false)
-            rfsuite.app.formFields[FIELD_YAW_WEIGHT]:enable(false)
-            rfsuite.app.formFields[FIELD_CYCLIC_WEIGHT]:enable(false)
-            rfsuite.app.formFields[FIELD_COLLECTIVE_WEIGHT]:enable(false)
-
-        else
-            rfsuite.app.formFields[FIELD_F_GAIN]:enable(true)
-            rfsuite.app.formFields[FIELD_YAW_WEIGHT]:enable(true)
-            rfsuite.app.formFields[FIELD_CYCLIC_WEIGHT]:enable(true)
-            rfsuite.app.formFields[FIELD_COLLECTIVE_WEIGHT]:enable(true)
-        end
+        local enabled = not decodedFlags["tx_precomp_curve"]
+        setFieldEnabled(FIELD_F_GAIN, enabled)
+        setFieldEnabled(FIELD_YAW_WEIGHT, enabled)
+        setFieldEnabled(FIELD_CYCLIC_WEIGHT, enabled)
+        setFieldEnabled(FIELD_COLLECTIVE_WEIGHT, enabled)
 
     end
 
@@ -123,4 +131,4 @@ local function onNavMenu()
     return navHandlers.onNavMenu()
 end
 
-return {apidata = apidata, title = "@i18n(app.modules.profile_governor.name)@", reboot = false, event = event, onNavMenu = onNavMenu, refreshOnProfileChange = true, eepromWrite = true, postLoad = postLoad, wakeup = wakeup, API = {}}
+return {apidata = apidata, title = "Governor", reboot = false, event = event, onNavMenu = onNavMenu, refreshOnProfileChange = true, eepromWrite = true, postLoad = postLoad, wakeup = wakeup, API = {}}

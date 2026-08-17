@@ -8,7 +8,7 @@ local data = {}
 
 data['help'] = {}
 
-data['help']['default'] = {"@i18n(app.modules.profile_autolevel.help_p1)@", "@i18n(app.modules.profile_autolevel.help_p2)@", "@i18n(app.modules.profile_autolevel.help_p3)@"}
+data['help']['default'] = {"Acro Trainer: How aggressively the heli tilts back to level when flying in Acro Trainer Mode.", "Angle Mode: How aggressively the heli tilts back to level when flying in Angle Mode.", "Horizon Mode: How aggressively the heli tilts back to level when flying in Horizon Mode."}
 
 data['fields'] = {}
 

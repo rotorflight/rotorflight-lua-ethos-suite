@@ -25,7 +25,7 @@ local function openPage(opts)
     rfsuite.app.lastTitle = title
     rfsuite.app.lastScript = script
 
-    rfsuite.app.ui.fieldHeader("@i18n(app.modules.settings.name)@" .. " / " .. "@i18n(app.modules.settings.audio)@" .. " / " .. "@i18n(app.modules.settings.txt_audio_events)@")
+    rfsuite.app.ui.fieldHeader("Settings" .. " / " .. "Audio" .. " / " .. "Events")
     rfsuite.app.formLineCnt = 0
 
     local formFieldCount = 0
@@ -40,45 +40,45 @@ local function openPage(opts)
     local escFields, becFields, fuelFields = {}, {}, {}
 
     local armEnabled = config.armflags == true
-    local armPanel = form.addExpansionPanel("@i18n(app.modules.settings.arming_flags)@")
+    local armPanel = form.addExpansionPanel("Arming Flags")
     armPanel:open(armEnabled)
-    local armLine = armPanel:addLine("@i18n(app.modules.settings.arming_flags)@")
+    local armLine = armPanel:addLine("Arming Flags")
     formFieldCount = formFieldCount + 1
     rfsuite.app.formLineCnt = rfsuite.app.formLineCnt + 1
     rfsuite.app.formFields[formFieldCount] = form.addBooleanField(armLine, nil, function() return config.armflags end, function(val) config.armflags = val end)
 
     local govEnabled = config.governor == true
-    local govPanel = form.addExpansionPanel("@i18n(app.modules.settings.governor_state)@")
+    local govPanel = form.addExpansionPanel("Governor State")
     govPanel:open(govEnabled)
-    local govLine = govPanel:addLine("@i18n(app.modules.settings.governor_state)@")
+    local govLine = govPanel:addLine("Governor State")
     formFieldCount = formFieldCount + 1
     rfsuite.app.formLineCnt = rfsuite.app.formLineCnt + 1
     rfsuite.app.formFields[formFieldCount] = form.addBooleanField(govLine, nil, function() return config.governor end, function(val) config.governor = val end)
 
     local voltEnabled = config.voltage == true
-    local voltPanel = form.addExpansionPanel("@i18n(app.modules.settings.voltage)@")
+    local voltPanel = form.addExpansionPanel("Voltage")
     voltPanel:open(voltEnabled)
-    local voltLine = voltPanel:addLine("@i18n(app.modules.settings.voltage)@")
+    local voltLine = voltPanel:addLine("Voltage")
     formFieldCount = formFieldCount + 1
     rfsuite.app.formLineCnt = rfsuite.app.formLineCnt + 1
     rfsuite.app.formFields[formFieldCount] = form.addBooleanField(voltLine, nil, function() return config.voltage end, function(val) config.voltage = val end)
 
     local ratesEnabled = (config.pid_profile == true) or (config.rate_profile == true)
-    local ratesPanel = form.addExpansionPanel("@i18n(app.modules.settings.pid_rates_profile)@")
+    local ratesPanel = form.addExpansionPanel("PID/Rates Profile")
     ratesPanel:open(ratesEnabled)
-    local pidLine = ratesPanel:addLine("@i18n(app.modules.settings.pid_profile)@")
+    local pidLine = ratesPanel:addLine("PID Profile")
     formFieldCount = formFieldCount + 1
     rfsuite.app.formLineCnt = rfsuite.app.formLineCnt + 1
     rfsuite.app.formFields[formFieldCount] = form.addBooleanField(pidLine, nil, function() return config.pid_profile end, function(val) config.pid_profile = val end)
-    local rateLine = ratesPanel:addLine("@i18n(app.modules.settings.rate_profile)@")
+    local rateLine = ratesPanel:addLine("Rate Profile")
     formFieldCount = formFieldCount + 1
     rfsuite.app.formLineCnt = rfsuite.app.formLineCnt + 1
     rfsuite.app.formFields[formFieldCount] = form.addBooleanField(rateLine, nil, function() return config.rate_profile end, function(val) config.rate_profile = val end)
 
     local escEnabled = config.temp_esc == true
-    local escPanel = form.addExpansionPanel("@i18n(app.modules.settings.esc_temperature)@")
+    local escPanel = form.addExpansionPanel("ESC Temperature")
     escPanel:open(escEnabled)
-    local escEnable = escPanel:addLine("@i18n(app.modules.settings.esc_temperature)@")
+    local escEnable = escPanel:addLine("ESC Temperature")
     formFieldCount = formFieldCount + 1
     rfsuite.app.formLineCnt = rfsuite.app.formLineCnt + 1
     escFields.enable = formFieldCount
@@ -86,7 +86,7 @@ local function openPage(opts)
         config.temp_esc = val
         setFieldEnabled(rfsuite.app.formFields[escFields.thresh], val)
     end)
-    local escThresh = escPanel:addLine("@i18n(app.modules.settings.esc_threshold)@")
+    local escThresh = escPanel:addLine("Threshold (Ã‚Â°)")
     formFieldCount = formFieldCount + 1
     rfsuite.app.formLineCnt = rfsuite.app.formLineCnt + 1
     escFields.thresh = formFieldCount
@@ -95,23 +95,23 @@ local function openPage(opts)
     setFieldEnabled(rfsuite.app.formFields[escFields.thresh], escEnabled)
 
     local adjEnabled = (config.adj_f == true) or (config.adj_v == true)
-    local adjPanel = form.addExpansionPanel("@i18n(app.modules.settings.adj_callouts)@")
+    local adjPanel = form.addExpansionPanel("Adjustment Callouts")
     adjPanel:open(adjEnabled)
 
-    local adjFuncLine = adjPanel:addLine("@i18n(app.modules.settings.adj_function)@")
+    local adjFuncLine = adjPanel:addLine("Adjustment Function")
     formFieldCount = formFieldCount + 1
     rfsuite.app.formLineCnt = rfsuite.app.formLineCnt + 1
     rfsuite.app.formFields[formFieldCount] = form.addBooleanField(adjFuncLine, nil, function() return config.adj_f == true end, function(val) config.adj_f = val end)
 
-    local adjValueLine = adjPanel:addLine("@i18n(app.modules.settings.adj_value)@")
+    local adjValueLine = adjPanel:addLine("Adjustment Value")
     formFieldCount = formFieldCount + 1
     rfsuite.app.formLineCnt = rfsuite.app.formLineCnt + 1
     rfsuite.app.formFields[formFieldCount] = form.addBooleanField(adjValueLine, nil, function() return config.adj_v == true end, function(val) config.adj_v = val end)
 
     local fuelEnabled = config.smartfuel == true
-    local fuelPanel = form.addExpansionPanel("@i18n(app.modules.settings.fuel)@")
+    local fuelPanel = form.addExpansionPanel("Fuel")
     fuelPanel:open(fuelEnabled)
-    local fuelEnable = fuelPanel:addLine("@i18n(app.modules.settings.fuel)@")
+    local fuelEnable = fuelPanel:addLine("Fuel")
     formFieldCount = formFieldCount + 1
     rfsuite.app.formLineCnt = rfsuite.app.formLineCnt + 1
     fuelFields.enable = formFieldCount
@@ -121,8 +121,8 @@ local function openPage(opts)
         setFieldEnabled(rfsuite.app.formFields[fuelFields.repeats], val)
         setFieldEnabled(rfsuite.app.formFields[fuelFields.haptic], val)
     end)
-    local calloutChoices = {{"@i18n(app.modules.settings.fuel_callout_default)@", 0}, {"@i18n(app.modules.settings.fuel_callout_5)@", 5}, {"@i18n(app.modules.settings.fuel_callout_10)@", 10}, {"@i18n(app.modules.settings.fuel_callout_20)@", 20}, {"@i18n(app.modules.settings.fuel_callout_25)@", 25}, {"@i18n(app.modules.settings.fuel_callout_50)@", 50}}
-    local fuelThresh = fuelPanel:addLine("@i18n(app.modules.settings.fuel_callout_percent)@")
+    local calloutChoices = {{"Default (Only at 10%)", 0}, {"50% and 5%", 5}, {"Every 10%", 10}, {"Every 20%", 20}, {"Every 25%", 25}, {"Every 50%", 50}}
+    local fuelThresh = fuelPanel:addLine("Callout %")
     formFieldCount = formFieldCount + 1
     rfsuite.app.formLineCnt = rfsuite.app.formLineCnt + 1
     fuelFields.callout = formFieldCount
@@ -133,7 +133,7 @@ local function openPage(opts)
     end, function(val) config.smartfuelcallout = val end)
     setFieldEnabled(rfsuite.app.formFields[fuelFields.callout], fuelEnabled)
 
-    local fuelRepeats = fuelPanel:addLine("@i18n(app.modules.settings.fuel_repeats_below)@")
+    local fuelRepeats = fuelPanel:addLine("Repeats below 0%")
     formFieldCount = formFieldCount + 1
     rfsuite.app.formLineCnt = rfsuite.app.formLineCnt + 1
     fuelFields.repeats = formFieldCount
@@ -141,7 +141,7 @@ local function openPage(opts)
     rfsuite.app.formFields[formFieldCount]:suffix("x")
     setFieldEnabled(rfsuite.app.formFields[fuelFields.repeats], fuelEnabled)
 
-    local fuelHaptic = fuelPanel:addLine("@i18n(app.modules.settings.fuel_haptic_below)@")
+    local fuelHaptic = fuelPanel:addLine("Haptic below 0%")
     formFieldCount = formFieldCount + 1
     rfsuite.app.formLineCnt = rfsuite.app.formLineCnt + 1
     fuelFields.haptic = formFieldCount
@@ -153,9 +153,9 @@ local function openPage(opts)
     setFieldEnabled(rfsuite.app.formFields[fuelFields.enable], true)
 
     local batteryProfileEnabled = config.battery_profile == true
-    local batteryPanel = form.addExpansionPanel("@i18n(app.modules.settings.battery_profile_event)@")
+    local batteryPanel = form.addExpansionPanel("Battery")
     batteryPanel:open(batteryProfileEnabled)
-    local batteryLine = batteryPanel:addLine("@i18n(app.modules.settings.battery_capacity_callout)@")
+    local batteryLine = batteryPanel:addLine("Battery capacity")
     formFieldCount = formFieldCount + 1
     rfsuite.app.formLineCnt = rfsuite.app.formLineCnt + 1
     rfsuite.app.formFields[formFieldCount] = form.addBooleanField(batteryLine, nil, function() return config.battery_profile end, function(val)
@@ -163,17 +163,17 @@ local function openPage(opts)
     end)
 
     local otherEnabled = config.otherSoundCfg == true
-    local otherPanel = form.addExpansionPanel("@i18n(app.modules.settings.otherSoundSettings)@")
+    local otherPanel = form.addExpansionPanel("Other")
     otherPanel:open(otherEnabled)
 
     local w = rfsuite.app.lcdWidth
-    local otherModelAnnouncement = otherPanel:addLine("@i18n(app.modules.settings.modelAnnouncement)@")
+    local otherModelAnnouncement = otherPanel:addLine("Model announcement")
 
     formFieldCount = formFieldCount + 1
     rfsuite.app.formLineCnt = rfsuite.app.formLineCnt + 1
     rfsuite.app.formFields[formFieldCount] = form.addBooleanField(otherModelAnnouncement, nil, function() return config.otherModelAnnounce == true end, function(val) config.otherModelAnnounce = val end)
     if rfsuite.app.formFields[formFieldCount].help then
-        rfsuite.app.formFields[formFieldCount]:help("@i18n(app.modules.settings.help_modelAnnouncement)@")
+        rfsuite.app.formFields[formFieldCount]:help("Model announcement requires a .wav file in the 'audio' folder matching the model name (e.g. 'racer.wav' for model 'racer').")
     end
 
     rfsuite.app.navButtons.save = true
@@ -187,7 +187,7 @@ end
 local function onSaveMenu()
 
     local function doSave()
-        local msg = "@i18n(app.modules.profile_select.save_prompt_local)@"
+        local msg = "Save current page to radio?"
         rfsuite.app.ui.progressDisplaySave(msg:gsub("%?$", "."))
         for key, value in pairs(config) do rfsuite.preferences.events[key] = value end
         rfsuite.ini.save_ini_file("SCRIPTS:/" .. rfsuite.config.preferences .. "/preferences.ini", rfsuite.preferences)
@@ -201,15 +201,15 @@ local function onSaveMenu()
 
     local buttons = {
         {
-            label = "@i18n(app.btn_ok_long)@",
+            label = "                OK                ",
             action = function()
                 doSave()
                 return true
             end
-        }, {label = "@i18n(app.modules.profile_select.cancel)@", action = function() return true end}
+        }, {label = "CANCEL", action = function() return true end}
     }
 
-    form.openDialog({width = nil, title = "@i18n(app.modules.profile_select.save_settings)@", message = "@i18n(app.modules.profile_select.save_prompt_local)@", buttons = buttons, wakeup = function() end, paint = function() end, options = TEXT_LEFT})
+    form.openDialog({width = nil, title = "Save settings", message = "Save current page to radio?", buttons = buttons, wakeup = function() end, paint = function() end, options = TEXT_LEFT})
 end
 
 local function event(widget, category, value, x, y)
@@ -221,7 +221,7 @@ local function onHelpMenu()
     local helpPath = "app/modules/settings/tools/help.lua"
     local help = assert(loadfile(helpPath))()
 
-    rfsuite.app.ui.openPageHelp(help.help["audio_events"], "@i18n(app.modules.settings.name)@" .. " / " .. "@i18n(app.modules.settings.audio)@" .. " / " .. "@i18n(app.modules.settings.txt_audio_events)@")
+    rfsuite.app.ui.openPageHelp(help.help["audio_events"], "Settings" .. " / " .. "Audio" .. " / " .. "Events")
 
 end
 

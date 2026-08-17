@@ -24,10 +24,10 @@ local apidata = {
         labels = {
         },
         fields = {
-            [FIELD_IDX.temperature_protection] = {t = "@i18n(app.modules.esc_tools.mfg.blheli_s.temperatureprotection)@", type = 1, mspapi = 1, apikey = "temperature_protection"},
-            [FIELD_IDX.beep_strength] = {t = "@i18n(app.modules.esc_tools.mfg.blheli_s.beepstrength)@", mspapi = 1, apikey = "beep_strength"},
-            [FIELD_IDX.beacon_strength] = {t = "@i18n(app.modules.esc_tools.mfg.blheli_s.beaconstrength)@", mspapi = 1, apikey = "beacon_strength"},
-            [FIELD_IDX.beacon_delay] = {t = "@i18n(app.modules.esc_tools.mfg.blheli_s.beacondelay)@", type = 1, mspapi = 1, apikey = "beacon_delay"},
+            [FIELD_IDX.temperature_protection] = {t = "Temperature Protection", type = 1, mspapi = 1, apikey = "temperature_protection"},
+            [FIELD_IDX.beep_strength] = {t = "Beep Strength", mspapi = 1, apikey = "beep_strength"},
+            [FIELD_IDX.beacon_strength] = {t = "Beacon Strength", mspapi = 1, apikey = "beacon_strength"},
+            [FIELD_IDX.beacon_delay] = {t = "Beacon Delay", type = 1, mspapi = 1, apikey = "beacon_delay"},
         }
     }
 }
@@ -70,7 +70,7 @@ return {
     navButtons = navHandlers.navButtons,
     onNavMenu = navHandlers.onNavMenu,
     event = navHandlers.event,
-    pageTitle = "@i18n(app.modules.esc_tools.name)@" .. " / " .. "@i18n(app.modules.esc_tools.mfg.blheli_s.name)@" .. " / " .. "@i18n(app.modules.esc_tools.mfg.blheli_s.advanced)@",
+    pageTitle = "Esc Programing" .. " / " .. "BLHeli_S" .. " / " .. "Advanced",
     headerLine = rfsuite.escHeaderLineText,
     progressCounter = 0.5
 }

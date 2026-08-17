@@ -4,7 +4,7 @@
 ]] --
 
 local MSP_API = "ESC_PARAMETERS_OMP"
-local toolName = "@i18n(app.modules.esc_tools.mfg.omp.name)@"
+local toolName = "OMP"
 
 local function getPageValue(page, index) return page[index] end
 

@@ -8,7 +8,7 @@ local data = {}
 
 data['help'] = {}
 
-data['help']['default'] = {"@i18n(app.modules.mixer.help_p1)@"}
+data['help']['default'] = {"Adust swash plate geometry, phase angles, and limits."}
 
 data['fields'] = {}
 

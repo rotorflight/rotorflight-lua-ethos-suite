@@ -67,7 +67,7 @@ local function openPage(opts)
     app.lastTitle = title
     app.lastScript = script
 
-    app.ui.fieldHeader("@i18n(app.modules.diagnostics.name)@" .. " / " .. "@i18n(app.modules.validate_sensors.name)@")
+    app.ui.fieldHeader("Diagnostics" .. " / " .. "Sensors")
 
     app.formLineCnt = 0
 
@@ -196,13 +196,13 @@ local function wakeup()
 
         doDiscoverNotify = false
 
-        local buttons = {{label = "@i18n(app.btn_ok)@", action = function() return true end}}
+        local buttons = {{label = "          OK           ", action = function() return true end}}
 
         if rfutils.ethosVersionAtLeast({1, 6, 3}) then
             rfutils.log("Starting discover sensors", "info")
             sensorTlm:discover()
         else
-            form.openDialog({width = nil, title = "@i18n(app.modules.validate_sensors.name)@", message = "@i18n(app.modules.validate_sensors.msg_repair_fin)@", buttons = buttons, wakeup = function() end, paint = function() end, options = TEXT_LEFT})
+            form.openDialog({width = nil, title = "Sensors", message = "The flight controller has been configured? You may need to perform a discover sensors to see the changes.", buttons = buttons, wakeup = function() end, paint = function() end, options = TEXT_LEFT})
         end
     end
 
@@ -214,14 +214,14 @@ local function wakeup()
         if field then
             if sensorKeyExists(v.key, invalidSensors) then
                 if v.mandatory == true then
-                    field:value("@i18n(app.modules.validate_sensors.invalid)@")
+                    field:value("INVALID")
                     field:color(ORANGE)
                 else
-                    field:value("@i18n(app.modules.validate_sensors.invalid)@")
+                    field:value("INVALID")
                     field:color(RED)
                 end
             else
-                field:value("@i18n(app.modules.validate_sensors.ok)@")
+                field:value("OK")
                 field:color(GREEN)
             end
         end
@@ -229,15 +229,15 @@ local function wakeup()
 
     if repairSensors == true then
 
-        progressLoader = openProgressDialog("@i18n(app.msg_saving)@", "@i18n(app.msg_saving_to_fbl)@")
+        progressLoader = openProgressDialog("Saving...", "Saving data to flight controller...")
         progressLoader:closeAllowed(false)
         progressLoaderCounter = 0
-        progressLoaderBaseMessage = "@i18n(app.msg_saving_to_fbl)@"
+        progressLoaderBaseMessage = "Saving data to flight controller..."
         progressLoaderMspStatusLast = nil
         updateProgressLoaderMessage()
         app.ui.registerProgressDialog(progressLoader, progressLoaderBaseMessage)
 
-        API = tasks.msp.api.loadPage("TELEMETRY_CONFIG")
+        local API = tasks.msp.api.loadPage("TELEMETRY_CONFIG")
         API.setUUID("sensors-tlm-read")
         API.setCompleteHandler(function(self, buf)
             local data = API.data()
@@ -278,27 +278,26 @@ local function onToolMenu(self)
 
     local buttons = {
         {
-            label = "@i18n(app.btn_ok)@",
+            label = "          OK           ",
             action = function()
 
                 repairSensors = true
-                writePayload = nil
                 return true
             end
-        }, {label = "@i18n(app.btn_cancel)@", action = function() return true end}
+        }, {label = "CANCEL", action = function() return true end}
     }
 
-    form.openDialog({width = nil, title = "@i18n(app.modules.validate_sensors.name)@", message = "@i18n(app.modules.validate_sensors.msg_repair)@", buttons = buttons, wakeup = function() end, paint = function() end, options = TEXT_LEFT})
+    form.openDialog({width = nil, title = "Sensors", message = "Enable required sensors on flight controller?", buttons = buttons, wakeup = function() end, paint = function() end, options = TEXT_LEFT})
 
-end
-
-local function event(widget, category, value, x, y)
-    return pageRuntime.handleCloseEvent(category, value, {onClose = onNavMenu})
 end
 
 local function onNavMenu()
     pageRuntime.openMenuContext()
     return true
+end
+
+local function event(widget, category, value, x, y)
+    return pageRuntime.handleCloseEvent(category, value, {onClose = onNavMenu})
 end
 
 return {reboot = false, eepromWrite = false, minBytes = 0, wakeup = wakeup, refreshswitch = false, simulatorResponse = {}, postLoad = postLoad, postRead = postRead, openPage = openPage, onNavMenu = onNavMenu, event = event, navButtons = {menu = true, save = false, reload = false, tool = false, help = false}, API = {}}

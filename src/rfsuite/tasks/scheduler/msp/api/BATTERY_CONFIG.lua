@@ -11,10 +11,10 @@ local MSP_API_CMD_READ = 32
 local MSP_API_CMD_WRITE = 33
 
 local TBL_BATTERY_SOURCE = {
-    [1] = "@i18n(api.BATTERY_CONFIG.source_none)@",
-    [2] = "@i18n(api.BATTERY_CONFIG.source_adc)@",
-    [3] = "@i18n(api.BATTERY_CONFIG.source_esc)@",
-    [4] = "@i18n(api.BATTERY_CONFIG.source_fbus)@"
+    [1] = "None",
+    [2] = "Battery ADC",
+    [3] = "ESC Telemetry",
+    [4] = "FrSky F.BUS"
 }
 
 -- Tuple layout:

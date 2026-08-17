@@ -18,16 +18,16 @@ local SIM_RESPONSE
 
 if rfsuite.utils.apiVersionCompare(">=", {12, 0, 9}) then
     local govModeTable = {
-        [0] = "@i18n(api.GOVERNOR_CONFIG.tbl_govmode_off)@",
-        [1] = "@i18n(api.GOVERNOR_CONFIG.tbl_govmode_limit)@",
-        [2] = "@i18n(api.GOVERNOR_CONFIG.tbl_govmode_direct)@",
-        [3] = "@i18n(api.GOVERNOR_CONFIG.tbl_govmode_electric)@",
-        [4] = "@i18n(api.GOVERNOR_CONFIG.tbl_govmode_nitro)@"
+        [0] = "OFF",
+        [1] = "LIMIT",
+        [2] = "DIRECT",
+        [3] = "ELECTRIC",
+        [4] = "NITRO"
     }
     local throttleTypeTable = {
-        [0] = "@i18n(api.GOVERNOR_CONFIG.tbl_throttle_type_normal)@",
-        [1] = "@i18n(api.GOVERNOR_CONFIG.tbl_throttle_type_switch)@",
-        [2] = "@i18n(api.GOVERNOR_CONFIG.tbl_throttle_type_function)@"
+        [0] = "NORMAL",
+        [1] = "SWITCH",
+        [2] = "FUNCTION"
     }
 
     FIELD_SPEC = {
@@ -101,11 +101,11 @@ if rfsuite.utils.apiVersionCompare(">=", {12, 0, 9}) then
     })
 else
     local govModeTable = {
-        [0] = "@i18n(api.GOVERNOR_CONFIG.tbl_govmode_off)@",
-        [1] = "@i18n(api.GOVERNOR_CONFIG.tbl_govmode_passthrough)@",
-        [2] = "@i18n(api.GOVERNOR_CONFIG.tbl_govmode_standard)@",
-        [3] = "@i18n(api.GOVERNOR_CONFIG.tbl_govmode_mode1)@",
-        [4] = "@i18n(api.GOVERNOR_CONFIG.tbl_govmode_mode2)@"
+        [0] = "OFF",
+        [1] = "PASSTHROUGH",
+        [2] = "STANDARD",
+        [3] = "MODE1",
+        [4] = "MODE2"
     }
 
     FIELD_SPEC = {

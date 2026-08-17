@@ -192,7 +192,7 @@ local lastModule = nil
 -- Cache loaded MSP API modules so we don't touch disk (loadfile/compile) on periodic polls.
 -- Also lets us install handlers/UUID once, instead of reallocating closures every poll.
 local apiCache = {}
-local API_CACHE_MAX = 0
+local API_CACHE_MAX = 1
 
 local VALUE_EPSILON = 0.0
 local FORCE_REFRESH_INTERVAL = 2.5
