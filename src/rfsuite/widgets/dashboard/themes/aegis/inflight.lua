@@ -351,7 +351,7 @@ local function inflightWakeup(box, telemetry)
     if c.rpm ~= nil and (c.maxRpm == nil or c.rpm > c.maxRpm) then
         c.maxRpm = c.rpm
     end
-    c.throttle = sensor(telemetry, "throttle_percent", "throttle") or 0
+    c.throttle = sensor(telemetry, "throttle_percent", "throttle")
     c.esc, c.escUnit, c.escWarn, c.escMax = temperatureSensor(telemetry, escWarnC, escMaxC)
     c.fuel = sensor(telemetry, "smartfuel")
     c.current = sensor(telemetry, "current")
@@ -432,7 +432,8 @@ local function drawVerticalMeter(x, y, w, h, title, value, maximum, color, value
         lcd.color(color)
         lcd.drawFilledRectangle(floor(barX + 2), floor(barY + barH - 2 - fillH), floor(barW - 4), fillH)
     end
-    drawTextAligned(x + 38, y + 44, w - 50, valueText or "--", "FONT_L", C.white, "left")
+    local valueColor = value == nil and C.muted or C.white
+    drawTextAligned(x + 38, y + 44, w - 50, valueText or "--", "FONT_L", valueColor, "left")
 end
 
 local function inflightPaint(x, y, w, h, box, c, telemetry)
@@ -470,7 +471,7 @@ local function inflightPaint(x, y, w, h, box, c, telemetry)
     local rightX = centerX + centerW + pad
 
     local escColor = c.esc and (c.esc >= c.escMax and C.red or (c.esc >= c.escWarn and C.amber or C.green)) or C.muted
-    local throttleColor = (c.throttle or 0) >= 90 and C.amber or C.cyan
+    local throttleColor = c.throttle == nil and C.muted or (c.throttle >= 90 and C.amber or C.cyan)
     local fuel = c.fuel or 0
     local fuelColor = c.fuel == nil and C.muted or (fuel <= c.fuelWarn and C.red or (fuel <= 50 and C.amber or C.green))
     local becColor = c.bec and (c.bec < c.becMin and C.red or (c.bec < c.becWarn and C.amber or C.cyan)) or C.muted
@@ -485,11 +486,11 @@ local function inflightPaint(x, y, w, h, box, c, telemetry)
     local cy = bodyY + bodyH * 0.48
     local radius = min(centerW * 0.43, bodyH * 0.43)
     local rpmMax = c.rpmMax
-    local rpmColor = (c.rpm or 0) > rpmMax and C.red or C.cyan
+    local rpmColor = c.rpm == nil and C.muted or (c.rpm > rpmMax and C.red or C.cyan)
     drawRadialGauge(cx, cy, radius, c.rpm or 0, rpmMax, rpmColor)
-    drawTextAligned(centerX, cy - 44, centerW, c.rpmText or "--", "FONT_XXL", C.white, "center")
+    drawTextAligned(centerX, cy - 44, centerW, c.rpmText or "--", "FONT_XXL", c.rpm == nil and C.muted or C.white, "center")
     drawTextAligned(centerX, cy + 10, centerW, "HEADSPEED  RPM", "FONT_XS", C.muted, "center")
-    drawTextAligned(centerX + 22, bodyY + bodyH - 33, centerW - 44, c.maxRpmText or "MAX --", "FONT_XS", C.amber, "left")
+    drawTextAligned(centerX + 22, bodyY + bodyH - 33, centerW - 44, c.maxRpmText or "MAX --", "FONT_XS", c.maxRpm == nil and C.muted or C.amber, "left")
     drawTextAligned(centerX + 22, bodyY + bodyH - 33, centerW - 44, c.rpmLimitText or "LIMIT --", "FONT_XS", C.muted, "right")
 
     local fuelH = floor(bodyH * 0.34)

@@ -286,6 +286,7 @@ local function postflightWakeup(box, telemetry)
     c.linkWarn = getThemeValue("link_warn")
 
     c.rpm = stat(telemetry, "rpm", "max", "headspeed", "erpm")
+    if c.rpm and c.rpm <= 0 then c.rpm = nil end
     c.esc, c.escUnit, c.escWarn, c.escMax = temperatureStat(telemetry, escWarnC, escMaxC)
     c.current = stat(telemetry, "current", "max")
     c.watts = stat(telemetry, "watts", "max")
