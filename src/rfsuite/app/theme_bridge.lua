@@ -68,6 +68,7 @@ local MODEL_RETRY_INTERVAL = 5.0
 local NATIVE_SIGNATURE_INTERVAL = 1.0
 local FADE_STEPS = 12
 local GRADIENT_STEPS = 32
+local TAPER_STEPS = 6
 
 -- The separately maintained theme branches keep appTheme in their small
 -- init.lua. Prefer that installed metadata so a theme author can edit their
@@ -419,7 +420,23 @@ local function threeColor(startRGB, middleRGB, finishRGB, progress)
   return blendColor(middleRGB, finishRGB, (progress - 0.5) * 2)
 end
 
-local function appendGradientRail(x, y, length, thickness, vertical, palette)
+local function railTaperLength(length)
+  if length <= 1 then return 1 end
+  return max(1, min(floor(length / 2), min(96, max(48, floor(length / 8)))))
+end
+
+local function appendTaperedRailSegment(x, y, startOffset, size, length, thickness, color)
+  -- Narrow both ends to one pixel while preserving the original center width.
+  local midpoint = startOffset + floor(size / 2)
+  local edgeDistance = min(midpoint, max(0, length - midpoint))
+  local taperLength = railTaperLength(length)
+  local progress = min(1, edgeDistance / max(1, taperLength))
+  local smooth = progress * progress * (3 - (2 * progress))
+  local segmentThickness = max(1, floor(1 + ((thickness - 1) * smooth) + 0.5))
+  appendSegment(x + startOffset, y, size, segmentThickness, color)
+end
+
+local function appendGradientRail(x, y, length, thickness, palette)
   if length <= 0 then return end
   local steps = min(GRADIENT_STEPS, max(12, length))
   for step = 1, steps do
@@ -428,25 +445,34 @@ local function appendGradientRail(x, y, length, thickness, vertical, palette)
     local size = max(1, endOffset - startOffset)
     local progress = (step - 1) / max(1, steps - 1)
     local color = threeColor(palette._railStartRGB, palette._railMiddleRGB, palette._railFinishRGB, progress)
-    if vertical then
-      appendSegment(x, y + startOffset, thickness, size, color)
-    else
-      appendSegment(x + startOffset, y, size, thickness, color)
-    end
+    appendTaperedRailSegment(x, y, startOffset, size, length, thickness, color)
   end
 end
 
-local function appendFadeRail(x, y, length, thickness, vertical, palette)
+local function appendFadeRail(x, y, length, thickness, palette)
   if length <= 0 then return end
-  local fadeLength = min(vertical and 84 or 96, max(24, floor(length / 5)))
+  local fadeLength = min(96, max(24, floor(length / 5)))
   fadeLength = min(fadeLength, length)
   local segmentSize = max(1, floor(fadeLength / FADE_STEPS))
   local actualFade = min(length, segmentSize * FADE_STEPS)
   local body = max(0, length - actualFade)
-  if body > 0 then
-    if vertical then appendSegment(x, y, thickness, body, palette.accent)
-    else appendSegment(x, y, body, thickness, palette.accent) end
+
+  -- Split the left edge into a few cached rectangles so its thickness tapers.
+  local leftTaperLength = min(body, railTaperLength(length))
+  local leftBody = 0
+  for step = 1, TAPER_STEPS do
+    local offset = floor(((step - 1) * leftTaperLength) / TAPER_STEPS)
+    local endOffset = floor((step * leftTaperLength) / TAPER_STEPS)
+    if endOffset > offset then
+      local size = endOffset - offset
+      appendTaperedRailSegment(x, y, offset, size, length, thickness, palette.accent)
+      leftBody = endOffset
+    end
   end
+  if leftBody < body then
+    appendTaperedRailSegment(x, y, leftBody, body - leftBody, length, thickness, palette.accent)
+  end
+
   for step = 1, FADE_STEPS do
     local progress = (step - 1) / max(1, FADE_STEPS - 1)
     local smooth = progress * progress * (3 - (2 * progress))
@@ -455,8 +481,7 @@ local function appendFadeRail(x, y, length, thickness, vertical, palette)
     if offset < length and amount > 0.035 then
       local size = min(segmentSize, length - offset)
       local color = blendColor(palette._backgroundRGB, palette._accentRGB, amount)
-      if vertical then appendSegment(x, y + offset, thickness, size, color)
-      else appendSegment(x + offset, y, size, thickness, color) end
+      appendTaperedRailSegment(x, y, offset, size, length, thickness, color)
     end
   end
 end
@@ -472,11 +497,9 @@ local function rebuildGeometry()
   if not activeEnabled or not palette or canvasWidth <= 0 or canvasHeight <= 0 then return end
   local railY = min(canvasHeight - 2, max(0, floor(headerBottom + 2)))
   if palette._railStartRGB and palette._railMiddleRGB and palette._railFinishRGB then
-    appendGradientRail(0, railY, canvasWidth, 2, false, palette)
-    appendGradientRail(0, railY, max(0, canvasHeight - railY), 2, true, palette)
+    appendGradientRail(0, railY, canvasWidth, 2, palette)
   else
-    appendFadeRail(0, railY, canvasWidth, 2, false, palette)
-    appendFadeRail(0, railY, max(0, canvasHeight - railY), 2, true, palette)
+    appendFadeRail(0, railY, canvasWidth, 2, palette)
   end
 end
 
