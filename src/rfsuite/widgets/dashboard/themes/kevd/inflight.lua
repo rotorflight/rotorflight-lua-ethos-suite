@@ -11,12 +11,27 @@ local lcd = lcd
 local tonumber = tonumber
 local floor = math.floor
 local format = string.format
+local clock = os.clock
 
 local utils = rfsuite.widgets.dashboard.utils
 local maxVoltageToCellVoltage = utils.maxVoltageToCellVoltage
 
 local headeropts = utils.getHeaderOptions()
 local colorMode = utils.themeColors()
+
+-- Longest stretch this panel's fuel readout is allowed to keep showing a
+-- number without a fresh getSensor("smartfuel") read behind it. This panel
+-- reads the sensor directly (unlike every other theme's fuel gauge, which
+-- goes through the shared, budget-paced gauge/bar.lua object) -- see the
+-- wakeup() below. Under normal telemetry that read succeeds every tick, so
+-- this never matters; it only kicks in if this box's own wakeup() itself
+-- goes a long stretch without being called at all (dense-theme instruction-
+-- budget starvation -- see widgets/dashboard/engine.lua's
+-- WAKE_CURSOR_MAX_CONSECUTIVE_FAILS for the scheduler-side half of this
+-- fix), where the old code would otherwise keep confidently displaying
+-- whatever percentage it last managed to read, indefinitely, even after
+-- it's badly out of date.
+local FUEL_STALE_TIMEOUT = 5.0
 
 local theme_section = "system/kevd"
 
@@ -126,10 +141,12 @@ local function rightStackWakeup(box, telemetry)
         c.fuelDisplay = floor(fuelRaw)
         c.fuelUnit = "%"
         c._fuelHasValue = true
-    elseif not c._fuelHasValue then
+        c._fuelUpdatedAt = clock()
+    elseif not c._fuelHasValue or (c._fuelUpdatedAt and (clock() - c._fuelUpdatedAt) > FUEL_STALE_TIMEOUT) then
         c.fuelPercent = 0
         c.fuelDisplay = utils.getPulsingDots(box, "_fuelDots")
         c.fuelUnit = nil
+        c._fuelHasValue = false
     end
     c.fuelFillColor = utils.resolveThresholdColor(c.fuelDisplay, box, "fillcolor", "fillcolor", box.rs_fuelthresholds)
 
