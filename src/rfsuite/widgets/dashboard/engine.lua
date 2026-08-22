@@ -501,23 +501,48 @@ local function paintObjects(widget)
     return true
   end
 
+  -- Once the first wake pass has fully completed (wakePassCount >= 1),
+  -- every box has had at least one real wakeup() and this loop behaves
+  -- exactly as before. While that first pass is still in progress, boxes
+  -- from wakeCursor onward haven't been woken even once yet -- their
+  -- object.paint() would run against a still-empty box._cache (populated
+  -- only by wakeup()), which most renders draw as a bare gap: no bgcolor,
+  -- no title, nothing, because those come from c.bgcolor/c.title in the
+  -- cache too, not from the box's own config directly. That's the
+  -- "screen clears, empty boxes appear" symptom -- the full-screen
+  -- background wipe above is instant, but each box's real content only
+  -- lands whenever wakeObjects() gets around to that index, possibly
+  -- several ticks later on a dense theme's cold start.
+  --
+  -- Paint the same generic background+title "shell" paintShellObjects()
+  -- already draws (drawBoxShell(), reading straight from the box's own
+  -- config params, no cache/wakeup dependency) for any box still waiting
+  -- its turn, so it reads as a themed placeholder box on screen -- not a
+  -- hole -- until its own wakeup catches up and it starts painting for
+  -- real.
+  local firstPassDone = wakePassCount >= 1
+
   for i = startIndex, #boxRects do
     local rect = boxRects[i]
     local box = rect.box
     if widget then widget.dashboardPaintRetryIndex = i end
-    local object = box and box.type and loadObjectType(box.type)
-    if object and object.paint then
-      local ok, err = pcall(object.paint, rect.x, rect.y, rect.w, rect.h, box)
-      if not ok then
-        if isInstructionBudgetError(err) then
-          if widget then widget.dashboardPaintRetryIndex = i end
-          if not widget or widget.dashboardInstructionBudgetRetryLogged ~= true then
-            print("[dashboard] object paint budget exhausted; retrying next tick: " .. tostring(err))
-            if widget then widget.dashboardInstructionBudgetRetryLogged = true end
+    if not firstPassDone and i >= wakeCursor then
+      drawBoxShell(rect)
+    else
+      local object = box and box.type and loadObjectType(box.type)
+      if object and object.paint then
+        local ok, err = pcall(object.paint, rect.x, rect.y, rect.w, rect.h, box)
+        if not ok then
+          if isInstructionBudgetError(err) then
+            if widget then widget.dashboardPaintRetryIndex = i end
+            if not widget or widget.dashboardInstructionBudgetRetryLogged ~= true then
+              print("[dashboard] object paint budget exhausted; retrying next tick: " .. tostring(err))
+              if widget then widget.dashboardInstructionBudgetRetryLogged = true end
+            end
+            return false
           end
-          return false
+          print("[dashboard] object paint failed: " .. tostring(err))
         end
-        print("[dashboard] object paint failed: " .. tostring(err))
       end
     end
     if widget then widget.dashboardPaintRetryIndex = i + 1 end
