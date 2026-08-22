@@ -133,6 +133,20 @@
       "reverse_text": false,
       "max_length": 67
     },
+    "msg_save_not_commited": {
+      "english": "Save not committed",
+      "translation": "Non enregistré",
+      "needs_translation": false,
+      "reverse_text": false,
+      "max_length": 18
+    },
+    "msg_please_disarm_to_save_warning": {
+      "english": "The flight controller rejected the save while armed. Your changes are safe and will be written to flash when you disarm.",
+      "translation": "Le contrôleur de vol a refusé l'enregistrement car il est armé. Vos modifications sont conservées et seront écrites en mémoire flash au désarmement.",
+      "needs_translation": false,
+      "reverse_text": false,
+      "max_length": 120
+    },
     "msg_background_task_missing_title": {
       "english": "Background task not running",
       "translation": "La tâche Background ne s'exécute pas",

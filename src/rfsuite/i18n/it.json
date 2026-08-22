@@ -7460,6 +7460,13 @@
       "reverse_text": false,
       "translation": "Carico dati dal flight controller..."
     },
+    "msg_please_disarm_to_save_warning": {
+      "english": "The flight controller rejected the save while armed. Your changes are safe and will be written to flash when you disarm.",
+      "max_length": 120,
+      "needs_translation": false,
+      "reverse_text": false,
+      "translation": "Il flight controller ha rifiutato il salvataggio perché è armato. Le modifiche sono al sicuro e verranno scritte in memoria flash al disarmo."
+    },
     "msg_reload_settings": {
       "english": "Reload data from flight controller?",
       "max_length": 35,
@@ -7487,6 +7494,13 @@
       "needs_translation": false,
       "reverse_text": false,
       "translation": "Salvataggio"
+    },
+    "msg_save_not_commited": {
+      "english": "Save not committed",
+      "max_length": 18,
+      "needs_translation": false,
+      "reverse_text": false,
+      "translation": "Non salvato"
     },
     "msg_save_settings": {
       "english": "Save settings",
@@ -8574,13 +8588,6 @@
         "needs_translation": false,
         "reverse_text": false,
         "translation": "RPM Min"
-      },
-      "startup_invalid_device": {
-        "english": "Invalid device connected",
-        "max_length": 24,
-        "needs_translation": true,
-        "reverse_text": false,
-        "translation": "Invalid device connected"
       },
       "startup_no_link": {
         "english": "No telemetry link detected",

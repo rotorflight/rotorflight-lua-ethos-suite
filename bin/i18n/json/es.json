@@ -133,6 +133,20 @@
       "reverse_text": false,
       "max_length": 67
     },
+    "msg_save_not_commited": {
+      "english": "Save not committed",
+      "translation": "No guardado",
+      "needs_translation": false,
+      "reverse_text": false,
+      "max_length": 18
+    },
+    "msg_please_disarm_to_save_warning": {
+      "english": "The flight controller rejected the save while armed. Your changes are safe and will be written to flash when you disarm.",
+      "translation": "El controlador de vuelo rechazó el guardado porque está armado. Los cambios están a salvo y se escribirán en la memoria flash al desarmar.",
+      "needs_translation": false,
+      "reverse_text": false,
+      "max_length": 120
+    },
     "msg_background_task_missing_title": {
       "english": "Background task not running",
       "translation": "La tarea Background no se está ejecutando",

@@ -911,6 +911,7 @@ local function create()
     fuelPercent = nil,
     governorMode = nil,
     governorState = nil,
+    rxMap = nil,
     mspTransport = nil,
     pidProfile = nil,
     rateProfile = nil,
@@ -1043,6 +1044,7 @@ local function update(widget, snapshot)
   widget.fuelPercent = snapshot.fuelPercent
   widget.governorMode = snapshot.governorMode
   widget.governorState = snapshot.governorState
+  widget.rxMap = snapshot.rxMap
   widget.mspTransport = snapshot.mspTransport
   widget.pidProfile = snapshot.pidProfile
   widget.rateProfile = snapshot.rateProfile
