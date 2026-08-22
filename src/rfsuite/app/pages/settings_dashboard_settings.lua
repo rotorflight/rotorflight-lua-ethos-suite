@@ -11,6 +11,7 @@ local header = requireModule("app/header.lua")
 local tileGrid = requireModule("app/tile_grid.lua")
 local settingsStore = requireModule("lib/settings_store.lua")
 local dashboardContext = requireModule("widgets/dashboard/context.lua")
+local themeBridge = requireModule("app/theme_bridge.lua")
 
 local PAGE_TITLE = "@i18n(app.modules.settings.name)@ / @i18n(app.modules.settings.dashboard)@ / @i18n(app.modules.settings.dashboard_settings)@"
 local NO_THEMES = "@i18n(app.modules.settings.no_themes_available_to_configure)@"
@@ -176,7 +177,8 @@ local function open(opts)
         icon = lcd.loadMask(theme.icon) or false
         iconCache[theme.icon] = icon
       end
-      buttons[i] = form.addButton(nil, {x = x, y = y, w = tileW, h = tileH}, {
+      local tileRect = {x = x, y = y, w = tileW, h = tileH}
+      buttons[i] = form.addButton(nil, tileRect, {
         text = theme.label,
         icon = icon or nil,
         options = tileFont,
@@ -185,6 +187,7 @@ local function open(opts)
           openTheme(theme)
         end,
       })
+      themeBridge.registerChromeRect(tileRect, "tile")
 
       col = col + 1
       if col >= numPerRow then

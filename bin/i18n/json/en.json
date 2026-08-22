@@ -2110,6 +2110,12 @@
           "needs_translation": false,
           "translation": "Integration"
         },
+        "txt_follow_dashboard_theme": {
+          "english": "Follow dashboard theme",
+          "max_length": 22,
+          "needs_translation": false,
+          "translation": "Follow dashboard theme"
+        },
         "txt_syncname": {
           "english": "Sync model name",
           "max_length": 15,
@@ -7278,6 +7284,12 @@
         "max_length": 8,
         "needs_translation": false,
         "translation": "Link Min"
+      },
+      "startup_invalid_device": {
+        "english": "Invalid device connected",
+        "max_length": 24,
+        "needs_translation": false,
+        "translation": "Invalid device connected"
       },
       "startup_no_link": {
         "english": "No telemetry link detected",
