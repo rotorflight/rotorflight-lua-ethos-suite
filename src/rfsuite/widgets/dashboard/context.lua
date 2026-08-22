@@ -50,6 +50,7 @@ end
 
 local utils = {}
 local dashboardPrefs = {}
+local dashboardPreferenceSection = nil
 local tempThresholdCache = setmetatable({}, {__mode = "k"})
 local fmtCache = {}
 local paletteCache = {}
@@ -2287,11 +2288,13 @@ function context.widgets.dashboard.savePreference(key, value)
   dashboardPrefs[key] = value
 end
 
-function context.widgets.dashboard.setPreferences(values)
+function context.widgets.dashboard.setPreferences(values, section)
   dashboardPrefs = {}
   if type(values) == "table" then
     for key, value in pairs(values) do dashboardPrefs[key] = value end
   end
+  dashboardPreferenceSection = type(section) == "string" and section or nil
+  context.widgets.dashboard.currentWidgetPath = dashboardPreferenceSection
 end
 
 function context.widgets.dashboard.preferences()
@@ -2325,6 +2328,9 @@ function context.setWidget(widget)
       lastflighttime = widget and widget.modelStats and widget.modelStats.lastflighttime or 0,
     },
   }
+  if dashboardPreferenceSection then
+    context.session.modelPreferences[dashboardPreferenceSection] = dashboardPrefs
+  end
   context.flightmode.current = widget and widget.flightmodeState or "preflight"
 end
 
