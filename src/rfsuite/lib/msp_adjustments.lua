@@ -1,7 +1,8 @@
 -- MSP helpers for Controls -> Adjustments.
 --
--- ADJUSTMENT_RANGES reads fixed 14-byte range records. SET_ADJUSTMENT_RANGE
--- writes a single slot with slot index + that same record shape.
+-- ADJUSTMENT_RANGES reads fixed 14-byte range records. The page uses the
+-- indexed read command for reliability over telemetry, then writes changed
+-- slots with slot index + that same record shape.
 
 if package.loaded["rfsuite.lib.msp_adjustments"] then
   return package.loaded["rfsuite.lib.msp_adjustments"]
@@ -12,6 +13,7 @@ local mspcodec = requireModule("lib/mspcodec.lua")
 
 local READ_COMMAND = 52
 local WRITE_COMMAND = 53
+local SLOT_READ_COMMAND = 156
 local RANGE_BYTES = 14
 local RANGE_COUNT = 42
 local SIMULATOR_RESPONSE = {
@@ -79,9 +81,24 @@ local function defaultRange()
   }
 end
 
+local function readRange(buf)
+  return {
+    adjFunction = mspcodec.readU8(buf),
+    enaChannel = mspcodec.readU8(buf),
+    enaRange = {start = stepToUs(mspcodec.readS8(buf)), ["end"] = stepToUs(mspcodec.readS8(buf))},
+    adjChannel = mspcodec.readU8(buf),
+    adjRange1 = {start = stepToUs(mspcodec.readS8(buf)), ["end"] = stepToUs(mspcodec.readS8(buf))},
+    adjRange2 = {start = stepToUs(mspcodec.readS8(buf)), ["end"] = stepToUs(mspcodec.readS8(buf))},
+    adjMin = mspcodec.readS16(buf),
+    adjMax = mspcodec.readS16(buf),
+    adjStep = mspcodec.readU8(buf),
+  }
+end
+
 local msp_adjustments = {
   READ_COMMAND = READ_COMMAND,
   WRITE_COMMAND = WRITE_COMMAND,
+  SLOT_READ_COMMAND = SLOT_READ_COMMAND,
   RANGE_COUNT = RANGE_COUNT,
 }
 
@@ -96,20 +113,16 @@ function msp_adjustments.decode(buf)
   if count > RANGE_COUNT then count = RANGE_COUNT end
 
   for i = 1, count do
-    ranges[i] = {
-      adjFunction = mspcodec.readU8(buf),
-      enaChannel = mspcodec.readU8(buf),
-      enaRange = {start = stepToUs(mspcodec.readS8(buf)), ["end"] = stepToUs(mspcodec.readS8(buf))},
-      adjChannel = mspcodec.readU8(buf),
-      adjRange1 = {start = stepToUs(mspcodec.readS8(buf)), ["end"] = stepToUs(mspcodec.readS8(buf))},
-      adjRange2 = {start = stepToUs(mspcodec.readS8(buf)), ["end"] = stepToUs(mspcodec.readS8(buf))},
-      adjMin = mspcodec.readS16(buf),
-      adjMax = mspcodec.readS16(buf),
-      adjStep = mspcodec.readU8(buf),
-    }
+    ranges[i] = readRange(buf)
   end
 
   return {ranges = ranges}
+end
+
+function msp_adjustments.decodeRange(buf)
+  buf.offset = 1
+  if #buf < RANGE_BYTES then return defaultRange() end
+  return readRange(buf)
 end
 
 function msp_adjustments.buildReadMessage(onData, onError)
@@ -117,6 +130,18 @@ function msp_adjustments.buildReadMessage(onData, onError)
     command = READ_COMMAND,
     processReply = function(_, buf)
       onData(msp_adjustments.decode(buf))
+    end,
+    errorHandler = onError,
+    simulatorResponse = SIMULATOR_RESPONSE,
+  }
+end
+
+function msp_adjustments.buildReadSlotMessage(index, onData, onError)
+  return {
+    command = SLOT_READ_COMMAND,
+    payload = {clamp((index or 1) - 1, 0, RANGE_COUNT - 1)},
+    processReply = function(_, buf)
+      onData(msp_adjustments.decodeRange(buf))
     end,
     errorHandler = onError,
     simulatorResponse = SIMULATOR_RESPONSE,

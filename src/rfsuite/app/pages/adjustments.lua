@@ -1,8 +1,7 @@
 -- Controls -> Adjustments.
 --
--- Custom editor for ADJUSTMENT_RANGES. The original page has additional
--- per-slot prefetch paths; this lite port keeps the same editable surface
--- on top of the bulk read and changed-slot writes to minimize moving parts.
+-- Custom editor for ADJUSTMENT_RANGES. Reads use the firmware's indexed
+-- range command so page load avoids one large MSP reply over telemetry.
 
 local requireModule = package.loaded["rfsuite.lib.require"] or assert(loadfile("lib/require.lua"))()
 local bus = requireModule("lib/bus.lua")
@@ -44,30 +43,28 @@ local ADJUST_FUNCTIONS = {
   {id = 5, name = "Pitch Rate", min = 0, max = 255},
   {id = 6, name = "Roll Rate", min = 0, max = 255},
   {id = 7, name = "Yaw Rate", min = 0, max = 255},
-  {id = 8, name = "Pitch RC Rate", min = 0, max = 255},
-  {id = 9, name = "Roll RC Rate", min = 0, max = 255},
-  {id = 10, name = "Yaw RC Rate", min = 0, max = 255},
+  {id = 8, name = "Pitch RC Rate", min = 1, max = 255},
+  {id = 9, name = "Roll RC Rate", min = 1, max = 255},
+  {id = 10, name = "Yaw RC Rate", min = 1, max = 255},
   {id = 11, name = "Pitch RC Expo", min = 0, max = 100},
   {id = 12, name = "Roll RC Expo", min = 0, max = 100},
   {id = 13, name = "Yaw RC Expo", min = 0, max = 100},
-  {id = 14, name = "Pitch P", min = 0, max = 250},
-  {id = 15, name = "Pitch I", min = 0, max = 250},
-  {id = 16, name = "Pitch D", min = 0, max = 250},
-  {id = 17, name = "Pitch F", min = 0, max = 250},
-  {id = 18, name = "Roll P", min = 0, max = 250},
-  {id = 19, name = "Roll I", min = 0, max = 250},
-  {id = 20, name = "Roll D", min = 0, max = 250},
-  {id = 21, name = "Roll F", min = 0, max = 250},
-  {id = 22, name = "Yaw P", min = 0, max = 250},
-  {id = 23, name = "Yaw I", min = 0, max = 250},
-  {id = 24, name = "Yaw D", min = 0, max = 250},
-  {id = 25, name = "Yaw F", min = 0, max = 250},
+  {id = 14, name = "Pitch P", min = 0, max = 1000},
+  {id = 15, name = "Pitch I", min = 0, max = 1000},
+  {id = 16, name = "Pitch D", min = 0, max = 1000},
+  {id = 17, name = "Pitch F", min = 0, max = 1000},
+  {id = 18, name = "Roll P", min = 0, max = 1000},
+  {id = 19, name = "Roll I", min = 0, max = 1000},
+  {id = 20, name = "Roll D", min = 0, max = 1000},
+  {id = 21, name = "Roll F", min = 0, max = 1000},
+  {id = 22, name = "Yaw P", min = 0, max = 1000},
+  {id = 23, name = "Yaw I", min = 0, max = 1000},
+  {id = 24, name = "Yaw D", min = 0, max = 1000},
+  {id = 25, name = "Yaw F", min = 0, max = 1000},
   {id = 26, name = "Yaw CW Stop Gain", min = 25, max = 250},
   {id = 27, name = "Yaw CCW Stop Gain", min = 25, max = 250},
   {id = 28, name = "Yaw Cyclic FF", min = 0, max = 250},
   {id = 29, name = "Yaw Collective FF", min = 0, max = 250},
-  {id = 30, name = "Yaw Collective Dynamic", min = -125, max = 125},
-  {id = 31, name = "Yaw Collective Decay", min = 1, max = 250},
   {id = 32, name = "Pitch Collective FF", min = 0, max = 250},
   {id = 33, name = "Pitch Gyro Cutoff", min = 0, max = 250},
   {id = 34, name = "Roll Gyro Cutoff", min = 0, max = 250},
@@ -78,9 +75,9 @@ local ADJUST_FUNCTIONS = {
   {id = 39, name = "Rescue Climb Collective", min = 0, max = 1000},
   {id = 40, name = "Rescue Hover Collective", min = 0, max = 1000},
   {id = 41, name = "Rescue Hover Altitude", min = 0, max = 2500},
-  {id = 42, name = "Rescue Alt P", min = 0, max = 250},
-  {id = 43, name = "Rescue Alt I", min = 0, max = 250},
-  {id = 44, name = "Rescue Alt D", min = 0, max = 250},
+  {id = 42, name = "Rescue Alt P", min = 0, max = 1000},
+  {id = 43, name = "Rescue Alt I", min = 0, max = 1000},
+  {id = 44, name = "Rescue Alt D", min = 0, max = 1000},
   {id = 45, name = "Angle Level Gain", min = 0, max = 200},
   {id = 46, name = "Horizon Level Gain", min = 0, max = 200},
   {id = 47, name = "Acro Trainer Gain", min = 25, max = 255},
@@ -92,14 +89,14 @@ local ADJUST_FUNCTIONS = {
   {id = 53, name = "Governor TTA", min = 0, max = 250},
   {id = 54, name = "Governor Cyclic FF", min = 0, max = 250},
   {id = 55, name = "Governor Collective FF", min = 0, max = 250},
-  {id = 56, name = "Pitch B", min = 0, max = 250},
-  {id = 57, name = "Roll B", min = 0, max = 250},
-  {id = 58, name = "Yaw B", min = 0, max = 250},
-  {id = 59, name = "Pitch O", min = 0, max = 250},
-  {id = 60, name = "Roll O", min = 0, max = 250},
+  {id = 56, name = "Pitch B", min = 0, max = 1000},
+  {id = 57, name = "Roll B", min = 0, max = 1000},
+  {id = 58, name = "Yaw B", min = 0, max = 1000},
+  {id = 59, name = "Pitch O", min = 0, max = 1000},
+  {id = 60, name = "Roll O", min = 0, max = 1000},
   {id = 61, name = "Cross Coupling Gain", min = 0, max = 250},
-  {id = 62, name = "Cross Coupling Ratio", min = 0, max = 250},
-  {id = 63, name = "Cross Coupling Cutoff", min = 0, max = 250},
+  {id = 62, name = "Cross Coupling Ratio", min = 0, max = 200},
+  {id = 63, name = "Cross Coupling Cutoff", min = 1, max = 250},
   {id = 64, name = "Acc Trim Pitch", min = -300, max = 300},
   {id = 65, name = "Acc Trim Roll", min = -300, max = 300},
   {id = 66, name = "Yaw Inertia Precomp Gain", min = 0, max = 250},
@@ -116,7 +113,7 @@ local ADJUST_FUNCTIONS = {
   {id = 77, name = "Governor Auto Throttle", min = 0, max = 250},
   {id = 78, name = "Governor Max Throttle", min = 0, max = 100},
   {id = 79, name = "Governor Min Throttle", min = 0, max = 100},
-  {id = 80, name = "Governor Headspeed", min = 0, max = 10000},
+  {id = 80, name = "Governor Headspeed", min = 0, max = 50000},
   {id = 81, name = "Governor Yaw FF", min = 0, max = 250},
   {id = 82, name = "Battery Profile", min = 1, max = 6},
 }
@@ -312,6 +309,35 @@ local function open(opts)
     if not headerHandle then return end
     headerHandle.setSaveEnabled(loaded and dirty and not busy)
     headerHandle.setReloadEnabled(not busy)
+  end
+
+  local function loadRanges(onData, onError)
+    local loadedRanges = {}
+    local slot = 1
+
+    local function fail(reason)
+      if onError then onError(reason) end
+    end
+
+    local function readNext()
+      if disposed then return end
+      if slot > adjustmentsMsp.RANGE_COUNT then
+        onData({ranges = loadedRanges})
+        return
+      end
+
+      local current = slot
+      bus.publish("msp.request", adjustmentsMsp.buildReadSlotMessage(current, function(range)
+        if disposed then return end
+        loadedRanges[current] = cloneRange(range)
+        slot = current + 1
+        readNext()
+      end, function(reason)
+        fail(reason or ("MSP_GET_ADJUSTMENT_RANGE failed at slot " .. tostring(current)))
+      end))
+    end
+
+    readNext()
   end
 
   local function markDirty(slot)
@@ -545,7 +571,7 @@ local function open(opts)
               dirtySlots = {}
               updateButtons()
               showProgress("@i18n(app.modules.adjustments.loading_ranges)@")
-              bus.publish("msp.request", adjustmentsMsp.buildReadMessage(function(data)
+              loadRanges(function(data)
                 if disposed then return end
                 ranges = cloneRanges(data.ranges)
                 original = data.ranges or {}
@@ -559,7 +585,7 @@ local function open(opts)
                 busy = false
                 closeDialog(headerHandle and headerHandle.focusReload)
                 updateButtons()
-              end))
+              end)
               return true
             end},
             {label = BTN_CANCEL, action = function() return true end},
@@ -786,7 +812,7 @@ local function open(opts)
   form.clear()
   render()
   showProgress("@i18n(app.modules.adjustments.loading_ranges)@")
-  bus.publish("msp.request", adjustmentsMsp.buildReadMessage(function(data)
+  loadRanges(function(data)
     if disposed then return end
     ranges = cloneRanges(data.ranges)
     original = data.ranges or {}
@@ -800,7 +826,7 @@ local function open(opts)
     busy = false
     closeDialog()
     updateButtons()
-  end))
+  end)
 end
 
 return {open = open}
