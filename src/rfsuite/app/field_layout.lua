@@ -220,8 +220,12 @@ end
 local function makeSetWithDirty(slot)
   return function(value)
     local runtime = slot.controlRef and slot.controlRef.runtime
-    if runtime then runtime:markDirty() end
     slot.set(value)
+    if runtime and runtime.refreshDirty then
+      runtime:refreshDirty()
+    elseif runtime then
+      runtime:markDirty()
+    end
   end
 end
 

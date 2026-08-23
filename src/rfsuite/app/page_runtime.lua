@@ -102,6 +102,27 @@ local function clearTable(t)
   end
 end
 
+local function cloneValue(value)
+  if type(value) ~= "table" then return value end
+  local out = {}
+  for k, v in pairs(value) do
+    out[k] = cloneValue(v)
+  end
+  return out
+end
+
+local function sameValue(a, b)
+  if a == b then return true end
+  if type(a) ~= "table" or type(b) ~= "table" then return false end
+  for k, v in pairs(a) do
+    if not sameValue(v, b[k]) then return false end
+  end
+  for k in pairs(b) do
+    if a[k] == nil then return false end
+  end
+  return true
+end
+
 -- config: {
 --   pageTitle,                  -- e.g. "PIDs" -- shown in the header only (dialogs are all generic, see below)
 --   logTag,                     -- e.g. "pids" -- debug print prefix; defaults to pageTitle
@@ -228,6 +249,7 @@ function PageRuntime.new(config)
   -- app/field_layout.lua's buildField(), which is what actually calls
   -- markDirty() for every field this runtime owns.
   self.dirty = false
+  self.cleanData = nil
   self.busy = false
   self.fields = {}
   self.activeDialog = nil
@@ -373,6 +395,22 @@ function PageRuntime:markDirty()
   self:updateSaveEnabled()
 end
 
+function PageRuntime:captureCleanData()
+  if self.disposed then return end
+  self.cleanData = cloneValue(self.data)
+end
+
+function PageRuntime:refreshDirty()
+  if self.disposed then return end
+  local dirty = true
+  if self.cleanData ~= nil then
+    dirty = not sameValue(self.data, self.cleanData)
+  end
+  if self.dirty == dirty then return end
+  self.dirty = dirty
+  self:updateSaveEnabled()
+end
+
 -- Explicit reset, used once a load/save actually lands the page's data
 -- in sync with the flight controller again (see loadData()'s success
 -- branch and performSave()'s writeSource() success branches below).
@@ -438,6 +476,7 @@ function PageRuntime:loadData(focusFn)
         -- any dirty state left over from edits abandoned by a manual
         -- Reload, or from the automatic profile-switch reload discarding
         -- whatever was on-screen for the old profile.
+        self_:captureCleanData()
         self_:setDirty(false)
         self_:setBusy(false)
         self_:closeDialog(focusFn)
@@ -536,6 +575,7 @@ function PageRuntime:performSave(focusFn)
     if self_.disposed then return end
     if index > #self_.sources then
       if not self_.eepromWrite then
+        self_:captureCleanData()
         self_:setDirty(false)
         if self_.onSaved then self_.onSaved(self_) end
         finishSave()
@@ -543,6 +583,7 @@ function PageRuntime:performSave(focusFn)
         return
       end
       bus.publish("msp.request", eeprom.buildWriteMessage(function()
+        self_:captureCleanData()
         self_:setDirty(false)
         if self_.onSaved then self_.onSaved(self_) end
         finishSave()
@@ -850,6 +891,7 @@ function PageRuntime:dispose()
   self.onSaved = nil
   self.loaded = false
   self.dirty = false
+  self.cleanData = nil
   self.busy = false
   self.lastProfile = nil
   self.loadedProfile = nil
@@ -1009,6 +1051,9 @@ function PageRuntime:buildChrome()
         if runtime.onLoaded then
           runtime.onLoaded()
         end
+        if not runtime.dirty then
+          runtime:captureCleanData()
+        end
       end
       if runtime.onWakeup then
         runtime.onWakeup(runtime)
@@ -1055,6 +1100,7 @@ function PageRuntime:loadInitial()
     for _, field in pairs(self.fields) do
       field:enable(true)
     end
+    self:captureCleanData()
     self:setDirty(false)
     self:setBusy(false)
     self.pendingOnLoaded = self.onLoaded ~= nil
