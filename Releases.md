@@ -1,6 +1,8 @@
-# 2.3.1
+# 2.3.1-20260908
 
 - Resolve issue with i18n compilation for non english language releases
+- Improve Speed
+- Reduce Memory Usage
 
 # 2.3.0
 
