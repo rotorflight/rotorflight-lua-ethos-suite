@@ -2388,6 +2388,12 @@
           "needs_translation": false,
           "max_length": 13
         },
+        "function_crsf_sensors": {
+          "english": "CRSF Sensors",
+          "translation": "CRSF Sensors",
+          "needs_translation": false,
+          "max_length": 12
+        },
         "function_telem_frsky": {
           "english": "Telemetry FrSky",
           "translation": "Telemetry FrSky",
