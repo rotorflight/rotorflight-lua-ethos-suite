@@ -2388,6 +2388,12 @@
           "needs_translation": false,
           "max_length": 13
         },
+        "function_rx_input_backup": {
+          "english": "Serial Rx (Backup)",
+          "translation": "Serial Rx (Backup)",
+          "needs_translation": false,
+          "max_length": 19
+        },
         "function_telem_frsky": {
           "english": "Telemetry FrSky",
           "translation": "Telemetry FrSky",
@@ -4187,6 +4193,68 @@
           "translation": "RF Module",
           "needs_translation": false,
           "max_length": 9
+        }
+      },
+      "rx_input_backup_status": {
+        "active_backup": {
+          "english": "Backup",
+          "translation": "Backup",
+          "needs_translation": false,
+          "max_length": 6
+        },
+        "active_main": {
+          "english": "Main",
+          "translation": "Main",
+          "needs_translation": false,
+          "max_length": 4
+        },
+        "active_source": {
+          "english": "Active Source",
+          "translation": "Active Source",
+          "needs_translation": false,
+          "max_length": 13
+        },
+        "channel": {
+          "english": "Channel",
+          "translation": "Channel",
+          "needs_translation": false,
+          "max_length": 7
+        },
+        "link": {
+          "english": "Link",
+          "translation": "Link",
+          "needs_translation": false,
+          "max_length": 4
+        },
+        "link_down": {
+          "english": "Down",
+          "translation": "Down",
+          "needs_translation": false,
+          "max_length": 4
+        },
+        "link_up": {
+          "english": "Up",
+          "translation": "Up",
+          "needs_translation": false,
+          "max_length": 2
+        },
+        "name": {
+          "english": "Serial Rx (Backup)",
+          "translation": "Serial Rx (Backup)",
+          "needs_translation": false,
+          "max_length": 19
+        },
+        "not_configured": {
+          "english": "Not Configured",
+          "translation": "Not Configured",
+          "needs_translation": false,
+          "max_length": 14
+        },
+        "protocol": {
+          "english": "Protocol",
+          "translation": "Protocol",
+          "needs_translation": false,
+          "max_length": 8
         }
       },
       "fblstatus": {

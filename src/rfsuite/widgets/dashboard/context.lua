@@ -2307,6 +2307,7 @@ local ARMING_DISABLE_FLAG_TAG = {
   [23] = "@i18n(app.modules.fblstatus.arming_disable_flag_23)@",
   [24] = "@i18n(app.modules.fblstatus.arming_disable_flag_24)@",
   [25] = "@i18n(app.modules.fblstatus.arming_disable_flag_25)@",
+  [26] = "@i18n(app.modules.fblstatus.arming_disable_flag_26)@",
 }
 
 -- Bit 0 (ARMED) is the only bit that reflects current arm state -- bits 1
@@ -2322,12 +2323,19 @@ function context.utils.armFlagsToIsArmed(value)
   return (math.floor(value) & 1) == 1
 end
 
+-- Deliberately stops one bit short of firmware's own ARMING_DISABLED_ARM_SWITCH
+-- (src/main/fc/runtime_config.h) -- that bit only ever accompanies another,
+-- real reason (it's set when the arm switch is on while something else is
+-- blocking arming), so listing it too would just repeat "and the arm switch
+-- is on" alongside whatever the actual cause already says. Bump this bound
+-- whenever firmware inserts a new flag ahead of ARM_SWITCH (as with bit
+-- 26/BACKUP_RX below) - it must always be (ARM_SWITCH's bit index - 1).
 function context.utils.armingDisableFlagsToString(flags)
   flags = tonumber(flags)
   if flags == nil or flags == 0 then return "OK" end
 
   local names = {}
-  for i = 0, 25 do
+  for i = 0, 26 do
     if (flags & (1 << i)) ~= 0 then
       local name = ARMING_DISABLE_FLAG_TAG[i]
       if name and name ~= "" then names[#names + 1] = name end

@@ -35,6 +35,7 @@ local ARMING_FLAGS = {
   [23] = "@i18n(app.modules.fblstatus.arming_disable_flag_23)@",
   [24] = "@i18n(app.modules.fblstatus.arming_disable_flag_24)@",
   [25] = "@i18n(app.modules.fblstatus.arming_disable_flag_25)@",
+  [26] = "@i18n(app.modules.fblstatus.arming_disable_flag_26)@",
 }
 
 local function hasBit(mask, bit)
@@ -50,7 +51,10 @@ local function armingFlagsText(mask)
   mask = tonumber(mask or 0) or 0
   if mask == 0 then return "@i18n(app.modules.fblstatus.ok)@" end
   local parts = {}
-  for bit = 0, 25 do
+  -- Stops one bit short of firmware's ARMING_DISABLED_ARM_SWITCH (always the
+  -- last flag) same as widgets/dashboard/context.lua's own
+  -- armingDisableFlagsToString() - see that function's comment for why.
+  for bit = 0, 26 do
     if hasBit(mask, bit) then
       parts[#parts + 1] = ARMING_FLAGS[bit] or tostring(bit)
     end
