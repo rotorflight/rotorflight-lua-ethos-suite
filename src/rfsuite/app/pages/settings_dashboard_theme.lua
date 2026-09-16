@@ -18,6 +18,7 @@ local MODEL_DISABLED = "@i18n(app.modules.settings.dashboard_theme_panel_model_d
 local DEFAULT_THEME = "system/default"
 
 local THEME_DEFS = {
+  {label = "Aegis", path = "system/aegis", minResolution = {x = 784, y = 294}},
   {label = "@i18n(app.modules.settings.dashboard_theme_aerc)@", path = "system/aerc"},
   {label = "@i18n(app.modules.settings.dashboard_theme_aerc_n)@", path = "system/aerc-n"},
   {label = "@i18n(app.modules.settings.dashboard_theme_timer)@", path = "system/timer"},
