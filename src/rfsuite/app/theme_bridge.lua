@@ -147,28 +147,41 @@ local function darkMode()
   return not ok or value == true
 end
 
+local function finiteNumber(value)
+  local number = tonumber(value)
+  if number and number == number and number > -math.huge and number < math.huge then return number end
+  return nil
+end
+
+-- Optional metadata is user-editable. Validate once while compiling its palette,
+-- before malformed channels can reach the LCD or cached gradient geometry.
+local function colorChannels(value)
+  if type(value) ~= "table" then return nil end
+  local red = finiteNumber(value.r or value[1])
+  local green = finiteNumber(value.g or value[2])
+  local blue = finiteNumber(value.b or value[3])
+  if red and green and blue then
+    return floor(max(0, min(255, red)) + 0.5), floor(max(0, min(255, green)) + 0.5),
+      floor(max(0, min(255, blue)) + 0.5)
+  end
+  return nil
+end
+
 local function rgb(value, fallback)
-  if type(value) == "number" then return value end
+  if type(value) == "number" then return finiteNumber(value) or fallback end
   if type(value) == "table" then
-    local red = tonumber(value.r or value[1])
-    local green = tonumber(value.g or value[2])
-    local blue = tonumber(value.b or value[3])
-    local alpha = tonumber(value.a or value[4]) or 1
+    local red, green, blue = colorChannels(value)
+    local alpha = max(0, min(1, finiteNumber(value.a or value[4]) or 1))
     if red and green and blue then return lcdRGB(red, green, blue, alpha) end
   end
   return fallback
 end
 
 local function rgbComponents(value, fallback)
-  if type(value) == "table" then
-    local red = tonumber(value.r or value[1])
-    local green = tonumber(value.g or value[2])
-    local blue = tonumber(value.b or value[3])
-    if red and green and blue then return {red, green, blue} end
-  end
-  if type(fallback) == "table" then
-    return {tonumber(fallback[1]) or 0, tonumber(fallback[2]) or 0, tonumber(fallback[3]) or 0}
-  end
+  local red, green, blue = colorChannels(value)
+  if red then return {red, green, blue} end
+  red, green, blue = colorChannels(fallback)
+  if red then return {red, green, blue} end
   return {0, 0, 0}
 end
 
@@ -176,7 +189,7 @@ local function nativeColor(constantName, fallback)
   local index = _G[constantName]
   if index ~= nil and type(lcd.themeColor) == "function" then
     local ok, value = pcall(lcd.themeColor, index)
-    if ok and type(value) == "number" then return value end
+    if ok and type(value) == "number" and finiteNumber(value) then return value end
   end
   return fallback
 end
@@ -291,7 +304,7 @@ local function nativeThemeSignature(now, isDark, force)
       local themeIndex = _G[NATIVE_THEME_KEYS[index]]
       if type(themeIndex) == "number" then
         local ok, color = pcall(lcd.themeColor, themeIndex)
-        if ok and type(color) == "number" then
+        if ok and type(color) == "number" and finiteNumber(color) then
           signature = ((signature * 33) + (color % 2147483647)) % 2147483647
         end
       end
