@@ -28,6 +28,9 @@ local DEFAULTS = {
     -- change what a pilot who never opens Settings sees.
     save_confirm = true,
     reload_confirm = true,
+    -- Follow the selected dashboard theme in the full-screen configurator.
+    -- Default-on preserves the original Theme Bridge behavior.
+    follow_dashboard_theme = true,
     -- Default true, matching master's own default (main.lua) -- the
     -- battery-profile chooser auto-prompts on connect when more than one
     -- profile is configured, same as master's showBatteryTypeStartup.
@@ -218,6 +221,7 @@ local function normalize(settings)
   settings.general.temperature_unit = clampNumber(settings.general.temperature_unit, DEFAULTS.general.temperature_unit, 0, 1)
   settings.general.save_confirm = coerceBool(settings.general.save_confirm, DEFAULTS.general.save_confirm)
   settings.general.reload_confirm = coerceBool(settings.general.reload_confirm, DEFAULTS.general.reload_confirm)
+  settings.general.follow_dashboard_theme = coerceBool(settings.general.follow_dashboard_theme, DEFAULTS.general.follow_dashboard_theme)
   settings.general.battery_profile_startup = coerceBool(settings.general.battery_profile_startup, DEFAULTS.general.battery_profile_startup)
   settings.general.syncname = coerceBool(settings.general.syncname, DEFAULTS.general.syncname)
 
@@ -324,6 +328,11 @@ end
 function settings_store.reloadConfirmEnabled(settings)
   local general = type(settings) == "table" and settings.general or nil
   return coerceBool(fieldValue(general, "reload_confirm"), DEFAULTS.general.reload_confirm) == true
+end
+
+function settings_store.followDashboardThemeEnabled(settings)
+  local general = type(settings) == "table" and settings.general or nil
+  return coerceBool(fieldValue(general, "follow_dashboard_theme"), DEFAULTS.general.follow_dashboard_theme) == true
 end
 
 function settings_store.batteryProfileStartupEnabled(settings)

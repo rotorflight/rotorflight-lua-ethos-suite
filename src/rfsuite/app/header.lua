@@ -88,6 +88,8 @@ if package.loaded["rfsuite.app.header"] then
 end
 
 local header = {}
+local requireModule = package.loaded["rfsuite.lib.require"] or assert(loadfile("lib/require.lua"))()
+local themeBridge = requireModule("app/theme_bridge.lua")
 
 -- i18n tags (the "@i18n(KEY)" + "@" syntax, split here so this comment
 -- itself doesn't get matched and flagged unresolved by the resolver
@@ -147,14 +149,19 @@ end
 -- actually pressed to trigger that dialog, or focusMenu() as the fallback
 -- when nothing specific pressed it (e.g. the page's initial load).
 function header.build(title, opts)
+  themeBridge.clearPage()
   local line = form.addLine("")
 
   local isLeafPage = (opts.onSave ~= nil) or (opts.onReload ~= nil) or (opts.onTool ~= nil)
 
   if not isLeafPage then
     local slots = form.getFieldSlots(line, {0, sizingHint(MENU_LABEL)})
-    local titleField = form.addStaticText(line, buildTitleRect(slots), title, LEFT)
+    local titleRect = buildTitleRect(slots)
+    local titleField = form.addStaticText(line, titleRect, title, LEFT)
+    themeBridge.registerHeaderRect(titleRect)
+    themeBridge.styleStaticText(titleField, "accent")
     local menuButton = addNavButton(line, slots[2], MENU_LABEL, opts.onBack)
+    themeBridge.registerNavigationRect(slots[2], "menu")
     return {
       setTitle = function(newTitle) titleField:value(newTitle) end,
       setSaveEnabled = noop,
@@ -175,16 +182,23 @@ function header.build(title, opts)
     0, sizingHint(MENU_LABEL), sizingHint(SAVE_LABEL), sizingHint(RELOAD_LABEL), sizingHint(TOOL_LABEL),
   })
 
-  local titleField = form.addStaticText(line, buildTitleRect(slots), title, LEFT)
+  local titleRect = buildTitleRect(slots)
+  local titleField = form.addStaticText(line, titleRect, title, LEFT)
+  themeBridge.registerHeaderRect(titleRect)
+  themeBridge.styleStaticText(titleField, "accent")
   local menuButton = addNavButton(line, slots[2], MENU_LABEL, opts.onBack)
+  themeBridge.registerNavigationRect(slots[2], "menu")
 
   local saveButton = addNavButton(line, slots[3], SAVE_LABEL, opts.onSave or noop)
+  themeBridge.registerNavigationRect(slots[3], "save")
   saveButton:enable(opts.onSave ~= nil)
 
   local reloadButton = addNavButton(line, slots[4], RELOAD_LABEL, opts.onReload or noop)
+  themeBridge.registerNavigationRect(slots[4], "reload")
   reloadButton:enable(opts.onReload ~= nil)
 
   local toolButton = addNavButton(line, slots[5], TOOL_LABEL, opts.onTool or noop)
+  themeBridge.registerNavigationRect(slots[5], "tool")
   toolButton:enable(opts.onTool ~= nil)
 
   return {

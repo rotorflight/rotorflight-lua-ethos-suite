@@ -23,6 +23,7 @@ local bus = requireModule("lib/bus.lua")
 local escProtocolGuard = requireModule("app/esc_protocol_guard.lua")
 local servoBusGuard = requireModule("app/servo_bus_guard.lua")
 local settingsStore = requireModule("lib/settings_store.lua")
+local themeBridge = requireModule("app/theme_bridge.lua")
 
 local developerModeEnabled = false
 
@@ -420,7 +421,9 @@ bus.subscribe("session.update", function(session)
 end)
 
 local function updateDeveloperMode(settings)
-  developerModeEnabled = settingsStore.developerModeEnabled(settings or settingsStore.load())
+  settings = settings or settingsStore.load()
+  developerModeEnabled = settingsStore.developerModeEnabled(settings)
+  return settings
 end
 
 bus.subscribe("settings.update", updateDeveloperMode)
@@ -446,7 +449,8 @@ local function create()
   taskAlertPending = false
   taskAlertOpen = false
   taskAlertShown = false
-  updateDeveloperMode()
+  local appSettings = updateDeveloperMode()
+  themeBridge.open(appSettings)
   menuContainer.openRoot(nav, ROOT_ENTRIES, setEventHandler, setWakeupHandler, setPaintHandler, setCleanupHandler, MENUS, taskGuard)
   -- Lets background-screen widgets (widgets/dashboard.lua) skip their own
   -- wakeup work while this full-screen tool owns the display -- matches
@@ -459,13 +463,16 @@ local function wakeup(state)
   if currentWakeupHandler then
     currentWakeupHandler()
   end
+  themeBridge.wakeup()
   showBackgroundTaskAlert()
 end
 
 local function paint(state)
+  themeBridge.paintBackground()
   if currentPaintHandler then
     currentPaintHandler()
   end
+  themeBridge.paintChrome()
 end
 
 -- Forwards the physical Back/Close key to whatever screen is currently
@@ -496,6 +503,7 @@ local function close(state)
   setEventHandler(nil)
   setWakeupHandler(nil)
   setPaintHandler(nil)
+  themeBridge.clearCache()
   bus.publish("app.state", {running = false})
   for _, key in ipairs(APP_SESSION_PACKAGE_KEYS) do
     package.loaded[key] = nil
