@@ -31,6 +31,33 @@ local function profileKey(profile)
   return "batteryCapacity_" .. tostring(profile)
 end
 
+-- Firmware with per-profile cell settings (rotorflight-firmware #508) reports
+-- cell count and the four cell voltages once per battery profile
+-- (<base>_0..5, see lib/msp_battery_config.lua); the un-suffixed legacy
+-- fields just mirror the active profile. Older firmware only has the legacy
+-- fields, which then apply to every profile.
+local CELL_FIELDS = {
+  "batteryCellCount",
+  "vbatmincellvoltage",
+  "vbatmaxcellvoltage",
+  "vbatfullcellvoltage",
+  "vbatwarningcellvoltage",
+}
+
+local CELL_KEYS = {}
+for _, base in ipairs(CELL_FIELDS) do
+  local keys = {}
+  for profile = 0, 5 do keys[profile] = base .. "_" .. profile end
+  CELL_KEYS[base] = keys
+end
+
+local function cellKey(battery, base, profile)
+  if battery and battery.hasProfileCells then
+    return CELL_KEYS[base][normalizeProfile(profile) or 0]
+  end
+  return base
+end
+
 local function clampCapacity(value)
   value = tonumber(value or 0) or 0
   if value < 0 then return 0 end
@@ -73,6 +100,14 @@ local function open(opts)
       if rt.data.battery then
         local key = profileKey(selected)
         rt.data.battery[key] = clampCapacity(rt.data.battery[key])
+        -- Legacy fields carry the active profile's values; the firmware
+        -- applies the per-profile arrays after them, so this is only for
+        -- consistency with what the configurator writes.
+        if rt.data.battery.hasProfileCells then
+          for _, base in ipairs(CELL_FIELDS) do
+            rt.data.battery[base] = rt.data.battery[CELL_KEYS[base][selected]]
+          end
+        end
       end
     end,
     -- tasks/session.lua reads BATTERY_CONFIG once at connect and caches it
@@ -149,11 +184,33 @@ local function open(opts)
   runtime:registerField("battery:capacityActive", capacityField)
 
   form.addLine("@i18n(telemetry.group_battery)@")
-  fieldLayout.buildSingle(runtime, "    @i18n(app.modules.power.max_cell_voltage)@", {source = "battery", key = "vbatmaxcellvoltage"})
-  fieldLayout.buildSingle(runtime, "    @i18n(app.modules.power.full_cell_voltage)@", {source = "battery", key = "vbatfullcellvoltage"})
-  fieldLayout.buildSingle(runtime, "    @i18n(app.modules.power.warn_cell_voltage)@", {source = "battery", key = "vbatwarningcellvoltage"})
-  fieldLayout.buildSingle(runtime, "    @i18n(app.modules.power.min_cell_voltage)@", {source = "battery", key = "vbatmincellvoltage"})
-  fieldLayout.buildSingle(runtime, "    @i18n(app.modules.power.cell_count)@", {source = "battery", key = "batteryCellCount"})
+  -- Cell count / cell voltages follow the selected profile (same as capacity
+  -- above), so they can't go through fieldLayout's fixed-key buildSingle().
+  local function addCellField(label, base)
+    local meta = batteryConfig.FIELD_META[base]
+    line = form.addLine(label)
+    local field = form.addNumberField(line, nil, meta.min, meta.max,
+      function()
+        local selected = normalizeProfile(dataRef.data.profile and dataRef.data.profile.batteryProfile) or 0
+        local battery = dataRef.data.battery or {}
+        return battery[cellKey(battery, base, selected)] or 0
+      end,
+      function(value)
+        markDirty()
+        local selected = normalizeProfile(dataRef.data.profile and dataRef.data.profile.batteryProfile) or 0
+        local battery = dataRef.data.battery
+        battery[cellKey(battery, base, selected)] = value
+      end)
+    if meta.decimals then field:decimals(meta.decimals) end
+    if meta.suffix then field:suffix(meta.suffix) end
+    field:default(meta.default or 0)
+    runtime:registerField("battery:" .. base, field)
+  end
+  addCellField("    @i18n(app.modules.power.max_cell_voltage)@", "vbatmaxcellvoltage")
+  addCellField("    @i18n(app.modules.power.full_cell_voltage)@", "vbatfullcellvoltage")
+  addCellField("    @i18n(app.modules.power.warn_cell_voltage)@", "vbatwarningcellvoltage")
+  addCellField("    @i18n(app.modules.power.min_cell_voltage)@", "vbatmincellvoltage")
+  addCellField("    @i18n(app.modules.power.cell_count)@", "batteryCellCount")
   fieldLayout.buildSingle(runtime, "    @i18n(app.modules.power.consumption_warning_percentage)@", {
     source = "battery",
     key = "consumptionWarningPercentage",

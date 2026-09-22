@@ -261,6 +261,34 @@ local function batteryProfileCapacity(config, profile)
   return capacity
 end
 
+-- Firmware with per-profile cell settings (rotorflight-firmware #508)
+-- reports cell count / cell voltages for all six battery profiles, while
+-- the legacy fields in the BATTERY_CONFIG reply only describe whichever
+-- profile was active at read time. Every consumer of
+-- session.batteryConfig (SmartFuel, voltage alerts, dashboard, ActiveLook)
+-- reads the legacy-named fields, so overwrite them in place with the active
+-- profile's values -- on read, and again whenever the active profile
+-- changes. No-op on older firmware (profileCells == nil).
+local function applyActiveProfileCells(config, profile)
+  if type(config) ~= "table" or type(config.profileCells) ~= "table" then return false end
+  local active = normalizeBatteryProfile(profile)
+  local cells = active ~= nil and config.profileCells[active] or nil
+  if not cells then return false end
+  if config.cellCount == cells.cellCount
+    and config.vbatMinCell == cells.vbatMinCell
+    and config.vbatMaxCell == cells.vbatMaxCell
+    and config.vbatFullCell == cells.vbatFullCell
+    and config.vbatWarningCell == cells.vbatWarningCell then
+    return false
+  end
+  config.cellCount = cells.cellCount
+  config.vbatMinCell = cells.vbatMinCell
+  config.vbatMaxCell = cells.vbatMaxCell
+  config.vbatFullCell = cells.vbatFullCell
+  config.vbatWarningCell = cells.vbatWarningCell
+  return true
+end
+
 local function copyStats(stats)
   if type(stats) ~= "table" then return nil end
   return {
@@ -595,6 +623,7 @@ local function runHandshake(mspQueue, protocol)
 
   if not session.batteryConfig then
     mspQueue:add(mspBattery.buildBatteryConfigReadMessage(function(data)
+      applyActiveProfileCells(data, session.batteryProfile)
       session.batteryConfig = data
       publish()
     end))
@@ -801,6 +830,7 @@ local function updateProfiles(protocol)
   local batteryProfile = normalizeBatteryProfile(telemetrySensors.getValue(protocol, "battery_profile"))
   if batteryProfile ~= session.batteryProfile then
     session.batteryProfile = batteryProfile
+    if applyActiveProfileCells(session.batteryConfig, batteryProfile) then localSmartFuel:reset() end
     publish()
   end
 
@@ -835,6 +865,7 @@ local function setBatteryProfile(value)
   if batteryProfile == nil then return end
   if batteryProfile == session.batteryProfile then return end
   session.batteryProfile = batteryProfile
+  if applyActiveProfileCells(session.batteryConfig, batteryProfile) then localSmartFuel:reset() end
   publish()
 end
 
@@ -961,6 +992,7 @@ bus.subscribe("model.smartfuel_type.update", onModelSmartfuelTypeUpdate)
 local function onBatteryConfigSaved()
   if not session.connected then return end
   bus.publish("msp.request", mspBattery.buildBatteryConfigReadMessage(function(data)
+    applyActiveProfileCells(data, session.batteryProfile)
     session.batteryConfig = data
     -- The local estimator's chargeLevel/initialChargeLevel were seeded
     -- against the *old* min/full cell voltage, and update()'s own clamp

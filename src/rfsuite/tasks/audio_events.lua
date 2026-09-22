@@ -271,6 +271,26 @@ local function batteryProfileCapacity(profile)
   return nil
 end
 
+local function batteryProfileCellCount(profile)
+  local config = session.batteryConfig
+  if type(config) ~= "table" then return nil end
+
+  local profileCells = config.profileCells
+  if type(profileCells) == "table" then
+    local cells = profileCells[profile]
+    if cells == nil then cells = profileCells[profile + 1] end
+    if type(cells) == "table" then
+      cells = cells.cellCount
+    end
+    cells = tonumber(cells)
+    if cells and cells > 0 then return cells end
+  end
+
+  local cells = tonumber(config.cellCount)
+  if cells and cells > 0 then return cells end
+  return nil
+end
+
 local function announceBatteryProfile()
   if not events.battery_profile then return end
   local value = normalizeBatteryProfile(session.batteryProfile)
@@ -279,9 +299,11 @@ local function announceBatteryProfile()
 
   local capacity = batteryProfileCapacity(value)
   if not capacity then return end
+  local cells = batteryProfileCellCount(value)
 
   playAlert("battery.wav")
   playNumber(math.floor(capacity + 0.5), UNIT_MILLIAMPERE_HOUR)
+  if cells then playNumber(math.floor(cells + 0.5), UNIT_CELLS) end
 end
 
 local function announceGovernor()
