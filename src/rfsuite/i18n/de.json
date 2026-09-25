@@ -54,24 +54,24 @@
       },
       "tbl_auto": {
         "english": "Auto",
-        "translation": "Auto",
+        "max_length": 4,
         "needs_translation": true,
         "reverse_text": false,
-        "max_length": 4
+        "translation": "Auto"
       },
       "tbl_electric": {
         "english": "Electric",
-        "translation": "Electric",
+        "max_length": 8,
         "needs_translation": true,
         "reverse_text": false,
-        "max_length": 8
+        "translation": "Electric"
       },
       "tbl_nitro": {
         "english": "Nitro",
-        "translation": "Nitro",
+        "max_length": 5,
         "needs_translation": true,
         "reverse_text": false,
-        "max_length": 5
+        "translation": "Nitro"
       }
     },
     "ESC_SENSOR_CONFIG": {
@@ -317,7 +317,7 @@
       "max_length": 13,
       "needs_translation": false,
       "reverse_text": false,
-      "translation": "Flugabstimmung"
+      "translation": "Flug-Tuning"
     },
     "menu_section_tools": {
       "english": "Tools",
@@ -5756,10 +5756,10 @@
         },
         "model_type": {
           "english": "Power Type",
-          "translation": "Power Type",
+          "max_length": 10,
           "needs_translation": true,
           "reverse_text": false,
-          "max_length": 10
+          "translation": "Power Type"
         },
         "name": {
           "english": "Power",

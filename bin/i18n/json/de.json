@@ -163,7 +163,7 @@
     },
     "menu_section_flight_tuning": {
       "english": "Flight Tuning",
-      "translation": "Flugabstimmung",
+      "translation": "Flug-Tuning",
       "needs_translation": false,
       "reverse_text": false,
       "max_length": 13
