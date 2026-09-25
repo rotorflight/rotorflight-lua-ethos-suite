@@ -111,6 +111,10 @@ Before finishing:
 - Check for hot-path allocations introduced by the change.
 - Confirm close/cleanup path exists for new dialogs, handles, or caches.
 - Run targeted sanity checks for affected module flows.
+- If the change is one a pilot can observe, update that page's file under `docs/pages/` in
+  the same pull request, or state on a line of its own why it needs none. The rule is
+  [.agents/rules/documentation.md](.agents/rules/documentation.md); the `Documentation rule`
+  job in `.github/workflows/pr.yml` fails when neither is there.
 
 ## 10) Scope Control
 
