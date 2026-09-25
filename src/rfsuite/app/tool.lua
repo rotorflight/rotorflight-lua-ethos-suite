@@ -23,6 +23,7 @@ local bus = requireModule("lib/bus.lua")
 local escProtocolGuard = requireModule("app/esc_protocol_guard.lua")
 local servoBusGuard = requireModule("app/servo_bus_guard.lua")
 local settingsStore = requireModule("lib/settings_store.lua")
+local armedGating = requireModule("app/armed_gating.lua")
 
 local developerModeEnabled = false
 
@@ -89,15 +90,29 @@ local MENUS = {
   -- Power, ESC & Motors, Governor) -- see
   -- ROOT_ENTRIES' own comment for why the other 4 root tiles
   -- (Tools/Logs/Settings/Developer) stay empty placeholders for now too.
+  --
+  -- `lockedWhileArmed = true` marks an entry that leads to a flight-critical
+  -- write path -- an FC or ESC parameter page. Issue #2302 badges those tiles
+  -- and refuses to navigate while the model is armed, so the pilot is warned
+  -- before the form is on screen rather than by PageRuntime:showSaveArmed()
+  -- afterwards. Submenu entries are never marked by hand: app/armed_gating.lua
+  -- derives them from their children.
+  --
+  -- The policy is "mark every page that writes to the flight controller or
+  -- an ESC, leave read-only and radio-local pages alone" -- the two are not
+  -- the same thing here, which is why radio_config is locked despite its name
+  -- (it edits MSP_RC_CONFIG / MSP_SET_RC_CONFIG, cmd 66/67, on the FC) while
+  -- Settings, Logs, Diagnostics and Stats stay open, because a pilot checking
+  -- link quality or flight stats while armed wants those reachable.
   setup_menu = {
     title = "@i18n(app.modules.hardware_setup.name)@",
     entries = {
-      {title = "@i18n(app.modules.configuration.name)@", icon = lcd.loadMask("app/gfx/configuration.png"), script = "app/pages/configuration.lua"},
-      {title = "@i18n(app.modules.radio_config.name)@", icon = lcd.loadMask("app/gfx/radio_config.png"), script = "app/pages/radio_config.lua"},
-      {title = "@i18n(app.modules.telemetry.name)@", icon = lcd.loadMask("app/gfx/telemetry.png"), script = "app/pages/telemetry.lua"},
-      {title = "@i18n(app.modules.accelerometer.name)@", icon = lcd.loadMask("app/gfx/accelerometer.png"), script = "app/pages/accelerometer.lua"},
-      {title = "@i18n(app.modules.alignment.name)@", icon = lcd.loadMask("app/gfx/alignment.png"), script = "app/pages/alignment.lua"},
-      {title = "@i18n(app.modules.ports.name)@", icon = lcd.loadMask("app/gfx/ports.png"), script = "app/pages/ports.lua"},
+      {title = "@i18n(app.modules.configuration.name)@", icon = lcd.loadMask("app/gfx/configuration.png"), script = "app/pages/configuration.lua", lockedWhileArmed = true},
+      {title = "@i18n(app.modules.radio_config.name)@", icon = lcd.loadMask("app/gfx/radio_config.png"), script = "app/pages/radio_config.lua", lockedWhileArmed = true},
+      {title = "@i18n(app.modules.telemetry.name)@", icon = lcd.loadMask("app/gfx/telemetry.png"), script = "app/pages/telemetry.lua", lockedWhileArmed = true},
+      {title = "@i18n(app.modules.accelerometer.name)@", icon = lcd.loadMask("app/gfx/accelerometer.png"), script = "app/pages/accelerometer.lua", lockedWhileArmed = true},
+      {title = "@i18n(app.modules.alignment.name)@", icon = lcd.loadMask("app/gfx/alignment.png"), script = "app/pages/alignment.lua", lockedWhileArmed = true},
+      {title = "@i18n(app.modules.ports.name)@", icon = lcd.loadMask("app/gfx/ports.png"), script = "app/pages/ports.lua", lockedWhileArmed = true},
       {title = "@i18n(app.modules.mixer.name)@", icon = lcd.loadMask("app/gfx/mixer.png"), menuId = "mixer_menu"},
       {title = "@i18n(app.modules.servos.name)@", icon = lcd.loadMask("app/gfx/servos.png"), menuId = "servos_menu"},
       {title = "@i18n(app.menu_section_controls)@", icon = lcd.loadMask("app/gfx/controls.png"), menuId = "controls_menu"},
@@ -109,92 +124,105 @@ local MENUS = {
   mixer_menu = {
     title = "@i18n(app.modules.mixer.name)@",
     entries = {
-      {title = "@i18n(app.modules.mixer.swash)@", icon = lcd.loadMask("app/gfx/mixer_swash.png"), script = "app/pages/mixer_swash.lua"},
-      {title = "@i18n(app.modules.mixer.geometry)@", icon = lcd.loadMask("app/gfx/mixer_geometry.png"), script = "app/pages/mixer_geometry.lua"},
-      {title = "@i18n(app.modules.mixer.tail)@", icon = lcd.loadMask("app/gfx/mixer_tail.png"), script = "app/pages/mixer_tail.lua"},
-      {title = "@i18n(app.modules.mixer.trims)@", icon = lcd.loadMask("app/gfx/mixer_trims.png"), script = "app/pages/mixer_trims.lua"},
+      {title = "@i18n(app.modules.mixer.swash)@", icon = lcd.loadMask("app/gfx/mixer_swash.png"), script = "app/pages/mixer_swash.lua", lockedWhileArmed = true},
+      {title = "@i18n(app.modules.mixer.geometry)@", icon = lcd.loadMask("app/gfx/mixer_geometry.png"), script = "app/pages/mixer_geometry.lua", lockedWhileArmed = true},
+      {title = "@i18n(app.modules.mixer.tail)@", icon = lcd.loadMask("app/gfx/mixer_tail.png"), script = "app/pages/mixer_tail.lua", lockedWhileArmed = true},
+      {title = "@i18n(app.modules.mixer.trims)@", icon = lcd.loadMask("app/gfx/mixer_trims.png"), script = "app/pages/mixer_trims.lua", lockedWhileArmed = true},
     },
   },
   servos_menu = {
     title = "@i18n(app.modules.servos.name)@",
     entries = {
-      {title = "@i18n(app.modules.servos.pwm)@", icon = lcd.loadMask("app/gfx/servos_pwm.png"), script = "app/pages/servos_pwm.lua"},
-      {title = "@i18n(app.modules.servos.bus)@", icon = lcd.loadMask("app/gfx/servos_bus.png"), script = "app/pages/servos_bus.lua", requiresServoBus = true},
+      {title = "@i18n(app.modules.servos.pwm)@", icon = lcd.loadMask("app/gfx/servos_pwm.png"), script = "app/pages/servos_pwm.lua", lockedWhileArmed = true},
+      {title = "@i18n(app.modules.servos.bus)@", icon = lcd.loadMask("app/gfx/servos_bus.png"), script = "app/pages/servos_bus.lua", requiresServoBus = true, lockedWhileArmed = true},
     },
   },
   controls_menu = {
     title = "@i18n(app.menu_section_controls)@",
     entries = {
-      {title = "@i18n(app.modules.modes.name)@", icon = lcd.loadMask("app/gfx/modes.png"), script = "app/pages/modes.lua"},
-      {title = "@i18n(app.modules.adjustments.name)@", icon = lcd.loadMask("app/gfx/adjustments.png"), script = "app/pages/adjustments.lua"},
-      {title = "@i18n(app.modules.failsafe.name)@", icon = lcd.loadMask("app/gfx/failsafe.png"), script = "app/pages/failsafe.lua"},
+      {title = "@i18n(app.modules.modes.name)@", icon = lcd.loadMask("app/gfx/modes.png"), script = "app/pages/modes.lua", lockedWhileArmed = true},
+      {title = "@i18n(app.modules.adjustments.name)@", icon = lcd.loadMask("app/gfx/adjustments.png"), script = "app/pages/adjustments.lua", lockedWhileArmed = true},
+      {title = "@i18n(app.modules.failsafe.name)@", icon = lcd.loadMask("app/gfx/failsafe.png"), script = "app/pages/failsafe.lua", lockedWhileArmed = true},
       {title = "@i18n(app.modules.beepers.name)@", icon = lcd.loadMask("app/gfx/beepers.png"), menuId = "beepers_menu"},
       {title = "@i18n(app.modules.blackbox.name)@", icon = lcd.loadMask("app/gfx/blackbox.png"), menuId = "blackbox_menu"},
+      -- Deliberately NOT locked: Stats reads the locally stored
+      -- model.stats.update record, never writes the FC. Keeping it
+      -- reachable is also what keeps controls_menu itself unlocked (see
+      -- app/armed_gating.lua's "all children locked" rule), so
+      -- Modes/Adjustments/Failsafe get their own badges instead.
       {title = "@i18n(app.modules.stats.name)@", icon = lcd.loadMask("app/gfx/stats.png"), script = "app/pages/stats.lua"},
     },
   },
   beepers_menu = {
     title = "@i18n(app.modules.beepers.name)@",
     entries = {
-      {title = "@i18n(app.modules.beepers.menu_configuration)@", icon = lcd.loadMask("app/gfx/beepers_configuration.png"), script = "app/pages/beepers_configuration.lua"},
-      {title = "@i18n(app.modules.beepers.menu_dshot)@", icon = lcd.loadMask("app/gfx/beepers_dshot.png"), script = "app/pages/beepers_dshot.lua"},
+      {title = "@i18n(app.modules.beepers.menu_configuration)@", icon = lcd.loadMask("app/gfx/beepers_configuration.png"), script = "app/pages/beepers_configuration.lua", lockedWhileArmed = true},
+      {title = "@i18n(app.modules.beepers.menu_dshot)@", icon = lcd.loadMask("app/gfx/beepers_dshot.png"), script = "app/pages/beepers_dshot.lua", lockedWhileArmed = true},
     },
   },
   blackbox_menu = {
     title = "@i18n(app.modules.blackbox.name)@",
     entries = {
-      {title = "@i18n(app.modules.blackbox.menu_configuration)@", icon = lcd.loadMask("app/gfx/blackbox_configuration.png"), script = "app/pages/blackbox_configuration.lua"},
-      {title = "@i18n(app.modules.blackbox.menu_logging)@", icon = lcd.loadMask("app/gfx/blackbox_logging.png"), script = "app/pages/blackbox_logging.lua"},
-      {title = "@i18n(app.modules.blackbox.menu_status)@", icon = lcd.loadMask("app/gfx/blackbox_status.png"), script = "app/pages/blackbox_status.lua"},
+      {title = "@i18n(app.modules.blackbox.menu_configuration)@", icon = lcd.loadMask("app/gfx/blackbox_configuration.png"), script = "app/pages/blackbox_configuration.lua", lockedWhileArmed = true},
+      {title = "@i18n(app.modules.blackbox.menu_logging)@", icon = lcd.loadMask("app/gfx/blackbox_logging.png"), script = "app/pages/blackbox_logging.lua", lockedWhileArmed = true},
+      {title = "@i18n(app.modules.blackbox.menu_status)@", icon = lcd.loadMask("app/gfx/blackbox_status.png"), script = "app/pages/blackbox_status.lua", lockedWhileArmed = true},
     },
   },
   power_menu = {
     title = "@i18n(app.modules.power.name)@",
     entries = {
-      {title = "@i18n(app.modules.power.battery_name)@", icon = lcd.loadMask("app/gfx/power_battery.png"), script = "app/pages/power_battery.lua"},
-      {title = "@i18n(app.modules.power.alert_name)@", icon = lcd.loadMask("app/gfx/power.png"), script = "app/pages/power_alerts.lua"},
-      {title = "@i18n(app.modules.power.source_name)@", icon = lcd.loadMask("app/gfx/power_source.png"), script = "app/pages/power_source.lua"},
-      {title = "@i18n(app.modules.power.smartfuel_name)@", icon = lcd.loadMask("app/gfx/power_smartfuel.png"), script = "app/pages/power_smartfuel.lua"},
+      {title = "@i18n(app.modules.power.battery_name)@", icon = lcd.loadMask("app/gfx/power_battery.png"), script = "app/pages/power_battery.lua", lockedWhileArmed = true},
+      {title = "@i18n(app.modules.power.alert_name)@", icon = lcd.loadMask("app/gfx/power.png"), script = "app/pages/power_alerts.lua", lockedWhileArmed = true},
+      {title = "@i18n(app.modules.power.source_name)@", icon = lcd.loadMask("app/gfx/power_source.png"), script = "app/pages/power_source.lua", lockedWhileArmed = true},
+      {title = "@i18n(app.modules.power.smartfuel_name)@", icon = lcd.loadMask("app/gfx/power_smartfuel.png"), script = "app/pages/power_smartfuel.lua", lockedWhileArmed = true},
     },
   },
   esc_motors_menu = {
     title = "@i18n(app.modules.esc_motors.name)@",
     entries = {
-      {title = "@i18n(app.modules.esc_motors.throttle)@", icon = lcd.loadMask("app/gfx/esc_motors_throttle.png"), script = "app/pages/esc_motors_throttle.lua"},
-      {title = "@i18n(app.modules.esc_motors.telemetry)@", icon = lcd.loadMask("app/gfx/esc_motors_telemetry.png"), script = "app/pages/esc_motors_telemetry.lua"},
-      {title = "@i18n(app.modules.esc_motors.rpm)@", icon = lcd.loadMask("app/gfx/esc_motors_rpm.png"), script = "app/pages/esc_motors_rpm.lua"},
+      {title = "@i18n(app.modules.esc_motors.throttle)@", icon = lcd.loadMask("app/gfx/esc_motors_throttle.png"), script = "app/pages/esc_motors_throttle.lua", lockedWhileArmed = true},
+      {title = "@i18n(app.modules.esc_motors.telemetry)@", icon = lcd.loadMask("app/gfx/esc_motors_telemetry.png"), script = "app/pages/esc_motors_telemetry.lua", lockedWhileArmed = true},
+      {title = "@i18n(app.modules.esc_motors.rpm)@", icon = lcd.loadMask("app/gfx/esc_motors_rpm.png"), script = "app/pages/esc_motors_rpm.lua", lockedWhileArmed = true},
       {title = "@i18n(app.modules.esc_tools.name)@", icon = lcd.loadMask("app/gfx/esc_tools.png"), menuId = "esc_forward_menu"},
     },
   },
   esc_forward_menu = {
     title = "@i18n(app.modules.esc_tools.name)@",
+    -- All of these flash or write ESC firmware over a serial link -- the
+    -- most destructive thing this tool can do, and the reason #2307 adds
+    -- its own armed gating to the ESC pages themselves.
     entries = {
-      {title = "@i18n(app.modules.esc_tools.mfg.hw5.name)@", icon = lcd.loadMask("app/gfx/esc_mfg_hw5.png"), script = "app/pages/esc_forward_hw5.lua", escProtocolId = 3},
-      {title = "@i18n(app.modules.esc_tools.mfg.am32.name)@", icon = lcd.loadMask("app/gfx/esc_mfg_am32.png"), script = "app/pages/esc_forward_am32.lua", escProtocolId = 1},
-      {title = "@i18n(app.modules.esc_tools.mfg.blheli_s.name)@", icon = lcd.loadMask("app/gfx/esc_mfg_blheli_s.png"), script = "app/pages/esc_forward_blheli_s.lua", escProtocolId = 1},
-      {title = "@i18n(app.modules.esc_tools.mfg.bluejay.name)@", icon = lcd.loadMask("app/gfx/esc_mfg_bluejay.png"), script = "app/pages/esc_forward_bluejay.lua", escProtocolId = 1},
-      {title = "@i18n(app.modules.esc_tools.mfg.flrtr.name)@", icon = lcd.loadMask("app/gfx/esc_mfg_flyrotor.png"), script = "app/pages/esc_forward_flyrotor.lua", escProtocolId = 10},
-      {title = "@i18n(app.modules.esc_tools.mfg.omp.name)@", icon = lcd.loadMask("app/gfx/esc_mfg_omp.png"), script = "app/pages/esc_forward_omp.lua", escProtocolId = 6},
-      {title = "@i18n(app.modules.esc_tools.mfg.scorp.name)@", icon = lcd.loadMask("app/gfx/esc_mfg_scorpion.png"), script = "app/pages/esc_forward_scorpion.lua", escProtocolId = 4},
-      {title = "@i18n(app.modules.esc_tools.mfg.xdfly.name)@", icon = lcd.loadMask("app/gfx/esc_mfg_xdfly.png"), script = "app/pages/esc_forward_xdfly.lua", escProtocolId = 12},
-      {title = "@i18n(app.modules.esc_tools.mfg.yge.name)@", icon = lcd.loadMask("app/gfx/esc_mfg_yge.png"), script = "app/pages/esc_forward_yge.lua", escProtocolId = 9},
-      {title = "@i18n(app.modules.esc_tools.mfg.ztw.name)@", icon = lcd.loadMask("app/gfx/esc_mfg_ztw.png"), script = "app/pages/esc_forward_ztw.lua", escProtocolId = 7},
+      {title = "@i18n(app.modules.esc_tools.mfg.hw5.name)@", icon = lcd.loadMask("app/gfx/esc_mfg_hw5.png"), script = "app/pages/esc_forward_hw5.lua", escProtocolId = 3, lockedWhileArmed = true},
+      {title = "@i18n(app.modules.esc_tools.mfg.am32.name)@", icon = lcd.loadMask("app/gfx/esc_mfg_am32.png"), script = "app/pages/esc_forward_am32.lua", escProtocolId = 1, lockedWhileArmed = true},
+      {title = "@i18n(app.modules.esc_tools.mfg.blheli_s.name)@", icon = lcd.loadMask("app/gfx/esc_mfg_blheli_s.png"), script = "app/pages/esc_forward_blheli_s.lua", escProtocolId = 1, lockedWhileArmed = true},
+      {title = "@i18n(app.modules.esc_tools.mfg.bluejay.name)@", icon = lcd.loadMask("app/gfx/esc_mfg_bluejay.png"), script = "app/pages/esc_forward_bluejay.lua", escProtocolId = 1, lockedWhileArmed = true},
+      {title = "@i18n(app.modules.esc_tools.mfg.flrtr.name)@", icon = lcd.loadMask("app/gfx/esc_mfg_flyrotor.png"), script = "app/pages/esc_forward_flyrotor.lua", escProtocolId = 10, lockedWhileArmed = true},
+      {title = "@i18n(app.modules.esc_tools.mfg.omp.name)@", icon = lcd.loadMask("app/gfx/esc_mfg_omp.png"), script = "app/pages/esc_forward_omp.lua", escProtocolId = 6, lockedWhileArmed = true},
+      {title = "@i18n(app.modules.esc_tools.mfg.scorp.name)@", icon = lcd.loadMask("app/gfx/esc_mfg_scorpion.png"), script = "app/pages/esc_forward_scorpion.lua", escProtocolId = 4, lockedWhileArmed = true},
+      {title = "@i18n(app.modules.esc_tools.mfg.xdfly.name)@", icon = lcd.loadMask("app/gfx/esc_mfg_xdfly.png"), script = "app/pages/esc_forward_xdfly.lua", escProtocolId = 12, lockedWhileArmed = true},
+      {title = "@i18n(app.modules.esc_tools.mfg.yge.name)@", icon = lcd.loadMask("app/gfx/esc_mfg_yge.png"), script = "app/pages/esc_forward_yge.lua", escProtocolId = 9, lockedWhileArmed = true},
+      {title = "@i18n(app.modules.esc_tools.mfg.ztw.name)@", icon = lcd.loadMask("app/gfx/esc_mfg_ztw.png"), script = "app/pages/esc_forward_ztw.lua", escProtocolId = 7, lockedWhileArmed = true},
     },
   },
   setup_governor_menu = {
     title = "@i18n(app.modules.governor.name)@",
     entries = {
-      {title = "@i18n(app.modules.governor.menu_general)@", icon = lcd.loadMask("app/gfx/setup_governor_general.png"), script = "app/pages/setup_governor_general.lua"},
-      {title = "@i18n(app.modules.governor.menu_time)@", icon = lcd.loadMask("app/gfx/setup_governor_time.png"), script = "app/pages/setup_governor_time.lua"},
-      {title = "@i18n(app.modules.governor.menu_filters)@", icon = lcd.loadMask("app/gfx/setup_governor_filters.png"), script = "app/pages/setup_governor_filters.lua"},
-      {title = "@i18n(app.modules.governor.menu_curves)@", icon = lcd.loadMask("app/gfx/setup_governor_curves.png"), script = "app/pages/setup_governor_curves.lua"},
+      {title = "@i18n(app.modules.governor.menu_general)@", icon = lcd.loadMask("app/gfx/setup_governor_general.png"), script = "app/pages/setup_governor_general.lua", lockedWhileArmed = true},
+      {title = "@i18n(app.modules.governor.menu_time)@", icon = lcd.loadMask("app/gfx/setup_governor_time.png"), script = "app/pages/setup_governor_time.lua", lockedWhileArmed = true},
+      {title = "@i18n(app.modules.governor.menu_filters)@", icon = lcd.loadMask("app/gfx/setup_governor_filters.png"), script = "app/pages/setup_governor_filters.lua", lockedWhileArmed = true},
+      {title = "@i18n(app.modules.governor.menu_curves)@", icon = lcd.loadMask("app/gfx/setup_governor_curves.png"), script = "app/pages/setup_governor_curves.lua", lockedWhileArmed = true},
     },
   },
   tools_menu = {
     title = "@i18n(app.menu_section_tools)@",
     entries = {
-      {title = "@i18n(app.modules.copyprofiles.name)@", icon = lcd.loadMask("app/gfx/copy_profiles.png"), script = "app/pages/copy_profiles.lua"},
-      {title = "@i18n(app.modules.profile_select.name)@", icon = lcd.loadMask("app/gfx/profile_select.png"), script = "app/pages/profile_select.lua"},
+      -- Both read and write FC profiles (MSP_SET_OTHER_CFG), so both are
+      -- locked. That leaves Diagnostics and Developer unlocked below, which
+      -- is the intent: link/ELRS diagnostics are exactly what a pilot wants
+      -- reachable while armed, so this menu stays open and badges only its
+      -- two write entries.
+      {title = "@i18n(app.modules.copyprofiles.name)@", icon = lcd.loadMask("app/gfx/copy_profiles.png"), script = "app/pages/copy_profiles.lua", lockedWhileArmed = true},
+      {title = "@i18n(app.modules.profile_select.name)@", icon = lcd.loadMask("app/gfx/profile_select.png"), script = "app/pages/profile_select.lua", lockedWhileArmed = true},
       {title = "@i18n(app.modules.diagnostics.name)@", icon = lcd.loadMask("app/gfx/diagnostics.png"), menuId = "diagnostics_menu"},
       {title = "@i18n(app.modules.settings.txt_developer)@", icon = lcd.loadMask("app/gfx/developer.png"), menuId = "developer_menu", visibleWhen = function() return developerModeEnabled == true end},
     },
@@ -260,8 +288,8 @@ local MENUS = {
   flight_tuning_menu = {
     title = "@i18n(app.menu_section_flight_tuning)@",
     entries = {
-      {title = "@i18n(app.modules.pids.name)@", icon = lcd.loadMask("app/gfx/pids.png"), script = "app/pages/pids.lua"},
-      {title = "@i18n(app.modules.rates.name)@", icon = lcd.loadMask("app/gfx/rates.png"), script = "app/pages/rates.lua"},
+      {title = "@i18n(app.modules.pids.name)@", icon = lcd.loadMask("app/gfx/pids.png"), script = "app/pages/pids.lua", lockedWhileArmed = true},
+      {title = "@i18n(app.modules.rates.name)@", icon = lcd.loadMask("app/gfx/rates.png"), script = "app/pages/rates.lua", lockedWhileArmed = true},
       {title = "@i18n(app.modules.governor.name)@", icon = lcd.loadMask("app/gfx/governor.png"), menuId = "governor_menu"},
       {title = "@i18n(app.menu_section_advanced)@", icon = lcd.loadMask("app/gfx/advanced.png"), menuId = "advanced_menu"},
     },
@@ -273,13 +301,13 @@ local MENUS = {
   advanced_menu = {
     title = "@i18n(app.menu_section_advanced)@",
     entries = {
-      {title = "@i18n(app.modules.filters.name)@", icon = lcd.loadMask("app/gfx/filters.png"), script = "app/pages/filters.lua"},
-      {title = "@i18n(app.modules.pid_controller.name)@", icon = lcd.loadMask("app/gfx/pid_controller.png"), script = "app/pages/pid_controller.lua"},
-      {title = "@i18n(app.modules.pid_bandwidth.name)@", icon = lcd.loadMask("app/gfx/pid_bandwidth.png"), script = "app/pages/pid_bandwidth.lua"},
-      {title = "@i18n(app.modules.autolevel.name)@", icon = lcd.loadMask("app/gfx/autolevel.png"), script = "app/pages/autolevel.lua"},
-      {title = "@i18n(app.modules.main_rotor.name)@", icon = lcd.loadMask("app/gfx/main_rotor.png"), script = "app/pages/main_rotor.lua"},
-      {title = "@i18n(app.modules.tail_rotor.name)@", icon = lcd.loadMask("app/gfx/tail_rotor.png"), script = "app/pages/tail_rotor.lua"},
-      {title = "@i18n(app.modules.rescue.name)@", icon = lcd.loadMask("app/gfx/rescue.png"), script = "app/pages/rescue.lua"},
+      {title = "@i18n(app.modules.filters.name)@", icon = lcd.loadMask("app/gfx/filters.png"), script = "app/pages/filters.lua", lockedWhileArmed = true},
+      {title = "@i18n(app.modules.pid_controller.name)@", icon = lcd.loadMask("app/gfx/pid_controller.png"), script = "app/pages/pid_controller.lua", lockedWhileArmed = true},
+      {title = "@i18n(app.modules.pid_bandwidth.name)@", icon = lcd.loadMask("app/gfx/pid_bandwidth.png"), script = "app/pages/pid_bandwidth.lua", lockedWhileArmed = true},
+      {title = "@i18n(app.modules.autolevel.name)@", icon = lcd.loadMask("app/gfx/autolevel.png"), script = "app/pages/autolevel.lua", lockedWhileArmed = true},
+      {title = "@i18n(app.modules.main_rotor.name)@", icon = lcd.loadMask("app/gfx/main_rotor.png"), script = "app/pages/main_rotor.lua", lockedWhileArmed = true},
+      {title = "@i18n(app.modules.tail_rotor.name)@", icon = lcd.loadMask("app/gfx/tail_rotor.png"), script = "app/pages/tail_rotor.lua", lockedWhileArmed = true},
+      {title = "@i18n(app.modules.rescue.name)@", icon = lcd.loadMask("app/gfx/rescue.png"), script = "app/pages/rescue.lua", lockedWhileArmed = true},
       {title = "@i18n(app.modules.rates_advanced.name)@", icon = lcd.loadMask("app/gfx/rates_advanced.png"), menuId = "rates_advanced_menu"},
     },
   },
@@ -288,8 +316,8 @@ local MENUS = {
   governor_menu = {
     title = "@i18n(app.modules.governor.name)@",
     entries = {
-      {title = "@i18n(app.modules.governor.menu_general)@", icon = lcd.loadMask("app/gfx/governor_general.png"), script = "app/pages/governor_general.lua"},
-      {title = "@i18n(app.modules.governor.menu_flags)@", icon = lcd.loadMask("app/gfx/governor_flags.png"), script = "app/pages/governor_flags.lua"},
+      {title = "@i18n(app.modules.governor.menu_general)@", icon = lcd.loadMask("app/gfx/governor_general.png"), script = "app/pages/governor_general.lua", lockedWhileArmed = true},
+      {title = "@i18n(app.modules.governor.menu_flags)@", icon = lcd.loadMask("app/gfx/governor_flags.png"), script = "app/pages/governor_flags.lua", lockedWhileArmed = true},
     },
   },
   -- Matches the original's own `rates_advanced` manifest entry --
@@ -300,9 +328,9 @@ local MENUS = {
   rates_advanced_menu = {
     title = "@i18n(app.modules.rates_advanced.name)@",
     entries = {
-      {title = "@i18n(app.modules.rates_advanced.menu_advanced)@", icon = lcd.loadMask("app/gfx/rates_advanced_grid.png"), script = "app/pages/rates_advanced.lua"},
-      {title = "@i18n(app.modules.rates_advanced.cyclic_behaviour)@", icon = lcd.loadMask("app/gfx/rates_cyclic.png"), script = "app/pages/rates_cyclic.lua"},
-      {title = "@i18n(app.modules.rates_advanced.rate_table)@", icon = lcd.loadMask("app/gfx/rates_type.png"), script = "app/pages/rates_type.lua"},
+      {title = "@i18n(app.modules.rates_advanced.menu_advanced)@", icon = lcd.loadMask("app/gfx/rates_advanced_grid.png"), script = "app/pages/rates_advanced.lua", lockedWhileArmed = true},
+      {title = "@i18n(app.modules.rates_advanced.cyclic_behaviour)@", icon = lcd.loadMask("app/gfx/rates_cyclic.png"), script = "app/pages/rates_cyclic.lua", lockedWhileArmed = true},
+      {title = "@i18n(app.modules.rates_advanced.rate_table)@", icon = lcd.loadMask("app/gfx/rates_type.png"), script = "app/pages/rates_type.lua", lockedWhileArmed = true},
     },
   },
 }
@@ -344,6 +372,12 @@ local BTN_OK = "@i18n(app.btn_ok)@"
 local appOpenedAt = nil
 local taskStatusAt = nil
 local sessionConnected = false
+-- Armed state, fed by the "session.update" subscription below and read by
+-- app/menu_container.lua's tile badging (#2302) through the closure passed
+-- to openRoot -- menu_container gets a function, not this value, because
+-- it polls the current state on its own wakeup rather than being rebuilt
+-- on every session publish.
+local sessionArmed = false
 local taskAlertPending = false
 local taskAlertOpen = false
 local taskAlertShown = false
@@ -417,6 +451,12 @@ bus.subscribe("session.update", function(session)
   -- true) so a not-yet-completed handshake doesn't wrongly lock out menus
   -- before the version read has had a chance to answer.
   sessionConnected = session and session.connected == true and session.apiVersionSupported ~= false
+  -- Armed state for #2302's menu tile badging. Deliberately a strict
+  -- `== true`: tasks/session.lua publishes isArmed as nil until the FC's
+  -- armflags sensor has reported at least once, and "not known yet" has to
+  -- read as disarmed or every connection-gated menu would badge itself
+  -- during the seconds before the first telemetry frame lands.
+  sessionArmed = session ~= nil and session.isArmed == true
 end)
 
 local function updateDeveloperMode(settings)
@@ -447,7 +487,11 @@ local function create()
   taskAlertOpen = false
   taskAlertShown = false
   updateDeveloperMode()
-  menuContainer.openRoot(nav, ROOT_ENTRIES, setEventHandler, setWakeupHandler, setPaintHandler, setCleanupHandler, MENUS, taskGuard)
+  -- Resolves every submenu tile's lockedWhileArmed from its children. Called
+  -- per open rather than once at load so it runs after the MENUS table is
+  -- fully populated with its guard assignments.
+  armedGating.resolve(ROOT_ENTRIES, MENUS)
+  menuContainer.openRoot(nav, ROOT_ENTRIES, setEventHandler, setWakeupHandler, setPaintHandler, setCleanupHandler, MENUS, taskGuard, function() return sessionArmed end)
   -- Lets background-screen widgets (widgets/dashboard.lua) skip their own
   -- wakeup work while this full-screen tool owns the display -- matches
   -- master's rfsuite.tasks.appRunning gate (dashboard.lua's wakeup()).
