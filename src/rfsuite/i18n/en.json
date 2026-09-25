@@ -6424,6 +6424,18 @@
       "needs_translation": false,
       "translation": "Background task not running"
     },
+    "msg_load_failed_body": {
+      "english": "Data could not be read from the flight controller. Please reload.",
+      "max_length": 65,
+      "needs_translation": false,
+      "translation": "Data could not be read from the flight controller. Please reload."
+    },
+    "msg_load_failed_title": {
+      "english": "Loading failed",
+      "max_length": 14,
+      "needs_translation": false,
+      "translation": "Loading failed"
+    },
     "msg_loading": {
       "english": "Loading...",
       "max_length": 10,

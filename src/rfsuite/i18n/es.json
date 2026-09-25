@@ -54,24 +54,24 @@
       },
       "tbl_auto": {
         "english": "Auto",
-        "translation": "Auto",
+        "max_length": 4,
         "needs_translation": true,
         "reverse_text": false,
-        "max_length": 4
+        "translation": "Auto"
       },
       "tbl_electric": {
         "english": "Electric",
-        "translation": "Electric",
+        "max_length": 8,
         "needs_translation": true,
         "reverse_text": false,
-        "max_length": 8
+        "translation": "Electric"
       },
       "tbl_nitro": {
         "english": "Nitro",
-        "translation": "Nitro",
+        "max_length": 5,
         "needs_translation": true,
         "reverse_text": false,
-        "max_length": 5
+        "translation": "Nitro"
       }
     },
     "ESC_SENSOR_CONFIG": {
@@ -5756,10 +5756,10 @@
         },
         "model_type": {
           "english": "Power Type",
-          "translation": "Power Type",
+          "max_length": 10,
           "needs_translation": true,
           "reverse_text": false,
-          "max_length": 10
+          "translation": "Power Type"
         },
         "name": {
           "english": "Power",
@@ -7473,6 +7473,20 @@
       "needs_translation": false,
       "reverse_text": false,
       "translation": "La tarea Background no se está ejecutando"
+    },
+    "msg_load_failed_body": {
+      "english": "Data could not be read from the flight controller. Please reload.",
+      "max_length": 65,
+      "needs_translation": true,
+      "reverse_text": false,
+      "translation": "Data could not be read from the flight controller. Please reload."
+    },
+    "msg_load_failed_title": {
+      "english": "Loading failed",
+      "max_length": 14,
+      "needs_translation": true,
+      "reverse_text": false,
+      "translation": "Loading failed"
     },
     "msg_loading": {
       "english": "Loading...",

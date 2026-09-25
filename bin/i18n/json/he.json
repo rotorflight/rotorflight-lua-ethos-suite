@@ -133,6 +133,20 @@
       "reverse_text": true,
       "max_length": 67
     },
+    "msg_load_failed_title": {
+      "english": "Loading failed",
+      "translation": "Loading failed",
+      "needs_translation": true,
+      "reverse_text": false,
+      "max_length": 14
+    },
+    "msg_load_failed_body": {
+      "english": "Data could not be read from the flight controller. Please reload.",
+      "translation": "Data could not be read from the flight controller. Please reload.",
+      "needs_translation": true,
+      "reverse_text": false,
+      "max_length": 65
+    },
     "msg_save_not_commited": {
       "english": "Save not committed",
       "translation": "לא נשמר",
