@@ -4038,11 +4038,11 @@
           "translation": "Protocolo Motor"
         },
         "arming_disable_flag_25": {
-          "english": "Arm Switch",
+          "english": "Override",
           "max_length": 10,
-          "needs_translation": false,
+          "needs_translation": true,
           "reverse_text": false,
-          "translation": "Botón Armado"
+          "translation": "Override"
         },
         "arming_disable_flag_3": {
           "english": "Bad RX Recovery",
@@ -4148,6 +4148,20 @@
           "needs_translation": false,
           "reverse_text": false,
           "translation": "No soportado"
+        },
+        "arming_disable_flag_26": {
+          "english": "No Filter",
+          "max_length": 10,
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "No Filter"
+        },
+        "arming_disable_flag_27": {
+          "english": "Arm Switch",
+          "max_length": 10,
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "Arm Switch"
         }
       },
       "filters": {

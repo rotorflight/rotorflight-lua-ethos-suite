@@ -2307,6 +2307,8 @@ local ARMING_DISABLE_FLAG_TAG = {
   [23] = "@i18n(app.modules.fblstatus.arming_disable_flag_23)@",
   [24] = "@i18n(app.modules.fblstatus.arming_disable_flag_24)@",
   [25] = "@i18n(app.modules.fblstatus.arming_disable_flag_25)@",
+  [26] = "@i18n(app.modules.fblstatus.arming_disable_flag_26)@",
+  [27] = "@i18n(app.modules.fblstatus.arming_disable_flag_27)@",
 }
 
 -- Bit 0 (ARMED) is the only bit that reflects current arm state -- bits 1
@@ -2327,7 +2329,7 @@ function context.utils.armingDisableFlagsToString(flags)
   if flags == nil or flags == 0 then return "OK" end
 
   local names = {}
-  for i = 0, 25 do
+  for i = 0, 27 do
     if (flags & (1 << i)) ~= 0 then
       local name = ARMING_DISABLE_FLAG_TAG[i]
       if name and name ~= "" then names[#names + 1] = name end

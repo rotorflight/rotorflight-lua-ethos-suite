@@ -35,6 +35,8 @@ local ARMING_FLAGS = {
   [23] = "@i18n(app.modules.fblstatus.arming_disable_flag_23)@",
   [24] = "@i18n(app.modules.fblstatus.arming_disable_flag_24)@",
   [25] = "@i18n(app.modules.fblstatus.arming_disable_flag_25)@",
+  [26] = "@i18n(app.modules.fblstatus.arming_disable_flag_26)@",
+  [27] = "@i18n(app.modules.fblstatus.arming_disable_flag_27)@",
 }
 
 local function hasBit(mask, bit)
@@ -50,7 +52,7 @@ local function armingFlagsText(mask)
   mask = tonumber(mask or 0) or 0
   if mask == 0 then return "@i18n(app.modules.fblstatus.ok)@" end
   local parts = {}
-  for bit = 0, 25 do
+  for bit = 0, 27 do
     if hasBit(mask, bit) then
       parts[#parts + 1] = ARMING_FLAGS[bit] or tostring(bit)
     end
