@@ -7357,6 +7357,13 @@
       "needs_translation": false,
       "reverse_text": false,
       "max_length": 8
+    },
+    "msg_menu_locked_while_armed": {
+      "english": "Locked while armed",
+      "translation": "Last (armed)",
+      "needs_translation": false,
+      "reverse_text": false,
+      "max_length": 18
     }
   },
   "telemetry": {

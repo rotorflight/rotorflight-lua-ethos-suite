@@ -7509,6 +7509,13 @@
       "reverse_text": false,
       "translation": "Daten vom Flugcontroller werden geladen..."
     },
+    "msg_menu_locked_while_armed": {
+      "english": "Locked while armed",
+      "max_length": 18,
+      "needs_translation": false,
+      "reverse_text": false,
+      "translation": "Gesperrt (scharf)"
+    },
     "msg_please_disarm_to_save_warning": {
       "english": "The flight controller rejected the save while armed. Your changes are safe and will be written to flash when you disarm.",
       "max_length": 120,

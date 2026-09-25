@@ -7509,6 +7509,13 @@
       "reverse_text": true,
       "translation": "טוען נתונים מבקר הטיסה..."
     },
+    "msg_menu_locked_while_armed": {
+      "english": "Locked while armed",
+      "translation": "נעול במצב armed",
+      "needs_translation": true,
+      "reverse_text": true,
+      "max_length": 18
+    },
     "msg_please_disarm_to_save_warning": {
       "english": "The flight controller rejected the save while armed. Your changes are safe and will be written to flash when you disarm.",
       "max_length": 120,

@@ -7509,6 +7509,13 @@
       "reverse_text": false,
       "translation": "Laden data van vliegcontroller..."
     },
+    "msg_menu_locked_while_armed": {
+      "english": "Locked while armed",
+      "translation": "Vergrendeld (scherp)",
+      "needs_translation": false,
+      "reverse_text": false,
+      "max_length": 20
+    },
     "msg_please_disarm_to_save_warning": {
       "english": "The flight controller rejected the save while armed. Your changes are safe and will be written to flash when you disarm.",
       "max_length": 120,
