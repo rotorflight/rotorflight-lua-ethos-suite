@@ -60,6 +60,15 @@ Dashboard themes are available for different flight states. See the [Dashboard T
 
 ----------
 
+## Documentation
+
+- **[Configuration Pages](docs/pages/README.md):** Complete reference for all 76 configuration and tuning pages, organized by menu domain (*Flight Tuning*, *Setup*, *Tools*, *Logs*, *Settings*).
+- **[Documentation Overview](docs/README.md):** Directory map, conventions, dashboard theme overviews, and memory lifecycle guides.
+- **[Page Template](docs/_template.md):** Canonical template and frontmatter standard for all configuration pages.
+- **[Scaffold Generator](bin/docs/generate_menu_docs.py):** CLI tool to scaffold, inspect, and verify documentation completeness (`bin/docs/generate_menu_docs.cmd --check`).
+
+----------
+
 ## Rotorflight Features
 
 Rotorflight includes a rich feature set, including:
