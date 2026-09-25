@@ -355,8 +355,9 @@ local function open(opts)
         y = form.height() + tilePadding
         col = 0
       end
+      local label = tileGrid.fitLabel(entry.title, tileW, tileFont)
       local button = form.addButton(nil, {x = x, y = y, w = tileW, h = tileH}, {
-        text = entry.title,
+        text = label,
         icon = icon,
         options = tileFont,
         press = function() press(entry) end,

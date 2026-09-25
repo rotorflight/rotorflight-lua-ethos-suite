@@ -176,8 +176,9 @@ local function open(opts)
         icon = lcd.loadMask(theme.icon) or false
         iconCache[theme.icon] = icon
       end
+      local label = tileGrid.fitLabel(theme.label, tileW, tileFont)
       buttons[i] = form.addButton(nil, {x = x, y = y, w = tileW, h = tileH}, {
-        text = theme.label,
+        text = label,
         icon = icon or nil,
         options = tileFont,
         press = function()
