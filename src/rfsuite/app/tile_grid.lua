@@ -4,7 +4,7 @@ local tile_grid = {}
 
 local MENU_TILE_MIN_WIDTH = 84
 local LOW_RES_WIDTH = 640
-local BUTTON_INNER_PADDING = 22
+local BUTTON_INNER_PADDING = 12
 
 tile_grid.MENU_TILE_MIN_WIDTH = MENU_TILE_MIN_WIDTH
 tile_grid.LOW_RES_WIDTH = LOW_RES_WIDTH
