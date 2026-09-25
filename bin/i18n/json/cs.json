@@ -5151,6 +5151,20 @@
           "reverse_text": false,
           "max_length": 10
         },
+        "confirm_prompt": {
+          "english": "Apply packet rate and model match changes to the RF module / Flight Controller?",
+          "translation": "Apply packet rate and model match changes to the RF module / Flight Controller?",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 79
+        },
+        "confirm_title": {
+          "english": "Confirm ELRS Link Sync",
+          "translation": "Confirm ELRS Link Sync",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 22
+        },
         "elrs_module": {
           "english": "ELRS Module",
           "translation": "ELRS modul",
@@ -5234,6 +5248,13 @@
           "needs_translation": false,
           "reverse_text": false,
           "max_length": 27
+        },
+        "status_not_elrs": {
+          "english": "Connected module is not ExpressLRS",
+          "translation": "Connected module is not ExpressLRS",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 34
         },
         "status_not_probed": {
           "english": "Not probed yet",

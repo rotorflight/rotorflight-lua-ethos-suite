@@ -98,7 +98,8 @@ local nextActionAt = 0
 local state = "idle"
 
 local sensor = nil
-local deviceId = CRSF_ADDRESS_CRSF_TRANSMITTER
+local deviceId = nil
+local isElrsVerified = false
 local fieldCount = 0
 local currentField = 1
 local currentChunk = 0
@@ -157,6 +158,7 @@ local T = {
   unavailableSimulation = "@i18n(app.modules.elrs_telemetry.status_unavailable_simulation)@",
   connectFirst = "@i18n(app.modules.elrs_telemetry.status_connect_first)@",
   requiresCrsf = "@i18n(app.modules.elrs_telemetry.status_requires_crsf)@",
+  statusNotElrs = "@i18n(app.modules.elrs_telemetry.status_not_elrs)@",
   unavailableArmed = "@i18n(app.modules.elrs_telemetry.status_unavailable_armed)@",
   probeRequested = "@i18n(app.modules.elrs_telemetry.status_probe_requested)@",
   syncRequested = "@i18n(app.modules.elrs_telemetry.status_sync_requested)@",
@@ -467,6 +469,13 @@ end
 local function syncRotorflightToElrs(fc)
   clearPendingWrites()
 
+  if not isElrsVerified or not deviceId then
+    log("Cannot sync to ELRS: module is not verified as ExpressLRS")
+    setStatus(T.statusNotElrs)
+    completeTask()
+    return
+  end
+
   local ratioTargetIndex, ratioTargetLabel = findRatioTarget(ratioField, fc.linkRatio)
   local rateTargetIndex, rateTargetLabel = findRateTarget(rateField, fc.linkRate)
 
@@ -515,6 +524,13 @@ local function syncRotorflightToElrs(fc)
 end
 
 local function syncElrsToRotorflight(fc, moduleRate, moduleRateText, moduleRatioText, ratioKind, effectiveRatio)
+  if not isElrsVerified then
+    log("Cannot sync from ELRS: module is not verified as ExpressLRS")
+    setStatus(T.statusNotElrs)
+    completeTask()
+    return
+  end
+
   if type(moduleRate) ~= "number" then
     log("ELRS sync could not determine a numeric packet rate from " .. tostring(moduleRateText or "?"))
     completeTask()
@@ -637,7 +653,8 @@ local function resetState()
   nextActionAt = 0
   state = "idle"
   sensor = nil
-  deviceId = CRSF_ADDRESS_CRSF_TRANSMITTER
+  deviceId = nil
+  isElrsVerified = false
   fieldCount = 0
   currentField = 1
   currentChunk = 0
@@ -685,10 +702,26 @@ end
 local function handleDeviceInfo(data)
   if data[2] ~= CRSF_ADDRESS_CRSF_TRANSMITTER then return end
 
-  local _, offset = readString(data, 3)
+  local deviceName, offset = readString(data, 3)
   local serial = readU32Be(data, offset)
-  if serial ~= ELRS_SERIAL_ID then return end
+  local isElrs = (serial == ELRS_SERIAL_ID)
+  if not isElrs and deviceName then
+    local lowerName = string_lower(deviceName)
+    if string_find(lowerName, "expresslrs", 1, true) or string_find(lowerName, "elrs", 1, true) then
+      isElrs = true
+    end
+  end
 
+  if not isElrs then
+    log("Non-ExpressLRS device responded at 0x" .. string.format("%02X", data[2] or 0) .. ": " .. tostring(deviceName or "unknown") .. " (serial=" .. string.format("0x%08X", serial or 0) .. ")")
+    isElrsVerified = false
+    deviceId = nil
+    setStatus(T.statusNotElrs)
+    completeTask()
+    return
+  end
+
+  isElrsVerified = true
   deviceId = data[2]
   fieldCount = data[offset + 12] or 0
   currentField = 1
@@ -703,7 +736,7 @@ local function handleDeviceInfo(data)
 end
 
 local function handleParameterEntry(data)
-  if state ~= "read" then return end
+  if state ~= "read" or not isElrsVerified or not deviceId then return end
   if data[2] ~= deviceId or data[3] ~= currentField then
     currentChunk = 0
     expectedChunksRemain = -1
@@ -765,6 +798,14 @@ function elrslink.wakeup()
 
   if taskComplete then return end
 
+  if session.isArmed == true then
+    log("ELRS link task aborted: system is armed")
+    setStatus(T.unavailableArmed)
+    clearPendingWrites()
+    completeTask()
+    return
+  end
+
   if shouldSkip() then
     setStatus(T.requiresActiveLink)
     taskComplete = true
@@ -803,6 +844,14 @@ function elrslink.wakeup()
     log("ELRS link probe timed out while reading module parameters")
     setStatus(T.readTimeout)
     finalize()
+    return
+  end
+
+  if (state == "read" or state == "write") and (not isElrsVerified or not deviceId) then
+    log("ELRS link task aborted: module is not verified as ExpressLRS")
+    setStatus(T.statusNotElrs)
+    clearPendingWrites()
+    completeTask()
     return
   end
 
@@ -935,6 +984,10 @@ end
 -- completed yet.
 function elrslink.getLinkSummary()
   return linkConfig
+end
+
+function elrslink.isVerified()
+  return isElrsVerified
 end
 
 elrslink.MODE_PROBE = SYNC_MODE_OFF
