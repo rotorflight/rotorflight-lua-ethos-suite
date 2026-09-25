@@ -81,7 +81,8 @@ jobs:
       - name: Write the pull request body to a file
         # through the environment, never interpolated into the script: a pull request
         # body is text anybody can write
-        PR_BODY: ${{ github.event.pull_request.body }}
+        env:
+          PR_BODY: ${{ github.event.pull_request.body }}
         run: printf '%s' "$PR_BODY" > pr-body.txt
 
       - name: Check the documentation rule
