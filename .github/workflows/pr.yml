@@ -12,7 +12,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        # 👇 keep this in sync with push.yml (add locales as translations land)
+        # keep this in sync with push.yml (add locales as translations land)
         lang: [en, de, es, fr, it, nl, pt-br, no, cs, pl, he, zh-cn]
 
     steps:
