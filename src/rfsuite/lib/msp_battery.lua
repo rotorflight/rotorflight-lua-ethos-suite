@@ -16,6 +16,9 @@ local msp_battery = {}
 
 msp_battery.BATTERY_CONFIG_READ_COMMAND = 32
 
+-- 15 legacy + 12 capacities + 6 * (1 cellCount + 4 * 2 cell voltages)
+local PROFILE_CELLS_MIN_BYTES = 81
+
 function msp_battery.buildBatteryConfigReadMessage(onData, onError)
   return {
     command = msp_battery.BATTERY_CONFIG_READ_COMMAND,
@@ -34,6 +37,19 @@ function msp_battery.buildBatteryConfigReadMessage(onData, onError)
       for i = 0, 5 do
         profiles[i] = mspcodec.readU16(buf)
       end
+      -- Per-profile cell count / cell voltages (rotorflight-firmware #508),
+      -- only present on newer firmware. The legacy fields above are the FC's
+      -- active profile at read time; tasks/session.lua re-resolves them from
+      -- these whenever the active battery profile changes.
+      local profileCells = nil
+      if #buf >= PROFILE_CELLS_MIN_BYTES then
+        profileCells = {}
+        for i = 0, 5 do profileCells[i] = {cellCount = mspcodec.readU8(buf)} end
+        for i = 0, 5 do profileCells[i].vbatMinCell = mspcodec.readU16(buf) / 100 end
+        for i = 0, 5 do profileCells[i].vbatMaxCell = mspcodec.readU16(buf) / 100 end
+        for i = 0, 5 do profileCells[i].vbatFullCell = mspcodec.readU16(buf) / 100 end
+        for i = 0, 5 do profileCells[i].vbatWarningCell = mspcodec.readU16(buf) / 100 end
+      end
       onData({
         batteryCapacity = batteryCapacity,
         cellCount = cellCount,
@@ -43,6 +59,7 @@ function msp_battery.buildBatteryConfigReadMessage(onData, onError)
         vbatWarningCell = vbatWarningCell,
         consumptionWarningPercentage = consumptionWarningPercentage,
         profiles = profiles,
+        profileCells = profileCells,
       })
     end,
     errorHandler = onError,
@@ -58,6 +75,11 @@ function msp_battery.buildBatteryConfigReadMessage(onData, onError)
       100,     -- lvcPercentage
       30,      -- consumptionWarningPercentage
       232, 3, 20, 5, 64, 6, 108, 7, 152, 8, 196, 9, -- batteryCapacity_0..5
+      6, 6, 6, 6, 6, 6,                               -- batteryCellCount_0..5
+      74, 1, 74, 1, 74, 1, 74, 1, 74, 1, 74, 1,       -- vbatmincellvoltage_0..5
+      164, 1, 164, 1, 164, 1, 164, 1, 164, 1, 164, 1, -- vbatmaxcellvoltage_0..5
+      154, 1, 154, 1, 154, 1, 154, 1, 154, 1, 154, 1, -- vbatfullcellvoltage_0..5
+      94, 1, 94, 1, 94, 1, 94, 1, 94, 1, 94, 1,       -- vbatwarningcellvoltage_0..5
     },
   }
 end
