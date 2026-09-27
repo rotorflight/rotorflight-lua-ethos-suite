@@ -83,6 +83,8 @@ local MSG_SAVING_TITLE = "@i18n(app.msg_saving)@"
 local MSG_SAVING_BODY = "@i18n(app.msg_saving_settings)@"
 local MSG_SAVE_FAILED_TITLE = "@i18n(app.msg_save_failed_title)@"
 local MSG_SAVE_FAILED_BODY = "@i18n(app.msg_save_failed_body)@"
+local MSG_LOAD_FAILED_TITLE = "@i18n(app.msg_load_failed_title)@"
+local MSG_LOAD_FAILED_BODY = "@i18n(app.msg_load_failed_body)@"
 -- EEPROM_WRITE is rejected by the FC while armed -- not a real failure, the
 -- change already sits in RAM and commits on disarm. Matches the original
 -- suite's own trap (app/tasks.lua's armedSaveWarning(), fed by
@@ -175,6 +177,8 @@ end
 --                               same as the original's own validateWrite() blocking just the REBOOT
 --                               API call, not the rest of the save. May also be a function returning
 --                               true/false for pages whose reboot need is data-dependent.
+--   isMspPage,                  -- optional boolean; if true, save gating additionally
+--                               -- blocks when the model is armed (self.isArmed == true).
 -- }
 -- No per-page save/reload confirmation text -- confirmSave()/confirmReload()
 -- always show the same generic dialog for every page, matching the
@@ -210,6 +214,7 @@ function PageRuntime.new(config)
   self.onDispose = config.onDispose
   self.onSaved = config.onSaved
   self.rebootAfterSave = config.rebootAfterSave
+  self.isMspPage = config.isMspPage
   self.initialData = config.initialData
   -- Kept in sync from every "session.update" (see onSessionUpdate()
   -- below) purely for rebootAfterSave's own safety gate -- nil until the
@@ -277,6 +282,9 @@ function PageRuntime.new(config)
   -- Same idea, set instead of pendingSaveError when the EEPROM write fails
   -- while self.isArmed is true -- see MSG_SAVE_ARMED_*'s own comment above.
   self.pendingSaveArmed = false
+  -- Set by loadData()'s error branch, consumed by the wakeup handler
+  -- to display an error modal when initial read or reload fails.
+  self.pendingLoadError = false
   -- Same idea, for onLoaded (see its own config comment above) -- set by
   -- loadData()'s success branch, consumed by the wakeup handler alongside
   -- pendingReload/pendingSaveConfirm. See that handler's own comment for
@@ -345,6 +353,7 @@ end
 
 function PageRuntime:showDialog(title, message)
   self.activeDialog = self:openLoadingDialog(title, message)
+  self:updateSaveEnabled()
 end
 
 -- Closes whichever dialog (read or save) is currently open, if any, and
@@ -360,6 +369,7 @@ function PageRuntime:closeDialog(focusFn)
   dialog:value(100)
   dialog:close()
   self.activeDialog = nil
+  self:updateSaveEnabled()
   if focusFn then
     focusFn()
   elseif self.headerHandle then
@@ -370,10 +380,25 @@ end
 -- Save and Reload both touch the same `data`/field state, so only one may
 -- run at a time -- disable both while either is in flight.
 function PageRuntime:setBusy(busy)
-  if self.disposed or not self.headerHandle then return end
+  if self.disposed then return end
   self.busy = busy and true or false
+  if not self.headerHandle then return end
   self:updateSaveEnabled()
   self.headerHandle.setReloadEnabled(not busy)
+end
+
+-- Bounded page save predicate: saving is only permitted when data has been
+-- fully and successfully loaded from the FC, unsaved modifications exist,
+-- no background read/save/dialog is active, and the page is not armed-gated.
+function PageRuntime:canSave()
+  if self.disposed then return false end
+  if self.isMspPage and self.isArmed == true then
+    return false
+  end
+  return self.loaded == true
+    and self.dirty == true
+    and not self.busy
+    and not self.activeDialog
 end
 
 -- Save is only ever enabled once the page has a completed load, isn't
@@ -381,7 +406,7 @@ end
 -- comment in PageRuntime.new().
 function PageRuntime:updateSaveEnabled()
   if self.disposed or not self.headerHandle then return end
-  self.headerHandle.setSaveEnabled(self.loaded and self.dirty and not self.busy)
+  self.headerHandle.setSaveEnabled(self:canSave())
 end
 
 -- Called by every field this runtime owns (see app/field_layout.lua's
@@ -444,14 +469,6 @@ end
 function PageRuntime:loadData(focusFn)
   if self.disposed then return end
 
-  -- Remembered so a failed read can restore the fields to whatever state
-  -- they were actually in beforehand (see the error branch below) rather
-  -- than leaving them disabled forever -- self-caught bug: that branch
-  -- used to only close the dialog, never re-enable the fields, so a read
-  -- that timed out (plausible right when a profile-switch event and its
-  -- telemetry blip coincide) left the page permanently dimmed with no way
-  -- to recover short of leaving and reopening it.
-  local wasLoaded = self.loaded
   self:setBusy(true)
   self.loaded = false
   for _, field in pairs(self.fields) do
@@ -502,14 +519,16 @@ function PageRuntime:loadData(focusFn)
       if self_.disposed then return end
       self_:queueUiAction(function()
         self_:log("loadData: read FAILED (" .. source.key .. "): " .. tostring(reason))
-        self_.loaded = wasLoaded
-        if wasLoaded then
-          for _, field in pairs(self_.fields) do
-            field:enable(true)
-          end
+        -- Strict safety guard: if any source read fails or times out, the page
+        -- MUST NOT be considered loaded. Keep fields disabled and disallow saving
+        -- to prevent writing unpopulated/default values to the FC.
+        self_.loaded = false
+        for _, field in pairs(self_.fields) do
+          field:enable(false)
         end
         self_:setBusy(false)
         self_:closeDialog(focusFn)
+        self_.pendingLoadError = true
       end)
     end))
   end
@@ -527,7 +546,7 @@ end
 -- MSP module always encodes/decodes its full wire struct (see e.g.
 -- lib/msp_pid_profile.lua).
 function PageRuntime:performSave(focusFn)
-  if self.disposed then return end
+  if self.disposed or not self:canSave() then return end
 
   if self.beforeSave then
     self.beforeSave(self)
@@ -639,7 +658,7 @@ end
 -- MSG_SAVE_*/BTN_* for every page -- see the constants' own comment above
 -- for why per-page text was dropped.
 function PageRuntime:confirmSave(focusFn)
-  if self.disposed then return end
+  if self.disposed or not self:canSave() then return end
 
   if not settingsStore.saveConfirmEnabled(settingsStore.load()) then
     self:performSave(focusFn)
@@ -662,6 +681,26 @@ function PageRuntime:confirmSave(focusFn)
         return true
       end},
       {label = BTN_CANCEL, action = function() return true end},
+    },
+    wakeup = function() end,
+    paint = function() end,
+  })
+end
+
+-- Shown from the wakeup tick when any source read in loadData() fails or
+-- times out. Alerts the pilot that configuration data could not be fetched
+-- and settings cannot be saved until data is successfully reloaded.
+function PageRuntime:showLoadError(focusFn)
+  if self.disposed then return end
+
+  form.openDialog({
+    title = MSG_LOAD_FAILED_TITLE,
+    message = MSG_LOAD_FAILED_BODY,
+    buttons = {
+      {label = BTN_OK, action = function()
+        if focusFn then focusFn() end
+        return true
+      end},
     },
     wakeup = function() end,
     paint = function() end,
@@ -783,6 +822,7 @@ function PageRuntime:onSessionUpdate(update)
   if self.disposed then return end
 
   self.isArmed = update.isArmed
+  self:updateSaveEnabled()
 
   local previous = self.lastProfile
   self.lastProfile = update[self.profileField]
@@ -900,6 +940,7 @@ function PageRuntime:dispose()
   self.pendingSaveConfirm = false
   self.pendingSaveError = nil
   self.pendingSaveArmed = false
+  self.pendingLoadError = false
   self.pendingOnLoaded = false
   if self.pendingUiActions then
     clearTable(self.pendingUiActions)
@@ -958,7 +999,7 @@ function PageRuntime:buildChrome()
       -- from the wakeup handler below, same as pendingReload.
       if value == KEY_ENTER_LONG then
         system.killEvents(KEY_ENTER_BREAK)
-        if runtime.loaded and not runtime.activeDialog then
+        if runtime:canSave() then
           runtime.pendingSaveConfirm = true
         end
         return true
@@ -976,12 +1017,14 @@ function PageRuntime:buildChrome()
     end,
     onSave = function()
       local runtime = controlRef.runtime
-      if not runtime or not runtime.loaded then return end
+      if not runtime or not runtime:canSave() then return end
       runtime:confirmSave(runtime.headerHandle.focusSave)
     end,
     onReload = function()
       local runtime = controlRef.runtime
-      if runtime then runtime:confirmReload(runtime.headerHandle.focusReload) end
+      if runtime and not runtime.busy and not runtime.activeDialog then
+        runtime:confirmReload(runtime.headerHandle.focusReload)
+      end
     end,
     onTool = self.onTool and function()
       local runtime = controlRef.runtime
@@ -1034,9 +1077,15 @@ function PageRuntime:buildChrome()
         runtime:log("wakeup: running deferred profile-change reload")
         runtime:loadData()
       end
-      if runtime.pendingSaveConfirm and runtime.loaded and not runtime.activeDialog then
+      if runtime.pendingSaveConfirm then
         runtime.pendingSaveConfirm = false
-        runtime:confirmSave(runtime.headerHandle.focusSave)
+        if runtime:canSave() then
+          runtime:confirmSave(runtime.headerHandle.focusSave)
+        end
+      end
+      if runtime.pendingLoadError and not runtime.activeDialog then
+        runtime.pendingLoadError = false
+        runtime:showLoadError(runtime.headerHandle and runtime.headerHandle.focusReload)
       end
       if runtime.pendingSaveError and not runtime.activeDialog then
         runtime.pendingSaveError = nil

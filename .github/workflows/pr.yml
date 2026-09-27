@@ -12,7 +12,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        # 👇 keep this in sync with push.yml (add locales as translations land)
+        # keep this in sync with push.yml (add locales as translations land)
         lang: [en, de, es, fr, it, nl, pt-br, no, cs, pl, he, zh-cn]
 
     steps:
@@ -48,3 +48,45 @@ jobs:
           name: rotorflight-lua-ethos-suite-lite-${{ env.GIT_VER }}-${{ matrix.lang }}
           path: rotorflight-lua-ethos-suite-lite-${{ env.GIT_VER }}-${{ matrix.lang }}.zip
           if-no-files-found: error
+
+  # The rule in .agents/rules/documentation.md asks that a change a pilot can observe
+  # updates its page file in the same pull request, and that a pull request which needs
+  # no documentation change says why. Nothing checked either half, so both rested on
+  # the author remembering at the moment they are least likely to.
+  #
+  # The check is deliberately narrower than the rule says, because no static check can
+  # decide what a pilot can observe: it asks nothing of a pull request that changes
+  # nothing under src/, passes one that changes src/ and also docs/, and passes one
+  # that changes src/ and no docs/ only if its body carries a `Documentation:` line of
+  # its own. Whether that reason is a good one is the reviewer's call.
+  documentation-rule:
+    name: Documentation rule
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          # the check diffs against the base commit, which a shallow clone does not carry
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Prove the check can go red
+        run: python bin/docs/verify_documentation_rule.py --self-test
+
+      - name: Write the pull request body to a file
+        # through the environment, never interpolated into the script: a pull request
+        # body is text anybody can write
+        env:
+          PR_BODY: ${{ github.event.pull_request.body }}
+        run: printf '%s' "$PR_BODY" > pr-body.txt
+
+      - name: Check the documentation rule
+        run: |
+          python bin/docs/verify_documentation_rule.py \
+            --base '${{ github.event.pull_request.base.sha }}' \
+            --body-file pr-body.txt

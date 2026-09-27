@@ -403,13 +403,19 @@ def scan_usb_drives_for_radio():
 
     print("[ETHOS] Performing fallback USB drive scan for radio...")
 
+    def _is_radio_root(path):
+        return (
+            os.path.isfile(os.path.join(path, "radio.bin")) or
+            os.path.isfile(os.path.join(path, "radio.cpuid")) or
+            os.path.isfile(os.path.join(path, "sdcard.cpuid")) or
+            os.path.isfile(os.path.join(path, "flash.cpuid"))
+        )
+
     if os.name == "nt":
         for letter in string.ascii_uppercase:
             root = f"{letter}:\\"
             try:
-                if (
-                    os.path.isdir(os.path.join(root, "scripts"))
-                ):
+                if _is_radio_root(root) and os.path.isdir(os.path.join(root, "scripts")):
                     candidates.append(os.path.normpath(os.path.join(root, "scripts")))
             except Exception:
                 pass
@@ -421,10 +427,7 @@ def scan_usb_drives_for_radio():
             for entry in os.listdir(base):
                 root = os.path.join(base, entry)
                 try:
-                    if (
-                        os.path.isfile(os.path.join(root, "radio.bin")) and
-                        os.path.isdir(os.path.join(root, "scripts"))
-                    ):
+                    if _is_radio_root(root) and os.path.isdir(os.path.join(root, "scripts")):
                         candidates.append(os.path.normpath(os.path.join(root, "scripts")))
                 except Exception:
                     pass

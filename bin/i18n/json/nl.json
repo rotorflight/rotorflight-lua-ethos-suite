@@ -133,6 +133,20 @@
       "reverse_text": false,
       "max_length": 67
     },
+    "msg_load_failed_title": {
+      "english": "Loading failed",
+      "translation": "Loading failed",
+      "needs_translation": true,
+      "reverse_text": false,
+      "max_length": 14
+    },
+    "msg_load_failed_body": {
+      "english": "Data could not be read from the flight controller. Please reload.",
+      "translation": "Data could not be read from the flight controller. Please reload.",
+      "needs_translation": true,
+      "reverse_text": false,
+      "max_length": 65
+    },
     "msg_save_not_commited": {
       "english": "Save not committed",
       "translation": "Niet opgeslagen",
@@ -5151,6 +5165,20 @@
           "reverse_text": false,
           "max_length": 10
         },
+        "confirm_prompt": {
+          "english": "Apply packet rate and model match changes to the RF module / Flight Controller?",
+          "translation": "Apply packet rate and model match changes to the RF module / Flight Controller?",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 79
+        },
+        "confirm_title": {
+          "english": "Confirm ELRS Link Sync",
+          "translation": "Confirm ELRS Link Sync",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 22
+        },
         "elrs_module": {
           "english": "ELRS Module",
           "translation": "ELRS Module",
@@ -5234,6 +5262,13 @@
           "needs_translation": false,
           "reverse_text": false,
           "max_length": 27
+        },
+        "status_not_elrs": {
+          "english": "Connected module is not ExpressLRS",
+          "translation": "Connected module is not ExpressLRS",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 34
         },
         "status_not_probed": {
           "english": "Not probed yet",

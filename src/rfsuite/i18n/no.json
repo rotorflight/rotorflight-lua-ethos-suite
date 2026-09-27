@@ -54,24 +54,24 @@
       },
       "tbl_auto": {
         "english": "Auto",
-        "translation": "Auto",
+        "max_length": 4,
         "needs_translation": true,
         "reverse_text": false,
-        "max_length": 4
+        "translation": "Auto"
       },
       "tbl_electric": {
         "english": "Electric",
-        "translation": "Electric",
+        "max_length": 8,
         "needs_translation": true,
         "reverse_text": false,
-        "max_length": 8
+        "translation": "Electric"
       },
       "tbl_nitro": {
         "english": "Nitro",
-        "translation": "Nitro",
+        "max_length": 5,
         "needs_translation": true,
         "reverse_text": false,
-        "max_length": 5
+        "translation": "Nitro"
       }
     },
     "ESC_SENSOR_CONFIG": {
@@ -1564,6 +1564,20 @@
           "reverse_text": false,
           "translation": "RF -> ELRS"
         },
+        "confirm_prompt": {
+          "english": "Apply packet rate and model match changes to the RF module / Flight Controller?",
+          "max_length": 79,
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "Apply packet rate and model match changes to the RF module / Flight Controller?"
+        },
+        "confirm_title": {
+          "english": "Confirm ELRS Link Sync",
+          "max_length": 22,
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "Confirm ELRS Link Sync"
+        },
         "elrs_module": {
           "english": "ELRS Module",
           "max_length": 11,
@@ -1647,6 +1661,13 @@
           "needs_translation": false,
           "reverse_text": false,
           "translation": "Ingen ELRS TX-modul"
+        },
+        "status_not_elrs": {
+          "english": "Connected module is not ExpressLRS",
+          "max_length": 34,
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "Connected module is not ExpressLRS"
         },
         "status_not_probed": {
           "english": "Not probed yet",
@@ -5756,10 +5777,10 @@
         },
         "model_type": {
           "english": "Power Type",
-          "translation": "Power Type",
+          "max_length": 10,
           "needs_translation": true,
           "reverse_text": false,
-          "max_length": 10
+          "translation": "Power Type"
         },
         "name": {
           "english": "Power",
@@ -7473,6 +7494,20 @@
       "needs_translation": false,
       "reverse_text": false,
       "translation": "Background-oppgaven kjører ikke"
+    },
+    "msg_load_failed_body": {
+      "english": "Data could not be read from the flight controller. Please reload.",
+      "max_length": 65,
+      "needs_translation": true,
+      "reverse_text": false,
+      "translation": "Data could not be read from the flight controller. Please reload."
+    },
+    "msg_load_failed_title": {
+      "english": "Loading failed",
+      "max_length": 14,
+      "needs_translation": true,
+      "reverse_text": false,
+      "translation": "Loading failed"
     },
     "msg_loading": {
       "english": "Loading...",
