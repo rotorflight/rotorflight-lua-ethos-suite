@@ -4,7 +4,6 @@ local requireModule = package.loaded["rfsuite.lib.require"] or assert(loadfile("
 local bus = requireModule("lib/bus.lua")
 local batteryProfileIndex = requireModule("lib/battery_profile_index.lua")
 local engineType = requireModule("lib/engine_type.lua")
-local modelPreferences = requireModule("lib/model_preferences.lua")
 local settingsStore = requireModule("lib/settings_store.lua")
 
 local audio_events = {}
@@ -58,7 +57,6 @@ local SMARTFUEL_THRESHOLDS = {
 
 local AUDIO_SESSION_KEYS = {
   "connected",
-  "mcuId",
   "craftName",
   "isArmed",
   "pidProfile",
@@ -75,6 +73,7 @@ local AUDIO_SESSION_KEYS = {
   "adjValue",
   "timerLive",
   "timerTarget",
+  "smartfuelModelType",
 }
 
 local function fileExists(path)
@@ -185,34 +184,12 @@ end
 -- (MSP_SMARTFUEL_CONFIG is four bytes -- mode, voltage fall, charge drop, sag
 -- gain) and has no tank/fuel concept, so the only sources are the
 -- transmitter-side model preference (app/pages/power_smartfuel.lua's
--- MODEL_TYPE_CHOICES) and the configured battery config. Auto is *resolved*
--- from the config, not guessed: a cell count or a configured pack capacity
--- means a battery. Same rule as widgets/dashboard/context.lua's
--- isElectricEngine(), both now reading lib/engine_type.lua.
-local modelTypeCacheMcuId = nil
-local modelTypeCacheValue = 0
-
-local function clearModelTypeCache()
-  modelTypeCacheMcuId = nil
-  modelTypeCacheValue = 0
-end
-
-local function currentModelType()
-  local mcuId = session.mcuId
-  if type(mcuId) ~= "string" or mcuId == "" then
-    if modelTypeCacheMcuId ~= nil then clearModelTypeCache() end
-    return 0
-  end
-  if mcuId ~= modelTypeCacheMcuId then
-    local prefs = modelPreferences.load(mcuId)
-    modelTypeCacheMcuId = mcuId
-    modelTypeCacheValue = tonumber(prefs and prefs.battery and prefs.battery.smartfuel_model_type) or 0
-  end
-  return modelTypeCacheValue
-end
-
+-- MODEL_TYPE_CHOICES, published in session.smartfuelModelType) and the configured
+-- battery config. Auto is *resolved* from the config, not guessed: a cell count
+-- or a configured pack capacity means a battery. Same rule as
+-- widgets/dashboard/context.lua's isElectricEngine(), both now reading lib/engine_type.lua.
 local function isElectricModel()
-  return engineType.isElectric(session.batteryConfig, currentModelType())
+  return engineType.isElectric(session.batteryConfig, session.smartfuelModelType)
 end
 
 -- The percentage callout's word, and whether it lives in the events package.
@@ -253,18 +230,6 @@ end
 
 bus.subscribe("session.update", onSessionUpdate)
 bus.subscribe("settings.update", onSettingsUpdate)
--- The SmartFuel page publishes this after it changes the model type, so the
--- cache has to be updated or the new word only appears after a reconnect.
--- See app/pages/power_smartfuel.lua's own publish and tasks/session.lua's
--- handler for the same payload shape. The payload carries the new value, so
--- there is no need to re-read the file here.
-bus.subscribe("model.smartfuel_type.update", function(payload)
-  if type(payload) ~= "table" then return end
-  if type(payload.mcuId) ~= "string" or payload.mcuId == "" then return end
-  if payload.mcuId ~= session.mcuId then return end
-  modelTypeCacheMcuId = payload.mcuId
-  modelTypeCacheValue = tonumber(payload.smartfuelModelType) or engineType.AUTO
-end)
 
 local function ensureSettings()
   if not settings then
@@ -723,7 +688,6 @@ function audio_events.reset()
   initialized = false
   craftNameAnnounced = false
   adjWavs = nil
-  clearModelTypeCache()
   for key in pairs(previous) do previous[key] = nil end
   for key in pairs(lastAlertAt) do lastAlertAt[key] = nil end
   lastSmartfuelAnnounced = nil
