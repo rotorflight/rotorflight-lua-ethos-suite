@@ -70,6 +70,8 @@ local function open(opts)
 
       if armingRows[1] == nil then
         armingRows[1] = common.addTextLine(ARMING_DETAIL_HEADING)
+      else
+        armingRows[1]:value(ARMING_DETAIL_HEADING)
       end
       for i = 1, #active do
         local row = armingRows[i + 1]
@@ -79,7 +81,7 @@ local function open(opts)
         end
         row:value(active[i])
       end
-      for i = #active + 1, #armingRows do
+      for i = #active + 2, #armingRows do
         armingRows[i]:value("")
       end
     end

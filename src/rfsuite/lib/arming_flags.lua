@@ -82,14 +82,13 @@ end
 function arming_flags.active(mask)
   mask = arming_flags.normalize(mask)
   local active = {}
-  for bit = 0, FLAG_COUNT - 1 do
+  for bit = 0, 31 do
     if arming_flags.hasBit(mask, bit) then
-      active[#active + 1] = FLAG_TAGS[bit] or tostring(bit)
+      active[#active + 1] = FLAG_TAGS[bit] or string.format("0x%X", 2 ^ bit)
     end
   end
   if #active == 0 and mask > 0 then
-    -- Only reachable for a bit at 26 or above, which this build does not
-    -- name. Report the raw mask rather than claim the model can be armed.
+    -- Fallback for values wider than 32 bits.
     active[1] = string.format("0x%X", mask)
   end
   return active

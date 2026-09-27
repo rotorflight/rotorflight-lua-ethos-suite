@@ -87,6 +87,18 @@ check(
 local unknown = arming.active(2 ^ 30)
 check("a bit above 25 is reported, not dropped", #unknown == 1 and unknown[1] == "0x40000000", table.concat(unknown, ","))
 
+local combined = arming.active(2 ^ 1 + 2 ^ 30)
+check(
+  "an unknown bit is not swallowed when a known bit is also present",
+  #combined == 2 and combined[1] == tagFor(1) and combined[2] == "0x40000000",
+  table.concat(combined, ","))
+
+local multiUnknown = arming.active(2 ^ 26 + 2 ^ 27)
+check(
+  "multiple unknown bits are each reported individually",
+  #multiUnknown == 2 and multiUnknown[1] == "0x4000000" and multiUnknown[2] == "0x8000000",
+  table.concat(multiUnknown, ","))
+
 -- ---------------------------------------------------------------------------
 -- What the page is allowed to put where
 -- ---------------------------------------------------------------------------
@@ -151,7 +163,92 @@ if page then
   check("the page never writes a flag name into a value line", page:find("fields.arming, active", 1, true) == nil)
   check("the page still has its ten value lines", select(2, page:gsub("common%.addValueLine", "")) == 10,
     select(2, page:gsub("common%.addValueLine", "")))
+  check("the detail rows cleanup starts after active rows (#active + 2)",
+    page:find("for i = #active + 2, #armingRows do", 1, true) ~= nil)
+  check("the detail heading is restored if flags reappear",
+    page:find("armingRows[1]:value(ARMING_DETAIL_HEADING)", 1, true) ~= nil)
 end
+
+-- ---------------------------------------------------------------------------
+-- Detail rows pool behaviour (renderArmingDetails)
+-- ---------------------------------------------------------------------------
+
+print("detail rows pool behaviour")
+
+local function createPoolHarness()
+  local armingRows = {}
+  local armingSignature = nil
+  local common = {
+    addTextLine = function(text, indent)
+      local obj = { text = text, indent = indent }
+      function obj:value(t) self.text = t end
+      return obj
+    end
+  }
+  local ARMING_DETAIL_HEADING = "Active reasons:"
+  local ARMING_DETAIL_INDENT = 12
+
+  local function renderArmingDetails(active)
+    local signature = table.concat(active, "\1")
+    if signature == armingSignature then return end
+    armingSignature = signature
+
+    if #active == 0 then
+      for i = 1, #armingRows do armingRows[i]:value("") end
+      return
+    end
+
+    if armingRows[1] == nil then
+      armingRows[1] = common.addTextLine(ARMING_DETAIL_HEADING)
+    else
+      armingRows[1]:value(ARMING_DETAIL_HEADING)
+    end
+    for i = 1, #active do
+      local row = armingRows[i + 1]
+      if row == nil then
+        row = common.addTextLine("", ARMING_DETAIL_INDENT)
+        armingRows[i + 1] = row
+      end
+      row:value(active[i])
+    end
+    for i = #active + 2, #armingRows do
+      armingRows[i]:value("")
+    end
+  end
+
+  return { rows = armingRows, render = renderArmingDetails }
+end
+
+local pool = createPoolHarness()
+
+-- 1. Single active reason: heading at row 1, reason at row 2, NOT blanked by cleanup
+pool.render({"THROTTLE"})
+check("single active flag: heading is present", pool.rows[1] and pool.rows[1].text == "Active reasons:")
+check("single active flag: flag is visible and not blanked by cleanup", pool.rows[2] and pool.rows[2].text == "THROTTLE")
+check("single active flag: exactly two rows created", #pool.rows == 2)
+
+-- 2. Three active reasons: rows expand
+pool.render({"FAILSAFE", "THROTTLE", "MSP"})
+check("three active flags: heading is present", pool.rows[1].text == "Active reasons:")
+check("three active flags: row 2 is FAILSAFE", pool.rows[2].text == "FAILSAFE")
+check("three active flags: row 3 is THROTTLE", pool.rows[3].text == "THROTTLE")
+check("three active flags: row 4 is MSP", pool.rows[4].text == "MSP")
+check("three active flags: four rows total", #pool.rows == 4)
+
+-- 3. All flags cleared (#active == 0): all rows blanked
+pool.render({})
+local allBlank = true
+for i = 1, #pool.rows do
+  if pool.rows[i].text ~= "" then allBlank = false break end
+end
+check("zero active flags: all rows are blanked", allBlank)
+
+-- 4. Flags reappear (1 active flag): heading restored, row 2 set, rows 3..4 blanked
+pool.render({"MSP"})
+check("flags reappear: heading is restored", pool.rows[1].text == "Active reasons:")
+check("flags reappear: active flag is set", pool.rows[2].text == "MSP")
+check("flags reappear: previous row 3 is blanked", pool.rows[3].text == "")
+check("flags reappear: previous row 4 is blanked", pool.rows[4].text == "")
 
 -- ---------------------------------------------------------------------------
 
