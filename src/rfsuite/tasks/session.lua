@@ -26,6 +26,7 @@ local handshake = requireModule("lib/msp_handshake.lua")
 local mspApiVersion = requireModule("lib/msp_api_version.lua")
 local settingsStore = requireModule("lib/settings_store.lua")
 local mspBattery = requireModule("lib/msp_battery.lua")
+local batteryProfileIndex = requireModule("lib/battery_profile_index.lua")
 local dataflashSummary = requireModule("lib/msp_dataflash_summary.lua")
 local governorConfig = requireModule("lib/msp_governor_config.lua")
 local modelPreferences = requireModule("lib/model_preferences.lua")
@@ -249,19 +250,14 @@ local function copyBatteryConfig(config)
   }
 end
 
-local function normalizeBatteryProfile(value)
-  local profile = tonumber(value)
-  if profile == nil then return nil end
-  profile = math.floor(profile)
-  if profile >= 1 and profile <= 6 then return profile - 1 end
-  if profile >= 0 and profile <= 5 then return profile end
-  return nil
-end
-
 local function batteryProfileCapacity(config, profile)
   if type(config) ~= "table" then return nil end
   local capacity = tonumber(config.batteryCapacity)
-  local active = normalizeBatteryProfile(profile)
+  -- session.batteryProfile is the internal 0-based index (config.profiles is
+  -- profiles[0]..profiles[5]), so validate, never re-base. Normalizing here
+  -- used to decrement 1..5 and look up the wrong pack's capacity, which fed
+  -- straight into the SmartFuel packCapacity below.
+  local active = batteryProfileIndex.index0(profile)
   local profiles = config.profiles
   if active ~= nil and type(profiles) == "table" then
     local profileCapacity = tonumber(profiles[active])
@@ -936,7 +932,13 @@ local function updateProfiles(protocol)
     publish()
   end
 
-  local batteryProfile = normalizeBatteryProfile(telemetrySensors.getValue(protocol, "battery_profile"))
+  -- The only 1-based battery-profile value in the whole suite: the FC
+  -- reports this sensor as getCurrentBatteryProfileIndex() + 1
+  -- (rotorflight-firmware src/main/telemetry/sensors.c:358-359). Converted
+  -- here, at its single ingress point, so session.batteryProfile is 0-based
+  -- from here on -- every other reader (the SmartFuel packCapacity, the
+  -- dashboard selector, the capacity announcement) consumes it as-is.
+  local batteryProfile = batteryProfileIndex.fromTelemetrySensor(telemetrySensors.getValue(protocol, "battery_profile"))
   if batteryProfile ~= session.batteryProfile then
     session.batteryProfile = batteryProfile
     publish()
@@ -992,7 +994,13 @@ local function updateArmState(protocol, mspQueue)
 end
 
 local function setBatteryProfile(value)
-  local batteryProfile = normalizeBatteryProfile(value)
+  -- Callers pass the 0-based index they are about to (or just did) write via
+  -- MSP 176 -- widgets/dashboard.lua's writeBatteryProfile() sets it from the
+  -- selector's own profile.idx, which buildBatteryProfileList() fills from
+  -- profiles[0]..profiles[5]. So this validates the base it is given; it
+  -- does not guess one. Re-normalizing an already-0-based value here used to
+  -- walk session.batteryProfile one pack backwards on every widget write.
+  local batteryProfile = batteryProfileIndex.index0(value)
   if batteryProfile == nil then return end
   if batteryProfile == session.batteryProfile then return end
   session.batteryProfile = batteryProfile

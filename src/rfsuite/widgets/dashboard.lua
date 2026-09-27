@@ -11,6 +11,7 @@ local flightmode = requireModule("widgets/dashboard/flightmode.lua")
 local dataflashErase = requireModule("lib/msp_dataflash_erase.lua")
 local dataflashSummary = requireModule("lib/msp_dataflash_summary.lua")
 local batteryProfileMsp = requireModule("lib/msp_battery_profile.lua")
+local batteryProfileIndex = requireModule("lib/battery_profile_index.lua")
 local ethosVersion = requireModule("lib/ethos_version.lua")
 local mspApiVersion = requireModule("lib/msp_api_version.lua")
 
@@ -398,15 +399,6 @@ local function canOpenSystemTool()
     and ethosVersion.atLeast({26, 1, 0})
 end
 
-local function normalizeBatteryProfile(value)
-  local profile = tonumber(value)
-  if profile == nil then return nil end
-  profile = math.floor(profile)
-  if profile >= 1 and profile <= 6 then return profile - 1 end
-  if profile >= 0 and profile <= 5 then return profile end
-  return nil
-end
-
 local function capacityValue(value)
   if type(value) == "number" then return value end
   if type(value) == "string" then return tonumber(value:match("(%d+)")) end
@@ -431,9 +423,21 @@ local function buildBatteryProfileList(widget)
   end
 
   if #profileList == 0 then
+    -- Fallback for a profiles table that is a 1-based *list* of
+    -- {name = ...} entries rather than the 0-based profiles[0]..[5] of plain
+    -- capacities that lib/msp_battery.lua decodes. ipairs positions are
+    -- 1-based, so the 0-based index is i - 1 -- which is exactly what the old
+    -- normalizeBatteryProfile() got right here by accident, while getting
+    -- everything else wrong. Spell it out instead of relying on that: feeding
+    -- the loop position `i` to a 0-based validator would read as index i and
+    -- shift this whole list by one.
     for i, profile in ipairs(profilesRaw) do
       if type(profile) == "table" and profile.name then
-        local idx = normalizeBatteryProfile(profile.idx or profile.index or profile.profile or i) or (i - 1)
+        local declared = profile.idx or profile.index or profile.profile
+        local idx = i - 1
+        if declared ~= nil then
+          idx = batteryProfileIndex.index0(declared) or idx
+        end
         profileList[#profileList + 1] = {name = profile.name, idx = idx}
       end
     end
@@ -755,10 +759,18 @@ end
 
 local function writeBatteryProfile(widget, profileIndex, profileName)
   if not widget or widget.connected ~= true or widget.batteryActive == true then return end
-  profileIndex = normalizeBatteryProfile(profileIndex)
+  -- profileIndex is profile.idx from buildBatteryProfileList(), which walks
+  -- widget.batteryConfig.profiles[0]..profiles[5] -- already the 0-based index
+  -- the MSP 176 payload wants. This only rejects an out-of-range value; it
+  -- must not shift it. The old normalize here subtracted 1 from every 1..5,
+  -- so picking pack 5 activated pack 4 on the flight controller.
+  profileIndex = batteryProfileIndex.index0(profileIndex)
   if profileIndex == nil then return end
 
-  if normalizeBatteryProfile(widget.batteryProfile) == profileIndex then
+  -- Both sides are 0-based and validated the same way, so a genuine 1 -> 2
+  -- pack change (index 0 -> 1) is now actually seen as a change. Comparing
+  -- two values from the old base-guessing helper could not tell them apart.
+  if batteryProfileIndex.index0(widget.batteryProfile) == profileIndex then
     showBatteryInfo("@i18n(widgets.battery.msg_battery_selected)@ " .. tostring(profileName))
     return
   end
@@ -809,7 +821,9 @@ local function chooseBatteryProfile(widget)
   local buttons = {}
   local message = "@i18n(widgets.battery.msg_select_battery)@\n\n"
   for _, profile in ipairs(profileList) do
-    local label = tostring((profile.idx or 0) + 1)
+    -- profile.idx is the 0-based index; label() is the 1-based pack number
+    -- the pilot knows the pack by. Same value as the old (idx or 0) + 1.
+    local label = tostring(batteryProfileIndex.label(profile.idx) or 1)
     message = message .. label .. " - " .. tostring(profile.name) .. "\n"
   end
 

@@ -2,6 +2,7 @@
 
 local requireModule = package.loaded["rfsuite.lib.require"] or assert(loadfile("lib/require.lua"))()
 local bus = requireModule("lib/bus.lua")
+local batteryProfileIndex = requireModule("lib/battery_profile_index.lua")
 local settingsStore = requireModule("lib/settings_store.lua")
 
 local audio_events = {}
@@ -241,15 +242,6 @@ local function announceProfile(key, enabled, file)
   playNumber(math.floor(value))
 end
 
-local function normalizeBatteryProfile(value)
-  local profile = tonumber(value)
-  if profile == nil then return nil end
-  profile = math.floor(profile)
-  if profile >= 1 and profile <= 6 then return profile - 1 end
-  if profile >= 0 and profile <= 5 then return profile end
-  return nil
-end
-
 local function extractCapacityValue(value)
   if type(value) == "number" then return value end
   if type(value) == "string" then return tonumber(value:match("(%d+)")) end
@@ -264,8 +256,13 @@ end
 local function batteryProfileCapacity(profile)
   local profiles = session.batteryConfig and session.batteryConfig.profiles
   if type(profiles) ~= "table" then return nil end
+  -- No `profiles[profile + 1]` retry: session.batteryConfig.profiles is
+  -- indexed 0..5, straight from the MSP_BATTERY_CONFIG reply
+  -- (lib/msp_battery.lua decodes batteryCapacity[0..5]; the firmware writes
+  -- them in that order, rotorflight-firmware src/main/msp/msp.c:906-908).
+  -- The old retry existed only to paper over an off-by-one one layer up, and
+  -- stood ready to answer with a neighbouring pack's capacity.
   local value = profiles[profile]
-  if value == nil then value = profiles[profile + 1] end
   value = extractCapacityValue(value)
   if value and value > 0 then return value end
   return nil
@@ -273,8 +270,14 @@ end
 
 local function announceBatteryProfile()
   if not events.battery_profile then return end
-  local value = normalizeBatteryProfile(session.batteryProfile)
-  local last = normalizeBatteryProfile(previous.batteryProfile)
+  -- session.batteryProfile and the previous.batteryProfile snapshot are both
+  -- already the internal 0-based index (tasks/session.lua converts the FC's
+  -- 1-based `battery_profile` telemetry sensor once, at its ingress point).
+  -- Validating is right; re-basing is not -- it made the announcement name
+  -- the pack one below the one actually selected, and made a real 1 -> 2
+  -- change look like "no change" and go unspoken.
+  local value = batteryProfileIndex.index0(session.batteryProfile)
+  local last = batteryProfileIndex.index0(previous.batteryProfile)
   if value == nil or last == nil or value == last then return end
 
   local capacity = batteryProfileCapacity(value)
