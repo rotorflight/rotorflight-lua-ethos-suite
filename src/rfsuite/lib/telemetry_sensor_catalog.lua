@@ -152,8 +152,38 @@ local catalog = {
     [64] = {65, 66, 67},
     [68] = {69, 70, 71},
   },
-  DEFAULT_IDS = {90, 3, 60, 4, 23, 5, 93, 99, 95, 96, 15, 91, 43, 97, 6},
+  DEFAULT_IDS = {90, 3, 60, 4, 23, 5, 93, 99, 95, 96, 15, 91, 43, 97, 6},  -- Ids the flight controller emits as *full* CRSF frames while
+  -- crsf_telemetry_mode is NATIVE: crsfNativeTelemetrySensors in
+  -- src/main/telemetry/crsf.c holds FLIGHT_MODE, BATTERY, ATTITUDE,
+  -- ALTITUDE, GPS, RPM and TEMP, and crsfInitNativeTelemetry() adds one to
+  -- the schedule per matching slot -- the mode picks which sensor table the
+  -- 40 slots filter, it does not switch the slots off. The three ids below
+  -- are the ones this catalog happens to offer; the rest of the native set
+  -- has no catalog entry, so those slots are "unmanaged" and are preserved
+  -- in place on save rather than listed here.
+  --
+  -- A native-locked sensor cannot be switched off from the Setup ->
+  -- Telemetry page in that mode, because the FC sends it whether or not a
+  -- slot selects it. Same ids, and the same treatment, as
+  -- rotorflight-lua-edgetx-suite's app/pages/setup/telemetry/page.lua
+  -- (CRSF_NATIVE_CATALOG_IDS).
+  NATIVE_LOCKED_IDS = {
+    [58] = true, -- Altitude
+    [64] = true, -- Attitude (combined)
+    [89] = true, -- Flight mode
+  },
 }
+
+-- NOT_AT_SAME_TIME above maps a parent to its children, so answering "which
+-- parent governs this id?" needs the reverse direction. Derived here rather
+-- than hand-listed so the two cannot drift; the EdgeTX page builds the same
+-- map (CONFLICTING_WITH) for the same reason.
+catalog.CONFLICTING_WITH = {}
+for parentId, childIds in pairs(catalog.NOT_AT_SAME_TIME) do
+  for _, childId in ipairs(childIds) do
+    catalog.CONFLICTING_WITH[childId] = parentId
+  end
+end
 
 package.loaded["rfsuite.lib.telemetry_sensor_catalog"] = catalog
 return catalog

@@ -3,6 +3,7 @@
 local requireModule = package.loaded["rfsuite.lib.require"] or assert(loadfile("lib/require.lua"))()
 local bus = requireModule("lib/bus.lua")
 local batteryProfileIndex = requireModule("lib/battery_profile_index.lua")
+local engineType = requireModule("lib/engine_type.lua")
 local settingsStore = requireModule("lib/settings_store.lua")
 
 local audio_events = {}
@@ -72,6 +73,7 @@ local AUDIO_SESSION_KEYS = {
   "adjValue",
   "timerLive",
   "timerTarget",
+  "smartfuelModelType",
 }
 
 local function fileExists(path)
@@ -175,6 +177,48 @@ end
 
 local function onSessionUpdate(snapshot)
   copySnapshot(snapshot)
+end
+
+-- Which word the fuel/battery percentage and low-fuel callouts use depends on
+-- the powerplant. The flight controller reports no model type at all
+-- (MSP_SMARTFUEL_CONFIG is four bytes -- mode, voltage fall, charge drop, sag
+-- gain) and has no tank/fuel concept, so the only sources are the
+-- transmitter-side model preference (app/pages/power_smartfuel.lua's
+-- MODEL_TYPE_CHOICES, published in session.smartfuelModelType) and the configured
+-- battery config. Auto is *resolved* from the config, not guessed: a cell count
+-- or a configured pack capacity means a battery. Same rule as
+-- widgets/dashboard/context.lua's isElectricEngine(), both now reading lib/engine_type.lua.
+local function isElectricModel()
+  return engineType.isElectric(session.batteryConfig, session.smartfuelModelType)
+end
+
+-- The percentage callout's word, and whether it lives in the events package.
+-- There is no status/alerts/battery.wav in any locale, but
+-- events/alerts/battery.wav is the same word ("Battery" / "Akku") in every
+-- sound pack, and playFile() only treats the package as a path segment, so it
+-- is read from there.
+local function percentCalloutAlert()
+  if isElectricModel() then return "battery.wav", true end
+  return "fuel.wav", false
+end
+
+-- status/alerts/lowbat.wav ("Battery empty" / "Akku leer") ships in every
+-- sound pack but was wired to nothing before this change.
+local function lowCalloutAlert()
+  if isElectricModel() then return "lowbat.wav" end
+  return "lowfuel.wav"
+end
+
+-- One dispatch point for a callout word, so the selectors above only decide
+-- which file and package. At module scope, not inside the announcement: that
+-- runs on the announcement timer and a per-call closure would be churn on
+-- every tick.
+local function playCalloutAlert(file, fromEvents)
+  if fromEvents then
+    playAlert(file)
+  else
+    playStatus(file)
+  end
 end
 
 local function onSettingsUpdate(snapshot)
@@ -434,14 +478,15 @@ local function announceSmartfuel(now)
 
   if value <= 0 then
     local repeats = tonumber(events.smartfuelrepeats) or 1
+    local lowAlert = lowCalloutAlert()
     if not lastLowFuelAnnounced then
-      playStatus("lowfuel.wav")
+      playCalloutAlert(lowAlert)
       if events.smartfuelhaptic then haptic() end
       lastLowFuelAnnounced = true
       lastLowFuelRepeatAt = now
       lastLowFuelRepeatCount = 1
     elseif lastLowFuelRepeatCount < repeats and (now - lastLowFuelRepeatAt) >= 10 then
-      playStatus("lowfuel.wav")
+      playCalloutAlert(lowAlert)
       if events.smartfuelhaptic then haptic() end
       lastLowFuelRepeatAt = now
       lastLowFuelRepeatCount = lastLowFuelRepeatCount + 1
@@ -464,7 +509,8 @@ local function announceSmartfuel(now)
   for i = 1, #thresholds do
     local threshold = thresholds[i]
     if value <= threshold and lastSmartfuelAnnounced > threshold then
-      playStatus("fuel.wav")
+      local percentAlert, fromEvents = percentCalloutAlert()
+      playCalloutAlert(percentAlert, fromEvents)
       playNumber(threshold, UNIT_PERCENT)
       lastSmartfuelAnnounced = threshold
       return
