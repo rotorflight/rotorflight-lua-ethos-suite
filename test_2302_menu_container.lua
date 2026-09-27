@@ -371,7 +371,7 @@ reset()
 menuContainer.openRoot(nav, {{title = LONG, script = "app/pages/long.lua", lockedWhileArmed = true}},
   function() end, function(h) wakeupHandler = h end,
   function() end, function() end, {}, taskGuard, nil)check("no armedState: tile built", #buttons == 1)
-check("no armedState: no badge", buttons[1].text:sub(1, 4) ~= "[!] ")
+check("no armedState: no badge", buttons[1].text:sub(1, 1) ~= "!", buttons[1].text)
 buttons[1].press()
 eq("no armedState: press still navigates", pushCount, 1)
 
