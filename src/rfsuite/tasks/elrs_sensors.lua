@@ -222,6 +222,7 @@ local function parseFrame(data)
   -- last byte with nothing left to pair it with -- matches the original's
   -- own `while ptr < #data` guard exactly.
   while ptr < len do
+    local sidPtr = ptr
     local sid
     sid, ptr = elrsDecode.decU16(data, ptr)
     local meta = sensorTable[sid]
@@ -229,7 +230,7 @@ local function parseFrame(data)
       debugLog.print(string.format(
         "[elrs] frame walk aborted: no decoder for appId 0x%04X at byte %d of %d -- "
           .. "every sensor packed after it in this frame is lost",
-        sid or 0, ptr - 1, len))
+        sid or 0, sidPtr, len))
       return
     end
 
@@ -240,7 +241,7 @@ local function parseFrame(data)
         "[elrs] frame walk aborted: decoder for appId 0x%04X at byte %d did not %s "
           .. "-- every sensor packed after it in this frame is lost",
         sid or 0, prevPtr,
-        not ok and "raise" or "advance"))
+        not ok and "succeed" or "advance"))
       return
     end
     ptr = nextPtr
