@@ -8,7 +8,20 @@ sidebar_label: Pages
 Reference documentation for each configuration and settings page reachable
 within the RFSuite Ethos system tool.
 
-**Status:** 76 reachable pages in navigation hierarchy.
+**Status:** 76 reachable pages in navigation hierarchy, 76 with a file.
+
+**What the 76 means.** The page files were generated from the menu hierarchy and the page
+sources, so every one of them starts as a scaffold: the menu path, the conditions and the
+control names are read out of the code, and the sentences around them are written from that.
+`bin/docs/generate_menu_docs.py --check` proves a file *exists* for every reachable page and
+nothing else — it cannot tell a page that describes its settings from one that only lists
+their names. Read a page against the tool before trusting it, and treat the index below as a
+table of contents rather than as a sign-off.
+
+Pages are filled in the same way as changes reach them: a pull request that changes a page
+brings that page's file with it, or says on a line of its own why it needs no documentation
+change. The `Documentation rule` job in `.github/workflows/pr.yml` fails when neither is
+there. The rule is in [.agents/rules/documentation.md](../../.agents/rules/documentation.md).
 
 The *Conditions* column names what hides, greys out or locks a page; the sentences
 and structure follow [_template.md](../_template.md).
