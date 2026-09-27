@@ -112,15 +112,26 @@ def _connect_find_scripts_dir():
         return None
     ri = None
     try:
-        ri = mod.RadioInterface()
+        # One HID attempt: callers poll this every couple of seconds anyway,
+        # and after a mode switch the radio is off the bus while it re-enumerates.
+        ri = mod.RadioInterface(retries=1)
         ri.scan_for_drives()
         # Prefer sdcard/radio volumes if present; Ethos maps SCRIPTS to the mounted media root + /scripts
         for key in ('sdcard', 'radio', 'flash'):
             root = ri.drives.get(key)
-            if root and os.path.isdir(os.path.join(root, 'scripts')):
-                return os.path.normpath(os.path.join(root, 'scripts'))
+            if not root:
+                continue
+            # Drives are stored as 'E:'; join as 'E:\scripts', not drive-relative 'E:scripts'.
+            if root.endswith(':'):
+                root += os.sep
+            scripts = os.path.join(root, 'scripts')
+            if os.path.isdir(scripts):
+                return os.path.normpath(scripts)
     except BaseException as e:
-        print(f"[CONNECT] Drive scan failed ({type(e).__name__}: {e})")
+        if "vendor 0x0483 not present" in str(e):
+            print("[CONNECT] Radio not on USB right now (normal for a few seconds after a mode switch).")
+        else:
+            print(f"[CONNECT] Drive scan failed ({type(e).__name__}: {e})")
     finally:
         try:
             if ri is not None:
