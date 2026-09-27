@@ -5,6 +5,25 @@ on:
     types: [opened, synchronize, reopened]
 
 jobs:
+  # A flight is a state machine that only misbehaves across a link loss, which
+  # no build and no package step can reach. Before this job the repository had no
+  # way to run a Lua check at all, so this is where the flight-record behaviour
+  # is pinned: a brief in-flight drop stays one record, and a pack swap stays
+  # two.
+  flight-record:
+    name: Flight record across a link loss
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Lua 5.3
+        run: sudo apt-get update && sudo apt-get install -y lua5.3
+
+      - name: Check the flight record behaviour
+        run: lua5.3 bin/flight_record/verify_flight_record.lua
+
   # Per-language PR builds (mirrors push.yml behavior)
   create-zip:
     name: Build PR ZIP (${{ matrix.lang }})

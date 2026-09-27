@@ -102,6 +102,7 @@ local session = {
   timerLive = 0,
   timerSession = 0,
   timerFlightCounted = false,
+  flightResumable = false,
   timerTarget = 300,
   smartfuelModelType = 0,
   modelPreferences = nil,
@@ -371,6 +372,10 @@ local function flush()
     timerLive = session.timerLive,
     timerSession = session.timerSession,
     timerFlightCounted = session.timerFlightCounted,
+    -- True while a flight that was in progress at link loss may still be
+    -- resumed. tasks/logging.lua reads this to hold its file open across a
+    -- short drop instead of starting a new one.
+    flightResumable = session.flightResumable,
     timerTarget = session.timerTarget,
     smartfuelModelType = session.smartfuelModelType,
     modelStats = copyStats(session.modelStats),
@@ -833,9 +838,6 @@ local function setConnected(value, mspQueue, protocol)
     session.batteryProfile = nil
     session.adjFunction = nil
     session.adjValue = nil
-    session.timerLive = 0
-    session.timerSession = 0
-    session.timerFlightCounted = false
     session.timerTarget = 300
     session.smartfuelModelType = 0
     session.modelPreferences = nil
@@ -851,7 +853,23 @@ local function setConnected(value, mspQueue, protocol)
     telemetryConfigReadInFlight = false
     pendingStatsSync = false
     pendingStatsSyncAt = nil
-    flightTimer.reset()
+    -- The flight timer is deliberately NOT reset here. Everything above is
+    -- per-link state, because a reconnect may be a different aircraft; a flight
+    -- in progress is not. Wiping it is what split one flight into two records
+    -- on a brief in-flight link drop -- the duration was lost and, past the
+    -- count threshold, the same flight was counted twice in stats.flightcount.
+    -- flight_timer decides instead: it holds the flight open across a short gap
+    -- and closes it for good once the pilot disarms or the gap outlasts its
+    -- grace window.
+    --
+    -- This function must not publish(). The only thing that carries a held
+    -- flight out to the log writer is the publish() in updateFlightTimer() at
+    -- the end of the same wakeup, and it carries the true value because the
+    -- freeze happens there first. A publish() added here would emit
+    -- connected=false with flightResumable still false, the log writer would
+    -- read that as a finished flight, and one flight would be two logs again --
+    -- with no other symptom to notice it by.
+    session.flightResumable = flightTimer.resumable()
     session.isArmed = nil
     session.armDisableFlags = nil
     localSmartFuel:reset()
@@ -1062,7 +1080,12 @@ end
 
 local function updateFlightTimer(now)
   local changed, snapshot, event = flightTimer.update(session.connected, session.isArmed, now)
-  if changed then
+  -- Recomputed every tick, not only on change: the grace window can expire
+  -- while the link stays down, and the log writer has to learn that the flight
+  -- can no longer be resumed.
+  local resumable = flightTimer.resumable(now)
+  if changed or resumable ~= session.flightResumable then
+    session.flightResumable = resumable
     session.timerLive = snapshot.timerLive
     session.timerSession = snapshot.timerSession
     session.timerFlightCounted = snapshot.timerFlightCounted
