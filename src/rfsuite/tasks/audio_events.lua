@@ -273,9 +273,8 @@ local function batteryProfileCellCount(profile)
   if type(config) ~= "table" then return nil end
 
   local profileCells = config.profileCells
-  if type(profileCells) == "table" then
+  if type(profileCells) == "table" and profile ~= nil then
     local cells = profileCells[profile]
-    if cells == nil then cells = profileCells[profile + 1] end
     if type(cells) == "table" then
       cells = cells.cellCount
     end
