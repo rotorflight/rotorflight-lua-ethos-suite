@@ -918,16 +918,48 @@ end
 -- sensor serves the same appId on CRSF) -- not an MSP poll. Published so
 -- app/pages/pids.lua (or any future page) can react to a profile switch
 -- without touching tasks/ directly.
+
+-- A PID/rate profile reading is the firmware's 1-based number, unchanged --
+-- unlike the battery profile, whose 0-based internal index
+-- lib/battery_profile_index.lua converts at this same ingress point, and
+-- whose 0 is therefore impossible. Here the firmware reports
+-- getCurrentPidProfileIndex() + 1 and getCurrentControlRateProfileIndex() + 1
+-- (rotorflight-firmware src/main/telemetry/sensors.c:310-313), so the
+-- smallest value it can ever send is 1, and the largest is
+-- PID_PROFILE_COUNT / CONTROL_RATE_PROFILE_COUNT -- both 6 or less
+-- (src/main/target/common_pre.h:257-261).
+--
+-- A 0 therefore did not come from the flight controller: it came from a
+-- telemetry source that lib/telemetry_sensors.lua resolved but that carries
+-- no data. S.Port lists two candidate appIds for both sensors
+-- (lib/telemetry_sensors_sport.lua: pid 0x5130/0x5471, rate 0x5131/0x5472)
+-- and getSource() latches the first one that resolves, so a slot Ethos
+-- discovered before it ever carried a reading holds the suite on a source
+-- stuck at 0 -- announceProfile() then speaks that as "Profile 0".
+--
+-- Rejecting it keeps the last known good value in session instead, which is
+-- the same guard the battery profile has had since #2397. (A *nil* reading
+-- was already harmless: rememberCurrent() copies nil into previous, so a
+-- reconnect that returns the same profile still compares equal and stays
+-- silent -- that part is unchanged, only the 0 is new behaviour.)
+local function activeProfile1(value)
+  local reading = tonumber(value)
+  if reading == nil then return nil end
+  reading = math.floor(reading)
+  if reading >= 1 and reading <= 6 then return reading end
+  return nil
+end
+
 local function updateProfiles(protocol)
   if not telemetrySensors then return end
-  local pidProfile = telemetrySensors.getValue(protocol, "pid_profile")
-  if pidProfile ~= session.pidProfile then
+  local pidProfile = activeProfile1(telemetrySensors.getValue(protocol, "pid_profile"))
+  if pidProfile ~= nil and pidProfile ~= session.pidProfile then
     session.pidProfile = pidProfile
     publish()
   end
 
-  local rateProfile = telemetrySensors.getValue(protocol, "rate_profile")
-  if rateProfile ~= session.rateProfile then
+  local rateProfile = activeProfile1(telemetrySensors.getValue(protocol, "rate_profile"))
+  if rateProfile ~= nil and rateProfile ~= session.rateProfile then
     session.rateProfile = rateProfile
     publish()
   end
