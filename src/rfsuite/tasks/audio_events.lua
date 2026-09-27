@@ -3,6 +3,7 @@
 local requireModule = package.loaded["rfsuite.lib.require"] or assert(loadfile("lib/require.lua"))()
 local bus = requireModule("lib/bus.lua")
 local batteryProfileIndex = requireModule("lib/battery_profile_index.lua")
+local modelPreferences = requireModule("lib/model_preferences.lua")
 local settingsStore = requireModule("lib/settings_store.lua")
 
 local audio_events = {}
@@ -56,6 +57,7 @@ local SMARTFUEL_THRESHOLDS = {
 
 local AUDIO_SESSION_KEYS = {
   "connected",
+  "mcuId",
   "craftName",
   "isArmed",
   "pidProfile",
@@ -177,6 +179,77 @@ local function onSessionUpdate(snapshot)
   copySnapshot(snapshot)
 end
 
+-- Which word the fuel/battery percentage and low-fuel callouts use depends on
+-- the powerplant, and the only source for that is the per-flight-controller
+-- model preference: the flight controller reports no model type at all
+-- (MSP_SMARTFUEL_CONFIG is four bytes -- mode, voltage fall, charge drop, sag
+-- gain). The values are app/pages/power_smartfuel.lua's MODEL_TYPE_CHOICES.
+local MODEL_TYPE_AUTO = 0
+local MODEL_TYPE_ELECTRIC = 1
+
+-- Cached per mcuId: model_preferences.load() is file I/O and this runs on the
+-- announcement timer, so it must not repeat while the connected model is
+-- unchanged. Cleared on a model-type update and on disconnect.
+local modelTypeCacheMcuId = nil
+local modelTypeCacheValue = MODEL_TYPE_AUTO
+
+local function clearModelTypeCache()
+  modelTypeCacheMcuId = nil
+  modelTypeCacheValue = MODEL_TYPE_AUTO
+end
+
+local function currentModelType()
+  local mcuId = session.mcuId
+  if type(mcuId) ~= "string" or mcuId == "" then
+    if modelTypeCacheMcuId ~= nil then clearModelTypeCache() end
+    return MODEL_TYPE_AUTO
+  end
+  if mcuId ~= modelTypeCacheMcuId then
+    local prefs = modelPreferences.load(mcuId)
+    modelTypeCacheMcuId = mcuId
+    modelTypeCacheValue = tonumber(prefs and prefs.battery and prefs.battery.smartfuel_model_type)
+      or MODEL_TYPE_AUTO
+  end
+  return modelTypeCacheValue
+end
+
+-- Auto deliberately keeps the existing "fuel" wording, and so does Nitro.
+-- Silently changing what a pilot hears is worse than making them pick a model
+-- type once: an Auto model that actually is a nitro would otherwise be told
+-- "battery" instead of "fuel".
+local function isElectricModel()
+  return currentModelType() == MODEL_TYPE_ELECTRIC
+end
+
+-- The percentage callout's word, and whether it lives in the events package.
+-- There is no status/alerts/battery.wav in any locale, but
+-- events/alerts/battery.wav is the same word ("Battery" / "Akku") in every
+-- sound pack, and playFile() only treats the package as a path segment, so it
+-- is read from there.
+local function percentCalloutAlert()
+  if isElectricModel() then return "battery.wav", true end
+  return "fuel.wav", false
+end
+
+-- status/alerts/lowbat.wav ("Battery empty" / "Akku leer") ships in every
+-- sound pack but was wired to nothing before this change.
+local function lowCalloutAlert()
+  if isElectricModel() then return "lowbat.wav" end
+  return "lowfuel.wav"
+end
+
+-- One dispatch point for a callout word, so the selectors above only decide
+-- which file and package. At module scope, not inside the announcement: that
+-- runs on the announcement timer and a per-call closure would be churn on
+-- every tick.
+local function playCalloutAlert(file, fromEvents)
+  if fromEvents then
+    playAlert(file)
+  else
+    playStatus(file)
+  end
+end
+
 local function onSettingsUpdate(snapshot)
   settings = snapshot or {}
   events = settingsStore.audioEvents(settings)
@@ -186,6 +259,18 @@ end
 
 bus.subscribe("session.update", onSessionUpdate)
 bus.subscribe("settings.update", onSettingsUpdate)
+-- The SmartFuel page publishes this after it changes the model type, so the
+-- cache has to be updated or the new word only appears after a reconnect.
+-- See app/pages/power_smartfuel.lua's own publish and tasks/session.lua's
+-- handler for the same payload shape. The payload carries the new value, so
+-- there is no need to re-read the file here.
+bus.subscribe("model.smartfuel_type.update", function(payload)
+  if type(payload) ~= "table" then return end
+  if type(payload.mcuId) ~= "string" or payload.mcuId == "" then return end
+  if payload.mcuId ~= session.mcuId then return end
+  modelTypeCacheMcuId = payload.mcuId
+  modelTypeCacheValue = tonumber(payload.smartfuelModelType) or MODEL_TYPE_AUTO
+end)
 
 local function ensureSettings()
   if not settings then
@@ -434,14 +519,15 @@ local function announceSmartfuel(now)
 
   if value <= 0 then
     local repeats = tonumber(events.smartfuelrepeats) or 1
+    local lowAlert = lowCalloutAlert()
     if not lastLowFuelAnnounced then
-      playStatus("lowfuel.wav")
+      playCalloutAlert(lowAlert)
       if events.smartfuelhaptic then haptic() end
       lastLowFuelAnnounced = true
       lastLowFuelRepeatAt = now
       lastLowFuelRepeatCount = 1
     elseif lastLowFuelRepeatCount < repeats and (now - lastLowFuelRepeatAt) >= 10 then
-      playStatus("lowfuel.wav")
+      playCalloutAlert(lowAlert)
       if events.smartfuelhaptic then haptic() end
       lastLowFuelRepeatAt = now
       lastLowFuelRepeatCount = lastLowFuelRepeatCount + 1
@@ -464,7 +550,8 @@ local function announceSmartfuel(now)
   for i = 1, #thresholds do
     local threshold = thresholds[i]
     if value <= threshold and lastSmartfuelAnnounced > threshold then
-      playStatus("fuel.wav")
+      local percentAlert, fromEvents = percentCalloutAlert()
+      playCalloutAlert(percentAlert, fromEvents)
       playNumber(threshold, UNIT_PERCENT)
       lastSmartfuelAnnounced = threshold
       return
@@ -642,6 +729,7 @@ function audio_events.reset()
   initialized = false
   craftNameAnnounced = false
   adjWavs = nil
+  clearModelTypeCache()
   for key in pairs(previous) do previous[key] = nil end
   for key in pairs(lastAlertAt) do lastAlertAt[key] = nil end
   lastSmartfuelAnnounced = nil
