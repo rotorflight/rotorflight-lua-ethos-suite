@@ -1,3 +1,12 @@
+if __name__ == "__main__":
+    # Install missing third-party packages (tqdm, pyserial, hidapi, pywin32)
+    # before anything below imports them.
+    try:
+        import deploy_deps
+        deploy_deps.rerun_if_installed()
+    except ImportError:
+        pass
+
 import os
 import shutil
 import argparse
