@@ -18,6 +18,9 @@ local adjWavs = nil
 local lastAlertAt = {}
 local craftNameAnnounced = false
 local lastSmartfuelAnnounced = nil
+-- Whether a numeric fuel reading has been evaluated yet, as opposed to merely
+-- being present. See announceSmartfuel() for why the two are not the same thing.
+local fuelEvaluated = false
 local lastLowFuelAnnounced = false
 local lastLowFuelRepeatAt = 0
 local lastLowFuelRepeatCount = 0
@@ -424,6 +427,32 @@ local function resetLowFuel()
   lastLowFuelRepeatCount = 0
 end
 
+local function resetFuelAnnouncements()
+  lastSmartfuelAnnounced = nil
+  fuelEvaluated = false
+  resetLowFuel()
+end
+
+-- Seed on the first reading, whatever it says.
+--
+-- The threshold loop below already did this for every value above zero: it took
+-- `lastSmartfuelAnnounced == nil` as "nothing to compare against yet", recorded
+-- the value and returned without a sound. The zero branch had no such gate, so
+-- a fuel reading of 0 on the first evaluation after connecting went straight
+-- into lowfuel.wav and latched lastLowFuelAnnounced -- and 0 is exactly what a
+-- sensor that has not received a frame yet can report, so powering the radio
+-- with a freshly charged pack announced "low fuel".
+--
+-- A 0 is not distinguishable from a real reading by value alone: an empty pack
+-- reads 0 too. So this seeds the first 0 instead of announcing it, and lets
+-- every later one through -- an empty pack is then announced from the second
+-- evaluation on, one wakeup later. The alternative of requiring a value above
+-- 0 before trusting any reading at all (which is what #2313 suggested) would
+-- silence the low-fuel warning for a genuinely empty pack forever, since such a
+-- pack never reads above 0.
+--
+-- resetFuelAnnouncements() clears this alongside lastSmartfuelAnnounced, so a
+-- reconnect or a pack change starts the seeding over.
 local function announceSmartfuel(now)
   if not events.smartfuel then return end
   if session.connected ~= true then return end
@@ -431,6 +460,13 @@ local function announceSmartfuel(now)
   local value = tonumber(session.fuelPercent)
   if value == nil then return end
   value = math.floor(value + 0.5)
+
+  if not fuelEvaluated then
+    fuelEvaluated = true
+    lastSmartfuelAnnounced = value
+    resetLowFuel()
+    return
+  end
 
   if value <= 0 then
     local repeats = tonumber(events.smartfuelrepeats) or 1
@@ -449,11 +485,6 @@ local function announceSmartfuel(now)
     return
   end
   resetLowFuel()
-
-  if lastSmartfuelAnnounced == nil then
-    lastSmartfuelAnnounced = value
-    return
-  end
 
   local thresholds = smartfuelThresholds()
   if not thresholds then
@@ -604,9 +635,8 @@ function audio_events.wakeup()
   if session.connected ~= true then
     initialized = false
     craftNameAnnounced = false
-    lastSmartfuelAnnounced = nil
+    resetFuelAnnouncements()
     adjWavs = nil
-    resetLowFuel()
     pendingAdjFunction = false
     resetTimerAudio()
     speakingUntil = 0
@@ -619,7 +649,10 @@ function audio_events.wakeup()
   if not initialized then
     initialized = true
     rememberCurrent()
-    lastSmartfuelAnnounced = tonumber(session.fuelPercent)
+    -- No fuel seed here: announceSmartfuel() seeds the first reading it
+    -- evaluates, whatever that reading is, and gating it in two places is how
+    -- the zero case came to be announced at all. Skipping this branch is what
+    -- keeps the first evaluation after a connect from carrying a sound.
     return
   end
 
@@ -644,12 +677,11 @@ function audio_events.reset()
   adjWavs = nil
   for key in pairs(previous) do previous[key] = nil end
   for key in pairs(lastAlertAt) do lastAlertAt[key] = nil end
-  lastSmartfuelAnnounced = nil
+  resetFuelAnnouncements()
   pendingAdjFunction = false
   resetTimerAudio()
   speakingUntil = 0
   for key in pairs(rollingSamples) do rollingSamples[key] = nil end
-  resetLowFuel()
 end
 
 function audio_events.setSettings(snapshot)
