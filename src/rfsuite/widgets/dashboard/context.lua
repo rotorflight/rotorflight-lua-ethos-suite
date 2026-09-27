@@ -8,6 +8,7 @@ if cached then return cached end
 
 local requireModule = package.loaded["rfsuite.lib.require"] or assert(loadfile("lib/require.lua"))()
 local buildInfo = requireModule("lib/build_info.lua")
+local engineType = requireModule("lib/engine_type.lua")
 local ethosVersion = requireModule("lib/ethos_version.lua")
 
 local context = {
@@ -2193,35 +2194,6 @@ function utils.isImageTooLarge(path, maxBytes)
   return context.utils.isImageTooLarge(path, maxBytes)
 end
 
-local function configuredCapacity(value)
-  if type(value) == "number" then return value end
-  if type(value) == "string" then return tonumber(value:match("(%d+)")) end
-  if type(value) == "table" then
-    if type(value.capacity) == "number" then return value.capacity end
-    if type(value.capacity) == "string" then return tonumber(value.capacity:match("(%d+)")) end
-    if type(value.name) == "string" then return tonumber(value.name:match("(%d+)")) end
-  end
-  return nil
-end
-
-local function hasConfiguredBatteryCapacity(config)
-  if not config then return false end
-  local capacity = tonumber(config.batteryCapacity) or 0
-  if capacity > 0 then return true end
-
-  local profiles = config.profiles
-  if type(profiles) ~= "table" then return false end
-  for i = 0, 5 do
-    capacity = configuredCapacity(profiles[i])
-    if capacity and capacity > 0 then return true end
-  end
-  for i = 1, 6 do
-    capacity = configuredCapacity(profiles[i])
-    if capacity and capacity > 0 then return true end
-  end
-  return false
-end
-
 function utils.isElectricEngine()
   local modelType = tonumber(currentWidget and currentWidget.smartfuelModelType)
   if modelType == nil then
@@ -2236,17 +2208,11 @@ function utils.isElectricEngine()
     return electricEngineCacheResult
   end
 
-  local isElectric
-  if modelType == 0 then
-    if not config then
-      isElectric = false
-    else
-      local cellCount = tonumber(config.cellCount or config.batteryCellCount) or 0
-      isElectric = cellCount ~= 0 or hasConfiguredBatteryCapacity(config)
-    end
-  else
-    isElectric = modelType == 1
-  end
+  -- The criteria (Auto -> cell count or a configured pack capacity) live in
+  -- lib/engine_type.lua, shared with tasks/audio_events.lua's callout wording,
+  -- so the dashboard and the announcements cannot answer "is this a battery
+  -- model?" differently.
+  local isElectric = engineType.isElectric(config, modelType)
 
   electricEngineCacheConfig = config
   electricEngineCacheModelType = modelType

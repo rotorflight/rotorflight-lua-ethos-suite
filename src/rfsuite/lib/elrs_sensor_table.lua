@@ -1,9 +1,23 @@
 -- ELRS/CRSF custom-telemetry SID -> sensor-metadata table. Stateless data
 -- only (a factory function, not a stateful module -- see below for why).
--- Transcribed from rotorflight-lua-ethos-suite's
+-- Transcribed from rotorflight-lua-edgetx-suite's
 -- tasks/scheduler/sensors/elrs_sensors.lua, ported in full (it's small
--- data, not much cost to carry entries this rebuild doesn't use yet) --
--- not independently verified against real hardware by this rebuild.
+-- data, not much cost to carry entries this rebuild doesn't use yet).
+--
+-- INVARIANT: this table must cover every appId the flight controller
+-- broadcasts. tasks/elrs_sensors.lua's parseFrame() walks a frame as
+-- `(U16 appId, value)` pairs and stops at the first appId it has no entry
+-- for -- it cannot skip one, because the pair's byte width lives here and
+-- nowhere on the wire. One gap therefore costs every sensor packed after it
+-- in that same frame, and the symptom looks like a dead sensor rather than a
+-- missing table entry.
+--
+-- The appIds are declared in the flight controller as TLM_SENSOR(...) in
+-- src/main/telemetry/crsf.c, and that file is the reference whenever this
+-- table is questioned. bin/telemetry/verify_sensor_table.py checks the two
+-- against each other (pinned to a firmware snapshot, overridable with
+-- --ref) and names the missing entries, and the parseFrame() abort itself now
+-- logs which appId it gave up on.
 --
 -- Returns a *factory function* taking a `decoders` table (both the pure
 -- primitives from lib/elrs_decode_primitives.lua and the aggregate
