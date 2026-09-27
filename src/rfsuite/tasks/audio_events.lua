@@ -3,6 +3,7 @@
 local requireModule = package.loaded["rfsuite.lib.require"] or assert(loadfile("lib/require.lua"))()
 local bus = requireModule("lib/bus.lua")
 local batteryProfileIndex = requireModule("lib/battery_profile_index.lua")
+local engineType = requireModule("lib/engine_type.lua")
 local modelPreferences = requireModule("lib/model_preferences.lua")
 local settingsStore = requireModule("lib/settings_store.lua")
 
@@ -180,45 +181,38 @@ local function onSessionUpdate(snapshot)
 end
 
 -- Which word the fuel/battery percentage and low-fuel callouts use depends on
--- the powerplant, and the only source for that is the per-flight-controller
--- model preference: the flight controller reports no model type at all
+-- the powerplant. The flight controller reports no model type at all
 -- (MSP_SMARTFUEL_CONFIG is four bytes -- mode, voltage fall, charge drop, sag
--- gain). The values are app/pages/power_smartfuel.lua's MODEL_TYPE_CHOICES.
-local MODEL_TYPE_AUTO = 0
-local MODEL_TYPE_ELECTRIC = 1
-
--- Cached per mcuId: model_preferences.load() is file I/O and this runs on the
--- announcement timer, so it must not repeat while the connected model is
--- unchanged. Cleared on a model-type update and on disconnect.
+-- gain) and has no tank/fuel concept, so the only sources are the
+-- transmitter-side model preference (app/pages/power_smartfuel.lua's
+-- MODEL_TYPE_CHOICES) and the configured battery config. Auto is *resolved*
+-- from the config, not guessed: a cell count or a configured pack capacity
+-- means a battery. Same rule as widgets/dashboard/context.lua's
+-- isElectricEngine(), both now reading lib/engine_type.lua.
 local modelTypeCacheMcuId = nil
-local modelTypeCacheValue = MODEL_TYPE_AUTO
+local modelTypeCacheValue = 0
 
 local function clearModelTypeCache()
   modelTypeCacheMcuId = nil
-  modelTypeCacheValue = MODEL_TYPE_AUTO
+  modelTypeCacheValue = 0
 end
 
 local function currentModelType()
   local mcuId = session.mcuId
   if type(mcuId) ~= "string" or mcuId == "" then
     if modelTypeCacheMcuId ~= nil then clearModelTypeCache() end
-    return MODEL_TYPE_AUTO
+    return 0
   end
   if mcuId ~= modelTypeCacheMcuId then
     local prefs = modelPreferences.load(mcuId)
     modelTypeCacheMcuId = mcuId
-    modelTypeCacheValue = tonumber(prefs and prefs.battery and prefs.battery.smartfuel_model_type)
-      or MODEL_TYPE_AUTO
+    modelTypeCacheValue = tonumber(prefs and prefs.battery and prefs.battery.smartfuel_model_type) or 0
   end
   return modelTypeCacheValue
 end
 
--- Auto deliberately keeps the existing "fuel" wording, and so does Nitro.
--- Silently changing what a pilot hears is worse than making them pick a model
--- type once: an Auto model that actually is a nitro would otherwise be told
--- "battery" instead of "fuel".
 local function isElectricModel()
-  return currentModelType() == MODEL_TYPE_ELECTRIC
+  return engineType.isElectric(session.batteryConfig, currentModelType())
 end
 
 -- The percentage callout's word, and whether it lives in the events package.
@@ -269,7 +263,7 @@ bus.subscribe("model.smartfuel_type.update", function(payload)
   if type(payload.mcuId) ~= "string" or payload.mcuId == "" then return end
   if payload.mcuId ~= session.mcuId then return end
   modelTypeCacheMcuId = payload.mcuId
-  modelTypeCacheValue = tonumber(payload.smartfuelModelType) or MODEL_TYPE_AUTO
+  modelTypeCacheValue = tonumber(payload.smartfuelModelType) or engineType.AUTO
 end)
 
 local function ensureSettings()
