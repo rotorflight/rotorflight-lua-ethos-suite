@@ -200,7 +200,7 @@ local function start()
 end
 
 local function inFlight()
-  return session.connected == true and session.isArmed == true and session.mcuId ~= nil
+  return session.connected == true and session.isArmed == true and (session.mcuId ~= nil or log.active == true)
 end
 
 local function loggingEnabled()

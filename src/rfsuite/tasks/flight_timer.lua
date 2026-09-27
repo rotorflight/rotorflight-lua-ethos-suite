@@ -125,6 +125,10 @@ function flight_timer.update(connected, armed, now)
       -- flown so far is already banked in `session`, and flightCounted survives,
       -- so a drop past the count threshold cannot be counted as a second flight.
       freeze(now)
+    elseif state.resumable then
+      if (now - state.lostAt) > RECONNECT_GRACE_SECONDS then
+        event = addEvent(event, closeFlight(now))
+      end
     elseif not state.resumable then
       -- Nothing was running and nothing is being held open, so there is nothing
       -- to keep. The `resumable` arm matters: the link usually stays down for
@@ -162,10 +166,17 @@ function flight_timer.update(connected, armed, now)
       state.flightCounted = true
       event = addEvent(event, {flightCounted = true})
     end
-  else
+  elseif armed == false then
     -- Disarmed while connected, or reconnected into a disarmed state: either
     -- way the flight is over, including one that was held open across a drop.
     if state.start or state.resumable then
+      event = addEvent(event, closeFlight(now))
+    end
+    state.live = state.session
+  else
+    -- armed is nil (link is connected, but arming state has not been received yet):
+    -- hold the flight while resumable unless grace has expired.
+    if state.resumable and (now - state.lostAt) > RECONNECT_GRACE_SECONDS then
       event = addEvent(event, closeFlight(now))
     end
     state.live = state.session
@@ -182,6 +193,11 @@ function flight_timer.resumable(now)
   if not state.resumable then return false end
   now = tonumber(now) or os.clock()
   return (now - state.lostAt) <= RECONNECT_GRACE_SECONDS
+end
+
+-- True while a flight is actively running or held open across a link loss.
+function flight_timer.inProgress(now)
+  return state.start ~= nil or flight_timer.resumable(now)
 end
 
 function flight_timer.current()

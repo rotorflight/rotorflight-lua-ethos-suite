@@ -203,10 +203,18 @@ do
     check("resumable is false once the grace window has passed",
       timer.resumable(32 + GRACE + 1) == false,
       "resumable(63)=" .. tostring(timer.resumable(32 + GRACE + 1)))
+    check("inProgress is true right after an armed link loss",
+      timer.inProgress(33) == true,
+      "inProgress(33)=" .. tostring(timer.inProgress(33)))
+    check("inProgress is false once the grace window has passed",
+      timer.inProgress(32 + GRACE + 1) == false,
+      "inProgress(63)=" .. tostring(timer.inProgress(32 + GRACE + 1)))
   end
   local fresh = dofile(TASKS .. "/flight_timer.lua")
   check("resumable is false when nothing was held open",
     type(fresh.resumable) ~= "function" or fresh.resumable(0) == false)
+  check("inProgress is false when nothing was held open",
+    type(fresh.inProgress) ~= "function" or fresh.inProgress(0) == false)
 end
 
 -- 8. reset() still means reset, because session.lua and the app both rely on it.
@@ -219,6 +227,7 @@ do
   check("reset clears the session, the live time and the count",
     s.timerSession == 0 and s.timerLive == 0 and s.timerFlightCounted == false,
     "session=" .. s.timerSession .. " live=" .. s.timerLive .. " counted=" .. tostring(s.timerFlightCounted))
+  check("inProgress is false after reset", timer.inProgress() == false)
 end
 
 -- ---------------------------------------------------------------------------
@@ -336,8 +345,8 @@ do
   local files = runLogScenario("one_flight", {
     {true, true, false},   -- armed, link up: one file opens
     {false, nil, true},    -- link lost mid-flight, flight still open
-    {true, true, true},    -- reconnects armed: the same file
-    {true, true, true},
+    {true, true, false},   -- reconnects armed: the same file, resumed (resumable now false)
+    {true, true, false},
   })
   check("log: a brief armed link loss keeps one file", files == 1,
     "files opened=" .. files .. " (2 means one flight was split)")

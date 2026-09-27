@@ -780,6 +780,19 @@ local function runHandshake(mspQueue, protocol)
   requestTelemetryConfig(mspQueue, protocol)
 end
 
+local function clearAircraftIdentity()
+  if originalModelName and model and model.name then
+    pcall(model.name, originalModelName)
+  end
+  originalModelName = nil
+  session.mcuId = nil
+  session.craftName = nil
+  session.modelPreferences = nil
+  session.modelPreferencesFile = nil
+  session.modelPreferencesMcuId = nil
+  session.modelStats = nil
+end
+
 local function setConnected(value, mspQueue, protocol)
   if session.connected == value then return end
   session.connected = value
@@ -792,14 +805,10 @@ local function setConnected(value, mspQueue, protocol)
     end
   else
     debugLog.print("[session] disconnected")
-    -- Restore whatever the Ethos model name was before syncname (see the
-    -- craft-name handshake above) last overwrote it -- must run before
-    -- session.craftName is wiped below, since it's this connect's own
-    -- captured originalModelName that's being restored, not a fresh read.
-    if originalModelName and model and model.name then
-      pcall(model.name, originalModelName)
+    local holdingFlight = flightTimer.inProgress and flightTimer.inProgress()
+    if not holdingFlight then
+      clearAircraftIdentity()
     end
-    originalModelName = nil
     -- Forget everything the handshake fetched so it re-runs in full on the
     -- next connect (a stale FC version/UID/battery config from a previous
     -- session -- or a different aircraft entirely -- must not survive a
@@ -808,13 +817,14 @@ local function setConnected(value, mspQueue, protocol)
     for k in pairs(handshakeInFlight) do
       handshakeInFlight[k] = false
     end
+    if holdingFlight and session.mcuId then
+      session.handshake.mcuId = true
+    end
     session.fcVersion = nil
     session.rfVersion = nil
     session.apiVersionMajor = nil
     session.apiVersionMinor = nil
     session.apiVersionSupported = nil
-    session.mcuId = nil
-    session.craftName = nil
     session.clockSynced = false
     session.batteryConfig = nil
     session.consumption = nil
@@ -840,10 +850,6 @@ local function setConnected(value, mspQueue, protocol)
     session.adjValue = nil
     session.timerTarget = 300
     session.smartfuelModelType = 0
-    session.modelPreferences = nil
-    session.modelPreferencesFile = nil
-    session.modelPreferencesMcuId = nil
-    session.modelStats = nil
     session.bblFlags = nil
     session.bblSize = nil
     session.bblUsed = nil
@@ -861,15 +867,7 @@ local function setConnected(value, mspQueue, protocol)
     -- flight_timer decides instead: it holds the flight open across a short gap
     -- and closes it for good once the pilot disarms or the gap outlasts its
     -- grace window.
-    --
-    -- This function must not publish(). The only thing that carries a held
-    -- flight out to the log writer is the publish() in updateFlightTimer() at
-    -- the end of the same wakeup, and it carries the true value because the
-    -- freeze happens there first. A publish() added here would emit
-    -- connected=false with flightResumable still false, the log writer would
-    -- read that as a finished flight, and one flight would be two logs again --
-    -- with no other symptom to notice it by.
-    session.flightResumable = flightTimer.resumable()
+    session.flightResumable = holdingFlight == true
     session.isArmed = nil
     session.armDisableFlags = nil
     localSmartFuel:reset()
@@ -1107,6 +1105,10 @@ local function updateFlightTimer(now)
       saveModelPreferences()
       scheduleStatsSync(1)
     end
+  end
+
+  if not session.connected and not (flightTimer.inProgress and flightTimer.inProgress(now)) then
+    clearAircraftIdentity()
   end
 end
 
