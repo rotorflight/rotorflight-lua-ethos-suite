@@ -71,22 +71,48 @@ local menu_container = {}
 --
 -- A `lockedWhileArmed` entry is one that leads to a flight-critical write
 -- path (an FC/ESC parameter page -- see how app/tool.lua classifies the
--- tree). While the model is armed those tiles carry a short "[!] " prefix
--- and refuse to navigate, which moves the warning *ahead* of the pilot's
--- finger instead of leaving it to PageRuntime:showSaveArmed() after the
--- page is already open and the form is already on screen.
+-- tree). While the model is armed those tiles carry a "!" prefix and refuse
+-- to navigate, which moves the warning *ahead* of the pilot's finger instead
+-- of leaving it to PageRuntime:showSaveArmed() after the page is already open
+-- and the form is already on screen.
 --
--- The prefix is deliberately ASCII and deliberately short: the same label
--- still has to survive tile_grid.fitLabel()'s ellipsis budget, and a
--- prefix costs 4 of the characters a long German label has to give up.
 -- A rejected press answers with a haptic pulse plus a short-lived header
--- title flash rather than a modal dialog -- a modal here would be the
--- very distraction this is meant to avoid, and it would also stack on top
--- of whatever the pilot was already looking at.
-local ARMED_BADGE = "[!] "
+-- title flash rather than a modal dialog -- a modal here would be the very
+-- distraction this is meant to avoid, and it would also stack on top of
+-- whatever the pilot was already looking at.
+--
+-- The badge is one character, and that is a measured decision rather than
+-- taste. tile_grid.fitLabel() has only 108px (~15 characters at the real
+-- FONT_S) at 800x480 and 98px at 480x320, and every character of badge is a
+-- character of module name the pilot loses. The original "[!] " prefix
+-- measured at four characters and visibly truncated "Configuration" to
+-- "Configura...", "Radio Config" to "Radio Con..." and "ESC & Motors" to
+-- "ESC & Mo..." on the simulator; all three fit again with "!" alone.
+--
+-- Everything that could carry the warning without touching the label was
+-- measured and ruled out first:
+--
+--   * A glyph is impossible. The Ethos system fonts were probed in the
+--     simulator and carry nothing from U+2500 upward: U+26A0, U+25B2 and
+--     U+2713 all render blank, while U+00B0 and U+2192 do render.
+--   * A greyed-out tile is impossible. :enable(false) -- which the suite
+--     uses on 13 form fields and buttons elsewhere -- is simply not
+--     rendered on a tile built by form.addButton(nil, {x,y,w,h}, ...).
+--   * A coloured badge is impossible. form.addButton takes text, icon,
+--     options and press and no colour of any kind, and all 116 icons in
+--     app/gfx are lcd.loadMask, so an icon is tinted by the theme rather
+--     than carrying a colour of its own.
+--   * Swapping the tile's own icon for a warning triangle works, but costs
+--     the pilot the module icon that identifies the tile, which is the one
+--     thing a pilot scanning the menu is reading. Rejected on that ground.
+--
+-- So the label is the only channel left, and one character is what it can
+-- be had.
+local ARMED_BADGE = "!"
 local ARMED_LOCKED_NOTICE = "@i18n(app.msg_menu_locked_while_armed)@"
 local ARMED_NOTICE_HOLD = 2.0
 local ARMED_HAPTIC_PATTERN = ". . ."
+
 
 -- Which tile index was last pressed on a given screen -- mirrors the
 -- original's own `prefs.menulastselected[moduleKey]` convention (see
@@ -298,16 +324,20 @@ local function openScreen(nav, menus, rootEntries, screen, setEventHandler, setW
   local windowWidth, windowHeight = lcd.getWindowSize()
   local numPerRow, tileW, tileH, tilePadding, tileFont = tileGrid.metrics(windowWidth, windowHeight)
 
+  -- The label one entry contributes to its tile, badge included. Routed
+  -- through tile_grid.fitLabel() rather than concatenated onto an
+  -- already-fitted label, so the badge is absorbed into the same ellipsis
+  -- budget instead of pushing the text past the border (Issue #2299).
+  --
   -- Declared here rather than next to entryIsLockedNow above because it
   -- closes over tileW/tileFont, which tileGrid.metrics() only produces on
   -- the line below -- a function defined earlier would resolve them as
   -- globals (nil) instead of these locals.
   local function tileLabel(entry, armed)
-    local text = entry.title
     if armed and entry.lockedWhileArmed == true then
-      text = ARMED_BADGE .. text
+      return tileGrid.fitLabel(ARMED_BADGE .. entry.title, tileW, tileFont)
     end
-    return tileGrid.fitLabel(text, tileW, tileFont)
+    return tileGrid.fitLabel(entry.title, tileW, tileFont)
   end
 
   -- form.height() reflects the header line's actual rendered height, so
@@ -330,11 +360,10 @@ local function openScreen(nav, menus, rootEntries, screen, setEventHandler, setW
     end
 
     if isEntryVisible(entry) then
-      -- Keep tile labels explicit; pre-truncate with ellipsis so long
-      -- titles never collide with or spill over the button border (Issue #2299).
-      -- An armed-gated tile additionally carries the "[!] " prefix (Issue #2302),
-      -- which fitLabel() absorbs into the same ellipsis budget rather than
-      -- letting the badge push the label past the border.
+      -- Pre-truncate with ellipsis so long titles never collide with or
+      -- spill over the button border (Issue #2299), and let the armed
+      -- badge share that same budget (Issue #2302) rather than sitting
+      -- outside it.
       local label = tileLabel(entry, isArmed)
       tileButtons[i] = form.addButton(nil, {x = x, y = y, w = tileW, h = tileH}, {
         text = label,

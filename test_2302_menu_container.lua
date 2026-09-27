@@ -72,7 +72,7 @@ local formStub = {
   height = function() return 20 + lineCount * 18 end,
   addLine = function() lineCount = lineCount + 1 return {} end,
   addButton = function(_, rect, opts)
-    local b = {rect = rect, text = opts.text, press = opts.press, enabled = true}
+    local b = {rect = rect, text = opts.text, icon = opts.icon, press = opts.press, enabled = true}
     function b:enable(v) self.enabled = v end
     function b:focus() self.focused = true end
     buttons[#buttons + 1] = b
@@ -208,7 +208,7 @@ end
 
 build(twoTiles(), taskGuard)
 eq("disarmed: two tiles built", #buttons, 2)
-check("disarmed: locked tile carries no badge", buttons[1].text:sub(1, 4) ~= "[!] ", buttons[1].text)
+check("disarmed: locked tile carries no badge", buttons[1].text:sub(1, 1) ~= "!", buttons[1].text)
 buttons[1].press()
 eq("disarmed: press navigates", pushCount, 1)
 eq("disarmed: press opens the page", openedPages[1], "app/pages/long.lua")
@@ -221,24 +221,67 @@ eq("disarmed: no haptic", #haptics, 0)
 armed = true
 build(twoTiles(), taskGuard)
 eq("armed: two tiles built", #buttons, 2)
-check("armed: locked tile is badged", buttons[1].text:sub(1, 4) == "[!] ", buttons[1].text)
-check("armed: unlocked tile carries no badge", buttons[2].text:sub(1, 4) ~= "[!] ", buttons[2].text)
+check("armed: locked tile is badged", buttons[1].text:sub(1, 1) == "!", buttons[1].text)
+check("armed: unlocked tile carries no badge", buttons[2].text:sub(1, 1) ~= "!", buttons[2].text)
 
--- The whole point of routing the badge through tileGrid.fitLabel rather
--- than concatenating it in front of an already-fitted label: the prefix
--- costs budget, so the result must still be truncated.
+-- The badge is one character and that is a measured decision, not taste: a
+-- "[!] " prefix cost four and visibly truncated real module names on the
+-- simulator. So the assertions are about how much of the title survives, not
+-- about the raw fitted length -- fitLabel() centres its ellipsis, which means
+-- a longer prefix can even yield a longer *output* while showing less title.
 -- metrics() returns numPerRow, tileW, tileH, tilePadding, tileFont -- tileW
 -- is the SECOND value, not the fifth.
 local _, tileW = realTileGrid.metrics(800, 480)
-local fitted = realTileGrid.fitLabel("[!] " .. LONG, tileW, "FONT_XS")
-check("armed: badged label is truncated to fit",
-      #buttons[1].text * CHAR_W <= tileW,
-      string.format("text=%q w=%d tileW=%d", buttons[1].text, #buttons[1].text * CHAR_W, tileW))
-check("armed: truncation actually engaged (test is not vacuous)",
-      #buttons[1].text < #("[!] " .. LONG),
-      string.format("text=%q", buttons[1].text))
+local fitted = realTileGrid.fitLabel("!" .. LONG, tileW, "FONT_XS")
+local fittedOld = realTileGrid.fitLabel("[!] " .. LONG, tileW, "FONT_XS")
+
+-- How many leading characters of the true title a fitted label preserves,
+-- ignoring the badge and the trailing ellipsis. Both badge shapes are
+-- stripped so the same helper can score the current "!" and the old "[!] ".
+local function titleCharsShown(label, title)
+  local body = label:gsub("^%[!%] ", "")   -- the old four-character badge
+  body = body:gsub("^!", "")               -- the current one-character badge
+  body = body:gsub("%.%.%.$", "")
+  if title:sub(1, #body) == body then return #body end
+  return 0
+end
+
 check("armed: fitted label matches tile_grid's own output", buttons[1].text == fitted,
       string.format("%q vs %q", buttons[1].text, fitted))
+check("armed: label still truncated to fit",
+      #buttons[1].text * CHAR_W <= tileW,
+      string.format("text=%q w=%d tileW=%d", buttons[1].text, #buttons[1].text * CHAR_W, tileW))
+check("armed: the one-character badge shows more title than \"[!] \" did",
+      titleCharsShown(buttons[1].text, LONG) > titleCharsShown(fittedOld, LONG),
+      string.format("new=%q shows %d, old=%q shows %d",
+                    buttons[1].text, titleCharsShown(buttons[1].text, LONG),
+                    fittedOld, titleCharsShown(fittedOld, LONG)))
+
+-- A title that exactly fills the tile: the badge must push it over, which is
+-- the case the shorter badge exists to minimise. The budget is probed rather
+-- than derived from tileW / CHAR_W -- fitLabel() does not spend the whole
+-- width and may reserve a margin, so arithmetic here would be a guess.
+do
+  local maxChars = 0
+  for n = 40, 1, -1 do
+    local probe = ("x"):rep(n)
+    if realTileGrid.fitLabel(probe, tileW, "FONT_XS") == probe then
+      maxChars = n
+      break
+    end
+  end
+  check("edge title: a bare title of the full width was found", maxChars > 0, "budget probe failed")
+  local edge = ("x"):rep(maxChars)
+  check("edge title: bare fills the tile untouched",
+        realTileGrid.fitLabel(edge, tileW, "FONT_XS") == edge)
+  check("edge title: a badge of any length truncates it",
+        realTileGrid.fitLabel("!" .. edge, tileW, "FONT_XS") ~= "!" .. edge)
+  build({{title = edge, script = "app/pages/long.lua", lockedWhileArmed = true}}, taskGuard)
+  check("armed: edge title is truncated but keeps the badge",
+        buttons[1].text:sub(1, 1) == "!" and buttons[1].text ~= edge, buttons[1].text)
+  -- Back to the two-tile screen the assertions below expect.
+  build(twoTiles(), taskGuard)
+end
 
 buttons[1].press()
 eq("armed: press is refused (no nav)", pushCount, 0)
@@ -279,13 +322,13 @@ eq("notice restores the real screen title", headerTitles[#headerTitles], ROOT_TI
 armed = false
 if wakeupHandler then wakeupHandler() end
 check("disarm: grid rebuilt", #buttons > 0)
-check("disarm: badge gone after rebuild", buttons[1].text:sub(1, 4) ~= "[!] ", buttons[1].text)
+check("disarm: badge gone after rebuild", buttons[1].text:sub(1, 1) ~= "!", buttons[1].text)
 buttons[1].press()
 eq("disarm: press navigates again", pushCount, 2)
 
 armed = true
 if wakeupHandler then wakeupHandler() end
-check("re-arm: badge back after rebuild", buttons[1].text:sub(1, 4) == "[!] ", buttons[1].text)
+check("re-arm: badge back after rebuild", buttons[1].text:sub(1, 1) == "!", buttons[1].text)
 
 --------------------------------------------------------------------
 -- 5. Wakeup handler installation
@@ -331,6 +374,37 @@ menuContainer.openRoot(nav, {{title = LONG, script = "app/pages/long.lua", locke
 check("no armedState: no badge", buttons[1].text:sub(1, 4) ~= "[!] ")
 buttons[1].press()
 eq("no armedState: press still navigates", pushCount, 1)
+
+--------------------------------------------------------------------
+-- 7. The armed state changes the label only, never the tile icon
+--------------------------------------------------------------------
+
+-- A warning triangle in place of the tile icon was implemented and measured
+-- (it cost zero label characters) and then rejected: the module icon is how
+-- a pilot identifies the tile at a glance, so taking it away to carry a
+-- warning is the wrong trade. This pins that decision down -- if a later
+-- change swaps the icon again, it fails here.
+do
+  local marker = {moduleIcon = true}
+  local entries = {
+    {title = SHORT, script = "app/pages/long.lua", lockedWhileArmed = true, icon = marker},
+    {title = SHORT, script = "app/pages/short.lua", icon = marker},
+  }
+
+  armed = false
+  build(entries, taskGuard)
+  check("disarmed: locked tile keeps its own icon", buttons[1].icon == marker)
+
+  armed = true
+  build(entries, taskGuard)
+  check("armed: locked tile still keeps its own icon", buttons[1].icon == marker,
+        tostring(buttons[1].icon and buttons[1].icon.moduleIcon))
+  check("armed: the icon is not replaced by any warning asset",
+        buttons[1].icon == buttons[2].icon)
+  check("armed: the difference is the label, not the icon",
+        buttons[1].text ~= buttons[2].text,
+        string.format("both %q", buttons[1].text))
+end
 
 --------------------------------------------------------------------
 -- Result
