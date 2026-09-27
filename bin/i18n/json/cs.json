@@ -5086,6 +5086,18 @@
           "max_length": 12,
           "reverse_text": false
         },
+        "arming_flags_active_list": {
+          "english": "Active reasons:",
+          "translation": "Aktivní důvody:",
+          "needs_translation": false,
+          "max_length": 15
+        },
+        "arming_flags_active_fmt": {
+          "english": "%d active",
+          "translation": "%d aktivní",
+          "needs_translation": false,
+          "max_length": 9
+        },
         "cpu_load": {
           "english": "CPU Load",
           "translation": "Zatížení CPU",

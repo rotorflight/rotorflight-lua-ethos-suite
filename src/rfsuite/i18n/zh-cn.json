@@ -4121,6 +4121,18 @@
           "reverse_text": false,
           "translation": "解锁标志"
         },
+        "arming_flags_active_fmt": {
+          "english": "%d active",
+          "max_length": 9,
+          "needs_translation": false,
+          "translation": "%d 项"
+        },
+        "arming_flags_active_list": {
+          "english": "Active reasons:",
+          "max_length": 15,
+          "needs_translation": false,
+          "translation": "生效原因："
+        },
         "cpu_load": {
           "english": "CPU Load",
           "max_length": 8,

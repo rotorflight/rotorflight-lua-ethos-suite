@@ -4121,6 +4121,18 @@
           "reverse_text": false,
           "translation": "Vyzbrojovací vlajky"
         },
+        "arming_flags_active_fmt": {
+          "english": "%d active",
+          "max_length": 9,
+          "needs_translation": false,
+          "translation": "%d aktivní"
+        },
+        "arming_flags_active_list": {
+          "english": "Active reasons:",
+          "max_length": 15,
+          "needs_translation": false,
+          "translation": "Aktivní důvody:"
+        },
         "cpu_load": {
           "english": "CPU Load",
           "max_length": 8,

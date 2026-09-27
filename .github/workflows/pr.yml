@@ -68,6 +68,41 @@ jobs:
           path: rotorflight-lua-ethos-suite-lite-${{ env.GIT_VER }}-${{ matrix.lang }}.zip
           if-no-files-found: error
 
+  # A Diagnostics page cannot be looked at from a pull request, and the one
+  # that broke was invisible by construction: app/pages/diagnostics_fblstatus.lua
+  # joined every active arming-disable flag into one value-column string, and
+  # that column is the narrow right-hand half of the line, so on a 480x320
+  # radio the reason the model would not arm was clipped off the right edge.
+  #
+  # The mask arithmetic now lives in lib/arming_flags.lua with no dependency on
+  # form or lcd, so it can be stepped here; the widths of the translated strings
+  # are the half that needs the locale files, and the two run together because
+  # neither one is worth anything without the other.
+  fblstatus:
+    name: Arming flags readable at any resolution
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Lua 5.3
+        run: sudo apt-get update && sudo apt-get install -y lua5.3
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Prove the width check can go red
+        run: python bin/fblstatus/verify_arming_flag_widths.py --self-test
+
+      - name: Check the arming flag mask and the page's use of it
+        run: lua5.3 bin/fblstatus/verify_arming_flags.lua
+
+      - name: Check every locale's flag strings against the row widths
+        run: python bin/fblstatus/verify_arming_flag_widths.py
+
   # tasks/elrs_sensors.lua's parseFrame() stops at the first appId it has no
   # decoder for and cannot skip it -- the pair's byte width lives only in
   # src/rfsuite/lib/elrs_sensor_table.lua. So one appId the table is missing
