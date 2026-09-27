@@ -92,12 +92,17 @@ local menu_container = {}
 -- Everything that could carry the warning without touching the label was
 -- measured and ruled out first:
 --
---   * A glyph is impossible. The Ethos system fonts were probed in the
---     simulator and carry nothing from U+2500 upward: U+26A0, U+25B2 and
---     U+2713 all render blank, while U+00B0 and U+2192 do render.
---   * A greyed-out tile is impossible. :enable(false) -- which the suite
---     uses on 13 form fields and buttons elsewhere -- is simply not
---     rendered on a tile built by form.addButton(nil, {x,y,w,h}, ...).
+--   * A glyph is not available. Probed in the simulator by rendering a row
+--     of candidates in the menu header: U+26A0 (warning sign), U+25B2 and
+--     U+25BC (triangles) and U+2713 and U+2717 (check/cross) all rendered
+--     blank, while U+00B0 and U+2192 rendered. Those five are what was
+--     measured -- the whole range above U+2500 was not swept, so this is
+--     not a claim that the fonts stop there.
+--   * A greyed-out tile does not work. :enable(false) -- used at 101 call
+--     sites across 35 files elsewhere in this suite, 11 of them on buttons
+--     including the header's Save and Reload -- is not rendered on a tile
+--     built by form.addButton(nil, {x,y,w,h}, ...). Verified by disabling
+--     two tiles in the simulator: no visual change.
 --   * A coloured badge is impossible. form.addButton takes text, icon,
 --     options and press and no colour of any kind, and all 116 icons in
 --     app/gfx are lcd.loadMask, so an icon is tinted by the theme rather
