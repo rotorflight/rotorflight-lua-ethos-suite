@@ -152,8 +152,7 @@ local catalog = {
     [64] = {65, 66, 67},
     [68] = {69, 70, 71},
   },
-  DEFAULT_IDS = {90, 3, 60, 4, 23, 5, 93, 99, 95, 96, 15, 91, 43, 97, 6},
-  -- Ids the flight controller emits as *full* CRSF frames while
+  DEFAULT_IDS = {90, 3, 60, 4, 23, 5, 93, 99, 95, 96, 15, 91, 43, 97, 6},  -- Ids the flight controller emits as *full* CRSF frames while
   -- crsf_telemetry_mode is NATIVE: crsfNativeTelemetrySensors in
   -- src/main/telemetry/crsf.c holds FLIGHT_MODE, BATTERY, ATTITUDE,
   -- ALTITUDE, GPS, RPM and TEMP, and crsfInitNativeTelemetry() adds one to
@@ -174,6 +173,17 @@ local catalog = {
     [89] = true, -- Flight mode
   },
 }
+
+-- NOT_AT_SAME_TIME above maps a parent to its children, so answering "which
+-- parent governs this id?" needs the reverse direction. Derived here rather
+-- than hand-listed so the two cannot drift; the EdgeTX page builds the same
+-- map (CONFLICTING_WITH) for the same reason.
+catalog.CONFLICTING_WITH = {}
+for parentId, childIds in pairs(catalog.NOT_AT_SAME_TIME) do
+  for _, childId in ipairs(childIds) do
+    catalog.CONFLICTING_WITH[childId] = parentId
+  end
+end
 
 package.loaded["rfsuite.lib.telemetry_sensor_catalog"] = catalog
 return catalog

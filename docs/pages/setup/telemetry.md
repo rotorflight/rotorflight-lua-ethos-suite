@@ -32,12 +32,14 @@ Greyed out until the flight controller answers. Read-only while the model is arm
 - **A maximum of 40 sensors can be active in total**, counting the preserved
   slots. If your switches plus the preserved ones would exceed 40, the save is
   refused and a dialog says so, rather than silently dropping sensors.
-- **Three sensors cannot be switched off while the flight controller is in
+- **Some sensors cannot be switched off while the flight controller is in
   native CRSF telemetry mode**: *Altitude*, *Attitude (Combined)* and *Flight
-  mode*. The flight controller sends those as whole CRSF frames in that mode
-  whether a slot selects them or not, so their switches read as on, stay
+  mode*, and the per-axis children *Pitch Attitude*, *Roll Attitude* and *Yaw
+  Attitude*. The flight controller sends those as whole CRSF frames in that
+  mode whether a slot selects them or not, so their switches read as on, stay
   greyed out and ignore taps. This is not a fault — those sensors really are
-  being sent.
+  being sent. The lock applies only in native mode: in custom mode all of them
+  are ordinary selectable sensors, and the page gives them back.
 - **Saving sets the flight controller's CRSF telemetry mode to *Custom*.** The
   suite reads custom telemetry only, so it cannot show sensors otherwise. The
   flight controller's mode is *Native* or *Custom* and this page has no control

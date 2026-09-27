@@ -90,6 +90,27 @@ local function isNativeLocked(crsfMode, id)
     and catalog.NATIVE_LOCKED_IDS[id] == true
 end
 
+-- NOT_AT_SAME_TIME maps a parent to its children, so "is my parent
+-- native-locked?" reads catalog.CONFLICTING_WITH, the reverse map derived in
+-- that file. A child of a native-locked parent is out of the pilot's reach for
+-- the same reason the parent is: the firmware will not send the combined and
+-- the per-axis value at the same time, and in NATIVE mode it is sending the
+-- parent.
+--
+-- Without this the switch accepts a tick, shows as on, and then collectSelected()
+-- drops the id -- the page would promise a sensor the FC never sends. Mirrors
+-- the CONFLICTING_WITH lookup in the EdgeTX page's getBoolGetter/getBoolSetter.
+local function hasNativeLockedParent(crsfMode, id)
+  local parentId = catalog.CONFLICTING_WITH[id]
+  return parentId ~= nil and isNativeLocked(crsfMode, parentId)
+end
+
+-- Either the id itself or its parent is being sent by the FC whatever the page
+-- does, so the page must not offer to change it.
+local function isFixedByFc(crsfMode, id)
+  return isNativeLocked(crsfMode, id) or hasNativeLockedParent(crsfMode, id)
+end
+
 local function countSelected(selected)
   local count = 0
   for _, id in ipairs(catalog.SENSOR_IDS) do
@@ -109,20 +130,8 @@ local function collectSelected(selected, crsfMode)
   for _, id in ipairs(catalog.SENSOR_IDS) do
     if isNativeLocked(crsfMode, id) then
       out[#out + 1] = id
-    elseif selected[id] == true then
-      local conflicts = catalog.NOT_AT_SAME_TIME[id]
-      local parentLocked = false
-      if conflicts then
-        for _, conflictId in ipairs(conflicts) do
-          if isNativeLocked(crsfMode, conflictId) then
-            parentLocked = true
-            break
-          end
-        end
-      end
-      if not parentLocked then
-        out[#out + 1] = id
-      end
+    elseif selected[id] == true and not hasNativeLockedParent(crsfMode, id) then
+      out[#out + 1] = id
     end
   end
   return out
@@ -187,10 +196,12 @@ local function applyDefaultSelection(selected, crsfMode)
     selected[id] = true
   end
   -- The Tool button resets the pilot's selection to the default set, so it
-  -- must not quietly switch off a native-locked sensor either -- the same
-  -- reason collectSelected() adds those ids back unconditionally.
+  -- must not quietly switch off a sensor the FC is sending either -- the same
+  -- reason collectSelected() adds those ids back unconditionally. Children of a
+  -- fixed parent are deliberately not added: the firmware will not send the
+  -- combined and the per-axis value together.
   for id in pairs(catalog.NATIVE_LOCKED_IDS) do
-    if isNativeLocked(crsfMode, id) then
+    if isFixedByFc(crsfMode, id) then
       selected[id] = true
     end
   end
@@ -219,19 +230,19 @@ local function open(opts)
 
   local function refreshConflictFields()
     for id, field in pairs(fieldsBySensor) do
-      -- A native-locked sensor stays disabled: the FC sends it in NATIVE mode
-      -- regardless, and its setter rejects a change anyway.
-      if not isNativeLocked(crsfMode, id) then
+      -- A sensor the FC is sending (or whose parent it is sending) stays
+      -- disabled: its setter rejects a change anyway.
+      if not isFixedByFc(crsfMode, id) then
         field:enable(true)
       end
     end
     for id, conflicts in pairs(catalog.NOT_AT_SAME_TIME) do
       if selected[id] == true then
         for _, conflictId in ipairs(conflicts) do
-          -- A native-locked conflict is not switched off here: the FC sends
-          -- it in NATIVE mode whether a slot selects it or not, so claiming
-          -- it is off would be a lie the save would not keep.
-          if isNativeLocked(crsfMode, conflictId) then
+          -- A fixed-by-FC conflict is not switched off here: the FC sends it
+          -- whether a slot selects it or not, so claiming it is off would be a
+          -- lie the save would not keep.
+          if isFixedByFc(crsfMode, conflictId) then
             selected[conflictId] = true
           else
             previousConflictState[conflictId] = selected[conflictId]
@@ -280,11 +291,18 @@ local function open(opts)
       local telemetry = rt.data.telemetry
       if telemetry then
         -- Preserved slots count against the 40 just as managed ones do, so
-        -- the "no more than 40" refusal stays honest now that unmanaged
-        -- slots are no longer overwritten with 0.
+        -- the "no more than 40" refusal stays honest now that unmanaged slots
+        -- are no longer overwritten with 0.
         local unmanaged = countUnmanaged(telemetry.slots)
         local ordered = collectSelected(selected, crsfMode)
         if #ordered + unmanaged > telemetryConfig.SLOT_COUNT then
+          -- Refused: slots and mode are left exactly as read, so the write
+          -- that follows re-sends the flight controller's current state
+          -- rather than a truncated version of the pilot's wish. The pilot's
+          -- switches are dropped, which is what the dialog is for. (The edgeTX
+          -- page returns false and blocks the write entirely; this runtime has
+          -- no veto, and re-sending the unchanged config is the safer of the
+          -- two available outcomes.)
           openTooManyDialog()
           return
         end
@@ -352,16 +370,17 @@ local function open(opts)
         local line = panel:addLine(sensor.name)
         local field = form.addBooleanField(line, nil,
           function()
-            -- Native-locked reads as on even if nothing put it in `selected`:
+            -- Fixed-by-FC reads as on even if nothing put it in `selected`:
             -- the FC is sending it, so the switch must not show off.
-            if isNativeLocked(crsfMode, sensorId) then return true end
+            if isFixedByFc(crsfMode, sensorId) then return true end
             return selected[sensorId] == true
           end,
           function(value)
-            -- Refuse the change outright while native-locked. Returning false
-            -- leaves the switch where the getter last reported it, so the
-            -- pilot's tap does not make the page disagree with the FC.
-            if isNativeLocked(crsfMode, sensorId) then return false end
+            -- Refuse the change outright while the FC is sending this sensor
+            -- (or its parent). Returning false leaves the switch where the
+            -- getter last reported it, so the pilot's tap does not make the
+            -- page disagree with the FC.
+            if isFixedByFc(crsfMode, sensorId) then return false end
 
             if value == true and selected[sensorId] ~= true
                 and countSelected(selected) >= telemetryConfig.SLOT_COUNT then
@@ -369,31 +388,30 @@ local function open(opts)
               return false
             end
 
+            -- Plain conflict handling, with no native-locked special case for
+            -- the children: `conflictId` here is always a child (NOT_AT_SAME_TIME
+            -- maps a parent to its children), and no child id is in
+            -- NATIVE_LOCKED_IDS. The case that does need guarding -- a child
+            -- whose parent is native-locked -- is already refused by the
+            -- isFixedByFc() check at the top of this setter.
             local conflicts = catalog.NOT_AT_SAME_TIME[sensorId]
             if conflicts then
               if value == true then
                 for _, conflictId in ipairs(conflicts) do
-                  if isNativeLocked(crsfMode, conflictId) then
-                    -- Left on: it is native-locked, so switching the parent
-                    -- on does not switch the child off.
-                  else
-                    previousConflictState[conflictId] = selected[conflictId]
-                    selected[conflictId] = false
-                    if fieldsBySensor[conflictId] then
-                      fieldsBySensor[conflictId]:enable(false)
-                    end
+                  previousConflictState[conflictId] = selected[conflictId]
+                  selected[conflictId] = false
+                  if fieldsBySensor[conflictId] then
+                    fieldsBySensor[conflictId]:enable(false)
                   end
                 end
               else
                 for _, conflictId in ipairs(conflicts) do
-                  if not isNativeLocked(crsfMode, conflictId) then
-                    if fieldsBySensor[conflictId] then
-                      fieldsBySensor[conflictId]:enable(true)
-                    end
-                    if previousConflictState[conflictId] ~= nil then
-                      selected[conflictId] = previousConflictState[conflictId]
-                      previousConflictState[conflictId] = nil
-                    end
+                  if fieldsBySensor[conflictId] then
+                    fieldsBySensor[conflictId]:enable(true)
+                  end
+                  if previousConflictState[conflictId] ~= nil then
+                    selected[conflictId] = previousConflictState[conflictId]
+                    previousConflictState[conflictId] = nil
                   end
                 end
               end
