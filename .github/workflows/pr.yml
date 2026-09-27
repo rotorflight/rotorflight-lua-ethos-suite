@@ -49,6 +49,35 @@ jobs:
           path: rotorflight-lua-ethos-suite-lite-${{ env.GIT_VER }}-${{ matrix.lang }}.zip
           if-no-files-found: error
 
+  # tasks/elrs_sensors.lua's parseFrame() stops at the first appId it has no
+  # decoder for and cannot skip it -- the pair's byte width lives only in
+  # src/rfsuite/lib/elrs_sensor_table.lua. So one appId the table is missing
+  # silently costs every sensor packed after it in the same frame, and the
+  # symptom looks like a dead sensor. Nothing in the tree could see that, so
+  # the table is compared against the firmware's TLM_SENSOR(...) list.
+  #
+  # The firmware file is read from a pinned snapshot tag, so a firmware that
+  # adds an appId shows up here as a deliberate change to this check rather
+  # than as a frame-walk abort on a pilot's radio.
+  sensor-table-completeness:
+    name: Sensor table completeness
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Prove the check can go red
+        run: python bin/telemetry/verify_sensor_table.py --self-test
+
+      - name: Check every broadcast appId has a decoder
+        run: python bin/telemetry/verify_sensor_table.py
+
   # The rule in .agents/rules/documentation.md asks that a change a pilot can observe
   # updates its page file in the same pull request, and that a pull request which needs
   # no documentation change says why. Nothing checked either half, so both rested on
