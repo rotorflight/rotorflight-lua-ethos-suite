@@ -413,6 +413,7 @@ def main():
     ap.add_argument('--json', required=True, help='Path to en.json')
     ap.add_argument('--root', required=True, help='Root of codebase to scan')
     ap.add_argument('--dry-run', action='store_true', help='Do not write changes')
+    ap.add_argument('--report', help='Write unresolved keys to this JSON file (removed when none)')
     args = ap.parse_args()
 
     if args.list_transforms:
@@ -441,6 +442,32 @@ def main():
         # show top offenders first
         for k, c in sorted(unresolved_agg.items(), key=lambda kv: (-kv[1], kv[0])):
             print(f"  {k}: {c} occurrence(s)")
+        print(f"[i18n] WARNING: {len(unresolved_agg)} key(s) missing from {Path(args.json).name}; "
+              "the radio will show the raw @i18n(...)@ text. "
+              "Run 'python bin/i18n/check-tags.py' for file/line locations.")
+
+    if args.report:
+        write_report(Path(args.report), args.json, unresolved_agg)
+
+
+def write_report(report: Path, json_path: str, unresolved: dict):
+    """Record unresolved keys for agents/tools; remove a stale report when clean."""
+    try:
+        if not unresolved:
+            if report.exists():
+                report.unlink()
+            return
+        report.parent.mkdir(parents=True, exist_ok=True)
+        import datetime
+        report.write_text(json.dumps({
+            "generated": datetime.datetime.now().isoformat(timespec="seconds"),
+            "locale_file": Path(json_path).name,
+            "unresolved": dict(sorted(unresolved.items())),
+            "locate_with": "python bin/i18n/check-tags.py --lang " + Path(json_path).stem,
+        }, indent=2) + "\n", encoding="utf-8")
+        print(f"[i18n] Report written: {report}")
+    except OSError as e:
+        print(f"[i18n] WARNING: could not write report {report}: {e}")
 
 if __name__ == "__main__":
     sys.exit(main())

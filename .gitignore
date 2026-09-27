@@ -11,3 +11,4 @@ __pycache__/
 .claude
 .vscode/settings.json
 bin/package/rotorflight-lua-ethos-suite-lite-local-test-en.zip
+.vscode/logs/
