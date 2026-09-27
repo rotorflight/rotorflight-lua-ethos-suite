@@ -649,7 +649,6 @@ local function buildBoxes(W)
             source = "temp_esc",
             stattype = "max",
             title = "ESC Max Temp",
-            unit = "°F",
             titlepos = "top",
             titlealign = "center",
             valuealign = "center",
