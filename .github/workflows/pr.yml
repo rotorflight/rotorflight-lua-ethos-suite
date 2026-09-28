@@ -45,6 +45,33 @@ jobs:
       - name: Check the write path
         run: lua5.3 bin/storage/verify_atomic_writes.lua
 
+  # Every MSP decoder in the suite funnels through lib/mspcodec.lua, and the one
+  # primitive there was not bounds-safe: readU8 returned nil for a byte past the
+  # end of the payload where readS8/readU16/readS16/readU32 all substituted 0.
+  # That nil was not a missing value. The smartfuel decoder divided a readU8
+  # result by 1000, and tasks/msp/queue.lua calls processReply with no pcall and
+  # there is none in the task path either, so a short reply raised out of the
+  # background task instead of being reported. The battery decoder had the softer
+  # version: a nil or a zero standing in for a profile capacity, in a config that
+  # still passed session.lua's `if not session.batteryConfig` guard because that
+  # guard sees the table and not its contents. A build cannot reach any of that,
+  # and a radio only produces a short reply under conditions nobody can script on
+  # demand, so the payload lengths are pinned here against the firmware handler's
+  # own byte counts instead. Cases 4, 5 and 6 go red on the pre-fix sources.
+  msp-codec-battery:
+    name: A short MSP payload is reported, not decoded
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Lua 5.3
+        run: sudo apt-get update && sudo apt-get install -y lua5.3
+
+      - name: Check the codec and the battery decoders
+        run: lua5.3 bin/msp_battery/verify_msp_battery.lua
+
   # Per-language PR builds (mirrors push.yml behavior)
   create-zip:
     name: Build PR ZIP (${{ matrix.lang }})
