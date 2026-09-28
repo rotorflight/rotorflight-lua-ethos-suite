@@ -69,36 +69,48 @@ local function writeDirect(path, data)
   local ok = pcall(function()
     file:write(data)
     if file.flush then file:flush() end
-    file:close()
   end)
+  pcall(function() file:close() end)
   return ok
 end
 
 -- Byte-preserving read of a whole file, used only by the two fallbacks below.
 --
--- io.read(handle, "L") is the Ethos spelling this codebase reads with (see
--- ini.load_file_as_string), and its line terminator is included on Ethos but
--- not on a stock Lua build, where the equivalent is handle:read("l"). The
--- terminator is therefore re-appended only when it is missing, so the copy is
--- byte-exact on both. Losing a separator here would silently fuse two
--- `[section]` headers into one.
+-- Tries file:read("*a") first, which is standard Lua (desktop / CLI harnesses)
+-- and reads the entire file in one call. Falls back to io.read(file, "L") which
+-- is the Ethos C-extension spelling this codebase reads with (see
+-- ini.load_file_as_string), where the line terminator is included. The terminator
+-- is re-appended only when it is missing, so the copy is byte-exact on both.
+-- Losing a separator here would silently fuse two `[section]` headers into one.
 local function readWholeFile(path)
   local file = io.open(path, "rb")
   if not file then return nil end
-  local chunks = {}
-  while true do
-    local chunk = io.read(file, "L")
-    if not chunk then break end
-    if not chunk:match("\n$") then chunk = chunk .. "\n" end
-    chunks[#chunks + 1] = chunk
+  local content = nil
+  if file.read then
+    local ok, res = pcall(function() return file:read("*a") end)
+    if ok and type(res) == "string" then
+      content = res
+    end
   end
-  file:close()
-  return table.concat(chunks)
+  if content == nil then
+    if file.seek then pcall(function() file:seek("set", 0) end) end
+    local chunks = {}
+    while true do
+      local ok, chunk = pcall(io.read, file, "L")
+      if not ok or not chunk then break end
+      if not chunk:match("\n$") then chunk = chunk .. "\n" end
+      chunks[#chunks + 1] = chunk
+    end
+    content = table.concat(chunks)
+  end
+  pcall(function() file:close() end)
+  return content
 end
 
 function atomicWrite.discardTemp(path)
-  if not (os and os.remove) then return false end
-  return (pcall(os.remove, atomicWrite.tempPath(path))) and true or false
+  if not (os and os.remove) or type(path) ~= "string" or path == "" then return false end
+  local ok, res = pcall(os.remove, atomicWrite.tempPath(path))
+  return (ok and res) and true or false
 end
 
 -- Open the temp file for writing. Returns nil when it cannot be created, which
@@ -131,7 +143,7 @@ function atomicWrite.commit(handle, path)
     local data = readWholeFile(temp)
     if not data then return false end
     local ok = writeDirect(path, data)
-    pcall(os.remove, temp)
+    atomicWrite.discardTemp(path)
     return ok
   end
 
@@ -155,7 +167,7 @@ function atomicWrite.commit(handle, path)
     -- copy of what the caller tried to save.
     local data = readWholeFile(temp)
     local ok = data ~= nil and writeDirect(path, data)
-    if ok and os and os.remove then pcall(os.remove, temp) end
+    if ok then atomicWrite.discardTemp(path) end
     return ok == true
   end
 
@@ -166,7 +178,7 @@ end
 -- file is never involved, so a caller can simply return false.
 function atomicWrite.abort(handle, path)
   if handle then pcall(function() handle:close() end) end
-  if os and os.remove and type(path) == "string" then pcall(os.remove, atomicWrite.tempPath(path)) end
+  if type(path) == "string" then atomicWrite.discardTemp(path) end
 end
 
 -- Convenience for callers that already hold the complete content as a string.

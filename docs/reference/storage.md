@@ -67,9 +67,9 @@ a flight.
   file back and measuring it before the original is touched; porting that needs
   a byte-exact read, which the Ethos `io.read(file, "L")` spelling used
   throughout this suite does not make obvious.
-- **A save that is interrupted *and* retried after the temp file was already
-  removed** cannot be recovered from; the settings on the card are the ones
-  from before the interrupted write.
+- **A save interrupted between target removal and the final rename** leaves
+  `<file>.tmp` on disk while `<file>` is missing; the next boot will load defaults
+  unless manually recovered from `.tmp`.
 - **The SD card being removed or failing** is outside this mechanism.
 - **The log page's own deletions** are not part of the write path.
 

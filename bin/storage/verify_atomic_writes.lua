@@ -268,8 +268,11 @@ do
   local realRename = os.rename
   os.rename = nil
 
+  local shimmedIoRead = io.read
+  io.read = realIoRead
   local first = ini.save_ini_file(path, settings(4))
   local second = ini.save_ini_file(path, settings(5))
+  io.read = shimmedIoRead
   os.rename = realRename
 
   check("a fresh save still succeeds", first == true)
