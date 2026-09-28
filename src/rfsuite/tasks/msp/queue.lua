@@ -39,6 +39,9 @@ local debugLog = requireModule("lib/debug_log.lua")
 local DEFAULT_RETRY_DELAY = 0.8
 local DEFAULT_MAX_RETRIES = 5
 local MAX_PENDING = 20
+-- Backstop for the TX drain loop in processQueue(); see the comment there for
+-- why it sits above the protocol's worst case (53 frames) rather than below it.
+local MAX_TX_FRAMES_PER_TICK = 64
 local EMPTY_PAYLOAD = {}
 
 local function notifyError(message, reason)
@@ -103,10 +106,37 @@ local function popFirst(list)
   return table.remove(list, 1)
 end
 
+-- Retires whatever message is in flight.
+--
+-- The shared TX buffer in tasks/msp/common.lua belongs to the *message* being
+-- sent, not to the queue, and mspSendRequest() refuses to arm a new one while
+-- that buffer is still populated. So retiring a message has to hand the buffer
+-- back -- otherwise a message that died between two of its frames left the
+-- buffer occupied for the rest of the script's life, and from then on every
+-- mspSendRequest() returned false without putting a byte on the wire, mspLastReq
+-- was never updated, mspPollReply() could never match, and each new message
+-- burned its whole retry budget before dying on max_retries. All MSP traffic
+-- dead, no error and no timeout to show for it, and the only way out was
+-- reloading the script.
+--
+-- Doing it here rather than at the individual abort sites makes that a
+-- property of "a message ended" instead of something each new `return` has to
+-- remember.
 function Queue:_finish()
+  self.common.mspClearTxBuf()
   self.current = nil
   self.lastSent = nil
   collectgarbage()
+end
+
+-- Abort the in-flight message: retire it, then report the reason. The message
+-- is snapshotted before _finish() because that clears self.current, and the
+-- handler has to be the one belonging to the message that was just abandoned.
+function Queue:abortCurrent(reason)
+  local msg = self.current
+  self:_finish()
+  notifyError(msg, reason or "aborted")
+  return msg
 end
 
 function Queue:_deliver(buf)
@@ -157,19 +187,47 @@ function Queue:processQueue()
     -- arrival instead of getting its own window -- effectively giving
     -- every message one fewer real attempt than maxRetries promised.
     if self.lastSent and self.retryCount > maxRetries then
-      local handler = msg.errorHandler
-      self:_finish()
-      if handler then handler("max_retries") end
-      return
+      return self:abortCurrent("max_retries")
     end
     local payload = msg.payload or EMPTY_PAYLOAD
-    common.mspSendRequest(msg.command, payload, msg.isWrite)
-    debugLog.msp("TX", msg.command, payload, "try=" .. tostring(self.retryCount + 1))
-    self.lastSent = now
-    self.retryCount = self.retryCount + 1
+    -- The return value used to be dropped on the floor, which made a refused
+    -- hand-off indistinguishable from a successful send: lastSent and
+    -- retryCount were advanced either way, so maxRetries was reached after
+    -- 6 x 0.8s of wall clock with not one byte having left the radio. Count
+    -- real hand-offs only, and say so out loud when there was none.
+    if common.mspSendRequest(msg.command, payload, msg.isWrite) then
+      debugLog.msp("TX", msg.command, payload, "try=" .. tostring(self.retryCount + 1))
+      self.lastSent = now
+      self.retryCount = self.retryCount + 1
+    else
+      debugLog.msp("TX!", msg.command, payload, "tx_busy")
+    end
   end
 
-  common.mspProcessTxQ()
+  -- Push every frame this message still owes out, not one per wakeup.
+  --
+  -- mspProcessTxQ() emits a single frame and says through its return value
+  -- that more remain -- a signal no caller read, so a 52-byte MSP_TELEMETRY_
+  -- CONFIG (5 header bytes + 52, at S.Port's 5 bytes per frame) was spread
+  -- over 12 background task ticks. Under load (LCD paint, a dataflash erase on
+  -- the FC) those ticks stretch, a 12-frame write outlasts the abort window
+  -- and dies mid-frame, and a message that dies mid-frame used to leave the
+  -- TX buffer occupied -- which is what turned one aborted write into a dead
+  -- MSP link for the rest of the session.
+  --
+  -- The guard is a runaway backstop, not a frame budget: mspProcessTxQ()
+  -- either advances mspTxIdx or empties the buffer, so the loop cannot spin.
+  -- It is sized above the worst case the protocol allows -- MSP caps a payload
+  -- at 256 bytes, and the 5-byte MSPv2 header plus those bytes at S.Port's 5
+  -- data bytes per frame is 53 frames -- so a legitimate message is never cut
+  -- short and has to be retried.
+  local frames = 0
+  while frames < MAX_TX_FRAMES_PER_TICK do
+    local more = common.mspProcessTxQ()
+    frames = frames + 1
+    if not more then break end
+  end
+
   local cmd, buf, err = common.mspPollReply()
 
   if cmd == msg.command and not err then
@@ -177,9 +235,7 @@ function Queue:processQueue()
     self:_deliver(buf)
   elseif err then
     debugLog.msp("ERR", msg.command, msg.payload or EMPTY_PAYLOAD, err)
-    local handler = msg.errorHandler
-    self:_finish()
-    if handler then handler(err) end
+    self:abortCurrent(err)
   end
 end
 

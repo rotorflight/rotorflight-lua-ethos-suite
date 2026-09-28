@@ -1,0 +1,406 @@
+-- Behaviour check for the MSP request queue (issue #2378).
+--
+-- Run it:
+--     lua5.3 bin/msp_queue/verify_msp_queue.lua
+--
+-- What it drives, and why:
+--   * tasks/msp/common.lua and tasks/msp/queue.lua are pure functions of a
+--     transport, a clock and a set of queued messages -- no radio, no FC and
+--     no Ethos needed. The transport is a stub that records every frame handed
+--     to it and hands back whatever reply frames a scenario queued up, so the
+--     claims below are measured, not inferred.
+--   * os.clock() is replaced before either module is loaded (common.lua binds
+--     `local os_clock = os.clock` at load time), and it advances by a fixed
+--     micro-step per call. The micro-step is not cosmetic: mspPollReply() polls
+--     inside a `while os_clock() < deadline` loop, so a frozen clock would spin
+--     there forever. Wall-clock jumps are made explicitly with clock.set().
+--
+-- The issue names three defects that mask each other -- a poisoned TX buffer, a
+-- retry counter that counts elapsed windows instead of send attempts, and a
+-- multi-frame write stretched over one background task tick per frame. Once the
+-- second and third are fixed, the first is much harder to see, so each defect
+-- also gets a case that fails on its own:
+--
+--   * "retiring a message hands the TX buffer back" calls _finish() with the
+--     buffer deliberately filled. It cannot be satisfied by fixing the retry
+--     counter or the drain, only by clearing the buffer on the retire path.
+--   * "one tick carries a whole message out" counts the frames a single
+--     processQueue() produces for a 52-byte write.
+--   * "a stale reply cannot poison the next request" aborts a request whose
+--     reply was truncated mid-frame, then delivers the orphaned continuation.
+--
+-- The two cases that describe the old behaviour are the point: a check that
+-- cannot fail proves nothing about the behaviour it passes.
+
+local function scriptDir()
+  local src = debug.getinfo(1, "S").source
+  local path = src:sub(1, 1) == "@" and src:sub(2) or src
+  return (path:match("^(.*)[/\\][^/\\]*$")) or "."
+end
+
+local ROOT = scriptDir() .. "/../.."
+local MSP = ROOT .. "/src/rfsuite/tasks/msp"
+
+local failures = 0
+local checks = 0
+
+local function check(label, ok, detail)
+  checks = checks + 1
+  if ok then
+    print(string.format("  ok    %s", label))
+  else
+    failures = failures + 1
+    print(string.format("  FAIL  %s", label))
+    if detail then print("        " .. tostring(detail)) end
+  end
+end
+
+-- ---------------------------------------------------------------------------
+-- Environment
+-- ---------------------------------------------------------------------------
+
+-- Controllable clock. `set()` jumps; every call also nudges forward so the
+-- bounded poll loops in common.lua terminate.
+local clock = { now = 0.0, step = 0.001 }
+local realClock = os.clock
+os.clock = function()
+  local t = clock.now
+  clock.now = t + clock.step
+  return t
+end
+
+-- queue.lua asks Ethos whether it is running in the simulator; on a real radio
+-- the answer is false and the queue takes the transport path, which is the path
+-- under test. Without this global the queue cannot be loaded at all.
+system = { getVersion = function() return { simulation = false } end }
+
+-- Every MSP line debugLog was asked to print, as "TAG cmd note".
+local logLines = {}
+package.loaded["rfsuite.lib.require"] = function(name)
+  if name == "lib/debug_log.lua" then
+    return {
+      print = function(msg) logLines[#logLines + 1] = tostring(msg) end,
+      msp = function(direction, command, payload, note)
+        logLines[#logLines + 1] = string.format("%s %s %s", tostring(direction),
+          tostring(command), tostring(note))
+      end,
+    }
+  end
+  error("unexpected dependency: " .. tostring(name))
+end
+
+-- A transport with S.Port's framing budget: 6 bytes per frame, one of which is
+-- the MSPv2 status flag, so 5 payload bytes per frame.
+local function newTransport(opts)
+  opts = opts or {}
+  local t = {
+    maxTxBufferSize = opts.maxTxBufferSize or 6,
+    maxRxBufferSize = opts.maxRxBufferSize or 6,
+    sent = {},     -- every frame handed to mspSend, in order
+    replies = {},  -- frames mspPoll() will hand back, oldest first
+  }
+  function t.mspSend(payload, isWrite)
+    local frame = {}
+    for i = 1, #payload do frame[i] = payload[i] end
+    frame[1] = payload[1] or 0
+    t.sent[#t.sent + 1] = { bytes = frame, isWrite = isWrite }
+    return true
+  end
+  function t.mspPoll()
+    return table.remove(t.replies, 1)
+  end
+  return t
+end
+
+-- Builds the reply frames a flight controller would put on the wire, in the
+-- layout tasks/msp/common.lua's receivedReply() parses: a start frame carrying
+-- status, flags, command and length, then continuation frames carrying payload
+-- bytes, numbered from 1.
+--
+-- `chunks` is a list of byte lists; one continuation frame is emitted per entry.
+local function replyFrames(cmd, declaredLen, chunks)
+  local frames = {}
+  local start = {}
+  start[1] = 0x40 | 0x10 -- version bits (2 << 5) + start flag, sequence 0
+  start[2] = 0            -- flags, skipped by receivedReply()
+  start[3] = cmd % 256
+  start[4] = math.floor(cmd / 256) % 256
+  start[5] = declaredLen % 256
+  start[6] = math.floor(declaredLen / 256) % 256
+  frames[1] = start
+  for i, chunk in ipairs(chunks) do
+    local frame = { i & 0x0F } -- sequence continues from 1
+    for j = 1, #chunk do frame[j + 1] = chunk[j] end
+    frames[#frames + 1] = frame
+  end
+  return frames
+end
+
+-- Restarts the module graph so no state leaks between cases: common.lua keeps
+-- its buffers in upvalues that only setTransport() and the request API touch,
+-- and a fresh dofile is the only way to get a clean set.
+local function newRig(opts)
+  local common = dofile(MSP .. "/common.lua")
+  local Queue = dofile(MSP .. "/queue.lua")
+  local transport = newTransport(opts)
+  common.setTransport(transport)
+  local queue = Queue.new(common)
+  clock.now = 0.0
+  return {
+    common = common,
+    queue = queue,
+    transport = transport,
+    tick = function() queue:processQueue() end,
+    jump = function(seconds) clock.now = clock.now + seconds end,
+  }
+end
+
+local function newMessage(cmd, opts)
+  opts = opts or {}
+  local payload = opts.payload
+  if payload == nil then
+    payload = {}
+    for i = 1, opts.payloadBytes or 0 do payload[i] = i & 0xFF end
+  end
+  local msg = {
+    command = cmd,
+    payload = payload,
+    isWrite = opts.isWrite,
+    maxRetries = opts.maxRetries,
+    retryDelay = opts.retryDelay,
+    replies = {},
+    errors = {},
+  }
+  msg.processReply = function(_, buf) msg.replies[#msg.replies + 1] = buf end
+  -- errorHandler is called as handler(reason), with no self -- see the message
+  -- shape documented atop tasks/msp/queue.lua.
+  msg.errorHandler = function(reason) msg.errors[#msg.errors + 1] = reason end
+  return msg
+end
+
+-- Counts the frames one processQueue() produced, i.e. a single wakeup's worth.
+local function framesAfterOneTick(rig, message)
+  local before = #rig.transport.sent
+  rig.queue:add(message)
+  rig.tick()
+  return #rig.transport.sent - before
+end
+
+-- How many of the frames handed to the transport were addressed to `cmd`.
+--
+-- A request frame laid out by mspProcessTxQ() is
+--   status, <reserved>, cmd1, cmd2, len1, len2, data...
+-- -- the reserved byte mirrors the flags byte that receivedReply() skips on the
+-- reply side, so the command sits at bytes 3 and 4, not 2 and 3.
+--
+-- Counting "frames on the wire" instead would not do: a poisoned buffer still
+-- leaks its leftovers onto the wire, it just leaks the *previous* request's
+-- frames.
+local function framesForCommand(sent, cmd)
+  local count = 0
+  for _, frame in ipairs(sent) do
+    local b = frame.bytes
+    if b[3] == cmd % 256 and b[4] == math.floor(cmd / 256) % 256 then
+      count = count + 1
+    end
+  end
+  return count
+end
+
+-- ---------------------------------------------------------------------------
+-- Defect 1 in isolation: the TX buffer belongs to the message, not the queue
+-- ---------------------------------------------------------------------------
+
+-- No timing, no retry counting, no drain involved: the buffer is filled by
+-- hand, a message is retired, and the buffer has to come back. Only clearing it
+-- on the retire path can make this pass.
+do
+  local rig = newRig()
+  local msg = newMessage(0x1234)
+  rig.queue:add(msg)
+  rig.queue.current = msg
+  rig.common.mspSendRequest(0x1234, {1, 2, 3})
+  check("precondition: a filled TX buffer refuses the next request",
+    rig.common.mspSendRequest(0x1235, {}) == false)
+  rig.queue:_finish()
+  check("retiring a message hands the TX buffer back",
+    rig.common.mspSendRequest(0x1235, {}) == true)
+end
+
+-- Reported rather than called blindly: before the fix queue.lua had no
+-- abortCurrent() at all, and a missing method would abort the run instead of
+-- reporting the case -- which is the difference between "this fails on the old
+-- code" and "this could not be measured on the old code".
+do
+  local rig = newRig()
+  local msg = newMessage(0x1234)
+  rig.queue:add(msg)
+  rig.queue.current = msg
+  rig.common.mspSendRequest(0x1234, {1, 2, 3})
+  if type(rig.queue.abortCurrent) ~= "function" then
+    check("aborting a message hands the TX buffer back", false,
+      "queue.lua has no abortCurrent(), so there is no way to abandon a message " ..
+      "and hand the shared TX buffer back")
+    check("aborting reports the reason to the message's own handler", false,
+      "queue.lua has no abortCurrent()")
+  else
+    rig.queue:abortCurrent("aborted")
+    check("aborting a message hands the TX buffer back",
+      rig.common.mspSendRequest(0x1235, {}) == true)
+    check("aborting reports the reason to the message's own handler",
+      #msg.errors == 1 and msg.errors[1] == "aborted",
+      "errors=" .. #msg.errors .. " first=" .. tostring(msg.errors[1]))
+  end
+end
+
+-- ---------------------------------------------------------------------------
+-- Defect 2 in isolation: a refused hand-off is not a send attempt
+-- ---------------------------------------------------------------------------
+
+-- MSP_TELEMETRY_CONFIG's size, the worst case the issue names: 52 payload bytes
+-- plus the 5-byte MSPv2 header, at 5 payload bytes per S.Port frame.
+local BIG_WRITE_CMD = 0x8A
+local BIG_WRITE_BYTES = 52
+-- Derived from the framing rather than measured, so that the checks below can
+-- be anchored on what the message owes the wire instead of on whatever the
+-- first attempt happened to produce -- anchoring on the first attempt is what
+-- let the old one-frame-per-tick code satisfy this arithmetic by accident.
+local BIG_WRITE_FRAMES = math.ceil((5 + BIG_WRITE_BYTES) / 5)
+
+-- One tick has to carry the whole message out. Counting the frames a single
+-- processQueue() produces cannot be satisfied by a fix to the retry counter or
+-- to the buffer reset.
+do
+  local rig = newRig()
+  local frames = framesAfterOneTick(rig, newMessage(BIG_WRITE_CMD,
+    { isWrite = true, payloadBytes = BIG_WRITE_BYTES }))
+  check("one tick carries a whole 52-byte write out", frames == BIG_WRITE_FRAMES,
+    "frames in a single tick=" .. frames .. " (12 = ceil(57/5); 1 means one frame per wakeup)")
+end
+
+-- A silent link, so every retry window is a real miss. Each permitted attempt
+-- has to put the *whole* message on the wire -- not one frame of it, and not
+-- nothing at all. The expectation is anchored on the frame count above, so a
+-- code that merely counts the windows it slept through cannot pass.
+do
+  local maxRetries = 2
+  local rig = newRig()
+  local msg = newMessage(BIG_WRITE_CMD, { isWrite = true, payloadBytes = BIG_WRITE_BYTES,
+    maxRetries = maxRetries })
+  rig.queue:add(msg)
+  for _ = 1, 4 do
+    rig.jump(1.0) -- past the 0.8s default retry delay
+    rig.tick()
+  end
+  local expected = BIG_WRITE_FRAMES * (maxRetries + 1)
+  check("every attempt puts the whole message on the wire",
+    #rig.transport.sent == expected,
+    "frames=" .. #rig.transport.sent .. " expected=" .. expected ..
+    " (" .. (maxRetries + 1) .. " attempts x " .. BIG_WRITE_FRAMES .. " frames)")
+  check("the message is given up once its attempts are spent",
+    #msg.errors == 1 and msg.errors[1] == "max_retries",
+    "errors=" .. #msg.errors .. " first=" .. tostring(msg.errors[1]))
+  check("giving up hands the TX buffer back",
+    rig.common.mspSendRequest(0x4321, {}) == true)
+end
+
+-- ---------------------------------------------------------------------------
+-- The issue's actual scenario: an aborted multi-frame write must not kill MSP
+-- ---------------------------------------------------------------------------
+
+do
+  local rig = newRig()
+  local write = newMessage(BIG_WRITE_CMD, { isWrite = true, payloadBytes = BIG_WRITE_BYTES,
+    maxRetries = 1 })
+  rig.queue:add(write)
+  rig.tick()
+  -- maxRetries=1 buys two hand-offs: retryCount reaches 2, and the message is
+  -- only given up on the third window, where 2 > 1.
+  for _ = 1, 2 do
+    rig.jump(1.0)
+    rig.tick()
+  end
+  check("the aborted write reported an error", #write.errors >= 1,
+    "errors=" .. #write.errors)
+
+  -- A normal configuration page opens next. This is the whole issue: before the
+  -- fix the buffer was still occupied here, so this request never reached the
+  -- wire and the page hung with no error and no timeout.
+  local read = newMessage(0x1E, { maxRetries = 1 })
+  rig.queue:add(read)
+  rig.tick()
+  check("a request after an aborted write reaches the wire under its own command",
+    framesForCommand(rig.transport.sent, read.command) == 1,
+    "frames for 0x1E=" .. framesForCommand(rig.transport.sent, read.command) ..
+    " (0 means the request was refused and only leftovers of the dead write went out)")
+
+  -- And it completes: the FC answers.
+  for _, frame in ipairs(replyFrames(read.command, 2, { {7, 8} })) do
+    rig.transport.replies[#rig.transport.replies + 1] = frame
+  end
+  rig.jump(1.0)
+  rig.tick()
+  check("a request after an aborted write still gets its reply",
+    #read.replies == 1 and read.replies[1][1] == 7 and read.replies[1][2] == 8,
+    "replies=" .. #read.replies .. " errors=" .. #read.errors)
+end
+
+-- ---------------------------------------------------------------------------
+-- Defect 4: a stale reply cannot poison the next request
+-- ---------------------------------------------------------------------------
+
+-- A read whose reply the link cut in half. The queue gives up on it with the
+-- assembly state still half-built: mspStarted true, one byte buffered, two
+-- announced. The request that takes its place arms mspLastReq, and only *then*
+-- do the abandoned reply's remaining frames turn up.
+--
+-- Those frames complete the old reply, and completing a reply clears mspLastReq
+-- (tasks/msp/common.lua's mspPollReply). The new request's own start frame then
+-- asks `mspRxReq == mspLastReq` and is told no, so the new reply can never be
+-- assembled and the new request times out -- a second, independent way for one
+-- aborted request to kill the traffic that follows it. Clearing the assembly
+-- state when a request is armed is what closes that window.
+do
+  local rig = newRig()
+  local stale = newMessage(0x09, { maxRetries = 0 }) -- maxRetries=0: one miss, then give up
+  for _, frame in ipairs(replyFrames(stale.command, 2, { {0xAA} })) do
+    rig.transport.replies[#rig.transport.replies + 1] = frame
+  end
+  rig.queue:add(stale)
+  rig.tick() -- sends, then reads a reply that stops after one of its two bytes
+
+  rig.jump(1.0)
+  rig.tick() -- max_retries: the message is abandoned with a half-built reply
+
+  -- The rest of the abandoned reply arrives late, and completes it.
+  rig.transport.replies[#rig.transport.replies + 1] = { 2, 0xBB }
+
+  local fresh = newMessage(0x09, { maxRetries = 2 })
+  rig.queue:add(fresh)
+  rig.tick() -- arms the new request, then reads the orphaned frame
+  for _, frame in ipairs(replyFrames(fresh.command, 1, { {0x42} })) do
+    rig.transport.replies[#rig.transport.replies + 1] = frame
+  end
+  rig.jump(1.0)
+  rig.tick()
+
+  local got = fresh.replies[1]
+  check("a late frame of an abandoned reply does not disarm the next request",
+    #fresh.replies == 1 and got and got[1] == 0x42,
+    "replies=" .. #fresh.replies .. " errors=" .. #fresh.errors ..
+    " first error=" .. tostring(fresh.errors[1]) ..
+    " payload=" .. (got and string.format("%02X", got[1] or 0) or "none") ..
+    " (AA/BB would be the abandoned request's own bytes handed to this one)")
+end
+
+-- ---------------------------------------------------------------------------
+
+print()
+if failures == 0 then
+  print(string.format("all %d checks passed", checks))
+  os.clock = realClock
+  os.exit(0)
+end
+print(string.format("%d of %d checks FAILED", failures, checks))
+os.clock = realClock
+os.exit(1)

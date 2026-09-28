@@ -45,6 +45,25 @@ jobs:
       - name: Check the write path
         run: lua5.3 bin/storage/verify_atomic_writes.lua
 
+  # An MSP request that is abandoned between two of its frames used to leave
+  # the shared TX buffer occupied, after which no request could be framed at all
+  # -- every configuration page then hung until the script was reloaded. No
+  # build and no package step reaches that: it needs a queue, a clock and a
+  # link that stops answering, so the behaviour is pinned here instead.
+  msp-queue:
+    name: MSP queue after an aborted request
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Lua 5.3
+        run: sudo apt-get update && sudo apt-get install -y lua5.3
+
+      - name: Check the MSP queue behaviour
+        run: lua5.3 bin/msp_queue/verify_msp_queue.lua
+
   # Per-language PR builds (mirrors push.yml behavior)
   create-zip:
     name: Build PR ZIP (${{ matrix.lang }})

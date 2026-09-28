@@ -102,6 +102,20 @@ local function mspSendRequest(cmd, payload, isWrite)
   mspLastReq = cmd
   mspLastReqIsWrite = isWrite and true or false
   mspTxIdx = 1
+
+  -- A new request also invalidates whatever the *previous* one left
+  -- half-assembled. mspStarted/mspRxBuf/mspRxSize/mspRemoteSeq are only
+  -- reset on a completed reply (mspPollReply) or a transport swap
+  -- (mspClearBufs), so a request that died between two reply frames left
+  -- mspStarted true with a partial mspRxBuf behind it. The orphaned
+  -- continuation frames then passed the sequence check in receivedReply()
+  -- -- which knows nothing about which command they belong to -- and were
+  -- appended to the *next* command's payload. Reset all four here, so
+  -- receivedReply()'s start flag is the only thing that may open a buffer.
+  mspStarted = false
+  mspRxBuf, mspRxSize, mspRemoteSeq = {}, 0, 0
+  mspRxError = false
+
   return true
 end
 
@@ -193,4 +207,12 @@ return {
   mspProcessTxQ = mspProcessTxQ,
   mspPollReply = mspPollReply,
   mspClearBufs = mspClearBufs,
+  -- Exported separately from mspClearBufs because the two answer different
+  -- questions. mspClearBufs() is a transport swap: throw away the queue AND
+  -- drain the link's stale incoming frames. mspClearTxBuf() is narrower --
+  -- just hand back a half-built outgoing message -- which is what a caller
+  -- needs when it abandons a single message and intends to keep using the
+  -- same transport. Draining the RX side there too would swallow a reply
+  -- that is already on its way for the *next* request.
+  mspClearTxBuf = mspClearTxBuf,
 }
