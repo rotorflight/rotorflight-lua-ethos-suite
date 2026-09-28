@@ -344,6 +344,62 @@ check("SMARTFUEL_CONFIG survives a nil onError", pcall(function()
 end) == true)
 
 -- ---------------------------------------------------------------------------
+-- Case 8: stream and variable-length decoders (msp_modes) terminate safely
+-- ---------------------------------------------------------------------------
+
+print("case 8: stream and variable-length decoders terminate safely with readU8 bounds")
+
+local function testModesDecoders()
+  local mspModes = requireModule("lib/msp_modes.lua")
+
+  -- Box names
+  local namesSim = { 65, 82, 77, 59, 65, 78, 71, 76, 69, 59, 72, 79, 82, 73, 90, 79, 78, 59 }
+  local names
+  mspModes.buildBoxNamesReadMessage(function(d) names = d end).processReply(nil, namesSim)
+  check("BOXNAMES decodes real names", names and #names == 3 and names[1] == "ARM" and names[2] == "ANGLE" and names[3] == "HORIZON")
+
+  local emptyNames
+  mspModes.buildBoxNamesReadMessage(function(d) emptyNames = d end).processReply(nil, {})
+  check("BOXNAMES terminates on empty buffer", emptyNames and #emptyNames == 0)
+
+  -- Box IDs
+  local idsSim = { 0, 1, 2, 53, 27, 36, 45, 13, 52, 19, 20, 26, 31, 51, 55, 56, 57 }
+  local ids
+  mspModes.buildBoxIdsReadMessage(function(d) ids = d end).processReply(nil, idsSim)
+  check("BOXIDS decodes all simulated ids", ids and #ids == #idsSim and ids[4] == 53)
+
+  local emptyIds
+  mspModes.buildBoxIdsReadMessage(function(d) emptyIds = d end).processReply(nil, {})
+  check("BOXIDS terminates on empty buffer", emptyIds and #emptyIds == 0)
+
+  -- Mode ranges
+  local ranges
+  local rangesSim = { 1, 0, 216, 40 }
+  mspModes.buildModeRangesReadMessage(function(d) ranges = d end).processReply(nil, rangesSim)
+  check("MODE_RANGES decodes valid 4-byte range", ranges and #ranges == 1 and ranges[1].id == 1 and ranges[1].auxChannelIndex == 0)
+
+  local emptyRanges
+  mspModes.buildModeRangesReadMessage(function(d) emptyRanges = d end).processReply(nil, {})
+  check("MODE_RANGES terminates on empty buffer", emptyRanges and #emptyRanges == 0)
+
+  local truncRanges
+  mspModes.buildModeRangesReadMessage(function(d) truncRanges = d end).processReply(nil, { 1, 0, 216 })
+  check("MODE_RANGES rejects truncated entry without loop", truncRanges and #truncRanges == 0)
+
+  -- Mode ranges extra
+  local extras
+  local extrasSim = { 1, 5, 0, 2 }
+  mspModes.buildModeRangesExtraReadMessage(function(d) extras = d end).processReply(nil, extrasSim)
+  check("MODE_RANGES_EXTRA decodes valid entry", extras and #extras == 1 and extras[1].id == 5)
+
+  local truncExtras
+  mspModes.buildModeRangesExtraReadMessage(function(d) truncExtras = d end).processReply(nil, { 5, 1 })
+  check("MODE_RANGES_EXTRA handles count exceeding buffer", truncExtras and #truncExtras == 0)
+end
+
+testModesDecoders()
+
+-- ---------------------------------------------------------------------------
 
 print("")
 if failures == 0 then
