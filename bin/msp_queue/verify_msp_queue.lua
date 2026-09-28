@@ -15,17 +15,16 @@
 --     inside a `while os_clock() < deadline` loop, so a frozen clock would spin
 --     there forever. Wall-clock jumps are made explicitly with clock.set().
 --
--- The issue names three defects that mask each other -- a poisoned TX buffer, a
--- retry counter that counts elapsed windows instead of send attempts, and a
--- multi-frame write stretched over one background task tick per frame. Once the
--- second and third are fixed, the first is much harder to see, so each defect
--- also gets a case that fails on its own:
+-- The issue names three defects -- a poisoned TX buffer, a retry counter that
+-- counts elapsed windows instead of send attempts, and a multi-frame write
+-- stretched over one background task tick per frame. Only the first two are
+-- fixed. The third is kept on purpose: draining a whole write in one tick
+-- overflowed Ethos's pushFrame() queue on hardware and broke every save, so
+-- "one frame per tick" is pinned below instead.
 --
 --   * "retiring a message hands the TX buffer back" calls _finish() with the
 --     buffer deliberately filled. It cannot be satisfied by fixing the retry
---     counter or the drain, only by clearing the buffer on the retire path.
---   * "one tick carries a whole message out" counts the frames a single
---     processQueue() produces for a 52-byte write.
+--     counter, only by clearing the buffer on the retire path.
 --   * "a stale reply cannot poison the next request" aborts a request whose
 --     reply was truncated mid-frame, then delivers the orphaned continuation.
 --
@@ -270,15 +269,24 @@ local BIG_WRITE_BYTES = 52
 -- let the old one-frame-per-tick code satisfy this arithmetic by accident.
 local BIG_WRITE_FRAMES = math.ceil((5 + BIG_WRITE_BYTES) / 5)
 
--- One tick has to carry the whole message out. Counting the frames a single
--- processQueue() produces cannot be satisfied by a fix to the retry counter or
--- to the buffer reset.
+-- One frame per tick: Ethos's pushFrame() queue is shallow, and a burst of a
+-- whole multi-frame write overflowed it on hardware.
 do
   local rig = newRig()
   local frames = framesAfterOneTick(rig, newMessage(BIG_WRITE_CMD,
     { isWrite = true, payloadBytes = BIG_WRITE_BYTES }))
-  check("one tick carries a whole 52-byte write out", frames == BIG_WRITE_FRAMES,
-    "frames in a single tick=" .. frames .. " (12 = ceil(57/5); 1 means one frame per wakeup)")
+  check("one tick puts exactly one frame on the wire", frames == 1,
+    "frames in a single tick=" .. frames)
+  for _ = 2, BIG_WRITE_FRAMES do rig.tick() end
+  check("the rest of the write follows one frame per tick",
+    #rig.transport.sent == BIG_WRITE_FRAMES,
+    "frames after " .. BIG_WRITE_FRAMES .. " ticks=" .. #rig.transport.sent)
+end
+
+-- Ticks until a message has put all BIG_WRITE_FRAMES frames of one attempt on
+-- the wire, without letting its retry window elapse.
+local function sendWholeAttempt(rig)
+  for _ = 1, BIG_WRITE_FRAMES do rig.tick() end
 end
 
 -- A silent link, so every retry window is a real miss. Each permitted attempt
@@ -291,10 +299,13 @@ do
   local msg = newMessage(BIG_WRITE_CMD, { isWrite = true, payloadBytes = BIG_WRITE_BYTES,
     maxRetries = maxRetries })
   rig.queue:add(msg)
-  for _ = 1, 4 do
+  sendWholeAttempt(rig)
+  for _ = 1, maxRetries do
     rig.jump(1.0) -- past the 0.8s default retry delay
-    rig.tick()
+    sendWholeAttempt(rig)
   end
+  rig.jump(1.0)
+  rig.tick() -- the last attempt's window has elapsed: give up
   local expected = BIG_WRITE_FRAMES * (maxRetries + 1)
   check("every attempt puts the whole message on the wire",
     #rig.transport.sent == expected,
@@ -316,13 +327,15 @@ do
   local write = newMessage(BIG_WRITE_CMD, { isWrite = true, payloadBytes = BIG_WRITE_BYTES,
     maxRetries = 1 })
   rig.queue:add(write)
-  rig.tick()
-  -- maxRetries=1 buys two hand-offs: retryCount reaches 2, and the message is
+  -- The first attempt dies mid-send: only half its frames are out when the
+  -- retry window elapses. maxRetries=1 buys two hand-offs, and the message is
   -- only given up on the third window, where 2 > 1.
-  for _ = 1, 2 do
-    rig.jump(1.0)
-    rig.tick()
-  end
+  for _ = 1, 6 do rig.tick() end
+  rig.jump(1.0)
+  sendWholeAttempt(rig) -- finishes attempt 1 (refused re-arm), then attempt 2
+  sendWholeAttempt(rig)
+  rig.jump(1.0)
+  rig.tick()
   check("the aborted write reported an error", #write.errors >= 1,
     "errors=" .. #write.errors)
 

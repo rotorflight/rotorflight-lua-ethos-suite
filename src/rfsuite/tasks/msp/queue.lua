@@ -39,9 +39,6 @@ local debugLog = requireModule("lib/debug_log.lua")
 local DEFAULT_RETRY_DELAY = 0.8
 local DEFAULT_MAX_RETRIES = 5
 local MAX_PENDING = 20
--- Backstop for the TX drain loop in processQueue(); see the comment there for
--- why it sits above the protocol's worst case (53 frames) rather than below it.
-local MAX_TX_FRAMES_PER_TICK = 64
 local EMPTY_PAYLOAD = {}
 
 local function notifyError(message, reason)
@@ -212,29 +209,14 @@ function Queue:processQueue()
     end
   end
 
-  -- Push every frame this message still owes out, not one per wakeup.
-  --
-  -- mspProcessTxQ() emits a single frame and says through its return value
-  -- that more remain -- a signal no caller read, so a 52-byte MSP_TELEMETRY_
-  -- CONFIG (5 header bytes + 52, at S.Port's 5 bytes per frame) was spread
-  -- over 12 background task ticks. Under load (LCD paint, a dataflash erase on
-  -- the FC) those ticks stretch, a 12-frame write outlasts the abort window
-  -- and dies mid-frame, and a message that dies mid-frame used to leave the
-  -- TX buffer occupied -- which is what turned one aborted write into a dead
-  -- MSP link for the rest of the session.
-  --
-  -- The guard is a runaway backstop, not a frame budget: mspProcessTxQ()
-  -- either advances mspTxIdx or empties the buffer, so the loop cannot spin.
-  -- It is sized above the worst case the protocol allows -- MSP caps a payload
-  -- at 256 bytes, and the 5-byte MSPv2 header plus those bytes at S.Port's 5
-  -- data bytes per frame is 53 frames -- so a legitimate message is never cut
-  -- short and has to be retried.
-  local frames = 0
-  while frames < MAX_TX_FRAMES_PER_TICK do
-    local more = common.mspProcessTxQ()
-    frames = frames + 1
-    if not more then break end
-  end
+  -- One frame per wakeup, deliberately. Both transports hand the frame to
+  -- Ethos's pushFrame(), and mspProcessTxQ() ignores whether it was
+  -- accepted. Draining a whole multi-frame write in one tick (#2411) broke
+  -- every save on hardware -- the burst outruns what pushFrame() will
+  -- queue, so the FC never sees a complete write. An abandoned mid-send
+  -- write no longer poisons the link either way, since _finish() hands the
+  -- TX buffer back.
+  common.mspProcessTxQ()
 
   local cmd, buf, err = common.mspPollReply()
 
