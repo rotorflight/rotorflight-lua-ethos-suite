@@ -35,6 +35,13 @@ local mspLastReq = 0
 local mspLastReqIsWrite = false
 local mspTxBuf = {}
 local mspTxIdx = 1
+-- MSP reply frames received, ever -- accepted or discarded. Only its change
+-- matters: see mspRxFrameCount().
+local mspRxFrames = 0
+-- Replies dropped part-way because a continuation frame broke the sequence,
+-- ever, plus the details of the latest one: see mspRxBreakInfo().
+local mspRxBreaks = 0
+local mspRxBreakExpected, mspRxBreakGot, mspRxBreakBytes, mspRxBreakSize = 0, 0, 0, 0
 
 -- {mspSend = fn(payload, isWrite), mspPoll = fn() -> payload|nil,
 --  maxTxBufferSize = n, maxRxBufferSize = n}
@@ -122,6 +129,7 @@ end
 -- Internal: process one reply packet. Returns true once a full reply has
 -- been assembled (possibly across several calls, for multi-frame replies).
 local function receivedReply(payload)
+  mspRxFrames = mspRxFrames + 1
   local idx = 1
   local status = payload[idx] or 0
   local start = (status & 0x10) ~= 0
@@ -142,6 +150,13 @@ local function receivedReply(payload)
     mspStarted = (mspRxReq == mspLastReq)
   else
     if (not mspStarted) or (((mspRemoteSeq + 1) & 0x0F) ~= seq) then
+      if mspStarted then
+        mspRxBreaks = mspRxBreaks + 1
+        mspRxBreakExpected = (mspRemoteSeq + 1) & 0x0F
+        mspRxBreakGot = seq
+        mspRxBreakBytes = #mspRxBuf
+        mspRxBreakSize = mspRxSize
+      end
       mspStarted = false
       mspRxBuf, mspRxSize, mspRemoteSeq = {}, 0, 0
       return nil
@@ -219,4 +234,15 @@ return {
   -- same transport. Draining the RX side there too would swallow a reply
   -- that is already on its way for the *next* request.
   mspClearTxBuf = mspClearTxBuf,
+  -- Grows by one for every MSP reply frame received, including frames
+  -- receivedReply() discards. The queue watches it change to tell an FC
+  -- that is still sending from a silent link: see queue.lua's
+  -- processQueue() for why a discarded frame counts too.
+  mspRxFrameCount = function() return mspRxFrames end,
+  -- Diagnostics only: how many replies were dropped part-way on a sequence
+  -- break, and for the latest one the sequence number expected, the one
+  -- that arrived, and how many of how many payload bytes were assembled.
+  mspRxBreakInfo = function()
+    return mspRxBreaks, mspRxBreakExpected, mspRxBreakGot, mspRxBreakBytes, mspRxBreakSize
+  end,
 }

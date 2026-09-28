@@ -56,6 +56,9 @@ function Queue.new(common)
     current = nil,
     lastSent = nil,
     retryCount = 0,
+    rxFrames = 0,
+    rxBreaks = 0,
+    lastTickAt = nil,
   }, Queue)
 end
 
@@ -204,6 +207,7 @@ function Queue:processQueue()
       debugLog.msp("TX", msg.command, payload, "try=" .. tostring(self.retryCount + 1))
       self.lastSent = now
       self.retryCount = self.retryCount + 1
+      self.rxFrames = common.mspRxFrameCount()
     else
       debugLog.msp("TX!", msg.command, payload, "tx_busy")
     end
@@ -219,6 +223,43 @@ function Queue:processQueue()
   common.mspProcessTxQ()
 
   local cmd, buf, err = common.mspPollReply()
+
+  -- Never resend while the FC is still sending. retryDelay used to count
+  -- from the send alone, so a reply longer than the window (a 448-byte
+  -- reply is ~90 S.Port frames) was cut off by a resend
+  -- part-way through, and every attempt died the same way until
+  -- max_retries failed the page load.
+  --
+  -- Frames this side discards count as well. When one reply frame is lost
+  -- on the link, the rest of that reply keeps arriving and is discarded
+  -- (it no longer follows the sequence). A request sent into that stream
+  -- gets an answer with no start frame: the firmware's sendMspReply()
+  -- (telemetry/msp_shared.c) only clears its static headerSent when a
+  -- reply finishes, not when a new request replaces it, so every
+  -- continuation frame of the new answer is discarded too. Waiting for
+  -- retryDelay of silence lets the old reply finish first, so the resend
+  -- gets a proper start frame.
+  --
+  -- A reply dropped part-way (a lost frame) then costs one full resend.
+  local rxFrames = common.mspRxFrameCount()
+  if rxFrames ~= self.rxFrames then
+    self.rxFrames = rxFrames
+    if self.lastSent then self.lastSent = now end
+  end
+
+  -- MSP-log only: a reply dropped part-way on a sequence break. got past
+  -- expected means frames were lost; gap is the time since the previous
+  -- tick, long gaps pointing at an overflowed Ethos frame queue.
+  if debugLog.mspEnabled() then
+    local breaks, expected, got, bytes, size = common.mspRxBreakInfo()
+    if breaks ~= self.rxBreaks then
+      self.rxBreaks = breaks
+      debugLog.msp("SEQ", msg.command, EMPTY_PAYLOAD, string.format(
+        "expected=%d got=%d bytes=%d/%d gap=%dms", expected, got, bytes, size,
+        math.floor(((now - (self.lastTickAt or now)) * 1000) + 0.5)))
+    end
+  end
+  self.lastTickAt = now
 
   if cmd == msg.command and not err then
     debugLog.msp("RX", cmd, buf)

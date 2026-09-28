@@ -79,6 +79,7 @@ package.loaded["rfsuite.lib.require"] = function(name)
   if name == "lib/debug_log.lua" then
     return {
       print = function(msg) logLines[#logLines + 1] = tostring(msg) end,
+      mspEnabled = function() return true end,
       msp = function(direction, command, payload, note)
         logLines[#logLines + 1] = string.format("%s %s %s", tostring(direction),
           tostring(command), tostring(note))
@@ -501,6 +502,109 @@ do
     #simMsg.errors == 1 and simMsg.errors[1] == "no_response" and rig.queue.current == nil,
     "errors=" .. #simMsg.errors .. " current=" .. tostring(rig.queue.current))
   system.getVersion = function() return { simulation = false } end
+end
+
+-- ---------------------------------------------------------------------------
+-- A reply longer than the retry window is not a timeout
+-- ---------------------------------------------------------------------------
+
+-- A 448-byte reply (e.g. a 32 x 14-byte rule pool): one start frame
+-- plus 90 continuation frames at 5 bytes each over S.Port. Streamed at one
+-- frame per 0.1s, the reply takes 9s -- far past the 0.8s retry window. The
+-- window used to count from the send alone, so a resend cut every attempt
+-- off part-way through and the page load failed on max_retries.
+local POOL_CMD = 172
+local POOL_BYTES = 448
+
+local function poolChunks()
+  local chunks, chunk = {}, nil
+  for i = 1, POOL_BYTES do
+    if not chunk or #chunk == 5 then chunk = {}; chunks[#chunks + 1] = chunk end
+    chunk[#chunk + 1] = i % 251
+  end
+  return chunks
+end
+
+do
+  local rig = newRig()
+  local msg = newMessage(POOL_CMD)
+  rig.queue:add(msg)
+  rig.tick() -- sends
+  for _, frame in ipairs(replyFrames(POOL_CMD, POOL_BYTES, poolChunks())) do
+    rig.transport.replies[#rig.transport.replies + 1] = frame
+    rig.jump(0.1)
+    rig.tick()
+  end
+  local got = msg.replies[1]
+  check("a reply still arriving past the retry window is not resent",
+    framesForCommand(rig.transport.sent, POOL_CMD) == 1,
+    "requests sent=" .. framesForCommand(rig.transport.sent, POOL_CMD))
+  check("a reply still arriving past the retry window completes",
+    #msg.replies == 1 and #msg.errors == 0 and #got == POOL_BYTES
+      and got[1] == 1 and got[POOL_BYTES] == POOL_BYTES % 251,
+    "replies=" .. #msg.replies .. " errors=" .. #msg.errors ..
+    " first error=" .. tostring(msg.errors[1]) .. " bytes=" .. (got and #got or 0))
+end
+
+-- The window still runs out when the reply stops part-way: silence, not the
+-- length of the reply, is what triggers a resend.
+do
+  local rig = newRig()
+  local msg = newMessage(POOL_CMD)
+  rig.queue:add(msg)
+  rig.tick() -- sends
+  local frames = replyFrames(POOL_CMD, POOL_BYTES, poolChunks())
+  for i = 1, 11 do
+    rig.transport.replies[#rig.transport.replies + 1] = frames[i]
+    rig.jump(0.1)
+    rig.tick()
+  end
+  rig.jump(1.0) -- the link goes quiet for longer than the window
+  rig.tick()
+  check("a reply that stops part-way is resent after the window",
+    framesForCommand(rig.transport.sent, POOL_CMD) == 2,
+    "requests sent=" .. framesForCommand(rig.transport.sent, POOL_CMD))
+end
+
+-- One frame of a long reply is lost on the link. The rest of that reply keeps
+-- arriving and is discarded, and the firmware answers a request sent into
+-- that stream with no start frame (sendMspReply()'s headerSent is only
+-- cleared when a reply finishes). So the resend has to wait until the broken
+-- reply has finished arriving, and then gets a whole reply.
+do
+  local rig = newRig()
+  local msg = newMessage(POOL_CMD)
+  rig.queue:add(msg)
+  rig.tick() -- sends
+  local frames = replyFrames(POOL_CMD, POOL_BYTES, poolChunks())
+  for i = 1, #frames do
+    if i ~= 23 then -- lost on the link, 110 bytes in
+      rig.transport.replies[#rig.transport.replies + 1] = frames[i]
+    end
+    rig.jump(0.1)
+    rig.tick()
+  end
+  check("no resend while a broken reply is still arriving",
+    framesForCommand(rig.transport.sent, POOL_CMD) == 1 and #msg.errors == 0,
+    "requests sent=" .. framesForCommand(rig.transport.sent, POOL_CMD) ..
+    " errors=" .. #msg.errors)
+
+  rig.jump(1.0) -- the broken reply has finished: silence
+  rig.tick()
+  check("the resend follows once the broken reply has finished",
+    framesForCommand(rig.transport.sent, POOL_CMD) == 2,
+    "requests sent=" .. framesForCommand(rig.transport.sent, POOL_CMD))
+
+  for i = 1, #frames do
+    rig.transport.replies[#rig.transport.replies + 1] = frames[i]
+    rig.jump(0.1)
+    rig.tick()
+  end
+  local got = msg.replies[1]
+  check("the resend's reply arrives complete",
+    #msg.replies == 1 and #msg.errors == 0 and got and #got == POOL_BYTES,
+    "replies=" .. #msg.replies .. " errors=" .. #msg.errors ..
+    " bytes=" .. (got and #got or 0))
 end
 
 -- ---------------------------------------------------------------------------
