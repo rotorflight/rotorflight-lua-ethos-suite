@@ -21,8 +21,8 @@ jobs:
       - name: Install Lua 5.3
         run: sudo apt-get update && sudo apt-get install -y lua5.3
 
-    - name: Check the flight record behaviour
-      run: lua5.3 bin/flight_record/verify_flight_record.lua
+      - name: Check the flight record behaviour
+        run: lua5.3 bin/flight_record/verify_flight_record.lua
 
   # Every file the suite owns was opened for writing directly, and io.open(path,
   # "w") truncates on open -- so a radio switched off mid-save left
@@ -36,14 +36,14 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-    - name: Install Lua 5.3
-      run: sudo apt-get update && sudo apt-get install -y lua5.3
+      - name: Install Lua 5.3
+        run: sudo apt-get update && sudo apt-get install -y lua5.3
 
-    - name: Check the write path
-      run: lua5.3 bin/storage/verify_atomic_writes.lua
-
+      - name: Check the write path
+        run: lua5.3 bin/storage/verify_atomic_writes.lua
 
   # Per-language PR builds (mirrors push.yml behavior)
   create-zip:
