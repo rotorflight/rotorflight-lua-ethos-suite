@@ -225,6 +225,9 @@ do
   rig.queue:_finish()
   check("retiring a message hands the TX buffer back",
     rig.common.mspSendRequest(0x1235, {}) == true)
+  check("retiring a message resets retryCount",
+    rig.queue.retryCount == 0,
+    "retryCount=" .. tostring(rig.queue.retryCount))
 end
 
 -- Reported rather than called blindly: before the fix queue.lua had no
@@ -391,6 +394,100 @@ do
     " first error=" .. tostring(fresh.errors[1]) ..
     " payload=" .. (got and string.format("%02X", got[1] or 0) or "none") ..
     " (AA/BB would be the abandoned request's own bytes handed to this one)")
+end
+
+-- ---------------------------------------------------------------------------
+-- Defect 5: mspClearBufs() must wipe half-assembled RX state
+-- ---------------------------------------------------------------------------
+
+do
+  local rig = newRig()
+  local partial = newMessage(0x09)
+  for _, frame in ipairs(replyFrames(partial.command, 2, { {0xAA} })) do
+    rig.transport.replies[#rig.transport.replies + 1] = frame
+  end
+  rig.queue:add(partial)
+  rig.tick() -- starts assembly
+
+  rig.queue:clear() -- drops in-flight work and resets buffers via mspClearBufs()
+
+  -- Deliver the late orphaned frame
+  rig.transport.replies[#rig.transport.replies + 1] = { 2, 0xBB }
+
+  local fresh = newMessage(0x09, { maxRetries = 1 })
+  rig.queue:add(fresh)
+  rig.tick()
+  for _, frame in ipairs(replyFrames(fresh.command, 1, { {0x42} })) do
+    rig.transport.replies[#rig.transport.replies + 1] = frame
+  end
+  rig.jump(1.0)
+  rig.tick()
+
+  local got = fresh.replies[1]
+  check("mspClearBufs resets RX state so late orphaned frames cannot complete",
+    #fresh.replies == 1 and got and got[1] == 0x42,
+    "replies=" .. #fresh.replies .. " payload=" .. (got and string.format("%02X", got[1] or 0) or "none"))
+end
+
+do
+  local rig = newRig()
+  rig.common.mspSendRequest(0x09, {})
+  local frames = replyFrames(0x09, 2, { {0xAA} })
+  rig.transport.replies = { frames[1] }
+  rig.common.mspPollReply() -- assemblies first frame
+
+  rig.common.mspClearBufs() -- resets RX assembly state
+
+  rig.transport.replies = { { 1, 0xBB } }
+  local cmd, buf = rig.common.mspPollReply()
+  check("mspClearBufs directly clears assembly state so orphaned continuation is rejected",
+    cmd == nil and buf == nil,
+    "cmd=" .. tostring(cmd) .. " buf=" .. tostring(buf))
+end
+
+-- ---------------------------------------------------------------------------
+-- Defect 6: invalid requests must abort immediately without deadlocking the queue
+-- ---------------------------------------------------------------------------
+
+do
+  local rig = newRig()
+  local errReported = nil
+  local bad = { command = nil, payload = {}, errorHandler = function(err) errReported = err end }
+  local added = rig.queue:add(bad)
+  check("Queue:add rejects request without command", added == false and errReported == "invalid_request",
+    "added=" .. tostring(added) .. " err=" .. tostring(errReported))
+
+  local errCurrent = nil
+  local directBad = { command = nil, payload = {}, errorHandler = function(err) errCurrent = err end }
+  rig.queue.current = directBad
+  rig.tick()
+  check("processQueue aborts unvalidated invalid request in current",
+    errCurrent == "invalid_request" and rig.queue.current == nil,
+    "err=" .. tostring(errCurrent) .. " current=" .. tostring(rig.queue.current))
+
+  -- Verify queue is not deadlocked and processes following valid messages
+  local valid = newMessage(0x1E, { maxRetries = 1 })
+  rig.queue:add(valid)
+  rig.tick()
+  check("valid request after invalid request is transmitted normally",
+    framesForCommand(rig.transport.sent, valid.command) == 1,
+    "frames for 0x1E=" .. framesForCommand(rig.transport.sent, valid.command))
+end
+
+-- ---------------------------------------------------------------------------
+-- Defect 7: simulator missing response aborts cleanly via abortCurrent
+-- ---------------------------------------------------------------------------
+
+do
+  local rig = newRig()
+  system.getVersion = function() return { simulation = true } end
+  local simMsg = newMessage(0x1234)
+  rig.queue:add(simMsg)
+  rig.tick()
+  check("simulator missing response aborts with no_response",
+    #simMsg.errors == 1 and simMsg.errors[1] == "no_response" and rig.queue.current == nil,
+    "errors=" .. #simMsg.errors .. " current=" .. tostring(rig.queue.current))
+  system.getVersion = function() return { simulation = false } end
 end
 
 -- ---------------------------------------------------------------------------

@@ -88,7 +88,7 @@ end
 -- to transports (like CRSF) that distinguish read vs write at the link
 -- layer; ignored otherwise.
 local function mspSendRequest(cmd, payload, isWrite)
-  if type(payload) ~= "table" or not cmd then return false end
+  if type(payload) ~= "table" or not cmd or type(cmd) ~= "number" then return false end
   if #mspTxBuf ~= 0 then return false end -- TX already busy
 
   local len = #payload
@@ -195,6 +195,10 @@ end
 -- their contents, and the next mspPollReply() simply keeps draining them.
 local function mspClearBufs()
   mspClearTxBuf()
+  mspLastReq = 0
+  mspStarted = false
+  mspRxBuf, mspRxSize, mspRemoteSeq = {}, 0, 0
+  mspRxError = false
   if transport then
     local deadline = os_clock() + 0.01
     while os_clock() < deadline and transport.mspPoll() do end

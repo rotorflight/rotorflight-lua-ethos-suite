@@ -67,6 +67,10 @@ function Queue:isProcessed()
 end
 
 function Queue:add(message)
+  if not message or not message.command or type(message.command) ~= "number" or (message.payload and type(message.payload) ~= "table") then
+    notifyError(message, "invalid_request")
+    return false
+  end
   if #self.pending >= MAX_PENDING then
     notifyError(message, "queue_full")
     return false
@@ -96,6 +100,7 @@ function Queue:clear()
   self.pending = {}
   self.current = nil
   self.lastSent = nil
+  self.retryCount = 0
   self.common.mspClearBufs()
   if droppedCurrent then notifyError(droppedCurrent, "cleared") end
   for i = 1, #droppedPending do notifyError(droppedPending[i], "cleared") end
@@ -126,6 +131,7 @@ function Queue:_finish()
   self.common.mspClearTxBuf()
   self.current = nil
   self.lastSent = nil
+  self.retryCount = 0
   collectgarbage()
 end
 
@@ -157,15 +163,18 @@ function Queue:processQueue()
   end
 
   local msg = self.current
+  local payload = msg.payload or EMPTY_PAYLOAD
+  if not msg.command or type(msg.command) ~= "number" or type(payload) ~= "table" then
+    return self:abortCurrent("invalid_request")
+  end
+
   local common = self.common
   local isSim = system.getVersion().simulation == true
 
   if isSim then
     if not msg.simulatorResponse then
       debugLog.msp("SIM", msg.command, msg.payload, "no_response")
-      self:_finish()
-      notifyError(msg, "no_response")
-      return
+      return self:abortCurrent("no_response")
     end
     debugLog.msp("SIM>", msg.command, msg.payload)
     debugLog.msp("SIM<", msg.command, msg.simulatorResponse)
@@ -189,7 +198,6 @@ function Queue:processQueue()
     if self.lastSent and self.retryCount > maxRetries then
       return self:abortCurrent("max_retries")
     end
-    local payload = msg.payload or EMPTY_PAYLOAD
     -- The return value used to be dropped on the floor, which made a refused
     -- hand-off indistinguishable from a successful send: lastSent and
     -- retryCount were advanced either way, so maxRetries was reached after
