@@ -20,6 +20,7 @@ are described in the [README](../README.md).
 | [dashboard-themes.md](dashboard-themes.md) | The dashboard widget: available themes, layout specifications, and screenshots. |
 | [i18n-locales.md](i18n-locales.md) | Supported languages, locale codes, and translation workflows. |
 | [memory-and-module-lifecycle.md](memory-and-module-lifecycle.md) | Ethos Lua runtime memory architecture, closure caches, GC behavior, and lifecycle management. |
+| [reference/storage.md](reference/storage.md) | What RFSuite stores on the SD card, where, and how a save survives the radio being switched off mid-write. |
 
 ## How page documentation is organized
 

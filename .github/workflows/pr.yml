@@ -21,8 +21,29 @@ jobs:
       - name: Install Lua 5.3
         run: sudo apt-get update && sudo apt-get install -y lua5.3
 
-      - name: Check the flight record behaviour
-        run: lua5.3 bin/flight_record/verify_flight_record.lua
+    - name: Check the flight record behaviour
+      run: lua5.3 bin/flight_record/verify_flight_record.lua
+
+  # Every file the suite owns was opened for writing directly, and io.open(path,
+  # "w") truncates on open -- so a radio switched off mid-save left
+  # settings.ini at 0 bytes or half a section, and the INI reader skips lines it
+  # does not recognise, which means the pilot's settings came back as the
+  # defaults with nothing reported anywhere. A build and a package step cannot
+  # reach that, and no page shows it: this is where the write path is pinned.
+  # The first case in the check goes red on the pre-fix ini.lua.
+  atomic-writes:
+    name: Settings survive an interrupted write
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Install Lua 5.3
+      run: sudo apt-get update && sudo apt-get install -y lua5.3
+
+    - name: Check the write path
+      run: lua5.3 bin/storage/verify_atomic_writes.lua
+
 
   # Per-language PR builds (mirrors push.yml behavior)
   create-zip:
