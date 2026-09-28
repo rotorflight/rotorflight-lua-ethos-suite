@@ -43,6 +43,43 @@ function diagnostics_common.updateField(field, value)
   end
 end
 
+-- A line whose text spans the whole window instead of the narrow right-hand
+-- value column that addValueLine() writes into.
+--
+-- Same construction app/esc_error.lua already ships for its reason lines:
+-- a blank form.addLine, one flex slot, and a static text laid out from x = 0
+-- to the window width. It is a separate function rather than a mode of
+-- addValueLine() because the two produce differently shaped lines and mixing
+-- them at a call site would be the ambiguity worth avoiding.
+--
+-- Returns the static text widget, so the caller can retext it in place --
+-- form.addStaticText is the one control whose value can be changed at
+-- runtime. That is what lets a Diagnostics page grow a list after its first
+-- MSP read without rebuilding (and flickering) the page.
+function diagnostics_common.addTextLine(text, indent)
+  local line = form.addLine("")
+  local slots = form.getFieldSlots(line, {0})
+  local slot = (slots and slots[1]) or {}
+  local width = nil
+  if lcd and lcd.getWindowSize then
+    width = lcd.getWindowSize()
+  end
+  return form.addStaticText(line, {
+    x = indent or 0,
+    y = slot.y or 0,
+    w = width or slot.w or 0,
+    h = slot.h or 0,
+  }, text, LEFT)
+end
+
+-- Only GREEN and RED are used as colour globals anywhere in the suite, both
+-- here; anything else would be a guess about the Ethos API.
+function diagnostics_common.setFieldColor(field, color)
+  if field and field.color then
+    field:color(color)
+  end
+end
+
 function diagnostics_common.updateStatus(field, value)
   if not field then return end
   diagnostics_common.updateField(field, diagnostics_common.yesNo(value))

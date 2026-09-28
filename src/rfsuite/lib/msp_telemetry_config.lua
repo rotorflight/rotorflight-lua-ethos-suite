@@ -19,8 +19,12 @@
 -- telemetry_inverted/halfDuplex/enableSensors/pinSwap have no consumer yet
 -- and just round-trip unchanged through the Setup -> Telemetry page's
 -- load/save; crsf_telemetry_mode does have one -- see app/pages/telemetry.lua's
--- beforeSave, which forces it to CUSTOM so a CRSF receiver actually sends
--- the slots this page writes.
+-- beforeSave, which sets it to CUSTOM on every save. The suite decodes custom
+-- telemetry only (tasks/elrs_sensors.lua against lib/elrs_sensor_table.lua),
+-- and the flight controller sends no custom-telemetry appIds in NATIVE mode, so
+-- the switch is what makes the slots this page writes reach the wire at all.
+-- That page also carries the longer explanation and preserves the slots this
+-- schema does not manage.
 
 local requireModule = package.loaded["rfsuite.lib.require"] or assert(loadfile("lib/require.lua"))()
 local mspcodec = requireModule("lib/mspcodec.lua")

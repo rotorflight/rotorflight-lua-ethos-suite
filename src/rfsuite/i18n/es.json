@@ -4121,6 +4121,18 @@
           "reverse_text": false,
           "translation": "Flags de Armado"
         },
+        "arming_flags_active_fmt": {
+          "english": "%d active",
+          "max_length": 9,
+          "needs_translation": false,
+          "translation": "%d activos"
+        },
+        "arming_flags_active_list": {
+          "english": "Active reasons:",
+          "max_length": 15,
+          "needs_translation": false,
+          "translation": "Motivos activos:"
+        },
         "cpu_load": {
           "english": "CPU Load",
           "max_length": 8,

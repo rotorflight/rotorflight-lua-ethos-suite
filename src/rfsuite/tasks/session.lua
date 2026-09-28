@@ -102,6 +102,7 @@ local session = {
   timerLive = 0,
   timerSession = 0,
   timerFlightCounted = false,
+  flightResumable = false,
   timerTarget = 300,
   smartfuelModelType = 0,
   modelPreferences = nil,
@@ -402,6 +403,10 @@ local function flush()
     timerLive = session.timerLive,
     timerSession = session.timerSession,
     timerFlightCounted = session.timerFlightCounted,
+    -- True while a flight that was in progress at link loss may still be
+    -- resumed. tasks/logging.lua reads this to hold its file open across a
+    -- short drop instead of starting a new one.
+    flightResumable = session.flightResumable,
     timerTarget = session.timerTarget,
     smartfuelModelType = session.smartfuelModelType,
     modelStats = copyStats(session.modelStats),
@@ -807,6 +812,19 @@ local function runHandshake(mspQueue, protocol)
   requestTelemetryConfig(mspQueue, protocol)
 end
 
+local function clearAircraftIdentity()
+  if originalModelName and model and model.name then
+    pcall(model.name, originalModelName)
+  end
+  originalModelName = nil
+  session.mcuId = nil
+  session.craftName = nil
+  session.modelPreferences = nil
+  session.modelPreferencesFile = nil
+  session.modelPreferencesMcuId = nil
+  session.modelStats = nil
+end
+
 local function setConnected(value, mspQueue, protocol)
   if session.connected == value then return end
   session.connected = value
@@ -819,14 +837,10 @@ local function setConnected(value, mspQueue, protocol)
     end
   else
     debugLog.print("[session] disconnected")
-    -- Restore whatever the Ethos model name was before syncname (see the
-    -- craft-name handshake above) last overwrote it -- must run before
-    -- session.craftName is wiped below, since it's this connect's own
-    -- captured originalModelName that's being restored, not a fresh read.
-    if originalModelName and model and model.name then
-      pcall(model.name, originalModelName)
+    local holdingFlight = flightTimer.inProgress and flightTimer.inProgress()
+    if not holdingFlight then
+      clearAircraftIdentity()
     end
-    originalModelName = nil
     -- Forget everything the handshake fetched so it re-runs in full on the
     -- next connect (a stale FC version/UID/battery config from a previous
     -- session -- or a different aircraft entirely -- must not survive a
@@ -835,13 +849,14 @@ local function setConnected(value, mspQueue, protocol)
     for k in pairs(handshakeInFlight) do
       handshakeInFlight[k] = false
     end
+    if holdingFlight and session.mcuId then
+      session.handshake.mcuId = true
+    end
     session.fcVersion = nil
     session.rfVersion = nil
     session.apiVersionMajor = nil
     session.apiVersionMinor = nil
     session.apiVersionSupported = nil
-    session.mcuId = nil
-    session.craftName = nil
     session.clockSynced = false
     session.batteryConfig = nil
     session.consumption = nil
@@ -865,15 +880,8 @@ local function setConnected(value, mspQueue, protocol)
     session.batteryProfile = nil
     session.adjFunction = nil
     session.adjValue = nil
-    session.timerLive = 0
-    session.timerSession = 0
-    session.timerFlightCounted = false
     session.timerTarget = 300
     session.smartfuelModelType = 0
-    session.modelPreferences = nil
-    session.modelPreferencesFile = nil
-    session.modelPreferencesMcuId = nil
-    session.modelStats = nil
     session.bblFlags = nil
     session.bblSize = nil
     session.bblUsed = nil
@@ -883,7 +891,15 @@ local function setConnected(value, mspQueue, protocol)
     telemetryConfigReadInFlight = false
     pendingStatsSync = false
     pendingStatsSyncAt = nil
-    flightTimer.reset()
+    -- The flight timer is deliberately NOT reset here. Everything above is
+    -- per-link state, because a reconnect may be a different aircraft; a flight
+    -- in progress is not. Wiping it is what split one flight into two records
+    -- on a brief in-flight link drop -- the duration was lost and, past the
+    -- count threshold, the same flight was counted twice in stats.flightcount.
+    -- flight_timer decides instead: it holds the flight open across a short gap
+    -- and closes it for good once the pilot disarms or the gap outlasts its
+    -- grace window.
+    session.flightResumable = holdingFlight == true
     session.isArmed = nil
     session.armDisableFlags = nil
     localSmartFuel:reset()
@@ -950,16 +966,48 @@ end
 -- sensor serves the same appId on CRSF) -- not an MSP poll. Published so
 -- app/pages/pids.lua (or any future page) can react to a profile switch
 -- without touching tasks/ directly.
+
+-- A PID/rate profile reading is the firmware's 1-based number, unchanged --
+-- unlike the battery profile, whose 0-based internal index
+-- lib/battery_profile_index.lua converts at this same ingress point, and
+-- whose 0 is therefore impossible. Here the firmware reports
+-- getCurrentPidProfileIndex() + 1 and getCurrentControlRateProfileIndex() + 1
+-- (rotorflight-firmware src/main/telemetry/sensors.c:310-313), so the
+-- smallest value it can ever send is 1, and the largest is
+-- PID_PROFILE_COUNT / CONTROL_RATE_PROFILE_COUNT -- both 6 or less
+-- (src/main/target/common_pre.h:257-261).
+--
+-- A 0 therefore did not come from the flight controller: it came from a
+-- telemetry source that lib/telemetry_sensors.lua resolved but that carries
+-- no data. S.Port lists two candidate appIds for both sensors
+-- (lib/telemetry_sensors_sport.lua: pid 0x5130/0x5471, rate 0x5131/0x5472)
+-- and getSource() latches the first one that resolves, so a slot Ethos
+-- discovered before it ever carried a reading holds the suite on a source
+-- stuck at 0 -- announceProfile() then speaks that as "Profile 0".
+--
+-- Rejecting it keeps the last known good value in session instead, which is
+-- the same guard the battery profile has had since #2397. (A *nil* reading
+-- was already harmless: rememberCurrent() copies nil into previous, so a
+-- reconnect that returns the same profile still compares equal and stays
+-- silent -- that part is unchanged, only the 0 is new behaviour.)
+local function activeProfile1(value)
+  local reading = tonumber(value)
+  if reading == nil then return nil end
+  reading = math.floor(reading)
+  if reading >= 1 and reading <= 6 then return reading end
+  return nil
+end
+
 local function updateProfiles(protocol)
   if not telemetrySensors then return end
-  local pidProfile = telemetrySensors.getValue(protocol, "pid_profile")
-  if pidProfile ~= session.pidProfile then
+  local pidProfile = activeProfile1(telemetrySensors.getValue(protocol, "pid_profile"))
+  if pidProfile ~= nil and pidProfile ~= session.pidProfile then
     session.pidProfile = pidProfile
     publish()
   end
 
-  local rateProfile = telemetrySensors.getValue(protocol, "rate_profile")
-  if rateProfile ~= session.rateProfile then
+  local rateProfile = activeProfile1(telemetrySensors.getValue(protocol, "rate_profile"))
+  if rateProfile ~= nil and rateProfile ~= session.rateProfile then
     session.rateProfile = rateProfile
     publish()
   end
@@ -1096,7 +1144,12 @@ end
 
 local function updateFlightTimer(now)
   local changed, snapshot, event = flightTimer.update(session.connected, session.isArmed, now)
-  if changed then
+  -- Recomputed every tick, not only on change: the grace window can expire
+  -- while the link stays down, and the log writer has to learn that the flight
+  -- can no longer be resumed.
+  local resumable = flightTimer.resumable(now)
+  if changed or resumable ~= session.flightResumable then
+    session.flightResumable = resumable
     session.timerLive = snapshot.timerLive
     session.timerSession = snapshot.timerSession
     session.timerFlightCounted = snapshot.timerFlightCounted
@@ -1118,6 +1171,10 @@ local function updateFlightTimer(now)
       saveModelPreferences()
       scheduleStatsSync(1)
     end
+  end
+
+  if not session.connected and not (flightTimer.inProgress and flightTimer.inProgress(now)) then
+    clearAircraftIdentity()
   end
 end
 

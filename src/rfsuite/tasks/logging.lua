@@ -147,6 +147,32 @@ local function stop()
   log.modelName = nil
 end
 
+-- Hold the log open across a short link loss. The samples taken so far are
+-- already in the file, the handle is closed so nothing is written while there
+-- is no link, and the next flush reopens the same path in append mode -- so
+-- one flight stays one file, and the peaks the log page derives from a file
+-- stay the peaks of the whole flight. A new file here would put the two halves
+-- of one flight into two records.
+local function pause()
+  if not log.active then return end
+  flush(true)
+  closeHandle()
+end
+
+-- A flight that was in progress at link loss can still be resumed, so the log
+-- is paused rather than stopped. flight_timer owns that decision and its grace
+-- window, so there is exactly one place that says whether this is the same
+-- flight.
+--
+-- A pilot who has disarmed ends the flight, even if the link only just came
+-- back: the outage is not a reason to keep a record alive, and holding it here
+-- is what would merge the next flight into this one. nil means "not known
+-- yet", which is the normal state while the link is down, and holding is right.
+local function holdAcrossLinkLoss()
+  if session.isArmed == false then return false end
+  return log.active and session.flightResumable == true
+end
+
 local function start()
   local dir = ensureDir()
   if not dir then return false end
@@ -174,7 +200,7 @@ local function start()
 end
 
 local function inFlight()
-  return session.connected == true and session.isArmed == true and session.mcuId ~= nil
+  return session.connected == true and session.isArmed == true and (session.mcuId ~= nil or log.active == true)
 end
 
 local function loggingEnabled()
@@ -190,7 +216,14 @@ end
 local function onSessionUpdate(snapshot)
   for k in pairs(session) do session[k] = nil end
   for k, v in pairs(snapshot or {}) do session[k] = v end
-  if not inFlight() then stop() end
+  if inFlight() then
+    -- Nothing to do: a log that is paused reopens the same file on the next
+    -- flush, and one that is not active yet is started by wakeup().
+  elseif holdAcrossLinkLoss() then
+    pause()
+  else
+    stop()
+  end
   updateModelIni()
 end
 
@@ -221,7 +254,9 @@ function logging.wakeup(protocol)
     return
   end
   if not inFlight() then
-    stop()
+    if not holdAcrossLinkLoss() then
+      stop()
+    end
     return
   end
   if not log.active and not start() then return end

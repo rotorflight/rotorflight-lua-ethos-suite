@@ -5086,6 +5086,18 @@
           "translation": "דגלי ארמינג",
           "reverse_text": true
         },
+        "arming_flags_active_list": {
+          "english": "Active reasons:",
+          "translation": "סיבות פעילות:",
+          "needs_translation": false,
+          "max_length": 15
+        },
+        "arming_flags_active_fmt": {
+          "english": "%d active",
+          "translation": "%d פעילים",
+          "needs_translation": false,
+          "max_length": 9
+        },
         "cpu_load": {
           "english": "CPU Load",
           "max_length": 8,
