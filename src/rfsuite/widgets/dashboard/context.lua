@@ -59,7 +59,27 @@ local themePaletteCache = {}
 local systemThemeSupport = nil
 local imageCache = {}
 local imagePathCache = {}
+-- imageBitmapCache holds decoded bitmaps, so unlike the two tables above it
+-- is bounded rather than merely cleared. Its key space is open-ended: every
+-- distinct model photo, dial panel and per-box `image` parameter ever
+-- resolved mints a new key, and a key looked up once used to stay resident
+-- for the rest of the app session with no release path at all. Each entry is
+-- a userdata handle plus its own decoded pixel buffer sized by the source
+-- file (widgets/dashboard/gfx/dials alone is 343 KB of panels), so this is
+-- the one image cache where an unbounded key count turns into RAM. The two
+-- string-keyed maps above are left to clearCaches({images = ...}): an entry
+-- there costs tens of bytes, and imagePathCache additionally has to keep its
+-- negative ("path or false") results or a missing image is re-probed against
+-- the filesystem on every single load.
+--
+-- 32 sits above what a full theme plus the current model photo resolves
+-- (one panel per configured dial and one bitmap per distinct image path), so
+-- in normal operation nothing is ever evicted and the bitmap is re-decoded
+-- exactly once per theme load, same as before. It is a ceiling, not a target:
+-- path churn within a session can no longer accumulate without limit.
+local IMAGE_BITMAP_CACHE_MAX = 32
 local imageBitmapCache = {}
+local imageBitmapClock = 0
 local liveSourceCache = {}
 local liveMissRetryAt = {}
 local liveMissCount = {}
@@ -1529,6 +1549,24 @@ local function clearTable(t)
   for key in pairs(t) do t[key] = nil end
 end
 
+-- Object modules that keep their own decoded-bitmap memo (see
+-- objects/image/model.lua's _imgCache) cannot be reached from here by name:
+-- the engine loadfile()s an object module on demand, and the module is a
+-- local. They register a clearer instead, and clearCaches({images = true})
+-- runs every registered clearer. This has to be an explicit registry rather
+-- than a table rewrite or a package.loaded sweep, because a clearer holds a
+-- closure over the module's own cache table: replacing the table here would
+-- leave the module writing into the orphaned one.
+local imageCacheClearers = {}
+
+function utils.registerImageCacheClearer(fn)
+  if type(fn) ~= "function" then return end
+  for i = 1, #imageCacheClearers do
+    if imageCacheClearers[i] == fn then return end
+  end
+  imageCacheClearers[#imageCacheClearers + 1] = fn
+end
+
 function context.widgets.dashboard.clearCaches(options)
   options = options or {}
   if options.renders then clearTable(context.widgets.dashboard.renders) end
@@ -1542,7 +1580,15 @@ function context.widgets.dashboard.clearCaches(options)
     clearTable(imageCache)
     clearTable(imagePathCache)
     clearTable(imageBitmapCache)
+    -- rfsuite.session IS context.session here: object modules get this very
+    -- module back under the name `rfsuite` (see objects/dial/image.lua's
+    -- `local rfsuite = requireModule("widgets/dashboard/context.lua")`), so
+    -- this is the table dial/image.lua writes its panels into.
     if context.session then clearTable(context.session.dialImageCache) end
+    for i = 1, #imageCacheClearers do
+      local ok, err = pcall(imageCacheClearers[i])
+      if not ok then print("[dashboard] image cache clearer failed: " .. tostring(err)) end
+    end
   end
   if options.liveSources then
     clearTable(liveSourceCache)
@@ -2302,13 +2348,59 @@ local function loadBitmap(path)
   return nil
 end
 
+-- Least-recently-used eviction for imageBitmapCache. Deliberately not a
+-- linked list: the map holds at most IMAGE_BITMAP_CACHE_MAX entries, so the
+-- "which one is oldest" walk is over a table of a few dozen records, and it
+-- only runs on a decode miss -- loadImage()'s callers (drawImageInRect,
+-- objects/image/image.lua, objects/image/model.lua) all memoise their own
+-- result, so the hit path below never re-decodes and never walks. An entry
+-- is a record rather than the bare bitmap handle so the recency stamp has
+-- somewhere to live without a second parallel map that could drift.
+--
+-- The live count is recomputed from the table instead of kept in a counter:
+-- a counter has to be reset on every clear path (clearCaches, and nothing
+-- else can reach this local), and a missed reset would silently make the
+-- loop below evict down to nothing.
+--
+-- What the ceiling does not cover: imageCache above, the per-(path, fallback
+-- logo) memo drawImageInRect keeps, holds the very same handles and is
+-- unbounded too. It is cleared by the same images branch, so the two are
+-- released together on every lifecycle event; the ceiling is a backstop for
+-- path churn *within* one theme's lifetime, not a replacement for it.
+local function trimImageBitmapCache()
+  local count = 0
+  for _ in pairs(imageBitmapCache) do count = count + 1 end
+
+  while count > IMAGE_BITMAP_CACHE_MAX do
+    local oldestKey, oldestUsed
+    for key, entry in pairs(imageBitmapCache) do
+      if oldestUsed == nil or entry.used < oldestUsed then
+        oldestKey, oldestUsed = key, entry.used
+      end
+    end
+    if not oldestKey then break end
+    imageBitmapCache[oldestKey] = nil
+    count = count - 1
+  end
+end
+
+local function cacheImageBitmap(key, bitmap)
+  imageBitmapClock = imageBitmapClock + 1
+  imageBitmapCache[key] = {bitmap = bitmap, used = imageBitmapClock}
+  trimImageBitmapCache()
+end
+
 function context.utils.loadImage(image1, image2, image3)
   local images = {image1, image2, image3}
   for i = 1, 3 do
     local image = normalizeImagePath(images[i])
     if image then
-      local cachedBitmap = imageBitmapCache[image]
-      if cachedBitmap then return cachedBitmap end
+      local entry = imageBitmapCache[image]
+      if entry then
+        imageBitmapClock = imageBitmapClock + 1
+        entry.used = imageBitmapClock
+        return entry.bitmap
+      end
 
       local path = imagePathCache[image]
       if path == nil then
@@ -2326,7 +2418,7 @@ function context.utils.loadImage(image1, image2, image3)
       if path then
         local bitmap = loadBitmap(path)
         if bitmap then
-          imageBitmapCache[image] = bitmap
+          cacheImageBitmap(image, bitmap)
           return bitmap
         end
       end
