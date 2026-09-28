@@ -57,20 +57,18 @@ local paletteCache = {}
 local themeStateCache = {}
 local themePaletteCache = {}
 local systemThemeSupport = nil
-local imageCache = {}
 local imagePathCache = {}
--- imageBitmapCache holds decoded bitmaps, so unlike the two tables above it
+-- imageBitmapCache holds decoded bitmaps, so unlike imagePathCache above it
 -- is bounded rather than merely cleared. Its key space is open-ended: every
 -- distinct model photo, dial panel and per-box `image` parameter ever
 -- resolved mints a new key, and a key looked up once used to stay resident
 -- for the rest of the app session with no release path at all. Each entry is
 -- a userdata handle plus its own decoded pixel buffer sized by the source
 -- file (widgets/dashboard/gfx/dials alone is 343 KB of panels), so this is
--- the one image cache where an unbounded key count turns into RAM. The two
--- string-keyed maps above are left to clearCaches({images = ...}): an entry
--- there costs tens of bytes, and imagePathCache additionally has to keep its
--- negative ("path or false") results or a missing image is re-probed against
--- the filesystem on every single load.
+-- the one image cache where an unbounded key count turns into RAM.
+-- imagePathCache is left to clearCaches({images = ...}): an entry there costs
+-- tens of bytes, and it additionally has to keep its negative ("path or false")
+-- results or a missing image is re-probed against the filesystem on every single load.
 --
 -- 32 sits above what a full theme plus the current model photo resolves
 -- (one panel per configured dial and one bitmap per distinct image path), so
@@ -1577,7 +1575,6 @@ function context.widgets.dashboard.clearCaches(options)
     systemThemeSupport = nil
   end
   if options.images then
-    clearTable(imageCache)
     clearTable(imagePathCache)
     clearTable(imageBitmapCache)
     -- rfsuite.session IS context.session here: object modules get this very
@@ -1815,23 +1812,17 @@ function utils.boxContentRect(x, y, w, h, bgcolor)
   return boxContentRect(x, y, w, h, bgcolor)
 end
 
--- Draws `image` (a path string, resolved+cached through imageCache like
--- utils.box() always has, or an already-loaded bitmap handle) fitted/aligned
--- inside the given rect. Extracted from utils.box()'s own image branch so
--- title-only callers (objects/image/{image,model}.lua) can draw their image
--- against utils.prepareTextLayout()'s cached content region without going
--- through utils.box()'s (uncached) title-measurement path a second time.
+-- Draws `image` (a path string, resolved+cached through loadImage(), or an
+-- already-loaded bitmap handle) fitted/aligned inside the given rect.
+-- Extracted from utils.box()'s own image branch so title-only callers
+-- (objects/image/{image,model}.lua) can draw their image against
+-- utils.prepareTextLayout()'s cached content region without going through
+-- utils.box()'s (uncached) title-measurement path a second time.
 local function drawImageInRect(regionX, regionY, regionW, regionH, image, imagewidth, imageheight, imagealign, bgcolor)
   local bitmap = nil
   if type(image) == "string" then
     local fallbackLogo = utils.getLogoFallbackForBackground and utils.getLogoFallbackForBackground(bgcolor)
-    local cacheKey = image .. "|" .. tostring(fallbackLogo or "")
-    bitmap = imageCache[cacheKey]
-    if bitmap == nil then
-      bitmap = context.utils.loadImage(image, nil, fallbackLogo) or false
-      imageCache[cacheKey] = bitmap
-    end
-    if bitmap == false then bitmap = nil end
+    bitmap = context.utils.loadImage(image, nil, fallbackLogo)
   else
     bitmap = image
   end
@@ -2361,12 +2352,6 @@ end
 -- a counter has to be reset on every clear path (clearCaches, and nothing
 -- else can reach this local), and a missed reset would silently make the
 -- loop below evict down to nothing.
---
--- What the ceiling does not cover: imageCache above, the per-(path, fallback
--- logo) memo drawImageInRect keeps, holds the very same handles and is
--- unbounded too. It is cleared by the same images branch, so the two are
--- released together on every lifecycle event; the ceiling is a backstop for
--- path churn *within* one theme's lifetime, not a replacement for it.
 local function trimImageBitmapCache()
   local count = 0
   for _ in pairs(imageBitmapCache) do count = count + 1 end

@@ -45,6 +45,26 @@ jobs:
       - name: Check the write path
         run: lua5.3 bin/storage/verify_atomic_writes.lua
 
+  # Widgets and objects load bitmaps on demand, and clearCaches()'s images
+  # branch previously had no caller anywhere -- so every decoded dashboard
+  # bitmap survived theme reloads, model changes and widget close. The fix
+  # wires clearThemeCache() to pass images = true, adds an LRU bound to the
+  # decoded-bitmap map, and provides a clearer registry for modules like
+  # objects/image/model.lua.
+  dashboard-image-caches:
+    name: Dashboard image cache eviction and theme reload
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Lua 5.3
+        run: sudo apt-get update && sudo apt-get install -y lua5.3
+
+      - name: Check dashboard image cache behaviour
+        run: lua5.3 bin/dashboard/verify_image_caches.lua
+
   # Per-language PR builds (mirrors push.yml behavior)
   create-zip:
     name: Build PR ZIP (${{ matrix.lang }})

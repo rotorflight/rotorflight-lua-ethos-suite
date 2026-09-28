@@ -178,13 +178,16 @@ switch, model change and widget close for the rest of the app session. When
 adding a flag here, the call site is part of the change; a flag nothing
 requests is indistinguishable from a flag that does not work.
 
-Two caches hold decoded bitmaps rather than strings, and both now have a
+Three caches hold decoded bitmaps rather than strings, and all have a
 release path that `clearCaches({images = true})` drives:
 
 | Cache | Held by | Released by |
 | --- | --- | --- |
 | `imageBitmapCache` (context.lua) | the context module | `clearCaches({images = true})`, plus an LRU ceiling of `IMAGE_BITMAP_CACHE_MAX` entries |
 | `_imgCache` (`objects/image/model.lua`) | the object module, keyed by craft name | a clearer registered via `utils.registerImageCacheClearer()`, run by the same `images` branch |
+| `session.dialImageCache` (`objects/dial/image.lua`) | the session table, keyed by dial panel | `clearCaches({images = true})` |
+
+In addition, `imagePathCache` (context.lua) caches resolved string paths and negative probe results (`path or false`) so missing images are not repeatedly probed against the filesystem; it is cleared by the same `images` branch.
 
 The LRU ceiling exists because the bitmap cache's key space is open-ended —
 every distinct model photo, dial panel and per-box `image` parameter mints a

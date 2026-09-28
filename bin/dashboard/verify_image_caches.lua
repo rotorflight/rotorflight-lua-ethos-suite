@@ -1,10 +1,9 @@
 -- Behaviour check for the dashboard's image/bitmap caches.
 --
--- Run it (from the suite root -- the modules under test loadfile() each other
--- by Ethos' relative path prefixes, so the working directory has to be what
--- the radio's SCRIPTS:/ would resolve to):
+-- Run it:
 --
---     cd src/rfsuite && lua5.3 ../../bin/dashboard/verify_image_caches.lua
+--     lua5.3 bin/dashboard/verify_image_caches.lua
+--     (or from src/rfsuite: lua5.3 ../../bin/dashboard/verify_image_caches.lua)
 --
 -- What it drives, and why:
 --   * The claim is about *retention*, not about a return value. A decoded
@@ -50,6 +49,32 @@ local function scriptDir()
   return (path:match("^(.*)[/\\][^/\\]*$")) or "."
 end
 
+local ROOT = scriptDir() .. "/../.."
+local SUITE = ROOT .. "/src/rfsuite"
+
+local function resolvePath(name)
+  local f = io.open(name, "r")
+  if f then
+    f:close()
+    return name
+  end
+  return SUITE .. "/" .. name
+end
+
+local realLoadfile = loadfile
+loadfile = function(path, mode, env)
+  if type(path) == "string" then
+    path = resolvePath(path)
+  end
+  if env ~= nil then
+    return realLoadfile(path, mode, env)
+  elseif mode ~= nil then
+    return realLoadfile(path, mode)
+  else
+    return realLoadfile(path)
+  end
+end
+
 local failures = 0
 local checks = 0
 
@@ -69,13 +94,12 @@ end
 -- ---------------------------------------------------------------------------
 
 -- rfsuite.lib.require is loadfile() against Ethos' path prefixes on a radio.
--- Here it is the real thing with the suite's own directory as the prefix,
--- which is why this script has to be run from src/rfsuite.
+-- Here it resolves relative to the suite directory when run from repository root.
 local function requireModule(name)
   local key = "rfsuite." .. name:gsub("%.lua$", ""):gsub("/", ".")
   local cached = package.loaded[key]
   if cached ~= nil then return cached end
-  local chunk, err = loadfile(name)
+  local chunk, err = loadfile(resolvePath(name))
   if not chunk then error(err) end
   local ok, result = pcall(chunk)
   if not ok then error(result) end
@@ -179,6 +203,17 @@ check("case 2: 40 distinct paths retained no more than the 32-entry ceiling",
   after40 <= 32, "retained=" .. after40)
 check("case 2: the ceiling is a real bound, not an accidental clear-all",
   after40 > 0, "retained=" .. after40)
+
+resetStubFilesystem()
+clearCaches({images = true})
+for i = 1, 40 do
+  local path = photoPath("rect" .. i)
+  existingFiles[path] = 64
+  dashboardUtils.drawImageInRect(0, 0, 100, 100, path)
+end
+local afterDraw40 = retainedBitmaps()
+check("case 2: 40 distinct drawImageInRect paths retained no more than the 32-entry ceiling",
+  afterDraw40 <= 32, "retained=" .. afterDraw40)
 
 -- ---------------------------------------------------------------------------
 -- Case 3 -- eviction is least-recently-used, not least-recently-inserted
@@ -288,7 +323,7 @@ end
 -- the result: model.lua stores `false` for a craft whose photo does not
 -- exist, so a surviving memo means the module never re-probes and a photo
 -- that has since appeared on the card stays invisible.
-local modelImage = assert(loadfile("widgets/dashboard/objects/image/model.lua"))()
+local modelImage = assert(loadfile(resolvePath("widgets/dashboard/objects/image/model.lua")))()
 
 resetStubFilesystem()
 clearCaches({images = true})
