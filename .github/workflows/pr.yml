@@ -45,6 +45,26 @@ jobs:
       - name: Check the write path
         run: lua5.3 bin/storage/verify_atomic_writes.lua
 
+  # A disconnect used to leave the MSP request queue holding everything an open
+  # page had queued, so the next handshake queued FIFO behind a backlog that no
+  # flight controller could answer any more. And every completed message forced
+  # a full GC cycle -- a call section 9 of the lifecycle doc had already measured
+  # as buying nothing. Both need a session task and a collector that can be
+  # observed, which no build or package step provides.
+  msp-disconnect-gc:
+    name: MSP queue on disconnect and the per-message GC
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Lua 5.3
+        run: sudo apt-get update && sudo apt-get install -y lua5.3
+
+      - name: Check the disconnect and GC behaviour
+        run: lua5.3 bin/msp_gc/verify_msp_disconnect.lua
+
   # Per-language PR builds (mirrors push.yml behavior)
   create-zip:
     name: Build PR ZIP (${{ matrix.lang }})
