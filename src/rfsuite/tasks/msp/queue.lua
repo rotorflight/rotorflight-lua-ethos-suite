@@ -112,19 +112,22 @@ end
 --
 -- The collectgarbage() here is the one full cycle this file keeps, and it is
 -- deliberate: clear() is rare and lands on a real teardown, which is the only
--- place a forced cycle earns its cost. It sweeps what the surrounding teardown
--- left behind -- not the messages just dropped, which are still referenced by
--- the locals above until this function returns. _finish() below is the hot
--- path and does not have even that.
+-- place a forced cycle earns its cost. By clearing droppedCurrent and
+-- droppedPending before calling collectgarbage(), the dropped messages and
+-- payloads are immediately reclaimed along with what the surrounding teardown
+-- left behind. _finish() below is the hot path and does not have even that.
 function Queue:clear()
   local droppedCurrent = self.current
   local droppedPending = self.pending
   self.pending = {}
   self.current = nil
   self.lastSent = nil
+  self.retryCount = 0
   self.common.mspClearBufs()
   if droppedCurrent then notifyError(droppedCurrent, "cleared") end
   for i = 1, #droppedPending do notifyError(droppedPending[i], "cleared") end
+  droppedCurrent = nil
+  droppedPending = nil
   collectgarbage()
 end
 
@@ -136,9 +139,16 @@ end
 -- boundary, and it deliberately does NOT force a full GC cycle: it buys no
 -- memory (header comment) and processQueue() runs it on every background task
 -- wakeup, so there is no reason to put it on the task's hot path.
+--
+-- Hand back the shared TX buffer in tasks/msp/common.lua and reset the retry
+-- counter so the next message starts with clean state.
 function Queue:_finish()
+  if self.common.mspClearTxBuf then
+    self.common.mspClearTxBuf()
+  end
   self.current = nil
   self.lastSent = nil
+  self.retryCount = 0
 end
 
 function Queue:_deliver(buf)

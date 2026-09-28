@@ -249,6 +249,7 @@ do
   local message = { command = 0x1E, payload = {}, processReply = function() end }
   weak[1] = message
   queue.current = message
+  queue.retryCount = 2
   message = nil
 
   queue:_finish()
@@ -257,37 +258,50 @@ do
   collectgarbage("restart")
   check("completing a message forces no full GC cycle", not collected,
     "the weak value was collected, so a full cycle still runs on the per-message path")
+  check("Queue:_finish() resets retryCount to 0", queue.retryCount == 0,
+    "retryCount was " .. tostring(queue.retryCount))
 end
 
 -- 5. The harness can see one, or check 4 proves nothing. Queue:clear() keeps its
 --    collect, which is exactly the contrast that gives 4 its meaning.
 --
---    The garbage placed here is deliberately *not* the message the queue drops:
---    clear() holds the dropped message in a local until the function returns,
---    so a collect on that line still sees it as reachable. That is a real
---    property of clear()'s own collect -- it sweeps everything else the page
---    teardown left behind, not the message tables it just released -- and it
---    is why the subject here is unrelated throwaway garbage.
+--    Queue:clear() nils its droppedCurrent and droppedPending locals before
+--    invoking collectgarbage(), so it reclaims both the dropped messages
+--    themselves and any surrounding garbage immediately.
 do
   local common, queue = newRig()
   collectgarbage("stop")
   collectgarbage("collect")
 
   local weak = setmetatable({}, { __mode = "v" })
-  local function drop()
-    local scratch = { 1, 2, 3 }
-    weak[#weak + 1] = scratch
-  end
-  drop()
+  local currentMsg = { command = 0x20, payload = { 1, 2, 3 }, processReply = function() end }
+  local pendingMsg = { command = 0x21, payload = { 4, 5, 6 }, processReply = function() end }
+  local scratch = { 1, 2, 3 }
+  weak[1] = currentMsg
+  weak[2] = pendingMsg
+  weak[3] = scratch
+  queue.current = currentMsg
+  queue.pending = { pendingMsg }
+  queue.retryCount = 3
+  currentMsg = nil
+  pendingMsg = nil
+  scratch = nil
+
   check("sanity: unreachable garbage survives while the collector is stopped",
-    weak[1] ~= nil, "the weak value was collected before clear() ran")
+    weak[1] ~= nil and weak[2] ~= nil and weak[3] ~= nil,
+    "the weak values were collected before clear() ran")
 
-  queue:clear() -- on an empty queue; its collect is what this observes
+  queue:clear()
 
-  local collected = weak[1] == nil
+  local collected = weak[1] == nil and weak[2] == nil and weak[3] == nil
   collectgarbage("restart")
   check("the harness does see a full collect where one still happens (Queue:clear)",
-    collected, "Queue:clear() kept its collect, so this should have swept the weak value")
+    collected, "Queue:clear() kept its collect, so this should have swept the weak values")
+  check("Queue:clear() swept the dropped message tables themselves",
+    weak[1] == nil and weak[2] == nil,
+    "droppedCurrent/droppedPending locals were not nil'd before collectgarbage()")
+  check("Queue:clear() resets retryCount to 0", queue.retryCount == 0,
+    "retryCount was " .. tostring(queue.retryCount))
 end
 
 -- 6. clear() must still answer every message it drops. This is what makes the

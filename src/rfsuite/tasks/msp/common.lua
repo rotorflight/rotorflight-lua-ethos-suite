@@ -193,4 +193,12 @@ return {
   mspProcessTxQ = mspProcessTxQ,
   mspPollReply = mspPollReply,
   mspClearBufs = mspClearBufs,
+  -- Exported separately from mspClearBufs because the two answer different
+  -- questions. mspClearBufs() is a transport swap: throw away the queue AND
+  -- drain the link's stale incoming frames. mspClearTxBuf() is narrower --
+  -- just hand back a half-built outgoing message -- which is what a caller
+  -- needs when it abandons a single message and intends to keep using the
+  -- same transport.
+  mspClearTxBuf = mspClearTxBuf,
 }
+
