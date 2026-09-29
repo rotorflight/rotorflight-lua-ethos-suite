@@ -1,28 +1,34 @@
--- Zaehlt die MSP-Anfragen, die das Werkzeug ueber seinen ganzen Lebenszyklus
--- stellt, und prueft, dass sie sich nicht pro Zyklus vermehren.
+-- Behaviour check for the MSP request pattern of the tool (#2421).
 --
--- Hintergrund: Das Werkzeug laedt seinen UI-Unterbaum erst beim Oeffnen statt
--- beim Boot (#2421). Die Sorge dabei war eine doppelte: dass dadurch (a) ein
--- Speicherleck entsteht und (b) zusaetzliche MSP-Aufrufe dazukommen, die den
--- Heap hochziehen. (a) beantwortet der Heap-Boden aus der Boot-Sonde, (b)
--- beantwortet DIESES Harness -- und zwar strenger als eine Beobachtung auf der
--- Leitung: es zaehlt an der Quelle, dem bus.publish, fuer einen fest
--- vorgegebenen Ablauf, und der Ablauf laesst sich byteweise zwischen zwei
--- Staenden vergleichen.
+-- Run it:
+--     lua5.3 bin/tool_ui/verify_no_extra_msp.lua
 --
--- Gefahren wird das ECHTE src/rfsuite/app/tool.lua inklusive der echten
--- Guards; gestubbt sind nur die Ethos-Widgets, der Hintergrund-Task und die
--- Verbindung -- Letztere muessen "laeuft" und "verbunden" melden, sonst feuern
--- die Guards gar nicht und der Test vergaenge an 0 == 0.
+-- What it drives, and why:
+--   * The real src/rfsuite/app/tool.lua, including both real guards. Only the
+--     Ethos widgets, the background task and the link are stubbed. The last two
+--     have to report "running" and "connected", because the guards only request
+--     then (tool.lua:469/475) -- without them the run passes on 0 == 0.
+--   * Requests are counted at bus.publish, the source, with the real bus left
+--     in place. That is stricter than watching the wire: the run is a fixed
+--     sequence, so the trace can be compared byte for byte between two builds.
+--   * Every request is answered the way a live FC would answer it. This is
+--     load-bearing, not decoration. Without a reply state.pending stays true,
+--     and pending blocks every repeat no matter what the `attempted` latch
+--     does. A first version of this harness had no answering stub and stayed
+--     GREEN after the guard's latch had been deliberately removed -- it was
+--     measuring nothing. With the stub, that same sabotage yields 309 requests
+--     instead of 6 and this file goes red.
 --
--- Der Weg fuehrt bewusst in BEIDE bewachten Menues:
---   Wurzel -> Hardware -> Servos        (servo_bus_guard,  MSP 54)
---   Wurzel -> Hardware -> ESC-Motoren -> ESC-Tools
---                                         (esc_protocol_guard, MSP 123)
--- Ein Ablauf, der sie auslaesst, wuerde nichts messen.
+-- The path deliberately enters BOTH guarded menus:
+--   root -> Hardware -> Servos            (servo_bus_guard,    MSP 54)
+--   root -> Hardware -> ESC & Motors -> ESC Tools
+--                                          (esc_protocol_guard, MSP 123)
+-- A run that skipped them would measure nothing. The tick block matters for the
+-- same reason: a retry storm can only arrive through wakeup(), which
+-- menu_container.lua:305-306 forwards to the guards.
 --
--- usage:  lua bin/tool_ui/verify_no_extra_msp.lua
---         (pfad optional: alternativ das Wurzelverzeichnis des Repos)
+-- The 98 lcd.loadMask calls in tool.lua are a different budget (the bitmap
+-- arena) and are not exercised here.
 
 local function scriptDir()
   local src = debug.getinfo(1, "S").source
@@ -34,43 +40,49 @@ local arg1 = ...
 local ROOT = (arg1 or (scriptDir() .. "/../..")):gsub("\\", "/")
 local SUITE = (ROOT .. "/src/rfsuite"):gsub("\\", "/")
 
-local bestanden, fehlgeschlagen = 0, 0
-local echtesPrint = print
+local checks, failures = 0, 0
 
-local function pruefe(name, bedingung, zusatz)
-  if bedingung then
-    bestanden = bestanden + 1
-    echtesPrint(string.format("  OK    %s", name))
+-- The real print, held in a local BEFORE _G.print is replaced below. The suite
+-- calls out() everywhere, so a silent stub has to be installed -- and if this
+-- file then calls the global print, it silences itself as well. That happened
+-- once already: the harness reported exit code 0 and not a single line.
+local out = print
+
+local function check(label, ok, detail)
+  checks = checks + 1
+  if ok then
+    out(string.format("  ok    %s", label))
   else
-    fehlgeschlagen = fehlgeschlagen + 1
-    echtesPrint(string.format("  FEHLT %s%s", name, zusatz and ("  -- " .. zusatz) or ""))
+    failures = failures + 1
+    out(string.format("  FAIL  %s", label))
+    if detail then out("        " .. tostring(detail)) end
   end
 end
 
--- ── Ethos-Stubs ─────────────────────────────────────────────────────────────
+-- ── Ethos stubs ──────────────────────────────────────────────────────────────
 package.path = SUITE .. "/?.lua;" .. package.path
 
-local echtesLoadfile = loadfile
-local SUITE_PRAEFIX = SUITE .. "/"
-_G.loadfile = function(pfad, ...)
-  if type(pfad) == "string" and pfad:match("%.lua$") then
-    local absolut = pfad:sub(1, 1) == "/" and pfad or (SUITE_PRAEFIX .. pfad)
-    return echtesLoadfile(absolut, ...)
+local realLoadfile = loadfile
+local SUITE_PREFIX = SUITE .. "/"
+_G.loadfile = function(path, ...)
+  if type(path) == "string" and path:match("%.lua$") then
+    local absolute = path:sub(1, 1) == "/" and path or (SUITE_PREFIX .. path)
+    return realLoadfile(absolute, ...)
   end
-  return echtesLoadfile(pfad, ...)
+  return realLoadfile(path, ...)
 end
 
-local registriertesTool = nil
+local registeredTool = nil
 _G.system = {
   getVersion = function() return { simulation = false, radio = { name = "stub" } } end,
-  registerSystemTool = function(tool) registriertesTool = tool return tool end,
+  registerSystemTool = function(tool) registeredTool = tool return tool end,
   getMemoryUsage = function() return {} end,
   formatBytes = function(n) return tostring(n) end,
 }
 
 _G.lcd = {
-  loadMask = function(p) return { pfad = p } end,
-  loadImage = function(p) return { pfad = p } end,
+  loadMask = function(p) return { path = p } end,
+  loadImage = function(p) return { path = p } end,
   getWindowSize = function() return 480, 320 end,
   getTextSize = function(t) return #t, 12 end,
   drawRectangle = function() end,
@@ -89,11 +101,11 @@ _G.lcd = {
 }
 _G.model = { get = function() return 0 end, name = function() return "stub" end }
 
--- Die Suite ruft ueberall print(); ein stiller Stub schluckt dann auch die
--- Ausgabe dieses Harness.
+-- The suite calls out() throughout; a silent stub would swallow this
+-- harness's own output as well.
 _G.print = function() end
 
-local function feldStub(slot)
+local function fieldStub(slot)
   return {
     slot = slot,
     focus = function() end,
@@ -108,21 +120,23 @@ local function feldStub(slot)
   }
 end
 
--- Jede Kachel wird hier festgehalten. Die Navigation laeuft ueber den
--- press-Callback, den menu_container.lua:242-265 baut -- das ist derselbe
--- Weg wie eine Betätigung im Menue, nur ohne Taste. Identifiziert wird die
--- Kachel ueber ihren Icon-Pfad, weil der aus den Menue-Daten stammt und
--- deshalb nicht geraten werden muss.
-local kacheln = {}
+-- Every tile is recorded here. Navigation goes through the press callback that
+-- menu_container.lua:242-265 builds -- the same path a button press takes, just
+-- without a key. A tile is identified by its icon path, which comes from the
+-- menu data and therefore does not have to be guessed.
+local tiles = {}
 _G.form = {
-  addButton = function(_, slot, taste)
-    local eintrag = { slot = slot, icon = taste and taste.icon and taste.icon.pfad, press = taste and taste.press }
-    kacheln[#kacheln + 1] = eintrag
-    return feldStub(slot)
+  addButton = function(_, slot, button)
+    tiles[#tiles + 1] = {
+      slot = slot,
+      icon = button and button.icon and button.icon.path,
+      press = button and button.press,
+    }
+    return fieldStub(slot)
   end,
   addLine = function() return 1 end,
-  addStaticText = function(_, rect) return feldStub(rect) end,
-  addTextButton = function(_, slot) return feldStub(slot) end,
+  addStaticText = function(_, rect) return fieldStub(rect) end,
+  addTextButton = function(_, slot) return fieldStub(slot) end,
   clear = function() end,
   getFieldSlots = function(_, hints)
     local n = type(hints) == "table" and #hints or 6
@@ -146,167 +160,157 @@ _G.EVT_CLOSE, _G.EVT_KEY, _G.EVT_EXIT_BREAK = 0x01, 0x02, 0x03
 _G.EVT_KEY_DOWN_BREAK, _G.KEY_ENTER_LONG = 0x04, 0x05
 _G.KEY_RTN_BREAK, _G.KEY_EXIT_BREAK = 0x06, 0x07
 
--- ── MSP-Zaehlung an der Quelle ───────────────────────────────────────────────
--- Der echte Bus wird VOR dem Werkzeug geladen und sein publish erst danach
--- umhüllt. Alle, die die Tabelle gehalten haben, sehen die Umhüllung -- es
--- bleibt also der echte Bus, nur mit einem Zähler davor.
-local bus = assert(echtesLoadfile(SUITE_PRAEFIX .. "lib/bus.lua")())
+-- ── MSP counting at the source ──────────────────────────────────────────────
+-- The real bus is loaded BEFORE the tool and its publish is wrapped afterwards.
+-- Every holder of that table sees the wrapper, so it stays the real bus with a
+-- counter in front of it.
+local bus = assert(realLoadfile(SUITE_PREFIX .. "lib/bus.lua")())
 
--- Die Anfragen werden SOFORT beantwortet, so wie ein erreichbarer FC es
--- tut. Das ist keine Kosmetik, sondern der Unterschied zwischen einer
--- Pruefung und keiner: ohne Antwort bleibt `pending` dauerhaft true, und
--- `pending` bremst jede Wiederholung -- unabhaengig davon, ob `attempted`
--- richtig gesetzt wird. Genau daran ist eine erste Fassung dieses Harness
--- gescheitert: sie blieb auch mit kaputtem Latch gruen, weil nie jemand
--- geantwortet hat. Erst mit Antwort greift der Latch ueberhaupt.
---
--- Byte-Layouts aus den echten Decodern, nicht geraten:
---   123  msp_esc_sensor_config.decode  -- 14 Felder (U8,U8,U16,U16,U16,U8,U8,S8,S8,U16)
---   54   msp_serial_config.decode      -- 9-Byte-Record (U8,U32,U8,U8,U8,U8)
-local ANTWORT = {
+-- Byte layouts come from the real decoders, not from guesswork:
+--   123  msp_esc_sensor_config.decode -- 14 fields
+--        (U8,U8,U16,U16,U16,U8,U8,S8,S8,U16)
+--   54   msp_serial_config.decode     -- 9-byte record (U8,U32,U8,U8,U8,U8)
+local REPLY = {
   [123] = function() return { 1, 0, 200, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 } end,
   [54] = function() return { 1, 0, 0, 0, 0, 0, 0, 0, 0 } end,
 }
 
-local spur = {}
-local echtesPublish = bus.publish
-bus.publish = function(topic, nachricht)
-  if topic == "msp.request" and type(nachricht) == "table" then
-    spur[#spur + 1] = nachricht.command or "?"
-    local antwort = ANTWORT[nachricht.command]
-    if antwort and nachricht.processReply then
-      local buf = antwort()
+local trace = {}
+local realPublish = bus.publish
+bus.publish = function(topic, message)
+  if topic == "msp.request" and type(message) == "table" then
+    trace[#trace + 1] = message.command or "?"
+    local reply = REPLY[message.command]
+    if reply and message.processReply then
+      local buf = reply()
       buf.offset = 1
-      nachricht.processReply(nil, buf)
+      message.processReply(nil, buf)
     end
   end
-  return echtesPublish(topic, nachricht)
+  return realPublish(topic, message)
 end
 
--- ── Ablauf ──────────────────────────────────────────────────────────────────
+-- ── Run ─────────────────────────────────────────────────────────────────────
 local ESC_ICON = "app/gfx/esc_tools.png"
 local SERVO_ICON = "app/gfx/servos.png"
 local HW_ICON = "app/gfx/hardware.png"
 local ESC_MOTORS_ICON = "app/gfx/esc_motors.png"
 
--- Die juengste Kachel mit diesem Icon: nach jedem Menuewechsel gehoeren die
--- Kacheln des neuen Bildschirms ans Ende der Liste.
-local function druecke(iconpfad)
-  for i = #kacheln, 1, -1 do
-    if kacheln[i].icon == iconpfad and kacheln[i].press then
-      kacheln[i].press()
+-- The newest tile with this icon: after every menu change the tiles of the new
+-- screen are at the end of the list.
+local function press(iconPath)
+  for i = #tiles, 1, -1 do
+    if tiles[i].icon == iconPath and tiles[i].press then
+      tiles[i].press()
       return true
     end
   end
   return false
 end
 
-local function spurAnzahl() return #spur end
+local function traceCount() return #trace end
 
-local function spurSeit(von)
-  local r = {}
-  for i = von + 1, #spur do r[#r + 1] = tostring(spur[i]) end
-  return table.concat(r, ",")
+local function traceSince(from)
+  local out = {}
+  for i = from + 1, #trace do out[#out + 1] = tostring(trace[i]) end
+  return table.concat(out, ",")
 end
 
-echtesPrint("Lade app/tool.lua ...")
+out("loading app/tool.lua ...")
 local tool = dofile(SUITE .. "/app/tool.lua")
 local handle = tool.init()
-pruefe("init() liefert ein Handle", handle ~= nil)
+check("init() returns a handle", handle ~= nil)
 
--- Die Guards fragen nur, wenn der Hintergrund-Task laeuft UND die Verbindung
--- steht (tool.lua:469/475). Beides wird ueber den echten Bus gemeldet -- nicht
--- ueberstubbed, damit der Zustandsautomat der Suite derselbe laeuft wie im
--- Betrieb.
+-- The guards only request while the background task runs AND the link is up
+-- (tool.lua:469/475). Both are announced over the real bus -- not stubbed -- so
+-- the suite's own state machine runs the way it does in operation.
 bus.publish("task.status", { running = true, updatedAt = os.clock() })
 bus.publish("session.update", { connected = true, apiVersionSupported = true })
 
-local ZYKLEN = 3
-local spurProZyklus = {}
+local CYCLES = 3
+local tracePerCycle = {}
 
-for zyklus = 1, ZYKLEN do
-  registriertesTool.create()
+for cycle = 1, CYCLES do
+  registeredTool.create()
 
-  -- Die Spur-Abschnitte werden SOFORT als Text festgehalten, nicht erst am
-  -- Ende des Zyklus. Sonst zeigt der Servos-Abschnitt die Antwort, die der
-  -- ESC-Schritt danach angehaengt hat -- und der Bericht erzaehlt zwei
-  -- Anfragen, wo eine war.
-  local markeServos = spurAnzahl()
-  pruefe(string.format("Zyklus %d  Hardware-Menue ist erreichbar", zyklus), druecke(HW_ICON))
-  pruefe(string.format("Zyklus %d  Servos-Menue ist erreichbar", zyklus), druecke(SERVO_ICON))
-  local nachServos = spurAnzahl() - markeServos
-  local textServos = spurSeit(markeServos)
+  -- The trace sections are captured as text IMMEDIATELY, not at the end of the
+  -- cycle. Otherwise the Servos section reports the reply the ESC step appended
+  -- afterwards, and the report counts two requests where there was one.
+  local markServos = traceCount()
+  check(string.format("cycle %d  Hardware menu is reachable", cycle), press(HW_ICON))
+  check(string.format("cycle %d  Servos menu is reachable", cycle), press(SERVO_ICON))
+  local afterServos = traceCount() - markServos
+  local textServos = traceSince(markServos)
 
-  local markeEsc = spurAnzahl()
-  pruefe(string.format("Zyklus %d  ESC-Motoren-Menue ist erreichbar", zyklus), druecke(ESC_MOTORS_ICON))
-  pruefe(string.format("Zyklus %d  ESC-Tools-Menue ist erreichbar", zyklus), druecke(ESC_ICON))
-  local nachEsc = spurAnzahl() - markeEsc
-  local textEsc = spurSeit(markeEsc)
+  local markEsc = traceCount()
+  check(string.format("cycle %d  ESC & Motors menu is reachable", cycle), press(ESC_MOTORS_ICON))
+  check(string.format("cycle %d  ESC Tools menu is reachable", cycle), press(ESC_ICON))
+  local afterEsc = traceCount() - markEsc
+  local textEsc = traceSince(markEsc)
 
-  -- Der Tick. Das ist der Weg, ueber den ein Retry-Sturm ueberhaupt entstehen
-  -- koennte: Ethos ruft wakeup() fortlaufend, menu_container.lua:305-306
-  -- gibt das an den Wache-Handler weiter, und der ruft request() auf. Ohne
-  -- diesen Block pruefte das Harness nur das Betreten des Menues -- also genau
-  -- den Fall, in dem sich nichts sammeln kann.
-  local markeTick = spurAnzahl()
+  -- The tick. This is the only route a retry storm could take: Ethos calls
+  -- wakeup() continuously, menu_container.lua:305-306 hands it to the guard,
+  -- and the guard calls request(). Without this block the file would only test
+  -- entering the menu -- exactly the case in which nothing can accumulate.
+  local markTick = traceCount()
   local TICKS = 100
   for _ = 1, TICKS do
-    registriertesTool.wakeup({})
+    registeredTool.wakeup({})
   end
-  local imTick = spurAnzahl() - markeTick
+  local inTick = traceCount() - markTick
 
-  registriertesTool.close()
+  registeredTool.close()
 
-  spurProZyklus[#spurProZyklus + 1] = string.format("Servos=%d(%s) ESC=%d(%s) Tick=%d",
-    nachServos, textServos, nachEsc, textEsc, imTick)
+  tracePerCycle[#tracePerCycle + 1] = string.format("Servos=%d(%s) ESC=%d(%s) Tick=%d",
+    afterServos, textServos, afterEsc, textEsc, inTick)
 end
 
--- ── Auswertung ──────────────────────────────────────────────────────────────
-local ESC_LESEN = 123      -- msp_esc_sensor_config.READ_COMMAND
-local SERIAL_LESEN = 54    -- msp_serial_config.READ_COMMAND
+-- ── Verdict ─────────────────────────────────────────────────────────────────
+local ESC_READ = 123      -- msp_esc_sensor_config.READ_COMMAND
+local SERIAL_READ = 54    -- msp_serial_config.READ_COMMAND
 
-echtesPrint("")
-echtesPrint("Spur je Zyklus:")
-for i, z in ipairs(spurProZyklus) do
-  echtesPrint(string.format("  %d  %s", i, z))
+out("")
+out("trace per cycle:")
+for i, t in ipairs(tracePerCycle) do
+  out(string.format("  %d  %s", i, t))
 end
-echtesPrint("")
+out("")
 
--- Jedes bewachte Menue stellt beim Betreten genau EINE Anfrage: die Wache
--- liest einmal und haelt das Ergebnis (attempted). Mehr waere der Retry-Sturm,
--- vor dem dieses Harness hier steht.
-for i = 1, #spurProZyklus do
-  local z = spurProZyklus[i]
-  pruefe(string.format("Zyklus %d  genau eine Servos-Abfrage (MSP %d)", i, SERIAL_LESEN),
-    z:find("Servos=1%(" .. SERIAL_LESEN .. "%)") ~= nil, z)
-  pruefe(string.format("Zyklus %d  genau eine ESC-Abfrage (MSP %d)", i, ESC_LESEN),
-    z:find("ESC=1%(" .. ESC_LESEN .. "%)") ~= nil, z)
-end
-
--- Und die entscheidende Eigenschaft: die Spur muss in JEDEM Zyklus gleich
--- sein. Waechst sie, sammelt sich etwas an -- genau Robs Sorge.
-for i = 2, #spurProZyklus do
-  pruefe(string.format("Zyklus %d ist identisch zu Zyklus 1", i),
-    spurProZyklus[i] == spurProZyklus[1],
-    string.format("%s  vs.  %s", spurProZyklus[i], spurProZyklus[1]))
+-- Each guarded menu issues exactly ONE request on entry: the guard reads once
+-- and holds the answer (attempted). More than that is the storm this file is
+-- here to catch.
+for i = 1, #tracePerCycle do
+  local t = tracePerCycle[i]
+  check(string.format("cycle %d  exactly one Servos read (MSP %d)", i, SERIAL_READ),
+    t:find("Servos=1%(" .. SERIAL_READ .. "%)") ~= nil, t)
+  check(string.format("cycle %d  exactly one ESC read (MSP %d)", i, ESC_READ),
+    t:find("ESC=1%(" .. ESC_READ .. "%)") ~= nil, t)
 end
 
--- 100 Ticks im bewachten Menue duerfen KEINE einzige Anfrage erzeugen. Der
--- Wache-Handler liest einmal und haelt das Ergebnis; sendet er bei jedem Tick,
--- ist das der Sturm, um den es hier geht.
-pruefe("100 Ticks im ESC-Menue erzeugen keine Anfrage", spurProZyklus[1]:find("Tick=0$") ~= nil,
-  spurProZyklus[1])
+-- And the property that matters: the trace must be the same in EVERY cycle. If
+-- it grows, something is accumulating -- which is the concern under test.
+for i = 2, #tracePerCycle do
+  check(string.format("cycle %d is identical to cycle 1", i),
+    tracePerCycle[i] == tracePerCycle[1],
+    string.format("%s  vs.  %s", tracePerCycle[i], tracePerCycle[1]))
+end
 
-pruefe("insgesamt gleich viele Anfragen in allen Zyklen",
-  #spur == 2 * #spurProZyklus, "Spur hat " .. #spur .. " Eintraege fuer " .. #spurProZyklus .. " Zyklen")
+-- 100 ticks inside a guarded menu must not produce a single request. The guard
+-- reads once and holds the result; if it sent on every tick, that is the storm.
+check("100 ticks inside the ESC menu produce no request",
+  tracePerCycle[1]:find("Tick=0$") ~= nil, tracePerCycle[1])
 
-echtesPrint("")
-echtesPrint(string.rep("-", 60))
-echtesPrint(string.format("bestanden: %d   fehlgeschlagen: %d", bestanden, fehlgeschlagen))
-echtesPrint("MSP-Anfragen gesamt: " .. #spur .. "   Spur: " .. spurSeit(0))
-if fehlgeschlagen > 0 then
-  echtesPrint("")
-  echtesPrint("FEHLGESCHLAGEN")
+check("the same total number of requests in every cycle",
+  #trace == 2 * #tracePerCycle,
+  "trace holds " .. #trace .. " entries for " .. #tracePerCycle .. " cycles")
+
+out("")
+out(string.rep("-", 60))
+out(string.format("checks: %d   failures: %d", checks, failures))
+out("MSP requests total: " .. #trace .. "   trace: " .. traceSince(0))
+if failures > 0 then
+  out("")
+  out("FAILED")
   os.exit(1)
 end
-echtesPrint("ALLE BESTANDEN")
+out("ALL CHECKS PASSED")

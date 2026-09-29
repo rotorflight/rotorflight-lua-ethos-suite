@@ -1,27 +1,28 @@
--- Prueft, dass die Tool-UI erst beim Oeffnen des Tools laedt.
+-- Behaviour check for the load timing of the tool's UI subtree (#2421).
 --
--- Das Harness faehrt das ECHTE src/rfsuite/app/tool.lua unter einer
--- Ethos-Stub-Umgebung: loadfile, Bus, Settings-Store, system.registerSystemTool
--- und ein lcd.loadMask, der nichts kostet. Der Punkt ist nicht, das Tool zu
--- testen -- es ist festzustellen, WELCHE Module wann in package.loaded
--- auftauchen.
+-- Run it:
+--     lua5.3 bin/tool_ui/verify_tool_ui_lazy.lua
 --
--- Vier Faelle, jeder gegen eine falsche Erwartung:
---   1. Nach dem Laden von tool.lua (init ist noch nicht gelaufen) liegt KEIN
---      app/-Modul des Tool-UI-Unterbaums in package.loaded.
---   2. Nach create() liegen sie ALLE drin.
---   3. close() laedt nichts nach, was nicht vorher schon da war.
---   4. Ein zweites create() laedt nichts erneut (requireModule cacht).
+-- What it drives, and why:
+--   * The real src/rfsuite/app/tool.lua under an Ethos stub environment:
+--     loadfile, bus, settings store, system.registerSystemTool and an
+--     lcd.loadMask that costs nothing. The point is not to test the tool -- it
+--     is to establish WHICH modules appear in package.loaded, and WHEN.
+--   * This file resolves its module paths against src/rfsuite, not against src,
+--     because that is what the suite itself does: main.lua:52 loads
+--     "lib/require.lua" and lives in src/rfsuite/. Same pattern as
+--     bin/storage/verify_atomic_writes.lua.
 --
--- Gegen die alte Fassung muss Fall 1 ROT werden -- dort stehen die
--- requireModule-Aufrufe in Spalte 1 und die Module sind sofort da.
+-- Four cases, each against a false expectation:
+--   1. After loading tool.lua (init has not run yet) NONE of the tool's UI
+--      subtree modules are in package.loaded.
+--   2. After create() they are ALL there.
+--   3. close() loads nothing that was not there before.
+--   4. A second create() loads nothing again (requireModule caches).
 --
--- usage:  lua bin/tool_ui/verify_tool_ui_lazy.lua
---         (pfad optional: alternativ das Wurzelverzeichnis des Repos)
+-- Against the pre-change file case 1 must go RED -- there the requireModule
+-- calls sit in column 1 and the modules are present immediately.
 
--- Heimfall: die Suite rechnet ihre Modulpfade gegen src/rfsuite auf, nicht
--- gegen src -- main.lua:52 laedt "lib/require.lua" und liegt selbst in
--- src/rfsuite/. Dasselbe Muster wie bin/storage/verify_atomic_writes.lua.
 local function scriptDir()
   local src = debug.getinfo(1, "S").source
   local path = src:sub(1, 1) == "@" and src:sub(2) or src
@@ -31,72 +32,71 @@ end
 local ROOT = scriptDir() .. "/../.."
 local SUITE = (ROOT .. "/src/rfsuite"):gsub("\\", "/")
 
-local bestanden, fehlgeschlagen = 0, 0
+local checks, failures = 0, 0
 
-local echtesPrint = print
+-- The real print, held in a local BEFORE _G.print is replaced below.
+local out = print
 
-local function pruefe(name, bedingung, zusatz)
-  if bedingung then
-    bestanden = bestanden + 1
-    echtesPrint(string.format("  OK    %s", name))
+local function check(label, ok, detail)
+  checks = checks + 1
+  if ok then
+    out(string.format("  ok    %s", label))
   else
-    fehlgeschlagen = fehlgeschlagen + 1
-    echtesPrint(string.format("  FEHLT %s%s", name, zusatz and ("  -- " .. zusatz) or ""))
+    failures = failures + 1
+    out(string.format("  FAIL  %s", label))
+    if detail then out("        " .. tostring(detail)) end
   end
 end
 
--- ── Ethos-Stubs ─────────────────────────────────────────────────────────────
-local geladen = {}          -- Reihenfolge des ersten Auftauchens
-local ladeReihenfolge = {}
+-- ── Ethos stubs ─────────────────────────────────────────────────────────────
+local loadedInOrder = {}
+local loadOrder = {}
 
 package.path = SUITE .. "/?.lua;" .. package.path
 
--- Die Suite laedt ihre Module ueber EINFACHE, relativ zum Arbeitsverzeichnis
--- aufgeloeste Pfade: tool.lua:36 ruft loadfile("lib/require.lua"), und
--- requireModule() daraus ruft loadfile("lib/bus.lua") -- beides ohne
--- Verzeichnisanteil. Auf dem Sender ist das Arbeitsverzeichnis der Pfad des
--- Wurzelskripts (src/rfsuite). Damit der Harness denselben Aufloesungsweg
--- hat, wird hier der Prefixer gesetzt, den die Suite selbst nicht braucht.
--- Er wird beim Traces fuehrt, aber nicht in den Modulnamen, die zaehlen.
-lokalPraefix = SUITE .. "/"
-_G.PRAEFIX = lokalPraefix
+-- The suite loads its modules through EAGERLY resolved paths that carry no
+-- directory part: tool.lua:36 calls loadfile("lib/require.lua"), and
+-- requireModule() inside it calls loadfile("lib/bus.lua"). On the radio the
+-- working directory is the root script's path (src/rfsuite). The prefix below
+-- gives this harness the same resolution route. It is in effect while the
+-- traces run, but not in the module names that get counted.
+local LOCAL_PREFIX = SUITE .. "/"
+_G.PREFIX = LOCAL_PREFIX
 
-local echtesLoadfile = loadfile
-local geladen = {}          -- Reihenfolge des ersten Auftauchens
-local ladeReihenfolge = {}
+local realLoadfile = loadfile
 
--- loadfile wird von lib/require.lua aufgerufen; dort greift die Umleitung.
--- Der Prefixer macht aus dem suite-eigenen "lib/require.lua" einen absoluten
--- Pfad -- fuer den Ladevorgang identisch, fuer die Auswertung aber
--- wieder aufgeraeumt, damit zaehleUnter() die echten Modulpfade sieht.
-_G.loadfile = function(pfad, ...)
-  if type(pfad) == "string" and pfad:match("%.lua$") then
-    local absolut = pfad:sub(1, 1) == "/" and pfad or (lokalPraefix .. pfad)
-    geladen[absolut] = (geladen[absolut] or 0) + 1
-    ladeReihenfolge[#ladeReihenfolge + 1] = absolut
-    return echtesLoadfile(absolut, ...)
+-- loadfile is what lib/require.lua calls; the redirect hooks in there.
+-- The prefix turns the suite's own "lib/require.lua" into an absolute path --
+-- identical for the load itself, but cleaned up again on evaluation so
+-- countUnder() sees the real module paths.
+_G.loadfile = function(path, ...)
+  if type(path) == "string" and path:match("%.lua$") then
+    local absolute = path:sub(1, 1) == "/" and path or (LOCAL_PREFIX .. path)
+    loadedInOrder[absolute] = (loadedInOrder[absolute] or 0) + 1
+    loadOrder[#loadOrder + 1] = absolute
+    return realLoadfile(absolute, ...)
   end
-  return echtesLoadfile(pfad, ...)
+  return realLoadfile(path, ...)
 end
 
 _G.package = package
 _G.package.loaded = package.loaded
 
--- sys-Table: Ethos liefert sie; das Tool braucht sie fuer init().
-local registriertesTool = nil
+-- sys table: Ethos supplies it; the tool needs it for init().
+local registeredTool = nil
 _G.system = {
   getVersion = function() return { simulation = false, radio = { name = "stub" } } end,
-  registerSystemTool = function(tool) registriertesTool = tool return tool end,
+  registerSystemTool = function(tool) registeredTool = tool return tool end,
   getMemoryUsage = function() return {} end,
   formatBytes = function(n) return tostring(n) end,
 }
 
--- lcd: loadMask ist im echten Code das teuerste (Bitmap-Arena), hier zaehlt
--- es nur die Aufrufe, damit ein Fehlschlag nicht an ihm haengt.
-local maskAufrufe = 0
+-- lcd: loadMask is the most expensive thing in the real code (the bitmap
+-- arena). Here it only counts calls, so that a failure does not hinge on it.
+local maskCalls = 0
 _G.lcd = {
-  loadMask = function(p) maskAufrufe = maskAufrufe + 1; return { pfad = p } end,
-  loadImage = function(p) return { pfad = p } end,
+  loadMask = function(p) maskCalls = maskCalls + 1; return { path = p } end,
+  loadImage = function(p) return { path = p } end,
   getWindowSize = function() return 480, 320 end,
   drawRectangle = function() end,
   drawText = function() end,
@@ -114,23 +114,24 @@ _G.lcd = {
 }
 _G.model = { get = function() return 0 end, name = function() return "stub" end }
 
--- ECHTES print, ueber eine eigene Referenz: die Suite ruft ueberall print(), und
--- ein stiller Stub schluckt dann auch die Ausgabe dieses Harness. Genau das ist
--- passiert -- der erste gruene Lauf gab Exitcode 0 ohne eine einzige Zeile.
+-- The suite calls print() throughout, so a silent stub has to be installed --
+-- and the real print was captured above, before this line, so that the stub
+-- does not swallow this harness's own output. That happened once: the first
+-- green run returned exit code 0 without a single line.
 _G.print = function() end
 
--- form: der Menuepfad baut echte Widgets. Hier zaehlt nur, dass er durchlaeuft
--- -- die tatsaechliche Formular-Arbeit gehoert nicht zu dieser Pruefung, sie
--- wird an anderer Stelle (bin/storage, bin/flight_record) geprueft.
-local feldIndex = 0
--- form.getFieldSlots(line, hints) liefert eine Liste von Rechtecken; header.lua:131
--- liest slots[1].y, slots[2].x und slots[1].h daraus. Ein Zahlen-Rueckgabewert
--- laesst das Harness an dieser Stelle abbrechen -- das Schema ist hier
--- getestet, nicht geraten.
-local function slotsStub(breite)
-  breite = breite or 480
+-- form: the menu path builds real widgets. Here it only has to run through.
+-- The actual form work is not part of this check; it is covered elsewhere
+-- (bin/storage, bin/flight_record).
+--
+-- form.getFieldSlots(line, hints) returns a list of rectangles; header.lua:131
+-- reads slots[1].y, slots[2].x and slots[1].h from it. A numeric return value
+-- would abort this harness at that point -- the schema is tested here, not
+-- guessed.
+local function slotsStub(width)
+  width = width or 480
   local n = 6
-  local w = breite / n
+  local w = width / n
   local out = {}
   for i = 1, n do
     out[i] = { x = (i - 1) * w, y = 0, w = w, h = 30 }
@@ -138,12 +139,12 @@ local function slotsStub(breite)
   return out
 end
 
--- Ethos-Widgets: form.addButton/addStaticText liefern Objekte mit Methoden.
--- Im Menuepfad wird :focus() aufgerufen (header.lua:162/198-201,
--- menu_container.lua:289/295); alles andere wird nur gelesen. Die Felder sind
--- bewusst minimal -- jede zusaetzliche Methode waere eine Annahme ueber
--- Verhalten, die diese Pruefung nicht macht.
-local function feldStub(slot)
+-- Ethos widgets: form.addButton/addStaticText return objects with methods.
+-- The menu path calls :focus() (header.lua:162/198-201,
+-- menu_container.lua:289/295); everything else is only read. The fields are
+-- deliberately minimal -- any extra method would be an assumption about
+-- behaviour that this check does not make.
+local function fieldStub(slot)
   return {
     slot = slot,
     focus = function() end,
@@ -159,16 +160,16 @@ local function feldStub(slot)
 end
 
 _G.form = {
-  addButton = function(_, slot) return feldStub(slot) end,
+  addButton = function(_, slot) return fieldStub(slot) end,
   addLine = function() return 1 end,
-  addStaticText = function(_, rect) return feldStub(rect) end,
-  addTextButton = function(_, slot) return feldStub(slot) end,
+  addStaticText = function(_, rect) return fieldStub(rect) end,
+  addTextButton = function(_, slot) return fieldStub(slot) end,
   clear = function() end,
   getFieldSlots = function(_, hints)
-    -- Die Slotzahl richtet sich nach den Hints, die header.lua uebergibt.
+    -- The slot count follows the hints header.lua passes in.
     local n = type(hints) == "table" and #hints or 6
-    local out = {}
     local w = 480 / math.max(n, 1)
+    local out = {}
     for i = 1, n do
       out[i] = { x = (i - 1) * w, y = 0, w = w, h = 30 }
     end
@@ -177,23 +178,18 @@ _G.form = {
   height = function() return 320 end,
   openProgressDialog = function() return { close = function() end } end,
 }
-_G.lcd.getTextSize = function(t)
-  feldIndex = feldIndex + 1
-  return #t, 12
-end
+_G.lcd.getTextSize = function(t) return #t, 12 end
 _G.os = os
 _G.math = math
 _G.string = string
 _G.table = table
-_G.print = function() end
 
--- Ethos-Globals, die die Menue-Kette als WERTE benutzt. Sie sind nicht im
--- Repo definiert (vergleiche activelook.lua:24, wo FONT_PX eine eigene
--- Tabelle ist) -- sie kommen von der Plattform, genau wie TIME_LEFT.
+-- Ethos globals the menu chain uses as VALUES. They are not defined in the repo
+-- (compare activelook.lua:24, where FONT_PX is its own table) -- they come from
+-- the platform, exactly like TIME_LEFT.
 --
--- Zahlen, keine Strings: header.lua:122 rechnet `options = FONT_S + CENTERED`,
--- also addieren sich Font und Ausrichtung. Das ist am Quelltext geprueft und
--- nicht geraten.
+-- Numbers, not strings: header.lua:122 computes `options = FONT_S + CENTERED`,
+-- so font and alignment are added. Read off the source, not guessed.
 _G.TIME_LEFT = 1
 _G.TEXT_LEFT = 2
 _G.LEFT = 3
@@ -206,7 +202,7 @@ _G.FONT_M = 30
 _G.FONT_L = 40
 _G.FONT_XL = 50
 
--- key events, close_key.lua filtert darauf
+-- key events; close_key.lua filters on these
 _G.EVT_CLOSE = 0x01
 _G.EVT_KEY = 0x02
 _G.EVT_EXIT_BREAK = 0x03
@@ -215,10 +211,9 @@ _G.KEY_ENTER_LONG = 0x05
 _G.KEY_RTN_BREAK = 0x06
 _G.KEY_EXIT_BREAK = 0x07
 
--- i18n-Tags: die Quelltexte enthalten @i18n(... )@-Platzhalter, die zur
--- Laufzeit uebersetzt werden. Fuer diese Pruefung irrelevant, aber leere
--- Strings sind harmlos.
-local TEST = {
+-- i18n tags: the sources contain @i18n(... )@ placeholders, translated at
+-- runtime. Irrelevant here, and empty strings are harmless.
+local UNDER_TEST = {
   "app/menu_container.lua",
   "app/navigation.lua",
   "app/header.lua",
@@ -231,69 +226,69 @@ local TEST = {
   "lib/msp_serial_config.lua",
 }
 
-local function zaehleUnter(name)
-  local ziel = SUITE .. "/" .. name
+local function countUnder(name)
+  local target = SUITE .. "/" .. name
   local n = 0
-  for _, pfad in ipairs(ladeReihenfolge) do
-    if pfad == ziel then n = n + 1 end
+  for _, path in ipairs(loadOrder) do
+    if path == target then n = n + 1 end
   end
   return n
 end
 
-local function moduleGeladen(name)
-  -- lib/require.lua cached unter "rfsuite." .. pfad ohne .lua
+local function moduleLoaded(name)
+  -- lib/require.lua caches under "rfsuite." .. path without .lua
   local key = "rfsuite." .. name:gsub("%.lua$", ""):gsub("/", ".")
   return package.loaded[key] ~= nil
 end
 
-echtesPrint("Lade app/tool.lua ...")
+out("loading app/tool.lua ...")
 local tool = dofile(SUITE .. "/app/tool.lua")
 local handle = tool.init()
-pruefe("init() liefert ein Handle", handle ~= nil)
+check("init() returns a handle", handle ~= nil)
 
-echtesPrint("")
-echtesPrint("Fall 1: NACH DEM LADEN, VOR create() -- nichts darf geladen sein")
-for _, name in ipairs(TEST) do
-  pruefe(string.format("%-34s nicht geladen", name),
-    not moduleGeladen(name) and zaehleUnter(name) == 0,
-    string.format("geladen=%s, loadfile-Aufrufe=%d",
-      tostring(moduleGeladen(name)), zaehleUnter(name)))
+out("")
+out("case 1: after loading, before create() -- nothing may be loaded")
+for _, name in ipairs(UNDER_TEST) do
+  check(string.format("%-34s not loaded", name),
+    not moduleLoaded(name) and countUnder(name) == 0,
+    string.format("loaded=%s, loadfile calls=%d",
+      tostring(moduleLoaded(name)), countUnder(name)))
 end
 
-echtesPrint("")
-echtesPrint("Fall 2: NACH create() -- der Tool-UI-Unterbaum muss vollstaendig sein")
-registriertesTool.create()
-for _, name in ipairs(TEST) do
-  pruefe(string.format("%-34s geladen", name), moduleGeladen(name),
-    "nach create() weiterhin nicht geladen")
+out("")
+out("case 2: after create() -- the tool's UI subtree must be complete")
+registeredTool.create()
+for _, name in ipairs(UNDER_TEST) do
+  check(string.format("%-34s loaded", name), moduleLoaded(name),
+    "still not loaded after create()")
 end
 
-echtesPrint("")
-echtesPrint("Fall 3: close() laedt nichts nach")
-local vorher = {}
-for _, name in ipairs(TEST) do vorher[name] = zaehleUnter(name) end
-registriertesTool.close()
-for _, name in ipairs(TEST) do
-  pruefe(string.format("%-34s unveraendert", name), zaehleUnter(name) == vorher[name],
-    string.format("neu geladen: %d", zaehleUnter(name) - vorher[name]))
+out("")
+out("case 3: close() loads nothing further")
+local before = {}
+for _, name in ipairs(UNDER_TEST) do before[name] = countUnder(name) end
+registeredTool.close()
+for _, name in ipairs(UNDER_TEST) do
+  check(string.format("%-34s unchanged", name), countUnder(name) == before[name],
+    string.format("newly loaded: %d", countUnder(name) - before[name]))
 end
 
-echtesPrint("")
-echtesPrint("Fall 4: zweites create() laedt nichts erneut")
-for _, name in ipairs(TEST) do vorher[name] = zaehleUnter(name) end
-registriertesTool.create()
-for _, name in ipairs(TEST) do
-  pruefe(string.format("%-34s kein zweiter Ladevorgang", name), zaehleUnter(name) == vorher[name],
-    string.format("erneut geladen: %d", zaehleUnter(name) - vorher[name]))
+out("")
+out("case 4: a second create() loads nothing again")
+for _, name in ipairs(UNDER_TEST) do before[name] = countUnder(name) end
+registeredTool.create()
+for _, name in ipairs(UNDER_TEST) do
+  check(string.format("%-34s no second load", name), countUnder(name) == before[name],
+    string.format("loaded again: %d", countUnder(name) - before[name]))
 end
 
-echtesPrint("")
-echtesPrint(string.rep("-", 60))
-echtesPrint(string.format("bestanden: %d   fehlgeschlagen: %d", bestanden, fehlgeschlagen))
-echtesPrint("lcd.loadMask-Aufrufe: " .. maskAufrufe)
-if fehlgeschlagen > 0 then
-  echtesPrint("")
-  echtesPrint("FEHLGESCHLAGEN")
+out("")
+out(string.rep("-", 60))
+out(string.format("checks: %d   failures: %d", checks, failures))
+out("lcd.loadMask calls: " .. maskCalls)
+if failures > 0 then
+  out("")
+  out("FAILED")
   os.exit(1)
 end
-echtesPrint("ALLE BESTANDEN")
+out("ALL CHECKS PASSED")
