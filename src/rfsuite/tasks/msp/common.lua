@@ -35,6 +35,13 @@ local mspLastReq = 0
 local mspLastReqIsWrite = false
 local mspTxBuf = {}
 local mspTxIdx = 1
+-- MSP reply frames received, ever -- accepted or discarded. Only its change
+-- matters: see mspRxFrameCount().
+local mspRxFrames = 0
+-- Replies dropped part-way because a continuation frame broke the sequence,
+-- ever, plus the details of the latest one: see mspRxBreakInfo().
+local mspRxBreaks = 0
+local mspRxBreakExpected, mspRxBreakGot, mspRxBreakBytes, mspRxBreakSize = 0, 0, 0, 0
 
 -- {mspSend = fn(payload, isWrite), mspPoll = fn() -> payload|nil,
 --  maxTxBufferSize = n, maxRxBufferSize = n}
@@ -88,7 +95,7 @@ end
 -- to transports (like CRSF) that distinguish read vs write at the link
 -- layer; ignored otherwise.
 local function mspSendRequest(cmd, payload, isWrite)
-  if type(payload) ~= "table" or not cmd then return false end
+  if type(payload) ~= "table" or not cmd or type(cmd) ~= "number" then return false end
   if #mspTxBuf ~= 0 then return false end -- TX already busy
 
   local len = #payload
@@ -102,12 +109,27 @@ local function mspSendRequest(cmd, payload, isWrite)
   mspLastReq = cmd
   mspLastReqIsWrite = isWrite and true or false
   mspTxIdx = 1
+
+  -- A new request also invalidates whatever the *previous* one left
+  -- half-assembled. mspStarted/mspRxBuf/mspRxSize/mspRemoteSeq are only
+  -- reset on a completed reply (mspPollReply) or a transport swap
+  -- (mspClearBufs), so a request that died between two reply frames left
+  -- mspStarted true with a partial mspRxBuf behind it. The orphaned
+  -- continuation frames then passed the sequence check in receivedReply()
+  -- -- which knows nothing about which command they belong to -- and were
+  -- appended to the *next* command's payload. Reset all four here, so
+  -- receivedReply()'s start flag is the only thing that may open a buffer.
+  mspStarted = false
+  mspRxBuf, mspRxSize, mspRemoteSeq = {}, 0, 0
+  mspRxError = false
+
   return true
 end
 
 -- Internal: process one reply packet. Returns true once a full reply has
 -- been assembled (possibly across several calls, for multi-frame replies).
 local function receivedReply(payload)
+  mspRxFrames = mspRxFrames + 1
   local idx = 1
   local status = payload[idx] or 0
   local start = (status & 0x10) ~= 0
@@ -128,6 +150,13 @@ local function receivedReply(payload)
     mspStarted = (mspRxReq == mspLastReq)
   else
     if (not mspStarted) or (((mspRemoteSeq + 1) & 0x0F) ~= seq) then
+      if mspStarted then
+        mspRxBreaks = mspRxBreaks + 1
+        mspRxBreakExpected = (mspRemoteSeq + 1) & 0x0F
+        mspRxBreakGot = seq
+        mspRxBreakBytes = #mspRxBuf
+        mspRxBreakSize = mspRxSize
+      end
       mspStarted = false
       mspRxBuf, mspRxSize, mspRemoteSeq = {}, 0, 0
       return nil
@@ -181,6 +210,10 @@ end
 -- their contents, and the next mspPollReply() simply keeps draining them.
 local function mspClearBufs()
   mspClearTxBuf()
+  mspLastReq = 0
+  mspStarted = false
+  mspRxBuf, mspRxSize, mspRemoteSeq = {}, 0, 0
+  mspRxError = false
   if transport then
     local deadline = os_clock() + 0.01
     while os_clock() < deadline and transport.mspPoll() do end
@@ -193,4 +226,23 @@ return {
   mspProcessTxQ = mspProcessTxQ,
   mspPollReply = mspPollReply,
   mspClearBufs = mspClearBufs,
+  -- Exported separately from mspClearBufs because the two answer different
+  -- questions. mspClearBufs() is a transport swap: throw away the queue AND
+  -- drain the link's stale incoming frames. mspClearTxBuf() is narrower --
+  -- just hand back a half-built outgoing message -- which is what a caller
+  -- needs when it abandons a single message and intends to keep using the
+  -- same transport. Draining the RX side there too would swallow a reply
+  -- that is already on its way for the *next* request.
+  mspClearTxBuf = mspClearTxBuf,
+  -- Grows by one for every MSP reply frame received, including frames
+  -- receivedReply() discards. The queue watches it change to tell an FC
+  -- that is still sending from a silent link: see queue.lua's
+  -- processQueue() for why a discarded frame counts too.
+  mspRxFrameCount = function() return mspRxFrames end,
+  -- Diagnostics only: how many replies were dropped part-way on a sequence
+  -- break, and for the latest one the sequence number expected, the one
+  -- that arrived, and how many of how many payload bytes were assembled.
+  mspRxBreakInfo = function()
+    return mspRxBreaks, mspRxBreakExpected, mspRxBreakGot, mspRxBreakBytes, mspRxBreakSize
+  end,
 }
