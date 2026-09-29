@@ -524,6 +524,7 @@ local function create()
   taskAlertOpen = false
   taskAlertShown = false
   updateDeveloperMode()
+  ensureMemstats()
   -- Guards first: menu_container consults them while building the first
   -- screen, so they have to be in place before openRoot() runs.
   installMenuGuards()

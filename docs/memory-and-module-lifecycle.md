@@ -225,7 +225,7 @@ loaded through `ensureX()` helpers called at the point of use.
 **What distinguishes this from the reverted experiment in §1:** §1 is about
 whether to defer *registering a subsystem that must run at boot*. The tool's
 UI subtree has no such duty — `menuContainer.openRoot` has exactly one call
-site (`app/tool.lua:450`, the `create()`), and the guards have one each. The
+site (`app/tool.lua:531`, the `create()`), and the guards have one each. The
 subsystem registration itself stayed eager; only the UI under it moved.
 
 **Two things the measurement settles, and one it does not:**

@@ -264,14 +264,34 @@ for _, name in ipairs(UNDER_TEST) do
 end
 
 out("")
-out("case 3: close() loads nothing further")
+out("case 3: close() loads nothing further and emits memstats")
 local before = {}
 for _, name in ipairs(UNDER_TEST) do before[name] = countUnder(name) end
+
+local memstatsPrints = {}
+local memstatsMod = package.loaded["rfsuite.lib.memstats"]
+local origMemstatsPrint = memstatsMod and memstatsMod.print
+if memstatsMod then
+  memstatsMod.print = function(tag)
+    memstatsPrints[#memstatsPrints + 1] = tag
+    return origMemstatsPrint(tag)
+  end
+end
+
 registeredTool.close()
+
+if memstatsMod then
+  memstatsMod.print = origMemstatsPrint
+end
+
 for _, name in ipairs(UNDER_TEST) do
   check(string.format("%-34s unchanged", name), countUnder(name) == before[name],
     string.format("newly loaded: %d", countUnder(name) - before[name]))
 end
+check("close() logged app.close (start)", memstatsPrints[1] == "app.close (start)",
+  string.format("got %s", tostring(memstatsPrints[1])))
+check("close() logged app.close (end)", memstatsPrints[2] == "app.close (end)",
+  string.format("got %s", tostring(memstatsPrints[2])))
 
 out("")
 out("case 4: a second create() loads nothing again")
