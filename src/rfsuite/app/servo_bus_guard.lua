@@ -62,8 +62,10 @@ function servo_bus_guard.new(opts)
   local function setResult(enabled, ready)
     state.busEnabled = enabled == true
     state.ready = ready == true
+    state.attempted = (ready == true)
     state.pending = false
     state.deadline = nil
+    state.nextAttemptAt = 0
     state.dirty = true
   end
 
@@ -83,7 +85,7 @@ function servo_bus_guard.new(opts)
   end
 
   local function request()
-    if state.attempted or state.pending or not canRequest() then return end
+    if state.attempted or state.pending or state.ready or not canRequest() then return end
     if os.clock() < state.nextAttemptAt then return end
 
     state.attempted = true
@@ -126,7 +128,7 @@ function servo_bus_guard.new(opts)
 
   function guard.wakeup()
     if not canRequest() then
-      if state.attempted or state.pending or state.ready or state.busEnabled then
+      if state.attempted or state.pending or state.ready or state.busEnabled or state.nextAttemptAt > 0 then
         state.token = state.token + 1
         state.attempted = false
         state.pending = false

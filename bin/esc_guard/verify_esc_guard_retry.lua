@@ -30,6 +30,15 @@
 --   8. servo_bus_guard: timeout, then a retry, then success enables the tile.
 --   9. servo_bus_guard: a successful read with no bus function leaves the
 --      tiles disabled and is not retried -- that is an answer, not a failure.
+--  10. esc_protocol_guard: a late reply after timeout enables the tile and
+--      prevents a second request/glitch when the backoff expires.
+--  11. servo_bus_guard: a late reply after timeout enables the tile and
+--      prevents a second request/glitch when the backoff expires.
+--  12. esc_protocol_guard: link loss resets state and invalidates pending token;
+--      reconnect triggers an immediate read.
+--  13. Link loss during the backoff window clears nextAttemptAt so reconnect
+--      does not wait out the remaining backoff (both guards).
+--  14. An in-flight request aborted by link loss does not apply late reply.
 --
 -- Cases 2, 3 and 8 must go RED against the pre-change files -- there
 -- `attempted` stays set and the second attempt never happens.
@@ -349,6 +358,112 @@ for _ = 1, 20 do
 end
 check("case 9  a read without a bus function is not retried", requestCount() == 1,
   "was " .. requestCount())
+
+-- ── case 10: esc guard, late reply after timeout prevents retry and UI glitch ──
+g = newGuard()
+g.open()
+check("case 10 open() reads exactly once", requestCount() == 1)
+advance(REQUEST_TIMEOUT + 0.1)
+g.wakeup() -- deadline passed -> timeout fail()
+check("case 10 tile disabled after timeout", g.isEntryEnabled(BLHELI) == false)
+advance(0.4)
+check("case 10 late reply arrives before retry", reply(1, 1) == true)
+check("case 10 late reply enables tile", g.isEntryEnabled(BLHELI) == true)
+advance(RETRY_INTERVAL)
+g.wakeup()
+check("case 10 tile stays enabled after backoff window", g.isEntryEnabled(BLHELI) == true)
+check("case 10 no duplicate request issued", requestCount() == 1,
+  "was " .. requestCount())
+
+-- ── case 11: servo guard, late reply after timeout prevents retry and UI glitch 
+g = newServoGuard()
+g.open()
+check("case 11 open() reads exactly once", requestCount() == 1)
+advance(REQUEST_TIMEOUT + 0.1)
+g.wakeup() -- deadline passed -> timeout fail()
+check("case 11 tile disabled after timeout", g.isEntryEnabled(SERVO_TILE) == false)
+advance(0.4)
+check("case 11 late reply arrives before retry", replyServo(1, SBUS_OUT_RECORD) == true)
+check("case 11 late reply enables tile", g.isEntryEnabled(SERVO_TILE) == true)
+advance(RETRY_INTERVAL)
+g.wakeup()
+check("case 11 tile stays enabled after backoff window", g.isEntryEnabled(SERVO_TILE) == true)
+check("case 11 no duplicate request issued", requestCount() == 1,
+  "was " .. requestCount())
+
+-- ── case 12: esc guard, link loss resets state and reconnect reads immediately ─
+local connected = true
+requests = {}
+g = esc_protocol_guard.new({
+  canRequest = function() return connected end,
+})
+g.open()
+check("case 12 initial read succeeds", reply(1, 1) == true)
+check("case 12 initial tile enabled", g.isEntryEnabled(BLHELI) == true)
+connected = false
+g.wakeup()
+check("case 12 tile disabled on link loss", g.isEntryEnabled(BLHELI) == false)
+connected = true
+g.wakeup()
+check("case 12 reconnect triggers immediate read", requestCount() == 2,
+  "was " .. requestCount())
+check("case 12 second read answered with new protocol", reply(2, 4) == true)
+check("case 12 new protocol enabled", g.isEntryEnabled(SCORPION) == true)
+check("case 12 old protocol disabled", g.isEntryEnabled(BLHELI) == false)
+
+-- ── case 13: link loss during backoff clears retry wait on both guards ─────────
+connected = true
+requests = {}
+g = esc_protocol_guard.new({
+  canRequest = function() return connected end,
+})
+g.open()
+advance(REQUEST_TIMEOUT + 0.1)
+g.wakeup() -- timeout -> backoff armed for +5.0s
+advance(0.5)
+connected = false
+g.wakeup() -- link loss during backoff clears nextAttemptAt
+advance(0.1) -- 0.6s total after timeout, far before 5.0s backoff expiry
+connected = true
+g.wakeup()
+check("case 13 ESC guard reads immediately after link loss in backoff", requestCount() == 2,
+  "was " .. requestCount())
+
+connected = true
+requests = {}
+g = servo_bus_guard.new({
+  canRequest = function() return connected end,
+})
+g.open()
+advance(REQUEST_TIMEOUT + 0.1)
+g.wakeup() -- timeout -> backoff armed for +5.0s
+advance(0.5)
+connected = false
+g.wakeup() -- link loss during backoff clears nextAttemptAt
+advance(0.1) -- 0.6s total after timeout, far before 5.0s backoff expiry
+connected = true
+g.wakeup()
+check("case 13 servo guard reads immediately after link loss in backoff", requestCount() == 2,
+  "was " .. requestCount())
+
+-- ── case 14: aborted request on link loss does not apply late reply ───────────
+connected = true
+requests = {}
+g = esc_protocol_guard.new({
+  canRequest = function() return connected end,
+})
+g.open()
+check("case 14 request 1 issued", requestCount() == 1)
+connected = false
+g.wakeup() -- aborts request 1, increments token
+connected = true
+g.wakeup() -- request 2 issued
+check("case 14 request 2 issued upon reconnect", requestCount() == 2,
+  "was " .. requestCount())
+check("case 14 aborted request 1 delivers late", reply(1, 1) == true)
+check("case 14 aborted reply is ignored", g.isEntryEnabled(BLHELI) == false)
+check("case 14 request 2 delivers reply", reply(2, 4) == true)
+check("case 14 current reply is accepted", g.isEntryEnabled(SCORPION) == true)
 
 -- ── Verdict ─────────────────────────────────────────────────────────────────
 out("")

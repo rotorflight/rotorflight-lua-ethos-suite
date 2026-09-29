@@ -59,8 +59,10 @@ function esc_protocol_guard.new(opts)
   local function setResult(protocol, ready)
     state.protocol = protocol
     state.ready = ready == true
+    state.attempted = (ready == true)
     state.pending = false
     state.deadline = nil
+    state.nextAttemptAt = 0
     state.dirty = true
   end
 
@@ -80,7 +82,7 @@ function esc_protocol_guard.new(opts)
   end
 
   local function request()
-    if state.attempted or state.pending or not canRequest() then return end
+    if state.attempted or state.pending or state.ready or not canRequest() then return end
     if os.clock() < state.nextAttemptAt then return end
 
     state.attempted = true
@@ -135,6 +137,19 @@ function esc_protocol_guard.new(opts)
         state.ready = true
         state.pending = false
         state.deadline = nil
+        state.dirty = true
+      end
+    elseif not canRequest() then
+      if state.attempted or state.pending or state.ready or state.protocol ~= nil or state.nextAttemptAt > 0 then
+        state.token = state.token + 1
+        state.attempted = false
+        state.pending = false
+        state.ready = false
+        state.protocol = nil
+        state.deadline = nil
+        -- The link is gone, so any backoff armed for it is meaningless: the
+        -- next request after the link returns should not have to wait it out.
+        state.nextAttemptAt = 0
         state.dirty = true
       end
     end
