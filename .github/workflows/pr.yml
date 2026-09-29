@@ -97,6 +97,23 @@ jobs:
       - name: Check the MSP request pattern over repeated tool cycles
         run: lua5.3 bin/tool_ui/verify_no_extra_msp.lua
 
+  # The ESC forward-programming tiles are gated by a guard that has to retry a
+  # failed MSP read. That retry reaches neither a build nor a package step, so
+  # it is pinned here. #2387
+  esc-guard-retry:
+    name: ESC tiles recover from a failed read
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Lua 5.3
+        run: sudo apt-get update && sudo apt-get install -y lua5.3
+
+      - name: Check that a failed ESC read is retried
+        run: lua5.3 bin/esc_guard/verify_esc_guard_retry.lua
+
   # Per-language PR builds (mirrors push.yml behavior)
   create-zip:
     name: Build PR ZIP (${{ matrix.lang }})
