@@ -47,8 +47,53 @@ local dashboardEngine = nil
 local loadedTheme = nil
 local loadedState = nil
 local systemToolHandle = nil
-local clock = os.clock
--- Set true while app/tool.lua's full-screen tool owns the display (see its
+-- Second stack sample point, and the reason it exists.
+--
+-- On the X18RS the background task's own reading of
+-- system.getMemoryUsage().mainStackAvailable came back 0 B at every one of 25
+-- samples, minimum AND maximum, across boot, connect, opening the tool and
+-- three menu levels -- while the firmware author reads 9 296 B for the same
+-- field on a radio that also runs this suite. That reading is not explained by
+-- the bus: the deepest bus nesting seen in the whole session was 1, so no
+-- handler ever published from inside a handler.
+--
+-- The instrument that was supposed to separate "the Main task is at the edge"
+-- from "this call site sits deep" could not do it. Both extremes are taken at
+-- ONE fixed call site, and a fixed call site has a fixed depth -- minimum,
+-- maximum and the latest value are the same measurement three times over. They
+-- measure how much the stack usage varies *around* this point, never how deep
+-- this point itself is. Only a reading taken somewhere else can say that.
+--
+-- So: one sample at the top of paint(), which is structurally the same position
+-- as the background task's wakeup -- one frame below Ethos' dispatcher. Two
+-- readings of the same field at two known positions answer the actual
+-- question. If both are 0 the radio is at the edge no matter where anyone
+-- looks; if they differ, the difference is the dispatch context, not us.
+--
+-- Rate-limited because system.getMemoryUsage() builds a Lua table on every
+-- call, and paint() runs at frame rate. On a suite whose heap is a measured
+-- budget, one table per second is acceptable and one per frame is not. The
+-- dashboard does not print this itself; the background task's memory-log line
+-- carries it, so no new output appears on the paint path.
+local PAINT_STACK_SAMPLE_INTERVAL = 1
+local lastPaintStackSampleAt = nil
+local stackProbe = nil
+
+local function sampleStackFromPaint()
+  -- No capability guard: system.getMemoryUsage has been part of Ethos since
+  -- 1.1.0. A guard here can never fire, and it would swallow the one case that
+  -- matters -- the function being absent -- by returning silently instead of
+  -- letting the paint path report a zero it never measured.
+  local now = os.clock()
+  if lastPaintStackSampleAt and (now - lastPaintStackSampleAt) < PAINT_STACK_SAMPLE_INTERVAL then
+    return
+  end
+  lastPaintStackSampleAt = now
+  stackProbe = stackProbe or requireModule("lib/stack_probe.lua")
+  stackProbe.notePaint((system.getMemoryUsage() or {}).mainStackAvailable)
+end
+
+local clock = os.clock-- Set true while app/tool.lua's full-screen tool owns the display (see its
 -- create()/close()) -- matches master's rfsuite.tasks.appRunning gate on
 -- dashboard.lua's own wakeup(): a background-screen widget doing full
 -- object-wakeup/paint-prep work while a *different* screen is the one
@@ -87,8 +132,21 @@ local function trimDashboardCaches(options)
   if dashboard and dashboard.clearCaches then dashboard.clearCaches(options) end
 end
 
+-- `images = true` is not optional here and not a micro-optimisation: every
+-- caller of this function (requestThemeReload, and close()) throws away
+-- themeDefs/stateDefs and resets the engine, so every object box and its
+-- cfg -- including the `c.panelimg` / `cfg.image` decoded-bitmap handles
+-- resolved through context.utils.loadImage() -- is rebuilt from scratch.
+-- Without asking for the image caches the previously decoded bitmaps stayed
+-- strongly referenced by context.lua's own imageCache/imagePathCache/
+-- imageBitmapCache and by objects/image/model.lua's per-craft _imgCache, so
+-- each theme switch (light -> dark -> light, or a new model on connect, which
+-- routes through requestThemeReload at the modelDashboard comparison) left
+-- the previous generation resident. That is the images branch of
+-- context.widgets.dashboard.clearCaches(), which had no caller anywhere in
+-- the tree until now (#2380).
 local function clearThemeCache()
-  trimDashboardCaches({theme = true})
+  trimDashboardCaches({theme = true, images = true})
   if dashboardEngine and dashboardEngine.reset then dashboardEngine.reset() end
   themeDef = nil
   stateDef = nil
@@ -1300,6 +1358,7 @@ local function drawFooterAlert(widget, w, h)
 end
 
 local function paint(widget)
+  sampleStackFromPaint()
   local w, h = lcd.getWindowSize()
   if widget and widget.themeReloadPending == true then
     if prepareDashboard(widget) then finishThemeReload(widget) end
