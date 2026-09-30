@@ -2,6 +2,8 @@
 
 local requireModule = package.loaded["rfsuite.lib.require"] or assert(loadfile("lib/require.lua"))()
 local bus = requireModule("lib/bus.lua")
+local batteryProfileIndex = requireModule("lib/battery_profile_index.lua")
+local engineType = requireModule("lib/engine_type.lua")
 local settingsStore = requireModule("lib/settings_store.lua")
 
 local audio_events = {}
@@ -17,6 +19,9 @@ local adjWavs = nil
 local lastAlertAt = {}
 local craftNameAnnounced = false
 local lastSmartfuelAnnounced = nil
+-- Whether a numeric fuel reading has been evaluated yet, as opposed to merely
+-- being present. See announceSmartfuel() for why the two are not the same thing.
+local fuelEvaluated = false
 local lastLowFuelAnnounced = false
 local lastLowFuelRepeatAt = 0
 local lastLowFuelRepeatCount = 0
@@ -71,6 +76,7 @@ local AUDIO_SESSION_KEYS = {
   "adjValue",
   "timerLive",
   "timerTarget",
+  "smartfuelModelType",
 }
 
 local function fileExists(path)
@@ -176,6 +182,48 @@ local function onSessionUpdate(snapshot)
   copySnapshot(snapshot)
 end
 
+-- Which word the fuel/battery percentage and low-fuel callouts use depends on
+-- the powerplant. The flight controller reports no model type at all
+-- (MSP_SMARTFUEL_CONFIG is four bytes -- mode, voltage fall, charge drop, sag
+-- gain) and has no tank/fuel concept, so the only sources are the
+-- transmitter-side model preference (app/pages/power_smartfuel.lua's
+-- MODEL_TYPE_CHOICES, published in session.smartfuelModelType) and the configured
+-- battery config. Auto is *resolved* from the config, not guessed: a cell count
+-- or a configured pack capacity means a battery. Same rule as
+-- widgets/dashboard/context.lua's isElectricEngine(), both now reading lib/engine_type.lua.
+local function isElectricModel()
+  return engineType.isElectric(session.batteryConfig, session.smartfuelModelType)
+end
+
+-- The percentage callout's word, and whether it lives in the events package.
+-- There is no status/alerts/battery.wav in any locale, but
+-- events/alerts/battery.wav is the same word ("Battery" / "Akku") in every
+-- sound pack, and playFile() only treats the package as a path segment, so it
+-- is read from there.
+local function percentCalloutAlert()
+  if isElectricModel() then return "battery.wav", true end
+  return "fuel.wav", false
+end
+
+-- status/alerts/lowbat.wav ("Battery empty" / "Akku leer") ships in every
+-- sound pack but was wired to nothing before this change.
+local function lowCalloutAlert()
+  if isElectricModel() then return "lowbat.wav" end
+  return "lowfuel.wav"
+end
+
+-- One dispatch point for a callout word, so the selectors above only decide
+-- which file and package. At module scope, not inside the announcement: that
+-- runs on the announcement timer and a per-call closure would be churn on
+-- every tick.
+local function playCalloutAlert(file, fromEvents)
+  if fromEvents then
+    playAlert(file)
+  else
+    playStatus(file)
+  end
+end
+
 local function onSettingsUpdate(snapshot)
   settings = snapshot or {}
   events = settingsStore.audioEvents(settings)
@@ -241,15 +289,6 @@ local function announceProfile(key, enabled, file)
   playNumber(math.floor(value))
 end
 
-local function normalizeBatteryProfile(value)
-  local profile = tonumber(value)
-  if profile == nil then return nil end
-  profile = math.floor(profile)
-  if profile >= 1 and profile <= 6 then return profile - 1 end
-  if profile >= 0 and profile <= 5 then return profile end
-  return nil
-end
-
 local function extractCapacityValue(value)
   if type(value) == "number" then return value end
   if type(value) == "string" then return tonumber(value:match("(%d+)")) end
@@ -264,8 +303,13 @@ end
 local function batteryProfileCapacity(profile)
   local profiles = session.batteryConfig and session.batteryConfig.profiles
   if type(profiles) ~= "table" then return nil end
+  -- No `profiles[profile + 1]` retry: session.batteryConfig.profiles is
+  -- indexed 0..5, straight from the MSP_BATTERY_CONFIG reply
+  -- (lib/msp_battery.lua decodes batteryCapacity[0..5]; the firmware writes
+  -- them in that order, rotorflight-firmware src/main/msp/msp.c:906-908).
+  -- The old retry existed only to paper over an off-by-one one layer up, and
+  -- stood ready to answer with a neighbouring pack's capacity.
   local value = profiles[profile]
-  if value == nil then value = profiles[profile + 1] end
   value = extractCapacityValue(value)
   if value and value > 0 then return value end
   return nil
@@ -273,8 +317,14 @@ end
 
 local function announceBatteryProfile()
   if not events.battery_profile then return end
-  local value = normalizeBatteryProfile(session.batteryProfile)
-  local last = normalizeBatteryProfile(previous.batteryProfile)
+  -- session.batteryProfile and the previous.batteryProfile snapshot are both
+  -- already the internal 0-based index (tasks/session.lua converts the FC's
+  -- 1-based `battery_profile` telemetry sensor once, at its ingress point).
+  -- Validating is right; re-basing is not -- it made the announcement name
+  -- the pack one below the one actually selected, and made a real 1 -> 2
+  -- change look like "no change" and go unspoken.
+  local value = batteryProfileIndex.index0(session.batteryProfile)
+  local last = batteryProfileIndex.index0(previous.batteryProfile)
   if value == nil or last == nil or value == last then return end
 
   local capacity = batteryProfileCapacity(value)
@@ -421,6 +471,32 @@ local function resetLowFuel()
   lastLowFuelRepeatCount = 0
 end
 
+local function resetFuelAnnouncements()
+  lastSmartfuelAnnounced = nil
+  fuelEvaluated = false
+  resetLowFuel()
+end
+
+-- Seed on the first reading, whatever it says.
+--
+-- The threshold loop below already did this for every value above zero: it took
+-- `lastSmartfuelAnnounced == nil` as "nothing to compare against yet", recorded
+-- the value and returned without a sound. The zero branch had no such gate, so
+-- a fuel reading of 0 on the first evaluation after connecting went straight
+-- into lowfuel.wav and latched lastLowFuelAnnounced -- and 0 is exactly what a
+-- sensor that has not received a frame yet can report, so powering the radio
+-- with a freshly charged pack announced "low fuel".
+--
+-- A 0 is not distinguishable from a real reading by value alone: an empty pack
+-- reads 0 too. So this seeds the first 0 instead of announcing it, and lets
+-- every later one through -- an empty pack is then announced from the second
+-- evaluation on, one wakeup later. The alternative of requiring a value above
+-- 0 before trusting any reading at all (which is what #2313 suggested) would
+-- silence the low-fuel warning for a genuinely empty pack forever, since such a
+-- pack never reads above 0.
+--
+-- resetFuelAnnouncements() clears this alongside lastSmartfuelAnnounced, so a
+-- reconnect or a pack change starts the seeding over.
 local function announceSmartfuel(now)
   if not events.smartfuel then return end
   if session.connected ~= true then return end
@@ -429,16 +505,24 @@ local function announceSmartfuel(now)
   if value == nil then return end
   value = math.floor(value + 0.5)
 
+  if not fuelEvaluated then
+    fuelEvaluated = true
+    lastSmartfuelAnnounced = value
+    resetLowFuel()
+    return
+  end
+
   if value <= 0 then
     local repeats = tonumber(events.smartfuelrepeats) or 1
+    local lowAlert = lowCalloutAlert()
     if not lastLowFuelAnnounced then
-      playStatus("lowfuel.wav")
+      playCalloutAlert(lowAlert)
       if events.smartfuelhaptic then haptic() end
       lastLowFuelAnnounced = true
       lastLowFuelRepeatAt = now
       lastLowFuelRepeatCount = 1
     elseif lastLowFuelRepeatCount < repeats and (now - lastLowFuelRepeatAt) >= 10 then
-      playStatus("lowfuel.wav")
+      playCalloutAlert(lowAlert)
       if events.smartfuelhaptic then haptic() end
       lastLowFuelRepeatAt = now
       lastLowFuelRepeatCount = lastLowFuelRepeatCount + 1
@@ -446,11 +530,6 @@ local function announceSmartfuel(now)
     return
   end
   resetLowFuel()
-
-  if lastSmartfuelAnnounced == nil then
-    lastSmartfuelAnnounced = value
-    return
-  end
 
   local thresholds = smartfuelThresholds()
   if not thresholds then
@@ -461,7 +540,8 @@ local function announceSmartfuel(now)
   for i = 1, #thresholds do
     local threshold = thresholds[i]
     if value <= threshold and lastSmartfuelAnnounced > threshold then
-      playStatus("fuel.wav")
+      local percentAlert, fromEvents = percentCalloutAlert()
+      playCalloutAlert(percentAlert, fromEvents)
       playNumber(threshold, UNIT_PERCENT)
       lastSmartfuelAnnounced = threshold
       return
@@ -601,9 +681,8 @@ function audio_events.wakeup()
   if session.connected ~= true then
     initialized = false
     craftNameAnnounced = false
-    lastSmartfuelAnnounced = nil
+    resetFuelAnnouncements()
     adjWavs = nil
-    resetLowFuel()
     pendingAdjFunction = false
     resetTimerAudio()
     speakingUntil = 0
@@ -616,7 +695,10 @@ function audio_events.wakeup()
   if not initialized then
     initialized = true
     rememberCurrent()
-    lastSmartfuelAnnounced = tonumber(session.fuelPercent)
+    -- No fuel seed here: announceSmartfuel() seeds the first reading it
+    -- evaluates, whatever that reading is, and gating it in two places is how
+    -- the zero case came to be announced at all. Skipping this branch is what
+    -- keeps the first evaluation after a connect from carrying a sound.
     return
   end
 
@@ -641,12 +723,11 @@ function audio_events.reset()
   adjWavs = nil
   for key in pairs(previous) do previous[key] = nil end
   for key in pairs(lastAlertAt) do lastAlertAt[key] = nil end
-  lastSmartfuelAnnounced = nil
+  resetFuelAnnouncements()
   pendingAdjFunction = false
   resetTimerAudio()
   speakingUntil = 0
   for key in pairs(rollingSamples) do rollingSamples[key] = nil end
-  resetLowFuel()
 end
 
 function audio_events.setSettings(snapshot)

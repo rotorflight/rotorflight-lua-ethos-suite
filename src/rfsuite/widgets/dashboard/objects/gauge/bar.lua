@@ -516,13 +516,24 @@ function render.wakeup(box)
         end
     end
 
-    local vmin, vmax
+    local vmin, vmax, thresholds
     if source == "txbatt" then
         vmin = getParam(box, "min") or 7.2
         vmax = getParam(box, "max") or 8.4
     else
         vmin = getParam(box, "min") or 0
         vmax = getParam(box, "max") or 100
+
+        -- Localized sensors (temperatures) report values in the pilot's unit, so the
+        -- scale and thresholds, written in the sensor's base unit, must follow.
+        local sensorDef = source and telemetry and telemetry.sensorTable and telemetry.sensorTable[source]
+        local localize = sensorDef and sensorDef.localizations
+        if type(localize) == "function" then
+            local _, _, _, lMin, lMax, lThresholds = localize(nil, vmin, vmax, getParam(box, "thresholds"))
+            vmin = lMin or vmin
+            vmax = lMax or vmax
+            thresholds = lThresholds
+        end
     end
 
     local percent = 0
@@ -588,8 +599,8 @@ function render.wakeup(box)
     local thresholdValue = displayValue
     if type(thresholdValue) ~= "number" then thresholdValue = value end
 
-    c.textcolor = resolveThresholdColor(thresholdValue, box, "textcolor", "textcolor")
-    c.fillcolor = resolveThresholdColor(thresholdValue, box, "fillcolor", "fillcolor")
+    c.textcolor = resolveThresholdColor(thresholdValue, box, "textcolor", "textcolor", thresholds)
+    c.fillcolor = resolveThresholdColor(thresholdValue, box, "fillcolor", "fillcolor", thresholds)
     c.fillbgcolor = cfg.fillbgcolor
     c.bgcolor = cfg.bgcolor
     c.titlecolor = cfg.titlecolor

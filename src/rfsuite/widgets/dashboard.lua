@@ -11,6 +11,7 @@ local flightmode = requireModule("widgets/dashboard/flightmode.lua")
 local dataflashErase = requireModule("lib/msp_dataflash_erase.lua")
 local dataflashSummary = requireModule("lib/msp_dataflash_summary.lua")
 local batteryProfileMsp = requireModule("lib/msp_battery_profile.lua")
+local batteryProfileIndex = requireModule("lib/battery_profile_index.lua")
 local ethosVersion = requireModule("lib/ethos_version.lua")
 local mspApiVersion = requireModule("lib/msp_api_version.lua")
 
@@ -47,8 +48,53 @@ local dashboardEngine = nil
 local loadedTheme = nil
 local loadedState = nil
 local systemToolHandle = nil
-local clock = os.clock
--- Set true while app/tool.lua's full-screen tool owns the display (see its
+-- Second stack sample point, and the reason it exists.
+--
+-- On the X18RS the background task's own reading of
+-- system.getMemoryUsage().mainStackAvailable came back 0 B at every one of 25
+-- samples, minimum AND maximum, across boot, connect, opening the tool and
+-- three menu levels -- while the firmware author reads 9 296 B for the same
+-- field on a radio that also runs this suite. That reading is not explained by
+-- the bus: the deepest bus nesting seen in the whole session was 1, so no
+-- handler ever published from inside a handler.
+--
+-- The instrument that was supposed to separate "the Main task is at the edge"
+-- from "this call site sits deep" could not do it. Both extremes are taken at
+-- ONE fixed call site, and a fixed call site has a fixed depth -- minimum,
+-- maximum and the latest value are the same measurement three times over. They
+-- measure how much the stack usage varies *around* this point, never how deep
+-- this point itself is. Only a reading taken somewhere else can say that.
+--
+-- So: one sample at the top of paint(), which is structurally the same position
+-- as the background task's wakeup -- one frame below Ethos' dispatcher. Two
+-- readings of the same field at two known positions answer the actual
+-- question. If both are 0 the radio is at the edge no matter where anyone
+-- looks; if they differ, the difference is the dispatch context, not us.
+--
+-- Rate-limited because system.getMemoryUsage() builds a Lua table on every
+-- call, and paint() runs at frame rate. On a suite whose heap is a measured
+-- budget, one table per second is acceptable and one per frame is not. The
+-- dashboard does not print this itself; the background task's memory-log line
+-- carries it, so no new output appears on the paint path.
+local PAINT_STACK_SAMPLE_INTERVAL = 1
+local lastPaintStackSampleAt = nil
+local stackProbe = nil
+
+local function sampleStackFromPaint()
+  -- No capability guard: system.getMemoryUsage has been part of Ethos since
+  -- 1.1.0. A guard here can never fire, and it would swallow the one case that
+  -- matters -- the function being absent -- by returning silently instead of
+  -- letting the paint path report a zero it never measured.
+  local now = os.clock()
+  if lastPaintStackSampleAt and (now - lastPaintStackSampleAt) < PAINT_STACK_SAMPLE_INTERVAL then
+    return
+  end
+  lastPaintStackSampleAt = now
+  stackProbe = stackProbe or requireModule("lib/stack_probe.lua")
+  stackProbe.notePaint((system.getMemoryUsage() or {}).mainStackAvailable)
+end
+
+local clock = os.clock-- Set true while app/tool.lua's full-screen tool owns the display (see its
 -- create()/close()) -- matches master's rfsuite.tasks.appRunning gate on
 -- dashboard.lua's own wakeup(): a background-screen widget doing full
 -- object-wakeup/paint-prep work while a *different* screen is the one
@@ -399,15 +445,6 @@ local function canOpenSystemTool()
     and ethosVersion.atLeast({26, 1, 0})
 end
 
-local function normalizeBatteryProfile(value)
-  local profile = tonumber(value)
-  if profile == nil then return nil end
-  profile = math.floor(profile)
-  if profile >= 1 and profile <= 6 then return profile - 1 end
-  if profile >= 0 and profile <= 5 then return profile end
-  return nil
-end
-
 local function capacityValue(value)
   if type(value) == "number" then return value end
   if type(value) == "string" then return tonumber(value:match("(%d+)")) end
@@ -432,9 +469,21 @@ local function buildBatteryProfileList(widget)
   end
 
   if #profileList == 0 then
+    -- Fallback for a profiles table that is a 1-based *list* of
+    -- {name = ...} entries rather than the 0-based profiles[0]..[5] of plain
+    -- capacities that lib/msp_battery.lua decodes. ipairs positions are
+    -- 1-based, so the 0-based index is i - 1 -- which is exactly what the old
+    -- normalizeBatteryProfile() got right here by accident, while getting
+    -- everything else wrong. Spell it out instead of relying on that: feeding
+    -- the loop position `i` to a 0-based validator would read as index i and
+    -- shift this whole list by one.
     for i, profile in ipairs(profilesRaw) do
       if type(profile) == "table" and profile.name then
-        local idx = normalizeBatteryProfile(profile.idx or profile.index or profile.profile or i) or (i - 1)
+        local declared = profile.idx or profile.index or profile.profile
+        local idx = i - 1
+        if declared ~= nil then
+          idx = batteryProfileIndex.index0(declared) or idx
+        end
         profileList[#profileList + 1] = {name = profile.name, idx = idx}
       end
     end
@@ -756,10 +805,18 @@ end
 
 local function writeBatteryProfile(widget, profileIndex, profileName)
   if not widget or widget.connected ~= true or widget.batteryActive == true then return end
-  profileIndex = normalizeBatteryProfile(profileIndex)
+  -- profileIndex is profile.idx from buildBatteryProfileList(), which walks
+  -- widget.batteryConfig.profiles[0]..profiles[5] -- already the 0-based index
+  -- the MSP 176 payload wants. This only rejects an out-of-range value; it
+  -- must not shift it. The old normalize here subtracted 1 from every 1..5,
+  -- so picking pack 5 activated pack 4 on the flight controller.
+  profileIndex = batteryProfileIndex.index0(profileIndex)
   if profileIndex == nil then return end
 
-  if normalizeBatteryProfile(widget.batteryProfile) == profileIndex then
+  -- Both sides are 0-based and validated the same way, so a genuine 1 -> 2
+  -- pack change (index 0 -> 1) is now actually seen as a change. Comparing
+  -- two values from the old base-guessing helper could not tell them apart.
+  if batteryProfileIndex.index0(widget.batteryProfile) == profileIndex then
     showBatteryInfo("@i18n(widgets.battery.msg_battery_selected)@ " .. tostring(profileName))
     return
   end
@@ -810,7 +867,9 @@ local function chooseBatteryProfile(widget)
   local buttons = {}
   local message = "@i18n(widgets.battery.msg_select_battery)@\n\n"
   for _, profile in ipairs(profileList) do
-    local label = tostring((profile.idx or 0) + 1)
+    -- profile.idx is the 0-based index; label() is the 1-based pack number
+    -- the pilot knows the pack by. Same value as the old (idx or 0) + 1.
+    local label = tostring(batteryProfileIndex.label(profile.idx) or 1)
     message = message .. label .. " - " .. tostring(profile.name) .. "\n"
   end
 
@@ -1287,6 +1346,7 @@ local function drawFooterAlert(widget, w, h)
 end
 
 local function paint(widget)
+  sampleStackFromPaint()
   local w, h = lcd.getWindowSize()
   if widget and widget.themeReloadPending == true then
     if prepareDashboard(widget) then finishThemeReload(widget) end

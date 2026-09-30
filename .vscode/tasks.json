@@ -3,10 +3,13 @@
   "tasks": [
     {
       "label": "Deploy & Launch [SIM]",
-      "type": "process",
+      "type": "shell",
       "command": "python",
       "osx": {
-        "command": "${config:python.defaultInterpreterPath}"
+        "command": "${command:python.interpreterPath}"
+      },
+      "windows": {
+        "command": "${command:python.interpreterPath}"
       },
       "args": [
         "${workspaceFolder}/.vscode/scripts/deploy.py",
@@ -43,10 +46,13 @@
     },
     {
       "label": "Deploy Radio",
-      "type": "process",
+      "type": "shell",
       "command": "python",
       "osx": {
-        "command": "${config:python.defaultInterpreterPath}"
+        "command": "${command:python.interpreterPath}"
+      },
+      "windows": {
+        "command": "${command:python.interpreterPath}"
       },
       "args": [
         "${workspaceFolder}/.vscode/scripts/deploy.py",
@@ -69,10 +75,13 @@
     },
     {
       "label": "Deploy Radio [Fast]",
-      "type": "process",
+      "type": "shell",
       "command": "python",
       "osx": {
-        "command": "${config:python.defaultInterpreterPath}"
+        "command": "${command:python.interpreterPath}"
+      },
+      "windows": {
+        "command": "${command:python.interpreterPath}"
       },
       "args": [
         "${workspaceFolder}/.vscode/scripts/deploy.py",
@@ -95,10 +104,13 @@
     },
     {
       "label": "Deploy Radio + Serial Debug",
-      "type": "process",
+      "type": "shell",
       "command": "python",
       "osx": {
-        "command": "${config:python.defaultInterpreterPath}"
+        "command": "${command:python.interpreterPath}"
+      },
+      "windows": {
+        "command": "${command:python.interpreterPath}"
       },
       "args": [
         "${workspaceFolder}/.vscode/scripts/deploy.py",
@@ -120,10 +132,13 @@
     },
     {
       "label": "Deploy Radio + Serial Debug [Fast]",
-      "type": "process",
+      "type": "shell",
       "command": "python",
       "osx": {
-        "command": "${config:python.defaultInterpreterPath}"
+        "command": "${command:python.interpreterPath}"
+      },
+      "windows": {
+        "command": "${command:python.interpreterPath}"
       },
       "args": [
         "${workspaceFolder}/.vscode/scripts/deploy.py",
@@ -147,10 +162,13 @@
     },
     {
       "label": "Radio: Serial Debug",
-      "type": "process",
+      "type": "shell",
       "command": "python",
       "osx": {
-        "command": "${config:python.defaultInterpreterPath}"
+        "command": "${command:python.interpreterPath}"
+      },
+      "windows": {
+        "command": "${command:python.interpreterPath}"
       },
       "args": [
         "${workspaceFolder}/.vscode/scripts/deploy.py",
@@ -172,10 +190,13 @@
     },
     {
       "label": "Clear locks",
-      "type": "process",
+      "type": "shell",
       "command": "python",
       "osx": {
-        "command": "${config:python.defaultInterpreterPath}"
+        "command": "${command:python.interpreterPath}"
+      },
+      "windows": {
+        "command": "${command:python.interpreterPath}"
       },
       "args": [
         "${workspaceFolder}/.vscode/scripts/deploy.py",
@@ -190,10 +211,13 @@
     },
     {
       "label": "Debug Radio Connection",
-      "type": "process",
+      "type": "shell",
       "command": "python",
       "osx": {
-        "command": "${config:python.defaultInterpreterPath}"
+        "command": "${command:python.interpreterPath}"
+      },
+      "windows": {
+        "command": "${command:python.interpreterPath}"
       },
       "args": [
         "${workspaceFolder}/.vscode/scripts/debug_connection.py"
@@ -207,10 +231,13 @@
     },
     {
       "label": "Debug Radio Connection: Switch To Serial",
-      "type": "process",
+      "type": "shell",
       "command": "python",
       "osx": {
-        "command": "${config:python.defaultInterpreterPath}"
+        "command": "${command:python.interpreterPath}"
+      },
+      "windows": {
+        "command": "${command:python.interpreterPath}"
       },
       "args": [
         "${workspaceFolder}/.vscode/scripts/debug_connection.py",
@@ -226,10 +253,13 @@
     },
     {
       "label": "Debug Radio Connection: Switch To Storage",
-      "type": "process",
+      "type": "shell",
       "command": "python",
       "osx": {
-        "command": "${config:python.defaultInterpreterPath}"
+        "command": "${command:python.interpreterPath}"
+      },
+      "windows": {
+        "command": "${command:python.interpreterPath}"
       },
       "args": [
         "${workspaceFolder}/.vscode/scripts/debug_connection.py",

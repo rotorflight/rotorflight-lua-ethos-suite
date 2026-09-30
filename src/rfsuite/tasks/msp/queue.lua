@@ -56,6 +56,9 @@ function Queue.new(common)
     current = nil,
     lastSent = nil,
     retryCount = 0,
+    rxFrames = 0,
+    rxBreaks = 0,
+    lastTickAt = nil,
   }, Queue)
 end
 
@@ -64,6 +67,10 @@ function Queue:isProcessed()
 end
 
 function Queue:add(message)
+  if not message or not message.command or type(message.command) ~= "number" or (message.payload and type(message.payload) ~= "table") then
+    notifyError(message, "invalid_request")
+    return false
+  end
   if #self.pending >= MAX_PENDING then
     notifyError(message, "queue_full")
     return false
@@ -93,6 +100,7 @@ function Queue:clear()
   self.pending = {}
   self.current = nil
   self.lastSent = nil
+  self.retryCount = 0
   self.common.mspClearBufs()
   if droppedCurrent then notifyError(droppedCurrent, "cleared") end
   for i = 1, #droppedPending do notifyError(droppedPending[i], "cleared") end
@@ -103,10 +111,38 @@ local function popFirst(list)
   return table.remove(list, 1)
 end
 
+-- Retires whatever message is in flight.
+--
+-- The shared TX buffer in tasks/msp/common.lua belongs to the *message* being
+-- sent, not to the queue, and mspSendRequest() refuses to arm a new one while
+-- that buffer is still populated. So retiring a message has to hand the buffer
+-- back -- otherwise a message that died between two of its frames left the
+-- buffer occupied for the rest of the script's life, and from then on every
+-- mspSendRequest() returned false without putting a byte on the wire, mspLastReq
+-- was never updated, mspPollReply() could never match, and each new message
+-- burned its whole retry budget before dying on max_retries. All MSP traffic
+-- dead, no error and no timeout to show for it, and the only way out was
+-- reloading the script.
+--
+-- Doing it here rather than at the individual abort sites makes that a
+-- property of "a message ended" instead of something each new `return` has to
+-- remember.
 function Queue:_finish()
+  self.common.mspClearTxBuf()
   self.current = nil
   self.lastSent = nil
+  self.retryCount = 0
   collectgarbage()
+end
+
+-- Abort the in-flight message: retire it, then report the reason. The message
+-- is snapshotted before _finish() because that clears self.current, and the
+-- handler has to be the one belonging to the message that was just abandoned.
+function Queue:abortCurrent(reason)
+  local msg = self.current
+  self:_finish()
+  notifyError(msg, reason or "aborted")
+  return msg
 end
 
 function Queue:_deliver(buf)
@@ -127,15 +163,18 @@ function Queue:processQueue()
   end
 
   local msg = self.current
+  local payload = msg.payload or EMPTY_PAYLOAD
+  if not msg.command or type(msg.command) ~= "number" or type(payload) ~= "table" then
+    return self:abortCurrent("invalid_request")
+  end
+
   local common = self.common
   local isSim = system.getVersion().simulation == true
 
   if isSim then
     if not msg.simulatorResponse then
       debugLog.msp("SIM", msg.command, msg.payload, "no_response")
-      self:_finish()
-      notifyError(msg, "no_response")
-      return
+      return self:abortCurrent("no_response")
     end
     debugLog.msp("SIM>", msg.command, msg.payload)
     debugLog.msp("SIM<", msg.command, msg.simulatorResponse)
@@ -157,29 +196,77 @@ function Queue:processQueue()
     -- arrival instead of getting its own window -- effectively giving
     -- every message one fewer real attempt than maxRetries promised.
     if self.lastSent and self.retryCount > maxRetries then
-      local handler = msg.errorHandler
-      self:_finish()
-      if handler then handler("max_retries") end
-      return
+      return self:abortCurrent("max_retries")
     end
-    local payload = msg.payload or EMPTY_PAYLOAD
-    common.mspSendRequest(msg.command, payload, msg.isWrite)
-    debugLog.msp("TX", msg.command, payload, "try=" .. tostring(self.retryCount + 1))
-    self.lastSent = now
-    self.retryCount = self.retryCount + 1
+    -- The return value used to be dropped on the floor, which made a refused
+    -- hand-off indistinguishable from a successful send: lastSent and
+    -- retryCount were advanced either way, so maxRetries was reached after
+    -- 6 x 0.8s of wall clock with not one byte having left the radio. Count
+    -- real hand-offs only, and say so out loud when there was none.
+    if common.mspSendRequest(msg.command, payload, msg.isWrite) then
+      debugLog.msp("TX", msg.command, payload, "try=" .. tostring(self.retryCount + 1))
+      self.lastSent = now
+      self.retryCount = self.retryCount + 1
+      self.rxFrames = common.mspRxFrameCount()
+    else
+      debugLog.msp("TX!", msg.command, payload, "tx_busy")
+    end
   end
 
+  -- One frame per wakeup, deliberately. Both transports hand the frame to
+  -- Ethos's pushFrame(), and mspProcessTxQ() ignores whether it was
+  -- accepted. Draining a whole multi-frame write in one tick (#2411) broke
+  -- every save on hardware -- the burst outruns what pushFrame() will
+  -- queue, so the FC never sees a complete write. An abandoned mid-send
+  -- write no longer poisons the link either way, since _finish() hands the
+  -- TX buffer back.
   common.mspProcessTxQ()
+
   local cmd, buf, err = common.mspPollReply()
+
+  -- Never resend while the FC is still sending. retryDelay used to count
+  -- from the send alone, so a reply longer than the window (a 448-byte
+  -- reply is ~90 S.Port frames) was cut off by a resend
+  -- part-way through, and every attempt died the same way until
+  -- max_retries failed the page load.
+  --
+  -- Frames this side discards count as well. When one reply frame is lost
+  -- on the link, the rest of that reply keeps arriving and is discarded
+  -- (it no longer follows the sequence). A request sent into that stream
+  -- gets an answer with no start frame: the firmware's sendMspReply()
+  -- (telemetry/msp_shared.c) only clears its static headerSent when a
+  -- reply finishes, not when a new request replaces it, so every
+  -- continuation frame of the new answer is discarded too. Waiting for
+  -- retryDelay of silence lets the old reply finish first, so the resend
+  -- gets a proper start frame.
+  --
+  -- A reply dropped part-way (a lost frame) then costs one full resend.
+  local rxFrames = common.mspRxFrameCount()
+  if rxFrames ~= self.rxFrames then
+    self.rxFrames = rxFrames
+    if self.lastSent then self.lastSent = now end
+  end
+
+  -- MSP-log only: a reply dropped part-way on a sequence break. got past
+  -- expected means frames were lost; gap is the time since the previous
+  -- tick, long gaps pointing at an overflowed Ethos frame queue.
+  if debugLog.mspEnabled() then
+    local breaks, expected, got, bytes, size = common.mspRxBreakInfo()
+    if breaks ~= self.rxBreaks then
+      self.rxBreaks = breaks
+      debugLog.msp("SEQ", msg.command, EMPTY_PAYLOAD, string.format(
+        "expected=%d got=%d bytes=%d/%d gap=%dms", expected, got, bytes, size,
+        math.floor(((now - (self.lastTickAt or now)) * 1000) + 0.5)))
+    end
+  end
+  self.lastTickAt = now
 
   if cmd == msg.command and not err then
     debugLog.msp("RX", cmd, buf)
     self:_deliver(buf)
   elseif err then
     debugLog.msp("ERR", msg.command, msg.payload or EMPTY_PAYLOAD, err)
-    local handler = msg.errorHandler
-    self:_finish()
-    if handler then handler(err) end
+    self:abortCurrent(err)
   end
 end
 

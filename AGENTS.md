@@ -97,6 +97,14 @@ Commands:
 Rules:
 - Do not hand-edit generated files in `src/rfsuite/i18n/` if a source JSON change is intended.
 - Keep translation key structure consistent with `en.json`.
+- Every `@i18n(key)@` tag must resolve: a missing key is not a build error,
+  the pilot just sees the raw tag text on the radio. Check with
+  `python bin/i18n/check-tags.py [--lang <locale>]` (exit 1 and file:line
+  for each missing key).
+- The deploy i18n step records the last deploy's missing keys in
+  `.vscode/logs/i18n-unresolved.json` (git-ignored; deleted when a deploy
+  resolves everything). If that file exists, tell the user which keys are
+  missing and where, even if the current task did not touch them.
 
 ## 8) MSP/API/Scheduler Notes
 
@@ -108,6 +116,8 @@ Rules:
 
 Before finishing:
 - Verify no generated file drift (`menu`/`i18n`) if source files were touched.
+- If you added or changed any `@i18n(...)@` tag, run `python bin/i18n/check-tags.py`
+  and fix what it reports.
 - Check for hot-path allocations introduced by the change.
 - Confirm close/cleanup path exists for new dialogs, handles, or caches.
 - Run targeted sanity checks for affected module flows.

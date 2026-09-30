@@ -14,9 +14,30 @@ import time
 try:
     import hid
 except ModuleNotFoundError:
-    raise ImportError("hid module needed; install with: python -m pip install hid")
+    raise ImportError("hid module needed; install with: python -m pip install hidapi")
 except ImportError:
-    raise ImportError("hidapi library is missing. On macOS, run: brew install hidapi")
+    raise ImportError("HID library failed to load; reinstall with: python -m pip install hidapi")
+
+# Two packages provide `import hid`: `hidapi` (hid.device, native library
+# built in) and the older `hid` wrapper (hid.Device, needs hidapi installed
+# separately). deploy_deps.py installs hidapi; both are supported here.
+_HIDAPI_STYLE = hasattr(hid, "device")
+if not _HIDAPI_STYLE and not hasattr(hid, "Device"):
+    raise ImportError("unrecognised hid module; install with: python -m pip install hidapi")
+
+
+def _open_hid(vid=None, pid=None, path=None):
+    """Open an HID device with whichever hid package is installed."""
+    if not _HIDAPI_STYLE:
+        if path is not None:
+            return hid.Device(path=path)
+        return hid.Device(vid=vid, pid=pid)
+    dev = hid.device()
+    if path is not None:
+        dev.open_path(path)
+    else:
+        dev.open(vid, pid)
+    return dev
 
 
 # HID Protocol Constants
@@ -44,7 +65,7 @@ class RadioInformation:
     default_storage: str
 
 
-class RadioInterfaceBase(hid.Device):
+class RadioInterfaceBase:
     """
     Base class: HID communication with Ethos radio.
 
@@ -54,6 +75,7 @@ class RadioInterfaceBase(hid.Device):
     """
 
     def __init__(self, retries=10, retry_delay=0.5):
+        self._dev = None
         last_error = None
 
         for attempt in range(1, retries + 1):
@@ -78,7 +100,7 @@ class RadioInterfaceBase(hid.Device):
         # Strategy 1: direct VID/PID open for known product IDs.
         for pid in ETHOS_PRODUCT_IDS:
             try:
-                hid.Device.__init__(self, vid=ETHOS_VENDOR_ID, pid=pid)
+                self._dev = _open_hid(vid=ETHOS_VENDOR_ID, pid=pid)
                 return
             except Exception:
                 pass
@@ -89,7 +111,7 @@ class RadioInterfaceBase(hid.Device):
             if not path:
                 continue
             try:
-                hid.Device.__init__(self, path=path)
+                self._dev = _open_hid(path=path)
                 return
             except Exception:
                 continue
@@ -100,12 +122,26 @@ class RadioInterfaceBase(hid.Device):
             if pid is None:
                 continue
             try:
-                hid.Device.__init__(self, vid=ETHOS_VENDOR_ID, pid=pid)
+                self._dev = _open_hid(vid=ETHOS_VENDOR_ID, pid=pid)
                 return
             except Exception:
                 continue
 
         raise RuntimeError("HID open failed for all Ethos candidates")
+
+    def write(self, data):
+        return self._dev.write(data)
+
+    def read(self, size, timeout=0):
+        # hidapi returns a list of ints, the hid wrapper bytes; both index the same.
+        return self._dev.read(size, timeout)
+
+    def close(self):
+        if self._dev is not None:
+            try:
+                self._dev.close()
+            finally:
+                self._dev = None
 
     def _ethos_candidates_from_enumerate(self):
         """Return HID enumerate rows that look like Ethos devices."""

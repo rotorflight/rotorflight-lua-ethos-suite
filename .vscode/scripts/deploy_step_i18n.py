@@ -41,9 +41,13 @@ def main():
         print(f"[I18N] Skipping: resolver not found at {resolver}")
         return 0
 
+    # Unresolved keys are recorded here (and the file removed when there are
+    # none) so AGENTS.md can point coding agents at the last deploy's result.
+    report = os.path.join(git_src, ".vscode", "logs", "i18n-unresolved.json")
+
     print(f"[I18N] Resolving @i18n(...)@ tags (lang={lang})…")
     subprocess.run(
-        [sys.executable, resolver, "--json", json_path, "--root", out_dir],
+        [sys.executable, resolver, "--json", json_path, "--root", out_dir, "--report", report],
         check=True,
     )
     return 0

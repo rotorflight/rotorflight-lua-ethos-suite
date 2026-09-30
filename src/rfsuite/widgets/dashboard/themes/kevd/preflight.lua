@@ -39,14 +39,6 @@ local function getThemeOptionKey(W)
     return utils.getDashboardThemeOptionKey(W)
 end
 
-local function getEscTempThemeValue(key, offset)
-    local value = getThemeValue(key)
-    if value ~= nil and offset then value = value + offset end
-    local prefs = rfsuite and rfsuite.preferences and rfsuite.preferences.localizations
-    if value ~= nil and prefs and prefs.temperature_unit == 1 then value = (value - 32) / 1.8 end
-    return value
-end
-
 local themeOptions = {
 
     ls_full = {font = "FONT_XXL", advfont = "FONT_STD", titlefont = "FONT_XS", arctitlefont = "FONT_STD", brfont = "FONT_XL", tilefont = "FONT_XL", govfont = "FONT_XL", smartfont = "FONT_XXL", smartvaluefont = "FONT_XL", smartadvfont = "FONT_L", smartvaluepaddingtop = 44, smartbattadvpaddingright = 28, smartbattadvpaddingtop = -15, tiletitlespacing = 4, tiletitlepaddingbottom = 1, tilevaluepaddingtop = 3, tilevaluepaddingbottom = 0, flightvaluepaddingtop = 3, flightvaluepaddingbottom = 0, thickness = 32, batteryframethickness = 4, titlepaddingbottom = 25, valuepaddingleft = 25, valuepaddingtop = 20, gvaluepaddingtop = 30, valuepaddingbottom = 25, brvaluepaddingbottom = 20, gaugepaddingtop = 20, battadvpaddingtop = 20, cappaddingright = 4},
@@ -338,7 +330,7 @@ local function buildBoxes(W)
             font = "FONT_XL",
             titlefont = opts.arctitlefont,
             min = 0,
-            max = getEscTempThemeValue("esctemp_max"),
+            max = getThemeValue("esctemp_max"),
             thickness = opts.thickness - 5,
             valuepaddingleft = 6,
             bgcolor = colorMode.bgcolor,
@@ -350,8 +342,8 @@ local function buildBoxes(W)
             valuepaddingtop = 30,
             transform = "floor",
             thresholds = {
-                {value = getEscTempThemeValue("esctemp_warn"), fillcolor = colorMode.fillcolor},
-                {value = getEscTempThemeValue("esctemp_max", -1), fillcolor = lcd.RGB(0xE3, 0xA3, 0x00)},
+                {value = getThemeValue("esctemp_warn"), fillcolor = colorMode.fillcolor},
+                {value = getThemeValue("esctemp_max") - 1, fillcolor = lcd.RGB(0xE3, 0xA3, 0x00)},
                 {value = 10000, fillcolor = colorMode.fillcritcolor}
             }
         },

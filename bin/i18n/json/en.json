@@ -2477,6 +2477,12 @@
           "translation": "Save error:",
           "needs_translation": false,
           "max_length": 11
+        },
+        "save_armed": {
+          "english": "Saved; written to flash on disarm",
+          "translation": "Saved; written to flash on disarm",
+          "needs_translation": false,
+          "max_length": 33
         }
       },
       "mixer": {
@@ -4363,6 +4369,18 @@
           "translation": "Arming Flags",
           "needs_translation": false,
           "max_length": 12
+        },
+        "arming_flags_active_list": {
+          "english": "Active reasons:",
+          "translation": "Active reasons:",
+          "needs_translation": false,
+          "max_length": 15
+        },
+        "arming_flags_active_fmt": {
+          "english": "%d active",
+          "translation": "%d active",
+          "needs_translation": false,
+          "max_length": 9
         },
         "cpu_load": {
           "english": "CPU Load",
@@ -6775,10 +6793,10 @@
       "translation": "GPS HDOP"
     },
     "sensor_gps_heading": {
-      "english": "GPS Heading",
+      "english": "GPS Course",
       "max_length": 11,
       "needs_translation": false,
-      "translation": "GPS Heading"
+      "translation": "GPS Course"
     },
     "sensor_gps_home_dir": {
       "english": "GPS Home Dir",
@@ -7362,6 +7380,12 @@
         "max_length": 29,
         "needs_translation": false,
         "translation": "Waiting for Rotorflight task."
+      },
+      "startup_invalid_device": {
+        "english": "Invalid device connected",
+        "translation": "Invalid device connected",
+        "needs_translation": false,
+        "max_length": 24
       },
       "startup_unsupported_version": {
         "english": "Unsupported firmware",

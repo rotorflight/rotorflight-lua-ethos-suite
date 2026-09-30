@@ -2883,6 +2883,13 @@
           "needs_translation": false,
           "reverse_text": false,
           "max_length": 11
+        },
+        "save_armed": {
+          "english": "Saved; written to flash on disarm",
+          "translation": "Saved; written to flash on disarm",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 33
         }
       },
       "mixer": {
@@ -5078,6 +5085,18 @@
           "needs_translation": false,
           "max_length": 12,
           "reverse_text": false
+        },
+        "arming_flags_active_list": {
+          "english": "Active reasons:",
+          "translation": "Motivos activos:",
+          "needs_translation": false,
+          "max_length": 15
+        },
+        "arming_flags_active_fmt": {
+          "english": "%d active",
+          "translation": "%d activos",
+          "needs_translation": false,
+          "max_length": 9
         },
         "cpu_load": {
           "english": "CPU Load",
@@ -7886,7 +7905,7 @@
       "max_length": 8
     },
     "sensor_gps_heading": {
-      "english": "GPS Heading",
+      "english": "GPS Course",
       "translation": "Rumbo GPS",
       "needs_translation": false,
       "reverse_text": false,
@@ -8567,6 +8586,13 @@
         "needs_translation": false,
         "reverse_text": false,
         "max_length": 29
+      },
+      "startup_invalid_device": {
+        "english": "Invalid device connected",
+        "translation": "Invalid device connected",
+        "needs_translation": true,
+        "reverse_text": false,
+        "max_length": 24
       },
       "startup_unsupported_version": {
         "english": "Unsupported firmware",

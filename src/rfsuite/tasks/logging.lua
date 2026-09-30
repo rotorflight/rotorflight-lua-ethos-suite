@@ -4,6 +4,8 @@ local requireModule = package.loaded["rfsuite.lib.require"] or assert(loadfile("
 local bus = requireModule("lib/bus.lua")
 local settingsStore = requireModule("lib/settings_store.lua")
 local debugLog = requireModule("lib/debug_log.lua")
+local ini = requireModule("lib/ini.lua")
+local atomicWrite = requireModule("lib/atomic_write.lua")
 
 local FLUSH_INTERVAL = 2.5
 local FLUSH_QUEUE_SIZE = 20
@@ -56,12 +58,10 @@ local function ensureDir()
 end
 
 local function writeModelIni(dir, name)
-  local path = dir .. "/logs.ini"
-  local file = io.open(path, "w")
-  if not file then return end
-  file:write("[model]\n")
-  file:write("name=", name or modelName(), "\n")
-  file:close()
+  -- Via ini.save_ini_file() rather than a hand-rolled io.open(): the model
+  -- name is rewritten whenever the connected craft reports a different one,
+  -- and a truncating write there loses the name the logs page shows.
+  return ini.save_ini_file(dir .. "/logs.ini", {model = {name = name or modelName()}})
 end
 
 local function updateModelIni()
@@ -147,6 +147,32 @@ local function stop()
   log.modelName = nil
 end
 
+-- Hold the log open across a short link loss. The samples taken so far are
+-- already in the file, the handle is closed so nothing is written while there
+-- is no link, and the next flush reopens the same path in append mode -- so
+-- one flight stays one file, and the peaks the log page derives from a file
+-- stay the peaks of the whole flight. A new file here would put the two halves
+-- of one flight into two records.
+local function pause()
+  if not log.active then return end
+  flush(true)
+  closeHandle()
+end
+
+-- A flight that was in progress at link loss can still be resumed, so the log
+-- is paused rather than stopped. flight_timer owns that decision and its grace
+-- window, so there is exactly one place that says whether this is the same
+-- flight.
+--
+-- A pilot who has disarmed ends the flight, even if the link only just came
+-- back: the outage is not a reason to keep a record alive, and holding it here
+-- is what would merge the next flight into this one. nil means "not known
+-- yet", which is the normal state while the link is down, and holding is right.
+local function holdAcrossLinkLoss()
+  if session.isArmed == false then return false end
+  return log.active and session.flightResumable == true
+end
+
 local function start()
   local dir = ensureDir()
   if not dir then return false end
@@ -159,14 +185,14 @@ local function start()
   log.lastSample = 0
   log.lastFlush = os.clock()
 
-  local file = io.open(log.filePath, "w")
-  if not file then
+  -- Staged and swapped in, like every other file this suite writes: an
+  -- interrupted write used to leave a 0-byte CSV in the telemetry folder,
+  -- which the logs page then listed as a flight with nothing in it.
+  if not atomicWrite.write(log.filePath, headerLine() .. "\n") then
     log.fileName = nil
     log.filePath = nil
     return false
   end
-  file:write(headerLine(), "\n")
-  file:close()
 
   log.active = true
   debugLog.print("[logging] started " .. log.fileName)
@@ -174,7 +200,7 @@ local function start()
 end
 
 local function inFlight()
-  return session.connected == true and session.isArmed == true and session.mcuId ~= nil
+  return session.connected == true and session.isArmed == true and (session.mcuId ~= nil or log.active == true)
 end
 
 local function loggingEnabled()
@@ -190,7 +216,14 @@ end
 local function onSessionUpdate(snapshot)
   for k in pairs(session) do session[k] = nil end
   for k, v in pairs(snapshot or {}) do session[k] = v end
-  if not inFlight() then stop() end
+  if inFlight() then
+    -- Nothing to do: a log that is paused reopens the same file on the next
+    -- flush, and one that is not active yet is started by wakeup().
+  elseif holdAcrossLinkLoss() then
+    pause()
+  else
+    stop()
+  end
   updateModelIni()
 end
 
@@ -221,7 +254,9 @@ function logging.wakeup(protocol)
     return
   end
   if not inFlight() then
-    stop()
+    if not holdAcrossLinkLoss() then
+      stop()
+    end
     return
   end
   if not log.active and not start() then return end

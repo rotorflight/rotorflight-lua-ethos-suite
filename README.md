@@ -196,23 +196,14 @@ See `docs/dev-environment.md` for the full developer environment setup guide.
     
 -   Python 3
     
--   Install libraries
+-   Install libraries (optional: the deploy tasks install any that are missing on first run)
     
     ```bash
     python -m pip install -r requirements.txt
     ```
 
--   On Windows, install this package if radio HID control cannot find `hidapi.dll`:
-
-     https://github.com/libusb/hidapi/releases/tag/hidapi-0.15.0
-
-     Simply copy the dll's for your architecture into c:\windows\system32
-
--   On macOS, install the native HID library before installing Python packages:
-
-    ```bash
-    brew install hidapi
-    ```
+    Radio HID control uses the `hidapi` package, which includes the native
+    library, so no separate `hidapi.dll` or `brew install hidapi` is needed.
 
 - Install the VS Code extension `Ethos`
 

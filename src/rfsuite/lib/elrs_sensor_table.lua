@@ -1,9 +1,23 @@
 -- ELRS/CRSF custom-telemetry SID -> sensor-metadata table. Stateless data
 -- only (a factory function, not a stateful module -- see below for why).
--- Transcribed from rotorflight-lua-ethos-suite's
+-- Transcribed from rotorflight-lua-edgetx-suite's
 -- tasks/scheduler/sensors/elrs_sensors.lua, ported in full (it's small
--- data, not much cost to carry entries this rebuild doesn't use yet) --
--- not independently verified against real hardware by this rebuild.
+-- data, not much cost to carry entries this rebuild doesn't use yet).
+--
+-- INVARIANT: this table must cover every appId the flight controller
+-- broadcasts. tasks/elrs_sensors.lua's parseFrame() walks a frame as
+-- `(U16 appId, value)` pairs and stops at the first appId it has no entry
+-- for -- it cannot skip one, because the pair's byte width lives here and
+-- nowhere on the wire. One gap therefore costs every sensor packed after it
+-- in that same frame, and the symptom looks like a dead sensor rather than a
+-- missing table entry.
+--
+-- The appIds are declared in the flight controller as TLM_SENSOR(...) in
+-- src/main/telemetry/crsf.c, and that file is the reference whenever this
+-- table is questioned. bin/telemetry/verify_sensor_table.py checks the two
+-- against each other (pinned to a firmware snapshot, overridable with
+-- --ref) and names the missing entries, and the parseFrame() abort itself now
+-- logs which appId it gave up on.
 --
 -- Returns a *factory function* taking a `decoders` table (both the pure
 -- primitives from lib/elrs_decode_primitives.lua and the aggregate
@@ -95,7 +109,7 @@ return function(decoders)
     [0x1124] = {name = "GPS VDOP", unit = UNIT_RAW, prec = 0, min = 0, max = 255, dec = decU8},
     [0x1125] = {name = "GPS Coord", unit = UNIT_RAW, prec = 0, dec = decLatLong},
     [0x1126] = {name = "GPS Altitude", unit = UNIT_METER, prec = 2, min = -100000000, max = 100000000, dec = decS16},
-    [0x1127] = {name = "GPS Heading", unit = UNIT_DEGREE, prec = 1, min = -1800, max = 3600, dec = decS16},
+    [0x1127] = {name = "GPS Course", unit = UNIT_DEGREE, prec = 1, min = -1800, max = 3600, dec = decS16},
     [0x1128] = {name = "GPS Speed", unit = UNIT_METER_PER_SECOND, prec = 2, min = 0, max = 10000, dec = decU16},
     [0x1129] = {name = "GPS Home Dist", unit = UNIT_METER, prec = 1, min = 0, max = 65535, dec = decU16},
     [0x112A] = {name = "GPS Home Dir", unit = UNIT_METER, prec = 1, min = 0, max = 3600, dec = decU16},

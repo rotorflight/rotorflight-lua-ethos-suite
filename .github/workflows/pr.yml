@@ -5,6 +5,120 @@ on:
     types: [opened, synchronize, reopened]
 
 jobs:
+  # A flight is a state machine that only misbehaves across a link loss, which
+  # no build and no package step can reach. Before this job the repository had no
+  # way to run a Lua check at all, so this is where the flight-record behaviour
+  # is pinned: a brief in-flight drop stays one record, and a pack swap stays
+  # two.
+  flight-record:
+    name: Flight record across a link loss
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Lua 5.3
+        run: sudo apt-get update && sudo apt-get install -y lua5.3
+
+      - name: Check the flight record behaviour
+        run: lua5.3 bin/flight_record/verify_flight_record.lua
+
+  # Every file the suite owns was opened for writing directly, and io.open(path,
+  # "w") truncates on open -- so a radio switched off mid-save left
+  # settings.ini at 0 bytes or half a section, and the INI reader skips lines it
+  # does not recognise, which means the pilot's settings came back as the
+  # defaults with nothing reported anywhere. A build and a package step cannot
+  # reach that, and no page shows it: this is where the write path is pinned.
+  # The first case in the check goes red on the pre-fix ini.lua.
+  atomic-writes:
+    name: Settings survive an interrupted write
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Lua 5.3
+        run: sudo apt-get update && sudo apt-get install -y lua5.3
+
+      - name: Check the write path
+        run: lua5.3 bin/storage/verify_atomic_writes.lua
+
+  # An MSP request that is abandoned between two of its frames used to leave
+  # the shared TX buffer occupied, after which no request could be framed at all
+  # -- every configuration page then hung until the script was reloaded. No
+  # build and no package step reaches that: it needs a queue, a clock and a
+  # link that stops answering, so the behaviour is pinned here instead.
+  msp-queue:
+    name: MSP queue after an aborted request
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Lua 5.3
+        run: sudo apt-get update && sudo apt-get install -y lua5.3
+
+      - name: Check the MSP queue behaviour
+        run: lua5.3 bin/msp_queue/verify_msp_queue.lua
+
+  tool-ui-lazy:
+    name: Tool UI not loaded at boot
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Lua 5.3
+        run: sudo apt-get update && sudo apt-get install -y lua5.3
+
+      - name: Check the tool's load timing
+        run: lua5.3 bin/tool_ui/verify_tool_ui_lazy.lua
+
+  # Deferring the tool's UI raises the obvious question: does it add MSP
+  # traffic, and does anything accumulate per open/close cycle? This harness
+  # counts the requests at bus.publish over three full tool cycles plus 100
+  # wakeups inside the guarded menu. It goes red if the guards stop latching
+  # (a sabotaged guard produces 309 requests instead of 6).
+  tool-ui-no-extra-msp:
+    name: Tool adds no MSP requests and accumulates nothing
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Lua 5.3
+        run: sudo apt-get update && sudo apt-get install -y lua5.3
+
+      - name: Check the MSP request pattern over repeated tool cycles
+        run: lua5.3 bin/tool_ui/verify_no_extra_msp.lua
+
+  # The bus is the only channel between the tool, the dashboard and the
+  # background task, and publish() calls its handlers synchronously -- a
+  # handler that publishes back into the same topic recurses, and in the
+  # reference Lua VM every Lua-to-Lua call is one C stack level. This harness
+  # drives a real cycle and asserts it terminates at the guard rather than at
+  # the VM's own "C stack overflow" (which is what happens without it: 197
+  # handler calls), and that the memory log reports the smallest
+  # mainStackAvailable it has ever seen.
+  stack-bounds:
+    name: Bus publish is bounded, stack minimum is tracked
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Lua 5.3
+        run: sudo apt-get update && sudo apt-get install -y lua5.3
+
+      - name: Check the publish recursion bound and the stack minimum
+        run: lua5.3 bin/stack/verify_stack_bounds.lua
+
   # Per-language PR builds (mirrors push.yml behavior)
   create-zip:
     name: Build PR ZIP (${{ matrix.lang }})
@@ -48,6 +162,70 @@ jobs:
           name: rotorflight-lua-ethos-suite-lite-${{ env.GIT_VER }}-${{ matrix.lang }}
           path: rotorflight-lua-ethos-suite-lite-${{ env.GIT_VER }}-${{ matrix.lang }}.zip
           if-no-files-found: error
+
+  # A Diagnostics page cannot be looked at from a pull request, and the one
+  # that broke was invisible by construction: app/pages/diagnostics_fblstatus.lua
+  # joined every active arming-disable flag into one value-column string, and
+  # that column is the narrow right-hand half of the line, so on a 480x320
+  # radio the reason the model would not arm was clipped off the right edge.
+  #
+  # The mask arithmetic now lives in lib/arming_flags.lua with no dependency on
+  # form or lcd, so it can be stepped here; the widths of the translated strings
+  # are the half that needs the locale files, and the two run together because
+  # neither one is worth anything without the other.
+  fblstatus:
+    name: Arming flags readable at any resolution
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Lua 5.3
+        run: sudo apt-get update && sudo apt-get install -y lua5.3
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Prove the width check can go red
+        run: python bin/fblstatus/verify_arming_flag_widths.py --self-test
+
+      - name: Check the arming flag mask and the page's use of it
+        run: lua5.3 bin/fblstatus/verify_arming_flags.lua
+
+      - name: Check every locale's flag strings against the row widths
+        run: python bin/fblstatus/verify_arming_flag_widths.py
+
+  # tasks/elrs_sensors.lua's parseFrame() stops at the first appId it has no
+  # decoder for and cannot skip it -- the pair's byte width lives only in
+  # src/rfsuite/lib/elrs_sensor_table.lua. So one appId the table is missing
+  # silently costs every sensor packed after it in the same frame, and the
+  # symptom looks like a dead sensor. Nothing in the tree could see that, so
+  # the table is compared against the firmware's TLM_SENSOR(...) list.
+  #
+  # The firmware file is read from a pinned snapshot tag, so a firmware that
+  # adds an appId shows up here as a deliberate change to this check rather
+  # than as a frame-walk abort on a pilot's radio.
+  sensor-table-completeness:
+    name: Sensor table completeness
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Prove the check can go red
+        run: python bin/telemetry/verify_sensor_table.py --self-test
+
+      - name: Check every broadcast appId has a decoder
+        run: python bin/telemetry/verify_sensor_table.py
 
   # The rule in .agents/rules/documentation.md asks that a change a pilot can observe
   # updates its page file in the same pull request, and that a pull request which needs

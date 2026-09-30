@@ -5,67 +5,25 @@ local bus = requireModule("lib/bus.lua")
 local common = requireModule("app/diagnostics_common.lua")
 local mspStatus = requireModule("lib/msp_status.lua")
 local dataflashSummary = requireModule("lib/msp_dataflash_summary.lua")
+local armingFlags = requireModule("lib/arming_flags.lua")
 
 local PAGE_TITLE = "@i18n(app.modules.diagnostics.name)@ / @i18n(app.modules.fblstatus.name)@"
 
-local ARMING_FLAGS = {
-  [0] = "@i18n(app.modules.fblstatus.arming_disable_flag_0)@",
-  [1] = "@i18n(app.modules.fblstatus.arming_disable_flag_1)@",
-  [2] = "@i18n(app.modules.fblstatus.arming_disable_flag_2)@",
-  [3] = "@i18n(app.modules.fblstatus.arming_disable_flag_3)@",
-  [4] = "@i18n(app.modules.fblstatus.arming_disable_flag_4)@",
-  [5] = "@i18n(app.modules.fblstatus.arming_disable_flag_5)@",
-  [6] = "@i18n(app.modules.fblstatus.arming_disable_flag_6)@",
-  [7] = "@i18n(app.modules.fblstatus.arming_disable_flag_7)@",
-  [8] = "@i18n(app.modules.fblstatus.arming_disable_flag_8)@",
-  [9] = "@i18n(app.modules.fblstatus.arming_disable_flag_9)@",
-  [10] = "@i18n(app.modules.fblstatus.arming_disable_flag_10)@",
-  [11] = "@i18n(app.modules.fblstatus.arming_disable_flag_11)@",
-  [12] = "@i18n(app.modules.fblstatus.arming_disable_flag_12)@",
-  [13] = "@i18n(app.modules.fblstatus.arming_disable_flag_13)@",
-  [14] = "@i18n(app.modules.fblstatus.arming_disable_flag_14)@",
-  [15] = "@i18n(app.modules.fblstatus.arming_disable_flag_15)@",
-  [16] = "@i18n(app.modules.fblstatus.arming_disable_flag_16)@",
-  [17] = "@i18n(app.modules.fblstatus.arming_disable_flag_17)@",
-  [18] = "@i18n(app.modules.fblstatus.arming_disable_flag_18)@",
-  [19] = "@i18n(app.modules.fblstatus.arming_disable_flag_19)@",
-  [20] = "@i18n(app.modules.fblstatus.arming_disable_flag_20)@",
-  [21] = "@i18n(app.modules.fblstatus.arming_disable_flag_21)@",
-  [22] = "@i18n(app.modules.fblstatus.arming_disable_flag_22)@",
-  [23] = "@i18n(app.modules.fblstatus.arming_disable_flag_23)@",
-  [24] = "@i18n(app.modules.fblstatus.arming_disable_flag_24)@",
-  [25] = "@i18n(app.modules.fblstatus.arming_disable_flag_25)@",
-}
-
-local function hasBit(mask, bit)
-  return math.floor((tonumber(mask or 0) or 0) / (2 ^ bit)) % 2 >= 1
-end
+-- Heading above the per-flag lines. The names themselves need no prefix: the
+-- indent and the heading carry the hierarchy, and a bullet glyph would be a
+-- font gamble -- U+26A0 and the U+25xx triangles were measured blank on this
+-- platform (see #2391), and U+2022 was never swept.
+local ARMING_DETAIL_HEADING = "@i18n(app.modules.fblstatus.arming_flags_active_list)@"
+local ARMING_DETAIL_INDENT = 12
 
 local function percentTenths(value)
   if value == nil then return "-" end
   return string.format("%.1f%%", (tonumber(value) or 0) / 10)
 end
 
-local function armingFlagsText(mask)
-  mask = tonumber(mask or 0) or 0
-  if mask == 0 then return "@i18n(app.modules.fblstatus.ok)@" end
-  local parts = {}
-  for bit = 0, 25 do
-    if hasBit(mask, bit) then
-      parts[#parts + 1] = ARMING_FLAGS[bit] or tostring(bit)
-    end
-  end
-  if #parts == 0 then return tostring(mask) end
-  local text = parts[1]
-  for i = 2, #parts do
-    text = text .. ", " .. parts[i]
-  end
-  return text
-end
-
 local function dataflashText(summary)
   if not summary then return "-" end
-  if not hasBit(summary.flags, 1) then return "@i18n(app.modules.fblstatus.unsupported)@" end
+  if not armingFlags.hasBit(summary.flags, 1) then return "@i18n(app.modules.fblstatus.unsupported)@" end
   local free = math.max((summary.total or 0) - (summary.used or 0), 0)
   return common.formatBytes(free)
 end
@@ -87,6 +45,47 @@ local function open(opts)
     local pending = 0
     local lastPoll = 0
 
+    -- One static text per detail row, index 1 being the heading. Built on
+    -- demand and kept afterwards, because form.addStaticText is the one
+    -- control whose text can change at runtime -- re-creating the rows per
+    -- poll would rebuild the page twice a second.
+    --
+    -- Rows are never destroyed, only emptied: this form API has no way to
+    -- remove a line, and a row whose text is "" costs one line of height for
+    -- as long as the page stays open. That is the price of not rebuilding,
+    -- and it is paid only when the pilot clears a flag while sitting on this
+    -- page -- re-opening it starts from an empty pool again.
+    local armingRows = {}
+    local armingSignature = nil
+
+    local function renderArmingDetails(active)
+      local signature = table.concat(active, "\1")
+      if signature == armingSignature then return end
+      armingSignature = signature
+
+      if #active == 0 then
+        for i = 1, #armingRows do armingRows[i]:value("") end
+        return
+      end
+
+      if armingRows[1] == nil then
+        armingRows[1] = common.addTextLine(ARMING_DETAIL_HEADING)
+      else
+        armingRows[1]:value(ARMING_DETAIL_HEADING)
+      end
+      for i = 1, #active do
+        local row = armingRows[i + 1]
+        if row == nil then
+          row = common.addTextLine("", ARMING_DETAIL_INDENT)
+          armingRows[i + 1] = row
+        end
+        row:value(active[i])
+      end
+      for i = #active + 2, #armingRows do
+        armingRows[i]:value("")
+      end
+    end
+
     local function finish()
       if ctx.isDisposed() then
         pending = 0
@@ -98,7 +97,14 @@ local function open(opts)
     end
 
     local function applyStatus(data)
-      common.updateField(fields.arming, armingFlagsText(data.arming_disable_flags))
+      local active = armingFlags.active(data.arming_disable_flags)
+      local summary, count = armingFlags.summary(data.arming_disable_flags, active)
+      common.updateField(fields.arming, summary)
+      -- GREEN and RED are the only colour globals used anywhere in this
+      -- suite, both in diagnostics_common.updateStatus(). An "amber" for
+      -- "blocked but not broken" would be a new assumption about the API.
+      common.setFieldColor(fields.arming, count == 0 and GREEN or RED)
+      renderArmingDetails(active)
       common.updateField(fields.realTimeLoad, percentTenths(data.max_real_time_load))
       common.updateField(fields.cpuLoad, percentTenths(data.average_cpu_load))
       common.updateField(fields.pidProfile, string.format("%d / %d", (data.current_pid_profile_index or 0) + 1, data.pid_profile_count or 0))

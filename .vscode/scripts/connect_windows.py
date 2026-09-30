@@ -114,7 +114,8 @@ class WindowsRadioInterface(RadioInterfaceBase):
         for key in ("sdcard", "radio", "flash"):
             root = self.drives.get(key)
             if root:
-                scripts = os.path.join(root, "scripts")
+                # 'E:' -> 'E:\scripts' (os.path.join would give drive-relative 'E:scripts')
+                scripts = os.path.join(root + "\\" if root.endswith(":") else root, "scripts")
                 if os.path.isdir(scripts):
                     return os.path.normpath(scripts)
 

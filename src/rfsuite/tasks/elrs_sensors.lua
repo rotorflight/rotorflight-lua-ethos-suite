@@ -202,10 +202,18 @@ end
 -- Parses one popped custom-telemetry frame: 2 address bytes + 1 frame-id
 -- byte (all skipped -- this rebuild doesn't track frame-skip diagnostics),
 -- then repeating (U16 sid, decoded value) pairs until the frame is
--- exhausted. An unrecognized sid can't be decoded without knowing its
--- byte width, so parsing stops there (matches the original's own
--- "parse break" behaviour) -- the rest of that frame's data is lost, not
--- the connection.
+-- exhausted.
+--
+-- An unrecognized appId cannot be skipped: the pair's byte width is not on
+-- the wire, it only exists in the decoder table. So parsing stops there (the
+-- original's own "parse break" behaviour) and the rest of that frame's data is
+-- lost -- not the connection. That used to be a silent loss, which reads from
+-- the symptom like a dead sensor rather than a missing table entry, so both
+-- aborts now name the appId they gave up on.
+--
+-- The table is kept complete against the firmware's set by
+-- bin/telemetry/verify_sensor_table.py, which names the appIds to add when it
+-- goes red.
 local function parseFrame(data)
   local len = #data
   local ptr = 4 -- skip 2 address bytes + 1 frame-id byte
@@ -214,14 +222,28 @@ local function parseFrame(data)
   -- last byte with nothing left to pair it with -- matches the original's
   -- own `while ptr < #data` guard exactly.
   while ptr < len do
+    local sidPtr = ptr
     local sid
     sid, ptr = elrsDecode.decU16(data, ptr)
     local meta = sensorTable[sid]
-    if not meta then return end
+    if not meta then
+      debugLog.print(string.format(
+        "[elrs] frame walk aborted: no decoder for appId 0x%04X at byte %d of %d -- "
+          .. "every sensor packed after it in this frame is lost",
+        sid or 0, sidPtr, len))
+      return
+    end
 
     local prevPtr = ptr
     local ok, value, nextPtr = pcall(meta.dec, data, ptr)
-    if not ok or not nextPtr or nextPtr <= prevPtr then return end
+    if not ok or not nextPtr or nextPtr <= prevPtr then
+      debugLog.print(string.format(
+        "[elrs] frame walk aborted: decoder for appId 0x%04X at byte %d did not %s "
+          .. "-- every sensor packed after it in this frame is lost",
+        sid or 0, prevPtr,
+        not ok and "succeed" or "advance"))
+      return
+    end
     ptr = nextPtr
 
     if value ~= nil then
