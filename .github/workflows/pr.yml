@@ -445,3 +445,39 @@ jobs:
           python bin/docs/verify_documentation_rule.py \
             --base '${{ github.event.pull_request.base.sha }}' \
             --body-file pr-body.txt
+
+  # pr.yml used to be edited by hand, and every pull request that added a
+  # harness job put it in the same place in the file. Three of them were open
+  # at once on 2026-09-30, and each collision cost a resolution rather than a
+  # merge. Two of those resolutions were wrong in a way nothing caught:
+  # #2414's squash left dashboard-image-caches with a name and no runs-on, and
+  # #2416's squash did the same to field-layout, so the file stopped loading as
+  # a workflow and the run on master reported failure with zero jobs.
+  #
+  # The file is now rendered from bin/ci/pr_jobs.py. This job is the other half
+  # of that: a registry that is edited without regenerating leaves the two
+  # disagreeing, and the next pull request to add a job inherits the old file
+  # and the same collision. It also pins the shape that broke twice -- every job
+  # needs a runs-on and at least one step.
+  #
+  # The self-test proves the checks can go red: it removes a runs-on from a
+  # rendered job, edits a line of the committed file, and adds a job naming a
+  # harness that does not exist, and each of those has to be reported.
+  pr-workflow-drift:
+    name: The pull request workflow matches its registry
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Prove the check can go red
+        run: python bin/ci/verify_pr_workflow.py --self-test
+
+      - name: Check pr.yml against the registry
+        run: python bin/ci/verify_pr_workflow.py
