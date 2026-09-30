@@ -805,6 +805,23 @@ local function setConnected(value, mspQueue, protocol)
     end
   else
     debugLog.print("[session] disconnected")
+    -- Drop the request queue before anything else. A disconnect is a transport
+    -- teardown, not just a state change, and the queue outliving it was the
+    -- expensive half: every message an open page had queued (alignment
+    -- attitude, dataflash summary, ...) then burned its full retry budget
+    -- against a flight controller that is no longer answering, and the ~10
+    -- messages of the next handshake were queued FIFO *behind* that backlog,
+    -- delaying the reconnect by seconds. Queue:clear() notifies every dropped
+    -- message with reason "cleared", so a page waiting on a callback gets an
+    -- answer instead of stalling -- and because it resets the queue before it
+    -- notifies, a handler that queues its own retry lands in the already
+    -- cleared queue rather than the one being discarded.
+    --
+    -- First, deliberately: the handlers run with the session still holding its
+    -- last known values, and only then does the reset below wipe them.
+    if mspQueue then
+      mspQueue:clear()
+    end
     local holdingFlight = flightTimer.inProgress and flightTimer.inProgress()
     if not holdingFlight then
       clearAircraftIdentity()
@@ -1196,6 +1213,14 @@ local function onBatteryConfigSaved()
     -- connection.
     localSmartFuel:reset()
     publish()
+  end, function(reason)
+    -- The saved change stays unconfirmed and session.batteryConfig keeps the
+    -- pre-edit values, so say so rather than leaving the page looking as if
+    -- the re-read had succeeded. ("cleared" is a transport swap, already
+    -- logged by the queue itself.)
+    if reason ~= "cleared" then
+      debugLog.print("[session] BATTERY_CONFIG re-read failed: " .. tostring(reason))
+    end
   end))
 end
 bus.subscribe("battery.config.saved", onBatteryConfigSaved)

@@ -133,8 +133,21 @@ local function trimDashboardCaches(options)
   if dashboard and dashboard.clearCaches then dashboard.clearCaches(options) end
 end
 
+-- `images = true` is not optional here and not a micro-optimisation: every
+-- caller of this function (requestThemeReload, and close()) throws away
+-- themeDefs/stateDefs and resets the engine, so every object box and its
+-- cfg -- including the `c.panelimg` / `cfg.image` decoded-bitmap handles
+-- resolved through context.utils.loadImage() -- is rebuilt from scratch.
+-- Without asking for the image caches the previously decoded bitmaps stayed
+-- strongly referenced by context.lua's own imageCache/imagePathCache/
+-- imageBitmapCache and by objects/image/model.lua's per-craft _imgCache, so
+-- each theme switch (light -> dark -> light, or a new model on connect, which
+-- routes through requestThemeReload at the modelDashboard comparison) left
+-- the previous generation resident. That is the images branch of
+-- context.widgets.dashboard.clearCaches(), which had no caller anywhere in
+-- the tree until now (#2380).
 local function clearThemeCache()
-  trimDashboardCaches({theme = true})
+  trimDashboardCaches({theme = true, images = true})
   if dashboardEngine and dashboardEngine.reset then dashboardEngine.reset() end
   themeDef = nil
   stateDef = nil

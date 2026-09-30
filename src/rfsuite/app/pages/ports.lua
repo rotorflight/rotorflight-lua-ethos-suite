@@ -233,6 +233,7 @@ local function open(opts)
   local needsRender = false
   local isArmed = nil
   local activeDialog = nil
+  local confirmDialog = nil
   local headerHandle = nil
   local fields = {}
   local sessionHandler = nil
@@ -243,16 +244,47 @@ local function open(opts)
 
   memstats.print("ports open")
 
+  -- Same two paths as app/page_runtime.lua's closeDialog(), and the same
+  -- split: dispose() sets disposed at the top of its own body and calls this
+  -- at the end, and dispose() is reached from app/tool.lua's close(), which
+  -- documents that the tool close callback can run after form mutation has
+  -- already been forbidden. The dialog is still closed there -- a progress
+  -- dialog left on screen over a page that is gone is the worse of the two
+  -- -- but the header write and the focus call are skipped, because
+  -- headerHandle.focusMenu() is a menuButton:focus() (app/header.lua:162).
   local function closeDialog(focusFn)
     if activeDialog then
-      activeDialog:value(100)
-      activeDialog:close()
+      local dialog = activeDialog
       activeDialog = nil
+      pcall(function()
+        dialog:value(100)
+        dialog:close()
+      end)
     end
+    if disposed then return end
     if focusFn then
       focusFn()
     elseif headerHandle then
       headerHandle.focusMenu()
+    end
+  end
+
+  -- form.openDialog()'s handle belongs to nobody here, and without keeping it
+  -- the "Save to FC?" / "Reload?" modal outlives the page: Back or a tool
+  -- close leaves it up with an OK button whose action only reaches `disposed`.
+  -- Stored duck-typed and closed defensively, for the reason spelled out in
+  -- app/page_runtime.lua's openMessageDialog() -- nothing in this suite has
+  -- ever kept one of these handles, so nothing in-repo proves its shape.
+  local function openConfirmDialog(args)
+    confirmDialog = form.openDialog(args)
+    return confirmDialog
+  end
+
+  local function closeConfirmDialog()
+    local handle = confirmDialog
+    confirmDialog = nil
+    if type(handle) == "table" and type(handle.close) == "function" then
+      pcall(function() handle:close() end)
     end
   end
 
@@ -285,6 +317,7 @@ local function open(opts)
     if opts.setWakeupHandler then opts.setWakeupHandler(nil) end
     if opts.setCleanupHandler then opts.setCleanupHandler(nil) end
     if sessionHandler then bus.unsubscribe("session.update", sessionHandler) end
+    closeConfirmDialog()
     closeDialog()
     for _, fieldInfo in pairs(fields) do
       local field = fieldInfo and fieldInfo.field
@@ -356,7 +389,7 @@ local function open(opts)
 
   local function openSaveDialog()
     if not loaded or not dirty or busy then return end
-    form.openDialog({
+    openConfirmDialog({
       title = MSG_SAVE_TITLE,
       message = MSG_SAVE_BODY,
       buttons = {
@@ -440,7 +473,7 @@ local function open(opts)
       end,
       onReload = function()
         if busy then return end
-        form.openDialog({
+        openConfirmDialog({
           title = MSG_RELOAD_TITLE,
           message = MSG_RELOAD_BODY,
           buttons = {

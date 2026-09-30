@@ -24,6 +24,18 @@ local math_floor = math.floor
 local MSP_VERSION_BITS = 2 << 5 -- MSPv2 version bits
 local MSP_STARTFLAG = 1 << 4
 
+-- Bounds on the two drain loops below. They are different bounds on purpose,
+-- because the two loops throw away different things -- see each one's own
+-- comment.
+--
+-- mspPollReply() assembles a reply, so its bound is wall time: a frame count
+-- that actually bound it would slice one long reply across wakeups, and the
+-- slice is not harmless (see POLL_SLICE_SECONDS for what makes it survivable).
+local POLL_SLICE_SECONDS = 0.003
+-- mspClearBufs() discards frames without looking at them, so its bound is a
+-- frame count: nothing there is lost by stopping early.
+local CLEAR_FRAME_CAP = 2
+
 local mspSeq = 0
 local mspRemoteSeq = 0
 local mspRxBuf = {}
@@ -179,10 +191,34 @@ end
 
 -- Poll for a complete MSP reply. Non-blocking: bounded to a small wall-time
 -- slice per call so a slow/absent transport can't stall the task's wakeup.
--- Multi-frame replies are reassembled across successive calls.
+-- Multi-frame replies are reassembled across successive calls -- the assembly
+-- state lives in upvalues, so stopping early just resumes on the next call.
+--
+-- The slice is the one place in this file where the work and the bound are not
+-- interchangeable, and the coupling is worth stating: a resend discards the
+-- half-assembled reply. mspSendRequest() resets mspStarted/mspRxBuf/
+-- mspRxRemoteSeq on every send, because a new command's continuation frames
+-- would otherwise be appended to the previous one's payload. So a reply that
+-- needs more than one wakeup to assemble is only safe because processQueue()
+-- re-arms lastSent on every wakeup it sees a reply frame arrive
+-- (queue.lua's mspRxFrameCount check), which suppresses the resend for as long
+-- as frames keep coming. Slicing therefore holds as long as consecutive
+-- wakeups stay inside DEFAULT_RETRY_DELAY -- a period far longer than the 0.05s
+-- the rest of this subsystem already schedules its session poll at.
+--
+-- 5ms was well above what the work needs. The issue asks for 1-2ms; 3ms is the
+-- smallest cut that changes nothing bin/msp_queue/verify_msp_queue.lua already
+-- pins -- that gate's clock charges a millisecond per clock read rather than per
+-- frame, so the frames one call can take there is slice/1ms, and at 2ms it stops
+-- being able to take a minimal two-frame reply inside one wakeup (two of its
+-- cases go red). Re-basing that gate's clock model is what would unlock 1-2ms;
+-- until then this is the measured limit of the cut, not a preference.
+--
+-- bin/perf/verify_clock_budgets.lua pins the number and the slicing case
+-- together, because the second one is what says how far it may be cut at all.
 local function mspPollReply()
   if not transport then return nil, nil, nil end
-  local deadline = os_clock() + 0.005
+  local deadline = os_clock() + POLL_SLICE_SECONDS
   while os_clock() < deadline do
     local pkt = transport.mspPoll()
     if pkt == nil then
@@ -199,15 +235,18 @@ local function mspPollReply()
   return nil, nil, nil
 end
 
--- Drain stale replies out of the transport's incoming-frame queue. Bounded
--- the same way mspPollReply() above is (a small wall-time slice, not an
--- unconditional drain) -- frames can back up on a busy link, and for the
--- S.Port transport a single transport.mspPoll() call already walks its
--- whole native frame buffer looking for a match, so an uncapped `while
--- transport.mspPoll() do end` here could otherwise churn through an
--- unbounded backlog in one wakeup with no yield point. Any frames left
--- over past the deadline are harmless leftovers -- nothing here acts on
--- their contents, and the next mspPollReply() simply keeps draining them.
+-- Drain stale replies out of the transport's incoming-frame queue. Bounded by
+-- a frame count rather than by a wall-time deadline: frames can back up on a
+-- busy link, and for the S.Port transport a single transport.mspPoll() call
+-- already walks its whole native frame buffer looking for a match, so an
+-- uncapped `while transport.mspPoll() do end` here could churn through an
+-- unbounded backlog in one wakeup with no yield point -- and a deadline
+-- checked between polls cannot bound that inner walk either. What this loop
+-- can honour is a number of frames.
+--
+-- Any frames left over past the cap are harmless leftovers -- nothing here
+-- acts on their contents, mspLastReq is 0 so they cannot be matched against a
+-- request either, and the next mspPollReply() simply keeps draining them.
 local function mspClearBufs()
   mspClearTxBuf()
   mspLastReq = 0
@@ -215,8 +254,9 @@ local function mspClearBufs()
   mspRxBuf, mspRxSize, mspRemoteSeq = {}, 0, 0
   mspRxError = false
   if transport then
-    local deadline = os_clock() + 0.01
-    while os_clock() < deadline and transport.mspPoll() do end
+    for _ = 1, CLEAR_FRAME_CAP do
+      if not transport.mspPoll() then break end
+    end
   end
 end
 
@@ -245,4 +285,10 @@ return {
   mspRxBreakInfo = function()
     return mspRxBreaks, mspRxBreakExpected, mspRxBreakGot, mspRxBreakBytes, mspRxBreakSize
   end,
+  -- The drain bounds, exported only so bin/perf/verify_clock_budgets.lua can
+  -- pin the numbers themselves. Hard-coding them in the harness instead would
+  -- let a loosened budget pass, because "never spends more than N" stays green
+  -- at any larger N.
+  POLL_SLICE_SECONDS = POLL_SLICE_SECONDS,
+  CLEAR_FRAME_CAP = CLEAR_FRAME_CAP,
 }

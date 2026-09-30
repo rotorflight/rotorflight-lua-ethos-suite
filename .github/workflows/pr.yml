@@ -45,6 +45,23 @@ jobs:
       - name: Check the write path
         run: lua5.3 bin/storage/verify_atomic_writes.lua
 
+  # The ESC forward-programming tiles are gated by a guard that has to retry a
+  # failed MSP read. That retry reaches neither a build nor a package step, so
+  # it is pinned here. #2387
+  esc-guard-retry:
+    name: ESC tiles recover from a failed read
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Lua 5.3
+        run: sudo apt-get update && sudo apt-get install -y lua5.3
+
+      - name: Check that a failed ESC read is retried
+        run: lua5.3 bin/esc_guard/verify_esc_guard_retry.lua
+
   # An MSP request that is abandoned between two of its frames used to leave
   # the shared TX buffer occupied, after which no request could be framed at all
   # -- every configuration page then hung until the script was reloaded. No
@@ -63,6 +80,84 @@ jobs:
 
       - name: Check the MSP queue behaviour
         run: lua5.3 bin/msp_queue/verify_msp_queue.lua
+
+  # A flight log is the pilot's evidence after a crash, and both ways it could
+  # lose rows were silent: an io.open that failed emptied the buffer, and a failed
+  # write() trimmed the rows it had just failed to persist. Neither leaves a trace
+  # -- the CSV looks like a log that worked and simply recorded nothing.
+  #
+  # Only a card that cannot be written reaches either path, and that is not
+  # something a build or a package step can stage. So the real logger is driven
+  # here with io.open and the handle's write() as the seams, and every sample is
+  # identifiable, so "were rows 1 to 20 written?" is a fact about the bytes.
+  #
+  # 13 of its 18 cases go red on the pre-fix logging.lua; the ones that do not
+  # pin the healthy path and the once-per-streak report.
+  log-flush-retry:
+    name: Flight log keeps samples it could not write
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Lua 5.3
+        run: sudo apt-get update && sudo apt-get install -y lua5.3
+
+      - name: Check that an unwritable card does not discard the buffer
+        run: lua5.3 bin/logging/verify_log_flush_retry.lua
+
+  # Three drain loops run inside one background-task wakeup with no yield point
+  # in between, and each was bounded by a wall-clock deadline set well above what
+  # the work needs -- on a single-core MCU competing with Ethos's C++ UI thread,
+  # the budget is UI latency. Nothing could see that, and nothing could see the
+  # other half: that a deadline read only *between* polls cannot bound one
+  # transport.mspPoll() call, which on S.Port walks the sensor's whole native
+  # frame queue. This harness drives the three loops against a permanently full
+  # queue and a clock that charges real time per frame, so it measures the budget
+  # instead of trusting it. The last group is the other half -- bounding the
+  # poll must not break reply assembly, which is what says how far a budget may
+  # be cut at all.
+  clock-budgets:
+    name: Background task drain budgets
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Lua 5.3
+        run: sudo apt-get update && sudo apt-get install -y lua5.3
+
+      - name: Check the drain budgets
+        run: lua5.3 bin/perf/verify_clock_budgets.lua
+
+  # Every MSP decoder in the suite funnels through lib/mspcodec.lua, and the one
+  # primitive there was not bounds-safe: readU8 returned nil for a byte past the
+  # end of the payload where readS8/readU16/readS16/readU32 all substituted 0.
+  # That nil was not a missing value. The smartfuel decoder divided a readU8
+  # result by 1000, and tasks/msp/queue.lua calls processReply with no pcall and
+  # there is none in the task path either, so a short reply raised out of the
+  # background task instead of being reported. The battery decoder had the softer
+  # version: a nil or a zero standing in for a profile capacity, in a config that
+  # still passed session.lua's `if not session.batteryConfig` guard because that
+  # guard sees the table and not its contents. A build cannot reach any of that,
+  # and a radio only produces a short reply under conditions nobody can script on
+  # demand, so the payload lengths are pinned here against the firmware handler's
+  # own byte counts instead. Cases 4, 5 and 6 go red on the pre-fix sources.
+  msp-codec-battery:
+    name: A short MSP payload is reported, not decoded
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Lua 5.3
+        run: sudo apt-get update && sudo apt-get install -y lua5.3
+
+      - name: Check the codec and the battery decoders
+        run: lua5.3 bin/msp_battery/verify_msp_battery.lua
 
   tool-ui-lazy:
     name: Tool UI not loaded at boot
@@ -97,6 +192,64 @@ jobs:
       - name: Check the MSP request pattern over repeated tool cycles
         run: lua5.3 bin/tool_ui/verify_no_extra_msp.lua
 
+  # Ethos form widgets retain closures across form.clear(), so app/field_layout.lua
+  # pools accessor slots to prevent unbounded closure growth across repeat page visits.
+  # This job checks poolStats(), slot pooling across pages and visits, and safe detachment
+  # of dataRef/controlRef on releaseRuntime().
+  field-layout:
+    name: Field layout slot pooling and lifecycle
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Lua 5.3
+        run: sudo apt-get update && sudo apt-get install -y lua5.3
+
+      - name: Check field layout slot pooling and lifecycle
+        run: lua5.3 bin/field_layout/verify_field_layout.lua
+
+  # Widgets and objects load bitmaps on demand, and clearCaches()'s images
+  # branch previously had no caller anywhere -- so every decoded dashboard
+  # bitmap survived theme reloads, model changes and widget close. The fix
+  # wires clearThemeCache() to pass images = true, adds an LRU bound to the
+  # decoded-bitmap map, and provides a clearer registry for modules like
+  # objects/image/model.lua.
+  dashboard-image-caches:
+    name: Dashboard image cache eviction and theme reload
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Lua 5.3
+        run: sudo apt-get update && sudo apt-get install -y lua5.3
+
+      - name: Check dashboard image cache behaviour
+        run: lua5.3 bin/dashboard/verify_image_caches.lua
+
+  # A disconnect used to leave the MSP request queue holding everything an open
+  # page had queued, so the next handshake queued FIFO behind a backlog that no
+  # flight controller could answer any more. And every completed message forced
+  # a full GC cycle -- a call section 9 of the lifecycle doc had already measured
+  # as buying nothing. Both need a session task and a collector that can be
+  # observed, which no build or package step provides.
+  msp-disconnect-gc:
+    name: MSP queue on disconnect and the per-message GC
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Lua 5.3
+        run: sudo apt-get update && sudo apt-get install -y lua5.3
+
+      - name: Check the disconnect and GC behaviour
+        run: lua5.3 bin/msp_gc/verify_msp_disconnect.lua
+
   # The bus is the only channel between the tool, the dashboard and the
   # background task, and publish() calls its handlers synchronously -- a
   # handler that publishes back into the same topic recurses, and in the
@@ -118,6 +271,57 @@ jobs:
 
       - name: Check the publish recursion bound and the stack minimum
         run: lua5.3 bin/stack/verify_stack_bounds.lua
+
+  # Leaving a page -- with the Back key, or by closing the tool -- ran the
+  # page's dialog teardown on a form Ethos had already stopped updating, and a
+  # save/reload confirmation that was still up outlived the page behind it with
+  # an OK button that did nothing. Neither is visible from a build: the first
+  # needs a form that refuses writes, the second needs a dialog handle that
+  # something else has to own. So the pages are loaded for real here, under a
+  # form whose writes raise once teardown starts.
+  #
+  # Five of its cases go red on the pre-fix pages, each naming the line it
+  # fails on.
+  dialog-lifecycle:
+    name: Dialog teardown when a page is left
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Lua 5.3
+        run: sudo apt-get update && sudo apt-get install -y lua5.3
+
+      - name: Check the dialog teardown
+        run: lua5.3 bin/dialog_lifecycle/verify_dialog_lifecycle.lua
+
+  # A page tags its data with the profile it was read for, and the tag used to
+  # be taken when the read finished rather than when it started. A pilot who
+  # switched profile while that read was in flight therefore got the previous
+  # profile's values on screen, anchored to the new profile -- and because the
+  # anchor matched, nothing ever reloaded. Saving then writes the old profile's
+  # values into the new one.
+  #
+  # Only a switch landing inside an MSP round-trip reaches it, which no build and
+  # no package step can stage. So MSP answers are held here rather than delivered
+  # inline, and the session.update is delivered while a read is genuinely in
+  # flight. Inline delivery makes the whole file vacuous.
+  #
+  # 5 of its 17 cases go red on the pre-fix page_runtime.lua.
+  profile-anchor:
+    name: A page's data stays tagged with the profile it came from
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Lua 5.3
+        run: sudo apt-get update && sudo apt-get install -y lua5.3
+
+      - name: Check the profile anchor across a switch during a read
+        run: lua5.3 bin/page_runtime/verify_profile_anchor.lua
 
   # Per-language PR builds (mirrors push.yml behavior)
   create-zip:
@@ -268,3 +472,39 @@ jobs:
           python bin/docs/verify_documentation_rule.py \
             --base '${{ github.event.pull_request.base.sha }}' \
             --body-file pr-body.txt
+
+  # pr.yml used to be edited by hand, and every pull request that added a
+  # harness job put it in the same place in the file. Three of them were open
+  # at once on 2026-09-30, and each collision cost a resolution rather than a
+  # merge. Two of those resolutions were wrong in a way nothing caught:
+  # #2414's squash left dashboard-image-caches with a name and no runs-on, and
+  # #2416's squash did the same to field-layout, so the file stopped loading as
+  # a workflow and the run on master reported failure with zero jobs.
+  #
+  # The file is now rendered from bin/ci/pr_jobs.py. This job is the other half
+  # of that: a registry that is edited without regenerating leaves the two
+  # disagreeing, and the next pull request to add a job inherits the old file
+  # and the same collision. It also pins the shape that broke twice -- every job
+  # needs a runs-on and at least one step.
+  #
+  # The self-test proves the checks can go red: it removes a runs-on from a
+  # rendered job, edits a line of the committed file, and adds a job naming a
+  # harness that does not exist, and each of those has to be reported.
+  pr-workflow-drift:
+    name: The pull request workflow matches its registry
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Prove the check can go red
+        run: python bin/ci/verify_pr_workflow.py --self-test
+
+      - name: Check pr.yml against the registry
+        run: python bin/ci/verify_pr_workflow.py

@@ -30,6 +30,10 @@ local log = {
   modelName = nil,
   fileHandle = nil,
   queue = {},
+  -- The last failure line already printed, so a streak that persists for a
+  -- whole flight costs one line instead of one per flush -- see
+  -- reportFailure() below. Cleared by the next successful write.
+  reported = nil,
   lastSample = 0,
   lastFlush = 0,
 }
@@ -104,6 +108,31 @@ local function closeHandle()
   end
 end
 
+-- Both failure paths below used to shorten the queue anyway: an io.open that
+-- failed emptied it outright, and a failed write() trimmed the rows it had just
+-- failed to persist. Either way the samples the flight controller had already
+-- handed over were gone, with nothing written anywhere about it -- a flight log
+-- that quietly stops recording is indistinguishable from one that worked.
+--
+-- Reported once per streak rather than once per tick. flush() runs every 2.5s
+-- for as long as the queue is non-empty, so a line per tick would bury
+-- everything else. Unconditional rather than behind debugLog, for the same
+-- reason tasks/session.lua's own FLIGHT_STATS failures are: this is a pilot's
+-- data, not a developer's trace.
+--
+-- `key` is deliberately not the message: the sample count in it changes on
+-- every tick, and folding that into the comparison turned a one-line report
+-- into one line per flush the first time this was written.
+--
+-- Holding the rows cannot grow without limit -- MAX_QUEUE in wakeup() below
+-- already drops the oldest past 80, so an unwritable card costs the samples
+-- taken while it was gone and then stops, instead of the whole buffer at once.
+local function reportFailure(key, message)
+  if log.reported == key then return end
+  log.reported = key
+  print("[logging] " .. message)
+end
+
 local function flush(force)
   if #log.queue == 0 or not log.filePath then return end
 
@@ -113,7 +142,10 @@ local function flush(force)
     log.fileHandle = file
   end
   if not file then
-    for i = #log.queue, 1, -1 do log.queue[i] = nil end
+    -- Keep the queue: the card may well come back before the flight ends, and
+    -- these rows are the only record of what it did in the meantime.
+    reportFailure("open", "cannot open " .. tostring(log.filePath)
+      .. " -- keeping " .. #log.queue .. " samples")
     return
   end
 
@@ -125,7 +157,11 @@ local function flush(force)
   end)
   if not ok then
     closeHandle()
+    reportFailure("write", "write to " .. tostring(log.filePath)
+      .. " failed -- keeping " .. #log.queue .. " samples")
+    return
   end
+  log.reported = nil
 
   if count >= #log.queue then
     for i = #log.queue, 1, -1 do log.queue[i] = nil end
@@ -139,6 +175,15 @@ end
 local function stop()
   if not log.active then return end
   flush(true)
+  -- flush() keeps the rows when it could not write them, and a log that is
+  -- ending has no next tick to retry on, so they are dropped here -- loudly,
+  -- and counted. This is the only place the queue is emptied without a write,
+  -- which is why start() below can rely on finding it empty for a new file.
+  if #log.queue > 0 then
+    reportFailure("end", "log ended with " .. #log.queue .. " unwritten samples in "
+      .. tostring(log.filePath))
+    for i = #log.queue, 1, -1 do log.queue[i] = nil end
+  end
   closeHandle()
   log.active = false
   log.fileName = nil
@@ -153,6 +198,9 @@ end
 -- one flight stays one file, and the peaks the log page derives from a file
 -- stay the peaks of the whole flight. A new file here would put the two halves
 -- of one flight into two records.
+--
+-- Unlike stop(), rows flush() could not write are kept rather than dropped:
+-- this log resumes, so the next flush still has somewhere to put them.
 local function pause()
   if not log.active then return end
   flush(true)
