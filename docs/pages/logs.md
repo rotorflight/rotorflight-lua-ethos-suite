@@ -33,6 +33,33 @@ Two things still end a log and start a new one:
 The time shown by the flight timer follows the same rule, so the timer, the log
 and the flight count in the statistics agree with each other.
 
+## When the card cannot be written
+
+Samples are buffered on the radio and written out every few seconds. If the card
+cannot be opened — removed, full, or not writable — the buffer is **kept**, not
+discarded, and the next attempt writes it. A card that comes back mid-flight
+therefore costs nothing; before, the first failed attempt threw the whole buffer
+away, so a brief disturbance cost the samples since the last successful write.
+
+While the card stays unwritable the buffer holds at most 80 samples and then
+starts dropping the oldest, so memory use stays bounded either way.
+
+Every such failure prints one line to the script log:
+
+```
+[logging] cannot open LOGS:/rfsuite/telemetry/<id>/<file>.csv -- keeping 20 samples
+[logging] write to LOGS:/rfsuite/telemetry/<id>/<file>.csv failed -- keeping 43 samples
+[logging] log ended with 61 unwritten samples in LOGS:/rfsuite/telemetry/<id>/<file>.csv
+```
+
+One line per streak, not one per attempt, so a card that stays away for a whole
+flight does not bury the rest of the output. The line is not behind the
+*Debug logs* setting — this is lost flight data, not a developer trace.
+
+The last line is the one that matters: a log that ends while the card was
+unwritable says so and counts what was lost. That is the only case where samples
+cannot be recovered, because there is no next attempt to recover them in.
+
 ## Settings
 
 | Setting | What it does |

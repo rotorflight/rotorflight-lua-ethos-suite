@@ -64,6 +64,32 @@ jobs:
       - name: Check the MSP queue behaviour
         run: lua5.3 bin/msp_queue/verify_msp_queue.lua
 
+  # A flight log is the pilot's evidence after a crash, and both ways it could
+  # lose rows were silent: an io.open that failed emptied the buffer, and a failed
+  # write() trimmed the rows it had just failed to persist. Neither leaves a trace
+  # -- the CSV looks like a log that worked and simply recorded nothing.
+  #
+  # Only a card that cannot be written reaches either path, and that is not
+  # something a build or a package step can stage. So the real logger is driven
+  # here with io.open and the handle's write() as the seams, and every sample is
+  # identifiable, so "were rows 1 to 20 written?" is a fact about the bytes.
+  #
+  # 13 of its 18 cases go red on the pre-fix logging.lua; the ones that do not
+  # pin the healthy path and the once-per-streak report.
+  log-flush-retry:
+    name: Flight log keeps samples it could not write
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Lua 5.3
+        run: sudo apt-get update && sudo apt-get install -y lua5.3
+
+      - name: Check that an unwritable card does not discard the buffer
+        run: lua5.3 bin/logging/verify_log_flush_retry.lua
+
   # Three drain loops run inside one background-task wakeup with no yield point
   # in between, and each was bounded by a wall-clock deadline set well above what
   # the work needs -- on a single-core MCU competing with Ethos's C++ UI thread,
