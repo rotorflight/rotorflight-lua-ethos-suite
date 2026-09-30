@@ -261,11 +261,22 @@ local function loadLogging(scratch)
       }
     elseif name == "lib/debug_log.lua" then
       return { print = function(msg) log[#log + 1] = msg end }
+    elseif name == "lib/ini.lua" or name == "lib/atomic_write.lua" then
+      -- The real modules, not stubs: start() and writeModelIni() now stage
+      -- their file and swap it in, and a stub here would hide that the swap
+      -- lands on the scratch path. They resolve each other through this very
+      -- stub, which is the same chain a radio walks.
+      local key = "rfsuite." .. name:gsub("%.lua$", ""):gsub("/", ".")
+      if package.loaded[key] == nil then
+        package.loaded[key] = dofile(ROOT .. "/src/rfsuite/" .. name)
+      end
+      return package.loaded[key]
     end
     error("unexpected dependency: " .. tostring(name))
   end
 
   local realOpen, realMkdir = io.open, os.mkdir
+  local realRename, realRemove = os.rename, os.remove
   local function redirect(path)
     return (tostring(path):gsub("^LOGS:", scratch))
   end
@@ -273,11 +284,20 @@ local function loadLogging(scratch)
     local handle = realOpen(redirect(path), mode)
     -- Only the CSV counts: start() also writes logs.ini, and the claim under
     -- test is about flight records, not about the model name beside them.
-    if handle and tostring(mode) == "w" and tostring(path):match("%.csv$") then
+    -- The header is staged, so the handle a new log opens is on "<file>.csv.tmp"
+    -- -- the match is deliberately not anchored, or every flight would count
+    -- zero files and the scenarios below would pass for the wrong reason.
+    if handle and tostring(mode) == "w" and tostring(path):match("%.csv") then
       started[#started + 1] = tostring(path)
     end
     return handle
   end
+  -- The staged write swaps the temp file into place with os.rename/os.remove,
+  -- which are not redirected by the io.open above -- so a save would try to
+  -- rename a "LOGS:" path that does not exist off a radio, and every log would
+  -- fail to start.
+  os.rename = function(old, new) return realRename(redirect(old), redirect(new)) end
+  os.remove = function(path) return realRemove(redirect(path)) end
   -- Lua 5.3 as built on this workstation has no os.mkdir, and the logger's
   -- safeMkdir() skips the call silently when it is absent -- so without this the
   -- log directory is never created and every open fails, which looks exactly
@@ -290,7 +310,7 @@ local function loadLogging(scratch)
 
   local ok, mod = pcall(dofile, TASKS .. "/logging.lua")
   if not ok then
-    io.open, os.mkdir = realOpen, realMkdir
+    io.open, os.mkdir, os.rename, os.remove = realOpen, realMkdir, realRename, realRemove
     error(mod)
   end
   -- The overrides stay in place for the whole scenario: the logger opens its
@@ -298,7 +318,7 @@ local function loadLogging(scratch)
   -- would send every write back to a "LOGS:" path that does not exist off a
   -- radio and the file count would be zero for that reason alone.
   local function restore()
-    io.open, os.mkdir = realOpen, realMkdir
+    io.open, os.mkdir, os.rename, os.remove = realOpen, realMkdir, realRename, realRemove
   end
   return mod, started, log, handlers, restore
 end

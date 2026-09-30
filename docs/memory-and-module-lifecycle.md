@@ -25,6 +25,12 @@ paying the eager cost once at startup does. Don't reintroduce a lazy
 proxy/deferred-registration layer for these three subsystems without new
 on-device evidence — this isn't a style choice, it's a reverted experiment.
 
+**Scope of the rule, clarified by §10:** the evidence gathered when this rule
+was written measured *registration* — whether a subsystem's callbacks are
+wired up eagerly or behind a proxy. It did not measure the load *timing of a
+page's UI subtree underneath* a subsystem that still registers eagerly. That
+narrower case has now been measured on-device and is worth doing: see §10.
+
 This is a different (and larger-grained) concern than §2 below:
 this section is about *whether to defer registering a whole subsystem at
 all*; §2 is about the mechanics of what happens when the same file is
@@ -202,11 +208,183 @@ case.** A targeted fix (self-caching, subscription cleanup, in-place
 clearing) that actually reduces *live references* is the only kind of
 fix that can work here.
 
+## 10. New evidence: deferring a page's UI subtree is not §1
+
+§1 says don't defer a *top-level subsystem's registration* without new
+on-device evidence. There is now on-device evidence, and it is a different
+thing: **the tool's own UI subtree can be deferred, and it was worth 60.4 kB
+on an X18RS.**
+
+`app/tool.lua` used to `requireModule()` its UI subtree at module scope, so
+ten modules — `menu_container`, `header`, `tile_grid`, `close_key`,
+`navigation`, `esc_protocol_guard`, `servo_bus_guard`, `msp_esc_sensor_config`,
+`msp_serial_config`, `memstats`, 52885 bytes of source — were parsed and
+retained on every boot to serve a page most pilots never open. They are now
+loaded through `ensureX()` helpers called at the point of use.
+
+**What distinguishes this from the reverted experiment in §1:** §1 is about
+whether to defer *registering a subsystem that must run at boot*. The tool's
+UI subtree has no such duty — `menuContainer.openRoot` has exactly one call
+site (`app/tool.lua:531`, the `create()`), and the guards have one each. The
+subsystem registration itself stayed eager; only the UI under it moved.
+
+**Two things the measurement settles, and one it does not:**
+
+- Settled: on-device, connected, empty screen, floor read before any
+  navigation — master 926.4 kB, deferred 866.0 kB, **−60.4 kB**. The
+  predicted figure from a desktop closure measurement scaled by the factor
+  in §9-adjacent analysis was −54.0 kB, so within 12 %.
+- Settled: the §1 concern did **not** materialise for the *load timing* of a
+  UI subtree. The branch boots, connects, and runs the full tool lifecycle
+  without error. §1's measurement was about the callback/registration layer,
+  not about when a subtree is parsed.
+- **Not settled:** the saving is in the **resting** state, not the peak. With
+  the tool open the two builds are 4.8 kB apart — noise. Once the tool is
+  open the ten modules are loaded; they are merely loaded later. A pilot who
+  keeps the tool open does not get the memory back.
+
+**A measurement trap worth recording, because it cost a full A/B cycle:**
+comparing a lazy build against a master build captured under a *different
+radio state* will produce a spectacularly wrong number. A run here read
+−523.5 kB. With a third master run added, that decomposed exactly into
+−463.1 kB for Lua that had been deleted off the card between the two runs,
+−60.4 kB for this change, and a residue of 0.0 kB. **If the numbers do not
+decompose, the missing ingredient is usually a third measurement, not a
+better explanation.** Compare `bmpRamAvail` between the runs — if it differs,
+the screen state differs and the comparison is void.
+
+The `collectgarbage()` dead end in §9 is unaffected: nothing here is a cache
+problem. Fewer modules are loaded.
+
+## 11. The C stack is a second budget, and it has exactly one unbounded term
+
+The heap is the budget everyone watches. It is not the only one. Ethos runs
+FreeRTOS, and a Lua script runs inside one of those tasks. In the reference Lua
+VM every Lua-to-Lua call consumes one C stack level, so a call chain that
+grows without bound does not raise a catchable Lua error - it walks the stack
+pointer down past the end of the task's stack array and into whatever the
+linker placed below it. On the radio that is `ioMutex`, and the result is a
+hardfault caught by the watchdog, not an exception.
+
+That is why the two failure modes have to be kept apart. A heap exhaustion
+says *"Lua has used too much RAM, it has been Killed"*. A stack overflow says
+nothing at all until the radio resets. Any change that trades one for the other
+- or claims to fix an EM by reducing heap - has to say which one it measured.
+
+### 11.0 Where the two budgets physically live
+
+From the Ethos linker script and the firmware author, on the X18RS:
+
+| Region | Origin | Size | Holds |
+|---|---|---|---|
+| ITCMRAM | `0x00000000` | 64 K | **unused** |
+| **DTCMRAM** | `0x20000000` | 128 K | **all variables and all stacks** |
+| RAM_D1 | `0x24000000` | 512 K | the model allocator (used by the mixer) |
+| RAM_D2 | `0x30000000` | 288 K | **the model backup, loaded in case of an EM** |
+| RAM_D3 | `0x38000000` | 64 K | peripherals that need BDMA |
+| **SDRAM** | `0xD0000000` | 8 MB | **everything else: the Lua heap and the bitmap arena** |
+
+Two consequences that are easy to get wrong:
+
+- **The stack and the Lua heap are in different memories.** The Main task's
+  stack is a static array in DTCMRAM; the Lua heap is in SDRAM. Exhausting one
+  cannot corrupt the other, and a heap reduction cannot buy stack headroom.
+  `system.getMemoryUsage()`'s `mainStackAvailable` is derived as
+  `4 * STACK_AVAILABLE_WORDS(mainStack, MAIN_STACK_SIZE)` - a macro over that
+  DTCMRAM array, not a heap figure and not a FreeRTOS call.
+- **The Lua heap and the bitmap arena share one 8 MB region.** `luaRamAvailable`
+  and `luaBitmapsRamAvailable` are two compile-time maxima carved out of the
+  same SDRAM, not two separately reserved pools. They compete: a script that
+  grows the Lua heap eats bitmap headroom, and the failure surfaces as a
+  *bitmap* error. Treat them as one budget with two views.
+
+An EM is a **designed, survivable recovery**, not a dead radio: the model lives
+in RAM_D1 and its backup in RAM_D2, and the backup is loaded on EM. That is also
+why a Main-stack overflow is survivable at all - the corruption hits a mutex in
+DTCMRAM, while the model and its backup sit in entirely different regions.
+
+The layout inside DTCMRAM is what makes the failure sharp, though:
+
+```
+0x20000000  …  unknown .bss  …  0x20005c14
+0x20005c14  audioStack   4 096 B
+0x20006c14  audioTaskId       4 B
+0x20006c18  ioMutex           4 B   <- first casualty of a downward overflow
+0x20006c1c  mainStack    20 480 B   <- grows down, into the three above
+0x2000BC1C  …  82 916 B of DTCMRAM above the stack  …
+```
+
+A FreeRTOS stack pointer starts at the top of its array and grows downward, so
+an exhausted Main task reaches `ioMutex` first. **There is no guard region
+between them - that adjacency is link order, not design** - and 27 676 B of
+DTCMRAM lies below `mainStack`, all of it shared with the program's variables.
+A full 20 KB overflow does not corrupt one mutex; it walks into everything the
+firmware keeps in that 128 K.
+
+### 11.1 The bound
+
+`lib/bus.lua` is the only channel the system tool, the dashboard widget and the
+background task use to talk to each other, and `publish()` invokes its
+handlers **synchronously**, inside its own loop. A handler is allowed to
+publish again - two or three levels of that is ordinary. A handler that
+publishes to a topic whose handler publishes back to the first one is not
+ordinary, and nothing in the bus stopped it.
+
+`MAX_PUBLISH_DEPTH` in `lib/bus.lua` stops it. The limit is deliberately far
+above legitimate nesting and far below anything that could threaten a stack:
+its job is to make the worst case **finite**, not to be the last level before an
+overflow. The real budget is not known - what
+`system.getMemoryUsage().mainStackAvailable` counts is an open question, raised
+with the Ethos firmware author in
+[rotorflight/rotorflight-lua-ethos-suite#2420](https://github.com/rotorflight/rotorflight-lua-ethos-suite/issues/2420).
+
+The guard **raises**, on purpose. The error unwinds exactly one level, into the
+`pcall()` of the publish that invoked the offending handler, so the cycle is
+cut, the existing handler-error branch above it reports it, and every
+`publish()` still decrements on the way out. A silently dropped publish would
+be indistinguishable from a bus that works.
+
+`bus.maxPublishDepth()` publishes the deepest chain actually observed, so the
+constant can be set from a measurement later instead of from a judgement.
+
+### 11.2 The minimum, and why not an instantaneous reading
+
+`lib/stack_probe.lua` keeps the **smallest** value of
+`system.getMemoryUsage().mainStackAvailable` seen since the task started. The
+question the radio is being asked is how close it has *ever* come to the edge,
+and an instantaneous reading cannot answer that - it is one moment, and the
+interesting moment is the worst one.
+
+It lives in its own small module rather than in `lib/memstats.lua` because
+that module is loaded lazily, inside the tool's own lifecycle (see section 10),
+and the only caller here is the background task, which runs from boot. Routing
+it through `memstats` would mean loading `memstats` at boot: 2.9 kB of
+permanently retained code for a module that does nothing in 99 % of sessions,
+which is exactly the cost section 10 removed.
+
+`note()` deliberately ignores a missing or non-numeric field instead of
+coercing it. The print lines use `or 0`, and feeding that fallback into a
+minimum would pin the reported figure at 0.0 kB for the rest of the session -
+a confident-looking number that means only "this firmware did not report the
+field". `formatStackFields()` renders that case as `-` instead.
+
+### 11.3 What this does not tell you
+
+Measuring the deepest *publish* nesting is not measuring C stack depth. It
+bounds the one recursive term in this suite; it says nothing about the depth of
+the dashboard's paint path, which is a plain nested call chain with no cycle
+in it. Until the meaning of `mainStackAvailable` is answered, no number from
+the Lua side can be converted into bytes of headroom.
+
+---
+
 ## Quick reference
 
 | Symptom | Likely cause | Fix |
 |---|---|---|
 | Considering deferring/proxying a top-level subsystem's registration to save startup RAM | Already tried and reverted -- measured worse retained-RAM growth | Don't, without new on-device evidence (§1) |
+| A page that is rarely opened pulls a big UI subtree in at boot, with no boot-time duty of its own | Modules required at module scope, retained forever by the `requireModule` cache | Load it at the point of use via `ensureX()` (§10) — worth 60.4 kB on an X18RS, resting state |
+| An A/B against a live build gives a wildly implausible delta | The two runs had different radio state | Add a third measurement; check `bmpRamAvail` for a screen-state difference first (§10) |
 | RAM climbs on every visit to the same page | Module reloaded fresh via `loadfile()`, rebuilding module-level tables | Self-cache (§3) |
 | RAM climbs *and* stale/duplicate event behavior appears over time | Module subscribes to the bus at load time, never cached | Self-cache (§3/§4) — non-negotiable |
 | A page's own live-data callback keeps firing after leaving the page | Page subscribed in open(), never unsubscribed in close() | Pair subscribe/unsubscribe (§5) |
