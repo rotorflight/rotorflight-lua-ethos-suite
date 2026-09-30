@@ -1213,6 +1213,14 @@ local function onBatteryConfigSaved()
     -- connection.
     localSmartFuel:reset()
     publish()
+  end, function(reason)
+    -- The saved change stays unconfirmed and session.batteryConfig keeps the
+    -- pre-edit values, so say so rather than leaving the page looking as if
+    -- the re-read had succeeded. ("cleared" is a transport swap, already
+    -- logged by the queue itself.)
+    if reason ~= "cleared" then
+      debugLog.print("[session] BATTERY_CONFIG re-read failed: " .. tostring(reason))
+    end
   end))
 end
 bus.subscribe("battery.config.saved", onBatteryConfigSaved)
