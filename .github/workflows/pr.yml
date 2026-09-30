@@ -64,6 +64,31 @@ jobs:
       - name: Check the MSP queue behaviour
         run: lua5.3 bin/msp_queue/verify_msp_queue.lua
 
+  # Three drain loops run inside one background-task wakeup with no yield point
+  # in between, and each was bounded by a wall-clock deadline set well above what
+  # the work needs -- on a single-core MCU competing with Ethos's C++ UI thread,
+  # the budget is UI latency. Nothing could see that, and nothing could see the
+  # other half: that a deadline read only *between* polls cannot bound one
+  # transport.mspPoll() call, which on S.Port walks the sensor's whole native
+  # frame queue. This harness drives the three loops against a permanently full
+  # queue and a clock that charges real time per frame, so it measures the budget
+  # instead of trusting it. The last group is the other half -- bounding the
+  # poll must not break reply assembly, which is what says how far a budget may
+  # be cut at all.
+  clock-budgets:
+    name: Background task drain budgets
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Lua 5.3
+        run: sudo apt-get update && sudo apt-get install -y lua5.3
+
+      - name: Check the drain budgets
+        run: lua5.3 bin/perf/verify_clock_budgets.lua
+
   tool-ui-lazy:
     name: Tool UI not loaded at boot
     runs-on: ubuntu-latest
