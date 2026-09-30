@@ -296,6 +296,33 @@ jobs:
       - name: Check the dialog teardown
         run: lua5.3 bin/dialog_lifecycle/verify_dialog_lifecycle.lua
 
+  # A page tags its data with the profile it was read for, and the tag used to
+  # be taken when the read finished rather than when it started. A pilot who
+  # switched profile while that read was in flight therefore got the previous
+  # profile's values on screen, anchored to the new profile -- and because the
+  # anchor matched, nothing ever reloaded. Saving then writes the old profile's
+  # values into the new one.
+  #
+  # Only a switch landing inside an MSP round-trip reaches it, which no build and
+  # no package step can stage. So MSP answers are held here rather than delivered
+  # inline, and the session.update is delivered while a read is genuinely in
+  # flight. Inline delivery makes the whole file vacuous.
+  #
+  # 5 of its 17 cases go red on the pre-fix page_runtime.lua.
+  profile-anchor:
+    name: A page's data stays tagged with the profile it came from
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Lua 5.3
+        run: sudo apt-get update && sudo apt-get install -y lua5.3
+
+      - name: Check the profile anchor across a switch during a read
+        run: lua5.3 bin/page_runtime/verify_profile_anchor.lua
+
   # Per-language PR builds (mirrors push.yml behavior)
   create-zip:
     name: Build PR ZIP (${{ matrix.lang }})
