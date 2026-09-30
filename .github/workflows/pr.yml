@@ -119,6 +119,30 @@ jobs:
       - name: Check the publish recursion bound and the stack minimum
         run: lua5.3 bin/stack/verify_stack_bounds.lua
 
+  # Leaving a page -- with the Back key, or by closing the tool -- ran the
+  # page's dialog teardown on a form Ethos had already stopped updating, and a
+  # save/reload confirmation that was still up outlived the page behind it with
+  # an OK button that did nothing. Neither is visible from a build: the first
+  # needs a form that refuses writes, the second needs a dialog handle that
+  # something else has to own. So the pages are loaded for real here, under a
+  # form whose writes raise once teardown starts.
+  #
+  # Five of its cases go red on the pre-fix pages, each naming the line it
+  # fails on.
+  dialog-lifecycle:
+    name: Dialog teardown when a page is left
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Lua 5.3
+        run: sudo apt-get update && sudo apt-get install -y lua5.3
+
+      - name: Check the dialog teardown
+        run: lua5.3 bin/dialog_lifecycle/verify_dialog_lifecycle.lua
+
   # Per-language PR builds (mirrors push.yml behavior)
   create-zip:
     name: Build PR ZIP (${{ matrix.lang }})

@@ -24,6 +24,10 @@ Greyed out until the flight controller answers. Read-only while the model is arm
 ## Notes
 
 - Changes are written to the flight controller EEPROM upon Save.
+- A *Save* or *Reload* confirmation that is still on screen when you leave the
+  page is now closed with the page. Before, it stayed up over the next screen
+  and its OK button did nothing, because the page behind it had already been
+  disposed. (#2383, `src/rfsuite/app/pages/ports.lua`)
 
 ## Related
 
