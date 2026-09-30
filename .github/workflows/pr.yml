@@ -64,6 +64,39 @@ jobs:
       - name: Check the MSP queue behaviour
         run: lua5.3 bin/msp_queue/verify_msp_queue.lua
 
+  tool-ui-lazy:
+    name: Tool UI not loaded at boot
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Lua 5.3
+        run: sudo apt-get update && sudo apt-get install -y lua5.3
+
+      - name: Check the tool's load timing
+        run: lua5.3 bin/tool_ui/verify_tool_ui_lazy.lua
+
+  # Deferring the tool's UI raises the obvious question: does it add MSP
+  # traffic, and does anything accumulate per open/close cycle? This harness
+  # counts the requests at bus.publish over three full tool cycles plus 100
+  # wakeups inside the guarded menu. It goes red if the guards stop latching
+  # (a sabotaged guard produces 309 requests instead of 6).
+  tool-ui-no-extra-msp:
+    name: Tool adds no MSP requests and accumulates nothing
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Lua 5.3
+        run: sudo apt-get update && sudo apt-get install -y lua5.3
+
+      - name: Check the MSP request pattern over repeated tool cycles
+        run: lua5.3 bin/tool_ui/verify_no_extra_msp.lua
+
   # Ethos form widgets retain closures across form.clear(), so app/field_layout.lua
   # pools accessor slots to prevent unbounded closure growth across repeat page visits.
   # This job checks poolStats(), slot pooling across pages and visits, and safe detachment

@@ -79,7 +79,9 @@ local CREATE_LIST = {
 
 -- appId -> {name, onlyIfName}: renamed only if Ethos's own discovery
 -- already created it under the generic FrSky name (never clobbers a
--- sensor a pilot renamed themselves). The original's own 0x5210 rename
+-- sensor a pilot renamed themselves). onlyIfName may be a list, to also
+-- migrate a name this suite gave the sensor in an earlier release.
+-- The original's own 0x5210 rename
 -- rule ("Y.angle", onlyifname="Heading") is not ported -- it would rename
 -- the "Heading" sensor CREATE_LIST above just created back out from under
 -- itself; that looks like leftover/dead logic in the original rather than
@@ -103,7 +105,7 @@ local RENAME_LIST = {
   [0x020A] = {name = "ESC2 Current", onlyIfName = "Current"},
   [0x050A] = {name = "ESC2 RPM", onlyIfName = "RPM"},
   [0x041A] = {name = "ESC2 Temp", onlyIfName = "Temp2"},
-  [0x0840] = {name = "GPS Heading", onlyIfName = "GPS course"},
+  [0x0840] = {name = "GPS Course", onlyIfName = {"GPS course", "GPS Heading"}},
   [0x0900] = {name = "MCU Voltage", onlyIfName = "ADC3"},
   [0x0901] = {name = "BEC Voltage", onlyIfName = "ADC3"},
   [0x0902] = {name = "BUS Voltage", onlyIfName = "ADC3"},
@@ -140,9 +142,15 @@ end
 -- Returns true if a rename actually happened.
 local function maybeRename(appId, meta)
   local source = system_getSource({category = CATEGORY_TELEMETRY_SENSOR, appId = appId})
-  if source and source:name() == meta.onlyIfName then
-    source:name(meta.name)
-    return true
+  if not source then return false end
+  local current = source:name()
+  local match = meta.onlyIfName
+  if type(match) ~= "table" then match = {match} end
+  for i = 1, #match do
+    if current == match[i] then
+      source:name(meta.name)
+      return true
+    end
   end
   return false
 end
