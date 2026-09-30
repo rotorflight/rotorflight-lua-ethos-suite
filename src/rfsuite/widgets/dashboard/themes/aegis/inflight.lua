@@ -532,7 +532,7 @@ local function inflightPaint(x, y, w, h, box, c, telemetry)
     lcd.drawFilledRectangle(floor(x), floor(y), floor(w), floor(h))
 
     local pad = 12
-    drawTextAligned(x + pad, y + 8, w * 0.5, "AEGIS // FLIGHT", "FONT_STD", C.cyan, "left")
+    drawTextAligned(x + pad, y + 8, w * 0.5, "BASTION // FLIGHT", "FONT_STD", C.cyan, "left")
     drawTextAligned(x + w * 0.35, y + 3, w * 0.30, c.timer or "00:00", "FONT_XL", C.white, "center")
 
     local bodyY = y + 42
@@ -596,7 +596,7 @@ local function inflightPaint(x, y, w, h, box, c, telemetry)
     drawTextAligned(consumedX, consumedValueY, consumedW, c.consumedText or "--", "FONT_XS", C.white, "center")
 
     local monitorY = y + h - 13
-    drawTextAligned(x + w * 0.67, monitorY, w * 0.31 - pad, "AEGIS MONITORING", "FONT_XXS", C.line2, "right")
+    drawTextAligned(x + w * 0.67, monitorY, w * 0.31 - pad, "BASTION MONITORING", "FONT_XXS", C.line2, "right")
 end
 
 local boxes_cache = nil

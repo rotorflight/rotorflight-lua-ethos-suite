@@ -561,7 +561,7 @@ local function preflightPaint(x, y, w, h, box, c, telemetry)
 
     local pad = 12
     local topY = y + 8
-    drawTextAligned(x + pad, topY, w * 0.55, "AEGIS // PRE-FLIGHT", "FONT_STD", C.cyan, "left")
+    drawTextAligned(x + pad, topY, w * 0.55, "BASTION // PRE-FLIGHT", "FONT_STD", C.cyan, "left")
     drawTextAligned(x + w - 220, topY, 208, c.status or "WAITING", "FONT_STD", c.statusColor or C.muted, "right")
 
     local bodyY = y + 42

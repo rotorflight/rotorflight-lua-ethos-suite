@@ -1,5 +1,5 @@
 --[[
-  Aegis dashboard theme configuration
+  Bastion dashboard theme configuration
   GPLv3
 ]] --
 

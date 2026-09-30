@@ -470,7 +470,7 @@ local function postflightPaint(x, y, w, h, box, c, telemetry)
     lcd.drawFilledRectangle(floor(x), floor(y), floor(w), floor(h))
 
     local pad = 12
-    drawTextAligned(x + pad, y + 8, w * 0.5, "AEGIS // DEBRIEF", "FONT_STD", C.cyan, "left")
+    drawTextAligned(x + pad, y + 8, w * 0.5, "BASTION // DEBRIEF", "FONT_STD", C.cyan, "left")
     drawTextAligned(x + w - 240, y + 6, 228, c.grade or "NO DATA", "FONT_L", c.gradeColor or C.muted, "right")
 
     local summaryY = y + 42
