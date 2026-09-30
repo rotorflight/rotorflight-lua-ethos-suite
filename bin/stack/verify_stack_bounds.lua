@@ -217,29 +217,50 @@ if stackProbe then
 
   -- The shipped rendering, not a copy of it. tasks/background.lua:73-85 builds
   -- its [bgtask mem] line around exactly this string.
-  check("no reading yet renders as '-', not as a number",
-    stackProbe.formatStackFields(0) == "stackMin=- pubMax=0",
+  check("no reading yet renders both extremes as '-', not as numbers",
+    stackProbe.formatStackFields(0) == "stackMin=- stackMax=- pubMax=0",
     "got: " .. stackProbe.formatStackFields(0))
 
-  -- The exact integer, NOT "%.1fKB". 0 bytes and 51 bytes both render as
+  -- The exact integers, NOT "%.1fKB". 0 bytes and 51 bytes both render as
   -- "0.0KB", and that is precisely the pair this instrument exists to
   -- distinguish. Ethos derives the field as 4 * STACK_AVAILABLE_WORDS, so the
   -- real values arrive as multiples of 4.
-  stackProbe.note(8192)
-  check("a reading renders as the exact integer, not a rounded kB",
-    stackProbe.formatStackFields(0) == "stackMin=8192B pubMax=0",
+  stackProbe.note(9296)
+  check("a single high reading fills both extremes",
+    stackProbe.formatStackFields(0) == "stackMin=9296B stackMax=9296B pubMax=0",
     "got: " .. stackProbe.formatStackFields(0))
 
+  -- The case the whole pair exists for: the same field read 9 296 in one place
+  -- and 0 in another. A minimum alone cannot say whether that is a Main task
+  -- at the edge or a deep call site; the maximum beside it can.
   stackProbe.note(4)
-  check("a single word of headroom is still distinguishable from none",
-    stackProbe.formatStackFields(0) == "stackMin=4B pubMax=0",
+  check("a low reading moves the minimum and leaves the maximum standing",
+    stackProbe.formatStackFields(0) == "stackMin=4B stackMax=9296B pubMax=0",
     "got: " .. stackProbe.formatStackFields(0))
+  check("maximum() reports it directly, not only through the format",
+    stackProbe.maximum() == 9296,
+    "maximum = " .. tostring(stackProbe.maximum()))
 
   stackProbe.note(0)
-  check("a genuine zero renders as 0B, distinct from '-'",
-    stackProbe.formatStackFields(3) == "stackMin=0B pubMax=3",
+  check("a genuine zero renders as 0B on the minimum, distinct from '-'",
+    stackProbe.formatStackFields(3) == "stackMin=0B stackMax=9296B pubMax=3",
     "got: " .. stackProbe.formatStackFields(3))
+
+  stackProbe.note(12000)
+  check("a later higher reading raises the maximum and not the minimum",
+    stackProbe.formatStackFields(0) == "stackMin=0B stackMax=12000B pubMax=0",
+    "got: " .. stackProbe.formatStackFields(0))
+
+  stackProbe.reset()
+  check("reset() clears BOTH extremes",
+    stackProbe.minimum() == nil and stackProbe.maximum() == nil,
+    "min = " .. tostring(stackProbe.minimum()) ..
+    " max = " .. tostring(stackProbe.maximum()))
+  check("after reset the line renders as never-measured again",
+    stackProbe.formatStackFields(0) == "stackMin=- stackMax=- pubMax=0",
+    "got: " .. stackProbe.formatStackFields(0))
 end
+
 
 out("")
 out(string.format("%d checks, %d failed", checks, failures))
