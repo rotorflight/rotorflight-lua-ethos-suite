@@ -28,7 +28,7 @@
 -- per-page callback closures, and retaining the last one would keep a closed
 -- page alive after navigation.
 
-local BUS_VERSION = 2
+local BUS_VERSION = 3
 
 local cached = package.loaded["rfsuite.bus"]
 if cached and cached._version == BUS_VERSION then
@@ -42,6 +42,39 @@ local retainedTopics = {
   ["task.status"] = true,
   ["app.state"] = true,
 }
+
+-- Re-entrancy accounting for publish(). See docs/memory-and-module-lifecycle.md
+-- section 11 for why this exists and what it does and does not prove.
+--
+-- A handler runs INSIDE the pcall() of its own publish()'s loop, and a
+-- handler is allowed to publish again -- that is the normal case, and two or
+-- three levels of it is ordinary (session.update handler -> battery.config.
+-- saved -> its handler). A handler that publishes to a topic whose handler
+-- publishes back to the first one is not ordinary: it recurses until
+-- something stops it.
+--
+-- What stops it is not a Lua error. In the reference Lua VM every
+-- Lua-to-Lua call is one C stack level, so that recursion consumes the
+-- FreeRTOS stack of the task the radio happens to be running it on, and an
+-- exhausted task stack writes into whatever sits below it in memory rather
+-- than unwinding. On Ethos that is ioMutex. The result is a hardfault and a
+-- watchdog reset, not a catchable error -- which is exactly why this has to
+-- be prevented by construction rather than caught afterwards.
+--
+-- The limit is deliberately far above any legitimate nesting and far below
+-- anything that could threaten a stack. Its job is to make the worst case
+-- FINITE, not to be the last level before an overflow: the real budget is
+-- still unknown, because what system.getMemoryUsage().mainStackAvailable
+-- actually counts is an open question (raised with the Ethos firmware
+-- author in rotorflight/rotorflight-lua-ethos-suite#2420). maxPublishDepth
+-- publishes the deepest chain actually observed, so this constant can later
+-- be set from a measurement instead of from a judgement.
+local MAX_PUBLISH_DEPTH = 8
+
+-- Both are plain numbers, not tables: read once per memory log line, and
+-- nothing here should allocate to answer a question.
+local publishDepth = 0
+local maxPublishDepth = 0
 
 local function subscribe(topic, handler)
   local list = subscribers[topic]
@@ -90,12 +123,39 @@ local function publish(topic, payload)
   for i = 1, #list do
     snapshot[i] = list[i]
   end
+
+  -- Checked before the increment, so the trip raises with the counter still
+  -- balanced. The error unwinds exactly ONE level -- into the pcall() of the
+  -- publish() that invoked the offending handler -- so the cycle is cut, that
+  -- publish()'s existing handler-error branch reports it through the print
+  -- below, and every publish() still decrements on the way back out. It is
+  -- loud on purpose: a silently dropped publish is indistinguishable from a
+  -- bus that works.
+  if publishDepth >= MAX_PUBLISH_DEPTH then
+    error("bus.publish recursion limit reached (" .. MAX_PUBLISH_DEPTH ..
+      ") while publishing '" .. tostring(topic) .. "'", 0)
+  end
+  publishDepth = publishDepth + 1
+  if publishDepth > maxPublishDepth then
+    maxPublishDepth = publishDepth
+  end
+
   for i = 1, #snapshot do
     local ok, err = pcall(snapshot[i], payload)
     if not ok then
       print("[bus] handler error on '" .. topic .. "': " .. tostring(err))
     end
   end
+
+  publishDepth = publishDepth - 1
+end
+
+-- The deepest publish() nesting actually observed, in frames. 0 before
+-- anything has been published. Exposed as a function so the counter has
+-- exactly one home: a mirrored field on the table would be a second copy
+-- that can drift from the one the guard reads.
+local function observedMaxPublishDepth()
+  return maxPublishDepth
 end
 
 local bus = {
@@ -103,6 +163,7 @@ local bus = {
   subscribe = subscribe,
   unsubscribe = unsubscribe,
   publish = publish,
+  maxPublishDepth = observedMaxPublishDepth,
 }
 
 package.loaded["rfsuite.bus"] = bus
