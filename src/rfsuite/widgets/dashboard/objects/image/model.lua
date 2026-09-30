@@ -54,7 +54,23 @@ function render.dirty(box)
     return utils.dirtyOnDisplayValueChange(box)
 end
 
+-- Memo of "craft name -> model photo bitmap", including the negative result
+-- (`false`) so a craft whose photo does not exist is not re-probed against
+-- the filesystem on every cfg build. The bitmap handle here is the very same
+-- userdata context.lua's imageBitmapCache holds, so this map is a second
+-- strong reference to a decoded bitmap: clearing only the context-side caches
+-- on a theme reload would free nothing for the model photo, and a pilot who
+-- cycles through craft names would keep one full decoded photo per craft for
+-- the rest of the app session. Registering a clearer puts this map inside
+-- clearCaches({images = true}), which widgets/dashboard.lua's clearThemeCache()
+-- now requests on every theme reload, model change and widget close (#2380).
 local _imgCache = {}
+
+if utils.registerImageCacheClearer then
+  utils.registerImageCacheClearer(function()
+    for key in pairs(_imgCache) do _imgCache[key] = nil end
+  end)
+end
 
 local function addCandidate(candidates, path)
     if type(path) ~= "string" or path == "" then return end
