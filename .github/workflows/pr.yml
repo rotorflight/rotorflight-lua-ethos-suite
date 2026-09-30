@@ -45,6 +45,23 @@ jobs:
       - name: Check the write path
         run: lua5.3 bin/storage/verify_atomic_writes.lua
 
+  # The ESC forward-programming tiles are gated by a guard that has to retry a
+  # failed MSP read. That retry reaches neither a build nor a package step, so
+  # it is pinned here. #2387
+  esc-guard-retry:
+    name: ESC tiles recover from a failed read
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Lua 5.3
+        run: sudo apt-get update && sudo apt-get install -y lua5.3
+
+      - name: Check that a failed ESC read is retried
+        run: lua5.3 bin/esc_guard/verify_esc_guard_retry.lua
+
   # An MSP request that is abandoned between two of its frames used to leave
   # the shared TX buffer occupied, after which no request could be framed at all
   # -- every configuration page then hung until the script was reloaded. No
@@ -63,6 +80,31 @@ jobs:
 
       - name: Check the MSP queue behaviour
         run: lua5.3 bin/msp_queue/verify_msp_queue.lua
+
+  # Three drain loops run inside one background-task wakeup with no yield point
+  # in between, and each was bounded by a wall-clock deadline set well above what
+  # the work needs -- on a single-core MCU competing with Ethos's C++ UI thread,
+  # the budget is UI latency. Nothing could see that, and nothing could see the
+  # other half: that a deadline read only *between* polls cannot bound one
+  # transport.mspPoll() call, which on S.Port walks the sensor's whole native
+  # frame queue. This harness drives the three loops against a permanently full
+  # queue and a clock that charges real time per frame, so it measures the budget
+  # instead of trusting it. The last group is the other half -- bounding the
+  # poll must not break reply assembly, which is what says how far a budget may
+  # be cut at all.
+  clock-budgets:
+    name: Background task drain budgets
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Lua 5.3
+        run: sudo apt-get update && sudo apt-get install -y lua5.3
+
+      - name: Check the drain budgets
+        run: lua5.3 bin/perf/verify_clock_budgets.lua
 
   tool-ui-lazy:
     name: Tool UI not loaded at boot
@@ -97,11 +139,12 @@ jobs:
       - name: Check the MSP request pattern over repeated tool cycles
         run: lua5.3 bin/tool_ui/verify_no_extra_msp.lua
 
-  # The ESC forward-programming tiles are gated by a guard that has to retry a
-  # failed MSP read. That retry reaches neither a build nor a package step, so
-  # it is pinned here. #2387
-  esc-guard-retry:
-    name: ESC tiles recover from a failed read
+  # Ethos form widgets retain closures across form.clear(), so app/field_layout.lua
+  # pools accessor slots to prevent unbounded closure growth across repeat page visits.
+  # This job checks poolStats(), slot pooling across pages and visits, and safe detachment
+  # of dataRef/controlRef on releaseRuntime().
+  field-layout:
+    name: Field layout slot pooling and lifecycle
     runs-on: ubuntu-latest
 
     steps:
@@ -111,8 +154,48 @@ jobs:
       - name: Install Lua 5.3
         run: sudo apt-get update && sudo apt-get install -y lua5.3
 
-      - name: Check that a failed ESC read is retried
-        run: lua5.3 bin/esc_guard/verify_esc_guard_retry.lua
+      - name: Check field layout slot pooling and lifecycle
+        run: lua5.3 bin/field_layout/verify_field_layout.lua
+
+  # Widgets and objects load bitmaps on demand, and clearCaches()'s images
+  # branch previously had no caller anywhere -- so every decoded dashboard
+  # bitmap survived theme reloads, model changes and widget close. The fix
+  # wires clearThemeCache() to pass images = true, adds an LRU bound to the
+  # decoded-bitmap map, and provides a clearer registry for modules like
+  # objects/image/model.lua.
+  dashboard-image-caches:
+    name: Dashboard image cache eviction and theme reload
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Lua 5.3
+        run: sudo apt-get update && sudo apt-get install -y lua5.3
+
+      - name: Check dashboard image cache behaviour
+        run: lua5.3 bin/dashboard/verify_image_caches.lua
+
+  # A disconnect used to leave the MSP request queue holding everything an open
+  # page had queued, so the next handshake queued FIFO behind a backlog that no
+  # flight controller could answer any more. And every completed message forced
+  # a full GC cycle -- a call section 9 of the lifecycle doc had already measured
+  # as buying nothing. Both need a session task and a collector that can be
+  # observed, which no build or package step provides.
+  msp-disconnect-gc:
+    name: MSP queue on disconnect and the per-message GC
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Lua 5.3
+        run: sudo apt-get update && sudo apt-get install -y lua5.3
+
+      - name: Check the disconnect and GC behaviour
+        run: lua5.3 bin/msp_gc/verify_msp_disconnect.lua
 
   # The bus is the only channel between the tool, the dashboard and the
   # background task, and publish() calls its handlers synchronously -- a

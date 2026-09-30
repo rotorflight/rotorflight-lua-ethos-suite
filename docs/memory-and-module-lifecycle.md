@@ -173,6 +173,50 @@ image/theme/render caches, gated behind flags (`{renders=, theme=,
 images=, liveSources=}`) so a theme switch only clears what actually
 needs to change.
 
+**A gated flag with no caller is an unmanaged cache, not a no-op.**
+`clearCaches()` is a pure option-dispatch table, so an option nobody
+requests fails silently: nothing errors, nothing is logged, and the whole
+cache class simply stays resident. That is exactly what happened to the
+`images` flag until #2380 — the branch existed, and
+`widgets/dashboard.lua`'s `clearThemeCache()` only ever passed
+`{theme = true}`, so every decoded dashboard bitmap survived every theme
+switch, model change and widget close for the rest of the app session. When
+adding a flag here, the call site is part of the change; a flag nothing
+requests is indistinguishable from a flag that does not work.
+
+Three caches hold decoded bitmaps rather than strings, and all have a
+release path that `clearCaches({images = true})` drives:
+
+| Cache | Held by | Released by |
+| --- | --- | --- |
+| `imageBitmapCache` (context.lua) | the context module | `clearCaches({images = true})`, plus an LRU ceiling of `IMAGE_BITMAP_CACHE_MAX` entries |
+| `_imgCache` (`objects/image/model.lua`) | the object module, keyed by craft name | a clearer registered via `utils.registerImageCacheClearer()`, run by the same `images` branch |
+| `session.dialImageCache` (`objects/dial/image.lua`) | the session table, keyed by dial panel | `clearCaches({images = true})` |
+
+In addition, `imagePathCache` (context.lua) caches resolved string paths and negative probe results (`path or false`) so missing images are not repeatedly probed against the filesystem; it is cleared by the same `images` branch.
+
+The LRU ceiling exists because the bitmap cache's key space is open-ended —
+every distinct model photo, dial panel and per-box `image` parameter mints a
+new key — so clearing on lifecycle events alone still lets path churn within
+one session accumulate. An evicted bitmap is not freed on the spot; the
+handle simply becomes garbage once nothing references it, and the next
+`loadImage()` re-decodes it.
+
+`objects/image/model.lua` needs a registry rather than a lookup because the
+engine `loadfile()`s object modules on demand and holds them in its own
+`objectsByType` map, so a clearer has to be a closure the module registers
+over its own local cache. The engine never evicts that map, so a given
+object module registers exactly one clearer per app session.
+
+**Not yet measured on hardware.** What is established here is the retention
+path: the bitmaps were reachable from a live reference, and they no longer
+are. How many kilobytes that is worth on a real radio is not established —
+quantifying it needs a `live` vs `churn` split around
+`collectgarbage("count")` (a `live` figure after a full collect measures
+true retention, `churn` measures the sawtooth), per #2364. Without that
+split, growth across theme switches cannot be told apart from the ~44 KB
+per page-visit baseline in §9.
+
 ## 8. Closures survive `form.clear()` — pool them
 
 Live testing showed Ethos retains some `form` callback/widget allocations
@@ -181,6 +225,45 @@ cannot fix retained widget objects, but does avoid *adding* fresh
 retained closures on every repeat visit. `app/field_layout.lua` pools
 field getter/setter closures by page+field shape for exactly this reason
 — see its own header comment for the full reasoning.
+
+### 8a. But do not shrink the pool on the way out
+
+The natural next step after "the pool is a permanent table" is to drop each
+entry when its page is released, on the reasoning that a slot whose
+`dataRef` and `controlRef` are both nil is dead weight. **That is a
+regression, not a saving**, and it is worth writing down because the
+argument for it is very plausible.
+
+The retained widget is what holds the closure alive. Evicting the pool
+entry does not free the closure — it only guarantees the *next* visit to
+that page builds a fresh set, while the old widget keeps the old one. So
+eviction converts a bounded, one-time pool into closure sets that grow
+linearly with the number of page visits, which is the exact thing §8's
+pooling exists to prevent.
+
+Measured by replaying every page's real field inventory (356 field shapes
+across 33 pages, taken from the pages' own spec tables) through
+`app/field_layout.lua` on Lua 5.4, opening each page, building every
+field and releasing the runtime:
+
+| Full tours of the page set | Pooled (current) | Evict-on-release |
+|---|---|---|
+| 1 | 195 entries built | 195 built |
+| 2 | 195 | 390 |
+| 5 | 195 | 975 |
+| 20 | 195 | 3900 |
+
+The pool also turns out to be *bounded by construction*, not merely slow
+to grow: it is keyed by field shape, and every field shape in the app is
+a literal in some page's source, so it saturates on the first tour at 195
+entries (~110 KB) and never grows again. A tour through a single ESC
+vendor page is 195 entries; only visiting *all ten* ESC vendor pages —
+which are mutually exclusive in practice — reaches 356.
+
+The real lever on this pool is therefore its **per-entry cost**, not its
+size. Every entry is a slot table plus its key string plus two closures;
+`poolStats()` on the module reports the total and live counts `(count, live)` so the cost
+and detached tail can be checked on a radio instead of estimated. See #2381.
 
 ## 9. A dead end: don't reach for `collectgarbage()` without new evidence
 
@@ -389,4 +472,5 @@ the Lua side can be converted into bytes of headroom.
 | RAM climbs *and* stale/duplicate event behavior appears over time | Module subscribes to the bus at load time, never cached | Self-cache (§3/§4) — non-negotiable |
 | A page's own live-data callback keeps firing after leaving the page | Page subscribed in open(), never unsubscribed in close() | Pair subscribe/unsubscribe (§5) |
 | A long-lived cache table keeps growing across the whole session | Cache never cleared, or cleared by reassignment while something else still holds the old table | Clear in place (§7) |
+| A cache class grows across the whole session although a `clearCaches`-style option exists for it | The option is gated and no call site ever requests it — a silent failure by construction | Request the option at the lifecycle call site, and bound the cache if its key space is open-ended (§7, #2380) |
 | RAM grows on menu/page rebuild despite everything above being clean | Likely Ethos's own `form` widget retention (§9) | Don't force `collectgarbage()` — it won't help; this needs a different kind of fix (or may be a platform limit) |

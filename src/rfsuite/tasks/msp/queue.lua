@@ -6,8 +6,25 @@
 -- Adapted from rotorflight-lua-ethos's RF2/MSP/mspQueue.lua: one flat
 -- object, no per-request promise/future, replies delivered via a plain
 -- callback (`processReply`) stored on the same message table that was
--- queued. `collectgarbage()` is called at every teardown boundary,
--- following that same file's deliberate RAM discipline.
+-- queued.
+--
+-- This file used to force a full `collectgarbage()` in _finish(), i.e. on
+-- *every* completed message, justified above as "that same file's deliberate
+-- RAM discipline". That rationale did not survive contact with
+-- docs/memory-and-module-lifecycle.md section 9: a live A/B log there measured
+-- a forced full collect as making no difference to RAM growth at all, because
+-- a full cycle can only reclaim what is genuinely unreachable. The call
+-- therefore bought nothing in memory, on a path that runs on every background
+-- task wakeup. (Its cost is a separate question and is *not* established here:
+-- measured on desktop Lua 5.3, one forced collect at a few hundred KB of live
+-- heap costs a few hundredths of a millisecond and scales with the heap -- see
+-- the printed figures in bin/msp_gc/verify_msp_disconnect.lua. What that costs
+-- on a radio is unmeasured.) The incremental collector reclaims these message
+-- tables on its own, on its own schedule.
+--
+-- Queue:clear() keeps its collect: it is rare (transport swap, arming,
+-- disconnect) and lands on a real teardown, which is the one place a forced
+-- cycle is worth having.
 --
 -- IMPORTANT: this module takes the shared tasks/msp/common.lua *instance*
 -- as a constructor argument (Queue.new(common)) rather than loading its own
@@ -40,6 +57,13 @@ local DEFAULT_RETRY_DELAY = 0.8
 local DEFAULT_MAX_RETRIES = 5
 local MAX_PENDING = 20
 local EMPTY_PAYLOAD = {}
+
+-- Computed once at load, the same way tasks/session.lua does for its own
+-- simulator gate: system.getVersion() crosses the C++/Lua boundary and
+-- allocates a table per call, and whether the script runs in the Ethos
+-- simulator cannot change while the script is running. Re-deriving it on every
+-- tick bought one table and one boundary crossing per wakeup for a constant.
+local isSim = system.getVersion().simulation == true
 
 local function notifyError(message, reason)
   if message then debugLog.msp("ERR", message.command, message.payload, reason) end
@@ -94,6 +118,18 @@ end
 -- script. Snapshot both before resetting queue state so a handler that
 -- itself calls Queue:add() (e.g. a retry) lands in the already-cleared
 -- queue, not the one about to be discarded.
+--
+-- Also called on disconnect (tasks/session.lua's setConnected()) and on
+-- arming (its updateArmState()) -- a link that went away takes the queue with
+-- it, and the next handshake must not queue FIFO behind a backlog that can no
+-- longer be answered.
+--
+-- The collectgarbage() here is the one full cycle this file keeps, and it is
+-- deliberate: clear() is rare and lands on a real teardown, which is the only
+-- place a forced cycle earns its cost. By clearing droppedCurrent and
+-- droppedPending before calling collectgarbage(), the dropped messages and
+-- payloads are immediately reclaimed along with what the surrounding teardown
+-- left behind. _finish() below is the hot path and does not have even that.
 function Queue:clear()
   local droppedCurrent = self.current
   local droppedPending = self.pending
@@ -104,6 +140,8 @@ function Queue:clear()
   self.common.mspClearBufs()
   if droppedCurrent then notifyError(droppedCurrent, "cleared") end
   for i = 1, #droppedPending do notifyError(droppedPending[i], "cleared") end
+  droppedCurrent = nil
+  droppedPending = nil
   collectgarbage()
 end
 
@@ -127,12 +165,17 @@ end
 -- Doing it here rather than at the individual abort sites makes that a
 -- property of "a message ended" instead of something each new `return` has to
 -- remember.
+--
+-- No forced GC cycle here, unlike the other teardown boundary in this file:
+-- Queue:clear() is rare and lands on a real teardown, while processQueue()
+-- runs this on every background task wakeup. The header comment says what a
+-- full collect does and does not buy; bin/msp_gc/verify_msp_disconnect.lua
+-- pins both halves of that.
 function Queue:_finish()
   self.common.mspClearTxBuf()
   self.current = nil
   self.lastSent = nil
   self.retryCount = 0
-  collectgarbage()
 end
 
 -- Abort the in-flight message: retire it, then report the reason. The message
@@ -169,7 +212,6 @@ function Queue:processQueue()
   end
 
   local common = self.common
-  local isSim = system.getVersion().simulation == true
 
   if isSim then
     if not msg.simulatorResponse then
