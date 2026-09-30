@@ -97,6 +97,28 @@ jobs:
       - name: Check the MSP request pattern over repeated tool cycles
         run: lua5.3 bin/tool_ui/verify_no_extra_msp.lua
 
+  # The bus is the only channel between the tool, the dashboard and the
+  # background task, and publish() calls its handlers synchronously -- a
+  # handler that publishes back into the same topic recurses, and in the
+  # reference Lua VM every Lua-to-Lua call is one C stack level. This harness
+  # drives a real cycle and asserts it terminates at the guard rather than at
+  # the VM's own "C stack overflow" (which is what happens without it: 197
+  # handler calls), and that the memory log reports the smallest
+  # mainStackAvailable it has ever seen.
+  stack-bounds:
+    name: Bus publish is bounded, stack minimum is tracked
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Lua 5.3
+        run: sudo apt-get update && sudo apt-get install -y lua5.3
+
+      - name: Check the publish recursion bound and the stack minimum
+        run: lua5.3 bin/stack/verify_stack_bounds.lua
+
   # Per-language PR builds (mirrors push.yml behavior)
   create-zip:
     name: Build PR ZIP (${{ matrix.lang }})

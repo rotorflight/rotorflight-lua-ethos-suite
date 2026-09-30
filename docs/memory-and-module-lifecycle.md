@@ -256,6 +256,78 @@ the screen state differs and the comparison is void.
 The `collectgarbage()` dead end in §9 is unaffected: nothing here is a cache
 problem. Fewer modules are loaded.
 
+## 11. The C stack is a second budget, and it has exactly one unbounded term
+
+The heap is the budget everyone watches. It is not the only one. Ethos runs
+FreeRTOS, and a Lua script runs inside one of those tasks. In the reference Lua
+VM every Lua-to-Lua call consumes one C stack level, so a call chain that
+grows without bound does not raise a catchable Lua error - it walks the stack
+pointer down past the end of the task's stack array and into whatever the
+linker placed below it. On the radio that is `ioMutex`, and the result is a
+hardfault caught by the watchdog, not an exception.
+
+That is why the two failure modes have to be kept apart. A heap exhaustion
+says *"Lua has used too much RAM, it has been Killed"*. A stack overflow says
+nothing at all until the radio resets. Any change that trades one for the other
+- or claims to fix an EM by reducing heap - has to say which one it measured.
+
+### 11.1 The bound
+
+`lib/bus.lua` is the only channel the system tool, the dashboard widget and the
+background task use to talk to each other, and `publish()` invokes its
+handlers **synchronously**, inside its own loop. A handler is allowed to
+publish again - two or three levels of that is ordinary. A handler that
+publishes to a topic whose handler publishes back to the first one is not
+ordinary, and nothing in the bus stopped it.
+
+`MAX_PUBLISH_DEPTH` in `lib/bus.lua` stops it. The limit is deliberately far
+above legitimate nesting and far below anything that could threaten a stack:
+its job is to make the worst case **finite**, not to be the last level before an
+overflow. The real budget is not known - what
+`system.getMemoryUsage().mainStackAvailable` counts is an open question, raised
+with the Ethos firmware author in
+[rotorflight/rotorflight-lua-ethos-suite#2420](https://github.com/rotorflight/rotorflight-lua-ethos-suite/issues/2420).
+
+The guard **raises**, on purpose. The error unwinds exactly one level, into the
+`pcall()` of the publish that invoked the offending handler, so the cycle is
+cut, the existing handler-error branch above it reports it, and every
+`publish()` still decrements on the way out. A silently dropped publish would
+be indistinguishable from a bus that works.
+
+`bus.maxPublishDepth()` publishes the deepest chain actually observed, so the
+constant can be set from a measurement later instead of from a judgement.
+
+### 11.2 The minimum, and why not an instantaneous reading
+
+`lib/stack_probe.lua` keeps the **smallest** value of
+`system.getMemoryUsage().mainStackAvailable` seen since the task started. The
+question the radio is being asked is how close it has *ever* come to the edge,
+and an instantaneous reading cannot answer that - it is one moment, and the
+interesting moment is the worst one.
+
+It lives in its own small module rather than in `lib/memstats.lua` because
+that module is loaded lazily, inside the tool's own lifecycle (see section 10),
+and the only caller here is the background task, which runs from boot. Routing
+it through `memstats` would mean loading `memstats` at boot: 2.9 kB of
+permanently retained code for a module that does nothing in 99 % of sessions,
+which is exactly the cost section 10 removed.
+
+`note()` deliberately ignores a missing or non-numeric field instead of
+coercing it. The print lines use `or 0`, and feeding that fallback into a
+minimum would pin the reported figure at 0.0 kB for the rest of the session -
+a confident-looking number that means only "this firmware did not report the
+field". `formatStackFields()` renders that case as `-` instead.
+
+### 11.3 What this does not tell you
+
+Measuring the deepest *publish* nesting is not measuring C stack depth. It
+bounds the one recursive term in this suite; it says nothing about the depth of
+the dashboard's paint path, which is a plain nested call chain with no cycle
+in it. Until the meaning of `mainStackAvailable` is answered, no number from
+the Lua side can be converted into bytes of headroom.
+
+---
+
 ## Quick reference
 
 | Symptom | Likely cause | Fix |
