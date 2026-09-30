@@ -47,8 +47,53 @@ local dashboardEngine = nil
 local loadedTheme = nil
 local loadedState = nil
 local systemToolHandle = nil
-local clock = os.clock
--- Set true while app/tool.lua's full-screen tool owns the display (see its
+-- Second stack sample point, and the reason it exists.
+--
+-- On the X18RS the background task's own reading of
+-- system.getMemoryUsage().mainStackAvailable came back 0 B at every one of 25
+-- samples, minimum AND maximum, across boot, connect, opening the tool and
+-- three menu levels -- while the firmware author reads 9 296 B for the same
+-- field on a radio that also runs this suite. That reading is not explained by
+-- the bus: the deepest bus nesting seen in the whole session was 1, so no
+-- handler ever published from inside a handler.
+--
+-- The instrument that was supposed to separate "the Main task is at the edge"
+-- from "this call site sits deep" could not do it. Both extremes are taken at
+-- ONE fixed call site, and a fixed call site has a fixed depth -- minimum,
+-- maximum and the latest value are the same measurement three times over. They
+-- measure how much the stack usage varies *around* this point, never how deep
+-- this point itself is. Only a reading taken somewhere else can say that.
+--
+-- So: one sample at the top of paint(), which is structurally the same position
+-- as the background task's wakeup -- one frame below Ethos' dispatcher. Two
+-- readings of the same field at two known positions answer the actual
+-- question. If both are 0 the radio is at the edge no matter where anyone
+-- looks; if they differ, the difference is the dispatch context, not us.
+--
+-- Rate-limited because system.getMemoryUsage() builds a Lua table on every
+-- call, and paint() runs at frame rate. On a suite whose heap is a measured
+-- budget, one table per second is acceptable and one per frame is not. The
+-- dashboard does not print this itself; the background task's memory-log line
+-- carries it, so no new output appears on the paint path.
+local PAINT_STACK_SAMPLE_INTERVAL = 1
+local lastPaintStackSampleAt = nil
+local stackProbe = nil
+
+local function sampleStackFromPaint()
+  -- No capability guard: system.getMemoryUsage has been part of Ethos since
+  -- 1.1.0. A guard here can never fire, and it would swallow the one case that
+  -- matters -- the function being absent -- by returning silently instead of
+  -- letting the paint path report a zero it never measured.
+  local now = os.clock()
+  if lastPaintStackSampleAt and (now - lastPaintStackSampleAt) < PAINT_STACK_SAMPLE_INTERVAL then
+    return
+  end
+  lastPaintStackSampleAt = now
+  stackProbe = stackProbe or requireModule("lib/stack_probe.lua")
+  stackProbe.notePaint((system.getMemoryUsage() or {}).mainStackAvailable)
+end
+
+local clock = os.clock-- Set true while app/tool.lua's full-screen tool owns the display (see its
 -- create()/close()) -- matches master's rfsuite.tasks.appRunning gate on
 -- dashboard.lua's own wakeup(): a background-screen widget doing full
 -- object-wakeup/paint-prep work while a *different* screen is the one
@@ -1300,6 +1345,7 @@ local function drawFooterAlert(widget, w, h)
 end
 
 local function paint(widget)
+  sampleStackFromPaint()
   local w, h = lcd.getWindowSize()
   if widget and widget.themeReloadPending == true then
     if prepareDashboard(widget) then finishThemeReload(widget) end
