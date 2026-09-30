@@ -41,6 +41,13 @@ local DEFAULT_MAX_RETRIES = 5
 local MAX_PENDING = 20
 local EMPTY_PAYLOAD = {}
 
+-- Computed once at load, the same way tasks/session.lua does for its own
+-- simulator gate: system.getVersion() crosses the C++/Lua boundary and
+-- allocates a table per call, and whether the script runs in the Ethos
+-- simulator cannot change while the script is running. Re-deriving it on every
+-- tick bought one table and one boundary crossing per wakeup for a constant.
+local isSim = system.getVersion().simulation == true
+
 local function notifyError(message, reason)
   if message then debugLog.msp("ERR", message.command, message.payload, reason) end
   local handler = message and message.errorHandler
@@ -169,7 +176,6 @@ function Queue:processQueue()
   end
 
   local common = self.common
-  local isSim = system.getVersion().simulation == true
 
   if isSim then
     if not msg.simulatorResponse then
