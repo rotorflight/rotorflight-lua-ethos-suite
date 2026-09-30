@@ -15,14 +15,68 @@
 -- it does is via lib/bus.lua's "msp.request" topic, and only indirectly,
 -- via whichever page is currently open.
 
+-- ── Loaded with the tool, not at boot ───────────────────────────────────────
+-- Everything below is only reachable from create() (or from close(), for
+-- nav). None of it runs while the background task and the dashboard are up and
+-- the tool is closed, which is the state the reported heap figure describes.
+--
+-- Measured on an X18RS: the ten files reachable from here cost ~42 kB of the
+-- Lua heap, and lib/memstats.lua another 2.3 kB, entirely on the radio's
+-- permanent floor. That is 3 % of the measured total -- small, but it is the
+-- cheapest part of the budget to remove and it removes it from every boot
+-- that never opens the tool.
+--
+-- lib/require.lua memoises into package.loaded, so the second and later calls
+-- are a table lookup rather than a re-read and re-parse. The one-liners below
+-- are therefore cheap enough to be the right form everywhere.
+--
+-- NOT deferred: lib/bus.lua, lib/settings_store.lua. The bus subscriptions at
+-- module level and settingsStore.developerModeEnabled() both run from here at
+-- boot, and the whole point of a deferred load is that it does not.
 local requireModule = package.loaded["rfsuite.lib.require"] or assert(loadfile("lib/require.lua"))()
-local navigation = requireModule("app/navigation.lua")
-local menuContainer = requireModule("app/menu_container.lua")
-local memstats = requireModule("lib/memstats.lua")
 local bus = requireModule("lib/bus.lua")
-local escProtocolGuard = requireModule("app/esc_protocol_guard.lua")
-local servoBusGuard = requireModule("app/servo_bus_guard.lua")
 local settingsStore = requireModule("lib/settings_store.lua")
+
+local navigation = nil
+local menuContainer = nil
+local escProtocolGuard = nil
+local servoBusGuard = nil
+local memstats = nil
+
+local function ensureNavigation()
+  if not navigation then
+    navigation = requireModule("app/navigation.lua")
+  end
+  return navigation
+end
+
+local function ensureMenuContainer()
+  if not menuContainer then
+    menuContainer = requireModule("app/menu_container.lua")
+  end
+  return menuContainer
+end
+
+local function ensureEscProtocolGuard()
+  if not escProtocolGuard then
+    escProtocolGuard = requireModule("app/esc_protocol_guard.lua")
+  end
+  return escProtocolGuard
+end
+
+local function ensureServoBusGuard()
+  if not servoBusGuard then
+    servoBusGuard = requireModule("app/servo_bus_guard.lua")
+  end
+  return servoBusGuard
+end
+
+local function ensureMemstats()
+  if not memstats then
+    memstats = requireModule("lib/memstats.lua")
+  end
+  return memstats
+end
 
 local developerModeEnabled = false
 
@@ -307,7 +361,21 @@ local MENUS = {
   },
 }
 
-local nav = navigation.new()
+-- The navigation stack itself. Created alongside the first tool open, because
+-- that is the first moment anything can push onto it -- create() threads it
+-- into menu_container.openRoot(), and close() clears it. Both of those are
+-- inside the tool's own lifecycle, so holding a nil here costs one table plus
+-- three closures and saves navigation.lua's module code on every boot that
+-- never opens the tool.
+local nav = nil
+
+local function ensureNav()
+  if not nav then
+    nav = ensureNavigation().new()
+  end
+  return nav
+end
+
 local currentEventHandler = nil
 local currentCleanupHandler = nil
 local currentPaintHandler = nil
@@ -388,17 +456,26 @@ local taskGuard = {
   requestAlert = requestBackgroundTaskAlert,
 }
 
-MENUS.esc_forward_menu.guard = escProtocolGuard.new({
-  canRequest = function()
-    return isBackgroundTaskRunning() and sessionConnected == true
-  end,
-})
+-- The two menu guards are attached to their menus on first tool open, not at
+-- module level. escProtocolGuard.new() and servoBusGuard.new() are the only
+-- call sites, and the guard objects are only consulted by menu_container while
+-- it decides whether an entry is enterable -- which cannot happen before
+-- create(). Assigning them here rather than at parse time is what keeps
+-- lib/msp_esc_sensor_config.lua and lib/msp_serial_config.lua off the boot
+-- floor; see the file header for the measured figure.
+local function installMenuGuards()
+  MENUS.esc_forward_menu.guard = ensureEscProtocolGuard().new({
+    canRequest = function()
+      return isBackgroundTaskRunning() and sessionConnected == true
+    end,
+  })
 
-MENUS.servos_menu.guard = servoBusGuard.new({
-  canRequest = function()
-    return isBackgroundTaskRunning() and sessionConnected == true
-  end,
-})
+  MENUS.servos_menu.guard = ensureServoBusGuard().new({
+    canRequest = function()
+      return isBackgroundTaskRunning() and sessionConnected == true
+    end,
+  })
+end
 
 bus.subscribe("task.status", function(status)
   if status and status.running then
@@ -447,7 +524,11 @@ local function create()
   taskAlertOpen = false
   taskAlertShown = false
   updateDeveloperMode()
-  menuContainer.openRoot(nav, ROOT_ENTRIES, setEventHandler, setWakeupHandler, setPaintHandler, setCleanupHandler, MENUS, taskGuard)
+  ensureMemstats()
+  -- Guards first: menu_container consults them while building the first
+  -- screen, so they have to be in place before openRoot() runs.
+  installMenuGuards()
+  ensureMenuContainer().openRoot(ensureNav(), ROOT_ENTRIES, setEventHandler, setWakeupHandler, setPaintHandler, setCleanupHandler, MENUS, taskGuard)
   -- Lets background-screen widgets (widgets/dashboard.lua) skip their own
   -- wakeup work while this full-screen tool owns the display -- matches
   -- master's rfsuite.tasks.appRunning gate (dashboard.lua's wakeup()).
@@ -487,12 +568,21 @@ end
 -- run after form mutation has already been forbidden, and Ethos owns final
 -- form teardown during app exit.
 local function close(state)
-  memstats.print("app.close (start)")
+  -- Both of these can legitimately be absent. Ethos calls close() on the tool
+  -- handle it was given, and a pilot who never opened the tool has no nav
+  -- stack and no memory log to print -- calling them unconditionally here
+  -- would either raise on nil or, worse, load the very modules this change
+  -- exists to keep off the boot floor.
+  if memstats then
+    memstats.print("app.close (start)")
+  end
   if currentCleanupHandler then
     currentCleanupHandler()
     currentCleanupHandler = nil
   end
-  nav.clear()
+  if nav then
+    nav.clear()
+  end
   setEventHandler(nil)
   setWakeupHandler(nil)
   setPaintHandler(nil)
@@ -501,7 +591,9 @@ local function close(state)
     package.loaded[key] = nil
   end
   collectgarbage("collect")
-  memstats.print("app.close (end)")
+  if memstats then
+    memstats.print("app.close (end)")
+  end
 end
 
 local tool = {

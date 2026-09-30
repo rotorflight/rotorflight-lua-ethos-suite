@@ -25,6 +25,12 @@ paying the eager cost once at startup does. Don't reintroduce a lazy
 proxy/deferred-registration layer for these three subsystems without new
 on-device evidence — this isn't a style choice, it's a reverted experiment.
 
+**Scope of the rule, clarified by §10:** the evidence gathered when this rule
+was written measured *registration* — whether a subsystem's callbacks are
+wired up eagerly or behind a proxy. It did not measure the load *timing of a
+page's UI subtree underneath* a subsystem that still registers eagerly. That
+narrower case has now been measured on-device and is worth doing: see §10.
+
 This is a different (and larger-grained) concern than §2 below:
 this section is about *whether to defer registering a whole subsystem at
 all*; §2 is about the mechanics of what happens when the same file is
@@ -202,11 +208,61 @@ case.** A targeted fix (self-caching, subscription cleanup, in-place
 clearing) that actually reduces *live references* is the only kind of
 fix that can work here.
 
+## 10. New evidence: deferring a page's UI subtree is not §1
+
+§1 says don't defer a *top-level subsystem's registration* without new
+on-device evidence. There is now on-device evidence, and it is a different
+thing: **the tool's own UI subtree can be deferred, and it was worth 60.4 kB
+on an X18RS.**
+
+`app/tool.lua` used to `requireModule()` its UI subtree at module scope, so
+ten modules — `menu_container`, `header`, `tile_grid`, `close_key`,
+`navigation`, `esc_protocol_guard`, `servo_bus_guard`, `msp_esc_sensor_config`,
+`msp_serial_config`, `memstats`, 52885 bytes of source — were parsed and
+retained on every boot to serve a page most pilots never open. They are now
+loaded through `ensureX()` helpers called at the point of use.
+
+**What distinguishes this from the reverted experiment in §1:** §1 is about
+whether to defer *registering a subsystem that must run at boot*. The tool's
+UI subtree has no such duty — `menuContainer.openRoot` has exactly one call
+site (`app/tool.lua:531`, the `create()`), and the guards have one each. The
+subsystem registration itself stayed eager; only the UI under it moved.
+
+**Two things the measurement settles, and one it does not:**
+
+- Settled: on-device, connected, empty screen, floor read before any
+  navigation — master 926.4 kB, deferred 866.0 kB, **−60.4 kB**. The
+  predicted figure from a desktop closure measurement scaled by the factor
+  in §9-adjacent analysis was −54.0 kB, so within 12 %.
+- Settled: the §1 concern did **not** materialise for the *load timing* of a
+  UI subtree. The branch boots, connects, and runs the full tool lifecycle
+  without error. §1's measurement was about the callback/registration layer,
+  not about when a subtree is parsed.
+- **Not settled:** the saving is in the **resting** state, not the peak. With
+  the tool open the two builds are 4.8 kB apart — noise. Once the tool is
+  open the ten modules are loaded; they are merely loaded later. A pilot who
+  keeps the tool open does not get the memory back.
+
+**A measurement trap worth recording, because it cost a full A/B cycle:**
+comparing a lazy build against a master build captured under a *different
+radio state* will produce a spectacularly wrong number. A run here read
+−523.5 kB. With a third master run added, that decomposed exactly into
+−463.1 kB for Lua that had been deleted off the card between the two runs,
+−60.4 kB for this change, and a residue of 0.0 kB. **If the numbers do not
+decompose, the missing ingredient is usually a third measurement, not a
+better explanation.** Compare `bmpRamAvail` between the runs — if it differs,
+the screen state differs and the comparison is void.
+
+The `collectgarbage()` dead end in §9 is unaffected: nothing here is a cache
+problem. Fewer modules are loaded.
+
 ## Quick reference
 
 | Symptom | Likely cause | Fix |
 |---|---|---|
 | Considering deferring/proxying a top-level subsystem's registration to save startup RAM | Already tried and reverted -- measured worse retained-RAM growth | Don't, without new on-device evidence (§1) |
+| A page that is rarely opened pulls a big UI subtree in at boot, with no boot-time duty of its own | Modules required at module scope, retained forever by the `requireModule` cache | Load it at the point of use via `ensureX()` (§10) — worth 60.4 kB on an X18RS, resting state |
+| An A/B against a live build gives a wildly implausible delta | The two runs had different radio state | Add a third measurement; check `bmpRamAvail` for a screen-state difference first (§10) |
 | RAM climbs on every visit to the same page | Module reloaded fresh via `loadfile()`, rebuilding module-level tables | Self-cache (§3) |
 | RAM climbs *and* stale/duplicate event behavior appears over time | Module subscribes to the bus at load time, never cached | Self-cache (§3/§4) — non-negotiable |
 | A page's own live-data callback keeps firing after leaving the page | Page subscribed in open(), never unsubscribed in close() | Pair subscribe/unsubscribe (§5) |
