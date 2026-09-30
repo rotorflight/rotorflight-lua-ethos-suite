@@ -136,6 +136,7 @@ jobs:
 
       - name: Check the publish recursion bound and the stack minimum
         run: lua5.3 bin/stack/verify_stack_bounds.lua
+
   # Per-language PR builds (mirrors push.yml behavior)
   create-zip:
     name: Build PR ZIP (${{ matrix.lang }})
