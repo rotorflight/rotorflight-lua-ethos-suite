@@ -71,6 +71,14 @@ end
 -- so it can be asserted on directly. Testing a copy of a format string in a
 -- harness proves the copy.
 --
+-- The minimum is printed as the RAW integer Ethos reports, in bytes, with no
+-- division. An earlier version printed it as "%.1fKB", which is exactly wrong
+-- at the only value that matters: 0 bytes and 51 bytes both render as "0.0KB",
+-- and those two are the difference between a stack with room and one that is
+-- out of it. Ethos derives the field as 4 * STACK_AVAILABLE_WORDS, so the
+-- number is a multiple of 4; the word count is bytes/4 for anyone who thinks
+-- in the firmware's unit.
+--
 -- maxPublishDepth is passed in rather than read from lib/bus.lua so this
 -- module stays independent of the bus; the caller already has the bus.
 --
@@ -80,7 +88,7 @@ end
 function stack_probe.formatStackFields(maxPublishDepth)
   local stackMin = "-"
   if minimum ~= nil then
-    stackMin = string.format("%.1fKB", minimum / 1024)
+    stackMin = string.format("%dB", minimum)
   end
   return string.format("stackMin=%s pubMax=%d", stackMin, maxPublishDepth or 0)
 end

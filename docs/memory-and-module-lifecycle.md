@@ -271,6 +271,56 @@ says *"Lua has used too much RAM, it has been Killed"*. A stack overflow says
 nothing at all until the radio resets. Any change that trades one for the other
 - or claims to fix an EM by reducing heap - has to say which one it measured.
 
+### 11.0 Where the two budgets physically live
+
+From the Ethos linker script and the firmware author, on the X18RS:
+
+| Region | Origin | Size | Holds |
+|---|---|---|---|
+| ITCMRAM | `0x00000000` | 64 K | **unused** |
+| **DTCMRAM** | `0x20000000` | 128 K | **all variables and all stacks** |
+| RAM_D1 | `0x24000000` | 512 K | the model allocator (used by the mixer) |
+| RAM_D2 | `0x30000000` | 288 K | **the model backup, loaded in case of an EM** |
+| RAM_D3 | `0x38000000` | 64 K | peripherals that need BDMA |
+| **SDRAM** | `0xD0000000` | 8 MB | **everything else: the Lua heap and the bitmap arena** |
+
+Two consequences that are easy to get wrong:
+
+- **The stack and the Lua heap are in different memories.** The Main task's
+  stack is a static array in DTCMRAM; the Lua heap is in SDRAM. Exhausting one
+  cannot corrupt the other, and a heap reduction cannot buy stack headroom.
+  `system.getMemoryUsage()`'s `mainStackAvailable` is derived as
+  `4 * STACK_AVAILABLE_WORDS(mainStack, MAIN_STACK_SIZE)` - a macro over that
+  DTCMRAM array, not a heap figure and not a FreeRTOS call.
+- **The Lua heap and the bitmap arena share one 8 MB region.** `luaRamAvailable`
+  and `luaBitmapsRamAvailable` are two compile-time maxima carved out of the
+  same SDRAM, not two separately reserved pools. They compete: a script that
+  grows the Lua heap eats bitmap headroom, and the failure surfaces as a
+  *bitmap* error. Treat them as one budget with two views.
+
+An EM is a **designed, survivable recovery**, not a dead radio: the model lives
+in RAM_D1 and its backup in RAM_D2, and the backup is loaded on EM. That is also
+why a Main-stack overflow is survivable at all - the corruption hits a mutex in
+DTCMRAM, while the model and its backup sit in entirely different regions.
+
+The layout inside DTCMRAM is what makes the failure sharp, though:
+
+```
+0x20000000  …  unknown .bss  …  0x20005c14
+0x20005c14  audioStack   4 096 B
+0x20006c14  audioTaskId       4 B
+0x20006c18  ioMutex           4 B   <- first casualty of a downward overflow
+0x20006c1c  mainStack    20 480 B   <- grows down, into the three above
+0x2000BC1C  …  82 916 B of DTCMRAM above the stack  …
+```
+
+A FreeRTOS stack pointer starts at the top of its array and grows downward, so
+an exhausted Main task reaches `ioMutex` first. **There is no guard region
+between them - that adjacency is link order, not design** - and 27 676 B of
+DTCMRAM lies below `mainStack`, all of it shared with the program's variables.
+A full 20 KB overflow does not corrupt one mutex; it walks into everything the
+firmware keeps in that 128 K.
+
 ### 11.1 The bound
 
 `lib/bus.lua` is the only channel the system tool, the dashboard widget and the

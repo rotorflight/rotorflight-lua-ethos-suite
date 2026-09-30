@@ -221,14 +221,23 @@ if stackProbe then
     stackProbe.formatStackFields(0) == "stackMin=- pubMax=0",
     "got: " .. stackProbe.formatStackFields(0))
 
+  -- The exact integer, NOT "%.1fKB". 0 bytes and 51 bytes both render as
+  -- "0.0KB", and that is precisely the pair this instrument exists to
+  -- distinguish. Ethos derives the field as 4 * STACK_AVAILABLE_WORDS, so the
+  -- real values arrive as multiples of 4.
   stackProbe.note(8192)
-  check("a reading renders in kB with one decimal",
-    stackProbe.formatStackFields(0):find("stackMin=8%.0KB", 1) ~= nil,
+  check("a reading renders as the exact integer, not a rounded kB",
+    stackProbe.formatStackFields(0) == "stackMin=8192B pubMax=0",
+    "got: " .. stackProbe.formatStackFields(0))
+
+  stackProbe.note(4)
+  check("a single word of headroom is still distinguishable from none",
+    stackProbe.formatStackFields(0) == "stackMin=4B pubMax=0",
     "got: " .. stackProbe.formatStackFields(0))
 
   stackProbe.note(0)
-  check("a genuine zero renders as 0.0KB, distinct from '-'",
-    stackProbe.formatStackFields(3) == "stackMin=0.0KB pubMax=3",
+  check("a genuine zero renders as 0B, distinct from '-'",
+    stackProbe.formatStackFields(3) == "stackMin=0B pubMax=3",
     "got: " .. stackProbe.formatStackFields(3))
 end
 
