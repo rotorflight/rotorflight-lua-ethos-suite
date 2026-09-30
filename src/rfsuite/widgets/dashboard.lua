@@ -80,7 +80,10 @@ local lastPaintStackSampleAt = nil
 local stackProbe = nil
 
 local function sampleStackFromPaint()
-  if not (system and system.getMemoryUsage) then return end
+  -- No capability guard: system.getMemoryUsage has been part of Ethos since
+  -- 1.1.0. A guard here can never fire, and it would swallow the one case that
+  -- matters -- the function being absent -- by returning silently instead of
+  -- letting the paint path report a zero it never measured.
   local now = os.clock()
   if lastPaintStackSampleAt and (now - lastPaintStackSampleAt) < PAINT_STACK_SAMPLE_INTERVAL then
     return
