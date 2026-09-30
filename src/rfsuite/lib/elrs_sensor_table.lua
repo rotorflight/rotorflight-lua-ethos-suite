@@ -109,7 +109,7 @@ return function(decoders)
     [0x1124] = {name = "GPS VDOP", unit = UNIT_RAW, prec = 0, min = 0, max = 255, dec = decU8},
     [0x1125] = {name = "GPS Coord", unit = UNIT_RAW, prec = 0, dec = decLatLong},
     [0x1126] = {name = "GPS Altitude", unit = UNIT_METER, prec = 2, min = -100000000, max = 100000000, dec = decS16},
-    [0x1127] = {name = "GPS Heading", unit = UNIT_DEGREE, prec = 1, min = -1800, max = 3600, dec = decS16},
+    [0x1127] = {name = "GPS Course", unit = UNIT_DEGREE, prec = 1, min = -1800, max = 3600, dec = decS16},
     [0x1128] = {name = "GPS Speed", unit = UNIT_METER_PER_SECOND, prec = 2, min = 0, max = 10000, dec = decU16},
     [0x1129] = {name = "GPS Home Dist", unit = UNIT_METER, prec = 1, min = 0, max = 65535, dec = decU16},
     [0x112A] = {name = "GPS Home Dir", unit = UNIT_METER, prec = 1, min = 0, max = 3600, dec = decU16},

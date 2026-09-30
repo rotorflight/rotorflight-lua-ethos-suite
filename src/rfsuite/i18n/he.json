@@ -8170,11 +8170,11 @@
       "translation": "GPS HDOP"
     },
     "sensor_gps_heading": {
-      "english": "GPS Heading",
+      "english": "GPS Course",
       "max_length": 11,
       "needs_translation": false,
       "reverse_text": true,
-      "translation": "GPS כותרת"
+      "translation": "GPS מסלול"
     },
     "sensor_gps_home_dir": {
       "english": "GPS Home Dir",
