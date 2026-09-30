@@ -52,11 +52,23 @@ local debugLog = requireModule("lib/debug_log.lua")
 local MODULE_INDEX = 1
 
 -- Safety cap on time spent draining queued custom-telemetry frames in a
--- single wakeup -- deliberately tighter than the original's own 0.2s,
--- since this now runs alongside the background task's MSP queue/session
--- polling in the same wakeup tick. Only matters if frames have backed up;
--- steady-state draining finishes in well under this.
-local POP_BUDGET_SECONDS = 0.05
+-- single wakeup -- deliberately tighter than the original's own 0.2s, since
+-- this now runs alongside the background task's MSP queue/session polling in
+-- the same wakeup tick. Only matters if frames have backed up; steady-state
+-- draining breaks out the moment the queue runs dry, so neither this nor the
+-- MSP side's slice is spent on an idle link.
+--
+-- 50ms -> 20ms. Not the 5-10ms the issue asks for: here a deadline already
+-- bounds the work correctly, because transport_crsf.lua's
+-- popCustomTelemetryFrame() is a single popFrame() of one frame type, so there
+-- is no inner walk for a count to bound better -- unlike the S.Port MSP poll
+-- above. Cutting this to 5-10ms would not make any frame arrive sooner; it
+-- would leave the rest in Ethos's own custom-telemetry queue to be decoded on
+-- the next 0.18s wakeup, which only raises the odds of that queue overflowing
+-- -- and neither its depth nor ELRS's delivery rate is measurable from here.
+-- What 20ms buys is the peak: one wakeup's worth of draining can no longer
+-- stack a 20ms block on top of the MSP side's slice on Ethos's single core.
+local POP_BUDGET_SECONDS = 0.02
 
 local os_clock = os.clock
 local math_floor = math.floor
@@ -282,4 +294,11 @@ local function reset()
   for _, sensor in pairs(sensors) do sensor:reset() end
 end
 
-return {wakeup = wakeup, reset = reset}
+return {
+  wakeup = wakeup,
+  reset = reset,
+  -- Exported only so bin/perf/verify_clock_budgets.lua can pin the number
+  -- itself; hard-coding it in the harness would let a loosened budget pass,
+  -- because "never spends more than N" stays green at any larger N.
+  POP_BUDGET_SECONDS = POP_BUDGET_SECONDS,
+}
