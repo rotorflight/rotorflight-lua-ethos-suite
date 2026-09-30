@@ -23,6 +23,8 @@ Always available offline without an active flight controller connection. Read-on
 
 ## Notes
 
+- The theme configuration tile is named **Bastion**. Previously saved limits
+  remain under `dashboard.aegis`; the rename does not reset these settings.
 - Changes are written to the flight controller EEPROM upon Save.
 
 ## Related

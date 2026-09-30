@@ -23,6 +23,8 @@ Always available offline without an active flight controller connection. Read-on
 
 ## Notes
 
+- The custom theme is displayed as **Bastion**. Its saved selection remains
+  `system/aegis`, preserving existing global and per-model selections.
 - Changes are written to the flight controller EEPROM upon Save.
 
 ## Related
