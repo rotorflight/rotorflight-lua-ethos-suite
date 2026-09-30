@@ -78,13 +78,49 @@ function stack_probe.maximum()
   return maximum
 end
 
+-- Second channel: the same field, read from a different call site.
+--
+-- The first channel is read from the background task's wakeup. On its own that
+-- cannot distinguish "the Main task is at the edge" from "this call site sits
+-- deep", because a fixed call site has a fixed depth: minimum, maximum and the
+-- latest value all measure the same thing, and none of them knows how deep
+-- that thing is. Only a second reading from a second position can say it.
+--
+-- widgets/dashboard.lua's paint() is that position: one frame below Ethos'
+-- dispatcher, structurally the same place as the task wakeup. Two readings of
+-- the same field at two known positions answer the question -- if both are 0,
+-- the radio is at the edge wherever anyone looks.
+local paintLatest
+local paintMinimum
+local paintMaximum
+
+-- Same input contract as note(): the RAW field, nil and non-numeric ignored,
+-- for the same reason. A missing field must stay distinguishable from a zero.
+function stack_probe.notePaint(bytes)
+  if type(bytes) ~= "number" then return end
+  paintLatest = bytes
+  if paintMinimum == nil or bytes < paintMinimum then
+    paintMinimum = bytes
+  end
+  if paintMaximum == nil or bytes > paintMaximum then
+    paintMaximum = bytes
+  end
+end
+
 -- Called from the background task's init(), so a reloaded task (a model
 -- switch reloads the task) starts a fresh window instead of reporting a
 -- minimum from a previous life. Only resets if the module has been loaded,
 -- which it may not have been yet on a first boot that never logged.
+--
+-- The paint channel is reset here too, but NOT from the paint path: the
+-- dashboard outlives a task reload, and a stale minimum from before it would be
+-- reported as if it belonged to this life of the task.
 function stack_probe.reset()
   minimum = nil
   maximum = nil
+  paintLatest = nil
+  paintMinimum = nil
+  paintMaximum = nil
 end
 
 -- The stack half of the [bgtask mem] line, built here rather than in
@@ -120,6 +156,15 @@ function stack_probe.formatStackFields(busMaxPublishDepth)
   end
   return string.format("stackMin=%s stackMax=%s pubMax=%d",
     stackMin, stackMax, busMaxPublishDepth or 0)
+end
+
+-- The paint site's contribution to the same line. "-", not a number, until the
+-- dashboard has actually been painted -- a dashboard that is never shown must
+-- not read as "measured, and it was zero", which is a different statement.
+function stack_probe.formatPaintFields()
+  if paintLatest == nil then return "paintNow=- paintMin=- paintMax=-" end
+  return string.format("paintNow=%dB paintMin=%dB paintMax=%dB",
+    paintLatest, paintMinimum, paintMaximum)
 end
 
 package.loaded["rfsuite.lib.stack_probe"] = stack_probe

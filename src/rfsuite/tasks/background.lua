@@ -87,7 +87,8 @@ local function logMemoryUsage(now)
     (mem.luaRamAvailable or 0) / 1024,
     (mem.luaBitmapsRamAvailable or 0) / 1024,
     (mem.mainStackAvailable or 0) / 1024,
-    stackProbe.formatStackFields(bus.maxPublishDepth and bus.maxPublishDepth() or 0)
+    stackProbe.formatStackFields(bus.maxPublishDepth and bus.maxPublishDepth() or 0) ..
+      " " .. stackProbe.formatPaintFields()
   ))
 end
 

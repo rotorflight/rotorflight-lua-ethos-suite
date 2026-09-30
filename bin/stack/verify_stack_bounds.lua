@@ -261,6 +261,50 @@ if stackProbe then
     "got: " .. stackProbe.formatStackFields(0))
 end
 
+-- ── 7. The second sample point ─────────────────────────────────────────────
+-- The case the first channel cannot decide. A single fixed call site has a
+-- fixed depth, so its minimum, maximum and latest value are the same
+-- measurement three times over: none of them knows how deep that call site
+-- is. Only a second position can say it. These assertions are about that
+-- channel being independent of the first, and about not lying when it has not
+-- been read yet.
+do
+  if stackProbe == nil then
+    -- Pre-change master has no such module at all. Report it as a failing
+    -- check rather than indexing nil: a red that dies on a stack trace tells
+    -- the reader nothing about which assertion failed.
+    check("the paint channel exists", false,
+      "lib/stack_probe.lua is absent -- pre-change master")
+  else
+    check("the paint channel starts unmeasured, and says so",
+      stackProbe.formatPaintFields() == "paintNow=- paintMin=- paintMax=-",
+      "got: " .. stackProbe.formatPaintFields())
+
+    stackProbe.notePaint(9296)
+    check("a paint reading is independent of the task's own zero",
+      stackProbe.formatPaintFields() == "paintNow=9296B paintMin=9296B paintMax=9296B",
+      "got: " .. stackProbe.formatPaintFields())
+    check("and it did not move the task channel",
+      stackProbe.formatStackFields(0) == "stackMin=- stackMax=- pubMax=0",
+      "got: " .. stackProbe.formatStackFields(0))
+
+    stackProbe.notePaint(0)
+    check("the two channels can disagree, which is the whole point",
+      stackProbe.formatPaintFields() == "paintNow=0B paintMin=0B paintMax=9296B",
+      "got: " .. stackProbe.formatPaintFields())
+
+    stackProbe.notePaint(nil)
+    check("a missing field leaves the last paint reading standing",
+      stackProbe.formatPaintFields() == "paintNow=0B paintMin=0B paintMax=9296B",
+      "got: " .. stackProbe.formatPaintFields())
+
+    stackProbe.reset()
+    check("reset() clears the paint channel too, from the task's side",
+      stackProbe.formatPaintFields() == "paintNow=- paintMin=- paintMax=-",
+      "got: " .. stackProbe.formatPaintFields())
+  end
+end
+
 
 out("")
 out(string.format("%d checks, %d failed", checks, failures))
