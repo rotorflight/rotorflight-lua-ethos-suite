@@ -7905,7 +7905,7 @@
       "max_length": 8
     },
     "sensor_gps_heading": {
-      "english": "GPS Heading",
+      "english": "GPS Course",
       "translation": "GPS Rumo",
       "needs_translation": false,
       "reverse_text": false,
