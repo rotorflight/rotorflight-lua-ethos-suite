@@ -36,6 +36,7 @@ would fail on a Windows clone and pass on CI.
 import argparse
 import difflib
 import os
+import re
 import subprocess
 import sys
 
@@ -168,38 +169,61 @@ def case_every_script_exists():
         )
 
 
-def case_render_is_valid_yaml():
-    print("case 3: the rendered file is a workflow GitHub can load")
-    text = render()
-    try:
-        import yaml
-    except ImportError:
-        check("PyYAML is available to parse the render", False, "pip install pyyaml")
-        return
-    try:
-        doc = yaml.safe_load(text)
-    except Exception as exc:  # noqa: BLE001 - the message is the finding
-        check("the render parses as YAML", False, exc)
-        return
-    check("the render parses as YAML", True)
-    jobs = doc.get("jobs") or {}
-    malformed = [
-        key
-        for key, value in jobs.items()
-        if not value.get("runs-on") or not value.get("steps")
-    ]
-    # this is the defect that cost master two squashes: a job with a name and
-    # no runs-on loads neither here nor on the runner
-    check(
-        "every job has runs-on and steps (the #2414/#2416 defect)",
-        not malformed,
-        malformed,
-    )
+def job_blocks(text):
+    """Split rendered YAML into (job_id, [lines]) at the two-space job keys.
+
+    Structural, not a parse. The repo's Python checks are stdlib-only by
+    design -- none of them imports PyYAML and no job installs anything -- and a
+    gate that needs a network install is a gate that stops running the day the
+    install fails. The shape checked here is the one the generator produces, so
+    scanning for it is enough, and the four verbatim blocks are hand-written,
+    which is exactly where a wrong indent would hide.
+    """
+    blocks = []
+    current = None
+    for line in text.split("\n"):
+        match = re.match(r"^  ([a-z0-9][a-z0-9-]*):\s*$", line)
+        if match:
+            current = (match.group(1), [])
+            blocks.append(current)
+            continue
+        if current is not None:
+            current[1].append(line)
+    return [(job_id, lines) for job_id, lines in blocks]
+
+
+def case_render_is_wellformed():
+    print("case 3: the rendered file has the shape GitHub can load")
+    blocks = job_blocks(render())
+
+    check("every job in the render is in the registry", bool(blocks), len(blocks))
     check(
         "every job id in the render is in the registry",
-        set(jobs) == set(job_ids_of_verbatim()) | {j.id for j in LUA_JOBS},
-        sorted(set(jobs)),
+        {job_id for job_id, _ in blocks}
+        == set(job_ids_of_verbatim()) | {j.id for j in LUA_JOBS},
+        sorted({job_id for job_id, _ in blocks}),
     )
+
+    # This is the defect that cost master two squashes: a job carrying a name
+    # and nothing else. It is a schema violation, so the file does not load at
+    # all and the run reports failure with zero jobs.
+    without_runner = [
+        job_id
+        for job_id, lines in blocks
+        if not any(line.strip().startswith("runs-on:") for line in lines)
+    ]
+    check(
+        "every job has a runs-on (the #2414/#2416 defect)",
+        not without_runner,
+        without_runner,
+    )
+
+    without_steps = [
+        job_id
+        for job_id, lines in blocks
+        if not any(line.strip().startswith("- name:") for line in lines)
+    ]
+    check("every job has at least one step", not without_steps, without_steps)
 
 
 def case_render_is_stable():
@@ -240,22 +264,16 @@ def self_test():
         "  msp-queue:\n    name: MSP queue after an aborted request\n",
         1,
     )
-    try:
-        import yaml
-
-        doc = yaml.safe_load(broken)
-        jobs = doc.get("jobs") or {}
-        malformed = [
-            k for k, v in jobs.items() if not v.get("runs-on") or not v.get("steps")
-        ]
-        ok = ok and "msp-queue" in malformed
-        print(
-            "  %s  a job with a name and no runs-on is reported as malformed"
-            % ("ok   " if "msp-queue" in malformed else "FAIL ")
-        )
-    except ImportError:
-        print("  skip  PyYAML is not installed, cannot prove the schema check")
-        ok = False
+    blocks = dict(job_blocks(broken))
+    reported = not any(
+        line.strip().startswith("runs-on:")
+        for line in blocks.get("msp-queue", [])
+    )
+    ok = ok and reported
+    print(
+        "  %s  a job with a name and no runs-on is reported"
+        % ("ok   " if reported else "FAIL ")
+    )
 
     # 2. drift between the registry and the committed file
     rendered = normalise(render())
@@ -332,7 +350,7 @@ def main():
 
     case_jobs_are_ordered_and_unique()
     case_every_script_exists()
-    case_render_is_valid_yaml()
+    case_render_is_wellformed()
     case_render_is_stable()
     case_committed_matches()
 
