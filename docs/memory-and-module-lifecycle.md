@@ -226,6 +226,45 @@ retained closures on every repeat visit. `app/field_layout.lua` pools
 field getter/setter closures by page+field shape for exactly this reason
 — see its own header comment for the full reasoning.
 
+### 8a. But do not shrink the pool on the way out
+
+The natural next step after "the pool is a permanent table" is to drop each
+entry when its page is released, on the reasoning that a slot whose
+`dataRef` and `controlRef` are both nil is dead weight. **That is a
+regression, not a saving**, and it is worth writing down because the
+argument for it is very plausible.
+
+The retained widget is what holds the closure alive. Evicting the pool
+entry does not free the closure — it only guarantees the *next* visit to
+that page builds a fresh set, while the old widget keeps the old one. So
+eviction converts a bounded, one-time pool into closure sets that grow
+linearly with the number of page visits, which is the exact thing §8's
+pooling exists to prevent.
+
+Measured by replaying every page's real field inventory (356 field shapes
+across 33 pages, taken from the pages' own spec tables) through
+`app/field_layout.lua` on Lua 5.4, opening each page, building every
+field and releasing the runtime:
+
+| Full tours of the page set | Pooled (current) | Evict-on-release |
+|---|---|---|
+| 1 | 195 entries built | 195 built |
+| 2 | 195 | 390 |
+| 5 | 195 | 975 |
+| 20 | 195 | 3900 |
+
+The pool also turns out to be *bounded by construction*, not merely slow
+to grow: it is keyed by field shape, and every field shape in the app is
+a literal in some page's source, so it saturates on the first tour at 195
+entries (~110 KB) and never grows again. A tour through a single ESC
+vendor page is 195 entries; only visiting *all ten* ESC vendor pages —
+which are mutually exclusive in practice — reaches 356.
+
+The real lever on this pool is therefore its **per-entry cost**, not its
+size. Every entry is a slot table plus its key string plus two closures;
+`poolStats()` on the module reports the total and live counts `(count, live)` so the cost
+and detached tail can be checked on a radio instead of estimated. See #2381.
+
 ## 9. A dead end: don't reach for `collectgarbage()` without new evidence
 
 A prior version of the menu-rebuild path forced `collectgarbage("collect")`
