@@ -8,6 +8,11 @@ local serialConfig = requireModule("lib/msp_serial_config.lua")
 local servo_bus_guard = {}
 
 local REQUEST_TIMEOUT = 3.0
+
+-- How long to wait after a failed read before trying again. Without it,
+-- wakeup() issues a new request on every tick.
+local RETRY_INTERVAL = 5.0
+
 local FUNCTION_MASK_SBUS_OUT = 262144
 local FUNCTION_MASK_FBUS_OUT = 524288
 local BUS_FUNCTION_MASK = FUNCTION_MASK_SBUS_OUT + FUNCTION_MASK_FBUS_OUT
@@ -45,6 +50,7 @@ function servo_bus_guard.new(opts)
     ready = false,
     busEnabled = false,
     deadline = nil,
+    nextAttemptAt = 0,
     dirty = true,
   }
 
@@ -56,13 +62,31 @@ function servo_bus_guard.new(opts)
   local function setResult(enabled, ready)
     state.busEnabled = enabled == true
     state.ready = ready == true
+    state.attempted = (ready == true)
     state.pending = false
     state.deadline = nil
+    state.nextAttemptAt = 0
+    state.dirty = true
+  end
+
+  -- A read that did not produce a usable result must not latch the guard shut.
+  -- `attempted` used to mean both "it is in flight" (for which there is
+  -- `pending`) and "we have read already" (for which the flag belongs back to
+  -- false after a failure). Without that, one hiccup leaves the tiles grey
+  -- until the next open(), even if the FC is healthy by then. See #2387.
+  local function fail()
+    state.busEnabled = false
+    state.ready = false
+    state.pending = false
+    state.deadline = nil
+    state.attempted = false
+    state.nextAttemptAt = os.clock() + RETRY_INTERVAL
     state.dirty = true
   end
 
   local function request()
-    if state.attempted or state.pending or not canRequest() then return end
+    if state.attempted or state.pending or state.ready or not canRequest() then return end
+    if os.clock() < state.nextAttemptAt then return end
 
     state.attempted = true
     state.pending = true
@@ -78,7 +102,7 @@ function servo_bus_guard.new(opts)
       setResult(portsHaveServoBus(data and data.ports), true)
     end, function()
       if token ~= state.token then return end
-      setResult(false, false)
+      fail()
     end))
   end
 
@@ -91,6 +115,7 @@ function servo_bus_guard.new(opts)
     state.ready = false
     state.busEnabled = false
     state.deadline = nil
+    state.nextAttemptAt = 0
     state.dirty = true
     request()
   end
@@ -103,13 +128,16 @@ function servo_bus_guard.new(opts)
 
   function guard.wakeup()
     if not canRequest() then
-      if state.attempted or state.pending or state.ready or state.busEnabled then
+      if state.attempted or state.pending or state.ready or state.busEnabled or state.nextAttemptAt > 0 then
         state.token = state.token + 1
         state.attempted = false
         state.pending = false
         state.ready = false
         state.busEnabled = false
         state.deadline = nil
+        -- The link is gone, so any backoff armed for it is meaningless: the
+        -- next request after the link returns should not have to wait it out.
+        state.nextAttemptAt = 0
         state.dirty = true
       end
     end
@@ -117,7 +145,7 @@ function servo_bus_guard.new(opts)
     request()
 
     if state.pending and state.deadline ~= nil and os.clock() >= state.deadline then
-      setResult(false, false)
+      fail()
     end
 
     local dirty = state.dirty
