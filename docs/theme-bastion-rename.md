@@ -8,12 +8,20 @@ The dedicated branch is `radio-theme-bastion`; the same branding is included in
 `radio-all-themes`. The graphite/cyan shield design and telemetry behavior are
 preserved.
 
-Existing radio selections and thresholds continue to use `system/aegis`,
-`dashboard.aegis`, and `widgets/dashboard/themes/aegis`. These are compatibility
-identifiers, not the display name. Keep the folder named `aegis` when copying an
-update so saved theme selections and settings still resolve correctly.
+As of October 1, 2026, the source folder is
+`src/rfsuite/widgets/dashboard/themes/bastion`. The branch routes the legacy
+theme selection `system/aegis` to this folder. The internal theme ID remains
+`aegis`, and saved instrument thresholds remain in the `dashboard.aegis` section
+of the radio's `SCRIPTS:/rfsuite.user/settings.ini`. Existing selections and
+thresholds therefore continue to work without a settings migration.
 
-The theme overlay under `artifacts/theme-refresh` includes the renamed theme
-content. The full branch source also updates the two app picker labels and the
-Bridge fallback palette name. Desktop previews are generated from the actual
-Lua modules using simulated telemetry and approximate radio fonts.
+Install the complete, matching Suite files from `radio-theme-bastion` or
+`radio-all-themes`, then restart the scripts or radio. The updated dashboard,
+settings page, and optional Theme Bridge routing must accompany the `bastion`
+folder; copying the folder alone onto an older Suite installation is not enough.
+Keep the radio's existing user settings when updating.
+
+The September 7 ZIP and manifest under `artifacts/theme-refresh` are archived
+artifacts with the earlier `aegis` folder layout. Use the current branch for a
+current installation. Historical desktop previews use simulated telemetry and
+approximate radio fonts; the folder rename does not change the theme's visuals.
