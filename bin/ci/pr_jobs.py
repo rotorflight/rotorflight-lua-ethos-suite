@@ -268,6 +268,36 @@ flight. Inline delivery makes the whole file vacuous.
 5 of its 17 cases go red on the pre-fix page_runtime.lua.
 '''
     ),
+    LuaJob(
+        id='gc-pause',
+        name='The incremental collector is tuned, and reads no pause it did not set',
+        step='Check the collector pause and the forced collects',
+        script='bin/gc_pause/verify_gc_pause.lua',
+        rationale=r'''The collector's pause decides when a cycle starts: live * pause / 100.
+The default is 200, so the heap may reach twice what is live before anything is
+reclaimed at all, while Ethos kills a script whose heap passes its limit (#2295).
+Lowering it is a one-line change -- but the one line has a foot-gun in it, and
+that is what this pins:
+
+`collectgarbage("setpause", n)` returns the PREVIOUS value, and with the
+argument omitted it does not read the current one, it SETS THE PAUSE TO 0.
+Pause 0 is "collect as constantly as possible", the opposite of the intent.
+Measured on the Lua 5.3.6 in this checkout, and the first case here asserts it
+rather than trusting it, because main.lua's own comment cites the behaviour and
+a future interpreter could change it.
+
+So the applied value is printed at boot instead of read back, and no file under
+src/ may call either setter without an explicit value. The harness also fixes
+where the call goes -- before background_task.init(), so the collector is on the
+new schedule while the subsystems allocate -- and holds the line that separates
+the justified forced collects from the hot path: Queue:_finish() must stay
+clean, Queue:clear() and the three ESC dispose paths must keep theirs.
+
+Pass --self-test to prove every one of those can go red: each check is aimed at
+a sabotaged copy of main.lua, at a planted bare setter, and at a queue.lua with
+its teardown collect cut out.
+'''
+    ),
 ]
 
 VERBATIM_JOBS = [

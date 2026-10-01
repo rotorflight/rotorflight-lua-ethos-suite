@@ -291,6 +291,76 @@ case.** A targeted fix (self-caching, subscription cleanup, in-place
 clearing) that actually reduces *live references* is the only kind of
 fix that can work here.
 
+### 9.1 Tuning the collector is a different lever from forcing it
+
+§9 rules out `collectgarbage("collect")` as a *fix*, because a complete cycle
+can only reclaim what is genuinely unreachable. **That ruling is untouched by
+this subsection.** Configuring the incremental collector changes *when* a cycle
+starts, not *what* is collectable: a cycle triggered at 120% of live instead of
+200% reclaims exactly the same objects, sooner. Nothing here makes retained
+memory collectable.
+
+The pause exists because the two ends of the range are both bad. A cycle starts
+once the heap has reached `live * pause / 100`, and the default is 200 — so with
+400 KB live, the heap is allowed to reach roughly 1.2 MB before the collector
+begins reclaiming at all. Ethos kills a script whose Lua heap passes its limit
+(#2295, *"Lua has used too much RAM, it has been Killed"*). A pause tuned for a
+general-purpose host therefore begins its work after the point at which the radio
+has already given up.
+
+`main.lua` sets it to **120** in `init()`, before `background_task.init()`, and
+prints what it applied:
+
+    [boot] gc: pause=120% of live heap before a cycle starts (Lua default 200)
+
+### 9.2 `collectgarbage("setpause")` is not a getter
+
+This is the whole reason the applied value is printed rather than read back:
+
+    collectgarbage("setpause", n)   -- sets the pause, RETURNS THE PREVIOUS one
+    collectgarbage("setpause")     -- sets the pause to 0, returns the previous
+
+Measured on the Lua 5.3.6 in this checkout, and asserted by
+`bin/gc_pause/verify_gc_pause.lua` rather than left to a comment, because
+`main.lua` cites the behaviour. Pause 0 means "collect as constantly as
+possible" — the exact opposite of the intent. So: the applied value is kept in a
+local and printed, no file under `src/` may call either setter without an
+explicit argument, and the call is `pcall`'d because a Lua without the mode
+string would otherwise abort the boot. A guard that fails says so.
+
+### 9.3 What the value is *not*
+
+- **Not measured.** Nothing in this repository states Ethos's Lua heap limit, so
+  there is no number to derive a pause from, and no on-device run measures what a
+  lower pause costs the background task's instruction budget
+  (`tasks/engine.lua`). It is one line to change and one line to revert, which
+  is what makes it worth trying.
+- **Not a fix for the allocation rate.** It moves the collector's onset earlier;
+  it does not allocate less. The churn itself still has to be reduced (#2364).
+- **Not covering the boot burst.** The eager `loadfile()` chain at
+  `main.lua:53/57/61` parses before `init()` runs, at the default pause. What it
+  leaves behind is live code, which no pause setting makes smaller — so this is a
+  creep measure, not a boot-peak measure.
+- **`setstepmul` is deliberately untouched.** It is the second knob, it trades
+  collector throughput against step size, and there is no measurement here of
+  jitter it would fix.
+
+### 9.4 How to decide it, without writing a line of code
+
+The metric that matters is the **peak `lua=` in the `[bgtask mem]` log over a
+30-minute flight** — and it is already logged, by `tasks/background.lua`. So the
+measurement is a procedure, not a feature: run the same session twice, once with
+the pause at the default and once at 120, and compare the peaks. The `[boot]` line
+above records which of the two a given log came from.
+
+A separate `live` figure, against which `churn` could be split, would need a
+forced full collect — and the one place that could show it,
+`app/pages/diagnostics_rfstatus.lua`, computes its memory text from a `wakeup`
+handler. A forced collect there would be precisely the hot-path forced collect
+this subsection is about. That is why there is no live/churn split in the
+diagnostics page: the number it would add is not worth a full cycle on every
+tick of that page.
+
 ## 10. New evidence: deferring a page's UI subtree is not §1
 
 §1 says don't defer a *top-level subsystem's registration* without new
@@ -474,3 +544,6 @@ the Lua side can be converted into bytes of headroom.
 | A long-lived cache table keeps growing across the whole session | Cache never cleared, or cleared by reassignment while something else still holds the old table | Clear in place (§7) |
 | A cache class grows across the whole session although a `clearCaches`-style option exists for it | The option is gated and no call site ever requests it — a silent failure by construction | Request the option at the lifecycle call site, and bound the cache if its key space is open-ended (§7, #2380) |
 | RAM grows on menu/page rebuild despite everything above being clean | Likely Ethos's own `form` widget retention (§9) | Don't force `collectgarbage()` — it won't help; this needs a different kind of fix (or may be a platform limit) |
+| The heap peaks past Ethos's limit before the collector starts reclaiming | The pause is 200, so a cycle only begins at twice the live heap (§9.1) | `main.lua` sets it to 120 and prints what it applied — judge it by the peak `lua=` (§9.4) |
+| The collector is running flat out on a radio | `collectgarbage("setpause")` was called without a value, which sets the pause to **0** (§9.2) | Print the applied value; never read it back — the setter returns the previous one |
+| Lowering the pause did not reduce memory use | It moves the collector's onset earlier; it does not allocate less (§9.3) | Reduce the churn itself (#2364) — the two are complementary, not alternatives |
