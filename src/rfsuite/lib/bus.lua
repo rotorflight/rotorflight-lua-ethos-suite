@@ -76,6 +76,12 @@ local MAX_PUBLISH_DEPTH = 8
 local publishDepth = 0
 local maxPublishDepth = 0
 
+-- One iteration copy per nesting level, reused across publishes. See publish()
+-- for why slots are cleared as handlers run to prevent closure retention.
+-- Bounded by MAX_PUBLISH_DEPTH: a level is created the first time a publish
+-- actually runs at it.
+local snapshots = {}
+
 local function subscribe(topic, handler)
   local list = subscribers[topic]
   if not list then
@@ -119,10 +125,26 @@ local function publish(topic, payload)
     return
   end
   -- Iterate a copy so a handler unsubscribing mid-publish can't skip entries.
-  local snapshot = {}
-  for i = 1, #list do
-    snapshot[i] = list[i]
-  end
+  -- The copy is pooled per nesting level rather than built per publish: this
+  -- runs at up to 20 Hz for session.update, and a fresh table every time was the
+  -- single largest allocation on that path. One snapshot per level is filled
+  -- from scratch on every publish, so the set of handlers a publish sees is
+  -- still the one that was subscribed when it started -- a handler
+  -- unsubscribing mid-publish keeps its turn in that publish and stops
+  -- receiving the next one, exactly as before.
+  --
+  -- Only indices 1..count are read while filling and iterating. Each slot is
+  -- cleared back to nil upon retrieval so the snapshot pool does not retain
+  -- closures (and their upvalues, e.g. closed PageRuntime instances) after
+  -- publish finishes or subscribers unsubscribe.
+  --
+  -- In PUC-Rio Lua, assigning nil to table array slots does NOT shrink the
+  -- allocated C array (sizearray remains unchanged without a rehash), so
+  -- writing 1..count on subsequent publishes still allocates 0.0 bytes.
+  --
+  -- The depth this publish will run at is unique while it runs, so a handler
+  -- that publishes to another topic takes the next level and cannot overwrite
+  -- the snapshot the outer loop is walking.
 
   -- Checked before the increment, so the trip raises with the counter still
   -- balanced. The error unwinds exactly ONE level -- into the pcall() of the
@@ -135,15 +157,30 @@ local function publish(topic, payload)
     error("bus.publish recursion limit reached (" .. MAX_PUBLISH_DEPTH ..
       ") while publishing '" .. tostring(topic) .. "'", 0)
   end
+
+  local count = #list
+  local snapshot = snapshots[publishDepth]
+  if snapshot == nil then
+    snapshot = {}
+    snapshots[publishDepth] = snapshot
+  end
+  for i = 1, count do
+    snapshot[i] = list[i]
+  end
+
   publishDepth = publishDepth + 1
   if publishDepth > maxPublishDepth then
     maxPublishDepth = publishDepth
   end
 
-  for i = 1, #snapshot do
-    local ok, err = pcall(snapshot[i], payload)
-    if not ok then
-      print("[bus] handler error on '" .. topic .. "': " .. tostring(err))
+  for i = 1, count do
+    local handler = snapshot[i]
+    snapshot[i] = nil
+    if handler then
+      local ok, err = pcall(handler, payload)
+      if not ok then
+        print("[bus] handler error on '" .. topic .. "': " .. tostring(err))
+      end
     end
   end
 

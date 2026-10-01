@@ -267,6 +267,32 @@ flight. Inline delivery makes the whole file vacuous.
 5 of its 17 cases go red on the pre-fix page_runtime.lua.
 '''
     ),
+    LuaJob(
+        id='wakeup-allocations',
+        name='Wakeup path allocates nothing per call',
+        step='Check the wakeup allocation paths',
+        script='bin/allocation_churn/verify_allocation_churn.lua',
+        rationale=r'''The dashboard wakeup path runs several times a second and session.update
+is published at up to 20 Hz, so a table rebuilt per call there is the
+sawtooth in the '[bgtask mem] lua=' log rather than a detail. Three such
+sites were removed: the subscriber copy in lib/bus.lua, the name table and
+its result table in getSensorStats(), and the per-call closure in
+transformValue(). #2384.
+
+No build and no package step reaches this -- it needs the collector held off
+and a loop that calls the function thousands of times, which is what the
+harness does. Every allocation assertion is paired in both directions: the
+current code has to come out under the bound and the removed code over it,
+on every run. A bound that both sides meet proves nothing, and the harness
+carries the removed implementations precisely so that can be seen. The same
+run also pins what a pooled iteration copy can get wrong -- a handler
+unsubscribed long ago must not come back through a leftover slot -- and the
+one value the change alters, an rssi box reading its own min/max instead of
+link quality's.
+
+Pass --self-test to assert only that the bounds still have teeth.
+'''
+    ),
 ]
 
 VERBATIM_JOBS = [

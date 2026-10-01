@@ -804,6 +804,14 @@ local STAT_ALIASES = {
   fuel = "smartfuel",
 }
 
+-- getSensorStats() returns one table per sensor, overwritten on each call, for
+-- every sensor whose min/max live in the flat "min<Suffix>"/"max<Suffix>" keys.
+-- One table for all sensors would be cheaper still, but a caller that read two
+-- sensors before drawing would see the second one twice; keying by name keeps
+-- that apart while still never allocating per call. Same pattern, same reason,
+-- as the temperature cache just above.
+local sensorStatsResults = {}
+
 local PRESENTATION_STAT_SOURCES = {
   "voltage",
   "cell_voltage",
@@ -977,37 +985,24 @@ function context.tasks.telemetry.getSensorStats(name)
     return cache
   end
   if entry then return entry end
-  local names = {
-    voltage = "Voltage",
-    cell_voltage = "CellVoltage",
-    consumption = "Consumption",
-    smartconsumption = "Consumption",
-    current = "Current",
-    throttle_percent = "ThrottlePercent",
-    rpm = "Rpm",
-    headspeed = "Rpm",
-    link = "Link",
-    rssi = "Link",
-    vfr = "Vfr",
-    tailspeed = "Tailspeed",
-    smartfuel = "FuelPercent",
-    fuel = "FuelPercent",
-    temp_mcu = "TempMcu",
-    temp_esc = "TempEsc",
-    bec_voltage = "BecVoltage",
-    altitude = "Altitude",
-    watts = "Watts",
-  }
-  local suffix = names[name or ""]
+  -- recordSensorStat() writes stats[statKey(name)] and the flat
+  -- min<Suffix>/max<Suffix> keys from the same value, and clearDashboardStats()
+  -- empties the table as a whole (dashboard.lua). A flat key therefore only
+  -- exists while the record above does, which the two returns above already
+  -- cover -- so the temperature branch this path used to carry was unreachable.
+  local suffix = STAT_SUFFIXES[name or ""]
   if not suffix then return nil end
-  local minValue = stats["min" .. suffix]
-  local maxValue = stats["max" .. suffix]
-  if name == "temp_mcu" or name == "temp_esc" then
-    local unit = temperatureUnit()
-    minValue = convertTemperature(minValue, unit)
-    maxValue = convertTemperature(maxValue, unit)
+  local result = sensorStatsResults[name]
+  if not result then
+    result = { min = nil, max = nil, avg = nil, sum = nil, count = nil }
+    sensorStatsResults[name] = result
   end
-  return {min = minValue, max = maxValue, avg = nil, sum = nil, count = nil}
+  result.min = stats["min" .. suffix]
+  result.max = stats["max" .. suffix]
+  result.avg = nil
+  result.sum = nil
+  result.count = nil
+  return result
 end
 
 function context.tasks.telemetry.active()
@@ -1603,35 +1598,51 @@ function utils.ensureCfg(box, builder)
   return box._cfg
 end
 
+-- "%.<decimals>f" is assembled once per distinct decimals value instead of on
+-- every rendered value. Used by applyTransform() below, its only caller.
+local function decimalFormat(decimals)
+  local fmt = fmtCache[decimals]
+  if not fmt then
+    fmt = "%." .. tostring(decimals) .. "f"
+    fmtCache[decimals] = fmt
+  end
+  return fmt
+end
+
+-- The one implementation of the transform dispatch. compileTransform() wraps it
+-- in a closure for the boxes that cache the result of ensureCfg(); the boxes
+-- that cannot cache (dial/image.lua, dial/rainbow.lua, gauge/ring.lua,
+-- gauge/step.lua, text/blackbox.lua, text/pidrates.lua) reach it through
+-- transformValue(), which has no per-call closure of its own.
+local function applyTransform(value, transform, decimals)
+  if value == nil then return nil end
+  if type(transform) == "function" then
+    value = transform(value)
+  elseif transform == "floor" then
+    value = math.floor(value)
+  elseif transform == "ceil" then
+    value = math.ceil(value)
+  elseif transform == "round" then
+    value = math.floor(value + 0.5)
+  elseif type(transform) == "number" then
+    value = value * transform
+  end
+  if decimals ~= nil and value ~= nil then
+    value = string.format(decimalFormat(decimals), value)
+  end
+  return value
+end
+
 function utils.compileTransform(transform, decimals)
   return function(value)
-    if value ~= nil and type(transform) == "function" then
-      value = transform(value)
-    elseif value ~= nil and transform == "floor" then
-      value = math.floor(value)
-    elseif value ~= nil and transform == "ceil" then
-      value = math.ceil(value)
-    elseif value ~= nil and transform == "round" then
-      value = math.floor(value + 0.5)
-    elseif value ~= nil and type(transform) == "number" then
-      value = value * transform
-    end
-    if decimals ~= nil and value ~= nil then
-      local fmt = fmtCache[decimals]
-      if not fmt then
-        fmt = "%." .. tostring(decimals) .. "f"
-        fmtCache[decimals] = fmt
-      end
-      value = string.format(fmt, value)
-    end
-    return value
+    return applyTransform(value, transform, decimals)
   end
 end
 
 function utils.transformValue(value, box)
-  local transform = utils.getParam(box or {}, "transform")
-  local decimals = utils.getParam(box or {}, "decimals")
-  return utils.compileTransform(transform, decimals)(value)
+  return applyTransform(value,
+    utils.getParam(box or {}, "transform"),
+    utils.getParam(box or {}, "decimals"))
 end
 
 function utils.resolveThresholdColor(value, box, colorKey, fallbackThemeKey, thresholdsOverride)
