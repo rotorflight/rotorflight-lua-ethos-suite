@@ -243,6 +243,30 @@ Five of its cases go red on the pre-fix pages, each naming the line it
 fails on.
 '''
     ),
+    # Registered here because the job was added to pr.yml by hand, so the
+    # generator did not know about it and the drift check has been red on master
+    # since #2432 landed. Any --write dropped this job from the workflow; the
+    # text below is master's, verbatim.
+    LuaJob(
+        id='profile-anchor',
+        name="A page's data stays tagged with the profile it came from",
+        step='Check the profile anchor across a switch during a read',
+        script='bin/page_runtime/verify_profile_anchor.lua',
+        rationale=r'''A page tags its data with the profile it was read for, and the tag used to
+be taken when the read finished rather than when it started. A pilot who
+switched profile while that read was in flight therefore got the previous
+profile's values on screen, anchored to the new profile -- and because the
+anchor matched, nothing ever reloaded. Saving then writes the old profile's
+values into the new one.
+
+Only a switch landing inside an MSP round-trip reaches it, which no build and
+no package step can stage. So MSP answers are held here rather than delivered
+inline, and the session.update is delivered while a read is genuinely in
+flight. Inline delivery makes the whole file vacuous.
+
+5 of its 17 cases go red on the pre-fix page_runtime.lua.
+'''
+    ),
 ]
 
 VERBATIM_JOBS = [
