@@ -30,7 +30,7 @@
 -- What this harness deliberately does NOT claim: that a pause of 120 is right.
 -- Nothing in the repository states Ethos's Lua heap limit and there is no
 -- on-device run yet. The value is a starting point to be measured
--- (docs/memory-and-module-lifecycle.md section 13), and this check pins the
+-- (docs/memory-and-module-lifecycle.md section 9.4), and this check pins the
 -- contract around it, not the outcome.
 --
 -- --self-test proves the checks can go red by pointing the same predicates at

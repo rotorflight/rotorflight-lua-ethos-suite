@@ -77,7 +77,7 @@ local activelook_widget = nil
 -- derive a pause from, and no on-device run yet measures what a lower pause
 -- costs the background task's instruction budget (tasks/engine.lua). What makes
 -- this worth trying anyway is that it is one line to change and one line to
--- revert -- see docs/memory-and-module-lifecycle.md section 13 for the
+-- revert -- see docs/memory-and-module-lifecycle.md section 9.4 for the
 -- measurement that decides it, which needs no code at all.
 --
 -- setstepmul is deliberately NOT touched. It is the second knob and it trades
