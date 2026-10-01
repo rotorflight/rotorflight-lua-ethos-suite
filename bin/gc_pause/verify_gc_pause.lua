@@ -83,13 +83,6 @@ local function writeFile(path, text)
   fh:close()
 end
 
-local function tempDir()
-  local base = os.getenv("TEMP") or os.getenv("TMP") or "."
-  local dir = base .. "\\rfsuite_gc_selftest"
-  os.execute('mkdir "' .. dir .. '" 2>nul')
-  return dir
-end
-
 -- ---------------------------------------------------------------------------
 -- 1. what the interpreter actually does with "setpause"
 -- ---------------------------------------------------------------------------
@@ -241,17 +234,34 @@ local function mainPauseChecks(path, quiet)
   return found, total
 end
 
--- Returns offenders and the number of files looked at.
-local function scanBareSetters(dir)
+-- Windows has no find(1) and POSIX shells have no dir(1), and the Lua stdlib
+-- has no directory API at all, so listing needs one shell command. This is the
+-- platform branch that keeps the check runnable on both: the first version used
+-- `dir /s /b` unconditionally and was green on the author's Windows box while
+-- reporting "scanned 0 .lua files" on the CI runner -- a check that passes by
+-- finding nothing is worse than no check, because the count is what catches it.
+local IS_WINDOWS = package.config:sub(1, 1) == "\\"
+
+local function listLuaFiles(dir)
+  local cmd = IS_WINDOWS
+    and ('dir /s /b "' .. dir .. '\\*.lua" 2>nul')
+    or ("find '" .. dir .. "' -type f -name '*.lua'")
+  local pipe = io.popen(cmd)
+  if not pipe then return nil end
+  local files = {}
+  for line in pipe:lines() do files[#files + 1] = line end
+  pipe:close()
+  return files
+end
+
+-- Returns offenders and the number of files looked at. Takes a file list rather
+-- than a directory, so the self-test can point it at a single planted file
+-- without having to create a directory to plant it in.
+local function scanBareSetters(files)
   local offenders = {}
-  local scanned = 0
-  -- One recursive listing rather than a walk of our own: the stdlib has no
-  -- directory API.
-  local pipe = io.popen('dir /s /b "' .. dir .. '\\*.lua" 2>nul')
-  if not pipe then return offenders, scanned, false end
-  for path in pipe:lines() do
-    scanned = scanned + 1
-    local short = path:match("[^\\]+$") or path
+  if not files then return offenders, 0 end
+  for _, path in ipairs(files) do
+    local short = path:match("[^/\\]+$") or path
     local lineNo = 0
     for line in (readFile(path) .. "\n"):gmatch("([^\n]*)\n") do
       lineNo = lineNo + 1
@@ -263,8 +273,7 @@ local function scanBareSetters(dir)
       end
     end
   end
-  pipe:close()
-  return offenders, scanned, true
+  return offenders, #files
 end
 
 -- Counts real forced cycles in a file, not the prose about them: queue.lua's
@@ -298,8 +307,9 @@ mainPauseChecks(MAIN)
 -- ---------------------------------------------------------------------------
 banner("src/ never calls the pause/stepmul setters without a value")
 do
-  local offenders, scanned, listed = scanBareSetters(SRC)
-  check("could list the Lua sources under src/rfsuite", listed)
+  local files = listLuaFiles(SRC)
+  check("could list the Lua sources under src/rfsuite", files ~= nil)
+  local offenders, scanned = scanBareSetters(files)
   check(string.format("scanned %d .lua files under src/rfsuite", scanned), scanned > 40, scanned)
   check("no collectgarbage(\"setpause\") or (\"setstepmul\") without a value",
     #offenders == 0, table.concat(offenders, ", "))
@@ -335,7 +345,8 @@ if arg and arg[1] == "--self-test" then
   -- forwards to the real function -- which is the point. Put it back after each
   -- attempt so the next measurement means anything.
   local pauseBefore = realCollectgarbage("setpause", 200)
-  local dir = tempDir()
+  -- os.tmpname() rather than a directory this harness creates: it is portable,
+  -- and nothing here needs a directory now.
   local source = readFile(MAIN)
 
   print()
@@ -363,22 +374,22 @@ if arg and arg[1] == "--self-test" then
 
   -- (a) the call never happens
   sabotage("applyGcPause() nie aufgerufen",
-    dir .. "\\main-a.lua", "  applyGcPause()", "  -- removed on purpose")
+    os.tmpname(), "  applyGcPause()", "  -- removed on purpose")
 
   -- (b) the trap: read the pause back with the argument omitted
   sabotage('collectgarbage("setpause") ohne Wert als Getter benutzt',
-    dir .. "\\main-b.lua",
+    os.tmpname(),
     'pcall(collectgarbage, "setpause", GC_PAUSE_PERCENT)',
     'pcall(collectgarbage, "setpause")')
 
   -- (c) a different value than the one the boot log reports
   sabotage("ein anderer Wert als der dokumentierte",
-    dir .. "\\main-c.lua", "GC_PAUSE_PERCENT = 120", "GC_PAUSE_PERCENT = 90")
+    os.tmpname(), "GC_PAUSE_PERCENT = 120", "GC_PAUSE_PERCENT = 90")
 
   -- (d) the scanner finds a planted bare setter
-  local planted = dir .. "\\planted.lua"
+  local planted = os.tmpname()
   writeFile(planted, 'local p = collectgarbage("setpause")\nreturn p\n')
-  local offenders = scanBareSetters(dir)
+  local offenders = scanBareSetters({ planted })
   local caught = #offenders > 0
   ok = ok and caught
   print(string.format("  %s  ein gepflanzter blinder Setter wird gefunden -- %d Treffer",
@@ -386,7 +397,7 @@ if arg and arg[1] == "--self-test" then
   os.remove(planted)
 
   -- (e) a teardown collect that quietly disappeared
-  local queueCopy = dir .. "\\queue.lua"
+  local queueCopy = os.tmpname()
   local queueText = readFile(SRC .. "/tasks/msp/queue.lua")
   local qs, qe = queueText:find("\n  collectgarbage()", 1, true)
   if not qs then
@@ -403,7 +414,6 @@ if arg and arg[1] == "--self-test" then
   os.remove(queueCopy)
 
   realCollectgarbage("setpause", pauseBefore)
-  os.execute('rmdir "' .. dir .. '" 2>nul')
 
   failures, checks = savedFail, savedChecks
   print()
