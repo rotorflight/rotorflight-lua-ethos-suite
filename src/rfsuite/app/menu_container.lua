@@ -191,6 +191,20 @@ local function openScreen(nav, menus, rootEntries, screen, setEventHandler, setW
   -- needs no separate branch, and every screen now behaves like its own
   -- on-screen Menu button, which is the invariant app/close_key.lua states in
   -- its first sentence.
+  --
+  -- Verified on the radio (X18RS, 02.10.2026), and it settles the part of
+  -- #2429 that was still open: a short RTN DOES reach this handler even while a
+  -- tile holds the form's input focus. The form layer does not swallow it. The
+  -- extra press came from Ethos's default running *after* the tool returned
+  -- false, and the default's two steps are "drop the focus, then exit" -- not
+  -- from the focus existing.
+  --
+  -- That is why focusEnabledTile() below is left alone. #2429 also proposed
+  -- turning the "where was I" tile marker from an input focus into a paint, on
+  -- the theory that the form layer consumes one RTN to clear a focus; measured
+  -- on the device, it does not, and with this handler installed one press
+  -- closes from every screen with the marker still an ordinary :focus(). Do not
+  -- re-do the marker as a paint on the strength of the issue's reasoning.
   setEventHandler(function(category, value)
     if not closeKey.shouldHandleClose(category, value) then return false end
     goBack()
