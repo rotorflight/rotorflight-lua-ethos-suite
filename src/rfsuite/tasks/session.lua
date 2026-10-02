@@ -1400,7 +1400,11 @@ local function wakeup(mspQueue, protocol, transport, simSensors)
     end
 
     if protocol == "crsf" and session.connected and shouldRunScheduled("elrs", ELRS_SENSOR_INTERVAL, now) then
-      ensureElrsSensors().wakeup(transport, session.telemetrySlots)
+      -- A capped drain (see tasks/elrs_sensors.lua's MAX_FRAMES_PER_WAKEUP)
+      -- left frames queued: run again next tick rather than in 0.18s.
+      if ensureElrsSensors().wakeup(transport, session.telemetrySlots) then
+        nextScheduledAt.elrs = nil
+      end
     end
   end
 

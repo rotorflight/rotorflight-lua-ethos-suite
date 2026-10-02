@@ -2,7 +2,7 @@
 -- forced GC that used to run on every completed message (issue #2379).
 --
 -- Run it:
---     lua5.3 bin/msp_gc/verify_msp_disconnect.lua
+--     lua5.4 bin/msp_gc/verify_msp_disconnect.lua
 --
 -- Two claims, checked without a radio, an FC or Ethos:
 --

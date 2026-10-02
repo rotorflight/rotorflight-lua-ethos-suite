@@ -18,11 +18,11 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Install Lua 5.3
-        run: sudo apt-get update && sudo apt-get install -y lua5.3
+      - name: Install Lua 5.4
+        run: sudo apt-get update && sudo apt-get install -y lua5.4
 
       - name: Check the flight record behaviour
-        run: lua5.3 bin/flight_record/verify_flight_record.lua
+        run: lua5.4 bin/flight_record/verify_flight_record.lua
 
   # Every file the suite owns was opened for writing directly, and io.open(path,
   # "w") truncates on open -- so a radio switched off mid-save left
@@ -39,11 +39,11 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Install Lua 5.3
-        run: sudo apt-get update && sudo apt-get install -y lua5.3
+      - name: Install Lua 5.4
+        run: sudo apt-get update && sudo apt-get install -y lua5.4
 
       - name: Check the write path
-        run: lua5.3 bin/storage/verify_atomic_writes.lua
+        run: lua5.4 bin/storage/verify_atomic_writes.lua
 
   # The ESC forward-programming tiles are gated by a guard that has to retry a
   # failed MSP read. That retry reaches neither a build nor a package step, so
@@ -56,11 +56,11 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Install Lua 5.3
-        run: sudo apt-get update && sudo apt-get install -y lua5.3
+      - name: Install Lua 5.4
+        run: sudo apt-get update && sudo apt-get install -y lua5.4
 
       - name: Check that a failed ESC read is retried
-        run: lua5.3 bin/esc_guard/verify_esc_guard_retry.lua
+        run: lua5.4 bin/esc_guard/verify_esc_guard_retry.lua
 
   # An MSP request that is abandoned between two of its frames used to leave
   # the shared TX buffer occupied, after which no request could be framed at all
@@ -75,11 +75,11 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Install Lua 5.3
-        run: sudo apt-get update && sudo apt-get install -y lua5.3
+      - name: Install Lua 5.4
+        run: sudo apt-get update && sudo apt-get install -y lua5.4
 
       - name: Check the MSP queue behaviour
-        run: lua5.3 bin/msp_queue/verify_msp_queue.lua
+        run: lua5.4 bin/msp_queue/verify_msp_queue.lua
 
   # A flight log is the pilot's evidence after a crash, and both ways it could
   # lose rows were silent: an io.open that failed emptied the buffer, and a failed
@@ -101,11 +101,11 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Install Lua 5.3
-        run: sudo apt-get update && sudo apt-get install -y lua5.3
+      - name: Install Lua 5.4
+        run: sudo apt-get update && sudo apt-get install -y lua5.4
 
       - name: Check that an unwritable card does not discard the buffer
-        run: lua5.3 bin/logging/verify_log_flush_retry.lua
+        run: lua5.4 bin/logging/verify_log_flush_retry.lua
 
   # Three drain loops run inside one background-task wakeup with no yield point
   # in between, and each was bounded by a wall-clock deadline set well above what
@@ -126,11 +126,11 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Install Lua 5.3
-        run: sudo apt-get update && sudo apt-get install -y lua5.3
+      - name: Install Lua 5.4
+        run: sudo apt-get update && sudo apt-get install -y lua5.4
 
       - name: Check the drain budgets
-        run: lua5.3 bin/perf/verify_clock_budgets.lua
+        run: lua5.4 bin/perf/verify_clock_budgets.lua
 
   # Every MSP decoder in the suite funnels through lib/mspcodec.lua, and the one
   # primitive there was not bounds-safe: readU8 returned nil for a byte past the
@@ -153,11 +153,11 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Install Lua 5.3
-        run: sudo apt-get update && sudo apt-get install -y lua5.3
+      - name: Install Lua 5.4
+        run: sudo apt-get update && sudo apt-get install -y lua5.4
 
       - name: Check the codec and the battery decoders
-        run: lua5.3 bin/msp_battery/verify_msp_battery.lua
+        run: lua5.4 bin/msp_battery/verify_msp_battery.lua
 
   tool-ui-lazy:
     name: Tool UI not loaded at boot
@@ -167,11 +167,11 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Install Lua 5.3
-        run: sudo apt-get update && sudo apt-get install -y lua5.3
+      - name: Install Lua 5.4
+        run: sudo apt-get update && sudo apt-get install -y lua5.4
 
       - name: Check the tool's load timing
-        run: lua5.3 bin/tool_ui/verify_tool_ui_lazy.lua
+        run: lua5.4 bin/tool_ui/verify_tool_ui_lazy.lua
 
   # Deferring the tool's UI raises the obvious question: does it add MSP
   # traffic, and does anything accumulate per open/close cycle? This harness
@@ -186,11 +186,11 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Install Lua 5.3
-        run: sudo apt-get update && sudo apt-get install -y lua5.3
+      - name: Install Lua 5.4
+        run: sudo apt-get update && sudo apt-get install -y lua5.4
 
       - name: Check the MSP request pattern over repeated tool cycles
-        run: lua5.3 bin/tool_ui/verify_no_extra_msp.lua
+        run: lua5.4 bin/tool_ui/verify_no_extra_msp.lua
 
   # Ethos form widgets retain closures across form.clear(), so app/field_layout.lua
   # pools accessor slots to prevent unbounded closure growth across repeat page visits.
@@ -204,11 +204,11 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Install Lua 5.3
-        run: sudo apt-get update && sudo apt-get install -y lua5.3
+      - name: Install Lua 5.4
+        run: sudo apt-get update && sudo apt-get install -y lua5.4
 
       - name: Check field layout slot pooling and lifecycle
-        run: lua5.3 bin/field_layout/verify_field_layout.lua
+        run: lua5.4 bin/field_layout/verify_field_layout.lua
 
   # Widgets and objects load bitmaps on demand, and clearCaches()'s images
   # branch previously had no caller anywhere -- so every decoded dashboard
@@ -224,11 +224,11 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Install Lua 5.3
-        run: sudo apt-get update && sudo apt-get install -y lua5.3
+      - name: Install Lua 5.4
+        run: sudo apt-get update && sudo apt-get install -y lua5.4
 
       - name: Check dashboard image cache behaviour
-        run: lua5.3 bin/dashboard/verify_image_caches.lua
+        run: lua5.4 bin/dashboard/verify_image_caches.lua
 
   # A disconnect used to leave the MSP request queue holding everything an open
   # page had queued, so the next handshake queued FIFO behind a backlog that no
@@ -244,11 +244,11 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Install Lua 5.3
-        run: sudo apt-get update && sudo apt-get install -y lua5.3
+      - name: Install Lua 5.4
+        run: sudo apt-get update && sudo apt-get install -y lua5.4
 
       - name: Check the disconnect and GC behaviour
-        run: lua5.3 bin/msp_gc/verify_msp_disconnect.lua
+        run: lua5.4 bin/msp_gc/verify_msp_disconnect.lua
 
   # The bus is the only channel between the tool, the dashboard and the
   # background task, and publish() calls its handlers synchronously -- a
@@ -266,11 +266,11 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Install Lua 5.3
-        run: sudo apt-get update && sudo apt-get install -y lua5.3
+      - name: Install Lua 5.4
+        run: sudo apt-get update && sudo apt-get install -y lua5.4
 
       - name: Check the publish recursion bound and the stack minimum
-        run: lua5.3 bin/stack/verify_stack_bounds.lua
+        run: lua5.4 bin/stack/verify_stack_bounds.lua
 
   # Leaving a page -- with the Back key, or by closing the tool -- ran the
   # page's dialog teardown on a form Ethos had already stopped updating, and a
@@ -290,11 +290,11 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Install Lua 5.3
-        run: sudo apt-get update && sudo apt-get install -y lua5.3
+      - name: Install Lua 5.4
+        run: sudo apt-get update && sudo apt-get install -y lua5.4
 
       - name: Check the dialog teardown
-        run: lua5.3 bin/dialog_lifecycle/verify_dialog_lifecycle.lua
+        run: lua5.4 bin/dialog_lifecycle/verify_dialog_lifecycle.lua
 
   # A page tags its data with the profile it was read for, and the tag used to
   # be taken when the read finished rather than when it started. A pilot who
@@ -317,11 +317,11 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Install Lua 5.3
-        run: sudo apt-get update && sudo apt-get install -y lua5.3
+      - name: Install Lua 5.4
+        run: sudo apt-get update && sudo apt-get install -y lua5.4
 
       - name: Check the profile anchor across a switch during a read
-        run: lua5.3 bin/page_runtime/verify_profile_anchor.lua
+        run: lua5.4 bin/page_runtime/verify_profile_anchor.lua
 
   # The dashboard wakeup path runs several times a second and session.update
   # is published at up to 20 Hz, so a table rebuilt per call there is the
@@ -350,11 +350,11 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Install Lua 5.3
-        run: sudo apt-get update && sudo apt-get install -y lua5.3
+      - name: Install Lua 5.4
+        run: sudo apt-get update && sudo apt-get install -y lua5.4
 
       - name: Check the wakeup allocation paths
-        run: lua5.3 bin/allocation_churn/verify_allocation_churn.lua
+        run: lua5.4 bin/allocation_churn/verify_allocation_churn.lua
 
   # The collector's pause decides when a cycle starts: live * pause / 100.
   # The default is 200, so the heap may reach twice what is live before anything is
@@ -365,7 +365,7 @@ jobs:
   # `collectgarbage("setpause", n)` returns the PREVIOUS value, and with the
   # argument omitted it does not read the current one, it SETS THE PAUSE TO 0.
   # Pause 0 is "collect as constantly as possible", the opposite of the intent.
-  # Measured on the Lua 5.3.6 in this checkout, and the first case here asserts it
+  # Measured on Lua 5.3.6 and on 5.4 (what Ethos runs), and the first case here asserts it
   # rather than trusting it, because main.lua's own comment cites the behaviour and
   # a future interpreter could change it.
   #
@@ -387,11 +387,11 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Install Lua 5.3
-        run: sudo apt-get update && sudo apt-get install -y lua5.3
+      - name: Install Lua 5.4
+        run: sudo apt-get update && sudo apt-get install -y lua5.4
 
       - name: Check the collector pause and the forced collects
-        run: lua5.3 bin/gc_pause/verify_gc_pause.lua
+        run: lua5.4 bin/gc_pause/verify_gc_pause.lua
 
   # Every screen but one installed a handler for the physical Back/Close key. The
   # root menu installed none, on the stated assumption that Ethos's own default
@@ -419,11 +419,68 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Install Lua 5.3
-        run: sudo apt-get update && sudo apt-get install -y lua5.3
+      - name: Install Lua 5.4
+        run: sudo apt-get update && sudo apt-get install -y lua5.4
 
       - name: Check the root menu close key
-        run: lua5.3 bin/tool_ui/verify_root_close_key.lua
+        run: lua5.4 bin/tool_ui/verify_root_close_key.lua
+
+  # lib/msp_governor_profile.lua encoded every field as `data[name] or 0`, so a
+  # table missing a key became a struct of zeros -- governor_headspeed 0,
+  # governor_max_throttle 0 -- and every one of those is a value the firmware
+  # accepts as in range. It re-runs its own validateAndFixServoConfig() on it and
+  # reports success. There is nothing in the write for a pilot to notice.
+  #
+  # What this pins is that the encoder refuses instead of inventing, and -- the half
+  # that matters -- that the refusal is not merely returned but acted upon: a codec
+  # that declines to build a message is a REFUSED write in app/page_runtime.lua, not
+  # a message with no payload. Asserting on encode() alone would pass while the
+  # runtime published the nil, so the harness drives the real page_runtime with the
+  # real codec and reads what went onto the bus.
+  #
+  # No build and no package step reaches it. The load gate that already existed --
+  # any source read failing keeps loaded == false and canSave() false -- is pinned
+  # too, so a later change cannot trade one protection for the other.
+  #
+  # Cases 2, 3 and 4 go red on the pre-fix codec. Pass --self-test to prove that
+  # rather than take it on trust: it puts a copy of the codec with the pre-fix
+  # encode() in the same seat and requires it to build a 17-byte all-zero payload
+  # from an empty table AND requires page_runtime to publish it.
+  governor-profile-write:
+    name: A governor profile is never written from an incomplete table
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Lua 5.4
+        run: sudo apt-get update && sudo apt-get install -y lua5.4
+
+      - name: Check the governor profile write guard
+        run: lua5.4 bin/governor_profile/verify_governor_profile_write.lua
+
+  # Ethos aborts any Lua callback that runs 20000 VM instructions ("Max
+  # instructions count reached"), and nothing on the radio says how close one
+  # runs. This drives the real dashboard widget through every theme and flight
+  # state, and the real background task through boot, link up, steady CRSF with
+  # ELRS frames, an ELRS backlog and link down, counting instructions with a
+  # debug hook on desktop Lua. Any callback at or over the limit fails, so a
+  # theme with too many boxes, or a new per-tick cost, is caught here instead of
+  # as stalled frames or a dropped background tick in flight.
+  instruction-budget:
+    name: Callbacks stay under the Ethos instruction limit
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Lua 5.4
+        run: sudo apt-get update && sudo apt-get install -y lua5.4
+
+      - name: Check the Ethos instruction budget
+        run: lua5.4 bin/perf/verify_instruction_budget.lua
 
   # Per-language PR builds (mirrors push.yml behavior)
   create-zip:
@@ -487,8 +544,8 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Install Lua 5.3
-        run: sudo apt-get update && sudo apt-get install -y lua5.3
+      - name: Install Lua 5.4
+        run: sudo apt-get update && sudo apt-get install -y lua5.4
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -499,7 +556,7 @@ jobs:
         run: python bin/fblstatus/verify_arming_flag_widths.py --self-test
 
       - name: Check the arming flag mask and the page's use of it
-        run: lua5.3 bin/fblstatus/verify_arming_flags.lua
+        run: lua5.4 bin/fblstatus/verify_arming_flags.lua
 
       - name: Check every locale's flag strings against the row widths
         run: python bin/fblstatus/verify_arming_flag_widths.py

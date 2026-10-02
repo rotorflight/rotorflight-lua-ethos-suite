@@ -2,7 +2,7 @@
 -- (#2383).
 --
 -- Run it:
---     lua5.3 bin/dialog_lifecycle/verify_dialog_lifecycle.lua
+--     lua5.4 bin/dialog_lifecycle/verify_dialog_lifecycle.lua
 --
 -- What it drives, and why:
 --   * The real app/page_runtime.lua, app/pages/ports.lua and

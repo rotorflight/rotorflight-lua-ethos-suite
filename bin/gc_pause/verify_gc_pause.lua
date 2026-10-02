@@ -1,8 +1,8 @@
 -- Behaviour check for the incremental collector's pause (issue #2389).
 --
 -- Run it:
---     lua5.3 bin/gc_pause/verify_gc_pause.lua
---     lua5.3 bin/gc_pause/verify_gc_pause.lua --self-test
+--     lua5.4 bin/gc_pause/verify_gc_pause.lua
+--     lua5.4 bin/gc_pause/verify_gc_pause.lua --self-test
 --
 -- Four claims, none of which needs a radio:
 --
@@ -11,7 +11,7 @@
 --      read the current one, it SETS THE PAUSE TO 0. Pause 0 is "collect as
 --      constantly as possible". This is what makes the function unusable as a
 --      getter, and it is the reason main.lua prints the value it applied
---      instead of reading it back. Measured on the Lua 5.3.6 in this checkout,
+--      instead of reading it back. Measured on Lua 5.3.6 and on 5.4 (what Ethos runs),
 --      and pinned so a future interpreter cannot quietly change it under a
 --      comment that cites it.
 --   2. main.lua's init() sets the pause exactly once per call, to the one

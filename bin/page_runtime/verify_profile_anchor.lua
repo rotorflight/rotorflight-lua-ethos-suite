@@ -1,7 +1,7 @@
 -- Behaviour check for the profile anchor a page's data is tagged with (#2388).
 --
 -- Run it:
---     lua5.3 bin/page_runtime/verify_profile_anchor.lua
+--     lua5.4 bin/page_runtime/verify_profile_anchor.lua
 --
 -- What it drives, and why:
 --   * The real src/rfsuite/app/page_runtime.lua under stubs for the six things

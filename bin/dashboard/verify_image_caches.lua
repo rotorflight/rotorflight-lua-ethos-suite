@@ -2,8 +2,8 @@
 --
 -- Run it:
 --
---     lua5.3 bin/dashboard/verify_image_caches.lua
---     (or from src/rfsuite: lua5.3 ../../bin/dashboard/verify_image_caches.lua)
+--     lua5.4 bin/dashboard/verify_image_caches.lua
+--     (or from src/rfsuite: lua5.4 ../../bin/dashboard/verify_image_caches.lua)
 --
 -- What it drives, and why:
 --   * The claim is about *retention*, not about a return value. A decoded

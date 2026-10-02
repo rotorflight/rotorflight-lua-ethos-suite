@@ -1,7 +1,7 @@
 -- Behaviour check for the flight-log flush (#2385).
 --
 -- Run it:
---     lua5.3 bin/logging/verify_log_flush_retry.lua
+--     lua5.4 bin/logging/verify_log_flush_retry.lua
 --
 -- What it drives, and why:
 --   * The real src/rfsuite/tasks/logging.lua under stubs for the five things it

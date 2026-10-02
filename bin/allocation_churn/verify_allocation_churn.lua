@@ -1,7 +1,7 @@
 -- Behaviour and allocation check for the dashboard wakeup path (issue #2384).
 --
 -- Run it:
---     lua5.3 bin/allocation_churn/verify_allocation_churn.lua
+--     lua5.4 bin/allocation_churn/verify_allocation_churn.lua
 --
 -- What it drives, and why:
 --   * lib/bus.lua is self-contained -- no radio, no FC, no Ethos. The check

@@ -16,7 +16,7 @@ because the generator puts each job where the registry says.
 
 Two kinds of entry, because the jobs are not all the same shape:
 
-* `LUA_JOBS` is the uniform one -- checkout, install lua5.3, run a single
+* `LUA_JOBS` is the uniform one -- checkout, install lua5.4, run a single
   harness. That is what every new behaviour fix needs, so it is modelled
   properly: the rationale is the reason the harness exists, and it is the
   part that has to survive being moved into a Python string.
@@ -38,7 +38,7 @@ from typing import NamedTuple
 
 
 class LuaJob(NamedTuple):
-    """A job that checks out, installs lua5.3 and runs one harness."""
+    """A job that checks out, installs lua5.4 and runs one harness."""
 
     id: str
     name: str
@@ -310,7 +310,7 @@ that is what this pins:
 `collectgarbage("setpause", n)` returns the PREVIOUS value, and with the
 argument omitted it does not read the current one, it SETS THE PAUSE TO 0.
 Pause 0 is "collect as constantly as possible", the opposite of the intent.
-Measured on the Lua 5.3.6 in this checkout, and the first case here asserts it
+Measured on Lua 5.3.6 and on 5.4 (what Ethos runs), and the first case here asserts it
 rather than trusting it, because main.lua's own comment cites the behaviour and
 a future interpreter could change it.
 
@@ -349,6 +349,49 @@ Seven of its seventeen cases go red on the pre-fix file. Pass --self-test to
 prove that rather than take it on trust: it re-runs the identical sequence
 against a copy of app/menu_container.lua with the pre-fix root branch put back
 and requires every one of the seven to fail.
+'''
+    ),
+    LuaJob(
+        id='governor-profile-write',
+        name='A governor profile is never written from an incomplete table',
+        step='Check the governor profile write guard',
+        script='bin/governor_profile/verify_governor_profile_write.lua',
+        rationale=r'''lib/msp_governor_profile.lua encoded every field as `data[name] or 0`, so a
+table missing a key became a struct of zeros -- governor_headspeed 0,
+governor_max_throttle 0 -- and every one of those is a value the firmware
+accepts as in range. It re-runs its own validateAndFixServoConfig() on it and
+reports success. There is nothing in the write for a pilot to notice.
+
+What this pins is that the encoder refuses instead of inventing, and -- the half
+that matters -- that the refusal is not merely returned but acted upon: a codec
+that declines to build a message is a REFUSED write in app/page_runtime.lua, not
+a message with no payload. Asserting on encode() alone would pass while the
+runtime published the nil, so the harness drives the real page_runtime with the
+real codec and reads what went onto the bus.
+
+No build and no package step reaches it. The load gate that already existed --
+any source read failing keeps loaded == false and canSave() false -- is pinned
+too, so a later change cannot trade one protection for the other.
+
+Cases 2, 3 and 4 go red on the pre-fix codec. Pass --self-test to prove that
+rather than take it on trust: it puts a copy of the codec with the pre-fix
+encode() in the same seat and requires it to build a 17-byte all-zero payload
+from an empty table AND requires page_runtime to publish it.
+'''
+    ),
+    LuaJob(
+        id='instruction-budget',
+        name='Callbacks stay under the Ethos instruction limit',
+        step='Check the Ethos instruction budget',
+        script='bin/perf/verify_instruction_budget.lua',
+        rationale=r'''Ethos aborts any Lua callback that runs 20000 VM instructions ("Max
+instructions count reached"), and nothing on the radio says how close one
+runs. This drives the real dashboard widget through every theme and flight
+state, and the real background task through boot, link up, steady CRSF with
+ELRS frames, an ELRS backlog and link down, counting instructions with a
+debug hook on desktop Lua. Any callback at or over the limit fails, so a
+theme with too many boxes, or a new per-tick cost, is caught here instead of
+as stalled frames or a dropped background tick in flight.
 '''
     ),
 ]
@@ -419,8 +462,8 @@ r'''  # A Diagnostics page cannot be looked at from a pull request, and the one
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Install Lua 5.3
-        run: sudo apt-get update && sudo apt-get install -y lua5.3
+      - name: Install Lua 5.4
+        run: sudo apt-get update && sudo apt-get install -y lua5.4
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -431,7 +474,7 @@ r'''  # A Diagnostics page cannot be looked at from a pull request, and the one
         run: python bin/fblstatus/verify_arming_flag_widths.py --self-test
 
       - name: Check the arming flag mask and the page's use of it
-        run: lua5.3 bin/fblstatus/verify_arming_flags.lua
+        run: lua5.4 bin/fblstatus/verify_arming_flags.lua
 
       - name: Check every locale's flag strings against the row widths
         run: python bin/fblstatus/verify_arming_flag_widths.py

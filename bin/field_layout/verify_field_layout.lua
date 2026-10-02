@@ -1,7 +1,7 @@
 -- Behaviour and lifecycle check for field_layout.lua slot pooling.
 --
 -- Run it:
---     lua5.3 bin/field_layout/verify_field_layout.lua
+--     lua5.4 bin/field_layout/verify_field_layout.lua
 --
 -- What it drives, and why:
 --   * app/field_layout.lua pools accessor slots by (page, spec, kind, scale, decimals).

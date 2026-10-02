@@ -19,6 +19,7 @@ local preparedObjectsLoaded = false
 local wakeCursor = 1
 local wakePassCount = 0
 local wakeCursorFailCount = 0
+local passHasUnwoken = false   -- see wakeOne()
 -- Hybrid safety cap on the very first wake pass (see wakeObjects()'s own
 -- comment on why that pass is otherwise a full, unpaced sweep of every
 -- box): still backstopped by wakeOne()'s own instruction-budget catch
@@ -152,15 +153,28 @@ local function buildBoxTypeList(boxes, headerBoxes)
   return typeScratch
 end
 
+-- A failed load is retried at most every LOAD_RETRY_SECONDS: paintObjects()
+-- asks for every box's type on every frame, and a missing or unreadable file
+-- would otherwise be a loadfile() per box per frame.
+local LOAD_RETRY_SECONDS = 1.0
+local loadFailedAt = {}
+
 local function loadObjectType(objectType)
   if objectsByType[objectType] then return objectsByType[objectType] end
+  local failedAt = loadFailedAt[objectType]
+  if failedAt and os.clock() - failedAt < LOAD_RETRY_SECONDS then return nil end
   local loader = loadfile("widgets/dashboard/objects/" .. objectType .. ".lua")
-  if not loader then return nil end
+  if not loader then
+    loadFailedAt[objectType] = os.clock()
+    return nil
+  end
   local ok, object = pcall(loader)
   if not ok then
+    loadFailedAt[objectType] = os.clock()
     print("[dashboard] failed to load object " .. tostring(objectType) .. ": " .. tostring(object))
     return nil
   end
+  loadFailedAt[objectType] = nil
   objectsByType[objectType] = object
   return object
 end
@@ -330,6 +344,7 @@ local function prepareLayout(config, screenW, screenH, skipObjectLoad, maxTypesT
     wakeCursor = 1
     wakePassCount = 0
     wakeCursorFailCount = 0
+    passHasUnwoken = false
     if skipObjectLoad then
       preparedObjectsLoaded = false
     else
@@ -345,6 +360,7 @@ local function prepareLayout(config, screenW, screenH, skipObjectLoad, maxTypesT
       wakeCursor = 1
       wakePassCount = 0
       wakeCursorFailCount = 0
+      passHasUnwoken = false
     end
   end
 end
@@ -355,28 +371,50 @@ end
 -- left -- the same distinction paintObjects() already draws via
 -- isInstructionBudgetError(). Any other error is logged and treated as this
 -- one box's problem only, same as before.
+--
+-- box._dashboardWoken records whether the box's wakeup() actually ran, so
+-- paintObjects() can draw the placeholder shell for one that did not rather
+-- than an object whose cache was never built. A box is not woken when its
+-- object type failed to load, when its wrapper could not load the subtype
+-- (it returns false), or when wakeup() was cut off by the instruction limit.
+-- Any of those also marks the pass as having unwoken boxes, which keeps
+-- wakeObjects() reporting "not done" so the dashboard keeps scheduling passes
+-- until every box has run once.
 local function wakeOne(rect)
   local box = rect and rect.box
-  local object = box and box.type and loadObjectType(box.type)
-  if object and object.wakeup then
+  if not box then return true end
+  local object = box.type and loadObjectType(box.type)
+  if not object then
+    if box.type then passHasUnwoken = true end
+    return true
+  end
+  if object.wakeup then
     box._dashboardRectX = rect.x
     box._dashboardRectY = rect.y
     box._dashboardRectW = rect.w
     box._dashboardRectH = rect.h
-    local ok, err = pcall(object.wakeup, box)
+    local ok, result = pcall(object.wakeup, box)
     if not ok then
-      if isInstructionBudgetError(err) then return false, err end
-      print("[dashboard] object wakeup failed: " .. tostring(err))
+      if isInstructionBudgetError(result) then return false, result end
+      print("[dashboard] object wakeup failed: " .. tostring(result))
+    elseif result == false then
+      passHasUnwoken = true
+      return true
     end
   end
+  box._dashboardWoken = true
   return true
 end
 
+-- Returns false while any box in the pass just finished was left unwoken (see
+-- wakeOne()), so the caller schedules another pass instead of settling.
 local function finishWakePass()
   wakeCursor = 1
   wakeCursorFailCount = 0
   wakePassCount = wakePassCount + 1
-  return true
+  local complete = not passHasUnwoken
+  passHasUnwoken = false
+  return complete
 end
 
 local function wakeObjects(maxCount, config)
@@ -428,6 +466,7 @@ local function wakeObjects(maxCount, config)
         -- in boxRects would otherwise never get a turn again for as long
         -- as the theme stays on screen.
         print("[dashboard] object wakeup failing repeatedly, skipping for this pass: " .. tostring(err))
+        passHasUnwoken = true
         wakeCursorFailCount = 0
         wakeCursor = wakeCursor + 1
         processed = processed + 1
@@ -526,7 +565,10 @@ local function paintObjects(widget)
     local rect = boxRects[i]
     local box = rect.box
     if widget then widget.dashboardPaintRetryIndex = i end
-    if not firstPassDone and i >= wakeCursor then
+    -- Also any box whose wakeup() has not actually run (see wakeOne()): its
+    -- object would paint from a cache that was never built, which most
+    -- objects draw as nothing at all.
+    if (not firstPassDone and i >= wakeCursor) or (box and box._dashboardWoken ~= true) then
       drawBoxShell(rect)
     else
       local object = box and box.type and loadObjectType(box.type)
@@ -627,6 +669,7 @@ function engine.reset()
   wakeCursor = 1
   wakePassCount = 0
   wakeCursorFailCount = 0
+  passHasUnwoken = false
   clearArray(pendingTypeQueue)
   pendingTypeCursor = 1
   for i = #boxRects, 1, -1 do boxRects[i] = nil end

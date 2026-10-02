@@ -58,8 +58,8 @@ jobs:
 
 CHECKOUT = "      - name: Checkout code\n        uses: actions/checkout@v4\n"
 INSTALL_LUA = (
-    "      - name: Install Lua 5.3\n"
-    "        run: sudo apt-get update && sudo apt-get install -y lua5.3\n"
+    "      - name: Install Lua 5.4\n"
+    "        run: sudo apt-get update && sudo apt-get install -y lua5.4\n"
 )
 SELF_TEST_STEP = "      - name: Prove the check can go red\n"
 
@@ -96,7 +96,7 @@ def render_lua_job(job):
     out.append(INSTALL_LUA)
     out.append("\n")
     out.append("      - name: %s\n" % job.step)
-    out.append("        run: lua5.3 %s\n" % job.script)
+    out.append("        run: lua5.4 %s\n" % job.script)
     return "".join(out)
 
 
