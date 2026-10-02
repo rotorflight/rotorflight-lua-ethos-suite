@@ -16,8 +16,7 @@ local PAGE_TITLE = "@i18n(app.modules.settings.name)@ / @i18n(app.modules.settin
 local NO_THEMES = "@i18n(app.modules.settings.no_themes_available_to_configure)@"
 
 local THEME_DEFS = {
-  -- The directory changed; the preference key preserves existing thresholds.
-  {label = "Bastion", folder = "aegis", directory = "bastion", minResolution = {x = 784, y = 294}},
+  {label = "Bastion", folder = "bastion", minResolution = {x = 784, y = 294}},
   {label = "@i18n(app.modules.settings.dashboard_theme_aerc)@", folder = "aerc"},
   {label = "@i18n(app.modules.settings.dashboard_theme_aerc_n)@", folder = "aerc-n"},
   {label = "@i18n(app.modules.settings.dashboard_theme_claude)@", folder = "claude"},
@@ -59,7 +58,7 @@ local function configuredThemes()
   local themes = {}
   for _, theme in ipairs(THEME_DEFS) do
     if themeVisible(theme) then
-      local dir = themeDir(theme.directory or theme.folder)
+      local dir = themeDir(theme.folder)
       local ok = pcall(function() return assert(loadfile(dir .. "/configure.lua")) end)
       if ok then
         themes[#themes + 1] = {

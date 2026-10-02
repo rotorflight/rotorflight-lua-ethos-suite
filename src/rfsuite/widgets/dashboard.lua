@@ -16,8 +16,7 @@ local ethosVersion = requireModule("lib/ethos_version.lua")
 local mspApiVersion = requireModule("lib/msp_api_version.lua")
 
 local THEME_DIRS = {
-  -- Keep saved Aegis selections while loading the renamed Bastion folder.
-  aegis = "widgets/dashboard/themes/bastion",
+  bastion = "widgets/dashboard/themes/bastion",
   ["aerc-n"] = "widgets/dashboard/themes/aerc-n",
   aerc = "widgets/dashboard/themes/aerc",
   claude = "widgets/dashboard/themes/claude",

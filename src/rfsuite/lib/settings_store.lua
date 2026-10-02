@@ -92,7 +92,7 @@ local DEFAULTS = {
 }
 
 local DASHBOARD_THEMES = {
-  aegis = true,
+  bastion = true,
   ["aerc-n"] = true,
   aerc = true,
   claude = true,

@@ -1,27 +1,16 @@
 # Bastion theme name
 
-The theme previously called Aegis is now **Bastion**. The September 30, 2026
-rename changes the GitHub branch, dashboard headings, monitoring label, theme
-selection/configuration labels, and Theme Bridge palette name.
+**Bastion** is the theme name used by dashboard headings, monitoring labels,
+theme selection, and configuration pages. Its graphite/cyan shield design and
+telemetry behavior are unchanged.
 
-The dedicated branch is `radio-theme-bastion`; the same branding is included in
-`radio-all-themes`. The graphite/cyan shield design and telemetry behavior are
-preserved.
+The source folder is `src/rfsuite/widgets/dashboard/themes/bastion`.
+The internal theme ID is `bastion`, the saved selection is `system/bastion`, and
+instrument thresholds are stored in the `dashboard.bastion` section of the
+radio's `SCRIPTS:/rfsuite.user/settings.ini`.
 
-As of October 1, 2026, the source folder is
-`src/rfsuite/widgets/dashboard/themes/bastion`. The branch routes the legacy
-theme selection `system/aegis` to this folder. The internal theme ID remains
-`aegis`, and saved instrument thresholds remain in the `dashboard.aegis` section
-of the radio's `SCRIPTS:/rfsuite.user/settings.ini`. Existing selections and
-thresholds therefore continue to work without a settings migration.
+The theme has not been merged or released, so there are no compatibility aliases
+or migrations for its earlier development name.
 
-Install the complete, matching Suite files from `radio-theme-bastion` or
-`radio-all-themes`, then restart the scripts or radio. The updated dashboard,
-settings page, and optional Theme Bridge routing must accompany the `bastion`
-folder; copying the folder alone onto an older Suite installation is not enough.
-Keep the radio's existing user settings when updating.
-
-The September 7 ZIP and manifest under `artifacts/theme-refresh` are archived
-artifacts with the earlier `aegis` folder layout. Use the current branch for a
-current installation. Historical desktop previews use simulated telemetry and
-approximate radio fonts; the folder rename does not change the theme's visuals.
+Install the complete, matching Suite files, then restart the scripts or radio.
+The dashboard and settings pages must accompany the theme folder to register it.
