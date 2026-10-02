@@ -10,6 +10,7 @@ local requireModule = package.loaded["rfsuite.lib.require"] or assert(loadfile("
 local buildInfo = requireModule("lib/build_info.lua")
 local engineType = requireModule("lib/engine_type.lua")
 local ethosVersion = requireModule("lib/ethos_version.lua")
+local armingFlags = requireModule("lib/arming_flags.lua")
 
 local context = {
   config = {
@@ -2449,35 +2450,6 @@ function context.utils.isImageTooLarge(path, maxBytes)
   return size > (tonumber(maxBytes) or DEFAULT_MAX_IMAGE_BYTES)
 end
 
-local ARMING_DISABLE_FLAG_TAG = {
-  [0] = "@i18n(app.modules.fblstatus.arming_disable_flag_0)@",
-  [1] = "@i18n(app.modules.fblstatus.arming_disable_flag_1)@",
-  [2] = "@i18n(app.modules.fblstatus.arming_disable_flag_2)@",
-  [3] = "@i18n(app.modules.fblstatus.arming_disable_flag_3)@",
-  [4] = "@i18n(app.modules.fblstatus.arming_disable_flag_4)@",
-  [5] = "@i18n(app.modules.fblstatus.arming_disable_flag_5)@",
-  [6] = "@i18n(app.modules.fblstatus.arming_disable_flag_6)@",
-  [7] = "@i18n(app.modules.fblstatus.arming_disable_flag_7)@",
-  [8] = "@i18n(app.modules.fblstatus.arming_disable_flag_8)@",
-  [9] = "@i18n(app.modules.fblstatus.arming_disable_flag_9)@",
-  [10] = "@i18n(app.modules.fblstatus.arming_disable_flag_10)@",
-  [11] = "@i18n(app.modules.fblstatus.arming_disable_flag_11)@",
-  [12] = "@i18n(app.modules.fblstatus.arming_disable_flag_12)@",
-  [13] = "@i18n(app.modules.fblstatus.arming_disable_flag_13)@",
-  [14] = "@i18n(app.modules.fblstatus.arming_disable_flag_14)@",
-  [15] = "@i18n(app.modules.fblstatus.arming_disable_flag_15)@",
-  [16] = "@i18n(app.modules.fblstatus.arming_disable_flag_16)@",
-  [17] = "@i18n(app.modules.fblstatus.arming_disable_flag_17)@",
-  [18] = "@i18n(app.modules.fblstatus.arming_disable_flag_18)@",
-  [19] = "@i18n(app.modules.fblstatus.arming_disable_flag_19)@",
-  [20] = "@i18n(app.modules.fblstatus.arming_disable_flag_20)@",
-  [21] = "@i18n(app.modules.fblstatus.arming_disable_flag_21)@",
-  [22] = "@i18n(app.modules.fblstatus.arming_disable_flag_22)@",
-  [23] = "@i18n(app.modules.fblstatus.arming_disable_flag_23)@",
-  [24] = "@i18n(app.modules.fblstatus.arming_disable_flag_24)@",
-  [25] = "@i18n(app.modules.fblstatus.arming_disable_flag_25)@",
-}
-
 -- Bit 0 (ARMED) is the only bit that reflects current arm state -- bits 1
 -- (WAS_EVER_ARMED) and 2 (WAS_ARMED_WITH_PREARM, firmware
 -- src/main/fc/runtime_config.h) are historical/informational and get set
@@ -2491,15 +2463,24 @@ function context.utils.armFlagsToIsArmed(value)
   return (math.floor(value) & 1) == 1
 end
 
+-- ARM_SWITCH (always the firmware's last flag) is left out: it only ever
+-- accompanies another, real reason -- it is set when the arm switch is on
+-- while something else is blocking arming -- so listing it would just repeat
+-- "and the arm switch is on". Its bit depends on the firmware, which the
+-- dashboard only knows by API version; see lib/arming_flags.lua.
 function context.utils.armingDisableFlagsToString(flags)
   flags = tonumber(flags)
   if flags == nil or flags == 0 then return "OK" end
 
+  local armSwitchBit = armingFlags.armSwitchBit({
+    apiMajor = context.session.apiVersionMajor,
+    apiMinor = context.session.apiVersionMinor,
+  })
   local names = {}
-  for i = 0, 25 do
-    if (flags & (1 << i)) ~= 0 then
-      local name = ARMING_DISABLE_FLAG_TAG[i]
-      if name and name ~= "" then names[#names + 1] = name end
+  for i = 0, 31 do
+    if (flags & (1 << i)) ~= 0 and i ~= armSwitchBit then
+      local name = armingFlags.tagFor(i, armSwitchBit)
+      if name then names[#names + 1] = name end
     end
   end
 
@@ -2542,6 +2523,8 @@ function context.setWidget(widget)
   context.session.mcu_id = widget and widget.mcuId
   context.session.craftName = widget and widget.craftName
   context.session.apiVersion = widget and widget.rfVersion
+  context.session.apiVersionMajor = widget and widget.apiVersionMajor
+  context.session.apiVersionMinor = widget and widget.apiVersionMinor
   context.session.timer.live = widget and widget.timerLive or 0
   context.session.bblFlags = widget and widget.bblFlags
   context.session.bblSize = widget and widget.bblSize
