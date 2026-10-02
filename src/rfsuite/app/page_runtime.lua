@@ -724,14 +724,35 @@ function PageRuntime:performSave(focusFn)
     end
 
     local values = self_.singleSource and self_.data or self_.data[source.key]
-    bus.publish("msp.request", source.mspModule.buildWriteMessage(values, function()
+
+    -- A codec may decline to build a message. lib/msp_governor_profile.lua
+    -- does exactly that when its table is missing a field, because the
+    -- alternative -- encode()'s old `data[name] or 0` -- produces a struct of
+    -- zeros that the firmware cannot tell from a deliberate one: headspeed 0
+    -- and max throttle 0 are in range, the write lands, and the pilot's
+    -- governor settings are gone with nothing reported. A nil message is
+    -- therefore a REFUSED write, not a message with no payload, and it is
+    -- handled here rather than published: no build step and no package step
+    -- reaches this, and it applies to every codec, not only this one.
+    local message, missing = source.mspModule.buildWriteMessage(values, function()
       if self_.disposed then return end
       writeSource(index + 1)
     end, function(reason)
       self_:log("performSave: write FAILED (" .. tostring(source.key) .. "): " .. tostring(reason))
       self_.pendingSaveError = reason or true
       finishSave()
-    end))
+    end)
+
+    if not message then
+      self_:log("performSave: write REFUSED (" .. tostring(source.key)
+        .. "): the codec declined to build a payload (missing "
+        .. tostring(missing) .. ")")
+      self_.pendingSaveError = "incomplete " .. tostring(source.key) .. " data"
+      finishSave()
+      return
+    end
+
+    bus.publish("msp.request", message)
   end
 
   writeSource(1)

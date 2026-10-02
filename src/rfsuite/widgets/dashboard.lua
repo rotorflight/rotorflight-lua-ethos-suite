@@ -111,7 +111,7 @@ local TOOLBAR_TIMEOUT = 10
 -- it saves RAM and avoids loading a non-visible theme during startup.
 local PREWARM_STATES = {}
 -- Live OS theme switches (no restart) are only picked up by polling
--- utils.getThemeSignature() and forcing a reload on change -- master does
+-- utils.getOsThemeSignature() and forcing a reload on change -- master does
 -- this every 0.25s in its wakeup(); this rewrite never did it at all, so
 -- every theme (not just one) needed a full restart to pick up a live
 -- theme switch. 5s (vs master's 0.25s) trades a little detection latency
@@ -1186,9 +1186,24 @@ local function dashboardState(widget)
   return widget.flightmodeState or "preflight"
 end
 
+-- Runs on every paint() and every prepare. settingsStore.dashboardTheme()
+-- rebuilds and re-normalises the whole settings table (withDefaults()) to read
+-- one section -- ~2k Lua instructions a call, measured with
+-- bin/perf/measure_dashboard_instructions.lua, against Ethos's 20000-per-call
+-- limit. Its result only changes with the snapshot or the theme, and
+-- settingsHandler replaces the snapshot table (never edits it) on every
+-- settings change, so identity is a sufficient key. setPreferences() still
+-- runs each call: the theme configure pages edit the live prefs through
+-- savePreference(), and this keeps resetting them exactly as before.
 local function setDashboardPreferences(widget, theme)
   ensureDashboardSettings(widget)
-  ensureDashboardContext().widgets.dashboard.setPreferences(settingsStore.dashboardTheme(widget.settingsSnapshot, theme))
+  local snapshot = widget.settingsSnapshot
+  if widget.dashboardPrefsSnapshot ~= snapshot or widget.dashboardPrefsTheme ~= theme then
+    widget.dashboardPrefsSnapshot = snapshot
+    widget.dashboardPrefsTheme = theme
+    widget.dashboardPrefsValues = settingsStore.dashboardTheme(snapshot, theme)
+  end
+  ensureDashboardContext().widgets.dashboard.setPreferences(widget.dashboardPrefsValues)
 end
 
 local function prepareDashboard(widget)
@@ -1362,9 +1377,12 @@ end
 local function paint(widget)
   sampleStackFromPaint()
   local w, h = lcd.getWindowSize()
-  if widget and widget.themeReloadPending == true then
-    if prepareDashboard(widget) then finishThemeReload(widget) end
-  end
+  -- A pending theme reload is finished by wakeup() (requestThemeReload() sets
+  -- needsPaint), not here. Preparing here as well ran a second first-wake pass
+  -- on top of engine.paint()'s own, and put the first paint after a connect or
+  -- theme change over Ethos's 20000-instruction limit on dense themes
+  -- (bin/perf/measure_dashboard_instructions.lua). Boxes not yet woken paint
+  -- their placeholder shell until wakeup() reaches them.
   if paintDashboard(widget, w, h) == false then
     requestPaint(widget)
     invalidateWidgetGlobal(widget)
@@ -1594,10 +1612,12 @@ local function wakeup(widget)
   if now >= nextThemeStateCheck then
     nextThemeStateCheck = now + THEME_STATE_CHECK_INTERVAL
     local utils = dashboardUtils(true)
-    local currentThemeSignature = utils and utils.getThemeSignature and utils.getThemeSignature() or nil
+    local currentThemeSignature = utils and utils.getOsThemeSignature and utils.getOsThemeSignature() or nil
     if currentThemeSignature ~= themeStateSignature then
+      -- The first read is the baseline, not a switch: nothing has loaded yet.
+      local isSwitch = themeStateSignature ~= nil
       themeStateSignature = currentThemeSignature
-      requestThemeReload(widget)
+      if isSwitch then requestThemeReload(widget) end
     end
   end
 
@@ -1696,6 +1716,9 @@ local function close(widget)
     bus.unsubscribe("task.status", widget.taskHandler)
     widget.taskHandler = nil
   end
+  widget.dashboardPrefsSnapshot = nil
+  widget.dashboardPrefsTheme = nil
+  widget.dashboardPrefsValues = nil
   widget.eraseActive = false
   widget.eraseReadPending = false
   widget.eraseDone = false

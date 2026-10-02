@@ -2,7 +2,7 @@
 -- question raised on rotorflight/rotorflight-lua-ethos-suite#2420.
 --
 -- Run it:
---     lua5.3 bin/stack/verify_stack_bounds.lua
+--     lua5.4 bin/stack/verify_stack_bounds.lua
 --
 -- What it drives, and why:
 --   * The real src/rfsuite/lib/bus.lua and the real

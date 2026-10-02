@@ -1,7 +1,7 @@
 -- Behaviour check for the arming-disable flags on the FBL Status page (#2346).
 --
 -- Run it:
---     lua5.3 bin/fblstatus/verify_arming_flags.lua
+--     lua5.4 bin/fblstatus/verify_arming_flags.lua
 --
 -- What it drives, and why:
 --   * lib/arming_flags.lua is the whole mask arithmetic and has no dependency

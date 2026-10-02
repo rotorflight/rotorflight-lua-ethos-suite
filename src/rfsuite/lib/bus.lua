@@ -28,7 +28,7 @@
 -- per-page callback closures, and retaining the last one would keep a closed
 -- page alive after navigation.
 
-local BUS_VERSION = 3
+local BUS_VERSION = 4
 
 local cached = package.loaded["rfsuite.bus"]
 if cached and cached._version == BUS_VERSION then
@@ -113,6 +113,21 @@ local function unsubscribe(topic, handler)
   end
 end
 
+-- One publish()'s handler loop; see publish() for why it is a separate
+-- function run under pcall. Module-level so no closure is built per publish.
+local function dispatch(snapshot, count, topic, payload)
+  for i = 1, count do
+    local handler = snapshot[i]
+    snapshot[i] = nil
+    if handler then
+      local ok, err = pcall(handler, payload)
+      if not ok then
+        print("[bus] handler error on '" .. topic .. "': " .. tostring(err))
+      end
+    end
+  end
+end
+
 local function publish(topic, payload)
   if retainedTopics[topic] then
     lastPublished[topic] = payload
@@ -168,23 +183,26 @@ local function publish(topic, payload)
     snapshot[i] = list[i]
   end
 
-  publishDepth = publishDepth + 1
+  local depth = publishDepth
+  publishDepth = depth + 1
   if publishDepth > maxPublishDepth then
     maxPublishDepth = publishDepth
   end
 
-  for i = 1, count do
-    local handler = snapshot[i]
-    snapshot[i] = nil
-    if handler then
-      local ok, err = pcall(handler, payload)
-      if not ok then
-        print("[bus] handler error on '" .. topic .. "': " .. tostring(err))
-      end
-    end
+  -- The loop runs under pcall and the depth is restored by assignment, not
+  -- decremented, because an error can be raised outside every handler's own
+  -- pcall: Ethos's "Max instructions count reached" fires on whichever
+  -- instruction crosses the limit, including this loop's own between handlers.
+  -- A plain decrement after the loop would then be skipped, and after
+  -- MAX_PUBLISH_DEPTH such aborts every publish -- msp.request included --
+  -- would fail until the script reloaded. Restoring the saved depth also
+  -- undoes anything a nested publish leaked.
+  local ok, err = pcall(dispatch, snapshot, count, topic, payload)
+  publishDepth = depth
+  if not ok then
+    for i = 1, count do snapshot[i] = nil end
+    error(err, 0)
   end
-
-  publishDepth = publishDepth - 1
 end
 
 -- The deepest publish() nesting actually observed, in frames. 0 before

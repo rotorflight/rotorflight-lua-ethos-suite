@@ -129,14 +129,41 @@ function msp_governor_profile.decode(buf)
   return data
 end
 
+-- Builds the wire payload, or refuses.
+--
+-- A missing key is refused rather than encoded as 0. `data[name] or 0` used to
+-- turn a table that never received a governor read into a struct of zeros that
+-- looks entirely plausible -- headspeed 0, max throttle 0, min throttle 0 --
+-- and every one of those is a legal in-range value, so the firmware accepts the
+-- write, re-runs its own validateAndFixServoConfig() and reports success. What
+-- is missing is exactly the thing the encoder is being asked to send, so it says
+-- so instead of inventing it.
+--
+-- Note what this is NOT: a check on values. 0 is a legitimate governor_gain and
+-- a legitimate governor_d_gain, and there is no bound this codec could apply
+-- that the firmware would not apply better. The only fact available here is
+-- presence.
+--
+-- Returns `payload`, or `nil, missingFieldName` when a field is absent. The name
+-- goes back so app/page_runtime.lua can name it in the error it shows.
 function msp_governor_profile.encode(data)
+  if type(data) ~= "table" then
+    return nil, "<not a table>"
+  end
+  for i = 1, #FIELDS do
+    local name = FIELDS[i][1]
+    if data[name] == nil then
+      return nil, name
+    end
+  end
+
   local payload = {}
   for i = 1, #FIELDS do
     local name, wireType = FIELDS[i][1], FIELDS[i][2]
     if wireType == "U16" then
-      mspcodec.writeU16(payload, data[name] or 0)
+      mspcodec.writeU16(payload, data[name])
     else
-      mspcodec.writeU8(payload, data[name] or 0)
+      mspcodec.writeU8(payload, data[name])
     end
   end
   return payload
@@ -162,10 +189,20 @@ end
 -- ones app/pages/tail_rotor.lua exposes as editable widgets) -- see that
 -- file's use of app/page_runtime.lua's multi-source load/save for how the
 -- fields it doesn't display are still round-tripped unchanged.
+--
+-- Returns `nil, missingFieldName` when `data` is incomplete, and no message at
+-- all in that case. Returning a message with no payload would put a zeroed
+-- governor struct on the wire, which is the whole thing encode() refuses to
+-- build. app/page_runtime.lua treats a nil message as a refused write and
+-- surfaces it instead of publishing it -- see its writeSource().
 function msp_governor_profile.buildWriteMessage(data, onWritten, onError)
+  local payload, missing = msp_governor_profile.encode(data)
+  if not payload then
+    return nil, missing
+  end
   return {
     command = WRITE_COMMAND,
-    payload = msp_governor_profile.encode(data),
+    payload = payload,
     isWrite = true,
     processReply = function()
       if onWritten then onWritten() end

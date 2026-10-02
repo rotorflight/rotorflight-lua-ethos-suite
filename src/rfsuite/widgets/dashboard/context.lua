@@ -1498,6 +1498,15 @@ function utils.getThemeSignature()
   return signature
 end
 
+-- The Ethos OS theme alone (light/dark, installed theme colors), for
+-- dashboard.lua's live theme-switch poll. getThemeSignature() also folds in
+-- window size and flight state (themeStateCache's key), so polling it made
+-- every preflight/inflight/postflight change look like an OS theme switch and
+-- forced a full theme reload a few seconds after each one.
+function utils.getOsThemeSignature()
+  return buildThemeColorSignature()
+end
+
 function utils.getBatteryVoltageBounds(defaultCells, defaultMin, defaultMax)
   local config = currentWidget and currentWidget.batteryConfig
   local cells = tonumber(config and config.cellCount) or defaultCells or 6

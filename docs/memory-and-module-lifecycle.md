@@ -320,7 +320,7 @@ This is the whole reason the applied value is printed rather than read back:
     collectgarbage("setpause", n)   -- sets the pause, RETURNS THE PREVIOUS one
     collectgarbage("setpause")     -- sets the pause to 0, returns the previous
 
-Measured on the Lua 5.3.6 in this checkout, and asserted by
+Measured on Lua 5.3.6 and on 5.4 (what Ethos runs), and asserted by
 `bin/gc_pause/verify_gc_pause.lua` rather than left to a comment, because
 `main.lua` cites the behaviour. Pause 0 means "collect as constantly as
 possible" — the exact opposite of the intent. So: the applied value is kept in a

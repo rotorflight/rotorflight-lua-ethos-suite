@@ -1,8 +1,8 @@
 -- Behaviour check for the physical Back/Close key at the ROOT menu (#2429).
 --
 -- Run it:
---     lua5.3 bin/tool_ui/verify_root_close_key.lua
---     lua5.3 bin/tool_ui/verify_root_close_key.lua --self-test
+--     lua5.4 bin/tool_ui/verify_root_close_key.lua
+--     lua5.4 bin/tool_ui/verify_root_close_key.lua --self-test
 --
 -- What it drives, and why:
 --   * The real src/rfsuite/app/tool.lua, so the chain under test is the whole
