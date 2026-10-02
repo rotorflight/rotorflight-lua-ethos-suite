@@ -4125,12 +4125,14 @@
           "english": "%d active",
           "max_length": 9,
           "needs_translation": false,
+          "reverse_text": true,
           "translation": "%d פעילים"
         },
         "arming_flags_active_list": {
           "english": "Active reasons:",
           "max_length": 15,
           "needs_translation": false,
+          "reverse_text": true,
           "translation": "סיבות פעילות:"
         },
         "cpu_load": {
@@ -7497,6 +7499,337 @@
           "needs_translation": false,
           "reverse_text": true,
           "translation": "טרים יאו %"
+        }
+      },
+      "tune_advisor": {
+        "act_f_fmt": {
+          "english": "PIDs > %s > F:  %d -> %d",
+          "max_length": 24,
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "PIDs > %s > F:  %d -> %d"
+        },
+        "act_fly_pitch": {
+          "english": "Fly flips in rate mode, centre the stick after each",
+          "max_length": 51,
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "Fly flips in rate mode, centre the stick after each"
+        },
+        "act_fly_roll": {
+          "english": "Fly rolls in rate mode, centre the stick after each",
+          "max_length": 51,
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "Fly rolls in rate mode, centre the stick after each"
+        },
+        "act_fly_yaw": {
+          "english": "Fly pirouettes in rate mode, centre the stick after each",
+          "max_length": 56,
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "Fly pirouettes in rate mode, centre the stick after each"
+        },
+        "act_none": {
+          "english": "No change suggested",
+          "max_length": 19,
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "No change suggested"
+        },
+        "act_p_fmt": {
+          "english": "PIDs > %s > P:  %d -> %d",
+          "max_length": 24,
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "PIDs > %s > P:  %d -> %d"
+        },
+        "act_rate_fmt": {
+          "english": "Rates > %s > %s:  %s -> %s",
+          "max_length": 26,
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "Rates > %s > %s:  %s -> %s"
+        },
+        "act_rate_pct_down_fmt": {
+          "english": "Rates > %s: all rates about %d%% lower",
+          "max_length": 38,
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "Rates > %s: all rates about %d%% lower"
+        },
+        "act_rate_pct_up_fmt": {
+          "english": "Rates > %s: all rates about %d%% higher",
+          "max_length": 39,
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "Rates > %s: all rates about %d%% higher"
+        },
+        "act_relax_fmt": {
+          "english": "Advanced > PID Controller > Iterm Relax Cutoff > %s:  %d -> %d",
+          "max_length": 62,
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "Advanced > PID Controller > Iterm Relax Cutoff > %s:  %d -> %d"
+        },
+        "axis": {
+          "english": "Axis",
+          "max_length": 4,
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "Axis"
+        },
+        "changes": {
+          "english": "Suggested changes",
+          "max_length": 17,
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "Suggested changes"
+        },
+        "changes_short": {
+          "english": "Changes",
+          "max_length": 7,
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "Changes"
+        },
+        "clear_prompt": {
+          "english": "Clear the collected flight data?",
+          "max_length": 32,
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "Clear the collected flight data?"
+        },
+        "collecting": {
+          "english": "collecting",
+          "max_length": 10,
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "collecting"
+        },
+        "data": {
+          "english": "Flight data",
+          "max_length": 11,
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "Flight data"
+        },
+        "data_fmt": {
+          "english": "%dm %02ds, %s",
+          "max_length": 13,
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "%dm %02ds, %s"
+        },
+        "more_why": {
+          "english": "More under Why",
+          "max_length": 14,
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "More under Why"
+        },
+        "name": {
+          "english": "Tune Advisor",
+          "max_length": 12,
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "Tune Advisor"
+        },
+        "paused": {
+          "english": "paused",
+          "max_length": 6,
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "paused"
+        },
+        "pitch": {
+          "english": "Pitch",
+          "max_length": 5,
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "Pitch"
+        },
+        "resp_fast_fmt": {
+          "english": "%d%% faster than asked",
+          "max_length": 22,
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "%d%% faster than asked"
+        },
+        "resp_more_fmt": {
+          "english": "Needs more flying (%d%%)",
+          "max_length": 24,
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "Needs more flying (%d%%)"
+        },
+        "resp_ok": {
+          "english": "Matches the stick",
+          "max_length": 17,
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "Matches the stick"
+        },
+        "resp_slow_fmt": {
+          "english": "%d%% slower than asked",
+          "max_length": 22,
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "%d%% slower than asked"
+        },
+        "resp_uneven": {
+          "english": "Too uneven to judge",
+          "max_length": 19,
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "Too uneven to judge"
+        },
+        "response": {
+          "english": "Response",
+          "max_length": 8,
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "Response"
+        },
+        "roll": {
+          "english": "Roll",
+          "max_length": 4,
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "Roll"
+        },
+        "stops": {
+          "english": "Stops",
+          "max_length": 5,
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "Stops"
+        },
+        "stops_more_fmt": {
+          "english": "Needs more stops (%d/%d)",
+          "max_length": 24,
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "Needs more stops (%d/%d)"
+        },
+        "stops_value_fmt": {
+          "english": "%d%% bounce-back",
+          "max_length": 16,
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "%d%% bounce-back"
+        },
+        "unsupported": {
+          "english": "Needs newer firmware",
+          "max_length": 20,
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "Needs newer firmware"
+        },
+        "why": {
+          "english": "Why",
+          "max_length": 3,
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "Why"
+        },
+        "why_brake_fmt": {
+          "english": "Stops bounce back %d%%. More P brakes them (or add B).",
+          "max_length": 54,
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "Stops bounce back %d%%. More P brakes them (or add B)."
+        },
+        "why_coll_high_fmt": {
+          "english": "It turns %d%% faster at high collective than at low.",
+          "max_length": 52,
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "It turns %d%% faster at high collective than at low."
+        },
+        "why_coll_low_fmt": {
+          "english": "It turns %d%% faster at low collective than at high.",
+          "max_length": 52,
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "It turns %d%% faster at low collective than at high."
+        },
+        "why_fast": {
+          "english": "The heli turns faster than the stick asks for.",
+          "max_length": 46,
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "The heli turns faster than the stick asks for."
+        },
+        "why_fix_f_fmt": {
+          "english": "Stops bounce back %d%%. Fix F first, then check again.",
+          "max_length": 54,
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "Stops bounce back %d%%. Fix F first, then check again."
+        },
+        "why_full_fmt": {
+          "english": "Full stick asks %d deg/s but the heli tops out at %d.",
+          "max_length": 53,
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "Full stick asks %d deg/s but the heli tops out at %d."
+        },
+        "why_keep_feel": {
+          "english": "Changing F and the rates together keeps the stick feel.",
+          "max_length": 55,
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "Changing F and the rates together keeps the stick feel."
+        },
+        "why_more": {
+          "english": "Data builds up while you fly in rate mode.",
+          "max_length": 42,
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "Data builds up while you fly in rate mode."
+        },
+        "why_no_f": {
+          "english": "This axis has no F, so its PID gains set the response.",
+          "max_length": 54,
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "This axis has no F, so its PID gains set the response."
+        },
+        "why_ok": {
+          "english": "The heli answers the stick as asked.",
+          "max_length": 36,
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "The heli answers the stick as asked."
+        },
+        "why_relax": {
+          "english": "After a stop, the I-term pushes the heli back.",
+          "max_length": 46,
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "After a stop, the I-term pushes the heli back."
+        },
+        "why_slow": {
+          "english": "The heli turns slower than the stick asks for.",
+          "max_length": 46,
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "The heli turns slower than the stick asks for."
+        },
+        "why_uneven": {
+          "english": "The response varies too much to judge. Common in 3D.",
+          "max_length": 52,
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "The response varies too much to judge. Common in 3D."
+        },
+        "yaw": {
+          "english": "Yaw",
+          "max_length": 3,
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "Yaw"
         }
       }
     },
