@@ -268,6 +268,20 @@ flight. Inline delivery makes the whole file vacuous.
 '''
     ),
     LuaJob(
+        id='tool-focus',
+        name="The Tool button hands a page a callable focus function",
+        step='Check the Tool button passes a page its focus function',
+        script='bin/page_runtime/verify_tool_focus.lua',
+        rationale=r'''Every page's onTool is function(focusFn), and calls focusFn() when its
+dialog closes or is cancelled. The header's Tool button called it as
+runtime:onTool(focus), so the page got the runtime table as focusFn and
+calibrating the accelerometer ended in "focusFn is not callable (a table
+value)". This presses the real page_runtime.lua's Tool button and closes
+the dialog the way the pages do; 4 of its 5 checks go red on the pre-fix
+page_runtime.lua.
+'''
+    ),
+    LuaJob(
         id='wakeup-allocations',
         name='Wakeup path allocates nothing per call',
         step='Check the wakeup allocation paths',
