@@ -550,9 +550,10 @@ local function paint(state)
 end
 
 -- Forwards the physical Back/Close key to whatever screen is currently
--- open (see app/menu_container.lua's setEventHandler calls). At the root
--- menu no handler is installed, so this returns false and Ethos falls
--- through to its own default (closing the tool).
+-- open (see app/menu_container.lua's setEventHandler calls). Every screen
+-- installs one, the root menu included, so this normally has a handler to
+-- forward to; with none installed it still returns false rather than
+-- guessing, which hands the key to Ethos.
 local function event(state, category, value, x, y)
   if currentEventHandler then
     return currentEventHandler(category, value) == true

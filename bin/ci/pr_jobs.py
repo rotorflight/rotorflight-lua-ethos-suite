@@ -326,6 +326,31 @@ a sabotaged copy of main.lua, at a planted bare setter, and at a queue.lua with
 its teardown collect cut out.
 '''
     ),
+    LuaJob(
+        id='root-close-key',
+        name='The physical Back key closes the suite from every screen',
+        step='Check the root menu close key',
+        script='bin/tool_ui/verify_root_close_key.lua',
+        rationale=r'''Every screen but one installed a handler for the physical Back/Close key. The
+root menu installed none, on the stated assumption that Ethos's own default
+closes the tool on the first press. It does not -- that default takes two, the
+first dropping the form's input focus -- so the root menu had two ways out that
+disagreed with each other: the on-screen Menu button left in one press, the
+hardware RTN in two. Neither a build nor a package step reaches any of it.
+
+The harness drives the real tool.lua through registerSystemTool, create() and
+event() -- not menu_container directly, because tool.lua's forwarding is part of
+what is being pinned -- and asserts that RTN and EXIT reach goBack() at the root,
+that goBack() is the same path the back button takes, that a long ENTER, a model
+key and a touch event are still passed through untouched, and that RTN in a
+submenu pops one level without exiting.
+
+Seven of its seventeen cases go red on the pre-fix file. Pass --self-test to
+prove that rather than take it on trust: it re-runs the identical sequence
+against a copy of app/menu_container.lua with the pre-fix root branch put back
+and requires every one of the seven to fail.
+'''
+    ),
 ]
 
 VERBATIM_JOBS = [
