@@ -1,4 +1,4 @@
-﻿-- Behaviour check for the physical Back/Close key at the ROOT menu (#2429).
+-- Behaviour check for the physical Back/Close key at the ROOT menu (#2429).
 --
 -- Run it:
 --     lua5.3 bin/tool_ui/verify_root_close_key.lua
