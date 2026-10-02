@@ -326,6 +326,39 @@ a sabotaged copy of main.lua, at a planted bare setter, and at a queue.lua with
 its teardown collect cut out.
 '''
     ),
+    LuaJob(
+        id='servos-bus-index',
+        name='Bus servo read, centre, override and save address one servo',
+        step='Check the bus servo index spaces',
+        script='bin/servos_bus/verify_servos_bus_index.lua',
+        rationale=r'''The BUS servo page sent the save to a different servo than the one it had
+read. Its read used the raw servoParams() slot, uiIndex + 8, while its write
+used a *packed* index, uiIndex + (servo_count - 18) -- and MSP_SET_SERVO_CONFIG
+takes the raw slot, exactly like the read, the centre write and the override.
+The two only coincide on a board that configures all eight PWM outputs as
+servos, so on a helicopter every save landed getServoCount() slots low and
+nothing was reported: those indices are all below MAX_SUPPORTED_SERVOS, so the
+firmware accepts them and re-runs validateAndFixServoConfig() on a servo the
+pilot never opened.
+
+No build and no package step reaches that. The firmware side is a claim about
+four handlers in another repository, and the suite side is three lines of
+arithmetic of which a wrong version shipped unnoticed -- so the harness reads
+the index out of the payload byte each command puts on the wire, driving the
+real page with the real codecs, instead of calling the page's index helper and
+asserting on its result. A helper that is right and a call site that does not
+use it give identical arithmetic and opposite behaviour.
+
+It runs both directions, which is what --self-test is for: the current page
+agrees on all sixteen tiles, and a copy with the pre-fix write index put back
+disagrees on all sixteen, each exactly getServoCount() low. That second
+direction also settles a claim in the original report: the old
+`if value < 0 then return 0` clamp could not fire, because MSP_STATUS only
+reports servo_count >= BUS_SERVO_CHANNELS while bus servos are configured
+(msp.c:1098-1104), so the offset was never negative and nothing collapsed onto
+servo 0 -- every row was merely mis-addressed.
+'''
+    ),
 ]
 
 VERBATIM_JOBS = [

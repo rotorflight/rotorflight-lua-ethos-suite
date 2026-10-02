@@ -1,10 +1,24 @@
 -- Servos -> BUS Output.
 --
 -- BUS servos look almost identical to PWM in the UI, but the firmware
--- indexes them differently. The original suite uses:
---   read/center/override index = UI index + 8
---   config write index         = UI index + (servo_count - 18)
--- Keep those translations local and explicit here.
+-- addresses them by one index: the raw servoParams() slot, with the bus
+-- servos starting at BUS_SERVO_OFFSET. All four commands this page uses take
+-- that same raw index --
+--   MSP_GET_SERVO_CONFIG   src/main/msp/msp.c:2483-2495  servoParams(i)
+--   MSP_SET_SERVO_CONFIG   src/main/msp/msp.c:2457-2470  servoParamsMutable(i)
+--   MSP_SET_SERVO_CENTER   src/main/msp/msp.c:3112-3127  servoParamsMutable(i)
+--   MSP_SET_SERVO_OVERRIDE src/main/msp/msp.c:3092-3098  setServoOverride(i, ..)
+-- -- each guarded only by `i >= MAX_SUPPORTED_SERVOS`. So one index, computed
+-- once, has to reach all of them.
+--
+-- Line numbers are against rotorflight-firmware 30923b5f5f549f67dd6a986fe726413bb057e1bd.
+--
+-- A packed index does exist, but only on the bulk commands
+-- MSP_SERVO_CONFIGURATIONS / MSP_SET_SERVO_CONFIGURATION (msp.c:1184-1240 and
+-- msp.c:3042-3077, which maps it to the raw slot at :3066). This page never
+-- sends those. It used to derive a packed index for the save anyway and send
+-- it to MSP_SET_SERVO_CONFIG, which made every save land on another slot than
+-- the read had come from -- see bin/servos_bus/verify_servos_bus_index.lua.
 
 local requireModule = package.loaded["rfsuite.lib.require"] or assert(loadfile("lib/require.lua"))()
 local bus = requireModule("lib/bus.lua")
@@ -28,8 +42,7 @@ local MSG_LOAD_ERROR = "@i18n(app.modules.ports.load_error_prefix)@"
 local BTN_OK = "@i18n(app.btn_ok)@"
 local BTN_CANCEL = "@i18n(app.btn_cancel)@"
 local BUS_OUTPUT_COUNT = 16
-local BUS_CONFIG_OFFSET = 18
-local BUS_READ_BASE_INDEX = 8
+local BUS_SERVO_OFFSET = 8
 local LIVE_SETTLE = 0.05
 
 local YES_NO = {
@@ -50,15 +63,11 @@ local function servoTitle(index)
   return "@i18n(app.modules.servos.servo_prefix)@" .. index
 end
 
-local function readIndex(uiIndex)
-  return (uiIndex or 0) + BUS_READ_BASE_INDEX
-end
-
-local function configWriteIndex(uiIndex, servoCount)
-  local offset = (tonumber(servoCount) or BUS_CONFIG_OFFSET) - BUS_CONFIG_OFFSET
-  local value = (uiIndex or 0) + offset
-  if value < 0 then return 0 end
-  return value
+-- The one index translation on this page: the raw servoParams() slot of bus
+-- servo `uiIndex`. Read, save, centre and override all take it verbatim, so it
+-- is computed once here and never derived a second time.
+local function busServoIndex(uiIndex)
+  return (uiIndex or 0) + BUS_SERVO_OFFSET
 end
 
 local function applyMixerNames(rows, swashMode, tailMode)
@@ -111,16 +120,15 @@ local function openEditor(opts, listState, row)
   local lastCenter = nil
   local lastChangeAt = 0
   local uiIndex = row.uiIndex
-  local rwIndex = readIndex(uiIndex)
-  local writeIndex = configWriteIndex(uiIndex, listState.servoCount)
+  local rawIndex = busServoIndex(uiIndex)
 
   local pageMsp = {
     FIELD_META = BUS_FIELD_META,
     buildReadMessage = function(onData, onError)
-      return servoConfig.buildReadMessage(rwIndex, onData, onError)
+      return servoConfig.buildReadMessage(rawIndex, onData, onError)
     end,
     buildWriteMessage = function(data, onWritten, onError)
-      return servoConfig.buildWriteMessage(writeIndex, data, onWritten, onError)
+      return servoConfig.buildWriteMessage(rawIndex, data, onWritten, onError)
     end,
   }
 
@@ -129,7 +137,7 @@ local function openEditor(opts, listState, row)
       publishOverrideAll(servoOverride.OVERRIDE_OFF)
       listState.inOverride = false
     else
-      publishOverride(rwIndex, servoOverride.OVERRIDE_OFF)
+      publishOverride(rawIndex, servoOverride.OVERRIDE_OFF)
     end
     inOverride = false
   end
@@ -183,7 +191,7 @@ local function openEditor(opts, listState, row)
                 if key ~= "mid" then field:enable(runtime.loaded) end
               end
             else
-              publishOverride(rwIndex, servoOverride.OVERRIDE_CENTER)
+              publishOverride(rawIndex, servoOverride.OVERRIDE_CENTER)
               inOverride = true
               inheritedOverride = false
               lastCenter = runtime.data.mid
@@ -210,7 +218,7 @@ local function openEditor(opts, listState, row)
       local now = os.clock()
       local current = rt.data.mid
       if current ~= lastCenter and (now - lastChangeAt) >= LIVE_SETTLE then
-        bus.publish("msp.request", servoCenter.buildWriteMessage(rwIndex, current))
+        bus.publish("msp.request", servoCenter.buildWriteMessage(rawIndex, current))
         lastCenter = current
         lastChangeAt = now
       end
@@ -393,7 +401,6 @@ local function open(opts)
         return
       end
       if pendingStatus and pendingMixer then
-        listState.servoCount = pendingStatus.servo_count
         listState.rows = buildRows(pendingMixer)
         closeDialog()
         opts.setWakeupHandler(nil)

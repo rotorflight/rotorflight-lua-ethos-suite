@@ -6,7 +6,7 @@ sidebar_position: 20
 
 # BUS Output
 
-Servos -> BUS Output. BUS servos look almost identical to PWM in the UI, but the firmware indexes them differently.
+Servos → BUS Output. BUS servos look almost identical to PWM in the UI, but the firmware numbers them from a different base: they start at slot 9, where the PWM servos end.
 
 ## Where to find it
 
@@ -30,6 +30,12 @@ Greyed out until the flight controller answers. Read-only while the model is arm
 ## Notes
 
 - Changes are written to the flight controller EEPROM upon Save.
+- Every action on this page — reading a servo, saving it, centring it, and the live
+  override — addresses the same physical servo. That is not a detail of the UI: the
+  flight controller keys all four of those commands on one index, and a save that
+  carried a different one than the read would write another servo's endpoints and
+  report success. Bus servo *n* here is servo *n* on the bus, whatever the PWM
+  outputs happen to be configured as.
 
 ## Related
 
