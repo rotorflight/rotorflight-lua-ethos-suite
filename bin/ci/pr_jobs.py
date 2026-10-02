@@ -351,6 +351,34 @@ against a copy of app/menu_container.lua with the pre-fix root branch put back
 and requires every one of the seven to fail.
 '''
     ),
+    LuaJob(
+        id='governor-profile-write',
+        name='A governor profile is never written from an incomplete table',
+        step='Check the governor profile write guard',
+        script='bin/governor_profile/verify_governor_profile_write.lua',
+        rationale=r'''lib/msp_governor_profile.lua encoded every field as `data[name] or 0`, so a
+table missing a key became a struct of zeros -- governor_headspeed 0,
+governor_max_throttle 0 -- and every one of those is a value the firmware
+accepts as in range. It re-runs its own validateAndFixServoConfig() on it and
+reports success. There is nothing in the write for a pilot to notice.
+
+What this pins is that the encoder refuses instead of inventing, and -- the half
+that matters -- that the refusal is not merely returned but acted upon: a codec
+that declines to build a message is a REFUSED write in app/page_runtime.lua, not
+a message with no payload. Asserting on encode() alone would pass while the
+runtime published the nil, so the harness drives the real page_runtime with the
+real codec and reads what went onto the bus.
+
+No build and no package step reaches it. The load gate that already existed --
+any source read failing keeps loaded == false and canSave() false -- is pinned
+too, so a later change cannot trade one protection for the other.
+
+Cases 2, 3 and 4 go red on the pre-fix codec. Pass --self-test to prove that
+rather than take it on trust: it puts a copy of the codec with the pre-fix
+encode() in the same seat and requires it to build a 17-byte all-zero payload
+from an empty table AND requires page_runtime to publish it.
+'''
+    ),
 ]
 
 VERBATIM_JOBS = [
