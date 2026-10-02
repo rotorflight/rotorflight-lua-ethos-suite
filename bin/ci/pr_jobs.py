@@ -243,6 +243,114 @@ Five of its cases go red on the pre-fix pages, each naming the line it
 fails on.
 '''
     ),
+    # Registered here because the job was added to pr.yml by hand, so the
+    # generator did not know about it and the drift check has been red on master
+    # since #2432 landed. Any --write dropped this job from the workflow; the
+    # text below is master's, verbatim.
+    LuaJob(
+        id='profile-anchor',
+        name="A page's data stays tagged with the profile it came from",
+        step='Check the profile anchor across a switch during a read',
+        script='bin/page_runtime/verify_profile_anchor.lua',
+        rationale=r'''A page tags its data with the profile it was read for, and the tag used to
+be taken when the read finished rather than when it started. A pilot who
+switched profile while that read was in flight therefore got the previous
+profile's values on screen, anchored to the new profile -- and because the
+anchor matched, nothing ever reloaded. Saving then writes the old profile's
+values into the new one.
+
+Only a switch landing inside an MSP round-trip reaches it, which no build and
+no package step can stage. So MSP answers are held here rather than delivered
+inline, and the session.update is delivered while a read is genuinely in
+flight. Inline delivery makes the whole file vacuous.
+
+5 of its 17 cases go red on the pre-fix page_runtime.lua.
+'''
+    ),
+    LuaJob(
+        id='wakeup-allocations',
+        name='Wakeup path allocates nothing per call',
+        step='Check the wakeup allocation paths',
+        script='bin/allocation_churn/verify_allocation_churn.lua',
+        rationale=r'''The dashboard wakeup path runs several times a second and session.update
+is published at up to 20 Hz, so a table rebuilt per call there is the
+sawtooth in the '[bgtask mem] lua=' log rather than a detail. Three such
+sites were removed: the subscriber copy in lib/bus.lua, the name table and
+its result table in getSensorStats(), and the per-call closure in
+transformValue(). #2384.
+
+No build and no package step reaches this -- it needs the collector held off
+and a loop that calls the function thousands of times, which is what the
+harness does. Every allocation assertion is paired in both directions: the
+current code has to come out under the bound and the removed code over it,
+on every run. A bound that both sides meet proves nothing, and the harness
+carries the removed implementations precisely so that can be seen. The same
+run also pins what a pooled iteration copy can get wrong -- a handler
+unsubscribed long ago must not come back through a leftover slot -- and the
+one value the change alters, an rssi box reading its own min/max instead of
+link quality's.
+
+Pass --self-test to assert only that the bounds still have teeth.
+'''
+    ),
+    # Appended after #2435 merged, so this entry is a pure addition to the
+    # registry rather than a re-registration of profile-anchor: that job arrived
+    # in master with #2435 and the text above is now master's.
+    LuaJob(
+        id='gc-pause',
+        name='The incremental collector is tuned, and reads no pause it did not set',
+        step='Check the collector pause and the forced collects',
+        script='bin/gc_pause/verify_gc_pause.lua',
+        rationale=r'''The collector's pause decides when a cycle starts: live * pause / 100.
+The default is 200, so the heap may reach twice what is live before anything is
+reclaimed at all, while Ethos kills a script whose heap passes its limit (#2295).
+Lowering it is a one-line change -- but the one line has a foot-gun in it, and
+that is what this pins:
+
+`collectgarbage("setpause", n)` returns the PREVIOUS value, and with the
+argument omitted it does not read the current one, it SETS THE PAUSE TO 0.
+Pause 0 is "collect as constantly as possible", the opposite of the intent.
+Measured on the Lua 5.3.6 in this checkout, and the first case here asserts it
+rather than trusting it, because main.lua's own comment cites the behaviour and
+a future interpreter could change it.
+
+So the applied value is printed at boot instead of read back, and no file under
+src/ may call either setter without an explicit value. The harness also fixes
+where the call goes -- before background_task.init(), so the collector is on the
+new schedule while the subsystems allocate -- and holds the line that separates
+the justified forced collects from the hot path: Queue:_finish() must stay
+clean, Queue:clear() and the three ESC dispose paths must keep theirs.
+
+Pass --self-test to prove every one of those can go red: each check is aimed at
+a sabotaged copy of main.lua, at a planted bare setter, and at a queue.lua with
+its teardown collect cut out.
+'''
+    ),
+    LuaJob(
+        id='root-close-key',
+        name='The physical Back key closes the suite from every screen',
+        step='Check the root menu close key',
+        script='bin/tool_ui/verify_root_close_key.lua',
+        rationale=r'''Every screen but one installed a handler for the physical Back/Close key. The
+root menu installed none, on the stated assumption that Ethos's own default
+closes the tool on the first press. It does not -- that default takes two, the
+first dropping the form's input focus -- so the root menu had two ways out that
+disagreed with each other: the on-screen Menu button left in one press, the
+hardware RTN in two. Neither a build nor a package step reaches any of it.
+
+The harness drives the real tool.lua through registerSystemTool, create() and
+event() -- not menu_container directly, because tool.lua's forwarding is part of
+what is being pinned -- and asserts that RTN and EXIT reach goBack() at the root,
+that goBack() is the same path the back button takes, that a long ENTER, a model
+key and a touch event are still passed through untouched, and that RTN in a
+submenu pops one level without exiting.
+
+Seven of its seventeen cases go red on the pre-fix file. Pass --self-test to
+prove that rather than take it on trust: it re-runs the identical sequence
+against a copy of app/menu_container.lua with the pre-fix root branch put back
+and requires every one of the seven to fail.
+'''
+    ),
 ]
 
 VERBATIM_JOBS = [

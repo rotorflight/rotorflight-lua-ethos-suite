@@ -42,10 +42,10 @@
 -- Every screen this renders installs its own physical-Back-key handler
 -- via `setEventHandler` (see app/close_key.lua and app/tool.lua,
 -- which is what actually receives Ethos's event() callback and forwards
--- to whichever handler is currently installed) -- at the root screen this
--- is `nil`, so the hardware Back key falls through to Ethos's own
--- default (closing the tool), exactly like the original at the true top
--- of its navigation stack.
+-- to whichever handler is currently installed). The root menu installs
+-- one too, not a `nil` -- see the comment at the setEventHandler() call
+-- below for why handing RTN to Ethos's own default there costs an extra
+-- press (#2429).
 --
 -- Every screen also shows the permanent header/"Menu" button row (see
 -- app/header.lua) as row one -- including the root menu, matching the
@@ -172,15 +172,44 @@ local function openScreen(nav, menus, rootEntries, screen, setEventHandler, setW
     openScreen(nav, menus, rootEntries, parentScreen, setEventHandler, setWakeupHandler, setPaintHandler, setCleanupHandler, taskGuard)
   end
 
-  if screen == nil then
-    setEventHandler(nil)
-  else
-    setEventHandler(function(category, value)
-      if not closeKey.shouldHandleClose(category, value) then return false end
-      goBack()
-      return true
-    end)
-  end
+  -- Every screen installs the same handler, the root menu included.
+  --
+  -- It used to be the root alone that installed none (`if screen == nil then
+  -- setEventHandler(nil)`), on the stated grounds that the hardware Back key
+  -- should then "fall through to Ethos's own default (closing the tool),
+  -- exactly like the original at the true top of its navigation stack". That
+  -- reasoning assumed Ethos's default closes the tool on the FIRST press. It
+  -- does not -- it is two presses (#2429): the first drops the form's input
+  -- focus, the second closes. So at the root the suite had two ways out that
+  -- disagreed with each other: the on-screen Menu button reached goBack()
+  -- directly (one press, see header.build's onBack below), while the
+  -- physical RTN was handed to a default that needs an extra keypress to get
+  -- to the same place.
+  --
+  -- goBack() already covers both cases -- it pops when there is a frame and
+  -- calls system.exit() when the stack is empty (see below) -- so the root
+  -- needs no separate branch, and every screen now behaves like its own
+  -- on-screen Menu button, which is the invariant app/close_key.lua states in
+  -- its first sentence.
+  --
+  -- Verified on the radio (X18RS, 02.10.2026), and it settles the part of
+  -- #2429 that was still open: a short RTN DOES reach this handler even while a
+  -- tile holds the form's input focus. The form layer does not swallow it. The
+  -- extra press came from Ethos's default running *after* the tool returned
+  -- false, and the default's two steps are "drop the focus, then exit" -- not
+  -- from the focus existing.
+  --
+  -- That is why focusEnabledTile() below is left alone. #2429 also proposed
+  -- turning the "where was I" tile marker from an input focus into a paint, on
+  -- the theory that the form layer consumes one RTN to clear a focus; measured
+  -- on the device, it does not, and with this handler installed one press
+  -- closes from every screen with the marker still an ordinary :focus(). Do not
+  -- re-do the marker as a paint on the strength of the issue's reasoning.
+  setEventHandler(function(category, value)
+    if not closeKey.shouldHandleClose(category, value) then return false end
+    goBack()
+    return true
+  end)
   -- Menu/tile screens never need a per-tick wakeup themselves -- only a
   -- leaf page opted into one (via opts.setWakeupHandler below) keeps it
   -- registered, so clear any leftover handler from whatever page was open

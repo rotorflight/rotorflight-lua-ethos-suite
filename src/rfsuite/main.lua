@@ -63,7 +63,64 @@ mark("widgets/dashboard.lua load", t0)
 
 local activelook_widget = nil
 
+-- The incremental collector's pause, as a percentage of the live heap. A
+-- collection cycle starts once the heap has reached live * pause / 100, so the
+-- default (200 in both 5.3 and 5.4) lets the heap grow to twice what is live
+-- before anything is reclaimed at all. Ethos kills a script whose Lua heap
+-- passes its limit (#2295, "Lua has used too much RAM, it has been Killed"), so
+-- a pause tuned for a general-purpose host starts collecting at a point the
+-- radio has already given up by. 120 cuts the permitted excess from 100% of
+-- live down to 20% of live.
+--
+-- THE VALUE IS A STARTING POINT, NOT A MEASURED ONE. Nothing in this
+-- repository states Ethos's Lua heap limit, so there is no number here to
+-- derive a pause from, and no on-device run yet measures what a lower pause
+-- costs the background task's instruction budget (tasks/engine.lua). What makes
+-- this worth trying anyway is that it is one line to change and one line to
+-- revert -- see docs/memory-and-module-lifecycle.md section 9.4 for the
+-- measurement that decides it, which needs no code at all.
+--
+-- setstepmul is deliberately NOT touched. It is the second knob and it trades
+-- collector throughput against step size; there is no measurement showing
+-- jitter that it would fix here, so changing it would be a guess in the other
+-- direction.
+local GC_PAUSE_PERCENT = 120
+
+-- Applies GC_PAUSE_PERCENT and reports what was applied.
+--
+-- `collectgarbage("setpause", n)` returns the PREVIOUS value, and with the
+-- argument omitted it does not read the current one -- it sets the pause to 0.
+-- Pause 0 is "collect as constantly as possible", the opposite of what this is
+-- for, and the Lua 5.3.6 in this checkout does exactly that
+-- (bin/gc_pause/verify_gc_pause.lua pins it). So the applied value is kept here
+-- and printed, never read back.
+--
+-- Guarded because "setpause" is a mode string like any other and a Lua without
+-- it would otherwise abort the boot. A guard that fails says so: a silent one
+-- would leave the log asserting a pause that was never applied.
+local function applyGcPause()
+  local ok, err = pcall(collectgarbage, "setpause", GC_PAUSE_PERCENT)
+  if not ok then
+    print(string.format("[boot] gc: setpause(%d) NOT applied on this Lua: %s",
+      GC_PAUSE_PERCENT, tostring(err)))
+    return false
+  end
+  print(string.format("[boot] gc: pause=%d%% of live heap before a cycle starts (Lua default 200)",
+    GC_PAUSE_PERCENT))
+  return true
+end
+
 local function init()
+  t0 = os.clock()
+  -- Before the three subsystems below, so the collector is already on its own
+  -- schedule while they allocate. What this does NOT cover is the eager
+  -- loadfile() chain at lines 53/57/61: that burst of parsing happens at
+  -- module load, before init() runs, and what it leaves behind is the live code
+  -- that no pause setting makes smaller. That is also why this is a creep
+  -- measure and not a boot-peak measure.
+  applyGcPause()
+  mark("gc.setpause", t0)
+
   t0 = os.clock()
   background_task.init()
   mark("background_task.init", t0)

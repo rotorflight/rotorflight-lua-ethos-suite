@@ -291,6 +291,76 @@ case.** A targeted fix (self-caching, subscription cleanup, in-place
 clearing) that actually reduces *live references* is the only kind of
 fix that can work here.
 
+### 9.1 Tuning the collector is a different lever from forcing it
+
+§9 rules out `collectgarbage("collect")` as a *fix*, because a complete cycle
+can only reclaim what is genuinely unreachable. **That ruling is untouched by
+this subsection.** Configuring the incremental collector changes *when* a cycle
+starts, not *what* is collectable: a cycle triggered at 120% of live instead of
+200% reclaims exactly the same objects, sooner. Nothing here makes retained
+memory collectable.
+
+The pause exists because the two ends of the range are both bad. A cycle starts
+once the heap has reached `live * pause / 100`, and the default is 200 — so with
+400 KB live, the heap is allowed to reach roughly 1.2 MB before the collector
+begins reclaiming at all. Ethos kills a script whose Lua heap passes its limit
+(#2295, *"Lua has used too much RAM, it has been Killed"*). A pause tuned for a
+general-purpose host therefore begins its work after the point at which the radio
+has already given up.
+
+`main.lua` sets it to **120** in `init()`, before `background_task.init()`, and
+prints what it applied:
+
+    [boot] gc: pause=120% of live heap before a cycle starts (Lua default 200)
+
+### 9.2 `collectgarbage("setpause")` is not a getter
+
+This is the whole reason the applied value is printed rather than read back:
+
+    collectgarbage("setpause", n)   -- sets the pause, RETURNS THE PREVIOUS one
+    collectgarbage("setpause")     -- sets the pause to 0, returns the previous
+
+Measured on the Lua 5.3.6 in this checkout, and asserted by
+`bin/gc_pause/verify_gc_pause.lua` rather than left to a comment, because
+`main.lua` cites the behaviour. Pause 0 means "collect as constantly as
+possible" — the exact opposite of the intent. So: the applied value is kept in a
+local and printed, no file under `src/` may call either setter without an
+explicit argument, and the call is `pcall`'d because a Lua without the mode
+string would otherwise abort the boot. A guard that fails says so.
+
+### 9.3 What the value is *not*
+
+- **Not measured.** Nothing in this repository states Ethos's Lua heap limit, so
+  there is no number to derive a pause from, and no on-device run measures what a
+  lower pause costs the background task's instruction budget
+  (`tasks/engine.lua`). It is one line to change and one line to revert, which
+  is what makes it worth trying.
+- **Not a fix for the allocation rate.** It moves the collector's onset earlier;
+  it does not allocate less. The churn itself still has to be reduced (#2364).
+- **Not covering the boot burst.** The eager `loadfile()` chain at
+  `main.lua:53/57/61` parses before `init()` runs, at the default pause. What it
+  leaves behind is live code, which no pause setting makes smaller — so this is a
+  creep measure, not a boot-peak measure.
+- **`setstepmul` is deliberately untouched.** It is the second knob, it trades
+  collector throughput against step size, and there is no measurement here of
+  jitter it would fix.
+
+### 9.4 How to decide it, without writing a line of code
+
+The metric that matters is the **peak `lua=` in the `[bgtask mem]` log over a
+30-minute flight** — and it is already logged, by `tasks/background.lua`. So the
+measurement is a procedure, not a feature: run the same session twice, once with
+the pause at the default and once at 120, and compare the peaks. The `[boot]` line
+above records which of the two a given log came from.
+
+A separate `live` figure, against which `churn` could be split, would need a
+forced full collect — and the one place that could show it,
+`app/pages/diagnostics_rfstatus.lua`, computes its memory text from a `wakeup`
+handler. A forced collect there would be precisely the hot-path forced collect
+this subsection is about. That is why there is no live/churn split in the
+diagnostics page: the number it would add is not worth a full cycle on every
+tick of that page.
+
 ## 10. New evidence: deferring a page's UI subtree is not §1
 
 §1 says don't defer a *top-level subsystem's registration* without new
@@ -461,6 +531,77 @@ the Lua side can be converted into bytes of headroom.
 
 ---
 
+## 12. Nothing on a wakeup path builds a table per call
+
+The dashboard wakeup path runs several times a second and `session.update` is
+published at up to 20 Hz, so a table rebuilt per call there is the sawtooth in
+the `'[bgtask mem] lua='` log rather than a detail. Three allocations on those
+paths were measured at 184 B, 128 B and 1392 B per call, and all three were a
+lookup table, a result table or a closure rebuilt for values the file already
+had at module level:
+
+- a name-to-suffix table rebuilt inside `getSensorStats()`, while the
+  `STAT_SUFFIXES` constant 80 lines above already held it — and the two had
+  drifted, so the rebuild read a different suffix for `rssi` than
+  `recordSensorStat()` wrote
+- a `compileTransform()` closure built, called on the next expression and thrown
+  away, for the boxes that do not cache their config
+- a copy of the subscriber list, made on every `publish()`
+
+Two rules follow, and both are about what the file already demonstrates:
+
+1. **A constant lookup table lives at module level, and in one place only.** Two
+   copies of the same mapping will disagree, and the disagreement stays invisible
+   until it returns the wrong number to a pilot.
+2. **Reuse a result object per key, not one for everything.**
+   `getSensorStats()` keeps one table per sensor name and overwrites its fields.
+   A single shared table would be cheaper still, but a caller that reads two
+   sensors before drawing would see the second one twice. Keyed by name that
+   costs 88 B per sensor queried and removes the trap; the temperature path in
+   the same function already cached its result this way.
+
+For the publish copy, one pooled snapshot per nesting level replaces the
+per-publish table, indexed by the `publishDepth` that section 11 already keeps —
+so the pool cannot grow past `MAX_PUBLISH_DEPTH` entries and the guard and the
+pool share one counter. Two details are load-bearing, and
+`bin/allocation_churn/verify_allocation_churn.lua` pins both:
+
+- **each slot is cleared (`snapshot[i] = nil`) upon retrieval.** Leaving
+  handler references in the pooled snapshot would retain closures (and via
+  their upvalues, entire closed `PageRuntime` instances or widget hierarchies)
+  across publishes. In PUC-Rio Lua, setting array entries to `nil` does *not*
+  shrink the table's allocated array capacity (`sizearray` remains unchanged
+  without a rehash), so writing `1..count` on subsequent publishes continues to
+  allocate 0.0 bytes while immediately preventing closure retention.
+- **the semantics of the copy are preserved exactly.** A handler unsubscribed by
+  another handler *during* a publish still gets its turn in that publish and
+  none in the next. Tombstoning the slot instead of shifting looks like the
+  obvious fix and is not this: it changes that behaviour, and its slots are never
+  reclaimed, so the subscriber list only grows — and page open/close is what
+  unsubscribes here.
+
+### Measuring this without fooling yourself
+
+`collectgarbage("count")` is the live heap **plus** whatever has not been
+collected yet, so a difference between two readings is an allocation figure only
+when no collection ran in between. Measured with the pause left alone, the numbers
+come out non-monotonic: the check reported 6 subscribers cheaper than 3, which is
+impossible, because the collector had run mid-loop and the reading was cut. So the
+harness pins the pause high, keeps a retained ballast array so the "double the
+live heap" trigger is out of reach, and asserts both directions on every run —
+the current code under the bound and the removed code over it. A bound that both
+sides meet proves nothing, which is why the removed implementations are carried
+in the harness rather than only described.
+
+The same trap applies to parse cost. `loadfile()` without running the chunk
+measures the parser's transient allocations, not the prototype the radio keeps,
+and parsing two revisions of a file in one process shares every interned string
+between them: that produced a parse delta that *fell* while the source grew. The
+figure quoted for that path is derived from a factor measured elsewhere, and is
+labelled as derived.
+
+---
+
 ## Quick reference
 
 | Symptom | Likely cause | Fix |
@@ -474,3 +615,9 @@ the Lua side can be converted into bytes of headroom.
 | A long-lived cache table keeps growing across the whole session | Cache never cleared, or cleared by reassignment while something else still holds the old table | Clear in place (§7) |
 | A cache class grows across the whole session although a `clearCaches`-style option exists for it | The option is gated and no call site ever requests it — a silent failure by construction | Request the option at the lifecycle call site, and bound the cache if its key space is open-ended (§7, #2380) |
 | RAM grows on menu/page rebuild despite everything above being clean | Likely Ethos's own `form` widget retention (§9) | Don't force `collectgarbage()` — it won't help; this needs a different kind of fix (or may be a platform limit) |
+| The heap peaks past Ethos's limit before the collector starts reclaiming | The pause is 200, so a cycle only begins at twice the live heap (§9.1) | `main.lua` sets it to 120 and prints what it applied — judge it by the peak `lua=` (§9.4) |
+| The collector is running flat out on a radio | `collectgarbage("setpause")` was called without a value, which sets the pause to **0** (§9.2) | Print the applied value; never read it back — the setter returns the previous one |
+| Lowering the pause did not reduce memory use | It moves the collector's onset earlier; it does not allocate less (§9.3) | Reduce the churn itself (#2364) — the two are complementary, not alternatives |
+| `lua=` in the background log sawtooths while the dashboard is up | A table, result object or closure rebuilt per call on a wakeup or publish path | Module-level constant, per-key result object, pooled iteration copy (§12) |
+| Heap grows *and* a stat box shows another sensor's numbers | Two copies of the same name-to-suffix mapping, disagreeing | One mapping, at module level (§12) |
+| An allocation measurement comes out smaller than the code change should allow | The collector ran inside the measurement window | Pin the pause, add ballast, assert the removed code over the bound too (§12) |
