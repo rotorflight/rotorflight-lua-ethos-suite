@@ -321,3 +321,14 @@ end }
 ---
 
 *This guide reflects the latest objects library (2024–2025) and should serve as the definitive reference for dashboard theme development.*
+
+## Bastion
+
+Bastion is a graphite and cyan dashboard theme designed for the X20 Pro
+(800×480). It requires at least 784×294 pixels and is hidden in both theme
+pickers on smaller screens, including 480×320 and 472×191 radios.
+
+Select it under *System → Settings → Dashboard → Themes*, and configure its
+instrument limits under *System → Settings → Dashboard → Settings*. The saved
+selection is `system/bastion`; instrument thresholds use the `dashboard.bastion`
+section of `SCRIPTS:/rfsuite.user/settings.ini`.

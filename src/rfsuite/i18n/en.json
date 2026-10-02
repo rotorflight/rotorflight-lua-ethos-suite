@@ -5796,6 +5796,12 @@
           "needs_translation": false,
           "translation": "AERC Nitro"
         },
+        "dashboard_theme_bastion": {
+          "english": "Bastion",
+          "max_length": 7,
+          "needs_translation": false,
+          "translation": "Bastion"
+        },
         "dashboard_theme_claude": {
           "english": "Claude",
           "max_length": 6,

@@ -23,6 +23,9 @@ Always available offline without an active flight controller connection. Read-on
 
 ## Notes
 
+- Bastion requires at least 784×294 pixels and is hidden in both dashboard
+  pickers on smaller screens, including 480×320 and 472×191 radios.
+
 - The theme configuration tile is named **Bastion** and loads from
   `widgets/dashboard/themes/bastion`. Instrument limits are saved under
   `dashboard.bastion` in the radio’s `settings.ini`.

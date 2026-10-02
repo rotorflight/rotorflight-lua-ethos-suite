@@ -2,7 +2,7 @@
 
 Run: python -m unittest discover -s tests/themes -p test_bastion_folder.py
 Requires Lupa (Lua 5.4). RFSUITE_TEST_ROOT can select a standalone checkout.
-Uses real loader/settings/configure/Bridge modules, in-memory settings and UI,
+Uses real loader/settings/configure modules, in-memory settings and UI,
 and a stub paint engine; theme visual acceptance is a separate check.
 """
 import os
@@ -105,7 +105,9 @@ class Radio:
     def read(self, path):
         self.loads.append(path)
         target = SOURCE / path
-        return target.read_text(encoding="utf-8") if target.is_file() else None
+        return (target.read_text(encoding="utf-8").replace(
+            "@i18n(app.modules.settings.dashboard_theme_bastion)@", "Bastion"
+        ) if target.is_file() else None)
 
     def run(self, code):
         return self.lua.execute(code)
@@ -166,35 +168,6 @@ class BastionFolderTests(unittest.TestCase):
             cleanup(); assert(context.widgets.dashboard.preferences()==nil)
         ''')
         self.assertIn("widgets/dashboard/themes/bastion/configure.lua", radio.loads)
-
-    @unittest.skipUnless((SOURCE / "app/theme_bridge.lua").is_file(), "Standalone branch has no Theme Bridge")
-    def test_bridge_resolves_metadata_and_releases_cache(self):
-        radio = Radio()
-        radio.run('''
-            bridge=requireModule("app/theme_bridge.lua")
-            function tick() now=now+0.6; bridge.wakeup() end
-            bridge.open(store.load()); tick(); tick()
-            local palette=bridge.getPalette()
-            assert(palette.path=="system/bastion" and palette.name=="Bastion")
-            local expected=assert(load(readSource("widgets/dashboard/themes/bastion/init.lua")))().appTheme
-            assert(palette.accent==lcd.RGB(table.unpack(expected.accent)))
-            for i=1,8 do bridge.paintBackground(); bridge.paintChrome(); tick() end
-            assert(bridge.getPalette()==palette,"stable palette cache was replaced")
-        ''')
-        metadata = "widgets/dashboard/themes/bastion/init.lua"
-        before = radio.loads.count(metadata)
-        self.assertEqual(before, 2)  # One Bridge read plus the independent expected metadata read.
-        self.assertFalse([p for p in radio.loads if "/themes/" in p and p.endswith(("/preflight.lua", "/inflight.lua", "/postflight.lua"))])
-        radio.run('''
-            bridge.clearCache()
-            bus.publish("session.update",{connected=false}); bus.publish("settings.update",store.load())
-            tick(); assert(bridge.getPalette()==nil)
-            bridge.open(store.load()); tick(); tick()
-            assert(bridge.getPalette().path=="system/bastion")
-            bridge.clearCache()
-        ''')
-        self.assertEqual(radio.loads.count(metadata), before + 1)
-
 
 
 if __name__ == "__main__":

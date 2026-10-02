@@ -23,6 +23,9 @@ Always available offline without an active flight controller connection. Read-on
 
 ## Notes
 
+- Bastion requires at least 784×294 pixels and is hidden in both dashboard
+  pickers on smaller screens, including 480×320 and 472×191 radios.
+
 - The custom theme is displayed as **Bastion**. Its saved selection is
   `system/bastion` for global and per-model selections.
 - Changes are written to the flight controller EEPROM upon Save.

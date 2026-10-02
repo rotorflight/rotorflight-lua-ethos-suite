@@ -8,7 +8,7 @@
 -- (lib/msp_status.lua, lib/msp_dataflash_summary.lua).
 --
 -- The names are the app.modules.fblstatus.arming_disable_flag_* keys, held here
--- as @i18n(...)@ tags. bin/package/resolve_i18n_tags.py substitutes the
+-- as i18n substitution tags. bin/package/resolve_i18n_tags.py substitutes the
 -- translated string at build time, so what ships in the ZIP is plain text in
 -- the pilot's language -- this file is never asked to translate anything.
 --

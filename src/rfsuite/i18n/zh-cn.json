@@ -6741,6 +6741,12 @@
           "reverse_text": false,
           "translation": "AERC 硝基"
         },
+        "dashboard_theme_bastion": {
+          "english": "Bastion",
+          "max_length": 7,
+          "needs_translation": false,
+          "translation": "Bastion"
+        },
         "dashboard_theme_claude": {
           "english": "Claude",
           "max_length": 6,
