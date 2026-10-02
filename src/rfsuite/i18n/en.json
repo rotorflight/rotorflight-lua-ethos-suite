@@ -3489,6 +3489,24 @@
           "translation": "Motor Protocol"
         },
         "arming_disable_flag_25": {
+          "english": "Override",
+          "max_length": 10,
+          "needs_translation": false,
+          "translation": "Override"
+        },
+        "arming_disable_flag_26": {
+          "english": "No Filter",
+          "max_length": 14,
+          "needs_translation": false,
+          "translation": "No Filter"
+        },
+        "arming_disable_flag_27": {
+          "english": "Backup RX",
+          "max_length": 14,
+          "needs_translation": false,
+          "translation": "Backup RX"
+        },
+        "arming_disable_flag_28": {
           "english": "Arm Switch",
           "max_length": 10,
           "needs_translation": false,
@@ -4812,6 +4830,12 @@
           "needs_translation": false,
           "translation": "FBus Out"
         },
+        "function_rx_input_backup": {
+          "english": "Serial Rx (Backup)",
+          "max_length": 19,
+          "needs_translation": false,
+          "translation": "Serial Rx (Backup)"
+        },
         "function_rx_serial": {
           "english": "RX Serial",
           "max_length": 9,
@@ -5521,6 +5545,68 @@
           "max_length": 9,
           "needs_translation": false,
           "translation": "RF Module"
+        }
+      },
+      "rx_input_backup_status": {
+        "active_backup": {
+          "english": "Backup",
+          "max_length": 6,
+          "needs_translation": false,
+          "translation": "Backup"
+        },
+        "active_main": {
+          "english": "Main",
+          "max_length": 4,
+          "needs_translation": false,
+          "translation": "Main"
+        },
+        "active_source": {
+          "english": "Active Source",
+          "max_length": 13,
+          "needs_translation": false,
+          "translation": "Active Source"
+        },
+        "channel": {
+          "english": "Channel",
+          "max_length": 7,
+          "needs_translation": false,
+          "translation": "Channel"
+        },
+        "link": {
+          "english": "Link",
+          "max_length": 4,
+          "needs_translation": false,
+          "translation": "Link"
+        },
+        "link_down": {
+          "english": "Down",
+          "max_length": 4,
+          "needs_translation": false,
+          "translation": "Down"
+        },
+        "link_up": {
+          "english": "Up",
+          "max_length": 2,
+          "needs_translation": false,
+          "translation": "Up"
+        },
+        "name": {
+          "english": "Serial Rx (Backup)",
+          "max_length": 19,
+          "needs_translation": false,
+          "translation": "Serial Rx (Backup)"
+        },
+        "not_configured": {
+          "english": "Not Configured",
+          "max_length": 14,
+          "needs_translation": false,
+          "translation": "Not Configured"
+        },
+        "protocol": {
+          "english": "Protocol",
+          "max_length": 8,
+          "needs_translation": false,
+          "translation": "Protocol"
         }
       },
       "servos": {
