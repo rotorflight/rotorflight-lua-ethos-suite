@@ -33,6 +33,9 @@ Greyed out until the flight controller answers. Read-only while the model is arm
   at **8.4 V** on the ones that do not. The ceiling follows the ESC that answered,
   so it changes with the model; an ESC this page has no entry for is treated as an
   8.4 V one. See #2337.
+- The *BEC Voltage* row is **hidden entirely** on an Opto model. An Opto ESC has no
+  BEC, so there is no voltage to set — a capped control for a setting that cannot
+  exist would be worse than no control.
 
 ### 12 V BEC and the HV-BEC flag
 
@@ -52,6 +55,9 @@ produced itself.
 
 Models with a 12 V ceiling: *YGE 165 HVT*, *YGE 205 HVT*, *YGE 205 HVT BEC*,
 *YGE Aureus 105v2*, *YGE Aureus 135v2*, *YGE Saphir 125v2*, *YGE Saphir 155v2*.
+
+Models with **no BEC**, where the row is hidden: *YGE 90 HVT Opto*,
+*YGE 120 HVT Opto*, *YGE Opto 135*, *YGE Opto 255*, *YGE Opto 405*.
 
 ## Related
 

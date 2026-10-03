@@ -32,6 +32,12 @@
 --   came to be in neither." So the fix is ONE table carrying both facts, not a
 --   second list next to the first.
 --
+--   A third fact joined it later the same day: an Opto ESC has no BEC at all
+--   (Björn), so "cannot reach 12 V" and "has no BEC" are different answers and
+--   need different UI -- the first caps the row, the second hides it. The
+--   section on the Opto models says which models that covers and which ten this
+--   suite still cannot answer for.
+--
 -- What it drives, and why:
 --   * The real app/pages/esc_forward_yge.lua and the real
 --     app/pages/esc_forward_vendor.lua, so the field spec the page hands the
@@ -48,24 +54,32 @@
 --     says what it does and does not cover.
 --
 -- Which checks go RED without the fix:
---   7 of 21. --self-test proves that rather than asserting it: it cuts the fix
---   back out of the three files that carry it and requires every one of the seven
+--   9 of 26. --self-test proves that rather than asserting it: it cuts the fix
+--   back out of the three files that carry it and requires every one of the nine
 --   to fail.
 --
 --   It cuts rather than serving pre-fix files from git, because the CI checkout
 --   has no history to serve them from -- and a cut is exactly where the sibling
 --   harness went wrong once: a slice that ran from the first mapping table to the
 --   end of the last function took an unrelated table with it, and the result
---   looked like a test failure. So this one verifies its own work in four steps
---   before trusting anything: every temp file must still LOAD (a cut that broke
---   the module is caught here, not three layers down), the feature must actually
---   be GONE from the sabotaged codec (a cut that removed the wrong thing is
---   caught here), every one of the three files must have been SERVED at least
---   once (a swap that never fired is caught here), and both passes must have
---   registered the same gate set.
+--   looked like a test failure. So this one verifies its own work before
+--   trusting anything, in five steps:
+--     * every temp file must still LOAD (a cut that broke the module is caught
+--       here, not three layers down);
+--     * the feature must actually be GONE from the sabotaged codec -- no
+--       becVoltageMax, no beforeSave, no hasBec;
+--     * the sabotaged PAGE must still HAVE its BEC row, plainly, with neither
+--       the ceiling nor the Opto gate on it. This one earned its place: the
+--       first version of the cut deleted the row instead of restoring the
+--       one-line entry, which left a page with no BEC row at all -- a third
+--       state, not the pre-fix one -- and the Opto gate then passed for the
+--       wrong reason, because the row was gone on every model and nothing could
+--       leak. Reading the source is the only way to see this: the page module
+--       exports open() and nothing else, so its FIELDS cannot be inspected.
+--     * all three files must have been SERVED at least once;
+--     * both passes must have registered the same gate set.
 --
---   Two of those four steps earned themselves while this file was being written,
---   which is the argument for having them rather than trusting the cut:
+--   Two more of those steps earned themselves while this file was being written:
 --     * the page was being loaded with realLoadfile, which BYPASSES the redirect,
 --       so the sabotaged page was never served -- pass 2 was testing the real page
 --       against a sabotaged codec and one gate stayed green for the wrong reason;
@@ -356,32 +370,44 @@ end
 -- ---------------------------------------------------------------------------
 
 -- Transcribed from rotorflight-lua-edgetx-suite
--- src/rfsuite/app/pages/setup/esc_motors/esc_tools/escmfg/yge/init.lua:17-39.
--- The transcription is the specification; the two disagreements with #2337's
--- body are noted where they occur.
+-- src/rfsuite/app/pages/setup/esc_motors/esc_tools/escmfg/yge/init.lua:17-39,
+-- plus one fact that table does not carry: `bec`, whether the model has a BEC at
+-- all (Björn, 2026-10-03 -- an Opto ESC has none).
+--
+-- `bec` is a THREE-valued fact and that is the point of writing it this way:
+--   true  -- the name says BEC, so it has one
+--   false -- the name says Opto, so it has none, and the row is hidden
+--   nil   -- the name says neither. UNKNOWN, and left that way on purpose. Six of
+--            the seven 12 V models are in this group, including "YGE 205 HVT"
+--            whose sibling is "YGE 205 HVT BEC", so the name cannot be read as
+--            the answer. An unknown keeps the row at the 8.4 V ceiling, which is
+--            what the page has always done.
 local EXPECTED_MODELS = {
-  [848] = {name = "YGE 35 LVT BEC", bec12v = false},
-  [1616] = {name = "YGE 65 LVT BEC", bec12v = false},
-  [2128] = {name = "YGE 85 LVT BEC", bec12v = false},
-  [2384] = {name = "YGE 95 LVT BEC", bec12v = false},
-  [4944] = {name = "YGE 135 LVT BEC", bec12v = false},
-  [2304] = {name = "YGE 90 HVT Opto", bec12v = false},
-  [4608] = {name = "YGE 120 HVT Opto", bec12v = false},
-  [5712] = {name = "YGE 165 HVT", bec12v = true},
-  [8272] = {name = "YGE 205 HVT", bec12v = true},
-  [8273] = {name = "YGE 205 HVT BEC", bec12v = true},
+  [848] = {name = "YGE 35 LVT BEC", bec = true, bec12v = false},
+  [1616] = {name = "YGE 65 LVT BEC", bec = true, bec12v = false},
+  [2128] = {name = "YGE 85 LVT BEC", bec = true, bec12v = false},
+  [2384] = {name = "YGE 95 LVT BEC", bec = true, bec12v = false},
+  [4944] = {name = "YGE 135 LVT BEC", bec = true, bec12v = false},
+  [8273] = {name = "YGE 205 HVT BEC", bec = true, bec12v = true},
+  [2304] = {name = "YGE 90 HVT Opto", bec = false, bec12v = false},
+  [4608] = {name = "YGE 120 HVT Opto", bec = false, bec12v = false},
+  [4928] = {name = "YGE Opto 135", bec = false, bec12v = false},
+  [9552] = {name = "YGE Opto 255", bec = false, bec12v = false},
+  [16464] = {name = "YGE Opto 405", bec = false, bec12v = false},
   [4177] = {name = "YGE Aureus 105", bec12v = false},
   [4179] = {name = "YGE Aureus 105v2", bec12v = true},
+  [4689] = {name = "YGE Saphir 125", bec12v = false},
+  [4691] = {name = "YGE Saphir 125v2", bec12v = true},
   [5025] = {name = "YGE Aureus 135", bec12v = false},
   [5027] = {name = "YGE Aureus 135v2", bec12v = true},
   [5457] = {name = "YGE Saphir 155", bec12v = false},
   [5459] = {name = "YGE Saphir 155v2", bec12v = true},
-  [4689] = {name = "YGE Saphir 125", bec12v = false},
-  [4691] = {name = "YGE Saphir 125v2", bec12v = true},
-  [4928] = {name = "YGE Opto 135", bec12v = false},
-  [9552] = {name = "YGE Opto 255", bec12v = false},
-  [16464] = {name = "YGE Opto 405", bec12v = false},
+  [5712] = {name = "YGE 165 HVT", bec12v = true},
+  [8272] = {name = "YGE 205 HVT", bec12v = true},
 }
+
+local OPTO_IDS = {2304, 4608, 4928, 9552, 16464}
+local UNMARKED_IDS = {4177, 4179, 4689, 4691, 5025, 5027, 5457, 5459, 5712, 8272}
 
 local BEC_8V_MAX = 84
 local BEC_12V_MAX = 120
@@ -792,6 +818,86 @@ local function runChecks()
   end
 
   -- -------------------------------------------------------------------------
+  -- The Opto models have no BEC, so the row is hidden rather than capped
+  -- -------------------------------------------------------------------------
+  out("")
+  out("a model with no BEC hides the row instead of capping it")
+
+  do
+    -- Every Opto-named model, each on its own open, and each must not have the
+    -- row built at all. Capping it would leave a live control on hardware that
+    -- has no BEC to set.
+    local leaked = {}
+    for _, id in ipairs(OPTO_IDS) do
+      local f = copyOf(baseFixture)
+      pokeU16(f, OFFSETS.esc_type.offset, id)
+      local runtime = openYge(f)
+      if not runtime then
+        leaked[#leaked + 1] = string.format("%d built no editor", id)
+      elseif rowField(ROW_BEC) ~= nil then
+        leaked[#leaked + 1] = string.format("%d (%s)", id, EXPECTED_MODELS[id].name)
+      end
+    end
+    gateCheck("none of the five Opto models builds the BEC Voltage row",
+      #leaked == 0,
+      #leaked > 0 and string.format("row shown on: %s", table.concat(leaked, ", ")) or nil)
+  end
+
+  do
+    -- ...and the capability itself is reported, not merely used to hide a row.
+    local f = copyOf(baseFixture)
+    pokeU16(f, OFFSETS.esc_type.offset, 16464)  -- YGE Opto 405
+    local runtime, _, codec = openYge(f)
+    local got = runtime and codec.hasBec and codec.hasBec(runtime.data)
+    gateCheck("hasBec() reports false for an Opto model",
+      got == false,
+      string.format("hasBec returned %s, expected false", tostring(got)))
+  end
+
+  do
+    -- A model whose name says BEC keeps the row.
+    local f = copyOf(baseFixture)
+    pokeU16(f, OFFSETS.esc_type.offset, 848)  -- YGE 35 LVT BEC
+    local runtime = openYge(f)
+    check("a model named BEC keeps the BEC Voltage row",
+      rowField(ROW_BEC) ~= nil,
+      "the row was not built")
+  end
+
+  do
+    -- The ten whose name says neither BEC nor Opto: UNKNOWN, and the row stays at
+    -- the 8.4 V ceiling. Not a gate -- that is today's behaviour, so the
+    -- pre-fix page does the same and this cannot detect the fix. It is here to
+    -- pin the choice, because the tempting wrong move is to read the name and
+    -- hide the row on ten models whose BEC nobody has confirmed either way.
+    local hidden = {}
+    for _, id in ipairs(UNMARKED_IDS) do
+      local f = copyOf(baseFixture)
+      pokeU16(f, OFFSETS.esc_type.offset, id)
+      local runtime = openYge(f)
+      if not runtime then
+        hidden[#hidden + 1] = string.format("%d built no editor", id)
+      elseif rowField(ROW_BEC) == nil then
+        hidden[#hidden + 1] = string.format("%d (%s)", id, EXPECTED_MODELS[id].name)
+      end
+    end
+    check("the ten models whose name says neither keep the row (BEC presence is an open question)",
+      #hidden == 0,
+      #hidden > 0 and string.format("row hidden on: %s", table.concat(hidden, ", ")) or nil)
+  end
+
+  do
+    -- An unknown id behaves like the unknown models: the row stays. Hiding it
+    -- would be the suite inventing a fact about hardware it has never seen.
+    local f = copyOf(baseFixture)
+    pokeU16(f, OFFSETS.esc_type.offset, 31337)
+    local runtime = openYge(f)
+    check("an unknown model id keeps the BEC Voltage row",
+      rowField(ROW_BEC) ~= nil,
+      "the row was hidden for an id this suite does not know")
+  end
+
+  -- -------------------------------------------------------------------------
   -- Blast radius of the shared-editor change
   -- -------------------------------------------------------------------------
   out("")
@@ -874,6 +980,17 @@ local function cut(src, open, close, what)
   return (src:sub(1, at - 1) .. src:sub(last + #close)), what
 end
 
+-- Replaces one span with given text. Used where the pre-fix form is not "the
+-- feature is gone" but "the feature is gone AND what was there before is back":
+-- the BEC row has to come back as the plain one-line entry it was, not vanish.
+local function replace(src, open, close, replacement, what, nl)
+  local at = src:find(open, 1, true)
+  if not at then error("sabotage: could not find the start of " .. what, 0) end
+  local last = src:find(close, at, true)
+  if not last then error("sabotage: could not find the end of " .. what, 0) end
+  return (src:sub(1, at - 1) .. replacement .. nl .. src:sub(last + #close))
+end
+
 local function prefixCodec(src, nl)
   local out = src
   -- (1) the model that was missing until this change
@@ -885,17 +1002,34 @@ local function prefixCodec(src, nl)
   out = cut(out, "-- The flags byte's HV-BEC bit is not a row on this page",
     "data.flags = setBit(data.flags, FLAG_BIT_BEC12V, data.lv_bec_voltage == BEC_VOLTAGE_MAX_12V and 1 or 0)\r\nend",
     "beforeSave()")
+  -- (4) and (5) the BEC-presence fact, both halves. Without these the Opto gate
+  -- stays green against a codec that has no notion of an Opto at all -- the
+  -- page's own enabledWhen is cut below, so removing only the accessor would
+  -- leave a live row that nothing hides, which is the defect.
+  out = cut(out, "function msp.hasBec(data)",
+    "return hasBec(data)\r\nend", "msp.hasBec()")
+  out = cut(out, "-- Whether the BEC Voltage row is shown at all. Only an EXPLICIT `bec = false`",
+    "return model == nil or model.bec ~= false\r\nend", "hasBec()")
   return out
 end
 
 local function prefixPage(src, nl)
   local out = src
-  -- (4) the dynamic ceiling on the BEC row
-  out = cut(out, "  -- The ceiling is a property of the model that answered",
-    '    max = function(data) return msp.becVoltageMax(data) end},',
-    "the BEC row's dynamic ceiling")
-  out = out:gsub('  %{label = "@i18n%(app%.modules%.esc_tools%.mfg%.yge%.lv_bec_voltage%)@", key = "lv_bec_voltage",\r\n(%)',
-    '  {label = "@i18n(app.modules.esc_tools.mfg.yge.lv_bec_voltage)@", key = "lv_bec_voltage"},\r\n%1')
+  -- (4) the BEC row goes back to the one-line entry it had before #2337 -- the
+  -- dynamic ceiling AND the Opto gate come off, and the row itself STAYS.
+  --
+  -- Deleting the whole entry instead of putting the old one back was the first
+  -- version of this cut, and it produced a THIRD state rather than the pre-fix
+  -- one: a page with no BEC row at all. That made the Opto gate pass for the
+  -- wrong reason -- the row was missing on every model, so nothing leaked. The
+  -- pre-fix page has the row, plainly, which is why this is a replacement and
+  -- not a deletion. --self-test now checks the shape of the sabotaged page
+  -- directly rather than trusting the slice.
+  out = replace(out,
+    "  -- The ceiling is a property of the model that answered",
+    "    enabledWhen = function(data) return msp.hasBec(data) end},",
+    '  {label = "@i18n(app.modules.esc_tools.mfg.yge.lv_bec_voltage)@", key = "lv_bec_voltage"},',
+    "the BEC row's ceiling and Opto gate", nl)
   -- (5) the beforeSave hand-through
   out = cut(out, "    -- Selects 12.0 V, sets the flags byte's HV-BEC bit. #2337",
     "beforeSave = msp.beforeSave,\r\n", "the page's beforeSave")
@@ -976,6 +1110,7 @@ if SELF_TEST then
     local problems = {}
     if type(pre.becVoltageMax) == "function" then problems[#problems + 1] = "becVoltageMax() is still there" end
     if type(pre.beforeSave) == "function" then problems[#problems + 1] = "beforeSave() is still there" end
+    if type(pre.hasBec) == "function" then problems[#problems + 1] = "hasBec() is still there" end
     local summary = tostring(pre.summaryFor({ esc_type = 4691, firmware_version = 0 }))
     if summary:find("Saphir", 1, true) then
       problems[#problems + 1] = "model 4691 is still named: " .. summary
@@ -989,7 +1124,36 @@ if SELF_TEST then
       for i = 1, #problems do out("  FAIL  sabotage check: " .. problems[i]) end
       os.exit(1)
     end
-    out("  the sabotaged codec is the pre-fix shape: no becVoltageMax, no beforeSave, 4691 unnamed")
+    out("  the sabotaged codec is the pre-fix shape: no becVoltageMax, no beforeSave, no hasBec, 4691 unnamed")
+  end
+
+  -- ...and the sabotaged PAGE must still HAVE the BEC row, plainly, with neither
+  -- the ceiling function nor the Opto gate on it. Reading the source is the only
+  -- way to see this: the page module exports open() and nothing else, so its
+  -- FIELDS table cannot be inspected from outside.
+  --
+  -- This check exists because the first version of the cut deleted the entry
+  -- instead of putting the old one back, which left a page with no BEC row at
+  -- all -- a third state, not the pre-fix one. It made the Opto gate pass for the
+  -- wrong reason: the row was gone on every model, so nothing could leak.
+  do
+    local page = readFile(staged["esc_forward_yge%.lua$"])
+    local problems = {}
+    if page:find("enabledWhen", 1, true) then
+      problems[#problems + 1] = "the Opto gate is still on the BEC row"
+    end
+    if page:find("becVoltageMax", 1, true) then
+      problems[#problems + 1] = "the dynamic ceiling is still on the BEC row"
+    end
+    local plain = page:find('key = "lv_bec_voltage"},', 1, true)
+    if not plain then
+      problems[#problems + 1] = "the BEC row is gone -- that is not the pre-fix page, that is no page"
+    end
+    if #problems > 0 then
+      for i = 1, #problems do out("  FAIL  sabotage check: " .. problems[i]) end
+      os.exit(1)
+    end
+    out("  the sabotaged page is the pre-fix shape: BEC row present, no ceiling, no Opto gate")
   end
 
   REPLACE = staged

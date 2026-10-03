@@ -63,28 +63,45 @@ end
 -- `bec12v` is what raises the BEC Voltage field's ceiling from 8.4 V to 12.0 V.
 -- It is a property of the MODEL rather than of the flags word: the flag says
 -- what the ESC is set to, this says what it can be set to.
+--
+-- `bec` is a THIRD fact and not the negation of `bec12v`, because "cannot reach
+-- 12 V" and "has no BEC at all" are different answers and need different UI:
+-- `bec = false` hides the BEC Voltage row, `bec = true` shows it, and an ABSENT
+-- `bec` means this suite does not know -- the row stays, at the 8.4 V ceiling
+-- every model shares, which is today's behaviour and not a regression.
+--
+-- The five models whose name says "Opto" carry `bec = false`: an Opto ESC has no
+-- BEC, so a BEC voltage on one is not a setting that can be written, and the row
+-- is hidden rather than capped (Björn, 2026-10-03). The ten models whose name
+-- carries neither "BEC" nor "Opto" are left unset ON PURPOSE -- the name does
+-- not say which side of the line they are on, and guessing would either hide the
+-- row on an ESC that has a BEC or invite a voltage on one that has not. Their
+-- `bec` is an open question, not an oversight.
 local ESC_MODELS = {
-  [848] = {name = "YGE 35 LVT BEC", bec12v = false},
-  [1616] = {name = "YGE 65 LVT BEC", bec12v = false},
-  [2128] = {name = "YGE 85 LVT BEC", bec12v = false},
-  [2384] = {name = "YGE 95 LVT BEC", bec12v = false},
-  [4944] = {name = "YGE 135 LVT BEC", bec12v = false},
-  [2304] = {name = "YGE 90 HVT Opto", bec12v = false},
-  [4608] = {name = "YGE 120 HVT Opto", bec12v = false},
-  [5712] = {name = "YGE 165 HVT", bec12v = true},
-  [8272] = {name = "YGE 205 HVT", bec12v = true},
-  [8273] = {name = "YGE 205 HVT BEC", bec12v = true},
+  -- Name says BEC.
+  [848] = {name = "YGE 35 LVT BEC", bec = true, bec12v = false},
+  [1616] = {name = "YGE 65 LVT BEC", bec = true, bec12v = false},
+  [2128] = {name = "YGE 85 LVT BEC", bec = true, bec12v = false},
+  [2384] = {name = "YGE 95 LVT BEC", bec = true, bec12v = false},
+  [4944] = {name = "YGE 135 LVT BEC", bec = true, bec12v = false},
+  [8273] = {name = "YGE 205 HVT BEC", bec = true, bec12v = true},
+  -- Name says Opto: no BEC at all.
+  [2304] = {name = "YGE 90 HVT Opto", bec = false, bec12v = false},
+  [4608] = {name = "YGE 120 HVT Opto", bec = false, bec12v = false},
+  [4928] = {name = "YGE Opto 135", bec = false, bec12v = false},
+  [9552] = {name = "YGE Opto 255", bec = false, bec12v = false},
+  [16464] = {name = "YGE Opto 405", bec = false, bec12v = false},
+  -- Name says neither. Unknown, and left that way -- see the note above.
   [4177] = {name = "YGE Aureus 105", bec12v = false},
   [4179] = {name = "YGE Aureus 105v2", bec12v = true},
+  [4689] = {name = "YGE Saphir 125", bec12v = false},
+  [4691] = {name = "YGE Saphir 125v2", bec12v = true},
   [5025] = {name = "YGE Aureus 135", bec12v = false},
   [5027] = {name = "YGE Aureus 135v2", bec12v = true},
   [5457] = {name = "YGE Saphir 155", bec12v = false},
   [5459] = {name = "YGE Saphir 155v2", bec12v = true},
-  [4689] = {name = "YGE Saphir 125", bec12v = false},
-  [4691] = {name = "YGE Saphir 125v2", bec12v = true},
-  [4928] = {name = "YGE Opto 135", bec12v = false},
-  [9552] = {name = "YGE Opto 255", bec12v = false},
-  [16464] = {name = "YGE Opto 405", bec12v = false},
+  [5712] = {name = "YGE 165 HVT", bec12v = true},
+  [8272] = {name = "YGE 205 HVT", bec12v = true},
 }
 
 -- The BEC Voltage field carries tenths of a volt, which is why the 12 V ceiling
@@ -262,6 +279,18 @@ local function supportsBec12v(data)
   return model ~= nil and model.bec12v == true
 end
 
+-- Whether the BEC Voltage row is shown at all. Only an EXPLICIT `bec = false`
+-- hides it -- the five models named "Opto", which have no BEC to set a voltage
+-- on. An unknown id and the ten models whose name says neither BEC nor Opto both
+-- report true, so the row stays at the 8.4 V ceiling: the state they are in is
+-- the state the page has always been in, and hiding a row on the strength of a
+-- name that does not answer the question would be a guess with a dead control in
+-- it. See the table's own comment for why that gap is deliberate.
+local function hasBec(data)
+  local model = data and ESC_MODELS[data.esc_type or 0]
+  return model == nil or model.bec ~= false
+end
+
 local function becMax(data)
   return supportsBec12v(data) and BEC_VOLTAGE_MAX_12V or BEC_VOLTAGE_MAX_8V
 end
@@ -301,6 +330,13 @@ end
 -- The ceiling of the BEC Voltage field, for the page to hand to the field spec.
 function msp.becVoltageMax(data)
   return becMax(data)
+end
+
+-- Whether the BEC Voltage row is shown at all. False only for the models named
+-- "Opto": an Opto ESC has no BEC, so there is no voltage to set and the row is
+-- hidden rather than capped (Björn, 2026-10-03).
+function msp.hasBec(data)
+  return hasBec(data)
 end
 
 -- The flags byte's HV-BEC bit is not a row on this page -- three other bits share
