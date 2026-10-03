@@ -35,12 +35,17 @@
 --
 --   A third fact joined it later the same day: an Opto ESC has no BEC at all
 --   (Björn), so "cannot reach 12 V" and "has no BEC" are different answers and
---   need different UI -- the first caps the row, the second hides it. He then
---   answered the ten models whose names say neither BEC nor Opto as well: all
---   ten have a BEC, so `bec` is false for exactly the five Opto models and true
---   for the other sixteen, with no entry left undecided. EdgeTX has no `bec`
---   field at all, which is why its page cannot hide the row and still offers a BEC
---   voltage on an ESC that has no BEC.
+--   need different UI -- the first caps the row, the second hides it.
+--
+--   That one is a FACT about the ESC and not a reading of the model name. The
+--   name is only the label it carries in a datasheet and in the EdgeTX table, so
+--   the five ids are stated in the table and no code inspects the string -- a
+--   model called "YGE Opto" with bec = true would be a wrong TABLE, not a wrong
+--   filter. He then confirmed the other sixteen per model: all ten whose names say
+--   neither BEC nor Opto have a BEC, so `bec` is false for exactly the five Opto
+--   models and true for the rest, with no entry left undecided. EdgeTX has no
+--   `bec` field at all, which is why its page cannot hide the row and still offers
+--   a BEC voltage on an ESC that has no BEC.
 --
 -- What it drives, and why:
 --   * The real app/pages/esc_forward_yge.lua and the real
@@ -380,9 +385,12 @@ end
 -- agree, so the two cannot drift apart unnoticed.
 --
 -- `bec` is the one field EdgeTX has no notion of, and it is what makes the BEC
--- Voltage row exist at all. Only the five models named "Opto" lack one; the ten
--- whose name says neither BEC nor Opto all have one. That is his answer, not an
--- inference from the name.
+-- Voltage row exist at all. The five Opto models have no BEC -- a fact about the
+-- ESC, not a reading of the name; the name is only the label it carries, and the
+-- ids are listed here and in the codec rather than filtered at runtime. The
+-- sixteen others have one, confirmed by Björn per model on 2026-10-03, including
+-- the ten whose name says neither BEC nor Opto. That is his answer, not an
+-- inference from a name.
 local EXPECTED_MODELS = {
   [848] = {name = "YGE 35 LVT BEC", bec = true, bec12v = false},
   [1616] = {name = "YGE 65 LVT BEC", bec = true, bec12v = false},
@@ -1129,7 +1137,13 @@ local function prefixCodec(src, nl)
   -- reaching the mechanism and not the table, so the check was asserting something
   -- no cut could ever falsify. A gate that cannot go red is not a gate.
   out = replace(out, '[8272] = {name = "YGE 205 HVT v2"', 'v2"', '[8272] = {name = "YGE 205 HVT"', 'model [8272] name', nl)
-  out = cut(out, '-- Whether the BEC Voltage row is shown at all. Only the five models named "Opto"',
+  -- This anchor is a COMMENT in the codec, and it is therefore coupled to how that
+  -- comment is worded: the phrasing was rewritten on 2026-10-03 to say that the Opto
+  -- fact is not read off the model name, and this line had to move with it. A cut
+  -- anchored on prose is a maintenance edge -- it fails loudly at the next rewording
+  -- rather than silently cutting the wrong span, which is why the error names the
+  -- anchor and not the feature.
+  out = cut(out, '-- Whether the BEC Voltage row is shown at all. It reports false only for the five',
     "return model == nil or model.bec ~= false\r\nend", "hasBec()")
   return out
 end

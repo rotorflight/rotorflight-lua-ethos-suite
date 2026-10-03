@@ -87,20 +87,28 @@ end
 --
 -- `bec` is a THIRD fact and not the negation of `bec12v`, because "cannot reach
 -- 12 V" and "has no BEC at all" are different answers and need different UI:
--- `bec = false` hides the BEC Voltage row. Only the five models named "Opto"
--- have it -- an Opto ESC has no BEC, so a BEC voltage on one is not a setting
--- that can be written, and the row is hidden rather than capped (Björn,
--- 2026-10-03). Every other model has a BEC, which for the ten whose name says
--- neither "BEC" nor "Opto" is his answer rather than an inference from the name.
+-- `bec = false` hides the BEC Voltage row.
+--
+-- THE FACT, not a reading of the name: an Opto ESC has no BEC. There is no
+-- voltage on one to set, so a BEC voltage is not a setting that can be written,
+-- and the row is hidden rather than capped (Björn, 2026-10-03).
+--
+-- The name is what that fact looks like in a datasheet and in the EdgeTX table,
+-- and it is why the five ids are listed here rather than filtered at runtime: a
+-- new Opto is a new line in THIS table, not a rule that spots the word. Nothing
+-- reads the name -- the six entries below marked "BEC" and the five marked "Opto"
+-- are the author's statement, and the other sixteen Björn confirmed per model on
+-- 2026-10-03, including the ten whose name says neither BEC nor Opto. Those ten
+-- are his answer and not an inference.
 local ESC_MODELS = {
-  -- Name says BEC.
+  -- Named BEC in the table; Björn confirmed a BEC on each.
   [848] = {name = "YGE 35 LVT BEC", bec = true, bec12v = false},
   [1616] = {name = "YGE 65 LVT BEC", bec = true, bec12v = false},
   [2128] = {name = "YGE 85 LVT BEC", bec = true, bec12v = false},
   [2384] = {name = "YGE 95 LVT BEC", bec = true, bec12v = false},
   [4944] = {name = "YGE 135 LVT BEC", bec = true, bec12v = false},
   [8273] = {name = "YGE 205 HVT BEC", bec = true, bec12v = true},
-  -- Name says Opto: no BEC at all.
+  -- Opto: no BEC at all. These five ids ARE the fact, not a name filter.
   [2304] = {name = "YGE 90 HVT Opto", bec = false, bec12v = false},
   [4608] = {name = "YGE 120 HVT Opto", bec = false, bec12v = false},
   [4928] = {name = "YGE Opto 135", bec = false, bec12v = false},
@@ -294,13 +302,19 @@ local function supportsBec12v(data)
   return model ~= nil and model.bec12v == true
 end
 
--- Whether the BEC Voltage row is shown at all. Only the five models named "Opto"
--- report false: an Opto ESC has no BEC, so there is no voltage to set and the row
--- is hidden rather than capped (Björn, 2026-10-03). Every other model reports
--- true -- for the ten whose name says neither BEC nor Opto that is his answer per
--- model, not an inference from the name, and an id this file has never seen also
--- reports true so the row stays rather than disappearing on hardware nothing is
--- known about.
+-- Whether the BEC Voltage row is shown at all. It reports false only for the five
+-- Opto models: an Opto ESC has no BEC, so there is no voltage to set and the row is
+-- hidden rather than capped (Björn, 2026-10-03).
+--
+-- That is a fact about the ESC, NOT something read off the name. The name is only the
+-- label that fact carries in a datasheet, and the five ids in ESC_MODELS are where a
+-- new Opto is added -- no code inspects the string. So a model called "YGE Opto" with
+-- `bec = true` above would be a wrong table, not a wrong filter.
+--
+-- Every other model reports true, including the ten whose name says neither BEC nor
+-- Opto -- that is Björn's answer per model, not an inference from a name -- and an id
+-- this file has never seen also reports true, so the row stays rather than
+-- disappearing on hardware nothing is known about.
 local function hasBec(data)
   local model = data and ESC_MODELS[data.esc_type or 0]
   return model == nil or model.bec ~= false
@@ -347,9 +361,9 @@ function msp.becVoltageMax(data)
   return becMax(data)
 end
 
--- Whether the BEC Voltage row is shown at all. False only for the models named
--- "Opto": an Opto ESC has no BEC, so there is no voltage to set and the row is
--- hidden rather than capped (Björn, 2026-10-03).
+-- Whether the BEC Voltage row is shown at all. False only for the five Opto models,
+-- which have no BEC (Björn, 2026-10-03) -- a fact about the ESC, not a reading of the
+-- name. See hasBec() above.
 function msp.hasBec(data)
   return hasBec(data)
 end
