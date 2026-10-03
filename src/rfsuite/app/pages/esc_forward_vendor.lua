@@ -20,6 +20,20 @@ local MSG_LOADING_TITLE = "@i18n(app.msg_loading)@"
 local MSG_LOADING_BODY = "@i18n(app.msg_loading_from_fbl)@"
 local RESET_TARGET = 100
 
+-- A field entry may carry a plain value or a function of `data` for anything
+-- that depends on which ESC answered -- `fieldLabel` below already resolves its
+-- label that way, and `min`/`max` are resolved the same way here for the same
+-- reason: a field's legal range is a property of the model, not of the field.
+-- app/field_layout.lua's buildField() has always honoured spec.min/spec.max
+-- (it falls back to the codec's FIELD_META only when the spec has none), so
+-- nothing there needed changing -- these two keys were simply dropped on the
+-- floor between the page and that call.
+local function specBound(field, name, data)
+  local value = field[name]
+  if type(value) == "function" then return value(data) end
+  return value
+end
+
 local function fieldSpec(mspModule, data, field)
   local key = field.key
   local meta = mspModule.FIELD_META and mspModule.FIELD_META[key] or {}
@@ -27,8 +41,8 @@ local function fieldSpec(mspModule, data, field)
     key = key,
     bit = field.bit,
     choices = field.choices or (mspModule.choicesFor and mspModule.choicesFor(data, key)) or meta.choices,
-    min = meta.min,
-    max = meta.max,
+    min = specBound(field, "min", data) or meta.min,
+    max = specBound(field, "max", data) or meta.max,
     default = meta.default,
     suffix = meta.suffix,
     decimals = meta.decimals,

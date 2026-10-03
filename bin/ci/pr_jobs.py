@@ -495,6 +495,51 @@ deliberately not gates: they pass on the pre-fix codec too, and a gate check tha
 cannot go red is worse than no check.
 '''
     ),
+    # Appended after #2456 was opened, so this entry is a pure addition rather
+    # than a re-registration of esc-parameters-yge: that job arrived with #2456.
+    LuaJob(
+        id='esc-parameters-yge-bec12v',
+        name='YGE 12 V BEC ceiling and the HV-BEC bit',
+        step='Check the 12 V BEC ceiling and the flag',
+        script='bin/esc_parameters_yge/verify_yge_bec12v.lua',
+        rationale=r'''Seven of the twenty-one YGE models have an HV BEC that runs up to 12.0 V, and the BEC
+Voltage field was capped at 8.4 V for all of them -- because the ceiling is a
+property of the MODEL and the field took its range from a constant in FIELD_META.
+app/field_layout.lua's buildField() has always honoured spec.min/spec.max, and
+app/pages/esc_forward_vendor.lua's fieldSpec() read them from FIELD_META only, so
+a page had no way to say otherwise. It now resolves them the way it already
+resolved labels: a value, or a function of the read data.
+
+The second half is the flags byte. Its HV-BEC bit (bit 3) has no row on this
+page -- bits 0 and 1 have rows, bit 3 did not -- so selecting 12.0 V commanded the
+voltage without the mode that makes it 12 V. The codec sets it from
+page_runtime's beforeSave hook, the same place and shape
+msp_esc_parameters_scorpion.lua already uses.
+
+Two rules, and the second is the one a reviewer should check: when the pilot MOVED
+the voltage the bit becomes (voltage == 120), and when they did not the bit is
+left exactly as the ESC reported it. An ESC reporting 8.4 V with the bit set is in
+a state this page never produced, and a save that changed the governor gain has no
+business clearing a BEC setting nobody looked at.
+
+The harness found that second rule the hard way: the first version enforced the
+invariant unconditionally and its own "an unrelated save leaves the bit alone" case
+went red. It is now the same rule the timing translation in #2456 follows.
+
+Finding on the way: the model table was missing [4691] "YGE Saphir 125v2" -- one
+of the seven 12 V models, and the first one #2337 names. It rendered as
+"YGE ESC (4691)", and with no entry there was nothing to raise the ceiling for.
+The EdgeTX table's own comment says why: name and capability used to be two lists,
+"and adding a model meant remembering both -- which is how 4691 came to be in
+neither". So this is ONE table carrying both facts, not a second list beside the
+first.
+
+7 of its 21 checks go red without the fix. Pass --self-test to prove that: it cuts
+the fix back out of the three files that carries and requires every one of the
+seven to fail -- and verifies its own cut four ways first, because a slice that
+takes an unrelated table with it looks exactly like a test failure.
+'''
+    ),
 ]
 
 VERBATIM_JOBS = [

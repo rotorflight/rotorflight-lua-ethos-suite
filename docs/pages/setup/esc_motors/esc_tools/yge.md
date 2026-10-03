@@ -29,6 +29,29 @@ Greyed out until the flight controller answers. Read-only while the model is arm
   the six fixed advance angles (*0 deg* .. *30 deg*) are translated to and from
   the word the ESC actually uses, and a row you did not touch is written back
   with the word it was read with. See #2336.
+- *BEC Voltage* goes up to **12.0 V** on the models that have an HV BEC, and stays
+  at **8.4 V** on the ones that do not. The ceiling follows the ESC that answered,
+  so it changes with the model; an ESC this page has no entry for is treated as an
+  8.4 V one. See #2337.
+
+### 12 V BEC and the HV-BEC flag
+
+The HV-BEC flag is not a row of its own. It follows the BEC Voltage instead, and
+it follows it in one direction only:
+
+| You do | The flag becomes |
+| --- | --- |
+| move the voltage **to 12.0 V** | set |
+| move the voltage **to anything below 12.0 V** | cleared |
+| do not touch the voltage | left exactly as the ESC reported it |
+
+So 12.0 V is the mode and 11.9 V is not, even though both are on the same slider —
+selecting 11.9 V clears the flag. And a save that changed some other setting leaves
+the flag alone, even if the ESC reported a combination this page would not have
+produced itself.
+
+Models with a 12 V ceiling: *YGE 165 HVT*, *YGE 205 HVT*, *YGE 205 HVT BEC*,
+*YGE Aureus 105v2*, *YGE Aureus 135v2*, *YGE Saphir 125v2*, *YGE Saphir 155v2*.
 
 ## Related
 
