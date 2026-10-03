@@ -402,10 +402,15 @@ from an empty table AND requires page_runtime to publish it.
 instructions count reached"), and nothing on the radio says how close one
 runs. This drives the real dashboard widget through every theme and flight
 state, and the real background task through boot, link up, steady CRSF with
-ELRS frames, an ELRS backlog and link down, counting instructions with a
-debug hook on desktop Lua. Any callback at or over the limit fails, so a
-theme with too many boxes, or a new per-tick cost, is caught here instead of
-as stalled frames or a dropped background tick in flight.
+ELRS frames, an ELRS backlog and link down, and the real system tool through
+every menu and every page (opened cold, read replies served by the MSP
+codecs' simulator fixtures), counting instructions with a debug hook on
+desktop Lua. Any callback at or over the limit fails, so a theme with too
+many boxes, a new per-tick cost, or a page that builds its form in one
+oversized pass is caught here instead of as stalled frames, a dropped
+background tick in flight, or a page that never draws. The Ports page did
+exactly that before this check covered the app: its function lists cost
+~25k instructions with 4 serial ports and ~255k with 12, in one wakeup.
 '''
     ),
 ]
