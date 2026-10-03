@@ -20,9 +20,10 @@
 --   does the timing translation, and
 --   rotorflight-lua-edgetx-suite .../escmfg/yge/init.lua:17-39 carries the model
 --   table with bec12v, while .../escmfg/yge/page.lua:322-328 and :543-556 do the
---   range and the flag. The list used here is that table, transcribed.
---
--- What was found on the way, and is pinned below:
+--   range and the flag. The list used here is that table, transcribed, and
+  --   every model's ceiling is asserted against it below, so the parity is a gate.
+  --
+  -- What was found on the way, and is pinned below:
 --   The Ethos codec's model table was missing [4691] "YGE Saphir 125v2" -- one
 --   of the seven 12 V models, and the first one the issue names. It showed as
 --   "YGE ESC (4691)", and with no entry there was nothing to raise the ceiling
@@ -34,9 +35,12 @@
 --
 --   A third fact joined it later the same day: an Opto ESC has no BEC at all
 --   (Björn), so "cannot reach 12 V" and "has no BEC" are different answers and
---   need different UI -- the first caps the row, the second hides it. The
---   section on the Opto models says which models that covers and which ten this
---   suite still cannot answer for.
+--   need different UI -- the first caps the row, the second hides it. He then
+--   answered the ten models whose names say neither BEC nor Opto as well: all
+--   ten have a BEC, so `bec` is false for exactly the five Opto models and true
+--   for the other sixteen, with no entry left undecided. EdgeTX has no `bec`
+--   field at all, which is why its page cannot hide the row and still offers a BEC
+--   voltage on an ESC that has no BEC.
 --
 -- What it drives, and why:
 --   * The real app/pages/esc_forward_yge.lua and the real
@@ -54,8 +58,8 @@
 --     says what it does and does not cover.
 --
 -- Which checks go RED without the fix:
---   9 of 26. --self-test proves that rather than asserting it: it cuts the fix
---   back out of the three files that carry it and requires every one of the nine
+  --   11 of 28. --self-test proves that rather than asserting it: it cuts the fix
+  --   back out of the three files that carry it and requires every one of the eleven
 --   to fail.
 --
 --   It cuts rather than serving pre-fix files from git, because the CI checkout
@@ -369,23 +373,23 @@ end
 -- The model table under test
 -- ---------------------------------------------------------------------------
 
--- The specification, and it is NOT the EdgeTX table this file used to follow.
--- The BEC voltages and the 12 V capability are Bjoern's, per model, given
--- 2026-10-03. They disagree with rotorflight-lua-edgetx-suite
--- .../escmfg/yge/init.lua:17-39 in BOTH directions -- three models there are
--- offered 12 V and do not have it, and one (Saphir 125) is held below a voltage
--- it does have. See the codec's table for the full comparison.
+-- The specification. The 12 V capability is the EdgeTX table's
+-- (rotorflight-lua-edgetx-suite .../escmfg/yge/init.lua:17-39), confirmed by
+-- Björn per model on 2026-10-03 including the three non-v2 entries. EDGETX_MODELS
+-- below is that table verbatim, and the parity check asserts all 21 entries
+-- agree, so the two cannot drift apart unnoticed.
 --
--- `bec` is what makes the BEC Voltage row exist at all, and only the five models
--- named "Opto" lack one. The ten whose name says neither BEC nor Opto all have
--- one: that is his answer, not an inference from the name.
+-- `bec` is the one field EdgeTX has no notion of, and it is what makes the BEC
+-- Voltage row exist at all. Only the five models named "Opto" lack one; the ten
+-- whose name says neither BEC nor Opto all have one. That is his answer, not an
+-- inference from the name.
 local EXPECTED_MODELS = {
   [848] = {name = "YGE 35 LVT BEC", bec = true, bec12v = false},
   [1616] = {name = "YGE 65 LVT BEC", bec = true, bec12v = false},
   [2128] = {name = "YGE 85 LVT BEC", bec = true, bec12v = false},
   [2384] = {name = "YGE 95 LVT BEC", bec = true, bec12v = false},
   [4944] = {name = "YGE 135 LVT BEC", bec = true, bec12v = false},
-  [8273] = {name = "YGE 205 HVT BEC", bec = true, bec12v = false},
+  [8273] = {name = "YGE 205 HVT BEC", bec = true, bec12v = true},
   [2304] = {name = "YGE 90 HVT Opto", bec = false, bec12v = false},
   [4608] = {name = "YGE 120 HVT Opto", bec = false, bec12v = false},
   [4928] = {name = "YGE Opto 135", bec = false, bec12v = false},
@@ -393,36 +397,67 @@ local EXPECTED_MODELS = {
   [16464] = {name = "YGE Opto 405", bec = false, bec12v = false},
   [4177] = {name = "YGE Aureus 105", bec = true, bec12v = false},
   [4179] = {name = "YGE Aureus 105v2", bec = true, bec12v = true},
-  [4689] = {name = "YGE Saphir 125", bec = true, bec12v = true},
+  [4689] = {name = "YGE Saphir 125", bec = true, bec12v = false},
   [4691] = {name = "YGE Saphir 125v2", bec = true, bec12v = true},
   [5025] = {name = "YGE Aureus 135", bec = true, bec12v = false},
   [5027] = {name = "YGE Aureus 135v2", bec = true, bec12v = true},
   [5457] = {name = "YGE Saphir 155", bec = true, bec12v = false},
   [5459] = {name = "YGE Saphir 155v2", bec = true, bec12v = true},
-  [5712] = {name = "YGE 165 HVT", bec = true, bec12v = false},
-  [8272] = {name = "YGE 205 HVT", bec = true, bec12v = false},
+  [5712] = {name = "YGE 165 HVT", bec = true, bec12v = true},
+  [8272] = {name = "YGE 205 HVT v2", bec = true, bec12v = true},
 }
 
 local OPTO_IDS = {2304, 4608, 4928, 9552, 16464}
 local UNMARKED_IDS = {4177, 4179, 4689, 4691, 5025, 5027, 5457, 5459, 5712, 8272}
 
 -- The two the ceiling cases are driven on. 4691 because it is the model the whole
--- finding is about, and because picking 8272 here would have been wrong: 205 HVT
--- is one of the three the EdgeTX table offers 12 V and Björn says it has an 8.4 V
--- BEC. 848 is a plain 8.4 V BEC model.
+-- finding is about; 5712 because it is a 12 V model whose name carries neither BEC
+-- nor Opto nor v2, and is therefore the one a reader is most likely to "correct"
+-- away. 848 is a plain 8.4 V BEC model.
 local MODEL_12V = 4691   -- YGE Saphir 125v2
 local MODEL_8V4 = 848    -- YGE 35 LVT BEC
 
--- The four entries where this file and the EdgeTX table disagree. Named
--- individually because they are the ones a reviewer should read the codec's table
--- comment for, and because if either side is ever corrected these four are what
--- changes.
-local DIVERGES_FROM_EDGETX = {
-  { id = 4689, name = "YGE Saphir 125", edgetx = false, here = true },
-  { id = 5712, name = "YGE 165 HVT", edgetx = true, here = false },
-  { id = 8272, name = "YGE 205 HVT", edgetx = true, here = false },
-  { id = 8273, name = "YGE 205 HVT BEC", edgetx = true, here = false },
+-- The EdgeTX table, transcribed from
+-- rotorflight-lua-edgetx-suite .../escmfg/yge/init.lua:17-39, and treated here as
+-- the specification for bec12v. Transcribed rather than parsed on purpose: a check
+-- that reads the other repository cannot run in this repository's CI.
+--
+-- Two of the names differ from EdgeTX's, and BOTH differences are Björn's, given
+-- 2026-10-03:
+--   4691 "YGE Saphir 125v2" -- EdgeTX already spells it this way. It was THIS
+--     codec that was missing the entry, so before this branch it had no name at
+--     all and rendered as "YGE ESC (4691)".
+--   8272 "YGE 205 HVT v2" -- EdgeTX calls it "YGE 205 HVT". The id and the 12 V
+--     capability are EdgeTX's; only the spelling is the owner's.
+-- The parity check names the other nineteen explicitly rather than asserting a
+-- count, so that a future edit which adds or drops an entry fails with the id in
+-- the message instead of a bare "expected 21".
+local EDGETX_MODELS = {
+  { id = 848, name = "YGE 35 LVT BEC", bec12v = false },
+  { id = 1616, name = "YGE 65 LVT BEC", bec12v = false },
+  { id = 2128, name = "YGE 85 LVT BEC", bec12v = false },
+  { id = 2304, name = "YGE 90 HVT Opto", bec12v = false },
+  { id = 2384, name = "YGE 95 LVT BEC", bec12v = false },
+  { id = 4177, name = "YGE Aureus 105", bec12v = false },
+  { id = 4179, name = "YGE Aureus 105v2", bec12v = true },
+  { id = 4608, name = "YGE 120 HVT Opto", bec12v = false },
+  { id = 4689, name = "YGE Saphir 125", bec12v = false },
+  { id = 4691, name = "YGE Saphir 125v2", bec12v = true },
+  { id = 4928, name = "YGE Opto 135", bec12v = false },
+  { id = 4944, name = "YGE 135 LVT BEC", bec12v = false },
+  { id = 5025, name = "YGE Aureus 135", bec12v = false },
+  { id = 5027, name = "YGE Aureus 135v2", bec12v = true },
+  { id = 5457, name = "YGE Saphir 155", bec12v = false },
+  { id = 5459, name = "YGE Saphir 155v2", bec12v = true },
+  { id = 5712, name = "YGE 165 HVT", bec12v = true },
+  { id = 8272, name = "YGE 205 HVT", bec12v = true },
+  { id = 8273, name = "YGE 205 HVT BEC", bec12v = true },
+  { id = 9552, name = "YGE Opto 255", bec12v = false },
+  { id = 16464, name = "YGE Opto 405", bec12v = false },
 }
+
+-- The one name that is deliberately NOT EdgeTX's, with the reason.
+local NAME_DIFFERS_ON_PURPOSE = { id = 8272, here = "YGE 205 HVT v2", edgetx = "YGE 205 HVT" }
 
 local BEC_8V_MAX = 84
 local BEC_12V_MAX = 120
@@ -626,7 +661,7 @@ local function runChecks()
   do
     local f = copyOf(baseFixture)
     pokeU16(f, OFFSETS.esc_type.offset, 4691)
-    local runtime = openYge(f)
+    local runtime, _, codec = openYge(f)
     local label = runtime and codec.summaryFor(runtime.data) or ""
     gateCheck("model 4691 is named \"YGE Saphir 125v2\" and not \"YGE ESC (4691)\"",
       label:find("YGE Saphir 125v2", 1, true) ~= nil,
@@ -914,40 +949,64 @@ local function runChecks()
   end
 
   -- -------------------------------------------------------------------------
-  -- Where this file and the EdgeTX table disagree
+  -- Parity with the EdgeTX table, on bec12v
   -- -------------------------------------------------------------------------
   out("")
-  out("the four models where this file and the EdgeTX table disagree")
+  out("the BEC ceiling matches the EdgeTX table on all 21 models")
 
   do
-    -- Not a gate: on the pre-fix codec every one of these reads as the EdgeTX
-    -- value, because that is what it had. They are here so the divergence is a
-    -- fact the harness carries rather than a claim in a comment -- and so that if
-    -- anyone ever "corrects" one of them back towards EdgeTX, it goes red.
-    local wrong = {}
-    for _, d in ipairs(DIVERGES_FROM_EDGETX) do
+    -- A gate, unlike the non-gate this replaced: on the pre-fix codec every model
+    -- returns BEC_8V_MAX, so all seven 12 V entries already fail here. That is what
+    -- makes it able to detect the fix rather than merely pin it afterwards.
+    --
+    -- Every entry is walked, not a sample, because "the seven that matter" is the
+    -- kind of list that rots: adding a model to EdgeTX would leave a four-entry
+    -- spot check green. Ids and counts are both asserted, so an entry dropped on
+    -- either side is named rather than counted.
+    local wrong, checked = {}, 0
+    for _, e in ipairs(EDGETX_MODELS) do
+      checked = checked + 1
       local f = copyOf(baseFixture)
-      pokeU16(f, OFFSETS.esc_type.offset, d.id)
+      pokeU16(f, OFFSETS.esc_type.offset, e.id)
       local runtime, _, codec = openYge(f)
       if not runtime then
-        wrong[#wrong + 1] = string.format("%d built no editor", d.id)
+        wrong[#wrong + 1] = string.format("%d built no editor", e.id)
+      elseif not codec.becVoltageMax then
+        wrong[#wrong + 1] = string.format("%d has no becVoltageMax", e.id)
       else
-        local want = d.here and BEC_12V_MAX or BEC_8V_MAX
-        -- Guarded, and not out of caution: this is a NON-gate, so it also runs in
-        -- pass 2 against a codec that has had becVoltageMax cut out. Calling it
-        -- blind took the whole self-test down with a nil-call three sections
-        -- before the verdict, which is a loud way to learn that a check has to
-        -- survive the tree it is pointed at.
-        local got = codec.becVoltageMax and codec.becVoltageMax(runtime.data)
+        local want = e.bec12v and BEC_12V_MAX or BEC_8V_MAX
+        local got = codec.becVoltageMax(runtime.data)
         if got ~= want then
-          wrong[#wrong + 1] = string.format("%d %s: EdgeTX says %s, this says %s, codec returned %s",
-            d.id, d.name, d.edgetx and "12 V" or "8.4 V", d.here and "12 V" or "8.4 V", tostring(got))
+          wrong[#wrong + 1] = string.format("%d %s: EdgeTX says %s, codec returned %s",
+            e.id, e.name, want / 10 .. " V", got and (got / 10) .. " V" or tostring(got))
         end
       end
     end
-    check("each of the four follows Björn's answer, not the EdgeTX table",
-      #wrong == 0,
-      #wrong > 0 and table.concat(wrong, "; ") or nil)
+    gateCheck("all 21 BEC ceilings equal the EdgeTX table's",
+      #wrong == 0 and checked == 21,
+      #wrong > 0 and table.concat(wrong, "; ") or (checked ~= 21 and ("walked " .. checked .. " entries, expected 21") or nil))
+  end
+
+  -- The one name that is deliberately not EdgeTX's, checked separately so that the
+  -- message says which kind of difference it is.
+  do
+    local f = copyOf(baseFixture)
+    pokeU16(f, OFFSETS.esc_type.offset, NAME_DIFFERS_ON_PURPOSE.id)
+    -- A gate: on the pre-fix codec [8272] is named "YGE 205 HVT", EdgeTX's
+    -- spelling, because the v2 came from the owner. It goes red if the name is
+    -- ever copied back from the other repository.
+    --
+    -- Compared for EQUALITY against the name part only. A "does it contain our
+    -- spelling and not EdgeTX's" test is unsatisfiable here and would have passed
+    -- nothing: "YGE 205 HVT v2" CONTAINS "YGE 205 HVT". summaryFor returns
+    -- "<name> / <ratio>", so the name is everything before the separator.
+    local runtime, _, codec = openYge(f)
+    local label = runtime and codec.summaryFor(runtime.data) or ""
+    local reported = label:match("^(.-)%s*/%s") or label
+    gateCheck(string.format("model %d is named exactly \"%s\", the owner's spelling, not EdgeTX's \"%s\"",
+        NAME_DIFFERS_ON_PURPOSE.id, NAME_DIFFERS_ON_PURPOSE.here, NAME_DIFFERS_ON_PURPOSE.edgetx),
+      reported == NAME_DIFFERS_ON_PURPOSE.here,
+      string.format("model row named \"%s\", expected exactly \"%s\"", reported, NAME_DIFFERS_ON_PURPOSE.here))
   end
 
   -- -------------------------------------------------------------------------
@@ -1061,6 +1120,15 @@ local function prefixCodec(src, nl)
   -- leave a live row that nothing hides, which is the defect.
   out = cut(out, "function msp.hasBec(data)",
     "return hasBec(data)\r\nend", "msp.hasBec()")
+  -- (6) the ONE name that is deliberately not EdgeTX's, rewritten back to EdgeTX's
+  -- spelling. Same cut as (1): a table entry, edited in place.
+  --
+  -- This was not a gate until this cut existed, and the self-test is what said so:
+  -- without (6) the name check "STAYS GREEN", because cutting functions and blocks
+  -- out of the codec leaves the table's strings untouched. The sabotage was
+  -- reaching the mechanism and not the table, so the check was asserting something
+  -- no cut could ever falsify. A gate that cannot go red is not a gate.
+  out = replace(out, '[8272] = {name = "YGE 205 HVT v2"', 'v2"', '[8272] = {name = "YGE 205 HVT"', 'model [8272] name', nl)
   out = cut(out, '-- Whether the BEC Voltage row is shown at all. Only the five models named "Opto"',
     "return model == nil or model.bec ~= false\r\nend", "hasBec()")
   return out

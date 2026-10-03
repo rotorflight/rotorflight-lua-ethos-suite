@@ -534,9 +534,16 @@ The EdgeTX table's own comment says why: name and capability used to be two list
 neither". So this is ONE table carrying both facts, not a second list beside the
 first.
 
-7 of its 21 checks go red without the fix. Pass --self-test to prove that: it cuts
-the fix back out of the three files that carries and requires every one of the
-seven to fail -- and verifies its own cut four ways first, because a slice that
+Two entries in the EdgeTX table are worth reading before "correcting" them: [5712]
+"YGE 165 HVT" and [8272] "YGE 205 HVT" carry neither BEC nor Opto nor v2 in the
+name and still run to 12.0 V. So "12 V means v2" is not the rule -- it holds for
+four of the seven, which is what that table happens to contain. This suite asserts
+parity with it on all 21 entries, and separately that [8272] keeps the owner's v2
+spelling (2026-10-03). The one field EdgeTX has no notion of is `bec`: only the
+five Opto models lack one, so their BEC Voltage row is hidden rather than capped.
+11 of its 28 checks go red without the fix. Pass --self-test to prove that: it cuts
+the fix back out of the three files that carry it and requires every one of the
+eleven to fail -- and verifies its own cut four ways first, because a slice that
 takes an unrelated table with it looks exactly like a test failure.
 '''
     ),

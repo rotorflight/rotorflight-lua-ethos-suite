@@ -64,21 +64,26 @@ end
 -- It is a property of the MODEL rather than of the flags word: the flag says
 -- what the ESC is set to, this says what it can be set to.
 --
--- The BEC voltages and the 12 V capability below are Bjoern's, not the EdgeTX
--- table's, and the two disagree in BOTH directions. Against
--- rotorflight-lua-edgetx-suite .../escmfg/yge/init.lua:17-39, which this file
--- used to follow:
---     5712  165 HVT          EdgeTX 12 V  ->  here 8.4 V
---     8272  205 HVT          EdgeTX 12 V  ->  here 8.4 V
---     8273  205 HVT BEC      EdgeTX 12 V  ->  here 8.4 V
---     4689  Saphir 125       EdgeTX 8.4 V ->  here 12 V
--- Three models were offered a voltage they do not have, and one was held below
--- one it does. The EdgeTX three predate its own one-table commit (9ad7ae14,
--- 2026-08-28): they were already in hvt12vTypes in page.lua, each with its model
--- name beside it. Nothing in either repository settles it -- rotorflight-firmware
--- has no YGE model table at all, and no Rotorflight repo carries one -- so the
--- hardware owner decides, and this file carries his answer. The same four entries
--- are then wrong in the EdgeTX suite, which is worth reporting there.
+-- The 12 V capability below is the EdgeTX table's, confirmed by the hardware
+-- owner on 2026-10-03: seven models, and the three non-v2 ones (165 HVT, 205 HVT
+-- v2, 205 HVT BEC) are included. rotorflight-lua-edgetx-suite
+-- .../escmfg/yge/init.lua:17-39 is therefore not a guess imported from a
+-- neighbouring suite but the value he confirmed, and `verify_yge_bec12v.lua`
+-- asserts the two tables agree on all 21 entries, so the parity cannot rot
+-- unnoticed.
+--
+-- Nothing in any Rotorflight repository settles it -- rotorflight-firmware has no
+-- YGE model table at all and ESC forward-programming is a pass-through -- which
+-- is why this is the hardware owner's answer and not an inference from the model
+-- names. Do not "correct" the three HVT entries away: they were already in
+-- hvt12vTypes in the EdgeTX page.lua before its own one-table commit (9ad7ae14,
+-- 2026-08-28), each with its model name beside it, and the owner has now said so
+-- a second time.
+--
+-- [8272] is spelled "YGE 205 HVT v2" here. The EdgeTX table calls it
+-- "YGE 205 HVT", which is the only NAME difference between the two tables; the
+-- owner gave the v2 spelling (2026-10-03). The id, and its 12 V capability, are
+-- EdgeTX's.
 --
 -- `bec` is a THIRD fact and not the negation of `bec12v`, because "cannot reach
 -- 12 V" and "has no BEC at all" are different answers and need different UI:
@@ -94,24 +99,24 @@ local ESC_MODELS = {
   [2128] = {name = "YGE 85 LVT BEC", bec = true, bec12v = false},
   [2384] = {name = "YGE 95 LVT BEC", bec = true, bec12v = false},
   [4944] = {name = "YGE 135 LVT BEC", bec = true, bec12v = false},
-  [8273] = {name = "YGE 205 HVT BEC", bec = true, bec12v = false},
+  [8273] = {name = "YGE 205 HVT BEC", bec = true, bec12v = true},
   -- Name says Opto: no BEC at all.
   [2304] = {name = "YGE 90 HVT Opto", bec = false, bec12v = false},
   [4608] = {name = "YGE 120 HVT Opto", bec = false, bec12v = false},
   [4928] = {name = "YGE Opto 135", bec = false, bec12v = false},
   [9552] = {name = "YGE Opto 255", bec = false, bec12v = false},
   [16464] = {name = "YGE Opto 405", bec = false, bec12v = false},
-  -- Name says neither. Björn answered these on 2026-10-03, per model.
+  -- Name says neither. Björn answered the BEC on 2026-10-03, per model; the 12 V comes from the EdgeTX table, which he confirmed the same day.
   [4177] = {name = "YGE Aureus 105", bec = true, bec12v = false},
   [4179] = {name = "YGE Aureus 105v2", bec = true, bec12v = true},
-  [4689] = {name = "YGE Saphir 125", bec = true, bec12v = true},
+  [4689] = {name = "YGE Saphir 125", bec = true, bec12v = false},
   [4691] = {name = "YGE Saphir 125v2", bec = true, bec12v = true},
   [5025] = {name = "YGE Aureus 135", bec = true, bec12v = false},
   [5027] = {name = "YGE Aureus 135v2", bec = true, bec12v = true},
   [5457] = {name = "YGE Saphir 155", bec = true, bec12v = false},
   [5459] = {name = "YGE Saphir 155v2", bec = true, bec12v = true},
-  [5712] = {name = "YGE 165 HVT", bec = true, bec12v = false},
-  [8272] = {name = "YGE 205 HVT", bec = true, bec12v = false},
+  [5712] = {name = "YGE 165 HVT", bec = true, bec12v = true},
+  [8272] = {name = "YGE 205 HVT v2", bec = true, bec12v = true},
 }
 
 -- The BEC Voltage field carries tenths of a volt, which is why the 12 V ceiling
