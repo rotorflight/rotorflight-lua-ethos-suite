@@ -35,6 +35,13 @@ msp_battery.BATTERY_CONFIG_READ_COMMAND = 32
 -- version-gated in the firmware, so 27 is the one size to expect.
 msp_battery.BATTERY_CONFIG_SIZE = 27
 
+-- Per-profile cell count / cell voltages (rotorflight-firmware #508), only
+-- present on newer firmware: the 27 bytes above plus 6 cellCount bytes plus
+-- 4 * 6 * 2 cell-voltage bytes = 81. The legacy fields are the FC's active
+-- profile at read time; tasks/session.lua re-resolves them from these
+-- whenever the active battery profile changes.
+local PROFILE_CELLS_MIN_BYTES = 81
+
 local function decodeBatteryConfig(buf)
   if type(buf) ~= "table" or #buf < msp_battery.BATTERY_CONFIG_SIZE then
     return nil, "short_payload"
@@ -54,6 +61,17 @@ local function decodeBatteryConfig(buf)
   for i = 0, 5 do
     profiles[i] = mspcodec.readU16(buf)
   end
+
+  local profileCells = nil
+  if #buf >= PROFILE_CELLS_MIN_BYTES then
+    profileCells = {}
+    for i = 0, 5 do profileCells[i] = {cellCount = mspcodec.readU8(buf)} end
+    for i = 0, 5 do profileCells[i].vbatMinCell = mspcodec.readU16(buf) / 100 end
+    for i = 0, 5 do profileCells[i].vbatMaxCell = mspcodec.readU16(buf) / 100 end
+    for i = 0, 5 do profileCells[i].vbatFullCell = mspcodec.readU16(buf) / 100 end
+    for i = 0, 5 do profileCells[i].vbatWarningCell = mspcodec.readU16(buf) / 100 end
+  end
+
   return {
     batteryCapacity = batteryCapacity,
     cellCount = cellCount,
@@ -63,6 +81,7 @@ local function decodeBatteryConfig(buf)
     vbatWarningCell = vbatWarningCell,
     consumptionWarningPercentage = consumptionWarningPercentage,
     profiles = profiles,
+    profileCells = profileCells,
   }
 end
 
@@ -90,6 +109,11 @@ function msp_battery.buildBatteryConfigReadMessage(onData, onError)
       100,     -- lvcPercentage
       30,      -- consumptionWarningPercentage
       232, 3, 20, 5, 64, 6, 108, 7, 152, 8, 196, 9, -- batteryCapacity_0..5
+      6, 6, 6, 6, 6, 6,                               -- batteryCellCount_0..5
+      74, 1, 74, 1, 74, 1, 74, 1, 74, 1, 74, 1,       -- vbatmincellvoltage_0..5
+      164, 1, 164, 1, 164, 1, 164, 1, 164, 1, 164, 1, -- vbatmaxcellvoltage_0..5
+      154, 1, 154, 1, 154, 1, 154, 1, 154, 1, 154, 1, -- vbatfullcellvoltage_0..5
+      94, 1, 94, 1, 94, 1, 94, 1, 94, 1, 94, 1,       -- vbatwarningcellvoltage_0..5
     },
   }
 end
