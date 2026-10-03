@@ -332,3 +332,5 @@ Select it under *System → Settings → Dashboard → Themes*, and configure it
 instrument limits under *System → Settings → Dashboard → Settings*. The saved
 selection is `system/bastion`; instrument thresholds use the `dashboard.bastion`
 section of `SCRIPTS:/rfsuite.user/settings.ini`.
+
+See the [complete theme guide](dashboard/bastion.md) and its three phase previews.
