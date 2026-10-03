@@ -1143,7 +1143,11 @@ function PageRuntime:buildChrome()
     onTool = self.onTool and function()
       local runtime = controlRef.runtime
       if runtime and runtime.onTool then
-        runtime:onTool(runtime.headerHandle.focusTool)
+        -- Plain call, not runtime:onTool(): every page's onTool is
+        -- function(focusFn), so a method call handed it the runtime table
+        -- as focusFn and the first focusFn() ("focusFn is not callable")
+        -- threw from closeDialog() or the dialog's Cancel button.
+        runtime.onTool(runtime.headerHandle.focusTool)
       end
     end or nil,
   })

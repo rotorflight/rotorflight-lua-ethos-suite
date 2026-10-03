@@ -323,6 +323,27 @@ jobs:
       - name: Check the profile anchor across a switch during a read
         run: lua5.4 bin/page_runtime/verify_profile_anchor.lua
 
+  # Every page's onTool is function(focusFn), and calls focusFn() when its
+  # dialog closes or is cancelled. The header's Tool button called it as
+  # runtime:onTool(focus), so the page got the runtime table as focusFn and
+  # calibrating the accelerometer ended in "focusFn is not callable (a table
+  # value)". This presses the real page_runtime.lua's Tool button and closes
+  # the dialog the way the pages do; 4 of its 5 checks go red on the pre-fix
+  # page_runtime.lua.
+  tool-focus:
+    name: The Tool button hands a page a callable focus function
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Lua 5.4
+        run: sudo apt-get update && sudo apt-get install -y lua5.4
+
+      - name: Check the Tool button passes a page its focus function
+        run: lua5.4 bin/page_runtime/verify_tool_focus.lua
+
   # The dashboard wakeup path runs several times a second and session.update
   # is published at up to 20 Hz, so a table rebuilt per call there is the
   # sawtooth in the '[bgtask mem] lua=' log rather than a detail. Three such
@@ -464,10 +485,15 @@ jobs:
   # instructions count reached"), and nothing on the radio says how close one
   # runs. This drives the real dashboard widget through every theme and flight
   # state, and the real background task through boot, link up, steady CRSF with
-  # ELRS frames, an ELRS backlog and link down, counting instructions with a
-  # debug hook on desktop Lua. Any callback at or over the limit fails, so a
-  # theme with too many boxes, or a new per-tick cost, is caught here instead of
-  # as stalled frames or a dropped background tick in flight.
+  # ELRS frames, an ELRS backlog and link down, and the real system tool through
+  # every menu and every page (opened cold, read replies served by the MSP
+  # codecs' simulator fixtures), counting instructions with a debug hook on
+  # desktop Lua. Any callback at or over the limit fails, so a theme with too
+  # many boxes, a new per-tick cost, or a page that builds its form in one
+  # oversized pass is caught here instead of as stalled frames, a dropped
+  # background tick in flight, or a page that never draws. The Ports page did
+  # exactly that before this check covered the app: its function lists cost
+  # ~25k instructions with 4 serial ports and ~255k with 12, in one wakeup.
   instruction-budget:
     name: Callbacks stay under the Ethos instruction limit
     runs-on: ubuntu-latest
