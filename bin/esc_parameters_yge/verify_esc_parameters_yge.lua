@@ -1030,11 +1030,25 @@ if SELF_TEST then
   sabotaged = sabotaged:sub(1, cStart - 1) .. sabotaged:sub(fEnd + #fTail + 1)
 
   -- (4) decode()'s two lines
+  --
+  -- The middle line is data.lv_bec_voltage_raw, which #2337 added to this same
+  -- function: both fields are "keep what was read beside the value the pilot sees",
+  -- so it landed between the two timing lines. This anchor was written before that
+  -- and has not matched since -- the self-test failed with "decode()'s timing split
+  -- not found" and nobody read it, because CI runs the checks, not the self-test.
+  --
+  -- It STAYS in the replacement. This cut is about the TIMING translation; taking
+  -- the voltage raw line out as well would make the #2337 checks fail here for the
+  -- wrong reason, and a sabotage that breaks more than it claims to is the kind
+  -- that teaches the next reader to ignore the message.
   local dKeep = "  data.timing_raw = data.timing" .. nl
+    .. "  data.lv_bec_voltage_raw = data.lv_bec_voltage" .. nl
     .. "  data.timing = motorTimingToUi(data.timing)" .. nl
     .. "  return data"
   local dAt = assert(sabotaged:find(dKeep, 1, true), "sabotage: decode()'s timing split not found")
-  sabotaged = sabotaged:sub(1, dAt - 1) .. "  return data" .. sabotaged:sub(dAt + #dKeep)
+  sabotaged = sabotaged:sub(1, dAt - 1)
+    .. "  data.lv_bec_voltage_raw = data.lv_bec_voltage" .. nl
+    .. "  return data" .. sabotaged:sub(dAt + #dKeep)
 
   -- (5) encode()'s branch
   local eBranch = "    local value = data and data[field[1]] or 0" .. nl

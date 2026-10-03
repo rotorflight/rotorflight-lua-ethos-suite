@@ -99,6 +99,55 @@ link that stops answering, so the behaviour is pinned here instead.
 '''
     ),
     LuaJob(
+        id='esc-target-selector',
+        name='The ESC selector offers only the ESCs that exist',
+        step='Check that a single-ESC setup shows no dead ESC rows',
+        script='bin/esc_target_selector/verify_esc_target_selector.lua',
+        rationale=r'''Every 4-way forward-programming page -- AM32, BLHeli_S, Bluejay,
+FlyRotor, Scorpion, HW5, OMP, XDFly, YGE, ZTW -- opens on
+app/pages/esc_forward_4way.lua, which asks the FC how many ESCs there are and
+then built its selector. It built ALL FOUR rows ("ESC 1".."ESC 4") and greyed
+out the surplus with button:enable(i <= count), so a single-ESC helicopter saw
+three dead lines, with nothing in the UI saying why.
+
+A control that cannot be used is not a disabled control, it is noise, and on a
+480x320 screen it was a third of the page. The selector now builds only the ESCs
+that exist, and with exactly one ESC there is no choice to offer, so there is no
+selector at all and the page goes straight to that ESC.
+
+The second half is where the trap is. The FC's answer has THREE distinguishable
+states, not two: a count of 1, no count at all because the reply carried no
+motor_count_blheli, and a read that failed. Collapsing the last two into "one
+ESC" would enter pass-through on a two-ESC helicopter because the read came back
+thin, so an unknown count keeps the selector and keeps this page's long-standing
+conservative default of ESC 1 only. The harness pins all three states.
+
+No existing harness loads this page: the other ESC harnesses stub it precisely
+to avoid its os.clock() delays (verify_esc_signature.lua:464-470), which is why
+the dead rows survived. This one loads it from its path and drives the real
+header and close_key.
+
+The issue's other half -- dropping the parsed cache on page exit -- needs no
+code and did not get any. It has been in place since the total rewrite (#2256,
+2026-08-07), seventeen days before #2338 was filed: esc_forward_vendor.lua:124-156
+resets the FBL control with clearQueue, closes the dialog, nils pendingData and
+pendingError, disposes the runtime, drops every handler, unloads the codec from
+package.loaded and collects. open() issues a fresh read on every call
+(esc_forward_vendor.lua:295), so no cache can survive. One check here pins that
+reset so the claim keeps being true.
+
+5 of its 18 checks are gates. Pass --self-test to prove that: it cuts the four
+pieces out, re-runs every check against the sabotaged page and requires each gate
+to turn red, comparing verdicts BY NAME. Getting there took three corrections
+that are worth recording: nine checks were marked gates that cannot fail; the
+sabotage was missing the enable expression, so the dead-row check stayed green;
+and with the row bound reverted but the new reply callbacks left in, pass 2
+CRASHED -- the pre-fix button:enable(i <= targetCount) raises on a nil count,
+which is why its "targetCount = 1" on a failed read was load-bearing and not
+tidiness.
+        '''
+    ),
+    LuaJob(
         id='log-flush-retry',
         name='Flight log keeps samples it could not write',
         step='Check that an unwritable card does not discard the buffer',

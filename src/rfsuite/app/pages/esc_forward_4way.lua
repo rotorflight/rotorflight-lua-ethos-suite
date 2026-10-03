@@ -48,6 +48,24 @@ local function clampTargetCount(count)
   return count
 end
 
+-- How many ESCs there are, or nil when the FC did not say.
+--
+-- The distinction is load-bearing, and it is why this is not simply
+-- clampTargetCount(). That one floors anything unusable to 1, which is right for
+-- "one ESC" and catastrophic for "I do not know": a count that was never reported
+-- would be indistinguishable from a real single-ESC setup, and the two need
+-- opposite handling. One ESC means there is nothing to choose and the page goes
+-- straight in. An unknown count must NOT go straight in -- it would enter
+-- pass-through on a two-ESC helicopter because the read came back without the
+-- field -- so the selector is shown and the conservative default applies.
+local function readTargetCount(raw)
+  local count = tonumber(raw)
+  if count == nil then return nil end
+  count = math.floor(count)
+  if count < 1 then return nil end
+  return clampTargetCount(count)
+end
+
 local function positiveInt(value, fallback, minValue)
   value = tonumber(value)
   if value == nil then value = fallback end
@@ -75,6 +93,7 @@ local function open(opts, config)
   local errorText = nil
   local switchPhase = nil
   local targetCount = nil
+  local countKnown = false
   local buildSelectorPending = false
   local dialog = nil
   local selectTarget
@@ -210,7 +229,19 @@ local function open(opts, config)
     form.clear()
     header.build(pageTitle, {onBack = goBack})
     form.addLine(SELECT_ESC)
-    for i = 1, #TARGETS do
+    -- Only the ESCs that exist get a row. The previous version built all four and
+    -- greyed out the surplus with button:enable(i <= targetCount), which left a
+    -- single-ESC pilot looking at three dead lines -- "ESC 2/3/4" that cannot
+    -- work, with nothing in the UI saying why. A row that cannot be used is not
+    -- a disabled row, it is noise, and on a 480x320 screen it is a third of the
+    -- page.
+    --
+    -- With an UNKNOWN count every target is listed but only ESC 1 is openable,
+    -- which is what this page has always done when the read did not answer. That
+    -- case is deliberately not tidied up: we do not know how many ESCs are there,
+    -- so the pilot chooses, and the conservative default stands.
+    local shown = countKnown and targetCount or #TARGETS
+    for i = 1, shown do
       local item = TARGETS[i]
       local line = form.addLine(item.label)
       local slots = form.getFieldSlots(line, {0, " Open "})
@@ -220,7 +251,7 @@ local function open(opts, config)
         press = function() selectTarget(item) end,
       })
       if button and button.enable then
-        button:enable(i <= targetCount)
+        button:enable(countKnown or i == 1)
       end
     end
   end
@@ -252,11 +283,13 @@ local function open(opts, config)
 
   bus.publish("msp.request", motorConfig.buildReadMessage(function(data)
     if disposed then return end
-    targetCount = clampTargetCount(data and data.motor_count_blheli)
+    targetCount = readTargetCount(data and data.motor_count_blheli)
+    countKnown = targetCount ~= nil
     buildSelectorPending = true
   end, function()
     if disposed then return end
-    targetCount = 1
+    targetCount = nil
+    countKnown = false
     buildSelectorPending = true
   end))
 
@@ -266,7 +299,27 @@ local function open(opts, config)
       if disposed then return end
       if buildSelectorPending then
         buildSelectorPending = false
-        buildSelector()
+        -- One ESC: there is no choice to offer, so there is no selector. Showing a
+        -- one-entry list would be the dead control this change removes.
+        --
+        -- Gated on countKnown. An unanswered read must fall through to the
+        -- selector even though it also leaves one openable row, because entering
+        -- pass-through without being asked is a worse mistake than one extra line.
+        if countKnown and targetCount == 1 then
+          -- selectTarget() refuses anything but "idle", and a fresh page is in
+          -- "loading_count" until the selector is built -- which is precisely
+          -- what this branch skips. The state has to be set first, or the whole
+          -- bypass is a silent no-op.
+          --
+          -- The harness caught that, and the reason it could is worth keeping in
+          -- mind: "no rows rendered" and "rows rendered where the harness cannot
+          -- see them" produce the same number. Only the published 4-way write
+          -- distinguishes them, so that assertion is the one that matters.
+          state = "idle"
+          selectTarget(TARGETS[1])
+        else
+          buildSelector()
+        end
       elseif state == "wait_pre" and os.clock() >= nextAt then
         state = "switch"
         startSwitchPhase(selected.target, switchWriteCount, function()
