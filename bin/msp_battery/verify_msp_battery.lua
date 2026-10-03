@@ -1,7 +1,7 @@
 -- Behaviour check for the MSP payload codec and the battery/smartfuel decoders.
 --
 -- Run it:
---     lua5.3 bin/msp_battery/verify_msp_battery.lua
+--     lua5.4 bin/msp_battery/verify_msp_battery.lua
 --
 -- What it drives, and why:
 --   * lib/mspcodec.lua and lib/msp_battery.lua are pure byte<->number code with

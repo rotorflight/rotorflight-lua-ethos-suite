@@ -8,6 +8,10 @@ local esc_protocol_guard = {}
 
 local REQUEST_TIMEOUT = 3.0
 
+-- How long to wait after a failed read before trying again. Without it,
+-- wakeup() issues a new request on every tick.
+local RETRY_INTERVAL = 5.0
+
 local function isSimulation()
   local version = system and system.getVersion and system.getVersion()
   return version and version.simulation == true
@@ -42,6 +46,7 @@ function esc_protocol_guard.new(opts)
     ready = false,
     protocol = nil,
     deadline = nil,
+    nextAttemptAt = 0,
     dirty = true,
   }
 
@@ -54,13 +59,31 @@ function esc_protocol_guard.new(opts)
   local function setResult(protocol, ready)
     state.protocol = protocol
     state.ready = ready == true
+    state.attempted = (ready == true)
     state.pending = false
     state.deadline = nil
+    state.nextAttemptAt = 0
+    state.dirty = true
+  end
+
+  -- A read that did not produce a usable result must not latch the guard shut.
+  -- `attempted` used to mean both "it is in flight" (for which there is
+  -- `pending`) and "we have read already" (for which the flag belongs back to
+  -- false after a failure). Without that, one hiccup leaves the tile grey until
+  -- the next open(), even if the FC is healthy by then. See #2387.
+  local function fail()
+    state.protocol = nil
+    state.ready = false
+    state.pending = false
+    state.deadline = nil
+    state.attempted = false
+    state.nextAttemptAt = os.clock() + RETRY_INTERVAL
     state.dirty = true
   end
 
   local function request()
-    if state.attempted or state.pending or not canRequest() then return end
+    if state.attempted or state.pending or state.ready or not canRequest() then return end
+    if os.clock() < state.nextAttemptAt then return end
 
     state.attempted = true
     state.pending = true
@@ -75,13 +98,16 @@ function esc_protocol_guard.new(opts)
       if token ~= state.token then return end
       local protocol = tonumber(data and data.protocol)
       if protocol == nil then
-        setResult(nil, false)
+        fail()
       else
+        -- Protocol 0 ("NONE") is a valid result: the FC answered and there
+        -- are no ESCs. That is an answer, not a failure -- so `attempted`
+        -- stays set here and nothing is read again.
         setResult(math.floor(protocol), true)
       end
     end, function()
       if token ~= state.token then return end
-      setResult(nil, false)
+      fail()
     end))
   end
 
@@ -94,6 +120,7 @@ function esc_protocol_guard.new(opts)
     state.ready = isSimulation()
     state.protocol = nil
     state.deadline = nil
+    state.nextAttemptAt = 0
     state.dirty = true
     request()
   end
@@ -112,12 +139,25 @@ function esc_protocol_guard.new(opts)
         state.deadline = nil
         state.dirty = true
       end
+    elseif not canRequest() then
+      if state.attempted or state.pending or state.ready or state.protocol ~= nil or state.nextAttemptAt > 0 then
+        state.token = state.token + 1
+        state.attempted = false
+        state.pending = false
+        state.ready = false
+        state.protocol = nil
+        state.deadline = nil
+        -- The link is gone, so any backoff armed for it is meaningless: the
+        -- next request after the link returns should not have to wait it out.
+        state.nextAttemptAt = 0
+        state.dirty = true
+      end
     end
 
     request()
 
     if state.pending and state.deadline ~= nil and os.clock() >= state.deadline then
-      setResult(nil, false)
+      fail()
     end
 
     local dirty = state.dirty

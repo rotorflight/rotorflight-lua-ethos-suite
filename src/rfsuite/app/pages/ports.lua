@@ -90,16 +90,7 @@ local UART_NAMES = {
 }
 
 local function maskHasAny(mask, bits)
-  if bits == 0 then return false end
-  local bit = 1
-  while bits > 0 do
-    if bits % 2 == 1 and math.floor((mask or 0) / bit) % 2 == 1 then
-      return true
-    end
-    bits = math.floor(bits / 2)
-    bit = bit * 2
-  end
-  return false
+  return ((mask or 0) & bits) ~= 0
 end
 
 local function shallowCopy(tbl)
@@ -181,25 +172,30 @@ local function buildBaudChoiceTable(port)
   return tableData
 end
 
-local function functionAllowedForPort(def, portIndex, ports)
-  if def.id == 0 then return true end
+-- The functions every OTHER port's current function excludes, as one mask.
+-- render() builds every port's choice list in a single wakeup, so this is
+-- computed once per port rather than once per port per function: checking
+-- each function against each other port bit by bit cost ~25k instructions
+-- with 4 ports and ~255k with 12, over Ethos's 20000-per-callback limit
+-- (measured with bin/perf/measure_app_instructions.lua).
+local function otherPortsExcl(portIndex, ports)
+  local excl = 0
   for i = 1, #ports do
-    if i ~= portIndex and maskHasAny(getPortExcl(ports[i].function_mask), def.id) then
-      return false
-    end
+    if i ~= portIndex then excl = excl | getPortExcl(ports[i].function_mask) end
   end
-  return true
+  return excl
 end
 
 local function buildFunctionChoiceTable(portIndex, ports)
   local port = ports[portIndex]
   if not port then return {} end
 
+  local excl = otherPortsExcl(portIndex, ports)
   local tableData = {}
   local seen = {}
   for i = 1, #PORT_FUNCTIONS do
     local def = PORT_FUNCTIONS[i]
-    if functionAllowedForPort(def, portIndex, ports) or def.id == port.function_mask then
+    if def.id == 0 or not maskHasAny(excl, def.id) or def.id == port.function_mask then
       tableData[#tableData + 1] = {def.name, def.id}
       seen[def.id] = true
     end
@@ -233,6 +229,7 @@ local function open(opts)
   local needsRender = false
   local isArmed = nil
   local activeDialog = nil
+  local confirmDialog = nil
   local headerHandle = nil
   local fields = {}
   local sessionHandler = nil
@@ -243,16 +240,47 @@ local function open(opts)
 
   memstats.print("ports open")
 
+  -- Same two paths as app/page_runtime.lua's closeDialog(), and the same
+  -- split: dispose() sets disposed at the top of its own body and calls this
+  -- at the end, and dispose() is reached from app/tool.lua's close(), which
+  -- documents that the tool close callback can run after form mutation has
+  -- already been forbidden. The dialog is still closed there -- a progress
+  -- dialog left on screen over a page that is gone is the worse of the two
+  -- -- but the header write and the focus call are skipped, because
+  -- headerHandle.focusMenu() is a menuButton:focus() (app/header.lua:162).
   local function closeDialog(focusFn)
     if activeDialog then
-      activeDialog:value(100)
-      activeDialog:close()
+      local dialog = activeDialog
       activeDialog = nil
+      pcall(function()
+        dialog:value(100)
+        dialog:close()
+      end)
     end
+    if disposed then return end
     if focusFn then
       focusFn()
     elseif headerHandle then
       headerHandle.focusMenu()
+    end
+  end
+
+  -- form.openDialog()'s handle belongs to nobody here, and without keeping it
+  -- the "Save to FC?" / "Reload?" modal outlives the page: Back or a tool
+  -- close leaves it up with an OK button whose action only reaches `disposed`.
+  -- Stored duck-typed and closed defensively, for the reason spelled out in
+  -- app/page_runtime.lua's openMessageDialog() -- nothing in this suite has
+  -- ever kept one of these handles, so nothing in-repo proves its shape.
+  local function openConfirmDialog(args)
+    confirmDialog = form.openDialog(args)
+    return confirmDialog
+  end
+
+  local function closeConfirmDialog()
+    local handle = confirmDialog
+    confirmDialog = nil
+    if type(handle) == "table" and type(handle.close) == "function" then
+      pcall(function() handle:close() end)
     end
   end
 
@@ -285,6 +313,7 @@ local function open(opts)
     if opts.setWakeupHandler then opts.setWakeupHandler(nil) end
     if opts.setCleanupHandler then opts.setCleanupHandler(nil) end
     if sessionHandler then bus.unsubscribe("session.update", sessionHandler) end
+    closeConfirmDialog()
     closeDialog()
     for _, fieldInfo in pairs(fields) do
       local field = fieldInfo and fieldInfo.field
@@ -356,7 +385,7 @@ local function open(opts)
 
   local function openSaveDialog()
     if not loaded or not dirty or busy then return end
-    form.openDialog({
+    openConfirmDialog({
       title = MSG_SAVE_TITLE,
       message = MSG_SAVE_BODY,
       buttons = {
@@ -440,7 +469,7 @@ local function open(opts)
       end,
       onReload = function()
         if busy then return end
-        form.openDialog({
+        openConfirmDialog({
           title = MSG_RELOAD_TITLE,
           message = MSG_RELOAD_BODY,
           buttons = {

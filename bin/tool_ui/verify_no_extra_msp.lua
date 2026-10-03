@@ -1,7 +1,7 @@
 -- Behaviour check for the MSP request pattern of the tool (#2421).
 --
 -- Run it:
---     lua5.3 bin/tool_ui/verify_no_extra_msp.lua
+--     lua5.4 bin/tool_ui/verify_no_extra_msp.lua
 --
 -- What it drives, and why:
 --   * The real src/rfsuite/app/tool.lua, including both real guards. Only the

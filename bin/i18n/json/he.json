@@ -2386,6 +2386,12 @@
           "reverse_text": true,
           "max_length": 6
         },
+        "dashboard_theme_bastion": {
+          "english": "Bastion",
+          "translation": "Bastion",
+          "needs_translation": false,
+          "max_length": 7
+        },
         "dashboard_theme_kevd": {
           "english": "Kevd",
           "translation": "קבד",

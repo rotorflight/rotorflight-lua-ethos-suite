@@ -1,7 +1,7 @@
 -- Behaviour check for the background task's drain budgets (issue #2382).
 --
 -- Run it:
---     lua5.3 bin/perf/verify_clock_budgets.lua
+--     lua5.4 bin/perf/verify_clock_budgets.lua
 --
 -- What it drives, and why:
 --   * tasks/msp/common.lua, tasks/msp/queue.lua and tasks/elrs_sensors.lua are
