@@ -92,6 +92,17 @@ local ESC_MODELS = {
   [9552] = {name = "YGE Opto 255", bec = false, bec12v = false},
   [16464] = {name = "YGE Opto 405", bec = false, bec12v = false},
   -- Name says neither. Unknown, and left that way -- see the note above.
+  --
+  -- The three HVT entries below are CONTESTED and carried as the EdgeTX table has
+  -- them, because that is the only authority in either repository and this file
+  -- does not get to overrule it on a hunch. Björn's recollection is that 12 V
+  -- belongs to the V2 models; 165 HVT, 205 HVT and 205 HVT BEC are not V2 and
+  -- still carry bec12v = true. They were already in the pre-refactor
+  -- hvt12vTypes list in the EdgeTX page, each with its model named beside it, so
+  -- this predates that refactor. rotorflight-firmware has no YGE model table at
+  -- all, so nothing in the tree settles it. If Björn confirms the V2 reading,
+  -- these three become false -- and the same three are then wrong in the EdgeTX
+  -- suite. See the pull request; do not change them without his answer.
   [4177] = {name = "YGE Aureus 105", bec12v = false},
   [4179] = {name = "YGE Aureus 105v2", bec12v = true},
   [4689] = {name = "YGE Saphir 125", bec12v = false},
