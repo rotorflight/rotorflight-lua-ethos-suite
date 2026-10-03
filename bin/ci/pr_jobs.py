@@ -99,6 +99,55 @@ link that stops answering, so the behaviour is pinned here instead.
 '''
     ),
     LuaJob(
+        id='esc-target-selector',
+        name='The ESC selector offers only the ESCs that exist',
+        step='Check that a single-ESC setup shows no dead ESC rows',
+        script='bin/esc_target_selector/verify_esc_target_selector.lua',
+        rationale=r'''Every 4-way forward-programming page -- AM32, BLHeli_S, Bluejay,
+FlyRotor, Scorpion, HW5, OMP, XDFly, YGE, ZTW -- opens on
+app/pages/esc_forward_4way.lua, which asks the FC how many ESCs there are and
+then built its selector. It built ALL FOUR rows ("ESC 1".."ESC 4") and greyed
+out the surplus with button:enable(i <= count), so a single-ESC helicopter saw
+three dead lines, with nothing in the UI saying why.
+
+A control that cannot be used is not a disabled control, it is noise, and on a
+480x320 screen it was a third of the page. The selector now builds only the ESCs
+that exist, and with exactly one ESC there is no choice to offer, so there is no
+selector at all and the page goes straight to that ESC.
+
+The second half is where the trap is. The FC's answer has THREE distinguishable
+states, not two: a count of 1, no count at all because the reply carried no
+motor_count_blheli, and a read that failed. Collapsing the last two into "one
+ESC" would enter pass-through on a two-ESC helicopter because the read came back
+thin, so an unknown count keeps the selector and keeps this page's long-standing
+conservative default of ESC 1 only. The harness pins all three states.
+
+No existing harness loads this page: the other ESC harnesses stub it precisely
+to avoid its os.clock() delays (verify_esc_signature.lua:464-470), which is why
+the dead rows survived. This one loads it from its path and drives the real
+header and close_key.
+
+The issue's other half -- dropping the parsed cache on page exit -- needs no
+code and did not get any. It has been in place since the total rewrite (#2256,
+2026-08-07), seventeen days before #2338 was filed: esc_forward_vendor.lua:124-156
+resets the FBL control with clearQueue, closes the dialog, nils pendingData and
+pendingError, disposes the runtime, drops every handler, unloads the codec from
+package.loaded and collects. open() issues a fresh read on every call
+(esc_forward_vendor.lua:295), so no cache can survive. One check here pins that
+reset so the claim keeps being true.
+
+5 of its 18 checks are gates. Pass --self-test to prove that: it cuts the four
+pieces out, re-runs every check against the sabotaged page and requires each gate
+to turn red, comparing verdicts BY NAME. Getting there took three corrections
+that are worth recording: nine checks were marked gates that cannot fail; the
+sabotage was missing the enable expression, so the dead-row check stayed green;
+and with the row bound reverted but the new reply callbacks left in, pass 2
+CRASHED -- the pre-fix button:enable(i <= targetCount) raises on a nil count,
+which is why its "targetCount = 1" on a failed read was load-bearing and not
+tidiness.
+        '''
+    ),
+    LuaJob(
         id='log-flush-retry',
         name='Flight log keeps samples it could not write',
         step='Check that an unwritable card does not discard the buffer',
@@ -456,6 +505,95 @@ what said so.
 Pass --self-test to prove the rest: it re-runs every case against a copy of
 esc_forward_vendor.lua whose isCompatibleEsc() returns true unconditionally and
 requires all 30 gate checks to fail.
+'''
+    ),
+    LuaJob(
+        id='esc-parameters-yge',
+        name='YGE timing words and the flags byte',
+        step='Check the YGE forward-programming codec',
+        script='bin/esc_parameters_yge/verify_esc_parameters_yge.lua',
+        rationale=r'''lib/msp_esc_parameters_yge.lua drew its Motor Timing row from a ten-entry list of UI
+positions and handed that position to the wire unchanged in both directions. The
+ESC does not number its timing the way the page does: it spells the four automatic
+modes 16..19 and the six fixed advance angles 1..6, with 0 a second spelling of the
+first automatic mode. So every word the ESC sent landed on the wrong row, and every
+row the pilot picked landed on the wrong word -- measured: an ESC reporting 17 ("Auto
+Efficient") displayed "Auto Norm", and a pilot selecting "0 deg" wrote 17, a fixed
+advance angle commanded as an automatic mode. Neither is visible from the page,
+which shows a position in its own list rather than the ESC's word.
+
+The flight controller is a pass-through here -- msp.c reads
+escGetParamBufferLength() bytes and calls escCommitParameters() without inspecting a
+field -- so no build and no package step can see any of it. The harness drives the
+real page, the real shared editor, the real field_layout and the real page_runtime,
+and answers reads with the codec's own simulatorResponse.
+
+21 of its 38 checks go red on the pre-fix codec. Pass --self-test to prove that
+rather than take it on trust: it re-runs the file against a copy of the codec with
+the pre-fix TIMING table, no translation block and the pre-fix decode()/encode(),
+and requires every one of those 21 to fail. It also requires both passes to have
+registered the same gates, so a case that runs on one of the two trees and not the
+other is reported rather than silently compared against nothing.
+
+The file also answers the issue's other half, which does NOT reproduce: the reserved
+bits 4..7 of the flags byte survive a save here, because this page keeps the ESC's
+byte and edits single bits in place (field_layout.lua:268-272) rather than packing
+four booleans into a fresh byte the way the EdgeTX page does (edgetx
+.../yge/page.lua:113-131). Five checks pin that, plus the load gate. They are
+deliberately not gates: they pass on the pre-fix codec too, and a gate check that
+cannot go red is worse than no check.
+'''
+    ),
+    # Appended after #2456 was opened, so this entry is a pure addition rather
+    # than a re-registration of esc-parameters-yge: that job arrived with #2456.
+    LuaJob(
+        id='esc-parameters-yge-bec12v',
+        name='YGE 12 V BEC ceiling and the HV-BEC bit',
+        step='Check the 12 V BEC ceiling and the flag',
+        script='bin/esc_parameters_yge/verify_yge_bec12v.lua',
+        rationale=r'''Seven of the twenty-one YGE models have an HV BEC that runs up to 12.0 V, and the BEC
+Voltage field was capped at 8.4 V for all of them -- because the ceiling is a
+property of the MODEL and the field took its range from a constant in FIELD_META.
+app/field_layout.lua's buildField() has always honoured spec.min/spec.max, and
+app/pages/esc_forward_vendor.lua's fieldSpec() read them from FIELD_META only, so
+a page had no way to say otherwise. It now resolves them the way it already
+resolved labels: a value, or a function of the read data.
+
+The second half is the flags byte. Its HV-BEC bit (bit 3) has no row on this
+page -- bits 0 and 1 have rows, bit 3 did not -- so selecting 12.0 V commanded the
+voltage without the mode that makes it 12 V. The codec sets it from
+page_runtime's beforeSave hook, the same place and shape
+msp_esc_parameters_scorpion.lua already uses.
+
+Two rules, and the second is the one a reviewer should check: when the pilot MOVED
+the voltage the bit becomes (voltage == 120), and when they did not the bit is
+left exactly as the ESC reported it. An ESC reporting 8.4 V with the bit set is in
+a state this page never produced, and a save that changed the governor gain has no
+business clearing a BEC setting nobody looked at.
+
+The harness found that second rule the hard way: the first version enforced the
+invariant unconditionally and its own "an unrelated save leaves the bit alone" case
+went red. It is now the same rule the timing translation in #2456 follows.
+
+Finding on the way: the model table was missing [4691] "YGE Saphir 125v2" -- one
+of the seven 12 V models, and the first one #2337 names. It rendered as
+"YGE ESC (4691)", and with no entry there was nothing to raise the ceiling for.
+The EdgeTX table's own comment says why: name and capability used to be two lists,
+"and adding a model meant remembering both -- which is how 4691 came to be in
+neither". So this is ONE table carrying both facts, not a second list beside the
+first.
+
+Two entries in the EdgeTX table are worth reading before "correcting" them: [5712]
+"YGE 165 HVT" and [8272] "YGE 205 HVT" carry neither BEC nor Opto nor v2 in the
+name and still run to 12.0 V. So "12 V means v2" is not the rule -- it holds for
+four of the seven, which is what that table happens to contain. This suite asserts
+parity with it on all 21 entries, and separately that [8272] keeps the owner's v2
+spelling (2026-10-03). The one field EdgeTX has no notion of is `bec`: only the
+five Opto models lack one, so their BEC Voltage row is hidden rather than capped.
+11 of its 28 checks go red without the fix. Pass --self-test to prove that: it cuts
+the fix back out of the three files that carry it and requires every one of the
+eleven to fail -- and verifies its own cut four ways first, because a slice that
+takes an unrelated table with it looks exactly like a test failure.
 '''
     ),
 ]
