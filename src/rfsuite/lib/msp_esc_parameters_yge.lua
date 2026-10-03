@@ -16,8 +16,43 @@ local CUTOFF = {{"Off", 0}, {"Slowdown", 1}, {"Cutoff", 2}}
 local CUTOFF_VOLTAGE = {{"2.9 V", 0}, {"3.0 V", 1}, {"3.1 V", 2}, {"3.2 V", 3}, {"3.3 V", 4}, {"3.4 V", 5}}
 local OFF_ON = {{"Off", 0}, {"On", 1}}
 local THROTTLE_RESPONSE = {{"Slow", 0}, {"Medium", 1}, {"Fast", 2}, {"Custom", 3}}
+-- The Motor Timing row is drawn from list positions, because that is what the
+-- choice widget takes. Those positions are NOT the ESC's words: the ESC spells
+-- the four automatic modes 16..19 and the six fixed advance angles 1..6, with 0
+-- a second spelling of the first automatic mode, and 7..15 and everything above
+-- 19 are values it does not define. The word is therefore decoded on the way in
+-- and encoded again on the way out.
 local TIMING = {{"Auto Norm", 0}, {"Auto Eff", 1}, {"Auto Power", 2}, {"Auto Extr", 3}, {"0 deg", 4}, {"6 deg", 5}, {"12 deg", 6}, {"18 deg", 7}, {"24 deg", 8}, {"30 deg", 9}}
+local MOTOR_TIMING_TO_UI = {
+  [0] = 0, [1] = 4, [2] = 5, [3] = 6, [4] = 7, [5] = 8, [6] = 9,
+  [16] = 0, [17] = 1, [18] = 2, [19] = 3
+}
+local MOTOR_TIMING_FROM_UI = {
+  [0] = 0, [1] = 17, [2] = 18, [3] = 19, [4] = 1,
+  [5] = 2, [6] = 3, [7] = 4, [8] = 5, [9] = 6
+}
 local FREEWHEEL = {{"Off", 0}, {"Auto", 1}, {"Unused", 2}, {"Always On", 3}}
+
+-- Both halves of the same mapping, and both needed: decode() has to turn the
+-- ESC's word into a row the widget can show, and encode() has to turn the row
+-- back into a word the ESC understands. Without them a pilot picking "Auto
+-- Efficient" commands wire 1, which the ESC reads as a fixed 0-degree advance.
+local function motorTimingToUi(raw)
+  return MOTOR_TIMING_TO_UI[raw] or 0
+end
+
+-- `raw` is the word the ESC itself sent, kept in `data.timing_raw` by decode().
+-- A row still standing on the entry that word decoded to writes that word back
+-- rather than the canonical spelling of the same entry, so a save that changed
+-- nothing changes nothing in the ESC. The table is indexed rather than decoded
+-- here on purpose: an undefined word decodes to the first automatic mode like
+-- everything else the ESC does not define, and keeping it would mean a pilot who
+-- deliberately picks that mode leaves the undefined word in place on a page that
+-- says he changed it.
+local function motorTimingFromUi(value, raw)
+  if raw ~= nil and MOTOR_TIMING_TO_UI[raw] == value then return raw end
+  return MOTOR_TIMING_FROM_UI[value] or 0
+end
 
 local ESC_TYPE = {
   [848] = "YGE 35 LVT BEC",
@@ -170,6 +205,10 @@ local function decode(buf)
     local field = WIRE_FIELDS[i]
     data[field[1]] = readValue(buf, field[2])
   end
+  -- The word the ESC sent, kept beside the row it decoded to so encode() can
+  -- write it back unchanged. See motorTimingFromUi().
+  data.timing_raw = data.timing
+  data.timing = motorTimingToUi(data.timing)
   return data
 end
 
@@ -177,7 +216,11 @@ local function encode(data)
   local payload = {}
   for i = 1, #WIRE_FIELDS do
     local field = WIRE_FIELDS[i]
-    writeValue(payload, field[2], data and data[field[1]] or 0)
+    local value = data and data[field[1]] or 0
+    if field[1] == "timing" then
+      value = motorTimingFromUi(value, data and data.timing_raw)
+    end
+    writeValue(payload, field[2], value)
   end
   return payload
 end

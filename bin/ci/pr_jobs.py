@@ -458,6 +458,43 @@ esc_forward_vendor.lua whose isCompatibleEsc() returns true unconditionally and
 requires all 30 gate checks to fail.
 '''
     ),
+    LuaJob(
+        id='esc-parameters-yge',
+        name='YGE timing words and the flags byte',
+        step='Check the YGE forward-programming codec',
+        script='bin/esc_parameters_yge/verify_esc_parameters_yge.lua',
+        rationale=r'''lib/msp_esc_parameters_yge.lua drew its Motor Timing row from a ten-entry list of UI
+positions and handed that position to the wire unchanged in both directions. The
+ESC does not number its timing the way the page does: it spells the four automatic
+modes 16..19 and the six fixed advance angles 1..6, with 0 a second spelling of the
+first automatic mode. So every word the ESC sent landed on the wrong row, and every
+row the pilot picked landed on the wrong word -- measured: an ESC reporting 17 ("Auto
+Efficient") displayed "Auto Norm", and a pilot selecting "0 deg" wrote 17, a fixed
+advance angle commanded as an automatic mode. Neither is visible from the page,
+which shows a position in its own list rather than the ESC's word.
+
+The flight controller is a pass-through here -- msp.c reads
+escGetParamBufferLength() bytes and calls escCommitParameters() without inspecting a
+field -- so no build and no package step can see any of it. The harness drives the
+real page, the real shared editor, the real field_layout and the real page_runtime,
+and answers reads with the codec's own simulatorResponse.
+
+21 of its 38 checks go red on the pre-fix codec. Pass --self-test to prove that
+rather than take it on trust: it re-runs the file against a copy of the codec with
+the pre-fix TIMING table, no translation block and the pre-fix decode()/encode(),
+and requires every one of those 21 to fail. It also requires both passes to have
+registered the same gates, so a case that runs on one of the two trees and not the
+other is reported rather than silently compared against nothing.
+
+The file also answers the issue's other half, which does NOT reproduce: the reserved
+bits 4..7 of the flags byte survive a save here, because this page keeps the ESC's
+byte and edits single bits in place (field_layout.lua:268-272) rather than packing
+four booleans into a fresh byte the way the EdgeTX page does (edgetx
+.../yge/page.lua:113-131). Five checks pin that, plus the load gate. They are
+deliberately not gates: they pass on the pre-fix codec too, and a gate check that
+cannot go red is worse than no check.
+'''
+    ),
 ]
 
 VERBATIM_JOBS = [
