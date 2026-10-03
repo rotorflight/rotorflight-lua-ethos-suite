@@ -16,35 +16,130 @@ local CUTOFF = {{"Off", 0}, {"Slowdown", 1}, {"Cutoff", 2}}
 local CUTOFF_VOLTAGE = {{"2.9 V", 0}, {"3.0 V", 1}, {"3.1 V", 2}, {"3.2 V", 3}, {"3.3 V", 4}, {"3.4 V", 5}}
 local OFF_ON = {{"Off", 0}, {"On", 1}}
 local THROTTLE_RESPONSE = {{"Slow", 0}, {"Medium", 1}, {"Fast", 2}, {"Custom", 3}}
+-- The Motor Timing row is drawn from list positions, because that is what the
+-- choice widget takes. Those positions are NOT the ESC's words: the ESC spells
+-- the four automatic modes 16..19 and the six fixed advance angles 1..6, with 0
+-- a second spelling of the first automatic mode, and 7..15 and everything above
+-- 19 are values it does not define. The word is therefore decoded on the way in
+-- and encoded again on the way out.
 local TIMING = {{"Auto Norm", 0}, {"Auto Eff", 1}, {"Auto Power", 2}, {"Auto Extr", 3}, {"0 deg", 4}, {"6 deg", 5}, {"12 deg", 6}, {"18 deg", 7}, {"24 deg", 8}, {"30 deg", 9}}
+local MOTOR_TIMING_TO_UI = {
+  [0] = 0, [1] = 4, [2] = 5, [3] = 6, [4] = 7, [5] = 8, [6] = 9,
+  [16] = 0, [17] = 1, [18] = 2, [19] = 3
+}
+local MOTOR_TIMING_FROM_UI = {
+  [0] = 0, [1] = 17, [2] = 18, [3] = 19, [4] = 1,
+  [5] = 2, [6] = 3, [7] = 4, [8] = 5, [9] = 6
+}
 local FREEWHEEL = {{"Off", 0}, {"Auto", 1}, {"Unused", 2}, {"Always On", 3}}
 
-local ESC_TYPE = {
-  [848] = "YGE 35 LVT BEC",
-  [1616] = "YGE 65 LVT BEC",
-  [2128] = "YGE 85 LVT BEC",
-  [2384] = "YGE 95 LVT BEC",
-  [4944] = "YGE 135 LVT BEC",
-  [2304] = "YGE 90 HVT Opto",
-  [4608] = "YGE 120 HVT Opto",
-  [5712] = "YGE 165 HVT",
-  [8272] = "YGE 205 HVT",
-  [8273] = "YGE 205 HVT BEC",
-  [4177] = "YGE Aureus 105",
-  [4179] = "YGE Aureus 105v2",
-  [5025] = "YGE Aureus 135",
-  [5027] = "YGE Aureus 135v2",
-  [5457] = "YGE Saphir 155",
-  [5459] = "YGE Saphir 155v2",
-  [4689] = "YGE Saphir 125",
-  [4928] = "YGE Opto 135",
-  [9552] = "YGE Opto 255",
-  [16464] = "YGE Opto 405",
+-- Both halves of the same mapping, and both needed: decode() has to turn the
+-- ESC's word into a row the widget can show, and encode() has to turn the row
+-- back into a word the ESC understands. Without them a pilot picking "Auto
+-- Efficient" commands wire 1, which the ESC reads as a fixed 0-degree advance.
+local function motorTimingToUi(raw)
+  return MOTOR_TIMING_TO_UI[raw] or 0
+end
+
+-- `raw` is the word the ESC itself sent, kept in `data.timing_raw` by decode().
+-- A row still standing on the entry that word decoded to writes that word back
+-- rather than the canonical spelling of the same entry, so a save that changed
+-- nothing changes nothing in the ESC. The table is indexed rather than decoded
+-- here on purpose: an undefined word decodes to the first automatic mode like
+-- everything else the ESC does not define, and keeping it would mean a pilot who
+-- deliberately picks that mode leaves the undefined word in place on a page that
+-- says he changed it.
+local function motorTimingFromUi(value, raw)
+  if raw ~= nil and MOTOR_TIMING_TO_UI[raw] == value then return raw end
+  return MOTOR_TIMING_FROM_UI[value] or 0
+end
+
+-- One entry per model, carrying every fact this suite knows about it. The name,
+-- the BEC voltage and the 12 V capability are deliberately NOT separate lists:
+-- they used to be, upstream, and a model added to one of them was invisible in
+-- the others. That is not hypothetical -- [4691] was missing from the name list
+-- this file carried until 2026-10-03, and it is one of the five 12 V models.
+--
+-- `bec12v` is what raises the BEC Voltage field's ceiling from 8.4 V to 12.0 V.
+-- It is a property of the MODEL rather than of the flags word: the flag says
+-- what the ESC is set to, this says what it can be set to.
+--
+-- The 12 V capability below is the EdgeTX table's, confirmed by the hardware
+-- owner on 2026-10-03: seven models, and the three non-v2 ones (165 HVT, 205 HVT
+-- v2, 205 HVT BEC) are included. rotorflight-lua-edgetx-suite
+-- .../escmfg/yge/init.lua:17-39 is therefore not a guess imported from a
+-- neighbouring suite but the value he confirmed, and `verify_yge_bec12v.lua`
+-- asserts the two tables agree on all 21 entries, so the parity cannot rot
+-- unnoticed.
+--
+-- Nothing in any Rotorflight repository settles it -- rotorflight-firmware has no
+-- YGE model table at all and ESC forward-programming is a pass-through -- which
+-- is why this is the hardware owner's answer and not an inference from the model
+-- names. Do not "correct" the three HVT entries away: they were already in
+-- hvt12vTypes in the EdgeTX page.lua before its own one-table commit (9ad7ae14,
+-- 2026-08-28), each with its model name beside it, and the owner has now said so
+-- a second time.
+--
+-- [8272] is spelled "YGE 205 HVT v2" here. The EdgeTX table calls it
+-- "YGE 205 HVT", which is the only NAME difference between the two tables; the
+-- owner gave the v2 spelling (2026-10-03). The id, and its 12 V capability, are
+-- EdgeTX's.
+--
+-- `bec` is a THIRD fact and not the negation of `bec12v`, because "cannot reach
+-- 12 V" and "has no BEC at all" are different answers and need different UI:
+-- `bec = false` hides the BEC Voltage row.
+--
+-- THE FACT, not a reading of the name: an Opto ESC has no BEC. There is no
+-- voltage on one to set, so a BEC voltage is not a setting that can be written,
+-- and the row is hidden rather than capped (Björn, 2026-10-03).
+--
+-- The name is what that fact looks like in a datasheet and in the EdgeTX table,
+-- and it is why the five ids are listed here rather than filtered at runtime: a
+-- new Opto is a new line in THIS table, not a rule that spots the word. Nothing
+-- reads the name -- the six entries below marked "BEC" and the five marked "Opto"
+-- are the author's statement, and the other sixteen Björn confirmed per model on
+-- 2026-10-03, including the ten whose name says neither BEC nor Opto. Those ten
+-- are his answer and not an inference.
+local ESC_MODELS = {
+  -- Named BEC in the table; Björn confirmed a BEC on each.
+  [848] = {name = "YGE 35 LVT BEC", bec = true, bec12v = false},
+  [1616] = {name = "YGE 65 LVT BEC", bec = true, bec12v = false},
+  [2128] = {name = "YGE 85 LVT BEC", bec = true, bec12v = false},
+  [2384] = {name = "YGE 95 LVT BEC", bec = true, bec12v = false},
+  [4944] = {name = "YGE 135 LVT BEC", bec = true, bec12v = false},
+  [8273] = {name = "YGE 205 HVT BEC", bec = true, bec12v = true},
+  -- Opto: no BEC at all. These five ids ARE the fact, not a name filter.
+  [2304] = {name = "YGE 90 HVT Opto", bec = false, bec12v = false},
+  [4608] = {name = "YGE 120 HVT Opto", bec = false, bec12v = false},
+  [4928] = {name = "YGE Opto 135", bec = false, bec12v = false},
+  [9552] = {name = "YGE Opto 255", bec = false, bec12v = false},
+  [16464] = {name = "YGE Opto 405", bec = false, bec12v = false},
+  -- Name says neither. Björn answered the BEC on 2026-10-03, per model; the 12 V comes from the EdgeTX table, which he confirmed the same day.
+  [4177] = {name = "YGE Aureus 105", bec = true, bec12v = false},
+  [4179] = {name = "YGE Aureus 105v2", bec = true, bec12v = true},
+  [4689] = {name = "YGE Saphir 125", bec = true, bec12v = false},
+  [4691] = {name = "YGE Saphir 125v2", bec = true, bec12v = true},
+  [5025] = {name = "YGE Aureus 135", bec = true, bec12v = false},
+  [5027] = {name = "YGE Aureus 135v2", bec = true, bec12v = true},
+  [5457] = {name = "YGE Saphir 155", bec = true, bec12v = false},
+  [5459] = {name = "YGE Saphir 155v2", bec = true, bec12v = true},
+  [5712] = {name = "YGE 165 HVT", bec = true, bec12v = true},
+  [8272] = {name = "YGE 205 HVT v2", bec = true, bec12v = true},
 }
+
+-- The BEC Voltage field carries tenths of a volt, which is why the 12 V ceiling
+-- is 120 and not 12.
+local BEC_VOLTAGE_MIN = 55
+local BEC_VOLTAGE_MAX_8V = 84
+local BEC_VOLTAGE_MAX_12V = 120
+
+-- Bit 3 of the flags byte, the one this page has no row for. It is what tells
+-- the ESC to run its HV BEC, so it cannot be left to a row that does not exist.
+local FLAG_BIT_BEC12V = 3
 
 local FIELD_META = {
   governor = {choices = ESC_MODE},
-  lv_bec_voltage = {min = 55, max = 84, decimals = 1, suffix = "v"},
+  lv_bec_voltage = {min = BEC_VOLTAGE_MIN, max = BEC_VOLTAGE_MAX_8V, decimals = 1, suffix = "v"},
   timing = {choices = TIMING},
   acceleration = {min = 0, max = 65535, default = 0},
   gov_p = {min = 1, max = 10, default = 5},
@@ -170,6 +265,13 @@ local function decode(buf)
     local field = WIRE_FIELDS[i]
     data[field[1]] = readValue(buf, field[2])
   end
+  -- The two fields the page translates rather than showing raw, each kept beside
+  -- the value it was read with. See motorTimingFromUi() for the timing one and
+  -- beforeSave() for the voltage one; both exist so a save that changed neither
+  -- changes neither.
+  data.timing_raw = data.timing
+  data.lv_bec_voltage_raw = data.lv_bec_voltage
+  data.timing = motorTimingToUi(data.timing)
   return data
 end
 
@@ -177,13 +279,66 @@ local function encode(data)
   local payload = {}
   for i = 1, #WIRE_FIELDS do
     local field = WIRE_FIELDS[i]
-    writeValue(payload, field[2], data and data[field[1]] or 0)
+    local value = data and data[field[1]] or 0
+    if field[1] == "timing" then
+      value = motorTimingFromUi(value, data and data.timing_raw)
+    end
+    writeValue(payload, field[2], value)
   end
   return payload
 end
 
 local function typeLabel(value)
-  return ESC_TYPE[value or 0] or ("YGE ESC (" .. tostring(value or 0) .. ")")
+  local model = ESC_MODELS[value or 0]
+  return (model and model.name) or ("YGE ESC (" .. tostring(value or 0) .. ")")
+end
+
+-- What the connected model can be set to, as opposed to what it is set to.
+-- An id this file has never heard of reports false: the range then stays at the
+-- 8.4 V every model shares, which is the safe direction -- a pilot is not offered
+-- a voltage this suite cannot vouch for.
+local function supportsBec12v(data)
+  local model = data and ESC_MODELS[data.esc_type or 0]
+  return model ~= nil and model.bec12v == true
+end
+
+-- Whether the BEC Voltage row is shown at all. It reports false only for the five
+-- Opto models: an Opto ESC has no BEC, so there is no voltage to set and the row is
+-- hidden rather than capped (Björn, 2026-10-03).
+--
+-- That is a fact about the ESC, NOT something read off the name. The name is only the
+-- label that fact carries in a datasheet, and the five ids in ESC_MODELS are where a
+-- new Opto is added -- no code inspects the string. So a model called "YGE Opto" with
+-- `bec = true` above would be a wrong table, not a wrong filter.
+--
+-- Every other model reports true, including the ten whose name says neither BEC nor
+-- Opto -- that is Björn's answer per model, not an inference from a name -- and an id
+-- this file has never seen also reports true, so the row stays rather than
+-- disappearing on hardware nothing is known about.
+local function hasBec(data)
+  local model = data and ESC_MODELS[data.esc_type or 0]
+  return model == nil or model.bec ~= false
+end
+
+local function becMax(data)
+  return supportsBec12v(data) and BEC_VOLTAGE_MAX_12V or BEC_VOLTAGE_MAX_8V
+end
+
+-- Arithmetic bit ops, the same spelling and the same reasoning as
+-- app/field_layout.lua's setBit() (field_layout.lua:123-133), which is the code
+-- that otherwise owns this same byte. It is kept local rather than exported from
+-- there because that module's helper is part of a pooled-slot design and this is
+-- not one of its callers.
+local function setBit(value, bit, bitValue)
+  value = value or 0
+  local mask = 2 ^ bit
+  local currentlySet = math.floor(value / mask) % 2 == 1
+  if bitValue ~= 0 and not currentlySet then
+    return value + mask
+  elseif bitValue == 0 and currentlySet then
+    return value - mask
+  end
+  return value
 end
 
 local msp = {
@@ -199,6 +354,50 @@ function msp.summaryFor(data)
   return string.format("%s / %.5f",
     typeLabel(data and data.esc_type),
     (tonumber(data and data.firmware_version) or 0) / 100000)
+end
+
+-- The ceiling of the BEC Voltage field, for the page to hand to the field spec.
+function msp.becVoltageMax(data)
+  return becMax(data)
+end
+
+-- Whether the BEC Voltage row is shown at all. False only for the five Opto models,
+-- which have no BEC (Björn, 2026-10-03) -- a fact about the ESC, not a reading of the
+-- name. See hasBec() above.
+function msp.hasBec(data)
+  return hasBec(data)
+end
+
+-- The flags byte's HV-BEC bit is not a row on this page -- three other bits share
+-- the byte and two of them have rows -- so nothing else would ever set it, and a
+-- pilot selecting 12.0 V would command the voltage without the mode that makes it
+-- 12 V. Enforced here rather than in a row because it is not the pilot's to choose
+-- independently: the flag and the voltage are one decision.
+--
+-- Two rules, and the second is the one that is easy to get wrong:
+--
+--   1. When the pilot MOVED the voltage, the bit becomes `voltage == 120`. Not
+--      "is 12 V or above": 12.0 V is the mode, and 11.9 V is the same slider one
+--      step below it, so asserting the bit for it would tell the ESC to switch to
+--      HV and then hand it a voltage the bit does not mean. The consequence a
+--      pilot can see: any voltage below 12.0 V clears the bit.
+--
+--   2. When the pilot did NOT move it, the bit is left exactly as the ESC
+--      reported it -- not forced to the invariant. An ESC that reports 8.4 V with
+--      the bit set is in a state this page never put it in, and a save that
+--      changed the governor gain has no business silently clearing a BEC setting
+--      nobody looked at. That is the same rule the timing translation follows
+--      (motorTimingFromUi writes the ESC's own word back for an untouched row),
+--      and the harness asserts both halves of it.
+--
+-- Runs from page_runtime's beforeSave hook (app/page_runtime.lua:640-642), after
+-- the confirmation and before any MSP_SET_* is built -- the same place and the
+-- same shape as msp_esc_parameters_scorpion.lua's.
+function msp.beforeSave(runtime)
+  local data = runtime and runtime.data
+  if not data then return end
+  if data.lv_bec_voltage == data.lv_bec_voltage_raw then return end
+  data.flags = setBit(data.flags, FLAG_BIT_BEC12V, data.lv_bec_voltage == BEC_VOLTAGE_MAX_12V and 1 or 0)
 end
 
 function msp.buildReadMessage(onData, onError)

@@ -555,6 +555,107 @@ jobs:
       - name: Check the ESC forward-programming signature gate
         run: lua5.4 bin/esc_signature/verify_esc_signature.lua
 
+  # lib/msp_esc_parameters_yge.lua drew its Motor Timing row from a ten-entry list of UI
+  # positions and handed that position to the wire unchanged in both directions. The
+  # ESC does not number its timing the way the page does: it spells the four automatic
+  # modes 16..19 and the six fixed advance angles 1..6, with 0 a second spelling of the
+  # first automatic mode. So every word the ESC sent landed on the wrong row, and every
+  # row the pilot picked landed on the wrong word -- measured: an ESC reporting 17 ("Auto
+  # Efficient") displayed "Auto Norm", and a pilot selecting "0 deg" wrote 17, a fixed
+  # advance angle commanded as an automatic mode. Neither is visible from the page,
+  # which shows a position in its own list rather than the ESC's word.
+  #
+  # The flight controller is a pass-through here -- msp.c reads
+  # escGetParamBufferLength() bytes and calls escCommitParameters() without inspecting a
+  # field -- so no build and no package step can see any of it. The harness drives the
+  # real page, the real shared editor, the real field_layout and the real page_runtime,
+  # and answers reads with the codec's own simulatorResponse.
+  #
+  # 21 of its 38 checks go red on the pre-fix codec. Pass --self-test to prove that
+  # rather than take it on trust: it re-runs the file against a copy of the codec with
+  # the pre-fix TIMING table, no translation block and the pre-fix decode()/encode(),
+  # and requires every one of those 21 to fail. It also requires both passes to have
+  # registered the same gates, so a case that runs on one of the two trees and not the
+  # other is reported rather than silently compared against nothing.
+  #
+  # The file also answers the issue's other half, which does NOT reproduce: the reserved
+  # bits 4..7 of the flags byte survive a save here, because this page keeps the ESC's
+  # byte and edits single bits in place (field_layout.lua:268-272) rather than packing
+  # four booleans into a fresh byte the way the EdgeTX page does (edgetx
+  # .../yge/page.lua:113-131). Five checks pin that, plus the load gate. They are
+  # deliberately not gates: they pass on the pre-fix codec too, and a gate check that
+  # cannot go red is worse than no check.
+  esc-parameters-yge:
+    name: YGE timing words and the flags byte
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Lua 5.4
+        run: sudo apt-get update && sudo apt-get install -y lua5.4
+
+      - name: Check the YGE forward-programming codec
+        run: lua5.4 bin/esc_parameters_yge/verify_esc_parameters_yge.lua
+
+  # Seven of the twenty-one YGE models have an HV BEC that runs up to 12.0 V, and the BEC
+  # Voltage field was capped at 8.4 V for all of them -- because the ceiling is a
+  # property of the MODEL and the field took its range from a constant in FIELD_META.
+  # app/field_layout.lua's buildField() has always honoured spec.min/spec.max, and
+  # app/pages/esc_forward_vendor.lua's fieldSpec() read them from FIELD_META only, so
+  # a page had no way to say otherwise. It now resolves them the way it already
+  # resolved labels: a value, or a function of the read data.
+  #
+  # The second half is the flags byte. Its HV-BEC bit (bit 3) has no row on this
+  # page -- bits 0 and 1 have rows, bit 3 did not -- so selecting 12.0 V commanded the
+  # voltage without the mode that makes it 12 V. The codec sets it from
+  # page_runtime's beforeSave hook, the same place and shape
+  # msp_esc_parameters_scorpion.lua already uses.
+  #
+  # Two rules, and the second is the one a reviewer should check: when the pilot MOVED
+  # the voltage the bit becomes (voltage == 120), and when they did not the bit is
+  # left exactly as the ESC reported it. An ESC reporting 8.4 V with the bit set is in
+  # a state this page never produced, and a save that changed the governor gain has no
+  # business clearing a BEC setting nobody looked at.
+  #
+  # The harness found that second rule the hard way: the first version enforced the
+  # invariant unconditionally and its own "an unrelated save leaves the bit alone" case
+  # went red. It is now the same rule the timing translation in #2456 follows.
+  #
+  # Finding on the way: the model table was missing [4691] "YGE Saphir 125v2" -- one
+  # of the seven 12 V models, and the first one #2337 names. It rendered as
+  # "YGE ESC (4691)", and with no entry there was nothing to raise the ceiling for.
+  # The EdgeTX table's own comment says why: name and capability used to be two lists,
+  # "and adding a model meant remembering both -- which is how 4691 came to be in
+  # neither". So this is ONE table carrying both facts, not a second list beside the
+  # first.
+  #
+  # Two entries in the EdgeTX table are worth reading before "correcting" them: [5712]
+  # "YGE 165 HVT" and [8272] "YGE 205 HVT" carry neither BEC nor Opto nor v2 in the
+  # name and still run to 12.0 V. So "12 V means v2" is not the rule -- it holds for
+  # four of the seven, which is what that table happens to contain. This suite asserts
+  # parity with it on all 21 entries, and separately that [8272] keeps the owner's v2
+  # spelling (2026-10-03). The one field EdgeTX has no notion of is `bec`: only the
+  # five Opto models lack one, so their BEC Voltage row is hidden rather than capped.
+  # 11 of its 28 checks go red without the fix. Pass --self-test to prove that: it cuts
+  # the fix back out of the three files that carry it and requires every one of the
+  # eleven to fail -- and verifies its own cut four ways first, because a slice that
+  # takes an unrelated table with it looks exactly like a test failure.
+  esc-parameters-yge-bec12v:
+    name: YGE 12 V BEC ceiling and the HV-BEC bit
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Lua 5.4
+        run: sudo apt-get update && sudo apt-get install -y lua5.4
+
+      - name: Check the 12 V BEC ceiling and the flag
+        run: lua5.4 bin/esc_parameters_yge/verify_yge_bec12v.lua
+
   # Per-language PR builds (mirrors push.yml behavior)
   create-zip:
     name: Build PR ZIP (${{ matrix.lang }})
