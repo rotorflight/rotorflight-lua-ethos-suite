@@ -369,45 +369,60 @@ end
 -- The model table under test
 -- ---------------------------------------------------------------------------
 
--- Transcribed from rotorflight-lua-edgetx-suite
--- src/rfsuite/app/pages/setup/esc_motors/esc_tools/escmfg/yge/init.lua:17-39,
--- plus one fact that table does not carry: `bec`, whether the model has a BEC at
--- all (Björn, 2026-10-03 -- an Opto ESC has none).
+-- The specification, and it is NOT the EdgeTX table this file used to follow.
+-- The BEC voltages and the 12 V capability are Bjoern's, per model, given
+-- 2026-10-03. They disagree with rotorflight-lua-edgetx-suite
+-- .../escmfg/yge/init.lua:17-39 in BOTH directions -- three models there are
+-- offered 12 V and do not have it, and one (Saphir 125) is held below a voltage
+-- it does have. See the codec's table for the full comparison.
 --
--- `bec` is a THREE-valued fact and that is the point of writing it this way:
---   true  -- the name says BEC, so it has one
---   false -- the name says Opto, so it has none, and the row is hidden
---   nil   -- the name says neither. UNKNOWN, and left that way on purpose. Six of
---            the seven 12 V models are in this group, including "YGE 205 HVT"
---            whose sibling is "YGE 205 HVT BEC", so the name cannot be read as
---            the answer. An unknown keeps the row at the 8.4 V ceiling, which is
---            what the page has always done.
+-- `bec` is what makes the BEC Voltage row exist at all, and only the five models
+-- named "Opto" lack one. The ten whose name says neither BEC nor Opto all have
+-- one: that is his answer, not an inference from the name.
 local EXPECTED_MODELS = {
   [848] = {name = "YGE 35 LVT BEC", bec = true, bec12v = false},
   [1616] = {name = "YGE 65 LVT BEC", bec = true, bec12v = false},
   [2128] = {name = "YGE 85 LVT BEC", bec = true, bec12v = false},
   [2384] = {name = "YGE 95 LVT BEC", bec = true, bec12v = false},
   [4944] = {name = "YGE 135 LVT BEC", bec = true, bec12v = false},
-  [8273] = {name = "YGE 205 HVT BEC", bec = true, bec12v = true},
+  [8273] = {name = "YGE 205 HVT BEC", bec = true, bec12v = false},
   [2304] = {name = "YGE 90 HVT Opto", bec = false, bec12v = false},
   [4608] = {name = "YGE 120 HVT Opto", bec = false, bec12v = false},
   [4928] = {name = "YGE Opto 135", bec = false, bec12v = false},
   [9552] = {name = "YGE Opto 255", bec = false, bec12v = false},
   [16464] = {name = "YGE Opto 405", bec = false, bec12v = false},
-  [4177] = {name = "YGE Aureus 105", bec12v = false},
-  [4179] = {name = "YGE Aureus 105v2", bec12v = true},
-  [4689] = {name = "YGE Saphir 125", bec12v = false},
-  [4691] = {name = "YGE Saphir 125v2", bec12v = true},
-  [5025] = {name = "YGE Aureus 135", bec12v = false},
-  [5027] = {name = "YGE Aureus 135v2", bec12v = true},
-  [5457] = {name = "YGE Saphir 155", bec12v = false},
-  [5459] = {name = "YGE Saphir 155v2", bec12v = true},
-  [5712] = {name = "YGE 165 HVT", bec12v = true},
-  [8272] = {name = "YGE 205 HVT", bec12v = true},
+  [4177] = {name = "YGE Aureus 105", bec = true, bec12v = false},
+  [4179] = {name = "YGE Aureus 105v2", bec = true, bec12v = true},
+  [4689] = {name = "YGE Saphir 125", bec = true, bec12v = true},
+  [4691] = {name = "YGE Saphir 125v2", bec = true, bec12v = true},
+  [5025] = {name = "YGE Aureus 135", bec = true, bec12v = false},
+  [5027] = {name = "YGE Aureus 135v2", bec = true, bec12v = true},
+  [5457] = {name = "YGE Saphir 155", bec = true, bec12v = false},
+  [5459] = {name = "YGE Saphir 155v2", bec = true, bec12v = true},
+  [5712] = {name = "YGE 165 HVT", bec = true, bec12v = false},
+  [8272] = {name = "YGE 205 HVT", bec = true, bec12v = false},
 }
 
 local OPTO_IDS = {2304, 4608, 4928, 9552, 16464}
 local UNMARKED_IDS = {4177, 4179, 4689, 4691, 5025, 5027, 5457, 5459, 5712, 8272}
+
+-- The two the ceiling cases are driven on. 4691 because it is the model the whole
+-- finding is about, and because picking 8272 here would have been wrong: 205 HVT
+-- is one of the three the EdgeTX table offers 12 V and Björn says it has an 8.4 V
+-- BEC. 848 is a plain 8.4 V BEC model.
+local MODEL_12V = 4691   -- YGE Saphir 125v2
+local MODEL_8V4 = 848    -- YGE 35 LVT BEC
+
+-- The four entries where this file and the EdgeTX table disagree. Named
+-- individually because they are the ones a reviewer should read the codec's table
+-- comment for, and because if either side is ever corrected these four are what
+-- changes.
+local DIVERGES_FROM_EDGETX = {
+  { id = 4689, name = "YGE Saphir 125", edgetx = false, here = true },
+  { id = 5712, name = "YGE 165 HVT", edgetx = true, here = false },
+  { id = 8272, name = "YGE 205 HVT", edgetx = true, here = false },
+  { id = 8273, name = "YGE 205 HVT BEC", edgetx = true, here = false },
+}
 
 local BEC_8V_MAX = 84
 local BEC_12V_MAX = 120
@@ -626,7 +641,7 @@ local function runChecks()
 
   do
     local f = copyOf(baseFixture)
-    pokeU16(f, OFFSETS.esc_type.offset, 8272)  -- YGE 205 HVT
+    pokeU16(f, OFFSETS.esc_type.offset, MODEL_12V)  -- YGE Saphir 125v2
     local runtime = openYge(f)
     local got = runtime and codec.becVoltageMax and codec.becVoltageMax(runtime.data)
     gateCheck("a 12 V model reports the 12.0 V ceiling",
@@ -636,7 +651,7 @@ local function runChecks()
 
   do
     local f = copyOf(baseFixture)
-    pokeU16(f, OFFSETS.esc_type.offset, 848)  -- YGE 35 LVT BEC
+    pokeU16(f, OFFSETS.esc_type.offset, MODEL_8V4)  -- YGE 35 LVT BEC, 8.4 V
     local runtime = openYge(f)
     local got = runtime and codec.becVoltageMax and codec.becVoltageMax(runtime.data)
     check("an 8.4 V model keeps the 8.4 V ceiling",
@@ -664,7 +679,7 @@ local function runChecks()
 
   do
     local f = copyOf(baseFixture)
-    pokeU16(f, OFFSETS.esc_type.offset, 8272)
+    pokeU16(f, OFFSETS.esc_type.offset, MODEL_12V)
     local runtime = openYge(f)
     local field = rowField(ROW_BEC)
     gateCheck("the BEC field is built with a ceiling of 12.0 V on a 12 V model",
@@ -675,7 +690,7 @@ local function runChecks()
 
   do
     local f = copyOf(baseFixture)
-    pokeU16(f, OFFSETS.esc_type.offset, 848)
+    pokeU16(f, OFFSETS.esc_type.offset, MODEL_8V4)
     local runtime = openYge(f)
     local field = rowField(ROW_BEC)
     check("the BEC field is built with a ceiling of 8.4 V on an 8.4 V model",
@@ -704,7 +719,7 @@ local function runChecks()
   -- check that cannot fail got in.
   do
     local f = copyOf(baseFixture)
-    pokeU16(f, OFFSETS.esc_type.offset, 8272)
+    pokeU16(f, OFFSETS.esc_type.offset, MODEL_12V)
     f[OFFSETS.flags.offset] = 0xF7
     local runtime, opts = openYge(f)
     local field = rowField(ROW_BEC)
@@ -734,7 +749,7 @@ local function runChecks()
     -- with it, or the ESC is left in HV mode with a voltage that is not the one
     -- the bit means.
     local f = copyOf(baseFixture)
-    pokeU16(f, OFFSETS.esc_type.offset, 8272)
+    pokeU16(f, OFFSETS.esc_type.offset, MODEL_12V)
     f[OFFSETS.flags.offset] = 0x0F
     local runtime, opts = openYge(f)
     local field = rowField(ROW_BEC)
@@ -756,7 +771,7 @@ local function runChecks()
     -- Asserting the bit for it would tell the ESC to switch to HV and hand it a
     -- voltage the bit does not mean.
     local f = copyOf(baseFixture)
-    pokeU16(f, OFFSETS.esc_type.offset, 8272)
+    pokeU16(f, OFFSETS.esc_type.offset, MODEL_12V)
     f[OFFSETS.flags.offset] = 0x0F
     local runtime, opts = openYge(f)
     local field = rowField(ROW_BEC)
@@ -779,7 +794,7 @@ local function runChecks()
     -- BEC setting nobody looked at -- the same rule the timing translation
     -- follows for an untouched row.
     local f = copyOf(baseFixture)
-    pokeU16(f, OFFSETS.esc_type.offset, 848)
+    pokeU16(f, OFFSETS.esc_type.offset, MODEL_8V4)
     f[OFFSETS.flags.offset] = 0x0F
     local runtime, opts = openYge(f)
     if not runtime or not editUnrelatedField() then
@@ -799,7 +814,7 @@ local function runChecks()
     -- ...and the converse: a pilot who DOES move the voltage gets the invariant,
     -- whatever the ESC said before.
     local f = copyOf(baseFixture)
-    pokeU16(f, OFFSETS.esc_type.offset, 848)
+    pokeU16(f, OFFSETS.esc_type.offset, MODEL_8V4)
     f[OFFSETS.flags.offset] = 0x0F
     local runtime, opts = openYge(f)
     local field = rowField(ROW_BEC)
@@ -857,7 +872,7 @@ local function runChecks()
   do
     -- A model whose name says BEC keeps the row.
     local f = copyOf(baseFixture)
-    pokeU16(f, OFFSETS.esc_type.offset, 848)  -- YGE 35 LVT BEC
+    pokeU16(f, OFFSETS.esc_type.offset, MODEL_8V4)  -- YGE 35 LVT BEC, 8.4 V
     local runtime = openYge(f)
     check("a model named BEC keeps the BEC Voltage row",
       rowField(ROW_BEC) ~= nil,
@@ -865,11 +880,12 @@ local function runChecks()
   end
 
   do
-    -- The ten whose name says neither BEC nor Opto: UNKNOWN, and the row stays at
-    -- the 8.4 V ceiling. Not a gate -- that is today's behaviour, so the
-    -- pre-fix page does the same and this cannot detect the fix. It is here to
-    -- pin the choice, because the tempting wrong move is to read the name and
-    -- hide the row on ten models whose BEC nobody has confirmed either way.
+    -- The ten whose name says neither BEC nor Opto. All ten HAVE a BEC -- that is
+    -- Björn's per-model answer, not an inference from the name -- so the row stays
+    -- on every one of them. Not a gate: the pre-fix page builds the row on all ten
+    -- too, so this cannot detect the fix. It is here because the tempting wrong
+    -- move is to read the name and hide the row on ten models whose BEC nobody had
+    -- confirmed either way.
     local hidden = {}
     for _, id in ipairs(UNMARKED_IDS) do
       local f = copyOf(baseFixture)
@@ -881,7 +897,7 @@ local function runChecks()
         hidden[#hidden + 1] = string.format("%d (%s)", id, EXPECTED_MODELS[id].name)
       end
     end
-    check("the ten models whose name says neither keep the row (BEC presence is an open question)",
+    check("the ten models whose name says neither all have a BEC and keep the row",
       #hidden == 0,
       #hidden > 0 and string.format("row hidden on: %s", table.concat(hidden, ", ")) or nil)
   end
@@ -895,6 +911,43 @@ local function runChecks()
     check("an unknown model id keeps the BEC Voltage row",
       rowField(ROW_BEC) ~= nil,
       "the row was hidden for an id this suite does not know")
+  end
+
+  -- -------------------------------------------------------------------------
+  -- Where this file and the EdgeTX table disagree
+  -- -------------------------------------------------------------------------
+  out("")
+  out("the four models where this file and the EdgeTX table disagree")
+
+  do
+    -- Not a gate: on the pre-fix codec every one of these reads as the EdgeTX
+    -- value, because that is what it had. They are here so the divergence is a
+    -- fact the harness carries rather than a claim in a comment -- and so that if
+    -- anyone ever "corrects" one of them back towards EdgeTX, it goes red.
+    local wrong = {}
+    for _, d in ipairs(DIVERGES_FROM_EDGETX) do
+      local f = copyOf(baseFixture)
+      pokeU16(f, OFFSETS.esc_type.offset, d.id)
+      local runtime, _, codec = openYge(f)
+      if not runtime then
+        wrong[#wrong + 1] = string.format("%d built no editor", d.id)
+      else
+        local want = d.here and BEC_12V_MAX or BEC_8V_MAX
+        -- Guarded, and not out of caution: this is a NON-gate, so it also runs in
+        -- pass 2 against a codec that has had becVoltageMax cut out. Calling it
+        -- blind took the whole self-test down with a nil-call three sections
+        -- before the verdict, which is a loud way to learn that a check has to
+        -- survive the tree it is pointed at.
+        local got = codec.becVoltageMax and codec.becVoltageMax(runtime.data)
+        if got ~= want then
+          wrong[#wrong + 1] = string.format("%d %s: EdgeTX says %s, this says %s, codec returned %s",
+            d.id, d.name, d.edgetx and "12 V" or "8.4 V", d.here and "12 V" or "8.4 V", tostring(got))
+        end
+      end
+    end
+    check("each of the four follows Björn's answer, not the EdgeTX table",
+      #wrong == 0,
+      #wrong > 0 and table.concat(wrong, "; ") or nil)
   end
 
   -- -------------------------------------------------------------------------
@@ -1008,7 +1061,7 @@ local function prefixCodec(src, nl)
   -- leave a live row that nothing hides, which is the defect.
   out = cut(out, "function msp.hasBec(data)",
     "return hasBec(data)\r\nend", "msp.hasBec()")
-  out = cut(out, "-- Whether the BEC Voltage row is shown at all. Only an EXPLICIT `bec = false`",
+  out = cut(out, '-- Whether the BEC Voltage row is shown at all. Only the five models named "Opto"',
     "return model == nil or model.bec ~= false\r\nend", "hasBec()")
   return out
 end

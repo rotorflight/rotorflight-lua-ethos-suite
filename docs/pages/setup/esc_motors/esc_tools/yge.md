@@ -53,11 +53,13 @@ selecting 11.9 V clears the flag. And a save that changed some other setting lea
 the flag alone, even if the ESC reported a combination this page would not have
 produced itself.
 
-Models with a 12 V ceiling: *YGE 165 HVT*, *YGE 205 HVT*, *YGE 205 HVT BEC*,
-*YGE Aureus 105v2*, *YGE Aureus 135v2*, *YGE Saphir 125v2*, *YGE Saphir 155v2*.
+Models with a **12 V** BEC: *YGE Aureus 105v2*, *YGE Saphir 125*, *YGE Saphir 125v2*,
+*YGE Aureus 135v2*, *YGE Saphir 155v2*.
 
 Models with **no BEC**, where the row is hidden: *YGE 90 HVT Opto*,
 *YGE 120 HVT Opto*, *YGE Opto 135*, *YGE Opto 255*, *YGE Opto 405*.
+
+Every other YGE model has a BEC and is offered up to 8.4 V.
 
 ## Related
 

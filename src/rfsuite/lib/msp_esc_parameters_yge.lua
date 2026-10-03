@@ -54,29 +54,39 @@ local function motorTimingFromUi(value, raw)
   return MOTOR_TIMING_FROM_UI[value] or 0
 end
 
--- One entry per model, carrying every fact this suite knows about it. The name
--- and the 12 V BEC capability are deliberately NOT two lists: they used to be,
--- and a model added to one of them was invisible in the other. That is not
--- hypothetical -- [4691] below was missing from the name list this file carried
--- until 2026-10-03, and it is one of the seven 12 V models (#2337).
+-- One entry per model, carrying every fact this suite knows about it. The name,
+-- the BEC voltage and the 12 V capability are deliberately NOT separate lists:
+-- they used to be, upstream, and a model added to one of them was invisible in
+-- the others. That is not hypothetical -- [4691] was missing from the name list
+-- this file carried until 2026-10-03, and it is one of the five 12 V models.
 --
 -- `bec12v` is what raises the BEC Voltage field's ceiling from 8.4 V to 12.0 V.
 -- It is a property of the MODEL rather than of the flags word: the flag says
 -- what the ESC is set to, this says what it can be set to.
 --
+-- The BEC voltages and the 12 V capability below are Bjoern's, not the EdgeTX
+-- table's, and the two disagree in BOTH directions. Against
+-- rotorflight-lua-edgetx-suite .../escmfg/yge/init.lua:17-39, which this file
+-- used to follow:
+--     5712  165 HVT          EdgeTX 12 V  ->  here 8.4 V
+--     8272  205 HVT          EdgeTX 12 V  ->  here 8.4 V
+--     8273  205 HVT BEC      EdgeTX 12 V  ->  here 8.4 V
+--     4689  Saphir 125       EdgeTX 8.4 V ->  here 12 V
+-- Three models were offered a voltage they do not have, and one was held below
+-- one it does. The EdgeTX three predate its own one-table commit (9ad7ae14,
+-- 2026-08-28): they were already in hvt12vTypes in page.lua, each with its model
+-- name beside it. Nothing in either repository settles it -- rotorflight-firmware
+-- has no YGE model table at all, and no Rotorflight repo carries one -- so the
+-- hardware owner decides, and this file carries his answer. The same four entries
+-- are then wrong in the EdgeTX suite, which is worth reporting there.
+--
 -- `bec` is a THIRD fact and not the negation of `bec12v`, because "cannot reach
 -- 12 V" and "has no BEC at all" are different answers and need different UI:
--- `bec = false` hides the BEC Voltage row, `bec = true` shows it, and an ABSENT
--- `bec` means this suite does not know -- the row stays, at the 8.4 V ceiling
--- every model shares, which is today's behaviour and not a regression.
---
--- The five models whose name says "Opto" carry `bec = false`: an Opto ESC has no
--- BEC, so a BEC voltage on one is not a setting that can be written, and the row
--- is hidden rather than capped (Björn, 2026-10-03). The ten models whose name
--- carries neither "BEC" nor "Opto" are left unset ON PURPOSE -- the name does
--- not say which side of the line they are on, and guessing would either hide the
--- row on an ESC that has a BEC or invite a voltage on one that has not. Their
--- `bec` is an open question, not an oversight.
+-- `bec = false` hides the BEC Voltage row. Only the five models named "Opto"
+-- have it -- an Opto ESC has no BEC, so a BEC voltage on one is not a setting
+-- that can be written, and the row is hidden rather than capped (Björn,
+-- 2026-10-03). Every other model has a BEC, which for the ten whose name says
+-- neither "BEC" nor "Opto" is his answer rather than an inference from the name.
 local ESC_MODELS = {
   -- Name says BEC.
   [848] = {name = "YGE 35 LVT BEC", bec = true, bec12v = false},
@@ -84,35 +94,24 @@ local ESC_MODELS = {
   [2128] = {name = "YGE 85 LVT BEC", bec = true, bec12v = false},
   [2384] = {name = "YGE 95 LVT BEC", bec = true, bec12v = false},
   [4944] = {name = "YGE 135 LVT BEC", bec = true, bec12v = false},
-  [8273] = {name = "YGE 205 HVT BEC", bec = true, bec12v = true},
+  [8273] = {name = "YGE 205 HVT BEC", bec = true, bec12v = false},
   -- Name says Opto: no BEC at all.
   [2304] = {name = "YGE 90 HVT Opto", bec = false, bec12v = false},
   [4608] = {name = "YGE 120 HVT Opto", bec = false, bec12v = false},
   [4928] = {name = "YGE Opto 135", bec = false, bec12v = false},
   [9552] = {name = "YGE Opto 255", bec = false, bec12v = false},
   [16464] = {name = "YGE Opto 405", bec = false, bec12v = false},
-  -- Name says neither. Unknown, and left that way -- see the note above.
-  --
-  -- The three HVT entries below are CONTESTED and carried as the EdgeTX table has
-  -- them, because that is the only authority in either repository and this file
-  -- does not get to overrule it on a hunch. Björn's recollection is that 12 V
-  -- belongs to the V2 models; 165 HVT, 205 HVT and 205 HVT BEC are not V2 and
-  -- still carry bec12v = true. They were already in the pre-refactor
-  -- hvt12vTypes list in the EdgeTX page, each with its model named beside it, so
-  -- this predates that refactor. rotorflight-firmware has no YGE model table at
-  -- all, so nothing in the tree settles it. If Björn confirms the V2 reading,
-  -- these three become false -- and the same three are then wrong in the EdgeTX
-  -- suite. See the pull request; do not change them without his answer.
-  [4177] = {name = "YGE Aureus 105", bec12v = false},
-  [4179] = {name = "YGE Aureus 105v2", bec12v = true},
-  [4689] = {name = "YGE Saphir 125", bec12v = false},
-  [4691] = {name = "YGE Saphir 125v2", bec12v = true},
-  [5025] = {name = "YGE Aureus 135", bec12v = false},
-  [5027] = {name = "YGE Aureus 135v2", bec12v = true},
-  [5457] = {name = "YGE Saphir 155", bec12v = false},
-  [5459] = {name = "YGE Saphir 155v2", bec12v = true},
-  [5712] = {name = "YGE 165 HVT", bec12v = true},
-  [8272] = {name = "YGE 205 HVT", bec12v = true},
+  -- Name says neither. Björn answered these on 2026-10-03, per model.
+  [4177] = {name = "YGE Aureus 105", bec = true, bec12v = false},
+  [4179] = {name = "YGE Aureus 105v2", bec = true, bec12v = true},
+  [4689] = {name = "YGE Saphir 125", bec = true, bec12v = true},
+  [4691] = {name = "YGE Saphir 125v2", bec = true, bec12v = true},
+  [5025] = {name = "YGE Aureus 135", bec = true, bec12v = false},
+  [5027] = {name = "YGE Aureus 135v2", bec = true, bec12v = true},
+  [5457] = {name = "YGE Saphir 155", bec = true, bec12v = false},
+  [5459] = {name = "YGE Saphir 155v2", bec = true, bec12v = true},
+  [5712] = {name = "YGE 165 HVT", bec = true, bec12v = false},
+  [8272] = {name = "YGE 205 HVT", bec = true, bec12v = false},
 }
 
 -- The BEC Voltage field carries tenths of a volt, which is why the 12 V ceiling
@@ -290,13 +289,13 @@ local function supportsBec12v(data)
   return model ~= nil and model.bec12v == true
 end
 
--- Whether the BEC Voltage row is shown at all. Only an EXPLICIT `bec = false`
--- hides it -- the five models named "Opto", which have no BEC to set a voltage
--- on. An unknown id and the ten models whose name says neither BEC nor Opto both
--- report true, so the row stays at the 8.4 V ceiling: the state they are in is
--- the state the page has always been in, and hiding a row on the strength of a
--- name that does not answer the question would be a guess with a dead control in
--- it. See the table's own comment for why that gap is deliberate.
+-- Whether the BEC Voltage row is shown at all. Only the five models named "Opto"
+-- report false: an Opto ESC has no BEC, so there is no voltage to set and the row
+-- is hidden rather than capped (Björn, 2026-10-03). Every other model reports
+-- true -- for the ten whose name says neither BEC nor Opto that is his answer per
+-- model, not an inference from the name, and an id this file has never seen also
+-- reports true so the row stays rather than disappearing on hardware nothing is
+-- known about.
 local function hasBec(data)
   local model = data and ESC_MODELS[data.esc_type or 0]
   return model == nil or model.bec ~= false
