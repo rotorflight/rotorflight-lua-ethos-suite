@@ -130,11 +130,18 @@ check("BATTERY_CONFIG_SIZE matches the firmware handler (15 + 6 * 2)",
 check("SMARTFUEL_CONFIG_SIZE matches the firmware handler (4 * u8)",
   mspBattery.SMARTFUEL_CONFIG_SIZE == 4, mspBattery.SMARTFUEL_CONFIG_SIZE)
 
--- The size the decoder now insists on and the size the Ethos simulator has
--- always fed it have to be the same number, or one of the two is wrong.
+-- The size the decoder insists on and the size the Ethos simulator feeds it
+-- have to be the same number, or one of the two is wrong. Since the per-profile
+-- cell voltages landed there are two wire sizes in play: 27 bytes is what the
+-- firmware handler always writes, and 81 adds the 6 cellCount bytes plus
+-- 4 * 6 * 2 cell-voltage bytes of a newer firmware. The fixture has to be
+-- exactly one of the two -- shorter and the decoder refuses it, longer and
+-- the fixture no longer describes any real payload.
+local BATTERY_CONFIG_FULL_SIZE = 81
 local simBattery = mspBattery.buildBatteryConfigReadMessage(function() end).simulatorResponse
-check("the BATTERY_CONFIG simulatorResponse is exactly BATTERY_CONFIG_SIZE",
-  #simBattery == mspBattery.BATTERY_CONFIG_SIZE, #simBattery)
+check("the BATTERY_CONFIG simulatorResponse is a whole wire size",
+  #simBattery == mspBattery.BATTERY_CONFIG_SIZE
+    or #simBattery == BATTERY_CONFIG_FULL_SIZE, #simBattery)
 
 local simSmartfuel = mspBattery.buildSmartfuelConfigReadMessage(function() end).simulatorResponse
 check("the SMARTFUEL_CONFIG simulatorResponse is exactly SMARTFUEL_CONFIG_SIZE",
@@ -398,6 +405,48 @@ local function testModesDecoders()
 end
 
 testModesDecoders()
+
+-- ---------------------------------------------------------------------------
+-- Case 9: the extended BATTERY_CONFIG payload carries per-profile cells
+-- ---------------------------------------------------------------------------
+
+print("case 9: an 81-byte BATTERY_CONFIG reply decodes its per-profile cells")
+
+-- The 27-byte BATTERY_REPLY above stops at the capacities, so nothing in this
+-- harness reached the per-profile block. The simulator fixture is the one
+-- payload of that length in the tree, so it is decoded here: a 27-byte reply
+-- must report no profileCells at all rather than six empty ones, and the
+-- 81-byte one must report six profiles whose cell counts and cell voltages
+-- are the ones the bytes carry.
+local legacy = decodeBattery(BATTERY_REPLY)
+check("a 27-byte reply reports no profileCells",
+  legacy ~= nil and legacy.profileCells == nil,
+  legacy and type(legacy.profileCells))
+
+local extended = decodeBattery(simBattery)
+check("the 81-byte fixture is accepted", extended ~= nil)
+
+if extended then
+  check("profileCells is present", extended.profileCells ~= nil)
+  if extended.profileCells then
+    -- Every fixture profile writes cellCount 6, and the four cell voltages as
+    -- 330 / 420 / 410 / 350 -- index 5 included, which is the one a six-pack
+    -- pilot actually picks.
+    for i = 0, 5 do
+      local p = extended.profileCells[i]
+      check(string.format("profileCells[%d].cellCount", i),
+        p ~= nil and p.cellCount == 6, p and p.cellCount)
+      check(string.format("profileCells[%d].vbatMinCell", i),
+        p ~= nil and math.abs(p.vbatMinCell - 3.30) < 1e-9, p and p.vbatMinCell)
+      check(string.format("profileCells[%d].vbatMaxCell", i),
+        p ~= nil and math.abs(p.vbatMaxCell - 4.20) < 1e-9, p and p.vbatMaxCell)
+      check(string.format("profileCells[%d].vbatFullCell", i),
+        p ~= nil and math.abs(p.vbatFullCell - 4.10) < 1e-9, p and p.vbatFullCell)
+      check(string.format("profileCells[%d].vbatWarningCell", i),
+        p ~= nil and math.abs(p.vbatWarningCell - 3.50) < 1e-9, p and p.vbatWarningCell)
+    end
+  end
+end
 
 -- ---------------------------------------------------------------------------
 

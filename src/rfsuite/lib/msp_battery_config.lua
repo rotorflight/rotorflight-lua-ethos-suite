@@ -36,6 +36,29 @@ local FIELDS = {
   {"batteryCapacity_5", "U16"},
 }
 
+-- Per-profile cell count / cell voltage arrays, appended after the six
+-- capacities by firmware with per-profile cell support (rotorflight-firmware
+-- #508, configurator #438). Wire order is every profile of one setting before
+-- the next: cellCount x6 (U8), then min, max, full, warning x6 (U16). Only
+-- present when the reply is long enough (see PROFILE_CELLS_MIN_BYTES) and
+-- only written back when it was read, so older firmware never sees them.
+local PROFILE_COUNT = 6
+local PROFILE_CELL_SETTINGS = {
+  {"batteryCellCount", "U8"},
+  {"vbatmincellvoltage", "U16"},
+  {"vbatmaxcellvoltage", "U16"},
+  {"vbatfullcellvoltage", "U16"},
+  {"vbatwarningcellvoltage", "U16"},
+}
+local PROFILE_CELLS_MIN_BYTES = 81 -- 15 legacy + 12 capacities + 6 * (1 + 4 * 2)
+
+local PROFILE_FIELDS = {}
+for _, setting in ipairs(PROFILE_CELL_SETTINGS) do
+  for i = 0, PROFILE_COUNT - 1 do
+    PROFILE_FIELDS[#PROFILE_FIELDS + 1] = {setting[1] .. "_" .. i, setting[2]}
+  end
+end
+
 local FIELD_META = {
   batteryCapacity = {min = 0, max = 20000, default = 0, suffix = "mAh"},
   batteryCellCount = {min = 0, max = 24, default = 6},
@@ -55,6 +78,12 @@ local FIELD_META = {
   batteryCapacity_5 = {min = 0, max = 40000, default = 0, suffix = "mAh"},
 }
 
+for _, setting in ipairs(PROFILE_CELL_SETTINGS) do
+  for i = 0, PROFILE_COUNT - 1 do
+    FIELD_META[setting[1] .. "_" .. i] = FIELD_META[setting[1]]
+  end
+end
+
 local SIMULATOR_RESPONSE = {
   136, 19,
   6,
@@ -72,12 +101,18 @@ local SIMULATOR_RESPONSE = {
   108, 7,
   152, 8,
   196, 9,
+  6, 6, 6, 6, 6, 6,                               -- batteryCellCount_0..5
+  74, 1, 74, 1, 74, 1, 74, 1, 74, 1, 74, 1,       -- vbatmincellvoltage_0..5
+  164, 1, 164, 1, 164, 1, 164, 1, 164, 1, 164, 1, -- vbatmaxcellvoltage_0..5
+  154, 1, 154, 1, 154, 1, 154, 1, 154, 1, 154, 1, -- vbatfullcellvoltage_0..5
+  94, 1, 94, 1, 94, 1, 94, 1, 94, 1, 94, 1,       -- vbatwarningcellvoltage_0..5
 }
 
 local msp_battery_config = {
   READ_COMMAND = READ_COMMAND,
   WRITE_COMMAND = WRITE_COMMAND,
   FIELDS = FIELDS,
+  PROFILE_FIELDS = PROFILE_FIELDS,
   FIELD_META = FIELD_META,
   SOURCE_CHOICES = SOURCE_CHOICES,
 }
@@ -102,6 +137,13 @@ function msp_battery_config.decode(buf)
     local name, wireType = FIELDS[i][1], FIELDS[i][2]
     data[name] = readByType(buf, wireType)
   end
+  if #buf >= PROFILE_CELLS_MIN_BYTES then
+    data.hasProfileCells = true
+    for i = 1, #PROFILE_FIELDS do
+      local name, wireType = PROFILE_FIELDS[i][1], PROFILE_FIELDS[i][2]
+      data[name] = readByType(buf, wireType)
+    end
+  end
   return data
 end
 
@@ -111,6 +153,12 @@ function msp_battery_config.encode(data)
   for i = 1, #FIELDS do
     local name, wireType = FIELDS[i][1], FIELDS[i][2]
     writeByType(payload, wireType, data[name])
+  end
+  if data.hasProfileCells then
+    for i = 1, #PROFILE_FIELDS do
+      local name, wireType = PROFILE_FIELDS[i][1], PROFILE_FIELDS[i][2]
+      writeByType(payload, wireType, data[name])
+    end
   end
   return payload
 end

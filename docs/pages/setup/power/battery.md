@@ -32,6 +32,11 @@ Greyed out until the flight controller answers. Read-only while the model is arm
 ## Notes
 
 - Changes are written to the flight controller EEPROM upon Save.
+- On firmware that carries the per-profile cell settings (rotorflight-firmware
+  #508), the cell count and the four cell voltage thresholds follow the
+  profile selected under *Profiles*, the same way *Capacity* already does, and
+  switching the profile reloads them. Older firmware only reports the values of
+  the active profile, so on it those five settings apply to every profile.
 
 ## Related
 
