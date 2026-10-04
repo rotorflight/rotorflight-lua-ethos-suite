@@ -678,9 +678,16 @@ local function checkOptoByteAlignment()
   local data = decodeWith(buf)
 
   local wrong = {}
-  -- Every field is compared against its own byte. The Startup Time row is NOT
-  -- special here: this change is about which byte a field sits on, and the byte a
-  -- field shows is the subject of a separate pull request.
+  -- Every field is compared against its own byte, EXCEPT startup_time.
+  --
+  -- That exception is the price of this file living next to the Startup Time
+  -- conversion: on the branch that carries it, the row shows the byte plus four, and
+  -- comparing it against the raw byte fails -- which is what happened, twice, before
+  -- this was written down. It is not a hole in the check, because the POSITION of
+  -- startup_time is pinned one function up: checkOptoLayout() recovers every field's
+  -- item index by poking one parameter byte at a time and watching which row moves,
+  -- and startup_time is in that list. What this function checks is the value, and for
+  -- the other sixteen fields the two are the same thing.
   local function expect(name)
     local at = itemByte(OPTO_LAYOUT[name])
     if data[name] ~= buf[at] then
@@ -688,13 +695,28 @@ local function checkOptoByteAlignment()
         name, tostring(data[name]), at, tostring(buf[at]))
     end
   end
-  for _, name in ipairs({ "startup_time", "gov_p_gain", "gov_i_gain", "auto_restart",
+  for _, name in ipairs({ "gov_p_gain", "gov_i_gain", "auto_restart",
                           "restart_time", "brake_type", "brake_force", "timing",
                           "rotation", "active_freewheel", "startup_power" }) do
     expect(name)
   end
   gateCheck("on an OPTO HW1106 every field reads the byte the OPTO layout names it",
     #wrong == 0, #wrong > 0 and table.concat(wrong, "; ") or nil)
+
+  -- startup_time is named here rather than quietly left out of the list above, so the
+  -- gate's label is not mistaken for a claim about every field on the layout.
+  --
+  -- It is a plain check and it is precise rather than permissive: this branch carries
+  -- the Startup Time conversion, so the value must be the byte PLUS FOUR. Asserting
+  -- "raw or raw+4" would accept a codec that had no conversion at all, which is a
+  -- statement that cannot fail. The other branch -- #2463, which does not carry the
+  -- conversion -- asserts the raw byte instead, and each harness is right on its own
+  -- branch.
+  local startupAt = itemByte(OPTO_LAYOUT.startup_time)
+  check("on an OPTO HW1106 startup_time reads the byte the OPTO layout names it, plus the documented four",
+    data.startup_time == buf[startupAt] + 4,
+    string.format("startup_time is %s, byte %d says %s", tostring(data.startup_time),
+      startupAt, tostring(buf[startupAt])))
 
   -- ...and a save writes those bytes back, not the ones a BEC model would use.
   local edited = decodeWith(buf)
@@ -743,35 +765,46 @@ end
 -- The round trip, exhaustively: every byte against all 256 of its values. NOT a
 -- gate -- it was lossless before and after -- and here so that a layout change
 -- cannot quietly cost a byte.
+--
+-- The Startup Time byte is excluded, for the same reason it is excluded from the
+-- value comparison above: a field with a range cannot round-trip every byte, and
+-- that field's behaviour is pinned by its own harness
+-- (bin/esc_hw5_startup/verify_hw5_startup.lua) rather than by a sweep that has to
+-- pretend the exception is not there.
+local STARTUP_BYTE_DEFAULT = itemByte(DEFAULT_LAYOUT.startup_time)
+
 local function checkRoundTrip()
   out("")
-  out("round trip: every byte survives a save that changed something else")
+  out("round trip: every byte except the Startup Time one survives a save that changed something else")
   local base = fixture()
-  local lost, firstLost = 0, nil
+  local lost, firstLost, checked = 0, nil, 0
   for offset = 1, #base do
-    for value = 0, 255 do
-      local buf = blockWith({})
-      buf[offset] = value
-      local payload = encodeWith(decodeWith(buf))
-      if type(payload) ~= "table" or #payload ~= BLOCK_BYTES then
-        lost = lost + 1
-        if not firstLost then
-          firstLost = string.format("byte %d: %s for a %d byte block", offset,
-            payload and #payload or "no payload", BLOCK_BYTES)
-        end
-      elseif payload[offset] ~= value then
-        lost = lost + 1
-        if not firstLost then
-          firstLost = string.format("byte %d: value %d came back as %d, nothing was edited",
-            offset, value, payload[offset])
+    if offset ~= STARTUP_BYTE_DEFAULT then
+      checked = checked + 1
+      for value = 0, 255 do
+        local buf = blockWith({})
+        buf[offset] = value
+        local payload = encodeWith(decodeWith(buf))
+        if type(payload) ~= "table" or #payload ~= BLOCK_BYTES then
+          lost = lost + 1
+          if not firstLost then
+            firstLost = string.format("byte %d: %s for a %d byte block", offset,
+              payload and #payload or "no payload", BLOCK_BYTES)
+          end
+        elseif payload[offset] ~= value then
+          lost = lost + 1
+          if not firstLost then
+            firstLost = string.format("byte %d: value %d came back as %d, nothing was edited",
+              offset, value, payload[offset])
+          end
         end
       end
     end
   end
-  check(string.format("all %d byte positions survive all 256 of their values unchanged",
-    #base), lost == 0,
+  check(string.format("all %d other byte positions survive all 256 of their values unchanged",
+    checked), lost == 0,
     lost > 0 and string.format("%d of %d values came back changed; first: %s",
-      lost, #base * 256, firstLost) or nil)
+      lost, checked * 256, firstLost) or nil)
 end
 
 -- Issue claim 2, recorded as a fact rather than a comment.
@@ -993,12 +1026,30 @@ end
 
 -- One splice, because this change is one splice. The pre-fix codec is the current
 -- one with the profile selection put back; decode() and encode() are byte-identical
--- to the pre-fix versions here, because the Startup Time offset that used to sit in
--- them moved to its own pull request. There is nothing else to cut out, and a second
--- cut would be a second thing to get wrong.
+-- to the pre-fix versions HERE, because the Startup Time offset moved to its own pull
+-- request. There is nothing else to cut out, and a second cut would be a second thing
+-- to get wrong.
+--
+-- The closing anchor is chosen rather than fixed, and it has to be. On the branch
+-- that carries the Startup Time conversion there is a FIELD_OFFSETS table between the
+-- profile selection and decode(), and cutting up to decode() swallowed it -- the
+-- spliced codec then referenced a table the splice had just deleted, and the
+-- self-test died inside verifySplice() with "attempt to index a nil value". Cutting up
+-- to FIELD_OFFSETS instead keeps it, and the same anchor works on the branch without
+-- the conversion, where there is no such table.
 local function preFix(source, nl)
+  local from = assert(source:find("local function isOpto(data)", 1, true),
+    "sabotage: isOpto() start not found")
+  local _, offsetsAt = source:find("local FIELD_OFFSETS = {", from, true)
+  local _, decodeAt = source:find("local function decode(buf)", from, true)
+  local marker
+  if offsetsAt and offsetsAt < decodeAt then
+    marker = "local FIELD_OFFSETS = {"
+  else
+    marker = "local function decode(buf)"
+  end
   return presplice(source, "local function isOpto(data)",
-    "local function decode(buf)", (PROFILE_SPLICE:gsub("\n", nl)), "profile selection")
+    marker, (PROFILE_SPLICE:gsub("\n", nl)), "profile selection")
 end
 
 -- Four ways, before the spliced codec is allowed to stand in for the pre-fix one.

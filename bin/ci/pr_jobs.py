@@ -654,6 +654,67 @@ pre-fix code, which is why it is a plain check now: OPTO hardware HW1104, becaus
 that model already worked -- PROFILES carried an entry for it.
 '''
     ),
+    # Stacked on esc-hw5-opto (#2463): this is the Startup Time conversion, which
+    # #2463 carried at first and which moved here so it can be reviewed on its own.
+    LuaJob(
+        id='esc-hw5-startup',
+        name='Hobbywing V5 Startup Time byte',
+        step='Check the Startup Time conversion',
+        script='bin/esc_hw5_startup/verify_hw5_startup.lua',
+        rationale=r'''FIELD_META declares startup_time as min 4, max 25, default 11 -- and decode()
+handed the page the RAW byte, which runs 0..21. So the row's declared range was
+violated by its own decoder, and an ESC set to its shortest start-up showed "0s" on
+a row that begins at 4. That contradiction is entirely inside this one file; no
+outside authority is needed to establish that it exists. Deciding WHICH side of it was
+wrong does need one, and EdgeTX is it -- this suite has always taken the HW5 layouts
+from there. It says so four times over:
+
+  * its own fixture comment:  11, -- item 6: startup_time (raw 11 -> 15s)
+    (tasks/msp/api/esc_parameters_hw5.lua:203)
+  * parse():                   out[fieldName] = rawVal + 4                    (:263-265)
+  * buildWritePayload():       rawVal = math.max(0, math.min(21,
+                                (tonumber(val) or 4) - 4))                       (:296-298)
+  * the page widget:           min = 4, max = 25, step = 1, suffix = "s"
+    (app/pages/.../escmfg/hw5/page.lua:617), and its initial ui.config value
+    startup_time = 15 (:38) -- the fixture's raw 11 plus four.
+
+The arithmetic is the cheapest of those arguments and probably the strongest:
+4..25 is 22 values and 0..21 is 22 values. A range that is 22 long on the page and 22
+long on the wire is one range counted from two ends, and it also explains the
+maximum: 25 - 4 + 1 = 22 = 21 - 0 + 1.
+
+startup_time is item 6 in DEFAULT and item 5 in OPTO, and ABSENT from HW1132 and
+HW1128 -- in both suites -- so the conversion must apply to exactly two of the four
+layouts.
+
+TWO BEHAVIOUR CHANGES worth reading rather than skimming. Both are EdgeTX parity, and
+both are stated here because parity alone would hide that something gives:
+
+  * The clamp is the FIELD's range, 0..21, and not the BYTE's, 0..255. The first
+    version of this fix clamped to 0..255; a caller outside the page's own range
+    could then write a raw byte the row says cannot exist. The page's min/max make it
+    unreachable through the UI, so nothing else in the harness would have noticed.
+  * A raw byte above 21 is now written back as 21 rather than as itself. Pre-fix an
+    ESC that sent 22 had its 22 passed through untouched. That is what EdgeTX does and
+    it is the right default for a field with a range, but it is a change, so it is
+    gated rather than left as a side effect.
+
+The harness found the second one by accident: the whole-block round trip swept all 81
+byte positions and reported 234 of 20736 values changed, first at byte 71 -- item 6,
+startup_time. The Startup Time byte is now excluded from that sweep with the reason
+written down, and its behaviour pinned by a gate of its own.
+
+6 of its 12 checks are gates. Pass --self-test to prove that: it splices the pre-fix
+decode()/encode() back into a copy of the codec and requires all six to fail, and it
+verifies its own splice four ways first. Two of the six were gates in the first
+version and the self-test caught them passing on the pre-fix code -- "every other
+field is untouched" and "HW1132 and HW1128 do not gain one" both guard the FIX rather
+than detect the DEFECT, so they are plain checks now. The read gate and the write
+gate are not redundant: a codec that added four in and subtracted four out is
+perfectly consistent and would pass every round trip in the file while showing the
+wrong number.
+'''
+    ),
 ]
 
 VERBATIM_JOBS = [

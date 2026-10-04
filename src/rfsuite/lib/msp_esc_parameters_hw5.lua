@@ -359,6 +359,42 @@ local function itemLayoutFor(data)
   return (profileFor(data).items) or DEFAULT_ITEMS
 end
 
+-- One field is not stored as the number the page shows.
+--
+-- startup_time declares min 4, max 25, default 11 in FIELD_META above, and the raw
+-- byte runs 0..21 -- so decode() used to hand the page numbers the row's own range
+-- says cannot happen, and a pilot with the ESC set to its shortest start saw "0s"
+-- on a row that begins at 4. That contradiction is inside this file and needs no
+-- outside authority to establish.
+--
+-- Which side of it was wrong is settled by the EdgeTX codec, which is the reference
+-- this suite has always taken the HW5 layouts from, and which says so four times
+-- over:
+--
+--   * its own fixture comment:  11, -- item 6: startup_time (raw 11 -> 15s)
+--     (tasks/msp/api/esc_parameters_hw5.lua:203)
+--   * parse():                   out[fieldName] = rawVal + 4          (:263-265)
+--   * buildWritePayload():       rawVal = math.max(0, math.min(21,
+--                                (tonumber(val) or 4) - 4))             (:296-298)
+--   * the page widget:           min = 4, max = 25, step = 1, suffix = "s"
+--     (app/pages/.../escmfg/hw5/page.lua:617) -- and its initial ui.config value
+--     startup_time = 15 (:38), which is the fixture's raw 11 plus four.
+--
+-- The arithmetic agrees, which is why this is a translation and not a patch: 4..25
+-- is 22 values and 0..21 is 22 values. A range that is 22 long on the page and 22
+-- long on the wire is one range counted from two ends.
+--
+-- The clamp is 0..21 and NOT 0..255, because that is the range of the byte. A wider
+-- clamp would let a caller outside the page's own range write a raw value the row
+-- says cannot exist; EdgeTX clamps to 21 for the same reason.
+--
+-- A table rather than another `if` in decode()/encode(): there is one such field
+-- today, and a second copy of the rule in the two directions is a second thing to
+-- forget when the next one is added.
+local FIELD_OFFSETS = {
+  startup_time = {offset = 4, min = 0, max = 21},
+}
+
 local function decode(buf)
   buf.offset = 1
   local data = {
@@ -371,7 +407,9 @@ local function decode(buf)
   data.mode_name = readString(buf, 51, 15)
   local layout = itemLayoutFor(data)
   for name, itemIndex in pairs(layout) do
-    data[name] = buf[65 + itemIndex] or 0
+    local rule = FIELD_OFFSETS[name]
+    local raw = buf[65 + itemIndex] or 0
+    data[name] = rule and (raw + rule.offset) or raw
   end
   return data
 end
@@ -384,7 +422,21 @@ local function encode(data)
   local layout = itemLayoutFor(data)
   for name, itemIndex in pairs(layout) do
     if data and data[name] ~= nil then
-      payload[65 + itemIndex] = math.floor(data[name] + 0.5) % 256
+      local rule = FIELD_OFFSETS[name]
+      if rule then
+        -- Rounded rather than truncated, because a number field can be handed a
+        -- fraction and a byte cannot hold one. Clamped to the byte's own range, and
+        -- NOT with `% 256`: that would turn a raw value below the row's minimum into
+        -- one near 255 -- a 252 where the pilot asked for something under 4s.
+        -- The page's min/max already prevent that; this is for a table built by
+        -- something else.
+        local raw = math.floor(data[name] - rule.offset + 0.5)
+        if raw < rule.min then raw = rule.min
+        elseif raw > rule.max then raw = rule.max end
+        payload[65 + itemIndex] = raw
+      else
+        payload[65 + itemIndex] = math.floor(data[name] + 0.5) % 256
+      end
     end
   end
   return payload

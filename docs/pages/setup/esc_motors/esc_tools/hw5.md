@@ -73,9 +73,13 @@ manufacturer put it in.
 
 ### Startup Time
 
-The row reads **4 to 25 seconds**, but the ESC counts from 0 - it reports **0 to 21**
-for the same range. The page does not correct for this yet, so an ESC set to its
-shortest start-up currently shows `0s` on a row that begins at `4`.
+The row reads **4 to 25 seconds**. The ESC counts the same range from **0 to 21**,
+and the page converts in both directions: it adds four on the way in and takes four
+off again on the way out. So an ESC set to its shortest start-up shows `4s` rather
+than `0s`, and a save writes back the byte the ESC sent.
+
+A byte above 21 is clamped to 21 rather than passed on. The ESC should never send
+one, and the EdgeTX page does the same.
 
 ### Active Freewheel
 
