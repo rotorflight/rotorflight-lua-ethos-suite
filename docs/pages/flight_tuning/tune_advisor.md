@@ -11,7 +11,7 @@ those measurements and suggests one change at a time for each axis. It changes n
 change on *PIDs*, *Rates* or *PID Controller*, fly again and come back.
 
 The flight controller counts only rate flight while spooled up and airborne, with the heli moving on some axis.
-Time in Angle, Horizon, Trainer, Rescue, GPS rescue or failsafe is left out. The data builds up over several
+Time in Angle, Horizon, Trainer, Altitude hold, Rescue, GPS rescue or failsafe is left out. The data builds up over several
 flights and clears on its own when you change the PIDs, Iterm Relax Cutoff, PID mode, rates or the active
 profile. A useful set is about ten seconds of rolls, flips and pirouettes with the stick centred after each one.
 The measurements live in the flight controller's memory and are lost at power-off.
@@ -20,8 +20,9 @@ The measurements live in the flight controller's memory and are lost at power-of
 
 *Configuration* → *Flight Tuning* → *Tune Advisor*
 
-Needs a flight controller connection. Firmware from before the Tune Advisor shows "Needs newer firmware". The
-page refreshes every 2 seconds.
+Greyed out until the flight controller answers. The page refreshes every 2 seconds. Firmware from before the
+Tune Advisor shows "Needs newer firmware" and the page stops asking; Reload asks again. When the link drops for
+a moment, the last measurements stay on screen until the next answer.
 
 ## Settings
 

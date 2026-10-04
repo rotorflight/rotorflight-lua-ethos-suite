@@ -112,7 +112,7 @@ local FF_MIN_CORR = 0.85
 local FF_HOT = 1.15
 local FF_LOW = 0.85
 local FF_STEP_MAX = 0.2         -- change F by at most 20% per step
-local F_MAX = 1000
+local GAIN_MAX = 1000           -- firmware PID_GAIN_MAX, the limit for P and F alike
 local RATE_RAW_MAX = 255
 
 -- Which rate columns scale the whole curve linearly, per rates_type. The
@@ -123,9 +123,12 @@ local LINEAR_ROLES = {
   [R.RATE_TYPE_QUICK] = {"rcRate", "srate"},        -- rc rate, max rate
   [R.RATE_TYPE_ROTORFLIGHT] = {"rcRate"},           -- rate (srate is the shape)
 }
--- Max rate asked at full stick (deg/s) from the raw bytes, where the type makes it direct
+-- Max rate asked at full stick (deg/s) from the raw bytes, where the type
+-- makes it direct: the firmware's rate curves (fc/rc_rates.c) at full stick.
+-- Actual and Quick reach the larger of their two terms.
 local function maxRateAsked(a)
-  if a.ratesType == R.RATE_TYPE_ACTUAL or a.ratesType == R.RATE_TYPE_QUICK then return a.sRate * 10 end
+  if a.ratesType == R.RATE_TYPE_ACTUAL then return math.max(a.rcRate, a.sRate) * 10 end
+  if a.ratesType == R.RATE_TYPE_QUICK then return math.max(a.sRate * 10, a.rcRate * 2) end
   if a.ratesType == R.RATE_TYPE_ROTORFLIGHT then return a.rcRate * 5 end
   return nil
 end
@@ -191,9 +194,22 @@ local function rateActions(a, name, k, act)
   end
 end
 
+-- How many lines rateActions() adds for this rates_type
+local function rateActionCount(a)
+  local roles = LINEAR_ROLES[a.ratesType]
+  return roles and #roles or 1
+end
+
 -- Fills actions/whys (cleared by the caller) for one axis; returns the
 -- Response and Stops values.
+--
+-- A change and its reason go in together or not at all, so a reason never
+-- shows for a change that was left out: a later change first checks room().
+-- The first change (fly more, F with its rates, or full-stick rates) always
+-- fits. The reasons for changes stay within MAX_WHYS; only the closing
+-- |collective| fact can be cut.
 local function advise(a, axis, name, actions, whys)
+  local function room(n) return #actions + n <= MAX_ACTIONS end
   local function act(s) if #actions < MAX_ACTIONS then actions[#actions + 1] = s end end
   local function why(s) if #whys < MAX_WHYS then whys[#whys + 1] = s end end
 
@@ -211,7 +227,7 @@ local function advise(a, axis, name, actions, whys)
     local hot = g > FF_HOT
     response = string.format(hot and T.respFastFmt or T.respSlowFmt, round(math.abs(g - 1) * 100))
     if a.F > 0 then
-      local newF = clamp(round(a.F * clamp(1 / g, 1 - FF_STEP_MAX, 1 + FF_STEP_MAX)), 1, F_MAX)
+      local newF = clamp(round(a.F * clamp(1 / g, 1 - FF_STEP_MAX, 1 + FF_STEP_MAX)), 1, GAIN_MAX)
       act(string.format(T.actFFmt, name, a.F, newF))
       -- Keep the stick feel: F x rate is what the pilot feels
       rateActions(a, name, a.F / newF, act)
@@ -225,7 +241,7 @@ local function advise(a, axis, name, actions, whys)
     local asked = maxRateAsked(a)
     if axis ~= AXIS_YAW and asked and a.fullCount >= FULL_MIN_COUNT
         and a.fullSatCount >= FULL_SAT_SHARE * a.fullCount
-        and a.fullMaxRate < FULL_REACH * asked then
+        and a.fullMaxRate < FULL_REACH * asked and room(rateActionCount(a)) then
       rateActions(a, name, a.fullMaxRate / asked, act)
       why(string.format(T.whyFullFmt, asked, a.fullMaxRate))
     end
@@ -239,14 +255,16 @@ local function advise(a, axis, name, actions, whys)
     local rebound = round(a.meanRebound * 100)
     stops = string.format(T.stopsValueFmt, rebound)
     if a.meanRebound >= REBOUND_BAD then
-      if a.meanIterm >= ITERM_PUSH and a.relaxCutoff > CUTOFF_MIN then
+      -- No room for the cutoff only after F and two rate lines; F is off
+      -- then, so the next branch says to fix F first.
+      if a.meanIterm >= ITERM_PUSH and a.relaxCutoff > CUTOFF_MIN and room(1) then
         act(string.format(T.actRelaxFmt, name, a.relaxCutoff,
           clamp(round(a.relaxCutoff * CUTOFF_STEP), CUTOFF_MIN, a.relaxCutoff - 1)))
         why(T.whyRelax)
       elseif ffOff(a) and a.F > 0 then
         why(string.format(T.whyFixFFmt, rebound))
-      else
-        act(string.format(T.actPFmt, name, a.P, clamp(round(a.P * P_STEP), a.P + 1, F_MAX)))
+      elseif room(1) then
+        act(string.format(T.actPFmt, name, a.P, clamp(round(a.P * P_STEP), a.P + 1, GAIN_MAX)))
         why(string.format(T.whyBrakeFmt, rebound))
       end
     end
@@ -300,16 +318,41 @@ local function colors()
   return cachedColors
 end
 
--- Word-wrap text into lines no wider than maxW (in the current lcd.font)
+local function isContinuationByte(b)
+  return b ~= nil and b >= 0x80 and b < 0xC0
+end
+
+-- Bytes of the longest leading piece of word no wider than maxW, cut on a
+-- UTF-8 character boundary; at least one character
+local function fitBytes(word, maxW)
+  for n = #word - 1, 1, -1 do
+    if not isContinuationByte(word:byte(n + 1)) and lcd.getTextSize(word:sub(1, n)) <= maxW then
+      return n
+    end
+  end
+  local n = 1                     -- not even one character fits: take one anyway
+  while isContinuationByte(word:byte(n + 1)) do n = n + 1 end
+  return n
+end
+
+-- Word-wrap text into lines no wider than maxW (in the current lcd.font).
+-- A word too wide for a line of its own (a long token in a translation) is
+-- cut into pieces that fit: drawText does not clip.
 local function wrapInto(out, text, maxW)
   local line = ""
   for word in text:gmatch("%S+") do
     local candidate = (line == "") and word or (line .. " " .. word)
-    if line ~= "" and lcd.getTextSize(candidate) > maxW then
-      out[#out + 1] = line
-      line = word
-    else
+    if lcd.getTextSize(candidate) <= maxW then
       line = candidate
+    else
+      if line ~= "" then out[#out + 1] = line end
+      while lcd.getTextSize(word) > maxW do
+        local n = fitBytes(word, maxW)
+        if n >= #word then break end
+        out[#out + 1] = word:sub(1, n)
+        word = word:sub(n + 1)
+      end
+      line = word
     end
   end
   if line ~= "" then out[#out + 1] = line end
@@ -324,6 +367,7 @@ local function open(opts)
   local disposed = false
   local headerHandle = nil
   local pending = false
+  local unsupported = false       -- the FC refused the command: no polling until Reload
   local lastPoll = 0
   local lastData = nil
   local lastSignature = nil
@@ -381,36 +425,52 @@ local function open(opts)
     render()
   end
 
+  -- reason true is the FC's MSP error reply, the only answer that means the
+  -- firmware lacks the command: say so once and stop polling. Any other
+  -- reason ("cleared" on a link swap, "max_retries" with no FC, "timeout")
+  -- is the link: keep what is on screen and let the next poll try again.
+  local function onRefused(reason)
+    if disposed or reason ~= true then return end
+    unsupported = true
+    lastSignature = nil
+    lastData = nil
+    showUnsupported()
+  end
+
   local poll
+
+  local function onReadData(data)
+    pending = false
+    if disposed then return end
+    if data.axis ~= AXES[selected][2] then
+      poll()      -- the axis changed while this request was out
+      return
+    end
+    apply(data)
+  end
+
+  local function onReadError(reason)
+    pending = false
+    onRefused(reason)
+  end
+
   poll = function()
     -- Reload stays enabled: this polls every 2 s, and greying the button for
     -- each request made it flicker. A press while a request is out is a no-op.
-    if disposed or pending then return end
+    if disposed or pending or unsupported then return end
     pending = true
-    bus.publish("msp.request", tuneAdvisor.buildReadMessage(AXES[selected][2], function(data)
-      pending = false
-      if disposed then return end
-      if data.axis ~= AXES[selected][2] then
-        poll()      -- the axis changed while this request was out
-        return
-      end
-      apply(data)
-    end, function()
-      pending = false
-      if disposed then return end
-      lastSignature = nil
-      lastData = nil
-      showUnsupported()
-    end))
+    bus.publish("msp.request", tuneAdvisor.buildReadMessage(AXES[selected][2], onReadData, onReadError))
+  end
+
+  local function onCleared()
+    if disposed then return end
+    lastSignature = nil
+    poll()
   end
 
   local function clear()
     if disposed then return end
-    bus.publish("msp.request", tuneAdvisor.buildClearMessage(function()
-      if disposed then return end
-      lastSignature = nil
-      poll()
-    end))
+    bus.publish("msp.request", tuneAdvisor.buildClearMessage(onCleared, onRefused))
   end
 
   local function confirmClear()
@@ -516,6 +576,7 @@ local function open(opts)
   headerHandle = header.build(PAGE_TITLE, {
     onBack = goBack,
     onReload = function()
+      unsupported = false         -- ask again, e.g. after a firmware update
       lastSignature = nil
       poll()
       if headerHandle then headerHandle.focusReload() end
@@ -546,7 +607,7 @@ local function open(opts)
         if lcd.invalidate then lcd.invalidate() end
       end
       local now = os.clock()
-      if not pending and now - lastPoll >= REFRESH_INTERVAL_SECONDS then
+      if not pending and not unsupported and now - lastPoll >= REFRESH_INTERVAL_SECONDS then
         lastPoll = now
         poll()
       end

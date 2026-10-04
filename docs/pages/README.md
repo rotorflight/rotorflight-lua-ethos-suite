@@ -32,7 +32,7 @@ and structure follow [_template.md](../_template.md).
 | --- | --- | --- | --- |
 | PIDs | [flight_tuning/pids.md](flight_tuning/pids.md) | Greyed out until the flight controller answers. Read-only while the model is armed. | written |
 | Rates | [flight_tuning/rates.md](flight_tuning/rates.md) | Greyed out until the flight controller answers. Read-only while the model is armed. | written |
-| Tune Advisor | [flight_tuning/tune_advisor.md](flight_tuning/tune_advisor.md) | Needs a flight controller connection. | written |
+| Tune Advisor | [flight_tuning/tune_advisor.md](flight_tuning/tune_advisor.md) | Greyed out until the flight controller answers. Read-only while the model is armed. | written |
 | General | [flight_tuning/governor/general.md](flight_tuning/governor/general.md) | Greyed out until the flight controller answers. Read-only while the model is armed. | written |
 | Behaviour | [flight_tuning/governor/flags.md](flight_tuning/governor/flags.md) | Greyed out until the flight controller answers. Read-only while the model is armed. | written |
 | Filters | [flight_tuning/advanced/filters.md](flight_tuning/advanced/filters.md) | Greyed out until the flight controller answers. Read-only while the model is armed. | written |
