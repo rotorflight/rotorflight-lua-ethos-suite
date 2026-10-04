@@ -38,7 +38,8 @@ show is handled the same way — if you did not move it, its byte goes back
 unchanged, even where the number on screen is not a direct copy of the byte.
 
 Two rows are one decision: *96→48 % Threshold* must not sit above
-*48→24 % Threshold*. Moving either one pulls the other with it.
+*48→24 % Threshold*. Lowering *48→24 %* pulls *96→48 %* down with it, and
+*96→48 %* is capped at *48→24 %*.
 
 The bytes beyond those 66 are the flight controller's own business and are left
 alone.

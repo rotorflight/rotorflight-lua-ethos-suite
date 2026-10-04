@@ -598,7 +598,7 @@ and the real runtime, and stubs app/pages/esc_forward_4way.lua for the reason
 bin/esc_signature does -- it only picks which ESC to address, and its own
 os.clock() delays cost about six seconds per open.
 
-14 of its 40 checks go red on the pre-fix codecs. Pass --self-test to prove that
+14 of its 41 checks go red on the pre-fix codecs. Pass --self-test to prove that
 rather than take it on trust: it splices the pre-fix codec directions and the
 pre-fix buildWriteMessage back into copies of both codecs and requires every one
 of the fourteen to fail. Three things in that self-test were wrong the first time

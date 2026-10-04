@@ -264,7 +264,7 @@ local function encode(data)
       -- but only then. An ESC that reports the two the other way round keeps
       -- them on a save that changed something else, which is the whole point of
       -- starting from the ESC's own bytes.
-      if ceilingMoved and ceiling ~= nil and value > ceiling then
+      if (ceilingMoved or moved) and ceiling ~= nil and value > ceiling then
         value = ceiling
         moved = true
       end

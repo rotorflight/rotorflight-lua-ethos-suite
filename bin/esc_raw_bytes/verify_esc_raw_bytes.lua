@@ -95,7 +95,7 @@
 --   * the three AM32 timing write-direction cases and the Motor KV one -- they
 --     confirm the fix did not turn "preserve" into "ignore", and the pre-fix
 --     encoder produced the same bytes;
---   * the Bluejay u16 vendor word and the threshold-clamp-still-applies case --
+--   * the Bluejay u16 vendor word and the two threshold-clamp-still-applies cases --
 --     both passed before the fix too.
 --
 -- --self-test proves the list rather than asserting it: it splices the pre-fix
@@ -600,6 +600,7 @@ local ROWS = {
     direction = "mfg.blheli_s.motordirection",
     pwm = "mfg.bluejay.pwmfrequency",
     threshold_low = "mfg.bluejay.threshold48to24",
+    threshold_high = "mfg.bluejay.threshold96to48",
   },
   am32 = {
     unrelated = "mfg.am32.beepvolume",
@@ -935,6 +936,30 @@ local function runBluejayChecks()
       local hi = payload and readByte(payload, AT[which].threshold_96to48)
       check(label, lo == hi,
         payload and string.format("wrote 48->24 %d and 96->48 %d; they must match", lo, hi)
+          or "no write went out")
+    end
+  end
+
+  do
+    local label = "moving the 96->48 threshold above the 48->24 one is clamped to the ceiling"
+    local runtime, opts = openPage(which, copyOf(fixture))
+    local field = runtime and rowField(ROWS[which].threshold_high)
+    if not field then
+      check(label, false, "the 96->48 threshold row was never built")
+    else
+      -- The fixture is 170/85, i.e. 67 % and 33 %. Setting the high one to 90 %
+      -- leaves it above the untouched 67 % ceiling, which is the state the rule
+      -- forbids.
+      edit(field, 90)
+      local payload = pressSave(opts)
+      local lo = payload and readByte(payload, AT[which].threshold_48to24)
+      local hi = payload and readByte(payload, AT[which].threshold_96to48)
+      local decoded = payload and CODECS[which]._decode(payload)
+      local loShown = decoded and decoded.threshold_48to24
+      local hiShown = decoded and decoded.threshold_96to48
+      check(label, hi == 171 and hiShown ~= nil and hiShown == loShown,
+        payload and string.format("wrote 48->24 %d (shown %s) and 96->48 %d (shown %s); 96->48 must clamp to 48->24 ceiling",
+          lo, tostring(loShown), hi, tostring(hiShown))
           or "no write went out")
     end
   end
