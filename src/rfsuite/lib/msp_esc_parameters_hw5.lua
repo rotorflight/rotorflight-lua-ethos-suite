@@ -268,34 +268,114 @@ local function hasToken(text, token)
   return type(text) == "string" and text:upper():find(token, 1, true) ~= nil
 end
 
-local function profileKey(data)
-  local version = trim(data and data.hardware_version) ~= "" and trim(data.hardware_version) or "default"
-  local model = trim(data and data.esc_type)
-  local firmware = trim(data and data.firmware_version)
-  local versionUpper = version:upper()
+-- Is this an OPTO ESC?
+--
+-- An OPTO ESC has no BEC, and its parameter block carries one byte fewer for
+-- that: OPTO_ITEMS drops bec_voltage at item 5, so every field from item 5 up
+-- sits one byte LOWER than it does on a model with a BEC. Getting that layout
+-- wrong therefore does not merely show a row that should be hidden -- it reads
+-- and writes every field after the fourth off the wrong byte, which is what
+-- turned an innocuous BEC Voltage row into shifted Auto Restart and governor
+-- values.
+--
+-- All three descriptive strings are searched, not one. The block carries the
+-- model twice -- bytes 35..50 as `esc_type` and bytes 51..65 as `mode_name`, the
+-- same name spelled with spaces instead of underscores -- plus the firmware
+-- version in bytes 3..18. Which of the three a given ESC puts "OPTO" in is not
+-- something this file can know, so all three are asked. The EdgeTX codec
+-- concatenates the two model strings for exactly this reason
+-- (esc_parameters_hw5.lua:119, :251).
+local function isOpto(data)
+  return hasToken(trim(data and data.esc_type), "OPTO")
+    or hasToken(trim(data and data.mode_name), "OPTO")
+    or hasToken(trim(data and data.firmware_version), "OPTO")
+end
 
-  if version ~= "default" and (hasToken(model, "OPTO") or hasToken(firmware, "OPTO")) then
-    return version .. "_PL_OPTO"
+-- The version profile on its own, with no regard for the variant. The CHOICE
+-- LISTS are a property of the model -- which cell counts it offers, which brake
+-- modes it has -- and an ESC being OPTO does not change any of them, so an OPTO
+-- model still takes its lists from here.
+local function versionProfileFor(version)
+  if version == nil or version == "" then return PROFILES.default end
+  local profile = PROFILES[version]
+  if profile then return profile end
+  local upper = version:upper()
+  if upper:find("HW1132", 1, true) then
+    return PROFILES.HW1132_V100456NB
+  elseif upper:find("HW1128", 1, true) then
+    return PROFILES.HW1128_V100456NB
+  elseif upper:find("HW1121", 1, true) then
+    return PROFILES.HW1121_V100456NB
   end
-  if not PROFILES[version] then
-    if versionUpper:find("HW1132", 1, true) then
-      return "HW1132_V100456NB"
-    elseif versionUpper:find("HW1128", 1, true) then
-      return "HW1128_V100456NB"
-    elseif versionUpper:find("HW1121", 1, true) then
-      return "HW1121_V100456NB"
-    end
-  end
-  return version
+  return PROFILES.default
+end
+
+-- One merged profile per version, built on first use.
+--
+-- Before this, the variant was part of the PROFILE KEY -- profileKey() returned
+-- `<version>_PL_OPTO` -- which only works for a version that happens to have
+-- such an entry. PROFILES carried exactly one, HW1104_V100456NB_PL_OPTO, so
+-- every OTHER OPTO model missed the lookup and fell through to PROFILES.default:
+-- a BEC row, and active_freewheel at item 15 instead of 14. Measured on the
+-- pre-fix codec, an OPTO HW1106 read startup_time 11 where the byte says 4,
+-- gov_p_gain 6 where the byte says 11, gov_i_gain 5 for 6, auto_restart 25 for 5,
+-- restart_time 1 for 25, brake_type 0 for 1, timing 24 for 0, rotation 0 for 24
+-- and startup_power 2 for 0 -- 9 of the 15 fields on the OPTO layout a byte out,
+-- from a page that looked entirely normal. The six that coincide are four fields
+-- ahead of the missing byte and two that happen to carry equal bytes on either
+-- side of it, which is luck and not a property of the fix.
+--
+-- The variant belongs to the LAYOUT, not to the key. So the lookup is by
+-- version, the layout is chosen by the variant, and an explicit
+-- `<version>_PL_OPTO` entry still wins where one exists -- its tables may
+-- differ, and HW1104's do not.
+--
+-- Memoised because profileFor() is reached once per field per page build through
+-- isFieldAvailable(), and a fresh two-field table per call would be an
+-- allocation on a hot-ish path for a value that never changes. The key is a
+-- 16-byte string off the wire, so the table is bounded by the models a pilot has
+-- connected, not by anything an attacker controls.
+local OPTO_PROFILES = {}
+
+local function optoProfileFor(version)
+  local cached = OPTO_PROFILES[version]
+  if cached then return cached end
+  local explicit = version ~= "" and PROFILES[version .. "_PL_OPTO"] or nil
+  local base = explicit or versionProfileFor(version)
+  cached = {tables = base and base.tables, items = OPTO_ITEMS}
+  OPTO_PROFILES[version] = cached
+  return cached
 end
 
 local function profileFor(data)
-  return PROFILES[profileKey(data)] or PROFILES.default
+  local version = trim(data and data.hardware_version)
+  if not isOpto(data) then
+    return versionProfileFor(version)
+  end
+  return optoProfileFor(version)
 end
 
 local function itemLayoutFor(data)
   return (profileFor(data).items) or DEFAULT_ITEMS
 end
+
+-- One field is not stored as the number the page shows.
+--
+-- startup_time declares min 4, max 25, default 11 in FIELD_META above, and the
+-- raw byte runs 0..21 -- so decode() used to hand the page numbers the row's own
+-- range says cannot happen, and a pilot with the ESC set to its shortest start
+-- saw "0s" on a row that begins at 4. That contradiction is inside this file and
+-- needs no outside authority to establish; which side of it was wrong is settled
+-- by the EdgeTX codec, which adds 4 on the way in and takes it off again on the
+-- way out (esc_parameters_hw5.lua:263-265, :296-298) and clamps the raw byte to
+-- 0..21.
+--
+-- A table rather than another `if` in decode()/encode(): there is one such field
+-- today, and a second copy of the rule in the two directions is a second thing to
+-- forget when the next one is added.
+local FIELD_OFFSETS = {
+  startup_time = 4,
+}
 
 local function decode(buf)
   buf.offset = 1
@@ -309,7 +389,8 @@ local function decode(buf)
   data.mode_name = readString(buf, 51, 15)
   local layout = itemLayoutFor(data)
   for name, itemIndex in pairs(layout) do
-    data[name] = buf[65 + itemIndex] or 0
+    local raw = buf[65 + itemIndex] or 0
+    data[name] = raw + (FIELD_OFFSETS[name] or 0)
   end
   return data
 end
@@ -322,7 +403,14 @@ local function encode(data)
   local layout = itemLayoutFor(data)
   for name, itemIndex in pairs(layout) do
     if data and data[name] ~= nil then
-      payload[65 + itemIndex] = math.floor(data[name] + 0.5) % 256
+      -- Clamped rather than left to `% 256`, which would turn a negative raw
+      -- byte into one near 255 -- a 252 where the pilot asked for something
+      -- below the row's minimum. The page's own range already prevents that; this
+      -- is for a table built by something else.
+      local offset = FIELD_OFFSETS[name] or 0
+      local raw = math.floor(data[name] - offset + 0.5)
+      if raw < 0 then raw = 0 elseif raw > 255 then raw = 255 end
+      payload[65 + itemIndex] = raw
     end
   end
   return payload
