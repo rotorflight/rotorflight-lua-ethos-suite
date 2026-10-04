@@ -57,9 +57,27 @@ local paletteCache = {}
 local themeStateCache = {}
 local themePaletteCache = {}
 local systemThemeSupport = nil
-local imageCache = {}
 local imagePathCache = {}
+-- imageBitmapCache holds decoded bitmaps, so unlike imagePathCache above it
+-- is bounded rather than merely cleared. Its key space is open-ended: every
+-- distinct model photo, dial panel and per-box `image` parameter ever
+-- resolved mints a new key, and a key looked up once used to stay resident
+-- for the rest of the app session with no release path at all. Each entry is
+-- a userdata handle plus its own decoded pixel buffer sized by the source
+-- file (widgets/dashboard/gfx/dials alone is 343 KB of panels), so this is
+-- the one image cache where an unbounded key count turns into RAM.
+-- imagePathCache is left to clearCaches({images = ...}): an entry there costs
+-- tens of bytes, and it additionally has to keep its negative ("path or false")
+-- results or a missing image is re-probed against the filesystem on every single load.
+--
+-- 32 sits above what a full theme plus the current model photo resolves
+-- (one panel per configured dial and one bitmap per distinct image path), so
+-- in normal operation nothing is ever evicted and the bitmap is re-decoded
+-- exactly once per theme load, same as before. It is a ceiling, not a target:
+-- path churn within a session can no longer accumulate without limit.
+local IMAGE_BITMAP_CACHE_MAX = 32
 local imageBitmapCache = {}
+local imageBitmapClock = 0
 local liveSourceCache = {}
 local liveMissRetryAt = {}
 local liveMissCount = {}
@@ -786,6 +804,14 @@ local STAT_ALIASES = {
   fuel = "smartfuel",
 }
 
+-- getSensorStats() returns one table per sensor, overwritten on each call, for
+-- every sensor whose min/max live in the flat "min<Suffix>"/"max<Suffix>" keys.
+-- One table for all sensors would be cheaper still, but a caller that read two
+-- sensors before drawing would see the second one twice; keying by name keeps
+-- that apart while still never allocating per call. Same pattern, same reason,
+-- as the temperature cache just above.
+local sensorStatsResults = {}
+
 local PRESENTATION_STAT_SOURCES = {
   "voltage",
   "cell_voltage",
@@ -959,37 +985,24 @@ function context.tasks.telemetry.getSensorStats(name)
     return cache
   end
   if entry then return entry end
-  local names = {
-    voltage = "Voltage",
-    cell_voltage = "CellVoltage",
-    consumption = "Consumption",
-    smartconsumption = "Consumption",
-    current = "Current",
-    throttle_percent = "ThrottlePercent",
-    rpm = "Rpm",
-    headspeed = "Rpm",
-    link = "Link",
-    rssi = "Link",
-    vfr = "Vfr",
-    tailspeed = "Tailspeed",
-    smartfuel = "FuelPercent",
-    fuel = "FuelPercent",
-    temp_mcu = "TempMcu",
-    temp_esc = "TempEsc",
-    bec_voltage = "BecVoltage",
-    altitude = "Altitude",
-    watts = "Watts",
-  }
-  local suffix = names[name or ""]
+  -- recordSensorStat() writes stats[statKey(name)] and the flat
+  -- min<Suffix>/max<Suffix> keys from the same value, and clearDashboardStats()
+  -- empties the table as a whole (dashboard.lua). A flat key therefore only
+  -- exists while the record above does, which the two returns above already
+  -- cover -- so the temperature branch this path used to carry was unreachable.
+  local suffix = STAT_SUFFIXES[name or ""]
   if not suffix then return nil end
-  local minValue = stats["min" .. suffix]
-  local maxValue = stats["max" .. suffix]
-  if name == "temp_mcu" or name == "temp_esc" then
-    local unit = temperatureUnit()
-    minValue = convertTemperature(minValue, unit)
-    maxValue = convertTemperature(maxValue, unit)
+  local result = sensorStatsResults[name]
+  if not result then
+    result = { min = nil, max = nil, avg = nil, sum = nil, count = nil }
+    sensorStatsResults[name] = result
   end
-  return {min = minValue, max = maxValue, avg = nil, sum = nil, count = nil}
+  result.min = stats["min" .. suffix]
+  result.max = stats["max" .. suffix]
+  result.avg = nil
+  result.sum = nil
+  result.count = nil
+  return result
 end
 
 function context.tasks.telemetry.active()
@@ -1485,6 +1498,15 @@ function utils.getThemeSignature()
   return signature
 end
 
+-- The Ethos OS theme alone (light/dark, installed theme colors), for
+-- dashboard.lua's live theme-switch poll. getThemeSignature() also folds in
+-- window size and flight state (themeStateCache's key), so polling it made
+-- every preflight/inflight/postflight change look like an OS theme switch and
+-- forced a full theme reload a few seconds after each one.
+function utils.getOsThemeSignature()
+  return buildThemeColorSignature()
+end
+
 function utils.getBatteryVoltageBounds(defaultCells, defaultMin, defaultMax)
   local config = currentWidget and currentWidget.batteryConfig
   local cells = tonumber(config and config.cellCount) or defaultCells or 6
@@ -1529,6 +1551,24 @@ local function clearTable(t)
   for key in pairs(t) do t[key] = nil end
 end
 
+-- Object modules that keep their own decoded-bitmap memo (see
+-- objects/image/model.lua's _imgCache) cannot be reached from here by name:
+-- the engine loadfile()s an object module on demand, and the module is a
+-- local. They register a clearer instead, and clearCaches({images = true})
+-- runs every registered clearer. This has to be an explicit registry rather
+-- than a table rewrite or a package.loaded sweep, because a clearer holds a
+-- closure over the module's own cache table: replacing the table here would
+-- leave the module writing into the orphaned one.
+local imageCacheClearers = {}
+
+function utils.registerImageCacheClearer(fn)
+  if type(fn) ~= "function" then return end
+  for i = 1, #imageCacheClearers do
+    if imageCacheClearers[i] == fn then return end
+  end
+  imageCacheClearers[#imageCacheClearers + 1] = fn
+end
+
 function context.widgets.dashboard.clearCaches(options)
   options = options or {}
   if options.renders then clearTable(context.widgets.dashboard.renders) end
@@ -1539,10 +1579,17 @@ function context.widgets.dashboard.clearCaches(options)
     systemThemeSupport = nil
   end
   if options.images then
-    clearTable(imageCache)
     clearTable(imagePathCache)
     clearTable(imageBitmapCache)
+    -- rfsuite.session IS context.session here: object modules get this very
+    -- module back under the name `rfsuite` (see objects/dial/image.lua's
+    -- `local rfsuite = requireModule("widgets/dashboard/context.lua")`), so
+    -- this is the table dial/image.lua writes its panels into.
     if context.session then clearTable(context.session.dialImageCache) end
+    for i = 1, #imageCacheClearers do
+      local ok, err = pcall(imageCacheClearers[i])
+      if not ok then print("[dashboard] image cache clearer failed: " .. tostring(err)) end
+    end
   end
   if options.liveSources then
     clearTable(liveSourceCache)
@@ -1560,35 +1607,51 @@ function utils.ensureCfg(box, builder)
   return box._cfg
 end
 
+-- "%.<decimals>f" is assembled once per distinct decimals value instead of on
+-- every rendered value. Used by applyTransform() below, its only caller.
+local function decimalFormat(decimals)
+  local fmt = fmtCache[decimals]
+  if not fmt then
+    fmt = "%." .. tostring(decimals) .. "f"
+    fmtCache[decimals] = fmt
+  end
+  return fmt
+end
+
+-- The one implementation of the transform dispatch. compileTransform() wraps it
+-- in a closure for the boxes that cache the result of ensureCfg(); the boxes
+-- that cannot cache (dial/image.lua, dial/rainbow.lua, gauge/ring.lua,
+-- gauge/step.lua, text/blackbox.lua, text/pidrates.lua) reach it through
+-- transformValue(), which has no per-call closure of its own.
+local function applyTransform(value, transform, decimals)
+  if value == nil then return nil end
+  if type(transform) == "function" then
+    value = transform(value)
+  elseif transform == "floor" then
+    value = math.floor(value)
+  elseif transform == "ceil" then
+    value = math.ceil(value)
+  elseif transform == "round" then
+    value = math.floor(value + 0.5)
+  elseif type(transform) == "number" then
+    value = value * transform
+  end
+  if decimals ~= nil and value ~= nil then
+    value = string.format(decimalFormat(decimals), value)
+  end
+  return value
+end
+
 function utils.compileTransform(transform, decimals)
   return function(value)
-    if value ~= nil and type(transform) == "function" then
-      value = transform(value)
-    elseif value ~= nil and transform == "floor" then
-      value = math.floor(value)
-    elseif value ~= nil and transform == "ceil" then
-      value = math.ceil(value)
-    elseif value ~= nil and transform == "round" then
-      value = math.floor(value + 0.5)
-    elseif value ~= nil and type(transform) == "number" then
-      value = value * transform
-    end
-    if decimals ~= nil and value ~= nil then
-      local fmt = fmtCache[decimals]
-      if not fmt then
-        fmt = "%." .. tostring(decimals) .. "f"
-        fmtCache[decimals] = fmt
-      end
-      value = string.format(fmt, value)
-    end
-    return value
+    return applyTransform(value, transform, decimals)
   end
 end
 
 function utils.transformValue(value, box)
-  local transform = utils.getParam(box or {}, "transform")
-  local decimals = utils.getParam(box or {}, "decimals")
-  return utils.compileTransform(transform, decimals)(value)
+  return applyTransform(value,
+    utils.getParam(box or {}, "transform"),
+    utils.getParam(box or {}, "decimals"))
 end
 
 function utils.resolveThresholdColor(value, box, colorKey, fallbackThemeKey, thresholdsOverride)
@@ -1769,23 +1832,17 @@ function utils.boxContentRect(x, y, w, h, bgcolor)
   return boxContentRect(x, y, w, h, bgcolor)
 end
 
--- Draws `image` (a path string, resolved+cached through imageCache like
--- utils.box() always has, or an already-loaded bitmap handle) fitted/aligned
--- inside the given rect. Extracted from utils.box()'s own image branch so
--- title-only callers (objects/image/{image,model}.lua) can draw their image
--- against utils.prepareTextLayout()'s cached content region without going
--- through utils.box()'s (uncached) title-measurement path a second time.
+-- Draws `image` (a path string, resolved+cached through loadImage(), or an
+-- already-loaded bitmap handle) fitted/aligned inside the given rect.
+-- Extracted from utils.box()'s own image branch so title-only callers
+-- (objects/image/{image,model}.lua) can draw their image against
+-- utils.prepareTextLayout()'s cached content region without going through
+-- utils.box()'s (uncached) title-measurement path a second time.
 local function drawImageInRect(regionX, regionY, regionW, regionH, image, imagewidth, imageheight, imagealign, bgcolor)
   local bitmap = nil
   if type(image) == "string" then
     local fallbackLogo = utils.getLogoFallbackForBackground and utils.getLogoFallbackForBackground(bgcolor)
-    local cacheKey = image .. "|" .. tostring(fallbackLogo or "")
-    bitmap = imageCache[cacheKey]
-    if bitmap == nil then
-      bitmap = context.utils.loadImage(image, nil, fallbackLogo) or false
-      imageCache[cacheKey] = bitmap
-    end
-    if bitmap == false then bitmap = nil end
+    bitmap = context.utils.loadImage(image, nil, fallbackLogo)
   else
     bitmap = image
   end
@@ -2302,13 +2359,53 @@ local function loadBitmap(path)
   return nil
 end
 
+-- Least-recently-used eviction for imageBitmapCache. Deliberately not a
+-- linked list: the map holds at most IMAGE_BITMAP_CACHE_MAX entries, so the
+-- "which one is oldest" walk is over a table of a few dozen records, and it
+-- only runs on a decode miss -- loadImage()'s callers (drawImageInRect,
+-- objects/image/image.lua, objects/image/model.lua) all memoise their own
+-- result, so the hit path below never re-decodes and never walks. An entry
+-- is a record rather than the bare bitmap handle so the recency stamp has
+-- somewhere to live without a second parallel map that could drift.
+--
+-- The live count is recomputed from the table instead of kept in a counter:
+-- a counter has to be reset on every clear path (clearCaches, and nothing
+-- else can reach this local), and a missed reset would silently make the
+-- loop below evict down to nothing.
+local function trimImageBitmapCache()
+  local count = 0
+  for _ in pairs(imageBitmapCache) do count = count + 1 end
+
+  while count > IMAGE_BITMAP_CACHE_MAX do
+    local oldestKey, oldestUsed
+    for key, entry in pairs(imageBitmapCache) do
+      if oldestUsed == nil or entry.used < oldestUsed then
+        oldestKey, oldestUsed = key, entry.used
+      end
+    end
+    if not oldestKey then break end
+    imageBitmapCache[oldestKey] = nil
+    count = count - 1
+  end
+end
+
+local function cacheImageBitmap(key, bitmap)
+  imageBitmapClock = imageBitmapClock + 1
+  imageBitmapCache[key] = {bitmap = bitmap, used = imageBitmapClock}
+  trimImageBitmapCache()
+end
+
 function context.utils.loadImage(image1, image2, image3)
   local images = {image1, image2, image3}
   for i = 1, 3 do
     local image = normalizeImagePath(images[i])
     if image then
-      local cachedBitmap = imageBitmapCache[image]
-      if cachedBitmap then return cachedBitmap end
+      local entry = imageBitmapCache[image]
+      if entry then
+        imageBitmapClock = imageBitmapClock + 1
+        entry.used = imageBitmapClock
+        return entry.bitmap
+      end
 
       local path = imagePathCache[image]
       if path == nil then
@@ -2326,7 +2423,7 @@ function context.utils.loadImage(image1, image2, image3)
       if path then
         local bitmap = loadBitmap(path)
         if bitmap then
-          imageBitmapCache[image] = bitmap
+          cacheImageBitmap(image, bitmap)
           return bitmap
         end
       end

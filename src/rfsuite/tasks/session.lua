@@ -269,6 +269,37 @@ local function batteryProfileCapacity(config, profile)
   return capacity
 end
 
+-- Firmware with per-profile cell settings (rotorflight-firmware #508)
+-- reports cell count / cell voltages for all six battery profiles, while
+-- the legacy fields in the BATTERY_CONFIG reply only describe whichever
+-- profile was active at read time. Every consumer of
+-- session.batteryConfig (SmartFuel, voltage alerts, dashboard, ActiveLook)
+-- reads the legacy-named fields, so overwrite them in place with the active
+-- profile's values -- on read, and again whenever the active profile
+-- changes. No-op on older firmware (profileCells == nil).
+local function applyActiveProfileCells(config, profile)
+  if type(config) ~= "table" or type(config.profileCells) ~= "table" then return false end
+  -- profile is the internal 0-based session.batteryProfile, so validate it
+  -- with the shared helper (#2397 removed the old local normalizeBatteryProfile)
+  -- rather than re-basing it.
+  local active = batteryProfileIndex.index0(profile)
+  local cells = active ~= nil and config.profileCells[active] or nil
+  if not cells then return false end
+  if config.cellCount == cells.cellCount
+    and config.vbatMinCell == cells.vbatMinCell
+    and config.vbatMaxCell == cells.vbatMaxCell
+    and config.vbatFullCell == cells.vbatFullCell
+    and config.vbatWarningCell == cells.vbatWarningCell then
+    return false
+  end
+  config.cellCount = cells.cellCount
+  config.vbatMinCell = cells.vbatMinCell
+  config.vbatMaxCell = cells.vbatMaxCell
+  config.vbatFullCell = cells.vbatFullCell
+  config.vbatWarningCell = cells.vbatWarningCell
+  return true
+end
+
 local function copyStats(stats)
   if type(stats) ~= "table" then return nil end
   return {
@@ -701,6 +732,7 @@ local function runHandshake(mspQueue, protocol)
     local queued = mspQueue:add(mspBattery.buildBatteryConfigReadMessage(function(data)
       handshakeInFlight.batteryConfig = false
       session.handshake.batteryConfig = true
+      applyActiveProfileCells(data, session.batteryProfile)
       session.batteryConfig = data
       publish()
     end, function(reason)
@@ -805,6 +837,23 @@ local function setConnected(value, mspQueue, protocol)
     end
   else
     debugLog.print("[session] disconnected")
+    -- Drop the request queue before anything else. A disconnect is a transport
+    -- teardown, not just a state change, and the queue outliving it was the
+    -- expensive half: every message an open page had queued (alignment
+    -- attitude, dataflash summary, ...) then burned its full retry budget
+    -- against a flight controller that is no longer answering, and the ~10
+    -- messages of the next handshake were queued FIFO *behind* that backlog,
+    -- delaying the reconnect by seconds. Queue:clear() notifies every dropped
+    -- message with reason "cleared", so a page waiting on a callback gets an
+    -- answer instead of stalling -- and because it resets the queue before it
+    -- notifies, a handler that queues its own retry lands in the already
+    -- cleared queue rather than the one being discarded.
+    --
+    -- First, deliberately: the handlers run with the session still holding its
+    -- last known values, and only then does the reset below wipe them.
+    if mspQueue then
+      mspQueue:clear()
+    end
     local holdingFlight = flightTimer.inProgress and flightTimer.inProgress()
     if not holdingFlight then
       clearAircraftIdentity()
@@ -989,6 +1038,7 @@ local function updateProfiles(protocol)
   local batteryProfile = batteryProfileIndex.fromTelemetrySensor(telemetrySensors.getValue(protocol, "battery_profile"))
   if batteryProfile ~= session.batteryProfile then
     session.batteryProfile = batteryProfile
+    if applyActiveProfileCells(session.batteryConfig, batteryProfile) then localSmartFuel:reset() end
     publish()
   end
 end
@@ -1052,6 +1102,7 @@ local function setBatteryProfile(value)
   if batteryProfile == nil then return end
   if batteryProfile == session.batteryProfile then return end
   session.batteryProfile = batteryProfile
+  if applyActiveProfileCells(session.batteryConfig, batteryProfile) then localSmartFuel:reset() end
   publish()
 end
 
@@ -1187,6 +1238,7 @@ bus.subscribe("model.smartfuel_type.update", onModelSmartfuelTypeUpdate)
 local function onBatteryConfigSaved()
   if not session.connected then return end
   bus.publish("msp.request", mspBattery.buildBatteryConfigReadMessage(function(data)
+    applyActiveProfileCells(data, session.batteryProfile)
     session.batteryConfig = data
     session.handshake.batteryConfig = true
     -- The local estimator's chargeLevel/initialChargeLevel were seeded
@@ -1196,6 +1248,14 @@ local function onBatteryConfigSaved()
     -- connection.
     localSmartFuel:reset()
     publish()
+  end, function(reason)
+    -- The saved change stays unconfirmed and session.batteryConfig keeps the
+    -- pre-edit values, so say so rather than leaving the page looking as if
+    -- the re-read had succeeded. ("cleared" is a transport swap, already
+    -- logged by the queue itself.)
+    if reason ~= "cleared" then
+      debugLog.print("[session] BATTERY_CONFIG re-read failed: " .. tostring(reason))
+    end
   end))
 end
 bus.subscribe("battery.config.saved", onBatteryConfigSaved)
@@ -1375,7 +1435,11 @@ local function wakeup(mspQueue, protocol, transport, simSensors)
     end
 
     if protocol == "crsf" and session.connected and shouldRunScheduled("elrs", ELRS_SENSOR_INTERVAL, now) then
-      ensureElrsSensors().wakeup(transport, session.telemetrySlots)
+      -- A capped drain (see tasks/elrs_sensors.lua's MAX_FRAMES_PER_WAKEUP)
+      -- left frames queued: run again next tick rather than in 0.18s.
+      if ensureElrsSensors().wakeup(transport, session.telemetrySlots) then
+        nextScheduledAt.elrs = nil
+      end
     end
   end
 

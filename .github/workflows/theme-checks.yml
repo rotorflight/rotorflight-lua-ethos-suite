@@ -1,0 +1,55 @@
+name: Theme registration and locales
+
+on:
+  pull_request:
+    paths:
+      - 'src/rfsuite/widgets/dashboard.lua'
+      - 'src/rfsuite/widgets/dashboard/**'
+      - 'src/rfsuite/lib/settings_store.lua'
+      - 'src/rfsuite/app/pages/settings_dashboard_*.lua'
+      - 'src/rfsuite/i18n/**'
+      - 'bin/i18n/**'
+      - '.vscode/scripts/resolve_i18n_tags.py'
+      - 'tests/themes/**'
+      - 'docs/dashboard-themes/**'
+      - '.github/workflows/theme-checks.yml'
+  push:
+    paths:
+      - 'src/rfsuite/widgets/dashboard.lua'
+      - 'src/rfsuite/widgets/dashboard/**'
+      - 'src/rfsuite/lib/settings_store.lua'
+      - 'src/rfsuite/app/pages/settings_dashboard_*.lua'
+      - 'src/rfsuite/i18n/**'
+      - 'bin/i18n/**'
+      - '.vscode/scripts/resolve_i18n_tags.py'
+      - 'tests/themes/**'
+      - 'docs/dashboard-themes/**'
+      - '.github/workflows/theme-checks.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  theme-checks:
+    name: Theme registration, settings, and translations
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Check out source
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      - name: Set up Python
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
+        with:
+          python-version: '3.12'
+      - name: Install Lua test runtime
+        run: python -m pip install --disable-pip-version-check lupa==2.8
+      - name: Check theme registration and settings
+        run: python -m unittest discover -s tests/themes -p 'test_*.py' -v
+      - name: Check translation tags in every locale
+        shell: bash
+        run: |
+          for locale_file in bin/i18n/json/*.json; do
+            locale_name="${locale_file##*/}"
+            python bin/i18n/check-tags.py --lang "${locale_name%.json}"
+          done

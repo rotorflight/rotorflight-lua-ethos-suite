@@ -52,11 +52,35 @@ local debugLog = requireModule("lib/debug_log.lua")
 local MODULE_INDEX = 1
 
 -- Safety cap on time spent draining queued custom-telemetry frames in a
--- single wakeup -- deliberately tighter than the original's own 0.2s,
--- since this now runs alongside the background task's MSP queue/session
--- polling in the same wakeup tick. Only matters if frames have backed up;
--- steady-state draining finishes in well under this.
-local POP_BUDGET_SECONDS = 0.05
+-- single wakeup -- deliberately tighter than the original's own 0.2s, since
+-- this now runs alongside the background task's MSP queue/session polling in
+-- the same wakeup tick. Only matters if frames have backed up; steady-state
+-- draining breaks out the moment the queue runs dry, so neither this nor the
+-- MSP side's slice is spent on an idle link.
+--
+-- 50ms -> 20ms. Not the 5-10ms the issue asks for: here a deadline already
+-- bounds the work correctly, because transport_crsf.lua's
+-- popCustomTelemetryFrame() is a single popFrame() of one frame type, so there
+-- is no inner walk for a count to bound better -- unlike the S.Port MSP poll
+-- above. Cutting this to 5-10ms would not make any frame arrive sooner; it
+-- would leave the rest in Ethos's own custom-telemetry queue to be decoded on
+-- the next 0.18s wakeup, which only raises the odds of that queue overflowing
+-- -- and neither its depth nor ELRS's delivery rate is measurable from here.
+-- What 20ms buys is the peak: one wakeup's worth of draining can no longer
+-- stack a 20ms block on top of the MSP side's slice on Ethos's single core.
+local POP_BUDGET_SECONDS = 0.02
+
+-- A second bound, in frames, because the deadline above bounds wall time but
+-- not Lua instructions, and Ethos kills a callback at 20000 of those
+-- ("Max instructions count reached"). Decoding one full frame costs ~1250-1450
+-- instructions (bin/perf/measure_bg_instructions.lua), so a ~1s backlog of 20
+-- frames cost the whole background-task wakeup ~32000 within the 20ms. Six
+-- frames is ~8.5k, leaving the rest of the tick (MSP poll and reply delivery,
+-- session flush, logging, audio) its share. wakeup() reports a cap hit, and
+-- tasks/session.lua then drains again on its very next tick (50ms) instead of
+-- after ELRS_SENSOR_INTERVAL -- up to 120 frames/s, so a backlog clears in a
+-- few ticks rather than sitting in Ethos's queue.
+local MAX_FRAMES_PER_WAKEUP = 6
 
 local os_clock = os.clock
 local math_floor = math.floor
@@ -258,10 +282,12 @@ local function wakeup(transport, telemetrySlots)
   if telemetrySlots and not relevantSids then buildRelevantSids(telemetrySlots) end
 
   local deadline = os_clock() + POP_BUDGET_SECONDS
-  while os_clock() < deadline do
+  local frames = 0
+  while frames < MAX_FRAMES_PER_WAKEUP and os_clock() < deadline do
     local command, data = transport.popCustomTelemetryFrame()
     if not command then break end
     parseFrame(data)
+    frames = frames + 1
   end
 
   -- Unconditional, every wakeup, regardless of whether any frame arrived
@@ -269,6 +295,9 @@ local function wakeup(transport, telemetrySlots)
   -- needed at all here. Cheap: each entry is a no-op unless its own
   -- STALE_REFRESH_SECONDS window has actually elapsed.
   for _, sensor in pairs(sensors) do sensor:refresh() end
+
+  -- true: stopped on the frame cap, so more are probably queued.
+  return frames >= MAX_FRAMES_PER_WAKEUP
 end
 
 -- Called on disconnect (mirrors tasks/session.lua's own field resets):
@@ -282,4 +311,12 @@ local function reset()
   for _, sensor in pairs(sensors) do sensor:reset() end
 end
 
-return {wakeup = wakeup, reset = reset}
+return {
+  wakeup = wakeup,
+  reset = reset,
+  -- Exported only so bin/perf/verify_clock_budgets.lua can pin the number
+  -- itself; hard-coding it in the harness would let a loosened budget pass,
+  -- because "never spends more than N" stays green at any larger N.
+  POP_BUDGET_SECONDS = POP_BUDGET_SECONDS,
+  MAX_FRAMES_PER_WAKEUP = MAX_FRAMES_PER_WAKEUP,
+}

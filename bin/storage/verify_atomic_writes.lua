@@ -1,7 +1,7 @@
 -- Behaviour check for the write path behind settings and logs.
 --
 -- Run it:
---     lua5.3 bin/storage/verify_atomic_writes.lua
+--     lua5.4 bin/storage/verify_atomic_writes.lua
 --
 -- What it drives, and why:
 --   * lib/ini.lua and lib/atomic_write.lua are the only place in the suite that

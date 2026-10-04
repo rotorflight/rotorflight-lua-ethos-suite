@@ -1,7 +1,7 @@
 -- Behaviour check for the flight record across a link loss.
 --
 -- Run it:
---     lua5.3 bin/flight_record/verify_flight_record.lua --self-test
+--     lua5.4 bin/flight_record/verify_flight_record.lua --self-test
 --
 -- What it drives, and why:
 --   * tasks/flight_timer.lua is a pure function of (connected, armed, now), so

@@ -1,7 +1,7 @@
 -- Behaviour check for the MSP request queue (issue #2378).
 --
 -- Run it:
---     lua5.3 bin/msp_queue/verify_msp_queue.lua
+--     lua5.4 bin/msp_queue/verify_msp_queue.lua
 --
 -- What it drives, and why:
 --   * tasks/msp/common.lua and tasks/msp/queue.lua are pure functions of a
@@ -70,7 +70,9 @@ end
 
 -- queue.lua asks Ethos whether it is running in the simulator; on a real radio
 -- the answer is false and the queue takes the transport path, which is the path
--- under test. Without this global the queue cannot be loaded at all.
+-- under test. Without this global the queue cannot be loaded at all. Since
+-- issue #2382 it reads the flag once, while being loaded, so the flag has to be
+-- in place before the module is dofile'd -- see the simulator case below.
 system = { getVersion = function() return { simulation = false } end }
 
 -- Every MSP line debugLog was asked to print, as "TAG cmd note".
@@ -492,16 +494,20 @@ end
 -- Defect 7: simulator missing response aborts cleanly via abortCurrent
 -- ---------------------------------------------------------------------------
 
+-- The flag is read once, when queue.lua is loaded, so the global has to be in
+-- place first. Flipping it after the module exists is not a scenario any more:
+-- nothing can change whether the script runs in the simulator while it runs.
 do
-  local rig = newRig()
+  local realGetVersion = system.getVersion
   system.getVersion = function() return { simulation = true } end
+  local rig = newRig()
   local simMsg = newMessage(0x1234)
   rig.queue:add(simMsg)
   rig.tick()
   check("simulator missing response aborts with no_response",
     #simMsg.errors == 1 and simMsg.errors[1] == "no_response" and rig.queue.current == nil,
     "errors=" .. #simMsg.errors .. " current=" .. tostring(rig.queue.current))
-  system.getVersion = function() return { simulation = false } end
+  system.getVersion = realGetVersion
 end
 
 -- ---------------------------------------------------------------------------

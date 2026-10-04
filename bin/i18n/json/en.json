@@ -2050,6 +2050,12 @@
           "needs_translation": false,
           "max_length": 6
         },
+        "dashboard_theme_bastion": {
+          "english": "Bastion",
+          "translation": "Bastion",
+          "needs_translation": false,
+          "max_length": 7
+        },
         "dashboard_theme_kevd": {
           "english": "Kevd",
           "translation": "Kevd",
@@ -2399,6 +2405,12 @@
           "translation": "S.PORT Master",
           "needs_translation": false,
           "max_length": 13
+        },
+        "function_crsf_sensors": {
+          "english": "CRSF Sensors",
+          "translation": "CRSF Sensors",
+          "needs_translation": false,
+          "max_length": 12
         },
         "function_telem_frsky": {
           "english": "Telemetry FrSky",
@@ -7077,10 +7089,10 @@
       "translation": "GPS HDOP"
     },
     "sensor_gps_heading": {
-      "english": "GPS Heading",
+      "english": "GPS Course",
       "max_length": 11,
       "needs_translation": false,
-      "translation": "GPS Heading"
+      "translation": "GPS Course"
     },
     "sensor_gps_home_dir": {
       "english": "GPS Home Dir",

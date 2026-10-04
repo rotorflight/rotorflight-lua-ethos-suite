@@ -1,0 +1,11 @@
+{
+  "folder": "bastion",
+  "name": "Bastion",
+  "selectionId": "system/bastion",
+  "settingsSection": "dashboard.bastion",
+  "minResolution": {
+    "x": 784,
+    "y": 294
+  },
+  "becLabel": "BEC caution below"
+}
