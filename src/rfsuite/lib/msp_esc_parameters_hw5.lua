@@ -359,24 +359,6 @@ local function itemLayoutFor(data)
   return (profileFor(data).items) or DEFAULT_ITEMS
 end
 
--- One field is not stored as the number the page shows.
---
--- startup_time declares min 4, max 25, default 11 in FIELD_META above, and the
--- raw byte runs 0..21 -- so decode() used to hand the page numbers the row's own
--- range says cannot happen, and a pilot with the ESC set to its shortest start
--- saw "0s" on a row that begins at 4. That contradiction is inside this file and
--- needs no outside authority to establish; which side of it was wrong is settled
--- by the EdgeTX codec, which adds 4 on the way in and takes it off again on the
--- way out (esc_parameters_hw5.lua:263-265, :296-298) and clamps the raw byte to
--- 0..21.
---
--- A table rather than another `if` in decode()/encode(): there is one such field
--- today, and a second copy of the rule in the two directions is a second thing to
--- forget when the next one is added.
-local FIELD_OFFSETS = {
-  startup_time = 4,
-}
-
 local function decode(buf)
   buf.offset = 1
   local data = {
@@ -389,8 +371,7 @@ local function decode(buf)
   data.mode_name = readString(buf, 51, 15)
   local layout = itemLayoutFor(data)
   for name, itemIndex in pairs(layout) do
-    local raw = buf[65 + itemIndex] or 0
-    data[name] = raw + (FIELD_OFFSETS[name] or 0)
+    data[name] = buf[65 + itemIndex] or 0
   end
   return data
 end
@@ -403,14 +384,7 @@ local function encode(data)
   local layout = itemLayoutFor(data)
   for name, itemIndex in pairs(layout) do
     if data and data[name] ~= nil then
-      -- Clamped rather than left to `% 256`, which would turn a negative raw
-      -- byte into one near 255 -- a 252 where the pilot asked for something
-      -- below the row's minimum. The page's own range already prevents that; this
-      -- is for a table built by something else.
-      local offset = FIELD_OFFSETS[name] or 0
-      local raw = math.floor(data[name] - offset + 0.5)
-      if raw < 0 then raw = 0 elseif raw > 255 then raw = 255 end
-      payload[65 + itemIndex] = raw
+      payload[65 + itemIndex] = math.floor(data[name] + 0.5) % 256
     end
   end
   return payload

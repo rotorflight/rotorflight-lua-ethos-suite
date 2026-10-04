@@ -73,11 +73,9 @@ manufacturer put it in.
 
 ### Startup Time
 
-The row reads **4 to 25 seconds**. The ESC counts from 0, so it reports **0 to 21**
-for the same range, and the page converts in both directions: it adds four on the
-way in and takes four off again on the way out. A save therefore writes back the
-byte the ESC sent, and an ESC set to its shortest start-up shows `4s` rather than
-`0s`.
+The row reads **4 to 25 seconds**, but the ESC counts from 0 - it reports **0 to 21**
+for the same range. The page does not correct for this yet, so an ESC set to its
+shortest start-up currently shows `0s` on a row that begins at `4`.
 
 ### Active Freewheel
 

@@ -600,8 +600,8 @@ takes an unrelated table with it looks exactly like a test failure.
     # two harnesses, two jobs.
     LuaJob(
         id='esc-hw5-opto',
-        name='Hobbywing V5 OPTO layout and Startup Time byte',
-        step='Check the OPTO layout and the Startup Time offset',
+        name='Hobbywing V5 OPTO layout',
+        step='Check the OPTO layout',
         script='bin/esc_hw5_opto/verify_hw5_opto.lua',
         rationale=r'''The layout was chosen by a PROFILE KEY. profileKey() returned
 `<hardware_version>_PL_OPTO` for any OPTO model, and PROFILES carried exactly one such
@@ -638,22 +638,20 @@ vice versa depending on firmware version" -- a question, not a specification. So
 there is nothing here to invert. The parity check is a plain check rather than a
 gate, and it exists so the answer stays a fact the repository carries.
 
-Found while measuring, in the same two functions, and labelled so it can be dropped
-on request: FIELD_META declares startup_time as min 4, max 25, default 11, and
-decode() handed the page the RAW byte, which runs 0..21 -- so the row's own range was
-violated by its own decoder and an ESC set to its shortest start showed "0s" on a
-row beginning at 4. EdgeTX settles which side was wrong: it adds 4 on the way in and
-takes it off again on the way out (esc_parameters_hw5.lua:263-265, :296-298).
+Deliberately NOT in this pull request: FIELD_META declares startup_time as min 4,
+max 25, default 11 while decode() hands the page the raw byte, which runs 0..21, so
+the row violates its own range. That is a real defect, but it lives in decode() and
+encode() rather than in the layout, it affects every HW5 model whether OPTO or not,
+and EdgeTX settles it by adding 4 on the way in and taking 4 off on the way out
+(esc_parameters_hw5.lua:263-265, :296-298). It has its own harness and its own job.
 
-14 of its 35 checks go red without the fix. Pass --self-test to prove that: it
-splices the pre-fix profile selection and the pre-fix decode()/encode() back into a
-copy of the codec and requires every one of the fourteen to fail -- and verifies the
-splice four ways first, because a sabotage that breaks the module differently from
-the defect under test proves nothing. Two further cases started out as gates and the
-self-test caught them passing on the pre-fix code, which is why they are plain
-checks now: OPTO hardware HW1104 (that model already worked -- PROFILES had an entry
-for it) and the Startup Time read-back round trip (an identity decode writing its own
-value back was always lossless).
+12 of its 31 checks go red without the fix. Pass --self-test to prove that: it
+splices the pre-fix profile selection back into a copy of the codec and requires
+every one of the twelve to fail -- and verifies the splice four ways first, because
+a sabotage that breaks the module differently from the defect under test proves
+nothing. One case started out as a gate and the self-test caught it passing on the
+pre-fix code, which is why it is a plain check now: OPTO hardware HW1104, because
+that model already worked -- PROFILES carried an entry for it.
 '''
     ),
 ]

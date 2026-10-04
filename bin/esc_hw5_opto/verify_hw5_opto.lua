@@ -79,34 +79,31 @@
 --   * The merged profile is built once per version rather than per call, because
 --     isFieldAvailable() reaches profileFor() once per field per page build.
 --
--- And one thing the issue does NOT mention, found while measuring, in the same two
--- functions, fixed here and labelled so that it can be dropped:
---   * FIELD_META declares startup_time as min 4, max 25, default 11 -- and
---     decode() used to hand the page the RAW byte, which runs 0..21. So the row's
---     own range was violated by its own decoder, and an ESC set to its shortest
---     start showed "0s" on a row beginning at 4. Which side of that contradiction
---     was wrong is settled by EdgeTX, which adds 4 on the way in and takes it off
---     again on the way out (esc_parameters_hw5.lua:263-265, :296-298).
+-- And one thing the issue does NOT mention, found while measuring: FIELD_META
+-- declares startup_time as min 4, max 25, default 11 -- and decode() hands the page
+-- the RAW byte, which runs 0..21, so the row's own range is violated by its own
+-- decoder. That is a real defect and it is NOT fixed here: it lives in decode() and
+-- encode() rather than in the layout, it affects every HW5 model whether OPTO or
+-- not, and EdgeTX settles it by adding 4 on the way in and taking it off again on
+-- the way out (esc_parameters_hw5.lua:263-265, :296-298). It has its own pull
+-- request and its own harness, so this one stays about the layout.
 --
--- Which checks go RED on the pre-fix codec -- fourteen, and --self-test reports
+-- Which checks go RED on the pre-fix codec -- twelve, and --self-test reports
 -- exactly which: eight of the nine OPTO layout cases, the BEC row, the OPTO byte
--- alignment, the OPTO write alignment, the page building no BEC row, and the two
--- Startup Time directions.
+-- alignment, the OPTO write alignment, and the page building no BEC row.
 --
--- Two cases are deliberately NOT in that list, and both started out as gates:
---   * OPTO hardware HW1104, because PROFILES carried HW1104_V100456NB_PL_OPTO and so
---     that model already came out right.
---   * the Startup Time read-back round trip, because a codec that decodes a byte to
---     itself and writes it straight back was always lossless.
--- Both are checked anyway -- they are the fix's own regression guards -- and both
--- are marked in place with the reason, so a later reader does not have to
--- rediscover them from the self-test output.
+-- One case is deliberately NOT in that list, and it started out as a gate:
+-- OPTO hardware HW1104, because PROFILES carried HW1104_V100456NB_PL_OPTO and so
+-- that model already came out right. It is checked anyway -- it is the fix's own
+-- regression guard on the one model that used to work -- and it is marked in place
+-- with the reason, so a later reader does not have to rediscover it from the
+-- self-test output.
 --
--- --self-test proves the rest rather than asserting it: it splices the pre-fix
--- profile selection and the pre-fix decode()/encode() back into a copy of the codec
--- and requires every one of them to fail. It also verifies the splice four ways
--- before using it, because a sabotage that breaks the module differently from the
--- defect under test proves nothing about the defect.
+-- --self-test proves the list rather than asserting it: it splices the pre-fix
+-- profile selection back into a copy of the codec and requires every one of them to
+-- fail. It also verifies the splice four ways before using it, because a sabotage
+-- that breaks the module differently from the defect under test proves nothing
+-- about the defect.
 --
 -- The round trip, the Active Freewheel parity and the "models that were already
 -- right" checks are deliberately NOT gates -- they pass on the pre-fix codec too,
@@ -534,7 +531,6 @@ end
 -- .vscode/scripts/resolve_i18n_tags.py, not at Lua runtime -- so the key IS the
 -- label here.
 local ROW_BEC = "mfg.hw5.bec_voltage"
-local ROW_STARTUP = "mfg.hw5.startup_time"
 local ROW_TIMING = "mfg.hw5.timing"
 
 local function freshOpts()
@@ -682,18 +678,14 @@ local function checkOptoByteAlignment()
   local data = decodeWith(buf)
 
   local wrong = {}
-  -- startup_time is the one field the codec shows as the byte PLUS four, so it is
-  -- compared against the offset value rather than the raw byte. Writing this check
-  -- as a plain equality against buf[at] is what the first version did, and it
-  -- reported the fix as broken -- correctly, because the check and the fix
-  -- disagreed about what the field holds.
-  local SHOWN_OFFSET = {startup_time = 4}
+  -- Every field is compared against its own byte. The Startup Time row is NOT
+  -- special here: this change is about which byte a field sits on, and the byte a
+  -- field shows is the subject of a separate pull request.
   local function expect(name)
     local at = itemByte(OPTO_LAYOUT[name])
-    local want = buf[at] + (SHOWN_OFFSET[name] or 0)
-    if data[name] ~= want then
+    if data[name] ~= buf[at] then
       wrong[#wrong + 1] = string.format("%s reads %s, byte %d says %s",
-        name, tostring(data[name]), at, tostring(want))
+        name, tostring(data[name]), at, tostring(buf[at]))
     end
   end
   for _, name in ipairs({ "startup_time", "gov_p_gain", "gov_i_gain", "auto_restart",
@@ -748,81 +740,9 @@ local function checkOptoByteAlignment()
   end
 end
 
--- The third finding: FIELD_META's own range against its own decoder.
-local function checkStartupTimeOffset()
-  out("")
-  out("Startup Time: the row says 4..25 s and the byte runs 0..21")
-
-  local wrong = {}
-  for _, raw in ipairs({ 0, 1, 5, 11, 17, 21 }) do
-    local buf = blockWith({})
-    buf[itemByte(DEFAULT_LAYOUT.startup_time)] = raw
-    local data = decodeWith(buf)
-    if data.startup_time ~= raw + 4 then
-      wrong[#wrong + 1] = string.format("byte %d shows %s, expected %d",
-        raw, tostring(data.startup_time), raw + 4)
-    end
-  end
-  gateCheck("a Startup Time byte of 0..21 reads as 4..25 seconds",
-    #wrong == 0, #wrong > 0 and table.concat(wrong, "; ") or nil)
-
-  -- NOT a gate, and the self-test showed why: before the fix decode() was the
-  -- identity and encode() wrote the value straight back, so byte -> byte -> byte
-  -- was lossless for every value. It is lossless now too, and that is the point of
-  -- keeping it -- it is what makes the offset above safe. What detects the bug is
-  -- the pair below: what the pilot SEES, and what the save WRITES.
-  local roundTripWrong = {}
-  for _, raw in ipairs({ 0, 1, 5, 11, 17, 21 }) do
-    local buf = blockWith({})
-    buf[itemByte(DEFAULT_LAYOUT.startup_time)] = raw
-    local payload = encodeWith(decodeWith(buf))
-    if not payload or payload[itemByte(DEFAULT_LAYOUT.startup_time)] ~= raw then
-      roundTripWrong[#roundTripWrong + 1] = string.format("byte %d came back as %s", raw,
-        payload and tostring(payload[itemByte(DEFAULT_LAYOUT.startup_time)]) or "no payload")
-    end
-  end
-  check("a Startup Time the codec read is written back as the same byte",
-    #roundTripWrong == 0, #roundTripWrong > 0 and table.concat(roundTripWrong, "; ") or nil)
-
-  -- The range in FIELD_META and the decoded value must agree, or the row is
-  -- showing something it says cannot happen.
-  local meta = codec.FIELD_META.startup_time
-  local buf = blockWith({})
-  buf[itemByte(DEFAULT_LAYOUT.startup_time)] = 0
-  local lowest = decodeWith(buf).startup_time
-  check(string.format("the lowest byte the ESC can send reads as the row's minimum (%s)",
-    tostring(meta and meta.min)),
-    meta ~= nil and lowest == meta.min,
-    string.format("byte 0 reads as %s, FIELD_META says the minimum is %s",
-      tostring(lowest), meta and tostring(meta.min)))
-
-  -- Through the page: moving the row moves its byte, by four below the displayed
-  -- step. THIS is the gate on the write side -- the read-side gate above cannot see
-  -- a codec that decodes wrongly but writes back consistently, and this can. It was
-  -- a plain check in the first version of this file, and the self-test caught it
-  -- passing on the pre-fix codec while the two real gates went red.
-  do
-    local runtime, opts = openPage({})
-    local field = runtime and rowField(ROW_STARTUP)
-    local label = "moving Startup Time writes the byte four below what the pilot chose"
-    if not field then
-      gateCheck(label, false, "the Startup Time row was never built")
-    else
-      local shown = field.get()
-      edit(field, shown + 2)
-      local payload = pressSave(opts)
-      local want = (shown + 2) - 4
-      local got = payload and payload[itemByte(DEFAULT_LAYOUT.startup_time)]
-      gateCheck(label, got == want,
-        payload and string.format("byte is %s, expected %d for a shown %d",
-          tostring(got), want, shown + 2) or "no write went out")
-    end
-  end
-end
-
 -- The round trip, exhaustively: every byte against all 256 of its values. NOT a
--- gate -- it was lossless before and after -- and here so that adding an entry to
--- FIELD_OFFSETS cannot quietly cost a byte.
+-- gate -- it was lossless before and after -- and here so that a layout change
+-- cannot quietly cost a byte.
 local function checkRoundTrip()
   out("")
   out("round trip: every byte survives a save that changed something else")
@@ -985,7 +905,6 @@ local function runChecks()
   page = loadPage()
   checkOptoLayout()
   checkOptoByteAlignment()
-  checkStartupTimeOffset()
   checkRoundTrip()
   checkActiveFreewheelMapping()
   checkOtherLayoutsUnchanged()
@@ -996,7 +915,7 @@ end
 -- ---------------------------------------------------------------------------
 
 out(string.rep("=", 72))
-out("Hobbywing V5 forward programming: the OPTO layout and the Startup Time byte (#2341)")
+out("Hobbywing V5 forward programming: the OPTO layout (#2341)")
 out(string.rep("=", 72))
 
 codec = loadCodec()
@@ -1071,52 +990,15 @@ end
 
 ]==]
 
--- The pre-fix codec directions, verbatim: no FIELD_OFFSETS, so startup_time was the
--- raw byte against a declared range of 4..25.
-local DIRECTIONS_SPLICE = [==[
-local function decode(buf)
-  buf.offset = 1
-  local data = {
-    esc_signature = mspcodec.readU8(buf),
-    esc_command = mspcodec.readU8(buf),
-  }
-  data.firmware_version = readString(buf, 3, 16)
-  data.hardware_version = readString(buf, 19, 16)
-  data.esc_type = readString(buf, 35, 16)
-  data.mode_name = readString(buf, 51, 15)
-  local layout = itemLayoutFor(data)
-  for name, itemIndex in pairs(layout) do
-    data[name] = buf[65 + itemIndex] or 0
-  end
-  return data
-end
 
-local function encode(data)
-  local payload = {}
-  local source = data and data._raw or SIMULATOR_RESPONSE
-  local limit = #source > 0 and #source or #SIMULATOR_RESPONSE
-  for i = 1, limit do payload[i] = source[i] or SIMULATOR_RESPONSE[i] or 0 end
-  local layout = itemLayoutFor(data)
-  for name, itemIndex in pairs(layout) do
-    if data and data[name] ~= nil then
-      payload[65 + itemIndex] = math.floor(data[name] + 0.5) % 256
-    end
-  end
-  return payload
-end
-
-]==]
-
+-- One splice, because this change is one splice. The pre-fix codec is the current
+-- one with the profile selection put back; decode() and encode() are byte-identical
+-- to the pre-fix versions here, because the Startup Time offset that used to sit in
+-- them moved to its own pull request. There is nothing else to cut out, and a second
+-- cut would be a second thing to get wrong.
 local function preFix(source, nl)
-  -- (1) the profile selection, from isOpto() to the FIELD_OFFSETS table.
-  source = presplice(source, "local function isOpto(data)",
-    "local FIELD_OFFSETS = {", (PROFILE_SPLICE:gsub("\n", nl)), "profile selection")
-  -- (2) decode()/encode(), bounded by the msp table that follows them. FIELD_OFFSETS
-  --     itself stays: it is harmless dead weight once nothing reads it, and cutting
-  --     it out as well would be a second thing to get wrong.
-  source = presplice(source, "local FIELD_OFFSETS = {",
-    "local msp = {", (DIRECTIONS_SPLICE:gsub("\n", nl)), "codec directions")
-  return source
+  return presplice(source, "local function isOpto(data)",
+    "local function decode(buf)", (PROFILE_SPLICE:gsub("\n", nl)), "profile selection")
 end
 
 -- Four ways, before the spliced codec is allowed to stand in for the pre-fix one.
@@ -1138,8 +1020,17 @@ local function verifySplice(original, sabotaged)
   if not ok then
     problems[#problems + 1] = "does not load: " .. tostring(spliced):gsub(".*%.lua:%d+: ", "")
   else
-    -- Its own signature: an OPTO HW1106 gets DEFAULT_ITEMS, so bec_voltage is
-    -- available and the Startup Time row shows the raw byte.
+    -- Its own signature, and it is a positive one rather than an absence: an OPTO
+    -- HW1106 gets DEFAULT_ITEMS, so bec_voltage is available AND active_freewheel
+    -- sits at item 15. Checking that it HIDES the BEC row is enough on its own, but
+    -- a splice that broke the profile lookup some other way could satisfy that half
+    -- while decoding nothing usable, so the second half pins the layout directly.
+    --
+    -- It used to have a third condition here -- "and it does not apply the Startup
+    -- Time offset" -- which went away with the offset. That condition could no
+    -- longer distinguish anything: after the split, decode() and encode() are
+    -- byte-identical to the pre-fix versions, so the spliced codec and the real one
+    -- agree about it by construction. A signature that cannot fail is not evidence.
     local fixtureBytes = spliced.buildReadMessage(function() end, function() end).simulatorResponse
     local buf = {}
     for i = 1, #fixtureBytes do buf[i] = fixtureBytes[i] end
@@ -1153,8 +1044,12 @@ local function verifySplice(original, sabotaged)
       problems[#problems + 1] = "decodes nothing, so this is not the pre-fix codec"
     elseif not spliced.isFieldAvailable(data, "bec_voltage") then
       problems[#problems + 1] = "hides the BEC row on an OPTO HW1106, so this is not the pre-fix codec"
-    elseif (data.startup_time or 0) > 25 then
-      problems[#problems + 1] = "applies the Startup Time offset, so this is not the pre-fix codec"
+    elseif data.active_freewheel == nil or buf[65 + 15] == nil then
+      problems[#problems + 1] = "places Active Freewheel somewhere the DEFAULT layout does not, so this is not the pre-fix codec"
+    elseif data.active_freewheel ~= buf[65 + 15] then
+      problems[#problems + 1] = string.format(
+        "reads Active Freewheel as %s where DEFAULT item 15 says %s, so this is not the pre-fix codec",
+        tostring(data.active_freewheel), tostring(buf[65 + 15]))
     end
   end
 
@@ -1166,7 +1061,7 @@ end
 if SELF_TEST then
   out("")
   out(string.rep("=", 72))
-  out("self-test: the OPTO and Startup Time checks must go red on the pre-fix codec")
+  out("self-test: the OPTO checks must go red on the pre-fix codec")
   out(string.rep("=", 72))
 
   local original = readFile(CODEC_SRC)
