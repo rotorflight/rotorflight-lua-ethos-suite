@@ -131,62 +131,107 @@ local function clamp(value, min, max)
   return value
 end
 
-local function decodeTiming(raw, data)
-  data._timing_advance_encoding = "legacy"
-  if raw >= 10 and raw <= 42 then
-    data._timing_advance_encoding = "new"
-    return clamp((raw - 10) / 8, 0, 3)
-  end
-  return clamp(raw, 0, 3)
+-- For seven of these wire types the byte the ESC stores is not the number the
+-- page shows. NORMALIZE is stored byte -> shown value and ENCODED is the other
+-- direction; a wire type in neither is the identity, which is every plain byte.
+--
+-- timing is the one that costs the ESC something. Two firmware generations
+-- number the four timing-advance positions differently -- 0..3 and 10..42 in
+-- steps of 8 -- and both spellings are in the field, so the byte a position
+-- came from decides what has to go back. That is why ENCODED.timing takes the
+-- stored byte as its second argument: it is not derivable from the position.
+local NORMALIZE = {
+  timing = function(raw)
+    if raw >= 10 and raw <= 42 then return clamp((raw - 10) / 8, 0, 3) end
+    return clamp(raw, 0, 3)
+  end,
+  motor_kv = function(raw) return raw * 40 + 20 end,
+  servo_low = function(raw) return raw * 2 + 750 end,
+  servo_high = function(raw) return raw * 2 + 1750 end,
+  servo_neutral = function(raw) return raw + 1374 end,
+  low_voltage = function(raw) return raw + 250 end,
+  current_limit = function(raw) return raw * 2 end,
+}
+
+local ENCODED = {
+  timing = function(value, stored)
+    if stored >= 10 and stored <= 42 then return 10 + value * 8 end
+    return value
+  end,
+  motor_kv = function(value) return clamp((value - 20) / 40, 0, 255) end,
+  servo_low = function(value) return clamp((value - 750) / 2, 0, 255) end,
+  servo_high = function(value) return clamp((value - 1750) / 2, 0, 255) end,
+  servo_neutral = function(value) return clamp(value - 1374, 0, 255) end,
+  low_voltage = function(value) return clamp(value - 250, 0, 255) end,
+  current_limit = function(value) return clamp(value / 2, 0, 255) end,
+}
+
+local function shownValue(wireType, stored)
+  local normalize = NORMALIZE[wireType]
+  if not normalize then return stored end
+  return normalize(stored)
 end
 
-local function encodeTiming(value, data)
-  local normalized = clamp(value, 0, 3)
-  if data and data._timing_advance_encoding == "new" then
-    return 10 + normalized * 8
-  end
-  return normalized
-end
-
-local function readValue(buf, wireType, data)
-  local raw = mspcodec.readU8(buf) or 0
-  if wireType == "timing" then return decodeTiming(raw, data) end
-  if wireType == "motor_kv" then return raw * 40 + 20 end
-  if wireType == "servo_low" then return raw * 2 + 750 end
-  if wireType == "servo_high" then return raw * 2 + 1750 end
-  if wireType == "servo_neutral" then return raw + 1374 end
-  if wireType == "low_voltage" then return raw + 250 end
-  if wireType == "current_limit" then return raw * 2 end
-  return raw
-end
-
-local function writeValue(payload, wireType, value, data)
-  local raw = value
-  if wireType == "timing" then raw = encodeTiming(value, data) end
-  if wireType == "motor_kv" then raw = clamp(((value or 20) - 20) / 40, 0, 255) end
-  if wireType == "servo_low" then raw = clamp(((value or 750) - 750) / 2, 0, 255) end
-  if wireType == "servo_high" then raw = clamp(((value or 1750) - 1750) / 2, 0, 255) end
-  if wireType == "servo_neutral" then raw = clamp((value or 1374) - 1374, 0, 255) end
-  if wireType == "low_voltage" then raw = clamp((value or 250) - 250, 0, 255) end
-  if wireType == "current_limit" then raw = clamp((value or 0) / 2, 0, 255) end
-  mspcodec.writeU8(payload, raw or 0)
+local function storedValue(wireType, value, stored)
+  local encode = ENCODED[wireType]
+  if not encode then return value end
+  return encode(value, stored)
 end
 
 local function decode(buf)
   buf.offset = 1
-  local data = {}
+  -- Every byte the ESC sent, kept verbatim. The page declares 31 rows for these
+  -- 50; the rest are the governor's PID terms, the EEPROM bookkeeping and the
+  -- reserved bytes a vendor tool wrote. encode() is why they are worth keeping.
+  local raw = {}
+  for i = 1, #buf do raw[i] = buf[i] or 0 end
+  local data = {_raw = raw}
   for i = 1, #WIRE_FIELDS do
     local field = WIRE_FIELDS[i]
-    data[field[1]] = readValue(buf, field[2], data)
+    data[field[1]] = shownValue(field[2], mspcodec.readU8(buf))
   end
   return data
 end
 
+-- The 50 bytes this suite sends are the whole of what the flight controller
+-- hands the ESC for an AM32: msp.c's MSP_SET_ESC_PARAMETERS copies exactly
+-- escGetParamBufferLength() bytes over the update buffer and commits that
+-- (msp.c:3399-3408, esc_sensor.c:4608-4611 -- AM32_NUM_EEPROM_BYTES plus the
+-- two-byte header). Whatever encode() does not reproduce is a byte the ESC is
+-- told changed.
+--
+-- Laying the block out from the parsed fields rewrites all of it, and it
+-- rewrites the rows that DO exist too wherever the number a row shows is not
+-- the byte behind it. The timing-advance byte is the worst case by a wide
+-- margin: two firmware generations number the same four positions differently,
+-- so 248 of its 256 values came back as something else -- measured on the
+-- pre-fix codec, an ESC reporting 11 (a timing position the older numbering
+-- does not have) was saved as 10, and one reporting 42 as 34. That is motor
+-- timing rewritten by a save that changed the beep volume.
+--
+-- So the payload starts as a copy of what the ESC sent, and one field is
+-- written only when the pilot moved it off the byte that value came from.
+-- Everything else is the ESC's own byte back, verbatim. This is the rule the
+-- EdgeTX suite already applies to the timing byte
+-- (esc_parameters_am32.lua's encodeTimingAdvance), and starting from the ESC's
+-- own block rather than from the layout is what extends it to the other 49.
 local function encode(data)
+  if type(data) ~= "table" or type(data._raw) ~= "table" then
+    return nil, "_raw"
+  end
+
   local payload = {}
+  data._raw.offset = 1
   for i = 1, #WIRE_FIELDS do
-    local field = WIRE_FIELDS[i]
-    writeValue(payload, field[2], data and data[field[1]], data)
+    local name, wireType = WIRE_FIELDS[i][1], WIRE_FIELDS[i][2]
+    local stored = mspcodec.readU8(data._raw)
+    local shown = shownValue(wireType, stored)
+    local value = data[name]
+    if value == nil or value == shown then
+      mspcodec.writeU8(payload, stored)
+    else
+      mspcodec.writeU8(payload, storedValue(wireType, value, stored))
+    end
   end
   return payload
 end
@@ -215,10 +260,25 @@ function msp.buildReadMessage(onData, onError)
   }
 end
 
+-- Builds a ready-to-publish write message. `data` is the table
+-- buildReadMessage() handed onData() -- the whole thing, not only the rows this
+-- page shows, since the block is written at once and encode() starts from the
+-- bytes it carries.
+--
+-- Returns `nil, reason` when there is no such table, and no message at all in
+-- that case: a payload laid out without the ESC's own bytes would put zeroes
+-- where the ESC had its timing advance and its governor terms. Returning a
+-- message with no payload is not an option -- app/page_runtime.lua treats a nil
+-- message as a refused write and reports it (see its writeSource()), the same
+-- as lib/msp_governor_profile.lua's refusal.
 function msp.buildWriteMessage(data, onWritten, onError)
+  local payload, reason = encode(data)
+  if not payload then
+    return nil, reason
+  end
   return {
     command = WRITE_COMMAND,
-    payload = encode(data),
+    payload = payload,
     isWrite = true,
     processReply = function() if onWritten then onWritten() end end,
     errorHandler = onError,
