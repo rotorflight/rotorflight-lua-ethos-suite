@@ -1,4 +1,8 @@
 -- YGE forward-programming payload (MSP 217 read / 218 write).
+--
+-- The block length is variable and the ESC decides it (#2458): the flight controller
+-- derives it from the count the ESC reports, so everything here about length is
+-- derived from that count too. See decode() and encode().
 
 if package.loaded["rfsuite.lib.msp_esc_parameters_yge"] then
   return package.loaded["rfsuite.lib.msp_esc_parameters_yge"]
@@ -211,8 +215,21 @@ local EDIT_FIELDS = {
   "current_limit",
 }
 
+-- 66 bytes, and the length is not a constant that happens to be 66: bytes 3..4 read
+-- 32, and 2 + 32 * 2 = 66. The first 58 bytes are unchanged from the fixture this
+-- replaces -- same ESC, same values -- and the eight that follow are the block's tail,
+-- taken verbatim from
+-- rotorflight-lua-edgetx-suite src/rfsuite/tasks/msp/api/esc_parameters_yge.lua's
+-- SIM_RESPONSE, which carries the same 66 bytes and describes the same ESC:
+--
+--   2, 0, 20, 0,   -- unknown_5  (U32)
+--   22, 0, 0, 0,   -- unknown_6  (U32)
+--
+-- Which is the whole of #2458 in one line: the old fixture said 32 parameters and
+-- stopped at 58 bytes, so it described an ESC eight bytes longer than the block it
+-- stood for.
 local SIMULATOR_RESPONSE = {
-  165, 0, 32, 0,
+  165, 0, 32, 0, -- esc_signature, esc_command, then esc_model|esc_version as the count: 32
   3, 0, -- governor
   55, 0, -- lv_bec_voltage
   0, 0, -- timing
@@ -238,7 +255,9 @@ local SIMULATOR_RESPONSE = {
   0, 0, -- unknown_3
   0, -- flags
   0, -- unknown_4
-  2, 19 -- current_limit
+  2, 19, -- current_limit
+  2, 0, 20, 0, -- unknown_5, past the fields this codec names
+  22, 0, 0, 0, -- unknown_6
 }
 
 local function readValue(buf, wireType)
@@ -258,13 +277,87 @@ local function writeValue(payload, wireType, value)
   end
 end
 
+-- The block is NOT a fixed size. The flight controller derives it from the count the
+-- ESC itself reports (rotorflight-firmware src/main/io/esc_sensor.c: ygeParamCount =
+-- ygeParams[0], paramPayloadLength = ygeParamCount * 2, and
+-- escGetParamFullBufferLength() = PARAM_HEADER_SIZE + paramPayloadLength with
+-- PARAM_HEADER_SIZE = 2), so the honest layout is 1..OPENYGE_PARAM_CACHE_SIZE_MAX
+-- parameters wide. MSP_SET_ESC_PARAMETERS inspects no field of its own -- it moves
+-- escGetParamBufferLength() bytes -- so the tool has to get the length right or the
+-- firmware copies past what was sent.
+--
+-- The count is the U16 at bytes 3..4, which is `esc_model` and `esc_version` read as
+-- one word. WIRE_FIELDS splits them into two U8s, so the count is derived from the
+-- two rather than stored: measured against the shipped fixture, bytes 3..4 read 32,
+-- and 2 + 32 * 2 = 66 -- which is exactly the length the sibling suite's fixture
+-- carries. This fixture said 58, which is 2 + 28 * 2: right for an ESC reporting 28,
+-- and this ESC says 32.
+local PARAM_HEADER_BYTES = 2
+local MAX_PARAM_COUNT = 64      -- OPENYGE_PARAM_CACHE_SIZE_MAX
+local WIRE_WIDTH = { u8 = 1, u16 = 2, u32 = 4 }
+
+-- What WIRE_FIELDS covers: PARAM_HEADER_BYTES plus every field below, and no more.
+-- Everything past that is the unknown tail, which is only knowable once the count is.
+local FIXED_PAYLOAD_BYTES = 56
+local FIXED_BLOCK_BYTES = PARAM_HEADER_BYTES + FIXED_PAYLOAD_BYTES
+
+local function paramCountOf(buf)
+  return (buf[3] or 0) + (buf[4] or 0) * 256
+end
+
+local function blockLengthFor(count)
+  return PARAM_HEADER_BYTES + count * 2
+end
+
+-- A count of 0, or one past the firmware's own cache ceiling, cannot describe a block
+-- this codec is willing to write. Both are refused rather than clamped: clamping would
+-- produce a payload whose length the ESC did not ask for, which is the failure #2458
+-- is about.
+local function countIsPlausible(count)
+  return count >= 1 and count <= MAX_PARAM_COUNT
+end
+
 local function decode(buf)
   buf.offset = 1
-  local data = {}
+  local received = #buf
+  local count = paramCountOf(buf)
+  local expected = blockLengthFor(count)
+  local data = {
+    param_count = count,
+    expected_length = expected,
+    received_length = received,
+    count_is_plausible = countIsPlausible(count),
+  }
+
+  -- Only as many fields as the buffer actually carries. readValue() would read a
+  -- missing byte as 0 (mspcodec.lua:57-58 and :70-75 do `buf[offset] or 0`), so a
+  -- block shorter than this layout used to decode into a table of plausible zeros
+  -- with nothing wrong anywhere -- which is what "misaligned, not truncated" means.
+  -- A field that is not there stays absent, and encode() below refuses to invent it.
   for i = 1, #WIRE_FIELDS do
     local field = WIRE_FIELDS[i]
+    if buf.offset + WIRE_WIDTH[field[2]] - 1 > received then break end
     data[field[1]] = readValue(buf, field[2])
   end
+
+  -- The tail, verbatim. Meaning unknown here as it is in the sibling suite, but it is
+  -- part of what the ESC sends and of what it expects back, so it is carried through
+  -- a read and written back unchanged rather than filled with zeros. A block whose
+  -- count asks for more tail than arrived leaves `unknown_tail` absent, which is the
+  -- refusal path and not a default.
+  local tailLength = expected - FIXED_BLOCK_BYTES
+  if tailLength > 0 and expected <= received then
+    local tail = {}
+    for i = 1, tailLength do
+      tail[i] = buf[FIXED_BLOCK_BYTES + i]
+      if tail[i] == nil then tail = nil break end
+    end
+    data.unknown_tail = tail
+    data.unknown_tail_length = tailLength
+  else
+    data.unknown_tail_length = tailLength > 0 and tailLength or 0
+  end
+
   -- The two fields the page translates rather than showing raw, each kept beside
   -- the value it was read with. See motorTimingFromUi() for the timing one and
   -- beforeSave() for the voltage one; both exist so a save that changed neither
@@ -275,7 +368,26 @@ local function decode(buf)
   return data
 end
 
+-- Returns `payload`, or `nil, whatIsMissing` when the block cannot be written as the
+-- ESC described it. The refusal is the same shape lib/msp_governor_profile.lua uses
+-- and for the same reason (#2446): app/page_runtime.lua:737-753 reads a nil message
+-- as a REFUSED write and names the reason, where a short payload is a write the
+-- firmware accepts -- msp.c's only length check is `if (len == 0)`, and
+-- sbufReadData's memcpy has no bounds check, so the overflow comes out of the
+-- previous contents of a static buffer and escCommitParameters() writes that to the
+-- ESC.
 local function encode(data)
+  if type(data) ~= "table" then return nil, "<not a table>" end
+  for i = 1, #WIRE_FIELDS do
+    local name = WIRE_FIELDS[i][1]
+    if data[name] == nil then return nil, name end
+  end
+
+  local expected = tonumber(data.expected_length) or 0
+  if not data.count_is_plausible or expected ~= blockLengthFor(tonumber(data.param_count) or 0) then
+    return nil, "a parameter count this codec trusts"
+  end
+
   local payload = {}
   for i = 1, #WIRE_FIELDS do
     local field = WIRE_FIELDS[i]
@@ -285,6 +397,21 @@ local function encode(data)
     end
     writeValue(payload, field[2], value)
   end
+
+  -- The tail goes back exactly as it arrived. Not invented, not zeroed: a zero here
+  -- is a parameter the pilot never saw and never chose.
+  local tailLength = tonumber(data.unknown_tail_length) or 0
+  if tailLength > 0 then
+    local tail = data.unknown_tail
+    if type(tail) ~= "table" or #tail < tailLength then
+      return nil, "the ESC's own tail bytes"
+    end
+    for i = 1, tailLength do payload[#payload + 1] = tail[i] end
+  end
+
+  -- Belt and braces, and cheap: the count and the payload are derived from different
+  -- places, and this is the line that would notice if they ever disagreed.
+  if #payload ~= expected then return nil, "a block length the payload does not match" end
   return payload
 end
 
@@ -409,10 +536,15 @@ function msp.buildReadMessage(onData, onError)
   }
 end
 
+-- A nil message is a REFUSED write, not a message with no payload: page_runtime
+-- handles it at :746-753 and shows the reason. See encode() for why a short payload
+-- is the worse answer.
 function msp.buildWriteMessage(data, onWritten, onError)
+  local payload, missing = encode(data)
+  if not payload then return nil, missing end
   return {
     command = WRITE_COMMAND,
-    payload = encode(data),
+    payload = payload,
     isWrite = true,
     processReply = function() if onWritten then onWritten() end end,
     errorHandler = onError,

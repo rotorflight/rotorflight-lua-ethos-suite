@@ -36,6 +36,12 @@ Greyed out until the flight controller answers. Read-only while the model is arm
 - The *BEC Voltage* row is **hidden entirely** on an Opto model. An Opto ESC has no
   BEC, so there is no voltage to set — a capped control for a setting that cannot
   exist would be worse than no control.
+- The **length of the parameter block follows the ESC**, not this page: the flight
+  controller takes it from the count the ESC reports, so the block is 1..64 parameters
+  wide rather than one fixed size. Whatever the page cannot write back exactly as the
+  ESC described it is **refused, not padded** — a short write would have the firmware
+  take the missing part from whatever the previous message left behind and store that
+  on the ESC. A Save that is refused reports why and writes nothing. See #2458.
 
 ### 12 V BEC and the HV-BEC flag
 
