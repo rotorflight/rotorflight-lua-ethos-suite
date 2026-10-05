@@ -114,6 +114,7 @@ SCRIPT_TO_DOC_PATH = {
     # Configuration -> Flight Tuning
     "app/pages/pids.lua": "flight_tuning/pids.md",
     "app/pages/rates.lua": "flight_tuning/rates.md",
+    "app/pages/tune_advisor.lua": "flight_tuning/tune_advisor.md",
     "app/pages/governor_general.lua": "flight_tuning/governor/general.md",
     "app/pages/governor_flags.lua": "flight_tuning/governor/flags.md",
     "app/pages/filters.lua": "flight_tuning/advanced/filters.md",

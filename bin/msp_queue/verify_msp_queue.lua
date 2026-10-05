@@ -1,7 +1,7 @@
 -- Behaviour check for the MSP request queue (issue #2378).
 --
 -- Run it:
---     lua5.3 bin/msp_queue/verify_msp_queue.lua
+--     lua5.4 bin/msp_queue/verify_msp_queue.lua
 --
 -- What it drives, and why:
 --   * tasks/msp/common.lua and tasks/msp/queue.lua are pure functions of a

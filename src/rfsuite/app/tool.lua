@@ -344,6 +344,13 @@ local MENUS = {
     entries = {
       {title = "@i18n(app.modules.pids.name)@", icon = lcd.loadMask("app/gfx/pids.png"), script = "app/pages/pids.lua", lockedWhileArmed = true},
       {title = "@i18n(app.modules.rates.name)@", icon = lcd.loadMask("app/gfx/rates.png"), script = "app/pages/rates.lua", lockedWhileArmed = true},
+      -- Reads what the FC measured in flight and suggests changes to the pages around it.
+      -- Gated anyway: the Clear button sends MSP2_CLEAR_TUNE_ADVISOR
+      -- (0x5F11, write -- lib/msp_tune_advisor.lua:3 and :34), which resets the
+      -- FC's statistics. That is a write to the flight controller, which is
+      -- what this menu's policy gates on (see the ROOT_ENTRIES comment), and
+      -- the advice on screen is worthless without the numbers behind it.
+      {title = "@i18n(app.modules.tune_advisor.name)@", icon = lcd.loadMask("app/gfx/tune_advisor.png"), script = "app/pages/tune_advisor.lua", lockedWhileArmed = true},
       {title = "@i18n(app.modules.governor.name)@", icon = lcd.loadMask("app/gfx/governor.png"), menuId = "governor_menu"},
       {title = "@i18n(app.menu_section_advanced)@", icon = lcd.loadMask("app/gfx/advanced.png"), menuId = "advanced_menu"},
     },
@@ -599,9 +606,10 @@ local function paint(state)
 end
 
 -- Forwards the physical Back/Close key to whatever screen is currently
--- open (see app/menu_container.lua's setEventHandler calls). At the root
--- menu no handler is installed, so this returns false and Ethos falls
--- through to its own default (closing the tool).
+-- open (see app/menu_container.lua's setEventHandler calls). Every screen
+-- installs one, the root menu included, so this normally has a handler to
+-- forward to; with none installed it still returns false rather than
+-- guessing, which hands the key to Ethos.
 local function event(state, category, value, x, y)
   if currentEventHandler then
     return currentEventHandler(category, value) == true

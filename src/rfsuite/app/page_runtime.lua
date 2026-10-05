@@ -266,10 +266,12 @@ function PageRuntime.new(config)
   self.messageDialogs = nil
   self.headerHandle = nil
   self.lastProfile = nil
-  -- The profile that was active when data was last (re)loaded -- nil
-  -- until the first loadData() completes, so the initial session.update
-  -- replay (see lib/bus.lua's subscribe()) only anchors lastProfile
-  -- without triggering a spurious reload before the page has loaded once.
+  -- The profile the data currently behind this page was read for -- captured
+  -- when the read was issued, not when it finished (see loadData()'s
+  -- profileAtReadStart). nil until the first loadData() completes, so the
+  -- initial session.update replay (see lib/bus.lua's subscribe()) only
+  -- anchors lastProfile without triggering a spurious reload before the page
+  -- has loaded once.
   self.loadedProfile = nil
   -- Set by onSessionUpdate/the event handler, consumed by the wakeup
   -- handler wired in buildChrome() -- see that method's comment for why
@@ -543,6 +545,13 @@ function PageRuntime:loadData(focusFn)
   end
   self:showDialog(MSG_LOADING_TITLE, MSG_LOADING_BODY)
 
+  -- Captured here, before the first MSP request is issued, and not in the
+  -- success branch below. A profile switch that lands while this read is in
+  -- flight advances self.lastProfile, so anchoring afterwards names the profile
+  -- the page is NOT showing -- and the anchor is the whole mechanism: once it
+  -- equals lastProfile, onSessionUpdate() below sees nothing to reload.
+  local profileAtReadStart = self.lastProfile
+
   local self_ = self
   local function readSource(index)
     if self_.disposed then return end
@@ -550,9 +559,9 @@ function PageRuntime:loadData(focusFn)
       self_:queueUiAction(function()
         self_:log("loadData: read succeeded")
         self_.loaded = true
-        -- Anchor to whatever profile is active *now* -- see loadedProfile's
-        -- declaration above for why this is what unblocks reload-on-change.
-        self_.loadedProfile = self_.lastProfile
+        -- The profile this data actually came from -- see
+        -- profileAtReadStart's own comment and loadedProfile's declaration.
+        self_.loadedProfile = profileAtReadStart
         for _, field in pairs(self_.fields) do
           field:enable(true)
         end
@@ -566,6 +575,19 @@ function PageRuntime:loadData(focusFn)
         self_:closeDialog(focusFn)
         if self_.onLoaded then
           self_.pendingOnLoaded = true
+        end
+        -- The profile moved while this read was in flight. onSessionUpdate()
+        -- could not arm the reload itself: it needs loadedProfile to be set and
+        -- loaded to be true, and during this window both were false. Arming the
+        -- same flag here closes that gap, and the wakeup tick picks it up in the
+        -- same pass -- loaded is true and the dialog is closed by now, which is
+        -- exactly what that dispatch tests for. The stale values above are
+        -- therefore never painted: the re-read re-disables the fields before
+        -- the frame is drawn.
+        if self_.lastProfile ~= profileAtReadStart then
+          self_:log("profile moved during the read: " .. tostring(profileAtReadStart)
+            .. " -> " .. tostring(self_.lastProfile) .. " -- reloading")
+          self_.pendingReload = true
         end
       end)
       return
@@ -702,14 +724,35 @@ function PageRuntime:performSave(focusFn)
     end
 
     local values = self_.singleSource and self_.data or self_.data[source.key]
-    bus.publish("msp.request", source.mspModule.buildWriteMessage(values, function()
+
+    -- A codec may decline to build a message. lib/msp_governor_profile.lua
+    -- does exactly that when its table is missing a field, because the
+    -- alternative -- encode()'s old `data[name] or 0` -- produces a struct of
+    -- zeros that the firmware cannot tell from a deliberate one: headspeed 0
+    -- and max throttle 0 are in range, the write lands, and the pilot's
+    -- governor settings are gone with nothing reported. A nil message is
+    -- therefore a REFUSED write, not a message with no payload, and it is
+    -- handled here rather than published: no build step and no package step
+    -- reaches this, and it applies to every codec, not only this one.
+    local message, missing = source.mspModule.buildWriteMessage(values, function()
       if self_.disposed then return end
       writeSource(index + 1)
     end, function(reason)
       self_:log("performSave: write FAILED (" .. tostring(source.key) .. "): " .. tostring(reason))
       self_.pendingSaveError = reason or true
       finishSave()
-    end))
+    end)
+
+    if not message then
+      self_:log("performSave: write REFUSED (" .. tostring(source.key)
+        .. "): the codec declined to build a payload (missing "
+        .. tostring(missing) .. ")")
+      self_.pendingSaveError = "incomplete " .. tostring(source.key) .. " data"
+      finishSave()
+      return
+    end
+
+    bus.publish("msp.request", message)
   end
 
   writeSource(1)
@@ -1100,7 +1143,11 @@ function PageRuntime:buildChrome()
     onTool = self.onTool and function()
       local runtime = controlRef.runtime
       if runtime and runtime.onTool then
-        runtime:onTool(runtime.headerHandle.focusTool)
+        -- Plain call, not runtime:onTool(): every page's onTool is
+        -- function(focusFn), so a method call handed it the runtime table
+        -- as focusFn and the first focusFn() ("focusFn is not callable")
+        -- threw from closeDialog() or the dialog's Cancel button.
+        runtime.onTool(runtime.headerHandle.focusTool)
       end
     end or nil,
   })
@@ -1216,6 +1263,10 @@ function PageRuntime:loadInitial()
   memstats.print(self.logTag .. " fields built")
   if self.initialData then
     self.loaded = true
+    -- self.lastProfile, not a captured value: no read is in flight here, the
+    -- page was handed a finished table, so the profile active now is the one it
+    -- was built from. loadData() needs the capture precisely because there the
+    -- two can differ.
     self.loadedProfile = self.lastProfile
     for _, field in pairs(self.fields) do
       field:enable(true)

@@ -1,0 +1,30 @@
+{
+  "kind": "Desktop preview, not radio capture",
+  "size": {
+    "width": 800,
+    "height": 480
+  },
+  "palette": "ETHOS 26 dark fixture",
+  "telemetry": "simulated connected fixture",
+  "font": "Arial",
+  "renderer": "MWRC Theme Studio tests/themes/render_themes.py",
+  "rendererSha256": "5f86203d67ea276f8f9e9ab6522487e6da782f993684018f76b9d8f9baadf08f",
+  "suiteCommit": "91dbbb7fb13f37c71116eba2e96267a45eba1bff",
+  "sourceState": "PR preparation working tree; hashes identify the rendered theme and principal engine inputs",
+  "inputs": {
+    "src/rfsuite/lib/require.lua": "09374652f87ebf7d881c74f75a78f22c54f38d183d314915f8c4507f8fe01a3d",
+    "src/rfsuite/widgets/dashboard/context.lua": "8109956f77426a666e9819f8668e2bb9aa052cad609b8cc37dc01e04a7332093",
+    "src/rfsuite/widgets/dashboard/engine.lua": "00fc46a9f56f854dd85c2ae35fc456ff63287096ee748867354247e27f57f7c5",
+    "src/rfsuite/widgets/dashboard/themes/bastion/configure.lua": "b74a0d1c1dc24c3f35ed268f0243d8d7e05c732da108df75b614e00a73690045",
+    "src/rfsuite/widgets/dashboard/themes/bastion/inflight.lua": "a0d1834ce2b2f0663fde1670aa5427641b299088af6cb89967c0c46b11bf4695",
+    "src/rfsuite/widgets/dashboard/themes/bastion/init.lua": "b02ae970b981275c1b0a348e40f86f5b119d32999bd3e6348ad13f2438dacec3",
+    "src/rfsuite/widgets/dashboard/themes/bastion/postflight.lua": "ce866dd63fb1d29342272872aaeec569bf4be6d1f501469e32163e61e1c90752",
+    "src/rfsuite/widgets/dashboard/themes/bastion/preflight.lua": "a018e02cb71b9ce932217df706c1693ec91df2fd2d1bc711c84c35f370fa1b5f"
+  },
+  "previews": {
+    "preflight.png": "0393d1d9215f073202bc6f00cffc4054467c76884437809d989c7b61416e337f",
+    "inflight.png": "eec6756d35257268872b410b8aafca8a1dbe19330a2998894266239f7c7544c3",
+    "postflight.png": "794b74e3c53b42e133ef02c15346c840fe4480bc7a31cc88ec4ddc677fe9a9f3"
+  },
+  "inputHashNormalization": "UTF-8 Lua source with CRLF/CR normalized to LF"
+}

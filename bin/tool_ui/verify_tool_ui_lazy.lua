@@ -1,7 +1,7 @@
 -- Behaviour check for the load timing of the tool's UI subtree (#2421).
 --
 -- Run it:
---     lua5.3 bin/tool_ui/verify_tool_ui_lazy.lua
+--     lua5.4 bin/tool_ui/verify_tool_ui_lazy.lua
 --
 -- What it drives, and why:
 --   * The real src/rfsuite/app/tool.lua under an Ethos stub environment:

@@ -314,10 +314,23 @@ end }
 ## 6. Tips & Best Practices
 
 * **Responsive Layout:** prefer percent-based (`*_pct`) for cross-resolution.
-* **Performance:** minimize heavy custom `func` paint logic.
+* **Performance:** minimize heavy custom `func` paint logic. Ethos stops any Lua callback that runs 20000 instructions ("Max instructions count reached"); the dashboard then finishes the frame on the next tick, so the pilot sees a stalled or partial frame. A full paint costs roughly 2.5k fixed plus ~300 per box (more on the first paint after a connect, when every box is being set up), so a page past about 35 boxes runs close to the limit -- `kevd`'s postflight page, with 36, is the densest shipped. Check a new or changed theme with `lua5.4 bin/perf/measure_dashboard_instructions.lua <theme> <state>` (add a tick number to see where the instructions go); `bin/perf/verify_instruction_budget.lua` runs every theme in CI and fails any callback at or over the limit.
 * **Modularity:** reuse objects in `objects/`; contribute new subtypes by adding `.lua` in the appropriate folder.
 * **Defaults:** omit fields to pick theme or object defaults.
 
 ---
 
 *This guide reflects the latest objects library (2024–2025) and should serve as the definitive reference for dashboard theme development.*
+
+## Bastion
+
+Bastion is a graphite and cyan dashboard theme designed for the X20 Pro
+(800×480). It requires at least 784×294 pixels and is hidden in both theme
+pickers on smaller screens, including 480×320 and 472×191 radios.
+
+Select it under *System → Settings → Dashboard → Themes*, and configure its
+instrument limits under *System → Settings → Dashboard → Settings*. The saved
+selection is `system/bastion`; instrument thresholds use the `dashboard.bastion`
+section of `SCRIPTS:/rfsuite.user/settings.ini`.
+
+See the [complete theme guide](dashboard/bastion.md) and its three phase previews.

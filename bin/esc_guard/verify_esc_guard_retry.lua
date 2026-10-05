@@ -1,7 +1,7 @@
 -- Behaviour check for the retry behaviour of the two menu guards (#2387).
 --
 -- Run it:
---     lua5.3 bin/esc_guard/verify_esc_guard_retry.lua
+--     lua5.4 bin/esc_guard/verify_esc_guard_retry.lua
 --
 -- What it drives, and why:
 --   * The real src/rfsuite/app/esc_protocol_guard.lua and

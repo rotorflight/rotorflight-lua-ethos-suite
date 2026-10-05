@@ -92,6 +92,7 @@ local DEFAULTS = {
 }
 
 local DASHBOARD_THEMES = {
+  bastion = true,
   ["aerc-n"] = true,
   aerc = true,
   claude = true,
