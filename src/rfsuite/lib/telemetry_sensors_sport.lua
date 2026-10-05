@@ -70,6 +70,13 @@ return {
     {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5125},
     {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5450},
   },
+  -- rotorflight-firmware telemetry/smartport.c FLIGHT_MODE and GPS_SATS.
+  flight_mode = {
+    {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5121},
+  },
+  gps_sats = {
+    {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x0860},
+  },
   adj_f = {
     {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5110},
   },

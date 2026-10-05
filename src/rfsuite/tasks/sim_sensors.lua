@@ -65,6 +65,8 @@ local SENSORS = {
   groundspeed      = {uid = 0x5025, name = "Ground Speed",     unit = UNIT_KNOT,          dec = 1,   min = -1800, max = 3600},
   battery_profile  = {uid = 0x5026, name = "Battery Profile",  unit = nil,                dec = 0,   min = 0,     max = 6},
   tailspeed        = {uid = 0x5027, name = "Tail Speed",       unit = UNIT_RPM,           dec = nil, min = 0,     max = 65535},
+  flight_mode      = {uid = 0x5028, name = "Flight Mode",      unit = nil,                dec = 0,   min = 0,     max = 65536},
+  gps_sats         = {uid = 0x5029, name = "GPS Sats",         unit = nil,                dec = 0,   min = 0,     max = 50},
 }
 
 -- key -> DiySensor instance, built once from SENSORS above. Module index

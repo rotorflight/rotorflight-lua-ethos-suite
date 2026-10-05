@@ -18,6 +18,7 @@ are described in the [README](../README.md).
 | --- | --- |
 | [pages/](pages/README.md) | One file per configuration page, in the menu hierarchy of the system tool. Its index lists every page with its menu path, conditions, and documentation status. |
 | [dashboard-themes.md](dashboard-themes.md) | The dashboard widget: available themes, layout specifications, and screenshots. |
+| [dashboard/controls.md](dashboard/controls.md) | The dashboard widget's toolbar and slide-down info panel: gestures, keys, and what each row shows. |
 | [i18n-locales.md](i18n-locales.md) | Supported languages, locale codes, and translation workflows. |
 | [memory-and-module-lifecycle.md](memory-and-module-lifecycle.md) | Ethos Lua runtime memory architecture, closure caches, GC behavior, and lifecycle management. |
 | [reference/storage.md](reference/storage.md) | What RFSuite stores on the SD card, where, and how a save survives the radio being switched off mid-write. |
