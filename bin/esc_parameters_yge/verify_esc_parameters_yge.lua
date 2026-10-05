@@ -592,10 +592,19 @@ local function runChecks()
   -- -------------------------------------------------------------------------
   out("")
   out("layout")
-  check("the shipped fixture is the length this file's layout predicts",
-    #FIXTURE == LAYOUT_BYTES,
-    string.format("fixture is %d bytes, layout predicts %d -- WIRE_FIELDS changed, update the table above",
+  -- Two facts now, where there was one constant before #2458. LAYOUT_BYTES is what
+  -- this file's field table covers -- the header plus the named fields, 58 bytes --
+  -- and the fixture is longer than that by whatever the ESC's own count adds. Before
+  -- #2458 the two had to be equal, and asserting that equality is what let a fixture
+  -- describe an ESC eight bytes longer than the block it stood for.
+  check("the named fields cover the first 58 bytes of the fixture",
+    #FIXTURE >= LAYOUT_BYTES,
+    string.format("fixture is %d bytes, the named fields cover %d -- a field was removed",
       #FIXTURE, LAYOUT_BYTES))
+  check("the fixture's length is what its own parameter count asks for",
+    #FIXTURE == 2 + 2 * ((FIXTURE[3] or 0) + (FIXTURE[4] or 0) * 256),
+    string.format("fixture is %d bytes, bytes 3..4 ask for %d",
+      #FIXTURE, 2 + 2 * ((FIXTURE[3] or 0) + (FIXTURE[4] or 0) * 256)))
 
   -- -------------------------------------------------------------------------
   -- The read direction, straight off the wire
@@ -719,7 +728,21 @@ local function runChecks()
   -- claim: a row still standing on the ESC's own word writes THAT word back, and
   -- a row that no longer stands on it gets the canonical word for the row rather
   -- than the word it happened to be read from.
-  local function encodeDirect(values)
+  -- The table handed to buildWriteMessage is a DECODED one with the fields under
+  -- test overridden, not a hand-built table of two fields.
+  --
+  -- That changed with #2458: the block's length comes from the count the ESC reports,
+  -- so a table that has never been decoded carries no length and the codec refuses to
+  -- write it -- correctly, since it does not know how long a block to send. The first
+  -- version of this helper passed { timing = 3, timing_raw = 19 } straight through and
+  -- every case below read "wire got nil", which reads like a broken codec and was
+  -- actually the refusal working. The rule under test is unchanged and still pinned;
+  -- it is now reached the way the page reaches it.
+  local function encodeDirect(overrides)
+    local values
+    codec.buildReadMessage(function(d) values = d end, function() end)
+      .processReply(nil, copyOf(FIXTURE))
+    for k, v in pairs(overrides) do values[k] = v end
     local message = codec.buildWriteMessage(values, function() end, function() end)
     if not message or type(message.payload) ~= "table" then return nil end
     return readU16(message.payload, OFFSETS.timing.offset)
@@ -952,9 +975,13 @@ local function runChecks()
         false, "the page did not load, or the unrelated row was never built")
     else
       local payload = pressSave(opts)
+      -- The length the ESC asked for, not the length this file's field table covers.
+      -- Those were the same number before #2458 and are not any more, which is the
+      -- point of the change.
+      local wantLength = 2 + 2 * ((f[3] or 0) + (f[4] or 0) * 256)
       check("Save reaches the ESC after a completed read and a pilot edit",
-        payload ~= nil and #payload == LAYOUT_BYTES,
-        payload and string.format("payload is %d bytes, expected %d", #payload, LAYOUT_BYTES)
+        payload ~= nil and #payload == wantLength,
+        payload and string.format("payload is %d bytes, the ESC's count asks for %d", #payload, wantLength)
           or "no write went out")
     end
   end

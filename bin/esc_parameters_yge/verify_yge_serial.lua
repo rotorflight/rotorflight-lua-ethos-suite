@@ -518,10 +518,14 @@ local function runChecks()
 
   out("")
   out("layout")
-  check("the shipped fixture is the length this file's layout predicts",
-    #baseFixture == LAYOUT_BYTES,
-    string.format("fixture is %d bytes, layout predicts %d -- WIRE_FIELDS changed, update the table above",
+  check("the named fields cover the first 58 bytes of the fixture",
+    LAYOUT_BYTES == 58 and #baseFixture >= LAYOUT_BYTES,
+    string.format("fixture is %d bytes, the named fields cover %d -- expected 58 named bytes",
       #baseFixture, LAYOUT_BYTES))
+  check("the fixture's length is what its own parameter count asks for",
+    #baseFixture == 2 + 2 * ((baseFixture[3] or 0) + (baseFixture[4] or 0) * 256),
+    string.format("fixture is %d bytes, bytes 3..4 ask for %d",
+      #baseFixture, 2 + 2 * ((baseFixture[3] or 0) + (baseFixture[4] or 0) * 256)))
 
   -- -------------------------------------------------------------------------
   -- The serial on the screen

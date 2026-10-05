@@ -871,6 +871,67 @@ them; and FlyRotor, whose esc_sn this suite already decodes and does not display
 left alone because #2462 changes that same codec and is ahead in the merge order.
 ''',
     ),
+    # Appended after #2458 was opened, so this entry is a pure addition rather than a
+    # re-registration of either YGE job.
+    LuaJob(
+        id='yge-block-length',
+        name='The YGE block is as long as the count the ESC reports',
+        step='Check the YGE block length and the refusal on a short block',
+        script='bin/esc_parameters_yge/verify_yge_block_length.lua',
+        rationale=r'''The YGE parameter block is not a fixed size. The flight controller derives its length
+from the count the ESC itself reports (rotorflight-firmware src/main/io/esc_sensor.c:
+ygeParamCount = ygeParams[0], paramPayloadLength = ygeParamCount * 2,
+escGetParamFullBufferLength() = PARAM_HEADER_SIZE + paramPayloadLength with
+PARAM_HEADER_SIZE = 2, and OPENYGE_PARAM_CACHE_SIZE_MAX = 64), so the real range is
+1..64 parameters. The codec described 30 fixed fields, 58 bytes -- 2 + 28 * 2, right for
+an ESC reporting 28 and for no other.
+
+Its own fixture said 32 and stopped at 58: measured, bytes 3..4 read 32 and
+2 + 32 * 2 = 66, which is the length the sibling suite's fixture carries for the same
+ESC. So the shipped fixture described an ESC eight bytes longer than the block it stood
+for, and every save was that much short.
+
+On the write side a short payload is not a truncation. msp.c's only length check on
+MSP_SET_ESC_PARAMETERS is `if (len == 0)`, sbufReadData's memcpy has no bounds check,
+and the destination paramUpdBuffer is a static array nothing clears per message -- so
+the firmware copies the overflow out of the PREVIOUS contents of that buffer and
+escCommitParameters() writes those bytes to the ESC.
+
+Three rules, and the second is the one a reviewer should check hardest:
+
+  1. The payload is exactly 2 + 2 * count, with the unknown tail carried through a read
+     and written back verbatim. Not zeroed: a zero there is a parameter the pilot never
+     saw and never chose.
+  2. A block that cannot be written AS THE ESC DESCRIBED IT is REFUSED, not padded.
+     A count of 0 or one past 64 is refused; a block that arrives short of what its own
+     count demands is refused; and a count below 28 is refused because the block ends
+     inside the field list, so at least one named field was never read and writing it
+     would mean inventing it. That is the misalignment case, and padding it to 58 would
+     be the defect. The refusal is lib/msp_governor_profile.lua's shape (#2446), and
+     app/page_runtime.lua:737-753 reads a nil message as a REFUSED write and names the
+     reason.
+  3. A field the buffer did not carry stays ABSENT rather than decoding as zero.
+     mspcodec.lua:57-58 and :70-75 read a missing byte as 0, so a short block used to
+     decode into a table of plausible zeros with nothing wrong anywhere.
+
+8 of the harness's 12 checks go red without the fix, over every count from 1 to 64
+rather than a sample. The one that looks like a gate and is not checks the harness's own
+buffer builder, so it is green in both passes by construction and says so.
+
+Three harnesses asserted that the fixture's length EQUALS what their field tables
+cover, which is what let a fixture describe the wrong ESC. They now assert two things:
+that the named fields cover the first 58 bytes, and that the fixture's length is what
+its own count asks for. One of them also drove the codec with a two-field hand-built
+table, which the refusal now rejects -- correctly, since such a table carries no count
+and no length -- so it decodes the fixture first and overrides the field under test.
+
+Not claimed: the count a real YGE ESC reports. Every number above comes from the
+fixture; there is no YGE hardware here, and what an ESC does with a misaligned block is
+unchecked. The firmware-side half of #2458 -- msp.c comparing sbufBytesRemaining(src)
+against len the way MSP_SET_4WIF_ESC_FWD_PROG does -- is one line in another
+repository.
+''',
+    ),
     # Appended for #2341. The previous entry is left alone: these are two issues,
     # two harnesses, two jobs.
     LuaJob(

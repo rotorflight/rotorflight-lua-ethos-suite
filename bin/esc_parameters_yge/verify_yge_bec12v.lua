@@ -627,10 +627,18 @@ local function runChecks()
 
   out("")
   out("layout")
-  check("the shipped fixture is the length this file's layout predicts",
-    #baseFixture == LAYOUT_BYTES,
-    string.format("fixture is %d bytes, layout predicts %d -- WIRE_FIELDS changed, update the table above",
+  -- Same two facts as the sibling harness, for the same reason (#2458): LAYOUT_BYTES is
+  -- what this file's field table covers, and the fixture is longer than that by
+  -- whatever the ESC's own count adds. Asserting that the two are EQUAL is what let a
+  -- fixture describe an ESC eight bytes longer than the block it stood for.
+  check("the named fields cover the first 58 bytes of the fixture",
+    #baseFixture >= LAYOUT_BYTES,
+    string.format("fixture is %d bytes, the named fields cover %d -- a field was removed",
       #baseFixture, LAYOUT_BYTES))
+  check("the fixture's length is what its own parameter count asks for",
+    #baseFixture == 2 + 2 * ((baseFixture[3] or 0) + (baseFixture[4] or 0) * 256),
+    string.format("fixture is %d bytes, bytes 3..4 ask for %d",
+      #baseFixture, 2 + 2 * ((baseFixture[3] or 0) + (baseFixture[4] or 0) * 256)))
 
   -- -------------------------------------------------------------------------
   -- The model table
