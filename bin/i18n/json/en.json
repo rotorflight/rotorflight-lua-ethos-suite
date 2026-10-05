@@ -6394,24 +6394,6 @@
           "needs_translation": false,
           "max_length": 11
         },
-        "data_fmt": {
-          "english": "%dm %02ds, %s",
-          "translation": "%dm %02ds, %s",
-          "needs_translation": false,
-          "max_length": 13
-        },
-        "collecting": {
-          "english": "collecting",
-          "translation": "collecting",
-          "needs_translation": false,
-          "max_length": 10
-        },
-        "paused": {
-          "english": "paused",
-          "translation": "paused",
-          "needs_translation": false,
-          "max_length": 6
-        },
         "unsupported": {
           "english": "Needs newer firmware",
           "translation": "Needs newer firmware",
@@ -6419,10 +6401,10 @@
           "max_length": 20
         },
         "clear_prompt": {
-          "english": "Clear the collected flight data?",
-          "translation": "Clear the collected flight data?",
+          "english": "Erase the saved flights?",
+          "translation": "Erase the saved flights?",
           "needs_translation": false,
-          "max_length": 32
+          "max_length": 24
         },
         "response": {
           "english": "Response",
@@ -6563,10 +6545,10 @@
           "max_length": 19
         },
         "why_more": {
-          "english": "Data builds up while you fly in rate mode.",
-          "translation": "Data builds up while you fly in rate mode.",
+          "english": "Each flight in rate mode is saved when you disarm.",
+          "translation": "Each flight in rate mode is saved when you disarm.",
           "needs_translation": false,
-          "max_length": 42
+          "max_length": 50
         },
         "why_uneven": {
           "english": "The response varies too much to judge. Common in 3D.",
@@ -6639,6 +6621,18 @@
           "translation": "The heli answers the stick as asked.",
           "needs_translation": false,
           "max_length": 36
+        },
+        "data_flights_fmt": {
+          "english": "%dm %02ds, %d/%d flights",
+          "translation": "%dm %02ds, %d/%d flights",
+          "needs_translation": false,
+          "max_length": 24
+        },
+        "no_aircraft": {
+          "english": "Connect to a model first",
+          "translation": "Connect to a model first",
+          "needs_translation": false,
+          "max_length": 24
         }
       }
     },
@@ -7090,7 +7084,7 @@
     },
     "sensor_gps_heading": {
       "english": "GPS Course",
-      "max_length": 11,
+      "max_length": 10,
       "needs_translation": false,
       "translation": "GPS Course"
     },

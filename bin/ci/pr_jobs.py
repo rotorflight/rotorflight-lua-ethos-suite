@@ -601,11 +601,12 @@ takes an unrelated table with it looks exactly like a test failure.
         name='Tune Advisor history on disarm',
         step='Check the Tune Advisor history on disarm',
         script='bin/tune_history/verify_tune_history.lua',
-        rationale=r'''The FC keeps its tune advisor statistics in RAM; the radio saves them on
-each disarm so a trend survives power-off. Pins that all three axes land
-in one append, a flight with no new rate data adds nothing, a disarm
-during a link loss is captured on reconnect, and firmware without the
-command is asked once.
+        rationale=r'''The FC keeps its tune advisor statistics in RAM; the radio saves each
+flight on disarm, clears the FC, and the page combines the last 5 flights
+on the current tune. Pins the capture (one flight per disarm, then a
+clear; 5 flights kept; a disarm during a link loss captured on reconnect;
+firmware without the command asked once) and the aggregate (only the
+newest tune, counts added, ratios weighted).
 '''
     ),
 ]

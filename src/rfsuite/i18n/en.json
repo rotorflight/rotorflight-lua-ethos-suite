@@ -4788,6 +4788,12 @@
           "needs_translation": false,
           "translation": "Blackbox"
         },
+        "function_crsf_sensors": {
+          "english": "CRSF Sensors",
+          "max_length": 12,
+          "needs_translation": false,
+          "translation": "CRSF Sensors"
+        },
         "function_custom": {
           "english": "Custom",
           "max_length": 6,
@@ -4829,12 +4835,6 @@
           "max_length": 13,
           "needs_translation": false,
           "translation": "S.PORT Master"
-        },
-        "function_crsf_sensors": {
-          "english": "CRSF Sensors",
-          "max_length": 12,
-          "needs_translation": false,
-          "translation": "CRSF Sensors"
         },
         "function_telem_frsky": {
           "english": "Telemetry FrSky",
@@ -6539,16 +6539,10 @@
           "translation": "Changes"
         },
         "clear_prompt": {
-          "english": "Clear the collected flight data?",
-          "max_length": 32,
+          "english": "Erase the saved flights?",
+          "max_length": 24,
           "needs_translation": false,
-          "translation": "Clear the collected flight data?"
-        },
-        "collecting": {
-          "english": "collecting",
-          "max_length": 10,
-          "needs_translation": false,
-          "translation": "collecting"
+          "translation": "Erase the saved flights?"
         },
         "data": {
           "english": "Flight data",
@@ -6556,11 +6550,11 @@
           "needs_translation": false,
           "translation": "Flight data"
         },
-        "data_fmt": {
-          "english": "%dm %02ds, %s",
-          "max_length": 13,
+        "data_flights_fmt": {
+          "english": "%dm %02ds, %d/%d flights",
+          "max_length": 24,
           "needs_translation": false,
-          "translation": "%dm %02ds, %s"
+          "translation": "%dm %02ds, %d/%d flights"
         },
         "more_why": {
           "english": "More under Why",
@@ -6574,11 +6568,11 @@
           "needs_translation": false,
           "translation": "Tune Advisor"
         },
-        "paused": {
-          "english": "paused",
-          "max_length": 6,
+        "no_aircraft": {
+          "english": "Connect to a model first",
+          "max_length": 24,
           "needs_translation": false,
-          "translation": "paused"
+          "translation": "Connect to a model first"
         },
         "pitch": {
           "english": "Pitch",
@@ -6701,10 +6695,10 @@
           "translation": "Changing F and the rates together keeps the stick feel."
         },
         "why_more": {
-          "english": "Data builds up while you fly in rate mode.",
-          "max_length": 42,
+          "english": "Each flight in rate mode is saved when you disarm.",
+          "max_length": 50,
           "needs_translation": false,
-          "translation": "Data builds up while you fly in rate mode."
+          "translation": "Each flight in rate mode is saved when you disarm."
         },
         "why_no_f": {
           "english": "This axis has no F, so its PID gains set the response.",
@@ -7320,7 +7314,7 @@
     },
     "sensor_gps_heading": {
       "english": "GPS Course",
-      "max_length": 11,
+      "max_length": 10,
       "needs_translation": false,
       "translation": "GPS Course"
     },

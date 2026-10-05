@@ -1,9 +1,10 @@
 -- Run from the repository root with Lua 5.3+: lua bin/tune_history/verify_tune_history.lua
--- Drives the real tasks/tune_history.lua and lib/msp_tune_advisor.lua with a
--- mocked bus and an in-memory LOGS: drive. Pins when a disarm is captured:
--- all three axes in one append, nothing for a flight with no new rate data,
--- a disarm during a link loss still captured on reconnect, and firmware
--- without the tune advisor asked once and then left alone.
+-- Drives the real tasks/tune_history.lua, lib/tune_history.lua and
+-- lib/msp_tune_advisor.lua with a mocked bus and an in-memory LOGS: drive.
+-- Pins the capture (each disarm saved as one flight, then the FC cleared;
+-- only the last 5 flights kept; a disarm during a link loss captured on
+-- reconnect; firmware without the tune advisor left alone) and the page's
+-- aggregate (only flights on the newest tune, counts added, ratios weighted).
 
 local ROOT = "src/rfsuite/"
 
@@ -19,36 +20,30 @@ local function check(label, ok, detail)
   end
 end
 
--- In-memory files for LOGS: paths; everything else is the real filesystem.
+-- In-memory LOGS: files; everything else is the real filesystem.
 local files = {}
 local realOpen = io.open
-local function memFile(path, mode)
-  local f = {}
-  function f:write(...)
-    for i = 1, select("#", ...) do files[path] = files[path] .. tostring(select(i, ...)) end
-    return self
-  end
-  function f:flush() end
-  function f:close() end
-  if mode:sub(1, 1) == "r" then
-    if files[path] == nil then return nil end
-  elseif mode:sub(1, 1) == "w" then
-    files[path] = ""
-  else
-    files[path] = files[path] or ""
-  end
-  return f
-end
 io.open = function(path, mode)
-  mode = mode or "r"
-  if type(path) == "string" and path:sub(1, 5) == "LOGS:" then return memFile(path, mode) end
+  if type(path) == "string" and path:sub(1, 5) == "LOGS:" then
+    if files[path] == nil then return nil end
+    return {close = function() end}
+  end
   return realOpen(path, mode)
 end
 os.mkdir = function() end
+local realRemove = os.remove
+os.remove = function(path)
+  if type(path) == "string" and path:sub(1, 5) == "LOGS:" then files[path] = nil; return true end
+  return realRemove(path)
+end
 
 local iniWrites = {}
 local cache = {
-  ["lib/ini.lua"] = {save_ini_file = function(path, data) iniWrites[#iniWrites + 1] = {path, data}; return true end},
+  ["lib/ini.lua"] = {
+    save_ini_file = function(path, data) iniWrites[#iniWrites + 1] = {path, data}; files[path] = "ini"; return true end,
+    load_file_as_string = function(path) return files[path] end,
+  },
+  ["lib/atomic_write.lua"] = {write = function(path, data) files[path] = data; return true end},
 }
 package.loaded["rfsuite.lib.require"] = function(path)
   if cache[path] == nil then
@@ -57,13 +52,18 @@ package.loaded["rfsuite.lib.require"] = function(path)
   end
   return cache[path]
 end
+local requireModule = package.loaded["rfsuite.lib.require"]
 
-local tuneAdvisor = package.loaded["rfsuite.lib.require"]("lib/msp_tune_advisor.lua")
+local tuneAdvisor = requireModule("lib/msp_tune_advisor.lua")
+local tuneHistory = requireModule("lib/tune_history.lua")
+
+-- Each reply is the simulator fixture with these overrides
+local reply = {seconds = 147, F = 100}
 local realDecode = tuneAdvisor.decode
-local seconds = 147
 tuneAdvisor.decode = function(buf)
   local data = realDecode(buf)
-  data.seconds = seconds
+  data.seconds = reply.seconds
+  data.a.F = reply.F
   return data
 end
 
@@ -73,15 +73,16 @@ os.clock = function() return clock end
 local MCU = "abc123"
 local HISTORY = "LOGS:/rfsuite/tune/" .. MCU .. "/history.csv"
 
-local handlers, requests
+local handlers, requests, saved
 local function load()
-  handlers, requests = {}, {}
+  handlers, requests, saved = {}, {}, {}
   for k in pairs(files) do files[k] = nil end
   for i = #iniWrites, 1, -1 do iniWrites[i] = nil end
   local bus = {
     subscribe = function(topic, fn) handlers[topic] = fn end,
     publish = function(topic, message)
       if topic == "msp.request" then requests[#requests + 1] = message end
+      if topic == "tune_history.saved" then saved[#saved + 1] = message end
     end,
   }
   -- The module takes lib/bus.lua from the require cache
@@ -97,39 +98,48 @@ local function update(fields)
 end
 
 -- Answers every outstanding request in order, including the ones each
--- answer queues; returns the axes asked for.
+-- answer queues; returns what was asked, e.g. {"roll", "pitch", "yaw", "clear"}.
+local NAMES = {"roll", "pitch", "yaw"}
 local function answerAll()
-  local axes = {}
+  local asked = {}
   local i = 1
   while requests[i] do
     local msg = requests[i]
-    axes[#axes + 1] = msg.payload[1] + 1
+    if msg.command == tuneAdvisor.CLEAR_COMMAND then
+      asked[#asked + 1] = "clear"
+    else
+      asked[#asked + 1] = NAMES[msg.payload[1] + 1]
+    end
     msg.processReply(msg, msg.simulatorResponse)
     i = i + 1
   end
   for j = #requests, 1, -1 do requests[j] = nil end
-  return axes
+  return table.concat(asked, ",")
 end
 
-local function rows()
-  local text = files[HISTORY]
-  if not text then return {} end
+local function lines()
   local out = {}
-  for line in text:gmatch("[^\n]+") do out[#out + 1] = line end
+  for line in (files[HISTORY] or ""):gmatch("[^\n]+") do out[#out + 1] = line end
   return out
+end
+
+local function fly(seconds, f)
+  reply.seconds, reply.F = seconds, f or 100
+  clock = clock + 60
+  update({isArmed = true})
+  update({isArmed = false})
+  return answerAll()
 end
 
 do
   load()
-  seconds = 147
   update({isArmed = false})
   update({isArmed = true})
   check("nothing is asked while armed", #requests == 0, #requests .. " requests")
   update({isArmed = false})
-  local axes = answerAll()
-  check("a disarm reads roll, pitch and yaw in turn",
-    #axes == 3 and axes[1] == 1 and axes[2] == 2 and axes[3] == 3, table.concat(axes, ","))
-  local r = rows()
+  local asked = answerAll()
+  check("a disarm reads roll, pitch and yaw, then clears the FC", asked == "roll,pitch,yaw,clear", asked)
+  local r = lines()
   check("a header and one row per axis are written", #r == 4
     and r[1]:match("^date,flight_seconds,axis,")
     and r[2]:match(",147,roll,50,100,0,10,4,36,72,")
@@ -140,27 +150,19 @@ do
   check("the aircraft is named beside its history", #iniWrites == 1
     and iniWrites[1][1] == "LOGS:/rfsuite/tune/" .. MCU .. "/logs.ini"
     and iniWrites[1][2].model.name == "Wing")
-  local inTelemetry = nil
-  for path in pairs(files) do
-    if path:find("/telemetry/", 1, true) then inTelemetry = path end
-  end
-  check("nothing lands among the flight logs", inTelemetry == nil, inTelemetry)
+  check("the page is told", #saved == 1 and saved[1] == MCU)
 
   update({isArmed = false})
   check("a disarm is captured once", #requests == 0, #requests .. " requests")
 
-  update({isArmed = true})
-  update({isArmed = false})
-  answerAll()
-  check("a flight with no new rate data adds nothing", #rows() == 4, #rows() .. " lines")
+  local asked0 = fly(0)
+  check("a flight with no rate flight saves nothing and clears nothing", asked0 == "roll,pitch,yaw"
+    and #lines() == 4, asked0 .. " / " .. #lines() .. " lines")
 
-  seconds = 300
-  update({isArmed = true})
-  update({isArmed = false})
-  answerAll()
-  r = rows()
-  check("the next flight appends below, without a second header", #r == 7
-    and r[5]:match(",300,roll,") and not r[5]:match("^date"), #r .. " lines")
+  for n = 1, 6 do fly(100 + n) end
+  r = lines()
+  check("only the last 5 flights are kept", #r == 16 and r[2]:match(",102,roll,") and r[14]:match(",106,roll,"),
+    #r .. " lines; first " .. tostring(r[2]))
 end
 
 do
@@ -171,7 +173,7 @@ do
   check("waits for the aircraft identity", #requests == 0, #requests .. " requests")
   update({isArmed = false})
   answerAll()
-  check("a disarm during a link loss is captured on reconnect", #rows() == 4, #rows() .. " lines")
+  check("a disarm during a link loss is captured on reconnect", #lines() == 4, #lines() .. " lines")
 end
 
 do
@@ -196,8 +198,49 @@ do
   check("a link error waits before asking again", #requests == 0, #requests .. " requests")
   clock = 106
   update({isArmed = false})
-  answerAll()
-  check("and then captures", #rows() == 4, #rows() .. " lines")
+  -- the clear fails too: it is sent again, without reading again
+  local i = 1
+  while requests[i] and requests[i].command ~= tuneAdvisor.CLEAR_COMMAND do
+    requests[i].processReply(requests[i], requests[i].simulatorResponse)
+    i = i + 1
+  end
+  requests[i].errorHandler("timeout")
+  for j = #requests, 1, -1 do requests[j] = nil end
+  clock = 112
+  update({isArmed = false})
+  local asked = answerAll()
+  check("a clear that did not get through is sent again", asked == "clear" and #lines() == 4,
+    asked .. " / " .. #lines() .. " lines")
+end
+
+-- The page's aggregate
+do
+  load()
+  fly(60, 100)
+  fly(70, 80)
+  fly(80, 80)
+  local flights = tuneHistory.read(MCU)
+  check("the history reads back as flights", #flights == 3 and flights[3].seconds == 80
+    and flights[3].axes[1].F == 80 and flights[3].axes[3].P == 80, #flights .. " flights")
+
+  local a, used, seconds = tuneHistory.aggregate(flights, 1)
+  local one = flights[3].axes[1]
+  check("only flights on the newest tune are combined", used == 2 and seconds == 150 and a.F == 80,
+    used .. " flights, " .. seconds .. " s")
+  check("counts add up", a.ffCount == 2 * one.ffCount and a.releases == 2 * one.releases
+    and a.spBands[1].count == 2 * one.spBands[1].count, a.ffCount)
+  check("ratios are weighted means", math.abs(a.ffGain - one.ffGain) < 1e-9
+    and math.abs(a.meanRebound - one.meanRebound) < 1e-9, a.ffGain)
+
+  for n = 1, 6 do fly(90 + n, 80) end
+  local _, usedMax = tuneHistory.aggregate(tuneHistory.read(MCU), 1)
+  check("at most 5 flights are combined", usedMax == 5, usedMax)
+
+  local empty, none = tuneHistory.aggregate({}, 2)
+  check("no flights aggregate to zeros", none == 0 and empty.ffCount == 0 and empty.collBands[3].count == 0)
+
+  files[HISTORY] = "some,other,columns\n1,2,3\n"
+  check("a file with other columns reads as no flights", #tuneHistory.read(MCU) == 0)
 end
 
 print()

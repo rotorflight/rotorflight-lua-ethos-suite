@@ -1,14 +1,18 @@
 -- Configuration -> Flight Tuning -> Tune Advisor page.
 --
--- Reads the FC's in-flight rate-loop statistics (lib/msp_tune_advisor.lua,
--- rotorflight-firmware flight/tune_advisor.c) and turns them into concrete
--- changes, one axis at a time: what was measured, which setting to change
--- (named by the page it lives on, in the units that page shows), and why.
--- The firmware only measures; the rules below are the advice, kept here so
--- they can change without a flash. Ported from the Wingflight suite.
+-- Turns the FC's in-flight rate-loop statistics (lib/msp_tune_advisor.lua,
+-- rotorflight-firmware flight/tune_advisor.c) into concrete changes, one axis
+-- at a time: what was measured, which setting to change (named by the page
+-- it lives on, in the units that page shows), and why. The firmware only
+-- measures; the rules below are the advice, kept here so they can change
+-- without a flash. Ported from the Wingflight suite.
 --
--- One axis at a time: the FC answers one axis per request so the reply
--- fits MSP over telemetry.
+-- The statistics come from the saved flights, not from the FC:
+-- tasks/tune_history.lua saves each flight on disarm and clears the FC, and
+-- this page combines the last few flights flown on the current tune
+-- (lib/tune_history.lua). The aircraft is the session's mcuId. The FC is
+-- asked once, on open and on Reload, only to learn whether its firmware has
+-- the tune advisor at all.
 --
 -- Rules, per axis:
 -- - Feed-forward match (gyro / setpoint at the best delay), judged only
@@ -26,8 +30,8 @@
 --   a lower Iterm Relax Cutoff; with F still off, F comes first; otherwise
 --   the controller is barely braking, so more P (or B).
 --
--- Clear (header Tool button) resets the FC's statistics; they also reset
--- on their own when the tune changes.
+-- Clear (header Tool button) erases the saved flights and resets the FC's
+-- statistics.
 --
 -- The header and Axis selector are form fields; everything below them is
 -- painted (see open()), like app/pages/logs.lua's graph view. Narrow screens
@@ -39,6 +43,7 @@ local bus = requireModule("lib/bus.lua")
 local closeKey = requireModule("app/close_key.lua")
 local header = requireModule("app/header.lua")
 local tuneAdvisor = requireModule("lib/msp_tune_advisor.lua")
+local tuneHistory = requireModule("lib/tune_history.lua")
 local rateCurveScale = requireModule("lib/rate_curve_scale.lua")
 
 local PAGE_TITLE = "@i18n(app.modules.tune_advisor.name)@"
@@ -48,9 +53,8 @@ local BTN_CANCEL = "@i18n(app.btn_cancel)@"
 local T = {
   axis = "@i18n(app.modules.tune_advisor.axis)@",
   data = "@i18n(app.modules.tune_advisor.data)@",
-  dataFmt = "@i18n(app.modules.tune_advisor.data_fmt)@",
-  collecting = "@i18n(app.modules.tune_advisor.collecting)@",
-  paused = "@i18n(app.modules.tune_advisor.paused)@",
+  dataFlightsFmt = "@i18n(app.modules.tune_advisor.data_flights_fmt)@",
+  noAircraft = "@i18n(app.modules.tune_advisor.no_aircraft)@",
   unsupported = "@i18n(app.modules.tune_advisor.unsupported)@",
   clearPrompt = "@i18n(app.modules.tune_advisor.clear_prompt)@",
   response = "@i18n(app.modules.tune_advisor.response)@",
@@ -103,8 +107,6 @@ local AXES = {
   {"@i18n(app.modules.tune_advisor.yaw)@", 3},
 }
 local AXIS_ROLL, AXIS_PITCH, AXIS_YAW = 1, 2, 3
-
-local REFRESH_INTERVAL_SECONDS = 2
 
 -- Feed-forward match
 local FF_MIN_COUNT = 1000       -- 10 s of usable 40-200 deg/s stick
@@ -366,11 +368,10 @@ local function open(opts)
   opts = opts or {}
   local disposed = false
   local headerHandle = nil
-  local pending = false
-  local unsupported = false       -- the FC refused the command: no polling until Reload
-  local lastPoll = 0
-  local lastData = nil
-  local lastSignature = nil
+  local probing = false
+  local unsupported = false       -- the FC refused the command: until Reload
+  local mcuId = nil               -- the session's aircraft
+  local flights = nil             -- lib/tune_history.lua read(), nil until loaded
   local selected = 1              -- index into AXES
   local section = SECTION_CHANGES -- compact screens only
   local actions, whys = {}, {}
@@ -380,33 +381,36 @@ local function open(opts)
   -- paint after a change, never on a paint with nothing new.
   local view = {data = "-", response = "-", stops = "-", actions = {}, whys = {}, layout = nil}
 
-  -- MSP replies arrive in the background task, where lcd.invalidate() does
-  -- not reach this page's window: flag it and invalidate from our own wakeup
-  -- (as app/pages/curves.lua and logs.lua do).
+  -- MSP replies and bus events arrive in the background task, where
+  -- lcd.invalidate() does not reach this page's window: flag it and
+  -- invalidate from our own wakeup (as app/pages/curves.lua and logs.lua do).
   local needsPaint = false
   local function changed()
     view.layout = nil
     needsPaint = true
   end
 
-  local function showUnsupported()
-    view.data, view.response, view.stops = T.unsupported, "-", "-"
+  local function showOnly(text)
+    view.data, view.response, view.stops = text, "-", "-"
     clearList(view.actions)
     clearList(view.whys)
     changed()
   end
 
   local function render()
-    local data = lastData
-    local axis = AXES[selected][2]
-    if not data or data.axis ~= axis then return end
+    if disposed then return end
+    if unsupported then showOnly(T.unsupported) return end
+    if not mcuId then showOnly(T.noAircraft) return end
+    if not flights then return end
 
-    view.data = string.format(T.dataFmt, math.floor(data.seconds / 60), data.seconds % 60,
-      data.collecting and T.collecting or T.paused)
+    local axis = AXES[selected][2]
+    local a, used, seconds = tuneHistory.aggregate(flights, axis)
+    view.data = string.format(T.dataFlightsFmt, math.floor(seconds / 60), seconds % 60,
+      used, tuneHistory.MAX_FLIGHTS)
 
     clearList(actions)
     clearList(whys)
-    view.response, view.stops = advise(data.a, axis, AXES[selected][1], actions, whys)
+    view.response, view.stops = advise(a, axis, AXES[selected][1], actions, whys)
     clearList(view.actions)
     clearList(view.whys)
     for i = 1, #actions do view.actions[i] = actions[i] end
@@ -414,63 +418,57 @@ local function open(opts)
     changed()
   end
 
-  local function apply(data)
-    -- Skip the rebuild when nothing new was collected
-    local a = data.a
-    local signature = ((data.seconds * 2 + (data.collecting and 1 or 0)) * 4 + data.axis) * 31
-      + a.ffCount + a.releases + a.fullCount + a.F + a.P + a.rcRate + a.sRate + a.ratesType + a.relaxCutoff
-    if signature == lastSignature then return end
-    lastSignature = signature
-    lastData = data
+  local function load()
+    flights = mcuId and tuneHistory.read(mcuId) or nil
     render()
   end
 
   -- reason true is the FC's MSP error reply, the only answer that means the
-  -- firmware lacks the command: say so once and stop polling. Any other
-  -- reason ("cleared" on a link swap, "max_retries" with no FC, "timeout")
-  -- is the link: keep what is on screen and let the next poll try again.
-  local function onRefused(reason)
+  -- firmware lacks the command. Any other reason is the link: the saved
+  -- flights do not need it.
+  local function onProbeData()
+    probing = false
+  end
+
+  local function onProbeError(reason)
+    probing = false
     if disposed or reason ~= true then return end
     unsupported = true
-    lastSignature = nil
-    lastData = nil
-    showUnsupported()
+    render()
   end
 
-  local poll
+  local function probe()
+    if disposed or probing or not mcuId then return end
+    probing = true
+    bus.publish("msp.request", tuneAdvisor.buildReadMessage(1, onProbeData, onProbeError))
+  end
 
-  local function onReadData(data)
-    pending = false
+  local function onSession(snapshot)
     if disposed then return end
-    if data.axis ~= AXES[selected][2] then
-      poll()      -- the axis changed while this request was out
-      return
-    end
-    apply(data)
+    -- A link loss keeps the aircraft: its saved flights do not need the link
+    local nextMcuId = snapshot and snapshot.mcuId or nil
+    if nextMcuId == nil or nextMcuId == mcuId then return end
+    mcuId = nextMcuId
+    unsupported = false
+    load()
+    probe()
   end
 
-  local function onReadError(reason)
-    pending = false
-    onRefused(reason)
+  local function onSaved(savedMcuId)
+    if disposed or savedMcuId ~= mcuId then return end
+    load()
   end
 
-  poll = function()
-    -- Reload stays enabled: this polls every 2 s, and greying the button for
-    -- each request made it flicker. A press while a request is out is a no-op.
-    if disposed or pending or unsupported then return end
-    pending = true
-    bus.publish("msp.request", tuneAdvisor.buildReadMessage(AXES[selected][2], onReadData, onReadError))
-  end
-
-  local function onCleared()
-    if disposed then return end
-    lastSignature = nil
-    poll()
+  local function unsubscribe()
+    bus.unsubscribe("session.update", onSession)
+    bus.unsubscribe("tune_history.saved", onSaved)
   end
 
   local function clear()
-    if disposed then return end
-    bus.publish("msp.request", tuneAdvisor.buildClearMessage(onCleared, onRefused))
+    if disposed or not mcuId then return end
+    tuneHistory.erase(mcuId)
+    bus.publish("msp.request", tuneAdvisor.buildClearMessage(nil, nil))
+    load()
   end
 
   local function confirmClear()
@@ -488,6 +486,7 @@ local function open(opts)
 
   local function goBack()
     disposed = true
+    unsubscribe()
     if opts.setWakeupHandler then opts.setWakeupHandler(nil) end
     if opts.setPaintHandler then opts.setPaintHandler(nil) end
     if opts.setCleanupHandler then opts.setCleanupHandler(nil) end
@@ -577,8 +576,8 @@ local function open(opts)
     onBack = goBack,
     onReload = function()
       unsupported = false         -- ask again, e.g. after a firmware update
-      lastSignature = nil
-      poll()
+      load()
+      probe()
       if headerHandle then headerHandle.focusReload() end
     end,
     onTool = confirmClear,
@@ -596,7 +595,8 @@ local function open(opts)
   if opts.setCleanupHandler then
     opts.setCleanupHandler(function()
       disposed = true
-      lastData = nil
+      unsubscribe()
+      flights = nil
       view.layout = nil
     end)
   end
@@ -606,11 +606,6 @@ local function open(opts)
         needsPaint = false
         if lcd.invalidate then lcd.invalidate() end
       end
-      local now = os.clock()
-      if not pending and not unsupported and now - lastPoll >= REFRESH_INTERVAL_SECONDS then
-        lastPoll = now
-        poll()
-      end
     end)
   end
   if opts.setPaintHandler then opts.setPaintHandler(paint) end
@@ -619,10 +614,7 @@ local function open(opts)
     for i, entry in ipairs(AXES) do
       if entry[2] == value then selected = i end
     end
-    -- Each axis is its own request: fetch the new one now
-    lastSignature = nil
-    lastPoll = os.clock()
-    poll()
+    render()
   end
 
   local axisLine = form.addLine(T.axis)
@@ -646,7 +638,10 @@ local function open(opts)
   end
 
   changed()
-  poll()
+  -- session.update is retained: this delivers the current aircraft now
+  bus.subscribe("session.update", onSession)
+  bus.subscribe("tune_history.saved", onSaved)
+  if not mcuId then render() end
 end
 
 return {open = open}
