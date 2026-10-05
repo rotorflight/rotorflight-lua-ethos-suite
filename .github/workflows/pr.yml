@@ -1017,6 +1017,135 @@ jobs:
       - name: Check the Scorpion serial number and the field names
         run: lua5.4 bin/esc_parameters_scorpion/verify_scorpion_serial.lua
 
+  # The layout was chosen by a PROFILE KEY. profileKey() returned
+  # `<hardware_version>_PL_OPTO` for any OPTO model, and PROFILES carried exactly one such
+  # entry, HW1104_V100456NB_PL_OPTO -- so every OTHER OPTO model missed the lookup, fell
+  # through to PROFILES.default, and got DEFAULT_ITEMS: bec_voltage at item 5,
+  # active_freewheel at 15, where OPTO_ITEMS has no bec_voltage and puts
+  # active_freewheel at 14. An OPTO ESC has no BEC byte, so every field from item 5 up
+  # was read and written one byte off, on a page that looked entirely normal. Measured
+  # on the codec's own simulator fixture, 9 of the 15 fields on the OPTO layout read
+  # the wrong byte, plus a phantom bec_voltage row over a byte the block does not have.
+  # Six of the 15 coincide: four sit before the missing byte, and two carry equal bytes
+  # on either side of the boundary in this fixture.
+  #
+  # OPTO was also looked for in ONE of the two model strings. The block carries the
+  # model twice -- bytes 35..50 as esc_type and 51..65 as mode_name -- plus the
+  # firmware version in bytes 3..18, and which of the three a given ESC puts "OPTO" in
+  # is not something this file can know. EdgeTX concatenates both model strings for
+  # exactly that reason (esc_parameters_hw5.lua:119, :251).
+  #
+  # The VARIANT chooses the LAYOUT and the VERSION chooses the CHOICE LISTS:
+  # profileFor() looks the version up as before and then, for an OPTO model, returns
+  # that profile's tables with OPTO_ITEMS. An explicit `<version>_PL_OPTO` entry still
+  # wins where one exists, because its tables may differ -- HW1104's do not, but that is
+  # a fact about HW1104. The merged profile is built once per version rather than per
+  # call, because isFieldAvailable() reaches profileFor() once per field per page build.
+  #
+  # ON THE ISSUE'S SECOND CLAIM -- the inverted Active Freewheel boolean -- this job
+  # changes nothing, and that is the finding. Both suites say 0 = Enabled, 1 = Disabled
+  # (here msp_esc_parameters_hw5.lua:21, and EdgeTX's esc_forward_hw5 page:687-690),
+  # the codec passes the byte through untouched in both directions, and the flight
+  # controller treats the whole HW5 block as opaque and only ever memcmps it
+  # (esc_sensor.c:2387-2393). The issue itself writes "0 = Enabled vs 1 = Disabled, or
+  # vice versa depending on firmware version" -- a question, not a specification. So
+  # there is nothing here to invert. The parity check is a plain check rather than a
+  # gate, and it exists so the answer stays a fact the repository carries.
+  #
+  # Deliberately NOT in this pull request: FIELD_META declares startup_time as min 4,
+  # max 25, default 11 while decode() hands the page the raw byte, which runs 0..21, so
+  # the row violates its own range. That is a real defect, but it lives in decode() and
+  # encode() rather than in the layout, it affects every HW5 model whether OPTO or not,
+  # and EdgeTX settles it by adding 4 on the way in and taking 4 off on the way out
+  # (esc_parameters_hw5.lua:263-265, :296-298). It has its own harness and its own job.
+  #
+  # 12 of its 31 checks go red without the fix. Pass --self-test to prove that: it
+  # splices the pre-fix profile selection back into a copy of the codec and requires
+  # every one of the twelve to fail -- and verifies the splice four ways first, because
+  # a sabotage that breaks the module differently from the defect under test proves
+  # nothing. One case started out as a gate and the self-test caught it passing on the
+  # pre-fix code, which is why it is a plain check now: OPTO hardware HW1104, because
+  # that model already worked -- PROFILES carried an entry for it.
+  esc-hw5-opto:
+    name: Hobbywing V5 OPTO layout
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Lua 5.4
+        run: sudo apt-get update && sudo apt-get install -y lua5.4
+
+      - name: Check the OPTO layout
+        run: lua5.4 bin/esc_hw5_opto/verify_hw5_opto.lua
+
+  # FIELD_META declares startup_time as min 4, max 25, default 11 -- and decode()
+  # handed the page the RAW byte, which runs 0..21. So the row's declared range was
+  # violated by its own decoder, and an ESC set to its shortest start-up showed "0s" on
+  # a row that begins at 4. That contradiction is entirely inside this one file; no
+  # outside authority is needed to establish that it exists. Deciding WHICH side of it was
+  # wrong does need one, and EdgeTX is it -- this suite has always taken the HW5 layouts
+  # from there. It says so four times over:
+  #
+  #   * its own fixture comment:  11, -- item 6: startup_time (raw 11 -> 15s)
+  #     (tasks/msp/api/esc_parameters_hw5.lua:203)
+  #   * parse():                   out[fieldName] = rawVal + 4                    (:263-265)
+  #   * buildWritePayload():       rawVal = math.max(0, math.min(21,
+  #                                 (tonumber(val) or 4) - 4))                       (:296-298)
+  #   * the page widget:           min = 4, max = 25, step = 1, suffix = "s"
+  #     (app/pages/.../escmfg/hw5/page.lua:617), and its initial ui.config value
+  #     startup_time = 15 (:38) -- the fixture's raw 11 plus four.
+  #
+  # The arithmetic is the cheapest of those arguments and probably the strongest:
+  # 4..25 is 22 values and 0..21 is 22 values. A range that is 22 long on the page and 22
+  # long on the wire is one range counted from two ends, and it also explains the
+  # maximum: 25 - 4 + 1 = 22 = 21 - 0 + 1.
+  #
+  # startup_time is item 6 in DEFAULT and item 5 in OPTO, and ABSENT from HW1132 and
+  # HW1128 -- in both suites -- so the conversion must apply to exactly two of the four
+  # layouts.
+  #
+  # TWO BEHAVIOUR CHANGES worth reading rather than skimming. Both are EdgeTX parity, and
+  # both are stated here because parity alone would hide that something gives:
+  #
+  #   * The clamp is the FIELD's range, 0..21, and not the BYTE's, 0..255. The first
+  #     version of this fix clamped to 0..255; a caller outside the page's own range
+  #     could then write a raw byte the row says cannot exist. The page's min/max make it
+  #     unreachable through the UI, so nothing else in the harness would have noticed.
+  #   * A raw byte above 21 is now written back as 21 rather than as itself. Pre-fix an
+  #     ESC that sent 22 had its 22 passed through untouched. That is what EdgeTX does and
+  #     it is the right default for a field with a range, but it is a change, so it is
+  #     gated rather than left as a side effect.
+  #
+  # The harness found the second one by accident: the whole-block round trip swept all 81
+  # byte positions and reported 234 of 20736 values changed, first at byte 71 -- item 6,
+  # startup_time. The Startup Time byte is now excluded from that sweep with the reason
+  # written down, and its behaviour pinned by a gate of its own.
+  #
+  # 6 of its 12 checks are gates. Pass --self-test to prove that: it splices the pre-fix
+  # decode()/encode() back into a copy of the codec and requires all six to fail, and it
+  # verifies its own splice four ways first. Two of the six were gates in the first
+  # version and the self-test caught them passing on the pre-fix code -- "every other
+  # field is untouched" and "HW1132 and HW1128 do not gain one" both guard the FIX rather
+  # than detect the DEFECT, so they are plain checks now. The read gate and the write
+  # gate are not redundant: a codec that added four in and subtracted four out is
+  # perfectly consistent and would pass every round trip in the file while showing the
+  # wrong number.
+  esc-hw5-startup:
+    name: Hobbywing V5 Startup Time byte
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Lua 5.4
+        run: sudo apt-get update && sudo apt-get install -y lua5.4
+
+      - name: Check the Startup Time conversion
+        run: lua5.4 bin/esc_hw5_startup/verify_hw5_startup.lua
+
   # Per-language PR builds (mirrors push.yml behavior)
   create-zip:
     name: Build PR ZIP (${{ matrix.lang }})
