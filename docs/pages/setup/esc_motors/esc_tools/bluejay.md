@@ -25,6 +25,25 @@ Greyed out until the flight controller answers. Read-only while the model is arm
 
 - Changes are written to the flight controller EEPROM upon Save.
 
+## What Save writes
+
+Save writes the ESC's whole 66-byte parameter block, and only the rows you moved
+are changed in it.
+
+The block carries more than this page has a row for: vendor bytes, reserved flags
+and legacy encodings that a configurator app wrote. Those are read back from the
+ESC and sent straight back out again, byte for byte, so a save that changed one
+row leaves every other byte exactly as the ESC reported it. A row the page *does*
+show is handled the same way — if you did not move it, its byte goes back
+unchanged, even where the number on screen is not a direct copy of the byte.
+
+Two rows are one decision: *96→48 % Threshold* must not sit above
+*48→24 % Threshold*. Lowering *48→24 %* pulls *96→48 %* down with it, and
+*96→48 %* is capped at *48→24 %*.
+
+The bytes beyond those 66 are the flight controller's own business and are left
+alone.
+
 ## Choosing the ESC
 
 If the flight controller reports more than one ESC, this page lists them and you
