@@ -10,7 +10,7 @@ Rates Advanced editor page. Loaded on demand (plain loadfile) only when the user
 
 ## Where to find it
 
-*Configuration* → *Flight Tuning* → *Advanced* → *Rates* → *Advanced*
+*Configuration* → *Flight Tuning* → *Rate Options* → *Advanced*
 
 Greyed out until the flight controller answers. Read-only while the model is armed.
 

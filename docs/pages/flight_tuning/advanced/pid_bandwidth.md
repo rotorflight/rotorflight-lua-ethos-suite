@@ -10,7 +10,7 @@ PID Bandwidth profile editor page. Loaded on demand (plain loadfile) only when t
 
 ## Where to find it
 
-*Configuration* → *Flight Tuning* → *Advanced* → *PID Bandwidth*
+*Configuration* → *Flight Tuning* → *PID Bandwidth*
 
 Greyed out until the flight controller answers. Read-only while the model is armed.
 

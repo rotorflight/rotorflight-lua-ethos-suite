@@ -10,7 +10,7 @@ PID Controller profile editor page. Loaded on demand (plain loadfile) only when 
 
 ## Where to find it
 
-*Configuration* → *Flight Tuning* → *Advanced* → *PID Controller*
+*Configuration* → *Flight Tuning* → *PID Controller*
 
 Greyed out until the flight controller answers. Read-only while the model is armed.
 

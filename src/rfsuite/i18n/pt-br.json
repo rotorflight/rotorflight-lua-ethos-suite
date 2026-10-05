@@ -305,6 +305,13 @@
       "reverse_text": false,
       "translation": "Avançado"
     },
+    "menu_section_board_radio": {
+      "english": "Board & Radio",
+      "max_length": 13,
+      "needs_translation": true,
+      "reverse_text": false,
+      "translation": "Board & Radio"
+    },
     "menu_section_controls": {
       "english": "Controls",
       "max_length": 8,
@@ -318,6 +325,27 @@
       "needs_translation": false,
       "reverse_text": false,
       "translation": "Ajuste de Voo"
+    },
+    "menu_section_mixer_servos": {
+      "english": "Mixer & Servos",
+      "max_length": 14,
+      "needs_translation": true,
+      "reverse_text": false,
+      "translation": "Mixer & Servos"
+    },
+    "menu_section_power_motors": {
+      "english": "Power & Motors",
+      "max_length": 14,
+      "needs_translation": true,
+      "reverse_text": false,
+      "translation": "Power & Motors"
+    },
+    "menu_section_sensors": {
+      "english": "Sensors",
+      "max_length": 7,
+      "needs_translation": true,
+      "reverse_text": false,
+      "translation": "Sensors"
     },
     "menu_section_tools": {
       "english": "Tools",
@@ -6176,8 +6204,8 @@
           "translation": "Avançado"
         },
         "name": {
-          "english": "Rates",
-          "max_length": 5,
+          "english": "Rate Options",
+          "max_length": 12,
           "needs_translation": false,
           "reverse_text": false,
           "translation": "Taxas"

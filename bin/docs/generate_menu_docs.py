@@ -233,7 +233,7 @@ def parse_lua_menus():
         })
 
     # Extract MENUS table block
-    menus_match = re.search(r"local MENUS = \{([\s\S]+?)\n\}\s*\nlocal nav", content)
+    menus_match = re.search(r"local MENUS = \{([\s\S]+?)\n\}\s*\n(?:--[^\n]*\n)*local nav", content)
     if not menus_match:
         raise ValueError("Could not find MENUS table in tool.lua")
     menus_block = menus_match.group(1)

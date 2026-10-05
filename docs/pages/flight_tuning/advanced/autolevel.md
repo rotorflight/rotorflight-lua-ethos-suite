@@ -10,7 +10,7 @@ Autolevel profile editor page. Loaded on demand (plain loadfile) only when the u
 
 ## Where to find it
 
-*Configuration* → *Flight Tuning* → *Advanced* → *Autolevel*
+*Configuration* → *Flight Tuning* → *Autolevel*
 
 Greyed out until the flight controller answers. Read-only while the model is armed.
 
