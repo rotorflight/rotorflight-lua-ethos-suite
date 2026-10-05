@@ -825,8 +825,6 @@ pre-fix code, which is why it is a plain check now: OPTO hardware HW1104, becaus
 that model already worked -- PROFILES carried an entry for it.
 '''
     ),
-    # Stacked on esc-hw5-opto (#2463): this is the Startup Time conversion, which
-    # #2463 carried at first and which moved here so it can be reviewed on its own.
     LuaJob(
         id='esc-hw5-startup',
         name='Hobbywing V5 Startup Time byte',
