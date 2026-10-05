@@ -713,6 +713,67 @@ jobs:
       - name: Check the 12 V BEC ceiling and the flag
         run: lua5.4 bin/esc_parameters_yge/verify_yge_bec12v.lua
 
+  # Three of the twenty-one XDFly block's words are stored one below the number
+  # the page shows (FIELD_OFFSETS: gov_p 1, gov_i 1, motor_poles 1), and encode()
+  # subtracted the bias without clamping the result. A value of 0 therefore packed
+  # 0 - 1 = -1, and mspcodec.writeU16 MASKS rather than clamps -- toByte() is
+  # math_floor(value) % 256 (lib/mspcodec.lua:85-87) -- so both bytes came out 0xFF.
+  #
+  # 0xFFFF is not an arbitrary number here. It is what the ESC answers a write it
+  # refused, which is the reason the sibling suite guards it:
+  # rotorflight-lua-edgetx-suite .../msp/api/esc_parameters_xdfly.lua:146-153 --
+  # "a shifted value is never taken below zero: 0xFFFF is what the ESC answers a write
+  # it refused, so a word of that shape must not be built here." EdgeTX clamps with
+  # `if v < 0 then v = 0 end`. This suite had the same bias table and no clamp, so the
+  # two suites disagreed about the one word that carries a refusal.
+  #
+  # WHAT IS NOT CLAIMED. The page cannot produce a value below the bias: FIELD_META's
+  # min equals the bias for all three fields, and field_layout.lua:442-446 hands that
+  # straight to form.addNumberField. Measured, not assumed -- case 1 asserts the three
+  # floors against the codec's own table. So this is a latent defect, not an observed
+  # one, and it is reported as such in #2467. Two things keep it worth fixing rather
+  # than documenting: `data and data[key] or 0` packs 0 for an ABSENT key, which lands
+  # on 0xFFFF by itself and is the same invented-zero shape #2348 had to fix in
+  # msp_governor_profile.lua; and #2339 established there is a second writer besides
+  # the widget, which inherits the unguarded subtraction.
+  #
+  # OMP and ZTW are driven too. Both requireModule() this codec and delegate
+  # buildWriteMessage to it (omp:8/:43-46, ztw:8/:43-46), so a clamp landing in only
+  # the XDFLY file would leave two vendors broken -- and pass 2 of the self-test has to
+  # seed the base key with the sabotaged codec before loading them, or requireModule()
+  # re-reads the repaired file off disk and both vendor gates stay green.
+  #
+  # 8 of its 22 checks are gates. Pass --self-test to prove that: it cuts the clamp out
+  # of encode() and requires all eight to go red, comparing verdicts BY NAME. It
+  # verifies its own cut five ways first. Two of those verifications exist because this
+  # file got it wrong first, and both failures were silent -- pass 2 ran the FIXED
+  # codec twice and reported every gate green:
+  #   * "  for i = 1, #EDIT_FIELDS do" appears in decode() AND in encode(), so a cut
+  #     anchored on the loop alone replaced the wrong one and left the clamp standing.
+  #   * the codec's own self-cache guard is keyed "rfsuite.lib.msp_esc_parameters_xdfly",
+  #     so loading the sabotaged copy under a different key cleared nothing and the
+  #     guard returned the fixed module.
+  #
+  # Three checks are deliberately NOT gates, and the file says which: the
+  # FIELD_OFFSETS round-trip over the legal range (the pre-fix code got that right --
+  # it is why #2343 does not reproduce), the whole-block sweep, and the two vendors'
+  # signature bytes. The sweep is the subtle one: without the clamp, -1 masks to 0xFFFF
+  # inside the SAME two bytes the clamp writes, so it cannot tell the defect from the
+  # fix. A gate that cannot fail is worse than no check at all.
+  esc-xdfly-bias:
+    name: The biased ESC words never reach 0xFFFF
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Lua 5.4
+        run: sudo apt-get update && sudo apt-get install -y lua5.4
+
+      - name: Check the lower clamp on the biased ESC words
+        run: lua5.4 bin/esc_xdfly_bias/verify_xdfly_bias.lua
+
   # Per-language PR builds (mirrors push.yml behavior)
   create-zip:
     name: Build PR ZIP (${{ matrix.lang }})
