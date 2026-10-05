@@ -137,11 +137,16 @@ local function open(opts)
     end
     if cleanModelType(modelType) ~= cleanModelType(savedModelType) then return end
     if snapshot and snapshot.smartfuelModelType ~= nil then
-      modelType = cleanModelType(snapshot.smartfuelModelType)
+      local nextType = cleanModelType(snapshot.smartfuelModelType)
+      if nextType == cleanModelType(savedModelType) then return end
+      modelType = nextType
       savedModelType = modelType
       if runtime and runtime.data then runtime.data.smartfuel_model_type = modelType end
-      if runtime and runtime.loaded then
-        runtime:captureCleanData()
+      -- session.update arrives every snapshot: patch only this key in the
+      -- clean copy, never recapture the whole of data, or any unsaved MSP
+      -- field edit is taken as clean and Save disables itself again.
+      if runtime and runtime.cleanData then
+        runtime.cleanData.smartfuel_model_type = modelType
         runtime:refreshDirty()
       end
       if form.invalidate then form.invalidate() end

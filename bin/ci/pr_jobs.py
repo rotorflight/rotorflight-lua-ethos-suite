@@ -544,6 +544,79 @@ deliberately not gates: they pass on the pre-fix codec too, and a gate check tha
 cannot go red is worse than no check.
 '''
     ),
+    LuaJob(
+        id='esc-raw-bytes',
+        name='An ESC save rewrites only the row the pilot moved',
+        step='Check that unedited ESC bytes survive a save',
+        script='bin/esc_raw_bytes/verify_esc_raw_bytes.lua',
+        rationale=r'''Both ESC forward-programming codecs laid the write payload out from the parsed fields
+alone. lib/msp_esc_parameters_bluejay.lua and lib/msp_esc_parameters_am32.lua
+both walked WIRE_FIELDS and wrote one byte per entry from `data[name]`; Bluejay's
+decode() already kept the ESC's own bytes in `data._raw` and nothing read them.
+
+That is not a display bug, because the flight controller merges nothing.
+msp.c's MSP_SET_ESC_PARAMETERS (msp.c:3397-3409) copies exactly
+escGetParamBufferLength() bytes over the update buffer and commits that, and that
+length is a two-byte header plus BLHELI_S_MSP_NUM_EEPROM_BYTES (0x40) for the 0xC1
+signature Bluejay shares with BLHeli_S, or AM32_NUM_EEPROM_BYTES (0x30) for 0xC2
+(esc_sensor.c:4553-4570). So Bluejay is 66 bytes and AM32 is 50 -- and the ESC
+parameter bytes beyond that window are the firmware's own business, kept from its
+own cache in fourwayIfFetchData (esc_sensor.c:765-819). These first 0x40 bytes are
+the Lua suite's and nobody else's. Every byte encode() did not reproduce
+byte-for-byte is a byte the ESC is told changed.
+
+Measured on the pre-fix codecs, poking one byte at a time over all 256 values and
+re-encoding with nothing edited: Bluejay rewrote 130 of the 256 minimum-startup-
+power bytes, 181 of the maximum-startup-power bytes, one of the PWM-frequency
+bytes and 155 and 188 of the two PWM-threshold bytes -- 655 in all -- and AM32
+rewrote 248 of the 256 timing-advance bytes, because two firmware generations
+number the same four positions differently (0..3 and 10..42 in steps of 8) and
+both spellings occur in the field. The pre-fix Bluejay encoder also clamped
+threshold_96to48 onto threshold_48to24 on every save, so an ESC reporting the
+pair the other way round was corrected whether or not the pilot looked at either
+row.
+
+encode() now starts from a copy of the ESC's own bytes and writes one field only
+when the pilot moved it off the byte that value came from. It is the rule the
+EdgeTX suite already applies to its five transformed Bluejay fields
+(esc_parameters_bluejay.lua's TRANSFORMS / buildWritePayload) and to the AM32
+timing byte (encodeTimingAdvance), extended from those fields to the whole block.
+A write with no ESC bytes behind it is now a REFUSED write rather than a payload
+of zeros, the same shape as lib/msp_governor_profile.lua's refusal and handled by
+app/page_runtime.lua's existing nil-message branch.
+
+The exhaustive check is the one that matters and it is not a sample: every byte
+position against every one of its 256 values, decode/encode with nothing edited.
+That is 16896 Bluejay pairs and 12800 AM32 ones, and on the pre-fix codecs it fails
+at exactly the six positions above. The staged page-level cases exist because
+every value in the shipped fixtures happens to survive the pre-fix round trip, so
+a case built on the fixture alone would have passed on the defective codec.
+
+No build and no package step reaches any of it: it needs two codecs, a page, a
+shared editor, a runtime and an MSP round trip. The harness drives the real pages
+and the real runtime, and stubs app/pages/esc_forward_4way.lua for the reason
+bin/esc_signature does -- it only picks which ESC to address, and its own
+os.clock() delays cost about six seconds per open.
+
+14 of its 41 checks go red on the pre-fix codecs. Pass --self-test to prove that
+rather than take it on trust: it splices the pre-fix codec directions and the
+pre-fix buildWriteMessage back into copies of both codecs and requires every one
+of the fourteen to fail. Three things in that self-test were wrong the first time
+and are recorded here because each of them made the self-test pass without proving
+anything:
+  * the spliced codecs were loaded through the normal helper, which reads the
+    checked-out path and never sees the redirect -- so nine of the seventeen gates
+    then registered stayed green on the FIXED codec;
+  * two gates carried identical wording from the two codecs' refusal checks and
+    collided in the gate list, which the duplicate counter caught;
+  * the first discriminator for "is this the pre-fix codec?" asked whether byte 7
+    moved, which proves nothing: 0 is a legal minimum-startup-power byte and
+    normalizes straight back to 0.
+And the eight timing-decode cases, the three timing write-direction cases and the
+Motor KV case are deliberately NOT gates -- they pass on the pre-fix codec too,
+and a gate check that cannot go red is worse than no check.
+'''
+    ),
     # Appended after #2456 was opened, so this entry is a pure addition rather
     # than a re-registration of esc-parameters-yge: that job arrived with #2456.
     LuaJob(
@@ -594,6 +667,104 @@ five Opto models lack one, so their BEC Voltage row is hidden rather than capped
 the fix back out of the three files that carry it and requires every one of the
 eleven to fail -- and verifies its own cut four ways first, because a slice that
 takes an unrelated table with it looks exactly like a test failure.
+'''
+    ),
+    LuaJob(
+        id='esc-flyrotor-payload',
+        name='FlyRotor writes 56 bytes and refuses a short block',
+        step='Check the FlyRotor block length and the length guard',
+        script='bin/esc_flyrotor_payload/verify_flyrotor_payload.lua',
+        rationale=r'''#2340 asks for three things about the FlyRotor forward-programming payload: extend the
+spec to 56 bytes, make the base and ADV/OTHER sub-page offsets match it, and
+validate buffer lengths before writing.
+
+Measured, the first two were already true and have been all along. The length comes
+from the flight controller's own page table, not from anybody's transcription of it:
+rotorflight-firmware src/main/sensors/esc_sensor.c:1931-1932 holds
+`static uint16_t flyParamPages[] = { 0x0016, 0x160C, 0x220A, 0x2C0A }` with
+hi-byte = offset and lo-byte = length; flyCalcParamBufferLength() (:2130-2136) sums
+the low bytes, 22 + 12 + 10 + 10 = 54, and escGetParamFullBufferLength()
+(:4540-4551) adds PARAM_HEADER_SIZE = 2. So MSP_ESC_PARAMETERS carries 56 bytes for
+a FlyRotor -- which is exactly what the codec's WIRE_FIELDS summed to and what its
+shipped simulatorResponse already carried. WIRE_FIELDS lands on all four page
+boundaries field for field: 8 fields over INFO's 22 bytes, 12 over BASIC's 12, 8
+over ADV's 10, 7 over OTHER's 10, nothing unmapped and nothing straddling a
+boundary. A decode/encode round trip with nothing edited changes 0 of 14 336 byte
+values. The EdgeTX codec computes PAYLOAD_LEN = 56 as well.
+
+Two things follow from flyParamPages being a COMPILE-TIME CONSTANT in the flight
+controller, and both are the opposite of what the issue assumes. 56 is not a floor
+a newer ESC firmware raises -- the FC never asks the ESC how long its block is. And
+the four pages are filled one at a time (flyDecodeReadResp, :2138-2157) with the
+payload only becoming available once every page is cached (:2150-2151), so msp.c
+returns false for a zero length: a short block is a TRUNCATED READ, not a smaller
+layout.
+
+That is where the defect was, and it is the issue's third point. lib/mspcodec.lua is
+deliberately bounds-safe -- a byte past the end reads as 0, not nil -- and its own
+header says a decoder that cannot tolerate a missing field must check the length
+itself. This codec did not. Measured on the pre-fix codec:
+
+    decode(40 bytes) -> encode wrote 56 bytes, 26 of them zero
+    decode( 3 bytes) -> encode wrote 56 bytes, 55 of them zero
+    decode( 0 bytes) -> encode wrote 56 bytes, ALL of them zero
+
+The signature gate does not catch it, because esc_signature is byte 1 and a 40-byte
+reply still carries it. And flyParamCommit() (:1964-1987) writes every page whose
+bytes DIFFER from the FC's cached block, so the zeroed pages are written: ADV lost
+soft_start, auto_restart_time, restart_acc, gov_p, gov_i, active_freewheel,
+drive_freq and motor_erpm_max, and OTHER lost throttle_protocol,
+telemetry_protocol, led_color_index, led_color_rgb, motor_temp_sensor, motor_temp
+and battery_capacity.
+
+The fix is the guard, in the shape lib/msp_battery.lua already uses for the same
+reason: decode() returns nil plus a reason for a short block and processReply calls
+onError, so the shared editor never opens on a zeroed tail; encode() refuses a table
+that is not a decoded one instead of zeroing what it is missing, and
+buildWriteMessage() declines to build a message, which app/page_runtime.lua already
+treats as a REFUSED write and reports. Pre-fix, a table missing exactly one field
+produced a payload with that field zeroed for 33 of the 37 fields, and RAISED for
+the other four (esc_sn, esc_iap, esc_fw, led_color_rgb -- writeValue() turned the
+missing value into 0 first and 0 is truthy in Lua, so `bytes or {}` kept the number
+and writeBytes() indexed it).
+
+The width table is now one WIRE table instead of a pair of if-chains in
+readValue()/writeValue(), and BLOCK_BYTES is summed from it, so the length guard and
+the layout cannot drift apart.
+
+8 of its 27 checks go red on the pre-fix codec. Pass --self-test to prove that: it
+splices the pre-fix byte helpers, the pre-fix decode()/encode() and the pre-fix
+buildReadMessage()/buildWriteMessage() back into a copy of the codec and requires
+every one of the eight to fail. Four mistakes in that self-test are worth keeping,
+because each of them made it pass without proving anything:
+  * the first splice ran from readBytes() to version() and took WIRE and
+    BLOCK_BYTES with it, so the spliced module had no BLOCK_BYTES and the layout
+    section raised on a nil in pass 2 -- aborting before the verdict;
+  * tryWrite() returned the message in both result slots, so every success was
+    recorded as a raise and the report said all 37 fields raised when only four do;
+  * it then mapped "raised" onto "declined", which is not the same thing, and two
+    gates stayed green against a codec that crashes rather than refuses;
+  * it captured only pcall's first result, so buildWriteMessage()'s refusal REASON
+    was thrown away and the gate that checks the reason failed on the FIXED codec.
+
+Everything in the layout and round-trip sections is deliberately NOT a gate: those
+are the issue's first two points, already satisfied, and they are here so the claim
+is a fact the repository carries rather than a sentence in a comment. So is "a block
+of exactly 56 bytes is accepted" -- that has to hold in both passes, and requiring
+it to go red would be requiring the harness to fail on correct behaviour.
+'''
+    ),
+    LuaJob(
+        id='tune-history',
+        name='Tune Advisor history on disarm',
+        step='Check the Tune Advisor history on disarm',
+        script='bin/tune_history/verify_tune_history.lua',
+        rationale=r'''The FC keeps its tune advisor statistics in RAM; the radio saves each
+flight on disarm, clears the FC, and the page combines the last 5 flights
+on the current tune. Pins the capture (one flight per disarm, then a
+clear; 5 flights kept; a disarm during a link loss captured on reconnect;
+firmware without the command asked once) and the aggregate (only the
+newest tune, counts added, ratios weighted).
 '''
     ),
     # Appended for #2341. The previous entry is left alone: these are two issues,
