@@ -5570,6 +5570,13 @@
           "reverse_text": false,
           "translation": "黑匣子"
         },
+        "function_crsf_sensors": {
+          "english": "CRSF Sensors",
+          "max_length": 12,
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "CRSF Sensors"
+        },
         "function_custom": {
           "english": "Custom",
           "max_length": 6,
@@ -6747,6 +6754,7 @@
           "english": "Bastion",
           "max_length": 7,
           "needs_translation": false,
+          "reverse_text": false,
           "translation": "Bastion"
         },
         "dashboard_theme_claude": {
@@ -7600,18 +7608,11 @@
           "translation": "Changes"
         },
         "clear_prompt": {
-          "english": "Clear the collected flight data?",
-          "max_length": 32,
+          "english": "Erase the saved flights?",
+          "max_length": 24,
           "needs_translation": true,
           "reverse_text": false,
           "translation": "Clear the collected flight data?"
-        },
-        "collecting": {
-          "english": "collecting",
-          "max_length": 10,
-          "needs_translation": true,
-          "reverse_text": false,
-          "translation": "collecting"
         },
         "data": {
           "english": "Flight data",
@@ -7620,12 +7621,12 @@
           "reverse_text": false,
           "translation": "Flight data"
         },
-        "data_fmt": {
-          "english": "%dm %02ds, %s",
-          "max_length": 13,
+        "data_flights_fmt": {
+          "english": "%dm %02ds, %d/%d flights",
+          "max_length": 24,
           "needs_translation": true,
           "reverse_text": false,
-          "translation": "%dm %02ds, %s"
+          "translation": "%dm %02ds, %d/%d flights"
         },
         "more_why": {
           "english": "More under Why",
@@ -7641,12 +7642,12 @@
           "reverse_text": false,
           "translation": "Tune Advisor"
         },
-        "paused": {
-          "english": "paused",
-          "max_length": 6,
+        "no_aircraft": {
+          "english": "Connect to a model first",
+          "max_length": 24,
           "needs_translation": true,
           "reverse_text": false,
-          "translation": "paused"
+          "translation": "Connect to a model first"
         },
         "pitch": {
           "english": "Pitch",
@@ -7789,8 +7790,8 @@
           "translation": "Changing F and the rates together keeps the stick feel."
         },
         "why_more": {
-          "english": "Data builds up while you fly in rate mode.",
-          "max_length": 42,
+          "english": "Each flight in rate mode is saved when you disarm.",
+          "max_length": 50,
           "needs_translation": true,
           "reverse_text": false,
           "translation": "Data builds up while you fly in rate mode."
@@ -8510,7 +8511,7 @@
     },
     "sensor_gps_heading": {
       "english": "GPS Course",
-      "max_length": 11,
+      "max_length": 10,
       "needs_translation": false,
       "reverse_text": false,
       "translation": "GPS 航迹"
