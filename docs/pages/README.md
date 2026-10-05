@@ -51,9 +51,9 @@ and structure follow [_template.md](../_template.md).
 | Page | File | Conditions | Status |
 | --- | --- | --- | --- |
 | Configuration | [setup/configuration.md](setup/configuration.md) | Greyed out until the flight controller answers. Read-only while the model is armed. | written |
+| Ports | [setup/ports.md](setup/ports.md) | Greyed out until the flight controller answers. Read-only while the model is armed. | written |
 | Radio Config | [setup/radio_config.md](setup/radio_config.md) | Greyed out until the flight controller answers. Read-only while the model is armed. | written |
 | Telemetry | [setup/telemetry.md](setup/telemetry.md) | Greyed out until the flight controller answers. Read-only while the model is armed. | written |
-| Ports | [setup/ports.md](setup/ports.md) | Greyed out until the flight controller answers. Read-only while the model is armed. | written |
 | Accelerometer | [setup/accelerometer.md](setup/accelerometer.md) | Greyed out until the flight controller answers. Read-only while the model is armed. | written |
 | Alignment | [setup/alignment.md](setup/alignment.md) | Greyed out until the flight controller answers. Read-only while the model is armed. | written |
 | Swash | [setup/mixer/swash.md](setup/mixer/swash.md) | Greyed out until the flight controller answers. Read-only while the model is armed. | written |

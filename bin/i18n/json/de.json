@@ -1198,8 +1198,8 @@
       "rates_advanced": {
         "name": {
           "english": "Rate Options",
-          "translation": "Raten",
-          "needs_translation": false,
+          "translation": "Rate Options",
+          "needs_translation": true,
           "reverse_text": false,
           "max_length": 12
         },

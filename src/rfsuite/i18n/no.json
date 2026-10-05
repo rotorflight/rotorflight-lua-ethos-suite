@@ -6206,9 +6206,9 @@
         "name": {
           "english": "Rate Options",
           "max_length": 12,
-          "needs_translation": false,
+          "needs_translation": true,
           "reverse_text": false,
-          "translation": "Priser"
+          "translation": "Rate Options"
         },
         "pitch": {
           "english": "Pitch",
