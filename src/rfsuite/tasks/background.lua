@@ -28,6 +28,8 @@ local telemetrySensors = requireModule("lib/telemetry_sensors.lua")
 local mspQueue = requireModule("tasks/msp/queue.lua").new(mspCommon)
 local session = requireModule("tasks/session.lua")
 local logging = requireModule("tasks/logging.lua")
+-- Event-driven off "session.update": no handle or scheduler job to keep
+requireModule("tasks/tune_history.lua")
 local audioEvents = requireModule("tasks/audio_events.lua")
 local audioSwitches = requireModule("tasks/audio_switches.lua")
 local scheduler = Scheduler.new()
