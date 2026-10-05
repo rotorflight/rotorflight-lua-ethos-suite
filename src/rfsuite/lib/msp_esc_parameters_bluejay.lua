@@ -134,51 +134,149 @@ local function clamp(value, min, max)
   return value
 end
 
-local function readValue(buf, wireType)
-  if wireType == "u16" then return mspcodec.readU16(buf) or 0 end
-  local raw = mspcodec.readU8(buf) or 0
-  if wireType == "startup_power_min" then return clamp(raw * 1000 / 2047 + 1000, 1000, 1125) end
-  if wireType == "startup_power_max" then return clamp(raw * 1000 / 250 + 1000, 1004, 1300) end
-  if wireType == "pwm_frequency" and raw == 192 then return 0 end
-  if wireType == "threshold" then return clamp(raw * 100 / 255, 0, 100) end
-  return raw
+-- For four of these wire types the byte the ESC stores is not the number the
+-- page shows: the range is coarser than the 256 bytes behind it, so several
+-- bytes share one displayed value. NORMALIZE is stored byte -> shown value and
+-- ENCODED is the other direction; a wire type in neither is the identity, which
+-- is every u8 and the one u16.
+--
+-- That is also why none of these can be inverted from the value alone.
+-- startup_power_min folds 256 bytes onto 126 shown values, so a shown value does
+-- not say which byte it came from; pwm_frequency spells one position two ways,
+-- with 192 and 0 both meaning "Dynamic". encode() therefore compares against the
+-- stored byte rather than against a re-derived one, which is what lets it write
+-- a byte it did not have to change back untouched.
+local NORMALIZE = {
+  startup_power_min = function(raw) return clamp(raw * 1000 / 2047 + 1000, 1000, 1125) end,
+  startup_power_max = function(raw) return clamp(raw * 1000 / 250 + 1000, 1004, 1300) end,
+  pwm_frequency = function(raw) if raw == 192 then return 0 end return raw end,
+  threshold = function(raw) return clamp(raw * 100 / 255, 0, 100) end,
+}
+
+local ENCODED = {
+  startup_power_min = function(value) return clamp((value - 1000) * 2047 / 1000, 0, 255) end,
+  startup_power_max = function(value) return clamp((value - 1000) * 250 / 1000, 0, 255) end,
+  pwm_frequency = function(value) if value == 0 then return 192 end return value end,
+  threshold = function(value) return clamp(value * 255 / 100, 0, 255) end,
+}
+
+-- The two PWM-frequency thresholds are one decision wearing two rows: the 96->48
+-- threshold must not sit above the 48->24 one. Kept as names because the pair
+-- has to be recognised field by field while the block is laid out, and
+-- THRESHOLD_CEILING is declared first in WIRE_FIELDS on purpose -- it is the
+-- value the other one is held under, so it has to be known before the second
+-- of the pair is written.
+local THRESHOLD_CEILING = "threshold_48to24"
+local THRESHOLD_CAPPED = "threshold_96to48"
+
+-- The next field out of `source`, as the number the ESC stores, advancing
+-- source.offset. u16 is little-endian, which is the order mspcodec.writeU16
+-- lays it down in.
+local function takeRaw(source, wireType)
+  if wireType == "u16" then
+    local lo = mspcodec.readU8(source)
+    local hi = mspcodec.readU8(source)
+    return lo + hi * 256
+  end
+  return mspcodec.readU8(source)
 end
 
-local function writeValue(payload, wireType, value)
+local function putRaw(payload, wireType, value)
   if wireType == "u16" then
-    mspcodec.writeU16(payload, value or 0)
+    mspcodec.writeU16(payload, value)
     return
   end
-  local raw = value or 0
-  if wireType == "startup_power_min" then raw = clamp(((value or 1000) - 1000) * 2047 / 1000, 0, 255) end
-  if wireType == "startup_power_max" then raw = clamp(((value or 1004) - 1000) * 250 / 1000, 0, 255) end
-  if wireType == "pwm_frequency" and tonumber(value) == 0 then raw = 192 end
-  if wireType == "threshold" then raw = clamp((value or 0) * 255 / 100, 0, 255) end
-  mspcodec.writeU8(payload, raw)
+  mspcodec.writeU8(payload, value)
+end
+
+local function shownValue(wireType, stored)
+  local normalize = NORMALIZE[wireType]
+  if not normalize then return stored end
+  return normalize(stored)
+end
+
+local function storedValue(wireType, value)
+  local encode = ENCODED[wireType]
+  if not encode then return value end
+  return encode(value)
 end
 
 local function decode(buf)
   buf.offset = 1
-  local data = {_raw = {}}
-  for i = 1, #buf do data._raw[i] = buf[i] end
+  -- Every byte the ESC sent, kept verbatim. The page declares 21 rows for this
+  -- block and fewer are shown on any one ESC, since several depend on the layout
+  -- revision; the rest of the 66 are vendor bytes, reserved flags and legacy
+  -- encodings that a configurator app wrote and this suite never had to
+  -- understand. encode() is why they are worth keeping.
+  local raw = {}
+  for i = 1, #buf do raw[i] = buf[i] or 0 end
+  local data = {_raw = raw}
   for i = 1, #WIRE_FIELDS do
     local field = WIRE_FIELDS[i]
-    data[field[1]] = readValue(buf, field[2])
+    data[field[1]] = shownValue(field[2], takeRaw(buf, field[2]))
   end
   return data
 end
 
+-- The block the flight controller hands the ESC is the 66 bytes this suite
+-- sends and nothing else: msp.c's MSP_SET_ESC_PARAMETERS copies exactly
+-- escGetParamBufferLength() bytes over the update buffer and commits that
+-- (msp.c:3399-3408, esc_sensor.c:4553-4570 -- a 2-byte header plus the ESC's
+-- first 0x40 parameter bytes). The firmware keeps the rest of the ESC's
+-- parameter block itself, from its own cache; these 64 are the Lua suite's.
+--
+-- So every byte this function does not reproduce is a byte the ESC is told
+-- changed. Laying the block out from the parsed fields rewrites all of it, and
+-- it rewrites the rows that DO exist too whenever the number a row shows is not
+-- the byte behind it -- measured on the pre-fix codec, a save that touched only
+-- the beacon volume moved the minimum startup power on 130 of its 256 byte
+-- values, the maximum startup power on 181, and a PWM threshold on 155 and 188.
+--
+-- So the payload starts as a copy of what the ESC sent, and one field is
+-- written only when the pilot moved it off the byte that value came from.
+-- Everything else is the ESC's own byte back, verbatim. This is the rule the
+-- EdgeTX suite applies to its five transformed fields
+-- (esc_parameters_bluejay.lua's TRANSFORMS and buildWritePayload), extended
+-- from those five to the whole block -- and, unlike that one, a byte this
+-- layout does not name at all survives too, because the payload is the ESC's
+-- rather than a fresh one.
 local function encode(data)
+  if type(data) ~= "table" or type(data._raw) ~= "table" then
+    return nil, "_raw"
+  end
+
   local payload = {}
-  local original96 = data and data.threshold_96to48
-  if data and data.threshold_48to24 and data.threshold_96to48 and data.threshold_96to48 > data.threshold_48to24 then
-    data.threshold_96to48 = data.threshold_48to24
-  end
+  local ceiling, ceilingMoved = nil, false
+
+  data._raw.offset = 1
   for i = 1, #WIRE_FIELDS do
-    local field = WIRE_FIELDS[i]
-    writeValue(payload, field[2], data and data[field[1]])
+    local name, wireType = WIRE_FIELDS[i][1], WIRE_FIELDS[i][2]
+    local stored = takeRaw(data._raw, wireType)
+    local shown = shownValue(wireType, stored)
+    local value = data[name]
+    local moved = value ~= nil and value ~= shown
+    if not moved then value = shown end
+
+    if name == THRESHOLD_CEILING then
+      ceiling, ceilingMoved = value, moved
+    elseif name == THRESHOLD_CAPPED then
+      -- One decision wearing two rows, so moving either half moves the pair --
+      -- but only then. An ESC that reports the two the other way round keeps
+      -- them on a save that changed something else, which is the whole point of
+      -- starting from the ESC's own bytes.
+      if (ceilingMoved or moved) and ceiling ~= nil and value > ceiling then
+        value = ceiling
+        moved = true
+      end
+    end
+
+    if moved then
+      putRaw(payload, wireType, storedValue(wireType, value))
+    else
+      putRaw(payload, wireType, stored)
+    end
   end
-  if data then data.threshold_96to48 = original96 end
+
   return payload
 end
 
@@ -248,10 +346,25 @@ function msp.buildReadMessage(onData, onError)
   }
 end
 
+-- Builds a ready-to-publish write message. `data` is the table buildReadMessage()
+-- handed onData() -- the whole thing, not only the rows this page shows, since
+-- the block is written at once and encode() starts from the bytes it carries.
+--
+-- Returns `nil, reason` when there is no such table, and no message at all in
+-- that case: a payload laid out without the ESC's own bytes would put zeroes
+-- where the ESC had vendor flags and legacy timing tables, which is the defect
+-- this encoding exists to prevent, so there is nothing to publish. Returning a
+-- message with no payload is not an option -- app/page_runtime.lua treats a nil
+-- message as a refused write and reports it (see its writeSource()), the same
+-- as lib/msp_governor_profile.lua's refusal.
 function msp.buildWriteMessage(data, onWritten, onError)
+  local payload, reason = encode(data)
+  if not payload then
+    return nil, reason
+  end
   return {
     command = WRITE_COMMAND,
-    payload = encode(data),
+    payload = payload,
     isWrite = true,
     processReply = function() if onWritten then onWritten() end end,
     errorHandler = onError,
