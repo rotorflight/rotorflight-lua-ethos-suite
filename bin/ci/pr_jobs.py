@@ -815,6 +815,62 @@ firmware without the command asked once) and the aggregate (only the
 newest tune, counts added, ratios weighted).
 '''
     ),
+    # Appended after #2455 was opened, so this entry is a pure addition rather than a
+    # re-registration of any of the two YGE jobs or of esc-signature, which covers
+    # several vendors at once.
+    LuaJob(
+        id='esc-parameters-scorpion-serial',
+        name='Scorpion ESCs can be told apart, and the word labelled FW was not one',
+        step='Check the Scorpion serial number and the field names',
+        script='bin/esc_parameters_scorpion/verify_scorpion_serial.lua',
+        rationale=r'''Bytes 57..62 of the Scorpion block were carried as three anonymous U16s named
+padding_1, padding_2 and padding_3, and the summary line read two byte offsets out of
+the raw block by hand:
+
+    return string.format("%s / FW %08X / v%d", model,
+      uintFromRaw(data, {55, 56, 57, 58}),
+      uintFromRaw(data, {61, 62}))
+
+The sibling suite names those bytes, and the widths add up exactly -- 4 + 2 = the 6
+bytes the three U16s occupied:
+
+    rotorflight-lua-edgetx-suite src/rfsuite/tasks/msp/api/esc_parameters_scorpion.lua
+    ... {"motor_startup_sound","U16"}, {"serial_number","U32"},
+        {"firmware_version","U16"}, {"soft_start_time","U16"}, ...
+
+So "FW %08X" was assembled from motor_startup_sound (55-56) and the LOW HALF of
+serial_number (57-58). The page has been showing that number since the codec was
+written. Nothing that meant anything goes away with it: the version was already on the
+line as "v%d" from bytes 61-62, which that list calls firmware_version.
+
+The reference prints the serial in decimal and prints nothing for a zero
+(.../escmfg/scorp/init.lua: `local sn = getUInt(buffer, {57, 58, 59, 60})` and
+`return sn ~= 0 and tostring(sn) or ""`), so both decisions follow it. That page has
+NO header compensation -- unlike the YGE one, which carries mspHeaderBytes = 2 -- so
+its byte numbers and this suite's are the same numbers, and the harness checks that
+against the fixture rather than against a comment.
+
+4 of the harness's 14 checks go red without the change. Two that look like gates are
+deliberately not, and both earned it:
+
+  * the field-list parity check compares two transcriptions and never reads the codec,
+    so it stayed green while the codec's names were cut back to padding_;
+  * "two ESCs that differ only in serial do not render the same line" was ALREADY true
+    before the change, because the word labelled FW was built from bytes that include
+    the low half of the serial -- true for the wrong reason, which makes it useless as
+    a gate.
+
+The gate that ties the naming claim to the code is the fixture round-trip: the serial
+the codec decodes has to be the u32 at byte 57, read out of the shipped fixture and
+out of the page's own decoded table.
+
+Two more things the check found while being written, both left as stated gaps rather
+than fixed here: the sibling decodes stick_max and stick_zero after gov_integral and
+this suite does not -- and builds no row for either, so nothing can be written into
+them; and FlyRotor, whose esc_sn this suite already decodes and does not display, is
+left alone because #2462 changes that same codec and is ahead in the merge order.
+''',
+    ),
 ]
 
 VERBATIM_JOBS = [
