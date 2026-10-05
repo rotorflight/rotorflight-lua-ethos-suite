@@ -2390,7 +2390,8 @@
           "english": "Bastion",
           "translation": "Bastion",
           "needs_translation": false,
-          "max_length": 7
+          "max_length": 7,
+          "reverse_text": false
         },
         "dashboard_theme_kevd": {
           "english": "Kevd",
@@ -2798,6 +2799,13 @@
           "needs_translation": false,
           "reverse_text": false,
           "max_length": 13
+        },
+        "function_crsf_sensors": {
+          "english": "CRSF Sensors",
+          "translation": "CRSF Sensors",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 12
         },
         "function_telem_frsky": {
           "english": "Telemetry FrSky",
@@ -7434,27 +7442,6 @@
           "reverse_text": false,
           "max_length": 11
         },
-        "data_fmt": {
-          "english": "%dm %02ds, %s",
-          "translation": "%dm %02ds, %s",
-          "needs_translation": true,
-          "reverse_text": false,
-          "max_length": 13
-        },
-        "collecting": {
-          "english": "collecting",
-          "translation": "collecting",
-          "needs_translation": true,
-          "reverse_text": false,
-          "max_length": 10
-        },
-        "paused": {
-          "english": "paused",
-          "translation": "paused",
-          "needs_translation": true,
-          "reverse_text": false,
-          "max_length": 6
-        },
         "unsupported": {
           "english": "Needs newer firmware",
           "translation": "Needs newer firmware",
@@ -7463,11 +7450,11 @@
           "max_length": 20
         },
         "clear_prompt": {
-          "english": "Clear the collected flight data?",
+          "english": "Erase the saved flights?",
           "translation": "Clear the collected flight data?",
           "needs_translation": true,
           "reverse_text": false,
-          "max_length": 32
+          "max_length": 24
         },
         "response": {
           "english": "Response",
@@ -7631,11 +7618,11 @@
           "max_length": 19
         },
         "why_more": {
-          "english": "Data builds up while you fly in rate mode.",
+          "english": "Each flight in rate mode is saved when you disarm.",
           "translation": "Data builds up while you fly in rate mode.",
           "needs_translation": true,
           "reverse_text": false,
-          "max_length": 42
+          "max_length": 50
         },
         "why_uneven": {
           "english": "The response varies too much to judge. Common in 3D.",
@@ -7720,6 +7707,20 @@
           "needs_translation": true,
           "reverse_text": false,
           "max_length": 36
+        },
+        "data_flights_fmt": {
+          "english": "%dm %02ds, %d/%d flights",
+          "translation": "%dm %02ds, %d/%d flights",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 24
+        },
+        "no_aircraft": {
+          "english": "Connect to a model first",
+          "translation": "Connect to a model first",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 24
         }
       }
     },
@@ -8248,7 +8249,7 @@
       "translation": "Route GPS",
       "needs_translation": false,
       "reverse_text": false,
-      "max_length": 11
+      "max_length": 10
     },
     "sensor_gps_home_dir": {
       "english": "GPS Home Dir",
