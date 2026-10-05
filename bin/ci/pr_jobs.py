@@ -988,6 +988,72 @@ perfectly consistent and would pass every round trip in the file while showing t
 wrong number.
 '''
     ),
+    LuaJob(
+        id='motor-protocol',
+        name='Throttle Protocol list follows the flight controller',
+        step='Check the motor protocol list and its defaults',
+        script='bin/motor_protocol/verify_motor_protocol.lua',
+        rationale=r'''Issue #2342 asks for the protocol lists to be built from what the FC reports
+instead of from static arrays. The motor half of that turned out to be three facts, and
+the one that mattered was not in the issue.
+
+THE DISABLED ENTRY WAS ON THE WRONG VALUE. rotorflight-firmware's own enum --
+src/main/drivers/motor.h, master 2026-10-04 -- reads:
+
+    PWM_TYPE_CASTLE_LINK,   9
+    PWM_TYPE_SRXL2,        10
+    PWM_TYPE_DISABLED,     11
+
+lib/msp_motor_config.lua had no SRXL2, so its DISABLED entry inherited the next free
+number: 10. Ten is SRXL2. Selecting DISABLED therefore wrote SRXL2 to the flight
+controller -- arming a serial ESC link instead of switching the motor output off.
+
+It stayed invisible because both ends agreed on the wrong number: the codec said 10 and
+so did the four places that fell back to it (esc_motors_throttle.lua's pwmFieldsEnabled()
+and refreshProtocolFields(), esc_motors_rpm.lua's isDshotProtocol() and its wakeup
+handler). A round trip through this suite's own code agreed perfectly. Only the
+firmware's enum says otherwise -- which is why the enum is transcribed into the harness
+rather than read from the suite, and why the pages now take DISABLED from
+motorConfig.DISABLED_PROTOCOL instead of a literal.
+
+SRXL2 WAS MISSING, and it is real: it reached drivers/motor.h on 2026-08-08 (e72e209d,
+#421) and the API minor went to 10 nine days later (ac1f1730, #484), so its floor is
+12.10 -- which is what EdgeTX gates the same list on
+(esc_motors/throttle/page.lua:395). This suite's own floor is 12.09
+(lib/msp_api_version.lua:69-73), so an FC it will happily talk to CAN be older than
+SRXL2. The value arrives with no new plumbing: tasks/session.lua already publishes
+apiVersionMinor in its "session.update" snapshot, page_runtime already subscribes, and
+lib/bus.lua:18/:97 already replays the retained snapshot synchronously -- so it is set
+before the page's first buildSingle().
+
+BRUSHED IS NOT A PROTOCOL. The firmware removed it on 2022-10-19 (9d1645a8) and kept
+slot 4 as a placeholder so the numbers after it would not move; the enum still carries
+"// BRUSHED" on PWM_TYPE_RESERVED, and checkMotorProtocolEnabled()
+(src/main/drivers/motor.c:154-176) has no case for it. It leaves the menu.
+
+WHAT IS NOT CLAIMED. The firmware gates these protocols on BUILD flags -- #ifdef
+USE_DSHOT, USE_TELEMETRY_CASTLE, USE_SRXL2_ESC -- and no MSP message reports them to the
+sender. The API version is a PROXY, not the fact: a target built without USE_SRXL2_ESC
+while reporting 12.10 is still offered SRXL2 and will refuse it at arm time. Nothing on
+the wire can do better, and this job pins the proxy instead of pretending to have the
+capability bits.
+
+CASTLE has no version gate here on purpose. EdgeTX gates it at 12.0.8, but this suite
+refuses to operate below 12.09, so a gate could never fire.
+
+KNOWN AND NOT FIXED: a pilot whose FC sits on the reserved slot sees a choice row whose
+value is not in the list. Whether Ethos draws that blank or snaps it to the first entry
+is not answerable from this repository and needs a live check. No data is at risk --
+choiceGet() returns the stored value unchanged and encode() writes back what was read.
+
+8 of its 22 checks are gates. Pass --self-test to prove that: it cuts the fix back out of
+THREE files -- the DISABLED constant, the choice function and the page's row-state test
+-- and requires all eight to fail, because the pre-fix defect was the static table PLUS
+four bare 10s and cutting one file left eight of thirteen gates green. Five checks are
+plain: four guard against the version check failing OPEN, one is a smoke test.
+'''
+  
+    ),
 ]
 
 VERBATIM_JOBS = [
