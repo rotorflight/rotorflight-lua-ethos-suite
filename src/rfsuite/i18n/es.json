@@ -8878,6 +8878,104 @@
         "reverse_text": false,
         "translation": "Velocidad Rotor"
       },
+      "info_armed": {
+        "english": "Armed",
+        "max_length": 5,
+        "needs_translation": true,
+        "reverse_text": false,
+        "translation": "Armed"
+      },
+      "info_arming": {
+        "english": "Arming",
+        "max_length": 6,
+        "needs_translation": true,
+        "reverse_text": false,
+        "translation": "Arming"
+      },
+      "info_blocked": {
+        "english": "Blocked",
+        "max_length": 7,
+        "needs_translation": true,
+        "reverse_text": false,
+        "translation": "Blocked"
+      },
+      "info_controller": {
+        "english": "Controller",
+        "max_length": 10,
+        "needs_translation": true,
+        "reverse_text": false,
+        "translation": "Controller"
+      },
+      "info_gps": {
+        "english": "GPS",
+        "max_length": 3,
+        "needs_translation": true,
+        "reverse_text": false,
+        "translation": "GPS"
+      },
+      "info_link": {
+        "english": "Link",
+        "max_length": 4,
+        "needs_translation": true,
+        "reverse_text": false,
+        "translation": "Link"
+      },
+      "info_mode": {
+        "english": "Flight mode",
+        "max_length": 11,
+        "needs_translation": true,
+        "reverse_text": false,
+        "translation": "Flight mode"
+      },
+      "info_not_connected": {
+        "english": "Not connected",
+        "max_length": 13,
+        "needs_translation": true,
+        "reverse_text": false,
+        "translation": "Not connected"
+      },
+      "info_pack": {
+        "english": "Pack",
+        "max_length": 4,
+        "needs_translation": true,
+        "reverse_text": false,
+        "translation": "Pack"
+      },
+      "info_profiles_fmt": {
+        "english": "PID %d  Rate %d  Batt %d",
+        "max_length": 24,
+        "needs_translation": true,
+        "reverse_text": false,
+        "translation": "PID %d  Rate %d  Batt %d"
+      },
+      "info_ready": {
+        "english": "Ready",
+        "max_length": 5,
+        "needs_translation": true,
+        "reverse_text": false,
+        "translation": "Ready"
+      },
+      "info_sats": {
+        "english": "Satellites",
+        "max_length": 10,
+        "needs_translation": true,
+        "reverse_text": false,
+        "translation": "Satellites"
+      },
+      "info_used": {
+        "english": "Used",
+        "max_length": 4,
+        "needs_translation": true,
+        "reverse_text": false,
+        "translation": "Used"
+      },
+      "info_used_fmt": {
+        "english": "%d%% used",
+        "max_length": 9,
+        "needs_translation": true,
+        "reverse_text": false,
+        "translation": "%d%% used"
+      },
       "link_max": {
         "english": "Link Max",
         "max_length": 8,
@@ -8961,6 +9059,48 @@
         "needs_translation": false,
         "reverse_text": false,
         "translation": "Volts Mín por celda"
+      },
+      "mode_angle": {
+        "english": "Angle",
+        "max_length": 5,
+        "needs_translation": true,
+        "reverse_text": false,
+        "translation": "Angle"
+      },
+      "mode_failsafe": {
+        "english": "Failsafe",
+        "max_length": 8,
+        "needs_translation": true,
+        "reverse_text": false,
+        "translation": "Failsafe"
+      },
+      "mode_gps_rescue": {
+        "english": "GPS Rescue",
+        "max_length": 10,
+        "needs_translation": true,
+        "reverse_text": false,
+        "translation": "GPS Rescue"
+      },
+      "mode_horizon": {
+        "english": "Horizon",
+        "max_length": 7,
+        "needs_translation": true,
+        "reverse_text": false,
+        "translation": "Horizon"
+      },
+      "mode_normal": {
+        "english": "Normal",
+        "max_length": 6,
+        "needs_translation": true,
+        "reverse_text": false,
+        "translation": "Normal"
+      },
+      "mode_rescue": {
+        "english": "Rescue",
+        "max_length": 6,
+        "needs_translation": true,
+        "reverse_text": false,
+        "translation": "Rescue"
       },
       "profile": {
         "english": "Profile",
