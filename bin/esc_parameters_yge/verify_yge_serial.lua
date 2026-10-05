@@ -13,14 +13,19 @@
 --   it as the `S/N:` part of its subheader
 --   (rotorflight-lua-edgetx-suite src/rfsuite/ui/controls.lua:335-356).
 --
--- What is deliberately NOT claimed here:
---   * That a serial of 0 means "not set". It means the word read back as 0. The
---     check below pins the behaviour -- the part is omitted -- and the reason it
---     is omitted is stated in the codec, but no YGE document was found that says
---     what 0 means, so the omission is a decision to review, not a fact.
---   * That any other vendor has a serial to show. AM32, BLHeli_S and Bluejay do
---     not decode one, and the issue says as much. Nothing here reads their
---     summary lines beyond a format regression pin.
+-- Two decisions in here are settled by the sibling suite rather than argued, and the
+-- harness pins the behaviour instead of restating the reasoning:
+--
+--   * A serial of 0 is left out rather than printed. "S/N 0" reads like data and
+--     identifies nothing. .../escmfg/yge/init.lua's getEscVersion() does the same:
+--     `return sn ~= 0 and tostring(sn) or ""`.
+--   * Decimal, not hexadecimal. Same line: `tostring(sn)`.
+--
+-- The offset looked wrong on first reading and is not: the sibling reads the serial
+-- from {29, 30, 31, 32} because that page carries `local mspHeaderBytes = 2`
+-- (yge/init.lua:8) and its getUInt adds it to every index. 29 + 2 = 31, which is
+-- where serial_number starts in this suite's WIRE_FIELDS -- verified here by the
+-- layout check against the shipped 58-byte fixture.
 --
 -- What it drives, and why:
 --   * The real app/pages/esc_forward_yge.lua through the real

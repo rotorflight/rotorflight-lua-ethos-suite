@@ -355,15 +355,22 @@ local msp = {
 -- shows it as an `S/N:` part of its subheader; this suite has one summary line
 -- per page instead, so it goes here.
 --
--- A serial of 0 is left out rather than printed. An ESC that does not fill the
--- field reports 0, and "S/N 0" reads like data while identifying nothing -- the
--- pilot cannot tell it from a real serial that happens to be small. Absent and
--- zero are treated the same, and both also keep string.format away from a nil.
+-- Both decisions below were checked against the sibling suite rather than argued:
+-- rotorflight-lua-edgetx-suite .../escmfg/yge/init.lua's getEscVersion() is
+--     local sn = getUInt(buffer, {29, 30, 31, 32})
+--     return sn ~= 0 and tostring(sn) or ""
+-- which is decimal, and which prints nothing for a 0. So this matches the
+-- reference on both counts, and the reasons are kept only so a later reader does
+-- not "correct" them:
 --
--- Decimal, because that is how this suite prints every other number in a summary
--- (AM32 "EEPROM %d", Bluejay "Rev %d", BLHeli_S "Revision %d") and the field is a
--- plain u32. No vendor document states how the YGE tool renders it; hexadecimal
--- is the alternative and is left as a reviewer's decision rather than assumed.
+--   * A serial of 0 is left out rather than printed. An ESC that does not fill the
+--     field reports 0, and "S/N 0" reads like data while identifying nothing.
+--   * Decimal, not hexadecimal.
+--
+-- Those indices also settle the offset, which looked wrong at first glance: the
+-- sibling's {29,30,31,32} is two lower than the bytes used here, because that
+-- page carries `local mspHeaderBytes = 2` (yge/init.lua:8) and its getUInt adds it
+-- to every index. 29 + 2 = 31, which is exactly where serial_number starts here.
 local function serialLabel(data)
   local serial = tonumber(data and data.serial_number)
   if not serial or serial <= 0 then return nil end

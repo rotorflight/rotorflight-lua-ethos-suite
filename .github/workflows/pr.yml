@@ -731,16 +731,22 @@ jobs:
   # a nil, and already wrote the ESC's own serial bytes back unchanged -- so those four
   # asserted the fix without being able to detect it.
   #
-  # Two decisions in here are for the reviewer, and the harness states both rather than
-  # asserting them:
+  # Two decisions in here look arguable and are not: the sibling suite settles both, and the
+  # harness pins the behaviour rather than restating the reasoning.
+  # rotorflight-lua-edgetx-suite .../escmfg/yge/init.lua's getEscVersion() is
   #
-  #   * A serial of 0 is left out rather than printed. "S/N 0" reads like data and
-  #     identifies nothing, and the pilot cannot tell it from a small real serial. No YGE
-  #     document was found that says what 0 means, so this is a decision, not a fact.
-  #   * Decimal, not hexadecimal. Every other number in this suite's summary lines is
-  #     decimal (AM32 "EEPROM %d", Bluejay "Rev %d", BLHeli_S "Revision %d") and the field
-  #     is a plain u32 -- but the EdgeTX suite prints some firmware words as %08X, so the
-  #     base is a question with an argument on both sides.
+  #     local sn = getUInt(buffer, {29, 30, 31, 32})
+  #     return sn ~= 0 and tostring(sn) or ""
+  #
+  # which is decimal, and which prints nothing for a 0. So a serial of 0 is left out because
+  # "S/N 0" would read like data and identify nothing, and the base is decimal because that
+  # is what the reference does.
+  #
+  # Those indices also settle the offset, which looked wrong at first glance and is not:
+  # the sibling reads the serial from {29, 30, 31, 32} because that page carries
+  # `local mspHeaderBytes = 2` (yge/init.lua:8) and its getUInt adds it to every index.
+  # 29 + 2 = 31, which is exactly where serial_number starts here. Without that line the two
+  # suites look two bytes apart and neither of them is wrong.
   #
   # AM32, BLHeli_S and Bluejay decode no serial at all, so there is nothing to show for
   # them and this job does not claim otherwise: whether one is readable over MSP 217 is
