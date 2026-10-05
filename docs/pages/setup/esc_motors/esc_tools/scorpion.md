@@ -24,6 +24,10 @@ Greyed out until the flight controller answers. Read-only while the model is arm
 ## Notes
 
 - Changes are written to the flight controller EEPROM upon Save.
+- The line under the title names the model, the firmware version and the ESC's own
+  **serial number**, so two ESCs of the same model can be told apart. An ESC that
+  reports `0` for it shows no serial at all: a printed `S/N 0` would read like data
+  and identify nothing. See #2455.
 
 ## Choosing the ESC
 

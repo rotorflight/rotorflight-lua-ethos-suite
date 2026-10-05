@@ -667,7 +667,55 @@ five Opto models lack one, so their BEC Voltage row is hidden rather than capped
 the fix back out of the three files that carry it and requires every one of the
 eleven to fail -- and verifies its own cut four ways first, because a slice that
 takes an unrelated table with it looks exactly like a test failure.
-'''
+''',
+    ),
+    # Appended after #2455 was opened, so this entry is a pure addition rather than
+    # a re-registration of esc-parameters-yge or esc-parameters-yge-bec12v: those
+    # two arrived with #2456 and #2337.
+    LuaJob(
+        id='esc-parameters-yge-serial',
+        name='YGE ESCs can be told apart by their serial number',
+        step='Check the YGE serial number in the summary line',
+        script='bin/esc_parameters_yge/verify_yge_serial.lua',
+        rationale=r'''lib/msp_esc_parameters_yge.lua decodes the ESC's own serial number -- WIRE_FIELDS
+carries {"serial_number", "u32"} and the block is 58 bytes -- and summaryFor() printed
+two parts, the model label and the firmware version. A pilot with four YGE ESCs had
+no way to tell them apart on the screen. The EdgeTX suite shows it as the `S/N:` part
+of its subheader (rotorflight-lua-edgetx-suite src/rfsuite/ui/controls.lua:335-356).
+
+Three of the harness's 12 checks go red without the fix, and the third is the one
+worth reading first: two ESCs that differ only in serial number must not render the
+same line. That is #2455's complaint stated as something the screen has to do, and it
+cannot be satisfied by a number written into the codec.
+
+The other nine are invariants, and they are registered as checks rather than gates on
+purpose. Four of them were gates in the first version of this file, and the self-test
+said what that was worth: "4 of 6 gate checks cannot detect the missing serial
+number". A codec that shows no serial at all also shows no "S/N 0", raises nothing on
+a nil, and already wrote the ESC's own serial bytes back unchanged -- so those four
+asserted the fix without being able to detect it.
+
+Two decisions in here look arguable and are not: the sibling suite settles both, and the
+harness pins the behaviour rather than restating the reasoning.
+rotorflight-lua-edgetx-suite .../escmfg/yge/init.lua's getEscVersion() is
+
+    local sn = getUInt(buffer, {29, 30, 31, 32})
+    return sn ~= 0 and tostring(sn) or ""
+
+which is decimal, and which prints nothing for a 0. So a serial of 0 is left out because
+"S/N 0" would read like data and identify nothing, and the base is decimal because that
+is what the reference does.
+
+Those indices also settle the offset, which looked wrong at first glance and is not:
+the sibling reads the serial from {29, 30, 31, 32} because that page carries
+`local mspHeaderBytes = 2` (yge/init.lua:8) and its getUInt adds it to every index.
+29 + 2 = 31, which is exactly where serial_number starts here. Without that line the two
+suites look two bytes apart and neither of them is wrong.
+
+AM32, BLHeli_S and Bluejay decode no serial at all, so there is nothing to show for
+them and this job does not claim otherwise: whether one is readable over MSP 217 is
+unchecked.
+''',
     ),
     LuaJob(
         id='esc-flyrotor-payload',
@@ -766,6 +814,123 @@ clear; 5 flights kept; a disarm during a link loss captured on reconnect;
 firmware without the command asked once) and the aggregate (only the
 newest tune, counts added, ratios weighted).
 '''
+    ),
+    # Appended after #2455 was opened, so this entry is a pure addition rather than a
+    # re-registration of any of the two YGE jobs or of esc-signature, which covers
+    # several vendors at once.
+    LuaJob(
+        id='esc-parameters-scorpion-serial',
+        name='Scorpion ESCs can be told apart, and the word labelled FW was not one',
+        step='Check the Scorpion serial number and the field names',
+        script='bin/esc_parameters_scorpion/verify_scorpion_serial.lua',
+        rationale=r'''Bytes 57..62 of the Scorpion block were carried as three anonymous U16s named
+padding_1, padding_2 and padding_3, and the summary line read two byte offsets out of
+the raw block by hand:
+
+    return string.format("%s / FW %08X / v%d", model,
+      uintFromRaw(data, {55, 56, 57, 58}),
+      uintFromRaw(data, {61, 62}))
+
+The sibling suite names those bytes, and the widths add up exactly -- 4 + 2 = the 6
+bytes the three U16s occupied:
+
+    rotorflight-lua-edgetx-suite src/rfsuite/tasks/msp/api/esc_parameters_scorpion.lua
+    ... {"motor_startup_sound","U16"}, {"serial_number","U32"},
+        {"firmware_version","U16"}, {"soft_start_time","U16"}, ...
+
+So "FW %08X" was assembled from motor_startup_sound (55-56) and the LOW HALF of
+serial_number (57-58). The page has been showing that number since the codec was
+written. Nothing that meant anything goes away with it: the version was already on the
+line as "v%d" from bytes 61-62, which that list calls firmware_version.
+
+The reference prints the serial in decimal and prints nothing for a zero
+(.../escmfg/scorp/init.lua: `local sn = getUInt(buffer, {57, 58, 59, 60})` and
+`return sn ~= 0 and tostring(sn) or ""`), so both decisions follow it. That page has
+NO header compensation -- unlike the YGE one, which carries mspHeaderBytes = 2 -- so
+its byte numbers and this suite's are the same numbers, and the harness checks that
+against the fixture rather than against a comment.
+
+4 of the harness's 14 checks go red without the change. Two that look like gates are
+deliberately not, and both earned it:
+
+  * the field-list parity check compares two transcriptions and never reads the codec,
+    so it stayed green while the codec's names were cut back to padding_;
+  * "two ESCs that differ only in serial do not render the same line" was ALREADY true
+    before the change, because the word labelled FW was built from bytes that include
+    the low half of the serial -- true for the wrong reason, which makes it useless as
+    a gate.
+
+The gate that ties the naming claim to the code is the fixture round-trip: the serial
+the codec decodes has to be the u32 at byte 57, read out of the shipped fixture and
+out of the page's own decoded table.
+
+Two more things the check found while being written, both left as stated gaps rather
+than fixed here: the sibling decodes stick_max and stick_zero after gov_integral and
+this suite does not -- and builds no row for either, so nothing can be written into
+them; and FlyRotor, whose esc_sn this suite already decodes and does not display, is
+left alone because #2462 changes that same codec and is ahead in the merge order.
+''',
+    ),
+    # Appended after #2458 was opened, so this entry is a pure addition rather than a
+    # re-registration of either YGE job.
+    LuaJob(
+        id='yge-block-length',
+        name='The YGE block is as long as the count the ESC reports',
+        step='Check the YGE block length and the refusal on a short block',
+        script='bin/esc_parameters_yge/verify_yge_block_length.lua',
+        rationale=r'''The YGE parameter block is not a fixed size. The flight controller derives its length
+from the count the ESC itself reports (rotorflight-firmware src/main/io/esc_sensor.c:
+ygeParamCount = ygeParams[0], paramPayloadLength = ygeParamCount * 2,
+escGetParamFullBufferLength() = PARAM_HEADER_SIZE + paramPayloadLength with
+PARAM_HEADER_SIZE = 2, and OPENYGE_PARAM_CACHE_SIZE_MAX = 64), so the real range is
+1..64 parameters. The codec described 30 fixed fields, 58 bytes -- 2 + 28 * 2, right for
+an ESC reporting 28 and for no other.
+
+Its own fixture said 32 and stopped at 58: measured, bytes 3..4 read 32 and
+2 + 32 * 2 = 66, which is the length the sibling suite's fixture carries for the same
+ESC. So the shipped fixture described an ESC eight bytes longer than the block it stood
+for, and every save was that much short.
+
+On the write side a short payload is not a truncation. msp.c's only length check on
+MSP_SET_ESC_PARAMETERS is `if (len == 0)`, sbufReadData's memcpy has no bounds check,
+and the destination paramUpdBuffer is a static array nothing clears per message -- so
+the firmware copies the overflow out of the PREVIOUS contents of that buffer and
+escCommitParameters() writes those bytes to the ESC.
+
+Three rules, and the second is the one a reviewer should check hardest:
+
+  1. The payload is exactly 2 + 2 * count, with the unknown tail carried through a read
+     and written back verbatim. Not zeroed: a zero there is a parameter the pilot never
+     saw and never chose.
+  2. A block that cannot be written AS THE ESC DESCRIBED IT is REFUSED, not padded.
+     A count of 0 or one past 64 is refused; a block that arrives short of what its own
+     count demands is refused; and a count below 28 is refused because the block ends
+     inside the field list, so at least one named field was never read and writing it
+     would mean inventing it. That is the misalignment case, and padding it to 58 would
+     be the defect. The refusal is lib/msp_governor_profile.lua's shape (#2446), and
+     app/page_runtime.lua:737-753 reads a nil message as a REFUSED write and names the
+     reason.
+  3. A field the buffer did not carry stays ABSENT rather than decoding as zero.
+     mspcodec.lua:57-58 and :70-75 read a missing byte as 0, so a short block used to
+     decode into a table of plausible zeros with nothing wrong anywhere.
+
+8 of the harness's 12 checks go red without the fix, over every count from 1 to 64
+rather than a sample. The one that looks like a gate and is not checks the harness's own
+buffer builder, so it is green in both passes by construction and says so.
+
+Three harnesses asserted that the fixture's length EQUALS what their field tables
+cover, which is what let a fixture describe the wrong ESC. They now assert two things:
+that the named fields cover the first 58 bytes, and that the fixture's length is what
+its own count asks for. One of them also drove the codec with a two-field hand-built
+table, which the refusal now rejects -- correctly, since such a table carries no count
+and no length -- so it decodes the fixture first and overrides the field under test.
+
+Not claimed: the count a real YGE ESC reports. Every number above comes from the
+fixture; there is no YGE hardware here, and what an ESC does with a misaligned block is
+unchecked. The firmware-side half of #2458 -- msp.c comparing sbufBytesRemaining(src)
+against len the way MSP_SET_4WIF_ESC_FWD_PROG does -- is one line in another
+repository.
+''',
     ),
     # Appended for #2341. The previous entry is left alone: these are two issues,
     # two harnesses, two jobs.
