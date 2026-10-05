@@ -3,13 +3,12 @@
 -- The FC's tune advisor statistics (lib/msp_tune_advisor.lua) live in its
 -- RAM: they build up across flights, clear when the tune changes, and are
 -- lost at power-off. On each disarm this reads all three axes and appends
--- them to a CSV in the aircraft's log folder, so the radio keeps a trend the
--- FC cannot:
+-- them to a CSV per aircraft, so the radio keeps a trend the FC cannot:
 --
---   LOGS:/rfsuite/telemetry/<mcuId>/tune/history.csv
+--   LOGS:/rfsuite/tune/<mcuId>/history.csv
 --
--- In a subfolder because app/pages/logs.lua lists every *.csv in the
--- aircraft folder as a flight log. One row per axis per capture. The figures
+-- Beside it, logs.ini names the aircraft in the same format as the flight
+-- log folders (app/pages/logs.lua). One row per axis per capture. The figures
 -- are the FC's running totals, not one flight's: a row whose tune columns
 -- (p .. s_rate) differ from the previous one, or whose flight_seconds
 -- dropped, starts a new set (tune changed, Clear, or FC power-cycled).
@@ -24,7 +23,7 @@ local bus = requireModule("lib/bus.lua")
 local tuneAdvisor = requireModule("lib/msp_tune_advisor.lua")
 local ini = requireModule("lib/ini.lua")
 
-local BASE_DIR = "LOGS:/rfsuite/telemetry"
+local BASE_DIR = "LOGS:/rfsuite/tune"
 local RETRY_SECONDS = 5           -- after a link error, before asking again
 local AXIS_NAMES = {"roll", "pitch", "yaw"}
 
@@ -90,13 +89,11 @@ local function write()
   safeMkdir("LOGS:/rfsuite")
   safeMkdir(BASE_DIR)
   safeMkdir(dir)
-  -- Names the folder in the Logs page when flight logging is off
   if not fileExists(dir .. "/logs.ini") then
     ini.save_ini_file(dir .. "/logs.ini", {model = {name = capture.modelName}})
   end
-  safeMkdir(dir .. "/tune")
 
-  local path = dir .. "/tune/history.csv"
+  local path = dir .. "/history.csv"
   local isNew = not fileExists(path)
   local file = io.open(path, "a")
   if not file then
