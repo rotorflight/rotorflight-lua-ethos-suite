@@ -594,7 +594,49 @@ five Opto models lack one, so their BEC Voltage row is hidden rather than capped
 the fix back out of the three files that carry it and requires every one of the
 eleven to fail -- and verifies its own cut four ways first, because a slice that
 takes an unrelated table with it looks exactly like a test failure.
-'''
+''',
+    ),
+    # Appended after #2455 was opened, so this entry is a pure addition rather than
+    # a re-registration of esc-parameters-yge or esc-parameters-yge-bec12v: those
+    # two arrived with #2456 and #2337.
+    LuaJob(
+        id='esc-parameters-yge-serial',
+        name='YGE ESCs can be told apart by their serial number',
+        step='Check the YGE serial number in the summary line',
+        script='bin/esc_parameters_yge/verify_yge_serial.lua',
+        rationale=r'''lib/msp_esc_parameters_yge.lua decodes the ESC's own serial number -- WIRE_FIELDS
+carries {"serial_number", "u32"} and the block is 58 bytes -- and summaryFor() printed
+two parts, the model label and the firmware version. A pilot with four YGE ESCs had
+no way to tell them apart on the screen. The EdgeTX suite shows it as the `S/N:` part
+of its subheader (rotorflight-lua-edgetx-suite src/rfsuite/ui/controls.lua:335-356).
+
+Three of the harness's 12 checks go red without the fix, and the third is the one
+worth reading first: two ESCs that differ only in serial number must not render the
+same line. That is #2455's complaint stated as something the screen has to do, and it
+cannot be satisfied by a number written into the codec.
+
+The other nine are invariants, and they are registered as checks rather than gates on
+purpose. Four of them were gates in the first version of this file, and the self-test
+said what that was worth: "4 of 6 gate checks cannot detect the missing serial
+number". A codec that shows no serial at all also shows no "S/N 0", raises nothing on
+a nil, and already wrote the ESC's own serial bytes back unchanged -- so those four
+asserted the fix without being able to detect it.
+
+Two decisions in here are for the reviewer, and the harness states both rather than
+asserting them:
+
+  * A serial of 0 is left out rather than printed. "S/N 0" reads like data and
+    identifies nothing, and the pilot cannot tell it from a small real serial. No YGE
+    document was found that says what 0 means, so this is a decision, not a fact.
+  * Decimal, not hexadecimal. Every other number in this suite's summary lines is
+    decimal (AM32 "EEPROM %d", Bluejay "Rev %d", BLHeli_S "Revision %d") and the field
+    is a plain u32 -- but the EdgeTX suite prints some firmware words as %08X, so the
+    base is a question with an argument on both sides.
+
+AM32, BLHeli_S and Bluejay decode no serial at all, so there is nothing to show for
+them and this job does not claim otherwise: whether one is readable over MSP 217 is
+unchecked.
+''',
     ),
 ]
 

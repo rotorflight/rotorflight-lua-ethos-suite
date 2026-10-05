@@ -36,6 +36,11 @@ Greyed out until the flight controller answers. Read-only while the model is arm
 - The *BEC Voltage* row is **hidden entirely** on an Opto model. An Opto ESC has no
   BEC, so there is no voltage to set — a capped control for a setting that cannot
   exist would be worse than no control.
+- The line under the title names the model, the firmware version and the ESC's own
+  **serial number**, so two ESCs of the same model can be told apart — which is what
+  you want when one of four behaves differently. An ESC that reports `0` for it shows
+  no serial at all: a printed `S/N 0` would read like data and identify nothing. See
+  #2455.
 
 ### 12 V BEC and the HV-BEC flag
 

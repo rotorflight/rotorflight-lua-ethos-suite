@@ -350,10 +350,34 @@ local msp = {
   TITLE = "YGE",
 }
 
+-- The ESC's own serial number, which the block already carries at WIRE_FIELDS
+-- ("serial_number", u32) and which nothing displayed until now. The EdgeTX suite
+-- shows it as an `S/N:` part of its subheader; this suite has one summary line
+-- per page instead, so it goes here.
+--
+-- A serial of 0 is left out rather than printed. An ESC that does not fill the
+-- field reports 0, and "S/N 0" reads like data while identifying nothing -- the
+-- pilot cannot tell it from a real serial that happens to be small. Absent and
+-- zero are treated the same, and both also keep string.format away from a nil.
+--
+-- Decimal, because that is how this suite prints every other number in a summary
+-- (AM32 "EEPROM %d", Bluejay "Rev %d", BLHeli_S "Revision %d") and the field is a
+-- plain u32. No vendor document states how the YGE tool renders it; hexadecimal
+-- is the alternative and is left as a reviewer's decision rather than assumed.
+local function serialLabel(data)
+  local serial = tonumber(data and data.serial_number)
+  if not serial or serial <= 0 then return nil end
+  return string.format("S/N %d", serial)
+end
+
 function msp.summaryFor(data)
-  return string.format("%s / %.5f",
+  local parts = {
     typeLabel(data and data.esc_type),
-    (tonumber(data and data.firmware_version) or 0) / 100000)
+    string.format("%.5f", (tonumber(data and data.firmware_version) or 0) / 100000),
+  }
+  local serial = serialLabel(data)
+  if serial then parts[#parts + 1] = serial end
+  return table.concat(parts, " / ")
 end
 
 -- The ceiling of the BEC Voltage field, for the page to hand to the field spec.
