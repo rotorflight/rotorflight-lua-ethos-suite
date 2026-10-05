@@ -93,7 +93,7 @@ local function open(opts)
     -- needs 12.10 and did not exist before it. runtime.apiVersionMinor is nil until
     -- the first session.update arrives, and nil yields the smaller list, so the
     -- conservative set is what a pilot can see before the handshake has finished.
-    choices = motorConfig.protocolChoices(runtime.apiVersionMinor, runtime.data.motor_pwm_protocol),
+    choices = motorConfig.protocolChoices(runtime.apiVersionMinor),
   })
   fieldLayout.buildSingle(runtime, "@i18n(app.modules.esc_motors.motor_pwm_rate)@", {key = PWM_RATE})
   fieldLayout.buildSingle(runtime, "@i18n(app.modules.esc_motors.mincommand)@", {key = MINCOMMAND})

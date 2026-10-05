@@ -42,12 +42,11 @@
 --    after it would not move; drivers/motor.h still carries "// BRUSHED" on
 --    PWM_TYPE_RESERVED. checkMotorProtocolEnabled() in drivers/motor.c:154-176 has
 --    no case for it.
---
---    It is dropped from the MENU but kept VISIBLE when the FC already reports 4.
---    That is not a compromise, it is the whole point: field_layout's choiceGet()
---    hands the choice widget whatever value is stored, with no check against the
---    list, so removing the entry outright would leave a pilot who has 4 in the FC
---    staring at a blank row with no way to see or change it.
+--    It is dropped from the menu outright. Keeping it visible when the FC already
+--    reports 4 would require rebuilding the form after the FC payload arrives, but
+--    field_layout has no re-spec path (a second buildSingle adds a second line).
+--    Round-trip integrity is still preserved: decoding slot 4 and saving back commits
+--    4 unchanged without corrupting the value.
 --
 -- WHAT IS NOT CLAIMED HERE. The firmware gates these protocols on BUILD flags --
 -- checkMotorProtocolEnabled() lists them under #ifdef USE_DSHOT,
