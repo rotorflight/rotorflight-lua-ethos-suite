@@ -14,7 +14,14 @@ The flight controller counts only rate flight while spooled up and airborne, wit
 Time in Angle, Horizon, Trainer, Altitude hold, Rescue, GPS rescue or failsafe is left out. The data builds up over several
 flights and clears on its own when you change the PIDs, Iterm Relax Cutoff, PID mode, rates or the active
 profile. A useful set is about ten seconds of rolls, flips and pirouettes with the stick centred after each one.
-The measurements live in the flight controller's memory and are lost at power-off.
+The measurements live in the flight controller's memory and are lost at power-off. So the radio keeps a
+copy: each time you disarm, the background task reads all three axes and adds them to
+`LOGS:/rfsuite/telemetry/<aircraft>/tune/history.csv` on the radio's SD card, one row per axis, in the same
+aircraft folder as the flight logs. This happens whether or not this page is open. A flight with no new rate
+flight adds nothing. The figures in each row are the flight controller's running totals, so a change in the
+tune columns (P, F, B, Iterm Relax Cutoff, rates), or a drop in `flight_seconds`, marks where a new set of
+measurements began. A disarm while the link is down is saved once the radio reconnects, provided the flight
+controller has not been powered off in between.
 
 ## Where to find it
 

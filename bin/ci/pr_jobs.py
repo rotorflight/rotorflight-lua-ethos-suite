@@ -596,6 +596,18 @@ eleven to fail -- and verifies its own cut four ways first, because a slice that
 takes an unrelated table with it looks exactly like a test failure.
 '''
     ),
+    LuaJob(
+        id='tune-history',
+        name='Tune Advisor history on disarm',
+        step='Check the Tune Advisor history on disarm',
+        script='bin/tune_history/verify_tune_history.lua',
+        rationale=r'''The FC keeps its tune advisor statistics in RAM; the radio saves them on
+each disarm so a trend survives power-off. Pins that all three axes land
+in one append, a flight with no new rate data adds nothing, a disarm
+during a link loss is captured on reconnect, and firmware without the
+command is asked once.
+'''
+    ),
 ]
 
 VERBATIM_JOBS = [

@@ -713,6 +713,25 @@ jobs:
       - name: Check the 12 V BEC ceiling and the flag
         run: lua5.4 bin/esc_parameters_yge/verify_yge_bec12v.lua
 
+  # The FC keeps its tune advisor statistics in RAM; the radio saves them on
+  # each disarm so a trend survives power-off. Pins that all three axes land
+  # in one append, a flight with no new rate data adds nothing, a disarm
+  # during a link loss is captured on reconnect, and firmware without the
+  # command is asked once.
+  tune-history:
+    name: Tune Advisor history on disarm
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Lua 5.4
+        run: sudo apt-get update && sudo apt-get install -y lua5.4
+
+      - name: Check the Tune Advisor history on disarm
+        run: lua5.4 bin/tune_history/verify_tune_history.lua
+
   # Per-language PR builds (mirrors push.yml behavior)
   create-zip:
     name: Build PR ZIP (${{ matrix.lang }})
