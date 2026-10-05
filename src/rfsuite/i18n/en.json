@@ -4788,6 +4788,12 @@
           "needs_translation": false,
           "translation": "Blackbox"
         },
+        "function_crsf_sensors": {
+          "english": "CRSF Sensors",
+          "max_length": 12,
+          "needs_translation": false,
+          "translation": "CRSF Sensors"
+        },
         "function_custom": {
           "english": "Custom",
           "max_length": 6,
@@ -4829,12 +4835,6 @@
           "max_length": 13,
           "needs_translation": false,
           "translation": "S.PORT Master"
-        },
-        "function_crsf_sensors": {
-          "english": "CRSF Sensors",
-          "max_length": 12,
-          "needs_translation": false,
-          "translation": "CRSF Sensors"
         },
         "function_telem_frsky": {
           "english": "Telemetry FrSky",
@@ -7320,7 +7320,7 @@
     },
     "sensor_gps_heading": {
       "english": "GPS Course",
-      "max_length": 11,
+      "max_length": 10,
       "needs_translation": false,
       "translation": "GPS Course"
     },

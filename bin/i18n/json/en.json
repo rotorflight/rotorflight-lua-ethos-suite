@@ -7090,7 +7090,7 @@
     },
     "sensor_gps_heading": {
       "english": "GPS Course",
-      "max_length": 11,
+      "max_length": 10,
       "needs_translation": false,
       "translation": "GPS Course"
     },
