@@ -9,7 +9,7 @@ local motorConfig = requireModule("lib/msp_motor_config.lua")
 local PAGE_TITLE = "@i18n(app.modules.esc_motors.rpm)@"
 
 local function isDshotProtocol(protocol)
-  protocol = tonumber(protocol or 10) or 10
+  protocol = tonumber(protocol) or motorConfig.DISABLED_PROTOCOL
   return protocol >= 5 and protocol <= 8
 end
 
@@ -43,7 +43,7 @@ local function open(opts)
       refreshDshotTelemetry(runtime)
     end,
     onWakeup = function(rt)
-      local protocol = tonumber(rt.data.motor and rt.data.motor.motor_pwm_protocol or 10) or 10
+      local protocol = tonumber(rt.data.motor and rt.data.motor.motor_pwm_protocol) or motorConfig.DISABLED_PROTOCOL
       if protocol ~= lastProtocol then
         lastProtocol = protocol
         refreshDshotTelemetry(rt)
