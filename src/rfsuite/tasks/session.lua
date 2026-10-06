@@ -92,6 +92,8 @@ local session = {
   fuelPercent = nil,
   governorMode = nil,
   governorState = nil,
+  flightModeFlags = nil, -- "flight_mode" telemetry sensor, the FC's flightModeFlags bitmask
+  gpsSats = nil, -- "GPS Sats" telemetry sensor; nil until the FC broadcasts it
   mspTransport = nil,
   telemetrySlots = nil, -- 40-entry S.Port sensor-slot array, see lib/msp_telemetry_config.lua
   pidProfile = nil,
@@ -394,6 +396,8 @@ local function flush()
     fuelPercent = session.fuelPercent,
     governorMode = session.governorMode,
     governorState = session.governorState,
+    flightModeFlags = session.flightModeFlags,
+    gpsSats = session.gpsSats,
     mspTransport = session.mspTransport,
     pidProfile = session.pidProfile,
     rateProfile = session.rateProfile,
@@ -890,6 +894,8 @@ local function setConnected(value, mspQueue, protocol)
     session.fuelPercent = nil
     session.governorMode = nil
     session.governorState = nil
+    session.flightModeFlags = nil
+    session.gpsSats = nil
     session.rxMap = nil
     session.telemetrySlots = nil
     session.pidProfile = nil
@@ -1159,6 +1165,26 @@ local function updateGovernor(protocol)
   end
 end
 
+-- Flight-mode flags and satellite count for the dashboard's info panel.
+-- Read on the profile cadence: both change slowly, and a model without GPS
+-- only costs the miss backoff in lib/telemetry_sensors.lua.
+local function updateInfoPanelTelemetry(protocol)
+  if not telemetrySensors then return end
+  local flags = telemetrySensors.getValue(protocol, "flight_mode")
+  if flags ~= nil then flags = math.floor(flags) end
+  if flags ~= session.flightModeFlags then
+    session.flightModeFlags = flags
+    publish()
+  end
+
+  local sats = telemetrySensors.getValue(protocol, "gps_sats")
+  if sats ~= nil then sats = math.floor(sats) end
+  if sats ~= session.gpsSats then
+    session.gpsSats = sats
+    publish()
+  end
+end
+
 local function updateFlightTimer(now)
   local changed, snapshot, event = flightTimer.update(session.connected, session.isArmed, now)
   -- Recomputed every tick, not only on change: the grace window can expire
@@ -1414,6 +1440,7 @@ local function wakeup(mspQueue, protocol, transport, simSensors)
     if shouldRunScheduled("profiles", PROFILE_INTERVAL, now) then
       updateProfiles(sensorProtocol)
       updateGovernor(sensorProtocol)
+      updateInfoPanelTelemetry(sensorProtocol)
     end
 
     if shouldRunScheduled("adjustment", ADJUSTMENT_INTERVAL, now) then

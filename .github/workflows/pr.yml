@@ -793,6 +793,150 @@ jobs:
       - name: Check the 12 V BEC ceiling and the flag
         run: lua5.4 bin/esc_parameters_yge/verify_yge_bec12v.lua
 
+  # lib/msp_esc_parameters_yge.lua decodes the ESC's own serial number -- WIRE_FIELDS
+  # carries {"serial_number", "u32"} and the block is 58 bytes -- and summaryFor() printed
+  # two parts, the model label and the firmware version. A pilot with four YGE ESCs had
+  # no way to tell them apart on the screen. The EdgeTX suite shows it as the `S/N:` part
+  # of its subheader (rotorflight-lua-edgetx-suite src/rfsuite/ui/controls.lua:335-356).
+  #
+  # Three of the harness's 12 checks go red without the fix, and the third is the one
+  # worth reading first: two ESCs that differ only in serial number must not render the
+  # same line. That is #2455's complaint stated as something the screen has to do, and it
+  # cannot be satisfied by a number written into the codec.
+  #
+  # The other nine are invariants, and they are registered as checks rather than gates on
+  # purpose. Four of them were gates in the first version of this file, and the self-test
+  # said what that was worth: "4 of 6 gate checks cannot detect the missing serial
+  # number". A codec that shows no serial at all also shows no "S/N 0", raises nothing on
+  # a nil, and already wrote the ESC's own serial bytes back unchanged -- so those four
+  # asserted the fix without being able to detect it.
+  #
+  # Two decisions in here look arguable and are not: the sibling suite settles both, and the
+  # harness pins the behaviour rather than restating the reasoning.
+  # rotorflight-lua-edgetx-suite .../escmfg/yge/init.lua's getEscVersion() is
+  #
+  #     local sn = getUInt(buffer, {29, 30, 31, 32})
+  #     return sn ~= 0 and tostring(sn) or ""
+  #
+  # which is decimal, and which prints nothing for a 0. So a serial of 0 is left out because
+  # "S/N 0" would read like data and identify nothing, and the base is decimal because that
+  # is what the reference does.
+  #
+  # Those indices also settle the offset, which looked wrong at first glance and is not:
+  # the sibling reads the serial from {29, 30, 31, 32} because that page carries
+  # `local mspHeaderBytes = 2` (yge/init.lua:8) and its getUInt adds it to every index.
+  # 29 + 2 = 31, which is exactly where serial_number starts here. Without that line the two
+  # suites look two bytes apart and neither of them is wrong.
+  #
+  # AM32, BLHeli_S and Bluejay decode no serial at all, so there is nothing to show for
+  # them and this job does not claim otherwise: whether one is readable over MSP 217 is
+  # unchecked.
+  esc-parameters-yge-serial:
+    name: YGE ESCs can be told apart by their serial number
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Lua 5.4
+        run: sudo apt-get update && sudo apt-get install -y lua5.4
+
+      - name: Check the YGE serial number in the summary line
+        run: lua5.4 bin/esc_parameters_yge/verify_yge_serial.lua
+
+  # #2340 asks for three things about the FlyRotor forward-programming payload: extend the
+  # spec to 56 bytes, make the base and ADV/OTHER sub-page offsets match it, and
+  # validate buffer lengths before writing.
+  #
+  # Measured, the first two were already true and have been all along. The length comes
+  # from the flight controller's own page table, not from anybody's transcription of it:
+  # rotorflight-firmware src/main/sensors/esc_sensor.c:1931-1932 holds
+  # `static uint16_t flyParamPages[] = { 0x0016, 0x160C, 0x220A, 0x2C0A }` with
+  # hi-byte = offset and lo-byte = length; flyCalcParamBufferLength() (:2130-2136) sums
+  # the low bytes, 22 + 12 + 10 + 10 = 54, and escGetParamFullBufferLength()
+  # (:4540-4551) adds PARAM_HEADER_SIZE = 2. So MSP_ESC_PARAMETERS carries 56 bytes for
+  # a FlyRotor -- which is exactly what the codec's WIRE_FIELDS summed to and what its
+  # shipped simulatorResponse already carried. WIRE_FIELDS lands on all four page
+  # boundaries field for field: 8 fields over INFO's 22 bytes, 12 over BASIC's 12, 8
+  # over ADV's 10, 7 over OTHER's 10, nothing unmapped and nothing straddling a
+  # boundary. A decode/encode round trip with nothing edited changes 0 of 14 336 byte
+  # values. The EdgeTX codec computes PAYLOAD_LEN = 56 as well.
+  #
+  # Two things follow from flyParamPages being a COMPILE-TIME CONSTANT in the flight
+  # controller, and both are the opposite of what the issue assumes. 56 is not a floor
+  # a newer ESC firmware raises -- the FC never asks the ESC how long its block is. And
+  # the four pages are filled one at a time (flyDecodeReadResp, :2138-2157) with the
+  # payload only becoming available once every page is cached (:2150-2151), so msp.c
+  # returns false for a zero length: a short block is a TRUNCATED READ, not a smaller
+  # layout.
+  #
+  # That is where the defect was, and it is the issue's third point. lib/mspcodec.lua is
+  # deliberately bounds-safe -- a byte past the end reads as 0, not nil -- and its own
+  # header says a decoder that cannot tolerate a missing field must check the length
+  # itself. This codec did not. Measured on the pre-fix codec:
+  #
+  #     decode(40 bytes) -> encode wrote 56 bytes, 26 of them zero
+  #     decode( 3 bytes) -> encode wrote 56 bytes, 55 of them zero
+  #     decode( 0 bytes) -> encode wrote 56 bytes, ALL of them zero
+  #
+  # The signature gate does not catch it, because esc_signature is byte 1 and a 40-byte
+  # reply still carries it. And flyParamCommit() (:1964-1987) writes every page whose
+  # bytes DIFFER from the FC's cached block, so the zeroed pages are written: ADV lost
+  # soft_start, auto_restart_time, restart_acc, gov_p, gov_i, active_freewheel,
+  # drive_freq and motor_erpm_max, and OTHER lost throttle_protocol,
+  # telemetry_protocol, led_color_index, led_color_rgb, motor_temp_sensor, motor_temp
+  # and battery_capacity.
+  #
+  # The fix is the guard, in the shape lib/msp_battery.lua already uses for the same
+  # reason: decode() returns nil plus a reason for a short block and processReply calls
+  # onError, so the shared editor never opens on a zeroed tail; encode() refuses a table
+  # that is not a decoded one instead of zeroing what it is missing, and
+  # buildWriteMessage() declines to build a message, which app/page_runtime.lua already
+  # treats as a REFUSED write and reports. Pre-fix, a table missing exactly one field
+  # produced a payload with that field zeroed for 33 of the 37 fields, and RAISED for
+  # the other four (esc_sn, esc_iap, esc_fw, led_color_rgb -- writeValue() turned the
+  # missing value into 0 first and 0 is truthy in Lua, so `bytes or {}` kept the number
+  # and writeBytes() indexed it).
+  #
+  # The width table is now one WIRE table instead of a pair of if-chains in
+  # readValue()/writeValue(), and BLOCK_BYTES is summed from it, so the length guard and
+  # the layout cannot drift apart.
+  #
+  # 8 of its 27 checks go red on the pre-fix codec. Pass --self-test to prove that: it
+  # splices the pre-fix byte helpers, the pre-fix decode()/encode() and the pre-fix
+  # buildReadMessage()/buildWriteMessage() back into a copy of the codec and requires
+  # every one of the eight to fail. Four mistakes in that self-test are worth keeping,
+  # because each of them made it pass without proving anything:
+  #   * the first splice ran from readBytes() to version() and took WIRE and
+  #     BLOCK_BYTES with it, so the spliced module had no BLOCK_BYTES and the layout
+  #     section raised on a nil in pass 2 -- aborting before the verdict;
+  #   * tryWrite() returned the message in both result slots, so every success was
+  #     recorded as a raise and the report said all 37 fields raised when only four do;
+  #   * it then mapped "raised" onto "declined", which is not the same thing, and two
+  #     gates stayed green against a codec that crashes rather than refuses;
+  #   * it captured only pcall's first result, so buildWriteMessage()'s refusal REASON
+  #     was thrown away and the gate that checks the reason failed on the FIXED codec.
+  #
+  # Everything in the layout and round-trip sections is deliberately NOT a gate: those
+  # are the issue's first two points, already satisfied, and they are here so the claim
+  # is a fact the repository carries rather than a sentence in a comment. So is "a block
+  # of exactly 56 bytes is accepted" -- that has to hold in both passes, and requiring
+  # it to go red would be requiring the harness to fail on correct behaviour.
+  esc-flyrotor-payload:
+    name: FlyRotor writes 56 bytes and refuses a short block
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Lua 5.4
+        run: sudo apt-get update && sudo apt-get install -y lua5.4
+
+      - name: Check the FlyRotor block length and the length guard
+        run: lua5.4 bin/esc_flyrotor_payload/verify_flyrotor_payload.lua
+
   # The FC keeps its tune advisor statistics in RAM; the radio saves each
   # flight on disarm, clears the FC, and the page combines the last 5 flights
   # on the current tune. Pins the capture (one flight per disarm, then a
@@ -812,6 +956,394 @@ jobs:
 
       - name: Check the Tune Advisor history on disarm
         run: lua5.4 bin/tune_history/verify_tune_history.lua
+
+  # Bytes 57..62 of the Scorpion block were carried as three anonymous U16s named
+  # padding_1, padding_2 and padding_3, and the summary line read two byte offsets out of
+  # the raw block by hand:
+  #
+  #     return string.format("%s / FW %08X / v%d", model,
+  #       uintFromRaw(data, {55, 56, 57, 58}),
+  #       uintFromRaw(data, {61, 62}))
+  #
+  # The sibling suite names those bytes, and the widths add up exactly -- 4 + 2 = the 6
+  # bytes the three U16s occupied:
+  #
+  #     rotorflight-lua-edgetx-suite src/rfsuite/tasks/msp/api/esc_parameters_scorpion.lua
+  #     ... {"motor_startup_sound","U16"}, {"serial_number","U32"},
+  #         {"firmware_version","U16"}, {"soft_start_time","U16"}, ...
+  #
+  # So "FW %08X" was assembled from motor_startup_sound (55-56) and the LOW HALF of
+  # serial_number (57-58). The page has been showing that number since the codec was
+  # written. Nothing that meant anything goes away with it: the version was already on the
+  # line as "v%d" from bytes 61-62, which that list calls firmware_version.
+  #
+  # The reference prints the serial in decimal and prints nothing for a zero
+  # (.../escmfg/scorp/init.lua: `local sn = getUInt(buffer, {57, 58, 59, 60})` and
+  # `return sn ~= 0 and tostring(sn) or ""`), so both decisions follow it. That page has
+  # NO header compensation -- unlike the YGE one, which carries mspHeaderBytes = 2 -- so
+  # its byte numbers and this suite's are the same numbers, and the harness checks that
+  # against the fixture rather than against a comment.
+  #
+  # 4 of the harness's 14 checks go red without the change. Two that look like gates are
+  # deliberately not, and both earned it:
+  #
+  #   * the field-list parity check compares two transcriptions and never reads the codec,
+  #     so it stayed green while the codec's names were cut back to padding_;
+  #   * "two ESCs that differ only in serial do not render the same line" was ALREADY true
+  #     before the change, because the word labelled FW was built from bytes that include
+  #     the low half of the serial -- true for the wrong reason, which makes it useless as
+  #     a gate.
+  #
+  # The gate that ties the naming claim to the code is the fixture round-trip: the serial
+  # the codec decodes has to be the u32 at byte 57, read out of the shipped fixture and
+  # out of the page's own decoded table.
+  #
+  # Two more things the check found while being written, both left as stated gaps rather
+  # than fixed here: the sibling decodes stick_max and stick_zero after gov_integral and
+  # this suite does not -- and builds no row for either, so nothing can be written into
+  # them; and FlyRotor, whose esc_sn this suite already decodes and does not display, is
+  # left alone because #2462 changes that same codec and is ahead in the merge order.
+  esc-parameters-scorpion-serial:
+    name: Scorpion ESCs can be told apart, and the word labelled FW was not one
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Lua 5.4
+        run: sudo apt-get update && sudo apt-get install -y lua5.4
+
+      - name: Check the Scorpion serial number and the field names
+        run: lua5.4 bin/esc_parameters_scorpion/verify_scorpion_serial.lua
+
+  # The YGE parameter block is not a fixed size. The flight controller derives its length
+  # from the count the ESC itself reports (rotorflight-firmware src/main/io/esc_sensor.c:
+  # ygeParamCount = ygeParams[0], paramPayloadLength = ygeParamCount * 2,
+  # escGetParamFullBufferLength() = PARAM_HEADER_SIZE + paramPayloadLength with
+  # PARAM_HEADER_SIZE = 2, and OPENYGE_PARAM_CACHE_SIZE_MAX = 64), so the real range is
+  # 1..64 parameters. The codec described 30 fixed fields, 58 bytes -- 2 + 28 * 2, right for
+  # an ESC reporting 28 and for no other.
+  #
+  # Its own fixture said 32 and stopped at 58: measured, bytes 3..4 read 32 and
+  # 2 + 32 * 2 = 66, which is the length the sibling suite's fixture carries for the same
+  # ESC. So the shipped fixture described an ESC eight bytes longer than the block it stood
+  # for, and every save was that much short.
+  #
+  # On the write side a short payload is not a truncation. msp.c's only length check on
+  # MSP_SET_ESC_PARAMETERS is `if (len == 0)`, sbufReadData's memcpy has no bounds check,
+  # and the destination paramUpdBuffer is a static array nothing clears per message -- so
+  # the firmware copies the overflow out of the PREVIOUS contents of that buffer and
+  # escCommitParameters() writes those bytes to the ESC.
+  #
+  # Three rules, and the second is the one a reviewer should check hardest:
+  #
+  #   1. The payload is exactly 2 + 2 * count, with the unknown tail carried through a read
+  #      and written back verbatim. Not zeroed: a zero there is a parameter the pilot never
+  #      saw and never chose.
+  #   2. A block that cannot be written AS THE ESC DESCRIBED IT is REFUSED, not padded.
+  #      A count of 0 or one past 64 is refused; a block that arrives short of what its own
+  #      count demands is refused; and a count below 28 is refused because the block ends
+  #      inside the field list, so at least one named field was never read and writing it
+  #      would mean inventing it. That is the misalignment case, and padding it to 58 would
+  #      be the defect. The refusal is lib/msp_governor_profile.lua's shape (#2446), and
+  #      app/page_runtime.lua:737-753 reads a nil message as a REFUSED write and names the
+  #      reason.
+  #   3. A field the buffer did not carry stays ABSENT rather than decoding as zero.
+  #      mspcodec.lua:57-58 and :70-75 read a missing byte as 0, so a short block used to
+  #      decode into a table of plausible zeros with nothing wrong anywhere.
+  #
+  # 8 of the harness's 12 checks go red without the fix, over every count from 1 to 64
+  # rather than a sample. The one that looks like a gate and is not checks the harness's own
+  # buffer builder, so it is green in both passes by construction and says so.
+  #
+  # Three harnesses asserted that the fixture's length EQUALS what their field tables
+  # cover, which is what let a fixture describe the wrong ESC. They now assert two things:
+  # that the named fields cover the first 58 bytes, and that the fixture's length is what
+  # its own count asks for. One of them also drove the codec with a two-field hand-built
+  # table, which the refusal now rejects -- correctly, since such a table carries no count
+  # and no length -- so it decodes the fixture first and overrides the field under test.
+  #
+  # Not claimed: the count a real YGE ESC reports. Every number above comes from the
+  # fixture; there is no YGE hardware here, and what an ESC does with a misaligned block is
+  # unchecked. The firmware-side half of #2458 -- msp.c comparing sbufBytesRemaining(src)
+  # against len the way MSP_SET_4WIF_ESC_FWD_PROG does -- is one line in another
+  # repository.
+  yge-block-length:
+    name: The YGE block is as long as the count the ESC reports
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Lua 5.4
+        run: sudo apt-get update && sudo apt-get install -y lua5.4
+
+      - name: Check the YGE block length and the refusal on a short block
+        run: lua5.4 bin/esc_parameters_yge/verify_yge_block_length.lua
+
+  # The layout was chosen by a PROFILE KEY. profileKey() returned
+  # `<hardware_version>_PL_OPTO` for any OPTO model, and PROFILES carried exactly one such
+  # entry, HW1104_V100456NB_PL_OPTO -- so every OTHER OPTO model missed the lookup, fell
+  # through to PROFILES.default, and got DEFAULT_ITEMS: bec_voltage at item 5,
+  # active_freewheel at 15, where OPTO_ITEMS has no bec_voltage and puts
+  # active_freewheel at 14. An OPTO ESC has no BEC byte, so every field from item 5 up
+  # was read and written one byte off, on a page that looked entirely normal. Measured
+  # on the codec's own simulator fixture, 9 of the 15 fields on the OPTO layout read
+  # the wrong byte, plus a phantom bec_voltage row over a byte the block does not have.
+  # Six of the 15 coincide: four sit before the missing byte, and two carry equal bytes
+  # on either side of the boundary in this fixture.
+  #
+  # OPTO was also looked for in ONE of the two model strings. The block carries the
+  # model twice -- bytes 35..50 as esc_type and 51..65 as mode_name -- plus the
+  # firmware version in bytes 3..18, and which of the three a given ESC puts "OPTO" in
+  # is not something this file can know. EdgeTX concatenates both model strings for
+  # exactly that reason (esc_parameters_hw5.lua:119, :251).
+  #
+  # The VARIANT chooses the LAYOUT and the VERSION chooses the CHOICE LISTS:
+  # profileFor() looks the version up as before and then, for an OPTO model, returns
+  # that profile's tables with OPTO_ITEMS. An explicit `<version>_PL_OPTO` entry still
+  # wins where one exists, because its tables may differ -- HW1104's do not, but that is
+  # a fact about HW1104. The merged profile is built once per version rather than per
+  # call, because isFieldAvailable() reaches profileFor() once per field per page build.
+  #
+  # ON THE ISSUE'S SECOND CLAIM -- the inverted Active Freewheel boolean -- this job
+  # changes nothing, and that is the finding. Both suites say 0 = Enabled, 1 = Disabled
+  # (here msp_esc_parameters_hw5.lua:21, and EdgeTX's esc_forward_hw5 page:687-690),
+  # the codec passes the byte through untouched in both directions, and the flight
+  # controller treats the whole HW5 block as opaque and only ever memcmps it
+  # (esc_sensor.c:2387-2393). The issue itself writes "0 = Enabled vs 1 = Disabled, or
+  # vice versa depending on firmware version" -- a question, not a specification. So
+  # there is nothing here to invert. The parity check is a plain check rather than a
+  # gate, and it exists so the answer stays a fact the repository carries.
+  #
+  # Deliberately NOT in this pull request: FIELD_META declares startup_time as min 4,
+  # max 25, default 11 while decode() hands the page the raw byte, which runs 0..21, so
+  # the row violates its own range. That is a real defect, but it lives in decode() and
+  # encode() rather than in the layout, it affects every HW5 model whether OPTO or not,
+  # and EdgeTX settles it by adding 4 on the way in and taking 4 off on the way out
+  # (esc_parameters_hw5.lua:263-265, :296-298). It has its own harness and its own job.
+  #
+  # 12 of its 31 checks go red without the fix. Pass --self-test to prove that: it
+  # splices the pre-fix profile selection back into a copy of the codec and requires
+  # every one of the twelve to fail -- and verifies the splice four ways first, because
+  # a sabotage that breaks the module differently from the defect under test proves
+  # nothing. One case started out as a gate and the self-test caught it passing on the
+  # pre-fix code, which is why it is a plain check now: OPTO hardware HW1104, because
+  # that model already worked -- PROFILES carried an entry for it.
+  esc-hw5-opto:
+    name: Hobbywing V5 OPTO layout
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Lua 5.4
+        run: sudo apt-get update && sudo apt-get install -y lua5.4
+
+      - name: Check the OPTO layout
+        run: lua5.4 bin/esc_hw5_opto/verify_hw5_opto.lua
+
+  # FIELD_META declares startup_time as min 4, max 25, default 11 -- and decode()
+  # handed the page the RAW byte, which runs 0..21. So the row's declared range was
+  # violated by its own decoder, and an ESC set to its shortest start-up showed "0s" on
+  # a row that begins at 4. That contradiction is entirely inside this one file; no
+  # outside authority is needed to establish that it exists. Deciding WHICH side of it was
+  # wrong does need one, and EdgeTX is it -- this suite has always taken the HW5 layouts
+  # from there. It says so four times over:
+  #
+  #   * its own fixture comment:  11, -- item 6: startup_time (raw 11 -> 15s)
+  #     (tasks/msp/api/esc_parameters_hw5.lua:203)
+  #   * parse():                   out[fieldName] = rawVal + 4                    (:263-265)
+  #   * buildWritePayload():       rawVal = math.max(0, math.min(21,
+  #                                 (tonumber(val) or 4) - 4))                       (:296-298)
+  #   * the page widget:           min = 4, max = 25, step = 1, suffix = "s"
+  #     (app/pages/.../escmfg/hw5/page.lua:617), and its initial ui.config value
+  #     startup_time = 15 (:38) -- the fixture's raw 11 plus four.
+  #
+  # The arithmetic is the cheapest of those arguments and probably the strongest:
+  # 4..25 is 22 values and 0..21 is 22 values. A range that is 22 long on the page and 22
+  # long on the wire is one range counted from two ends, and it also explains the
+  # maximum: 25 - 4 + 1 = 22 = 21 - 0 + 1.
+  #
+  # startup_time is item 6 in DEFAULT and item 5 in OPTO, and ABSENT from HW1132 and
+  # HW1128 -- in both suites -- so the conversion must apply to exactly two of the four
+  # layouts.
+  #
+  # TWO BEHAVIOUR CHANGES worth reading rather than skimming. Both are EdgeTX parity, and
+  # both are stated here because parity alone would hide that something gives:
+  #
+  #   * The clamp is the FIELD's range, 0..21, and not the BYTE's, 0..255. The first
+  #     version of this fix clamped to 0..255; a caller outside the page's own range
+  #     could then write a raw byte the row says cannot exist. The page's min/max make it
+  #     unreachable through the UI, so nothing else in the harness would have noticed.
+  #   * A raw byte above 21 is now written back as 21 rather than as itself. Pre-fix an
+  #     ESC that sent 22 had its 22 passed through untouched. That is what EdgeTX does and
+  #     it is the right default for a field with a range, but it is a change, so it is
+  #     gated rather than left as a side effect.
+  #
+  # The harness found the second one by accident: the whole-block round trip swept all 81
+  # byte positions and reported 234 of 20736 values changed, first at byte 71 -- item 6,
+  # startup_time. The Startup Time byte is now excluded from that sweep with the reason
+  # written down, and its behaviour pinned by a gate of its own.
+  #
+  # 6 of its 12 checks are gates. Pass --self-test to prove that: it splices the pre-fix
+  # decode()/encode() back into a copy of the codec and requires all six to fail, and it
+  # verifies its own splice four ways first. Two of the six were gates in the first
+  # version and the self-test caught them passing on the pre-fix code -- "every other
+  # field is untouched" and "HW1132 and HW1128 do not gain one" both guard the FIX rather
+  # than detect the DEFECT, so they are plain checks now. The read gate and the write
+  # gate are not redundant: a codec that added four in and subtracted four out is
+  # perfectly consistent and would pass every round trip in the file while showing the
+  # wrong number.
+  esc-hw5-startup:
+    name: Hobbywing V5 Startup Time byte
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Lua 5.4
+        run: sudo apt-get update && sudo apt-get install -y lua5.4
+
+      - name: Check the Startup Time conversion
+        run: lua5.4 bin/esc_hw5_startup/verify_hw5_startup.lua
+
+  # Three of the twenty-one XDFly block's words are stored one below the number
+  # the page shows (FIELD_OFFSETS: gov_p 1, gov_i 1, motor_poles 1), and encode()
+  # subtracted the bias without clamping the result. A value of 0 therefore packed
+  # 0 - 1 = -1, and mspcodec.writeU16 MASKS rather than clamps -- toByte() is
+  # math_floor(value) % 256 (lib/mspcodec.lua:85-87) -- so both bytes came out 0xFF.
+  #
+  # 0xFFFF is not an arbitrary number here. It is what the ESC answers a write it
+  # refused, which is the reason the sibling suite guards it:
+  # rotorflight-lua-edgetx-suite .../msp/api/esc_parameters_xdfly.lua:146-153 --
+  # "a shifted value is never taken below zero: 0xFFFF is what the ESC answers a write
+  # it refused, so a word of that shape must not be built here." EdgeTX clamps with
+  # `if v < 0 then v = 0 end`. This suite had the same bias table and no clamp, so the
+  # two suites disagreed about the one word that carries a refusal.
+  #
+  # WHAT IS NOT CLAIMED. The page cannot produce a value below the bias: FIELD_META's
+  # min equals the bias for all three fields, and field_layout.lua:442-446 hands that
+  # straight to form.addNumberField. Measured, not assumed -- case 1 asserts the three
+  # floors against the codec's own table. So this is a latent defect, not an observed
+  # one, and it is reported as such in #2467. Two things keep it worth fixing rather
+  # than documenting: `data and data[key] or 0` packs 0 for an ABSENT key, which lands
+  # on 0xFFFF by itself and is the same invented-zero shape #2348 had to fix in
+  # msp_governor_profile.lua; and #2339 established there is a second writer besides
+  # the widget, which inherits the unguarded subtraction.
+  #
+  # OMP and ZTW are driven too. Both requireModule() this codec and delegate
+  # buildWriteMessage to it (omp:8/:43-46, ztw:8/:43-46), so a clamp landing in only
+  # the XDFLY file would leave two vendors broken -- and pass 2 of the self-test has to
+  # seed the base key with the sabotaged codec before loading them, or requireModule()
+  # re-reads the repaired file off disk and both vendor gates stay green.
+  #
+  # 8 of its 22 checks are gates. Pass --self-test to prove that: it cuts the clamp out
+  # of encode() and requires all eight to go red, comparing verdicts BY NAME. It
+  # verifies its own cut five ways first. Two of those verifications exist because this
+  # file got it wrong first, and both failures were silent -- pass 2 ran the FIXED
+  # codec twice and reported every gate green:
+  #   * "  for i = 1, #EDIT_FIELDS do" appears in decode() AND in encode(), so a cut
+  #     anchored on the loop alone replaced the wrong one and left the clamp standing.
+  #   * the codec's own self-cache guard is keyed "rfsuite.lib.msp_esc_parameters_xdfly",
+  #     so loading the sabotaged copy under a different key cleared nothing and the
+  #     guard returned the fixed module.
+  #
+  # Three checks are deliberately NOT gates, and the file says which: the
+  # FIELD_OFFSETS round-trip over the legal range (the pre-fix code got that right --
+  # it is why #2343 does not reproduce), the whole-block sweep, and the two vendors'
+  # signature bytes. The sweep is the subtle one: without the clamp, -1 masks to 0xFFFF
+  # inside the SAME two bytes the clamp writes, so it cannot tell the defect from the
+  # fix. A gate that cannot fail is worse than no check at all.
+  esc-xdfly-bias:
+    name: The biased ESC words never reach 0xFFFF
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Lua 5.4
+        run: sudo apt-get update && sudo apt-get install -y lua5.4
+
+      - name: Check the lower clamp on the biased ESC words
+        run: lua5.4 bin/esc_xdfly_bias/verify_xdfly_bias.lua
+
+  # Issue #2342 asks for the protocol lists to be built from what the FC reports
+  # instead of from static arrays. The motor half of that turned out to be three facts, and
+  # the one that mattered was not in the issue.
+  #
+  # THE DISABLED ENTRY WAS ON THE WRONG VALUE. rotorflight-firmware's own enum --
+  # src/main/drivers/motor.h, master 2026-10-04 -- reads:
+  #
+  #     PWM_TYPE_CASTLE_LINK,   9
+  #     PWM_TYPE_SRXL2,        10
+  #     PWM_TYPE_DISABLED,     11
+  #
+  # lib/msp_motor_config.lua had no SRXL2, so its DISABLED entry inherited the next free
+  # number: 10. Ten is SRXL2. Selecting DISABLED therefore wrote SRXL2 to the flight
+  # controller -- arming a serial ESC link instead of switching the motor output off.
+  #
+  # It stayed invisible because both ends agreed on the wrong number: the codec said 10 and
+  # so did the four places that fell back to it (esc_motors_throttle.lua's pwmFieldsEnabled()
+  # and refreshProtocolFields(), esc_motors_rpm.lua's isDshotProtocol() and its wakeup
+  # handler). A round trip through this suite's own code agreed perfectly. Only the
+  # firmware's enum says otherwise -- which is why the enum is transcribed into the harness
+  # rather than read from the suite, and why the pages now take DISABLED from
+  # motorConfig.DISABLED_PROTOCOL instead of a literal.
+  #
+  # SRXL2 WAS MISSING, and it is real: it reached drivers/motor.h on 2026-08-08 (e72e209d,
+  # #421) and the API minor went to 10 nine days later (ac1f1730, #484), so its floor is
+  # 12.10 -- which is what EdgeTX gates the same list on
+  # (esc_motors/throttle/page.lua:395). This suite's own floor is 12.09
+  # (lib/msp_api_version.lua:69-73), so an FC it will happily talk to CAN be older than
+  # SRXL2. The value arrives with no new plumbing: tasks/session.lua already publishes
+  # apiVersionMinor in its "session.update" snapshot, page_runtime already subscribes, and
+  # lib/bus.lua:18/:97 already replays the retained snapshot synchronously -- so it is set
+  # before the page's first buildSingle().
+  #
+  # BRUSHED IS NOT A PROTOCOL. The firmware removed it on 2022-10-19 (9d1645a8) and kept
+  # slot 4 as a placeholder so the numbers after it would not move; the enum still carries
+  # "// BRUSHED" on PWM_TYPE_RESERVED, and checkMotorProtocolEnabled()
+  # (src/main/drivers/motor.c:154-176) has no case for it. It leaves the menu.
+  #
+  # WHAT IS NOT CLAIMED. The firmware gates these protocols on BUILD flags -- #ifdef
+  # USE_DSHOT, USE_TELEMETRY_CASTLE, USE_SRXL2_ESC -- and no MSP message reports them to the
+  # sender. The API version is a PROXY, not the fact: a target built without USE_SRXL2_ESC
+  # while reporting 12.10 is still offered SRXL2 and will refuse it at arm time. Nothing on
+  # the wire can do better, and this job pins the proxy instead of pretending to have the
+  # capability bits.
+  #
+  # CASTLE has no version gate here on purpose. EdgeTX gates it at 12.0.8, but this suite
+  # refuses to operate below 12.09, so a gate could never fire.
+  #
+  # KNOWN AND NOT FIXED: a pilot whose FC sits on the reserved slot sees a choice row whose
+  # value is not in the list. Whether Ethos draws that blank or snaps it to the first entry
+  # is not answerable from this repository and needs a live check. No data is at risk --
+  # choiceGet() returns the stored value unchanged and encode() writes back what was read.
+  #
+  # 8 of its 22 checks are gates. Pass --self-test to prove that: it cuts the fix back out of
+  # THREE files -- the DISABLED constant, the choice function and the page's row-state test
+  # -- and requires all eight to fail, because the pre-fix defect was the static table PLUS
+  # four bare 10s and cutting one file left eight of thirteen gates green. Five checks are
+  # plain: four guard against the version check failing OPEN, one is a smoke test.
+  motor-protocol:
+    name: Throttle Protocol list follows the flight controller
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Lua 5.4
+        run: sudo apt-get update && sudo apt-get install -y lua5.4
+
+      - name: Check the motor protocol list and its defaults
+        run: lua5.4 bin/motor_protocol/verify_motor_protocol.lua
 
   # Per-language PR builds (mirrors push.yml behavior)
   create-zip:

@@ -125,6 +125,7 @@ local TOOLBAR_ITEMS = {
   {name = "Reset", icon = "widgets/dashboard/gfx/toolbar_reset.png", action = "reset_flight"},
   {name = "Erase", icon = "widgets/dashboard/gfx/toolbar_erase.png", action = "erase_blackbox", isConnected = true},
   {name = "Battery", icon = "widgets/dashboard/gfx/toolbar_battery.png", action = "battery_profile", isConnected = true, requiresBatteryProfiles = true},
+  {name = "Info", icon = "widgets/dashboard/gfx/toolbar_info.png", action = "info_panel"},
   {name = "Setup", icon = "widgets/dashboard/gfx/toolbar_app.png", action = "launch_app", requiresOpenPage = true},
 }
 
@@ -336,10 +337,29 @@ local function clearToolbarMasks(widget)
   for key in pairs(masks) do masks[key] = nil end
 end
 
+-- Slide-down info panel (controller, battery and GPS state). Unlike the
+-- toolbar it has no timeout: a pilot checking it before a flight keeps it
+-- open until they slide it up, tap, press Exit, or arm. Its row cache is
+-- only built while it is open and is dropped again on close.
+local function setInfoPanelVisible(widget, visible)
+  if not widget then return end
+  visible = visible == true
+  if widget.infoPanelVisible == visible then return end
+  widget.infoPanelVisible = visible
+  if visible then
+    widget.toolbarVisible = false
+    widget.selectedToolbarIndex = nil
+  else
+    widget.infoPanel = nil
+  end
+  requestPaint(widget)
+end
+
 local function setToolbarVisible(widget, visible)
   if not widget then return end
   visible = visible == true
   if widget.toolbarVisible == visible then return end
+  if visible then setInfoPanelVisible(widget, false) end
   widget.toolbarVisible = visible
   widget.toolbarOpenedAt = visible and clock() or 0
   widget.toolbarLastActive = widget.toolbarOpenedAt
@@ -578,6 +598,346 @@ local function drawToolbar(widget, w, h)
       lcd.drawFilledRectangle(bx + 2, by + 2, bw - 4, bh - 4)
     end
   end
+end
+
+-- Info panel rows are {label, text, color} entries cached per column. Each
+-- row keeps the input it was formatted from (row.key) and only rebuilds its
+-- text when that input changes, so an open panel allocates nothing while
+-- the values hold still.
+local INFO_GOOD = lcd.RGB(0, 170, 60, 1)
+local INFO_WARN = lcd.RGB(230, 150, 0, 1)
+local INFO_BAD = lcd.RGB(210, 40, 40, 1)
+local INFO_TRANSPORT_NAMES = {sport = "S.Port", crsf = "CRSF", sim = "SIM"}
+-- Flight-mode bits (rotorflight-firmware fc/runtime_config.h), first match
+-- wins. Same order as the firmware's own CRSF flight-mode text
+-- (telemetry/crsf.c), so the panel names the mode a CRSF screen shows.
+local INFO_FLIGHT_MODES = {
+  {bit = 0, name = "@i18n(widgets.dashboard.mode_failsafe)@"},
+  {bit = 6, name = "@i18n(widgets.dashboard.mode_gps_rescue)@"},
+  {bit = 5, name = "@i18n(widgets.dashboard.mode_rescue)@"},
+  {bit = 2, name = "@i18n(widgets.dashboard.mode_horizon)@"},
+  {bit = 1, name = "@i18n(widgets.dashboard.mode_angle)@"},
+}
+-- Governor states, as widgets/dashboard/context.lua's GOVERNOR_LABELS.
+local INFO_GOVERNOR_LABELS = {
+  [0] = "OFF",
+  [1] = "IDLE",
+  [2] = "SPOOLUP",
+  [3] = "RECOVERY",
+  [4] = "ACTIVE",
+  [5] = "THR OFF",
+  [6] = "LOST HS",
+  [7] = "AUTOROT",
+  [8] = "BAILOUT",
+  [100] = "DISABLED",
+  [101] = "DISARMED",
+}
+local armingFlags = nil
+
+local function infoRow(rows, i, id, label)
+  local row = rows[i]
+  if not row then
+    row = {}
+    rows[i] = row
+  end
+  if row.id ~= id then
+    row.id = id
+    row.key = false
+    row.key2 = false
+    row.text = nil
+    row.color = nil
+  end
+  row.label = label
+  row.reason = false
+  row.heading = false
+  return row
+end
+
+-- Battery column: the active profile's pack, the live voltage and mAh
+-- used, then a GPS section only while a GPS Sats sensor is reporting --
+-- without one the column is just battery.
+local function refreshBatteryRows(widget, rows, n)
+  local row
+  local config = widget.batteryConfig
+  local cells = config and tonumber(config.cellCount)
+  local profiles = config and config.profiles
+  local active = batteryProfileIndex.index0(widget.batteryProfile) or 0
+  local capacity = type(profiles) == "table" and capacityValue(profiles[active])
+  if not capacity or capacity <= 0 then capacity = config and tonumber(config.batteryCapacity) end
+  if cells and cells > 0 then
+    n = n + 1
+    row = infoRow(rows, n, "pack", "@i18n(widgets.dashboard.info_pack)@")
+    capacity = capacity and math.floor(capacity + 0.5) or 0
+    local key = cells * 100000 + capacity
+    if row.key ~= key then
+      row.key = key
+      row.text = capacity > 0 and string.format("%dS  %dmAh", cells, capacity) or string.format("%dS", cells)
+    end
+  end
+
+  local voltage = tonumber(widget.voltage)
+  if voltage then
+    n = n + 1
+    row = infoRow(rows, n, "volt", "@i18n(widgets.dashboard.voltage)@")
+    local key = math.floor(voltage * 10 + 0.5)
+    if row.key ~= key then
+      row.key = key
+      row.text = string.format("%.1fV", key / 10)
+    end
+  end
+
+  local used = tonumber(widget.consumption)
+  if used then
+    n = n + 1
+    row = infoRow(rows, n, "used", "@i18n(widgets.dashboard.info_used)@")
+    local key = math.floor(used + 0.5)
+    if row.key ~= key then
+      row.key = key
+      row.text = string.format("%dmAh", key)
+    end
+  end
+  return n
+end
+
+local function refreshPowerRows(widget, rows)
+  if widget.connected ~= true then
+    infoRow(rows, 1, "nc", "@i18n(widgets.dashboard.info_not_connected)@")
+    rows.n = 1
+    return
+  end
+
+  local n = refreshBatteryRows(widget, rows, 0)
+  local sats = widget.gpsSats
+  if sats == nil then
+    rows.n = n
+    return
+  end
+
+  n = n + 1
+  local row = infoRow(rows, n, "gpsHead", "@i18n(widgets.dashboard.info_gps)@")
+  row.heading = true
+
+  n = n + 1
+  row = infoRow(rows, n, "sats", "@i18n(widgets.dashboard.info_sats)@")
+  if row.key ~= sats then
+    row.key = sats
+    row.text = tostring(sats)
+  end
+  rows.n = n
+end
+
+local function refreshControllerRows(widget, rows, reasons)
+  local n = 1
+  local row = infoRow(rows, 1, "link", "@i18n(widgets.dashboard.info_link)@")
+  if widget.connected ~= true then
+    row.key = false
+    row.text, row.color = "@i18n(widgets.dashboard.info_not_connected)@", INFO_BAD
+    rows.n = 1
+    return
+  end
+  local transport = widget.mspTransport
+  local lq = tonumber(widget.linkQuality)
+  if lq then lq = math.floor(lq + 0.5) end
+  if row.key ~= transport or row.key2 ~= lq then
+    row.key, row.key2 = transport, lq
+    local name = INFO_TRANSPORT_NAMES[transport] or tostring(transport or "-")
+    row.text = lq and (name .. "  " .. lq .. "%") or name
+    row.color = nil
+  end
+
+  local flags = tonumber(widget.flightModeFlags)
+  if flags then
+    n = n + 1
+    row = infoRow(rows, n, "mode", "@i18n(widgets.dashboard.info_mode)@")
+    flags = math.floor(flags)
+    if row.key ~= flags then
+      row.key = flags
+      row.text = "@i18n(widgets.dashboard.mode_normal)@"
+      for i = 1, #INFO_FLIGHT_MODES do
+        local mode = INFO_FLIGHT_MODES[i]
+        if (flags >> mode.bit) & 1 == 1 then
+          row.text = mode.name
+          break
+        end
+      end
+    end
+  end
+
+  local gov = tonumber(widget.governorState)
+  if gov then
+    n = n + 1
+    row = infoRow(rows, n, "gov", "@i18n(widgets.dashboard.governor)@")
+    gov = math.floor(gov)
+    if row.key ~= gov then
+      row.key = gov
+      row.text = INFO_GOVERNOR_LABELS[gov] or tostring(gov)
+    end
+  end
+
+  n = n + 1
+  row = infoRow(rows, n, "arm", "@i18n(widgets.dashboard.info_arming)@")
+  local mask = widget.armDisableFlags
+  local armKey = widget.isArmed == true and -1 or mask
+  if row.key ~= armKey then
+    row.key = armKey
+    for i = #reasons, 1, -1 do reasons[i] = nil end
+    if armKey == -1 then
+      row.text, row.color = "@i18n(widgets.dashboard.info_armed)@", INFO_BAD
+    elseif mask == nil then
+      row.text, row.color = "-", nil
+    else
+      armingFlags = armingFlags or requireModule("lib/arming_flags.lua")
+      local active = armingFlags.active(mask)
+      for i = 1, #active do reasons[i] = active[i] end
+      if #reasons == 0 then
+        row.text, row.color = "@i18n(widgets.dashboard.info_ready)@", INFO_GOOD
+      else
+        row.text, row.color = "@i18n(widgets.dashboard.info_blocked)@", INFO_WARN
+      end
+    end
+  end
+  local pid, rate = tonumber(widget.pidProfile), tonumber(widget.rateProfile)
+  local batt = batteryProfileIndex.label(widget.batteryProfile)
+  if pid and rate and batt then
+    n = n + 1
+    row = infoRow(rows, n, "profile", "@i18n(widgets.dashboard.profile)@")
+    local key = pid * 100 + rate * 10 + batt
+    if row.key ~= key then
+      row.key = key
+      row.text = string.format("@i18n(widgets.dashboard.info_profiles_fmt)@", pid, rate, batt)
+    end
+  end
+
+  local bec = tonumber(widget.becVoltage)
+  if bec then
+    n = n + 1
+    row = infoRow(rows, n, "bec", "@i18n(widgets.dashboard.bec_voltage)@")
+    local key = math.floor(bec * 10 + 0.5)
+    if row.key ~= key then
+      row.key = key
+      row.text = string.format("%.1fV", key / 10)
+    end
+  end
+
+  local size, used = tonumber(widget.bblSize), tonumber(widget.bblUsed)
+  if size and size > 0 and used then
+    n = n + 1
+    row = infoRow(rows, n, "bbl", "@i18n(widgets.dashboard.blackbox)@")
+    local pct = math.floor(used * 100 / size + 0.5)
+    if row.key ~= pct then
+      row.key = pct
+      row.text = string.format("@i18n(widgets.dashboard.info_used_fmt)@", pct)
+    end
+  end
+
+  -- Reasons go last: a long list then only loses its own tail off the
+  -- bottom of the panel, never the rows above.
+  for i = 1, #reasons do
+    n = n + 1
+    row = infoRow(rows, n, "reason", reasons[i])
+    row.reason = true
+  end
+  rows.n = n
+end
+
+-- Bottom margin under the columns: room for the grab handle and border.
+local INFO_PANEL_FOOT = 12
+
+local function infoColumnHeight(panel, rows)
+  local height = panel.titleH + panel.gap
+  for i = 1, rows.n do
+    if rows[i].heading then
+      height = height + panel.gap * 2 + panel.titleH
+    else
+      height = height + panel.rowH
+    end
+  end
+  return height
+end
+
+-- As tall as the longer column needs, up to 85% of the dashboard; a column
+-- that still does not fit loses its last rows.
+local function infoPanelHeight(panel, h)
+  local content = math.max(infoColumnHeight(panel, panel.power), infoColumnHeight(panel, panel.fc))
+  return math.min(math.floor(h * 0.85), panel.pad + content + INFO_PANEL_FOOT)
+end
+
+local function drawInfoHeading(panel, title, x, y, colW)
+  lcd.font(panel.titleFont)
+  lcd.color(panel.colors.text)
+  lcd.drawText(x, y, title)
+  y = y + panel.titleH
+  lcd.color(panel.colors.line)
+  lcd.drawFilledRectangle(x, y, colW, 2)
+  lcd.font(panel.rowFont)
+  return y + panel.gap
+end
+
+local function drawInfoColumn(panel, rows, title, x, y, colW, maxY)
+  local colors = panel.colors
+  y = drawInfoHeading(panel, title, x, y, colW)
+  for i = 1, rows.n do
+    local row = rows[i]
+    if row.heading then
+      -- Skip a heading that would have no room for a row under it.
+      if y + panel.gap + panel.titleH + panel.rowH > maxY then return end
+      y = drawInfoHeading(panel, row.label, x, y + panel.gap, colW)
+    else
+      if y + panel.rowH > maxY then return end
+      if row.reason then
+        lcd.color(INFO_WARN)
+        lcd.drawText(x + panel.gap, y, row.label)
+      else
+        lcd.color(colors.text)
+        lcd.drawText(x, y, row.label)
+        if row.text then
+          lcd.color(row.color or colors.text)
+          lcd.drawText(x + colW, y, row.text, RIGHT)
+        end
+      end
+      y = y + panel.rowH
+    end
+  end
+end
+
+local function drawInfoPanel(widget, w, h)
+  if not widget.infoPanelVisible then return end
+  local panel = widget.infoPanel
+  if not panel then
+    panel = {power = {n = 0}, fc = {n = 0}, reasons = {}, colors = toolbarColors()}
+    widget.infoPanel = panel
+  end
+  if panel.layoutW ~= w or panel.layoutH ~= h then
+    local lowRes = w <= 640
+    panel.layoutW, panel.layoutH = w, h
+    panel.pad = lowRes and 8 or 14
+    panel.gap = lowRes and 4 or 6
+    panel.titleFont = lowRes and FONT_S or FONT_STD
+    panel.rowFont = lowRes and FONT_XS or FONT_S
+    lcd.font(panel.titleFont)
+    local _, th = lcd.getTextSize("A")
+    panel.titleH = th + 2
+    lcd.font(panel.rowFont)
+    local _, rh = lcd.getTextSize("A")
+    panel.rowH = rh + panel.gap
+  end
+
+  refreshPowerRows(widget, panel.power)
+  refreshControllerRows(widget, panel.fc, panel.reasons)
+
+  local x, y, panelW, panelH = 0, 0, w, infoPanelHeight(panel, h)
+  local colors = panel.colors
+  local pad = panel.pad
+  lcd.color(colors.surfaceBg)
+  lcd.drawFilledRectangle(x, y, panelW, panelH)
+  lcd.color(colors.line)
+  lcd.drawFilledRectangle(x, y + panelH - 3, panelW, 3)
+  lcd.drawFilledRectangle(math.floor(panelW / 2) - 20, y + panelH - 10, 40, 3)
+
+  local colW = math.floor((panelW - pad * 3) / 2)
+  local maxY = y + panelH - INFO_PANEL_FOOT
+  drawInfoColumn(panel, panel.fc, "@i18n(widgets.dashboard.info_controller)@", x + pad, y + pad, colW, maxY)
+  drawInfoColumn(panel, panel.power, "@i18n(widgets.dashboard.battery)@", x + pad * 2 + colW, y + pad, colW, maxY)
 end
 
 local function clearDashboardStats(stats)
@@ -932,6 +1292,10 @@ local function activateToolbarItem(widget, item)
   elseif item.action == "launch_app" then
     launchSystemTool(widget)
     return true
+  elseif item.action == "info_panel" then
+    setInfoPanelVisible(widget, true)
+    invalidateWidget(widget)
+    return true
   end
   return false
 end
@@ -1030,6 +1394,8 @@ local function create()
     selectedToolbarIndex = nil,
     toolbarRects = {},
     toolbarMasks = nil,
+    infoPanelVisible = false,
+    infoPanel = nil,
     pendingResetFlight = false,
     eraseDialog = nil,
     eraseActive = false,
@@ -1095,9 +1461,14 @@ local function update(widget, snapshot)
   local previousState = widget.flightmodeState
   local previousConnected = widget.connected
   local previousMcuId = widget.mcuId
+  local previousArmed = widget.isArmed
   widget.connected = snapshot.connected == true
   widget.isArmed = snapshot.isArmed
+  -- The info panel covers most of the dashboard, so arming closes it.
+  if widget.isArmed == true and previousArmed ~= true then setInfoPanelVisible(widget, false) end
   widget.armDisableFlags = snapshot.armDisableFlags
+  widget.flightModeFlags = snapshot.flightModeFlags
+  widget.gpsSats = snapshot.gpsSats
 
   widget.craftName = snapshot.craftName
   widget.mcuId = snapshot.mcuId
@@ -1388,6 +1759,21 @@ local function paint(widget)
     return
   end
   drawToolbar(widget, w, h)
+  -- The panel draws on top of a full theme paint. On a dense theme's first
+  -- paint after a reload the two together can pass Ethos's instruction
+  -- limit; retry the frame next tick, as paintDashboard() does.
+  if widget.infoPanelVisible then
+    local ok, err = pcall(drawInfoPanel, widget, w, h)
+    if not ok then
+      if isInstructionBudgetError(err) then
+        widget.dashboardPaintRetryPending = true
+        requestPaint(widget)
+        return
+      end
+      print("[dashboard] info panel paint failed: " .. tostring(err))
+      setInfoPanelVisible(widget, false)
+    end
+  end
   drawFooterAlert(widget, w, h)
 end
 
@@ -1459,6 +1845,14 @@ local function event(widget, category, value, x, y)
     end
   end
 
+  if widget.infoPanelVisible and category == EVT_KEY and lcd.hasFocus()
+      and (value == KEY_EXIT_BREAK or value == KEY_RTN_BREAK or value == KEY_ENTER_BREAK) then
+    setInfoPanelVisible(widget, false)
+    invalidateWidget(widget)
+    if system and system.killEvents then system.killEvents(value) end
+    return true
+  end
+
   if widget.toolbarVisible and category == EVT_TOUCH and (value == TOUCH_START or value == TOUCH_END) and x and y then
     for idx, rect in ipairs(widget.toolbarRects or {}) do
       if x >= rect.x and x < rect.x + rect.w and y >= rect.y and y < rect.y + rect.h then
@@ -1479,9 +1873,18 @@ local function event(widget, category, value, x, y)
     widget.gestureTriggered = false
     widget.gestureConsumeStartedAt = 0
   elseif category == EVT_TOUCH and value == TOUCH_END then
+    -- A swipe that opened or closed something ends in the consume path at
+    -- the top of this function, so reaching here with the panel open is a
+    -- tap: close it.
+    local tapped = widget.infoPanelVisible and not widget.gestureTriggered
     widget.gestureActive = false
     widget.gestureTriggered = false
     widget.gestureConsumeStartedAt = 0
+    if tapped then
+      setInfoPanelVisible(widget, false)
+      invalidateWidget(widget)
+      return true
+    end
   elseif category == EVT_TOUCH and value == TOUCH_MOVE and x and y then
     widget.isSliding = true
     widget.isSlidingStart = clock()
@@ -1499,7 +1902,11 @@ local function event(widget, category, value, x, y)
           widget.gestureTriggered = true
           widget.gestureConsumeUntilTouchEnd = true
           widget.gestureConsumeStartedAt = clock()
-          setToolbarVisible(widget, true)
+          if widget.infoPanelVisible then
+            setInfoPanelVisible(widget, false)
+          else
+            setToolbarVisible(widget, true)
+          end
           consumeTouchEvents()
           invalidateWidget(widget)
           return true
@@ -1507,7 +1914,11 @@ local function event(widget, category, value, x, y)
           widget.gestureTriggered = true
           widget.gestureConsumeUntilTouchEnd = true
           widget.gestureConsumeStartedAt = clock()
-          setToolbarVisible(widget, false)
+          if widget.toolbarVisible then
+            setToolbarVisible(widget, false)
+          else
+            setInfoPanelVisible(widget, true)
+          end
           consumeTouchEvents()
           invalidateWidget(widget)
           return true
@@ -1728,6 +2139,7 @@ local function close(widget)
   widget.batteryError = false
   closeBatteryDialog(widget)
   clearToolbarMasks(widget)
+  setInfoPanelVisible(widget, false)
   clearThemeCache()
 end
 

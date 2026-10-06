@@ -54,6 +54,12 @@ return {
   governor = {
     {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5009},
   },
+  flight_mode = {
+    {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5028},
+  },
+  gps_sats = {
+    {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5029},
+  },
   adj_f = {
     {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5010},
   },

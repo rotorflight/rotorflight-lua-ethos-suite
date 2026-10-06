@@ -10,7 +10,7 @@ Main Rotor profile editor page. Loaded on demand (plain loadfile) only when the 
 
 ## Where to find it
 
-*Configuration* → *Flight Tuning* → *Advanced* → *Main Rotor*
+*Configuration* → *Flight Tuning* → *Main Rotor*
 
 Greyed out until the flight controller answers. Read-only while the model is armed.
 

@@ -10,7 +10,7 @@ Cyclic Behaviour editor page. Loaded on demand (plain loadfile) only when the us
 
 ## Where to find it
 
-*Configuration* → *Flight Tuning* → *Advanced* → *Rates* → *Cyclic Behaviour*
+*Configuration* → *Flight Tuning* → *Rate Options* → *Cyclic Behaviour*
 
 Greyed out until the flight controller answers. Read-only while the model is armed.
 

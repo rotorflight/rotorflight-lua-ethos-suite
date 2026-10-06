@@ -10,7 +10,7 @@ Rescue profile editor page. Loaded on demand (plain loadfile) only when the user
 
 ## Where to find it
 
-*Configuration* → *Flight Tuning* → *Advanced* → *Rescue*
+*Configuration* → *Flight Tuning* → *Rescue*
 
 Greyed out until the flight controller answers. Read-only while the model is armed.
 

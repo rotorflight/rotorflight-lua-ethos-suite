@@ -249,11 +249,15 @@ if ROOT_ENTRIES and MENUS then
   --     which stays open because Controls > Stats is a local read, so the
   --     "all children locked" rule leaves Hardware Setup reachable and lets
   --     its own write pages badge individually. Asserted separately below.
+  --     advanced_menu is deliberately absent too: master dissolved it into
+  --     `group` labels inside flight_tuning_menu (#2473), so there is no such
+  --     submenu left to lock. The pages that used to live in it are asserted
+  --     individually in 2b-quater below.
   local MUST_LOCK = {
     mixer_menu = true, servos_menu = true,
     power_menu = true, esc_motors_menu = true, esc_forward_menu = true,
     setup_governor_menu = true, beepers_menu = true, blackbox_menu = true,
-    flight_tuning_menu = true, advanced_menu = true, rates_advanced_menu = true,
+    flight_tuning_menu = true, rates_advanced_menu = true,
     governor_menu = true,
   }
   for menuId in pairs(MUST_LOCK) do
@@ -306,6 +310,28 @@ if ROOT_ENTRIES and MENUS then
     check("setup_menu: only controls_menu is left open",
           #unlocked == 1 and unlocked[1] == "controls_menu",
           table.concat(unlocked, ", "))
+  end
+
+  -- 2b-quater. The Advanced pages that used to sit in their own `advanced_menu`
+  --       submenu are group entries inside flight_tuning_menu since #2473.
+  --       Dissolving the submenu must not dissolve the gating: every one of
+  --       them is an FC write and has to stay locked on its own.
+  do
+    local ft = MENUS.flight_tuning_menu
+    local advanced = {}
+    for i = 1, #ft.entries do
+      local e = ft.entries[i]
+      if e.group == "@i18n(app.menu_section_advanced)@" and e.script then
+        advanced[#advanced + 1] = e
+      end
+    end
+    check("flight_tuning_menu still lists the Advanced pages", #advanced >= 7,
+          "#advanced=" .. #advanced)
+    local unlocked = {}
+    for _, e in ipairs(advanced) do
+      if e.lockedWhileArmed ~= true then unlocked[#unlocked + 1] = e.script end
+    end
+    check("every Advanced page is locked", #unlocked == 0, table.concat(unlocked, ", "))
   end
 
   -- 2c. Root tiles: Flight Tuning and Hardware Setup are gated; Logs and

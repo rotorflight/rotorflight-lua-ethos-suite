@@ -59,6 +59,13 @@ return {
   governor = {
     {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1205},
   },
+  -- rotorflight-firmware telemetry/crsf.c FLIGHT_MODE and GPS_SATS.
+  flight_mode = {
+    {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1201},
+  },
+  gps_sats = {
+    {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1121},
+  },
   adj_f = {
     {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1221},
   },
