@@ -36,6 +36,8 @@ Always available offline without an active flight controller connection. Read-on
 - A **threshold** announcement (*fuel.wav* plus the percentage) is unchanged: it is made
   when the reading crosses a step of the callout range, once per step, and a standing
   value does not repeat it.
+- **Battery profile** announces the newly selected pack as "Battery, 2200 milliamp
+  hours, 4 cells". The cell count is left out when the profile has none set.
 
 ## Related
 

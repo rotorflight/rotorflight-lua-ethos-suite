@@ -352,7 +352,12 @@ local function announceBatteryProfile()
 
   playAlert("battery.wav")
   playNumber(math.floor(capacity + 0.5), UNIT_MILLIAMPERE_HOUR)
-  if cells then playNumber(math.floor(cells + 0.5), UNIT_CELLS) end
+  -- Ethos has no spoken unit for cells (UNIT_CELLS is not a playNumber
+  -- unit), so say the number bare and follow it with our own word.
+  if cells then
+    playNumber(math.floor(cells + 0.5))
+    playAlert("cells.wav")
+  end
 end
 
 local function announceGovernor()

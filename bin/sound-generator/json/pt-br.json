@@ -498,6 +498,12 @@
     "needs_translation": true
   },
   {
+    "file": "events/alerts/cells.wav",
+    "english": "cells",
+    "translation": "células",
+    "needs_translation": false
+  },
+  {
     "file": "status/alerts/lowbat.wav",
     "english": "Battery Empty",
     "translation": null,
