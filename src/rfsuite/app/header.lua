@@ -111,6 +111,64 @@ end
 
 local function noop() end
 
+-- Non-blocking footer banner. A short message drawn over the bottom edge of
+-- the screen for a couple of seconds, in place of a modal form.openDialog()
+-- that seizes the whole form and waits for an OK press. #2303: the "the flight
+-- controller did not commit your save while armed" case is not a failure the
+-- pilot has to acknowledge -- the per-page MSP_SET_* writes landed and the FC
+-- commits them on disarm -- so it must not interrupt flying.
+--
+-- Drawn from a paint handler (the way the dashboard's own footer alerts are,
+-- widgets/dashboard.lua's drawFooterBanner()) rather than built as a form
+-- line. A form line would reserve a row for the whole life of the page even
+-- though the banner is up for two seconds, and a 480x320 radio cannot spare a
+-- row for a message that is usually not there.
+local BANNER_SECONDS = 2.5
+
+local function drawBanner(text)
+  local w, h = lcd.getWindowSize()
+  lcd.font(w <= 640 and FONT_XS or FONT_S)
+  local _, textH = lcd.getTextSize(text)
+  local pad = (w <= 640) and 8 or 12
+  local bannerH = textH + pad
+  local bannerY = h - bannerH
+  lcd.color(lcd.RGB(180, 20, 20, 1))
+  lcd.drawFilledRectangle(0, bannerY, w, bannerH)
+  lcd.color(lcd.RGB(255, 255, 255, 1))
+  lcd.drawText(w * 0.5, bannerY + (bannerH - textH) * 0.5, text, CENTERED)
+end
+
+-- One banner per header, shared by both header shapes (Menu-only and the
+-- leaf-page row) so neither duplicates the timing/haptic body. The caller
+-- drives it from its own paint and wakeup handlers: paint() draws while the
+-- window is open, update() is the wakeup tick that closes it and reports the
+-- transition so the caller can invalidate one last time (a radio does not
+-- repaint on its own when a timer elapses).
+local function newBanner()
+  local text, expiresAt = nil, 0
+
+  local function show(newText)
+    if not newText or newText == "" then return end
+    text = newText
+    expiresAt = os.clock() + BANNER_SECONDS
+    if system and system.playHaptic then system.playHaptic(". . . .") end
+  end
+
+  local function update()
+    if text and os.clock() >= expiresAt then
+      text = nil
+      return true
+    end
+    return false
+  end
+
+  local function paint()
+    if text then drawBanner(text) end
+  end
+
+  return show, update, paint
+end
+
 -- See the header comment above: form.addButton() with an explicit
 -- options=FONT_S, not the deprecated, font-less form.addTextButton().
 -- CENTERED added on top so the label sits centered within the button
@@ -139,15 +197,21 @@ end
 -- }
 -- Returns {setTitle = fn(text), setSaveEnabled = fn(enabled),
 -- setReloadEnabled = fn(enabled), focusMenu = fn(), focusSave = fn(),
--- focusReload = fn(), focusTool = fn()}.
+-- focusReload = fn(), focusTool = fn(), showBanner = fn(text),
+-- updateBanner = fn() -> bool, paintBanner = fn()}.
 -- Each focus* re-focuses that specific button -- Ethos has a bug where a
 -- form loses focus entirely once a form.openProgressDialog closes, so
 -- callers should call the appropriate one right after closing one (see
 -- app/pages/pids.lua's closeDialog()): whichever button the pilot
 -- actually pressed to trigger that dialog, or focusMenu() as the fallback
 -- when nothing specific pressed it (e.g. the page's initial load).
+-- showBanner(text) raises the transient non-blocking footer banner (see its
+-- own comment above); a caller with a paint/wakeup tick calls paintBanner()
+-- from paint and updateBanner() from wakeup, the latter returning true once as
+-- the banner expires so the caller can lcd.invalidate() for the clearing frame.
 function header.build(title, opts)
   local line = form.addLine("")
+  local showBanner, updateBanner, paintBanner = newBanner()
 
   local isLeafPage = (opts.onSave ~= nil) or (opts.onReload ~= nil) or (opts.onTool ~= nil)
 
@@ -163,6 +227,9 @@ function header.build(title, opts)
       focusSave = noop,
       focusReload = noop,
       focusTool = noop,
+      showBanner = showBanner,
+      updateBanner = updateBanner,
+      paintBanner = paintBanner,
     }
   end
 
@@ -199,6 +266,9 @@ function header.build(title, opts)
     focusSave = function() saveButton:focus() end,
     focusReload = function() reloadButton:focus() end,
     focusTool = function() toolButton:focus() end,
+    showBanner = showBanner,
+    updateBanner = updateBanner,
+    paintBanner = paintBanner,
   }
 end
 

@@ -93,8 +93,15 @@ local MSG_LOAD_FAILED_BODY = "@i18n(app.msg_load_failed_body)@"
 -- lib/utils.lua's "armed_blocked" reason from queueEepromWrite()): shown
 -- instead of MSG_SAVE_FAILED_* when the EEPROM write fails while
 -- self.isArmed is true (see performSave()'s errorHandler below).
-local MSG_SAVE_ARMED_TITLE = "@i18n(app.msg_save_not_commited)@"
-local MSG_SAVE_ARMED_BODY = "@i18n(app.msg_please_disarm_to_save_warning)@"
+--
+-- #2303: shown as a non-blocking header banner, not a modal dialog. The
+-- per-page MSP_SET_* writes already landed and the FC commits them on disarm,
+-- so there is nothing for the pilot to acknowledge -- while the old modal
+-- seized the whole form until it was dismissed, mid-flight. The text is the
+-- short title of that dialog; the sentence the dialog added ("your changes are
+-- safe and will be written to flash when you disarm") does not fit a one-line
+-- footer and no longer has to, because nothing is now waiting on the press.
+local MSG_SAVE_ARMED_BANNER = "@i18n(app.msg_save_not_commited)@"
 
 local PageRuntime = {}
 PageRuntime.__index = PageRuntime
@@ -181,6 +188,9 @@ end
 --                               true/false for pages whose reboot need is data-dependent.
 --   isMspPage,                  -- optional boolean; if true, save gating additionally
 --                               -- blocks when the model is armed (self.isArmed == true).
+--   localSettings,              -- optional boolean; #2303. True for a page whose save only
+--                               -- writes the radio's own storage and never touches the FC, so
+--                               -- the armed gate does not apply even when isMspPage is set.
 -- }
 -- No per-page save/reload confirmation text -- confirmSave()/confirmReload()
 -- always show the same generic dialog for every page, matching the
@@ -217,6 +227,11 @@ function PageRuntime.new(config)
   self.onSaved = config.onSaved
   self.rebootAfterSave = config.rebootAfterSave
   self.isMspPage = config.isMspPage
+  -- #2303: true for a page whose save only writes the radio's own storage
+  -- (lib/settings_store.lua) and never requests MSP_EEPROM_WRITE, so the FC
+  -- armed gate in canSave() does not apply to it. Off by default -- every page
+  -- built on this runtime is an FC/ESC editor unless it says otherwise.
+  self.localSettings = config.localSettings == true
   self.initialData = config.initialData
   -- Kept in sync from every "session.update" (see onSessionUpdate()
   -- below) purely for rebootAfterSave's own safety gate -- nil until the
@@ -476,7 +491,7 @@ end
 -- no background read/save/dialog is active, and the page is not armed-gated.
 function PageRuntime:canSave()
   if self.disposed then return false end
-  if self.isMspPage and self.isArmed == true then
+  if self.isMspPage and not self.localSettings and self.isArmed == true then
     return false
   end
   return self.loaded == true
@@ -862,21 +877,17 @@ end
 -- memory), but the values just written via MSP_SET_* already sit in RAM
 -- and commit for real on disarm. Matches the original suite's own
 -- armedSaveWarning() trap (app/tasks.lua).
+--
+-- #2303: a non-blocking header banner, not a modal. See MSG_SAVE_ARMED_BANNER's
+-- own comment. It is reached from the same wakeup tick as before, which is what
+-- this runtime already requires for opening UI from an MSP callback chain.
 function PageRuntime:showSaveArmed(focusFn)
   if self.disposed then return end
-
-  self:openMessageDialog({
-    title = MSG_SAVE_ARMED_TITLE,
-    message = MSG_SAVE_ARMED_BODY,
-    buttons = {
-      {label = BTN_OK, action = function()
-        if focusFn then focusFn() end
-        return true
-      end},
-    },
-    wakeup = function() end,
-    paint = function() end,
-  })
+  if focusFn then focusFn() end
+  if self.headerHandle and self.headerHandle.showBanner then
+    self:log("save not committed: EEPROM rejected while armed -- banner shown")
+    self.headerHandle.showBanner(MSG_SAVE_ARMED_BANNER)
+  end
 end
 
 -- Mirrors the original's `reload_confirm` preference (app/tasks.lua:414-
@@ -1231,6 +1242,14 @@ function PageRuntime:buildChrome()
         runtime.pendingSaveArmed = false
         runtime:showSaveArmed(runtime.headerHandle and runtime.headerHandle.focusSave)
       end
+      -- The header banner (#2303) closes itself on a clock, but a radio does
+      -- not repaint when a timer elapses: update() reports the one transition
+      -- so this tick can ask for the clearing frame. Silent while a banner is
+      -- open and after it is gone.
+      if runtime.headerHandle and runtime.headerHandle.updateBanner
+          and runtime.headerHandle.updateBanner() then
+        if lcd and lcd.invalidate then lcd.invalidate() end
+      end
       if runtime.pendingOnLoaded then
         runtime.pendingOnLoaded = false
         if runtime.onLoaded then
@@ -1246,10 +1265,17 @@ function PageRuntime:buildChrome()
     end)
   end
 
-  if opts.setPaintHandler and self.onPaint then
+  -- Installed whenever the host offers it, not only for pages with their own
+  -- onPaint: the header's non-blocking banner (#2303) is drawn from here, and a
+  -- page with no onPaint would otherwise have no paint tick of its own.
+  if opts.setPaintHandler then
     opts.setPaintHandler(function()
       local runtime = controlRef.runtime
-      if runtime and not runtime.disposed and runtime.onPaint then
+      if not runtime or runtime.disposed then return end
+      if runtime.headerHandle and runtime.headerHandle.paintBanner then
+        runtime.headerHandle.paintBanner()
+      end
+      if runtime.onPaint then
         runtime.onPaint(runtime)
       end
     end)

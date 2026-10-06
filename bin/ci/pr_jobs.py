@@ -1267,6 +1267,8 @@ two stick fields out of REST_FIELDS and the eight fixture bytes back out and req
 one to fail. Two checks that look like gates are deliberately not -- the transcribed trib
 table is a constant here, and the two-transcription offset parity check never reads the
 codec -- and the file says so.
+'''
+    ),
     LuaJob(
         id='esc-summary-full-width',
         name='ESC summary header spans full width without 2-column clipping',
@@ -1287,6 +1289,54 @@ lcd.getWindowSize()).
 
 2 of the 5 checks in bin/esc_summary/verify_esc_summary.lua are gates and go red on
 the pre-fix code, proven by --self-test.
+''',
+    ),
+    # Appended for #2303. A pure addition to the registry; the two entries above
+    # are left as they are.
+    LuaJob(
+        id='armed-save-banner',
+        name='An armed save is reported without a modal',
+        step='Check the armed-save warning and the local-settings bypass',
+        script='bin/armed_save/verify_armed_save.lua',
+        rationale=r'''EEPROM_WRITE is refused by the FC while the model is armed -- the firmware rejects
+flight-critical memory outright in that state -- but the per-page MSP_SET_* writes
+already landed and the FC commits them on disarm. app/page_runtime.lua turned that
+benign refusal into a modal form.openDialog(): it seized the whole form from the MSP
+callback chain's wakeup tick and held it until the pilot pressed OK, mid-flight.
+
+#2303 replaces the modal with a transient footer banner. app/header.lua builds it:
+a text drawn from a paint handler for 2.5 s (the dashboard's own footer alerts are
+drawn the same way, widgets/dashboard.lua's drawFooterBanner()), with a haptic pulse,
+not a form line -- a line would reserve a row for the life of the page for a message
+that is usually not there. page_runtime installs the paint handler unconditionally now
+(not only for pages with their own onPaint), draws the banner from it, and closes it
+from the wakeup tick, which invalidates once for the clearing frame because a radio
+does not repaint when a timer elapses.
+
+The issue's other half -- a local-settings page must save while armed -- is the new
+`localSettings` config flag, honored by canSave()'s armed gate. The finding worth
+reading: no page sets isMspPage, so the gate has been inert since it was added
+(#2305), and the reachable armed path is the EEPROM rejection above. This PR does NOT
+start marking FC pages with isMspPage, because pre-blocking the save would throw the
+pilot's edit away: the FC applies MSP_SET_* in RAM and commits on disarm, which is
+exactly what the old dialog's own body text promised ("your changes are safe and
+will be written to flash when you disarm"). Refusing the write pre-emptively would
+make that sentence false. The banner is the whole fix; the flag is there for a page
+that genuinely writes only local storage.
+
+3 of its 17 checks are gates and go red on the pre-fix page_runtime/header. Pass
+--self-test to prove that: it splices showSaveArmed()'s banner call back to the
+pre-fix modal and requires both the banner gate and the no-modal gate to fail, and
+splices BANNER_SECONDS past the fake clock's reach and requires the expiry gate to
+fail. The remaining checks are controls: an unarmed rejection must still be a real
+failure dialog, a local-settings page must save while armed, and an FC page without
+the flag must stay gated.
+
+This entry also repairs bin/ci/pr_jobs.py itself. #2479 inserted the
+esc-parameters-scorpion-block-length entry without its closing terminator, so that
+job's rationale swallowed the esc-summary-full-width job and the module stopped
+parsing -- `python bin/ci/verify_pr_workflow.py` raised a SyntaxError on master, and
+every pull request inherited it.
 '''
     ),
 ]
