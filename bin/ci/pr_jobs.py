@@ -1267,6 +1267,8 @@ two stick fields out of REST_FIELDS and the eight fixture bytes back out and req
 one to fail. Two checks that look like gates are deliberately not -- the transcribed trib
 table is a constant here, and the two-transcription offset parity check never reads the
 codec -- and the file says so.
+'''
+    ),
     LuaJob(
         id='esc-summary-full-width',
         name='ESC summary header spans full width without 2-column clipping',
