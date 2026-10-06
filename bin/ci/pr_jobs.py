@@ -250,10 +250,10 @@ It also pins the live bus subscribers, the rfsuite.* entries in
 package.loaded, the field_layout pool size, the form-widget count and the
 post-collect heap.
 
-The result is flat on every count -- the heap byte count included, once the
-harness stops growing its own metric arrays inside the region it measures.
-The suite's own Lua tree retains nothing per cycle, so #2425's ~30 kB is not
-reachable from Lua -- consistent with docs/memory-and-module-lifecycle.md
+The object counts are flat; the heap byte count stays within a small tolerance
+(it shifts by a fraction of a KB between Lua builds, so it is a backstop, not
+the check). The suite's own Lua tree retains nothing per cycle, so #2425's
+~30 kB is not reachable from Lua -- consistent with docs/memory-and-module-lifecycle.md
 section 8, where Ethos's own form widget system retains widget/callback
 allocations past form.clear() outside Lua's GC graph. It is a platform trait,
 not something this repository fixes by dropping references. The harness stays

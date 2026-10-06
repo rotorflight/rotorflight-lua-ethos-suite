@@ -622,7 +622,7 @@ reaches 16), not just the preload shell — and after every cycle counts:
   `field_layout` pool size, the form-widget count, and the post-collect heap as
   a coarse backstop.
 
-**The result is flat on every count.** Across any number of cycles the reachable
+**The result is flat on every object count.** Across any number of cycles the reachable
 table and string populations are constant to the object, the subscriber and
 `package.loaded` populations do not move, and no closure set accumulates. So the
 ~30 kB #2425 measured is **not reachable from Lua** — which is the same
