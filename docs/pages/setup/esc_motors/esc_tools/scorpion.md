@@ -28,6 +28,10 @@ Greyed out until the flight controller answers. Read-only while the model is arm
   **serial number**, so two ESCs of the same model can be told apart. An ESC that
   reports `0` for it shows no serial at all: a printed `S/N 0` would read like data
   and identify nothing. See #2455.
+- A save sends the whole parameter block the flight controller asks for -- 84 bytes
+  for a Scorpion, the same length the EdgeTX suite uses. The two `stick` words at the
+  end (bytes 77..84) have no row on this page: they are read from the ESC and written
+  back unchanged, so a save cannot overwrite them. See #2457.
 
 ## Choosing the ESC
 
