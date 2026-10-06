@@ -1446,6 +1446,18 @@ jobs:
   # codec -- and the file says so.
   esc-parameters-scorpion-block-length:
     name: The Scorpion block is the length the flight controller asks for
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Lua 5.4
+        run: sudo apt-get update && sudo apt-get install -y lua5.4
+
+      - name: Check the Scorpion block length and the appended stick words
+        run: lua5.4 bin/esc_parameters_scorpion/verify_scorpion_block_length.lua
+
   # In app/pages/esc_forward_vendor.lua, the ESC summary header was rendered using
   # form.addLine(mspModule.summaryFor(data, pageTitle)). In Ethos, form.addLine()
   # splits each line into a left label column and a right widget column, clipping
@@ -1472,8 +1484,6 @@ jobs:
       - name: Install Lua 5.4
         run: sudo apt-get update && sudo apt-get install -y lua5.4
 
-      - name: Check the Scorpion block length and the appended stick words
-        run: lua5.4 bin/esc_parameters_scorpion/verify_scorpion_block_length.lua
       - name: Check the ESC summary header width and line layout
         run: lua5.4 bin/esc_summary/verify_esc_summary.lua
 
