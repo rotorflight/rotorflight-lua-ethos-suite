@@ -1220,6 +1220,28 @@ four bare 10s and cutting one file left eight of thirteen gates green. Five chec
 plain: four guard against the version check failing OPEN, one is a smoke test.
 '''
     ),
+    LuaJob(
+        id='esc-summary-full-width',
+        name='ESC summary header spans full width without 2-column clipping',
+        step='Check the ESC summary header width and line layout',
+        script='bin/esc_summary/verify_esc_summary.lua',
+        rationale=r'''In app/pages/esc_forward_vendor.lua, the ESC summary header was rendered using
+form.addLine(mspModule.summaryFor(data, pageTitle)). In Ethos, form.addLine()
+splits each line into a left label column and a right widget column, clipping
+the label column at ~32 characters on standard screens (e.g. 480x320).
+When the summary line includes the model name, firmware version, and serial number
+(e.g. "YGE Saphir 125 / 1.03576 / S/N 100770", 37 characters), the text past 32 chars
+was vertically sliced on the column boundary (showing "... S/N 1C"), and the rest of
+the serial number was clipped off while the right half of the line remained empty.
+
+The summary is now rendered via escError.addTextLine(summary), which creates an empty
+line and spans form.addStaticText across the full display width (x = 0, w =
+lcd.getWindowSize()).
+
+2 of the 5 checks in bin/esc_summary/verify_esc_summary.lua are gates and go red on
+the pre-fix code, proven by --self-test.
+'''
+    ),
 ]
 
 VERBATIM_JOBS = [

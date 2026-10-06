@@ -222,7 +222,10 @@ function esc_forward_vendor.open(opts, config)
     form.clear()
     runtime:buildChrome()
     if mspModule.summaryFor then
-      form.addLine(mspModule.summaryFor(data, pageTitle))
+      local summary = mspModule.summaryFor(data, pageTitle)
+      if summary and summary ~= "" then
+        escError.addTextLine(summary)
+      end
     end
 
     local panel = nil

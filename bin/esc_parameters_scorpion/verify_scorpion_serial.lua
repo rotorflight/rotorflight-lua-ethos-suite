@@ -242,7 +242,11 @@ end
 _G.form = {
   addButton = function() return widgetStub("button") end,
   addTextButton = function() return widgetStub("textbutton") end,
-  addStaticText = function() end,
+  addStaticText = function(line, _, text)
+    if line and text and obs.lines[line] == "" then
+      obs.lines[line] = text
+    end
+  end,
   addNumberField = function(line, _, min, max, get, setWithDirty)
     local field = fieldFor(line)
     field.kind, field.min, field.max = "number", min, max
