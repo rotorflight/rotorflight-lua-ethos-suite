@@ -224,6 +224,49 @@ wakeups inside the guarded menu. It goes red if the guards stop latching
 '''
     ),
     LuaJob(
+        id='tool-lifecycle-retention',
+        name='Tool open/close retains no Lua memory',
+        step='Check that repeated tool cycles retain nothing',
+        script='bin/tool_ui/verify_tool_lifecycle_retention.lua',
+        rationale=r'''#2425 measured ~30 kB of Lua heap retained per tool open/close cycle on an
+X18RS, surviving a forced full collect, and left the live reference
+unidentified -- the most plausible mechanism behind the "slowly creeping up"
+heap across a flying day. The issue's own suggested investigation is to count
+at the source rather than observe the result, which no build and no package
+step can do.
+
+This harness drives the exact cycle #2425 measured -- open the tool, drill
+into the ESC menus, open one ESC vendor page, let its editor build, return,
+close -- through the real tool.lua, menu_container, page_runtime and
+field_layout. The ESC read is answered from the codec's own simulatorResponse,
+so the page does not stop on its preload shell: page_runtime and every
+field_layout field are built (the pool reaches 16), which is what the pool
+check below has to mean anything.
+
+After every cycle it counts the tables and strings actually reachable from _G
+and package.loaded. That is the sharp instrument: an exact integer, unaffected
+by allocator accounting, which any live Lua reference would necessarily move.
+It also pins the live bus subscribers, the rfsuite.* entries in
+package.loaded, the field_layout pool size, the form-widget count and the
+post-collect heap.
+
+The result is flat on every count -- the heap byte count included, once the
+harness stops growing its own metric arrays inside the region it measures.
+The suite's own Lua tree retains nothing per cycle, so #2425's ~30 kB is not
+reachable from Lua -- consistent with docs/memory-and-module-lifecycle.md
+section 8, where Ethos's own form widget system retains widget/callback
+allocations past form.clear() outside Lua's GC graph. It is a platform trait,
+not something this repository fixes by dropping references. The harness stays
+as the regression guard: a module-level table that grows per screen rebuild,
+or a page handler that stops unsubscribing, turns the flat-from-cycle-2
+property red.
+
+Pass --self-test to prove that rather than take it on trust: it retains every
+form widget's options table per cycle, exactly as a live Ethos widget would
+retain its callback, and requires the census checks to go red.
+'''
+    ),
+    LuaJob(
         id='field-layout',
         name='Field layout slot pooling and lifecycle',
         step='Check field layout slot pooling and lifecycle',
