@@ -51,7 +51,10 @@ local FIELDS = {
   {label = "@i18n(app.modules.esc_tools.mfg.blheli_s.demagcompensation)@", key = "demag_compensation"},
   {label = "@i18n(app.modules.esc_tools.mfg.blheli_s.brakeonstop)@", key = "brake_on_stop"},
   {label = brakingStrengthLabel, key = "braking_strength", enabledWhen = atLeast(202)},
-  {label = "@i18n(app.modules.esc_tools.mfg.bluejay.ledcontrol)@", key = "led_control", enabledWhen = function(data) return msp.supportsLedControl(data) end},
+  -- No LED Control row. It was gated on msp.supportsLedControl(), which read a
+  -- byte this 66-byte reply does not carry, so the row could not be shown on any
+  -- ESC; the byte it would have written is reserved_28 in
+  -- lib/msp_esc_parameters_bluejay.lua, where the sources for that are laid out.
 
   {group = "@i18n(app.modules.esc_tools.mfg.bluejay.beacon)@"},
   {label = "@i18n(app.modules.esc_tools.mfg.blheli_s.beepstrength)@", key = "beep_strength"},

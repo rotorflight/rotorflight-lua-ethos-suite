@@ -470,7 +470,7 @@ local LAYOUTS = {
     { "reserved_20", "u8" }, { "reserved_21", "u8" }, { "reserved_22", "u8" },
     { "temperature_protection", "u8" }, { "low_rpm_power_protection", "u8" },
     { "reserved_25", "u8" }, { "reserved_26", "u8" }, { "brake_on_stop", "u8" },
-    { "led_control", "u8" }, { "power_rating", "u8" }, { "force_edt_arm", "u8" },
+    { "reserved_28", "u8" }, { "power_rating", "u8" }, { "force_edt_arm", "u8" },
     { "threshold_48to24", "u8" }, { "threshold_96to48", "u8" },
   },
   am32 = {

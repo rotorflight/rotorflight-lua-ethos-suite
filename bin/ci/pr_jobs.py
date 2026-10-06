@@ -803,6 +803,58 @@ it to go red would be requiring the harness to fail on correct behaviour.
 '''
     ),
     LuaJob(
+        id='bluejay-led-control',
+        name='The Bluejay LED row is either reachable or absent',
+        step='Check the Bluejay LED Control row',
+        script='bin/bluejay_led_control/verify_bluejay_led_control.lua',
+        rationale=r'''app/pages/esc_forward_bluejay.lua declared an LED Control row and gated it on
+msp.supportsLedControl(), which read _raw[67] and compared it with the five ASCII
+letters naming Bluejay's five LED-capable pinouts. The MSP 217 reply is 66 bytes --
+two header bytes plus BLHELI_S_MSP_NUM_EEPROM_BYTES (0x40) -- so _raw[67] is nil,
+the comparison is false, and esc_forward_vendor.lua's fieldEnabled() requires
+`== true`: the row could never be shown on any ESC. Measured here rather than
+assumed, because the whole case rests on the length.
+
+The row is gone rather than repaired, and the reasons are in the firmware.
+mathiasvr/bluejay lists all 26 supported ESCs with their LED counts in
+Bluejay.asm:63-91 and exactly five have one (E_ 3, J_ 3, M_ 1, Q_ 2, U_ 3; every
+other layout reads "_" there, Z_ reads "-"), but those letters are EQU constants of
+the build. The EEPROM segment at 1A00h
+(Bluejay.asm:321-364) holds 41 parameter bytes and not one is a layout letter; the
+only layout-related byte is Eep_Layout_Revision, written from the firmware-wide
+EEPROM_LAYOUT_REVISION = 204 (Bluejay.asm:319), which every layout shares. Byte 43
+of the block IS the LED byte -- Eep_Pgm_LED_Control, segment offset 0x28 -- so the
+byte can be written, but nothing on the wire says whether writing it does anything.
+And the row's choice list was BLHeli_S's: Bluejay drives one pin per LED, two bits
+each, lit when the pair is non-zero (Bluejay.asm:1525-1556), so that list's "Green"
+is one LED on rather than a colour. Putting the row back means per-LED on/off, which
+is a decision about the UI and not a repair of this byte. Byte 43 is kept as the name
+reserved_28, so the block still decodes and re-encodes all 66 bytes -- the flight
+controller commits exactly escGetParamBufferLength() of them, so a dropped field
+entry would have shortened the payload rather than removed a row.
+
+Three gates. The first is the defect class and outlives this row: no criterion and no
+label on the page may read a byte the reply does not carry. The reads are traced
+through a metatable on _raw, so the check reports WHICH byte was reached for, and a
+revision test like atLeast(209) -- correctly false for a layout-204 ESC -- is not
+caught, because it reads layout_revision, which decode() did produce. The other two
+pin the decision itself, so a correct LED row can come back only deliberately, with
+the criterion that makes it reachable.
+
+Four checks are deliberately NOT gates, because they were true before the fix as
+well: the reply is 66 bytes and has no byte 67, byte 43 round-trips unchanged over
+all 256 values, every one of the 66 positions still has exactly one owning field,
+and byte 43 is among them under the name reserved_28. They are the guard on what the
+rename could have broken.
+
+3 of its 7 checks go red on the pre-fix page and codec. Pass --self-test to prove
+that rather than take it on trust: it splices the pre-fix row and the pre-fix
+criterion back into copies of both files, proves each splice is the pre-fix code
+before letting it stand in for one -- different file, reads back, loads, and writes
+the same 66 bytes -- and requires all three to fail.
+'''
+    ),
+    LuaJob(
         id='tune-history',
         name='Tune Advisor history on disarm',
         step='Check the Tune Advisor history on disarm',

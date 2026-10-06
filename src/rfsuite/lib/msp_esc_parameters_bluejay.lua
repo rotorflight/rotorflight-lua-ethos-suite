@@ -37,10 +37,6 @@ local PWM_DYNAMIC = {{"24kHz", 24}, {"48kHz", 48}, {"96kHz", 96}, {"Dynamic", 0}
 local STARTUP_BEEP_OLD = ON_OFF
 local STARTUP_BEEP_205 = {{"Off", 0}, {"Normal", 1}, {"Custom", 2}}
 local BRAKING_MODE = {{"Off", 0}, {"Not during startup", 1}, {"On", 2}}
-local LED_CONTROL = {
-  {"Off", 0x00}, {"Blue", 0x03}, {"Green", 0x0c}, {"Red", 0x30},
-  {"Cyan", 0x0f}, {"Magenta", 0x33}, {"Yellow", 0x3c}, {"White", 0x3f},
-}
 local POWER_RATING = {{"1S", 1}, {"2S+", 2}}
 
 local FIELD_META = {
@@ -53,7 +49,6 @@ local FIELD_META = {
   demag_compensation = {choices = DEMAG},
   brake_on_stop = {choices = ON_OFF},
   braking_strength = {min = 0, max = 255},
-  led_control = {choices = LED_CONTROL},
   beep_strength = {min = 0, max = 255},
   beacon_strength = {min = 0, max = 255},
   beacon_delay = {choices = BEACON_DELAY},
@@ -109,7 +104,34 @@ local WIRE_FIELDS = {
   {"reserved_25", "u8"},
   {"reserved_26", "u8"},
   {"brake_on_stop", "u8"},
-  {"led_control", "u8"},
+  -- Segment offset 0x28, and it is a name rather than a row. The byte itself is
+  -- Eep_Pgm_LED_Control -- mathiasvr/bluejay, Bluejay.asm:362, in the EEPROM
+  -- segment that starts at 1A00h (Bluejay.asm:321-364). This block is that
+  -- segment's first 0x40 bytes behind a two-byte header, which the names here
+  -- already carry: the rows and placeholders above cover the segment's offsets
+  -- 0 to 0x28 one for one, with main_revision, sub_revision and layout_revision
+  -- as its first three at block bytes 3, 4 and 5, and brake_on_stop last at
+  -- offset 0x29. So offset 0x28 is block byte 43.
+  --
+  -- What the row that used to stand here needed was the number of LEDs, and that
+  -- is a property of the compiled pinout, not a setting: Bluejay.asm:63-91 lists
+  -- the 26 supported ESCs and gives exactly five of them an LED count -- E_ 3,
+  -- J_ 3, M_ 1, Q_ 2, U_ 3 -- while every other layout reads "_" in that column
+  -- and Z_ reads "-". Those letters are EQU constants of the build and are never
+  -- stored: of the Eep_* labels in that segment only one is
+  -- layout-related, Eep_Layout_Revision, and it is written from the single
+  -- firmware-wide EEPROM_LAYOUT_REVISION (Bluejay.asm:319) = 204 for every
+  -- layout. Nothing in this block, and nothing else on MSP, says which ESC
+  -- answered -- which is why supportsLedControl() read _raw[67], one past the end
+  -- of a 66-byte reply, and therefore could never be true (#2453).
+  --
+  -- The choice list that came with the row was BLHeli_S's rather than Bluejay's.
+  -- Bluejay drives one pin per LED, two bits each, and lights a pin when its
+  -- pair is non-zero (Bluejay.asm:1525-1556, DEFAULT_PGM_LED_CONTROL's own
+  -- comment at :131 reads "2 bits per LED, 0=Off, 1=On"), so that list's "Green"
+  -- is one LED on rather than a colour. Putting the row back means per-LED
+  -- on/off, which is a decision about the UI and not a repair of this byte.
+  {"reserved_28", "u8"},
   {"power_rating", "u8"},
   {"force_edt_arm", "u8"},
   {"threshold_48to24", "threshold"},
@@ -284,13 +306,6 @@ local function layout(data)
   return tonumber(data and data.layout_revision) or 0
 end
 
-local function supportsLedControl(data)
-  local raw = data and data._raw
-  local prefix = raw and raw[67]
-  return prefix == string.byte("E") or prefix == string.byte("J") or prefix == string.byte("M")
-    or prefix == string.byte("Q") or prefix == string.byte("U")
-end
-
 local function choicesFor(data, key)
   local rev = layout(data)
   if key == "rpm_power_slope" then
@@ -320,10 +335,6 @@ local msp = {
 function msp.isCompatible(data)
   return tonumber(data and data.esc_signature) == msp.EXPECTED_SIGNATURE
     and tonumber(data and data.main_revision) == 0
-end
-
-function msp.supportsLedControl(data)
-  return supportsLedControl(data)
 end
 
 function msp.choicesFor(data, key)
