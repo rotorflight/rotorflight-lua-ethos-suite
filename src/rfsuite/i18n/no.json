@@ -7924,6 +7924,20 @@
       "reverse_text": false,
       "translation": "Last inn data from flight controller?"
     },
+    "msg_restarting": {
+      "english": "Restarting...",
+      "max_length": 13,
+      "needs_translation": true,
+      "reverse_text": false,
+      "translation": "Restarting..."
+    },
+    "msg_restarting_fc": {
+      "english": "Restarting flight controller...",
+      "max_length": 31,
+      "needs_translation": true,
+      "reverse_text": false,
+      "translation": "Restarting flight controller..."
+    },
     "msg_save_current_page": {
       "english": "Save current page to flight controller?",
       "max_length": 39,

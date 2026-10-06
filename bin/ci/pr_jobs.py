@@ -224,6 +224,49 @@ wakeups inside the guarded menu. It goes red if the guards stop latching
 '''
     ),
     LuaJob(
+        id='tool-lifecycle-retention',
+        name='Tool open/close retains no Lua memory',
+        step='Check that repeated tool cycles retain nothing',
+        script='bin/tool_ui/verify_tool_lifecycle_retention.lua',
+        rationale=r'''#2425 measured ~30 kB of Lua heap retained per tool open/close cycle on an
+X18RS, surviving a forced full collect, and left the live reference
+unidentified -- the most plausible mechanism behind the "slowly creeping up"
+heap across a flying day. The issue's own suggested investigation is to count
+at the source rather than observe the result, which no build and no package
+step can do.
+
+This harness drives the exact cycle #2425 measured -- open the tool, drill
+into the ESC menus, open one ESC vendor page, let its editor build, return,
+close -- through the real tool.lua, menu_container, page_runtime and
+field_layout. The ESC read is answered from the codec's own simulatorResponse,
+so the page does not stop on its preload shell: page_runtime and every
+field_layout field are built (the pool reaches 16), which is what the pool
+check below has to mean anything.
+
+After every cycle it counts the tables and strings actually reachable from _G
+and package.loaded. That is the sharp instrument: an exact integer, unaffected
+by allocator accounting, which any live Lua reference would necessarily move.
+It also pins the live bus subscribers, the rfsuite.* entries in
+package.loaded, the field_layout pool size, the form-widget count and the
+post-collect heap.
+
+The object counts are flat; the heap byte count stays within a small tolerance
+(it shifts by a fraction of a KB between Lua builds, so it is a backstop, not
+the check). The suite's own Lua tree retains nothing per cycle, so #2425's
+~30 kB is not reachable from Lua -- consistent with docs/memory-and-module-lifecycle.md
+section 8, where Ethos's own form widget system retains widget/callback
+allocations past form.clear() outside Lua's GC graph. It is a platform trait,
+not something this repository fixes by dropping references. The harness stays
+as the regression guard: a module-level table that grows per screen rebuild,
+or a page handler that stops unsubscribing, turns the flat-from-cycle-2
+property red.
+
+Pass --self-test to prove that rather than take it on trust: it retains every
+form widget's options table per cycle, exactly as a live Ethos widget would
+retain its callback, and requires the census checks to go red.
+'''
+    ),
+    LuaJob(
         id='field-layout',
         name='Field layout slot pooling and lifecycle',
         step='Check field layout slot pooling and lifecycle',
@@ -855,6 +898,38 @@ the same 66 bytes -- and requires all three to fail.
 '''
     ),
     LuaJob(
+        id='bluejay-layout-revs',
+        name='The Bluejay layout-revision bounds stay where they belong',
+        step='Check the Bluejay layout-revision bounds',
+        script='bin/bluejay_layout_revs/verify_bluejay_layout_revs.lua',
+        rationale=r'''app/pages/esc_forward_bluejay.lua gates rows on the ESC's layout_revision byte, and
+issue #2454 read the bounds as sitting ahead of the firmware's release history -- six
+rows invisible on every released Bluejay. The finding is real; the implication is not.
+The bounds are a port of the forward model one client keeps, stylesuxx/esc-configurator
+src/sources/Bluejay/settings.js's COMMON map, whose revisions are the released layouts
+200 (v0.9), 201 (v0.10), 203 (v0.12) and 204 (v0.15, bluejay master = v0.16) plus six
+that never shipped: 202 carried a damping-mode braking strength, 205 the three-way
+startup beep and a PWM frequency, 206 the power rating, 207 force-edt-arm, 208 dropped
+dithering, and 209 the dynamic PWM frequency and the two thresholds.
+
+mathiasvr/bluejay has never released an EEPROM_LAYOUT_REVISION other than 33, 200, 201, 203
+and 204 (Bluejay.asm:319 is 204 on master), so on 203/204 the two rows the bounds hide are
+exactly the two the firmware stopped applying there: Pwm_Freq is written from its
+default and never read on any released tag, and the startup-beep application ("Read
+programmed startup beep setting") is gone from v0.12 onward. The rows come back on
+their own when a layout that carries them ships, so the bounds must not be "fixed" to
+make them appear early.
+
+Two gates. The first reads the page's own FIELDS per revision and requires the
+visibility table the model implies, so a bound loosened for a released revision turns
+it red and the change has to be deliberate. The second requires the shipped
+simulatorResponse to report a revision that was actually released -- 204 -- which is
+what stops the Ethos simulator from showing a Bluejay that does not exist; it read 209
+before. Both mutations turn their gate red under --self-test (a loosened bound, and a
+fixture on 209), so neither gate can pass by being unable to fail.
+'''
+    ),
+    LuaJob(
         id='tune-history',
         name='Tune Advisor history on disarm',
         step='Check the Tune Advisor history on disarm',
@@ -1289,6 +1364,88 @@ lcd.getWindowSize()).
 
 2 of the 5 checks in bin/esc_summary/verify_esc_summary.lua are gates and go red on
 the pre-fix code, proven by --self-test.
+''',
+    ),
+    # Appended for #2303. A pure addition to the registry; the two entries above
+    # are left as they are.
+    LuaJob(
+        id='armed-save-banner',
+        name='An armed save is reported without a modal',
+        step='Check the armed-save warning and the local-settings bypass',
+        script='bin/armed_save/verify_armed_save.lua',
+        rationale=r'''EEPROM_WRITE is refused by the FC while the model is armed -- the firmware rejects
+flight-critical memory outright in that state -- but the per-page MSP_SET_* writes
+already landed and the FC commits them on disarm. app/page_runtime.lua turned that
+benign refusal into a modal form.openDialog(): it seized the whole form from the MSP
+callback chain's wakeup tick and held it until the pilot pressed OK, mid-flight.
+
+#2303 replaces the modal with a transient footer banner. app/header.lua builds it:
+a text drawn from a paint handler for 2.5 s (the dashboard's own footer alerts are
+drawn the same way, widgets/dashboard.lua's drawFooterBanner()), with a haptic pulse,
+not a form line -- a line would reserve a row for the life of the page for a message
+that is usually not there. page_runtime installs the paint handler unconditionally now
+(not only for pages with their own onPaint), draws the banner from it, and closes it
+from the wakeup tick, which invalidates once for the clearing frame because a radio
+does not repaint when a timer elapses.
+
+The issue's other half -- a local-settings page must save while armed -- is the new
+`localSettings` config flag, honored by canSave()'s armed gate. The finding worth
+reading: no page sets isMspPage, so the gate has been inert since it was added
+(#2305), and the reachable armed path is the EEPROM rejection above. This PR does NOT
+start marking FC pages with isMspPage, because pre-blocking the save would throw the
+pilot's edit away: the FC applies MSP_SET_* in RAM and commits on disarm, which is
+exactly what the old dialog's own body text promised ("your changes are safe and
+will be written to flash when you disarm"). Refusing the write pre-emptively would
+make that sentence false. The banner is the whole fix; the flag is there for a page
+that genuinely writes only local storage.
+
+3 of its 17 checks are gates and go red on the pre-fix page_runtime/header. Pass
+--self-test to prove that: it splices showSaveArmed()'s banner call back to the
+pre-fix modal and requires both the banner gate and the no-modal gate to fail, and
+splices BANNER_SECONDS past the fake clock's reach and requires the expiry gate to
+fail. The remaining checks are controls: an unarmed rejection must still be a real
+failure dialog, a local-settings page must save while armed, and an FC page without
+the flag must stay gated.
+
+This entry also repairs bin/ci/pr_jobs.py itself. #2479 inserted the
+esc-parameters-scorpion-block-length entry without its closing terminator, so that
+job's rationale swallowed the esc-summary-full-width job and the module stopped
+parsing -- `python bin/ci/verify_pr_workflow.py` raised a SyntaxError on master, and
+every pull request inherited it.
+'''
+    ),
+    # Appended for #2361: the governor pages must not restart the FC, and a save
+    # that does must wait for it to come back. Pure addition to the registry.
+    LuaJob(
+        id='governor-reboot-policy',
+        name='Governor saves do not reboot the FC, and a reboot is waited for',
+        step='Check the governor reboot policy and the save-and-reboot wait',
+        script='bin/reboot_policy/verify_reboot_policy.lua',
+        rationale=r'''Rotorflight 2 applies governor, filter, PID and rate writes in RAM immediately,
+so a governor save must not restart the board. The four Setup -> Governor pages
+declared rebootAfterSave = true, so every RPM or curve correction at the field
+dropped telemetry, twitched the servos on re-initialization and cost 5-10 s of
+reconnection. The EdgeTX suite fixed the same thing in ac950276 (PR #25); this is
+the Ethos half.
+
+What replaces the reboot flag is not nothing, though: the save path sent
+MSP_REBOOT fire-and-forget and closed the dialog at once, reporting the save done
+while the board was still booting, so a page left open kept showing pre-restart
+values. A save that DOES restart the FC now holds a "Restarting..." dialog until
+the link drops and the handshake answers again, then reloads.
+
+Neither half reaches a build or a package step: one is a field in a page's config,
+the other needs a link that drops and a background task to notice. The harness
+loads the four real governor pages and reads the config they hand PageRuntime.new,
+and drives the real page_runtime through a save, a drop and a reconnect.
+
+Three checks are gates, proven by --self-test: it splices rebootAfterSave back to
+true in a copy of a governor page and requires the governor check to fail, and it
+loads a copy of page_runtime.lua with `self_.pendingReboot = true` spliced to
+false -- the one line that arms the wait -- and requires the hold and reload
+checks to fail. The remaining checks are controls: a page with no reboot must
+finish at once, an armed save must publish no reboot, and a board that never
+returns must still end the wait on its 20 s bound.
 '''
     ),
     LuaJob(

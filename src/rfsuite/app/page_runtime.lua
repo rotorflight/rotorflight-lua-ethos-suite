@@ -93,8 +93,29 @@ local MSG_LOAD_FAILED_BODY = "@i18n(app.msg_load_failed_body)@"
 -- lib/utils.lua's "armed_blocked" reason from queueEepromWrite()): shown
 -- instead of MSG_SAVE_FAILED_* when the EEPROM write fails while
 -- self.isArmed is true (see performSave()'s errorHandler below).
+--
+-- #2303: shown as a non-blocking header banner, not a modal dialog. The
+-- per-page MSP_SET_* writes already landed and the FC commits them on disarm,
+-- so there is nothing for the pilot to acknowledge -- while the old modal
+-- seized the whole form until it was dismissed, mid-flight. The text is the
+-- short title of that dialog; the sentence the dialog added ("your changes are
+-- safe and will be written to flash when you disarm") does not fit a one-line
+-- footer and no longer has to, because nothing is now waiting on the press.
+local MSG_SAVE_ARMED_BANNER = "@i18n(app.msg_save_not_commited)@"
 local MSG_SAVE_ARMED_TITLE = "@i18n(app.msg_save_not_commited)@"
 local MSG_SAVE_ARMED_BODY = "@i18n(app.msg_please_disarm_to_save_warning)@"
+-- Shown while a page whose save restarts the flight controller waits for it to
+-- come back -- see beginRebootWait()/updateRebootWait() below. The EEPROM write
+-- and the MSP_REBOOT that follow a save are already committed and sent by the
+-- time this is on screen, so it only reports the restart, it does not ask.
+local MSG_RESTARTING_TITLE = "@i18n(app.msg_restarting)@"
+local MSG_RESTARTING_BODY = "@i18n(app.msg_restarting_fc)@"
+-- Give-up bound for the reconnect wait, not a wait duration: the page leaves
+-- the moment the flight controller answers again, so this is only ever spent in
+-- full on a board that does not come back (including one that was switched
+-- off). Matches rotorflight-lua-edgetx-suite's own save pipeline, whose probe
+-- bound is also 20 s (tasks/msp/save_pipeline.lua's RECONNECT_TIMEOUT_SECONDS).
+local REBOOT_TIMEOUT_SECONDS = 20
 
 local PageRuntime = {}
 PageRuntime.__index = PageRuntime
@@ -179,8 +200,21 @@ end
 --                               same as the original's own validateWrite() blocking just the REBOOT
 --                               API call, not the rest of the save. May also be a function returning
 --                               true/false for pages whose reboot need is data-dependent.
+--                               When a reboot DOES happen the page no longer closes its dialog and
+--                               reports the save done: it holds a "Restarting..." dialog until the
+--                               link drops and the FC answers a fresh handshake, then re-reads
+--                               (see beginRebootWait()/updateRebootWait()/finishRebootWait()). The
+--                               reboot itself stays fire-and-forget on the wire -- see
+--                               lib/msp_reboot.lua -- only the UI waits. Note the policy this
+--                               encodes: Rotorflight 2 applies governor/PID/filter/rate writes in
+--                               RAM immediately, so only hardware-driver and core-structure
+--                               changes (ports, radio config, board alignment, loop rate, the
+--                               mixer's own structural changes) should set this true.
 --   isMspPage,                  -- optional boolean; if true, save gating additionally
 --                               -- blocks when the model is armed (self.isArmed == true).
+--   localSettings,              -- optional boolean; #2303. True for a page whose save only
+--                               -- writes the radio's own storage and never touches the FC, so
+--                               -- the armed gate does not apply even when isMspPage is set.
 -- }
 -- No per-page save/reload confirmation text -- confirmSave()/confirmReload()
 -- always show the same generic dialog for every page, matching the
@@ -217,6 +251,11 @@ function PageRuntime.new(config)
   self.onSaved = config.onSaved
   self.rebootAfterSave = config.rebootAfterSave
   self.isMspPage = config.isMspPage
+  -- #2303: true for a page whose save only writes the radio's own storage
+  -- (lib/settings_store.lua) and never requests MSP_EEPROM_WRITE, so the FC
+  -- armed gate in canSave() does not apply to it. Off by default -- every page
+  -- built on this runtime is an FC/ESC editor unless it says otherwise.
+  self.localSettings = config.localSettings == true
   self.initialData = config.initialData
   -- Kept in sync from every "session.update" (see onSessionUpdate()
   -- below) purely for rebootAfterSave's own safety gate -- nil until the
@@ -224,6 +263,19 @@ function PageRuntime.new(config)
   -- resolved), treated the same as "not armed" by that gate, matching
   -- the original's own resolveArmedState() fallback.
   self.isArmed = nil
+  -- Connection state and the handshake's apiVersion flag, kept from every
+  -- "session.update" for the reboot wait (updateRebootWait()): a save that
+  -- restarts the FC holds its page until the link drops and comes back. Both
+  -- nil until the first update arrives, which updateRebootWait() reads as
+  -- "nothing observed yet" rather than as a drop or a reconnect.
+  self.connected = nil
+  self.handshakeApiVersion = nil
+  -- Set by performSave()'s committed path when the reboot was published,
+  -- consumed by the wakeup handler in buildChrome() -- the dialog it opens
+  -- (beginRebootWait()) must not open from the MSP callback chain, same as
+  -- every other dialog in this file. See REBOOT_TIMEOUT_SECONDS above.
+  self.pendingReboot = false
+  self.rebootWait = nil
 
   -- MSP_API_VERSION's minor, from the snapshot tasks/session.lua already publishes
   -- on "session.update" (see its flush()). nil until the first update arrives.
@@ -476,7 +528,7 @@ end
 -- no background read/save/dialog is active, and the page is not armed-gated.
 function PageRuntime:canSave()
   if self.disposed then return false end
-  if self.isMspPage and self.isArmed == true then
+  if self.isMspPage and not self.localSettings and self.isArmed == true then
     return false
   end
   return self.loaded == true
@@ -669,49 +721,60 @@ function PageRuntime:performSave(focusFn)
     end)
   end
 
-  -- Only called from the EEPROM write's own success path (never on
-  -- failure -- matches the original's own saveDone(), which is what
-  -- calls rebootFc(), never saveFailed()). Skips (but still lets the
-  -- rest of the save stand -- the EEPROM commit above already
-  -- happened) if `self.isArmed == true`; see rebootAfterSave's own
-  -- config comment and lib/msp_reboot.lua's for why this is the one
-  -- safety gate on that command.
-  local function maybeReboot()
+  -- Only consulted from the committed save path (never on failure -- matches
+  -- the original's own saveDone(), which is what calls rebootFc(), never
+  -- saveFailed()). Skips the reboot (but still lets the rest of the save
+  -- stand -- the EEPROM commit already happened) if `self.isArmed == true`;
+  -- see rebootAfterSave's own config comment and lib/msp_reboot.lua's for why
+  -- this is the one safety gate on that command.
+  local function rebootRequested()
     local shouldReboot = self_.rebootAfterSave
     if type(shouldReboot) == "function" then
       shouldReboot = shouldReboot(self_)
     end
-    if not shouldReboot then return end
+    if not shouldReboot then return false end
     if self_.isArmed == true then
       self_:log("performSave: rebootAfterSave skipped (isArmed == true)")
+      return false
+    end
+    return true
+  end
+
+  -- The committed half of the save, shared by the EEPROM and no-EEPROM paths:
+  -- the write(s) succeeded, so snapshot the clean data and, if this page
+  -- restarts the FC, publish MSP_REBOOT.
+  --
+  -- On a reboot the save dialog is deliberately NOT closed here. It is turned
+  -- into the "Restarting..." dialog by the wakeup handler and the page is held
+  -- until the link is back (beginRebootWait()/updateRebootWait()). That replaces
+  -- the old fire-and-forget, which closed the dialog and reported the save
+  -- finished while the board was still booting: the pilot could not tell "saved"
+  -- from "rebooting", and a page left open kept showing the pre-restart values.
+  local function commitSave()
+    self_:captureCleanData()
+    self_:setDirty(false)
+    if self_.onSaved then self_.onSaved(self_) end
+    if rebootRequested() then
+      self_.pendingReboot = true
+      self_:log("performSave: publishing MSP_REBOOT")
+      bus.publish("msp.request", reboot.buildWriteMessage(function()
+        self_:log("performSave: MSP_REBOOT acked")
+      end, function(reason)
+        self_:log("performSave: MSP_REBOOT failed: " .. tostring(reason))
+      end))
       return
     end
-    self_:log("performSave: publishing MSP_REBOOT")
-    bus.publish("msp.request", reboot.buildWriteMessage(function()
-      self_:log("performSave: MSP_REBOOT acked")
-    end, function(reason)
-      self_:log("performSave: MSP_REBOOT failed: " .. tostring(reason))
-    end))
+    finishSave()
   end
 
   local function writeSource(index)
     if self_.disposed then return end
     if index > #self_.sources then
       if not self_.eepromWrite then
-        self_:captureCleanData()
-        self_:setDirty(false)
-        if self_.onSaved then self_.onSaved(self_) end
-        finishSave()
-        maybeReboot()
+        commitSave()
         return
       end
-      bus.publish("msp.request", eeprom.buildWriteMessage(function()
-        self_:captureCleanData()
-        self_:setDirty(false)
-        if self_.onSaved then self_.onSaved(self_) end
-        finishSave()
-        maybeReboot()
-      end, function(reason)
+      bus.publish("msp.request", eeprom.buildWriteMessage(commitSave, function(reason)
         self_:log("performSave: EEPROM_WRITE failed: " .. tostring(reason))
         if self_.isArmed == true then
           self_.pendingSaveArmed = true
@@ -771,6 +834,82 @@ function PageRuntime:performSave(focusFn)
   end
 
   writeSource(1)
+end
+
+-- Opens the "Restarting flight controller..." dialog and records the wait
+-- state. Called from the wakeup handler, not from the MSP callback that set
+-- pendingReboot -- form.openProgressDialog() only works reliably from the app
+-- tool's own tick (see onSessionUpdate()'s and buildChrome()'s own comments).
+--
+-- The saving dialog is closed first on purpose: the save has already committed
+-- and the flight controller has already been told to restart, so leaving
+-- "Saving..." under the restart would name the wrong phase.
+function PageRuntime:beginRebootWait()
+  if self.disposed then return end
+  self:closeDialog(self.headerHandle and self.headerHandle.focusSave)
+  self:showDialog(MSG_RESTARTING_TITLE, MSG_RESTARTING_BODY)
+  self.rebootWait = {
+    startedAt = os.clock(),
+    sawDisconnect = false,
+  }
+  self:log("reboot: waiting for the flight controller to drop")
+end
+
+-- Drives the reconnect wait from the page's own wakeup tick. Two edges are
+-- required: the link must be seen to drop, and it must come back with a fresh
+-- handshake, before the page re-reads. Requiring the drop is what keeps a board
+-- that never rebooted -- or a save that was actually refused -- from being
+-- reported as restarted; the newer signal, handshakeApiVersion, is the FC
+-- answering MSP again (tasks/session.lua's API_VERSION read), the Ethos
+-- equivalent of the EdgeTX pipeline's post-reboot probe.
+--
+-- The timeout is a give-up bound so a board that never comes back cannot leave
+-- the dialog standing for the rest of the session; it is not how long a normal
+-- reboot takes.
+function PageRuntime:updateRebootWait()
+  local wait = self.rebootWait
+  if not wait or self.disposed then return end
+
+  if not wait.sawDisconnect then
+    if self.connected == false then
+      wait.sawDisconnect = true
+      self:log("reboot: link dropped; waiting for the flight controller to come back")
+    elseif self.connected == true and self.handshakeApiVersion == false then
+      -- The drop edge was missed (the background task polls the link every
+      -- 0.05 s, the reset can be shorter), but the handshake was cleared: the
+      -- suite did process the disconnect, so the board did go down.
+      wait.sawDisconnect = true
+      self:log("reboot: handshake reset observed; waiting for the flight controller to come back")
+    end
+  end
+
+  if wait.sawDisconnect and self.connected == true and self.handshakeApiVersion == true then
+    self:finishRebootWait(true)
+    return
+  end
+
+  if (os.clock() - wait.startedAt) >= REBOOT_TIMEOUT_SECONDS then
+    self:log("reboot: timed out waiting for the flight controller to come back")
+    self:finishRebootWait(false)
+  end
+end
+
+-- Ends the wait and re-reads the page. Either outcome closes the dialog and
+-- reloads: on success the FC is back and the read returns the post-restart
+-- values; on a timeout the reload's own failure path shows the load-failed
+-- dialog instead of leaving the restart dialog open forever. Either way the
+-- page ends up holding values read after the restart, never before it.
+function PageRuntime:finishRebootWait(ok)
+  self.rebootWait = nil
+  self.pendingReboot = false
+  if self.disposed then return end
+  if ok then
+    self:log("reboot: flight controller is back; reloading")
+  else
+    debugLog.print("[" .. (self.logTag or "page") .. "] reboot: giving up waiting; reloading")
+  end
+  self:closeDialog(self.headerHandle and self.headerHandle.focusMenu)
+  self:loadData(self.headerHandle and self.headerHandle.focusReload)
 end
 
 -- Mirrors the original suite's app/tasks.lua:288-314 (`save_confirm`
@@ -862,21 +1001,17 @@ end
 -- memory), but the values just written via MSP_SET_* already sit in RAM
 -- and commit for real on disarm. Matches the original suite's own
 -- armedSaveWarning() trap (app/tasks.lua).
+--
+-- #2303: a non-blocking header banner, not a modal. See MSG_SAVE_ARMED_BANNER's
+-- own comment. It is reached from the same wakeup tick as before, which is what
+-- this runtime already requires for opening UI from an MSP callback chain.
 function PageRuntime:showSaveArmed(focusFn)
   if self.disposed then return end
-
-  self:openMessageDialog({
-    title = MSG_SAVE_ARMED_TITLE,
-    message = MSG_SAVE_ARMED_BODY,
-    buttons = {
-      {label = BTN_OK, action = function()
-        if focusFn then focusFn() end
-        return true
-      end},
-    },
-    wakeup = function() end,
-    paint = function() end,
-  })
+  if focusFn then focusFn() end
+  if self.headerHandle and self.headerHandle.showBanner then
+    self:log("save not committed: EEPROM rejected while armed -- banner shown")
+    self.headerHandle.showBanner(MSG_SAVE_ARMED_BANNER)
+  end
 end
 
 -- Mirrors the original's `reload_confirm` preference (app/tasks.lua:414-
@@ -950,6 +1085,13 @@ function PageRuntime:onSessionUpdate(update)
   -- See the declaration above: tasks/session.lua's snapshot carries it, and the
   -- subscription this handler already exists for is the only sanctioned way in.
   self.apiVersionMinor = update.apiVersionMinor
+  -- The reboot wait's two signals (see updateRebootWait()): whether the link is
+  -- up, and whether the FC is answering MSP again. handshake is copied as
+  -- booleans by tasks/session.lua's flush(), so `== true` is the whole test;
+  -- a nil handshake (a snapshot from before the first handshake) reads false.
+  self.connected = update.connected
+  local handshake = update.handshake
+  self.handshakeApiVersion = (type(handshake) == "table") and (handshake.apiVersion == true) or false
   self:updateSaveEnabled()
 
   local previous = self.lastProfile
@@ -1074,6 +1216,10 @@ function PageRuntime:dispose()
   self.pendingSaveArmed = false
   self.pendingLoadError = false
   self.pendingOnLoaded = false
+  self.pendingReboot = false
+  self.rebootWait = nil
+  self.connected = nil
+  self.handshakeApiVersion = nil
   if self.pendingUiActions then
     clearTable(self.pendingUiActions)
     self.pendingUiActions = nil
@@ -1208,6 +1354,19 @@ function PageRuntime:buildChrome()
       local runtime = controlRef.runtime
       if not runtime or runtime.disposed then return end
       runtime:runPendingUiActions()
+      -- A save that restarts the FC: open the restart dialog once, then poll
+      -- the reconnect wait each tick until it ends. Both run before the flags
+      -- below, and those are all gated on `not activeDialog`, so the restart
+      -- dialog owns the screen for the whole wait. See finishRebootWait() for
+      -- why the wait ends in a normal loadData().
+      if runtime.pendingReboot and not runtime.rebootWait then
+        runtime.pendingReboot = false
+        runtime:beginRebootWait()
+      end
+      if runtime.rebootWait then
+        runtime:updateRebootWait()
+        if runtime.disposed then return end
+      end
       if runtime.pendingReload and runtime.loaded and not runtime.activeDialog then
         runtime.pendingReload = false
         runtime:log("wakeup: running deferred profile-change reload")
@@ -1231,6 +1390,14 @@ function PageRuntime:buildChrome()
         runtime.pendingSaveArmed = false
         runtime:showSaveArmed(runtime.headerHandle and runtime.headerHandle.focusSave)
       end
+      -- The header banner (#2303) closes itself on a clock, but a radio does
+      -- not repaint when a timer elapses: update() reports the one transition
+      -- so this tick can ask for the clearing frame. Silent while a banner is
+      -- open and after it is gone.
+      if runtime.headerHandle and runtime.headerHandle.updateBanner
+          and runtime.headerHandle.updateBanner() then
+        if lcd and lcd.invalidate then lcd.invalidate() end
+      end
       if runtime.pendingOnLoaded then
         runtime.pendingOnLoaded = false
         if runtime.onLoaded then
@@ -1246,10 +1413,17 @@ function PageRuntime:buildChrome()
     end)
   end
 
-  if opts.setPaintHandler and self.onPaint then
+  -- Installed whenever the host offers it, not only for pages with their own
+  -- onPaint: the header's non-blocking banner (#2303) is drawn from here, and a
+  -- page with no onPaint would otherwise have no paint tick of its own.
+  if opts.setPaintHandler then
     opts.setPaintHandler(function()
       local runtime = controlRef.runtime
-      if runtime and not runtime.disposed and runtime.onPaint then
+      if not runtime or runtime.disposed then return end
+      if runtime.headerHandle and runtime.headerHandle.paintBanner then
+        runtime.headerHandle.paintBanner()
+      end
+      if runtime.onPaint then
         runtime.onPaint(runtime)
       end
     end)

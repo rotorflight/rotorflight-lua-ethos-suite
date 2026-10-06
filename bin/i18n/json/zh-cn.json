@@ -119,6 +119,20 @@
       "reverse_text": false,
       "max_length": 18
     },
+    "msg_restarting": {
+      "english": "Restarting...",
+      "translation": "Restarting...",
+      "needs_translation": true,
+      "reverse_text": false,
+      "max_length": 13
+    },
+    "msg_restarting_fc": {
+      "english": "Restarting flight controller...",
+      "translation": "Restarting flight controller...",
+      "needs_translation": true,
+      "reverse_text": false,
+      "max_length": 31
+    },
     "msg_save_failed_title": {
       "english": "Save failed",
       "translation": "保存失败",
