@@ -638,6 +638,14 @@ local function runHandshake(mspQueue, protocol)
         playConnectBeep()
       end
       publish()
+      -- Phased handshake (issue #2362): the identity/config reads below are
+      -- held back until this verdict is a verified "yes" (see the gate a few
+      -- lines down). Now that API_VERSION has answered, resume the handshake
+      -- in the same turn rather than waiting for wakeup()'s own 2s retry tick,
+      -- so the remaining phases start as soon as the version is known. On an
+      -- incompatible FC this call lands on the gate and does nothing, which is
+      -- the point: no further requests are queued.
+      runHandshake(mspQueue, protocol)
     end, function(reason)
       handshakeInFlight.apiVersion = false
       if reason ~= "cleared" then
@@ -647,6 +655,25 @@ local function runHandshake(mspQueue, protocol)
     if queued == false then
       handshakeInFlight.apiVersion = false
     end
+  end
+
+  -- Phased handshake (issue #2362). Every read below is a post-connect read
+  -- that only makes sense once the FC has proven it speaks this suite's own
+  -- MSP dialect. `session.apiVersionSupported` is nil until MSP_API_VERSION
+  -- has been answered, and false when the answer was an incompatible family,
+  -- or this family with a minor below this rebuild's floor -- see
+  -- lib/msp_api_version.lua's isSupported(). This function used to queue the
+  -- whole identity/config burst unconditionally, in one call: on an
+  -- incompatible FC that put FC_VERSION, UID, NAME, the RTC sync and the
+  -- battery/smartfuel/governor/rx-map reads on the wire ahead of any verdict,
+  -- and because the queue is single-in-flight, one unanswerable request at its
+  -- head -- the 5 x 0.8s retry budget of MSP_UID, say -- starved every page
+  -- read behind it for seconds. API_VERSION above is the one request allowed
+  -- to run unverified; it is cheap, and its own success callback resumes this
+  -- function the moment the verdict is in. Nothing below is queued until the
+  -- verdict is a verified "yes".
+  if session.apiVersionSupported ~= true then
+    return
   end
 
   if not session.handshake.fcVariant and not handshakeInFlight.fcVariant then
@@ -1399,8 +1426,12 @@ local function wakeup(mspQueue, protocol, transport, simSensors)
 
   -- If any handshake queries were cleared by an early arming transition,
   -- or if packets were lost during initial connect, retry pending items
-  -- periodically while connected and disarmed.
-  if session.connected and session.isArmed ~= true and not isHandshakeComplete() then
+  -- periodically while connected and disarmed. Skipped once API_VERSION has
+  -- been answered as incompatible (issue #2362): the handshake can then never
+  -- complete, so the 2s tick would only re-enter runHandshake() to hit its own
+  -- version gate and return -- a no-op every 2s for the lifetime of the link.
+  if session.connected and session.isArmed ~= true and not isHandshakeComplete()
+      and session.apiVersionSupported ~= false then
     if shouldRunScheduled("handshake_retry", 2.0, now) then
       runHandshake(mspQueue, protocol)
     end

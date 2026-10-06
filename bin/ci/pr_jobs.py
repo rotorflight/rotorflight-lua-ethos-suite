@@ -1267,6 +1267,8 @@ two stick fields out of REST_FIELDS and the eight fixture bytes back out and req
 one to fail. Two checks that look like gates are deliberately not -- the transcribed trib
 table is a constant here, and the two-transcription offset parity check never reads the
 codec -- and the file says so.
+'''
+    ),
     LuaJob(
         id='esc-summary-full-width',
         name='ESC summary header spans full width without 2-column clipping',
@@ -1287,6 +1289,32 @@ lcd.getWindowSize()).
 
 2 of the 5 checks in bin/esc_summary/verify_esc_summary.lua are gates and go red on
 the pre-fix code, proven by --self-test.
+'''
+    ),
+    LuaJob(
+        id='handshake-gate',
+        name='Post-connect reads wait for a verified API_VERSION',
+        step='Check the phased startup handshake',
+        script='bin/handshake_gate/verify_handshake_gate.lua',
+        rationale=r'''tasks/session.lua's runHandshake() queued its whole identity/config burst in one
+call, ahead of any API-version verdict: MSP_FC_VERSION, MSP_UID, MSP_NAME, the RTC
+sync and the battery/smartfuel/governor/rx-map reads all went on the wire before
+MSP_API_VERSION had even been answered, let alone checked. On a weak link, or
+against firmware from a different family, one unanswerable request at the head of
+the single-in-flight queue blocks every page read behind it for its full retry
+budget -- 5 x 0.8s for UID -- which is the queue starvation #2362 reports.
+
+The handshake is now phased: API_VERSION is the only request allowed to run
+unverified, its own success callback resumes the handshake the moment the verdict
+is in, and nothing else is queued until that verdict is a verified "yes". An
+incompatible or too-old FC stops after the version read; the UI banner for it
+already existed (widgets/dashboard.lua's drawFooterAlert). No build and no package
+step reaches any of this -- it needs a queue, a clock and an FC that answers, or
+does not -- so it is pinned here.
+
+5 of the harness's 12 checks are gates on the queue contents, proven by --self-test:
+it neuters the gate's condition in a copy of session.lua and requires the central
+check (no identity read before the verdict) to go red.
 '''
     ),
 ]

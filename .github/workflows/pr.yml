@@ -1446,6 +1446,18 @@ jobs:
   # codec -- and the file says so.
   esc-parameters-scorpion-block-length:
     name: The Scorpion block is the length the flight controller asks for
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Lua 5.4
+        run: sudo apt-get update && sudo apt-get install -y lua5.4
+
+      - name: Check the Scorpion block length and the appended stick words
+        run: lua5.4 bin/esc_parameters_scorpion/verify_scorpion_block_length.lua
+
   # In app/pages/esc_forward_vendor.lua, the ESC summary header was rendered using
   # form.addLine(mspModule.summaryFor(data, pageTitle)). In Ethos, form.addLine()
   # splits each line into a left label column and a right widget column, clipping
@@ -1472,10 +1484,41 @@ jobs:
       - name: Install Lua 5.4
         run: sudo apt-get update && sudo apt-get install -y lua5.4
 
-      - name: Check the Scorpion block length and the appended stick words
-        run: lua5.4 bin/esc_parameters_scorpion/verify_scorpion_block_length.lua
       - name: Check the ESC summary header width and line layout
         run: lua5.4 bin/esc_summary/verify_esc_summary.lua
+
+  # tasks/session.lua's runHandshake() queued its whole identity/config burst in one
+  # call, ahead of any API-version verdict: MSP_FC_VERSION, MSP_UID, MSP_NAME, the RTC
+  # sync and the battery/smartfuel/governor/rx-map reads all went on the wire before
+  # MSP_API_VERSION had even been answered, let alone checked. On a weak link, or
+  # against firmware from a different family, one unanswerable request at the head of
+  # the single-in-flight queue blocks every page read behind it for its full retry
+  # budget -- 5 x 0.8s for UID -- which is the queue starvation #2362 reports.
+  #
+  # The handshake is now phased: API_VERSION is the only request allowed to run
+  # unverified, its own success callback resumes the handshake the moment the verdict
+  # is in, and nothing else is queued until that verdict is a verified "yes". An
+  # incompatible or too-old FC stops after the version read; the UI banner for it
+  # already existed (widgets/dashboard.lua's drawFooterAlert). No build and no package
+  # step reaches any of this -- it needs a queue, a clock and an FC that answers, or
+  # does not -- so it is pinned here.
+  #
+  # 5 of the harness's 12 checks are gates on the queue contents, proven by --self-test:
+  # it neuters the gate's condition in a copy of session.lua and requires the central
+  # check (no identity read before the verdict) to go red.
+  handshake-gate:
+    name: Post-connect reads wait for a verified API_VERSION
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Lua 5.4
+        run: sudo apt-get update && sudo apt-get install -y lua5.4
+
+      - name: Check the phased startup handshake
+        run: lua5.4 bin/handshake_gate/verify_handshake_gate.lua
 
   # Per-language PR builds (mirrors push.yml behavior)
   create-zip:
