@@ -1291,6 +1291,40 @@ lcd.getWindowSize()).
 the pre-fix code, proven by --self-test.
 '''
     ),
+    # Appended for #2361: the governor pages must not restart the FC, and a save
+    # that does must wait for it to come back. Pure addition to the registry.
+    LuaJob(
+        id='governor-reboot-policy',
+        name='Governor saves do not reboot the FC, and a reboot is waited for',
+        step='Check the governor reboot policy and the save-and-reboot wait',
+        script='bin/reboot_policy/verify_reboot_policy.lua',
+        rationale=r'''Rotorflight 2 applies governor, filter, PID and rate writes in RAM immediately,
+so a governor save must not restart the board. The four Setup -> Governor pages
+declared rebootAfterSave = true, so every RPM or curve correction at the field
+dropped telemetry, twitched the servos on re-initialization and cost 5-10 s of
+reconnection. The EdgeTX suite fixed the same thing in ac950276 (PR #25); this is
+the Ethos half.
+
+What replaces the reboot flag is not nothing, though: the save path sent
+MSP_REBOOT fire-and-forget and closed the dialog at once, reporting the save done
+while the board was still booting, so a page left open kept showing pre-restart
+values. A save that DOES restart the FC now holds a "Restarting..." dialog until
+the link drops and the handshake answers again, then reloads.
+
+Neither half reaches a build or a package step: one is a field in a page's config,
+the other needs a link that drops and a background task to notice. The harness
+loads the four real governor pages and reads the config they hand PageRuntime.new,
+and drives the real page_runtime through a save, a drop and a reconnect.
+
+Three checks are gates, proven by --self-test: it splices rebootAfterSave back to
+true in a copy of a governor page and requires the governor check to fail, and it
+loads a copy of page_runtime.lua with `self_.pendingReboot = true` spliced to
+false -- the one line that arms the wait -- and requires the hold and reload
+checks to fail. The remaining checks are controls: a page with no reboot must
+finish at once, an armed save must publish no reboot, and a board that never
+returns must still end the wait on its 20 s bound.
+'''
+    ),
 ]
 
 VERBATIM_JOBS = [
