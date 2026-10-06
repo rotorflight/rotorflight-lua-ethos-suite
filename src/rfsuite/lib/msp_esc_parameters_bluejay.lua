@@ -142,8 +142,17 @@ for i = 0x2d, 0x3f do
   WIRE_FIELDS[#WIRE_FIELDS + 1] = {string.format("reserved_%02x", i), "u8"}
 end
 
+-- Byte 5 is layout_revision and it is 204, the current Bluejay release
+-- (EEPROM_LAYOUT_REVISION = 204, Bluejay.asm:319). It used to read 209, a
+-- revision no tag has ever carried, which made the Ethos simulator show a
+-- Bluejay that does not exist and put rows on screen that no shipped ESC can
+-- reach. A fixture is meant to reproduce a real reply, so it follows the
+-- current release; the pages that a future layout brings back are exercised by
+-- their own bounds, not by the fixture. The values behind the rows this hides
+-- are left in place -- the codec decodes and re-encodes all 66 bytes either
+-- way. See issue #2454.
 local SIMULATOR_RESPONSE = {
-  193, 0, 0, 22, 209, 255, 51, 0, 0, 5, 255, 9, 24, 1, 255, 85,
+  193, 0, 0, 22, 204, 255, 51, 0, 0, 5, 255, 9, 24, 1, 255, 85,
   170, 255, 255, 255, 255, 255, 255, 4, 255, 255, 255, 255, 255, 40, 80, 4,
   255, 2, 255, 255, 255, 0, 1, 255, 255, 0, 0, 2, 0, 170, 85, 0, 0, 0, 0,
   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0

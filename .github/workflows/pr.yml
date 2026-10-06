@@ -996,6 +996,45 @@ jobs:
       - name: Check the Bluejay LED Control row
         run: lua5.4 bin/bluejay_led_control/verify_bluejay_led_control.lua
 
+  # app/pages/esc_forward_bluejay.lua gates rows on the ESC's layout_revision byte, and
+  # issue #2454 read the bounds as sitting ahead of the firmware's release history -- six
+  # rows invisible on every released Bluejay. The finding is real; the implication is not.
+  # The bounds are a port of the forward model one client keeps, stylesuxx/esc-configurator
+  # src/sources/Bluejay/settings.js's COMMON map, whose revisions are the released layouts
+  # 200 (v0.9), 201 (v0.10), 203 (v0.12) and 204 (v0.15, bluejay master = v0.16) plus six
+  # that never shipped: 202 carried a damping-mode braking strength, 205 the three-way
+  # startup beep and a PWM frequency, 206 the power rating, 207 force-edt-arm, 208 dropped
+  # dithering, and 209 the dynamic PWM frequency and the two thresholds.
+  #
+  # mathiasvr/bluejay has never released an EEPROM_LAYOUT_REVISION other than 33, 200, 201, 203
+  # and 204 (Bluejay.asm:319 is 204 on master), so on 203/204 the two rows the bounds hide are
+  # exactly the two the firmware stopped applying there: Pwm_Freq is written from its
+  # default and never read on any released tag, and the startup-beep application ("Read
+  # programmed startup beep setting") is gone from v0.12 onward. The rows come back on
+  # their own when a layout that carries them ships, so the bounds must not be "fixed" to
+  # make them appear early.
+  #
+  # Two gates. The first reads the page's own FIELDS per revision and requires the
+  # visibility table the model implies, so a bound loosened for a released revision turns
+  # it red and the change has to be deliberate. The second requires the shipped
+  # simulatorResponse to report a revision that was actually released -- 204 -- which is
+  # what stops the Ethos simulator from showing a Bluejay that does not exist; it read 209
+  # before. Both mutations turn their gate red under --self-test (a loosened bound, and a
+  # fixture on 209), so neither gate can pass by being unable to fail.
+  bluejay-layout-revs:
+    name: The Bluejay layout-revision bounds stay where they belong
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Lua 5.4
+        run: sudo apt-get update && sudo apt-get install -y lua5.4
+
+      - name: Check the Bluejay layout-revision bounds
+        run: lua5.4 bin/bluejay_layout_revs/verify_bluejay_layout_revs.lua
+
   # The FC keeps its tune advisor statistics in RAM; the radio saves each
   # flight on disarm, clears the FC, and the page combines the last 5 flights
   # on the current tune. Pins the capture (one flight per disarm, then a
