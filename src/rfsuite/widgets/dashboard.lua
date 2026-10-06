@@ -823,7 +823,8 @@ local function refreshControllerRows(widget, rows, reasons)
   if size and size > 0 and used then
     n = n + 1
     row = infoRow(rows, n, "bbl", "@i18n(widgets.dashboard.blackbox)@")
-    local pct = math.floor(used * 100 / size + 0.5)
+    -- Divide first: used * 100 overflows a 32-bit integer past ~21 MB.
+    local pct = math.floor(used / size * 100 + 0.5)
     if row.key ~= pct then
       row.key = pct
       row.text = string.format("@i18n(widgets.dashboard.info_used_fmt)@", pct)
