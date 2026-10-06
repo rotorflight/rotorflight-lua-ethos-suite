@@ -455,23 +455,28 @@ end
 
 -- ── The check sequence ──────────────────────────────────────────────────────
 local function runCycles(n)
+  local m = newMetrics(n)
   -- Warm-up: the first create() loads the tool's UI subtree and the first
   -- visit loads the page modules. Those are one-time costs and are not the
-  -- growth #2425 is about.
+  -- growth #2425 is about. Also run the census and counter functions once so
+  -- allocator and hash structures are primed before cycle 1 is recorded.
   cycle()
+  poolSize()
+  census()
+  subscriberTotal()
+  rfsuiteKeyCount()
   heapKB()
 
-  local m = newMetrics(n)
   for i = 1, n do
     local widgetDelta = cycle()
     local count, live = poolSize()
-    m.heap[i] = heapKB()
     m.tables[i], m.strings[i] = census()
     m.widgets[i] = widgetDelta
     m.subscribers[i] = subscriberTotal()
     m.keys[i] = rfsuiteKeyCount()
     m.pool[i] = count
     m.poolLive[i] = live
+    m.heap[i] = heapKB()
   end
   return m
 end
