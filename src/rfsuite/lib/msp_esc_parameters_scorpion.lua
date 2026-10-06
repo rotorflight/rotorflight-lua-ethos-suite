@@ -1,4 +1,15 @@
 -- Scorpion forward-programming payload (MSP 217 read / 218 write).
+--
+-- The block is 84 bytes, and the length is not cosmetic (#2457). The flight
+-- controller treats MSP_SET_ESC_PARAMETERS as an opaque move of
+-- escGetParamBufferLength() bytes: for a Scorpion (ESC_SIG_TRIB, 0x53) that is
+-- PARAM_HEADER_SIZE + tribCalcParamBufferLength(), and tribParamAddrLen sums to
+-- 82, so 2 + 82 = 84 (rotorflight-firmware src/main/sensors/esc_sensor.c:
+-- tribParamAddrLen, tribCalcParamBufferLength(), escGetParamBufferLength()).
+-- sbufReadData copies that many bytes out of the received frame with no bounds
+-- check and no comparison against what actually arrived, and the destination is
+-- a persistent static buffer, so a payload shorter than 84 leaves the tail to be
+-- filled from past the end of the frame. This codec used to send 76.
 
 if package.loaded["rfsuite.lib.msp_esc_parameters_scorpion"] then
   return package.loaded["rfsuite.lib.msp_esc_parameters_scorpion"]
@@ -70,6 +81,15 @@ local REST_FIELDS = {
   {"bailout", "u16"},
   {"gov_proportional", "u32"},
   {"gov_integral", "u32"},
+  -- The block does not end at gov_integral. Bytes 77..84 are two U32s the sibling
+  -- suite names stick_max and stick_zero; its field list carries both after
+  -- gov_integral (rotorflight-lua-edgetx-suite src/rfsuite/tasks/msp/api/
+  -- esc_parameters_scorpion.lua), and the width that closes the gap is the 84 the
+  -- flight controller asks for. The page builds no row for either, so they are
+  -- never edited -- they are decoded and written back verbatim, because the
+  -- firmware commits all 84 bytes whether or not the tool sent them (#2457).
+  {"stick_max", "u32"},
+  {"stick_zero", "u32"},
 }
 for i = 1, #REST_FIELDS do WIRE_FIELDS[#WIRE_FIELDS + 1] = REST_FIELDS[i] end
 
@@ -97,7 +117,13 @@ local SIMULATOR_RESPONSE = {
   64, 31, -- runup_time
   208, 7, -- bailout
   100, 0, 0, 0, -- gov_proportional
-  200, 0, 0, 0 -- gov_integral
+  200, 0, 0, 0, -- gov_integral
+  -- The last eight bytes, taken verbatim from the sibling suite's SIM_RESPONSE
+  -- (rotorflight-lua-edgetx-suite .../msp/api/esc_parameters_scorpion.lua), which
+  -- carries the same 84 bytes and describes the same ESC. Without them this fixture
+  -- -- and so every save -- is 76 bytes where the ESC's block is 84 (#2457).
+  1, 0, 0, 0, -- stick_max
+  200, 250, 0, 0 -- stick_zero
 }
 
 local function readValue(buf, wireType)

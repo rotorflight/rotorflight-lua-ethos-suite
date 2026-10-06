@@ -1220,6 +1220,55 @@ four bare 10s and cutting one file left eight of thirteen gates green. Five chec
 plain: four guard against the version check failing OPEN, one is a smoke test.
 '''
     ),
+    # Appended after #2457 was opened, so this entry is a pure addition rather than a
+    # re-registration of esc-parameters-scorpion-serial: that job arrived with #2455.
+    LuaJob(
+        id='esc-parameters-scorpion-block-length',
+        name='The Scorpion block is the length the flight controller asks for',
+        step='Check the Scorpion block length and the appended stick words',
+        script='bin/esc_parameters_scorpion/verify_scorpion_block_length.lua',
+        rationale=r'''lib/msp_esc_parameters_scorpion.lua described 76 bytes where the flight
+controller's block for a Scorpion is 84. The last eight are two U32 words the sibling
+suite names stick_max and stick_zero; this codec stopped at gov_integral.
+
+That is not cosmetic on the write path. msp.c's MSP_SET_ESC_PARAMETERS is an opaque move
+of escGetParamBufferLength() bytes, and its only length check is `len == 0`.
+
+    const uint8_t len = escGetParamBufferLength();
+    if (len == 0) return MSP_RESULT_ERROR;
+    sbufReadData(src, escGetParamUpdBuffer(), len);
+    if (!escCommitParameters()) return MSP_RESULT_ERROR;
+
+sbufReadData is an unchecked memcpy and the destination paramUpdBuffer is a persistent
+static array nothing clears per message -- escGetParamUpdBuffer() re-fills it from
+paramBuffer only in the BLHeli_S case. So a 76-byte payload leaves the firmware copying
+eight bytes from past the end of the received frame into escCommitParameters and on to
+the ESC, and the last two words are stored from whatever those bytes were.
+
+Where 84 comes from (rotorflight-firmware src/main/sensors/esc_sensor.c; the Scorpion is
+ESC_SIG_TRIB = 0x53, served by tribSensorInit, not the 4-way path):
+
+    static uint16_t tribParamAddrLen[] =
+        { 0x0020, 0x1008, 0x230E, 0x8204, 0x8502, 0x1406, 0x1808, 0x3408 };
+    tribCalcParamBufferLength() sums (x & 0xFF)      -> 32+8+14+4+2+6+8+8 = 82
+    #define PARAM_HEADER_SIZE 2
+    escGetParamBufferLength() = PARAM_HEADER_SIZE + it -> 2 + 82 = 84
+
+The TRIB path sets paramPayloadLength = tribCalcParamBufferLength() when the ESC's
+UNC/status handshake completes (tribDecodeReadStatusResp), so the length is a constant 84
+for this vendor, not a count the ESC varies.
+
+The codec and its fixture now carry the two words, taken verbatim from the sibling's
+FIELD_SPEC / SIM_RESPONSE, and the page builds no row for either -- they are carried through
+a read and written back verbatim.
+
+6 of the harness's 12 checks go red without the fix, proven by --self-test: it cuts the
+two stick fields out of REST_FIELDS and the eight fixture bytes back out and requires every
+one to fail. Two checks that look like gates are deliberately not -- the transcribed trib
+table is a constant here, and the two-transcription offset parity check never reads the
+codec -- and the file says so.
+'''
+    ),
 ]
 
 VERBATIM_JOBS = [
