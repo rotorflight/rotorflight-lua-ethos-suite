@@ -45,6 +45,7 @@ local msp_motor_override = {
 function msp_motor_override.parse(buf)
   if type(buf) ~= "table" then return nil end
   if #buf < MOTOR_SLOTS * 2 then return nil end
+  buf.offset = 1
   local out = {}
   for idx = 1, MOTOR_SLOTS do
     out["motor_" .. idx] = mspcodec.readS16(buf)
@@ -60,7 +61,7 @@ end
 function msp_motor_override.buildWriteMessage(index, value, onWritten, onError)
   local payload = {}
   mspcodec.writeU8(payload, index or 0)
-  mspcodec.writeU16(payload, value or OVERRIDE_OFF)
+  mspcodec.writeS16(payload, value or OVERRIDE_OFF)
   return {
     command = WRITE_COMMAND,
     payload = payload,

@@ -314,10 +314,12 @@ package.loaded["rfsuite.app.header"] = {
     -- Every header the page builds is recorded, each with the Back callback it
     -- was handed: the page builds one before the load and another once the load
     -- has finished, and the two are separate callbacks.
-    local handle = {
+    local handle
+    handle = {
       builtTitle = title,
+      currentTitle = title,
       onBack = opts and opts.onBack,
-      setTitle = function() end,
+      setTitle = function(t) handle.currentTitle = t end,
       setSaveEnabled = function() end,
       setReloadEnabled = function() end,
       focusMenu = function() end,
@@ -506,7 +508,12 @@ do
   local parsed = codec.parse(negative)
   check("a negative override reads back negative", parsed and parsed.motor_1 == -100,
     parsed and ("got " .. tostring(parsed.motor_1)) or "parse returned nil")
+  local parsedAgain = codec.parse(negative)
+  check("parsing the same buffer resets offset to 1", parsedAgain and parsedAgain.motor_1 == -100)
   check("a short answer is refused rather than half-read", codec.parse({0, 0}) == nil)
+  local negWrite = codec.buildWriteMessage(0, -100)
+  check("a negative override writes signed int16",
+    negWrite.payload[2] == 0x9C and negWrite.payload[3] == 0xFF)
 end
 -- part B: the page keeps an enabled override alive --------------------------
 --
@@ -626,6 +633,10 @@ do
   -- Now a confirmed one, with the throttle actually off zero.
   dialog = confirmOverride(page, 40)
   check("the throttle is only usable while overriding", throttleField().enabled == true)
+  local topHeader = headerBuilds[#headerBuilds]
+  check("the title carries a * while overriding",
+    topHeader and topHeader.currentTitle and topHeader.currentTitle:sub(-2) == " *",
+    topHeader and ("title is " .. tostring(topHeader.currentTitle)) or "no header")
   check("a confirmed override writes nothing until the keep-alive runs",
     anyMotorRunning() == false,
     "the confirmation itself drove a motor")
@@ -765,6 +776,8 @@ do
     "motor 1 = " .. tostring(lastValueFor(0)) .. " after arming")
   check("and the switch is disabled rather than left claiming an override",
     overrideSwitch().enabled == false)
+  check("and the title loses * when disarmed",
+    headerBuilds[#headerBuilds].currentTitle ~= nil and not headerBuilds[#headerBuilds].currentTitle:find("%*"))
 
   -- Disarming hands the control back, so the page is not left permanently dead.
   publishSession(true, false)

@@ -97,6 +97,7 @@ local function open(opts)
   local fields = {}
   local dialog = nil
   local confirmHandle = nil
+  local headerHandle = nil
   local sessionHandler = nil
 
   local function count() return effectiveMotorCount(motorCount) end
@@ -146,6 +147,9 @@ local function open(opts)
     if blocked and inOverride then
       inOverride = false
       releaseAllMotors()
+    end
+    if headerHandle and headerHandle.setTitle then
+      headerHandle.setTitle(inOverride and (PAGE_TITLE .. " *") or PAGE_TITLE)
     end
     local idle = loaded and not activeDialog
     if fields.enable then fields.enable:enable(idle and not blocked) end
@@ -227,7 +231,7 @@ local function open(opts)
 
   local function buildFields()
     form.clear()
-    local headerHandle = header.build(inOverride and (PAGE_TITLE .. " *") or PAGE_TITLE, {
+    headerHandle = header.build(inOverride and (PAGE_TITLE .. " *") or PAGE_TITLE, {
       onBack = function() goBack() end,
     })
 
@@ -273,7 +277,7 @@ local function open(opts)
     if fields.throttle and fields.throttle.suffix then fields.throttle:suffix("%") end
 
     refreshEnabled()
-    if headerHandle and headerHandle.focusMenu then headerHandle:focusMenu() end
+    if headerHandle and headerHandle.focusMenu then headerHandle.focusMenu() end
   end
 
   local function closeProgress(force)
@@ -311,6 +315,7 @@ local function open(opts)
     end
     stopOverride()
     fields = {}
+    headerHandle = nil
     if opts.setWakeupHandler then opts.setWakeupHandler(nil) end
     if opts.onBack then opts.onBack() end
   end
