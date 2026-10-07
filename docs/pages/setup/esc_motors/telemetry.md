@@ -1,7 +1,7 @@
 ---
 title: Telemetry
 sidebar_label: Telemetry
-sidebar_position: 20
+sidebar_position: 30
 ---
 
 # Telemetry

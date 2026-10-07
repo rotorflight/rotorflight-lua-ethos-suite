@@ -1923,6 +1923,76 @@
           "reverse_text": false,
           "translation": "Valeur PWM arret moteur"
         },
+        "motor": {
+          "english": "Motor",
+          "max_length": 5,
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "Motor"
+        },
+        "motor_override": {
+          "english": "Motor Override",
+          "max_length": 14,
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "Motor Override"
+        },
+        "motor_override_armed": {
+          "english": "Disarm before driving a motor.",
+          "max_length": 30,
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "Disarm before driving a motor."
+        },
+        "motor_override_disable": {
+          "english": "Disable motor override",
+          "max_length": 22,
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "Disable motor override"
+        },
+        "motor_override_disable_msg": {
+          "english": "Return control of the motor to the flight controller.",
+          "max_length": 53,
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "Return control of the motor to the flight controller."
+        },
+        "motor_override_disconnected": {
+          "english": "Link lost. The motor is back under flight controller control.",
+          "max_length": 61,
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "Link lost. The motor is back under flight controller control."
+        },
+        "motor_override_enable": {
+          "english": "Enable motor override",
+          "max_length": 21,
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "Enable motor override"
+        },
+        "motor_override_enable_msg": {
+          "english": "The flight controller drives the motor directly. Remove the blades, secure the craft and stand clear.",
+          "max_length": 101,
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "The flight controller drives the motor directly. Remove the blades, secure the craft and stand clear."
+        },
+        "motor_override_note": {
+          "english": "Blades off and the craft secured. The motor turns as soon as the throttle leaves zero.",
+          "max_length": 86,
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "Blades off and the craft secured. The motor turns as soon as the throttle leaves zero."
+        },
+        "motor_override_throttle": {
+          "english": "Throttle",
+          "max_length": 8,
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "Throttle"
+        },
         "motor_pole_count": {
           "english": "Motor Pole Count",
           "max_length": 16,

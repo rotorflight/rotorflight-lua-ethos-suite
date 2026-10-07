@@ -1576,27 +1576,6 @@ jobs:
       - name: Check the ESC summary header width and line layout
         run: lua5.4 bin/esc_summary/verify_esc_summary.lua
 
-  # tasks/session.lua's runHandshake() queued its whole identity/config burst in one
-  # call, ahead of any API-version verdict: MSP_FC_VERSION, MSP_UID, MSP_NAME, the RTC
-  # sync and the battery/smartfuel/governor/rx-map reads all went on the wire before
-  # MSP_API_VERSION had even been answered, let alone checked. On a weak link, or
-  # against firmware from a different family, one unanswerable request at the head of
-  # the single-in-flight queue blocks every page read behind it for its full retry
-  # budget -- 5 x 0.8s for UID -- which is the queue starvation #2362 reports.
-  #
-  # The handshake is now phased: API_VERSION is the only request allowed to run
-  # unverified, its own success callback resumes the handshake the moment the verdict
-  # is in, and nothing else is queued until that verdict is a verified "yes". An
-  # incompatible or too-old FC stops after the version read; the UI banner for it
-  # already existed (widgets/dashboard.lua's drawFooterAlert). No build and no package
-  # step reaches any of this -- it needs a queue, a clock and an FC that answers, or
-  # does not -- so it is pinned here.
-  #
-  # 5 of the harness's 12 checks are gates on the queue contents, proven by --self-test:
-  # it neuters the gate's condition in a copy of session.lua and requires the central
-  # check (no identity read before the verdict) to go red.
-  handshake-gate:
-    name: Post-connect reads wait for a verified API_VERSION
   # EEPROM_WRITE is refused by the FC while the model is armed -- the firmware rejects
   # flight-critical memory outright in that state -- but the per-page MSP_SET_* writes
   # already landed and the FC commits them on disarm. app/page_runtime.lua turned that
@@ -1638,6 +1617,18 @@ jobs:
   # every pull request inherited it.
   armed-save-banner:
     name: An armed save is reported without a modal
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Lua 5.4
+        run: sudo apt-get update && sudo apt-get install -y lua5.4
+
+      - name: Check the armed-save warning and the local-settings bypass
+        run: lua5.4 bin/armed_save/verify_armed_save.lua
+
   # Rotorflight 2 applies governor, filter, PID and rate writes in RAM immediately,
   # so a governor save must not restart the board. The four Setup -> Governor pages
   # declared rebootAfterSave = true, so every RPM or curve correction at the field
@@ -1674,12 +1665,122 @@ jobs:
       - name: Install Lua 5.4
         run: sudo apt-get update && sudo apt-get install -y lua5.4
 
-      - name: Check the phased startup handshake
-        run: lua5.4 bin/handshake_gate/verify_handshake_gate.lua
-      - name: Check the armed-save warning and the local-settings bypass
-        run: lua5.4 bin/armed_save/verify_armed_save.lua
       - name: Check the governor reboot policy and the save-and-reboot wait
         run: lua5.4 bin/reboot_policy/verify_reboot_policy.lua
+
+  # Issue #2307 asks for the EdgeTX suite's motor-override safeguards on Ethos. The
+  # interlocks are not free choices; three of the four are the firmware's own deadlines,
+  # and a page that gets any of them wrong leaves a motor turning that the pilot cannot
+  # see or stop.
+  #
+  # THE 1-SECOND DEADLINE IS WHY THE KEEP-ALIVE EXISTS. MOTOR_OVERRIDE_TIMEOUT is 1000000
+  # (rotorflight-firmware src/main/flight/motors.h:27), and motors.c:301-303 resets EVERY
+  # override once it passes:
+  #
+  #     if (motorOverrideTimeout) {
+  #         if (cmp32(currentTimeUs, motorOverrideTimeout) > 0)
+  #             resetMotorOverride();
+  #     }
+  #
+  # So one write is not "the motor is on", it is "the motor turns for one more second". A
+  # page that writes on every wheel click looks like it works and is the most dangerous
+  # shape available: the motor stops whenever the pilot stops scrolling. The page
+  # therefore re-sends the current value at 4 Hz -- four times inside the window, which is
+  # also what the Configurator sends -- and keeps ONE write in flight, because a link
+  # slower than 4 Hz would otherwise grow the queue without bound.
+  #
+  # THE ARMED CHECK IS IN THE FIRMWARE, SO THE PAGE'S ONLY LEVER IS TO REFUSE.
+  # motors.c:114-120:
+  #
+  #     if (!ARMING_FLAG(ARMED) && motor < motorCount) {
+  #         motorOverride[motor] = value;
+  #         motorOverrideTimeout = timeout ? (micros() + timeout) | BIT(0) : 0;
+  #     }
+  #
+  # An armed craft cannot be overridden at all. The switch is therefore disabled rather
+  # than shown as a control that would quietly do nothing, and an override that was
+  # already running when the model armed is handed straight back -- with the zeros
+  # actually written, since the page cannot know whether its last write arrived.
+  #
+  # THE WRITE NAMES ONE MOTOR, so leaving has to name them all. msp.c:2966-2972 reads a
+  # u8 index and one u16 value, so a release that names only the selected motor leaves
+  # every other motor at whatever it had. The release names all of them, unconditionally,
+  # because that is the path that has to work when something has already gone wrong.
+  #
+  # One correction to the issue as filed: it asks for the same heartbeat on the servo
+  # override pages. There is nothing to service. servos.c:95-98 is
+  #
+  #     int16_t setServoOverride(uint8_t servo, int16_t val)
+  #     {
+  #         return servoOverride[servo] = val;
+  #     }
+  #
+  # -- it stores the value and nothing else. The only override deadline in the firmware is
+  # motorOverrideTimeout; there is no servo counterpart, so a servo override holds until
+  # something writes SERVO_OVERRIDE_OFF. Adding a heartbeat there would have re-sent
+  # OVERRIDE_CENTER every 250 ms, overwriting the value the pilot had just dialled in.
+  #
+  # `lockedWhileArmed` does not exist in this suite either -- grep-verified over
+  # src/rfsuite: it is an EdgeTX manifest flag, and the Ethos menu layer has no armed
+  # handling at all. The armed gate is the page refusing, not a menu lock.
+  #
+  # 9 of the harness's 43 checks are gates, proven by --self-test: it loads spliced copies
+  # of the page with the keep-alive interval neutralised, the armed guard dropped from
+  # both places it is enforced (the disabled switch and the refusal to open the confirm),
+  # the every-motor release narrowed to the selected motor, and the session-driven release
+  # replaced by a bare flag clear -- and requires each to go red. The splices assert they
+  # applied, because a pattern that has moved must fail the run rather than pass silently.
+  #
+  # The remaining checks are controls, and the file says which: a page that is not
+  # overriding writes nothing at all over five seconds, the throttle and the motor
+  # selector are locked while overriding, a cancel leaves the page as it was, and a newly
+  # selected motor starts at zero instead of inheriting its predecessor's throttle.
+  motor-override-safety:
+    name: Motor override is confirmed, kept alive, armed-guarded and released
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Lua 5.4
+        run: sudo apt-get update && sudo apt-get install -y lua5.4
+
+      - name: Check the motor override interlocks against the firmware deadlines
+        run: lua5.4 bin/motor_override/verify_motor_override.lua
+
+  # tasks/session.lua's runHandshake() queued its whole identity/config burst in one
+  # call, ahead of any API-version verdict: MSP_FC_VERSION, MSP_UID, MSP_NAME, the RTC
+  # sync and the battery/smartfuel/governor/rx-map reads all went on the wire before
+  # MSP_API_VERSION had even been answered, let alone checked. On a weak link, or
+  # against firmware from a different family, one unanswerable request at the head of
+  # the single-in-flight queue blocks every page read behind it for its full retry
+  # budget -- 5 x 0.8s for UID -- which is the queue starvation #2362 reports.
+  #
+  # The handshake is now phased: API_VERSION is the only request allowed to run
+  # unverified, its own success callback resumes the handshake the moment the verdict
+  # is in, and nothing else is queued until that verdict is a verified "yes". An
+  # incompatible or too-old FC stops after the version read; the UI banner for it
+  # already existed (widgets/dashboard.lua's drawFooterAlert). No build and no package
+  # step reaches any of this -- it needs a queue, a clock and an FC that answers, or
+  # does not -- so it is pinned here.
+  #
+  # 5 of the harness's 12 checks are gates on the queue contents, proven by --self-test:
+  # it neuters the gate's condition in a copy of session.lua and requires the central
+  # check (no identity read before the verdict) to go red.
+  handshake-gate:
+    name: Post-connect reads wait for a verified API_VERSION
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Lua 5.4
+        run: sudo apt-get update && sudo apt-get install -y lua5.4
+
+      - name: Check the phased startup handshake
+        run: lua5.4 bin/handshake_gate/verify_handshake_gate.lua
 
   # Per-language PR builds (mirrors push.yml behavior)
   create-zip:

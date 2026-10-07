@@ -157,6 +157,7 @@ SCRIPT_TO_DOC_PATH = {
     "app/pages/esc_motors_throttle.lua": "setup/esc_motors/throttle.md",
     "app/pages/esc_motors_telemetry.lua": "setup/esc_motors/telemetry.md",
     "app/pages/esc_motors_rpm.lua": "setup/esc_motors/rpm.md",
+    "app/pages/motor_override.lua": "setup/esc_motors/motor_override.md",
     "app/pages/esc_forward_hw5.lua": "setup/esc_motors/esc_tools/hw5.md",
     "app/pages/esc_forward_am32.lua": "setup/esc_motors/esc_tools/am32.md",
     "app/pages/esc_forward_blheli_s.lua": "setup/esc_motors/esc_tools/blheli_s.md",
