@@ -38,6 +38,20 @@ Always available offline without an active flight controller connection. Read-on
   value does not repeat it.
 - **Battery profile** announces the newly selected pack as "Battery, 2200 milliamp
   hours, 4 cells". The cell count is left out when the profile has none set.
+- **FC status** callouts need the flight controller's *System Status* and *System Config*
+  telemetry sensors (firmware with MSP API 12.10 or newer, selected under *Setup* →
+  *Telemetry*). Without them these switches have no effect.
+
+  | Switch | Says | Default |
+  | --- | --- | --- |
+  | Gyro overflow | "Gyro overflow" when the gyro overflows. | On |
+  | GPS not responding | "GPS not responding" when a GPS that was talking to the flight controller earlier on this connection stops, held for 1 second. | On |
+  | Blackbox full | "Blackbox full" when the blackbox storage fills up. *System Config* must be selected. | On |
+  | Control limit | "Control limit" while the cyclic, yaw or collective hits its mixer limit, at most every 3 seconds. | Off, it can be chatty in 3D flight |
+
+  A condition that is already present when the model connects is not announced; the
+  dashboard's status banner shows it instead. Each one is announced again only after it
+  has cleared and come back. They are spoken whether or not the model is armed.
 
 ## Related
 

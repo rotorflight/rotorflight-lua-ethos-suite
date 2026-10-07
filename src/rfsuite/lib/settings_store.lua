@@ -57,6 +57,12 @@ local DEFAULTS = {
     pid_profile = true,
     rate_profile = true,
     battery_profile = true,
+    -- FC status callouts (lib/system_alerts.lua, tasks/audio_events.lua).
+    status_gyro = true,
+    status_gps = true,
+    status_blackbox = true,
+    -- Off by default: "control limit" can be chatty in 3D flight.
+    status_saturation = false,
     smartfuel = true,
     smartfuelcallout = 0,
     smartfuelrepeats = 1,
@@ -180,6 +186,10 @@ local function normalizeEvents(values)
   events.pid_profile = coerceBool(events.pid_profile, DEFAULTS.events.pid_profile)
   events.rate_profile = coerceBool(events.rate_profile, DEFAULTS.events.rate_profile)
   events.battery_profile = coerceBool(events.battery_profile, DEFAULTS.events.battery_profile)
+  events.status_gyro = coerceBool(events.status_gyro, DEFAULTS.events.status_gyro)
+  events.status_gps = coerceBool(events.status_gps, DEFAULTS.events.status_gps)
+  events.status_blackbox = coerceBool(events.status_blackbox, DEFAULTS.events.status_blackbox)
+  events.status_saturation = coerceBool(events.status_saturation, DEFAULTS.events.status_saturation)
   events.smartfuel = coerceBool(events.smartfuel, DEFAULTS.events.smartfuel)
   events.smartfuelcallout = clampNumber(events.smartfuelcallout, DEFAULTS.events.smartfuelcallout, 0, 50)
   events.smartfuelrepeats = clampNumber(events.smartfuelrepeats, DEFAULTS.events.smartfuelrepeats, 1, 10)

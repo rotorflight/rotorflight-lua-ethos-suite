@@ -17,6 +17,15 @@ local initialized = false
 local adjWavs = nil
 
 local lastAlertAt = {}
+-- lib/system_alerts.lua, loaded once the FC's system_status first arrives
+-- (firmware before MSP API 12.10 never sends it).
+local systemAlerts = nil
+-- lib/system_alerts.lua rule id -> {reported, pending, since}: the state last
+-- announced, and a change waiting out the rule's debounce.
+local alertState = {}
+-- Minimum gap between "control limit" callouts while the controls keep
+-- hitting their limit.
+local CONTROL_LIMIT_REPEAT_SECONDS = 3
 local craftNameAnnounced = false
 local lastSmartfuelAnnounced = nil
 -- Whether a numeric fuel reading has been evaluated yet, as opposed to merely
@@ -67,6 +76,8 @@ local AUDIO_SESSION_KEYS = {
   "batteryProfile",
   "governorMode",
   "governorState",
+  "systemStatus",
+  "systemConfig",
   "voltage",
   "batteryConfig",
   "tempEsc",
@@ -690,6 +701,58 @@ local function announceTimer()
   end
 end
 
+-- FC status callouts from lib/system_alerts.lua's rules. A condition already
+-- present when the status first arrives becomes the baseline silently (the
+-- dashboard banner shows it); after that each change is announced once it has
+-- held for the rule's debounce. Not armed-gated: a full Blackbox or a silent
+-- GPS matters on the bench too.
+local function announceSystemAlerts(now)
+  local status = session.systemStatus
+  if status == nil then return end
+  if not systemAlerts then systemAlerts = requireModule("lib/system_alerts.lua") end
+  local config = session.systemConfig
+  local rules = systemAlerts.RULES
+
+  for i = 1, #rules do
+    local rule = rules[i]
+    if rule.enterSound then
+      local active = systemAlerts.isActive(rule, status, config)
+      local state = alertState[rule.id]
+      if state == nil then
+        alertState[rule.id] = {reported = active, pending = nil, since = now}
+      elseif active == state.reported then
+        state.pending = nil
+      else
+        if state.pending ~= active then
+          state.pending = active
+          state.since = now
+        end
+        if now - state.since >= (rule.debounce or 0) then
+          state.reported = active
+          state.pending = nil
+          if active and events[rule.setting] then playAlert(rule.enterSound) end
+        end
+      end
+    end
+  end
+end
+
+-- Stabilized cyclic, yaw or collective hit its mixer limit (the FC holds the
+-- flag for 500 ms). Rate-limited, and off by default: it can be chatty in 3D
+-- flight.
+local function announceControlLimit(now)
+  if not events.status_saturation then return end
+  local status = session.systemStatus
+  if not (status and status.controlSaturated) then return end
+  if lastAlertAt.control_limit and (now - lastAlertAt.control_limit) < CONTROL_LIMIT_REPEAT_SECONDS then return end
+  lastAlertAt.control_limit = now
+  playAlert("controllimit.wav")
+end
+
+local function clearAlertState()
+  for key in pairs(alertState) do alertState[key] = nil end
+end
+
 local function rememberCurrent()
   previous.connected = session.connected
   previous.isArmed = session.isArmed
@@ -714,6 +777,7 @@ function audio_events.wakeup()
     speakingUntil = 0
     for key in pairs(rollingSamples) do rollingSamples[key] = nil end
     for key in pairs(lastAlertAt) do lastAlertAt[key] = nil end
+    clearAlertState()
     rememberCurrent()
     return
   end
@@ -734,6 +798,8 @@ function audio_events.wakeup()
   announceProfile("rateProfile", events.rate_profile, "rates.wav")
   announceBatteryProfile()
   announceGovernor()
+  announceSystemAlerts(now)
+  announceControlLimit(now)
   announceVoltage(now)
   announceEscTemp(now)
   announceBecRxVoltage(now)
@@ -749,6 +815,7 @@ function audio_events.reset()
   adjWavs = nil
   for key in pairs(previous) do previous[key] = nil end
   for key in pairs(lastAlertAt) do lastAlertAt[key] = nil end
+  clearAlertState()
   resetFuelAnnouncements()
   pendingAdjFunction = false
   resetTimerAudio()

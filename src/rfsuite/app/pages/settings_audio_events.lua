@@ -131,6 +131,14 @@ local function open(opts)
   addBool(statePanel, "@i18n(app.modules.settings.rate_profile)@", "rate_profile")
   addBool(statePanel, "@i18n(app.modules.settings.battery_profile_event)@", "battery_profile")
 
+  -- Needs the FC's System Status / System Config sensors (MSP API 12.10+).
+  local statusPanel = form.addExpansionPanel("@i18n(app.modules.settings.status_alerts)@")
+  statusPanel:open(false)
+  addBool(statusPanel, "@i18n(app.modules.settings.status_gyro)@", "status_gyro")
+  addBool(statusPanel, "@i18n(app.modules.settings.status_gps)@", "status_gps")
+  addBool(statusPanel, "@i18n(app.modules.settings.status_blackbox)@", "status_blackbox")
+  addBool(statusPanel, "@i18n(app.modules.settings.status_saturation)@", "status_saturation")
+
   local adjPanel = form.addExpansionPanel("@i18n(app.modules.settings.adj_callouts)@")
   adjPanel:open(settings.events.adj_f == true or settings.events.adj_v == true)
   addBool(adjPanel, "@i18n(app.modules.settings.adj_function)@", "adj_f")

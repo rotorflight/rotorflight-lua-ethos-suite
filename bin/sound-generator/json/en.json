@@ -221,7 +221,7 @@
     "translation": "P",
     "needs_translation": false
   },
-    {
+  {
     "file": "adjfunctions/b.wav",
     "english": "B",
     "translation": "B",
@@ -507,6 +507,30 @@
     "file": "status/alerts/lowbat.wav",
     "english": "Battery Empty",
     "translation": "Battery Empty",
+    "needs_translation": false
+  },
+  {
+    "file": "events/alerts/gyrooverflow.wav",
+    "english": "Gyro overflow",
+    "translation": "Gyro overflow",
+    "needs_translation": false
+  },
+  {
+    "file": "events/alerts/gpsfail.wav",
+    "english": "GPS not responding",
+    "translation": "GPS not responding",
+    "needs_translation": false
+  },
+  {
+    "file": "events/alerts/bbfull.wav",
+    "english": "Blackbox full",
+    "translation": "Blackbox full",
+    "needs_translation": false
+  },
+  {
+    "file": "events/alerts/controllimit.wav",
+    "english": "Control limit",
+    "translation": "Control limit",
     "needs_translation": false
   }
 ]

@@ -1,12 +1,20 @@
 -- FC status alerts: which conditions in the decoded system_status /
 -- system_config telemetry words (lib/system_status.lua, published by
--- tasks/session.lua) get a dashboard footer banner.
+-- tasks/session.lua) get a dashboard footer banner and/or a callout.
+--
+-- One table of rules so the dashboard (widgets/dashboard.lua) and the
+-- callouts (tasks/audio_events.lua's announceSystemAlerts()) always agree on
+-- what counts as a problem.
 --
 -- Rule fields:
---   id         unique key
+--   id         unique key (audio edge state is tracked per id)
 --   level      LEVEL.CRITICAL (red banner) or LEVEL.WARNING (amber banner)
 --   text       banner text
 --   active     function(status, config) -> bool; both are always tables
+--   setting    events.<setting> switch for the callout (nil = banner only)
+--   enterSound events/alerts/<file> played when the condition starts
+--   debounce   seconds a change must hold before it is announced, so a
+--              flickering condition doesn't chatter
 --
 -- Rules are in priority order: the banner shows the first active one, plus
 -- a count of the others. topBanner() allocates nothing, so it is safe on the
@@ -54,6 +62,8 @@ local RULES = {
     level = LEVEL.CRITICAL,
     text = "@i18n(widgets.dashboard.alert_gyro_overflow)@",
     active = function(s) return s.gyroOverflow == true end,
+    setting = "status_gyro",
+    enterSound = "gyrooverflow.wav",
   },
 
   -- Warnings
@@ -71,6 +81,9 @@ local RULES = {
     level = LEVEL.WARNING,
     text = "@i18n(widgets.dashboard.alert_gps_lost)@",
     active = function(s) return s.gpsCommsLost == true end,
+    setting = "status_gps",
+    enterSound = "gpsfail.wav",
+    debounce = 1.0,
   },
   {
     id = "acc_uncalibrated",
@@ -95,6 +108,8 @@ local RULES = {
     level = LEVEL.WARNING,
     text = "@i18n(widgets.dashboard.alert_blackbox_full)@",
     active = function(_, c) return c.blackboxFull == true end,
+    setting = "status_blackbox",
+    enterSound = "bbfull.wav",
   },
 }
 
@@ -102,6 +117,11 @@ local systemAlerts = {
   LEVEL = LEVEL,
   RULES = RULES,
 }
+
+function systemAlerts.isActive(rule, status, config)
+  if status == nil then return false end
+  return rule.active(status, config or EMPTY) == true
+end
 
 -- Highest-priority active rule, and how many rules are active in total.
 -- Returns nil, 0 when there is nothing to show.

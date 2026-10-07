@@ -7205,6 +7205,36 @@
           "reverse_text": false,
           "translation": "Inválid"
         },
+        "status_alerts": {
+          "english": "FC status",
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "FC status"
+        },
+        "status_blackbox": {
+          "english": "Blackbox full",
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "Blackbox full"
+        },
+        "status_gps": {
+          "english": "GPS not responding",
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "GPS not responding"
+        },
+        "status_gyro": {
+          "english": "Gyro overflow",
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "Gyro overflow"
+        },
+        "status_saturation": {
+          "english": "Control limit",
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "Control limit"
+        },
         "temperature_unit": {
           "english": "Temperature Unit",
           "max_length": 16,

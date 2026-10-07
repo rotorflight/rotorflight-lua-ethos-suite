@@ -1819,6 +1819,36 @@
           "translation": "הגדרות",
           "reverse_text": true
         },
+        "status_alerts": {
+          "english": "FC status",
+          "translation": "FC status",
+          "needs_translation": true,
+          "reverse_text": false
+        },
+        "status_blackbox": {
+          "english": "Blackbox full",
+          "translation": "Blackbox full",
+          "needs_translation": true,
+          "reverse_text": false
+        },
+        "status_gps": {
+          "english": "GPS not responding",
+          "translation": "GPS not responding",
+          "needs_translation": true,
+          "reverse_text": false
+        },
+        "status_gyro": {
+          "english": "Gyro overflow",
+          "translation": "Gyro overflow",
+          "needs_translation": true,
+          "reverse_text": false
+        },
+        "status_saturation": {
+          "english": "Control limit",
+          "translation": "Control limit",
+          "needs_translation": true,
+          "reverse_text": false
+        },
         "txt_developer": {
           "english": "Developer",
           "translation": "מפתח",

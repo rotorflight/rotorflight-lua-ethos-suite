@@ -508,5 +508,29 @@
     "english": "Battery Empty",
     "translation": null,
     "needs_translation": true
+  },
+  {
+    "file": "events/alerts/gyrooverflow.wav",
+    "english": "Gyro overflow",
+    "translation": null,
+    "needs_translation": true
+  },
+  {
+    "file": "events/alerts/gpsfail.wav",
+    "english": "GPS not responding",
+    "translation": null,
+    "needs_translation": true
+  },
+  {
+    "file": "events/alerts/bbfull.wav",
+    "english": "Blackbox full",
+    "translation": null,
+    "needs_translation": true
+  },
+  {
+    "file": "events/alerts/controllimit.wav",
+    "english": "Control limit",
+    "translation": null,
+    "needs_translation": true
   }
 ]
