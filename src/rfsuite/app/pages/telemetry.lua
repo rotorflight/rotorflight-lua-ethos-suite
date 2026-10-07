@@ -111,6 +111,21 @@ local function isFixedByFc(crsfMode, id)
   return isNativeLocked(crsfMode, id) or hasNativeLockedParent(crsfMode, id)
 end
 
+-- The ids of one catalog group that the connected firmware can send: an
+-- entry with minApiMinor is left out on older firmware. apiVersionMinor is
+-- nil before the handshake, which leaves those entries out too. Called once
+-- per group while the page is built.
+local function offeredIds(ids, apiVersionMinor)
+  local out = {}
+  for _, id in ipairs(ids) do
+    local minApiMinor = catalog.SENSOR_LIST[id].minApiMinor
+    if minApiMinor == nil or (apiVersionMinor or 0) >= minApiMinor then
+      out[#out + 1] = id
+    end
+  end
+  return out
+end
+
 local function countSelected(selected)
   local count = 0
   for _, id in ipairs(catalog.SENSOR_IDS) do
@@ -190,10 +205,15 @@ local function countUnmanaged(slots)
   return count
 end
 
-local function applyDefaultSelection(selected, crsfMode)
+local function applyDefaultSelection(selected, crsfMode, apiVersionMinor)
   clearTable(selected)
   for _, id in ipairs(catalog.DEFAULT_IDS) do
-    selected[id] = true
+    -- Defaults the connected firmware is too old to send are left out, the
+    -- same as offeredIds() leaves them off the page.
+    local minApiMinor = catalog.SENSOR_LIST[id].minApiMinor
+    if minApiMinor == nil or (apiVersionMinor or 0) >= minApiMinor then
+      selected[id] = true
+    end
   end
   -- The Tool button resets the pilot's selection to the default set, so it
   -- must not quietly switch off a sensor the FC is sending either -- the same
@@ -326,7 +346,7 @@ local function open(opts)
           {label = BTN_OK, action = function()
             local rt = controlRef and controlRef.runtime
             if rt then rt:markDirty() end
-            applyDefaultSelection(selected, crsfMode)
+            applyDefaultSelection(selected, crsfMode, rt and rt.apiVersionMinor)
             previousConflictState = {}
             refreshConflictFields()
             if form.invalidate then form.invalidate() end
@@ -364,7 +384,7 @@ local function open(opts)
     if group and group.ids and #group.ids > 0 then
       local panel = form.addExpansionPanel(group.title)
       panel:open(false)
-      for _, id in ipairs(group.ids) do
+      for _, id in ipairs(offeredIds(group.ids, runtime.apiVersionMinor)) do
         local sensor = catalog.SENSOR_LIST[id]
         local sensorId = id
         local line = panel:addLine(sensor.name)

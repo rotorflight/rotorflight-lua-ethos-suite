@@ -40,8 +40,8 @@ has focus, the same as the toolbar's keys.
 | --- | --- |
 | Link | Telemetry link type (S.Port or CRSF), plus link quality when the link reports it. |
 | Flight mode | Failsafe, GPS Rescue, Rescue, Horizon, Angle, or Normal, from the FC's Flight Mode sensor. The first that applies, in the order the firmware's own CRSF flight-mode text uses. |
-| Governor | Governor state (OFF, IDLE, SPOOLUP, ACTIVE, …), when the governor sensor reports. |
-| Arming | **Ready** (green), **Blocked** (amber), or **Armed** (red). When blocked, each reason is listed at the bottom of the column. `-` until the FC reports its arming flags. |
+| Governor | Governor state (OFF, IDLE, SPOOLUP, ACTIVE, …), when the governor sensor or the System Status sensor reports. |
+| Arming | **Ready** (green), **Blocked** (amber), or **Armed** (red). When blocked, each reason is listed at the bottom of the column. `-` until the FC reports its arming flags (or System Status). |
 | Profile | Active PID, rate and battery profile numbers. |
 | BEC Voltage | BEC voltage, when the sensor reports it. |
 | Blackbox | How full the blackbox dataflash is. |
@@ -61,3 +61,28 @@ is just Battery.
 Each row only appears once its value is known. If the panel can't fit
 everything, the last rows of a column are left off. While no model is connected,
 both columns show **Not connected**.
+
+## Status banner
+
+When the flight controller sends the **System Status** telemetry sensor
+(firmware with MSP API 12.10 or newer, sensor selected under *Setup* →
+*Telemetry*), a banner across the bottom of the dashboard shows the most
+important problem it reports. Critical problems are red, warnings amber. When
+more than one is active, the banner adds a count, for example
+`GYRO OVERFLOW (+2)`. The banner goes away by itself when the problem clears.
+
+| Banner | Level | Shown while |
+| --- | --- | --- |
+| FAILSAFE | Critical | The FC is in a failsafe phase. |
+| BATTERY CRITICAL | Critical | The FC reports the battery as critical. |
+| GYRO OVERFLOW | Critical | The gyro has overflowed. |
+| GOVERNOR FALLBACK | Warning | The governor has lost its headspeed signal and is on its fallback throttle. |
+| GPS NOT RESPONDING | Warning | The GPS was talking to the FC earlier on this connection and has stopped. |
+| ACC NOT CALIBRATED | Warning | An accelerometer is fitted but has never been calibrated. |
+| TEST OVERRIDE ACTIVE | Warning | A servo, motor or mixer override from a setup tool is on. |
+| REBOOT REQUIRED | Warning | A saved setting only takes effect after a reboot. |
+| BLACKBOX FULL | Warning | The blackbox storage is full. **System Config** must be selected too. |
+
+The "background task not running" and "unsupported firmware" banners take
+priority over these. With older firmware, or without the sensor, there is no
+status banner, and the rest of the dashboard works as before.

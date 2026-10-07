@@ -8531,6 +8531,18 @@
       "reverse_text": false,
       "max_length": 8
     },
+    "sensor_system_config": {
+      "english": "System Config",
+      "translation": "System Config",
+      "needs_translation": true,
+      "reverse_text": false
+    },
+    "sensor_system_status": {
+      "english": "System Status",
+      "translation": "System Status",
+      "needs_translation": true,
+      "reverse_text": false
+    },
     "sensor_tailspeed": {
       "english": "Tailspeed",
       "translation": "Velocidad de cola",
@@ -8885,6 +8897,60 @@
       }
     },
     "dashboard": {
+      "alert_acc_uncalibrated": {
+        "english": "ACC NOT CALIBRATED",
+        "translation": "ACC NOT CALIBRATED",
+        "needs_translation": true,
+        "reverse_text": false
+      },
+      "alert_battery_critical": {
+        "english": "BATTERY CRITICAL",
+        "translation": "BATTERY CRITICAL",
+        "needs_translation": true,
+        "reverse_text": false
+      },
+      "alert_blackbox_full": {
+        "english": "BLACKBOX FULL",
+        "translation": "BLACKBOX FULL",
+        "needs_translation": true,
+        "reverse_text": false
+      },
+      "alert_failsafe": {
+        "english": "FAILSAFE",
+        "translation": "FAILSAFE",
+        "needs_translation": true,
+        "reverse_text": false
+      },
+      "alert_governor_fallback": {
+        "english": "GOVERNOR FALLBACK",
+        "translation": "GOVERNOR FALLBACK",
+        "needs_translation": true,
+        "reverse_text": false
+      },
+      "alert_gps_lost": {
+        "english": "GPS NOT RESPONDING",
+        "translation": "GPS NOT RESPONDING",
+        "needs_translation": true,
+        "reverse_text": false
+      },
+      "alert_gyro_overflow": {
+        "english": "GYRO OVERFLOW",
+        "translation": "GYRO OVERFLOW",
+        "needs_translation": true,
+        "reverse_text": false
+      },
+      "alert_override": {
+        "english": "TEST OVERRIDE ACTIVE",
+        "translation": "TEST OVERRIDE ACTIVE",
+        "needs_translation": true,
+        "reverse_text": false
+      },
+      "alert_reboot_required": {
+        "english": "REBOOT REQUIRED",
+        "translation": "REBOOT REQUIRED",
+        "needs_translation": true,
+        "reverse_text": false
+      },
       "altitude_max": {
         "english": "Altitude Max",
         "translation": "Altitud Máx",

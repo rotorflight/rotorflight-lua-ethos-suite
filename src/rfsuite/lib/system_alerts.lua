@@ -1,0 +1,123 @@
+-- FC status alerts: which conditions in the decoded system_status /
+-- system_config telemetry words (lib/system_status.lua, published by
+-- tasks/session.lua) get a dashboard footer banner.
+--
+-- Rule fields:
+--   id         unique key
+--   level      LEVEL.CRITICAL (red banner) or LEVEL.WARNING (amber banner)
+--   text       banner text
+--   active     function(status, config) -> bool; both are always tables
+--
+-- Rules are in priority order: the banner shows the first active one, plus
+-- a count of the others. topBanner() allocates nothing, so it is safe on the
+-- paint path.
+
+if package.loaded["rfsuite.lib.system_alerts"] then
+  return package.loaded["rfsuite.lib.system_alerts"]
+end
+
+local requireModule = package.loaded["rfsuite.lib.require"] or assert(loadfile("lib/require.lua"))()
+local codec = requireModule("lib/system_status.lua")
+
+local FAILSAFE = codec.FAILSAFE
+local BATTERY = codec.BATTERY
+local GOVERNOR = codec.GOVERNOR
+
+local LEVEL = {
+  CRITICAL = 1,
+  WARNING = 2,
+}
+
+local EMPTY = {}
+
+local RULES = {
+  -- Critical
+  {
+    -- Rarely reaches the radio (telemetry rides the same link), but shown
+    -- whenever it does. The spoken "failsafe" comes from the flight-mode callout.
+    id = "failsafe",
+    level = LEVEL.CRITICAL,
+    text = "@i18n(widgets.dashboard.alert_failsafe)@",
+    active = function(s)
+      local phase = s.failsafePhase
+      return phase ~= nil and phase ~= FAILSAFE.IDLE and phase ~= FAILSAFE.RX_LOSS_RECOVERED
+    end,
+  },
+  {
+    id = "battery_critical",
+    level = LEVEL.CRITICAL,
+    text = "@i18n(widgets.dashboard.alert_battery_critical)@",
+    active = function(s) return s.batteryState == BATTERY.CRITICAL end,
+  },
+  {
+    id = "gyro_overflow",
+    level = LEVEL.CRITICAL,
+    text = "@i18n(widgets.dashboard.alert_gyro_overflow)@",
+    active = function(s) return s.gyroOverflow == true end,
+  },
+
+  -- Warnings
+  {
+    -- Governor lost its headspeed signal and is running on its fallback throttle.
+    id = "governor_fallback",
+    level = LEVEL.WARNING,
+    text = "@i18n(widgets.dashboard.alert_governor_fallback)@",
+    active = function(s) return s.governorState == GOVERNOR.FALLBACK end,
+  },
+  {
+    -- gpsCommsLost is latched by tasks/session.lua: the GPS was talking to
+    -- the FC earlier this connection and has stopped.
+    id = "gps_lost",
+    level = LEVEL.WARNING,
+    text = "@i18n(widgets.dashboard.alert_gps_lost)@",
+    active = function(s) return s.gpsCommsLost == true end,
+  },
+  {
+    id = "acc_uncalibrated",
+    level = LEVEL.WARNING,
+    text = "@i18n(widgets.dashboard.alert_acc_uncalibrated)@",
+    active = function(s) return s.accNotCalibrated == true end,
+  },
+  {
+    id = "override",
+    level = LEVEL.WARNING,
+    text = "@i18n(widgets.dashboard.alert_override)@",
+    active = function(s) return s.overrideActive == true end,
+  },
+  {
+    id = "reboot_required",
+    level = LEVEL.WARNING,
+    text = "@i18n(widgets.dashboard.alert_reboot_required)@",
+    active = function(_, c) return c.rebootRequired == true end,
+  },
+  {
+    id = "blackbox_full",
+    level = LEVEL.WARNING,
+    text = "@i18n(widgets.dashboard.alert_blackbox_full)@",
+    active = function(_, c) return c.blackboxFull == true end,
+  },
+}
+
+local systemAlerts = {
+  LEVEL = LEVEL,
+  RULES = RULES,
+}
+
+-- Highest-priority active rule, and how many rules are active in total.
+-- Returns nil, 0 when there is nothing to show.
+function systemAlerts.topBanner(status, config)
+  if status == nil then return nil, 0 end
+  config = config or EMPTY
+  local top, count = nil, 0
+  for i = 1, #RULES do
+    local rule = RULES[i]
+    if rule.active(status, config) == true then
+      count = count + 1
+      if top == nil then top = rule end
+    end
+  end
+  return top, count
+end
+
+package.loaded["rfsuite.lib.system_alerts"] = systemAlerts
+return systemAlerts

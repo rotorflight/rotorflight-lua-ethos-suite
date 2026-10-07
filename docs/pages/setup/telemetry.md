@@ -47,6 +47,14 @@ Greyed out until the flight controller answers. Read-only while the model is arm
   controller was configured with (default *Native*). The current mode is shown
   under *Diagnostics* → *ELRS Link*.
 
+- **System Status and System Config** (in the *Status* group) pack the arm
+  state, governor and rescue state, failsafe phase, profile numbers and other
+  flight controller status into two sensors. They drive the dashboard's status
+  banner, and while they are selected the suite reads arm state and profiles
+  from them instead of the individual sensors. They are only listed, and only
+  included by the header *Default* button, when the flight controller runs
+  firmware with MSP API 12.10 or newer.
+
 ## Related
 
 - [Rotorflight documentation](https://www.rotorflight.org/docs/)

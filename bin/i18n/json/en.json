@@ -7328,6 +7328,18 @@
       "needs_translation": false,
       "translation": "SYS Load"
     },
+    "sensor_system_config": {
+      "english": "System Config",
+      "max_length": 13,
+      "needs_translation": false,
+      "translation": "System Config"
+    },
+    "sensor_system_status": {
+      "english": "System Status",
+      "max_length": 13,
+      "needs_translation": false,
+      "translation": "System Status"
+    },
     "sensor_tailspeed": {
       "english": "Tailspeed",
       "max_length": 9,
@@ -7635,6 +7647,60 @@
       }
     },
     "dashboard": {
+      "alert_acc_uncalibrated": {
+        "english": "ACC NOT CALIBRATED",
+        "max_length": 18,
+        "needs_translation": false,
+        "translation": "ACC NOT CALIBRATED"
+      },
+      "alert_battery_critical": {
+        "english": "BATTERY CRITICAL",
+        "max_length": 16,
+        "needs_translation": false,
+        "translation": "BATTERY CRITICAL"
+      },
+      "alert_blackbox_full": {
+        "english": "BLACKBOX FULL",
+        "max_length": 13,
+        "needs_translation": false,
+        "translation": "BLACKBOX FULL"
+      },
+      "alert_failsafe": {
+        "english": "FAILSAFE",
+        "max_length": 8,
+        "needs_translation": false,
+        "translation": "FAILSAFE"
+      },
+      "alert_governor_fallback": {
+        "english": "GOVERNOR FALLBACK",
+        "max_length": 17,
+        "needs_translation": false,
+        "translation": "GOVERNOR FALLBACK"
+      },
+      "alert_gps_lost": {
+        "english": "GPS NOT RESPONDING",
+        "max_length": 18,
+        "needs_translation": false,
+        "translation": "GPS NOT RESPONDING"
+      },
+      "alert_gyro_overflow": {
+        "english": "GYRO OVERFLOW",
+        "max_length": 13,
+        "needs_translation": false,
+        "translation": "GYRO OVERFLOW"
+      },
+      "alert_override": {
+        "english": "TEST OVERRIDE ACTIVE",
+        "max_length": 20,
+        "needs_translation": false,
+        "translation": "TEST OVERRIDE ACTIVE"
+      },
+      "alert_reboot_required": {
+        "english": "REBOOT REQUIRED",
+        "max_length": 15,
+        "needs_translation": false,
+        "translation": "REBOOT REQUIRED"
+      },
       "altitude_max": {
         "english": "Altitude Max",
         "max_length": 12,
