@@ -56,6 +56,9 @@ local out = print
 -- like (see bin/i18n/check-tags.py and .vscode/scripts/resolve_i18n_tags.py).
 local ENABLE_MSG = "@i18n(app.modules.esc_motors.motor_override_enable_msg)@"
 local NOTE_TEXT = "@i18n(app.modules.esc_motors.motor_override_note)@"
+local NOTE_TEXT_2 = "@i18n(app.modules.esc_motors.motor_override_note_2)@"
+local DISCONNECTED_TEXT = "@i18n(app.modules.esc_motors.motor_override_disconnected)@"
+local ARMED_TEXT = "@i18n(app.modules.esc_motors.motor_override_armed)@"
 
 local function check(label, ok, detail)
   checks = checks + 1
@@ -159,10 +162,39 @@ local function fieldByName(name)
   return nil
 end
 
+--- The static-text widget carrying `text`, or nil. Static text is the one widget
+--- whose value can be read back, which is how the note lines are identified.
+local function staticByText(text)
+  for _, f in ipairs(fieldRegistry) do
+    if f.fieldName == "static" and f.text == text then return f end
+  end
+  return nil
+end
+
+--- Whether a static text was given the whole line.
+---
+--- `nil` as the rect means the line's VALUE column -- the narrow right-hand
+--- slot -- and that is where the safety note first landed, which is why it
+--- arrived on the radio cut off at the right edge with half its sentence gone.
+--- The suite's own idiom (app/esc_error.lua:43-61) is x = 0 and w = window.
+local function spansFullLine(f)
+  if not f or not f.rect then return false end
+  return f.rect.x == 0 and f.rect.w == lcd.getWindowSize()
+end
+
 _G.form = {
   addButton = function() return widgetStub("button") end,
   addTextButton = function() return widgetStub("textbutton") end,
-  addStaticText = function(_, _, text) return fieldStub("static") end,
+  -- The rect is kept because where a static text lands is the whole point of
+  -- one of the checks below: `nil` here means the line's VALUE column -- the
+  -- narrow right-hand slot -- which is where the safety note was first written
+  -- and why it arrived on the radio cut off at the right edge.
+  addStaticText = function(_, rect, text)
+    local f = fieldStub("static")
+    f.rect = rect
+    f.text = text
+    return f
+  end,
   -- min/max and the getter/setter, in the order form.addNumberField takes them.
   addNumberField = function(_, _, _min, _max, getter, setter)
     return fieldStub("number", getter, setter)
@@ -176,6 +208,9 @@ _G.form = {
     return f
   end,
   addLine = function(label) return { lineLabel = label } end,
+  -- Real Ethos: content-fit slots. The harness needs a plausible y/h and a
+  -- width, because the full-width text helper overrides x and w itself.
+  getFieldSlots = function() return {{x = 0, y = 12, w = 300, h = 26}} end,
   clear = function() end,
   height = function() return 480 end,
   invalidate = function() end,
@@ -636,6 +671,21 @@ do
   check("the page reads only Ethos globals this harness declares",
     #undeclaredGlobals == 0,
     "undeclared ALL-CAPS global(s) read: " .. table.concat(undeclaredGlobals, ", "))
+
+  -- The safety note is two full-width lines, not one line in the value column.
+  -- This is the check that would have caught the note arriving clipped.
+  local n1 = staticByText(NOTE_TEXT)
+  local n2 = staticByText(NOTE_TEXT_2)
+  check("the first safety note line spans the line, not the value column",
+    spansFullLine(n1),
+    n1 == nil and ("no static text carries " .. NOTE_TEXT)
+      or ("rect = " .. (n1.rect and ("x=" .. n1.rect.x .. " w=" .. n1.rect.w)
+        or "nil (the line's value column)")))
+  check("the second safety note line does too", spansFullLine(n2),
+    n2 == nil and ("no static text carries " .. NOTE_TEXT_2)
+      or ("rect = " .. (n2.rect and ("x=" .. n2.rect.x .. " w=" .. n2.rect.w)
+        or "nil (the line's value column)")))
+
   check("the page offers an override switch", overrideSwitch() ~= nil)
   check("the page offers a throttle", throttleField() ~= nil)
 
@@ -782,6 +832,12 @@ do
     dialog == nil or dialog.args.message ~= ENABLE_MSG,
     "a confirm was shown for an armed model")
   check("and nothing was written while armed", anyMotorRunning() == false)
+
+  -- The armed notice is retexted into a line that already exists, so it has to
+  -- be a full-width line for the same reason the note does.
+  check("the armed notice is drawn across the line",
+    spansFullLine(staticByText(ARMED_TEXT)),
+    "the armed notice did not get a full-width rect")
 end
 
 out("")
@@ -906,7 +962,7 @@ if selfTest then
   -- The splice puts the EdgeTX name back and requires the undeclared-global
   -- check to name it.
   do
-    local page = openPage(splicePage("LEFT + FONT_S", "LEFT + SMLSIZE"))
+    local page = openPage(splicePage("rect, text, LEFT)", "rect, text, LEFT + SMLSIZE)"))
     loadPage(page, 4)
     check("the EdgeTX-constant gate goes red on an undeclared global",
       #undeclaredGlobals > 0,
@@ -914,6 +970,19 @@ if selfTest then
     check("and it names the constant that is not an Ethos one",
       table.concat(undeclaredGlobals, ","):find("SMLSIZE") ~= nil,
       "recorded: " .. table.concat(undeclaredGlobals, ", "))
+  end
+
+  -- Gate 0b: the note drawn in the value column. `nil` as a static text's
+  -- rect is what shipped: the note landed in the line's narrow right-hand slot
+  -- and arrived on the radio cut off at the right edge.
+  do
+    local page = openPage(splicePage(
+      "local rect = {x = 0, y = slot.y or 0, w = width or slot.w or 0, h = slot.h or 0}",
+      "local rect = nil"))
+    loadPage(page, 4)
+    check("the value-column gate goes red when the rect is nil",
+      spansFullLine(staticByText(NOTE_TEXT)) == false,
+      "the spliced page still gave the note a full-width rect")
   end
 
   -- Gate 1: no keep-alive. motors.c:301-303 resets the override one second

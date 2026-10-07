@@ -1959,11 +1959,11 @@
           "translation": "Motorsteuerung an den Flugcontroller zurückgeben."
         },
         "motor_override_disconnected": {
-          "english": "Link lost. The motor is back under flight controller control.",
-          "max_length": 61,
+          "english": "Link lost. Override released.",
+          "max_length": 29,
           "needs_translation": false,
           "reverse_text": false,
-          "translation": "Verbindung weg. Der Motor wird wieder vom Flugcontroller gesteuert."
+          "translation": "Verbindung weg. Override aus."
         },
         "motor_override_enable": {
           "english": "Enable motor override",
@@ -1980,11 +1980,18 @@
           "translation": "Der Flugcontroller steuert den Motor direkt. Rotoren abnehmen, Modell sichern und Abstand halten."
         },
         "motor_override_note": {
-          "english": "Blades off and the craft secured. The motor turns as soon as the throttle leaves zero.",
-          "max_length": 86,
+          "english": "Blades off and the craft secured.",
+          "max_length": 33,
           "needs_translation": false,
           "reverse_text": false,
-          "translation": "Rotoren abgenommen und Modell gesichert. Der Motor dreht, sobald der Gashebel null verlässt."
+          "translation": "Rotoren ab und Modell gesichert."
+        },
+        "motor_override_note_2": {
+          "english": "The motor turns with the throttle.",
+          "max_length": 34,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Der Motor dreht mit dem Gas."
         },
         "motor_override_throttle": {
           "english": "Throttle",

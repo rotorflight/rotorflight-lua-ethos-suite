@@ -1959,8 +1959,8 @@
           "translation": "Return control of the motor to the flight controller."
         },
         "motor_override_disconnected": {
-          "english": "Link lost. The motor is back under flight controller control.",
-          "max_length": 61,
+          "english": "Link lost. Override released.",
+          "max_length": 29,
           "needs_translation": true,
           "reverse_text": false,
           "translation": "Link lost. The motor is back under flight controller control."
@@ -1980,11 +1980,18 @@
           "translation": "The flight controller drives the motor directly. Remove the blades, secure the craft and stand clear."
         },
         "motor_override_note": {
-          "english": "Blades off and the craft secured. The motor turns as soon as the throttle leaves zero.",
-          "max_length": 86,
+          "english": "Blades off and the craft secured.",
+          "max_length": 33,
           "needs_translation": true,
           "reverse_text": false,
           "translation": "Blades off and the craft secured. The motor turns as soon as the throttle leaves zero."
+        },
+        "motor_override_note_2": {
+          "english": "The motor turns with the throttle.",
+          "max_length": 34,
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "The motor turns with the throttle."
         },
         "motor_override_throttle": {
           "english": "Throttle",

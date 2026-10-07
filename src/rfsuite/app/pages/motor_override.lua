@@ -32,6 +32,28 @@ local progressDialog = requireModule("app/progress_dialog.lua")
 local motorOverride = requireModule("lib/msp_motor_override.lua")
 local status = requireModule("lib/msp_status.lua")
 
+-- A line of text across the whole screen.
+--
+-- form.addStaticText(line, nil, text) puts the text in that line's VALUE
+-- column -- the narrow right-hand slot -- and clips whatever does not fit.
+-- That is where this page's safety note was first written, which is why it
+-- arrived cut off at the right edge with its second half missing. The suite's
+-- idiom for a line that is ALL text is an empty form line plus a rect spanning
+-- the window: app/esc_error.lua:43-61 and app/diagnostics_common.lua:59-73 both
+-- do exactly this, and header.lua:56-70 records the same trap being hit before.
+--
+-- 480 px carries about 37 characters (bin/esc_summary/verify_esc_summary.lua),
+-- which is why the note below is two short lines rather than one long one.
+local function addTextLine(text)
+  local line = form.addLine("")
+  local slots = form.getFieldSlots(line, {0})
+  local slot = (slots and slots[1]) or {}
+  local width = nil
+  if lcd and lcd.getWindowSize then width = lcd.getWindowSize() end
+  local rect = {x = 0, y = slot.y or 0, w = width or slot.w or 0, h = slot.h or 0}
+  return form.addStaticText(line, rect, text, LEFT)
+end
+
 local PAGE_TITLE = "@i18n(app.modules.esc_motors.motor_override)@"
 local MSG_LOADING_TITLE = "@i18n(app.msg_loading)@"
 local MSG_LOADING_BODY = "@i18n(app.msg_loading_from_fbl)@"
@@ -235,10 +257,10 @@ local function open(opts)
       onBack = function() goBack() end,
     })
 
-    form.addStaticText(form.addLine(""), nil,
-      "@i18n(app.modules.esc_motors.motor_override_note)@", LEFT + FONT_S)
+    addTextLine("@i18n(app.modules.esc_motors.motor_override_note)@")
+    addTextLine("@i18n(app.modules.esc_motors.motor_override_note_2)@")
 
-    fields.notice = form.addStaticText(form.addLine(""), nil, "", LEFT + FONT_S)
+    fields.notice = addTextLine("")
 
     if count() > 1 then
       local choices = {}
