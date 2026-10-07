@@ -236,9 +236,9 @@ local function open(opts)
     })
 
     form.addStaticText(form.addLine(""), nil,
-      "@i18n(app.modules.esc_motors.motor_override_note)@", LEFT + SMLSIZE)
+      "@i18n(app.modules.esc_motors.motor_override_note)@", LEFT + FONT_S)
 
-    fields.notice = form.addStaticText(form.addLine(""), nil, "", LEFT + SMLSIZE)
+    fields.notice = form.addStaticText(form.addLine(""), nil, "", LEFT + FONT_S)
 
     if count() > 1 then
       local choices = {}

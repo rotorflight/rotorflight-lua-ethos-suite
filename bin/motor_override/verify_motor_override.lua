@@ -201,9 +201,11 @@ _G.LEFT = 3
 _G.CENTERED = 4
 _G.RIGHT = 5
 _G.TOP_LEFT = 6
-_G.SMLSIZE = 8
-_G.MIDSIZE = 12
-_G.BIGSIZE = 20
+-- Only the constants Ethos actually provides. SMLSIZE, MIDSIZE and BIGSIZE are
+-- EdgeTX's names for the text sizes -- Ethos calls them FONT_XS/S/M/L. They were
+-- stubbed here until 2026-10-07, and that stub is exactly why this harness ran
+-- green while the page crashed on the radio with
+-- "attempt to perform arithmetic on a nil value (global 'SMLSIZE')".
 _G.FONT_XS = 10
 _G.FONT_S = 20
 _G.FONT_M = 30
@@ -227,6 +229,24 @@ _G.lcd = {
   RGB = function(r, g, b) return r, g, b end,
 }
 
+-- ── the Ethos constant surface ─────────────────────────────────────────────
+--
+-- An ALL-CAPS name the page reads is an Ethos constant, and every one this
+-- harness declares is listed above. A name it has NOT declared is a constant
+-- Ethos does not have -- SMLSIZE, EdgeTX's name for a text size, was exactly
+-- that, and it ran green here for a whole session because this harness stubbed
+-- it. Reads are recorded rather than raised, so the failure lands as a named
+-- check instead of an arithmetic error two frames down.
+local undeclaredGlobals = {}
+
+setmetatable(_G, {__index = function(_, k)
+  if type(k) == "string" and k:match("^[A-Z][A-Z0-9_]+$") then
+    undeclaredGlobals[#undeclaredGlobals + 1] = k
+    return 0
+  end
+  return nil
+end})
+
 -- ── shared seams ───────────────────────────────────────────────────────────
 
 local sessionHandlers = {}
@@ -242,6 +262,7 @@ local function resetTrace()
   dialogs = {}
   sessionHandlers = {}
   headerBuilds = {}
+  undeclaredGlobals = {}
 end
 
 local function publishSession(connected, isArmed)
@@ -612,6 +633,9 @@ do
   loadPage(page, 4)
   check("the page opens and reads STATUS and MOTOR_OVERRIDE",
     #published >= 2, "published " .. tostring(#published))
+  check("the page reads only Ethos globals this harness declares",
+    #undeclaredGlobals == 0,
+    "undeclared ALL-CAPS global(s) read: " .. table.concat(undeclaredGlobals, ", "))
   check("the page offers an override switch", overrideSwitch() ~= nil)
   check("the page offers a throttle", throttleField() ~= nil)
 
@@ -873,6 +897,23 @@ if selfTest then
       return string.sub(source, 1, at - 1) .. replacement
         .. string.sub(source, at + #pattern)
     end
+  end
+
+  -- Gate 0: an EdgeTX-only constant. This is the one that actually happened:
+  -- the page read SMLSIZE -- EdgeTX's name for a text size, which Ethos does not
+  -- define -- and this harness stubbed it, so the run was green while the radio
+  -- raised "attempt to perform arithmetic on a nil value (global 'SMLSIZE')".
+  -- The splice puts the EdgeTX name back and requires the undeclared-global
+  -- check to name it.
+  do
+    local page = openPage(splicePage("LEFT + FONT_S", "LEFT + SMLSIZE"))
+    loadPage(page, 4)
+    check("the EdgeTX-constant gate goes red on an undeclared global",
+      #undeclaredGlobals > 0,
+      "the spliced page read SMLSIZE and the harness did not record it")
+    check("and it names the constant that is not an Ethos one",
+      table.concat(undeclaredGlobals, ","):find("SMLSIZE") ~= nil,
+      "recorded: " .. table.concat(undeclaredGlobals, ", "))
   end
 
   -- Gate 1: no keep-alive. motors.c:301-303 resets the override one second
