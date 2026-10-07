@@ -1564,8 +1564,9 @@ firmware's bit layout here.
 The same check pins how tasks/session.lua and lib/system_alerts.lua handle a
 missing word: a tick without a battery-profile reading keeps the last pack, a
 dropped status frame leaves the arm state alone, System Config's own alerts still
-fire when System Status is not selected, and the decoder is only loaded once
-either word arrives. --self-test reverts each of the three fixes in a copy of the
+fire when System Status is not selected, a callout waits for the word its rule
+reads before recording its starting state, and the decoder is only loaded once
+either word arrives. --self-test reverts each of the four fixes in a copy of the
 source and requires its check to go red.
 '''
     ),

@@ -20,6 +20,10 @@
 --      * a dropped system_status frame leaves session.isArmed alone;
 --      * lib/system_status.lua is not loaded until one of the two words
 --        arrives, so firmware before 12.10 never pays for it.
+--   4. tasks/audio_events.lua: a callout rule records its starting state only
+--      once the word it reads has arrived. With System Status first, a
+--      Blackbox already full when System Config arrives must stay silent (the
+--      banner shows it), and a later fill must still be announced.
 --
 -- session.lua is loaded with its Ethos globals and module loader stubbed, the
 -- way bin/handshake_gate/verify_handshake_gate.lua does it. The codec, the
@@ -37,6 +41,7 @@ end
 local ROOT = scriptDir() .. "/../.."
 local SRC = ROOT .. "/src/rfsuite"
 local SESSION_PATH = SRC .. "/tasks/session.lua"
+local AUDIO_PATH = SRC .. "/tasks/audio_events.lua"
 local ALERTS_PATH = SRC .. "/lib/system_alerts.lua"
 local CODEC_PATH = SRC .. "/lib/system_status.lua"
 
@@ -385,6 +390,90 @@ local function sessionChecks()
 end
 
 -- ---------------------------------------------------------------------------
+-- 4. audio_events.lua callouts.
+-- ---------------------------------------------------------------------------
+
+-- The real audio_events.lua with the real alert rules; the bus, settings and
+-- Ethos audio calls are stubbed. Returns a driver that publishes a session
+-- snapshot, runs one wakeup and reports the files played.
+local function newAudioRig(source, alertsSource)
+  clearModules()
+  local onSession
+  local played = {}
+  package.loaded["rfsuite.lib.require"] = function(name)
+    if name == "lib/bus.lua" then
+      return { publish = function() end,
+        subscribe = function(topic, fn) if topic == "session.update" then onSession = fn end end }
+    elseif name == "lib/settings_store.lua" then
+      return {
+        load = function() return {} end,
+        audioEvents = function() return { status_blackbox = true, status_gyro = true, status_gps = true } end,
+        audioTimer = function() return {} end,
+      }
+    elseif name == "lib/engine_type.lua" then
+      return { isElectric = function() return true end }
+    elseif name == "lib/system_alerts.lua" and alertsSource then
+      return assert(load(alertsSource, "@" .. ALERTS_PATH))()
+    end
+    return assert(loadfile(SRC .. "/" .. name))()
+  end
+  system = {
+    playFile = function(path) played[#played + 1] = path end,
+    playNumber = function() end,
+    playHaptic = function() end,
+    playTone = function() end,
+    getAudioVoice = function() return "en/default" end,
+  }
+  local audio = assert(load(source or readFile(AUDIO_PATH), "@" .. AUDIO_PATH))()
+
+  local rig = {}
+  function rig.step(status, config)
+    onSession({ connected = true, systemStatus = status, systemConfig = config })
+    audio.wakeup()
+  end
+  function rig.count(file)
+    local n = 0
+    for _, path in ipairs(played) do
+      if path:sub(-#file) == file then n = n + 1 end
+    end
+    return n
+  end
+  return rig
+end
+
+-- Status first, then a config word that already reports a full Blackbox.
+-- Returns how many times bbfull.wav played on that first config word.
+local function blackboxAnnouncedOnArrival(source)
+  local rig = newAudioRig(source)
+  local status = { raw = 0 }
+  rig.step(status, nil)
+  rig.step(status, nil)
+  rig.step(status, nil)
+  rig.step(status, { raw = 1, blackboxFull = true })
+  rig.step(status, { raw = 1, blackboxFull = true })
+  return rig.count("bbfull.wav"), rig
+end
+
+local function calloutChecks()
+  local count, rig = blackboxAnnouncedOnArrival()
+  check("a Blackbox already full when System Config arrives after System Status is not announced",
+    count == 0, "bbfull.wav played " .. count .. "x")
+  local status = { raw = 0 }
+  rig.step(status, { raw = 2, blackboxFull = false })
+  rig.step(status, { raw = 1, blackboxFull = true })
+  check("a Blackbox that fills later is announced", rig.count("bbfull.wav") == 1,
+    "bbfull.wav played " .. rig.count("bbfull.wav") .. "x")
+
+  local cfgFirst = newAudioRig()
+  cfgFirst.step(nil, { raw = 2, blackboxFull = false })
+  cfgFirst.step(nil, { raw = 2, blackboxFull = false })
+  cfgFirst.step(nil, { raw = 2, blackboxFull = false })
+  cfgFirst.step(nil, { raw = 1, blackboxFull = true })
+  check("with System Config alone, a Blackbox that fills is announced",
+    cfgFirst.count("bbfull.wav") == 1, "bbfull.wav played " .. cfgFirst.count("bbfull.wav") .. "x")
+end
+
+-- ---------------------------------------------------------------------------
 -- Self-test: each fix reverted must turn its check red.
 -- ---------------------------------------------------------------------------
 local function selfTest()
@@ -410,6 +499,13 @@ local function selfTest()
     'local systemStatusCodec = requireModule("lib/system_status.lua")')
   check("self-test: an eager require loads the codec without either word",
     codecLoadedWithoutWords(eager) == true)
+
+  local noWait = mutate(readFile(AUDIO_PATH),
+    "if rule.enterSound and systemAlerts.hasWords(rule, status, config) then",
+    "if rule.enterSound then")
+  local count = blackboxAnnouncedOnArrival(noWait)
+  check("self-test: without waiting for the word, the existing full Blackbox is announced",
+    count == 1, "bbfull.wav played " .. count .. "x")
 end
 
 if SELF_TEST then
@@ -422,6 +518,8 @@ else
   alertChecks()
   print("system status session")
   sessionChecks()
+  print("system status callouts")
+  calloutChecks()
 end
 
 print(string.format("%d/%d checks passed", checks - failures, checks))

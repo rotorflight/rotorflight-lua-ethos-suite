@@ -702,9 +702,10 @@ local function announceTimer()
 end
 
 -- FC status callouts from lib/system_alerts.lua's rules. A condition already
--- present when the status first arrives becomes the baseline silently (the
--- dashboard banner shows it); after that each change is announced once it has
--- held for the rule's debounce. Not armed-gated: a full Blackbox or a silent
+-- present when the word its rule reads first arrives becomes the baseline
+-- silently (the dashboard banner shows it), and a rule is left alone until
+-- that word arrives; after that each change is announced once it has held for
+-- the rule's debounce. Not armed-gated: a full Blackbox or a silent
 -- GPS matters on the bench too.
 local function announceSystemAlerts(now)
   local status = session.systemStatus
@@ -715,7 +716,7 @@ local function announceSystemAlerts(now)
 
   for i = 1, #rules do
     local rule = rules[i]
-    if rule.enterSound then
+    if rule.enterSound and systemAlerts.hasWords(rule, status, config) then
       local active = systemAlerts.isActive(rule, status, config)
       local state = alertState[rule.id]
       if state == nil then

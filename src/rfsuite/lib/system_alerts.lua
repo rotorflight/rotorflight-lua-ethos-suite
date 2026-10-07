@@ -12,6 +12,8 @@
 --   text       banner text
 --   active     function(status, config) -> bool; both are always tables
 --              (an empty one for a word the FC is not sending)
+--   word       "config" for a rule that reads only system_config; nil means
+--              it reads system_status (see hasWords())
 --   setting    events.<setting> switch for the callout (nil = banner only)
 --   enterSound events/alerts/<file> played when the condition starts
 --   debounce   seconds a change must hold before it is announced, so a
@@ -107,12 +109,14 @@ local RULES = {
     id = "reboot_required",
     level = LEVEL.WARNING,
     text = "@i18n(widgets.dashboard.alert_reboot_required)@",
+    word = "config",
     active = function(_, c) return c.rebootRequired == true end,
   },
   {
     id = "blackbox_full",
     level = LEVEL.WARNING,
     text = "@i18n(widgets.dashboard.alert_blackbox_full)@",
+    word = "config",
     active = function(_, c) return c.blackboxFull == true end,
     setting = "status_blackbox",
     enterSound = "bbfull.wav",
@@ -123,6 +127,15 @@ local systemAlerts = {
   LEVEL = LEVEL,
   RULES = RULES,
 }
+
+-- Whether the word a rule reads has arrived. The callouts wait for it before
+-- recording a rule's starting state: otherwise, with System Status arriving
+-- first, a Blackbox that is already full would be recorded as "not full" and
+-- then announced as new when System Config arrives.
+function systemAlerts.hasWords(rule, status, config)
+  if rule.word == "config" then return config ~= nil end
+  return status ~= nil
+end
 
 function systemAlerts.isActive(rule, status, config)
   if status == nil and config == nil then return false end
