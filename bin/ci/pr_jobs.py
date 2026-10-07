@@ -1550,6 +1550,25 @@ it neuters the gate's condition in a copy of session.lua and requires the centra
 check (no identity read before the verdict) to go red.
 '''
     ),
+    LuaJob(
+        id='system-status',
+        name='Packed FC status sensors decode and alert correctly',
+        step='Check the System Status/Config sensors',
+        script='bin/system_status/verify_system_status.lua',
+        rationale=r'''System Status and System Config (MSP API 12.10) pack arm state, failsafe,
+governor, battery, profiles and a dozen flags into two 31-bit words. A field read
+from the wrong bit is a different but plausible state -- FALLBACK reads as
+AUTOROTATION -- so no screen shows the mistake; the decoder is pinned against the
+firmware's bit layout here.
+
+The same check pins how tasks/session.lua and lib/system_alerts.lua handle a
+missing word: a tick without a battery-profile reading keeps the last pack, a
+dropped status frame leaves the arm state alone, System Config's own alerts still
+fire when System Status is not selected, and the decoder is only loaded once
+either word arrives. --self-test reverts each of the three fixes in a copy of the
+source and requires its check to go red.
+'''
+    ),
 ]
 
 VERBATIM_JOBS = [

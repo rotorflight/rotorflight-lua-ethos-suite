@@ -39,7 +39,6 @@ local telemetryConfig = requireModule("lib/msp_telemetry_config.lua")
 local flightTimer = requireModule("tasks/flight_timer.lua")
 local debugLog = requireModule("lib/debug_log.lua")
 local rxMapApi = requireModule("lib/msp_rx_map.lua")
-local systemStatusCodec = requireModule("lib/system_status.lua")
 
 local TELEMETRY_VALUE_INTERVAL = 0.5
 local PROFILE_INTERVAL = 0.5
@@ -1065,11 +1064,24 @@ local function activeProfile1(value)
   return nil
 end
 
+-- lib/system_status.lua, loaded the first time the FC sends one of its packed
+-- words: firmware before MSP API 12.10, or a model without either sensor
+-- selected, never needs it.
+local systemStatusCodec = nil
+
+-- One packed status word as a plain integer, or nil when there is no reading.
+local function readSystemWord(protocol, name)
+  local value = telemetrySensors.getValue(protocol, name)
+  if value == nil then return nil end
+  if not systemStatusCodec then systemStatusCodec = requireModule("lib/system_status.lua") end
+  return systemStatusCodec.toRaw(value)
+end
+
 -- Decodes the FC's "system_config" sensor into session.systemConfig when its
 -- word changes. Returns the current decoded table, or nil when the FC is not
 -- sending it (firmware before MSP API 12.10, or the sensor not selected).
 local function updateSystemConfig(protocol)
-  local raw = systemStatusCodec.toRaw(telemetrySensors.getValue(protocol, "system_config"))
+  local raw = readSystemWord(protocol, "system_config")
   if raw == nil then return nil end
   if session.systemConfig == nil or raw ~= session.systemConfig.raw then
     session.systemConfig = systemStatusCodec.decodeConfig(raw)
@@ -1103,8 +1115,11 @@ local function updateProfiles(protocol)
   -- here, at its single ingress point, so session.batteryProfile is 0-based
   -- from here on -- every other reader (the SmartFuel packCapacity, the
   -- dashboard selector, the capacity announcement) consumes it as-is.
+  -- A tick with no valid reading keeps the last pack, like the pid/rate
+  -- profiles above: clearing it would reset SmartFuel, and the next good
+  -- reading would reset it again.
   local batteryProfile = batteryProfileIndex.fromTelemetrySensor(config and config.batteryProfile or telemetrySensors.getValue(protocol, "battery_profile"))
-  if batteryProfile ~= session.batteryProfile then
+  if batteryProfile ~= nil and batteryProfile ~= session.batteryProfile then
     session.batteryProfile = batteryProfile
     if applyActiveProfileCells(session.batteryConfig, batteryProfile) then localSmartFuel:reset() end
     publish()
@@ -1114,16 +1129,18 @@ end
 -- Decodes the FC's "system_status" sensor (lib/system_status.lua) into
 -- session.systemStatus when its word changes. Runs every wakeup tick from
 -- updateArmState(), so an unchanged word costs one compare and no
--- allocation. Returns the current decoded table, or nil when the FC is not
--- sending it (firmware before MSP API 12.10, or the sensor not selected) --
--- the last decoded state is kept rather than cleared, same as the other
--- readings here.
+-- allocation. Returns the decoded table, or nil when this tick has no
+-- reading (firmware before MSP API 12.10, the sensor not selected, or a
+-- missed frame). session.systemStatus keeps the last decoded state either
+-- way. The nil return is deliberate: updateArmState() then reads the armflags
+-- sensor if there is one, and otherwise leaves session.isArmed unchanged, so
+-- a missed frame never flips the arm state.
 --
 -- gpsCommsLost is added here: the FC clears "GPS healthy" when the module
 -- stops talking, so the loss can only be seen as "was healthy earlier this
 -- connection, isn't now" (lib/system_alerts.lua).
 local function updateSystemStatus(protocol)
-  local raw = systemStatusCodec.toRaw(telemetrySensors.getValue(protocol, "system_status"))
+  local raw = readSystemWord(protocol, "system_status")
   if raw == nil then return nil end
   if session.systemStatus ~= nil and raw == session.systemStatus.raw then return session.systemStatus end
 

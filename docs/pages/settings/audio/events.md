@@ -38,9 +38,10 @@ Always available offline without an active flight controller connection. Read-on
   value does not repeat it.
 - **Battery profile** announces the newly selected pack as "Battery, 2200 milliamp
   hours, 4 cells". The cell count is left out when the profile has none set.
-- **FC status** callouts need the flight controller's *System Status* and *System Config*
-  telemetry sensors (firmware with MSP API 12.10 or newer, selected under *Setup* →
-  *Telemetry*). Without them these switches have no effect.
+- **FC status** callouts need the flight controller's *System Status* or *System Config*
+  telemetry sensor (firmware with MSP API 12.10 or newer, selected under *Setup* →
+  *Telemetry*). Blackbox full comes from *System Config*, the others from *System
+  Status*; without the sensor a switch needs, it has no effect.
 
   | Switch | Says | Default |
   | --- | --- | --- |

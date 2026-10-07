@@ -11,6 +11,7 @@
 --   level      LEVEL.CRITICAL (red banner) or LEVEL.WARNING (amber banner)
 --   text       banner text
 --   active     function(status, config) -> bool; both are always tables
+--              (an empty one for a word the FC is not sending)
 --   setting    events.<setting> switch for the callout (nil = banner only)
 --   enterSound events/alerts/<file> played when the condition starts
 --   debounce   seconds a change must hold before it is announced, so a
@@ -19,6 +20,11 @@
 -- Rules are in priority order: the banner shows the first active one, plus
 -- a count of the others. topBanner() allocates nothing, so it is safe on the
 -- paint path.
+--
+-- The two words are separate sensors and a model may select only one, so
+-- each rule is evaluated against whichever words are present: the
+-- system_config rules (reboot required, Blackbox full) still fire without
+-- system_status, and the other way round.
 
 if package.loaded["rfsuite.lib.system_alerts"] then
   return package.loaded["rfsuite.lib.system_alerts"]
@@ -119,14 +125,15 @@ local systemAlerts = {
 }
 
 function systemAlerts.isActive(rule, status, config)
-  if status == nil then return false end
-  return rule.active(status, config or EMPTY) == true
+  if status == nil and config == nil then return false end
+  return rule.active(status or EMPTY, config or EMPTY) == true
 end
 
 -- Highest-priority active rule, and how many rules are active in total.
 -- Returns nil, 0 when there is nothing to show.
 function systemAlerts.topBanner(status, config)
-  if status == nil then return nil, 0 end
+  if status == nil and config == nil then return nil, 0 end
+  status = status or EMPTY
   config = config or EMPTY
   local top, count = nil, 0
   for i = 1, #RULES do

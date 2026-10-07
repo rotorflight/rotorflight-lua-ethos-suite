@@ -17,8 +17,8 @@ local initialized = false
 local adjWavs = nil
 
 local lastAlertAt = {}
--- lib/system_alerts.lua, loaded once the FC's system_status first arrives
--- (firmware before MSP API 12.10 never sends it).
+-- lib/system_alerts.lua, loaded once the FC's system_status or system_config
+-- first arrives (firmware before MSP API 12.10 sends neither).
 local systemAlerts = nil
 -- lib/system_alerts.lua rule id -> {reported, pending, since}: the state last
 -- announced, and a change waiting out the rule's debounce.
@@ -708,9 +708,9 @@ end
 -- GPS matters on the bench too.
 local function announceSystemAlerts(now)
   local status = session.systemStatus
-  if status == nil then return end
-  if not systemAlerts then systemAlerts = requireModule("lib/system_alerts.lua") end
   local config = session.systemConfig
+  if status == nil and config == nil then return end
+  if not systemAlerts then systemAlerts = requireModule("lib/system_alerts.lua") end
   local rules = systemAlerts.RULES
 
   for i = 1, #rules do

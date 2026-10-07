@@ -64,10 +64,12 @@ both columns show **Not connected**.
 
 ## Status banner
 
-When the flight controller sends the **System Status** telemetry sensor
-(firmware with MSP API 12.10 or newer, sensor selected under *Setup* →
-*Telemetry*), a banner across the bottom of the dashboard shows the most
-important problem it reports. Critical problems are red, warnings amber. When
+When the flight controller sends the **System Status** or **System Config**
+telemetry sensor (firmware with MSP API 12.10 or newer, sensor selected under
+*Setup* → *Telemetry*), a banner across the bottom of the dashboard shows the
+most important problem they report. REBOOT REQUIRED and BLACKBOX FULL come
+from System Config, the others from System Status, so each banner needs its
+own sensor selected. Critical problems are red, warnings amber. When
 more than one is active, the banner adds a count, for example
 `GYRO OVERFLOW (+2)`. The banner goes away by itself when the problem clears.
 
@@ -80,9 +82,9 @@ more than one is active, the banner adds a count, for example
 | GPS NOT RESPONDING | Warning | The GPS was talking to the FC earlier on this connection and has stopped. |
 | ACC NOT CALIBRATED | Warning | An accelerometer is fitted but has never been calibrated. |
 | TEST OVERRIDE ACTIVE | Warning | A servo, motor or mixer override from a setup tool is on. |
-| REBOOT REQUIRED | Warning | A saved setting only takes effect after a reboot. |
-| BLACKBOX FULL | Warning | The blackbox storage is full. **System Config** must be selected too. |
+| REBOOT REQUIRED | Warning | A saved setting only takes effect after a reboot. Needs **System Config**. |
+| BLACKBOX FULL | Warning | The blackbox storage is full. Needs **System Config**. |
 
 The "background task not running" and "unsupported firmware" banners take
-priority over these. With older firmware, or without the sensor, there is no
-status banner, and the rest of the dashboard works as before.
+priority over these. With older firmware, or without either sensor, there is
+no status banner, and the rest of the dashboard works as before.
