@@ -549,7 +549,7 @@ local function announceMainPowerLost(now)
       -- on the way in below.
       local path = firstResolvedSound(MAIN_POWER_OK_SOUNDS)
       if path then system.playFile(path) end
-      playNumber(math.floor((voltage * 10) + 0.5), UNIT_VOLTS, 1)
+      playNumber(math.floor((voltage * 10) + 0.5), UNIT_VOLT, 1)
     end
     return
   end
@@ -563,7 +563,7 @@ local function announceMainPowerLost(now)
   mainPowerLostActive = true
   if path then system.playFile(path) end
   local bec = tonumber(session.becVoltage)
-  if bec then playNumber(math.floor((bec * 10) + 0.5), UNIT_VOLTS, 1) end
+  if bec then playNumber(math.floor((bec * 10) + 0.5), UNIT_VOLT, 1) end
   haptic()
 end
 

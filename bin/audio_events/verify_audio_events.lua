@@ -789,6 +789,7 @@ local realIoOpen = io.open
 local savedSystem = _G.system
 local savedOsClock = os.clock
 local savedRequire = package.loaded["rfsuite.lib.require"]
+local savedUnitVolt = _G.UNIT_VOLT
 local scriptFiles = {}
 io.open = function(path, mode)
   if type(path) == "string" and path:sub(1, 8) == "SCRIPTS:" then
@@ -828,7 +829,7 @@ local function newMainPowerRig(events, source)
     return loadfile(name)()
   end
 
-  _G.UNIT_VOLTS = "V"
+  _G.UNIT_VOLT = "V"
   _G.system = {
     playFile = function(path) played[#played + 1] = path end,
     playNumber = function(value, unit, decimals)
@@ -1000,6 +1001,7 @@ io.open = realIoOpen
 _G.system = savedSystem
 os.clock = savedOsClock
 package.loaded["rfsuite.lib.require"] = savedRequire
+_G.UNIT_VOLT = savedUnitVolt
 
 out("")
 out(string.rep("-", 60))
