@@ -139,10 +139,14 @@ If the repository is already dirty:
 Agents can check UI changes in the Ethos WASM simulator. They can boot the radio, see its screen and operate it with touch, keys and the rotary encoder. Use this to confirm that a page, dialog or widget looks and behaves right before calling a pilot-visible change done.
 
 Tooling:
-- **Claude Code:** install the `ethos-simulator` plugin once with
-  `/plugin marketplace add FrSkyRC/ethos-tools` and then
+- **Claude Code:** this repository's `.claude/settings.json` lists the `ethos-tools` marketplace and
+  enables its `ethos-simulator` plugin, so Claude Code offers to install it when you trust the folder.
+  To install it by hand: `/plugin marketplace add FrSkyRC/ethos-tools` and then
   `/plugin install ethos-simulator@ethos-tools`.
   Its `ethos-navigate` skill covers starting the simulator, the screenshot loop and the radio buttons.
+  If `ethos-navigate` is not in the session's skill list (the plugin was installed mid-session, or the
+  install was declined), restart the session, or read `simulation/skills/ethos-navigate/SKILL.md` from a
+  clone of [FrSkyRC/ethos-tools](https://github.com/FrSkyRC/ethos-tools) and follow it by hand.
 - **Other agents:** run `simulation/run_wasm.js --serve` from a clone of
   [FrSkyRC/ethos-tools](https://github.com/FrSkyRC/ethos-tools) directly. Its README lists the commands.
 
