@@ -532,5 +532,17 @@
     "english": "Control limit",
     "translation": "Control limit",
     "needs_translation": false
+  },
+  {
+    "file": "events/alerts/telemetrylost.wav",
+    "english": "Telemetry lost",
+    "translation": "Telemetry lost",
+    "needs_translation": false
+  },
+  {
+    "file": "events/alerts/telemetryok.wav",
+    "english": "Telemetry recovered",
+    "translation": "Telemetry recovered",
+    "needs_translation": false
   }
 ]

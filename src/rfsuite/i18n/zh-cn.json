@@ -7107,6 +7107,13 @@
           "reverse_text": false,
           "translation": "调速器状态"
         },
+        "link": {
+          "english": "Link",
+          "max_length": 4,
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "Link"
+        },
         "log_msp_data": {
           "english": "Log MSP data",
           "max_length": 12,
@@ -7246,6 +7253,13 @@
           "needs_translation": true,
           "reverse_text": false,
           "translation": "Control limit"
+        },
+        "telemetry_lost": {
+          "english": "Telemetry lost",
+          "max_length": 14,
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "Telemetry lost"
         },
         "temperature_unit": {
           "english": "Temperature Unit",

@@ -12,7 +12,7 @@
 -- fields when it opens (the build callback below runs once, at open). The
 -- shared half -- the save confirmation, the dirty check against a snapshot,
 -- and the dispose that drops every reference this page took -- lives here
--- instead of being copied into six files.
+-- instead of being copied into every category page.
 --
 -- Same shape as app/pages/settings_activelook_common.lua, which is the
 -- established precedent in this tree for a family of Settings subpages. It
@@ -23,7 +23,7 @@
 --
 -- Not loaded at boot: app/menu_container.lua's loadPage() is the only path
 -- that reaches a page file, and it runs on the pilot's tap. So this file and
--- its six callers sit off the boot closure entirely -- see the heap note in
+-- its callers sit off the boot closure entirely -- see the heap note in
 -- the pull request body for the measurement.
 
 local common = {}

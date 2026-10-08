@@ -1882,6 +1882,18 @@
           "needs_translation": false,
           "max_length": 15
         },
+        "link": {
+          "english": "Link",
+          "translation": "Link",
+          "needs_translation": false,
+          "max_length": 4
+        },
+        "telemetry_lost": {
+          "english": "Telemetry lost",
+          "translation": "Telemetry lost",
+          "needs_translation": false,
+          "max_length": 14
+        },
         "alert_repeat_interval": {
           "english": "Repeat interval",
           "translation": "Repeat interval",
