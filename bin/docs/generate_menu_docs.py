@@ -194,7 +194,15 @@ SCRIPT_TO_DOC_PATH = {
     "app/pages/settings_activelook_preflight.lua": "settings/activelook/preflight.md",
     "app/pages/settings_activelook_inflight.lua": "settings/activelook/inflight.md",
     "app/pages/settings_activelook_postflight.lua": "settings/activelook/postflight.md",
-    "app/pages/settings_audio_events.lua": "settings/audio/events.md",
+    # Issue #2308 split the one Events page into these five category pages.
+    # Their shared helper (settings_audio_events_common.lua) is not reachable
+    # from a menu entry, so it has no document of its own -- same as
+    # settings_activelook_common.lua.
+    "app/pages/settings_audio_events_voltage.lua": "settings/audio/events/voltage.md",
+    "app/pages/settings_audio_events_esc.lua": "settings/audio/events/esc.md",
+    "app/pages/settings_audio_events_fuel.lua": "settings/audio/events/fuel.md",
+    "app/pages/settings_audio_events_state.lua": "settings/audio/events/state.md",
+    "app/pages/settings_audio_events_announcement.lua": "settings/audio/events/announcement.md",
     "app/pages/settings_audio_switches.lua": "settings/audio/switches.md",
     "app/pages/settings_audio_timer.lua": "settings/audio/timer.md",
     "app/pages/developer_settings.lua": "settings/developer.md",

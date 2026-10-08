@@ -291,9 +291,37 @@ local MENUS = {
   settings_audio_menu = {
     title = "@i18n(app.modules.settings.name)@ / @i18n(app.modules.settings.audio)@",
     entries = {
-      {title = "@i18n(app.modules.settings.txt_audio_events)@", icon = lcd.loadMask("app/gfx/settings_audio_events.png"), script = "app/pages/settings_audio_events.lua", offline = true},
+      {title = "@i18n(app.modules.settings.txt_audio_events)@", icon = lcd.loadMask("app/gfx/settings_audio_events.png"), menuId = "settings_audio_events_menu", offline = true},
       {title = "@i18n(app.modules.settings.txt_audio_switches)@", icon = lcd.loadMask("app/gfx/settings_audio_switches.png"), script = "app/pages/settings_audio_switches.lua", offline = true},
       {title = "@i18n(app.modules.settings.txt_audio_timer)@", icon = lcd.loadMask("app/gfx/settings_audio_timer.png"), script = "app/pages/settings_audio_timer.lua", offline = true},
+    },
+  },
+  -- Issue #2308. This was one page, settings_audio_events.lua, holding all
+  -- twenty settings.events keys as seven expansion panels; on a 480x320 radio
+  -- that meant scrolling past every unrelated event to change one, and it
+  -- built every widget for every event at once. It is a menu of five category
+  -- pages now, each of which builds only its own fields on open.
+  --
+  -- The issue proposed five categories too, but named a "Link" one (telemetry
+  -- lost/recovered, RSSI) and did not mention the model announcement. Neither
+  -- matches settings.events as it stands: there is no link key to configure --
+  -- tasks/audio_events.lua:707-719 answers a down link by clearing its alert
+  -- state and returning, so it announces nothing about the link at all and
+  -- there is nothing for a toggle to switch -- so no Link tile is offered
+  -- rather than an invented one. craft_name is a real key, so it keeps a tile
+  -- instead of being dropped. All twenty keys are covered.
+  --
+  -- Every entry carries offline = true: the whole subtree is local settings
+  -- with no MSP read, which is why it was reachable without a flight
+  -- controller before and must stay reachable now.
+  settings_audio_events_menu = {
+    title = "@i18n(app.modules.settings.name)@ / @i18n(app.modules.settings.audio)@ / @i18n(app.modules.settings.txt_audio_events)@",
+    entries = {
+      {title = "@i18n(app.modules.settings.voltage)@", icon = lcd.loadMask("app/gfx/power_battery.png"), script = "app/pages/settings_audio_events_voltage.lua", offline = true},
+      {title = "@i18n(app.modules.settings.esc_temperature)@", icon = lcd.loadMask("app/gfx/esc_motors.png"), script = "app/pages/settings_audio_events_esc.lua", offline = true},
+      {title = "@i18n(app.modules.settings.fuel)@", icon = lcd.loadMask("app/gfx/power_smartfuel.png"), script = "app/pages/settings_audio_events_fuel.lua", offline = true},
+      {title = "@i18n(app.modules.settings.audio_event_state)@", icon = lcd.loadMask("app/gfx/governor.png"), script = "app/pages/settings_audio_events_state.lua", offline = true},
+      {title = "@i18n(app.modules.settings.model_announcement)@", icon = lcd.loadMask("app/gfx/beepers.png"), script = "app/pages/settings_audio_events_announcement.lua", offline = true},
     },
   },
   developer_menu = {

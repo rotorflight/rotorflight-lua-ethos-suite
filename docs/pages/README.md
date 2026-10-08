@@ -8,9 +8,9 @@ sidebar_label: Pages
 Reference documentation for each configuration and settings page reachable
 within the RFSuite Ethos system tool.
 
-**Status:** 77 reachable pages in navigation hierarchy, 77 with a file.
+**Status:** 82 reachable pages in navigation hierarchy, 82 with a file.
 
-**What the 77 means.** The page files were generated from the menu hierarchy and the page
+**What the 82 means.** The page files were generated from the menu hierarchy and the page
 sources, so every one of them starts as a scaffold: the menu path, the conditions and the
 control names are read out of the code, and the sentences around them are written from that.
 `bin/docs/generate_menu_docs.py --check` proves a file *exists* for every reachable page and
@@ -22,6 +22,10 @@ Pages are filled in the same way as changes reach them: a pull request that chan
 brings that page's file with it, or says on a line of its own why it needs no documentation
 change. The `Documentation rule` job in `.github/workflows/pr.yml` fails when neither is
 there. The rule is in [.agents/rules/documentation.md](../../.agents/rules/documentation.md).
+
+<!-- The two paragraphs above are hand-written and `--update-index` overwrites this
+     preamble, because the generator emits only the Status line. Re-add them after
+     regenerating, and update the two counts. -->
 
 The *Conditions* column names what hides, greys out or locks a page; the sentences
 and structure follow [_template.md](../_template.md).
@@ -54,14 +58,6 @@ and structure follow [_template.md](../_template.md).
 | Ports | [setup/ports.md](setup/ports.md) | Greyed out until the flight controller answers. Read-only while the model is armed. | written |
 | Radio Config | [setup/radio_config.md](setup/radio_config.md) | Greyed out until the flight controller answers. Read-only while the model is armed. | written |
 | Telemetry | [setup/telemetry.md](setup/telemetry.md) | Greyed out until the flight controller answers. Read-only while the model is armed. | written |
-| Accelerometer | [setup/accelerometer.md](setup/accelerometer.md) | Greyed out until the flight controller answers. Read-only while the model is armed. | written |
-| Alignment | [setup/alignment.md](setup/alignment.md) | Greyed out until the flight controller answers. Read-only while the model is armed. | written |
-| Swash | [setup/mixer/swash.md](setup/mixer/swash.md) | Greyed out until the flight controller answers. Read-only while the model is armed. | written |
-| Geometry | [setup/mixer/geometry.md](setup/mixer/geometry.md) | Greyed out until the flight controller answers. Read-only while the model is armed. | written |
-| Tail | [setup/mixer/tail.md](setup/mixer/tail.md) | Greyed out until the flight controller answers. Read-only while the model is armed. | written |
-| Trims | [setup/mixer/trims.md](setup/mixer/trims.md) | Greyed out until the flight controller answers. Read-only while the model is armed. | written |
-| PWM Output | [setup/servos/pwm.md](setup/servos/pwm.md) | Greyed out until the flight controller answers. Read-only while the model is armed. | written |
-| BUS Output | [setup/servos/bus.md](setup/servos/bus.md) | Greyed out until the flight controller answers. Read-only while the model is armed. Only available when servo bus output is configured. | written |
 | Modes | [setup/controls/modes.md](setup/controls/modes.md) | Greyed out until the flight controller answers. Read-only while the model is armed. | written |
 | Adjustments | [setup/controls/adjustments.md](setup/controls/adjustments.md) | Greyed out until the flight controller answers. Read-only while the model is armed. | written |
 | Failsafe | [setup/controls/failsafe.md](setup/controls/failsafe.md) | Greyed out until the flight controller answers. Read-only while the model is armed. | written |
@@ -71,10 +67,19 @@ and structure follow [_template.md](../_template.md).
 | Logging | [setup/controls/blackbox/logging.md](setup/controls/blackbox/logging.md) | Greyed out until the flight controller answers. Read-only while the model is armed. | written |
 | Status | [setup/controls/blackbox/status.md](setup/controls/blackbox/status.md) | Greyed out until the flight controller answers. Read-only while the model is armed. | written |
 | Stats | [setup/controls/stats.md](setup/controls/stats.md) | Greyed out until the flight controller answers. Read-only while the model is armed. | written |
+| Accelerometer | [setup/accelerometer.md](setup/accelerometer.md) | Greyed out until the flight controller answers. Read-only while the model is armed. | written |
+| Alignment | [setup/alignment.md](setup/alignment.md) | Greyed out until the flight controller answers. Read-only while the model is armed. | written |
+| Swash | [setup/mixer/swash.md](setup/mixer/swash.md) | Greyed out until the flight controller answers. Read-only while the model is armed. | written |
+| Geometry | [setup/mixer/geometry.md](setup/mixer/geometry.md) | Greyed out until the flight controller answers. Read-only while the model is armed. | written |
+| Tail | [setup/mixer/tail.md](setup/mixer/tail.md) | Greyed out until the flight controller answers. Read-only while the model is armed. | written |
+| Trims | [setup/mixer/trims.md](setup/mixer/trims.md) | Greyed out until the flight controller answers. Read-only while the model is armed. | written |
+| PWM Output | [setup/servos/pwm.md](setup/servos/pwm.md) | Greyed out until the flight controller answers. Read-only while the model is armed. | written |
+| BUS Output | [setup/servos/bus.md](setup/servos/bus.md) | Greyed out until the flight controller answers. Read-only while the model is armed. Only available when servo bus output is configured. | written |
 | Battery | [setup/power/battery.md](setup/power/battery.md) | Greyed out until the flight controller answers. Read-only while the model is armed. | written |
 | Alerts | [setup/power/alerts.md](setup/power/alerts.md) | Greyed out until the flight controller answers. Read-only while the model is armed. | written |
 | Sources | [setup/power/source.md](setup/power/source.md) | Greyed out until the flight controller answers. Read-only while the model is armed. | written |
 | SmartFuel | [setup/power/smartfuel.md](setup/power/smartfuel.md) | Greyed out until the flight controller answers. Read-only while the model is armed. | written |
+| Motor Override | [setup/esc_motors/motor_override.md](setup/esc_motors/motor_override.md) | Greyed out until the flight controller answers. Read-only while the model is armed. | written |
 | Throttle | [setup/esc_motors/throttle.md](setup/esc_motors/throttle.md) | Greyed out until the flight controller answers. Read-only while the model is armed. | written |
 | Telemetry | [setup/esc_motors/telemetry.md](setup/esc_motors/telemetry.md) | Greyed out until the flight controller answers. Read-only while the model is armed. | written |
 | RPM | [setup/esc_motors/rpm.md](setup/esc_motors/rpm.md) | Greyed out until the flight controller answers. Read-only while the model is armed. | written |
@@ -123,7 +128,11 @@ and structure follow [_template.md](../_template.md).
 | Preflight | [settings/activelook/preflight.md](settings/activelook/preflight.md) | Always available offline without an active flight controller connection. Read-only while the model is armed. | written |
 | Inflight | [settings/activelook/inflight.md](settings/activelook/inflight.md) | Always available offline without an active flight controller connection. Read-only while the model is armed. | written |
 | Postflight | [settings/activelook/postflight.md](settings/activelook/postflight.md) | Always available offline without an active flight controller connection. Read-only while the model is armed. | written |
-| Events | [settings/audio/events.md](settings/audio/events.md) | Always available offline without an active flight controller connection. Read-only while the model is armed. | written |
+| Voltage | [settings/audio/events/voltage.md](settings/audio/events/voltage.md) | Always available offline without an active flight controller connection. Read-only while the model is armed. | written |
+| ESC temperature | [settings/audio/events/esc.md](settings/audio/events/esc.md) | Always available offline without an active flight controller connection. Read-only while the model is armed. | written |
+| Fuel | [settings/audio/events/fuel.md](settings/audio/events/fuel.md) | Always available offline without an active flight controller connection. Read-only while the model is armed. | written |
+| State callouts | [settings/audio/events/state.md](settings/audio/events/state.md) | Always available offline without an active flight controller connection. Read-only while the model is armed. | written |
+| Model announcement | [settings/audio/events/announcement.md](settings/audio/events/announcement.md) | Always available offline without an active flight controller connection. Read-only while the model is armed. | written |
 | Switches | [settings/audio/switches.md](settings/audio/switches.md) | Always available offline without an active flight controller connection. Read-only while the model is armed. | written |
 | Timer | [settings/audio/timer.md](settings/audio/timer.md) | Always available offline without an active flight controller connection. Read-only while the model is armed. | written |
 | Developer | [settings/developer.md](settings/developer.md) | Always available offline without an active flight controller connection. Read-only while the model is armed. Hidden until *System* → *Settings* → *Developer* mode is active. | written |
