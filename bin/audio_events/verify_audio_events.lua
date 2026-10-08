@@ -95,34 +95,48 @@ end
 
 -- ── the categories, and the keys each one edits ─────────────────────────────
 
--- The five category pages, in the order app/tool.lua's settings_audio_events_menu
+-- The six category pages, in the order app/tool.lua's settings_audio_events_menu
 -- lists them. Kept next to the file names on purpose: case 5 reads the menu back
 -- out of tool.lua and compares, so a page added there without a row here is
 -- caught there rather than silently untested.
+--
+-- Six, not five: PR #2488 adds four settings.events keys for the FC status
+-- callouts and gave them their own expansion panel, so they are a page here too.
 local CATEGORIES = {
   {key = "voltage",      file = "settings_audio_events_voltage.lua"},
   {key = "esc",          file = "settings_audio_events_esc.lua"},
   {key = "fuel",         file = "settings_audio_events_fuel.lua"},
   {key = "state",        file = "settings_audio_events_state.lua"},
+  {key = "status",       file = "settings_audio_events_status.lua"},
   {key = "announcement", file = "settings_audio_events_announcement.lua"},
 }
 
 -- DEFAULTS.events, read out of the real settings store's source.
 --
--- Its `events = {` block is a flat list of `name = <scalar>,` lines and ends at
--- the first line that is exactly `  },`. Anything else in that table (a nested
--- table, a computed value) would break the reading, so the block has to match
--- before a single key is trusted.
+-- Its `events = {` block is a list of `name = <scalar>,` lines and ends at the
+-- first line that is exactly `  },`. Anything else in that table (a nested table,
+-- a computed value) would break the reading, so the block has to match before a
+-- single key is trusted.
+--
+-- The raw assignment count is returned next to the key list, and case 1 requires
+-- them to be equal. The block carries comment lines (PR #2488 added two), and a
+-- scanner that half-read it would report a key count below the real one -- which
+-- is precisely the direction that lets a dropped key pass. A duplicate name would
+-- move the count the same way, so this catches that too.
 local function readDefaultsEventKeys()
   local src = readFile(SUITE .. "/lib/settings_store.lua")
   local block = src:match("events%s*=%s*{(.-)\n  },\n")
   if not block then return nil, "no events block found in lib/settings_store.lua" end
-  local keys = {}
+  local keys, seen, raw = {}, {}, 0
   for name in block:gmatch("\n%s+([%a_][%w_]*)%s*=") do
-    keys[#keys + 1] = name
+    raw = raw + 1
+    if not seen[name] then
+      seen[name] = true
+      keys[#keys + 1] = name
+    end
   end
   table.sort(keys)
-  return keys, nil
+  return keys, nil, raw
 end
 
 -- The (label, key) pairs one category page declares, in source order, plus the
@@ -438,7 +452,7 @@ end
 
 -- ── setup: one key list, shared by every case ───────────────────────────────
 
-local DEFAULT_KEYS, DEFAULT_ERR = readDefaultsEventKeys()
+local DEFAULT_KEYS, DEFAULT_ERR, DEFAULT_RAW = readDefaultsEventKeys()
 
 out("Settings -> Audio -> Events category pages (issue #2308)")
 out("")
@@ -454,6 +468,10 @@ do
 
   if DEFAULT_KEYS then
     out("        DEFAULTS.events has " .. #DEFAULT_KEYS .. " keys")
+    check("every assignment in the store's events block was read",
+      DEFAULT_RAW == #DEFAULT_KEYS,
+      DEFAULT_RAW .. " assignments, " .. #DEFAULT_KEYS ..
+      " distinct keys -- a half-read block would understate the key count")
 
     local editedBy = {}
     local scanComplete = true
@@ -518,7 +536,7 @@ do
   end
 
   if DEFAULT_KEYS then
-    check(string.format("the five pages together build exactly the store's key count (%d)", total),
+    check(string.format("the category pages together build exactly the store's key count (%d)", total),
       total == #DEFAULT_KEYS, "the split must neither drop a field nor duplicate one")
     local widest = 0
     for _, n in ipairs(widths) do if n > widest then widest = n end end
@@ -670,7 +688,7 @@ end
 -- ── case 5: the menu reaches five real pages ───────────────────────────────
 
 out("")
-out("case 5: the menu in tool.lua reaches exactly these five pages")
+out("case 5: the menu in tool.lua reaches exactly these category pages")
 do
   local tool = readFile(SUITE .. "/app/tool.lua")
 

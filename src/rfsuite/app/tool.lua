@@ -296,20 +296,22 @@ local MENUS = {
       {title = "@i18n(app.modules.settings.txt_audio_timer)@", icon = lcd.loadMask("app/gfx/settings_audio_timer.png"), script = "app/pages/settings_audio_timer.lua", offline = true},
     },
   },
-  -- Issue #2308. This was one page, settings_audio_events.lua, holding all
-  -- twenty settings.events keys as seven expansion panels; on a 480x320 radio
-  -- that meant scrolling past every unrelated event to change one, and it
-  -- built every widget for every event at once. It is a menu of five category
-  -- pages now, each of which builds only its own fields on open.
+  -- Issue #2308. This was one page, settings_audio_events.lua, holding every
+  -- settings.events key as a run of expansion panels; on a 480x320 radio that
+  -- meant scrolling past every unrelated event to change one, and it built
+  -- every widget for every event at once. It is a menu of category pages now,
+  -- each of which builds only its own fields on open.
   --
-  -- The issue proposed five categories too, but named a "Link" one (telemetry
-  -- lost/recovered, RSSI) and did not mention the model announcement. Neither
-  -- matches settings.events as it stands: there is no link key to configure --
-  -- tasks/audio_events.lua:707-719 answers a down link by clearing its alert
-  -- state and returning, so it announces nothing about the link at all and
-  -- there is nothing for a toggle to switch -- so no Link tile is offered
-  -- rather than an invented one. craft_name is a real key, so it keeps a tile
-  -- instead of being dropped. All twenty keys are covered.
+  -- The FC status entry is PR #2488's "Status alerts" panel, kept as its own
+  -- tile for the reasons on settings_audio_events_status.lua: it is the only
+  -- category that needs a live flight controller, and #2488 drew that boundary
+  -- deliberately.
+  --
+  -- The issue proposed a "Link" category too (telemetry lost/recovered, RSSI).
+  -- That one does not exist: settings.events has no link key, and
+  -- tasks/audio_events.lua answers a down link by clearing its alert state and
+  -- returning -- it announces nothing about the link, so there is nothing for a
+  -- toggle to switch. No Link tile is offered rather than an invented one.
   --
   -- Every entry carries offline = true: the whole subtree is local settings
   -- with no MSP read, which is why it was reachable without a flight
@@ -321,6 +323,7 @@ local MENUS = {
       {title = "@i18n(app.modules.settings.esc_temperature)@", icon = lcd.loadMask("app/gfx/esc_motors.png"), script = "app/pages/settings_audio_events_esc.lua", offline = true},
       {title = "@i18n(app.modules.settings.fuel)@", icon = lcd.loadMask("app/gfx/power_smartfuel.png"), script = "app/pages/settings_audio_events_fuel.lua", offline = true},
       {title = "@i18n(app.modules.settings.audio_event_state)@", icon = lcd.loadMask("app/gfx/governor.png"), script = "app/pages/settings_audio_events_state.lua", offline = true},
+      {title = "@i18n(app.modules.settings.status_alerts)@", icon = lcd.loadMask("app/gfx/diagnostics_info.png"), script = "app/pages/settings_audio_events_status.lua", offline = true},
       {title = "@i18n(app.modules.settings.model_announcement)@", icon = lcd.loadMask("app/gfx/beepers.png"), script = "app/pages/settings_audio_events_announcement.lua", offline = true},
     },
   },

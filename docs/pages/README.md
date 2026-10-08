@@ -8,9 +8,9 @@ sidebar_label: Pages
 Reference documentation for each configuration and settings page reachable
 within the RFSuite Ethos system tool.
 
-**Status:** 82 reachable pages in navigation hierarchy, 82 with a file.
+**Status:** 83 reachable pages in navigation hierarchy, 83 with a file.
 
-**What the 82 means.** The page files were generated from the menu hierarchy and the page
+**What the 83 means.** The page files were generated from the menu hierarchy and the page
 sources, so every one of them starts as a scaffold: the menu path, the conditions and the
 control names are read out of the code, and the sentences around them are written from that.
 `bin/docs/generate_menu_docs.py --check` proves a file *exists* for every reachable page and
@@ -132,6 +132,7 @@ and structure follow [_template.md](../_template.md).
 | ESC temperature | [settings/audio/events/esc.md](settings/audio/events/esc.md) | Always available offline without an active flight controller connection. Read-only while the model is armed. | written |
 | Fuel | [settings/audio/events/fuel.md](settings/audio/events/fuel.md) | Always available offline without an active flight controller connection. Read-only while the model is armed. | written |
 | State callouts | [settings/audio/events/state.md](settings/audio/events/state.md) | Always available offline without an active flight controller connection. Read-only while the model is armed. | written |
+| FC status | [settings/audio/events/status.md](settings/audio/events/status.md) | Always available offline without an active flight controller connection. Read-only while the model is armed. | written |
 | Model announcement | [settings/audio/events/announcement.md](settings/audio/events/announcement.md) | Always available offline without an active flight controller connection. Read-only while the model is armed. | written |
 | Switches | [settings/audio/switches.md](settings/audio/switches.md) | Always available offline without an active flight controller connection. Read-only while the model is armed. | written |
 | Timer | [settings/audio/timer.md](settings/audio/timer.md) | Always available offline without an active flight controller connection. Read-only while the model is armed. | written |
