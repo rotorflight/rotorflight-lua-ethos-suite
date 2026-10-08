@@ -1,7 +1,7 @@
 ---
 title: Model announcement
 sidebar_label: Model announcement
-sidebar_position: 50
+sidebar_position: 60
 ---
 
 # Model announcement

@@ -184,7 +184,8 @@ function common.openPage(pageTitle, opts, build)
     local field = form.addNumberField(line, nil, spec.min, spec.max,
       function()
         local value = settings and settings.events and settings.events[key]
-        if value == nil then return spec.default end
+        if value == nil then value = spec.default end
+        if value == nil then return nil end
         return math.floor((value * scale) + 0.5)
       end,
       function(value)

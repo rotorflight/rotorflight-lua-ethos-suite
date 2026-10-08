@@ -340,7 +340,7 @@ fails on.
         name='Audio events stay reachable after the split into categories',
         step='Check the Audio -> Events category pages',
         script='bin/audio_events/verify_audio_events.lua',
-        rationale=r'''#2308 split one Settings -> Audio -> Events page into five category
+        rationale=r'''#2308 split one Settings -> Audio -> Events page into six category
 pages. The risk in that split is not that the build breaks -- it is that a key
 quietly stops having a toggle. Nothing in the build or the package step can see
 a setting that no page offers any more; the pilot finds out in the air, and the
@@ -352,7 +352,7 @@ keys each category page actually edits. A key with no page, a key with two, and 
 page editing a key the store never had all go red.
 
 The on-demand half is measured rather than asserted: a form stub counts the
-field widgets each page builds, so the five pages have to total exactly the
+field widgets each page builds, so the six pages have to total exactly the
 store's key count and no single page may build the set again. And the round trip
 is driven per field -- every field is set, saved, and read back through the
 page's own getter after re-opening, which is what a setter writing the wrong key

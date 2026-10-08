@@ -290,7 +290,9 @@ _G.form = {
     cleared = cleared + 1
   end,
   addBooleanField = function(line, _, get, set) return addField("bool", line, get, set) end,
-  addNumberField = function(line, _, _, _, get, set) return addField("number", line, get, set) end,
+  addNumberField = function(line, _, min, max, get, set)
+    return addField("number", line, get, set, {min = min, max = max})
+  end,
   addChoiceField = function(line, _, choices, get, set)
     return addField("choice", line, get, set, {choices = choices})
   end,
@@ -685,7 +687,7 @@ do
   end
 end
 
--- ── case 5: the menu reaches five real pages ───────────────────────────────
+-- ── case 5: the menu reaches six real pages ────────────────────────────────
 
 out("")
 out("case 5: the menu in tool.lua reaches exactly these category pages")
@@ -723,6 +725,26 @@ do
       if not reachable[p] then orphans[#orphans + 1] = category.file end
     end
     check("no category page is orphaned", #orphans == 0, table.concat(orphans, ", "))
+  end
+end
+
+-- ── case 6: unassigned number fields return scaled defaults ────────────────
+
+out("")
+out("case 6: unassigned number fields return within declared bounds")
+do
+  snapshot = {events = {}}
+  for _, category in ipairs(CATEGORIES) do
+    local _, built = openCategory(category, false)
+    for _, w in ipairs(built) do
+      if w.kind == "number" then
+        local got = w.get()
+        check(string.format("%s: '%s' default is within [%s, %s] (got %s)",
+          category.file, tostring(w.label), tostring(w.min), tostring(w.max), tostring(got)),
+          got ~= nil and got >= w.min and got <= w.max,
+          string.format("got %s outside [%s, %s]", tostring(got), tostring(w.min), tostring(w.max)))
+      end
+    end
   end
 end
 
