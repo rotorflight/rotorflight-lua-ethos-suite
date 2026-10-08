@@ -1876,6 +1876,12 @@
           "needs_translation": false,
           "max_length": 17
         },
+        "main_power_lost": {
+          "english": "Main power lost",
+          "translation": "Main power lost",
+          "needs_translation": false,
+          "max_length": 15
+        },
         "alert_repeat_interval": {
           "english": "Repeat interval",
           "translation": "Repeat interval",

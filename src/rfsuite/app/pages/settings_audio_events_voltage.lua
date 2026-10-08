@@ -26,6 +26,12 @@ local function open(opts)
     fields.voltageRepeat = ctx.addNumber("@i18n(app.modules.settings.alert_repeat_interval)@", "voltage_repeat_interval",
       {min = 5, max = 120, default = 10, suffix = "s"})
 
+    -- Not a threshold on the pack voltage above but a different event that
+    -- happens to be read off the same sensor: the pack reading as gone while
+    -- the BEC stays up. It sits between the pack and BEC groups because it
+    -- needs both readings to mean anything (issue #2310).
+    fields.mainPowerLost = ctx.addBool("@i18n(app.modules.settings.main_power_lost)@", "main_power_lost")
+
     fields.becVoltage = ctx.addBool("@i18n(app.modules.settings.bec_voltage_alert)@", "bec_voltage", updateFields)
     fields.becVoltageThreshold = ctx.addNumber("@i18n(app.modules.settings.bec_voltage_threshold)@", "becalertvalue",
       {min = 30, max = 150, default = 6.5, scale = 10, decimals = 1, suffix = "V"})

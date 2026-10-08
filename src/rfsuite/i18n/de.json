@@ -7121,6 +7121,13 @@
           "reverse_text": false,
           "translation": "Unterspannungsalarm"
         },
+        "main_power_lost": {
+          "english": "Main power lost",
+          "max_length": 15,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Hauptstrom verloren"
+        },
         "memory_logs": {
           "english": "Memory logs",
           "max_length": 11,

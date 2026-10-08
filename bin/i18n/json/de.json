@@ -2178,6 +2178,13 @@
           "reverse_text": false,
           "max_length": 17
         },
+        "main_power_lost": {
+          "english": "Main power lost",
+          "translation": "Hauptstrom verloren",
+          "needs_translation": false,
+          "reverse_text": false,
+          "max_length": 15
+        },
         "alert_repeat_interval": {
           "english": "Repeat interval",
           "translation": "Repeat-Intervall",

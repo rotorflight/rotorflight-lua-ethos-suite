@@ -7121,6 +7121,13 @@
           "reverse_text": false,
           "translation": "Alerte basse tension"
         },
+        "main_power_lost": {
+          "english": "Main power lost",
+          "max_length": 15,
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "Main power lost"
+        },
         "memory_logs": {
           "english": "Memory logs",
           "max_length": 11,

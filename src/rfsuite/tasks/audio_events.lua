@@ -17,6 +17,13 @@ local initialized = false
 local adjWavs = nil
 
 local lastAlertAt = {}
+-- Whether the pack has read a real voltage at any point in the current run.
+-- The main-power test below needs it: a model whose pack is not measured at
+-- all would otherwise look exactly like one whose pack has gone.
+local packVoltageSeen = false
+-- True between a main-power alert actually playing and the pack coming back,
+-- so the recovery is only announced for an episode that was announced lost.
+local mainPowerLostActive = false
 -- lib/system_alerts.lua, loaded once the FC's system_status or system_config
 -- first arrives (firmware before MSP API 12.10 sends neither).
 local systemAlerts = nil
@@ -26,6 +33,29 @@ local alertState = {}
 -- Minimum gap between "control limit" callouts while the controls keep
 -- hitting their limit.
 local CONTROL_LIMIT_REPEAT_SECONDS = 3
+-- What separates "the pack is gone" from "the pack is low". A disconnected
+-- main battery reads as no voltage at all, and the lowest a flight pack is
+-- ever taken to is far above this, so nothing a discharge can reach falls
+-- inside the window. The same number and the same test the EdgeTX suite's
+-- lib/audio.lua uses (MAIN_POWER_LOST_VOLTS, Audio.mainPowerLost).
+local MAIN_POWER_LOST_VOLTS = 1.0
+-- How often a main-power alert repeats while the pack stays gone.
+local MAIN_POWER_REPEAT_SECONDS = 10
+-- The sound each main-power announcement would like the sound packs to gain,
+-- with the files every shipped pack already carries as the fallback. The
+-- EdgeTX suite does the same, for the same reason: every shipped file names a
+-- different event, so a pack without the dedicated word says the nearest one
+-- rather than nothing. (pkg, file) in play order; resolved once per
+-- announcement by firstResolvedSound().
+local MAIN_POWER_LOST_SOUNDS = {
+  {"status", "alerts/mainpower.wav"},
+  {"status", "alerts/lowbat.wav"},
+  {"status", "alerts/lowvoltage.wav"},
+}
+local MAIN_POWER_OK_SOUNDS = {
+  {"status", "alerts/mainpowerok.wav"},
+  {"events", "alerts/battery.wav"},
+}
 local craftNameAnnounced = false
 local lastSmartfuelAnnounced = nil
 -- Whether a numeric fuel reading has been evaluated yet, as opposed to merely
@@ -142,6 +172,29 @@ end
 
 local function playNumber(value, unit, decimals)
   if system.playNumber then system.playNumber(value, unit, decimals) end
+end
+
+-- The path a packaged sound would play from, in the same user -> locale ->
+-- en/default order playFile() uses, but returning nil when none of them is
+-- there. playFile() itself is left alone: it plays the en/default path for
+-- any built-in file, and every one of those ships. This is only for the
+-- main-power sounds above, which a pack may not carry yet.
+local function resolveSound(pkg, file)
+  local user = "SCRIPTS:/rfsuite.user/audio/user/" .. pkg .. "/" .. file
+  if fileExists(user) then return user end
+  local locale = "SCRIPTS:/rfsuite/audio/" .. audioVoice() .. "/" .. pkg .. "/" .. file
+  if fileExists(locale) then return locale end
+  local fallback = "SCRIPTS:/rfsuite/audio/en/default/" .. pkg .. "/" .. file
+  if fileExists(fallback) then return fallback end
+  return nil
+end
+
+local function firstResolvedSound(candidates)
+  for i = 1, #candidates do
+    local path = resolveSound(candidates[i][1], candidates[i][2])
+    if path then return path end
+  end
+  return nil
 end
 
 local function haptic()
@@ -437,6 +490,79 @@ local function announceVoltage(now)
   if lastAlertAt.voltage and (now - lastAlertAt.voltage) < repeatInterval then return end
   lastAlertAt.voltage = now
   playAlert("lowvoltage.wav")
+end
+
+-- The main pack is gone while the flight controller stays alive on a BEC or a
+-- backup battery. Telemetry can report this at all only because everything
+-- else keeps arriving: the receiver and the FC are on the reserve, and the
+-- pack voltage is the one sensor with nothing behind it. Nothing else in this
+-- file would notice the machine is flying on its backup.
+--
+-- Three things have to be true together, and the second is what keeps a model
+-- whose pack is not measured at all quiet: the pack reads as gone rather than
+-- merely low, it has read a real voltage at some point this connection, and a
+-- BEC voltage is there beside it -- without one there is no evidence anything
+-- is still powered. The same test as the EdgeTX suite's lib/audio.lua
+-- (Audio.mainPowerLost); decoding "gone" as total voltage rather than per
+-- cell is the other half of why this is its own function and not a branch of
+-- announceVoltage(). Not armed-gated, for the same reason it is not there:
+-- the pack-seen latch already keeps a bench setup with no pack attached quiet,
+-- and a pack that goes while the model sits on the ground is still a fault.
+local function mainPowerLost()
+  local voltage = tonumber(session.voltage)
+  if voltage == nil then return false end
+
+  if voltage > MAIN_POWER_LOST_VOLTS then
+    packVoltageSeen = true
+    return false
+  end
+
+  if not packVoltageSeen then return false end
+
+  local bec = tonumber(session.becVoltage)
+  if bec == nil or bec <= 0 then return false end
+
+  return true
+end
+
+-- Announced again every MAIN_POWER_REPEAT_SECONDS while the pack stays gone,
+-- and once more when it comes back. The BEC voltage and not the pack's is
+-- spoken on the way in: it is the reading that still means something, and it
+-- says how much is left of whatever is keeping the receiver alive.
+local function announceMainPowerLost(now)
+  if not events.main_power_lost then
+    -- Forget an episode the pilot switched the alert off in, so switching it
+    -- back on does not announce a recovery for a loss that was never spoken.
+    mainPowerLostActive = false
+    return
+  end
+  if session.connected ~= true then return end
+
+  local voltage = tonumber(session.voltage)
+  if voltage == nil then return end
+
+  if not mainPowerLost() then
+    if voltage > MAIN_POWER_LOST_VOLTS and mainPowerLostActive then
+      mainPowerLostActive = false
+      lastAlertAt.main_power = nil
+      local path = firstResolvedSound(MAIN_POWER_OK_SOUNDS)
+      if path then
+        system.playFile(path)
+        playNumber(math.floor((voltage * 10) + 0.5), UNIT_VOLTS, 1)
+      end
+    end
+    return
+  end
+
+  if lastAlertAt.main_power and (now - lastAlertAt.main_power) < MAIN_POWER_REPEAT_SECONDS then return end
+  local path = firstResolvedSound(MAIN_POWER_LOST_SOUNDS)
+  if not path then return end
+  lastAlertAt.main_power = now
+  mainPowerLostActive = true
+  system.playFile(path)
+  local bec = tonumber(session.becVoltage)
+  if bec then playNumber(math.floor((bec * 10) + 0.5), UNIT_VOLTS, 1) end
+  haptic()
 end
 
 local function announceEscTemp(now)
@@ -776,6 +902,8 @@ function audio_events.wakeup()
     pendingAdjFunction = false
     resetTimerAudio()
     speakingUntil = 0
+    packVoltageSeen = false
+    mainPowerLostActive = false
     for key in pairs(rollingSamples) do rollingSamples[key] = nil end
     for key in pairs(lastAlertAt) do lastAlertAt[key] = nil end
     clearAlertState()
@@ -804,6 +932,7 @@ function audio_events.wakeup()
   announceVoltage(now)
   announceEscTemp(now)
   announceBecRxVoltage(now)
+  announceMainPowerLost(now)
   announceSmartfuel(now)
   announceTimer()
   announceAdjustment(now)
@@ -821,6 +950,8 @@ function audio_events.reset()
   pendingAdjFunction = false
   resetTimerAudio()
   speakingUntil = 0
+  packVoltageSeen = false
+  mainPowerLostActive = false
   for key in pairs(rollingSamples) do rollingSamples[key] = nil end
 end
 
