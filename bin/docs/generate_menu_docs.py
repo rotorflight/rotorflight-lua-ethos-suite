@@ -203,6 +203,7 @@ SCRIPT_TO_DOC_PATH = {
     "app/pages/settings_audio_events_fuel.lua": "settings/audio/events/fuel.md",
     "app/pages/settings_audio_events_state.lua": "settings/audio/events/state.md",
     "app/pages/settings_audio_events_status.lua": "settings/audio/events/status.md",
+    "app/pages/settings_audio_events_link.lua": "settings/audio/events/link.md",
     "app/pages/settings_audio_events_announcement.lua": "settings/audio/events/announcement.md",
     "app/pages/settings_audio_switches.lua": "settings/audio/switches.md",
     "app/pages/settings_audio_timer.lua": "settings/audio/timer.md",

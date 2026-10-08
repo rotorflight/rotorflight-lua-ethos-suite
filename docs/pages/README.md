@@ -8,7 +8,7 @@ sidebar_label: Pages
 Reference documentation for each configuration and settings page reachable
 within the RFSuite Ethos system tool.
 
-**Status:** 83 reachable pages in navigation hierarchy.
+**Status:** 84 reachable pages in navigation hierarchy.
 
 The *Conditions* column names what hides, greys out or locks a page; the sentences
 and structure follow [_template.md](../_template.md).
@@ -116,6 +116,7 @@ and structure follow [_template.md](../_template.md).
 | Fuel | [settings/audio/events/fuel.md](settings/audio/events/fuel.md) | Always available offline without an active flight controller connection. Read-only while the model is armed. | written |
 | State callouts | [settings/audio/events/state.md](settings/audio/events/state.md) | Always available offline without an active flight controller connection. Read-only while the model is armed. | written |
 | FC status | [settings/audio/events/status.md](settings/audio/events/status.md) | Always available offline without an active flight controller connection. Read-only while the model is armed. | written |
+| Link | [settings/audio/events/link.md](settings/audio/events/link.md) | Always available offline without an active flight controller connection. Read-only while the model is armed. | written |
 | Model callout | [settings/audio/events/announcement.md](settings/audio/events/announcement.md) | Always available offline without an active flight controller connection. Read-only while the model is armed. | written |
 | Switches | [settings/audio/switches.md](settings/audio/switches.md) | Always available offline without an active flight controller connection. Read-only while the model is armed. | written |
 | Timer | [settings/audio/timer.md](settings/audio/timer.md) | Always available offline without an active flight controller connection. Read-only while the model is armed. | written |
