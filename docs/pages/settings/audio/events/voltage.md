@@ -19,6 +19,8 @@ Always available offline without an active flight controller connection. Read-on
 | Setting | What it does |
 | --- | --- |
 | *Low voltage alert* | Calls out the pack when it drops below the warning cell voltage the flight controller reports. |
+| *Voltage callout* | What the low-voltage callout says once it fires: *Alert only* (the default, no number), *Pack voltage* (e.g. "22.4 volts") or *Cell voltage* (the average cell, e.g. "3.65 volts"). Greyed out while *Low voltage alert* is off. |
+| *Hold time* | Seconds the pack must stay below the warning cell voltage before the alert fires, 0.0 to 10.0, default 2.0. This is what filters a momentary voltage sag. Greyed out while *Low voltage alert* is off. |
 | *Repeat interval* | Seconds between repeats of a standing low-voltage callout. Range 5 to 120, default 10. Greyed out while *Low voltage alert* is off. |
 | *Main power lost* | Calls out a main pack that has gone while the flight controller stays alive on a BEC or a backup battery (a backup guard or a separate receiver pack). Off by default. |
 | *BEC voltage alert* | Calls out when the BEC supply falls below its threshold. |
@@ -30,6 +32,13 @@ Always available offline without an active flight controller connection. Read-on
 
 - Changes are saved to the radio's settings store, not to the flight controller. Nothing here
   is written to flight controller EEPROM.
+- The low-voltage alert waits out voltage sag. An aggressive 3D maneuver pulls the pack below
+  the warning cell voltage for a fraction of a second and it recovers immediately; the alert
+  only fires once the reading has stayed below the threshold for *Hold time*. Set *Hold time*
+  to 0 to alarm on the first low reading, as earlier releases did.
+- *Cell voltage* is the average cell: the pack voltage divided by the configured cell count,
+  the same value the flight controller broadcasts as *Cell Voltage*. There is no separate
+  lowest-cell sensor to read.
 - A pack reading below 1 V in total is ignored, so a bench run on USB power with no pack
   attached does not sound the low-voltage alarm on noise.
 - *Main power lost* needs two readings to mean anything: the pack voltage and a BEC voltage.

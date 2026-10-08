@@ -442,14 +442,14 @@
         },
         "yaw_cyclic_ff_gain": {
           "english": "Yaw Cyclic FF Gain",
-          "translation": "Yaw Cyclische FF-versterking",
+          "translation": "Yaw cycl. FF-versterking",
           "needs_translation": false,
           "reverse_text": false,
           "max_length": 18
         },
         "yaw_collective_ff_gain": {
           "english": "Yaw Collective FF Gain",
-          "translation": "Yaw collectieve FF-versterking",
+          "translation": "Yaw coll. FF-versterking",
           "needs_translation": false,
           "reverse_text": false,
           "max_length": 22
@@ -710,7 +710,7 @@
         },
         "menu_curves_long": {
           "english": "Governor Bypass Curve",
-          "translation": "Gouverneur Bypass-curve",
+          "translation": "Governor bypass-curve",
           "needs_translation": false,
           "max_length": 21,
           "reverse_text": false
@@ -803,30 +803,30 @@
         },
         "cyclic_cross_coupling_gain": {
           "english": "Cyclic Cross Coupling: Gain",
-          "translation": "Cyclische kruiskoppeling: winst",
+          "translation": "Cycl. kruiskoppeling: gain",
           "needs_translation": false,
           "reverse_text": false,
           "max_length": 27
         },
         "cyclic_cross_coupling_ratio": {
           "english": "Cyclic Cross Coupling: Ratio",
-          "translation": "Cyclische kruiskoppeling: Ratio",
+          "translation": "Cycl. kruiskoppeling: ratio",
           "needs_translation": false,
           "reverse_text": false,
           "max_length": 28
         },
         "cyclic_cross_coupling_cutoff": {
-          "english": "Cyclic Cross Coupling: Cutoff",
-          "translation": "Cyclische kruiskoppeling: afsnijding",
+          "english": "Cyclic Cross Coupling Cutoff",
+          "translation": "Cycl. kruiskoppeling cutoff",
           "needs_translation": false,
           "reverse_text": false,
-          "max_length": 29
+          "max_length": 28
         }
       },
       "pid_bandwidth": {
         "name": {
           "english": "PID Bandwidth",
-          "translation": "PID Bandbreedte",
+          "translation": "PID-band",
           "needs_translation": false,
           "reverse_text": false,
           "max_length": 13
@@ -877,7 +877,7 @@
       "autolevel": {
         "name": {
           "english": "Autolevel",
-          "translation": "Automatisch nivelleren",
+          "translation": "Auto-niveau",
           "needs_translation": false,
           "reverse_text": false,
           "max_length": 9
@@ -1225,11 +1225,11 @@
           "max_length": 8
         },
         "cyclic_behaviour": {
-          "english": "Cyclic Behaviour",
+          "english": "Cyclic Behav.",
           "translation": "Cyclisch gedrag",
           "needs_translation": false,
           "reverse_text": false,
-          "max_length": 16
+          "max_length": 13
         },
         "rate_table": {
           "english": "Rate Table",
@@ -1526,7 +1526,7 @@
         },
         "disable_servo_override": {
           "english": "Disable servo override",
-          "translation": "Servo overschrijven uitschakelen",
+          "translation": "Servo-override uit",
           "needs_translation": false,
           "max_length": 22,
           "reverse_text": false
@@ -1712,7 +1712,7 @@
       "radio_config": {
         "name": {
           "english": "Radio Config",
-          "translation": "Radioconfiguratie",
+          "translation": "Radioconfig.",
           "needs_translation": false,
           "max_length": 12,
           "reverse_text": false
@@ -1823,31 +1823,36 @@
           "english": "FC status",
           "translation": "FC status",
           "needs_translation": true,
-          "reverse_text": false
+          "reverse_text": false,
+          "max_length": 9
         },
         "status_blackbox": {
           "english": "Blackbox full",
           "translation": "Blackbox full",
           "needs_translation": true,
-          "reverse_text": false
+          "reverse_text": false,
+          "max_length": 13
         },
         "status_gps": {
           "english": "GPS not responding",
           "translation": "GPS not responding",
           "needs_translation": true,
-          "reverse_text": false
+          "reverse_text": false,
+          "max_length": 18
         },
         "status_gyro": {
           "english": "Gyro overflow",
           "translation": "Gyro overflow",
           "needs_translation": true,
-          "reverse_text": false
+          "reverse_text": false,
+          "max_length": 13
         },
         "status_saturation": {
           "english": "Control limit",
           "translation": "Control limit",
           "needs_translation": true,
-          "reverse_text": false
+          "reverse_text": false,
+          "max_length": 13
         },
         "txt_developer": {
           "english": "Developer",
@@ -2116,10 +2121,10 @@
           "reverse_text": false
         },
         "esc_temperature": {
-          "english": "ESC temperature",
-          "translation": "ESC Temperatuur",
+          "english": "ESC temp",
+          "translation": "ESC-temp.",
           "needs_translation": false,
-          "max_length": 15,
+          "max_length": 8,
           "reverse_text": false
         },
         "esc_threshold": {
@@ -2192,6 +2197,41 @@
           "reverse_text": false,
           "max_length": 15
         },
+        "voltage_hold": {
+          "english": "Hold time",
+          "translation": "Hold time",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 9
+        },
+        "voltage_callout": {
+          "english": "Voltage callout",
+          "translation": "Voltage callout",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 15
+        },
+        "voltage_callout_none": {
+          "english": "Alert only",
+          "translation": "Alert only",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 10
+        },
+        "voltage_callout_pack": {
+          "english": "Pack voltage",
+          "translation": "Pack voltage",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 12
+        },
+        "voltage_callout_cell": {
+          "english": "Cell voltage",
+          "translation": "Cell voltage",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 12
+        },
         "fuel": {
           "english": "Fuel",
           "translation": "Brandstof",
@@ -2208,7 +2248,7 @@
         },
         "fuel_callout_default": {
           "english": "Default",
-          "translation": "Standaard (Alleen per 10%)",
+          "translation": "Standaard",
           "needs_translation": false,
           "max_length": 7,
           "reverse_text": false
@@ -2263,11 +2303,11 @@
           "reverse_text": false
         },
         "model_announcement": {
-          "english": "Model announcement",
-          "translation": "Model aankondiging",
+          "english": "Model callout",
+          "translation": "Modelmelding",
           "needs_translation": false,
           "reverse_text": false,
-          "max_length": 18
+          "max_length": 13
         },
         "timer_alerting": {
           "english": "Timer audio",
@@ -2278,7 +2318,7 @@
         },
         "timer_elapsed_alert_mode": {
           "english": "Elapsed alert",
-          "translation": "Timer afgelopen waarschuwing",
+          "translation": "Melding verstreken",
           "needs_translation": false,
           "max_length": 13,
           "reverse_text": false
@@ -2536,11 +2576,11 @@
           "max_length": 15
         },
         "txt_show_battery_profile_connect": {
-          "english": "Show battery profile on connect",
-          "translation": "Show battery profile on connect",
+          "english": "Battery profile on connect",
+          "translation": "Battery profile on connect",
           "needs_translation": true,
           "reverse_text": false,
-          "max_length": 31
+          "max_length": 26
         },
         "temperature_unit": {
           "english": "Temperature Unit",
@@ -2583,7 +2623,7 @@
         },
         "name": {
           "english": "Accelerometer",
-          "translation": "Versnellingsmeter",
+          "translation": "Accelerometer",
           "needs_translation": false,
           "max_length": 13,
           "reverse_text": false
@@ -2662,7 +2702,7 @@
         },
         "mag_cw_180_flip": {
           "english": "CW 180 deg flip",
-          "translation": "CW 180 graden omdraaien",
+          "translation": "CW 180 omgedraaid",
           "needs_translation": false,
           "reverse_text": false,
           "max_length": 15
@@ -2676,7 +2716,7 @@
         },
         "mag_cw_270_flip": {
           "english": "CW 270 deg flip",
-          "translation": "CW 270 graden omdraaien",
+          "translation": "CW 270 omgedraaid",
           "needs_translation": false,
           "reverse_text": false,
           "max_length": 15
@@ -3016,7 +3056,7 @@
         },
         "disable_swash_override": {
           "english": "Disable swash setup mode",
-          "translation": "Schakel de swash-instelmodus uit",
+          "translation": "Swash-instelmodus uit",
           "needs_translation": false,
           "reverse_text": false,
           "max_length": 24
@@ -3193,7 +3233,7 @@
         },
         "disable_mixer_override": {
           "english": "Disable mixer override",
-          "translation": "Schakel mixer overschrijven uit",
+          "translation": "Mixer-override uit",
           "needs_translation": false,
           "max_length": 22,
           "reverse_text": false
@@ -3251,7 +3291,7 @@
         },
         "auto_detect_active": {
           "english": "Auto-detect active: toggle desired AUX channel",
-          "translation": "Automatische detectie actief: schakel naar het gewenste AUX kanaal",
+          "translation": "Auto-detectie actief: schakel het gewenste AUX-kanaal",
           "needs_translation": false,
           "reverse_text": false,
           "max_length": 46
@@ -3789,7 +3829,7 @@
         },
         "field_arming_gps_no_fix": {
           "english": "Arming GPS no fix",
-          "translation": "Inschakelen GPS geen oplossing",
+          "translation": "Armen zonder GPS-fix",
           "needs_translation": false,
           "reverse_text": false,
           "max_length": 17
@@ -4390,7 +4430,7 @@
         },
         "consumption_warning_percentage": {
           "english": "Consumption Warning %",
-          "translation": "Consumption Waarschuwing %",
+          "translation": "Verbruikswaarsch. %",
           "needs_translation": false,
           "max_length": 21,
           "reverse_text": false
@@ -4644,7 +4684,7 @@
         },
         "motor_override_note": {
           "english": "Blades off and the craft secured.",
-          "translation": "Blades off and the craft secured. The motor turns as soon as the throttle leaves zero.",
+          "translation": "Blades off and the craft secured.",
           "needs_translation": true,
           "reverse_text": false,
           "max_length": 33
@@ -4779,7 +4819,7 @@
       "profile_select": {
         "name": {
           "english": "Select Profile",
-          "translation": "Selecteer profiel",
+          "translation": "Kies profiel",
           "needs_translation": false,
           "max_length": 14,
           "reverse_text": false
@@ -5747,7 +5787,7 @@
             },
             "lowvoltagecutoff": {
               "english": "Low Voltage Cutoff",
-              "translation": "Uitschakeling bij lage spanning",
+              "translation": "Onderspanningsgrens",
               "needs_translation": false,
               "reverse_text": false,
               "max_length": 18
@@ -5873,7 +5913,7 @@
             },
             "stuckrotorprotection": {
               "english": "Stuck Rotor Protection",
-              "translation": "Bescherming tegen vastzittende rotor",
+              "translation": "Blokkeerbeveiliging",
               "needs_translation": false,
               "reverse_text": false,
               "max_length": 22
@@ -6411,7 +6451,7 @@
             },
             "restart_acc": {
               "english": "Auto Bailout Accel",
-              "translation": "Automatische reddingsoperatie versneld",
+              "translation": "Auto-bailout versn.",
               "needs_translation": false,
               "max_length": 18,
               "reverse_text": false
@@ -7377,7 +7417,7 @@
         },
         "name": {
           "english": "ESC Prog.",
-          "translation": "ESC Gereedschap",
+          "translation": "ESC prog.",
           "needs_translation": false,
           "max_length": 9,
           "reverse_text": false
@@ -7385,10 +7425,10 @@
       },
       "msp_exp": {
         "name": {
-          "english": "MSP Experimental",
-          "translation": "MSP Experimenteel",
+          "english": "MSP Exp.",
+          "translation": "MSP exp.",
           "needs_translation": false,
-          "max_length": 16,
+          "max_length": 8,
           "reverse_text": false
         }
       },
@@ -8572,13 +8612,15 @@
       "english": "System Config",
       "translation": "System Config",
       "needs_translation": true,
-      "reverse_text": false
+      "reverse_text": false,
+      "max_length": 13
     },
     "sensor_system_status": {
       "english": "System Status",
       "translation": "System Status",
       "needs_translation": true,
-      "reverse_text": false
+      "reverse_text": false,
+      "max_length": 13
     },
     "sensor_tailspeed": {
       "english": "Tailspeed",
@@ -8938,55 +8980,64 @@
         "english": "ACC NOT CALIBRATED",
         "translation": "ACC NOT CALIBRATED",
         "needs_translation": true,
-        "reverse_text": false
+        "reverse_text": false,
+        "max_length": 18
       },
       "alert_battery_critical": {
         "english": "BATTERY CRITICAL",
         "translation": "BATTERY CRITICAL",
         "needs_translation": true,
-        "reverse_text": false
+        "reverse_text": false,
+        "max_length": 16
       },
       "alert_blackbox_full": {
         "english": "BLACKBOX FULL",
         "translation": "BLACKBOX FULL",
         "needs_translation": true,
-        "reverse_text": false
+        "reverse_text": false,
+        "max_length": 13
       },
       "alert_failsafe": {
         "english": "FAILSAFE",
         "translation": "FAILSAFE",
         "needs_translation": true,
-        "reverse_text": false
+        "reverse_text": false,
+        "max_length": 8
       },
       "alert_governor_fallback": {
         "english": "GOVERNOR FALLBACK",
         "translation": "GOVERNOR FALLBACK",
         "needs_translation": true,
-        "reverse_text": false
+        "reverse_text": false,
+        "max_length": 17
       },
       "alert_gps_lost": {
         "english": "GPS NOT RESPONDING",
         "translation": "GPS NOT RESPONDING",
         "needs_translation": true,
-        "reverse_text": false
+        "reverse_text": false,
+        "max_length": 18
       },
       "alert_gyro_overflow": {
         "english": "GYRO OVERFLOW",
         "translation": "GYRO OVERFLOW",
         "needs_translation": true,
-        "reverse_text": false
+        "reverse_text": false,
+        "max_length": 13
       },
       "alert_override": {
         "english": "TEST OVERRIDE ACTIVE",
         "translation": "TEST OVERRIDE ACTIVE",
         "needs_translation": true,
-        "reverse_text": false
+        "reverse_text": false,
+        "max_length": 20
       },
       "alert_reboot_required": {
         "english": "REBOOT REQUIRED",
         "translation": "REBOOT REQUIRED",
         "needs_translation": true,
-        "reverse_text": false
+        "reverse_text": false,
+        "max_length": 15
       },
       "altitude_max": {
         "english": "Altitude Max",

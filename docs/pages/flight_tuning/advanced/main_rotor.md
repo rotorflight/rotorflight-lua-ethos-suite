@@ -21,7 +21,7 @@ Greyed out until the flight controller answers. Read-only while the model is arm
 | Collective Pitch Comp | Configures Collective Pitch Comp. Range: 0 to 250. Default: 0. |
 | Cyclic Cross Coupling: Gain | Configures Cyclic Cross Coupling: Gain. Range: 0 to 250. Default: 50. |
 | Cyclic Cross Coupling: Ratio | Configures Cyclic Cross Coupling: Ratio. Range: 0 to 200 %. Default: 0 %. |
-| Cyclic Cross Coupling: Cutoff | Configures Cyclic Cross Coupling: Cutoff. Range: 1 to 250 Hz. Default: 25 Hz. |
+| Cyclic Cross Coupling Cutoff | Configures Cyclic Cross Coupling Cutoff. Range: 1 to 250 Hz. Default: 25 Hz. |
 
 ## Notes
 

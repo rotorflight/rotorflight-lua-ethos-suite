@@ -1,16 +1,16 @@
 ---
-title: Model announcement
-sidebar_label: Model announcement
+title: Model callout
+sidebar_label: Model callout
 sidebar_position: 60
 ---
 
-# Model announcement
+# Model callout
 
 Plays the name of the connected craft once per connection, if the pilot has recorded one.
 
 ## Where to find it
 
-*System* → *Settings* → *Audio* → *Events* → *Model announcement*
+*System* → *Settings* → *Audio* → *Events* → *Model callout*
 
 Always available offline without an active flight controller connection. Read-only while the model is armed.
 
@@ -18,7 +18,7 @@ Always available offline without an active flight controller connection. Read-on
 
 | Setting | What it does |
 | --- | --- |
-| *Model announcement* | Plays the connected craft's recorded name on connect. Off by default. |
+| *Model callout* | Plays the connected craft's recorded name on connect. Off by default. |
 
 ## Notes
 

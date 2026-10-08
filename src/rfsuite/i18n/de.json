@@ -368,7 +368,7 @@
           "max_length": 13,
           "needs_translation": false,
           "reverse_text": false,
-          "translation": "Beschleunigungssensor"
+          "translation": "Beschl.-Sensor"
         },
         "pitch": {
           "english": "Pitch",
@@ -838,7 +838,7 @@
           "max_length": 20,
           "needs_translation": false,
           "reverse_text": false,
-          "translation": "ACC-Kalibrierung fehlgeschlagen"
+          "translation": "ACC-Kalibrierfehler"
         },
         "field_armed": {
           "english": "Armed",
@@ -2799,7 +2799,7 @@
               "max_length": 12,
               "needs_translation": false,
               "reverse_text": false,
-              "translation": "Verstärkungswert für den Stromsensor"
+              "translation": "Stromsensor-Verstärkung"
             },
             "drive_freq": {
               "english": "Drive Frequency",
@@ -2834,7 +2834,7 @@
               "max_length": 10,
               "needs_translation": false,
               "reverse_text": false,
-              "translation": "Integralwert für den Governor"
+              "translation": "Governor I"
             },
             "gov_p": {
               "english": "Governor P",
@@ -2862,14 +2862,14 @@
               "max_length": 17,
               "needs_translation": false,
               "reverse_text": false,
-              "translation": "Spannung, bei der die Leistung reduziert wird"
+              "translation": "Unterspannungsgrenze"
             },
             "motor_direction": {
               "english": "Motor Direction",
               "max_length": 15,
               "needs_translation": false,
               "reverse_text": false,
-              "translation": "Motordrehrichtung (CCW/CW)"
+              "translation": "Motordrehrichtung"
             },
             "motor_erpm_max": {
               "english": "Maximum Motor ERPM",
@@ -3195,7 +3195,7 @@
               "max_length": 5,
               "needs_translation": false,
               "reverse_text": false,
-              "translation": "Proportionalwert für den Governor"
+              "translation": "Governor P"
             },
             "governor": {
               "english": "Governor",
@@ -3230,7 +3230,7 @@
               "max_length": 15,
               "needs_translation": false,
               "reverse_text": false,
-              "translation": "Motordrehrichtung (CCW/CW)"
+              "translation": "Motordrehrichtung"
             },
             "motor_poles": {
               "english": "Motor Poles",
@@ -3486,7 +3486,7 @@
               "max_length": 5,
               "needs_translation": false,
               "reverse_text": false,
-              "translation": "Proportionalwert für den Governor"
+              "translation": "Governor P"
             },
             "governor": {
               "english": "Governor",
@@ -3521,7 +3521,7 @@
               "max_length": 15,
               "needs_translation": false,
               "reverse_text": false,
-              "translation": "Motordrehrichtung (CCW/CW)"
+              "translation": "Motordrehrichtung"
             },
             "motor_poles": {
               "english": "Motor Poles",
@@ -3642,7 +3642,7 @@
               "max_length": 5,
               "needs_translation": false,
               "reverse_text": false,
-              "translation": "Proportionalwert für den Governor"
+              "translation": "Governor P"
             },
             "lv_bec_voltage": {
               "english": "BEC",
@@ -3798,7 +3798,7 @@
               "max_length": 5,
               "needs_translation": false,
               "reverse_text": false,
-              "translation": "Proportionalwert für den Governor"
+              "translation": "Governor P"
             },
             "governor": {
               "english": "Governor",
@@ -3833,7 +3833,7 @@
               "max_length": 15,
               "needs_translation": false,
               "reverse_text": false,
-              "translation": "Motordrehrichtung (CCW/CW)"
+              "translation": "Motordrehrichtung"
             },
             "motor_poles": {
               "english": "Motor Poles",
@@ -4876,25 +4876,25 @@
           "translation": "Kollektiv Pitch Comp"
         },
         "cyclic_cross_coupling_cutoff": {
-          "english": "Cyclic Cross Coupling: Cutoff",
-          "max_length": 29,
+          "english": "Cyclic Cross Coupling Cutoff",
+          "max_length": 28,
           "needs_translation": false,
           "reverse_text": false,
-          "translation": "Zyklische Kreuzkopplung: Cutoff"
+          "translation": "Zykl. Kreuzkopplung Cutoff"
         },
         "cyclic_cross_coupling_gain": {
           "english": "Cyclic Cross Coupling: Gain",
           "max_length": 27,
           "needs_translation": false,
           "reverse_text": false,
-          "translation": "Zyklische Kreuzkopplung: Verstärkung"
+          "translation": "Zykl. Kreuzkopplung: Verst."
         },
         "cyclic_cross_coupling_ratio": {
           "english": "Cyclic Cross Coupling: Ratio",
           "max_length": 28,
           "needs_translation": false,
           "reverse_text": false,
-          "translation": "Zyklische Kreuzkopplung: Ratio"
+          "translation": "Zykl. Kreuzkopplung: Ratio"
         },
         "name": {
           "english": "Main Rotor",
@@ -4938,14 +4938,14 @@
           "max_length": 28,
           "needs_translation": false,
           "reverse_text": false,
-          "translation": "Kollektive Neigungskorrektur -"
+          "translation": "Koll. Neigungskorrektur -"
         },
         "collective_tilt_correction_pos": {
           "english": "Collective Tilt Correction +",
           "max_length": 28,
           "needs_translation": false,
           "reverse_text": false,
-          "translation": "Kollektive Neigungskorrektur +"
+          "translation": "Koll. Neigungskorrektur +"
         },
         "cyclic_calibration": {
           "english": "Cyclic Calibration",
@@ -4966,7 +4966,7 @@
           "max_length": 24,
           "needs_translation": false,
           "reverse_text": false,
-          "translation": "Taumelscheiben-Einstellmodus deaktivieren"
+          "translation": "TS-Einstellmodus aus"
         },
         "disable_swash_override_message": {
           "english": "Disable swash setup mode and return mixer control to the flight controller.",
@@ -5281,11 +5281,11 @@
       },
       "msp_exp": {
         "name": {
-          "english": "MSP Experimental",
-          "max_length": 16,
+          "english": "MSP Exp.",
+          "max_length": 8,
           "needs_translation": false,
           "reverse_text": false,
-          "translation": "MSP Experimentell"
+          "translation": "MSP Exp."
         }
       },
       "msp_speed": {
@@ -5294,7 +5294,7 @@
           "max_length": 18,
           "needs_translation": false,
           "reverse_text": false,
-          "translation": "Durchschnittliche Anfragezeit"
+          "translation": "Mittl. Anfragezeit"
         },
         "checksum_errors": {
           "english": "Checksum errors",
@@ -5322,7 +5322,7 @@
           "max_length": 9,
           "needs_translation": false,
           "reverse_text": false,
-          "translation": "MSP-Geschwindigkeit"
+          "translation": "MSP-Tempo"
         },
         "retries": {
           "english": "Retries",
@@ -5920,7 +5920,7 @@
           "max_length": 5,
           "needs_translation": false,
           "reverse_text": false,
-          "translation": "Stromversorgung"
+          "translation": "Energie"
         },
         "reload_alerts_prompt": {
           "english": "Reload local power alert settings?",
@@ -6013,7 +6013,7 @@
           "max_length": 14,
           "needs_translation": false,
           "reverse_text": false,
-          "translation": "Profil auswählen"
+          "translation": "Profil wählen"
         },
         "pid_profile": {
           "english": "PID profile",
@@ -6232,11 +6232,11 @@
           "translation": "Kol"
         },
         "cyclic_behaviour": {
-          "english": "Cyclic Behaviour",
-          "max_length": 16,
+          "english": "Cyclic Behav.",
+          "max_length": 13,
           "needs_translation": false,
           "reverse_text": false,
-          "translation": "Zyklik-Verhalten"
+          "translation": "Zyklik-Verh."
         },
         "cyclic_polarity": {
           "english": "Cyclic Polarity",
@@ -6578,7 +6578,7 @@
           "max_length": 22,
           "needs_translation": false,
           "reverse_text": false,
-          "translation": "Servo-Überschreibung deaktivieren"
+          "translation": "Servo-Override aus"
         },
         "disable_servo_override_msg": {
           "english": "Return control of the servos to the flight controller.",
@@ -6783,7 +6783,7 @@
           "max_length": 14,
           "needs_translation": false,
           "reverse_text": false,
-          "translation": "Staatliche Aufrufe"
+          "translation": "Statusansagen"
         },
         "battery_profile_event": {
           "english": "Battery profile",
@@ -7010,8 +7010,8 @@
           "translation": "Einstellungen"
         },
         "esc_temperature": {
-          "english": "ESC temperature",
-          "max_length": 15,
+          "english": "ESC temp",
+          "max_length": 8,
           "needs_translation": false,
           "reverse_text": false,
           "translation": "ESC-Temperatur"
@@ -7136,8 +7136,8 @@
           "translation": "Speicherprotokolle"
         },
         "model_announcement": {
-          "english": "Model announcement",
-          "max_length": 18,
+          "english": "Model callout",
+          "max_length": 13,
           "needs_translation": false,
           "reverse_text": false,
           "translation": "Modellansage"
@@ -7214,30 +7214,35 @@
         },
         "status_alerts": {
           "english": "FC status",
+          "max_length": 9,
           "needs_translation": true,
           "reverse_text": false,
           "translation": "FC status"
         },
         "status_blackbox": {
           "english": "Blackbox full",
+          "max_length": 13,
           "needs_translation": true,
           "reverse_text": false,
           "translation": "Blackbox full"
         },
         "status_gps": {
           "english": "GPS not responding",
+          "max_length": 18,
           "needs_translation": true,
           "reverse_text": false,
           "translation": "GPS not responding"
         },
         "status_gyro": {
           "english": "Gyro overflow",
+          "max_length": 13,
           "needs_translation": true,
           "reverse_text": false,
           "translation": "Gyro overflow"
         },
         "status_saturation": {
           "english": "Control limit",
+          "max_length": 13,
           "needs_translation": true,
           "reverse_text": false,
           "translation": "Control limit"
@@ -7418,11 +7423,11 @@
           "translation": "Speich."
         },
         "txt_show_battery_profile_connect": {
-          "english": "Show battery profile on connect",
-          "max_length": 31,
+          "english": "Battery profile on connect",
+          "max_length": 26,
           "needs_translation": true,
           "reverse_text": false,
-          "translation": "Show battery profile on connect"
+          "translation": "Battery profile on connect"
         },
         "txt_syncname": {
           "english": "Sync model name",
@@ -7437,6 +7442,41 @@
           "needs_translation": false,
           "reverse_text": false,
           "translation": "Spannung"
+        },
+        "voltage_callout": {
+          "english": "Voltage callout",
+          "max_length": 15,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Spannungsansage"
+        },
+        "voltage_callout_cell": {
+          "english": "Cell voltage",
+          "max_length": 12,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Zellenspannung"
+        },
+        "voltage_callout_none": {
+          "english": "Alert only",
+          "max_length": 10,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Nur Alarm"
+        },
+        "voltage_callout_pack": {
+          "english": "Pack voltage",
+          "max_length": 12,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Akkuspannung"
+        },
+        "voltage_hold": {
+          "english": "Hold time",
+          "max_length": 9,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Haltezeit"
         }
       },
       "stats": {
@@ -7552,7 +7592,7 @@
           "max_length": 18,
           "needs_translation": false,
           "reverse_text": false,
-          "translation": "Yaw Zyklische FF Verstärkung"
+          "translation": "Yaw Zyklik-FF-Verst."
         },
         "yaw_precomp_cutoff": {
           "english": "Yaw Precomp Cutoff",
@@ -7612,7 +7652,7 @@
           "max_length": 22,
           "needs_translation": false,
           "reverse_text": false,
-          "translation": "Mischer-Überschreibung deaktivieren"
+          "translation": "Mischer-Override aus"
         },
         "enable_mixer_message": {
           "english": "Set all servos to their configured center position. \r\n\r\nThis will result in all values on this page being saved when adjusting the servo trim.",
@@ -8835,12 +8875,14 @@
     },
     "sensor_system_config": {
       "english": "System Config",
+      "max_length": 13,
       "needs_translation": true,
       "reverse_text": false,
       "translation": "System Config"
     },
     "sensor_system_status": {
       "english": "System Status",
+      "max_length": 13,
       "needs_translation": true,
       "reverse_text": false,
       "translation": "System Status"
@@ -8936,54 +8978,63 @@
     "dashboard": {
       "alert_acc_uncalibrated": {
         "english": "ACC NOT CALIBRATED",
+        "max_length": 18,
         "needs_translation": true,
         "reverse_text": false,
         "translation": "ACC NOT CALIBRATED"
       },
       "alert_battery_critical": {
         "english": "BATTERY CRITICAL",
+        "max_length": 16,
         "needs_translation": true,
         "reverse_text": false,
         "translation": "BATTERY CRITICAL"
       },
       "alert_blackbox_full": {
         "english": "BLACKBOX FULL",
+        "max_length": 13,
         "needs_translation": true,
         "reverse_text": false,
         "translation": "BLACKBOX FULL"
       },
       "alert_failsafe": {
         "english": "FAILSAFE",
+        "max_length": 8,
         "needs_translation": true,
         "reverse_text": false,
         "translation": "FAILSAFE"
       },
       "alert_governor_fallback": {
         "english": "GOVERNOR FALLBACK",
+        "max_length": 17,
         "needs_translation": true,
         "reverse_text": false,
         "translation": "GOVERNOR FALLBACK"
       },
       "alert_gps_lost": {
         "english": "GPS NOT RESPONDING",
+        "max_length": 18,
         "needs_translation": true,
         "reverse_text": false,
         "translation": "GPS NOT RESPONDING"
       },
       "alert_gyro_overflow": {
         "english": "GYRO OVERFLOW",
+        "max_length": 13,
         "needs_translation": true,
         "reverse_text": false,
         "translation": "GYRO OVERFLOW"
       },
       "alert_override": {
         "english": "TEST OVERRIDE ACTIVE",
+        "max_length": 20,
         "needs_translation": true,
         "reverse_text": false,
         "translation": "TEST OVERRIDE ACTIVE"
       },
       "alert_reboot_required": {
         "english": "REBOOT REQUIRED",
+        "max_length": 15,
         "needs_translation": true,
         "reverse_text": false,
         "translation": "REBOOT REQUIRED"

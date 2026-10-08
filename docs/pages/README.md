@@ -8,24 +8,7 @@ sidebar_label: Pages
 Reference documentation for each configuration and settings page reachable
 within the RFSuite Ethos system tool.
 
-**Status:** 83 reachable pages in navigation hierarchy, 83 with a file.
-
-**What the 83 means.** The page files were generated from the menu hierarchy and the page
-sources, so every one of them starts as a scaffold: the menu path, the conditions and the
-control names are read out of the code, and the sentences around them are written from that.
-`bin/docs/generate_menu_docs.py --check` proves a file *exists* for every reachable page and
-nothing else — it cannot tell a page that describes its settings from one that only lists
-their names. Read a page against the tool before trusting it, and treat the index below as a
-table of contents rather than as a sign-off.
-
-Pages are filled in the same way as changes reach them: a pull request that changes a page
-brings that page's file with it, or says on a line of its own why it needs no documentation
-change. The `Documentation rule` job in `.github/workflows/pr.yml` fails when neither is
-there. The rule is in [.agents/rules/documentation.md](../../.agents/rules/documentation.md).
-
-<!-- The two paragraphs above are hand-written and `--update-index` overwrites this
-     preamble, because the generator emits only the Status line. Re-add them after
-     regenerating, and update the two counts. -->
+**Status:** 83 reachable pages in navigation hierarchy.
 
 The *Conditions* column names what hides, greys out or locks a page; the sentences
 and structure follow [_template.md](../_template.md).
@@ -47,7 +30,7 @@ and structure follow [_template.md](../_template.md).
 | Tail Rotor | [flight_tuning/advanced/tail_rotor.md](flight_tuning/advanced/tail_rotor.md) | Greyed out until the flight controller answers. Read-only while the model is armed. | written |
 | Rescue | [flight_tuning/advanced/rescue.md](flight_tuning/advanced/rescue.md) | Greyed out until the flight controller answers. Read-only while the model is armed. | written |
 | Advanced | [flight_tuning/advanced/rates_advanced/advanced.md](flight_tuning/advanced/rates_advanced/advanced.md) | Greyed out until the flight controller answers. Read-only while the model is armed. | written |
-| Cyclic Behaviour | [flight_tuning/advanced/rates_advanced/cyclic_behaviour.md](flight_tuning/advanced/rates_advanced/cyclic_behaviour.md) | Greyed out until the flight controller answers. Read-only while the model is armed. | written |
+| Cyclic Behav. | [flight_tuning/advanced/rates_advanced/cyclic_behaviour.md](flight_tuning/advanced/rates_advanced/cyclic_behaviour.md) | Greyed out until the flight controller answers. Read-only while the model is armed. | written |
 | Rate Table | [flight_tuning/advanced/rates_advanced/table.md](flight_tuning/advanced/rates_advanced/table.md) | Greyed out until the flight controller answers. Read-only while the model is armed. | written |
 
 ## Configuration → Setup
@@ -109,7 +92,7 @@ and structure follow [_template.md](../_template.md).
 | FBL Status | [tools/diagnostics/fblstatus.md](tools/diagnostics/fblstatus.md) | Greyed out until the flight controller answers. Read-only while the model is armed. | written |
 | Info | [tools/diagnostics/info.md](tools/diagnostics/info.md) | Greyed out until the flight controller answers. Read-only while the model is armed. | written |
 | MSP Speed | [tools/developer/msp_speed.md](tools/developer/msp_speed.md) | Greyed out until the flight controller answers. Read-only while the model is armed. Hidden until *System* → *Settings* → *Developer* mode is active. | written |
-| MSP Experimental | [tools/developer/msp_exp.md](tools/developer/msp_exp.md) | Greyed out until the flight controller answers. Read-only while the model is armed. Hidden until *System* → *Settings* → *Developer* mode is active. | written |
+| MSP Exp. | [tools/developer/msp_exp.md](tools/developer/msp_exp.md) | Greyed out until the flight controller answers. Read-only while the model is armed. Hidden until *System* → *Settings* → *Developer* mode is active. | written |
 
 ## System → Logs
 
@@ -129,11 +112,11 @@ and structure follow [_template.md](../_template.md).
 | Inflight | [settings/activelook/inflight.md](settings/activelook/inflight.md) | Always available offline without an active flight controller connection. Read-only while the model is armed. | written |
 | Postflight | [settings/activelook/postflight.md](settings/activelook/postflight.md) | Always available offline without an active flight controller connection. Read-only while the model is armed. | written |
 | Voltage | [settings/audio/events/voltage.md](settings/audio/events/voltage.md) | Always available offline without an active flight controller connection. Read-only while the model is armed. | written |
-| ESC temperature | [settings/audio/events/esc.md](settings/audio/events/esc.md) | Always available offline without an active flight controller connection. Read-only while the model is armed. | written |
+| ESC temp | [settings/audio/events/esc.md](settings/audio/events/esc.md) | Always available offline without an active flight controller connection. Read-only while the model is armed. | written |
 | Fuel | [settings/audio/events/fuel.md](settings/audio/events/fuel.md) | Always available offline without an active flight controller connection. Read-only while the model is armed. | written |
 | State callouts | [settings/audio/events/state.md](settings/audio/events/state.md) | Always available offline without an active flight controller connection. Read-only while the model is armed. | written |
 | FC status | [settings/audio/events/status.md](settings/audio/events/status.md) | Always available offline without an active flight controller connection. Read-only while the model is armed. | written |
-| Model announcement | [settings/audio/events/announcement.md](settings/audio/events/announcement.md) | Always available offline without an active flight controller connection. Read-only while the model is armed. | written |
+| Model callout | [settings/audio/events/announcement.md](settings/audio/events/announcement.md) | Always available offline without an active flight controller connection. Read-only while the model is armed. | written |
 | Switches | [settings/audio/switches.md](settings/audio/switches.md) | Always available offline without an active flight controller connection. Read-only while the model is armed. | written |
 | Timer | [settings/audio/timer.md](settings/audio/timer.md) | Always available offline without an active flight controller connection. Read-only while the model is armed. | written |
 | Developer | [settings/developer.md](settings/developer.md) | Always available offline without an active flight controller connection. Read-only while the model is armed. Hidden until *System* → *Settings* → *Developer* mode is active. | written |

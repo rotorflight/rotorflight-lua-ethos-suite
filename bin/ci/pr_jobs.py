@@ -370,6 +370,11 @@ after its interval; and the pack coming back speaks once. A copy of the task
 with the pack-seen latch stripped is then loaded and required to fire on a
 never-measured pack, so the instrument is proven able to go red.
 
+The same harness checks the low-voltage hold filter and spoken reading (#2309):
+a brief sag stays silent, recovery restarts the hold, hold = 0 fires at once,
+and the callout speaks the pack total, average cell or nothing. Stripping the
+hold guard must make a brief sag fire.
+
 The instrument guards itself twice. Case 1 counts the add* call sites in the
 page sources and fails if its own scanner missed one, so a partial read cannot
 understate coverage. Case 3 watches the snapshot table a page was handed rather
@@ -1730,6 +1735,33 @@ r'''  # tasks/elrs_sensors.lua's parseFrame() stops at the first appId it has no
 
       - name: Check every broadcast appId has a decoder
         run: python bin/telemetry/verify_sensor_table.py
+'''
+    ,
+    # i18n-fit
+r'''  # A string too wide for where it is shown is cut off on the radio: a form label
+  # runs under its field, a menu tile label ends in "...". max_length caps a
+  # translation at the English character count, which says nothing about pixels,
+  # so German and Polish labels overflowed while passing it. check-fit.py measures
+  # every locale's strings against the budget of the place each key is used, with
+  # character widths measured on the X18 (the smallest screen).
+  i18n-fit:
+    name: i18n strings fit the X18
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Prove the check can go red
+        run: python bin/i18n/check-fit.py --self-test
+
+      - name: Check every locale fits
+        run: python bin/i18n/check-fit.py
 '''
     ,
     # documentation-rule

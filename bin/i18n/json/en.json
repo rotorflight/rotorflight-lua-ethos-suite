@@ -701,10 +701,10 @@
           "max_length": 28
         },
         "cyclic_cross_coupling_cutoff": {
-          "english": "Cyclic Cross Coupling: Cutoff",
-          "translation": "Cyclic Cross Coupling: Cutoff",
+          "english": "Cyclic Cross Coupling Cutoff",
+          "translation": "Cyclic Cross Coupling Cutoff",
           "needs_translation": false,
-          "max_length": 29
+          "max_length": 28
         }
       },
       "pid_bandwidth": {
@@ -1053,10 +1053,10 @@
           "max_length": 8
         },
         "cyclic_behaviour": {
-          "english": "Cyclic Behaviour",
-          "translation": "Cyclic Behaviour",
+          "english": "Cyclic Behav.",
+          "translation": "Cyclic Behav.",
           "needs_translation": false,
-          "max_length": 16
+          "max_length": 13
         },
         "rate_table": {
           "english": "Rate Table",
@@ -1823,10 +1823,10 @@
           "max_length": 16
         },
         "esc_temperature": {
-          "english": "ESC temperature",
-          "translation": "ESC temperature",
+          "english": "ESC temp",
+          "translation": "ESC temp",
           "needs_translation": false,
-          "max_length": 15
+          "max_length": 8
         },
         "esc_threshold": {
           "english": "ESC threshold",
@@ -1887,6 +1887,36 @@
           "translation": "Repeat interval",
           "needs_translation": false,
           "max_length": 15
+        },
+        "voltage_hold": {
+          "english": "Hold time",
+          "translation": "Hold time",
+          "needs_translation": false,
+          "max_length": 9
+        },
+        "voltage_callout": {
+          "english": "Voltage callout",
+          "translation": "Voltage callout",
+          "needs_translation": false,
+          "max_length": 15
+        },
+        "voltage_callout_none": {
+          "english": "Alert only",
+          "translation": "Alert only",
+          "needs_translation": false,
+          "max_length": 10
+        },
+        "voltage_callout_pack": {
+          "english": "Pack voltage",
+          "translation": "Pack voltage",
+          "needs_translation": false,
+          "max_length": 12
+        },
+        "voltage_callout_cell": {
+          "english": "Cell voltage",
+          "translation": "Cell voltage",
+          "needs_translation": false,
+          "max_length": 12
         },
         "fuel": {
           "english": "Fuel",
@@ -1949,10 +1979,10 @@
           "max_length": 15
         },
         "model_announcement": {
-          "english": "Model announcement",
-          "translation": "Model announcement",
+          "english": "Model callout",
+          "translation": "Model callout",
           "needs_translation": false,
-          "max_length": 18
+          "max_length": 13
         },
         "timer_alerting": {
           "english": "Timer audio",
@@ -2183,10 +2213,10 @@
           "translation": "Sync model name"
         },
         "txt_show_battery_profile_connect": {
-          "english": "Show battery profile on connect",
-          "max_length": 31,
+          "english": "Battery profile on connect",
+          "max_length": 26,
           "needs_translation": false,
-          "translation": "Show battery profile on connect"
+          "translation": "Battery profile on connect"
         },
         "temperature_unit": {
           "english": "Temperature Unit",
@@ -6349,10 +6379,10 @@
       },
       "msp_exp": {
         "name": {
-          "english": "MSP Experimental",
-          "max_length": 16,
+          "english": "MSP Exp.",
+          "max_length": 8,
           "needs_translation": false,
-          "translation": "MSP Experimental"
+          "translation": "MSP Exp."
         }
       },
       "msp_speed": {

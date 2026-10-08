@@ -100,6 +100,7 @@ _G.system = {
 local drawnTexts = {}
 local invalidations = 0
 _G.lcd = {
+  loadMask = function(p) return {path = p} end,
   getWindowSize = function() return 800, 480 end,
   getTextSize = function(text) return #tostring(text) * 8, 16 end,
   font = function() end,

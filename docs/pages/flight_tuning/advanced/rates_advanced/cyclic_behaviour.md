@@ -1,16 +1,16 @@
 ---
-title: Cyclic Behaviour
-sidebar_label: Cyclic Behaviour
+title: Cyclic Behav.
+sidebar_label: Cyclic Behav.
 sidebar_position: 20
 ---
 
-# Cyclic Behaviour
+# Cyclic Behav.
 
-Cyclic Behaviour editor page. Loaded on demand (plain loadfile) only when the user opens Flight Tuning -> Advanced -> Rates Advanced -> Cyclic Behaviour -- see app/tool.lua.
+Cyclic Behav. editor page. Loaded on demand (plain loadfile) only when the user opens Flight Tuning -> Advanced -> Rates Advanced -> Cyclic Behav. -- see app/tool.lua.
 
 ## Where to find it
 
-*Configuration* → *Flight Tuning* → *Rate Options* → *Cyclic Behaviour*
+*Configuration* → *Flight Tuning* → *Rate Options* → *Cyclic Behav.*
 
 Greyed out until the flight controller answers. Read-only while the model is armed.
 

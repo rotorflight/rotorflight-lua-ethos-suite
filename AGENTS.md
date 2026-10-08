@@ -105,6 +105,15 @@ Rules:
   `.vscode/logs/i18n-unresolved.json` (git-ignored; deleted when a deploy
   resolves everything). If that file exists, tell the user which keys are
   missing and where, even if the current task did not touch them.
+- Every string must fit where it is shown on the smallest screen (X18,
+  480x320). `max_length` only caps characters; check pixels with
+  `python bin/i18n/check-fit.py [--lang <locale...>]` (exit 1 and file:line for
+  each string too wide; the `i18n-fit` CI job runs it). Budgets on the X18:
+  menu tile 98px, page title 178px (only the page's own name: the header drops
+  leading breadcrumb levels), form label 215px, choice 200px. Fix an overflow by
+  shortening the text in `bin/i18n/json/`, not by widening the layout. When you
+  change English, also set the same `english` in every locale file and supply a
+  short translation, or `update-missing-translations.py` resets it to English.
 
 ## 8) MSP/API/Scheduler Notes
 
@@ -118,6 +127,8 @@ Before finishing:
 - Verify no generated file drift (`menu`/`i18n`) if source files were touched.
 - If you added or changed any `@i18n(...)@` tag, run `python bin/i18n/check-tags.py`
   and fix what it reports.
+- If you added or changed any i18n string, or where one is used, run
+  `python bin/i18n/check-fit.py` and shorten what it reports.
 - Check for hot-path allocations introduced by the change.
 - Confirm close/cleanup path exists for new dialogs, handles, or caches.
 - Run targeted sanity checks for affected module flows.
@@ -162,5 +173,18 @@ This repository:
 - **Boot dialogs:** booting shows a *Select Battery* dialog, then *Battery Profile*, then *Checklist warning*.
   Dismiss each one before any other input. Menu keys are ignored while a dialog is open.
 - **Opening the app:** `SYS`, then `PAGE` to System page 2, then the **Rotorflight** tile. The app's own pages are tile grids with a **BACK** button at the top right.
+- **Another board, or a fresh radio folder:** a model saved by a newer Ethos build
+  will not load on an older one ("Need firmware update"), so for a second board
+  (e.g. `X18S_EU`, the smallest screen at 480x320) mount a new folder under the
+  scratchpad holding only `scripts/rfsuite` copied from the deployed one. It boots
+  through *Select language*, *Storage error, default settings restored* and the
+  *Create model* wizard; finish the wizard, then set the model up, or every app tile
+  shows *Background task not running*:
+  1. Model menu, page 3, **Lua**: turn **Rotorflight [Background]** on.
+  2. Model menu, page 1, **RF system**, **Internal module**: turn **State** on.
+  3. Model menu, page 2, **Telemetry**: discover sensors if the list is empty.
+- **Cached modules:** `app/header.lua` and other shared modules cache themselves in
+  `package.loaded`, so a redeploy is not picked up until the simulator restarts
+  (`quit`, then start it again).
 - **No flight controller needed:** the suite's built-in simulated sensors and MSP responses (`src/rfsuite/sim/sensors/` and the `simulatorResponse` tables in `src/rfsuite/lib/msp_*.lua`) populate pages such as PIDs.
 - **Lua errors** appear in the output of the `log` command, not on screen.

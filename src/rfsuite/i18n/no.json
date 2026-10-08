@@ -1984,7 +1984,7 @@
           "max_length": 33,
           "needs_translation": true,
           "reverse_text": false,
-          "translation": "Blades off and the craft secured. The motor turns as soon as the throttle leaves zero."
+          "translation": "Blades off and the craft secured."
         },
         "motor_override_note_2": {
           "english": "The motor turns with the throttle.",
@@ -2096,7 +2096,7 @@
           "max_length": 19,
           "needs_translation": false,
           "reverse_text": false,
-          "translation": "Usynkronisert ESC Oppdatering"
+          "translation": "Usynk. ESC-oppdatering"
         },
         "use_dshot_telemetry": {
           "english": "DShot RPM Telemetry",
@@ -2380,7 +2380,7 @@
               "max_length": 22,
               "needs_translation": false,
               "reverse_text": false,
-              "translation": "Rotorbeskyttelse som sitter fast"
+              "translation": "Fastlåst rotor-vern"
             },
             "tbl_brake_active": {
               "english": "Active Brake",
@@ -3884,7 +3884,7 @@
           "max_length": 9,
           "needs_translation": false,
           "reverse_text": false,
-          "translation": "Esc programmering"
+          "translation": "ESC-prog."
         },
         "open": {
           "english": "Open",
@@ -4876,8 +4876,8 @@
           "translation": "Kollektiv Pitch Comp"
         },
         "cyclic_cross_coupling_cutoff": {
-          "english": "Cyclic Cross Coupling: Cutoff",
-          "max_length": 29,
+          "english": "Cyclic Cross Coupling Cutoff",
+          "max_length": 28,
           "needs_translation": false,
           "reverse_text": false,
           "translation": "Syklisk tverrkobling: Cutoff"
@@ -4966,7 +4966,7 @@
           "max_length": 24,
           "needs_translation": false,
           "reverse_text": false,
-          "translation": "Deaktiver swash-oppsettmodus"
+          "translation": "Slå av swash-oppsett"
         },
         "disable_swash_override_message": {
           "english": "Disable swash setup mode and return mixer control to the flight controller.",
@@ -5281,11 +5281,11 @@
       },
       "msp_exp": {
         "name": {
-          "english": "MSP Experimental",
-          "max_length": 16,
+          "english": "MSP Exp.",
+          "max_length": 8,
           "needs_translation": false,
           "reverse_text": false,
-          "translation": "MSP Eksperimentell"
+          "translation": "MSP eksp."
         }
       },
       "msp_speed": {
@@ -6232,11 +6232,11 @@
           "translation": "Kol"
         },
         "cyclic_behaviour": {
-          "english": "Cyclic Behaviour",
-          "max_length": 16,
+          "english": "Cyclic Behav.",
+          "max_length": 13,
           "needs_translation": false,
           "reverse_text": false,
-          "translation": "Syklisk oppførsel"
+          "translation": "Syklisk oppf."
         },
         "cyclic_polarity": {
           "english": "Cyclic Polarity",
@@ -6320,7 +6320,7 @@
           "max_length": 21,
           "needs_translation": false,
           "reverse_text": false,
-          "translation": "Settpunkt forsterkning cutoff"
+          "translation": "Settpunkt-boost cutoff"
         },
         "setpoint_boost_gain": {
           "english": "Setpoint Boost Gain",
@@ -6783,7 +6783,7 @@
           "max_length": 14,
           "needs_translation": false,
           "reverse_text": false,
-          "translation": "Statlige meldinger"
+          "translation": "Statusmeldinger"
         },
         "battery_profile_event": {
           "english": "Battery profile",
@@ -7010,8 +7010,8 @@
           "translation": "Innstill"
         },
         "esc_temperature": {
-          "english": "ESC temperature",
-          "max_length": 15,
+          "english": "ESC temp",
+          "max_length": 8,
           "needs_translation": false,
           "reverse_text": false,
           "translation": "ESC temperatur"
@@ -7136,11 +7136,11 @@
           "translation": "Minnelogger"
         },
         "model_announcement": {
-          "english": "Model announcement",
-          "max_length": 18,
+          "english": "Model callout",
+          "max_length": 13,
           "needs_translation": false,
           "reverse_text": false,
-          "translation": "Modellkunngjøring"
+          "translation": "Modellmelding"
         },
         "name": {
           "english": "Settings",
@@ -7214,30 +7214,35 @@
         },
         "status_alerts": {
           "english": "FC status",
+          "max_length": 9,
           "needs_translation": true,
           "reverse_text": false,
           "translation": "FC status"
         },
         "status_blackbox": {
           "english": "Blackbox full",
+          "max_length": 13,
           "needs_translation": true,
           "reverse_text": false,
           "translation": "Blackbox full"
         },
         "status_gps": {
           "english": "GPS not responding",
+          "max_length": 18,
           "needs_translation": true,
           "reverse_text": false,
           "translation": "GPS not responding"
         },
         "status_gyro": {
           "english": "Gyro overflow",
+          "max_length": 13,
           "needs_translation": true,
           "reverse_text": false,
           "translation": "Gyro overflow"
         },
         "status_saturation": {
           "english": "Control limit",
+          "max_length": 13,
           "needs_translation": true,
           "reverse_text": false,
           "translation": "Control limit"
@@ -7418,11 +7423,11 @@
           "translation": "Lagring"
         },
         "txt_show_battery_profile_connect": {
-          "english": "Show battery profile on connect",
-          "max_length": 31,
+          "english": "Battery profile on connect",
+          "max_length": 26,
           "needs_translation": true,
           "reverse_text": false,
-          "translation": "Show battery profile on connect"
+          "translation": "Battery profile on connect"
         },
         "txt_syncname": {
           "english": "Sync model name",
@@ -7437,6 +7442,41 @@
           "needs_translation": false,
           "reverse_text": false,
           "translation": "Spenning"
+        },
+        "voltage_callout": {
+          "english": "Voltage callout",
+          "max_length": 15,
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "Voltage callout"
+        },
+        "voltage_callout_cell": {
+          "english": "Cell voltage",
+          "max_length": 12,
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "Cell voltage"
+        },
+        "voltage_callout_none": {
+          "english": "Alert only",
+          "max_length": 10,
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "Alert only"
+        },
+        "voltage_callout_pack": {
+          "english": "Pack voltage",
+          "max_length": 12,
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "Pack voltage"
+        },
+        "voltage_hold": {
+          "english": "Hold time",
+          "max_length": 9,
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "Hold time"
         }
       },
       "stats": {
@@ -8835,12 +8875,14 @@
     },
     "sensor_system_config": {
       "english": "System Config",
+      "max_length": 13,
       "needs_translation": true,
       "reverse_text": false,
       "translation": "System Config"
     },
     "sensor_system_status": {
       "english": "System Status",
+      "max_length": 13,
       "needs_translation": true,
       "reverse_text": false,
       "translation": "System Status"
@@ -8936,54 +8978,63 @@
     "dashboard": {
       "alert_acc_uncalibrated": {
         "english": "ACC NOT CALIBRATED",
+        "max_length": 18,
         "needs_translation": true,
         "reverse_text": false,
         "translation": "ACC NOT CALIBRATED"
       },
       "alert_battery_critical": {
         "english": "BATTERY CRITICAL",
+        "max_length": 16,
         "needs_translation": true,
         "reverse_text": false,
         "translation": "BATTERY CRITICAL"
       },
       "alert_blackbox_full": {
         "english": "BLACKBOX FULL",
+        "max_length": 13,
         "needs_translation": true,
         "reverse_text": false,
         "translation": "BLACKBOX FULL"
       },
       "alert_failsafe": {
         "english": "FAILSAFE",
+        "max_length": 8,
         "needs_translation": true,
         "reverse_text": false,
         "translation": "FAILSAFE"
       },
       "alert_governor_fallback": {
         "english": "GOVERNOR FALLBACK",
+        "max_length": 17,
         "needs_translation": true,
         "reverse_text": false,
         "translation": "GOVERNOR FALLBACK"
       },
       "alert_gps_lost": {
         "english": "GPS NOT RESPONDING",
+        "max_length": 18,
         "needs_translation": true,
         "reverse_text": false,
         "translation": "GPS NOT RESPONDING"
       },
       "alert_gyro_overflow": {
         "english": "GYRO OVERFLOW",
+        "max_length": 13,
         "needs_translation": true,
         "reverse_text": false,
         "translation": "GYRO OVERFLOW"
       },
       "alert_override": {
         "english": "TEST OVERRIDE ACTIVE",
+        "max_length": 20,
         "needs_translation": true,
         "reverse_text": false,
         "translation": "TEST OVERRIDE ACTIVE"
       },
       "alert_reboot_required": {
         "english": "REBOOT REQUIRED",
+        "max_length": 15,
         "needs_translation": true,
         "reverse_text": false,
         "translation": "REBOOT REQUIRED"

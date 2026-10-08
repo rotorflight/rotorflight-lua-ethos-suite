@@ -1,16 +1,16 @@
 ---
-title: MSP Experimental
-sidebar_label: MSP Experimental
+title: MSP Exp.
+sidebar_label: MSP Exp.
 sidebar_position: 20
 ---
 
-# MSP Experimental
+# MSP Exp.
 
-Developer -> MSP Experimental.
+Developer -> MSP Exp..
 
 ## Where to find it
 
-*System* → *Tools* → *Developer* → *MSP Experimental*
+*System* → *Tools* → *Developer* → *MSP Exp.*
 
 Greyed out until the flight controller answers. Read-only while the model is armed. Hidden until *System* → *Settings* → *Developer* mode is active.
 
