@@ -816,11 +816,18 @@ local function newVoltageRig(events, source)
   -- 20.4 V over 6 cells is 3.40 V/cell, below the 3.50 V warning threshold;
   -- 22.2 V is 3.70, above it. The first step after connecting only seeds the
   -- module's state, so each scenario steps once at clock 0 before measuring.
-  function rig.step(voltage)
+  function rig.step(voltage, config, newEvents)
+    if newEvents ~= nil then events = newEvents end
+    local batt = {cellCount = 6, vbatWarningCell = 3.5}
+    if config == false then
+      batt = nil
+    elseif type(config) == "table" then
+      batt = config
+    end
     handlers["session.update"]({
       connected = true,
       voltage = voltage,
-      batteryConfig = {cellCount = 6, vbatWarningCell = 3.5},
+      batteryConfig = batt,
     })
     handlers["settings.update"]({events = events})
     audio.wakeup()
@@ -864,6 +871,53 @@ local function voltageChecks()
     rig.setClock(5); rig.step(20.4)   -- 2 >= 2 -> fire
     check("the fresh dip fires once it has held", rig.countLow() == 1,
       "lowvoltage.wav played " .. rig.countLow() .. "x")
+  end
+
+  -- A missing voltage reading or missing battery configuration during a dip clears the hold.
+  do
+    local rig = newVoltageRig({voltage = true, voltage_hold = 2.0, voltage_callout = 0, voltage_repeat_interval = 10})
+    rig.setClock(0); rig.step(20.4)   -- seed
+    rig.setClock(1); rig.step(20.4)   -- hold starts
+    rig.setClock(1.5); rig.step(nil)  -- telemetry dropout (voltage = nil) -> hold cleared
+    check("telemetry dropout during dip does not fire", rig.countLow() == 0)
+    rig.setClock(3.0); rig.step(20.4) -- dip resumes; hold restarts at 3.0 (0 < 2)
+    rig.setClock(4.0); rig.step(20.4) -- 1.0 < 2
+    check("dip after telemetry dropout still waits out the full hold",
+      rig.countLow() == 0, "lowvoltage.wav played " .. rig.countLow() .. "x")
+    rig.setClock(5.0); rig.step(20.4) -- 2.0 >= 2 -> fires
+    check("dip after telemetry dropout fires once hold elapsed",
+      rig.countLow() == 1, "lowvoltage.wav played " .. rig.countLow() .. "x")
+  end
+
+  do
+    local rig = newVoltageRig({voltage = true, voltage_hold = 2.0, voltage_callout = 0, voltage_repeat_interval = 10})
+    rig.setClock(0); rig.step(20.4)   -- seed
+    rig.setClock(1); rig.step(20.4)   -- hold starts
+    rig.setClock(1.5); rig.step(20.4, false) -- missing batteryConfig -> hold cleared
+    check("missing batteryConfig during dip does not fire", rig.countLow() == 0)
+    rig.setClock(3.0); rig.step(20.4) -- dip resumes; hold restarts at 3.0 (0 < 2)
+    rig.setClock(4.0); rig.step(20.4) -- 1.0 < 2
+    check("dip after missing batteryConfig still waits out the full hold",
+      rig.countLow() == 0, "lowvoltage.wav played " .. rig.countLow() .. "x")
+    rig.setClock(5.0); rig.step(20.4) -- 2.0 >= 2 -> fires
+    check("dip after missing batteryConfig fires once hold elapsed",
+      rig.countLow() == 1, "lowvoltage.wav played " .. rig.countLow() .. "x")
+  end
+
+  -- Disabling and re-enabling the alert clears any partial hold.
+  do
+    local rig = newVoltageRig({voltage = true, voltage_hold = 2.0, voltage_callout = 0, voltage_repeat_interval = 10})
+    rig.setClock(0); rig.step(20.4)   -- seed
+    rig.setClock(1); rig.step(20.4)   -- hold starts
+    rig.setClock(1.5); rig.step(20.4, nil, {voltage = false, voltage_hold = 2.0, voltage_callout = 0, voltage_repeat_interval = 10})
+    check("disabled alert does not fire", rig.countLow() == 0)
+    rig.setClock(3.0); rig.step(20.4, nil, {voltage = true, voltage_hold = 2.0, voltage_callout = 0, voltage_repeat_interval = 10}) -- re-enabled, hold restarts at 3.0
+    rig.setClock(4.0); rig.step(20.4) -- 1.0 < 2
+    check("re-enabled alert still waits out full hold",
+      rig.countLow() == 0, "lowvoltage.wav played " .. rig.countLow() .. "x")
+    rig.setClock(5.0); rig.step(20.4) -- 2.0 >= 2 -> fires
+    check("re-enabled alert fires once hold elapsed",
+      rig.countLow() == 1, "lowvoltage.wav played " .. rig.countLow() .. "x")
   end
 
   -- hold = 0 disables the filter and fires on the first low reading.
@@ -913,6 +967,26 @@ local function voltageChecks()
     rig.setClock(11); rig.step(20.4)  -- 10s after the first
     check("a standing low reading repeats after the interval",
       rig.countLow() == 2, "lowvoltage.wav played " .. rig.countLow() .. "x")
+  end
+
+  -- Settings normalization clamps stored voltage_hold to 0..10 and voltage_callout to 0..2.
+  do
+    local savedStore = package.loaded["rfsuite.lib.settings_store"]
+    package.loaded["rfsuite.lib.settings_store"] = nil
+    local store = assert(loadfile("lib/settings_store.lua"))()
+    package.loaded["rfsuite.lib.settings_store"] = savedStore
+
+    local lower = store.audioEvents({events = {voltage_hold = -5, voltage_callout = -2}})
+    check("negative voltage_hold is clamped to 0", lower.voltage_hold == 0,
+      "got " .. tostring(lower.voltage_hold))
+    check("negative voltage_callout is clamped to 0", lower.voltage_callout == 0,
+      "got " .. tostring(lower.voltage_callout))
+
+    local upper = store.audioEvents({events = {voltage_hold = 25, voltage_callout = 99}})
+    check("voltage_hold > 10 is clamped to 10", upper.voltage_hold == 10,
+      "got " .. tostring(upper.voltage_hold))
+    check("voltage_callout > 2 is clamped to 2", upper.voltage_callout == 2,
+      "got " .. tostring(upper.voltage_callout))
   end
 
   -- Can-fail: strip the hold guard and require the sag to fire.

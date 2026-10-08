@@ -337,7 +337,7 @@ fails on.
     ),
     LuaJob(
         id='audio-events-categories',
-        name='Audio events: category coverage and the low-voltage alert',
+        name='Audio events - category coverage and the low-voltage alert',
         step='Check the Audio -> Events pages and the low-voltage alert',
         script='bin/audio_events/verify_audio_events.lua',
         rationale=r'''#2308 split one Settings -> Audio -> Events page into six category pages,

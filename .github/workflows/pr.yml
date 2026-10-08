@@ -441,7 +441,7 @@ jobs:
   # entry or restoring the old page were each run against this harness and each
   # turns it red.
   audio-events-categories:
-    name: Audio events: category coverage and the low-voltage alert
+    name: Audio events - category coverage and the low-voltage alert
     runs-on: ubuntu-latest
 
     steps:

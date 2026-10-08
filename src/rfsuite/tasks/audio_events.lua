@@ -414,14 +414,24 @@ local function speakAdjValue(value, now)
 end
 
 local function announceVoltage(now)
-  if not events.voltage then return end
-  if session.connected ~= true then return end
+  if not events.voltage then
+    lastAlertAt.voltage = nil
+    lowVoltageHoldStart = nil
+    return
+  end
+  if session.connected ~= true then
+    lowVoltageHoldStart = nil
+    return
+  end
 
   local voltage = tonumber(session.voltage)
   local config = session.batteryConfig
   local cellCount = tonumber(config and config.cellCount)
   local warnCell = tonumber(config and config.vbatWarningCell)
-  if voltage == nil or cellCount == nil or cellCount <= 0 or warnCell == nil or warnCell <= 0 then return end
+  if voltage == nil or cellCount == nil or cellCount <= 0 or warnCell == nil or warnCell <= 0 then
+    lowVoltageHoldStart = nil
+    return
+  end
 
   -- Below 1V total is implausible for a connected battery (e.g. running on
   -- USB power alone with no pack attached) -- don't let a near-zero noise
