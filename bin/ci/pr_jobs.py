@@ -337,16 +337,17 @@ fails on.
     ),
     LuaJob(
         id='audio-events-categories',
-        name='Audio events stay reachable after the split into categories',
-        step='Check the Audio -> Events category pages',
+        name='Audio events: category coverage and the low-voltage alert',
+        step='Check the Audio -> Events pages and the low-voltage alert',
         script='bin/audio_events/verify_audio_events.lua',
-        rationale=r'''#2308 split one Settings -> Audio -> Events page into six category
-pages. The risk in that split is not that the build breaks -- it is that a key
-quietly stops having a toggle. Nothing in the build or the package step can see
-a setting that no page offers any more; the pilot finds out in the air, and the
-settings store still holds the key, so nothing reports a mismatch either.
+        rationale=r'''#2308 split one Settings -> Audio -> Events page into six category pages,
+and #2309 added the low-voltage hold filter and the spoken reading. Both fail
+quietly. A key that stops having a toggle loses its setting, and a regression in
+tasks/audio_events.lua either sounds the alarm on a momentary 3D voltage sag or
+stops speaking the voltage -- the pilot finds out in the air, and the settings
+store still holds the keys, so nothing reports a mismatch either.
 
-So the coverage is checked against the store itself: the twenty keys in
+So the coverage is checked against the store itself: the keys in
 lib/settings_store.lua's DEFAULTS.events, read out of that file, against the
 keys each category page actually edits. A key with no page, a key with two, and a
 page editing a key the store never had all go red.
@@ -360,7 +361,15 @@ cannot pass (two of these fields store in different units than they display, so
 reading back through the getter is also what keeps the harness from needing to
 know that).
 
-The instrument guards itself twice. Case 1 counts the add* call sites in the
+The task behaviour is driven against the real tasks/audio_events.lua with the
+bus, the settings store, system audio and os.clock stubbed: a low reading that
+has not held for voltage_hold seconds stays silent, a recovery restarts the
+hold, hold = 0 fires at once, and voltage_callout speaks the pack total, the
+average cell or nothing. A copy of the task with its hold guard stripped is then
+loaded and required to fire on the sag, so the instrument is proven able to go
+red.
+
+The instrument guards itself twice more. Case 1 counts the add* call sites in the
 page sources and fails if its own scanner missed one, so a partial read cannot
 understate coverage. Case 3 watches the snapshot table a page was handed rather
 than the settings store, because save() takes its own deep copy -- a write into a

@@ -54,6 +54,13 @@ local DEFAULTS = {
     governor = true,
     voltage = true,
     voltage_repeat_interval = 10,
+    -- Seconds a low pack reading must hold before the alarm fires, so a
+    -- momentary 3D voltage sag is not called out (issue #2309). 0 disables
+    -- the filter; default 2.0.
+    voltage_hold = 2.0,
+    -- What the low-voltage callout speaks: 0 alert tone only, 1 total pack
+    -- voltage, 2 average cell voltage (issue #2309).
+    voltage_callout = 0,
     pid_profile = true,
     rate_profile = true,
     battery_profile = true,

@@ -17,6 +17,10 @@ local initialized = false
 local adjWavs = nil
 
 local lastAlertAt = {}
+-- When the pack first read below the warning cell voltage in the current
+-- run, for the hold filter in announceVoltage(). nil while the reading is
+-- at or above the threshold (or before a first below-threshold reading).
+local lowVoltageHoldStart = nil
 -- lib/system_alerts.lua, loaded once the FC's system_status or system_config
 -- first arrives (firmware before MSP API 12.10 sends neither).
 local systemAlerts = nil
@@ -424,19 +428,43 @@ local function announceVoltage(now)
   -- reading trigger the low-voltage alarm.
   if voltage < 1 then
     lastAlertAt.voltage = nil
+    lowVoltageHoldStart = nil
     return
   end
 
   local cellVoltage = voltage / cellCount
   if cellVoltage >= warnCell then
     lastAlertAt.voltage = nil
+    lowVoltageHoldStart = nil
     return
   end
+
+  -- Voltage sag: an aggressive 3D maneuver pulls the pack below the warning
+  -- cell voltage for a fraction of a second and it recovers immediately.
+  -- The alarm only fires once the reading has stayed below the threshold for
+  -- events.voltage_hold seconds, so a transient dip is not called out
+  -- (issue #2309). 0 disables the filter and fires on the first low reading.
+  local hold = tonumber(events.voltage_hold)
+  if hold == nil then hold = 2.0 end
+  if not lowVoltageHoldStart then lowVoltageHoldStart = now end
+  if (now - lowVoltageHoldStart) < hold then return end
 
   local repeatInterval = tonumber(events.voltage_repeat_interval) or 10
   if lastAlertAt.voltage and (now - lastAlertAt.voltage) < repeatInterval then return end
   lastAlertAt.voltage = now
   playAlert("lowvoltage.wav")
+
+  -- Speak the reading itself if configured (issue #2309): the pack total at
+  -- one decimal (e.g. "22.4 volts") or the average cell at two (e.g. "3.65
+  -- volts"). playNumber() takes the value scaled to the decimals it is asked
+  -- to speak, so the total is sent as tenths and the cell as hundredths.
+  -- 0 (default) keeps the old alert-only callout.
+  local callout = tonumber(events.voltage_callout) or 0
+  if callout == 1 then
+    playNumber(math.floor((voltage * 10) + 0.5), UNIT_VOLTS, 1)
+  elseif callout == 2 then
+    playNumber(math.floor((cellVoltage * 100) + 0.5), UNIT_VOLTS, 2)
+  end
 end
 
 local function announceEscTemp(now)
@@ -776,6 +804,7 @@ function audio_events.wakeup()
     pendingAdjFunction = false
     resetTimerAudio()
     speakingUntil = 0
+    lowVoltageHoldStart = nil
     for key in pairs(rollingSamples) do rollingSamples[key] = nil end
     for key in pairs(lastAlertAt) do lastAlertAt[key] = nil end
     clearAlertState()
@@ -821,6 +850,7 @@ function audio_events.reset()
   pendingAdjFunction = false
   resetTimerAudio()
   speakingUntil = 0
+  lowVoltageHoldStart = nil
   for key in pairs(rollingSamples) do rollingSamples[key] = nil end
 end
 
