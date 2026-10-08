@@ -162,5 +162,18 @@ This repository:
 - **Boot dialogs:** booting shows a *Select Battery* dialog, then *Battery Profile*, then *Checklist warning*.
   Dismiss each one before any other input. Menu keys are ignored while a dialog is open.
 - **Opening the app:** `SYS`, then `PAGE` to System page 2, then the **Rotorflight** tile. The app's own pages are tile grids with a **BACK** button at the top right.
+- **Another board, or a fresh radio folder:** a model saved by a newer Ethos build
+  will not load on an older one ("Need firmware update"), so for a second board
+  (e.g. `X18S_EU`, the smallest screen at 480x320) mount a new folder under the
+  scratchpad holding only `scripts/rfsuite` copied from the deployed one. It boots
+  through *Select language*, *Storage error, default settings restored* and the
+  *Create model* wizard; finish the wizard, then set the model up, or every app tile
+  shows *Background task not running*:
+  1. Model menu, page 3, **Lua**: turn **Rotorflight [Background]** on.
+  2. Model menu, page 1, **RF system**, **Internal module**: turn **State** on.
+  3. Model menu, page 2, **Telemetry**: discover sensors if the list is empty.
+- **Cached modules:** `app/header.lua` and other shared modules cache themselves in
+  `package.loaded`, so a redeploy is not picked up until the simulator restarts
+  (`quit`, then start it again).
 - **No flight controller needed:** the suite's built-in simulated sensors and MSP responses (`src/rfsuite/sim/sensors/` and the `simulatorResponse` tables in `src/rfsuite/lib/msp_*.lua`) populate pages such as PIDs.
 - **Lua errors** appear in the output of the `log` command, not on screen.

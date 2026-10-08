@@ -118,6 +118,8 @@ _G.string = string
 _G.table = table
 
 _G.system = {getVersion = function() return {simulation = false, radio = {name = "stub"}} end}
+-- app/header.lua loads its nav-button icon masks when the module loads.
+_G.lcd = {loadMask = function(p) return {path = p} end}
 _G.LEFT, _G.CENTERED, _G.RIGHT = 1, 2, 3
 _G.FONT_XS, _G.FONT_S, _G.FONT_M, _G.FONT_L = 6, 7, 8, 9
 _G.EVT_CLOSE = 0x01

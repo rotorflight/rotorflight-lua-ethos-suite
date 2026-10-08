@@ -27,22 +27,18 @@
 -- rebuild doesn't have and isn't something to guess at without a live
 -- render to check it against.
 --
--- Self-caught gap, found live (the same one app/menu_container.lua's
--- tiles had, fixed there first): nav buttons used to build with
--- form.addTextButton(line, rect, text, press) -- deprecated in favor of
--- form.addButton, and with no font/options control at all, so Ethos
--- rendered them at its larger default font instead of the original's own
--- explicit FONT_S. addNavButton() below switches to form.addButton(line,
--- rect, {text=, options=FONT_S, press=}) -- the exact call shape
--- app/menu_container.lua's tile buttons already use successfully, not a
--- new unverified API.
+-- The nav buttons are icon-only: form.addButton(line, rect, {icon=mask,
+-- press=}) with no `text`, which Ethos draws as the mask centered in the
+-- button and recolours for the focused and disabled states the same way it
+-- does a label. Icons instead of the old SAVE/RELOAD/BACK words keep the
+-- buttons narrow, so the title keeps more of the row on a 480x320 radio,
+-- and need no translation. Checked in the simulator on X20 (800x480) and
+-- X18 (480x320): one 32x32 mask set fits both button heights.
 --
--- Button slots are sized to fit their own label text, not "whatever's
+-- Every button slot is sized from the same fixed hint, not "whatever's
 -- left after the title" -- so each button is exactly the same width on
--- every screen regardless of how long that screen's title is. Padded
--- with a few extra spaces on each side so the slot comes out comfortably
--- larger than the bare glyphs (the padding is only a sizing hint passed
--- to getFieldSlots; the button itself still shows the plain label).
+-- every screen regardless of how long that screen's title is. The hint is
+-- only passed to getFieldSlots for sizing; it is never drawn.
 --
 -- The title itself is a `form.addStaticText` overlay on a blank
 -- `form.addLine("")`, not text baked into addLine's own title parameter --
@@ -89,25 +85,15 @@ end
 
 local header = {}
 
--- i18n tags (the "@i18n(KEY)" + "@" syntax, split here so this comment
--- itself doesn't get matched and flagged unresolved by the resolver
--- below) are replaced by a build-time text substitution -- see
--- .vscode/scripts/resolve_i18n_tags.py -- not at Lua runtime, so every
--- occurrence of the same tag string resolves to the same text. Storing
--- each label once and reusing it for both the button's actual text and
--- its sizingHint() width calculation guarantees they can never drift out
--- of sync with each other, even once a translation's word length differs
--- from English's. Wording matches rotorflight-lua-ethos-suite's own nav
--- button labels exactly (all-caps SAVE/RELOAD/BACK, not this rebuild's
--- earlier Save/Reload/Menu).
-local MENU_LABEL = "@i18n(app.navigation_menu)@"
-local SAVE_LABEL = "@i18n(app.navigation_save)@"
-local RELOAD_LABEL = "@i18n(app.navigation_reload)@"
-local TOOL_LABEL = "@i18n(app.navigation_tools)@"
+-- Loaded once per module lifetime (this file self-caches above), so
+-- building a header on every page open costs no mask loads.
+local MENU_ICON = lcd.loadMask("app/gfx/nav/back.png")
+local SAVE_ICON = lcd.loadMask("app/gfx/nav/save.png")
+local RELOAD_ICON = lcd.loadMask("app/gfx/nav/reload.png")
+local TOOL_ICON = lcd.loadMask("app/gfx/nav/tool.png")
 
-local function sizingHint(label)
-  return "   " .. label .. "   "
-end
+-- Width hint for every icon button slot (see the header comment above).
+local SLOT_HINT = "  WWW  "
 
 local function noop() end
 
@@ -169,15 +155,10 @@ local function newBanner()
   return show, update, paint
 end
 
--- See the header comment above: form.addButton() with an explicit
--- options=FONT_S, not the deprecated, font-less form.addTextButton().
--- CENTERED added on top so the label sits centered within the button
--- box rather than at whatever form.addButton's own default alignment
--- is -- flags combine with `+` the same way lcd.drawText's do.
-local function addNavButton(line, rect, label, press)
+-- See the header comment above: an icon-only form.addButton().
+local function addNavButton(line, rect, icon, press)
   return form.addButton(line, rect, {
-    text = label,
-    options = FONT_S + CENTERED,
+    icon = icon,
     press = press,
   })
 end
@@ -216,9 +197,9 @@ function header.build(title, opts)
   local isLeafPage = (opts.onSave ~= nil) or (opts.onReload ~= nil) or (opts.onTool ~= nil)
 
   if not isLeafPage then
-    local slots = form.getFieldSlots(line, {0, sizingHint(MENU_LABEL)})
+    local slots = form.getFieldSlots(line, {0, SLOT_HINT})
     local titleField = form.addStaticText(line, buildTitleRect(slots), title, LEFT)
-    local menuButton = addNavButton(line, slots[2], MENU_LABEL, opts.onBack)
+    local menuButton = addNavButton(line, slots[2], MENU_ICON, opts.onBack)
     return {
       setTitle = function(newTitle) titleField:value(newTitle) end,
       setSaveEnabled = noop,
@@ -233,25 +214,18 @@ function header.build(title, opts)
     }
   end
 
-  -- Tool is deliberately compact, matching the original's own label for
-  -- this button ("*", i18n key app.navigation_tools) -- a single
-  -- character sizes to roughly half the width of a word-length button
-  -- for free, through the same content-fit slot sizing every other
-  -- button uses.
-  local slots = form.getFieldSlots(line, {
-    0, sizingHint(MENU_LABEL), sizingHint(SAVE_LABEL), sizingHint(RELOAD_LABEL), sizingHint(TOOL_LABEL),
-  })
+  local slots = form.getFieldSlots(line, {0, SLOT_HINT, SLOT_HINT, SLOT_HINT, SLOT_HINT})
 
   local titleField = form.addStaticText(line, buildTitleRect(slots), title, LEFT)
-  local menuButton = addNavButton(line, slots[2], MENU_LABEL, opts.onBack)
+  local menuButton = addNavButton(line, slots[2], MENU_ICON, opts.onBack)
 
-  local saveButton = addNavButton(line, slots[3], SAVE_LABEL, opts.onSave or noop)
+  local saveButton = addNavButton(line, slots[3], SAVE_ICON, opts.onSave or noop)
   saveButton:enable(opts.onSave ~= nil)
 
-  local reloadButton = addNavButton(line, slots[4], RELOAD_LABEL, opts.onReload or noop)
+  local reloadButton = addNavButton(line, slots[4], RELOAD_ICON, opts.onReload or noop)
   reloadButton:enable(opts.onReload ~= nil)
 
-  local toolButton = addNavButton(line, slots[5], TOOL_LABEL, opts.onTool or noop)
+  local toolButton = addNavButton(line, slots[5], TOOL_ICON, opts.onTool or noop)
   toolButton:enable(opts.onTool ~= nil)
 
   return {
