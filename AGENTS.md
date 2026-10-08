@@ -121,6 +121,8 @@ Before finishing:
 - Check for hot-path allocations introduced by the change.
 - Confirm close/cleanup path exists for new dialogs, handles, or caches.
 - Run targeted sanity checks for affected module flows.
+- For UI changes, open the affected page in the simulator when the tooling is available
+  (Section 11), and include screenshots with the pull request.
 - If the change is one a pilot can observe, update that page's file under `docs/pages/` in
   the same pull request, or state on a line of its own why it needs none. The rule is
   [.agents/rules/documentation.md](.agents/rules/documentation.md); the `Documentation rule`
@@ -132,3 +134,29 @@ If the repository is already dirty:
 - Do not modify unrelated files.
 - Touch only files needed for the requested task.
 
+## 11) Testing in the Ethos Simulator
+
+Agents can check UI changes in the Ethos WASM simulator. They can boot the radio, see its screen and operate it with touch, keys and the rotary encoder. Use this to confirm that a page, dialog or widget looks and behaves right before calling a pilot-visible change done.
+
+Tooling:
+- **Claude Code:** install the `ethos-simulator` plugin once with
+  `/plugin marketplace add FrSkyRC/ethos-tools` and then
+  `/plugin install ethos-simulator@ethos-tools`.
+  Its `ethos-navigate` skill covers starting the simulator, the screenshot loop and the radio buttons.
+- **Other agents:** run `simulation/run_wasm.js --serve` from a clone of
+  [FrSkyRC/ethos-tools](https://github.com/FrSkyRC/ethos-tools) directly. Its README lists the commands.
+
+This repository:
+- **Simulator build:** board and protocol come from `ethos.board` / `ethos.protocol` in `.vscode/settings.json`.
+  The Ethos VS Code extension caches the `<BOARD>_<PROTOCOL>.js` + `.wasm` pair in its global storage
+  (`<VS Code user dir>/globalStorage/bsongis.ethos/cache`).
+- **Deploy first:** `python .vscode/scripts/deploy.py --lang en --step i18n --step soundpack --step sensors`
+  (the same command as the "Deploy & Launch [SIM]" VS Code task).
+  This writes `src/rfsuite` to `simulators/<BOARD>_<PROTOCOL>@<release>/scripts/rfsuite`.
+- **Mount that folder** (`simulators/<BOARD>_<PROTOCOL>@<release>/`) as the radio's root directory.
+  It is git-ignored, so mounting it directly is fine. Don't run a second simulator on the same folder at the same time, for example the VS Code extension's.
+- **Boot dialogs:** booting shows a *Select Battery* dialog, then *Battery Profile*, then *Checklist warning*.
+  Dismiss each one before any other input. Menu keys are ignored while a dialog is open.
+- **Opening the app:** `SYS`, then `PAGE` to System page 2, then the **Rotorflight** tile. The app's own pages are tile grids with a **BACK** button at the top right.
+- **No flight controller needed:** the suite's built-in simulated sensors and MSP responses (`src/rfsuite/sim/sensors/` and the `simulatorResponse` tables in `src/rfsuite/lib/msp_*.lua`) populate pages such as PIDs.
+- **Lua errors** appear in the output of the `log` command, not on screen.
