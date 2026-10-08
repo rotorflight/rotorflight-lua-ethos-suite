@@ -766,6 +766,8 @@ end
 -- Pinned:
 --   * a pack that has read a voltage and then goes, with a BEC still up,
 --     fires the alert, speaks the BEC voltage and buzzes;
+--   * with none of the loss sounds available, the BEC voltage and the haptic
+--     still fire;
 --   * a model whose pack is not measured at all stays silent, and so does one
 --     with no BEC reading -- the two guards that keep this quiet;
 --   * the alert repeats only after the repeat interval;
@@ -781,7 +783,12 @@ local AUDIO_PATH = SUITE .. "/tasks/audio_events.lua"
 
 -- io.open is answered for the "SCRIPTS:" paths in `scriptFiles` and left to the
 -- real filesystem for everything else (the harness's own readFile() shares it).
+-- The globals the rigs replace are put back once the case is done, so nothing
+-- that runs after it -- today only the summary -- sees a stub.
 local realIoOpen = io.open
+local savedSystem = _G.system
+local savedOsClock = os.clock
+local savedRequire = package.loaded["rfsuite.lib.require"]
 local scriptFiles = {}
 io.open = function(path, mode)
   if type(path) == "string" and path:sub(1, 8) == "SCRIPTS:" then
@@ -851,6 +858,8 @@ local function newMainPowerRig(events, source)
     return n
   end
   function rig.lastPlayed() return played[#played] end
+  -- For the case where a pack carries none of the loss sounds.
+  function rig.noSounds() scriptFiles = {} end
   return rig
 end
 
@@ -872,6 +881,25 @@ local function mainPowerChecks()
       n ~= nil and n.value == 50 and n.unit == "V" and n.decimals == 1,
       n and string.format("%s %s %s", n.value, tostring(n.unit), tostring(n.decimals)))
     check("the alert buzzes", #rig.haptics == 1, #rig.haptics .. " haptic(s)")
+  end
+
+  -- A pack that carries none of the loss sounds still gets the spoken BEC
+  -- voltage and the haptic; only the sound is missing. The voice is the part
+  -- that says how long is left, so it must not depend on a file resolving.
+  do
+    local rig = newMainPowerRig({main_power_lost = true})
+    rig.noSounds()
+    rig.setClock(0); rig.step({connected = true, voltage = 22.2, becVoltage = 5.0})
+    rig.setClock(1); rig.step({connected = true, voltage = 22.2, becVoltage = 5.0})
+    rig.setClock(2); rig.step({connected = true, voltage = 0, becVoltage = 5.0})
+    check("with no loss sound available, no file is played",
+      rig.count(".wav") == 0, rig.count(".wav") .. " file(s) played")
+    local n = rig.spoken[#rig.spoken]
+    check("with no loss sound available, the BEC voltage is still spoken",
+      n ~= nil and n.value == 50 and n.decimals == 1,
+      n and string.format("value=%s decimals=%s", tostring(n.value), tostring(n.decimals)))
+    check("with no loss sound available, the alert still buzzes",
+      #rig.haptics == 1, #rig.haptics .. " haptic(s)")
   end
 
   -- A dedicated mainpower.wav, once a pack carries it, is preferred over the
@@ -965,6 +993,13 @@ end
 out("")
 out("case 7: the main-power alert")
 mainPowerChecks()
+
+-- Put the globals the rigs replaced back, so nothing after this case -- the
+-- summary today, anything added later -- runs against a stub.
+io.open = realIoOpen
+_G.system = savedSystem
+os.clock = savedOsClock
+package.loaded["rfsuite.lib.require"] = savedRequire
 
 out("")
 out(string.rep("-", 60))

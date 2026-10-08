@@ -545,21 +545,23 @@ local function announceMainPowerLost(now)
     if voltage > MAIN_POWER_LOST_VOLTS and mainPowerLostActive then
       mainPowerLostActive = false
       lastAlertAt.main_power = nil
+      -- The voice goes out whether or not a sound file resolves, the same as
+      -- on the way in below.
       local path = firstResolvedSound(MAIN_POWER_OK_SOUNDS)
-      if path then
-        system.playFile(path)
-        playNumber(math.floor((voltage * 10) + 0.5), UNIT_VOLTS, 1)
-      end
+      if path then system.playFile(path) end
+      playNumber(math.floor((voltage * 10) + 0.5), UNIT_VOLTS, 1)
     end
     return
   end
 
   if lastAlertAt.main_power and (now - lastAlertAt.main_power) < MAIN_POWER_REPEAT_SECONDS then return end
+  -- The voice and the haptic go out whether or not a sound file resolves: a
+  -- pack that carries none of the loss sounds would otherwise get no alert at
+  -- all, and the spoken BEC voltage is the part that says how long is left.
   local path = firstResolvedSound(MAIN_POWER_LOST_SOUNDS)
-  if not path then return end
   lastAlertAt.main_power = now
   mainPowerLostActive = true
-  system.playFile(path)
+  if path then system.playFile(path) end
   local bec = tonumber(session.becVoltage)
   if bec then playNumber(math.floor((bec * 10) + 0.5), UNIT_VOLTS, 1) end
   haptic()

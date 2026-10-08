@@ -33,12 +33,13 @@ Always available offline without an active flight controller connection. Read-on
 - A pack reading below 1 V in total is ignored, so a bench run on USB power with no pack
   attached does not sound the low-voltage alarm on noise.
 - *Main power lost* needs two readings to mean anything: the pack voltage and a BEC voltage.
-  It fires only once the pack has read a real voltage in the current connection and then
-  drops to zero while the BEC stays up, so a model whose pack is not measured at all -- or
-  one with no BEC sensor -- stays quiet. It repeats every 10 seconds while the pack is gone,
-  speaks the remaining BEC voltage, and announces once more when the pack comes back. The
-  dedicated *Main power lost* sound is not in the packs yet; without it the alert uses the
-  pack's own *Battery empty* word.
+  It fires only once the pack has read above 1.0 V in the current connection and then falls
+  to 1.0 V or below while the BEC stays up, so a model whose pack is not measured at all --
+  or one with no BEC sensor -- stays quiet. It repeats every 10 seconds while the pack is
+  gone, speaks the remaining BEC voltage, and announces once more when the pack comes back.
+  The dedicated *Main power lost* sound is not in the packs yet; without it the alert uses the
+  pack's own *Battery empty* word, and if no loss sound resolves at all the BEC voltage and
+  the haptic still sound.
 - Each threshold belongs to the toggle above it and is greyed out while that toggle is off, so
   the stored value is never mistaken for an active one.
 
