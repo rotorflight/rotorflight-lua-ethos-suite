@@ -156,32 +156,40 @@ do
     reviveBody:find("mspQueue = requireModule(\"tasks/msp/queue.lua\").new(mspCommon)", 1, true) ~= nil)
   check("the revival rebuilds the scheduler inside its own body",
     reviveBody:find("scheduler = Scheduler.new()", 1, true) ~= nil)
-  check("the revival tells the waiting pages before dropping the queue",
-    reviveBody:find("pcall(mspQueue.clear, mspQueue)", 1, true) ~= nil
-      and orderPin(reviveBody, "pcall(mspQueue.clear, mspQueue)",
-                   "mspQueue = requireModule(\"tasks/msp/queue.lua\").new(mspCommon)"))
+  check("the revival puts the replacement in before clearing the old queue",
+    reviveBody:find("local oldQueue = mspQueue", 1, true) ~= nil
+      and orderPin(reviveBody, "mspQueue = requireModule(\"tasks/msp/queue.lua\").new(mspCommon)",
+                   "pcall(oldQueue.clear, oldQueue)"))
+  check("the clear runs on the old queue, not the replacement",
+    reviveBody:find("pcall(oldQueue.clear, oldQueue)", 1, true) ~= nil)
   check("the revival counts as a recovered tick",
     reviveBody:find("watchdog:beat()", 1, true) ~= nil)
   check("the revival does not re-subscribe the bus handlers",
     reviveBody:find("bus.subscribe", 1, true) == nil)
 end
 
--- Can-fail: the clear-before-replace pin against a copy that drops the queue.
+-- Can-fail: the clear pin against a copy that drops the old queue silently.
 do
-  local dropped = (background:gsub("\n  local cleared, clearErr = pcall%(mspQueue%.clear, mspQueue%)\n", "\n", 1))
+  local dropped = (background:gsub("\n  local cleared, clearErr = pcall%(oldQueue%.clear, oldQueue%)\n", "\n", 1))
   check("the clear of the old queue could be located", dropped ~= background)
   check("without that clear the pin goes red (this check can go red)",
-    dropped:find("pcall(mspQueue.clear, mspQueue)", 1, true) == nil)
+    dropped:find("pcall(oldQueue.clear, oldQueue)", 1, true) == nil)
 end
 
 -- Can-fail: the clock check against a watchdog whose threshold can never open.
 do
+  -- Positive control: with the threshold intact this sequence IS due. Without
+  -- it, a check that reads "not due" passes for any reason at all.
+  local w0 = Watchdog.new(3)
+  w0:start(10)
+  check("the threshold check can go red at all", w0:due(13) == true)
+
   local open = readFile(SUITE .. "/lib/task_watchdog.lua")
   open = (open:gsub("%>= self%.stallSeconds", ">= math.huge", 1))
   check("the threshold replacement could be located", open:find(">= math.huge", 1, true) ~= nil)
   local Broken = loadChunk(open, "task_watchdog_open.lua")()
   local w = Broken.new(3)
-  w:beat(10)
+  w:start(10)
   check("without a threshold the watchdog never opens (this check can go red)",
     w:due(13) == false, "a blown-open threshold has to read as not due")
 end

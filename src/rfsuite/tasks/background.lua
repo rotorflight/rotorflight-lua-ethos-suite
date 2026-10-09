@@ -180,15 +180,20 @@ end
 -- pipeline, and re-subscribing would make every revival a duplicate handler.
 local function revivePipeline(now)
   watchdog:noteRevival()
-  -- Whoever is waiting has to be told: a page whose reply is dropped would
-  -- otherwise wait for it forever.
-  local cleared, clearErr = pcall(mspQueue.clear, mspQueue)
-  if not cleared then
-    print("[bgtask] old queue clear failed: " .. errorText(clearErr))
-  end
+  -- The replacement goes in FIRST: a cleared message's errorHandler may publish
+  -- a new MSP request synchronously, and that request belongs to the queue that
+  -- is still around afterwards -- otherwise it lands in the old one and is
+  -- dropped with it, unanswered and without an error.
+  local oldQueue = mspQueue
   mspQueue = requireModule("tasks/msp/queue.lua").new(mspCommon)
   scheduler = Scheduler.new()
   registerSubtasks()
+  -- Whoever is waiting has to be told: a page whose reply is dropped would
+  -- otherwise wait for it forever.
+  local cleared, clearErr = pcall(oldQueue.clear, oldQueue)
+  if not cleared then
+    print("[bgtask] old queue clear failed: " .. errorText(clearErr))
+  end
   watchdog:beat()
   publishTaskStatus(now)
   print("[bgtask] pipeline rebuilt after a stalled tick (revival " ..

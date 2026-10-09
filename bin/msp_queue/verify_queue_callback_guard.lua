@@ -120,6 +120,7 @@ local function newRig(opts)
   local transport = {maxTxBufferSize = 6, maxRxBufferSize = 6, sent = {}, failSend = false}
   function transport.mspSend(payload)
     if transport.failSend then error("transport exploded") end
+    if transport.failSendObject then error(transport.failSendObject) end
     transport.sent[#transport.sent + 1] = payload
     return true
   end
@@ -291,15 +292,41 @@ do
     not escapes(rig.queue.wakeup, rig.queue) and #m2.replies == 1)
 end
 
--- Can-fail: report() without the guarded conversion has to let that object out.
+-- The same hostile error object, this time from the transport. That is the path
+-- where the conversion decides whether the error leaves Queue:wakeup() at all:
+-- here it arrives as a table, so report("processQueue", hostile) is the line
+-- that has to survive -- Queue:wakeup() calls it outside its own pcall, and the
+-- message in flight is only retired and its TX buffer handed back after it.
+do
+  local hostile = setmetatable({}, {__tostring = function() error("tostring blew up") end})
+  local rig = newRig()
+  rig.transport.failSendObject = hostile
+  local m = newMessage(40)
+  rig.queue:add(m)
+  check("a transport raising an unprintable error does not escape",
+    not escapes(rig.queue.wakeup, rig.queue))
+  check("it is printed with its type", linesMatching("error of type table") == 1,
+    table.concat(lines, " | "))
+  check("the message in flight is retired and the buffer handed back",
+    m.errors[1] == "queue_error" and rig.queue:isProcessed(),
+    "errors: " .. table.concat(m.errors, ","))
+end
+
+-- Can-fail: report() without the guarded conversion has to let that object out
+-- through Queue:wakeup(), which is the reach the guard is there to remove.
 do
   local source = readFile(MSP .. "/queue.lua")
-  local unguarded = source:gsub("errorText%(err%)", "tostring(err)", 1)
-  check("the guarded conversion could be located", unguarded ~= source)
-  local rig = newRig({sim = true, source = unguarded})
-  local hostile = setmetatable({}, {__tostring = function() error("tostring blew up") end})
-  rig.queue:add(newMessage(32, {failReplyObject = hostile}))
-  check("without the guarded conversion the error escapes (this check can go red)",
+  -- The reporting call, not the declaration: rewriting "local function
+  -- errorText(err)" would make the copy fail because report() finds no
+  -- errorText, which is a different failure and proves nothing.
+  local unguarded = source:gsub('failed: " .. errorText%(err%)', 'failed: " .. tostring(err)', 1)
+  check("the guarded conversion could be located",
+    unguarded ~= source and unguarded:find("local function errorText(err)", 1, true) ~= nil)
+  local rig = newRig({source = unguarded})
+  rig.transport.failSendObject = setmetatable({},
+    {__tostring = function() error("tostring blew up") end})
+  rig.queue:add(newMessage(41))
+  check("without the guarded conversion it escapes Queue:wakeup() (this check can go red)",
     escapes(rig.queue.wakeup, rig.queue))
 end
 
