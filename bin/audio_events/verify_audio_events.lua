@@ -1,5 +1,5 @@
 -- Behaviour check for the Settings -> Audio -> Events split (issue #2308) and
--- for the audio events the split's pages switch (#2310, #2311).
+-- for the audio events the split's pages switch (#2310, #2311, #2315).
 --
 -- Run it:
 --     lua5.4 bin/audio_events/verify_audio_events.lua
@@ -35,6 +35,8 @@
 --  10. a link loss while disarmed is announced        -> case 8
 --  11. a link coming back is announced without a loss -> case 8
 --  12. a link loss while armed is not announced       -> case 8
+--  13. a burst of adjustment steps says a value the
+--      model no longer has, or one number per step     -> case 9
 --
 -- A check that cannot fail proves nothing about the behaviour it passes, so
 -- two of the load-bearing ones guard their own instruments:
@@ -1168,6 +1170,146 @@ end
 out("")
 out("case 8: the telemetry link, gated by the armed state")
 telemetryLinkChecks()
+
+-- ── case 9: in-flight adjustments settle before they are spoken (#2315) ────
+--
+-- tasks/audio_events.lua's announceAdjustment() is reached by nothing in the
+-- build or the package step, and the failure is quiet in the direction that
+-- matters: the task used to speak the first step of a burst and drop the ones
+-- that landed while that number was still playing, so a pilot clicking a trim
+-- switch three times heard a value the model no longer had.
+--
+-- The rig is stepped every 0.25 s, the interval tasks/background.lua schedules
+-- this task at, and the adjustment words resolve through playFile()'s en/default
+-- fallback, so each word is one entry under adjfunctions/.
+--
+-- Pinned:
+--   * a burst of steps says one number, and it is the last one;
+--   * nothing is said until the value has stood still for the settle window;
+--   * a function change says the name once, followed by the settled value;
+--   * a step that settles while an announcement is still playing is spoken
+--     afterwards, not dropped;
+--   * adj_v = false keeps a value-only change silent, function 0 says nothing,
+--     and a change still waiting when the link drops is not spoken later.
+--
+-- The last check strips the settle guard from a copy of the task and requires
+-- the burst to be announced from its first step there. If it stops turning red,
+-- the instrument has gone blind.
+
+local function spokenValues(rig)
+  local values = {}
+  for i = 1, #rig.spoken do values[i] = tostring(rig.spoken[i].value) end
+  return table.concat(values, ",")
+end
+
+-- Seeds function 14 ("pitch p gain") at 50 and leaves the clock at 0.25.
+local function newAdjRig(events, source)
+  local rig = newTaskRig(events, source)
+  rig.setClock(0); rig.step({connected = true, adjFunction = 14, adjValue = 50})    -- initialize
+  rig.setClock(0.25); rig.step({connected = true, adjFunction = 14, adjValue = 50}) -- seen
+  return rig
+end
+
+-- Three steps 0.25 s apart, then two ticks of standing still.
+local function adjBurst(rig)
+  rig.setClock(0.50); rig.step({connected = true, adjFunction = 14, adjValue = 51})
+  rig.setClock(0.75); rig.step({connected = true, adjFunction = 14, adjValue = 52})
+  rig.setClock(1.00); rig.step({connected = true, adjFunction = 14, adjValue = 53})
+end
+
+local function adjustmentChecks()
+  do
+    local rig = newAdjRig({adj_v = true})
+    adjBurst(rig)
+    check("nothing is spoken while the value is still moving",
+      #rig.spoken == 0, "spoke " .. spokenValues(rig))
+    rig.setClock(1.25); rig.step({connected = true, adjFunction = 14, adjValue = 53}) -- 0.25 < 0.35
+    check("nothing is spoken before the settle window has passed",
+      #rig.spoken == 0, "spoke " .. spokenValues(rig))
+    rig.setClock(1.50); rig.step({connected = true, adjFunction = 14, adjValue = 53}) -- 0.50 >= 0.35
+    check("a burst of steps says one number, and it is the last one",
+      spokenValues(rig) == "53", "spoke " .. spokenValues(rig))
+    rig.setClock(3.00); rig.step({connected = true, adjFunction = 14, adjValue = 53})
+    check("a settled value is not repeated",
+      spokenValues(rig) == "53", "spoke " .. spokenValues(rig))
+    check("a value-only change does not say the function's name",
+      rig.count("adjfunctions/") == 0, rig.count("adjfunctions/") .. " word(s)")
+  end
+
+  -- The function changes on the first step of the burst.
+  do
+    local rig = newAdjRig({adj_f = true, adj_v = true})
+    rig.setClock(0.50); rig.step({connected = true, adjFunction = 15, adjValue = 30})
+    rig.setClock(0.75); rig.step({connected = true, adjFunction = 15, adjValue = 31})
+    check("a function change is not announced while the value is still moving",
+      rig.count("adjfunctions/") == 0 and #rig.spoken == 0,
+      rig.count("adjfunctions/") .. " word(s), spoke " .. spokenValues(rig))
+    rig.setClock(1.00); rig.step({connected = true, adjFunction = 15, adjValue = 31})
+    rig.setClock(1.25); rig.step({connected = true, adjFunction = 15, adjValue = 31})
+    check("a function change says the three words of its name once",
+      rig.count("adjfunctions/pitch.wav") == 1 and rig.count("adjfunctions/i.wav") == 1
+        and rig.count("adjfunctions/gain.wav") == 1 and rig.count("adjfunctions/") == 3,
+      rig.count("adjfunctions/") .. " word(s)")
+    check("the name is followed by the settled value",
+      spokenValues(rig) == "31", "spoke " .. spokenValues(rig))
+
+    -- Name and number take 3 * 0.45 + 0.6 s from 1.25, so the task is still
+    -- speaking until 3.2. A step that settles inside that has to wait, not go.
+    rig.setClock(1.50); rig.step({connected = true, adjFunction = 15, adjValue = 32})
+    rig.setClock(2.00); rig.step({connected = true, adjFunction = 15, adjValue = 32})
+    rig.setClock(3.00); rig.step({connected = true, adjFunction = 15, adjValue = 32})
+    check("a step that settles during an announcement is held back",
+      spokenValues(rig) == "31", "spoke " .. spokenValues(rig))
+    rig.setClock(3.25); rig.step({connected = true, adjFunction = 15, adjValue = 32})
+    check("and is spoken once the announcement is over",
+      spokenValues(rig) == "31,32", "spoke " .. spokenValues(rig))
+    check("without the name a second time",
+      rig.count("adjfunctions/") == 3, rig.count("adjfunctions/") .. " word(s)")
+  end
+
+  do
+    local rig = newAdjRig({adj_f = true, adj_v = false})
+    adjBurst(rig)
+    rig.setClock(2.00); rig.step({connected = true, adjFunction = 14, adjValue = 53})
+    check("adj_v = false keeps a value-only change silent",
+      #rig.spoken == 0 and rig.count("adjfunctions/") == 0,
+      rig.count("adjfunctions/") .. " word(s), spoke " .. spokenValues(rig))
+  end
+
+  do
+    local rig = newAdjRig({adj_f = true, adj_v = true})
+    rig.setClock(0.50); rig.step({connected = true, adjFunction = 0, adjValue = 0})
+    rig.setClock(1.50); rig.step({connected = true, adjFunction = 0, adjValue = 0})
+    check("function 0 says nothing",
+      #rig.spoken == 0 and rig.count("adjfunctions/") == 0,
+      rig.count("adjfunctions/") .. " word(s), spoke " .. spokenValues(rig))
+  end
+
+  do
+    local rig = newAdjRig({adj_v = true})
+    adjBurst(rig)
+    rig.setClock(1.25); rig.step({connected = false})
+    rig.setClock(1.50); rig.step({connected = true, adjFunction = 14, adjValue = 53}) -- initialize
+    rig.setClock(2.50); rig.step({connected = true, adjFunction = 14, adjValue = 53})
+    check("a change still waiting when the link drops is not spoken later",
+      #rig.spoken == 0, "spoke " .. spokenValues(rig))
+  end
+
+  -- Can-fail: strip the settle guard and require the burst to be announced from
+  -- its first step. If this stops turning red, the checks above prove nothing.
+  local source = readFile(AUDIO_PATH)
+  local stripped = source:gsub(
+    "if %(now %- adjChangedAt%) < ADJ_SETTLE_SECONDS then return end", "", 1)
+  check("the settle guard could be located in announceAdjustment()", stripped ~= source)
+  local rig = newAdjRig({adj_v = true}, stripped)
+  adjBurst(rig)
+  check("without the settle guard the first step of a burst is spoken (this check can go red)",
+    #rig.spoken >= 1 and rig.spoken[1].value == 51, "spoke " .. spokenValues(rig))
+end
+
+out("")
+out("case 9: in-flight adjustments settle before they are spoken")
+adjustmentChecks()
 
 -- Put the globals the rigs replaced back, so nothing after this case -- the
 -- summary today, anything added later -- runs against a stub.

@@ -385,6 +385,15 @@ a brief sag stays silent, recovery restarts the hold, hold = 0 fires at once,
 and the callout speaks the pack total, average cell or nothing. Stripping the
 hold guard must make a brief sag fire.
 
+And the in-flight adjustment announcement (#2315): the task spoke the first step
+of a burst and dropped the ones that landed while that number was still playing,
+so three clicks on a trim switch announced a value the model no longer had. The
+rig is stepped at the task's own 0.25 s interval and pins that a burst says one
+number and that it is the last one, that a function change says its name once
+with the settled value, and that a step settling during an announcement is held
+back rather than dropped. Stripping the settle guard must make the first step of
+the burst speak again.
+
 The instrument guards itself twice. Case 1 counts the add* call sites in the
 page sources and fails if its own scanner missed one, so a partial read cannot
 understate coverage. Case 3 watches the snapshot table a page was handed rather
