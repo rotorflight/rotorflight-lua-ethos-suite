@@ -81,27 +81,30 @@ local Watchdog = loadChunk(readFile(SUITE .. "/lib/task_watchdog.lua"), "task_wa
 
 do
   local w = Watchdog.new(3)
-  check("a task that never completed a tick is not due",
-    w:due(10) == false, "due before any beat")
+  check("a task that has not started a tick is not due",
+    w:due(10) == false, "due before any start")
 
-  w:beat(10)
-  check("a beat holds the watchdog closed", w:due(12.999) == false)
+  w:start(10)
+  check("a started tick holds the watchdog closed", w:due(12.999) == false)
   check("the threshold opens it, and not a moment earlier",
     w:due(12.999) == false and w:due(13) == true)
   check("past the threshold due() stays true", w:due(99) == true)
-  w:beat(100)
-  check("a beat after the threshold closes it again", w:due(101) == false)
+  w:start(20)
+  check("a later tick does not postpone the stall", w:due(21) == true,
+    "the mark must stay where the first tick started")
+  w:beat()
+  check("a beat closes it again", w:due(101) == false)
 
   w:noteRevival()
   w:noteRevival()
   check("every revival is counted", w.revivals == 2, w.revivals)
 
   local short = Watchdog.new(1)
-  short:beat(10)
+  short:start(10)
   check("a second builder value is honoured", short:due(11) == true)
 
   local defaults = Watchdog.new(3)
-  defaults:beat()
+  defaults:start()
   check("os.clock() is the default clock", defaults:due() == false)
 end
 
@@ -114,15 +117,26 @@ local function orderPin(source, first, second)
   return i ~= nil and j ~= nil and i < j
 end
 
+-- One function's own text. Pins that search the whole file match the first
+-- occurrence anywhere, which is how a pin ends up reading a line from another
+-- function and passing for the wrong reason.
+local function functionBody(source, header)
+  local from = assert(source:find(header, 1, true), "header not found: " .. header)
+  local to = assert(source:find("\nend", from, 1, true), "end not found: " .. header)
+  return source:sub(from, to)
+end
+
 do
+  local wakeupBody = functionBody(background, "local function taskWakeup()")
   -- Markers carry the line's own indentation: a bare "scheduler:wakeup()"
   -- also appears in the comment above it, and a pin that matches the comment
   -- passes for the wrong reason.
   check("taskWakeup checks due() before it uses the queue",
-    orderPin(background, "if watchdog:due(now) then revivePipeline(now) end",
+    orderPin(wakeupBody, "if watchdog:due(now) then revivePipeline(now) end",
              "\n  mspQueue:wakeup()\n"))
-  check("the beat comes after the scheduler ran",
-    orderPin(background, "\n  scheduler:wakeup()\n", "\n  watchdog:beat(now)\n"))
+  check("the start comes before the queue, the beat after the scheduler ran",
+    orderPin(wakeupBody, "\n  watchdog:start(now)\n", "\n  mspQueue:wakeup()\n")
+      and orderPin(wakeupBody, "\n  scheduler:wakeup()\n", "\n  watchdog:beat()\n"))
   check("taskInit and the revival register through the one path",
     background:find("local function registerSubtasks()", 1, true) ~= nil
       and background:find("  registerSubtasks()", 1, true) ~= nil
@@ -138,13 +152,26 @@ do
 
   local reviveFrom = background:find("local function revivePipeline(now)", 1, true)
   local reviveTo = background:find("\nend", reviveFrom, 1, true)
-  local reviveBody = background:sub(reviveFrom, reviveTo)
-  check("the revival rebuilds the queue inside its own body",
+  local reviveBody = background:sub(reviveFrom, reviveTo)  check("the revival rebuilds the queue inside its own body",
     reviveBody:find("mspQueue = requireModule(\"tasks/msp/queue.lua\").new(mspCommon)", 1, true) ~= nil)
   check("the revival rebuilds the scheduler inside its own body",
     reviveBody:find("scheduler = Scheduler.new()", 1, true) ~= nil)
+  check("the revival tells the waiting pages before dropping the queue",
+    reviveBody:find("pcall(mspQueue.clear, mspQueue)", 1, true) ~= nil
+      and orderPin(reviveBody, "pcall(mspQueue.clear, mspQueue)",
+                   "mspQueue = requireModule(\"tasks/msp/queue.lua\").new(mspCommon)"))
+  check("the revival counts as a recovered tick",
+    reviveBody:find("watchdog:beat()", 1, true) ~= nil)
   check("the revival does not re-subscribe the bus handlers",
     reviveBody:find("bus.subscribe", 1, true) == nil)
+end
+
+-- Can-fail: the clear-before-replace pin against a copy that drops the queue.
+do
+  local dropped = (background:gsub("\n  local cleared, clearErr = pcall%(mspQueue%.clear, mspQueue%)\n", "\n", 1))
+  check("the clear of the old queue could be located", dropped ~= background)
+  check("without that clear the pin goes red (this check can go red)",
+    dropped:find("pcall(mspQueue.clear, mspQueue)", 1, true) == nil)
 end
 
 -- Can-fail: the clock check against a watchdog whose threshold can never open.

@@ -141,6 +141,14 @@ local function checkTransportChange()
   print("[bgtask] transport changed: " .. tostring(protocol) .. " (module " .. tostring(moduleNumber) .. ")")
 end
 
+-- Printing an error must not be able to raise: an error object with a
+-- __tostring metamethod that raises would turn a report into a second failure.
+local function errorText(err)
+  local ok, text = pcall(tostring, err)
+  if ok and type(text) == "string" then return text end
+  return "<error of type " .. type(err) .. ">"
+end
+
 -- The one registration path, shared by taskInit and by the revival below.
 local function registerSubtasks()
   scheduler:clear()
@@ -172,9 +180,16 @@ end
 -- pipeline, and re-subscribing would make every revival a duplicate handler.
 local function revivePipeline(now)
   watchdog:noteRevival()
+  -- Whoever is waiting has to be told: a page whose reply is dropped would
+  -- otherwise wait for it forever.
+  local cleared, clearErr = pcall(mspQueue.clear, mspQueue)
+  if not cleared then
+    print("[bgtask] old queue clear failed: " .. errorText(clearErr))
+  end
   mspQueue = requireModule("tasks/msp/queue.lua").new(mspCommon)
   scheduler = Scheduler.new()
   registerSubtasks()
+  watchdog:beat()
   publishTaskStatus(now)
   print("[bgtask] pipeline rebuilt after a stalled tick (revival " ..
     watchdog.revivals .. ")")
@@ -224,6 +239,7 @@ end
 local function taskWakeup()
   local now = os.clock()
   if watchdog:due(now) then revivePipeline(now) end
+  watchdog:start(now)
   -- Queue:wakeup() is processQueue() under pcall: an error from a page's reply
   -- callback or from the transport is printed and the message retired, instead
   -- of skipping scheduler:wakeup() below for this tick -- and for every tick, if
@@ -232,7 +248,7 @@ local function taskWakeup()
   mspQueue:wakeup()
   scheduler:wakeup()
   -- Only a tick that got this far ran its whole pipeline.
-  watchdog:beat(now)
+  watchdog:beat()
   logMemoryUsage(now)
   if not lastTaskStatusAt or (now - lastTaskStatusAt) >= TASK_STATUS_INTERVAL then
     publishTaskStatus(now)

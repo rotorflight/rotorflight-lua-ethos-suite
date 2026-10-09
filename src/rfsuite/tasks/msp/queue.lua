@@ -83,6 +83,16 @@ local REPORT_INTERVAL = 1
 local lastReportAt = {}
 local suppressed = {}
 
+-- Lua lets error() carry any value, and converting one can raise: a table with
+-- a __tostring that throws would make the report itself the second failure, and
+-- Queue:wakeup() calls report() outside its pcall. So the conversion is guarded
+-- and falls back to the type.
+local function errorText(err)
+  local ok, text = pcall(tostring, err)
+  if ok and type(text) == "string" then return text end
+  return "<error of type " .. type(err) .. ">"
+end
+
 local function report(site, err)
   local now = os.clock()
   local last = lastReportAt[site]
@@ -93,7 +103,7 @@ local function report(site, err)
   lastReportAt[site] = now
   local held = suppressed[site]
   suppressed[site] = nil
-  print("[msp queue] " .. site .. " failed: " .. tostring(err)
+  print("[msp queue] " .. site .. " failed: " .. errorText(err)
     .. (held and (" (+" .. held .. " suppressed)") or ""))
 end
 

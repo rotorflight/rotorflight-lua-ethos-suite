@@ -140,6 +140,7 @@ local function newMessage(cmd, opts)
   m.processReply = function(_, buf)
     m.replies[#m.replies + 1] = buf
     if opts.failReply then error("page bug: nil index") end
+    if opts.failReplyObject then error(opts.failReplyObject) end
   end
   m.errorHandler = function(reason)
     m.errors[#m.errors + 1] = reason
@@ -267,6 +268,39 @@ do
   check("tasks/background.lua calls Queue:wakeup()", source:find("mspQueue:wakeup()", 1, true) ~= nil)
   check("and no longer calls processQueue() directly",
     source:find("mspQueue:processQueue()", 1, true) == nil)
+end
+
+-- An error object that cannot be converted to text. Lua lets error() carry any
+-- value, and report() runs outside Queue:wakeup()'s pcall, so an unguarded
+-- tostring() here would be a second failure with the same reach.
+do
+  local rig = newRig({sim = true})
+  local hostile = setmetatable({}, {__tostring = function() error("tostring blew up") end})
+  local m1 = newMessage(30, {failReplyObject = hostile})
+  local m2 = newMessage(31)
+  rig.queue:add(m1)
+  rig.queue:add(m2)
+  check("an error object whose __tostring raises does not escape",
+    not escapes(rig.queue.wakeup, rig.queue))
+  check("it is printed with its type instead of its text",
+    linesMatching("error of type table") == 1,
+    table.concat(lines, " | "))
+  check("the page is told through its errorHandler anyway",
+    m1.errors[1] == "callback_error", "errors: " .. table.concat(m1.errors, ","))
+  check("and the next message still goes out",
+    not escapes(rig.queue.wakeup, rig.queue) and #m2.replies == 1)
+end
+
+-- Can-fail: report() without the guarded conversion has to let that object out.
+do
+  local source = readFile(MSP .. "/queue.lua")
+  local unguarded = source:gsub("errorText%(err%)", "tostring(err)", 1)
+  check("the guarded conversion could be located", unguarded ~= source)
+  local rig = newRig({sim = true, source = unguarded})
+  local hostile = setmetatable({}, {__tostring = function() error("tostring blew up") end})
+  rig.queue:add(newMessage(32, {failReplyObject = hostile}))
+  check("without the guarded conversion the error escapes (this check can go red)",
+    escapes(rig.queue.wakeup, rig.queue))
 end
 
 -- Can-fail: each guard stripped from a copy of the queue has to let its error out.
