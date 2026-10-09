@@ -16,9 +16,30 @@ seconds without a touch or key press.
 | --- | --- | --- |
 | Reset | Resets the flight (timers and min/max stats) after a confirmation. | Never. |
 | Erase | Erases the blackbox dataflash after a confirmation. | Not connected. |
-| Battery | Picks the active battery profile. | Not connected, or fewer than two battery profiles are set. |
+| Battery | Opens the battery picker (below) to choose the active battery profile. | Not connected, or fewer than two battery profiles are set. |
 | Info | Opens the info panel (below). | Never. |
 | Setup | Opens the RFSuite system tool. | Ethos is older than 26.1. |
+
+## Battery picker
+
+The picker shows the battery profiles as a grid, one cell per pack, with the
+pack number and its capacity. It is three cells across on a dashboard 400 px
+wide or wider, and two cells across on a narrower one. It opens with the pack
+the FC reports as active already selected.
+
+It opens in two ways:
+
+- from the **Battery** tile on the toolbar;
+- by itself, once each time the radio connects to an FC with more than one
+  battery profile. This follows **Settings > General > Integration > Battery
+  profile on connect**, which is on by default.
+
+To change the active pack, tap its cell, or turn the rotary to it and press
+Enter. The FC receives the change, and the picker closes.
+
+Exit or Return closes the picker and changes nothing, and so does a tap outside
+the grid. Choosing the pack that is already active changes nothing and shows a
+short confirmation.
 
 ## Info panel
 
