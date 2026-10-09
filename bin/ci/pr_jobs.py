@@ -99,6 +99,32 @@ link that stops answering, so the behaviour is pinned here instead.
 '''
     ),
     LuaJob(
+        id='msp-callback-guard',
+        name='A failing MSP callback does not take the queue down',
+        step='Check the MSP queue error isolation',
+        script='bin/msp_queue/verify_queue_callback_guard.lua',
+        rationale=r'''A page's processReply and errorHandler run inside the background task's
+wakeup, and an error that leaves it is not reported to the page -- it leaves the
+task (#2363). The same goes for an error from the transport inside
+processQueue(). Nothing in the build or the package step reaches that, and the
+failure is quiet: one page bug on one reply would stop the audio alerts, the
+telemetry and the flight record.
+
+So the real queue is driven against a transport that can be told to fail and a
+page whose callbacks raise. A raising processReply must not escape, must be
+printed, must reach the page's errorHandler as "callback_error", and must leave
+the next message to be delivered. A raising errorHandler must not escape, and
+clear() must still tell every dropped message. A transport error must leave
+Queue:wakeup() printed, retire the message in flight as "queue_error" and let the
+next one go out, which only works if the TX buffer was handed back. A callback
+that fails on every poll is printed once a second, with the count held back.
+
+Copies of the queue with one guard removed each are loaded and each has to let its
+error escape. If one of those ever stops turning red, the instrument has gone
+blind.
+'''
+    ),
+    LuaJob(
         id='esc-target-selector',
         name='The ESC selector offers only the ESCs that exist',
         step='Check that a single-ESC setup shows no dead ESC rows',

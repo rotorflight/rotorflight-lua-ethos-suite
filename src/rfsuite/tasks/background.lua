@@ -193,7 +193,11 @@ local function taskInit()
 end
 
 local function taskWakeup()
-  mspQueue:processQueue()
+  -- Queue:wakeup() is processQueue() under pcall: an error from a page's reply
+  -- callback or from the transport is printed and the message retired, instead
+  -- of leaving this function (issue #2363). The scheduler guards each subtask
+  -- the same way (tasks/scheduler.lua).
+  mspQueue:wakeup()
   scheduler:wakeup()
   local now = os.clock()
   logMemoryUsage(now)
