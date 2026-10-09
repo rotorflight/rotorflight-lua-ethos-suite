@@ -551,6 +551,16 @@ local function isToolbarItemEnabled(widget, item)
   return true
 end
 
+-- Every overlay (toolbar, info panel, battery picker) dims the dashboard behind
+-- it, so the overlay is the part to look at. The picker uses the same value
+-- (battery_picker.lua DIM_ALPHA).
+local OVERLAY_DIM = lcd.RGB(0, 0, 0, 0.6)
+
+local function dimDashboard(w, h)
+  lcd.color(OVERLAY_DIM)
+  lcd.drawFilledRectangle(0, 0, w, h)
+end
+
 local function drawToolbar(widget, w, h)
   if not widget.toolbarVisible then
     clearToolbarMasks(widget)
@@ -1898,6 +1908,7 @@ local function paint(widget)
     invalidateWidgetGlobal(widget)
     return
   end
+  if widget.toolbarVisible then dimDashboard(w, h) end
   drawToolbar(widget, w, h)
   if widget.batteryPicker then
     -- The picker is modal: nothing is drawn over it. The footer banner would
@@ -1910,6 +1921,7 @@ local function paint(widget)
   -- paint after a reload the two together can pass Ethos's instruction
   -- limit; retry the frame next tick, as paintDashboard() does.
   if widget.infoPanelVisible then
+    dimDashboard(w, h)
     local ok, err = pcall(drawInfoPanel, widget, w, h)
     if not ok then
       if isInstructionBudgetError(err) then

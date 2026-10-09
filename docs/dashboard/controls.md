@@ -10,7 +10,8 @@ Source: `src/rfsuite/widgets/dashboard.lua`.
 
 Open it by sliding up on the dashboard, or with a long press of PAGE. Close it
 by sliding down or pressing the rotary down. It closes by itself after 10
-seconds without a touch or key press.
+seconds without a touch or key press. While it is open the dashboard behind it
+is dimmed.
 
 | Tile | Does | Greyed out when |
 | --- | --- | --- |
@@ -50,8 +51,8 @@ confirmation.
 
 Slide down on the dashboard to open it, or pick **Info** on the toolbar. It
 drops from the top, as tall as its contents need (at most 85% of the
-dashboard), and updates live. Unlike the toolbar it does not time out. It
-closes when you:
+dashboard), and updates live. The dashboard behind it is dimmed. Unlike the
+toolbar it does not time out. It closes when you:
 
 - press Exit, Return or Enter, slide up, or tap anywhere on the dashboard;
 - arm the model. You can open it again while armed.

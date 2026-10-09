@@ -550,6 +550,34 @@ touch(TOUCH_END, 240, 300)
 check("a tap below the panel closes it without a write",
   state.batteryPicker == nil and #requests == requestsBeforeSwipe)
 
+-- Every overlay dims the dashboard behind it: the toolbar and the info panel
+-- too, not only the battery picker (the agreed rule, #2357).
+local function fullScreenDimPainted()
+  rects = {}
+  paintUntilDrawn()
+  for _, r in ipairs(rects) do
+    if r.x == 0 and r.y == 0 and r.w == 480 and r.h == 320
+        and r.color and r.color.alpha == picker.DIM_ALPHA then
+      return true
+    end
+  end
+  return false
+end
+
+key(KEY_EXIT_BREAK)
+check("the picker is closed for the overlay checks", state.batteryPicker == nil)
+key(KEY_PAGE_LONG)
+check("the toolbar is open for the overlay checks", state.toolbarVisible == true)
+check("the toolbar dims the dashboard behind it", fullScreenDimPainted())
+key(KEY_ROTARY_RIGHT)
+key(KEY_ROTARY_RIGHT)
+key(KEY_ROTARY_RIGHT)
+key(KEY_ENTER_BREAK)
+check("choosing Info opens the info panel", state.infoPanelVisible == true)
+check("the info panel dims the dashboard behind it", fullScreenDimPainted())
+key(KEY_EXIT_BREAK)
+check("Exit closes the info panel", state.infoPanelVisible ~= true)
+
 openPickerFromToolbar()
 check("the picker is open before widget close", state.batteryPicker ~= nil)
 descriptor.close(state)
