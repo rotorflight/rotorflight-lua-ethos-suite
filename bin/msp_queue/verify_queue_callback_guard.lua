@@ -241,6 +241,13 @@ do
   check("the next one after a second says how many were held back",
     linesMatching("processReply failed: ") == 2 and linesMatching("(+4 suppressed)") == 1,
     table.concat(lines, " | "))
+  -- Clock jumps backward (e.g. simulator reset / test rig clock jump): must not suppress indefinitely.
+  clock.now = clock.now - 10
+  rig.queue:add(newMessage(21, {failReply = true}))
+  rig.queue:processQueue()
+  check("a backward clock jump prints immediately and resets suppression baseline",
+    linesMatching("processReply failed: ") == 3,
+    linesMatching("processReply failed: ") .. " line(s)")
 end
 
 -- A reply that does not fail.

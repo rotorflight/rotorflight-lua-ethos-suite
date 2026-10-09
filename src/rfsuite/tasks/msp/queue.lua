@@ -86,7 +86,7 @@ local suppressed = {}
 local function report(site, err)
   local now = os.clock()
   local last = lastReportAt[site]
-  if last and (now - last) < REPORT_INTERVAL then
+  if last and (now - last) >= 0 and (now - last) < REPORT_INTERVAL then
     suppressed[site] = (suppressed[site] or 0) + 1
     return
   end
