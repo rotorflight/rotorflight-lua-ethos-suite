@@ -395,6 +395,32 @@ entry, dropping the pack-seen or BEC guard or restoring the old page were each
 run against this harness and each turns it red.
 '''
     ),
+    LuaJob(
+        id='adj-voice-settle',
+        name='In-flight adjustments settle before they are spoken',
+        step='Check the in-flight adjustment announcement',
+        script='bin/adj_voice/verify_adj_voice.lua',
+        rationale=r'''An in-flight adjustment is announced from tasks/audio_events.lua's
+announceAdjustment(). Before #2315 it spoke the first step of a burst and dropped
+every step that landed while that announcement was still playing, so three clicks
+on a trim switch announced a value the model no longer had. Nothing in the build
+or the package step reaches it, and the failure is quiet: the pilot hears a
+plausible number.
+
+The real task is driven one wakeup at a time, every 0.25 s -- the interval
+tasks/background.lua schedules it at -- against a controllable clock. A burst of
+steps has to say one number, and it has to be the last one. Nothing is spoken
+until the value has stood still for the settle window. A function change says the
+name once and then the settled value. A step that settles while an announcement is
+still playing is spoken afterwards, not dropped. adj_v = false keeps a value-only
+change silent, function 0 says nothing, and a change still waiting when the link
+drops is not spoken later.
+
+A copy of the task with the settle guard removed is then loaded, and the first
+step of the burst has to be spoken there. If that ever stops turning red, the
+instrument has gone blind.
+'''
+    ),
     # Registered here because the job was added to pr.yml by hand, so the
     # generator did not know about it and the drift check has been red on master
     # since #2432 landed. Any --write dropped this job from the workflow; the
@@ -1647,6 +1673,45 @@ ELECTRIC keep their real OFF, a state other than 0 is unchanged, a disarmed craf
 still reads DISARMED, and a mode that was never read (the session's error fallback
 sets 0) reads OFF, not PASSTHRU. --self-test swaps the new condition for false and
 requires the None case to go red.
+        id='known-models',
+        name='The radio remembers each controller by name and lists them offline',
+        step='Check the stored craft name and the known-models listing',
+        script='bin/known_models/verify_known_models.lua',
+        rationale=r'''Issue #2323: with no flight controller connected the radio cannot say which
+helicopters it has stored preferences for, because the per-controller store
+(lib/model_preferences.lua, one file per MCU id) carries no name and nothing can
+list the files. Two things had to change, and neither is reachable from a build or
+a package step.
+
+The name is recorded by tasks/session.lua. The UID and the NAME replies are
+independent reads and either may arrive first, so both callbacks call
+recordCraftName() and the second one writes. The harness drives the real
+session.lua through its own handshake and delivers the two replies in both orders;
+a name that has not changed writes nothing, an empty answer never replaces a stored
+name, and a rename is one write.
+
+The name is stored in quotes. lib/ini.lua reads "007", "0x10" and "1e3" back as
+numbers and "true" as a boolean, so a bare `name=007` would not survive a save and
+a load. The first gate writes fifteen names that look like exactly those things (and
+quotes, `=`, `;`, a control character, 40 characters) and requires each to come back
+as written or, where it is cleaned on purpose, as cleaned.
+
+lib/known_models.lua lists the stores through system.listFiles, which the suite
+already uses for its log browser (app/pages/logs.lua). Its shape was measured on the
+Ethos 26.1.3 simulator and the harness's fake card answers in it: an array of names
+that carries ".." and sub-directories, nil for a directory that is not there. The
+fake lists in descending order on purpose, so a listing that leans on the card's
+order is caught. The ".tmp" file a write in flight leaves behind must not be listed.
+The module is loaded where it is called and writes nothing; one of the controls
+snapshots the card before and after.
+
+`modified` is returned as the table os.stat() gives, not as an epoch: on the simulator
+os.time() of a stat table drops the minutes and seconds (13:16:08 came back as
+13:00:00), so an epoch would claim a precision it does not have.
+
+--self-test takes out one piece at a time -- the quoting, each of the two session
+hooks, the id sort, the ".ini" end anchor -- and requires the gate named for it to go
+red. The baseline run is required to be green first.
 '''
     ),
 ]

@@ -97,6 +97,14 @@ local lastLowFuelAnnounced = false
 local lastLowFuelRepeatAt = 0
 local lastLowFuelRepeatCount = 0
 local pendingAdjFunction = false
+-- When the adjustment last moved without having been spoken yet, or nil while
+-- nothing is waiting. See announceAdjustment().
+local adjChangedAt = nil
+-- How long an in-flight adjustment has to stand still before it is spoken
+-- (issue #2315). The flight controller steps a held trim switch every 200 ms
+-- (rotorflight-firmware src/main/fc/rc_adjustments.c, REPEAT_DELAY), so a
+-- window above that is what turns a burst of clicks into one announcement.
+local ADJ_SETTLE_SECONDS = 0.35
 local speakingUntil = 0
 local rollingSamples = {}
 local timerTriggered = false
@@ -824,8 +832,24 @@ local function announceSmartfuel(now)
   lastSmartfuelAnnounced = value
 end
 
+-- An in-flight adjustment: the function's name when it changes, and the value.
+--
+-- Nothing is spoken on the step itself. Every step restarts a settle window,
+-- and the announcement goes out once the value has stood still for
+-- ADJ_SETTLE_SECONDS -- so a burst of clicks on a trim switch says one number,
+-- and it is the one the model ended up with (issue #2315). Speaking each step
+-- as it arrived did the opposite of what the pilot needs: the first step was
+-- spoken, the ones that landed while that number was still playing were
+-- dropped by canSpeak(), and the last of them was the value in the model.
+--
+-- A change that has settled while an earlier announcement is still playing
+-- stays pending rather than being dropped, for the same reason.
 local function announceAdjustment(now)
-  if not (events.adj_f or events.adj_v) then return end
+  if not (events.adj_f or events.adj_v) then
+    pendingAdjFunction = false
+    adjChangedAt = nil
+    return
+  end
   if session.connected ~= true then return end
 
   local adjFunction = tonumber(session.adjFunction)
@@ -841,19 +865,24 @@ local function announceAdjustment(now)
   if functionChanged then pendingAdjFunction = true end
   if pendingAdjFunction and (adjFunction == 0 or not events.adj_f) then pendingAdjFunction = false end
 
-  if pendingAdjFunction and adjFunction ~= 0 and events.adj_f then
-    if canSpeak(now) then
-      if speakAdjFunction(adjFunction, now) then
-        speakAdjValue(adjValue, speakingUntil)
-      end
-      pendingAdjFunction = false
+  if (events.adj_f and functionChanged) or ((events.adj_v or pendingAdjFunction) and valueChanged) then adjChangedAt = now end
+  -- The flight controller reports function 0 while nothing is being adjusted.
+  if adjFunction == 0 then adjChangedAt = nil end
+
+  if not adjChangedAt then return end
+  if (now - adjChangedAt) < ADJ_SETTLE_SECONDS then return end
+  if not canSpeak(now) then return end
+  adjChangedAt = nil
+
+  if pendingAdjFunction then
+    pendingAdjFunction = false
+    if speakAdjFunction(adjFunction, now) then
+      speakAdjValue(adjValue, speakingUntil)
     end
     return
   end
 
-  if valueChanged and adjFunction ~= 0 and events.adj_v and canSpeak(now) then
-    speakAdjValue(adjValue, now)
-  end
+  if events.adj_v then speakAdjValue(adjValue, now) end
 end
 
 local function resetTimerAudio()
@@ -1016,6 +1045,7 @@ function audio_events.wakeup()
     resetFuelAnnouncements()
     adjWavs = nil
     pendingAdjFunction = false
+    adjChangedAt = nil
     resetTimerAudio()
     speakingUntil = 0
     packVoltageSeen = false
@@ -1076,6 +1106,7 @@ function audio_events.reset()
   clearAlertState()
   resetFuelAnnouncements()
   pendingAdjFunction = false
+  adjChangedAt = nil
   resetTimerAudio()
   speakingUntil = 0
   packVoltageSeen = false
