@@ -489,5 +489,28 @@ check("the footer banner does not paint over the open picker", not bannerDrawn()
   "banner drawn while the picker is open")
 key(KEY_EXIT_BREAK)
 
+-- Disconnecting the flight controller closes the open picker so touches and
+-- keys are no longer trapped in a modal picker while offline.
+openPickerFromToolbar()
+check("the picker is open before disconnect", state.batteryPicker ~= nil)
+bus.publish("session.update", {connected = false})
+check("disconnecting the FC closes the open picker", state.batteryPicker == nil)
+
+-- Reconnecting and opening the picker again, then closing the widget resets
+-- the picker cleanly.
+bus.publish("session.update", {
+  connected = true,
+  apiVersionSupported = true,
+  batteryConfig = {profiles = {
+    [0] = {capacity = 3300}, [1] = {capacity = 4000}, [2] = {capacity = 5000},
+    [3] = {capacity = 2200}, [4] = {capacity = 1500}, [5] = {capacity = 6000},
+  }},
+  batteryProfile = 3,
+})
+openPickerFromToolbar()
+check("the picker is open before widget close", state.batteryPicker ~= nil)
+descriptor.close(state)
+check("closing the widget resets the picker", state.batteryPicker == nil)
+
 print(string.format("\n%d checks, %d failed", checks, failures))
 os.exit(failures == 0 and 0 or 1)

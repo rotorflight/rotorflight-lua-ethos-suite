@@ -1624,6 +1624,7 @@ local function update(widget, snapshot)
     -- disconnect) -- otherwise reconnecting the same craft would never
     -- prompt again for the rest of this widget's lifetime.
     widget.batteryDialogShown = false
+    closeBatteryPicker(widget)
   end
 
   widget.flightmodeState = widget.flightmode:update(widget)
@@ -2262,6 +2263,7 @@ local function close(widget)
   widget.batteryDone = false
   widget.batteryError = false
   closeBatteryDialog(widget)
+  closeBatteryPicker(widget)
   clearToolbarMasks(widget)
   setInfoPanelVisible(widget, false)
   clearThemeCache()
