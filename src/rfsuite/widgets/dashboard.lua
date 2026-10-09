@@ -1279,22 +1279,29 @@ local function chooseBatteryProfile(widget)
 
   setToolbarVisible(widget, false)
   setInfoPanelVisible(widget, false)
+  local module = ensureBatteryPicker()
   widget.batteryPicker = {
     items = items,
     selected = selected,
     title = "@i18n(widgets.battery.select_title)@",
     colors = toolbarColors(),
+    dim = lcd.RGB(0, 0, 0, module.DIM_ALPHA),
     layout = nil,
   }
   requestPaint(widget)
   invalidateWidget(widget)
 end
 
+-- The picker is a panel from the top, like the info panel: its height comes
+-- from its grid (at most 85% of the dashboard), and the layout is built for
+-- that height, so the cells are where the panel draws them.
 local function batteryPickerLayout(widget, w, h)
   local picker = widget.batteryPicker
+  local module = ensureBatteryPicker()
+  local panelH = module.panelHeight(w, h, #picker.items)
   local layout = picker.layout
-  if not layout or layout.w ~= w or layout.h ~= h then
-    layout = ensureBatteryPicker().layout(w, h, picker.items)
+  if not layout or layout.w ~= w or layout.h ~= panelH then
+    layout = module.layout(w, panelH, picker.items)
     picker.layout = layout
   end
   return layout
@@ -1302,6 +1309,9 @@ end
 
 local function drawBatteryPicker(widget, w, h)
   local picker = widget.batteryPicker
+  -- Dim the whole dashboard first, so the panel reads as the thing in front.
+  lcd.color(picker.dim)
+  lcd.drawFilledRectangle(0, 0, w, h)
   ensureBatteryPicker().draw(batteryPickerLayout(widget, w, h), picker.title, picker.selected, picker.colors)
 end
 
@@ -1314,18 +1324,34 @@ local function chooseBatteryPickerItem(widget, index)
 end
 
 -- While the picker is open it takes every touch and key: a pack is chosen by
--- tap or by rotary plus Enter, and Exit or Return (or a tap outside the grid)
--- closes it without a change. Nothing else in the dashboard runs under it.
+-- tap or by rotary plus Enter. Exit or Return, a tap outside the panel, or a
+-- swipe up (as for the info panel) closes it without a change. Nothing else in
+-- the dashboard runs under it.
 local function batteryPickerEvent(widget, category, value, x, y)
   local picker = widget.batteryPicker
   if category == EVT_TOUCH then
-    if value == TOUCH_END and x and y then
-      local w, h = lcd.getWindowSize()
-      local index = ensureBatteryPicker().hit(batteryPickerLayout(widget, w, h), x, y)
-      if index then
-        chooseBatteryPickerItem(widget, index)
-      else
+    if value == TOUCH_START and x and y then
+      picker.touchStartY = y
+      picker.swiped = false
+    elseif value == TOUCH_MOVE and y and picker.touchStartY and not picker.swiped then
+      if y - picker.touchStartY <= -GESTURE_MIN_DY then
+        picker.swiped = true
         closeBatteryPicker(widget)
+        -- Swallow the rest of this gesture, so the slide does not open the
+        -- toolbar again.
+        widget.gestureConsumeUntilTouchEnd = true
+        widget.gestureConsumeStartedAt = clock()
+      end
+    elseif value == TOUCH_END then
+      if picker.swiped then return true end
+      if x and y then
+        local w, h = lcd.getWindowSize()
+        local index = ensureBatteryPicker().hit(batteryPickerLayout(widget, w, h), x, y)
+        if index then
+          chooseBatteryPickerItem(widget, index)
+        else
+          closeBatteryPicker(widget)
+        end
       end
     end
     return true

@@ -93,10 +93,16 @@ ROTARY_LEFT, KEY_ROTARY_RIGHT = 40, 41
 -- Every string the stub lcd is asked to draw in the current paint.
 local drawn = {}
 
+-- Every filled rectangle with the colour that was set for it, so the dim
+-- behind the panel can be found and its alpha checked.
+local rects, currentColor = {}, nil
+
 lcd = setmetatable({
-  RGB = function() return 0 end,
-  color = function() end,
-  drawFilledRectangle = function() end,
+  RGB = function(_, _, _, alpha) return {alpha = alpha or 1} end,
+  color = function(c) currentColor = c end,
+  drawFilledRectangle = function(x, y, w, h)
+    rects[#rects + 1] = {x = x, y = y, w = w, h = h, color = currentColor}
+  end,
   drawText = function(_, _, text) drawn[#drawn + 1] = tostring(text) end,
   font = function() end,
   getTextSize = function(text) return #tostring(text) * 7, 14 end,
@@ -333,7 +339,8 @@ local function completeLastWrite()
 end
 
 local function cellCentre(index)
-  local layout = picker.layout(480, 320, state.batteryPicker.items)
+  local items = state.batteryPicker.items
+  local layout = picker.layout(480, picker.panelHeight(480, 320, #items), items)
   local c = layout.cells[index]
   return c.x + c.w / 2, c.y + c.h / 2
 end
@@ -507,6 +514,42 @@ bus.publish("session.update", {
   }},
   batteryProfile = 3,
 })
+-- The picker is a panel from the top, like the info panel, with the dashboard
+-- dimmed behind it. A swipe up closes it, and a tap below the panel closes it.
+openPickerFromToolbar()
+check("the picker is open for the panel checks", state.batteryPicker ~= nil)
+local panelH = picker.panelHeight(480, 320, #state.batteryPicker.items)
+check("the panel is shorter than the screen and at most 85% of it (six packs on 480x320)",
+  panelH < 320 and panelH <= math.floor(320 * 0.85), "panel " .. panelH)
+local panelLayout = picker.layout(480, panelH, state.batteryPicker.items)
+check("the panel's pack cells are at least 44 px in both directions",
+  panelLayout.minTarget >= picker.MIN_TARGET, "smallest cell " .. panelLayout.minTarget)
+
+rects = {}
+paintUntilDrawn()
+local dimmed = false
+for _, r in ipairs(rects) do
+  if r.x == 0 and r.y == 0 and r.w == 480 and r.h == 320
+      and r.color and r.color.alpha == picker.DIM_ALPHA then
+    dimmed = true
+  end
+end
+check("the whole dashboard is dimmed behind the panel", dimmed, "no full-screen dim rectangle")
+
+local requestsBeforeSwipe = #requests
+touch(TOUCH_START, 240, 200)
+touch(TOUCH_MOVE, 240, 150)
+check("a swipe up closes the picker", state.batteryPicker == nil)
+touch(TOUCH_MOVE, 240, 60)
+touch(TOUCH_END, 240, 60)
+check("the rest of the swipe does not reopen the toolbar", state.toolbarVisible ~= true)
+check("the swipe writes no pack", #requests == requestsBeforeSwipe)
+
+openPickerFromToolbar()
+touch(TOUCH_END, 240, 300)
+check("a tap below the panel closes it without a write",
+  state.batteryPicker == nil and #requests == requestsBeforeSwipe)
+
 openPickerFromToolbar()
 check("the picker is open before widget close", state.batteryPicker ~= nil)
 descriptor.close(state)

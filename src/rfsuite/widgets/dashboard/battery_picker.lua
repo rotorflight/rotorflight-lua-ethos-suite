@@ -22,6 +22,8 @@ local GAP = 8
 local PAD = 6
 local NUMBER_NAME_GAP = 4
 local MIN_TITLE_H = 32
+-- Room under the grid for the grab handle and border of the panel.
+local PANEL_FOOT = 12
 
 function M.columnsFor(w)
   if w >= M.WIDE_MIN_WIDTH then return 3 end
@@ -70,7 +72,7 @@ function M.layout(w, h, items)
   local titleH = math.max(MIN_TITLE_H, math.floor(h * 0.14))
   local gridY = titleH + MARGIN
   local gridW = w - 2 * MARGIN
-  local gridH = h - gridY - MARGIN
+  local gridH = h - gridY - MARGIN - PANEL_FOOT
   local cellW = math.floor((gridW - GAP * (cols - 1)) / cols)
   local cellH = rows > 0 and math.floor((gridH - GAP * (rows - 1)) / rows) or 0
 
@@ -122,12 +124,30 @@ function M.step(selected, delta, count)
   return ((selected - 1 + delta) % count) + 1
 end
 
+-- The panel is as tall as its grid needs, at most 85% of the dashboard, the
+-- same rule as the info panel (widgets/dashboard.lua infoPanelHeight()).
+local PANEL_CELL_H = 64
+local PANEL_TITLE_H = MIN_TITLE_H
+M.DIM_ALPHA = 0.6
+
+function M.panelHeight(w, h, count)
+  local cols = M.columnsFor(w)
+  if cols > count then cols = count end
+  if cols < 1 then cols = 1 end
+  local rows = count > 0 and math.ceil(count / cols) or 0
+  local content = PANEL_TITLE_H + MARGIN + rows * PANEL_CELL_H + math.max(rows - 1, 0) * GAP + MARGIN + PANEL_FOOT
+  return math.min(math.floor(h * 0.85), content)
+end
+
 -- colors: the table toolbarColors() returns in widgets/dashboard.lua.
 function M.draw(layout, title, selected, colors)
   local w, h = layout.w, layout.h
 
   lcd.color(colors.surfaceBg)
   lcd.drawFilledRectangle(0, 0, w, h)
+  lcd.color(colors.line)
+  lcd.drawFilledRectangle(0, h - 3, w, 3)
+  lcd.drawFilledRectangle(math.floor(w / 2) - 20, h - 10, 40, 3)
 
   lcd.font(FONT_S)
   local _, titleTextH = lcd.getTextSize(title)

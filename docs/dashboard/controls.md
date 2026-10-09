@@ -27,6 +27,10 @@ pack number and its capacity. It is three cells across on a dashboard 400 px
 wide or wider, and two cells across on a narrower one. It opens with the pack
 the FC reports as active already selected.
 
+It drops down from the top of the dashboard, like the info panel, as tall as
+its grid needs (at most 85% of the dashboard). The rest of the dashboard is
+dimmed behind it, so the panel is the part to look at.
+
 It opens in two ways:
 
 - from the **Battery** tile on the toolbar;
@@ -37,9 +41,10 @@ It opens in two ways:
 To change the active pack, tap its cell, or turn the rotary to it and press
 Enter. The FC receives the change, and the picker closes.
 
-Exit or Return closes the picker and changes nothing, and so does a tap outside
-the grid. Choosing the pack that is already active changes nothing and shows a
-short confirmation.
+Exit or Return closes the picker and changes nothing. So does a tap on the
+dimmed part of the dashboard, or a swipe up, the same as for the info panel.
+Choosing the pack that is already active changes nothing and shows a short
+confirmation.
 
 ## Info panel
 
