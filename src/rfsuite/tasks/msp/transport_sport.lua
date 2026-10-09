@@ -20,6 +20,12 @@ local moduleNumber = ...
 
 local transport = {}
 
+-- Optional Ethos 26.1.3+ instruction budget. Cache the capability once; older
+-- radios keep the existing drain behaviour. Leave headroom for the rest of
+-- the background wakeup; this is a cooperative bound, not preemption.
+local getInstructionsUsage = system and system.getInstructionsUsage
+local DRAIN_INSTRUCTION_LIMIT = 60
+
 local LOCAL_SENSOR_ID = 0x0D
 local SPORT_REMOTE_SENSOR_ID = 0x1B
 local FPORT_REMOTE_SENSOR_ID = 0x00
@@ -50,6 +56,7 @@ function transport.mspPoll()
   if not s then return nil end
 
   while true do
+    if getInstructionsUsage and getInstructionsUsage() >= DRAIN_INSTRUCTION_LIMIT then return nil end
     local frame = s:popFrame()
     if not frame then return nil end
 
