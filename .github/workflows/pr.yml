@@ -1990,6 +1990,18 @@ jobs:
   # requires the None case to go red.
   governor-state:
     name: Stateless governor modes show PASSTHRU, not OFF
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Lua 5.4
+        run: sudo apt-get update && sudo apt-get install -y lua5.4
+
+      - name: Check the governor label in None and Limit modes
+        run: lua5.4 bin/governor_state/verify_governor_state.lua
+
   # Issue #2323: with no flight controller connected the radio cannot say which
   # helicopters it has stored preferences for, because the per-controller store
   # (lib/model_preferences.lua, one file per MCU id) carries no name and nothing can
@@ -2036,8 +2048,6 @@ jobs:
       - name: Install Lua 5.4
         run: sudo apt-get update && sudo apt-get install -y lua5.4
 
-      - name: Check the governor label in None and Limit modes
-        run: lua5.4 bin/governor_state/verify_governor_state.lua
       - name: Check the stored craft name and the known-models listing
         run: lua5.4 bin/known_models/verify_known_models.lua
 

@@ -1726,6 +1726,9 @@ ELECTRIC keep their real OFF, a state other than 0 is unchanged, a disarmed craf
 still reads DISARMED, and a mode that was never read (the session's error fallback
 sets 0) reads OFF, not PASSTHRU. --self-test swaps the new condition for false and
 requires the None case to go red.
+'''
+    ),
+    LuaJob(
         id='known-models',
         name='The radio remembers each controller by name and lists them offline',
         step='Check the stored craft name and the known-models listing',

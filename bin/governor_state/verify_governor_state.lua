@@ -76,7 +76,7 @@ local function loadContext(preFix)
   local text
   if preFix then
     local f = assert(io.open(resolvePath("widgets/dashboard/context.lua"), "r"))
-    text = f:read("a")
+    text = f:read("a"):gsub("\r", "")
     f:close()
     local n
     text, n = text:gsub("local stateless = session and session%.governorModeKnown == true\n%s*and %(session%.governorMode == 0 or session%.governorMode == 1%)",
