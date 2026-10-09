@@ -865,7 +865,7 @@ local function announceAdjustment(now)
   if functionChanged then pendingAdjFunction = true end
   if pendingAdjFunction and (adjFunction == 0 or not events.adj_f) then pendingAdjFunction = false end
 
-  if functionChanged or valueChanged then adjChangedAt = now end
+  if (events.adj_f and functionChanged) or (events.adj_v and valueChanged) then adjChangedAt = now end
   -- The flight controller reports function 0 while nothing is being adjusted.
   if adjFunction == 0 then adjChangedAt = nil end
 

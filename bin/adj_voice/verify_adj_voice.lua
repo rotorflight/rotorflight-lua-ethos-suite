@@ -23,7 +23,8 @@
 --   * a function change says the name once, followed by the settled value;
 --   * a step that settles while an announcement is still playing is spoken
 --     afterwards, not dropped;
---   * adj_v = false keeps a value-only change silent, function 0 says nothing,
+--   * adj_v = false keeps a value-only change silent, adj_f = false keeps a
+--     function change with constant value silent, function 0 says nothing,
 --     and a change still waiting when the link drops is not spoken later.
 --
 -- A check that cannot fail proves nothing, so the last check strips the settle
@@ -220,6 +221,16 @@ do
   adjBurst(rig)
   rig.setClock(2.00); rig.step({connected = true, adjFunction = 14, adjValue = 53})
   check("adj_v = false keeps a value-only change silent",
+    #rig.spoken == 0 and rig.count("adjfunctions/") == 0,
+    rig.count("adjfunctions/") .. " word(s), spoke " .. spokenValues(rig))
+end
+
+do
+  local rig = newAdjRig({adj_f = false, adj_v = true})
+  -- Function changes from 14 to 15, value stays at initial 50.
+  rig.setClock(0.50); rig.step({connected = true, adjFunction = 15, adjValue = 50})
+  rig.setClock(1.50); rig.step({connected = true, adjFunction = 15, adjValue = 50})
+  check("adj_f = false keeps a function change silent when value is unchanged",
     #rig.spoken == 0 and rig.count("adjfunctions/") == 0,
     rig.count("adjfunctions/") .. " word(s), spoke " .. spokenValues(rig))
 end
