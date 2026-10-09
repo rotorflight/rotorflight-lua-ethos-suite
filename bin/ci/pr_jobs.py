@@ -104,11 +104,12 @@ link that stops answering, so the behaviour is pinned here instead.
         step='Check the MSP queue error isolation',
         script='bin/msp_queue/verify_queue_callback_guard.lua',
         rationale=r'''A page's processReply and errorHandler run inside the background task's
-wakeup, and an error that leaves it is not reported to the page -- it leaves the
-task (#2363). The same goes for an error from the transport inside
-processQueue(). Nothing in the build or the package step reaches that, and the
-failure is quiet: one page bug on one reply would stop the audio alerts, the
-telemetry and the flight record.
+wakeup, ahead of the scheduler (#2363). Ethos does not stop a task whose wakeup
+raises -- it logs the error and calls wakeup again -- but the rest of that tick is
+skipped, and an error that repeats skips it on every tick. The same goes for an
+error from the transport inside processQueue(). Nothing in the build or the
+package step reaches that, and the failure is quiet: the audio alerts, the
+session and the flight record go silent with only a log line to say why.
 
 So the real queue is driven against a transport that can be told to fail and a
 page whose callbacks raise. A raising processReply must not escape, must be

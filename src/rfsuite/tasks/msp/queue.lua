@@ -67,9 +67,14 @@ local EMPTY_PAYLOAD = {}
 local isSim = system.getVersion().simulation == true
 
 -- A page's processReply/errorHandler runs inside the background task's
--- wakeup, and an error that leaves it takes the task down with it (issue
--- #2363). So both are called under pcall: the failure is printed, the queue
--- carries on, and the page is told through its errorHandler where there is one.
+-- wakeup (issue #2363). Ethos does not stop a task whose wakeup raises: it logs
+-- the error and calls wakeup again -- measured in the WASM simulator, Ethos
+-- 26.1.3, 1020 errors in a row from taskWakeup() and the task was still being
+-- called; not measured on a radio. What an error does cost is the rest of that
+-- tick, and taskWakeup() runs the scheduler (session, audio events, logging)
+-- after the queue, so one that repeats starves all of it on every tick. So both
+-- are called under pcall: the failure is printed, the queue carries on, and the
+-- page is told through its errorHandler where there is one.
 --
 -- Printed, not swallowed -- and at most once a second per call site, because a
 -- reply that fails will fail again on the next poll of the same page. The

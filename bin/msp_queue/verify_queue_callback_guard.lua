@@ -10,10 +10,13 @@
 --     callback cases deterministic; the transport case needs the real path.
 --
 -- Why a harness at all: a page's processReply/errorHandler runs inside the
--- background task's wakeup, and an error that leaves it is not reported to the
--- page -- it leaves the task. Nothing in the build or the package step reaches
--- that, and the failure is quiet: a page bug on one reply would stop the audio
--- alerts, the telemetry and the flight record with nothing to show for it.
+-- background task's wakeup, ahead of the scheduler. Ethos does not stop a task
+-- whose wakeup raises -- it logs the error and calls wakeup again (measured in
+-- the WASM simulator, not on a radio) -- but the rest of that tick is skipped,
+-- and an error that repeats skips it on every tick. Nothing in the build or the
+-- package step reaches that, and the failure is quiet: the audio alerts, the
+-- session and the flight record go silent with only a log line in Ethos to say
+-- why.
 --
 -- Pinned:
 --   * a processReply that raises does not escape, is printed, tells the page
