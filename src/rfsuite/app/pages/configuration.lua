@@ -200,7 +200,8 @@ local function open(opts)
       local craft = self_.data.craftName
       local name = craft and craft.name
       if name and name ~= "" then
-        bus.publish("craft.name.saved", name)
+        if type(name) ~= "string" then name = tostring(name) end
+        bus.publish("craft.name.saved", name:sub(1, mspName.MAX_NAME_LENGTH))
       end
     end,
   })
@@ -244,7 +245,11 @@ local function open(opts)
       function(value)
         markDirty()
         local craftName = dataRef.data.craftName
-        if craftName then craftName.name = value or "" end
+        if craftName then
+          local name = value or ""
+          if type(name) ~= "string" then name = tostring(name) end
+          craftName.name = name:sub(1, mspName.MAX_NAME_LENGTH)
+        end
       end)
     runtime:registerField("craftName:name", nameField)
 
