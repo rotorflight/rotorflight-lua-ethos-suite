@@ -123,7 +123,33 @@ that fails on every poll is printed once a second, with the count held back.
 Copies of the queue with one guard removed each are loaded and each has to let its
 error escape. If one of those ever stops turning red, the instrument has gone
 blind.
-'''
+''',
+    ),
+    LuaJob(
+        id='queue-watchdog',
+        name='A stalled background tick rebuilds the pipeline',
+        step='Check the watchdog and the pipeline revival',
+        script='bin/queue_watchdog/verify_queue_watchdog.lua',
+        rationale=r'''A reply callback or a subtask can raise on every tick, and when it raises ahead of
+the heartbeat publish the tick never completes. Ethos does not stop the task for
+it (#2363, measured in the WASM simulator): the task is called again and goes on
+failing, silent, with only a log line in Ethos to say why. The per-call guards of
+the msp-callback-guard job keep one failure from skipping the rest of a tick; they
+cannot help when the same failure repeats, because by then there is nothing left
+to skip into.
+
+So the real lib/task_watchdog.lua is driven against a controllable clock: a task
+that never completed a tick is not due, a beat holds it closed until the threshold
+and only the threshold opens it, a beat after that closes it again, and every
+revival is counted. The wiring is pinned by reading tasks/background.lua: the
+stall check has to run before the queue is used, the beat after the scheduler ran,
+and the revival has to rebuild queue and scheduler, register the subtasks through
+the one path taskInit uses, and not re-subscribe the bus handlers -- a duplicate
+handler per revival is worse than the stall. A copy of the watchdog with the
+threshold blown open and a copy of background.lua with the beat moved ahead of the
+scheduler each have to turn the matching pin red; if one of those stops turning
+red, the instrument has gone blind.
+''',
     ),
     LuaJob(
         id='esc-target-selector',

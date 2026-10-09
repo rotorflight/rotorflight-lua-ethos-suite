@@ -33,6 +33,12 @@ requireModule("tasks/tune_history.lua")
 local audioEvents = requireModule("tasks/audio_events.lua")
 local audioSwitches = requireModule("tasks/audio_switches.lua")
 local scheduler = Scheduler.new()
+local taskWatchdog = requireModule("lib/task_watchdog.lua")
+-- The same 3 s the tool waits for a heartbeat (app/tool.lua's
+-- TASK_STATUS_TIMEOUT): the pipeline is rebuilt at the moment the task would
+-- otherwise start being reported as missing.
+local WATCHDOG_STALL_SECONDS = 3
+local watchdog = taskWatchdog.new(WATCHDOG_STALL_SECONDS)
 
 local TASK_STATUS_INTERVAL = 0.5
 local MEMORY_LOG_INTERVAL = 5
@@ -66,6 +72,7 @@ local function publishTaskStatus(now)
     running = true,
     protocol = protocol,
     updatedAt = lastTaskStatusAt,
+    revivals = watchdog.revivals,
   })
 end
 
@@ -134,6 +141,45 @@ local function checkTransportChange()
   print("[bgtask] transport changed: " .. tostring(protocol) .. " (module " .. tostring(moduleNumber) .. ")")
 end
 
+-- The one registration path, shared by taskInit and by the revival below.
+local function registerSubtasks()
+  scheduler:clear()
+  scheduler:add("transport_recheck", TRANSPORT_RECHECK_INTERVAL, checkTransportChange)
+  scheduler:add("session", 0.05, function()
+    session.wakeup(mspQueue, protocol, transport, simSensors)
+  end)
+  scheduler:add("logging", 0.25, function()
+    logging.wakeup(protocol)
+  end)
+  scheduler:add("audio_events", 0.25, function()
+    audioEvents.wakeup()
+  end)
+  scheduler:add("audio_switches", 0.25, function()
+    audioSwitches.wakeup(protocol)
+  end)
+  -- Only ever loadfile'd in taskInit, behind its own simulation check -- see
+  -- tasks/sim_sensors.lua's own header for why it costs nothing otherwise.
+  if simSensors then
+    scheduler:add("sim_sensors", 2, function()
+      simSensors.wakeup()
+    end)
+  end
+end
+
+-- The tick stopped completing while the task is still being called (issue
+-- #2363): the transport is kept, queue and scheduler are rebuilt on top of it.
+-- No bus.subscribe here -- those belong to the task's lifetime, not to the
+-- pipeline, and re-subscribing would make every revival a duplicate handler.
+local function revivePipeline(now)
+  watchdog:noteRevival()
+  mspQueue = requireModule("tasks/msp/queue.lua").new(mspCommon)
+  scheduler = Scheduler.new()
+  registerSubtasks()
+  publishTaskStatus(now)
+  print("[bgtask] pipeline rebuilt after a stalled tick (revival " ..
+    watchdog.revivals .. ")")
+end
+
 local function taskInit()
   transport, protocol, moduleNumber = mspTransportSelect.select()
   mspCommon.setTransport(transport)
@@ -162,37 +208,22 @@ local function taskInit()
     end
     mspQueue:add(message)
   end)
-  scheduler:clear()
   lastMemoryLogAt = nil
   -- A reloaded task (a model switch reloads it) starts a fresh window rather
   -- than reporting a minimum from its previous life. Guarded: on a first boot
   -- that has never logged a line, the probe was never loaded.
   if stackProbe then stackProbe.reset() end
-  scheduler:add("transport_recheck", TRANSPORT_RECHECK_INTERVAL, checkTransportChange)
-  scheduler:add("session", 0.05, function()
-    session.wakeup(mspQueue, protocol, transport, simSensors)
-  end)
-  scheduler:add("logging", 0.25, function()
-    logging.wakeup(protocol)
-  end)
-  scheduler:add("audio_events", 0.25, function()
-    audioEvents.wakeup()
-  end)
-  scheduler:add("audio_switches", 0.25, function()
-    audioSwitches.wakeup(protocol)
-  end)
-
-  -- Only ever loadfile'd/scheduled here, behind this one check -- see
+  -- Only ever loadfile'd here, behind this one check -- see
   -- tasks/sim_sensors.lua's own header for why it costs nothing otherwise.
   if system.getVersion().simulation == true then
     simSensors = simSensors or requireModule("tasks/sim_sensors.lua")
-    scheduler:add("sim_sensors", 2, function()
-      simSensors.wakeup()
-    end)
   end
+  registerSubtasks()
 end
 
 local function taskWakeup()
+  local now = os.clock()
+  if watchdog:due(now) then revivePipeline(now) end
   -- Queue:wakeup() is processQueue() under pcall: an error from a page's reply
   -- callback or from the transport is printed and the message retired, instead
   -- of skipping scheduler:wakeup() below for this tick -- and for every tick, if
@@ -200,7 +231,8 @@ local function taskWakeup()
   -- (tasks/scheduler.lua).
   mspQueue:wakeup()
   scheduler:wakeup()
-  local now = os.clock()
+  -- Only a tick that got this far ran its whole pipeline.
+  watchdog:beat(now)
   logMemoryUsage(now)
   if not lastTaskStatusAt or (now - lastTaskStatusAt) >= TASK_STATUS_INTERVAL then
     publishTaskStatus(now)
