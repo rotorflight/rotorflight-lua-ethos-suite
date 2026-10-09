@@ -1630,6 +1630,48 @@ either word arrives. --self-test reverts each of the four fixes in a copy of the
 source and requires its check to go red.
 '''
     ),
+    LuaJob(
+        id='known-models',
+        name='The radio remembers each controller by name and lists them offline',
+        step='Check the stored craft name and the known-models listing',
+        script='bin/known_models/verify_known_models.lua',
+        rationale=r'''Issue #2323: with no flight controller connected the radio cannot say which
+helicopters it has stored preferences for, because the per-controller store
+(lib/model_preferences.lua, one file per MCU id) carries no name and nothing can
+list the files. Two things had to change, and neither is reachable from a build or
+a package step.
+
+The name is recorded by tasks/session.lua. The UID and the NAME replies are
+independent reads and either may arrive first, so both callbacks call
+recordCraftName() and the second one writes. The harness drives the real
+session.lua through its own handshake and delivers the two replies in both orders;
+a name that has not changed writes nothing, an empty answer never replaces a stored
+name, and a rename is one write.
+
+The name is stored in quotes. lib/ini.lua reads "007", "0x10" and "1e3" back as
+numbers and "true" as a boolean, so a bare `name=007` would not survive a save and
+a load. The first gate writes fifteen names that look like exactly those things (and
+quotes, `=`, `;`, a control character, 40 characters) and requires each to come back
+as written or, where it is cleaned on purpose, as cleaned.
+
+lib/known_models.lua lists the stores through system.listFiles, which the suite
+already uses for its log browser (app/pages/logs.lua). Its shape was measured on the
+Ethos 26.1.3 simulator and the harness's fake card answers in it: an array of names
+that carries ".." and sub-directories, nil for a directory that is not there. The
+fake lists in descending order on purpose, so a listing that leans on the card's
+order is caught. The ".tmp" file a write in flight leaves behind must not be listed.
+The module is loaded where it is called and writes nothing; one of the controls
+snapshots the card before and after.
+
+`modified` is returned as the table os.stat() gives, not as an epoch: on the simulator
+os.time() of a stat table drops the minutes and seconds (13:16:08 came back as
+13:00:00), so an epoch would claim a precision it does not have.
+
+--self-test takes out one piece at a time -- the quoting, each of the two session
+hooks, the id sort, the ".ini" end anchor -- and requires the gate named for it to go
+red. The baseline run is required to be green first.
+'''
+    ),
 ]
 
 VERBATIM_JOBS = [
