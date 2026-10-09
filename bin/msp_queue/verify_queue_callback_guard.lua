@@ -230,6 +230,38 @@ do
     #rig.transport.sent .. " frame(s) sent")
 end
 
+-- A second failure during that recovery: the TX-buffer cleanup. It runs inside
+-- Queue:wakeup()'s recovery path, and without its own pcall a raising cleanup
+-- would leave the message in flight and reach the background task.
+do
+  local rig = newRig({sim = false})
+  local m = newMessage(9)
+  rig.transport.failSend = true
+  rig.queue.common.mspClearTxBuf = function() error("cleanup exploded") end
+  rig.queue:add(m)
+  check("a TX-buffer cleanup error does not escape Queue:wakeup()",
+    not escapes(rig.queue.wakeup, rig.queue))
+  check("it is printed",
+    linesMatching("mspClearTxBuf failed: ") == 1, table.concat(lines, " | "))
+  check("the message in flight is still retired with queue_error",
+    #m.errors == 1 and m.errors[1] == "queue_error" and rig.queue.current == nil,
+    "errors: " .. table.concat(m.errors, ","))
+end
+
+-- Can-fail: the cleanup guard removed has to let that second failure out.
+do
+  local source = readFile(MSP .. "/queue.lua")
+  local unguarded = source:gsub("pcall%(self%.common%.mspClearTxBuf%)",
+    "self.common.mspClearTxBuf()", 1)
+  check("the cleanup guard could be located", unguarded ~= source)
+  local rig = newRig({sim = false, source = unguarded})
+  rig.transport.failSend = true
+  rig.queue.common.mspClearTxBuf = function() error("cleanup exploded") end
+  rig.queue:add(newMessage(10))
+  check("without the cleanup guard the error escapes (this check can go red)",
+    escapes(rig.queue.wakeup, rig.queue))
+end
+
 -- A callback that fails on every poll.
 do
   local rig = newRig({sim = true})
