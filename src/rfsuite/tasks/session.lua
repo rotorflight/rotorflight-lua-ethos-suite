@@ -402,6 +402,7 @@ local function flush()
     becVoltage = session.becVoltage,
     fuelPercent = session.fuelPercent,
     governorMode = session.governorMode,
+    governorModeKnown = session.governorModeKnown,
     governorState = session.governorState,
     flightModeFlags = session.flightModeFlags,
     gpsSats = session.gpsSats,
@@ -815,12 +816,15 @@ local function runHandshake(mspQueue, protocol)
       handshakeInFlight.governorConfig = false
       session.handshake.governorConfig = true
       session.governorMode = data.gov_mode
+      session.governorModeKnown = true
       publish()
     end, function(reason)
       handshakeInFlight.governorConfig = false
       if reason == "cleared" then return end
       session.handshake.governorConfig = true
+      -- The read failed: 0 is the audio fallback (silent), not a known mode.
       session.governorMode = 0
+      session.governorModeKnown = false
       publish()
     end))
     if queued == false then
@@ -933,6 +937,7 @@ local function setConnected(value, mspQueue, protocol)
     session.smartfuelChargeDropPerSecond = nil
     session.fuelPercent = nil
     session.governorMode = nil
+    session.governorModeKnown = nil
     session.governorState = nil
     session.flightModeFlags = nil
     session.gpsSats = nil

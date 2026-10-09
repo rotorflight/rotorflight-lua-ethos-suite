@@ -1630,6 +1630,25 @@ either word arrives. --self-test reverts each of the four fixes in a copy of the
 source and requires its check to go red.
 '''
     ),
+    LuaJob(
+        id='governor-state',
+        name='Stateless governor modes show PASSTHRU, not OFF',
+        step='Check the governor label in None and Limit modes',
+        script='bin/governor_state/verify_governor_state.lua',
+        rationale=r'''Issue #2353: with the FC's governor mode set to None or Limit, the firmware never
+leaves THROTTLE_OFF (governor.c: governorUpdate() has no state change for
+GOV_MODE_NONE, and govUpdateLimitedThrottle() only sets throttleOutput), so the
+dashboard's governor tile read OFF in big letters for a whole flight. The label
+now comes from the mode the FC reported, once it has been read.
+
+The harness drives the real widgets/dashboard/context.lua through
+utils.getGovernorState(): None and Limit with state 0 read PASSTHRU, DIRECT and
+ELECTRIC keep their real OFF, a state other than 0 is unchanged, a disarmed craft
+still reads DISARMED, and a mode that was never read (the session's error fallback
+sets 0) reads OFF, not PASSTHRU. --self-test swaps the new condition for false and
+requires the None case to go red.
+'''
+    ),
 ]
 
 VERBATIM_JOBS = [
