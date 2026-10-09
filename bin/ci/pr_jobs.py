@@ -385,15 +385,6 @@ a brief sag stays silent, recovery restarts the hold, hold = 0 fires at once,
 and the callout speaks the pack total, average cell or nothing. Stripping the
 hold guard must make a brief sag fire.
 
-And the in-flight adjustment announcement (#2315): the task spoke the first step
-of a burst and dropped the ones that landed while that number was still playing,
-so three clicks on a trim switch announced a value the model no longer had. The
-rig is stepped at the task's own 0.25 s interval and pins that a burst says one
-number and that it is the last one, that a function change says its name once
-with the settled value, and that a step settling during an announcement is held
-back rather than dropped. Stripping the settle guard must make the first step of
-the burst speak again.
-
 The instrument guards itself twice. Case 1 counts the add* call sites in the
 page sources and fails if its own scanner missed one, so a partial read cannot
 understate coverage. Case 3 watches the snapshot table a page was handed rather
@@ -402,6 +393,32 @@ released snapshot is invisible from the store and only shows there. Dropping the
 disposed guard, dropping the snapshot release, dropping a field, moving a menu
 entry, dropping the pack-seen or BEC guard or restoring the old page were each
 run against this harness and each turns it red.
+'''
+    ),
+    LuaJob(
+        id='adj-voice-settle',
+        name='In-flight adjustments settle before they are spoken',
+        step='Check the in-flight adjustment announcement',
+        script='bin/adj_voice/verify_adj_voice.lua',
+        rationale=r'''An in-flight adjustment is announced from tasks/audio_events.lua's
+announceAdjustment(). Before #2315 it spoke the first step of a burst and dropped
+every step that landed while that announcement was still playing, so three clicks
+on a trim switch announced a value the model no longer had. Nothing in the build
+or the package step reaches it, and the failure is quiet: the pilot hears a
+plausible number.
+
+The real task is driven one wakeup at a time, every 0.25 s -- the interval
+tasks/background.lua schedules it at -- against a controllable clock. A burst of
+steps has to say one number, and it has to be the last one. Nothing is spoken
+until the value has stood still for the settle window. A function change says the
+name once and then the settled value. A step that settles while an announcement is
+still playing is spoken afterwards, not dropped. adj_v = false keeps a value-only
+change silent, function 0 says nothing, and a change still waiting when the link
+drops is not spoken later.
+
+A copy of the task with the settle guard removed is then loaded, and the first
+step of the burst has to be spoken there. If that ever stops turning red, the
+instrument has gone blind.
 '''
     ),
     # Registered here because the job was added to pr.yml by hand, so the

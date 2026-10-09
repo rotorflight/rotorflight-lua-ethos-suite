@@ -448,15 +448,6 @@ jobs:
   # and the callout speaks the pack total, average cell or nothing. Stripping the
   # hold guard must make a brief sag fire.
   #
-  # And the in-flight adjustment announcement (#2315): the task spoke the first step
-  # of a burst and dropped the ones that landed while that number was still playing,
-  # so three clicks on a trim switch announced a value the model no longer had. The
-  # rig is stepped at the task's own 0.25 s interval and pins that a burst says one
-  # number and that it is the last one, that a function change says its name once
-  # with the settled value, and that a step settling during an announcement is held
-  # back rather than dropped. Stripping the settle guard must make the first step of
-  # the burst speak again.
-  #
   # The instrument guards itself twice. Case 1 counts the add* call sites in the
   # page sources and fails if its own scanner missed one, so a partial read cannot
   # understate coverage. Case 3 watches the snapshot table a page was handed rather
@@ -478,6 +469,39 @@ jobs:
 
       - name: Check the Audio -> Events pages and the audio events
         run: lua5.4 bin/audio_events/verify_audio_events.lua
+
+  # An in-flight adjustment is announced from tasks/audio_events.lua's
+  # announceAdjustment(). Before #2315 it spoke the first step of a burst and dropped
+  # every step that landed while that announcement was still playing, so three clicks
+  # on a trim switch announced a value the model no longer had. Nothing in the build
+  # or the package step reaches it, and the failure is quiet: the pilot hears a
+  # plausible number.
+  #
+  # The real task is driven one wakeup at a time, every 0.25 s -- the interval
+  # tasks/background.lua schedules it at -- against a controllable clock. A burst of
+  # steps has to say one number, and it has to be the last one. Nothing is spoken
+  # until the value has stood still for the settle window. A function change says the
+  # name once and then the settled value. A step that settles while an announcement is
+  # still playing is spoken afterwards, not dropped. adj_v = false keeps a value-only
+  # change silent, function 0 says nothing, and a change still waiting when the link
+  # drops is not spoken later.
+  #
+  # A copy of the task with the settle guard removed is then loaded, and the first
+  # step of the burst has to be spoken there. If that ever stops turning red, the
+  # instrument has gone blind.
+  adj-voice-settle:
+    name: In-flight adjustments settle before they are spoken
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Lua 5.4
+        run: sudo apt-get update && sudo apt-get install -y lua5.4
+
+      - name: Check the in-flight adjustment announcement
+        run: lua5.4 bin/adj_voice/verify_adj_voice.lua
 
   # A page tags its data with the profile it was read for, and the tag used to
   # be taken when the read finished rather than when it started. A pilot who
