@@ -583,5 +583,15 @@ check("the picker is open before widget close", state.batteryPicker ~= nil)
 descriptor.close(state)
 check("closing the widget resets the picker", state.batteryPicker == nil)
 
+-- The panel is capped at 85% of the screen; at 320x240 the cap leaves the
+-- grid short, so the cells must still reach the touch minimum.
+do
+  local items6 = profileItems(6)
+  local panel320 = picker.panelHeight(320, 240, 6)
+  local grid320 = picker.layout(320, panel320, items6)
+  check("six profiles at 320x240 in the capped panel: every cell at least 44 px",
+    grid320.minTarget >= picker.MIN_TARGET, "smallest cell " .. grid320.minTarget)
+end
+
 print(string.format("\n%d checks, %d failed", checks, failures))
 os.exit(failures == 0 and 0 or 1)

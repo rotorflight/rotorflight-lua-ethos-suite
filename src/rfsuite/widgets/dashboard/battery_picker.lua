@@ -18,7 +18,7 @@ M.MIN_TARGET = 44
 M.WIDE_MIN_WIDTH = 400
 
 local MARGIN = 8
-local GAP = 8
+local GAP = 6
 local PAD = 6
 local NUMBER_NAME_GAP = 4
 local MIN_TITLE_H = 32
