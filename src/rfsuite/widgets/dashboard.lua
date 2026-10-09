@@ -1873,7 +1873,11 @@ local function paint(widget)
   end
   drawToolbar(widget, w, h)
   if widget.batteryPicker then
+    -- The picker is modal: nothing is drawn over it. The footer banner would
+    -- cover the bottom row of pack cells (CodeRabbit on #2519), so it waits
+    -- until the picker closes.
     drawBatteryPicker(widget, w, h)
+    return
   end
   -- The panel draws on top of a full theme paint. On a dense theme's first
   -- paint after a reload the two together can pass Ethos's instruction

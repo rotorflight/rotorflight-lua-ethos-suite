@@ -449,5 +449,45 @@ key(KEY_EXIT_BREAK)
 check("the pack choice was never shown as an Ethos dialog", choiceDialogs == 0,
   choiceDialogs .. " choice dialog(s)")
 
+-- The footer banner must not paint over the picker (CodeRabbit on #2519).
+-- paint() draws the footer after the picker unless the picker returns first.
+-- Force the banner's own condition -- no background task status, grace
+-- expired -- and check the banner text: drawn with the picker closed (so the
+-- check can see it), absent with the picker open.
+local BANNER = "@i18n(app.msg_background_task_missing_title)@"
+state.createdAt = os.clock() - 60
+state.taskStatusAt = nil
+
+local function paintUntilDrawn()
+  local ok, err = true, nil
+  for _ = 1, 20 do
+    drawn = {}
+    ok, err = pcall(descriptor.paint, state)
+    if not ok or #drawn > 0 then break end
+    descriptor.wakeup(state)
+  end
+  return ok, err
+end
+
+local function bannerDrawn()
+  for _, text in ipairs(drawn) do
+    if text == BANNER then return true end
+  end
+  return false
+end
+
+local footerPainted, footerErr = paintUntilDrawn()
+check("the footer check paints the dashboard", footerPainted, footerErr)
+check("the footer banner is drawn with the picker closed (the check can see it)",
+  bannerDrawn(), "banner text not drawn")
+
+openPickerFromToolbar()
+check("the picker is open for the footer check", state.batteryPicker ~= nil)
+local pickerPainted, pickerErr = paintUntilDrawn()
+check("painting the picker over the footer condition runs without error", pickerPainted, pickerErr)
+check("the footer banner does not paint over the open picker", not bannerDrawn(),
+  "banner drawn while the picker is open")
+key(KEY_EXIT_BREAK)
+
 print(string.format("\n%d checks, %d failed", checks, failures))
 os.exit(failures == 0 and 0 or 1)
