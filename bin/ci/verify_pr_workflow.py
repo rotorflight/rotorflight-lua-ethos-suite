@@ -56,7 +56,12 @@ on:
 jobs:
 """
 
-CHECKOUT = "      - name: Checkout code\n        uses: actions/checkout@v4\n"
+CHECKOUT = (
+    "      - name: Checkout code\n"
+    "        uses: actions/checkout@v4\n"
+    "        with:\n"
+    "          persist-credentials: false\n"
+)
 INSTALL_LUA = (
     "      - name: Install Lua 5.4\n"
     "        run: sudo apt-get update && sudo apt-get install -y lua5.4\n"
@@ -89,6 +94,8 @@ def render_lua_job(job):
     out.append("  %s:\n" % job.id)
     out.append("    name: %s\n" % job.name)
     out.append("    runs-on: ubuntu-latest\n")
+    # Read-only token: the harness runs PR code, so it gets no write access.
+    out.append("    permissions:\n      contents: read\n")
     out.append("\n")
     out.append("    steps:\n")
     out.append(CHECKOUT)

@@ -13,10 +13,14 @@ jobs:
   flight-record:
     name: Flight record across a link loss
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
       - name: Install Lua 5.4
         run: sudo apt-get update && sudo apt-get install -y lua5.4
@@ -34,10 +38,14 @@ jobs:
   atomic-writes:
     name: Settings survive an interrupted write
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
       - name: Install Lua 5.4
         run: sudo apt-get update && sudo apt-get install -y lua5.4
@@ -51,10 +59,14 @@ jobs:
   esc-guard-retry:
     name: ESC tiles recover from a failed read
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
       - name: Install Lua 5.4
         run: sudo apt-get update && sudo apt-get install -y lua5.4
@@ -70,10 +82,14 @@ jobs:
   msp-queue:
     name: MSP queue after an aborted request
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
       - name: Install Lua 5.4
         run: sudo apt-get update && sudo apt-get install -y lua5.4
@@ -104,10 +120,14 @@ jobs:
   msp-callback-guard:
     name: A failing MSP callback does not take the queue down
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
       - name: Install Lua 5.4
         run: sudo apt-get update && sudo apt-get install -y lua5.4
@@ -137,10 +157,14 @@ jobs:
   queue-watchdog:
     name: A stalled background tick rebuilds the pipeline
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
       - name: Install Lua 5.4
         run: sudo apt-get update && sudo apt-get install -y lua5.4
@@ -194,10 +218,14 @@ jobs:
   esc-target-selector:
     name: The ESC selector offers only the ESCs that exist
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
       - name: Install Lua 5.4
         run: sudo apt-get update && sudo apt-get install -y lua5.4
@@ -220,10 +248,14 @@ jobs:
   log-flush-retry:
     name: Flight log keeps samples it could not write
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
       - name: Install Lua 5.4
         run: sudo apt-get update && sudo apt-get install -y lua5.4
@@ -245,10 +277,14 @@ jobs:
   clock-budgets:
     name: Background task drain budgets
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
       - name: Install Lua 5.4
         run: sudo apt-get update && sudo apt-get install -y lua5.4
@@ -272,10 +308,14 @@ jobs:
   msp-codec-battery:
     name: A short MSP payload is reported, not decoded
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
       - name: Install Lua 5.4
         run: sudo apt-get update && sudo apt-get install -y lua5.4
@@ -286,10 +326,14 @@ jobs:
   tool-ui-lazy:
     name: Tool UI not loaded at boot
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
       - name: Install Lua 5.4
         run: sudo apt-get update && sudo apt-get install -y lua5.4
@@ -305,10 +349,14 @@ jobs:
   tool-ui-no-extra-msp:
     name: Tool adds no MSP requests and accumulates nothing
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
       - name: Install Lua 5.4
         run: sudo apt-get update && sudo apt-get install -y lua5.4
@@ -355,10 +403,14 @@ jobs:
   tool-lifecycle-retention:
     name: Tool open/close retains no Lua memory
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
       - name: Install Lua 5.4
         run: sudo apt-get update && sudo apt-get install -y lua5.4
@@ -373,10 +425,14 @@ jobs:
   field-layout:
     name: Field layout slot pooling and lifecycle
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
       - name: Install Lua 5.4
         run: sudo apt-get update && sudo apt-get install -y lua5.4
@@ -393,10 +449,14 @@ jobs:
   dashboard-image-caches:
     name: Dashboard image cache eviction and theme reload
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
       - name: Install Lua 5.4
         run: sudo apt-get update && sudo apt-get install -y lua5.4
@@ -413,10 +473,14 @@ jobs:
   msp-disconnect-gc:
     name: MSP queue on disconnect and the per-message GC
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
       - name: Install Lua 5.4
         run: sudo apt-get update && sudo apt-get install -y lua5.4
@@ -435,10 +499,14 @@ jobs:
   stack-bounds:
     name: Bus publish is bounded, stack minimum is tracked
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
       - name: Install Lua 5.4
         run: sudo apt-get update && sudo apt-get install -y lua5.4
@@ -459,10 +527,14 @@ jobs:
   dialog-lifecycle:
     name: Dialog teardown when a page is left
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
       - name: Install Lua 5.4
         run: sudo apt-get update && sudo apt-get install -y lua5.4
@@ -526,10 +598,14 @@ jobs:
   audio-events-categories:
     name: Audio events reachable after the split, and what they announce
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
       - name: Install Lua 5.4
         run: sudo apt-get update && sudo apt-get install -y lua5.4
@@ -559,10 +635,14 @@ jobs:
   adj-voice-settle:
     name: In-flight adjustments settle before they are spoken
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
       - name: Install Lua 5.4
         run: sudo apt-get update && sudo apt-get install -y lua5.4
@@ -586,10 +666,14 @@ jobs:
   profile-anchor:
     name: A page's data stays tagged with the profile it came from
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
       - name: Install Lua 5.4
         run: sudo apt-get update && sudo apt-get install -y lua5.4
@@ -607,10 +691,14 @@ jobs:
   tool-focus:
     name: The Tool button hands a page a callable focus function
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
       - name: Install Lua 5.4
         run: sudo apt-get update && sudo apt-get install -y lua5.4
@@ -640,10 +728,14 @@ jobs:
   wakeup-allocations:
     name: Wakeup path allocates nothing per call
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
       - name: Install Lua 5.4
         run: sudo apt-get update && sudo apt-get install -y lua5.4
@@ -677,10 +769,14 @@ jobs:
   gc-pause:
     name: The incremental collector is tuned, and reads no pause it did not set
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
       - name: Install Lua 5.4
         run: sudo apt-get update && sudo apt-get install -y lua5.4
@@ -709,10 +805,14 @@ jobs:
   root-close-key:
     name: The physical Back key closes the suite from every screen
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
       - name: Install Lua 5.4
         run: sudo apt-get update && sudo apt-get install -y lua5.4
@@ -744,10 +844,14 @@ jobs:
   governor-profile-write:
     name: A governor profile is never written from an incomplete table
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
       - name: Install Lua 5.4
         run: sudo apt-get update && sudo apt-get install -y lua5.4
@@ -771,10 +875,14 @@ jobs:
   instruction-budget:
     name: Callbacks stay under the Ethos instruction limit
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
       - name: Install Lua 5.4
         run: sudo apt-get update && sudo apt-get install -y lua5.4
@@ -818,10 +926,14 @@ jobs:
   esc-signature:
     name: An ESC editor never opens on another vendor's ESC
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
       - name: Install Lua 5.4
         run: sudo apt-get update && sudo apt-get install -y lua5.4
@@ -862,10 +974,14 @@ jobs:
   esc-parameters-yge:
     name: YGE timing words and the flags byte
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
       - name: Install Lua 5.4
         run: sudo apt-get update && sudo apt-get install -y lua5.4
@@ -942,10 +1058,14 @@ jobs:
   esc-raw-bytes:
     name: An ESC save rewrites only the row the pilot moved
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
       - name: Install Lua 5.4
         run: sudo apt-get update && sudo apt-get install -y lua5.4
@@ -999,10 +1119,14 @@ jobs:
   esc-parameters-yge-bec12v:
     name: YGE 12 V BEC ceiling and the HV-BEC bit
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
       - name: Install Lua 5.4
         run: sudo apt-get update && sudo apt-get install -y lua5.4
@@ -1051,10 +1175,14 @@ jobs:
   esc-parameters-yge-serial:
     name: YGE ESCs can be told apart by their serial number
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
       - name: Install Lua 5.4
         run: sudo apt-get update && sudo apt-get install -y lua5.4
@@ -1143,10 +1271,14 @@ jobs:
   esc-flyrotor-payload:
     name: FlyRotor writes 56 bytes and refuses a short block
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
       - name: Install Lua 5.4
         run: sudo apt-get update && sudo apt-get install -y lua5.4
@@ -1202,10 +1334,14 @@ jobs:
   bluejay-led-control:
     name: The Bluejay LED row is either reachable or absent
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
       - name: Install Lua 5.4
         run: sudo apt-get update && sudo apt-get install -y lua5.4
@@ -1241,10 +1377,14 @@ jobs:
   bluejay-layout-revs:
     name: The Bluejay layout-revision bounds stay where they belong
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
       - name: Install Lua 5.4
         run: sudo apt-get update && sudo apt-get install -y lua5.4
@@ -1261,10 +1401,14 @@ jobs:
   tune-history:
     name: Tune Advisor history on disarm
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
       - name: Install Lua 5.4
         run: sudo apt-get update && sudo apt-get install -y lua5.4
@@ -1321,10 +1465,14 @@ jobs:
   esc-parameters-scorpion-serial:
     name: Scorpion ESCs can be told apart, and the word labelled FW was not one
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
       - name: Install Lua 5.4
         run: sudo apt-get update && sudo apt-get install -y lua5.4
@@ -1387,10 +1535,14 @@ jobs:
   yge-block-length:
     name: The YGE block is as long as the count the ESC reports
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
       - name: Install Lua 5.4
         run: sudo apt-get update && sudo apt-get install -y lua5.4
@@ -1450,10 +1602,14 @@ jobs:
   esc-hw5-opto:
     name: Hobbywing V5 OPTO layout
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
       - name: Install Lua 5.4
         run: sudo apt-get update && sudo apt-get install -y lua5.4
@@ -1516,10 +1672,14 @@ jobs:
   esc-hw5-startup:
     name: Hobbywing V5 Startup Time byte
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
       - name: Install Lua 5.4
         run: sudo apt-get update && sudo apt-get install -y lua5.4
@@ -1577,10 +1737,14 @@ jobs:
   esc-xdfly-bias:
     name: The biased ESC words never reach 0xFFFF
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
       - name: Install Lua 5.4
         run: sudo apt-get update && sudo apt-get install -y lua5.4
@@ -1649,10 +1813,14 @@ jobs:
   motor-protocol:
     name: Throttle Protocol list follows the flight controller
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
       - name: Install Lua 5.4
         run: sudo apt-get update && sudo apt-get install -y lua5.4
@@ -1703,10 +1871,14 @@ jobs:
   esc-parameters-scorpion-block-length:
     name: The Scorpion block is the length the flight controller asks for
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
       - name: Install Lua 5.4
         run: sudo apt-get update && sudo apt-get install -y lua5.4
@@ -1732,10 +1904,14 @@ jobs:
   esc-summary-full-width:
     name: ESC summary header spans full width without 2-column clipping
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
       - name: Install Lua 5.4
         run: sudo apt-get update && sudo apt-get install -y lua5.4
@@ -1785,10 +1961,14 @@ jobs:
   armed-save-banner:
     name: An armed save is reported without a modal
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
       - name: Install Lua 5.4
         run: sudo apt-get update && sudo apt-get install -y lua5.4
@@ -1824,10 +2004,14 @@ jobs:
   governor-reboot-policy:
     name: Governor saves do not reboot the FC, and a reboot is waited for
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
       - name: Install Lua 5.4
         run: sudo apt-get update && sudo apt-get install -y lua5.4
@@ -1905,10 +2089,14 @@ jobs:
   motor-override-safety:
     name: Motor override is confirmed, kept alive, armed-guarded and released
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
       - name: Install Lua 5.4
         run: sudo apt-get update && sudo apt-get install -y lua5.4
@@ -1938,10 +2126,14 @@ jobs:
   handshake-gate:
     name: Post-connect reads wait for a verified API_VERSION
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
       - name: Install Lua 5.4
         run: sudo apt-get update && sudo apt-get install -y lua5.4
@@ -1965,10 +2157,14 @@ jobs:
   system-status:
     name: Packed FC status sensors decode and alert correctly
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
       - name: Install Lua 5.4
         run: sudo apt-get update && sudo apt-get install -y lua5.4
@@ -1991,10 +2187,14 @@ jobs:
   governor-state:
     name: Stateless governor modes show PASSTHRU, not OFF
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
       - name: Install Lua 5.4
         run: sudo apt-get update && sudo apt-get install -y lua5.4
@@ -2040,10 +2240,14 @@ jobs:
   known-models:
     name: The radio remembers each controller by name and lists them offline
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
       - name: Install Lua 5.4
         run: sudo apt-get update && sudo apt-get install -y lua5.4
