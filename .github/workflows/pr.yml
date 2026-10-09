@@ -81,6 +81,73 @@ jobs:
       - name: Check the MSP queue behaviour
         run: lua5.4 bin/msp_queue/verify_msp_queue.lua
 
+  # A page's processReply and errorHandler run inside the background task's
+  # wakeup, ahead of the scheduler (#2363). Ethos does not stop a task whose wakeup
+  # raises -- it logs the error and calls wakeup again -- but the rest of that tick is
+  # skipped, and an error that repeats skips it on every tick. The same goes for an
+  # error from the transport inside processQueue(). Nothing in the build or the
+  # package step reaches that, and the failure is quiet: the audio alerts, the
+  # session and the flight record go silent with only a log line to say why.
+  #
+  # So the real queue is driven against a transport that can be told to fail and a
+  # page whose callbacks raise. A raising processReply must not escape, must be
+  # printed, must reach the page's errorHandler as "callback_error", and must leave
+  # the next message to be delivered. A raising errorHandler must not escape, and
+  # clear() must still tell every dropped message. A transport error must leave
+  # Queue:wakeup() printed, retire the message in flight as "queue_error" and let the
+  # next one go out, which only works if the TX buffer was handed back. A callback
+  # that fails on every poll is printed once a second, with the count held back.
+  #
+  # Copies of the queue with one guard removed each are loaded and each has to let its
+  # error escape. If one of those ever stops turning red, the instrument has gone
+  # blind.
+  msp-callback-guard:
+    name: A failing MSP callback does not take the queue down
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Lua 5.4
+        run: sudo apt-get update && sudo apt-get install -y lua5.4
+
+      - name: Check the MSP queue error isolation
+        run: lua5.4 bin/msp_queue/verify_queue_callback_guard.lua
+
+  # A reply callback or a subtask can raise on every tick, and when it raises ahead of
+  # the heartbeat publish the tick never completes. Ethos does not stop the task for
+  # it (#2363, measured in the WASM simulator): the task is called again and goes on
+  # failing, silent, with only a log line in Ethos to say why. The per-call guards of
+  # the msp-callback-guard job keep one failure from skipping the rest of a tick; they
+  # cannot help when the same failure repeats, because by then there is nothing left
+  # to skip into.
+  #
+  # So the real lib/task_watchdog.lua is driven against a controllable clock: a task
+  # that never completed a tick is not due, a beat holds it closed until the threshold
+  # and only the threshold opens it, a beat after that closes it again, and every
+  # revival is counted. The wiring is pinned by reading tasks/background.lua: the
+  # stall check has to run before the queue is used, the beat after the scheduler ran,
+  # and the revival has to rebuild queue and scheduler, register the subtasks through
+  # the one path taskInit uses, and not re-subscribe the bus handlers -- a duplicate
+  # handler per revival is worse than the stall. A copy of the watchdog with the
+  # threshold blown open and a copy of background.lua with the beat moved ahead of the
+  # scheduler each have to turn the matching pin red; if one of those stops turning
+  # red, the instrument has gone blind.
+  queue-watchdog:
+    name: A stalled background tick rebuilds the pipeline
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Lua 5.4
+        run: sudo apt-get update && sudo apt-get install -y lua5.4
+
+      - name: Check the watchdog and the pipeline revival
+        run: lua5.4 bin/queue_watchdog/verify_queue_watchdog.lua
+
   # Every 4-way forward-programming page -- AM32, BLHeli_S, Bluejay,
   # FlyRotor, Scorpion, HW5, OMP, XDFly, YGE, ZTW -- opens on
   # app/pages/esc_forward_4way.lua, which asks the FC how many ESCs there are and
@@ -469,6 +536,39 @@ jobs:
 
       - name: Check the Audio -> Events pages and the audio events
         run: lua5.4 bin/audio_events/verify_audio_events.lua
+
+  # An in-flight adjustment is announced from tasks/audio_events.lua's
+  # announceAdjustment(). Before #2315 it spoke the first step of a burst and dropped
+  # every step that landed while that announcement was still playing, so three clicks
+  # on a trim switch announced a value the model no longer had. Nothing in the build
+  # or the package step reaches it, and the failure is quiet: the pilot hears a
+  # plausible number.
+  #
+  # The real task is driven one wakeup at a time, every 0.25 s -- the interval
+  # tasks/background.lua schedules it at -- against a controllable clock. A burst of
+  # steps has to say one number, and it has to be the last one. Nothing is spoken
+  # until the value has stood still for the settle window. A function change says the
+  # name once and then the settled value. A step that settles while an announcement is
+  # still playing is spoken afterwards, not dropped. adj_v = false keeps a value-only
+  # change silent, function 0 says nothing, and a change still waiting when the link
+  # drops is not spoken later.
+  #
+  # A copy of the task with the settle guard removed is then loaded, and the first
+  # step of the burst has to be spoken there. If that ever stops turning red, the
+  # instrument has gone blind.
+  adj-voice-settle:
+    name: In-flight adjustments settle before they are spoken
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Lua 5.4
+        run: sudo apt-get update && sudo apt-get install -y lua5.4
+
+      - name: Check the in-flight adjustment announcement
+        run: lua5.4 bin/adj_voice/verify_adj_voice.lua
 
   # A page tags its data with the profile it was read for, and the tag used to
   # be taken when the read finished rather than when it started. A pilot who
@@ -1903,6 +2003,81 @@ jobs:
 
       - name: Check the Battery tile picker
         run: lua5.4 bin/battery_picker/verify_battery_picker.lua
+
+  # Issue #2353: with the FC's governor mode set to None or Limit, the firmware never
+  # leaves THROTTLE_OFF (governor.c: governorUpdate() has no state change for
+  # GOV_MODE_NONE, and govUpdateLimitedThrottle() only sets throttleOutput), so the
+  # dashboard's governor tile read OFF in big letters for a whole flight. The label
+  # now comes from the mode the FC reported, once it has been read.
+  #
+  # The harness drives the real widgets/dashboard/context.lua through
+  # utils.getGovernorState(): None and Limit with state 0 read PASSTHRU, DIRECT and
+  # ELECTRIC keep their real OFF, a state other than 0 is unchanged, a disarmed craft
+  # still reads DISARMED, and a mode that was never read (the session's error fallback
+  # sets 0) reads OFF, not PASSTHRU. --self-test swaps the new condition for false and
+  # requires the None case to go red.
+  governor-state:
+    name: Stateless governor modes show PASSTHRU, not OFF
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Lua 5.4
+        run: sudo apt-get update && sudo apt-get install -y lua5.4
+
+      - name: Check the governor label in None and Limit modes
+        run: lua5.4 bin/governor_state/verify_governor_state.lua
+
+  # Issue #2323: with no flight controller connected the radio cannot say which
+  # helicopters it has stored preferences for, because the per-controller store
+  # (lib/model_preferences.lua, one file per MCU id) carries no name and nothing can
+  # list the files. Two things had to change, and neither is reachable from a build or
+  # a package step.
+  #
+  # The name is recorded by tasks/session.lua. The UID and the NAME replies are
+  # independent reads and either may arrive first, so both callbacks call
+  # recordCraftName() and the second one writes. The harness drives the real
+  # session.lua through its own handshake and delivers the two replies in both orders;
+  # a name that has not changed writes nothing, an empty answer never replaces a stored
+  # name, and a rename is one write.
+  #
+  # The name is stored in quotes. lib/ini.lua reads "007", "0x10" and "1e3" back as
+  # numbers and "true" as a boolean, so a bare `name=007` would not survive a save and
+  # a load. The first gate writes fifteen names that look like exactly those things (and
+  # quotes, `=`, `;`, a control character, 40 characters) and requires each to come back
+  # as written or, where it is cleaned on purpose, as cleaned.
+  #
+  # lib/known_models.lua lists the stores through system.listFiles, which the suite
+  # already uses for its log browser (app/pages/logs.lua). Its shape was measured on the
+  # Ethos 26.1.3 simulator and the harness's fake card answers in it: an array of names
+  # that carries ".." and sub-directories, nil for a directory that is not there. The
+  # fake lists in descending order on purpose, so a listing that leans on the card's
+  # order is caught. The ".tmp" file a write in flight leaves behind must not be listed.
+  # The module is loaded where it is called and writes nothing; one of the controls
+  # snapshots the card before and after.
+  #
+  # `modified` is returned as the table os.stat() gives, not as an epoch: on the simulator
+  # os.time() of a stat table drops the minutes and seconds (13:16:08 came back as
+  # 13:00:00), so an epoch would claim a precision it does not have.
+  #
+  # --self-test takes out one piece at a time -- the quoting, each of the two session
+  # hooks, the id sort, the ".ini" end anchor -- and requires the gate named for it to go
+  # red. The baseline run is required to be green first.
+  known-models:
+    name: The radio remembers each controller by name and lists them offline
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Lua 5.4
+        run: sudo apt-get update && sudo apt-get install -y lua5.4
+
+      - name: Check the stored craft name and the known-models listing
+        run: lua5.4 bin/known_models/verify_known_models.lua
 
   # Per-language PR builds (mirrors push.yml behavior)
   create-zip:

@@ -2300,7 +2300,17 @@ function context.utils.getGovernorState(value)
     returnvalue = isArmed and "ARMED" or "DISARMED"
   else
     if isArmed == false then value = 101 end
-    returnvalue = GOVERNOR_LABELS[value] or "UNKNOWN"
+    -- Stateless governor modes (firmware gov_mode NONE=0 and LIMIT=1): the
+    -- state machine never leaves THROTTLE_OFF, so 0 there means "no governor
+    -- in the FC", not "off". Only when the mode was actually read (#2353).
+    local session = context.session
+    local stateless = session and session.governorModeKnown == true
+      and (session.governorMode == 0 or session.governorMode == 1)
+    if value == 0 and stateless then
+      returnvalue = "PASSTHRU"
+    else
+      returnvalue = GOVERNOR_LABELS[value] or "UNKNOWN"
+    end
   end
 
   local disableflags = telemetry and telemetry.getSensor and telemetry.getSensor("armdisableflags")
@@ -2556,6 +2566,8 @@ function context.setWidget(widget)
   context.session.bblSize = widget and widget.bblSize
   context.session.bblUsed = widget and widget.bblUsed
   context.session.headspeedVariancePct = widget and widget.headspeedVariancePct
+  context.session.governorMode = widget and widget.governorMode
+  context.session.governorModeKnown = widget and widget.governorModeKnown
   local modelPrefs = context.session.modelPreferences
   modelPrefs.general = modelPrefs.general or {}
   modelPrefs.battery = modelPrefs.battery or {}

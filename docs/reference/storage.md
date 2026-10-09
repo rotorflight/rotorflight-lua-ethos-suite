@@ -9,7 +9,7 @@ radio being switched off mid-save.
 | File | Contents | Written by |
 | --- | --- | --- |
 | `SCRIPTS:/rfsuite.user/settings.ini` | All system-tool settings, including the audio event and timer configuration, the dashboard themes, and the ActiveLook configuration. | `lib/settings_store.lua` |
-| `SCRIPTS:/rfsuite.user/models/<mcuId>.ini` | Per-flight-controller preferences: battery/smart-fuel configuration, and the flight statistics (flight count, total flight time, last flight time). | `lib/model_preferences.lua` |
+| `SCRIPTS:/rfsuite.user/models/<mcuId>.ini` | Per-flight-controller preferences: battery/smart-fuel configuration, the flight statistics (flight count, total flight time, last flight time), and the name the flight controller reported (`[craft] name`). | `lib/model_preferences.lua` |
 | `LOGS:/rfsuite/telemetry/<mcuId>/logs.ini` | The model name shown in the *Logs* page for that flight-controller's folder. | `tasks/logging.lua` |
 | `LOGS:/rfsuite/telemetry/<mcuId>/<timestamp>.csv` | One telemetry CSV per flight, appended to while the flight is in progress. | `tasks/logging.lua` |
 
@@ -18,6 +18,28 @@ radio being switched off mid-save.
 (`ini.load_ini_file()`) skips any line it does not recognise, so a damaged file
 does not raise an error — it loads as whatever survived. That is why a save must
 never leave a partially written file behind in the first place.
+
+### The craft name, and the known-models list
+
+`tasks/session.lua` writes the name the flight controller reports (`MSP_NAME`)
+into `[craft] name` of that controller's file, so the radio can name a model
+with no link up. The UID and the name arrive in separate replies and either may
+come first; whichever comes second writes. A name that has not changed writes
+nothing, and an empty answer never replaces a stored name. Saving a new craft
+name on the Configuration page updates the store and session immediately via
+`craft.name.saved`.
+
+The name is stored inside double quotes (`name="007"`). The INI reader turns a
+bare `007`, `0x10` or `1e3` into a number and `true` into a boolean, so a name
+written without quotes would not survive a save and a load. A store written
+before the name existed has no `[craft]` section and lists with no name.
+
+`lib/known_models.lua` lists the stores on the card with no link:
+`requireModule("lib/known_models.lua").list()` returns one record per file in
+`models/`, sorted by id: `id`, `name` (nil if none is recorded), `path`, and
+`modified`, the table `os.stat()` reports for the file. It writes nothing. It
+reads every store, so call it from a tool page, not from a widget or a wakeup,
+and load it where it is called -- nothing loads it at boot.
 
 The `rfsuite.user` folder is the suite's own folder on the SD card. Deleting it
 resets RFSuite to defaults; nothing outside it is touched.

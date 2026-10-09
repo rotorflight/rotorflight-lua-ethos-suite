@@ -402,6 +402,7 @@ local function flush()
     becVoltage = session.becVoltage,
     fuelPercent = session.fuelPercent,
     governorMode = session.governorMode,
+    governorModeKnown = session.governorModeKnown,
     governorState = session.governorState,
     flightModeFlags = session.flightModeFlags,
     gpsSats = session.gpsSats,
@@ -461,6 +462,19 @@ local function loadModelPreferences()
   updateModelSnapshots()
   publish()
   return true
+end
+
+-- Keep what the FC calls itself next to its preferences (lib/known_models.lua lists it with
+-- no link up). The UID and the name arrive in separate replies, in either order, so both
+-- callbacks come here and the second one finds both halves; a name that has not changed
+-- writes nothing.
+local function recordCraftName()
+  if not (session.modelPreferences and session.modelPreferencesFile and session.craftName) then return end
+  local prefs, changed = modelPreferences.setCraftName(session.modelPreferences, session.craftName)
+  if changed then
+    session.modelPreferences = prefs
+    saveModelPreferences()
+  end
 end
 
 local function scheduleStatsSync(delay)
@@ -711,6 +725,7 @@ local function runHandshake(mspQueue, protocol)
       session.handshake.mcuId = true
       session.mcuId = mcuId
       loadModelPreferences()
+      recordCraftName()
       scheduleStatsSync(0)
       publish()
     end, function(reason)
@@ -730,6 +745,7 @@ local function runHandshake(mspQueue, protocol)
       handshakeInFlight.craftName = false
       session.handshake.craftName = true
       session.craftName = name
+      recordCraftName()
       if settingsStore.syncNameEnabled(settingsStore.load()) and model and model.name
         and session.craftName and session.craftName ~= "" then
         if not originalModelName then
@@ -815,12 +831,15 @@ local function runHandshake(mspQueue, protocol)
       handshakeInFlight.governorConfig = false
       session.handshake.governorConfig = true
       session.governorMode = data.gov_mode
+      session.governorModeKnown = true
       publish()
     end, function(reason)
       handshakeInFlight.governorConfig = false
       if reason == "cleared" then return end
       session.handshake.governorConfig = true
+      -- The read failed: 0 is the audio fallback (silent), not a known mode.
       session.governorMode = 0
+      session.governorModeKnown = false
       publish()
     end))
     if queued == false then
@@ -933,6 +952,7 @@ local function setConnected(value, mspQueue, protocol)
     session.smartfuelChargeDropPerSecond = nil
     session.fuelPercent = nil
     session.governorMode = nil
+    session.governorModeKnown = nil
     session.governorState = nil
     session.flightModeFlags = nil
     session.gpsSats = nil
@@ -1419,6 +1439,23 @@ local function onSmartfuelConfigSaved()
   end))
 end
 bus.subscribe("smartfuel.config.saved", onSmartfuelConfigSaved)
+
+local function onCraftNameSaved(name)
+  if not session.connected then return end
+  if type(name) ~= "string" or name == "" then return end
+  session.craftName = name
+  recordCraftName()
+  if settingsStore.syncNameEnabled(settingsStore.load()) and model and model.name
+    and session.craftName and session.craftName ~= "" then
+    if not originalModelName then
+      local ok, current = pcall(model.name)
+      if ok then originalModelName = current end
+    end
+    pcall(model.name, session.craftName)
+  end
+  publish()
+end
+bus.subscribe("craft.name.saved", onCraftNameSaved)
 
 -- If the FC computes smartfuel itself (smartfuelMode > 0), just mirror its
 -- broadcast sensor. Otherwise run the local sigmoid/slew estimator

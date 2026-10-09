@@ -23,13 +23,17 @@ Always available offline without an active flight controller connection. Read-on
 | *PID profile* | Announces the newly selected PID profile. |
 | *Rate profile* | Announces the newly selected rate profile. |
 | *Battery profile* | Announces the newly selected pack. |
-| *Adjustment function* | Announces the function an in-flight adjustment has landed on. |
-| *Adjustment value* | Announces the value an in-flight adjustment has landed on. |
+| *Adjustment function* | Announces the name of the function an in-flight adjustment is changing, followed by its value. |
+| *Adjustment value* | Announces the value an in-flight adjustment has settled on. |
 
 ## Notes
 
 - **Battery profile** announces the newly selected pack as "Battery, 2200 milliamp hours, 4
   cells". The cell count is left out when the profile has none set.
+- **Adjustments** are spoken once the value has stopped changing for about a third of a second.
+  A burst of trim clicks therefore says one number, the one the model ended up with, rather than
+  each step. Nothing is spoken while the value is still moving. A change that settles while the
+  previous announcement is still playing is spoken after it.
 - None of these depends on a threshold, so nothing on this page is greyed out by another setting
   here.
 - Changes are saved to the radio's settings store, not to the flight controller.

@@ -1464,6 +1464,7 @@ local function create()
     becVoltage = nil,
     fuelPercent = nil,
     governorMode = nil,
+    governorModeKnown = nil,
     governorState = nil,
     rxMap = nil,
     mspTransport = nil,
@@ -1607,6 +1608,7 @@ local function update(widget, snapshot)
   widget.becVoltage = snapshot.becVoltage
   widget.fuelPercent = snapshot.fuelPercent
   widget.governorMode = snapshot.governorMode
+  widget.governorModeKnown = snapshot.governorModeKnown
   widget.governorState = snapshot.governorState
   widget.rxMap = snapshot.rxMap
   widget.mspTransport = snapshot.mspTransport
