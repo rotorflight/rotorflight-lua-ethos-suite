@@ -226,6 +226,20 @@ do
 end
 
 do
+  local rig = newAdjRig({adj_f = true, adj_v = false})
+  rig.setClock(0.50); rig.step({connected = true, adjFunction = 15, adjValue = 50})
+  rig.setClock(0.70); rig.step({connected = true, adjFunction = 15, adjValue = 51})
+  rig.setClock(0.90); rig.step({connected = true, adjFunction = 15, adjValue = 51})
+  check("pending function announcement restarts settle window on value change when adj_v is false",
+    #rig.spoken == 0 and rig.count("adjfunctions/") == 0,
+    rig.count("adjfunctions/") .. " word(s), spoke " .. spokenValues(rig))
+  rig.setClock(1.10); rig.step({connected = true, adjFunction = 15, adjValue = 51})
+  check("and speaks settled function and value after settle window",
+    spokenValues(rig) == "51" and rig.count("adjfunctions/") == 3,
+    rig.count("adjfunctions/") .. " word(s), spoke " .. spokenValues(rig))
+end
+
+do
   local rig = newAdjRig({adj_f = false, adj_v = true})
   -- Function changes from 14 to 15, value stays at initial 50.
   rig.setClock(0.50); rig.step({connected = true, adjFunction = 15, adjValue = 50})
