@@ -25,7 +25,9 @@ never leave a partially written file behind in the first place.
 into `[craft] name` of that controller's file, so the radio can name a model
 with no link up. The UID and the name arrive in separate replies and either may
 come first; whichever comes second writes. A name that has not changed writes
-nothing, and an empty answer never replaces a stored name.
+nothing, and an empty answer never replaces a stored name. Saving a new craft
+name on the Configuration page updates the store and session immediately via
+`craft.name.saved`.
 
 The name is stored inside double quotes (`name="007"`). The INI reader turns a
 bare `007`, `0x10` or `1e3` into a number and `true` into a boolean, so a name

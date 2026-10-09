@@ -27,11 +27,12 @@
 -- Which checks are gates, and how --self-test proves it:
 --   Each gate goes red when one named piece of the change is taken out, and --self-test
 --   takes each out in turn and requires exactly that gate to fail:
---     quoting     the name is written bare            -> "names survive a save and a load"
---     uid-hook    session.lua does not record on UID  -> "NAME then UID"
---     name-hook   session.lua does not record on NAME -> "UID then NAME"
---     sort        the id sort is removed              -> "listed in id order"
---     filter      the ".ini" end anchor is removed    -> "only stores are listed"
+--     quoting          the name is written bare               -> "names survive a save and a load"
+--     uid-hook         session.lua does not record on UID     -> "NAME then UID"
+--     name-hook        session.lua does not record on NAME    -> "UID then NAME"
+--     craft-save-hook  session.lua ignores craft.name.saved   -> "craft.name.saved updates the store"
+--     sort             the id sort is removed                 -> "listed in id order"
+--     filter           the ".ini" end anchor is removed       -> "only stores are listed"
 --   The other checks are controls: they pin behaviour that has to survive a change here.
 
 local function scriptDir()
@@ -239,6 +240,13 @@ local MUTATIONS = {
         "session.craftName = name\n", "name-hook")
     end,
   },
+  ["craft-save-hook"] = {
+    gate = "a rename via craft.name.saved updates the store immediately while connected",
+    ["tasks/session.lua"] = function(t)
+      return replaceOnce(t, "bus.subscribe(\"craft.name.saved\", onCraftNameSaved)\n",
+        "-- bus.subscribe(\"craft.name.saved\", onCraftNameSaved)\n", "craft-save-hook")
+    end,
+  },
   sort = {
     gate = "stores are listed in id order, not in the card's order",
     ["lib/known_models.lua"] = function(t)
@@ -440,13 +448,24 @@ local function newRig(sessionSource)
     add = function(self, message) self.added[#self.added + 1] = message; return true end,
     clear = function() end,
   }
+  local busSubs = {}
+  local fakeBus = {}
+  fakeBus.publish = function(topic, payload)
+    if topic == "session.update" then fakeBus.lastSnapshot = payload end
+    for _, handler in ipairs(busSubs[topic] or {}) do handler(payload) end
+  end
+  fakeBus.subscribe = function(topic, handler)
+    busSubs[topic] = busSubs[topic] or {}
+    busSubs[topic][#busSubs[topic] + 1] = handler
+    return handler
+  end
   local modules = {}
   package.loaded["rfsuite.lib.require"] = function(name)
     if SESSION_REAL[name] then
       if modules[name] == nil then modules[name] = assert(loadfile(SRC .. "/" .. name))() end
       return modules[name]
     elseif name == "lib/bus.lua" then
-      return { publish = function() end, subscribe = function() end }
+      return fakeBus
     elseif name == "lib/debug_log.lua" then
       return { print = function() end, msp = function() end, format = function() end,
         mspEnabled = function() return false end }
@@ -481,7 +500,7 @@ local function newRig(sessionSource)
   local session = assert(load(sessionSource or readReal(SESSION_PATH), "@" .. SESSION_PATH))()
   session.setTelemetrySensors({ getValue = function() return nil end, reset = function() end })
 
-  local rig = { session = session, queue = queue, handshake = modules["lib/msp_handshake.lua"]
+  local rig = { session = session, queue = queue, bus = fakeBus, handshake = modules["lib/msp_handshake.lua"]
     or assert(loadfile(SRC .. "/lib/msp_handshake.lua"))() }
   function rig.tick() session.wakeup(queue, "sport", nil, { telemetryState = function() return active end }) end
   function rig.find(command)
@@ -576,6 +595,28 @@ local function partSession(sessionSource)
     deliver(blank, NAME, {})
     check("a controller that answers with no name leaves the recorded one alone",
       storeOf(id):find('name="Goblin 800"', 1, true) ~= nil)
+
+    -- A rename published via craft.name.saved while connected updates session and store
+    blank.bus.publish("craft.name.saved", "Goblin 900")
+    blank.tick()
+    check("a rename via craft.name.saved updates the store immediately while connected",
+      blank.bus.lastSnapshot and blank.bus.lastSnapshot.craftName == "Goblin 900"
+        and storeOf(id):find('name="Goblin 900"', 1, true) ~= nil,
+      "store: " .. tostring(storeOf(id)))
+
+    -- An empty craft.name.saved is ignored
+    blank.bus.publish("craft.name.saved", "")
+    blank.tick()
+    check("an empty craft.name.saved leaves the recorded name alone",
+      blank.bus.lastSnapshot and blank.bus.lastSnapshot.craftName == "Goblin 900"
+        and storeOf(id):find('name="Goblin 900"', 1, true) ~= nil)
+  end
+
+  resetFs()
+  do
+    local offlineRig = newRig(sessionSource)
+    offlineRig.bus.publish("craft.name.saved", "Ignored")
+    check("craft.name.saved while disconnected writes no store", storeOf("unknown") == nil)
   end
 end
 
@@ -595,7 +636,7 @@ if arg and arg[1] == "--self-test" then
   local bad = baseline == 0
   print(string.format("baseline: %d checks, %d failing", checks, baseline))
   if not bad then print("SELF-TEST FAILED: the unmutated run must be green first"); os.exit(1) end
-  local order = { "quoting", "uid-hook", "name-hook", "sort", "filter" }
+  local order = { "quoting", "uid-hook", "name-hook", "craft-save-hook", "sort", "filter" }
   local all = true
   for _, name in ipairs(order) do
     results, failures, checks = {}, 0, 0

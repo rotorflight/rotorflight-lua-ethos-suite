@@ -1435,6 +1435,23 @@ local function onSmartfuelConfigSaved()
 end
 bus.subscribe("smartfuel.config.saved", onSmartfuelConfigSaved)
 
+local function onCraftNameSaved(name)
+  if not session.connected then return end
+  if type(name) ~= "string" or name == "" then return end
+  session.craftName = name
+  recordCraftName()
+  if settingsStore.syncNameEnabled(settingsStore.load()) and model and model.name
+    and session.craftName and session.craftName ~= "" then
+    if not originalModelName then
+      local ok, current = pcall(model.name)
+      if ok then originalModelName = current end
+    end
+    pcall(model.name, session.craftName)
+  end
+  publish()
+end
+bus.subscribe("craft.name.saved", onCraftNameSaved)
+
 -- If the FC computes smartfuel itself (smartfuelMode > 0), just mirror its
 -- broadcast sensor. Otherwise run the local sigmoid/slew estimator
 -- (lib/smartfuel_calc.lua) against live voltage/consumption telemetry.

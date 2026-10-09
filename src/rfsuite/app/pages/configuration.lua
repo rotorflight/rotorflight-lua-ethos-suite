@@ -112,6 +112,7 @@ local mspName = requireModule("lib/msp_name.lua")
 local advancedConfig = requireModule("lib/msp_advanced_config.lua")
 local featureConfig = requireModule("lib/msp_feature_config.lua")
 local mspStatus = requireModule("lib/msp_status.lua")
+local bus = requireModule("lib/bus.lua")
 
 local PAGE_TITLE = "@i18n(app.modules.configuration.name)@"
 
@@ -193,6 +194,13 @@ local function open(opts)
     onLoaded = function()
       if buildFields then
         buildFields()
+      end
+    end,
+    onSaved = function(self_)
+      local craft = self_.data.craftName
+      local name = craft and craft.name
+      if name and name ~= "" then
+        bus.publish("craft.name.saved", name)
       end
     end,
   })
