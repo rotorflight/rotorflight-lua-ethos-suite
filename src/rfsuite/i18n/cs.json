@@ -363,6 +363,12 @@
           "reverse_text": false,
           "translation": "Kalibrovat akcelerometr?"
         },
+        "msg_calibration_timeout": {
+          "english": "The calibration did not finish. Try again.",
+          "max_length": 46,
+          "needs_translation": false,
+          "translation": "Kalibrace neskončila. Zkuste to znovu."
+        },
         "name": {
           "english": "Accelerometer",
           "max_length": 13,
@@ -7782,6 +7788,27 @@
           "reverse_text": false,
           "translation": "Advanced > PID Controller > Iterm Relax Cutoff > %s:  %d -> %d"
         },
+        "applied": {
+          "english": "Changes saved to the flight controller. Fly again to check the new tune.",
+          "max_length": 72,
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "Changes saved to the flight controller. Fly again to check the new tune."
+        },
+        "apply_hint": {
+          "english": "Press Save to write these to the flight controller.",
+          "max_length": 51,
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "Press Save to write these to the flight controller."
+        },
+        "apply_prompt": {
+          "english": "Write these changes to the flight controller and save them?",
+          "max_length": 59,
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "Write these changes to the flight controller and save them?"
+        },
         "axis": {
           "english": "Axis",
           "max_length": 4,
@@ -7823,6 +7850,48 @@
           "needs_translation": true,
           "reverse_text": false,
           "translation": "%dm %02ds, %d/%d flights"
+        },
+        "err_armed": {
+          "english": "Disarm first. Nothing was saved.",
+          "max_length": 32,
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "Disarm first. Nothing was saved."
+        },
+        "err_changed": {
+          "english": "The settings on the flight controller are not the ones these flights were flown with. Nothing was changed. Fly again with the current settings.",
+          "max_length": 143,
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "The settings on the flight controller are not the ones these flights were flown with. Nothing was changed. Fly again with the current settings."
+        },
+        "err_read": {
+          "english": "Could not read the settings from the flight controller. Nothing was changed.",
+          "max_length": 76,
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "Could not read the settings from the flight controller. Nothing was changed."
+        },
+        "err_save": {
+          "english": "Saving failed. The changes are active until the flight controller restarts, then undone.",
+          "max_length": 88,
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "Saving failed. The changes are active until the flight controller restarts, then undone."
+        },
+        "err_verify": {
+          "english": "Saved, but reading back did not confirm it. Check the settings on PIDs, Rates and PID Controller.",
+          "max_length": 97,
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "Saved, but reading back did not confirm it. Check the settings on PIDs, Rates and PID Controller."
+        },
+        "err_write": {
+          "english": "Writing failed. Nothing was saved: restart the flight controller to undo any part already sent.",
+          "max_length": 95,
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "Writing failed. Nothing was saved: restart the flight controller to undo any part already sent."
         },
         "more_why": {
           "english": "More under Why",
@@ -7900,6 +7969,34 @@
           "needs_translation": true,
           "reverse_text": false,
           "translation": "Roll"
+        },
+        "stage_read": {
+          "english": "Reading current settings...",
+          "max_length": 27,
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "Reading current settings..."
+        },
+        "stage_save": {
+          "english": "Saving to flight controller...",
+          "max_length": 30,
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "Saving to flight controller..."
+        },
+        "stage_verify": {
+          "english": "Checking saved settings...",
+          "max_length": 26,
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "Checking saved settings..."
+        },
+        "stage_write": {
+          "english": "Writing changes...",
+          "max_length": 18,
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "Writing changes..."
         },
         "stops": {
           "english": "Stops",

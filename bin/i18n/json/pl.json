@@ -2635,6 +2635,12 @@
           "max_length": 28,
           "reverse_text": false
         },
+        "msg_calibration_timeout": {
+          "english": "The calibration did not finish. Try again.",
+          "max_length": 46,
+          "needs_translation": false,
+          "translation": "Kalibracja nie zakończyła się. Spróbuj znowu."
+        },
         "name": {
           "english": "Accelerometer",
           "translation": "Akcelerometr",
@@ -7903,6 +7909,97 @@
           "needs_translation": true,
           "reverse_text": false,
           "max_length": 24
+        },
+        "apply_hint": {
+          "english": "Press Save to write these to the flight controller.",
+          "translation": "Press Save to write these to the flight controller.",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 51
+        },
+        "apply_prompt": {
+          "english": "Write these changes to the flight controller and save them?",
+          "translation": "Write these changes to the flight controller and save them?",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 59
+        },
+        "applied": {
+          "english": "Changes saved to the flight controller. Fly again to check the new tune.",
+          "translation": "Changes saved to the flight controller. Fly again to check the new tune.",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 72
+        },
+        "stage_read": {
+          "english": "Reading current settings...",
+          "translation": "Reading current settings...",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 27
+        },
+        "stage_write": {
+          "english": "Writing changes...",
+          "translation": "Writing changes...",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 18
+        },
+        "stage_save": {
+          "english": "Saving to flight controller...",
+          "translation": "Saving to flight controller...",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 30
+        },
+        "stage_verify": {
+          "english": "Checking saved settings...",
+          "translation": "Checking saved settings...",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 26
+        },
+        "err_read": {
+          "english": "Could not read the settings from the flight controller. Nothing was changed.",
+          "translation": "Could not read the settings from the flight controller. Nothing was changed.",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 76
+        },
+        "err_changed": {
+          "english": "The settings on the flight controller are not the ones these flights were flown with. Nothing was changed. Fly again with the current settings.",
+          "translation": "The settings on the flight controller are not the ones these flights were flown with. Nothing was changed. Fly again with the current settings.",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 143
+        },
+        "err_armed": {
+          "english": "Disarm first. Nothing was saved.",
+          "translation": "Disarm first. Nothing was saved.",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 32
+        },
+        "err_write": {
+          "english": "Writing failed. Nothing was saved: restart the flight controller to undo any part already sent.",
+          "translation": "Writing failed. Nothing was saved: restart the flight controller to undo any part already sent.",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 95
+        },
+        "err_save": {
+          "english": "Saving failed. The changes are active until the flight controller restarts, then undone.",
+          "translation": "Saving failed. The changes are active until the flight controller restarts, then undone.",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 88
+        },
+        "err_verify": {
+          "english": "Saved, but reading back did not confirm it. Check the settings on PIDs, Rates and PID Controller.",
+          "translation": "Saved, but reading back did not confirm it. Check the settings on PIDs, Rates and PID Controller.",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 97
         }
       }
     },

@@ -33,6 +33,20 @@
 -- Clear (header Tool button) erases the saved flights and resets the FC's
 -- statistics.
 --
+-- Apply (header Save button) writes the shown axis's changes to the FC. It
+-- reads PID tuning, PID profile and rates, checks each reply is long enough
+-- to hold every field and that the FC still holds the tune the flights were
+-- flown on (the same profiles, and P, F, B, Iterm Relax Cutoff, rates type
+-- and rates as the newest flight), changes only the advised fields, writes,
+-- commits to EEPROM and reads back to confirm. Anything unexpected stops it
+-- before the write. The progress dialog names each stage. A rate change the
+-- page can only give as a percentage (Betaflight, Raceflight, KISS rates)
+-- is not applied, and neither is the F change that goes with it: F alone
+-- would change the stick feel. The saved flights are kept: the next flight
+-- is on a new tune, so tune_history.aggregate() starts again from it, and the
+-- firmware resets its statistics when it arms on a changed tune. changes.csv
+-- beside the history records each value replaced.
+--
 -- The header and Axis selector are form fields; everything below them is
 -- painted (see open()), like app/pages/logs.lua's graph view. Narrow screens
 -- (480 wide: X18, X10) cannot always fit every reason, so a Changes/Why
@@ -45,6 +59,11 @@ local header = requireModule("app/header.lua")
 local tuneAdvisor = requireModule("lib/msp_tune_advisor.lua")
 local tuneHistory = requireModule("lib/tune_history.lua")
 local rateCurveScale = requireModule("lib/rate_curve_scale.lua")
+local progressDialog = requireModule("app/progress_dialog.lua")
+local pidTuning = requireModule("lib/msp_pid_tuning.lua")
+local pidProfile = requireModule("lib/msp_pid_profile.lua")
+local rcTuning = requireModule("lib/msp_rc_tuning.lua")
+local eeprom = requireModule("lib/msp_eeprom.lua")
 
 local PAGE_TITLE = "@i18n(app.modules.tune_advisor.name)@"
 local BTN_OK = "@i18n(app.btn_ok)@"
@@ -98,6 +117,20 @@ local T = {
   whyFixFFmt = "@i18n(app.modules.tune_advisor.why_fix_f_fmt)@",
   whyBrakeFmt = "@i18n(app.modules.tune_advisor.why_brake_fmt)@",
   whyOk = "@i18n(app.modules.tune_advisor.why_ok)@",
+
+  applyHint = "@i18n(app.modules.tune_advisor.apply_hint)@",
+  applyPrompt = "@i18n(app.modules.tune_advisor.apply_prompt)@",
+  applied = "@i18n(app.modules.tune_advisor.applied)@",
+  stageRead = "@i18n(app.modules.tune_advisor.stage_read)@",
+  stageWrite = "@i18n(app.modules.tune_advisor.stage_write)@",
+  stageSave = "@i18n(app.modules.tune_advisor.stage_save)@",
+  stageVerify = "@i18n(app.modules.tune_advisor.stage_verify)@",
+  errRead = "@i18n(app.modules.tune_advisor.err_read)@",
+  errChanged = "@i18n(app.modules.tune_advisor.err_changed)@",
+  errArmed = "@i18n(app.modules.tune_advisor.err_armed)@",
+  errWrite = "@i18n(app.modules.tune_advisor.err_write)@",
+  errSave = "@i18n(app.modules.tune_advisor.err_save)@",
+  errVerify = "@i18n(app.modules.tune_advisor.err_verify)@",
 }
 
 -- {label, axis}: axis is the FC's 1-based axis (1 roll, 2 pitch, 3 yaw)
@@ -155,6 +188,43 @@ local CUTOFF_MIN = 1
 local MAX_ACTIONS = 3
 local MAX_WHYS = 3
 
+-- Apply: the FC messages holding the tune, read and written in this order
+local SOURCES = {
+  {key = "tuning", codec = pidTuning},
+  {key = "profile", codec = pidProfile},
+  {key = "rates", codec = rcTuning},
+}
+local SOURCE_BY_KEY = {}
+for _, source in ipairs(SOURCES) do
+  SOURCE_BY_KEY[source.key] = source
+  -- Bytes a reply must hold to carry every field: the codecs read a missing
+  -- byte as 0, so a short reply would decode to a plausible tune of zeros.
+  -- Encoding an empty table writes every field once, at its wire width.
+  source.minBytes = #source.codec.encode({})
+end
+local AXIS_FIELDS = {"roll", "pitch", "yaw"}
+-- The simulator's MSP fixtures do not change on a write, so a read-back
+-- there cannot show the new values
+local IS_SIM = system.getVersion().simulation == true
+
+-- Where a tune_history TUNE_KEYS value lives on the FC: source key, field
+-- name (lib/msp_rc_tuning.lua calls the srate column rates_N)
+local function fcField(key, axis)
+  if key == "relaxCutoff" then return "profile", "iterm_relax_cutoff_" .. (axis - 1) end
+  if key == "ratesType" then return "rates", "rates_type" end
+  if key == "rcRate" then return "rates", "rcRates_" .. axis end
+  if key == "sRate" then return "rates", "rates_" .. axis end
+  return "tuning", AXIS_FIELDS[axis] .. "_" .. string.lower(key)
+end
+
+-- Whether value is one the FC accepts for that setting
+local function inRange(key, axis, value)
+  if key == "rcRate" or key == "sRate" then return value >= 1 and value <= RATE_RAW_MAX end
+  local src, field = fcField(key, axis)
+  local meta = SOURCE_BY_KEY[src].codec.FIELD_META[field]
+  return meta ~= nil and value >= meta.min and value <= meta.max
+end
+
 local function round(v)
   return math.floor(v + 0.5)
 end
@@ -180,8 +250,10 @@ local function rateText(raw, rateType, role)
   return string.format("%." .. decimals .. "f", raw * scale / 100)
 end
 
--- Suggests scaling the rate curve by k (e.g. 1.25 = 25% faster everywhere)
-local function rateActions(a, name, k, act)
+-- Suggests scaling the rate curve by k (e.g. 1.25 = 25% faster everywhere).
+-- change(text, key, from, to) adds a line Apply can write; a percentage
+-- (no linear column for this rates_type) is only shown.
+local function rateActions(a, name, k, act, change)
   local roles = LINEAR_ROLES[a.ratesType]
   if not roles then
     local pct = round(math.abs(k - 1) * 100)
@@ -191,8 +263,9 @@ local function rateActions(a, name, k, act)
   for _, role in ipairs(roles) do
     local raw = (role == "rcRate") and a.rcRate or a.sRate
     local newRaw = clamp(round(raw * k), 1, RATE_RAW_MAX)
-    act(string.format(T.actRateFmt, name, (role == "rcRate") and T.rcRate or T.rate,
-      rateText(raw, a.ratesType, role), rateText(newRaw, a.ratesType, role)))
+    change(string.format(T.actRateFmt, name, (role == "rcRate") and T.rcRate or T.rate,
+      rateText(raw, a.ratesType, role), rateText(newRaw, a.ratesType, role)),
+      (role == "rcRate") and "rcRate" or "sRate", raw, newRaw)
   end
 end
 
@@ -202,18 +275,25 @@ local function rateActionCount(a)
   return roles and #roles or 1
 end
 
--- Fills actions/whys (cleared by the caller) for one axis; returns the
--- Response and Stops values.
+-- Fills actions/whys/changes (cleared by the caller) for one axis; returns
+-- the Response and Stops values. changes holds what Apply writes, one
+-- {key, from, to, text} per setting action: key is a tune_history TUNE_KEYS
+-- name, text the action line.
 --
 -- A change and its reason go in together or not at all, so a reason never
 -- shows for a change that was left out: a later change first checks room().
 -- The first change (fly more, F with its rates, or full-stick rates) always
 -- fits. The reasons for changes stay within MAX_WHYS; only the closing
 -- |collective| fact can be cut.
-local function advise(a, axis, name, actions, whys)
+local function advise(a, axis, name, actions, whys, changes)
   local function room(n) return #actions + n <= MAX_ACTIONS end
   local function act(s) if #actions < MAX_ACTIONS then actions[#actions + 1] = s end end
   local function why(s) if #whys < MAX_WHYS then whys[#whys + 1] = s end end
+  -- A setting action: callers check room() first, so it is never dropped
+  local function change(text, key, from, to)
+    act(text)
+    if from ~= to then changes[#changes + 1] = {key = key, from = from, to = to, text = text} end
+  end
 
   -- Response: feed-forward match
   local response
@@ -230,9 +310,11 @@ local function advise(a, axis, name, actions, whys)
     response = string.format(hot and T.respFastFmt or T.respSlowFmt, round(math.abs(g - 1) * 100))
     if a.F > 0 then
       local newF = clamp(round(a.F * clamp(1 / g, 1 - FF_STEP_MAX, 1 + FF_STEP_MAX)), 1, GAIN_MAX)
-      act(string.format(T.actFFmt, name, a.F, newF))
-      -- Keep the stick feel: F x rate is what the pilot feels
-      rateActions(a, name, a.F / newF, act)
+      -- Keep the stick feel: F x rate is what the pilot feels. F is applied
+      -- only with its rates, so a percentage-only rates_type applies neither.
+      local text = string.format(T.actFFmt, name, a.F, newF)
+      if LINEAR_ROLES[a.ratesType] then change(text, "F", a.F, newF) else act(text) end
+      rateActions(a, name, a.F / newF, act, change)
       why(hot and T.whyFast or T.whySlow)
       why(T.whyKeepFeel)
     else
@@ -244,7 +326,7 @@ local function advise(a, axis, name, actions, whys)
     if axis ~= AXIS_YAW and asked and a.fullCount >= FULL_MIN_COUNT
         and a.fullSatCount >= FULL_SAT_SHARE * a.fullCount
         and a.fullMaxRate < FULL_REACH * asked and room(rateActionCount(a)) then
-      rateActions(a, name, a.fullMaxRate / asked, act)
+      rateActions(a, name, a.fullMaxRate / asked, act, change)
       why(string.format(T.whyFullFmt, asked, a.fullMaxRate))
     end
   end
@@ -260,13 +342,14 @@ local function advise(a, axis, name, actions, whys)
       -- No room for the cutoff only after F and two rate lines; F is off
       -- then, so the next branch says to fix F first.
       if a.meanIterm >= ITERM_PUSH and a.relaxCutoff > CUTOFF_MIN and room(1) then
-        act(string.format(T.actRelaxFmt, name, a.relaxCutoff,
-          clamp(round(a.relaxCutoff * CUTOFF_STEP), CUTOFF_MIN, a.relaxCutoff - 1)))
+        local newCutoff = clamp(round(a.relaxCutoff * CUTOFF_STEP), CUTOFF_MIN, a.relaxCutoff - 1)
+        change(string.format(T.actRelaxFmt, name, a.relaxCutoff, newCutoff), "relaxCutoff", a.relaxCutoff, newCutoff)
         why(T.whyRelax)
       elseif ffOff(a) and a.F > 0 then
         why(string.format(T.whyFixFFmt, rebound))
       elseif room(1) then
-        act(string.format(T.actPFmt, name, a.P, clamp(round(a.P * P_STEP), a.P + 1, GAIN_MAX)))
+        local newP = clamp(round(a.P * P_STEP), a.P + 1, GAIN_MAX)
+        change(string.format(T.actPFmt, name, a.P, newP), "P", a.P, newP)
         why(string.format(T.whyBrakeFmt, rebound))
       end
     end
@@ -376,10 +459,23 @@ local function open(opts)
   local section = SECTION_CHANGES -- compact screens only
   local actions, whys = {}, {}
   local compact = lcd.getWindowSize() < COMPACT_WIDTH
+  local link = {connected = false, armed = false, pidProfile = nil, rateProfile = nil}
 
   -- What paint shows. layout (the wrapped lines) is rebuilt on the next
-  -- paint after a change, never on a paint with nothing new.
-  local view = {data = "-", response = "-", stops = "-", actions = {}, whys = {}, layout = nil}
+  -- paint after a change, never on a paint with nothing new. changes and
+  -- tune (the tune the advice is for) are what Apply writes and checks.
+  local view = {data = "-", response = "-", stops = "-", actions = {}, whys = {}, layout = nil,
+    axis = nil, changes = {}, tune = {}}
+
+  -- Apply state. applying is set from the press until the wakeup handler
+  -- takes applyResult (true, or the error text) set by the MSP callbacks;
+  -- applyStage is the progress dialog message, also shown from wakeup.
+  local applying = nil
+  local applyDialog = nil
+  local applyResult = nil
+  local applyStage, shownStage = nil, nil
+  local applied = {}              -- by axis: written since the flights were loaded
+  local saveEnabled = nil
 
   -- MSP replies and bus events arrive in the background task, where
   -- lcd.invalidate() does not reach this page's window: flag it and
@@ -394,6 +490,7 @@ local function open(opts)
     view.data, view.response, view.stops = text, "-", "-"
     clearList(view.actions)
     clearList(view.whys)
+    clearList(view.changes)
     changed()
   end
 
@@ -410,16 +507,28 @@ local function open(opts)
 
     clearList(actions)
     clearList(whys)
-    view.response, view.stops = advise(a, axis, AXES[selected][1], actions, whys)
+    clearList(view.changes)
+    view.response, view.stops = advise(a, axis, AXES[selected][1], actions, whys, view.changes)
+    view.axis = axis
+    for _, k in ipairs(tuneHistory.TUNE_KEYS) do view.tune[k] = a[k] end
     clearList(view.actions)
     clearList(view.whys)
-    for i = 1, #actions do view.actions[i] = actions[i] end
-    for i = 1, #whys do view.whys[i] = whys[i] end
+    if applied[axis] then
+      -- The advice was for the tune just replaced: nothing to do but fly
+      clearList(view.changes)
+      view.actions[1] = T.applied
+    else
+      for i = 1, #actions do view.actions[i] = actions[i] end
+      for i = 1, #whys do view.whys[i] = whys[i] end
+      -- After the changes, so the compact Changes view never cuts it
+      if #view.changes > 0 then view.actions[#view.actions + 1] = T.applyHint end
+    end
     changed()
   end
 
   local function load()
     flights = mcuId and tuneHistory.read(mcuId) or nil
+    for k in pairs(applied) do applied[k] = nil end
     render()
   end
 
@@ -445,6 +554,11 @@ local function open(opts)
 
   local function onSession(snapshot)
     if disposed then return end
+    if snapshot then
+      link.connected = snapshot.connected == true
+      link.armed = snapshot.isArmed == true
+      link.pidProfile, link.rateProfile = snapshot.pidProfile, snapshot.rateProfile
+    end
     -- A link loss keeps the aircraft: its saved flights do not need the link
     local nextMcuId = snapshot and snapshot.mcuId or nil
     if nextMcuId == nil or nextMcuId == mcuId then return end
@@ -471,6 +585,153 @@ local function open(opts)
     load()
   end
 
+  -- Apply (header Save). Each step runs from the previous one's MSP reply;
+  -- any failure ends it through finish(), and the wakeup handler reports.
+  local function canApply()
+    return not applying and not unsupported and mcuId ~= nil and link.connected
+      and not link.armed and #view.changes > 0
+  end
+
+  local function finish(result)
+    if disposed or not applying or applyResult ~= nil then return end
+    applyResult = result
+  end
+
+  -- Reads every source into `into`; fails with errText on an error or a
+  -- reply too short to hold every field
+  local function readAll(index, into, errText, onDone)
+    if disposed or not applying or applyResult ~= nil then return end
+    local source = SOURCES[index]
+    if not source then onDone() return end
+    local msg = source.codec.buildReadMessage(function(data)
+      into[source.key] = data
+      readAll(index + 1, into, errText, onDone)
+    end, function() finish(errText) end)
+    local decode = msg.processReply
+    msg.processReply = function(self, buf)
+      if type(buf) ~= "table" or #buf < source.minBytes then finish(errText) return end
+      decode(self, buf)
+    end
+    bus.publish("msp.request", msg)
+  end
+
+  local function verify()
+    if disposed or not applying then return end
+    applyStage = T.stageVerify
+    local readBack = {}
+    readAll(1, readBack, T.errVerify, function()
+      if not IS_SIM then
+        for _, c in ipairs(applying.changes) do
+          local src, field = fcField(c.key, applying.axis)
+          if readBack[src][field] ~= c.to then finish(T.errVerify) return end
+        end
+      end
+      finish(true)
+    end)
+  end
+
+  local function write()
+    local data, axis = applying.data, applying.axis
+    -- The FC must still hold the tune the advice was worked out for
+    if link.armed then finish(T.errArmed) return end
+    if link.pidProfile ~= applying.pidProfile or link.rateProfile ~= applying.rateProfile then
+      finish(T.errChanged) return
+    end
+    for k, value in pairs(applying.tune) do
+      local src, field = fcField(k, axis)
+      if data[src][field] ~= value then finish(T.errChanged) return end
+    end
+    local dirty = {}
+    for _, c in ipairs(applying.changes) do
+      local src, field = fcField(c.key, axis)
+      if data[src][field] ~= c.from or not inRange(c.key, axis, c.to) then finish(T.errChanged) return end
+      data[src][field] = c.to
+      dirty[src] = true
+    end
+
+    applyStage = T.stageWrite
+    local function writeNext(index)
+      if disposed or not applying then return end
+      local source = SOURCES[index]
+      if not source then
+        applyStage = T.stageSave
+        bus.publish("msp.request", eeprom.buildWriteMessage(verify, function()
+          finish(link.armed and T.errArmed or T.errSave)
+        end))
+        return
+      end
+      if not dirty[source.key] then writeNext(index + 1) return end
+      bus.publish("msp.request", source.codec.buildWriteMessage(data[source.key],
+        function() writeNext(index + 1) end,
+        function() finish(T.errWrite) end))
+    end
+    writeNext(1)
+  end
+
+  local function apply()
+    if disposed or not canApply() then return end
+    local tune, changes = {}, {}
+    for k, v in pairs(view.tune) do tune[k] = v end
+    for i, c in ipairs(view.changes) do changes[i] = c end
+    applying = {axis = view.axis, tune = tune, changes = changes, data = {},
+      pidProfile = link.pidProfile, rateProfile = link.rateProfile}
+    applyResult = nil
+    applyStage, shownStage = T.stageRead, T.stageRead
+    applyDialog = progressDialog.open({title = PAGE_TITLE, message = T.stageRead})
+    readAll(1, applying.data, T.errRead, write)
+  end
+
+  local function confirmApply()
+    if not canApply() then return end
+    local lines = {}
+    for i, c in ipairs(view.changes) do lines[i] = c.text end
+    lines[#lines + 1] = ""
+    lines[#lines + 1] = T.applyPrompt
+    form.openDialog({
+      title = PAGE_TITLE,
+      message = table.concat(lines, "\n"),
+      buttons = {
+        {label = BTN_OK, action = function() apply(); return true end},
+        {label = BTN_CANCEL, action = function() return true end},
+      },
+      wakeup = function() end,
+      paint = function() end,
+      options = TEXT_LEFT,
+    })
+  end
+
+  local function closeApplyDialog()
+    if not applyDialog then return end
+    applyDialog:close(true)         -- now: the outcome dialog follows at once
+    applyDialog = nil
+  end
+
+  -- Wakeup side of Apply: the dialog's stage text and the outcome
+  local function updateApply()
+    if applyDialog and shownStage ~= applyStage then
+      shownStage = applyStage
+      applyDialog:message(applyStage)
+    end
+    if applyResult == nil then return end
+    local result, done = applyResult, applying
+    applyResult, applying = nil, nil
+    closeApplyDialog()
+    if result == true then
+      tuneHistory.logChanges(mcuId, done.axis, done.changes)
+      applied[done.axis] = true
+      render()
+    end
+    form.openDialog({
+      title = PAGE_TITLE,
+      message = result == true and T.applied or result,
+      buttons = {{label = BTN_OK, action = function() return true end}},
+      wakeup = function() end,
+      paint = function() end,
+      options = TEXT_LEFT,
+    })
+    if headerHandle then headerHandle.focusMenu() end
+  end
+
   local function confirmClear()
     form.openDialog({
       title = PAGE_TITLE,
@@ -487,6 +748,7 @@ local function open(opts)
   local function goBack()
     disposed = true
     unsubscribe()
+    closeApplyDialog()
     if opts.setWakeupHandler then opts.setWakeupHandler(nil) end
     if opts.setPaintHandler then opts.setPaintHandler(nil) end
     if opts.setCleanupHandler then opts.setCleanupHandler(nil) end
@@ -574,6 +836,7 @@ local function open(opts)
   form.clear()
   headerHandle = header.build(PAGE_TITLE, {
     onBack = goBack,
+    onSave = confirmApply,
     onReload = function()
       unsupported = false         -- ask again, e.g. after a firmware update
       load()
@@ -596,12 +859,20 @@ local function open(opts)
     opts.setCleanupHandler(function()
       disposed = true
       unsubscribe()
+      closeApplyDialog()
+      applying = nil
       flights = nil
       view.layout = nil
     end)
   end
   if opts.setWakeupHandler then
     opts.setWakeupHandler(function()
+      updateApply()
+      local canSave = canApply()
+      if saveEnabled ~= canSave then
+        saveEnabled = canSave
+        headerHandle.setSaveEnabled(canSave)
+      end
       if needsPaint then
         needsPaint = false
         if lcd.invalidate then lcd.invalidate() end
