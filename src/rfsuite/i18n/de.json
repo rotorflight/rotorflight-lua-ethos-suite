@@ -367,7 +367,7 @@
           "english": "The calibration did not finish. Try again.",
           "max_length": 46,
           "needs_translation": false,
-          "translation": "Die Kalibrierung ist nicht abgeschlossen. Bitte erneut versuchen."
+          "translation": "Kalibrierung nicht beendet. Erneut versuchen."
         },
         "name": {
           "english": "Accelerometer",

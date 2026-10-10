@@ -2638,8 +2638,8 @@
         "msg_calibration_timeout": {
           "english": "The calibration did not finish. Try again.",
           "max_length": 46,
-          "needs_translation": true,
-          "translation": "The calibration did not finish. Try again."
+          "needs_translation": false,
+          "translation": "Kalibracja nie zakończyła się. Spróbuj znowu."
         },
         "name": {
           "english": "Accelerometer",
