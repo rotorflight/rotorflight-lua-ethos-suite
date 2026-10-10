@@ -2189,10 +2189,14 @@ jobs:
   battery-picker:
     name: Battery tile picker lays the packs out as a grid
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
       - name: Install Lua 5.4
         run: sudo apt-get update && sudo apt-get install -y lua5.4
@@ -2282,6 +2286,37 @@ jobs:
 
       - name: Check the stored craft name and the known-models listing
         run: lua5.4 bin/known_models/verify_known_models.lua
+
+  # The rates page offered every rate field up to 255. The firmware keeps one
+  # limit set per rates_type (src/main/fc/rc_rates.c:39-46: rc_rate, srate and expo)
+  # and clamps the stored values to it when the config is loaded (config.c:184-194).
+  # A pilot could enter a value the firmware then cut at the next boot, so the shown
+  # value changed after a reboot.
+  #
+  # lib/rate_curve_scale.lua now takes each field's maximum from the table of firmware
+  # limits, for the display bounds and for the value stored from the page.
+  #
+  # The harness checks the limit for every rates_type and field, the display maximum,
+  # the clamp of a value above the limit, and that the limit survives a round trip
+  # through the display. --self-test puts back the flat 255 ceiling and requires the
+  # value checks to go red.
+  rate-limits:
+    name: Rate and expo maximums follow the rate table, as the firmware clamps them
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Install Lua 5.4
+        run: sudo apt-get update && sudo apt-get install -y lua5.4
+
+      - name: Check the rate table limits
+        run: lua5.4 bin/rate_limits/verify_rate_limits.lua
 
   # Per-language PR builds (mirrors push.yml behavior)
   create-zip:
