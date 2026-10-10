@@ -31,6 +31,9 @@ Greyed out until the flight controller answers. Read-only while the model is arm
 
 - Changes are written to the flight controller EEPROM upon Save.
 - Parameters are scoped to the currently active Rate profile.
+- The largest value of each field depends on the rate table: the firmware keeps a
+  limit per table and field, and the page does not go above it. A value saved above
+  the limit before the firmware is updated is cut to the limit at the next boot.
 
 ## Related
 

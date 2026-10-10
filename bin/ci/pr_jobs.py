@@ -1806,6 +1806,26 @@ red. The baseline run is required to be green first.
 '''
     ),
     LuaJob(
+        id='rate-limits',
+        name='Rate and expo maximums follow the rate table, as the firmware clamps them',
+        step='Check the rate table limits',
+        script='bin/rate_limits/verify_rate_limits.lua',
+        rationale=r'''The rates page offered every rate field up to 255. The firmware keeps one
+limit set per rates_type (src/main/fc/rc_rates.c:39-46: rc_rate, srate and expo)
+and clamps the stored values to it when the config is loaded (config.c:184-194).
+A pilot could enter a value the firmware then cut at the next boot, so the shown
+value changed after a reboot.
+
+lib/rate_curve_scale.lua now takes each field's maximum from the table of firmware
+limits, for the display bounds and for the value stored from the page.
+
+The harness checks the limit for every rates_type and field, the display maximum,
+the clamp of a value above the limit, and that the limit survives a round trip
+through the display. --self-test puts back the flat 255 ceiling and requires the
+value checks to go red.
+'''
+    ),
+    LuaJob(
         id='acc-calibration-wait',
         name='Accelerometer calibration waits for the flight controller before it saves',
         step='Check the accelerometer calibration wait',
