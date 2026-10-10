@@ -1081,6 +1081,20 @@ firmware without the command asked once) and the aggregate (only the
 newest tune, counts added, ratios weighted).
 '''
     ),
+    LuaJob(
+        id='tune-advisor-apply',
+        name='Tune Advisor Apply',
+        step='Check the Tune Advisor Apply',
+        script='bin/tune_advisor_apply/verify_tune_advisor_apply.lua',
+        rationale=r'''The Tune Advisor's Save writes its suggested changes to the FC. Pins
+what reaches the FC: only the advised fields change, and nothing is
+written unless every read is complete (a short reply would decode as a
+tune of zeros), the FC still holds the tune the flights were flown on
+(same values and profiles) and the model is disarmed; a failed write is
+never committed to EEPROM; F is never applied without its rates (a
+percentage-only rates_type applies neither); each stage is shown.
+'''
+    ),
     # Appended after #2455 was opened, so this entry is a pure addition rather than a
     # re-registration of any of the two YGE jobs or of esc-signature, which covers
     # several vendors at once.

@@ -1416,6 +1416,31 @@ jobs:
       - name: Check the Tune Advisor history on disarm
         run: lua5.4 bin/tune_history/verify_tune_history.lua
 
+  # The Tune Advisor's Save writes its suggested changes to the FC. Pins
+  # what reaches the FC: only the advised fields change, and nothing is
+  # written unless every read is complete (a short reply would decode as a
+  # tune of zeros), the FC still holds the tune the flights were flown on
+  # (same values and profiles) and the model is disarmed; a failed write is
+  # never committed to EEPROM; F is never applied without its rates (a
+  # percentage-only rates_type applies neither); each stage is shown.
+  tune-advisor-apply:
+    name: Tune Advisor Apply
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Install Lua 5.4
+        run: sudo apt-get update && sudo apt-get install -y lua5.4
+
+      - name: Check the Tune Advisor Apply
+        run: lua5.4 bin/tune_advisor_apply/verify_tune_advisor_apply.lua
+
   # Bytes 57..62 of the Scorpion block were carried as three anonymous U16s named
   # padding_1, padding_2 and padding_3, and the summary line read two byte offsets out of
   # the raw block by hand:
@@ -2189,10 +2214,14 @@ jobs:
   battery-picker:
     name: Battery tile picker lays the packs out as a grid
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
       - name: Install Lua 5.4
         run: sudo apt-get update && sudo apt-get install -y lua5.4
