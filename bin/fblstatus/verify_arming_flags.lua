@@ -100,6 +100,43 @@ check(
   table.concat(multiUnknown, ","))
 
 -- ---------------------------------------------------------------------------
+-- ARM_SWITCH follows the firmware
+-- ---------------------------------------------------------------------------
+
+-- ARM_SWITCH is always the firmware's last flag, so its bit has moved as flags
+-- were added. Labelling by a fixed bit showed it as whatever flag had moved
+-- into that slot.
+
+print("ARM_SWITCH position")
+
+local ARM_SWITCH = "@i18n(app.modules.fblstatus.arming_disable_flag_28)@"
+
+check("the MSP_STATUS flag count locates ARM_SWITCH exactly", arming.armSwitchBit({count = 27}) == 26)
+check("the count wins over the API version",
+  arming.armSwitchBit({count = 27, apiMajor = 12, apiMinor = 10}) == 26)
+check("API 12.8 puts ARM_SWITCH at bit 25", arming.armSwitchBit({apiMajor = 12, apiMinor = 8}) == 25)
+check("API 12.9 puts ARM_SWITCH at bit 26", arming.armSwitchBit({apiMajor = 12, apiMinor = 9}) == 26)
+check("API 12.10 puts ARM_SWITCH at bit 28", arming.armSwitchBit({apiMajor = 12, apiMinor = 10}) == 28)
+check("unknown firmware leaves ARM_SWITCH unknown",
+  arming.armSwitchBit(nil) == nil and arming.armSwitchBit({count = 0}) == nil)
+
+local older = arming.active(2 ^ 1 + 2 ^ 26, {count = 27})
+check("on 27-flag firmware bit 26 is ARM_SWITCH, not No Filter",
+  #older == 2 and older[1] == tagFor(1) and older[2] == ARM_SWITCH,
+  table.concat(older, ","))
+
+local newer = arming.active(2 ^ 26 + 2 ^ 27 + 2 ^ 28, {count = 29})
+check("on 29-flag firmware bits 26..28 are No Filter, Backup RX, ARM_SWITCH",
+  #newer == 3 and newer[1] == tagFor(26) and newer[2] == tagFor(27) and newer[3] == ARM_SWITCH,
+  table.concat(newer, ","))
+
+local legacy = arming.active(2 ^ 25, {apiMajor = 12, apiMinor = 8})
+check("on API 12.8 bit 25 is ARM_SWITCH, not Override", legacy[1] == ARM_SWITCH, legacy[1])
+
+local above = arming.active(2 ^ 27, {count = 27})
+check("a bit above ARM_SWITCH is reported as its number", above[1] == "0x8000000", above[1])
+
+-- ---------------------------------------------------------------------------
 -- What the page is allowed to put where
 -- ---------------------------------------------------------------------------
 

@@ -24,9 +24,10 @@ end
 
 local arming_flags = {}
 
--- Bits 0..25. The firmware's own arming-disable mask is wider than this in
--- later versions; a set bit above 25 is reported as its number rather than
--- dropped, so an unknown bit is visible instead of silently missing.
+-- Bits 0..25 always mean the same thing. A set bit above 25 is reported as
+-- its number rather than dropped, so an unknown bit is visible instead of
+-- silently missing -- unless the caller says which firmware it is talking
+-- to (see armSwitchBit), in which case bits 26 and 27 are named too.
 local FLAG_COUNT = 26
 
 local FLAG_TAGS = {
@@ -58,6 +59,19 @@ local FLAG_TAGS = {
   [25] = "@i18n(app.modules.fblstatus.arming_disable_flag_25)@",
 }
 
+-- Firmware bits 26 and 27 (NO_NOTCH_FILTER, RX_INPUT_BACKUP). Named only when
+-- the firmware is known to have them, i.e. when they sit below ARM_SWITCH.
+local EXTRA_FLAG_TAGS = {
+  [26] = "@i18n(app.modules.fblstatus.arming_disable_flag_26)@",
+  [27] = "@i18n(app.modules.fblstatus.arming_disable_flag_27)@",
+}
+
+-- ARM_SWITCH is always the firmware's last flag, so its bit has moved as
+-- flags were added: 25 up to API 12.8, 26 in 12.9 (OVERRIDE), and 28 once
+-- NO_NOTCH_FILTER (26) and RX_INPUT_BACKUP (27) exist, which is assumed
+-- from 12.10 on. It gets its own label rather than a per-bit one.
+local ARM_SWITCH_TAG = "@i18n(app.modules.fblstatus.arming_disable_flag_28)@"
+
 -- The summary line's text. Bounded by construction: a count and a fixed word,
 -- never the flag names. "#2346: the value column cannot hold the names."
 local ACTIVE_FMT = "@i18n(app.modules.fblstatus.arming_flags_active_fmt)@"
@@ -76,15 +90,42 @@ function arming_flags.hasBit(mask, bit)
   return math.floor(arming_flags.normalize(mask) / (2 ^ bit)) % 2 >= 1
 end
 
+-- ARM_SWITCH's bit for the connected firmware, or nil when unknown.
+-- `firmware` is either {count = <MSP_STATUS arming_disable_flags_count>},
+-- which is exact, or {apiMajor = n, apiMinor = n} when only the API version
+-- is known (the dashboard, which gets the mask from telemetry).
+function arming_flags.armSwitchBit(firmware)
+  if type(firmware) ~= "table" then return nil end
+  local count = tonumber(firmware.count)
+  if count and count > 0 then return count - 1 end
+  local major, minor = tonumber(firmware.apiMajor), tonumber(firmware.apiMinor)
+  if not major or not minor then return nil end
+  local version = major * 100 + minor
+  if version >= 1210 then return 28 end
+  if version >= 1209 then return 26 end
+  return 25
+end
+
+-- The label for one bit, or nil when this build cannot name it.
+function arming_flags.tagFor(bit, armSwitchBit)
+  if bit == armSwitchBit then return ARM_SWITCH_TAG end
+  if armSwitchBit and bit > armSwitchBit then return nil end
+  if FLAG_TAGS[bit] then return FLAG_TAGS[bit] end
+  if armSwitchBit then return EXTRA_FLAG_TAGS[bit] end
+  return nil
+end
+
 -- Active flags, lowest bit first -- the order the pilot clears them in.
 -- A list of display strings, never a joined string: joining is what made the
 -- original unreadable, so the join deliberately does not exist here.
-function arming_flags.active(mask)
+-- `firmware` is optional; see armSwitchBit.
+function arming_flags.active(mask, firmware)
   mask = arming_flags.normalize(mask)
+  local armSwitchBit = arming_flags.armSwitchBit(firmware)
   local active = {}
   for bit = 0, 31 do
     if arming_flags.hasBit(mask, bit) then
-      active[#active + 1] = FLAG_TAGS[bit] or string.format("0x%X", 2 ^ bit)
+      active[#active + 1] = arming_flags.tagFor(bit, armSwitchBit) or string.format("0x%X", 2 ^ bit)
     end
   end
   if #active == 0 and mask > 0 then

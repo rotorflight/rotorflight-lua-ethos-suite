@@ -97,7 +97,7 @@ local function open(opts)
     end
 
     local function applyStatus(data)
-      local active = armingFlags.active(data.arming_disable_flags)
+      local active = armingFlags.active(data.arming_disable_flags, {count = data.arming_disable_flags_count})
       local summary, count = armingFlags.summary(data.arming_disable_flags, active)
       common.updateField(fields.arming, summary)
       -- GREEN and RED are the only colour globals used anywhere in this
