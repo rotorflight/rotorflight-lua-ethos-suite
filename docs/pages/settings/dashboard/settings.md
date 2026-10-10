@@ -28,5 +28,17 @@ window meets its minimum size. **Bastion** requires at least 784 × 294 pixels;
 
 The available fields are provided by the theme's configuration module.
 
+## KSE5
+
+**KSE5** sets the value at which each of its rings is full. A zero or missing
+value falls back to the default.
+
+- **Headspeed → Max** — 500 to 6000 rpm, default 3000.
+- **Current → Max** — 10 to 500 A, default 150. The ring turns to the warning
+  colour above 70 % of this value and to the critical colour above 90 %.
+- **ESC Temp → Max** — 40 to 150 °C, default 100, with the same colour steps.
+
+Values are stored in the `dashboard.kse5` section of `settings.ini`.
+
 See the [Bastion guide](../../../dashboard/bastion.md) for its appearance,
 installation, and [phase previews](../../../dashboard-themes/Bastion/README.md).

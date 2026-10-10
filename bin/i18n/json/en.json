@@ -2152,6 +2152,18 @@
           "needs_translation": false,
           "max_length": 4
         },
+        "dashboard_theme_kse4": {
+          "english": "KSE4",
+          "translation": "KSE4",
+          "needs_translation": false,
+          "max_length": 4
+        },
+        "dashboard_theme_kse5": {
+          "english": "KSE5",
+          "translation": "KSE5",
+          "needs_translation": false,
+          "max_length": 4
+        },
         "dashboard_theme_danielrc": {
           "english": "DanielRC",
           "translation": "DanielRC",
