@@ -100,12 +100,12 @@ applies an adjustment straight away and saves it when you disarm.
   flight where you adjusted one of these settings (or switched profile) is measured partly on the old value and
   saved as if flown on the value you ended on. Leave these adjustments alone while collecting flights for the
   advisor. If you did use one, press *Clear* and fly again.
-- **Adjusting between flights is fine.** A switch (stepped) adjustment is saved at disarm, so the next flight is on
+- **Adjusting between flights is fine.** A *Stepped* adjustment (a switch) is saved at disarm, so the next flight is on
   a new tune and the advisor starts again from it, as it does after *Save*.
-- **A knob or slider (continuous) adjustment overrides Apply.** It sets the value from the knob's position: once the
+- **A *Mapped* adjustment (a knob or slider) overrides Apply.** It sets the value from the knob's position: once the
   knob moves, and at every power-up while its range is enabled, the value goes back to what the knob says. A value
-  written by *Save* then lasts only until that happens. Before applying advice to a setting, remove its continuous
-  adjustment or turn it off, or leave the knob where it gives the new value.
+  written by *Save* then lasts only until that happens. Before applying advice to a setting, set its *Mapped*
+  adjustment's *Type* to *Off*, or leave the knob where it gives the new value.
 - *Save* checks the profiles and values at the moment it writes, so an adjustment or profile switch made since the
   flights stops it with nothing changed.
 
