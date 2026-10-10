@@ -2189,10 +2189,14 @@ jobs:
   battery-picker:
     name: Battery tile picker lays the packs out as a grid
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
       - name: Install Lua 5.4
         run: sudo apt-get update && sudo apt-get install -y lua5.4
@@ -2282,6 +2286,39 @@ jobs:
 
       - name: Check the stored craft name and the known-models listing
         run: lua5.4 bin/known_models/verify_known_models.lua
+
+  # MSP_ACC_CALIBRATION is acknowledged as soon as it arrives, but the flight
+  # controller finishes the calibration afterwards: it sets ARMING_DISABLED_CALIBRATING
+  # (bit 12 of arming_disable_flags) while it runs and clears it when it is done. The
+  # accelerometer page used to save to the EEPROM and play the beep on the acknowledgement,
+  # so it reported a calibration as finished before the flight controller had finished it.
+  #
+  # lib/acc_calibration_wait.lua decides from MSP_STATUS polls: done once the bit has been
+  # seen set and is clear again, timeout after 15 seconds while it stays set or the polls fail.
+  # One assumption is stated in the module: a bit never seen set counts as done after 3 seconds,
+  # because a calibration shorter than one poll interval is never seen set.
+  #
+  # The harness drives the real module with a simulated clock: no done while the bit is set,
+  # done on the first clear poll after it was seen set, the fallback time, the timeout, the
+  # poll interval. --self-test replaces the rule with a naive one that reports done on the
+  # first clear poll, and requires that to be caught.
+  acc-calibration-wait:
+    name: Accelerometer calibration waits for the flight controller before it saves
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Install Lua 5.4
+        run: sudo apt-get update && sudo apt-get install -y lua5.4
+
+      - name: Check the accelerometer calibration wait
+        run: lua5.4 bin/acc_calibration_wait/verify_acc_calibration_wait.lua
 
   # Per-language PR builds (mirrors push.yml behavior)
   create-zip:

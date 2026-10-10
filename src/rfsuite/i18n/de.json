@@ -363,6 +363,12 @@
           "reverse_text": false,
           "translation": "Beschleunigungssensor kalibrieren?"
         },
+        "msg_calibration_timeout": {
+          "english": "The calibration did not finish. Try again.",
+          "max_length": 46,
+          "needs_translation": false,
+          "translation": "Die Kalibrierung ist nicht abgeschlossen. Bitte erneut versuchen."
+        },
         "name": {
           "english": "Accelerometer",
           "max_length": 13,

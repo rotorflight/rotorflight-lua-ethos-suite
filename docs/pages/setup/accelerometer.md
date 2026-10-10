@@ -24,6 +24,9 @@ Greyed out until the flight controller answers. Read-only while the model is arm
 ## Notes
 
 - Changes are written to the flight controller EEPROM upon Save.
+- Calibrate waits until the flight controller reports that the calibration has
+  finished, then saves to the EEPROM and plays the confirmation beep. If it does
+  not finish within 15 seconds, the page shows an error and saves nothing.
 
 ## Related
 

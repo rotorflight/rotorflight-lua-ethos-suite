@@ -1791,6 +1791,28 @@ hooks, the id sort, the ".ini" end anchor -- and requires the gate named for it 
 red. The baseline run is required to be green first.
 '''
     ),
+    LuaJob(
+        id='acc-calibration-wait',
+        name='Accelerometer calibration waits for the flight controller before it saves',
+        step='Check the accelerometer calibration wait',
+        script='bin/acc_calibration_wait/verify_acc_calibration_wait.lua',
+        rationale=r'''MSP_ACC_CALIBRATION is acknowledged as soon as it arrives, but the flight
+controller finishes the calibration afterwards: it sets ARMING_DISABLED_CALIBRATING
+(bit 12 of arming_disable_flags) while it runs and clears it when it is done. The
+accelerometer page used to save to the EEPROM and play the beep on the acknowledgement,
+so it reported a calibration as finished before the flight controller had finished it.
+
+lib/acc_calibration_wait.lua decides from MSP_STATUS polls: done once the bit has been
+seen set and is clear again, timeout after 15 seconds while it stays set or the polls fail.
+One assumption is stated in the module: a bit never seen set counts as done after 3 seconds,
+because a calibration shorter than one poll interval is never seen set.
+
+The harness drives the real module with a simulated clock: no done while the bit is set,
+done on the first clear poll after it was seen set, the fallback time, the timeout, the
+poll interval. --self-test replaces the rule with a naive one that reports done on the
+first clear poll, and requires that to be caught.
+'''
+    ),
 ]
 
 VERBATIM_JOBS = [

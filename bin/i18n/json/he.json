@@ -2635,6 +2635,12 @@
           "translation": "לכייל את האקסלרומטר?",
           "reverse_text": true
         },
+        "msg_calibration_timeout": {
+          "english": "The calibration did not finish. Try again.",
+          "max_length": 46,
+          "needs_translation": true,
+          "translation": "The calibration did not finish. Try again."
+        },
         "name": {
           "english": "Accelerometer",
           "max_length": 13,

@@ -2635,6 +2635,12 @@
           "reverse_text": false,
           "max_length": 28
         },
+        "msg_calibration_timeout": {
+          "english": "The calibration did not finish. Try again.",
+          "max_length": 46,
+          "needs_translation": false,
+          "translation": "Die Kalibrierung ist nicht abgeschlossen. Bitte erneut versuchen."
+        },
         "name": {
           "english": "Accelerometer",
           "translation": "Beschl.-Sensor",
