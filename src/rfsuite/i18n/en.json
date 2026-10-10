@@ -5946,6 +5946,18 @@
           "needs_translation": false,
           "translation": "Kevd"
         },
+        "dashboard_theme_kse4": {
+          "english": "KSE4",
+          "max_length": 4,
+          "needs_translation": false,
+          "translation": "KSE4"
+        },
+        "dashboard_theme_kse5": {
+          "english": "KSE5",
+          "max_length": 4,
+          "needs_translation": false,
+          "translation": "KSE5"
+        },
         "dashboard_theme_panel_global": {
           "english": "Default theme for all models",
           "max_length": 28,
