@@ -2580,5 +2580,11 @@ end
 
 context.widgets.dashboard.utils = utils
 
+-- A second load can start and finish while Ethos has this one paused (see
+-- lib/require.lua). The copy that finished first is already in use, so
+-- hand that back rather than replacing it with this one.
+local existing = package.loaded["rfsuite.dashboard.context"]
+if existing then return existing end
+
 package.loaded["rfsuite.dashboard.context"] = context
 return context

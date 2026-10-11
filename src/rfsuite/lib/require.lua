@@ -78,6 +78,13 @@ local function requireModule(path, cacheKey)
   if cached ~= nil then return cached end
 
   local result = assert(loadfile(path))()
+  -- Ethos can pause a long module body and run another script callback
+  -- before it returns; if that callback required the same path, it built
+  -- and cached its own copy first. Keep that one: callers already hold it,
+  -- and two live copies of a stateful module (widgets/dashboard/context.lua
+  -- left the dashboard blank this way) must never coexist.
+  local existing = package.loaded[cacheKey]
+  if existing ~= nil then return existing end
   -- A module that returns nothing (relies purely on package.loaded's
   -- own self-guard returning it on the *next* raw loadfile(), never on
   -- this wrapper) would otherwise recompute `cached ~= nil` as false on
