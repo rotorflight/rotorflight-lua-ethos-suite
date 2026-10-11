@@ -105,6 +105,9 @@ check("manufacturer name is not a reference design", port_labels.lookup("VANTAC_
 check("nil design gives nil", port_labels.lookup(nil, 3) == nil)
 check("empty design gives nil", port_labels.lookup("", 3) == nil)
 check("UART with no label gives nil (UART10 = index 9)", port_labels.lookup("F7B5", 9) == nil)
+-- The DSM connector keeps its letter (the Configurator shows "DSM Ⓓ"), so pilots can match it.
+check("F7A1 UART1 (index 0) is DSM D", port_labels.lookup("F7A1", 0) == "DSM D",
+  tostring(port_labels.lookup("F7A1", 0)))
 
 local designs, entries, complete = 0, 0, true
 for _, table_ in pairs(port_labels.DESIGNS) do
