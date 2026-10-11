@@ -2376,6 +2376,33 @@ jobs:
       - name: Check the accelerometer calibration wait
         run: lua5.4 bin/acc_calibration_wait/verify_acc_calibration_wait.lua
 
+  # Issue #2358: the audio alert and the dashboard footer banner both show that the
+  # flight pack is gone while the receiver still runs on backup power. The test lives in
+  # lib/main_power.lua; tasks/session.lua evaluates it on every voltage change and publishes
+  # session.mainPowerLost, so both consumers read one flag.
+  #
+  # The harness checks the threshold, the latch (a pack never seen this connection stays
+  # quiet), recovery, and that the shared test gives the same answer as the function it
+  # replaced in tasks/audio_events.lua on master, for a fixed set of readings. A mutated
+  # threshold turns it red.
+  main-power-lost:
+    name: Main power lost test shared by audio alert and dashboard banner
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Install Lua 5.4
+        run: sudo apt-get update && sudo apt-get install -y lua5.4
+
+      - name: Check the main power lost test and its audio equivalence
+        run: lua5.4 bin/main_power/verify_main_power.lua
+
   # Per-language PR builds (mirrors push.yml behavior)
   create-zip:
     name: Build PR ZIP (${{ matrix.lang }})

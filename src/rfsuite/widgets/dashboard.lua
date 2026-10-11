@@ -1598,6 +1598,7 @@ local function update(widget, snapshot)
   widget.apiVersionMajor = snapshot.apiVersionMajor
   widget.apiVersionMinor = snapshot.apiVersionMinor
   widget.apiVersionSupported = snapshot.apiVersionSupported
+  widget.mainPowerLost = snapshot.mainPowerLost == true
   widget.voltage = snapshot.voltage
   widget.batteryConfig = snapshot.batteryConfig
   widget.consumption = snapshot.consumption
@@ -1884,6 +1885,13 @@ local function drawFooterAlert(widget, w, h)
   if not isBackgroundTaskRunning(widget) then
     if not backgroundTaskGraceExpired(widget) then return end
     drawFooterBanner(w, h, "@i18n(app.msg_background_task_missing_title)@")
+    return
+  end
+
+  -- Main power lost outranks the firmware warnings and the FC status alerts: the flight
+  -- pack is gone while the receiver still runs on backup power (#2358).
+  if widget.connected == true and widget.mainPowerLost == true then
+    drawFooterBanner(w, h, "@i18n(app.msg_main_power_lost_banner)@", FOOTER_ALERT_BG, FOOTER_ALERT_TEXT)
     return
   end
 

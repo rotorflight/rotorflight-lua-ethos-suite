@@ -8154,6 +8154,13 @@
       "reverse_text": false,
       "translation": "A tarefa em segundo plano Rotorflight não está em execução. Habilite-o antes de abrir os menus."
     },
+    "msg_main_power_lost_banner": {
+      "english": "MAIN POWER LOST",
+      "max_length": 27,
+      "needs_translation": false,
+      "reverse_text": false,
+      "translation": "ENERGIA PRINCIPAL PERDIDA"
+    },
     "msg_background_task_missing_title": {
       "english": "Background task not running",
       "max_length": 27,

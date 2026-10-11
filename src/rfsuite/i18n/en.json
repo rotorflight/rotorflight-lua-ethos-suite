@@ -7008,6 +7008,12 @@
       "needs_translation": false,
       "translation": "Rotorflight background task is not running. Enable it before opening menus."
     },
+    "msg_main_power_lost_banner": {
+      "english": "MAIN POWER LOST",
+      "max_length": 27,
+      "needs_translation": false,
+      "translation": "MAIN POWER LOST"
+    },
     "msg_background_task_missing_title": {
       "english": "Background task not running",
       "max_length": 27,

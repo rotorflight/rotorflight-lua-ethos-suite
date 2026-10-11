@@ -28,6 +28,10 @@ local settingsStore = requireModule("lib/settings_store.lua")
 local mspBattery = requireModule("lib/msp_battery.lua")
 local batteryProfileIndex = requireModule("lib/battery_profile_index.lua")
 local dataflashSummary = requireModule("lib/msp_dataflash_summary.lua")
+local mainPower = requireModule("lib/main_power.lua")
+-- The latch lives with the session, not in the audio task, so the dashboard and the
+-- audio alert read one flag from one place (#2358).
+local mainPowerLatch = mainPower.newLatch()
 local governorConfig = requireModule("lib/msp_governor_config.lua")
 local modelPreferences = requireModule("lib/model_preferences.lua")
 local flightStats = requireModule("lib/msp_flight_stats.lua")
@@ -74,6 +78,9 @@ local session = {
   -- true/false once lib/msp_api_version.lua's read completes; nil while
   -- still unknown (never reads as "unsupported" -- see its own isSupported()).
   apiVersionSupported = nil,
+  -- true while the flight pack is gone and the receiver runs on backup power (#2358).
+  -- Evaluated in updateMainPower(); the audio alert and the dashboard both read it.
+  mainPowerLost = false,
   mcuId = nil,
   craftName = nil,
   clockSynced = false,
@@ -389,6 +396,7 @@ local function flush()
     apiVersionMajor = session.apiVersionMajor,
     apiVersionMinor = session.apiVersionMinor,
     apiVersionSupported = session.apiVersionSupported,
+    mainPowerLost = session.mainPowerLost,
     mcuId = session.mcuId,
     craftName = session.craftName,
     batteryConfig = copyBatteryConfig(session.batteryConfig),
@@ -947,6 +955,8 @@ local function setConnected(value, mspQueue, protocol)
     session.tempEsc = nil
     session.tempMcu = nil
     session.becVoltage = nil
+    session.mainPowerLost = false
+    mainPowerLatch.packSeen = false
     session.smartfuelMode = nil
     session.smartfuelVoltageFallPerSecond = nil
     session.smartfuelChargeDropPerSecond = nil
@@ -998,11 +1008,19 @@ local function setConnected(value, mspQueue, protocol)
   publish()
 end
 
+-- Main power lost (#2358): evaluated on every voltage change, so the latch sees each
+-- reading (the latch itself is declared with the requires, above setConnected()).
+local function updateMainPower()
+  session.mainPowerLost = mainPower.evaluate(
+    tonumber(session.voltage), tonumber(session.becVoltage), mainPowerLatch)
+end
+
 local function updateVoltage(protocol)
   if not telemetrySensors then return end
   local value = telemetrySensors.getValue(protocol, "voltage")
   if value ~= session.voltage then
     session.voltage = value
+    updateMainPower()
     publish()
   end
 end
@@ -1283,6 +1301,7 @@ local function updateBecVoltage(protocol)
   local value = telemetrySensors.getValue(protocol, "bec_voltage")
   if value ~= session.becVoltage then
     session.becVoltage = value
+    updateMainPower()
     publish()
   end
 end

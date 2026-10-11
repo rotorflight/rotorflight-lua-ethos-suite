@@ -1847,6 +1847,22 @@ poll interval. --self-test replaces the rule with a naive one that reports done 
 first clear poll, and requires that to be caught.
 '''
     ),
+    LuaJob(
+        id='main-power-lost',
+        name='Main power lost test shared by audio alert and dashboard banner',
+        step='Check the main power lost test and its audio equivalence',
+        script='bin/main_power/verify_main_power.lua',
+        rationale=r'''Issue #2358: the audio alert and the dashboard footer banner both show that the
+flight pack is gone while the receiver still runs on backup power. The test lives in
+lib/main_power.lua; tasks/session.lua evaluates it on every voltage change and publishes
+session.mainPowerLost, so both consumers read one flag.
+
+The harness checks the threshold, the latch (a pack never seen this connection stays
+quiet), recovery, and that the shared test gives the same answer as the function it
+replaced in tasks/audio_events.lua on master, for a fixed set of readings. A mutated
+threshold turns it red.
+'''
+    ),
 ]
 
 VERBATIM_JOBS = [

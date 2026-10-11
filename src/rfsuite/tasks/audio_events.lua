@@ -5,6 +5,7 @@ local bus = requireModule("lib/bus.lua")
 local batteryProfileIndex = requireModule("lib/battery_profile_index.lua")
 local engineType = requireModule("lib/engine_type.lua")
 local settingsStore = requireModule("lib/settings_store.lua")
+local mainPower = requireModule("lib/main_power.lua")
 
 local audio_events = {}
 
@@ -20,7 +21,6 @@ local lastAlertAt = {}
 -- Whether the pack has read a real voltage at any point in the current run.
 -- The main-power test below needs it: a model whose pack is not measured at
 -- all would otherwise look exactly like one whose pack has gone.
-local packVoltageSeen = false
 -- True between a main-power alert actually playing and the pack coming back,
 -- so the recovery is only announced for an episode that was announced lost.
 local mainPowerLostActive = false
@@ -48,7 +48,7 @@ local CONTROL_LIMIT_REPEAT_SECONDS = 3
 -- ever taken to is far above this, so nothing a discharge can reach falls
 -- inside the window. The same number and the same test the EdgeTX suite's
 -- lib/audio.lua uses (MAIN_POWER_LOST_VOLTS, Audio.mainPowerLost).
-local MAIN_POWER_LOST_VOLTS = 1.0
+local MAIN_POWER_LOST_VOLTS = mainPower.THRESHOLD_VOLTS
 -- How often a main-power alert repeats while the pack stays gone.
 local MAIN_POWER_REPEAT_SECONDS = 10
 -- The sound each main-power announcement would like the sound packs to gain,
@@ -152,6 +152,7 @@ local AUDIO_SESSION_KEYS = {
   "batteryConfig",
   "tempEsc",
   "becVoltage",
+  "mainPowerLost",
   "fuelPercent",
   "adjFunction",
   "adjValue",
@@ -582,21 +583,10 @@ end
 -- announceVoltage(). Not armed-gated, for the same reason it is not there:
 -- the pack-seen latch already keeps a bench setup with no pack attached quiet,
 -- and a pack that goes while the model sits on the ground is still a fault.
+-- The test itself is lib/main_power.lua, evaluated by tasks/session.lua on every voltage
+-- change (#2358), so the audio alert and the dashboard banner cannot disagree.
 local function mainPowerLost()
-  local voltage = tonumber(session.voltage)
-  if voltage == nil then return false end
-
-  if voltage > MAIN_POWER_LOST_VOLTS then
-    packVoltageSeen = true
-    return false
-  end
-
-  if not packVoltageSeen then return false end
-
-  local bec = tonumber(session.becVoltage)
-  if bec == nil or bec <= 0 then return false end
-
-  return true
+  return session.mainPowerLost == true
 end
 
 -- Announced again every MAIN_POWER_REPEAT_SECONDS while the pack stays gone,
@@ -1048,7 +1038,6 @@ function audio_events.wakeup()
     adjChangedAt = nil
     resetTimerAudio()
     speakingUntil = 0
-    packVoltageSeen = false
     mainPowerLostActive = false
     lowVoltageHoldStart = nil
     -- connectionLostAt is deliberately NOT cleared here: it has to outlive the
@@ -1109,7 +1098,6 @@ function audio_events.reset()
   adjChangedAt = nil
   resetTimerAudio()
   speakingUntil = 0
-  packVoltageSeen = false
   mainPowerLostActive = false
   connectionLostAt = nil
   lowVoltageHoldStart = nil
