@@ -1847,6 +1847,19 @@ poll interval. --self-test replaces the rule with a naive one that reports done 
 first clear poll, and requires that to be caught.
 '''
     ),
+    LuaJob(
+        id='memory-bursts',
+        name='Memory bursts in dashboard settings and diagnostics status',
+        step='Check memory burst and churn mitigations',
+        script='bin/memory_bursts/verify_memory_bursts.lua',
+        rationale=r'''Opening dashboard settings synchronously compiled all theme configure.lua files
+via loadfile(), causing an acute memory spike on radios operating close to the
+2048 kB Lua ceiling (#2295, #2530). Diagnostics status ran at 20-30 Hz without
+rate limiting, churning memory on every wakeup frame. This pins that theme
+discovery probes file presence without compiling chunks and that diagnostics
+status updates are rate-limited to at most 1 Hz.
+'''
+    ),
 ]
 
 VERBATIM_JOBS = [

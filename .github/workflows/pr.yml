@@ -2376,6 +2376,30 @@ jobs:
       - name: Check the accelerometer calibration wait
         run: lua5.4 bin/acc_calibration_wait/verify_acc_calibration_wait.lua
 
+  # Opening dashboard settings synchronously compiled all theme configure.lua files
+  # via loadfile(), causing an acute memory spike on radios operating close to the
+  # 2048 kB Lua ceiling (#2295, #2530). Diagnostics status ran at 20-30 Hz without
+  # rate limiting, churning memory on every wakeup frame. This pins that theme
+  # discovery probes file presence without compiling chunks and that diagnostics
+  # status updates are rate-limited to at most 1 Hz.
+  memory-bursts:
+    name: Memory bursts in dashboard settings and diagnostics status
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Install Lua 5.4
+        run: sudo apt-get update && sudo apt-get install -y lua5.4
+
+      - name: Check memory burst and churn mitigations
+        run: lua5.4 bin/memory_bursts/verify_memory_bursts.lua
+
   # Per-language PR builds (mirrors push.yml behavior)
   create-zip:
     name: Build PR ZIP (${{ matrix.lang }})
