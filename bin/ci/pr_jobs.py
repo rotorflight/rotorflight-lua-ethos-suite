@@ -2046,10 +2046,15 @@ r'''  # A tag that does not resolve is shown on the radio as the raw text "@i18n
   i18n-tags:
     name: i18n tags resolve and no new hardcoded labels
     runs-on: ubuntu-latest
+    # Read-only token: the checkers run code from the pull request.
+    permissions:
+      contents: read
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
       - name: Set up Python
         uses: actions/setup-python@v5
