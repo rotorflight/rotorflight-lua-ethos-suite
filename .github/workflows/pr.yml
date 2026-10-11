@@ -2376,6 +2376,26 @@ jobs:
       - name: Check the accelerometer calibration wait
         run: lua5.4 bin/acc_calibration_wait/verify_acc_calibration_wait.lua
 
+  # Port labels on the Ports page (#2359). The table is copied from the Rotorflight
+  # Configurator (GPL-3.0); the check pins the lookup and the MSP_BOARD_INFO parser.
+  port-labels:
+    name: Port labels from the board design
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Install Lua 5.4
+        run: sudo apt-get update && sudo apt-get install -y lua5.4
+
+      - name: Check the label table and the MSP_BOARD_INFO parser
+        run: lua5.4 bin/port_labels/verify_port_labels.lua
+
   # Per-language PR builds (mirrors push.yml behavior)
   create-zip:
     name: Build PR ZIP (${{ matrix.lang }})
@@ -2454,22 +2474,6 @@ jobs:
 
       - name: Check every locale's flag strings against the row widths
         run: python bin/fblstatus/verify_arming_flag_widths.py
-
-  # Port labels on the Ports page (#2359). The table is copied from the Rotorflight
-  # Configurator (GPL-3.0); the check pins the lookup and the MSP_BOARD_INFO parser.
-  port-labels:
-    name: Port labels from the board design
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Install Lua 5.3
-        run: sudo apt-get update && sudo apt-get install -y lua5.3
-
-      - name: Check the label table and the MSP_BOARD_INFO parser
-        run: lua5.3 bin/port_labels/verify_port_labels.lua
 
   # tasks/elrs_sensors.lua's parseFrame() stops at the first appId it has no
   # decoder for and cannot skip it -- the pair's byte width lives only in

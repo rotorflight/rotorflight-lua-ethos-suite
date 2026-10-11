@@ -23,6 +23,11 @@ Greyed out until the flight controller answers. Read-only while the model is arm
 
 ## Notes
 
+- Ports are labeled with their silkscreen connector names according to the flight
+  controller's board design (e.g. `Port A [UART4]`, `S.BUS [UART1]`, `DSM D [UART1]`).
+  If board information is unavailable or the board design does not define dedicated labels,
+  the ports fall back to their plain MCU UART names (`UART1`..`UART6`). (#2359,
+  `src/rfsuite/app/pages/ports.lua`, `src/rfsuite/lib/port_labels.lua`)
 - Changes are written to the flight controller EEPROM upon Save.
 - A *Save* or *Reload* confirmation that is still on screen when you leave the
   page is now closed with the page. Before, it stayed up over the next screen
