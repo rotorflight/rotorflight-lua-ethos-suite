@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """Normalise tile and theme icons to exactly 70x70 px, RGB PNG without alpha.
 
-Scope (Issue #2365): every PNG in src/rfsuite/app/gfx/ and the theme preview
-icon.png of each dashboard theme. Dashboard graphics (dials, logos, toolbar,
+Scope: every PNG in src/<suite>/app/gfx/ and the theme preview icon.png of each
+dashboard theme, for every suite under src/ (rfsuite and wfsuite). Dashboard graphics (dials, logos, toolbar,
 default image) are deliberately NOT in scope: they are drawn at their own
 size and would be destroyed by a rescale.
 
@@ -33,8 +33,8 @@ from PIL import Image
 SIZE = 70
 REPO_ROOT = Path(__file__).resolve().parents[2]
 PATTERNS = (
-    "src/rfsuite/app/gfx/*.png",
-    "src/rfsuite/widgets/dashboard/themes/*/icon.png",
+    "src/*/app/gfx/*.png",
+    "src/*/widgets/dashboard/themes/*/icon.png",
 )
 
 
