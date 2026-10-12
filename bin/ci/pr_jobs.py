@@ -1904,6 +1904,30 @@ discovery probes file presence without compiling chunks and that diagnostics
 status updates are rate-limited to at most 1 Hz.
 '''
     ),
+    LuaJob(
+        id='servo-config-commands',
+        name='Servo command numbers: read 125, raw write 124, packed write 212, centre 213, override 193',
+        step='Check the servo command numbers and payloads',
+        script='bin/servo_config_commands/verify_servo_config_commands.lua',
+        rationale=r'''Issue #2444: lib/msp_servo_config.lua named the packed write 212 as its
+"WRITE_COMMAND", next to a read that takes a raw index, and nothing pinned the
+numbers. Against rotorflight-firmware src/main/msp/msp_protocol.h, 212
+(MSP_SET_SERVO_CONFIGURATION) takes the packed index and 124 (MSP_SET_SERVO_CONFIG)
+takes the raw one, the same index space as the read, 125. A mapping slip there
+writes a valid-looking slot on another servo with no error, so a plausible edit
+must not pass unseen.
+
+The module now names each command for what it is, states the two index spaces in
+its header, and exposes the raw write as buildRawWriteMessage. Nothing in the suite
+uses the raw write yet; that is a separate decision.
+
+The harness reads the command number and the payload off the messages the modules
+build: 125, 212 and 124 in lib/msp_servo_config.lua, 213 in lib/msp_servo_center.lua,
+193 in lib/msp_servo_override.lua, and the 17-byte layout shared by 124 and 212.
+--self-test swaps one number at a time in a copy of each module and requires the
+pin to go red every time, after the unmodified modules have passed.
+'''
+    ),
 ]
 
 VERBATIM_JOBS = [
