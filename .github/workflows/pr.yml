@@ -2403,6 +2403,26 @@ jobs:
       - name: Check the main power lost test and its audio equivalence
         run: lua5.4 bin/main_power/verify_main_power.lua
 
+  # Port labels on the Ports page (#2359). The table is copied from the Rotorflight
+  # Configurator (GPL-3.0); the check pins the lookup and the MSP_BOARD_INFO parser.
+  port-labels:
+    name: Port labels from the board design
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Install Lua 5.4
+        run: sudo apt-get update && sudo apt-get install -y lua5.4
+
+      - name: Check the label table and the MSP_BOARD_INFO parser
+        run: lua5.4 bin/port_labels/verify_port_labels.lua
+
   # Opening dashboard settings synchronously compiled all theme configure.lua files
   # via loadfile(), causing an acute memory spike on radios operating close to the
   # 2048 kB Lua ceiling (#2295, #2530). Diagnostics status ran at 20-30 Hz without

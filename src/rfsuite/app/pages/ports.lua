@@ -15,6 +15,8 @@ local serialConfig = requireModule("lib/msp_serial_config.lua")
 local rxConfig = requireModule("lib/msp_rx_config.lua")
 local eeprom = requireModule("lib/msp_eeprom.lua")
 local reboot = requireModule("lib/msp_reboot.lua")
+local boardInfo = requireModule("lib/msp_board_info.lua")
+local portLabels = requireModule("lib/port_labels.lua")
 
 local PAGE_TITLE = "@i18n(app.modules.ports.name)@"
 local MSG_SAVE_TITLE = "@i18n(app.msg_save_settings)@"
@@ -106,8 +108,13 @@ local function clonePorts(ports)
   return out
 end
 
-local function portLabel(identifier)
-  return UART_NAMES[identifier] or ("@i18n(app.modules.ports.port_prefix)@ " .. tostring(identifier))
+-- Silkscreen name with the UART in brackets ("Port Ⓐ [UART4]") when the board
+-- design has one; the plain UART name otherwise.
+local function portLabel(boardDesign, boardName, identifier)
+  local uart = UART_NAMES[identifier]
+  local silkscreen = portLabels.lookup(boardDesign, identifier, boardName)
+  if silkscreen and uart then return silkscreen .. " [" .. uart .. "]" end
+  return uart or ("@i18n(app.modules.ports.port_prefix)@ " .. tostring(identifier))
 end
 
 local function getPortFunctionById(functionMask)
@@ -223,6 +230,8 @@ local function open(opts)
   local disposed = false
   local loaded = false
   local busy = false
+  local boardDesign = nil -- from MSP_BOARD_INFO; nil until read or when generic
+  local boardName = nil   -- from MSP_BOARD_INFO; keys boards that share a generic design
   local dirty = false
   local loadError = nil
   local saveError = nil
@@ -325,6 +334,8 @@ local function open(opts)
     fields = {}
     package.loaded["rfsuite.lib.msp_serial_config"] = nil
     package.loaded["rfsuite.lib.msp_rx_config"] = nil
+    package.loaded["rfsuite.lib.msp_board_info"] = nil
+    package.loaded["rfsuite.lib.port_labels"] = nil
     memstats.print("ports disposed")
   end
 
@@ -346,41 +357,57 @@ local function open(opts)
     setBusy(true)
     activeDialog = openProgress(MSG_LOADING_TITLE, MSG_LOADING_BODY)
 
-    bus.publish("msp.request", serialConfig.buildReadMessage(function(data)
-      if disposed then return end
-      local filtered = {}
-      local ports = data and data.ports or {}
-      for i = 1, #ports do
-        local port = shallowCopy(ports[i])
-        if port.identifier ~= 20 then
-          port.receiver_locked = maskHasAny(port.function_mask, FUNCTION_MASK_RX_SERIAL)
-          filtered[#filtered + 1] = port
-        end
-      end
-      portsOriginal = clonePorts(filtered)
-      portsWorking = clonePorts(filtered)
-
-      bus.publish("msp.request", rxConfig.buildReadMessage(function(rxData)
+    local function loadSerialPorts()
+      bus.publish("msp.request", serialConfig.buildReadMessage(function(data)
         if disposed then return end
-        rxSerialProvider = rxData and rxData.serialrx_provider or 0
-        loaded = true
-        closeDialog(focusFn)
-        setBusy(false)
-        needsRender = true
+        local filtered = {}
+        local ports = data and data.ports or {}
+        for i = 1, #ports do
+          local port = shallowCopy(ports[i])
+          if port.identifier ~= 20 then
+            port.receiver_locked = maskHasAny(port.function_mask, FUNCTION_MASK_RX_SERIAL)
+            filtered[#filtered + 1] = port
+          end
+        end
+        portsOriginal = clonePorts(filtered)
+        portsWorking = clonePorts(filtered)
+
+        bus.publish("msp.request", rxConfig.buildReadMessage(function(rxData)
+          if disposed then return end
+          rxSerialProvider = rxData and rxData.serialrx_provider or 0
+          loaded = true
+          closeDialog(focusFn)
+          setBusy(false)
+          needsRender = true
+        end, function()
+          if disposed then return end
+          rxSerialProvider = 0
+          loaded = true
+          closeDialog(focusFn)
+          setBusy(false)
+          needsRender = true
+        end))
       end, function()
         if disposed then return end
-        rxSerialProvider = 0
-        loaded = true
+        loadError = "@i18n(app.modules.ports.error_read_serial_ports)@"
         closeDialog(focusFn)
         setBusy(false)
         needsRender = true
       end))
+    end
+
+    -- The board design selects the silkscreen labels, so it is read first. If it
+    -- is missing or the read fails, the page still loads with plain UART names.
+    bus.publish("msp.request", boardInfo.buildReadMessage(function(info)
+      if disposed then return end
+      boardDesign = info and info.boardDesign ~= "" and info.boardDesign or nil
+      boardName = info and info.boardName ~= "" and info.boardName or nil
+      loadSerialPorts()
     end, function()
       if disposed then return end
-      loadError = "@i18n(app.modules.ports.error_read_serial_ports)@"
-      closeDialog(focusFn)
-      setBusy(false)
-      needsRender = true
+      boardDesign = nil
+      boardName = nil
+      loadSerialPorts()
     end))
   end
 
@@ -521,7 +548,7 @@ local function open(opts)
 
     for i = 1, #portsWorking do
       local port = portsWorking[i]
-      local title = portLabel(port.identifier)
+      local title = portLabel(boardDesign, boardName, port.identifier)
       if port.receiver_locked then
         title = title .. " @i18n(app.modules.ports.rx_tag)@"
       end
