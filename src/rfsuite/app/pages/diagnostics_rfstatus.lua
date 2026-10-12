@@ -29,6 +29,8 @@ local function luaMemoryText()
   return string.format("%.1f kB", collectgarbage("count"))
 end
 
+local REFRESH_INTERVAL = 1.0
+
 local function open(opts)
   common.openReadOnlyPage(opts, PAGE_TITLE, function(ctx)
     local fields = {
@@ -40,19 +42,30 @@ local function open(opts)
       api = common.addValueLine("@i18n(app.modules.rfstatus.apiversion)@", "@i18n(app.modules.rfstatus.ok)@"),
     }
 
-    local function update(session)
+    local lastUpdate = 0
+    local lastConnected = nil
+
+    local function update(session, force)
+      local now = os.clock()
+      local connected = session and session.connected
+      if not force and (now - lastUpdate < REFRESH_INTERVAL) and (connected == lastConnected) then
+        return
+      end
+      lastUpdate = now
+      lastConnected = connected
+
       common.updateField(fields.memory, memoryText())
       common.updateField(fields.luaMemory, luaMemoryText())
       common.updateStatus(fields.rfModule, moduleEnabled())
       common.updateStatus(fields.mspSensor, haveMspSensor())
-      common.updateStatus(fields.connected, session.connected)
+      common.updateStatus(fields.connected, connected)
       common.updateStatus(fields.api, true)
     end
 
-    update(ctx.session)
+    update(ctx.session, true)
     return {
-      onSession = update,
-      wakeup = function() update(ctx.session) end,
+      onSession = function(session) update(session, false) end,
+      wakeup = function() update(ctx.session, false) end,
     }
   end)
 end
