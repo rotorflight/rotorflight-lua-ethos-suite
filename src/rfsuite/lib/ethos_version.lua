@@ -12,7 +12,8 @@
 local ethos_version = {}
 
 function ethos_version.atLeast(target)
-  if not system or type(system.getVersion) ~= "function" then return false end
+  -- system.getVersion() is available in Ethos 1.1.0 and later; this function is only
+  -- called from Ethos contexts where it is guaranteed to exist.
   local version = system.getVersion() or {}
   local current = {
     tonumber(version.major or version.majorVersion) or 0,

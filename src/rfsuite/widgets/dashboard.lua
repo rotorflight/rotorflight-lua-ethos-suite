@@ -1380,7 +1380,7 @@ local function batteryPickerEvent(widget, category, value, x, y)
     elseif value == KEY_EXIT_BREAK or value == KEY_RTN_BREAK then
       closeBatteryPicker(widget)
     end
-    if system and system.killEvents then system.killEvents(value) end
+    system.killEvents(value)
     return true
   end
 
@@ -1983,7 +1983,7 @@ local function event(widget, category, value, x, y)
   if category == EVT_KEY and value == KEY_PAGE_LONG and lcd.hasFocus() then
     setToolbarVisible(widget, true)
     invalidateWidget(widget)
-    if system and system.killEvents then system.killEvents(value) end
+    system.killEvents(value)
     return true
   end
 
@@ -2024,7 +2024,7 @@ local function event(widget, category, value, x, y)
       and (value == KEY_EXIT_BREAK or value == KEY_RTN_BREAK or value == KEY_ENTER_BREAK) then
     setInfoPanelVisible(widget, false)
     invalidateWidget(widget)
-    if system and system.killEvents then system.killEvents(value) end
+    system.killEvents(value)
     return true
   end
 

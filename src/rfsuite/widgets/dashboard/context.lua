@@ -1313,10 +1313,8 @@ function utils.standardHeaderLayout(headeropts)
 end
 
 function utils.getTxBatteryVoltageRange()
-  if system and system.voltageRange then
-    local vmin, vmax = system.voltageRange()
-    if vmin and vmax and vmin < vmax then return vmin, vmax end
-  end
+  local vmin, vmax = system.voltageRange()
+  if vmin and vmax and vmin < vmax then return vmin, vmax end
   return 7.2, 8.4
 end
 
@@ -1695,11 +1693,11 @@ function utils.dirtyOnDisplayValueChange(box)
 end
 
 function utils.getFontListsForResolution()
-  local version = system and system.getVersion and system.getVersion() or {}
+  local version = system.getVersion()
   local liveW, liveH
   if lcd.getWindowSize then liveW, liveH = lcd.getWindowSize() end
-  local width = version.lcdWidth or liveW or 800
-  local height = version.lcdHeight or liveH or 480
+  local width = (version and version.lcdWidth) or liveW or 800
+  local height = (version and version.lcdHeight) or liveH or 480
   local resolution = tostring(width) .. "x" .. tostring(height)
   return FONT_LISTS_BY_RESOLUTION[resolution] or DEFAULT_FONT_LISTS
 end

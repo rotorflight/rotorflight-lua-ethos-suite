@@ -13,7 +13,7 @@ local REQUEST_TIMEOUT = 3.0
 local RETRY_INTERVAL = 5.0
 
 local function isSimulation()
-  local version = system and system.getVersion and system.getVersion()
+  local version = system.getVersion()
   return version and version.simulation == true
 end
 

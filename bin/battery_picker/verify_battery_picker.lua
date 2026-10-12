@@ -118,6 +118,9 @@ system = {
   killEvents = function() end,
   openPage = function() end,
   getMemoryUsage = function() return {mainStackAvailable = 4096} end,
+  getVersion = function() return {simulation = false} end,
+  voltageRange = function() return 7.2, 8.4 end,
+  getSource = function() return nil end,
 }
 model = {bitmap = function() return nil end}
 

@@ -484,18 +484,16 @@ local function readCurrentAlias(telemetry)
         end
     end
 
-    if system and system.getSource then
-        for i = 1, #CURRENT_ALIAS_SOURCE_CANDIDATES do
-            local src = currentAliasSources[i]
-            if src == nil then
-                local ok, resolved = pcall(system.getSource, CURRENT_ALIAS_SOURCE_CANDIDATES[i])
-                src = ok and resolved or false
-                currentAliasSources[i] = src
-            end
-            if src and type(src.value) == "function" then
-                local v = src:value()
-                if type(v) == "number" then return v end
-            end
+    for i = 1, #CURRENT_ALIAS_SOURCE_CANDIDATES do
+        local src = currentAliasSources[i]
+        if src == nil then
+            local ok, resolved = pcall(system.getSource, CURRENT_ALIAS_SOURCE_CANDIDATES[i])
+            src = ok and resolved or false
+            currentAliasSources[i] = src
+        end
+        if src and type(src.value) == "function" then
+            local v = src:value()
+            if type(v) == "number" then return v end
         end
     end
 

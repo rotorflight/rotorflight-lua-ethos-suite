@@ -33,7 +33,7 @@ local function windowSize()
     local gotW, gotH = lcd.getWindowSize()
     if type(gotW) == "number" and gotW > 0 then w = gotW end
     if type(gotH) == "number" and gotH > 0 then h = gotH end
-  elseif system and system.getVersion then
+  else
     local version = system.getVersion()
     w = version.lcdWidth or w
     h = version.lcdHeight or h
