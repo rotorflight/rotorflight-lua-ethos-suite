@@ -2495,7 +2495,7 @@ jobs:
   # --self-test swaps one number at a time in a copy of each module and requires the
   # pin to go red every time, after the unmodified modules have passed.
   servo-config-commands:
-    name: Servo command numbers: read 125, raw write 124, packed write 212, centre 213, override 193
+    name: Servo command numbers (read 125, raw write 124, packed write 212, centre 213, override 193)
     runs-on: ubuntu-latest
     permissions:
       contents: read

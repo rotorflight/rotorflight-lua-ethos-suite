@@ -1906,7 +1906,7 @@ status updates are rate-limited to at most 1 Hz.
     ),
     LuaJob(
         id='servo-config-commands',
-        name='Servo command numbers: read 125, raw write 124, packed write 212, centre 213, override 193',
+        name='Servo command numbers (read 125, raw write 124, packed write 212, centre 213, override 193)',
         step='Check the servo command numbers and payloads',
         script='bin/servo_config_commands/verify_servo_config_commands.lua',
         rationale=r'''Issue #2444: lib/msp_servo_config.lua named the packed write 212 as its
