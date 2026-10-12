@@ -263,6 +263,36 @@ jobs:
       - name: Check that an unwritable card does not discard the buffer
         run: lua5.4 bin/logging/verify_log_flush_retry.lua
 
+  # The flight log wrote a sensor the aircraft was not sending as 0. A 0 in the CSV
+  # is indistinguishable from a measured zero -- a 0 A current draw is a real
+  # reading -- so anything that reads the file later takes an absent value for a
+  # measurement. The logger's sensorValue() replaced nil with 0 on the output side,
+  # after telemetry_sensors had already done the right thing on the input side.
+  #
+  # So the real logger is driven against a fake sensor that returns nil for a column,
+  # a real 0, or nothing at all, and the bytes that reach the CSV are checked: an
+  # absent column is an empty field, a real zero stays "0", a sensor that starts
+  # sending later is written from then on, and no "nil" text or short row ever
+  # reaches the file. Cases 1, 2 and 4 go red on the pre-fix logging.lua; the other
+  # two pin the behaviour the fix must not break.
+  absent-sensor-log:
+    name: A sensor that is not sending is an empty field in the flight log
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Install Lua 5.4
+        run: sudo apt-get update && sudo apt-get install -y lua5.4
+
+      - name: Check that an absent sensor is not logged as 0
+        run: lua5.4 bin/logging/verify_absent_sensor.lua
+
   # Three drain loops run inside one background-task wakeup with no yield point
   # in between, and each was bounded by a wall-clock deadline set well above what
   # the work needs -- on a single-core MCU competing with Ethos's C++ UI thread,

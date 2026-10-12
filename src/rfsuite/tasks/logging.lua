@@ -86,17 +86,25 @@ local function headerLine()
   return "time, " .. table.concat(labels, ", ")
 end
 
+-- nil means "no reading": the sensor is not sending, or the logger has no
+-- sensor set yet. It is not a measurement, so it must not be written as 0 --
+-- a 0 in the CSV is indistinguishable from a real zero A draw (Issue #2440).
 local function sensorValue(protocol, name)
-  if not telemetrySensors then return 0 end
-  local value = telemetrySensors.getValue(protocol, name)
-  if value == nil then return 0 end
-  return value
+  if not telemetrySensors then return nil end
+  return telemetrySensors.getValue(protocol, name)
 end
 
 local function sampleLine(protocol)
   local values = {}
   for i = 1, #LOG_COLUMNS do
-    values[i] = tostring(sensorValue(protocol, LOG_COLUMNS[i].name))
+    local value = sensorValue(protocol, LOG_COLUMNS[i].name)
+    -- An empty field, not "nil" and not "0": the column count stays fixed, so
+    -- a positional reader still gets the right column for every later value.
+    if value == nil then
+      values[i] = ""
+    else
+      values[i] = tostring(value)
+    end
   end
   return tostring(os.time()) .. ", " .. table.concat(values, ", ")
 end

@@ -220,6 +220,25 @@ pin the healthy path and the once-per-streak report.
 '''
     ),
     LuaJob(
+        id='absent-sensor-log',
+        name='A sensor that is not sending is an empty field in the flight log',
+        step='Check that an absent sensor is not logged as 0',
+        script='bin/logging/verify_absent_sensor.lua',
+        rationale=r'''The flight log wrote a sensor the aircraft was not sending as 0. A 0 in the CSV
+is indistinguishable from a measured zero -- a 0 A current draw is a real
+reading -- so anything that reads the file later takes an absent value for a
+measurement. The logger's sensorValue() replaced nil with 0 on the output side,
+after telemetry_sensors had already done the right thing on the input side.
+
+So the real logger is driven against a fake sensor that returns nil for a column,
+a real 0, or nothing at all, and the bytes that reach the CSV are checked: an
+absent column is an empty field, a real zero stays "0", a sensor that starts
+sending later is written from then on, and no "nil" text or short row ever
+reaches the file. Cases 1, 2 and 4 go red on the pre-fix logging.lua; the other
+two pin the behaviour the fix must not break.
+'''
+    ),
+    LuaJob(
         id='clock-budgets',
         name='Background task drain budgets',
         step='Check the drain budgets',
