@@ -1885,6 +1885,29 @@ discovery probes file presence without compiling chunks and that diagnostics
 status updates are rate-limited to at most 1 Hz.
 '''
     ),
+    LuaJob(
+        id='scheduler-coincidence',
+        name='Telemetry reads and the audio tasks: measured pass coincidence',
+        step='Check the measured pass coincidence against the registered intervals',
+        script='bin/scheduler/verify_scheduler_coincidence.lua',
+        rationale=r'''The background scheduler runs every due task in one pass, and session.lua's
+telemetry read (0.5 s) shares that pass with the three 0.25 s audio tasks
+whenever their phases line up. Whether they line up depends on the pass cadence,
+not on the interval table alone: the real scheduler.lua, driven at a fixed 125 ms
+pass, puts every telemetry read in a pass with audio_events, while at a 5 ms pass
+the same intervals coincide in under 2 % of reads. Staggering the audio
+intervals to 0.3 s is therefore not a general fix; it helps at one cadence and
+hurts at another.
+
+The check reads the intervals from background.lua and session.lua rather than
+copying them, so a change to any of them turns it red and the measurement has to
+be taken again. It runs the real scheduler.lua against a simulated clock and
+pins three things: the instrument sees the collision at 125 ms, the collision is
+not guaranteed at 5 ms, and the 0.3 s stagger reaches a third at 125 ms but rises
+above the current value at 100 ms. The cadence of the radio itself is not
+measured here.
+'''
+    ),
 ]
 
 VERBATIM_JOBS = [
