@@ -73,7 +73,7 @@ def fit_to_canvas(source, path):
 
 
 def is_in_spec(img):
-    return img.size == (SIZE, SIZE) and not has_alpha(img)
+    return img.mode == "RGB" and img.size == (SIZE, SIZE) and not has_alpha(img)
 
 
 def main():
