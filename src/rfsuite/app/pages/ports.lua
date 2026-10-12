@@ -542,7 +542,7 @@ local function open(opts)
     local rightPadding = 8
     local gap = 6
     local wBaud = math.floor(width * 0.28)
-    local wFunc = math.floor(width * 0.42)
+    local wFunc = math.floor(width * 0.28)
     local xBaud = width - rightPadding - wBaud
     local xFunc = xBaud - gap - wFunc
 
