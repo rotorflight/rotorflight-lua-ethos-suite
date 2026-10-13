@@ -136,8 +136,8 @@ local INSTRUCTION_BUDGET_ERROR = "Max instructions count reached"
 
 local TOOLBAR_ITEMS = {
   {name = "Reset", icon = "widgets/dashboard/gfx/toolbar_reset.png", action = "reset_flight"},
-  {name = "Erase", icon = "widgets/dashboard/gfx/toolbar_erase.png", action = "erase_blackbox", isConnected = true},
-  {name = "Battery", icon = "widgets/dashboard/gfx/toolbar_battery.png", action = "battery_profile", isConnected = true, requiresBatteryProfiles = true},
+  {name = "Erase", icon = "widgets/dashboard/gfx/toolbar_erase.png", action = "erase_blackbox", isConnected = true, blockedWhileArmed = true},
+  {name = "Battery", icon = "widgets/dashboard/gfx/toolbar_battery.png", action = "battery_profile", isConnected = true, requiresBatteryProfiles = true, blockedWhileArmed = true},
   {name = "Info", icon = "widgets/dashboard/gfx/toolbar_info.png", action = "info_panel"},
   {name = "Setup", icon = "widgets/dashboard/gfx/toolbar_app.png", action = "launch_app", requiresOpenPage = true},
 }
@@ -548,6 +548,8 @@ local function isToolbarItemEnabled(widget, item)
   -- version doesn't wrongly block a toolbar item before the handshake has
   -- even had a chance to answer -- only a *confirmed* unsupported FC does.
   if item.isConnected == true and not (widget and widget.connected == true and widget.apiVersionSupported ~= false) then return false end
+  -- Items that write to the FC are refused while the model is armed (#2505).
+  if item.blockedWhileArmed == true and widget and widget.isArmed == true then return false end
   if item.requiresOpenPage == true and not canOpenSystemTool() then return false end
   if item.requiresBatteryProfiles == true and not hasSelectableBatteryProfiles(widget) then return false end
   return true
@@ -1081,7 +1083,7 @@ local function readBlackboxSummaryAfterErase(widget)
 end
 
 local function doEraseBlackbox(widget)
-  if not widget or widget.connected ~= true or widget.eraseActive == true then return end
+  if not widget or widget.connected ~= true or widget.isArmed == true or widget.eraseActive == true then return end
 
   widget.eraseActive = true
   widget.eraseStartedAt = clock()
@@ -1201,7 +1203,7 @@ local function showBatteryInfo(message)
 end
 
 local function writeBatteryProfile(widget, profileIndex, profileName)
-  if not widget or widget.connected ~= true or widget.batteryActive == true then return end
+  if not widget or widget.connected ~= true or widget.isArmed == true or widget.batteryActive == true then return end
   -- profileIndex is profile.idx from buildBatteryProfileList(), which walks
   -- widget.batteryConfig.profiles[0]..profiles[5] -- already the 0-based index
   -- the MSP 176 payload wants. This only rejects an out-of-range value; it
@@ -1267,7 +1269,7 @@ local function closeBatteryPicker(widget)
 end
 
 local function chooseBatteryProfile(widget)
-  if not widget or widget.connected ~= true then return end
+  if not widget or widget.connected ~= true or widget.isArmed == true then return end
   local profileList = buildBatteryProfileList(widget)
   if #profileList == 0 then
     showBatteryInfo("@i18n(widgets.battery.no_profiles)@")
@@ -1585,6 +1587,10 @@ local function update(widget, snapshot)
   widget.isArmed = snapshot.isArmed
   -- The info panel covers most of the dashboard, so arming closes it.
   if widget.isArmed == true and previousArmed ~= true then setInfoPanelVisible(widget, false) end
+  -- Arming also closes an open battery picker, because a pack write is refused
+  -- while armed; the picker must not stay open to accept one (#2505).
+  if widget.isArmed == true and previousArmed ~= true then closeBatteryPicker(widget) end
+  if widget.isArmed ~= previousArmed then invalidateWidget(widget) end
   widget.armDisableFlags = snapshot.armDisableFlags
   widget.systemStatus = snapshot.systemStatus
   widget.systemConfig = snapshot.systemConfig

@@ -1764,6 +1764,27 @@ puts back one row of six and requires the three-across check to go red.
 '''
     ),
     LuaJob(
+        id='toolbar-armed',
+        name='Dashboard write items are refused while armed',
+        step='Check the dashboard Erase and Battery tiles while armed',
+        script='bin/toolbar_armed/verify_toolbar_armed.lua',
+        rationale=r'''Issue #2505: two dashboard toolbar items write to the flight controller,
+blackbox erase and battery profile, and neither their enable check nor their
+write path looked at the arm state. A battery picker open at arming, or an erase
+confirmation answered after arming, still wrote.
+
+No build and no package step reaches this -- it is a touch path through a running
+widget. The harness drives the real widgets/dashboard.lua through the descriptor
+the radio calls, and feeds the arm state through session.update the way the
+session does. While armed the Erase and Battery tiles are disabled, arming closes
+an open battery picker, and a confirmed erase answered after arming publishes no
+msp.request. Disarmed, the same paths publish their write again. The checks that
+depend on the toolbar being reachable assert that it is reachable first, so a
+run that cannot reach the tiles fails instead of passing vacuously. Run against
+unpatched master, 11 of 19 checks fail.
+'''
+    ),
+    LuaJob(
         id='governor-state',
         name='Stateless governor modes show PASSTHRU, not OFF',
         step='Check the governor label in None and Limit modes',

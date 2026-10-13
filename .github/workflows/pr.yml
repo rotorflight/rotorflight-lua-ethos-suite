@@ -2259,6 +2259,38 @@ jobs:
       - name: Check the Battery tile picker
         run: lua5.4 bin/battery_picker/verify_battery_picker.lua
 
+  # Issue #2505: two dashboard toolbar items write to the flight controller,
+  # blackbox erase and battery profile, and neither their enable check nor their
+  # write path looked at the arm state. A battery picker open at arming, or an erase
+  # confirmation answered after arming, still wrote.
+  #
+  # No build and no package step reaches this -- it is a touch path through a running
+  # widget. The harness drives the real widgets/dashboard.lua through the descriptor
+  # the radio calls, and feeds the arm state through session.update the way the
+  # session does. While armed the Erase and Battery tiles are disabled, arming closes
+  # an open battery picker, and a confirmed erase answered after arming publishes no
+  # msp.request. Disarmed, the same paths publish their write again. The checks that
+  # depend on the toolbar being reachable assert that it is reachable first, so a
+  # run that cannot reach the tiles fails instead of passing vacuously. Run against
+  # unpatched master, 11 of 19 checks fail.
+  toolbar-armed:
+    name: Dashboard write items are refused while armed
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Install Lua 5.4
+        run: sudo apt-get update && sudo apt-get install -y lua5.4
+
+      - name: Check the dashboard Erase and Battery tiles while armed
+        run: lua5.4 bin/toolbar_armed/verify_toolbar_armed.lua
+
   # Issue #2353: with the FC's governor mode set to None or Limit, the firmware never
   # leaves THROTTLE_OFF (governor.c: governorUpdate() has no state change for
   # GOV_MODE_NONE, and govUpdateLimitedThrottle() only sets throttleOutput), so the
