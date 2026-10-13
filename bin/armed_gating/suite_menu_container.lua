@@ -216,105 +216,30 @@ eq("disarmed: press opens the page", openedPages[1], "app/pages/long.lua")
 eq("disarmed: no haptic", #haptics, 0)
 
 --------------------------------------------------------------------
--- 2. Armed: badge present, press refused, feedback given
+-- 2. Armed: a locked tile is disabled, shows the forbidden icon, and does nothing
 --------------------------------------------------------------------
 
 armed = true
 build(twoTiles(), taskGuard)
 eq("armed: two tiles built", #buttons, 2)
-check("armed: locked tile is badged", buttons[1].text:sub(1, 1) == "!", buttons[1].text)
-check("armed: unlocked tile carries no badge", buttons[2].text:sub(1, 1) ~= "!", buttons[2].text)
+check("armed: locked tile carries no badge", buttons[1].text:sub(1, 1) ~= "!", buttons[1].text)
+check("armed: locked tile is disabled", buttons[1].enabled == false)
+check("armed: unlocked tile stays enabled", buttons[2].enabled == true)
+check("armed: locked tile shows the forbidden icon", buttons[1].icon ~= nil and buttons[1].icon ~= buttons[2].icon)
+local armedIcon = buttons[1].icon
 
--- The badge is one character and that is a measured decision, not taste: a
--- "[!] " prefix cost four and visibly truncated real module names on the
--- simulator. So the assertions are about how much of the title survives, not
--- about the raw fitted length -- fitLabel() centres its ellipsis, which means
--- a longer prefix can even yield a longer *output* while showing less title.
--- metrics() returns numPerRow, tileW, tileH, tilePadding, tileFont -- tileW
--- is the SECOND value, not the fifth.
-local _, tileW = realTileGrid.metrics(800, 480)
-local fitted = realTileGrid.fitLabel("!" .. LONG, tileW, "FONT_XS")
-local fittedOld = realTileGrid.fitLabel("[!] " .. LONG, tileW, "FONT_XS")
-
--- How many leading characters of the true title a fitted label preserves,
--- ignoring the badge and the trailing ellipsis. Both badge shapes are
--- stripped so the same helper can score the current "!" and the old "[!] ".
-local function titleCharsShown(label, title)
-  local body = label:gsub("^%[!%] ", "")   -- the old four-character badge
-  body = body:gsub("^!", "")               -- the current one-character badge
-  body = body:gsub("%.%.%.$", "")
-  if title:sub(1, #body) == body then return #body end
-  return 0
-end
-
-check("armed: fitted label matches tile_grid's own output", buttons[1].text == fitted,
-      string.format("%q vs %q", buttons[1].text, fitted))
-check("armed: label still truncated to fit",
-      #buttons[1].text * CHAR_W <= tileW,
-      string.format("text=%q w=%d tileW=%d", buttons[1].text, #buttons[1].text * CHAR_W, tileW))
-check("armed: the one-character badge shows more title than \"[!] \" did",
-      titleCharsShown(buttons[1].text, LONG) > titleCharsShown(fittedOld, LONG),
-      string.format("new=%q shows %d, old=%q shows %d",
-                    buttons[1].text, titleCharsShown(buttons[1].text, LONG),
-                    fittedOld, titleCharsShown(fittedOld, LONG)))
-
--- A title that exactly fills the tile: the badge must push it over, which is
--- the case the shorter badge exists to minimise. The budget is probed rather
--- than derived from tileW / CHAR_W -- fitLabel() does not spend the whole
--- width and may reserve a margin, so arithmetic here would be a guess.
-do
-  local maxChars = 0
-  for n = 40, 1, -1 do
-    local probe = ("x"):rep(n)
-    if realTileGrid.fitLabel(probe, tileW, "FONT_XS") == probe then
-      maxChars = n
-      break
-    end
-  end
-  check("edge title: a bare title of the full width was found", maxChars > 0, "budget probe failed")
-  local edge = ("x"):rep(maxChars)
-  check("edge title: bare fills the tile untouched",
-        realTileGrid.fitLabel(edge, tileW, "FONT_XS") == edge)
-  check("edge title: a badge of any length truncates it",
-        realTileGrid.fitLabel("!" .. edge, tileW, "FONT_XS") ~= "!" .. edge)
-  build({{title = edge, script = "app/pages/long.lua", lockedWhileArmed = true}}, taskGuard)
-  check("armed: edge title is truncated but keeps the badge",
-        buttons[1].text:sub(1, 1) == "!" and buttons[1].text ~= edge, buttons[1].text)
-  -- Back to the two-tile screen the assertions below expect.
-  build(twoTiles(), taskGuard)
-end
-
+-- A disabled tile must not open its page, buzz or change the header. The press
+-- handler is kept as a silent guard for the case Ethos delivers it anyway.
 buttons[1].press()
-eq("armed: press is refused (no nav)", pushCount, 0)
-eq("armed: press does not open the page", #openedPages, 0)
-eq("armed: press fires a haptic", #haptics, 1)
-eq("armed: notice shown in the header", headerTitles[#headerTitles],
-   "@i18n(app.msg_menu_locked_while_armed)@")
+eq("armed: press on a disabled tile does not navigate", pushCount, 0)
+eq("armed: press on a disabled tile does not open the page", #openedPages, 0)
+eq("armed: press on a disabled tile does not buzz", #haptics, 0)
+eq("armed: header title is unchanged", headerTitles[#headerTitles], ROOT_TITLE)
 
 -- An unlocked tile must still work while armed.
 buttons[2].press()
 eq("armed: unlocked tile still navigates", pushCount, 1)
 eq("armed: unlocked tile opens its page", openedPages[1], "app/pages/short.lua")
-
--- Repeated presses must not stack notices.
-local noticesBefore = #headerTitles
-buttons[1].press()
-buttons[1].press()
-eq("armed: repeat presses do not stack notices", #headerTitles, noticesBefore)
-eq("armed: repeat presses still buzz", #haptics, 3)
-
---------------------------------------------------------------------
--- 3. Notice restores the real title on its own
---------------------------------------------------------------------
-
--- The hold is 2.0 s of os.clock(); a fake clock advances instead of waiting.
-local fakeClock = {t = 1000}
-local realClock = os.clock
-os.clock = function() return fakeClock.t end
-fakeClock.t = fakeClock.t + 2.5
-if wakeupHandler then wakeupHandler() end
-os.clock = realClock
-eq("notice restores the real screen title", headerTitles[#headerTitles], ROOT_TITLE)
 
 --------------------------------------------------------------------
 -- 4. Arm/disarm transition rebuilds the grid
@@ -323,13 +248,14 @@ eq("notice restores the real screen title", headerTitles[#headerTitles], ROOT_TI
 armed = false
 if wakeupHandler then wakeupHandler() end
 check("disarm: grid rebuilt", #buttons > 0)
-check("disarm: badge gone after rebuild", buttons[1].text:sub(1, 1) ~= "!", buttons[1].text)
+check("disarm: locked tile enabled again", buttons[1].enabled == true)
+check("disarm: forbidden icon gone", buttons[1].icon ~= armedIcon)
 buttons[1].press()
 eq("disarm: press navigates again", pushCount, 2)
 
 armed = true
 if wakeupHandler then wakeupHandler() end
-check("re-arm: badge back after rebuild", buttons[1].text:sub(1, 1) == "!", buttons[1].text)
+check("re-arm: locked tile disabled again", buttons[1].enabled == false)
 
 --------------------------------------------------------------------
 -- 5. Wakeup handler installation
@@ -377,14 +303,11 @@ buttons[1].press()
 eq("no armedState: press still navigates", pushCount, 1)
 
 --------------------------------------------------------------------
--- 7. The armed state changes the label only, never the tile icon
+-- 7. The armed state disables locked tiles and swaps only their icon
 --------------------------------------------------------------------
 
--- A warning triangle in place of the tile icon was implemented and measured
--- (it cost zero label characters) and then rejected: the module icon is how
--- a pilot identifies the tile at a glance, so taking it away to carry a
--- warning is the wrong trade. This pins that decision down -- if a later
--- change swaps the icon again, it fails here.
+-- The tile keeps its title. While armed a locked tile gets the forbidden sign
+-- instead of its module icon, and it is disabled. Disarmed, both come back.
 do
   local marker = {moduleIcon = true}
   local entries = {
@@ -395,16 +318,14 @@ do
   armed = false
   build(entries, taskGuard)
   check("disarmed: locked tile keeps its own icon", buttons[1].icon == marker)
+  check("disarmed: locked tile is enabled", buttons[1].enabled == true)
 
   armed = true
   build(entries, taskGuard)
-  check("armed: locked tile still keeps its own icon", buttons[1].icon == marker,
-        tostring(buttons[1].icon and buttons[1].icon.moduleIcon))
-  check("armed: the icon is not replaced by any warning asset",
-        buttons[1].icon == buttons[2].icon)
-  check("armed: the difference is the label, not the icon",
-        buttons[1].text ~= buttons[2].text,
-        string.format("both %q", buttons[1].text))
+  check("armed: locked tile no longer has its own icon", buttons[1].icon ~= marker)
+  check("armed: unlocked tile keeps its icon", buttons[2].icon == marker)
+  check("armed: the label is the plain title", buttons[1].text == buttons[2].text,
+        string.format("%q vs %q", buttons[1].text, buttons[2].text))
 end
 
 --------------------------------------------------------------------
