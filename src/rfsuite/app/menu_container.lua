@@ -349,7 +349,8 @@ local function openScreen(nav, menus, rootEntries, screen, setEventHandler, setW
   end
 
   form.clear()
-  local headerTitle = firstGroup or title
+  -- PROTOTYPE: the first group is the header line, indented like the others.
+  local headerTitle = firstGroup and (" " .. firstGroup) or title
   local headerHandle = header.build(headerTitle, {onBack = goBack})
 
   -- Transient "locked while armed" notice, shown by flashing the header
@@ -409,7 +410,7 @@ local function openScreen(nav, menus, rootEntries, screen, setEventHandler, setW
   -- the tile grid starts right below it regardless of the radio's line
   -- height -- no hardcoded offset to get wrong.
   -- PROTOTYPE: tiles start at a fixed left gap, so they sit clear of the frame.
-  local TILE_LEFT_GAP = 8
+  local TILE_LEFT_GAP = 4
 
   local x, y = 0, form.height() + tilePadding
   local lastGroup = firstGroup
