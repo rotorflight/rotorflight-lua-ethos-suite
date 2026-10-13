@@ -35,6 +35,8 @@ local pidProfile = requireModule("lib/msp_pid_profile.lua")
 
 local PAGE_TITLE = "@i18n(app.modules.pid_controller.name)@"
 
+local MASTER_GAIN_KEYS = {"cyclic_master_gain", "yaw_master_gain"}
+
 local ITERM_RELAX_OPTIONS = {
   {"@i18n(app.modules.pid_controller.tbl_off)@", 0},
   {"@i18n(app.modules.pid_controller.tbl_rp)@", 1},
@@ -46,16 +48,39 @@ local ITERM_RELAX_OPTIONS = {
 -- opts.setEventHandler/opts.setWakeupHandler: see app/menu_container.lua
 -- and app/tool.lua for how Ethos's event()/wakeup() reach a page.
 local function open(opts)
+  -- Assigned right after pageRuntime.new(); onLoaded only runs after a
+  -- read, by which time it is set. See app/pages/pids.lua for why closures
+  -- capture controlRef rather than the runtime itself.
+  local controlRef
   local runtime = pageRuntime.new({
     pageTitle = PAGE_TITLE,
     logTag = "pidctrl",
     mspModule = pidProfile,
     opts = opts,
     unloadPackageKeys = {"rfsuite.lib.msp_pid_profile"},
+    -- Firmware before API 12.10 has no master gains: loadData() has just
+    -- enabled every field, so take those two back out.
+    onLoaded = function()
+      local rt = controlRef and controlRef.runtime
+      if rt and rt.data and not rt.data.has_master_gain then
+        for _, key in ipairs(MASTER_GAIN_KEYS) do
+          local field = rt.fields[key]
+          if field then field:enable(false) end
+        end
+      end
+    end,
   })
+  controlRef = runtime.controlRef
 
   form.clear()
   runtime:buildChrome()
+
+  -- Scale the feedback gains (cyclic P/I/D/O, tail P/I/D) together; F,
+  -- B and the precomps are left as tuned. See the firmware's pid.c.
+  fieldLayout.buildGroup(runtime, "@i18n(app.modules.pid_controller.master_gain)@", {
+    {title = "@i18n(app.modules.pid_controller.cyclic)@", spec = {key = "cyclic_master_gain"}},
+    {title = "@i18n(app.modules.pid_controller.yaw)@", spec = {key = "yaw_master_gain"}},
+  })
 
   fieldLayout.buildSingle(runtime, "@i18n(app.modules.pid_controller.ground_error_decay)@",
     {key = "error_decay_time_ground"})

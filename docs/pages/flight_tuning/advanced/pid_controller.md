@@ -18,6 +18,8 @@ Greyed out until the flight controller answers. Read-only while the model is arm
 
 | Setting | What it does |
 | --- | --- |
+| Master Gain (Cyc) | Scales the roll and pitch P, I, D and Offset gains together, keeping their ratios. Feedforward, Boost and precomp are not scaled. Range: 25 to 200 %. Default: 100 %. |
+| Master Gain (Y) | Scales the tail P, I and D gains together, keeping their ratios and the CW/CCW stop gain balance. Feedforward, Boost and precomp are not scaled. Range: 25 to 200 %. Default: 100 %. |
 | Ground Error Decay | Configures Ground Error Decay. Range: 0 to 250 s. Default: 25 s. |
 | Iterm Relax: Type | Configures Iterm Relax: Type. |
 | In-flight Error Decay (Time) | Configures In-flight Error Decay (Time). Range: 0 to 250 s. Default: 250 s. |
@@ -35,6 +37,8 @@ Greyed out until the flight controller answers. Read-only while the model is arm
 
 - Changes are written to the flight controller EEPROM upon Save.
 - Parameters are scoped to the currently active PID profile.
+- Master Gain needs firmware with MSP API 12.10 or later; on older firmware both fields stay greyed out.
+- A master gain changed in flight (Cyclic/Yaw Master Gain adjustment functions) does not disturb trim already held by I and Offset; only how fast they build up changes.
 
 ## Related
 

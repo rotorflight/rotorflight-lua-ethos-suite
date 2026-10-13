@@ -70,4 +70,7 @@ return {
   [73] = "yaw dyn deadband gain",
   [74] = "yaw dyn deadband filter",
   [75] = "yaw precomp cutoff",
+  -- No "master" word is recorded; "cyclic gain" / "yaw gain" name them.
+  [83] = "cyclic gain",
+  [84] = "yaw gain",
 }

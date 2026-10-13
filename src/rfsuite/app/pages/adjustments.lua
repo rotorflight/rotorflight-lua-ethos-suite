@@ -116,6 +116,8 @@ local ADJUST_FUNCTIONS = {
   {id = 80, name = "Governor Headspeed", min = 0, max = 50000},
   {id = 81, name = "Governor Yaw FF", min = 0, max = 250},
   {id = 82, name = "Battery Profile", min = 1, max = 6},
+  {id = 83, name = "Cyclic Master Gain", min = 25, max = 200},
+  {id = 84, name = "Yaw Master Gain", min = 25, max = 200},
 }
 
 local FUNCTION_OPTIONS = {}

@@ -305,6 +305,20 @@
           "reverse_text": false,
           "max_length": 14
         },
+        "master_gain": {
+          "english": "Master Gain",
+          "translation": "Gesamtverstärkung",
+          "needs_translation": false,
+          "reverse_text": false,
+          "max_length": 11
+        },
+        "cyclic": {
+          "english": "Cyc",
+          "translation": "Zyk",
+          "needs_translation": false,
+          "reverse_text": false,
+          "max_length": 3
+        },
         "ground_error_decay": {
           "english": "Ground Error Decay",
           "translation": "Erdungsfehler Decay",
