@@ -17,6 +17,9 @@ local MSG_SAVING_TITLE = "@i18n(app.msg_saving)@"
 local MSG_SAVING_BODY = "@i18n(app.msg_saving_settings)@"
 local MSG_SAVE_TITLE = "@i18n(app.msg_save_settings)@"
 local MSG_SAVE_BODY = "@i18n(app.msg_save_current_page)@"
+local MSG_SAVE_FAILED_TITLE = "@i18n(app.msg_save_failed_title)@"
+local MSG_SAVE_FAILED_BODY = "@i18n(app.msg_save_failed_body)@"
+local BTN_OK_SHORT = "@i18n(app.btn_ok)@"
 
 local MAX_PROFILE_COUNT = 6
 
@@ -126,6 +129,28 @@ local function open(opts)
     end))
   end
 
+  -- A refused profile write is reported, as the FC pages do (#2498). The page's
+  -- state does not move to the board's answer, so the Save button stays lit and
+  -- a second attempt is possible.
+  local function showSaveFailed(focusFn)
+    if disposed or not form or type(form.openDialog) ~= "function" then return end
+    form.openDialog({
+      title = MSG_SAVE_FAILED_TITLE,
+      message = MSG_SAVE_FAILED_BODY,
+      buttons = {
+        {
+          label = BTN_OK_SHORT,
+          action = function()
+            if focusFn then focusFn() end
+            return true
+          end,
+        },
+      },
+      wakeup = function() end,
+      paint = function() end,
+    })
+  end
+
   local function saveData(focusFn)
     if disposed or not loaded or not isDirty() then return end
     busy = true
@@ -145,12 +170,14 @@ local function open(opts)
         busy = false
         closeDialog(focusFn)
         updateEnabled()
+        showSaveFailed(focusFn)
       end))
     end, function()
       if disposed then return end
       busy = false
       closeDialog(focusFn)
       updateEnabled()
+      showSaveFailed(focusFn)
     end))
   end
 

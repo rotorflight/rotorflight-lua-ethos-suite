@@ -1764,6 +1764,22 @@ puts back one row of six and requires the three-across check to go red.
 '''
     ),
     LuaJob(
+        id='profile-select-refusal',
+        name='Select Profile reports a refused profile write and keeps Save lit',
+        step='Check that a refused profile write is reported',
+        script='bin/profile_select/verify_profile_select.lua',
+        rationale=r'''Issue #2498: the Select Profile page closed its progress dialog on a refused
+PID or rate profile write and said nothing, so the pilot saw the dialog go away and
+the Save button still lit. The refusal now opens the save-failed dialog that the FC
+pages already use, and the page keeps its state, so a second attempt is possible.
+
+No build and no package step reaches this -- it is a write path through a running
+page. The harness drives the real profile_select page with the real bus and the real
+select-profile message builder, and answers each write as the FC would: accepted or
+refused. Against unpatched master the two refused-write dialog checks fail.
+'''
+    ),
+    LuaJob(
         id='governor-state',
         name='Stateless governor modes show PASSTHRU, not OFF',
         step='Check the governor label in None and Limit modes',

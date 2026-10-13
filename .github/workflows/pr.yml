@@ -2259,6 +2259,33 @@ jobs:
       - name: Check the Battery tile picker
         run: lua5.4 bin/battery_picker/verify_battery_picker.lua
 
+  # Issue #2498: the Select Profile page closed its progress dialog on a refused
+  # PID or rate profile write and said nothing, so the pilot saw the dialog go away and
+  # the Save button still lit. The refusal now opens the save-failed dialog that the FC
+  # pages already use, and the page keeps its state, so a second attempt is possible.
+  #
+  # No build and no package step reaches this -- it is a write path through a running
+  # page. The harness drives the real profile_select page with the real bus and the real
+  # select-profile message builder, and answers each write as the FC would: accepted or
+  # refused. Against unpatched master the two refused-write dialog checks fail.
+  profile-select-refusal:
+    name: Select Profile reports a refused profile write and keeps Save lit
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Install Lua 5.4
+        run: sudo apt-get update && sudo apt-get install -y lua5.4
+
+      - name: Check that a refused profile write is reported
+        run: lua5.4 bin/profile_select/verify_profile_select.lua
+
   # Issue #2353: with the FC's governor mode set to None or Limit, the firmware never
   # leaves THROTTLE_OFF (governor.c: governorUpdate() has no state change for
   # GOV_MODE_NONE, and govUpdateLimitedThrottle() only sets throttleOutput), so the
