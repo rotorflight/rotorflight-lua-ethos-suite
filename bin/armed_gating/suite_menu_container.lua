@@ -82,6 +82,7 @@ local formStub = {
 
 local lcdStub = {
   getWindowSize = function() return 800, 480 end,
+  loadMask = function() return {} end,
   getTextSize = function(t) return #t * CHAR_W end,
   font = function() end,
 }
