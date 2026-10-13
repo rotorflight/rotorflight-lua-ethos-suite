@@ -1,4 +1,4 @@
--- Behaviour check for #2502: editing the cells of a non-active battery profile does
+-- Behaviour check for Issue #2502: editing the cells of a non-active battery profile does
 -- not make that profile active when the page is saved.
 --
 -- Run it:
@@ -290,6 +290,8 @@ local editField = findField("edit_battery", "choice")
 check("the Edit Battery choice exists", editField ~= nil)
 check("the Edit Battery choice starts on the active profile",
       editField and editField.get() == 0, "shown=" .. tostring(editField and editField.get()))
+check("the Edit Battery field is registered with runtime",
+      runtimeRef and runtimeRef.fields and runtimeRef.fields["battery:editProfile"] ~= nil)
 
 -- ---------------------------------------------------------------------------
 -- 2. Editing profile 3's cells does not make profile 3 active on save

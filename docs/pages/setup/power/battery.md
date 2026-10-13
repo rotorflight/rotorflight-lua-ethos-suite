@@ -33,12 +33,15 @@ Greyed out until the flight controller answers. Read-only while the model is arm
 ## Notes
 
 - Changes are written to the flight controller EEPROM upon Save.
-- On firmware that carries the per-profile cell settings (rotorflight-firmware
-  #508), the capacity, the cell count and the four cell voltage thresholds follow
+- The capacity, the cell count and the four cell voltage thresholds follow
   *Edit Battery*, not the active profile. Editing another profile's values therefore
-  does not make that profile active when you save (#2502). *Profiles* stays on the
-  active profile. Older firmware only reports the values of the active profile, so
-  on it those five settings apply to every profile.
+  does not make that profile active when you save (Issue #2502). *Profiles* stays on the
+  active profile.
+- On firmware that carries the per-profile cell settings (rotorflight-firmware
+  PR #508), each profile keeps its own cell count and cell voltage thresholds.
+  Older firmware only reports the cell values of the active profile, so on it
+  those five settings apply to every profile. The capacity is stored per profile
+  on all firmware versions.
 - *Edit Battery* starts on the active profile each time the page is opened.
 
 ## Related
