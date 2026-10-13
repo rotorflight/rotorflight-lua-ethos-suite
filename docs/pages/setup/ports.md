@@ -29,7 +29,7 @@ Greyed out until the flight controller answers. Read-only while the model is arm
   the ports fall back to their plain MCU UART names (`UART1`..`UART6`). (#2359,
   `src/rfsuite/app/pages/ports.lua`, `src/rfsuite/lib/port_labels.lua`)
 - Changes are written to the flight controller EEPROM upon Save. Afterwards the page reads the
-  ports back, so the rows show what the flight controller holds, not what was sent (#2497).
+  ports back, so the rows show what the flight controller holds, not what was sent (Issue #2497).
 - A *Save* or *Reload* confirmation that is still on screen when you leave the
   page is now closed with the page. Before, it stayed up over the next screen
   and its OK button did nothing, because the page behind it had already been
