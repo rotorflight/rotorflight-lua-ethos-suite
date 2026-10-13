@@ -120,9 +120,6 @@ local function forbiddenIcon()
   if not forbiddenMask then forbiddenMask = lcd.loadMask("app/gfx/armed_locked.png") end
   return forbiddenMask
 end
-local ARMED_LOCKED_NOTICE = "@i18n(app.msg_menu_locked_while_armed)@"
-local ARMED_NOTICE_HOLD = 2.0
-local ARMED_HAPTIC_PATTERN = ". . ."
 
 
 -- Which tile index was last pressed on a given screen -- mirrors the
@@ -353,33 +350,6 @@ local function openScreen(nav, menus, rootEntries, screen, setEventHandler, setW
   local headerTitle = firstGroup and (" " .. firstGroup) or title
   local headerHandle = header.build(headerTitle, {onBack = goBack})
 
-  -- Transient "locked while armed" notice, shown by flashing the header
-  -- title (header.build exposes setTitle, and header.lua's own comment
-  -- documents form.addStaticText:value() as the field-tested way to change
-  -- a title in place). Non-modal by construction, and the only header
-  -- write this screen ever performs -- tickArmedNotice() puts the real
-  -- title back, and a press while the notice is already up does not
-  -- re-raise it, so the pilot cannot stack up notices.
-  local noticeShownAt = nil
-  local function showArmedLockedNotice()
-    if system.playHaptic then
-      -- Haptics are cosmetic feedback; a radio without a vibration motor
-      -- or an Ethos build that drops the call must not take the menu down
-      -- with it, hence the pcall.
-      pcall(system.playHaptic, ARMED_HAPTIC_PATTERN)
-    end
-    if noticeShownAt then return end
-    noticeShownAt = os.clock()
-    headerHandle.setTitle(ARMED_LOCKED_NOTICE)
-  end
-
-  local function tickArmedNotice()
-    if not noticeShownAt then return end
-    if (os.clock() - noticeShownAt) < ARMED_NOTICE_HOLD then return end
-    noticeShownAt = nil
-    headerHandle.setTitle(headerTitle)
-  end
-
   local isArmed = readArmed(armedState)
   local function entryIsLockedNow(entry)
     return entry.lockedWhileArmed == true and isArmed
@@ -449,10 +419,8 @@ local function openScreen(nav, menus, rootEntries, screen, setEventHandler, setW
           -- locked tile has to answer with the armed notice even when the
           -- background task is also down, otherwise the pilot gets silence
           -- for tapping a tile that is visibly badged.
-          if entryIsLockedNow(entry) then
-            showArmedLockedNotice()
-            return
-          end
+          -- A locked tile is disabled while armed; this is only a silent guard.
+          if entryIsLockedNow(entry) then return end
           if not canOpenEntry(entry, taskGuard) then
             if taskGuard and (not taskGuard.isRunning()) and taskGuard.requestAlert then
               taskGuard.requestAlert()
@@ -477,6 +445,10 @@ local function openScreen(nav, menus, rootEntries, screen, setEventHandler, setW
           end
         end,
       })
+
+      if tileButtons[i] and tileButtons[i].enable and entryIsLockedNow(entry) then
+        tileButtons[i]:enable(false)
+      end
 
       col = col + 1
       if col >= numPerRow then
@@ -518,8 +490,6 @@ local function openScreen(nav, menus, rootEntries, screen, setEventHandler, setW
   if taskGuard or menuGuard or armedGated then
     local lastEnabled = {}
     local function updateMenuState()
-      tickArmedNotice()
-
       -- Arm/disarm transition: the badges are part of each button's
       -- `text`, and a form.addButton result has no documented way to
       -- change its text at runtime (only form.addStaticText does, see
@@ -549,7 +519,7 @@ local function openScreen(nav, menus, rootEntries, screen, setEventHandler, setW
       local selectedIndex = lastSelected[key]
       for i = 1, #entries do
         local button = tileButtons[i]
-        local enabled = isEntryEnabled(entries[i], taskGuard, menuGuard)
+        local enabled = isEntryEnabled(entries[i], taskGuard, menuGuard) and not entryIsLockedNow(entries[i])
         if selectedIndex == i and enabled then selectedStillEnabled = true end
         if button and button.enable and enabled ~= lastEnabled[i] then
           lastEnabled[i] = enabled
