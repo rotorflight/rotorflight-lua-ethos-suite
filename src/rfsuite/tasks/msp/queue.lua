@@ -41,7 +41,8 @@
 --   payload = {...} | nil,              -- omit/{} for parameterless reads
 --   isWrite = true | nil,                -- only matters to CRSF (frame type)
 --   processReply = function(message, buf) ... end,
---   errorHandler = function(reason) ... end,   -- reason: "timeout"|"max_retries"
+--   errorHandler = function(reason) ... end,   -- reason: "timeout"|"max_retries"|
+--                                              -- "callback_error"|"queue_error"|...
 --   simulatorResponse = {...},           -- reply bytes used in the Ethos simulator
 --   retryDelay = <seconds added to the 0.8s default>,
 --   maxRetries = <default 5>,
@@ -65,11 +66,53 @@ local EMPTY_PAYLOAD = {}
 -- tick bought one table and one boundary crossing per wakeup for a constant.
 local isSim = system.getVersion().simulation == true
 
+-- A page's processReply/errorHandler runs inside the background task's
+-- wakeup (issue #2363). Ethos does not stop a task whose wakeup raises: it logs
+-- the error and calls wakeup again -- measured in the WASM simulator, Ethos
+-- 26.1.3, 1020 errors in a row from taskWakeup() and the task was still being
+-- called; not measured on a radio. What an error does cost is the rest of that
+-- tick, and taskWakeup() runs the scheduler (session, audio events, logging)
+-- after the queue, so one that repeats starves all of it on every tick. So both
+-- are called under pcall: the failure is printed, the queue carries on, and the
+-- page is told through its errorHandler where there is one.
+--
+-- Printed, not swallowed -- and at most once a second per call site, because a
+-- reply that fails will fail again on the next poll of the same page. The
+-- count of lines held back goes on the next line that does get through.
+local REPORT_INTERVAL = 1
+local lastReportAt = {}
+local suppressed = {}
+
+-- Lua lets error() carry any value, and converting one can raise: a table with
+-- a __tostring that throws would make the report itself the second failure, and
+-- Queue:wakeup() calls report() outside its pcall. So the conversion is guarded
+-- and falls back to the type.
+local function errorText(err)
+  local ok, text = pcall(tostring, err)
+  if ok and type(text) == "string" then return text end
+  return "<error of type " .. type(err) .. ">"
+end
+
+local function report(site, err)
+  local now = os.clock()
+  local last = lastReportAt[site]
+  if last and (now - last) >= 0 and (now - last) < REPORT_INTERVAL then
+    suppressed[site] = (suppressed[site] or 0) + 1
+    return
+  end
+  lastReportAt[site] = now
+  local held = suppressed[site]
+  suppressed[site] = nil
+  print("[msp queue] " .. site .. " failed: " .. errorText(err)
+    .. (held and (" (+" .. held .. " suppressed)") or ""))
+end
+
 local function notifyError(message, reason)
   if message then debugLog.msp("ERR", message.command, message.payload, reason) end
   local handler = message and message.errorHandler
   if handler then
-    handler(reason)
+    local ok, err = pcall(handler, reason)
+    if not ok then report("errorHandler", err) end
   end
 end
 
@@ -192,7 +235,13 @@ function Queue:_deliver(buf)
   local msg = self.current
   self:_finish()
   if msg.processReply then
-    msg.processReply(msg, buf)
+    -- The queue is already clear of this message (see _finish() above), so a
+    -- failing callback leaves nothing half-done on this side.
+    local ok, err = pcall(msg.processReply, msg, buf)
+    if not ok then
+      report("processReply", err)
+      notifyError(msg, "callback_error")
+    end
   end
 end
 
@@ -310,6 +359,29 @@ function Queue:processQueue()
     debugLog.msp("ERR", msg.command, msg.payload or EMPTY_PAYLOAD, err)
     self:abortCurrent(err)
   end
+end
+
+-- What the background task calls every tick. processQueue() reaches into the
+-- transport (Ethos's pushFrame()/popFrame()), and an error from there used to
+-- leave the task through taskWakeup(). Here it is printed, the message that was
+-- in flight is retired with "queue_error", and the next one gets its turn.
+--
+-- The state is reset by hand first rather than through _finish(): _finish()
+-- reaches into the transport too, and if that is what just failed, retiring
+-- through it would fail the same way and leave self.current set -- the same
+-- error again on every tick, and the queue stuck behind it.
+function Queue:wakeup()
+  local ok, err = pcall(self.processQueue, self)
+  if ok then return end
+  report("processQueue", err)
+
+  local msg = self.current
+  self.current = nil
+  self.lastSent = nil
+  self.retryCount = 0
+  local cleared, clearErr = pcall(self.common.mspClearTxBuf)
+  if not cleared then report("mspClearTxBuf", clearErr) end
+  notifyError(msg, "queue_error")
 end
 
 return Queue

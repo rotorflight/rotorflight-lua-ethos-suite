@@ -242,7 +242,11 @@ end
 _G.form = {
   addButton = function() return widgetStub("button") end,
   addTextButton = function() return widgetStub("textbutton") end,
-  addStaticText = function() end,
+  addStaticText = function(line, _, text)
+    if line and text and obs.lines[line] == "" then
+      obs.lines[line] = text
+    end
+  end,
   addNumberField = function(line, _, min, max, get, setWithDirty)
     local field = fieldFor(line)
     field.kind, field.min, field.max = "number", min, max
@@ -344,6 +348,7 @@ local LOCAL_TAIL = {
   { "serial_number", "u32" }, { "firmware_version", "u16" },
   { "soft_start_time", "u16" }, { "runup_time", "u16" }, { "bailout", "u16" },
   { "gov_proportional", "u32" }, { "gov_integral", "u32" },
+  { "stick_max", "u32" }, { "stick_zero", "u32" },
 }
 for i = 1, #LOCAL_TAIL do LOCAL_FIELDS[#LOCAL_FIELDS + 1] = LOCAL_TAIL[i] end
 
@@ -352,10 +357,9 @@ for i = 1, #LOCAL_TAIL do LOCAL_FIELDS[#LOCAL_FIELDS + 1] = LOCAL_TAIL[i] end
 -- transcribed and treated as the specification for the field NAMES. The three
 -- padding_ names this change removed are absent from it, which is the point.
 --
--- Only the fields this suite decodes are listed. The reference carries two more
--- after gov_integral -- see REFERENCE_ONLY_TAIL -- and counting them as mismatches
--- would make the parity check fail on a gap that is stated separately and on
--- purpose.
+-- Every field both suites decode is listed, stick_max and stick_zero included:
+-- #2457 added those two to this codec, so there is no coverage gap left to state
+-- separately.
 local REFERENCE_TAIL = {
   { "esc_mode", "u16" }, { "bec_voltage", "u16" }, { "rotation", "u16" },
   { "telemetry_protocol", "u16" }, { "protection_delay", "u16" }, { "min_voltage", "u16" },
@@ -364,20 +368,6 @@ local REFERENCE_TAIL = {
   { "serial_number", "u32" }, { "firmware_version", "u16" },
   { "soft_start_time", "u16" }, { "runup_time", "u16" }, { "bailout", "u16" },
   { "gov_proportional", "u32" }, { "gov_integral", "u32" },
-}
-
--- Named rather than left out of the transcription: the reference decodes two more
--- U32s that this suite does not. The page builds no row for either -- its FIELDS
--- list ends at motor_startup_sound -- so there is nothing on screen to write and
--- nothing that can be lost. That is why this is a coverage gap and not a defect,
--- and the check below says so rather than leaving it to be assumed.
---
--- The first version of this file listed FOUR fields here and claimed the codec
--- decoded none of the governor words. Both halves were wrong: the transcription
--- stopped at bailout, and gov_proportional/gov_integral are decoded
--- (msp_esc_parameters_scorpion.lua:71-72) with rows on the page. A check written to
--- match what I believed was reading is not evidence about the code.
-local REFERENCE_ONLY_TAIL = {
   { "stick_max", "u32" }, { "stick_zero", "u32" },
 }
 
@@ -602,25 +592,27 @@ local function runChecks()
   end
 
   do
-    -- The gap after gov_integral, named. Both lists end at the same byte there, so
-    -- stick_max and stick_zero are a difference in coverage and not a shift.
+    -- #2457 closed the gap that used to sit after gov_integral: stick_max and
+    -- stick_zero are decoded here now, so both field lists end at the same byte and
+    -- there is no coverage gap left to state separately. The page still builds no row
+    -- for either -- its FIELDS list ends at motor_startup_sound -- so they are never
+    -- edited; they are carried through a read and written back verbatim, which is what
+    -- makes the payload the ESC's own 84-byte block.
+    --
+    -- NOT a gate, for the same reason the parity check above is not: it compares the
+    -- two transcriptions and the page's source, not the codec. The gate that ties the
+    -- claim to the codec is in bin/esc_parameters_scorpion/verify_scorpion_block_length.lua.
     local _, mineEnd = offsetsOf(LOCAL_TAIL, offsets.esc_mode.offset)
-    local _, refEnd = offsetsOf(REFERENCE_ONLY_TAIL, mineEnd + 1)
-    local undecoded = {}
-    for _, field in ipairs(REFERENCE_ONLY_TAIL) do
-      if offsets[field[1]] == nil then undecoded[#undecoded + 1] = field[1] end
-    end
-    -- The page is the reason this is a gap and not a defect: it builds no row for
-    -- either field, so nothing can be written into them and nothing can be lost.
+    local decoded = offsets.stick_max ~= nil and offsets.stick_zero ~= nil
     local page = readFile(PREFIX .. "app/pages/esc_forward_scorpion.lua")
     local rowsForThem = 0
-    for _, field in ipairs(REFERENCE_ONLY_TAIL) do
-      if page:find('key = "' .. field[1] .. '"', 1, true) then rowsForThem = rowsForThem + 1 end
+    for _, name in ipairs({ "stick_max", "stick_zero" }) do
+      if page:find('key = "' .. name .. '"', 1, true) then rowsForThem = rowsForThem + 1 end
     end
-    check("the two fields the reference decodes after gov_integral are named as a gap, and the page has no row for either",
-      #undecoded == 2 and refEnd > mineEnd and rowsForThem == 0,
-      string.format("this suite ends at byte %d, the reference at %d; undecoded here: %s; rows built for them: %d",
-        mineEnd, refEnd, table.concat(undecoded, ", "), rowsForThem))
+    check("stick_max and stick_zero are decoded but carry no page row, so the block is 84 bytes",
+      decoded and mineEnd == 84 and rowsForThem == 0,
+      string.format("this suite ends at byte %d; stick_max decoded here: %s; rows built for them: %d",
+        mineEnd, tostring(decoded), rowsForThem))
   end
 
   out("")

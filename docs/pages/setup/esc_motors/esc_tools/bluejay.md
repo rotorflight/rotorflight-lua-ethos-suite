@@ -57,6 +57,6 @@ listed and only *ESC 1* can be opened. The page does not guess.
 
 ## Related
 
-- [Rotorflight documentation](https://www.rotorflight.org/docs/)
+- [Rotorflight documentation](https://doc.rotorflight.org/)
 
 *Documented against RFSuite Ethos 2.3.1.*

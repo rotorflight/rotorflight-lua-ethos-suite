@@ -28,10 +28,10 @@ Greyed out until the flight controller answers. Read-only while the model is arm
 
 ## Notes
 
-- Changes are written to the flight controller EEPROM upon Save.
+- Written to the flight controller EEPROM on Save; Rotorflight 2 applies governor settings immediately, so the save does not restart the flight controller.
 
 ## Related
 
-- [Rotorflight documentation](https://www.rotorflight.org/docs/)
+- [Rotorflight documentation](https://doc.rotorflight.org/)
 
 *Documented against RFSuite Ethos 2.3.1.*

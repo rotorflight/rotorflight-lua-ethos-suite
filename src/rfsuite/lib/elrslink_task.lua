@@ -634,7 +634,7 @@ local function finalize()
 end
 
 local function shouldSkip()
-  if system and system.getVersion and system.getVersion().simulation == true then return true end
+  if system.getVersion().simulation == true then return true end
   if session.mspTransport ~= "crsf" then return true end
   if not (crsf and (crsf.getSensor or crsf.popFrame)) then return true end
   return false
@@ -915,7 +915,7 @@ function elrslink.start(mode)
   manualSyncMode = normalizeSyncMode(mode)
   resetState()
 
-  if system and system.getVersion and system.getVersion().simulation == true then
+  if system.getVersion().simulation == true then
     setStatus(T.unavailableSimulation)
     taskComplete = true
     return false

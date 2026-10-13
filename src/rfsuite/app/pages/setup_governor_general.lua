@@ -31,7 +31,11 @@ local function open(opts)
     mspModule = governorConfig,
     opts = opts,
     profileField = "none",
-    rebootAfterSave = true,
+    -- Rotorflight 2 applies governor writes in RAM immediately, so a save here
+    -- must not restart the flight controller: the old `true` dropped telemetry
+    -- and twitched the servos on every RPM or curve correction at the field.
+    -- Matches the EdgeTX suite, whose governor pages request no reboot.
+    rebootAfterSave = false,
     unloadPackageKeys = {"rfsuite.lib.msp_governor_config"},
     onLoaded = function()
       lastMode = nil

@@ -498,8 +498,50 @@
     "needs_translation": true
   },
   {
+    "file": "events/alerts/cells.wav",
+    "english": "cells",
+    "translation": "תאים",
+    "needs_translation": false
+  },
+  {
     "file": "status/alerts/lowbat.wav",
     "english": "Battery Empty",
+    "translation": null,
+    "needs_translation": true
+  },
+  {
+    "file": "events/alerts/gyrooverflow.wav",
+    "english": "Gyro overflow",
+    "translation": null,
+    "needs_translation": true
+  },
+  {
+    "file": "events/alerts/gpsfail.wav",
+    "english": "GPS not responding",
+    "translation": null,
+    "needs_translation": true
+  },
+  {
+    "file": "events/alerts/bbfull.wav",
+    "english": "Blackbox full",
+    "translation": null,
+    "needs_translation": true
+  },
+  {
+    "file": "events/alerts/controllimit.wav",
+    "english": "Control limit",
+    "translation": null,
+    "needs_translation": true
+  },
+  {
+    "file": "events/alerts/telemetrylost.wav",
+    "english": "Telemetry lost",
+    "translation": null,
+    "needs_translation": true
+  },
+  {
+    "file": "events/alerts/telemetryok.wav",
+    "english": "Telemetry recovered",
     "translation": null,
     "needs_translation": true
   }

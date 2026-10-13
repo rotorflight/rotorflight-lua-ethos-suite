@@ -470,7 +470,7 @@ local LAYOUTS = {
     { "reserved_20", "u8" }, { "reserved_21", "u8" }, { "reserved_22", "u8" },
     { "temperature_protection", "u8" }, { "low_rpm_power_protection", "u8" },
     { "reserved_25", "u8" }, { "reserved_26", "u8" }, { "brake_on_stop", "u8" },
-    { "led_control", "u8" }, { "power_rating", "u8" }, { "force_edt_arm", "u8" },
+    { "reserved_28", "u8" }, { "power_rating", "u8" }, { "force_edt_arm", "u8" },
     { "threshold_48to24", "u8" }, { "threshold_96to48", "u8" },
   },
   am32 = {
@@ -683,8 +683,8 @@ end
 -- unrelated row, which is both reachable and the harder test: the untouched
 -- bytes have to ride along on their own.
 --
--- Both chosen rows are plain bytes, and both are built at the fixture's layout
--- revision (Bluejay 209 in its own fixture), so the row exists in every case.
+-- Both chosen rows are plain bytes, and both are built on any released Bluejay
+-- layout, so the row exists in every case.
 local function editUnrelatedField(which)
   local field = rowField(ROWS[which].unrelated)
   if not field then return false end
@@ -728,6 +728,18 @@ local function poke(which, fixture, name, value)
   end
   buf[field.offset] = value
   return buf, buf[field.offset] == value
+end
+
+-- A copy of the fixture reporting `rev` as its layout revision. The shipped
+-- Bluejay fixture is a real 204 reply now, so a case that needs a row only a
+-- later layout carries stages the revision it needs -- the same move as the
+-- byte cases' poke(), and for the same reason: the case states its own
+-- precondition instead of relying on the fixture to carry it.
+local function atLayout(which, fixture, rev)
+  local buf = copyOf(fixture)
+  local field = OFFSETS[which].layout_revision
+  buf[field.offset] = rev
+  return buf
 end
 
 -- The exhaustive check: every byte position, every one of its 256 values, no
@@ -923,7 +935,8 @@ local function runBluejayChecks()
   -- scoping it to a moved row.
   do
     local label = "moving the 48->24 threshold below the 96->48 one still pulls the other down"
-    local runtime, opts = openPage(which, copyOf(fixture))
+    -- The thresholds are a 209 row; stage that revision so the row is built.
+    local runtime, opts = openPage(which, atLayout(which, fixture, 209))
     local field = runtime and rowField(ROWS[which].threshold_low)
     if not field then
       check(label, false, "the 48->24 threshold row was never built")
@@ -942,7 +955,8 @@ local function runBluejayChecks()
 
   do
     local label = "moving the 96->48 threshold above the 48->24 one is clamped to the ceiling"
-    local runtime, opts = openPage(which, copyOf(fixture))
+    -- The thresholds are a 209 row; stage that revision so the row is built.
+    local runtime, opts = openPage(which, atLayout(which, fixture, 209))
     local field = runtime and rowField(ROWS[which].threshold_high)
     if not field then
       check(label, false, "the 96->48 threshold row was never built")
@@ -985,7 +999,8 @@ local function runBluejayChecks()
   -- encoded, not written back: the fix must not turn "preserve" into "ignore".
   do
     local label = "selecting Dynamic PWM Frequency writes 192, the byte that means it"
-    local runtime, opts = openPage(which, copyOf(fixture))
+    -- The dynamic PWM frequency is a 209 row; stage that revision so the row is built.
+    local runtime, opts = openPage(which, atLayout(which, fixture, 209))
     local field = runtime and rowField(ROWS[which].pwm)
     if not field then
       check(label, false, "the PWM Frequency row was never built")

@@ -7,6 +7,27 @@ local msp = requireModule("lib/msp_esc_parameters_bluejay.lua")
 
 local PAGE_TITLE = "@i18n(app.modules.esc_tools.mfg.bluejay.name)@"
 
+-- Row visibility is decided by the ESC's own layout_revision byte, and the
+-- bounds below are the released Bluejay layouts plus the one forward model a
+-- client keeps: stylesuxx/esc-configurator, src/sources/Bluejay/settings.js.
+-- Read off that file's COMMON map, the revisions in play are
+--
+--   200 (v0.9) -> 201 (v0.10) -> 203 (v0.12) -> 204 (v0.15, bluejay master = v0.16)
+--   202          never released; only ever carried a damping-mode braking strength
+--   205 .. 209   never released; 205 adds the three-way startup beep and a PWM
+--                frequency, 206 the power rating, 207 force-edt-arm, 208 drops
+--                dithering, 209 the dynamic PWM frequency and the two thresholds
+--
+-- so atLeast(206), atLeast(207) and atLeast(209) name rows no shipped ESC can
+-- reach, and `rev == 205 or rev >= 209` and `rev <= 202 or rev == 205` are that
+-- same gap read from both sides. That is deliberate anticipation, not a defect:
+-- mathiasvr/bluejay has never released an EEPROM_LAYOUT_REVISION other than 33,
+-- 200, 201, 203 and 204, and the two rows this hides on 203/204 are exactly the
+-- two the firmware stopped applying there -- Pwm_Freq is written from its default
+-- and never read on any released tag, and the startup-beep application ("Read
+-- programmed startup beep setting") is gone from v0.12 onward. The rows come
+-- back on their own when a layout that carries them ships. See issue #2454,
+-- which asked for this to be said rather than left to look like a bug.
 local function layout(data)
   return tonumber(data and data.layout_revision) or 0
 end
@@ -51,7 +72,10 @@ local FIELDS = {
   {label = "@i18n(app.modules.esc_tools.mfg.blheli_s.demagcompensation)@", key = "demag_compensation"},
   {label = "@i18n(app.modules.esc_tools.mfg.blheli_s.brakeonstop)@", key = "brake_on_stop"},
   {label = brakingStrengthLabel, key = "braking_strength", enabledWhen = atLeast(202)},
-  {label = "@i18n(app.modules.esc_tools.mfg.bluejay.ledcontrol)@", key = "led_control", enabledWhen = function(data) return msp.supportsLedControl(data) end},
+  -- No LED Control row. It was gated on msp.supportsLedControl(), which read a
+  -- byte this 66-byte reply does not carry, so the row could not be shown on any
+  -- ESC; the byte it would have written is reserved_28 in
+  -- lib/msp_esc_parameters_bluejay.lua, where the sources for that are laid out.
 
   {group = "@i18n(app.modules.esc_tools.mfg.bluejay.beacon)@"},
   {label = "@i18n(app.modules.esc_tools.mfg.blheli_s.beepstrength)@", key = "beep_strength"},

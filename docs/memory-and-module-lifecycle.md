@@ -602,6 +602,56 @@ labelled as derived.
 
 ---
 
+## 13. A tool open/close cycle retains nothing Lua-side (#2425)
+
+#2425 reported ~30 kB of Lua heap retained per tool open/close cycle on an
+X18RS — open the tool, drill into the ESC menus, return, close — surviving a
+forced `collectgarbage("collect")`, and identified that as the most plausible
+mechanism behind a "slowly creeping up" heap across a flying day. A live
+reference holds it, the issue said, and the live reference was not found.
+
+`bin/tool_ui/verify_tool_lifecycle_retention.lua` drives that exact cycle
+through the real `tool.lua`, `menu_container`, `page_runtime` and an ESC vendor
+page — the page's MSP read is answered from the codec's own `simulatorResponse`,
+so the editor and every `field_layout` field are actually built (the pool
+reaches 16), not just the preload shell — and after every cycle counts:
+
+- the tables and strings actually **reachable from `_G` and `package.loaded`**
+  — the sharp check, an exact integer;
+- live bus subscribers, `rfsuite.*` entries in `package.loaded`, the
+  `field_layout` pool size, the form-widget count, and the post-collect heap as
+  a coarse backstop.
+
+**The result is flat on every object count.** Across any number of cycles the reachable
+table and string populations are constant to the object, the subscriber and
+`package.loaded` populations do not move, and no closure set accumulates. So the
+~30 kB #2425 measured is **not reachable from Lua** — which is the same
+conclusion §9 already reached for the page-navigation case and §8 records as a
+trait of Ethos's own `form` widget system: it retains widget/callback
+allocations past `form.clear()` outside Lua's GC reachability graph, and no
+amount of dropping Lua references can free a reference Lua does not hold.
+
+Two things make the negative result usable rather than a shrug. First, the
+harness is the regression guard: a module-level table that grows per screen
+rebuild, or a page handler that stops unsubscribing, turns the
+flat-from-cycle-2 property red, and `--self-test` proves that by planting the
+§8 failure mode — every form widget's options table retained per cycle — and
+requiring the census checks to go red. Second, the byte count is flat too, and
+how it got there is the trap worth recording: the harness's own metric arrays
+were built as empty tables and grown one index per cycle, so the post-collect
+reading crept by ~0.2 KB/cycle — retention that was entirely the instrument.
+Pre-sizing those arrays removes it, and the byte count then moves by 0.00 KB
+across cycles. The census stays the check to read: an exact integer no
+allocator accounting can perturb, against a byte count that is only a backstop.
+
+The census has its own measurement trap, the same one §12 records for
+allocation: a census that follows function upvalues produced counts that varied
+between runs (the reachable set through closures depends on the last cycle), so
+the harness follows table values only. Every container it exists to catch is a
+table on the path from `_G` or `package.loaded`.
+
+---
+
 ## Quick reference
 
 | Symptom | Likely cause | Fix |
@@ -615,6 +665,7 @@ labelled as derived.
 | A long-lived cache table keeps growing across the whole session | Cache never cleared, or cleared by reassignment while something else still holds the old table | Clear in place (§7) |
 | A cache class grows across the whole session although a `clearCaches`-style option exists for it | The option is gated and no call site ever requests it — a silent failure by construction | Request the option at the lifecycle call site, and bound the cache if its key space is open-ended (§7, #2380) |
 | RAM grows on menu/page rebuild despite everything above being clean | Likely Ethos's own `form` widget retention (§9) | Don't force `collectgarbage()` — it won't help; this needs a different kind of fix (or may be a platform limit) |
+| A tool open/close cycle seems to retain memory, and a forced collect cannot claw it back | Measured: no Lua object is retained; the ~30 kB is Ethos `form` retention, not a Lua reference | `bin/tool_ui/verify_tool_lifecycle_retention.lua` counts reachable objects — flat means it is the platform (§13) |
 | The heap peaks past Ethos's limit before the collector starts reclaiming | The pause is 200, so a cycle only begins at twice the live heap (§9.1) | `main.lua` sets it to 120 and prints what it applied — judge it by the peak `lua=` (§9.4) |
 | The collector is running flat out on a radio | `collectgarbage("setpause")` was called without a value, which sets the pause to **0** (§9.2) | Print the applied value; never read it back — the setter returns the previous one |
 | Lowering the pause did not reduce memory use | It moves the collector's onset earlier; it does not allocate less (§9.3) | Reduce the churn itself (#2364) — the two are complementary, not alternatives |

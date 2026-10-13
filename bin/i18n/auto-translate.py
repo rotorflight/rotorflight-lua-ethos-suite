@@ -5,6 +5,12 @@ Auto-translate Rotorflight i18n JSON files using the Claude API.
 Finds all entries with needs_translation=True across all non-English locale files
 and translates them in batches, respecting max_length constraints.
 
+A key shown somewhere with a fixed width (a menu tile, a form label, a choice:
+see check-fit.py) also gets a character limit worked out from that width and the
+locale's average character width on the X18, and a translation still too wide
+in pixels is sent back once for a shorter one. One that remains too wide is
+kept and reported, so check-fit.py names it for a hand fix.
+
 Usage:
     python bin/i18n/auto-translate.py                  # all locales
     python bin/i18n/auto-translate.py --only de fr     # specific locales
@@ -16,6 +22,7 @@ Environment: ANTHROPIC_API_KEY must be set.
 """
 
 import argparse
+import importlib.util
 import json
 import os
 import re
@@ -31,6 +38,7 @@ except ImportError:
     sys.exit(1)
 
 ROOT_DIR = Path(__file__).parent / "json"
+CHECK_FIT = Path(__file__).parent / "check-fit.py"
 DEFAULT_BATCH_SIZE = 30
 MODEL = "claude-haiku-4-5-20251001"
 
@@ -81,6 +89,48 @@ def write_json(filepath: Path, data: OrderedDict) -> None:
     with filepath.open("w", encoding="utf-8", newline="\n") as f:
         json.dump(data, f, indent=2, ensure_ascii=False)
         f.write("\n")
+
+
+def load_check_fit():
+    spec = importlib.util.spec_from_file_location("check_fit", CHECK_FIT)
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    return mod
+
+
+class FitBudgets:
+    """Pixel budgets per key (from check-fit.py's source scan) and the X18 glyph widths."""
+
+    def __init__(self):
+        self.fit = load_check_fit()
+        self.glyphs = self.fit.load_glyphs()
+        uses = self.fit.collect_uses(self.fit.load_resolver())
+        self.budgets = {key: [self.fit.BUDGETS[c] for c in ctxs] for key, ctxs in uses.items()}
+
+    def average_widths(self, data: dict) -> dict:
+        """Mean character width per font over a locale's existing translations."""
+        texts = []
+
+        def walk(n):
+            if isinstance(n, dict):
+                if "translation" in n:
+                    texts.append(n.get("translation") or "")
+                else:
+                    for v in n.values():
+                        walk(v)
+
+        walk(data)
+        chars = sum(len(t) for t in texts) or 1
+        return {f: sum(self.fit.text_width(t, f, self.glyphs) for t in texts) / chars
+                for f in self.fit.FONT_INDEX}
+
+    def char_cap(self, key: str, averages: dict) -> int | None:
+        caps = [int(px // averages[font]) for font, px in self.budgets.get(key, [])]
+        return min(caps) if caps else None
+
+    def too_wide(self, key: str, text: str) -> bool:
+        return any(self.fit.text_width(text, font, self.glyphs) > px
+                   for font, px in self.budgets.get(key, []))
 
 
 def find_untranslated(obj: dict, path: str = "") -> list[dict]:
@@ -181,6 +231,7 @@ def process_language(
     lang_path: Path,
     batch_size: int,
     dry_run: bool,
+    fit: FitBudgets | None = None,
 ) -> tuple[int, int]:
     """
     Process a single language file.
@@ -199,15 +250,30 @@ def process_language(
         print(f"  {lang_code:6s} ({lang_name}): {total} entries need translation")
         return 0, total
 
+    if fit is not None:
+        averages = fit.average_widths(data)
+        for entry in untranslated:
+            cap = fit.char_cap(entry["path"], averages)
+            if cap is not None:
+                entry["max_length"] = max(1, min(entry["max_length"], cap))
+
     num_batches = (total + batch_size - 1) // batch_size
     print(f"  {lang_code:6s} ({lang_name}): {total} entries in {num_batches} batch(es)")
 
     translated = 0
     failed = 0
+    retry = []
 
-    for batch_num, start in enumerate(range(0, total, batch_size), 1):
+    for batch_num, start in enumerate(range(0, total + batch_size, batch_size), 1):
         batch = untranslated[start : start + batch_size]
-        print(f"    [{batch_num}/{num_batches}] translating {len(batch)} entries...", end=" ", flush=True)
+        if batch:
+            print(f"    [{batch_num}/{num_batches}] translating {len(batch)} entries...", end=" ", flush=True)
+        else:
+            # One more pass for translations that came back too wide in pixels.
+            if not retry:
+                break
+            batch, retry = retry, None
+            print(f"    [retry] shortening {len(batch)} too-wide entries...", end=" ", flush=True)
 
         try:
             result = translate_batch(client, batch, lang_name)
@@ -223,14 +289,18 @@ def process_language(
                 failed += 1
                 continue
             translation = _truncate_to_limit(str(raw_translation), entry["max_length"])
+            if fit is not None and fit.too_wide(entry["path"], translation):
+                if retry is not None:
+                    retry.append(dict(entry, max_length=max(1, len(translation) * 3 // 4)))
+                    continue
+                print(f"\n    WARNING: still too wide for the X18: {entry['path']} = {translation!r}")
             set_translation(data, entry["path"], translation)
             translated += 1
 
         print(f"OK ({translated} done so far)")
 
         # Polite rate-limit pause between batches
-        if batch_num < num_batches:
-            time.sleep(0.5)
+        time.sleep(0.5)
 
     write_json(lang_path, data)
 
@@ -287,8 +357,9 @@ def main(argv: list[str] | None = None) -> int:
     total_translated = 0
     total_needed = 0
 
+    fit = FitBudgets()
     for lang_path in lang_files:
-        done, needed = process_language(client, lang_path.stem, lang_path, args.batch_size, args.dry_run)
+        done, needed = process_language(client, lang_path.stem, lang_path, args.batch_size, args.dry_run, fit)
         total_translated += done
         total_needed += needed
 

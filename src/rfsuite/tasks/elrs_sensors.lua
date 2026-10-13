@@ -83,6 +83,13 @@ local POP_BUDGET_SECONDS = 0.02
 local MAX_FRAMES_PER_WAKEUP = 6
 
 local os_clock = os.clock
+
+-- Optional Ethos 26.1.3+ instruction budget. Cache the capability once; older
+-- radios keep the existing drain behaviour. Leave headroom for the rest of
+-- the background wakeup; this is a cooperative bound, not preemption.
+local getInstructionsUsage = system and system.getInstructionsUsage
+local DRAIN_INSTRUCTION_LIMIT = 70
+
 local math_floor = math.floor
 
 -- appId -> {name, unit, prec, min, max, dec} once built (see
@@ -283,7 +290,12 @@ local function wakeup(transport, telemetrySlots)
 
   local deadline = os_clock() + POP_BUDGET_SECONDS
   local frames = 0
+  local budgetReached = false
   while frames < MAX_FRAMES_PER_WAKEUP and os_clock() < deadline do
+    if getInstructionsUsage and getInstructionsUsage() >= DRAIN_INSTRUCTION_LIMIT then
+      budgetReached = true
+      break
+    end
     local command, data = transport.popCustomTelemetryFrame()
     if not command then break end
     parseFrame(data)
@@ -296,8 +308,8 @@ local function wakeup(transport, telemetrySlots)
   -- STALE_REFRESH_SECONDS window has actually elapsed.
   for _, sensor in pairs(sensors) do sensor:refresh() end
 
-  -- true: stopped on the frame cap, so more are probably queued.
-  return frames >= MAX_FRAMES_PER_WAKEUP
+  -- Ask session.lua to retry next wakeup when a budget leaves frames queued.
+  return budgetReached or frames >= MAX_FRAMES_PER_WAKEUP
 end
 
 -- Called on disconnect (mirrors tasks/session.lua's own field resets):

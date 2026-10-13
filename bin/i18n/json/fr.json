@@ -119,6 +119,20 @@
       "max_length": 18,
       "reverse_text": false
     },
+    "msg_restarting": {
+      "english": "Restarting...",
+      "translation": "Restarting...",
+      "needs_translation": true,
+      "reverse_text": false,
+      "max_length": 13
+    },
+    "msg_restarting_fc": {
+      "english": "Restarting flight controller...",
+      "translation": "Restarting flight controller...",
+      "needs_translation": true,
+      "reverse_text": false,
+      "max_length": 31
+    },
     "msg_save_failed_title": {
       "english": "Save failed",
       "translation": "Sauvegarde",
@@ -696,7 +710,7 @@
         },
         "menu_curves_long": {
           "english": "Governor Bypass Curve",
-          "translation": "Gouverneur Bypass Courbe",
+          "translation": "Courbe bypass gov.",
           "needs_translation": false,
           "max_length": 21,
           "reverse_text": false
@@ -710,7 +724,7 @@
         },
         "menu_time": {
           "english": "Ramp Time",
-          "translation": "Temps de rampe",
+          "translation": "Durée rampe",
           "needs_translation": false,
           "max_length": 9,
           "reverse_text": false
@@ -731,7 +745,7 @@
         },
         "spooldown_time": {
           "english": "Spooldown time",
-          "translation": "Temps de descente en regime",
+          "translation": "Durée descente régime",
           "needs_translation": false,
           "max_length": 14,
           "reverse_text": false
@@ -775,7 +789,7 @@
       "main_rotor": {
         "name": {
           "english": "Main Rotor",
-          "translation": "Moteur principal Roteur",
+          "translation": "Rotor principal",
           "needs_translation": false,
           "reverse_text": false,
           "max_length": 10
@@ -789,30 +803,30 @@
         },
         "cyclic_cross_coupling_gain": {
           "english": "Cyclic Cross Coupling: Gain",
-          "translation": "Couplage croisé cyclique: gain",
+          "translation": "Couplage croisé cycl.: gain",
           "needs_translation": false,
           "reverse_text": false,
           "max_length": 27
         },
         "cyclic_cross_coupling_ratio": {
           "english": "Cyclic Cross Coupling: Ratio",
-          "translation": "Couplage croisé cyclique: Ratio",
+          "translation": "Couplage croisé cycl.: ratio",
           "needs_translation": false,
           "reverse_text": false,
           "max_length": 28
         },
         "cyclic_cross_coupling_cutoff": {
-          "english": "Cyclic Cross Coupling: Cutoff",
-          "translation": "Couplage croisé cyclique: coupure",
+          "english": "Cyclic Cross Coupling Cutoff",
+          "translation": "Coupl. croisé cycl. coupure",
           "needs_translation": false,
           "reverse_text": false,
-          "max_length": 29
+          "max_length": 28
         }
       },
       "pid_bandwidth": {
         "name": {
           "english": "PID Bandwidth",
-          "translation": "Bande passante PID",
+          "translation": "Bande PID",
           "needs_translation": false,
           "reverse_text": false,
           "max_length": 13
@@ -863,7 +877,7 @@
       "autolevel": {
         "name": {
           "english": "Autolevel",
-          "translation": "Mise à niveau automatique",
+          "translation": "Auto-niveau",
           "needs_translation": false,
           "reverse_text": false,
           "max_length": 9
@@ -1211,15 +1225,15 @@
           "max_length": 8
         },
         "cyclic_behaviour": {
-          "english": "Cyclic Behaviour",
-          "translation": "Comportement cyc",
+          "english": "Cyclic Behav.",
+          "translation": "Comport. cycl.",
           "needs_translation": false,
           "reverse_text": false,
-          "max_length": 16
+          "max_length": 13
         },
         "rate_table": {
           "english": "Rate Table",
-          "translation": "Table des vitesses",
+          "translation": "Table taux",
           "needs_translation": false,
           "max_length": 10,
           "reverse_text": false
@@ -1512,7 +1526,7 @@
         },
         "disable_servo_override": {
           "english": "Disable servo override",
-          "translation": "Desactiver remplacement servo",
+          "translation": "Désact. forçage servo",
           "needs_translation": false,
           "max_length": 22,
           "reverse_text": false
@@ -1805,6 +1819,41 @@
           "max_length": 8,
           "reverse_text": false
         },
+        "status_alerts": {
+          "english": "FC status",
+          "translation": "FC status",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 9
+        },
+        "status_blackbox": {
+          "english": "Blackbox full",
+          "translation": "Blackbox full",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 13
+        },
+        "status_gps": {
+          "english": "GPS not responding",
+          "translation": "GPS not responding",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 18
+        },
+        "status_gyro": {
+          "english": "Gyro overflow",
+          "translation": "Gyro overflow",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 13
+        },
+        "status_saturation": {
+          "english": "Control limit",
+          "translation": "Control limit",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 13
+        },
         "txt_developer": {
           "english": "Developer",
           "translation": "Développ.",
@@ -1814,7 +1863,7 @@
         },
         "dashboard": {
           "english": "Dashboard",
-          "translation": "Tableau de bord",
+          "translation": "Tab. de bord",
           "needs_translation": false,
           "max_length": 9,
           "reverse_text": false
@@ -2072,10 +2121,10 @@
           "reverse_text": false
         },
         "esc_temperature": {
-          "english": "ESC temperature",
-          "translation": "Temperature ESC",
+          "english": "ESC temp",
+          "translation": "Temp. ESC",
           "needs_translation": false,
-          "max_length": 15,
+          "max_length": 8,
           "reverse_text": false
         },
         "esc_threshold": {
@@ -2134,12 +2183,68 @@
           "reverse_text": false,
           "max_length": 17
         },
+        "main_power_lost": {
+          "english": "Main power lost",
+          "translation": "Main power lost",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 15
+        },
+        "link": {
+          "english": "Link",
+          "translation": "Link",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 4
+        },
+        "telemetry_lost": {
+          "english": "Telemetry lost",
+          "translation": "Telemetry lost",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 14
+        },
         "alert_repeat_interval": {
           "english": "Repeat interval",
           "translation": "Rintervalle de répétition",
           "needs_translation": false,
           "reverse_text": false,
           "max_length": 15
+        },
+        "voltage_hold": {
+          "english": "Hold time",
+          "translation": "Hold time",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 9
+        },
+        "voltage_callout": {
+          "english": "Voltage callout",
+          "translation": "Voltage callout",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 15
+        },
+        "voltage_callout_none": {
+          "english": "Alert only",
+          "translation": "Alert only",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 10
+        },
+        "voltage_callout_pack": {
+          "english": "Pack voltage",
+          "translation": "Pack voltage",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 12
+        },
+        "voltage_callout_cell": {
+          "english": "Cell voltage",
+          "translation": "Cell voltage",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 12
         },
         "fuel": {
           "english": "Fuel",
@@ -2157,7 +2262,7 @@
         },
         "fuel_callout_default": {
           "english": "Default",
-          "translation": "Par defaut (uniquement a 10%)",
+          "translation": "Par défaut",
           "needs_translation": false,
           "max_length": 7,
           "reverse_text": false
@@ -2212,11 +2317,11 @@
           "reverse_text": false
         },
         "model_announcement": {
-          "english": "Model announcement",
-          "translation": "Annonce du modèle",
+          "english": "Model callout",
+          "translation": "Annonce mod.",
           "needs_translation": false,
           "reverse_text": false,
-          "max_length": 18
+          "max_length": 13
         },
         "timer_alerting": {
           "english": "Timer audio",
@@ -2400,6 +2505,20 @@
           "reverse_text": false,
           "max_length": 4
         },
+        "dashboard_theme_kse4": {
+          "english": "KSE4",
+          "translation": "KSE4",
+          "needs_translation": false,
+          "reverse_text": false,
+          "max_length": 4
+        },
+        "dashboard_theme_kse5": {
+          "english": "KSE5",
+          "translation": "KSE5",
+          "needs_translation": false,
+          "reverse_text": false,
+          "max_length": 4
+        },
         "dashboard_theme_danielrc": {
           "english": "DanielRC",
           "translation": "DanielRC",
@@ -2485,11 +2604,11 @@
           "max_length": 15
         },
         "txt_show_battery_profile_connect": {
-          "english": "Show battery profile on connect",
-          "translation": "Show battery profile on connect",
+          "english": "Battery profile on connect",
+          "translation": "Battery profile on connect",
           "needs_translation": true,
           "reverse_text": false,
-          "max_length": 31
+          "max_length": 26
         },
         "temperature_unit": {
           "english": "Temperature Unit",
@@ -2529,6 +2648,12 @@
           "needs_translation": false,
           "max_length": 28,
           "reverse_text": false
+        },
+        "msg_calibration_timeout": {
+          "english": "The calibration did not finish. Try again.",
+          "max_length": 46,
+          "needs_translation": false,
+          "translation": "L'étalonnage n'a pas abouti. Réessayez."
         },
         "name": {
           "english": "Accelerometer",
@@ -2597,7 +2722,7 @@
         },
         "mag_cw_0_flip": {
           "english": "CW 0 deg flip",
-          "translation": "CW Retournement à 0 degré",
+          "translation": "CW 0 retourné",
           "needs_translation": false,
           "reverse_text": false,
           "max_length": 13
@@ -2611,7 +2736,7 @@
         },
         "mag_cw_180_flip": {
           "english": "CW 180 deg flip",
-          "translation": "CW Retournement à 180 degrés",
+          "translation": "CW 180 retourné",
           "needs_translation": false,
           "reverse_text": false,
           "max_length": 15
@@ -2625,7 +2750,7 @@
         },
         "mag_cw_270_flip": {
           "english": "CW 270 deg flip",
-          "translation": "CW Retournement à 270 degrés",
+          "translation": "CW 270 retourné",
           "needs_translation": false,
           "reverse_text": false,
           "max_length": 15
@@ -2639,7 +2764,7 @@
         },
         "mag_cw_90_flip": {
           "english": "CW 90 deg flip",
-          "translation": "CW Retournement à 90 degrés",
+          "translation": "CW 90 retourné",
           "needs_translation": false,
           "reverse_text": false,
           "max_length": 14
@@ -3142,7 +3267,7 @@
         },
         "disable_mixer_override": {
           "english": "Disable mixer override",
-          "translation": "Desactiver le remplacement du mixeur",
+          "translation": "Désact. forçage mixeur",
           "needs_translation": false,
           "max_length": 22,
           "reverse_text": false
@@ -4474,7 +4599,7 @@
       "esc_motors": {
         "consumption_correction": {
           "english": "Consumption Correction",
-          "translation": "Correction de consommation",
+          "translation": "Correction conso.",
           "needs_translation": false,
           "max_length": 22,
           "reverse_text": false
@@ -4535,6 +4660,83 @@
           "max_length": 20,
           "reverse_text": false
         },
+        "motor": {
+          "english": "Motor",
+          "translation": "Motor",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 5
+        },
+        "motor_override": {
+          "english": "Motor Override",
+          "translation": "Motor Override",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 14
+        },
+        "motor_override_armed": {
+          "english": "Disarm before driving a motor.",
+          "translation": "Disarm before driving a motor.",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 30
+        },
+        "motor_override_disable": {
+          "english": "Disable motor override",
+          "translation": "Disable motor override",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 22
+        },
+        "motor_override_disable_msg": {
+          "english": "Return control of the motor to the flight controller.",
+          "translation": "Return control of the motor to the flight controller.",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 53
+        },
+        "motor_override_disconnected": {
+          "english": "Link lost. Override released.",
+          "translation": "Link lost. The motor is back under flight controller control.",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 29
+        },
+        "motor_override_enable": {
+          "english": "Enable motor override",
+          "translation": "Enable motor override",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 21
+        },
+        "motor_override_enable_msg": {
+          "english": "The flight controller drives the motor directly. Remove the blades, secure the craft and stand clear.",
+          "translation": "The flight controller drives the motor directly. Remove the blades, secure the craft and stand clear.",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 101
+        },
+        "motor_override_note": {
+          "english": "Blades off and the craft secured.",
+          "translation": "Blades off and the craft secured.",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 33
+        },
+        "motor_override_note_2": {
+          "english": "The motor turns with the throttle.",
+          "translation": "The motor turns with the throttle.",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 34
+        },
+        "motor_override_throttle": {
+          "english": "Throttle",
+          "translation": "Throttle",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 8
+        },
         "motor_pole_count": {
           "english": "Motor Pole Count",
           "translation": "Nombre de poles moteur",
@@ -4579,7 +4781,7 @@
         },
         "rpm": {
           "english": "RPM",
-          "translation": "Tours par Minute",
+          "translation": "Tr/min",
           "needs_translation": false,
           "max_length": 3,
           "reverse_text": false
@@ -4651,7 +4853,7 @@
       "profile_select": {
         "name": {
           "english": "Select Profile",
-          "translation": "Selectionner le profil",
+          "translation": "Choix du profil",
           "needs_translation": false,
           "max_length": 14,
           "reverse_text": false
@@ -6255,7 +6457,7 @@
             },
             "motor_temp_sensor": {
               "english": "Motor Temperture Sensor",
-              "translation": "Capteur de temperature moteur",
+              "translation": "Capteur temp. moteur",
               "needs_translation": false,
               "max_length": 23,
               "reverse_text": false
@@ -6779,7 +6981,7 @@
             },
             "soft_start_time": {
               "english": "Soft Start Time",
-              "translation": "Temps demarrage progressif",
+              "translation": "Durée démarrage doux",
               "needs_translation": false,
               "max_length": 15,
               "reverse_text": false
@@ -7257,10 +7459,10 @@
       },
       "msp_exp": {
         "name": {
-          "english": "MSP Experimental",
-          "translation": "MSP Expérimental",
+          "english": "MSP Exp.",
+          "translation": "MSP exp.",
           "needs_translation": false,
-          "max_length": 16,
+          "max_length": 8,
           "reverse_text": false
         }
       },
@@ -7721,6 +7923,97 @@
           "needs_translation": true,
           "reverse_text": false,
           "max_length": 24
+        },
+        "apply_hint": {
+          "english": "Press Save to write these to the flight controller.",
+          "translation": "Press Save to write these to the flight controller.",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 51
+        },
+        "apply_prompt": {
+          "english": "Write these changes to the flight controller and save them?",
+          "translation": "Write these changes to the flight controller and save them?",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 59
+        },
+        "applied": {
+          "english": "Changes saved to the flight controller. Fly again to check the new tune.",
+          "translation": "Changes saved to the flight controller. Fly again to check the new tune.",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 72
+        },
+        "stage_read": {
+          "english": "Reading current settings...",
+          "translation": "Reading current settings...",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 27
+        },
+        "stage_write": {
+          "english": "Writing changes...",
+          "translation": "Writing changes...",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 18
+        },
+        "stage_save": {
+          "english": "Saving to flight controller...",
+          "translation": "Saving to flight controller...",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 30
+        },
+        "stage_verify": {
+          "english": "Checking saved settings...",
+          "translation": "Checking saved settings...",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 26
+        },
+        "err_read": {
+          "english": "Could not read the settings from the flight controller. Nothing was changed.",
+          "translation": "Could not read the settings from the flight controller. Nothing was changed.",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 76
+        },
+        "err_changed": {
+          "english": "The settings on the flight controller are not the ones these flights were flown with. Nothing was changed. Fly again with the current settings.",
+          "translation": "The settings on the flight controller are not the ones these flights were flown with. Nothing was changed. Fly again with the current settings.",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 143
+        },
+        "err_armed": {
+          "english": "Disarm first. Nothing was saved.",
+          "translation": "Disarm first. Nothing was saved.",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 32
+        },
+        "err_write": {
+          "english": "Writing failed. Nothing was saved: restart the flight controller to undo any part already sent.",
+          "translation": "Writing failed. Nothing was saved: restart the flight controller to undo any part already sent.",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 95
+        },
+        "err_save": {
+          "english": "Saving failed. The changes are active until the flight controller restarts, then undone.",
+          "translation": "Saving failed. The changes are active until the flight controller restarts, then undone.",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 88
+        },
+        "err_verify": {
+          "english": "Saved, but reading back did not confirm it. Check the settings on PIDs, Rates and PID Controller.",
+          "translation": "Saved, but reading back did not confirm it. Check the settings on PIDs, Rates and PID Controller.",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 97
         }
       }
     },
@@ -8447,6 +8740,20 @@
       "reverse_text": false,
       "max_length": 8
     },
+    "sensor_system_config": {
+      "english": "System Config",
+      "translation": "System Config",
+      "needs_translation": true,
+      "reverse_text": false,
+      "max_length": 13
+    },
+    "sensor_system_status": {
+      "english": "System Status",
+      "translation": "System Status",
+      "needs_translation": true,
+      "reverse_text": false,
+      "max_length": 13
+    },
     "sensor_tailspeed": {
       "english": "Tailspeed",
       "translation": "Vitesse arrière",
@@ -8801,6 +9108,69 @@
       }
     },
     "dashboard": {
+      "alert_acc_uncalibrated": {
+        "english": "ACC NOT CALIBRATED",
+        "translation": "ACC NOT CALIBRATED",
+        "needs_translation": true,
+        "reverse_text": false,
+        "max_length": 18
+      },
+      "alert_battery_critical": {
+        "english": "BATTERY CRITICAL",
+        "translation": "BATTERY CRITICAL",
+        "needs_translation": true,
+        "reverse_text": false,
+        "max_length": 16
+      },
+      "alert_blackbox_full": {
+        "english": "BLACKBOX FULL",
+        "translation": "BLACKBOX FULL",
+        "needs_translation": true,
+        "reverse_text": false,
+        "max_length": 13
+      },
+      "alert_failsafe": {
+        "english": "FAILSAFE",
+        "translation": "FAILSAFE",
+        "needs_translation": true,
+        "reverse_text": false,
+        "max_length": 8
+      },
+      "alert_governor_fallback": {
+        "english": "GOVERNOR FALLBACK",
+        "translation": "GOVERNOR FALLBACK",
+        "needs_translation": true,
+        "reverse_text": false,
+        "max_length": 17
+      },
+      "alert_gps_lost": {
+        "english": "GPS NOT RESPONDING",
+        "translation": "GPS NOT RESPONDING",
+        "needs_translation": true,
+        "reverse_text": false,
+        "max_length": 18
+      },
+      "alert_gyro_overflow": {
+        "english": "GYRO OVERFLOW",
+        "translation": "GYRO OVERFLOW",
+        "needs_translation": true,
+        "reverse_text": false,
+        "max_length": 13
+      },
+      "alert_override": {
+        "english": "TEST OVERRIDE ACTIVE",
+        "translation": "TEST OVERRIDE ACTIVE",
+        "needs_translation": true,
+        "reverse_text": false,
+        "max_length": 20
+      },
+      "alert_reboot_required": {
+        "english": "REBOOT REQUIRED",
+        "translation": "REBOOT REQUIRED",
+        "needs_translation": true,
+        "reverse_text": false,
+        "max_length": 15
+      },
       "altitude_max": {
         "english": "Altitude Max",
         "translation": "Altitude maximale",

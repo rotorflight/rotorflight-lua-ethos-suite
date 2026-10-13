@@ -1,7 +1,7 @@
 ---
 title: RPM
 sidebar_label: RPM
-sidebar_position: 30
+sidebar_position: 40
 ---
 
 # RPM
@@ -32,6 +32,6 @@ Greyed out until the flight controller answers. Read-only while the model is arm
 
 ## Related
 
-- [Rotorflight documentation](https://www.rotorflight.org/docs/)
+- [Rotorflight documentation](https://doc.rotorflight.org/)
 
 *Documented against RFSuite Ethos 2.3.1.*

@@ -54,9 +54,32 @@ local DEFAULTS = {
     governor = true,
     voltage = true,
     voltage_repeat_interval = 10,
+    -- Announce a main pack that has gone while the FC stays alive on a BEC or
+    -- a backup battery (issue #2310). Off by default: it only means anything
+    -- for a model carrying a backup guard or a separate receiver pack, and it
+    -- needs both a pack voltage and a BEC voltage to be readable at all.
+    main_power_lost = false,
+    -- Seconds a low pack reading must hold before the alarm fires, so a
+    -- momentary 3D voltage sag is not called out (issue #2309). 0 disables
+    -- the filter; default 2.0.
+    voltage_hold = 2.0,
+    -- What the low-voltage callout speaks: 0 alert tone only, 1 total pack
+    -- voltage, 2 average cell voltage (issue #2309).
+    voltage_callout = 0,
+    -- Announce the telemetry link going and coming back, but only while the
+    -- model is armed (issue #2311). On by default: the armed gate is what keeps
+    -- a bench power-down silent, so what is left is a link loss with the rotors
+    -- turning -- the one event here a pilot must not have to notice himself.
+    telemetry_lost = true,
     pid_profile = true,
     rate_profile = true,
     battery_profile = true,
+    -- FC status callouts (lib/system_alerts.lua, tasks/audio_events.lua).
+    status_gyro = true,
+    status_gps = true,
+    status_blackbox = true,
+    -- Off by default: "control limit" can be chatty in 3D flight.
+    status_saturation = false,
     smartfuel = true,
     smartfuelcallout = 0,
     smartfuelrepeats = 1,
@@ -101,6 +124,8 @@ local DASHBOARD_THEMES = {
   gismo = true,
   helihud = true,
   kevd = true,
+  kse4 = true,
+  kse5 = true,
   rfstatus = true,
   ["rt-rc-n"] = true,
   ["rt-rc"] = true,
@@ -177,9 +202,17 @@ local function normalizeEvents(values)
   events.governor = coerceBool(events.governor, DEFAULTS.events.governor)
   events.voltage = coerceBool(events.voltage, DEFAULTS.events.voltage)
   events.voltage_repeat_interval = clampNumber(events.voltage_repeat_interval, DEFAULTS.events.voltage_repeat_interval, 5, 120)
+  events.main_power_lost = coerceBool(events.main_power_lost, DEFAULTS.events.main_power_lost)
+  events.voltage_hold = clampNumber(events.voltage_hold, DEFAULTS.events.voltage_hold, 0, 10)
+  events.voltage_callout = clampNumber(events.voltage_callout, DEFAULTS.events.voltage_callout, 0, 2)
+  events.telemetry_lost = coerceBool(events.telemetry_lost, DEFAULTS.events.telemetry_lost)
   events.pid_profile = coerceBool(events.pid_profile, DEFAULTS.events.pid_profile)
   events.rate_profile = coerceBool(events.rate_profile, DEFAULTS.events.rate_profile)
   events.battery_profile = coerceBool(events.battery_profile, DEFAULTS.events.battery_profile)
+  events.status_gyro = coerceBool(events.status_gyro, DEFAULTS.events.status_gyro)
+  events.status_gps = coerceBool(events.status_gps, DEFAULTS.events.status_gps)
+  events.status_blackbox = coerceBool(events.status_blackbox, DEFAULTS.events.status_blackbox)
+  events.status_saturation = coerceBool(events.status_saturation, DEFAULTS.events.status_saturation)
   events.smartfuel = coerceBool(events.smartfuel, DEFAULTS.events.smartfuel)
   events.smartfuelcallout = clampNumber(events.smartfuelcallout, DEFAULTS.events.smartfuelcallout, 0, 50)
   events.smartfuelrepeats = clampNumber(events.smartfuelrepeats, DEFAULTS.events.smartfuelrepeats, 1, 10)

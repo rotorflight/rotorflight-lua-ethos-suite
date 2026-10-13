@@ -1,7 +1,7 @@
 ---
 title: Throttle
 sidebar_label: Throttle
-sidebar_position: 10
+sidebar_position: 20
 ---
 
 # Throttle
@@ -69,6 +69,6 @@ numbers mean nothing.
 
 ## Related
 
-- [Rotorflight documentation](https://www.rotorflight.org/docs/)
+- [Rotorflight documentation](https://doc.rotorflight.org/)
 
 *Documented against RFSuite Ethos 2.3.1.*

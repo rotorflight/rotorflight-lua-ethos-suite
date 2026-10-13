@@ -33,7 +33,7 @@ local function windowSize()
     local gotW, gotH = lcd.getWindowSize()
     if type(gotW) == "number" and gotW > 0 then w = gotW end
     if type(gotH) == "number" and gotH > 0 then h = gotH end
-  elseif system and system.getVersion then
+  else
     local version = system.getVersion()
     w = version.lcdWidth or w
     h = version.lcdHeight or h
@@ -52,7 +52,9 @@ local function open(opts)
     mspModule = governorConfig,
     opts = opts,
     profileField = "none",
-    rebootAfterSave = true,
+    -- Rotorflight 2 applies governor writes in RAM immediately -- see
+    -- app/pages/setup_governor_general.lua's own note. No reboot on save.
+    rebootAfterSave = false,
     unloadPackageKeys = {"rfsuite.lib.msp_governor_config"},
     onLoaded = function()
       for i = 1, FIELD_COUNT do

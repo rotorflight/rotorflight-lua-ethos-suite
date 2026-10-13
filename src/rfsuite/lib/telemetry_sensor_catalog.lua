@@ -100,6 +100,11 @@ local SENSOR_LIST = {
   [105] = {name = "@i18n(telemetry.sensor_dbg5)@", group = "debug"},
   [106] = {name = "@i18n(telemetry.sensor_dbg6)@", group = "debug"},
   [107] = {name = "@i18n(telemetry.sensor_dbg7)@", group = "debug"},
+  -- Packed status words (lib/system_status.lua). minApiMinor: firmware
+  -- before MSP API 12.10 does not have them, so app/pages/telemetry.lua
+  -- does not offer them there.
+  [120] = {name = "@i18n(telemetry.sensor_system_status)@", group = "status", minApiMinor = 10},
+  [121] = {name = "@i18n(telemetry.sensor_system_config)@", group = "status", minApiMinor = 10},
 }
 
 local GROUP_TITLE = {
@@ -152,7 +157,11 @@ local catalog = {
     [64] = {65, 66, 67},
     [68] = {69, 70, 71},
   },
-  DEFAULT_IDS = {90, 3, 60, 4, 23, 5, 93, 99, 95, 96, 15, 91, 43, 97, 6},  -- Ids the flight controller emits as *full* CRSF frames while
+  -- Same set as rotorflight-firmware's telemetry_sensors default
+  -- (src/main/pg/telemetry.c) -- keep the two in sync. 120/121 are only
+  -- applied on firmware that has them (minApiMinor above).
+  DEFAULT_IDS = {90, 3, 60, 4, 23, 5, 93, 99, 95, 96, 15, 91, 43, 97, 6, 120, 121},
+  -- Ids the flight controller emits as *full* CRSF frames while
   -- crsf_telemetry_mode is NATIVE: crsfNativeTelemetrySensors in
   -- src/main/telemetry/crsf.c holds FLIGHT_MODE, BATTERY, ATTITUDE,
   -- ALTITUDE, GPS, RPM and TEMP, and crsfInitNativeTelemetry() adds one to

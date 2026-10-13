@@ -44,6 +44,6 @@ sidebar_position: <order of the tile in its menu, times 10>
 <!-- Optional. Link the Rotorflight documentation for the underlying feature instead of
      restating it. Delete the section if there is nothing to link. -->
 
-- [Rotorflight documentation](https://www.rotorflight.org/docs/)
+- [Rotorflight documentation](https://doc.rotorflight.org/)
 
 *Documented against RFSuite Ethos 2.3.1.*

@@ -51,6 +51,13 @@ return {
   battery_profile = {
     {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5026},
   },
+  -- Packed by tasks/sim_sensors.lua from the editor's per-field files.
+  system_status = {
+    {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5031},
+  },
+  system_config = {
+    {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5032},
+  },
   governor = {
     {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5009},
   },

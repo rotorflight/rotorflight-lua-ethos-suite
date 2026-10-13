@@ -41,17 +41,20 @@ local msp_tune_advisor = {
   AXIS_COUNT = AXIS_COUNT,
 }
 
--- Simulator fixture, one reply per axis (Actual rates, center 360, max 720):
+-- Simulator fixture, one reply per axis (Actual rates, center 180, max 240):
 -- cyclic turning faster than asked with the usual stop bounce, pitch too
--- irregular to judge, tail with little data.
+-- irregular to judge, tail with little data. The tune (P, F, B, cutoff,
+-- rates) is the other fixtures' (lib/msp_pid_tuning.lua, msp_pid_profile.lua,
+-- msp_rc_tuning.lua), so the Tune Advisor's Apply finds the FC still on the
+-- tune that was flown.
 local SIM_AXES = {
-  {p = 50, f = 100, cutoff = 10, rcRate = 36, sRate = 72, ffCount = 1491, ff = 1.53, corr = 0.97, lag = 90,
+  {p = 70, f = 120, b = 0, cutoff = 10, rcRate = 18, sRate = 24, ffCount = 1491, ff = 1.53, corr = 0.97, lag = 90,
    sp = {{1.52, 1341}, {1.54, 163}, {1.03, 50}}, coll = {{1.24, 385}, {1.54, 763}, {1.73, 356}},
    full = {87, 25, 0.38, 395}, rel = {35, 18, 0.15, 1.47, 0.020, 0.003}},
-  {p = 50, f = 100, cutoff = 10, rcRate = 36, sRate = 72, ffCount = 1172, ff = 0.79, corr = 0.78, lag = 70,
+  {p = 100, f = 120, b = 0, cutoff = 10, rcRate = 18, sRate = 24, ffCount = 1172, ff = 0.79, corr = 0.78, lag = 70,
    sp = {{1.06, 999}, {0.45, 194}, {0, 54}}, coll = {{0.28, 446}, {1.27, 629}, {1.59, 118}},
    full = {105, 72, 0, 23}, rel = {10, 2, 0.09, 1.33, 0.019, 0.011}},
-  {p = 80, f = 0, cutoff = 10, rcRate = 36, sRate = 72, ffCount = 404, ff = 0.27, corr = 0.84, lag = 250,
+  {p = 100, f = 0, b = 0, cutoff = 10, rcRate = 18, sRate = 40, ffCount = 404, ff = 0.27, corr = 0.84, lag = 250,
    sp = {{0.26, 300}, {0.30, 109}, {0, 0}}, coll = {{0.29, 409}, {0, 0}, {0, 0}},
    full = {29, 29, 0.09, 42}, rel = {0, 0, 0, 0, 0, 0}},
 }
@@ -67,7 +70,7 @@ local function buildSimulatorResponse(axis)
   mspcodec.writeU8(buf, axis - 1)
   mspcodec.writeU16(buf, a.p)
   mspcodec.writeU16(buf, a.f)
-  mspcodec.writeU16(buf, 0)
+  mspcodec.writeU16(buf, a.b)
   mspcodec.writeU8(buf, a.cutoff)
   mspcodec.writeU8(buf, RATES_TYPE_ACTUAL)
   mspcodec.writeU8(buf, a.rcRate)

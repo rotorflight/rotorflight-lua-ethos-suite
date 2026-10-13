@@ -9,6 +9,12 @@ local ceil = math.ceil
 local max = math.max
 local sort = table.sort
 
+-- Ethos 26.1.3+ can report the current callback's instruction allowance.
+-- Leave headroom for the next object's indivisible work and the caller's tail.
+-- Older firmware retains the existing object-count pacing and error recovery.
+local getInstructionsUsage = system and system.getInstructionsUsage
+local WAKE_INSTRUCTION_LIMIT = 70
+
 local objectsByType = {}
 local boxRects = {}
 local typeScratch = {}
@@ -454,6 +460,9 @@ local function wakeObjects(maxCount, config)
 
   local processed = 0
   while wakeCursor <= count and processed < maxCount do
+    -- Pause before touching the object or its failure count. The existing
+    -- cursor and false return make the caller resume this pass next tick.
+    if getInstructionsUsage and getInstructionsUsage() >= WAKE_INSTRUCTION_LIMIT then return false end
     local ok, err = wakeOne(boxRects[wakeCursor])
     if not ok then
       wakeCursorFailCount = wakeCursorFailCount + 1

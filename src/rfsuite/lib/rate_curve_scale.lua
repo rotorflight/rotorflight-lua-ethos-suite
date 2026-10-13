@@ -154,6 +154,35 @@ local function scaleFor(rateType, role, axisClass)
 end
 rate_curve_scale.scaleFor = scaleFor
 
+-- The largest raw byte the firmware accepts per rates_type and role (issue
+-- #2350). The firmware keeps one {rc_rate, srate, expo} limit set per table in
+-- ratesSettingLimits[] (src/main/fc/rc_rates.c:39-46) and clamps the values to it
+-- when the config is loaded (src/main/config/config.c:184-194, validateAndFixRatesSettings,
+-- called from readEEPROM at config.c:760 and writeUnmodifiedConfigToEEPROM at config.c:771).
+-- Roles map to those fields: rcRate -> rc_rate_limit, srate -> srate_limit,
+-- expo -> expo_limit. MSP_SET_RC_TUNING does not clamp (src/main/msp/msp.c, the
+-- MSP_SET_RC_TUNING case), so a value above the limit is only cut at the next boot.
+-- RATES_TYPE_NONE (index 0, src/main/pg/rates.h:27-28) has no entry in that table,
+-- so the firmware's limits for it are zero: a NONE profile is cut to 0 at boot.
+-- NONE is limited to 0 here for the same reason, so the page does not offer a value
+-- the firmware would drop.
+local RAW_LIMITS = {
+  [RATE_TYPE_NONE] = {rcRate = 0, srate = 0, expo = 0},
+  [RATE_TYPE_BETAFLIGHT] = {rcRate = 255, srate = 90, expo = 100},
+  [RATE_TYPE_RACEFLIGHT] = {rcRate = 200, srate = 255, expo = 100},
+  [RATE_TYPE_KISS] = {rcRate = 255, srate = 90, expo = 100},
+  [RATE_TYPE_ACTUAL] = {rcRate = 200, srate = 200, expo = 100},
+  [RATE_TYPE_QUICK] = {rcRate = 255, srate = 200, expo = 100},
+  [RATE_TYPE_ROTORFLIGHT] = {rcRate = 200, srate = 100, expo = 100},
+}
+
+-- nil or unknown rateType falls back to ACTUAL, the same as scaleFor().
+local function rawMaxFor(rateType, role)
+  local limits = RAW_LIMITS[rateType] or RAW_LIMITS[RATE_TYPE_ACTUAL]
+  return limits[role] or 255
+end
+rate_curve_scale.rawMaxFor = rawMaxFor
+
 -- How many decimal places each (rates_type, role, axis-class) actually
 -- needs to render without silently losing precision -- e.g. Actual/
 -- Raceflight/Rotorflight's main-axis RC Rate is naturally a whole number
@@ -248,8 +277,9 @@ function rate_curve_scale.fromDisplayInt(displayInt, rateType, role, axisClass)
   local divisor = scaleFor(rateType, role, axisClass)
   local scale = 10 ^ decimalsFor(rateType, role, axisClass)
   local raw = math.floor((displayInt or 0) / scale * 100 / divisor + 0.5)
+  local maxRaw = rawMaxFor(rateType, role)
   if raw < 0 then return 0 end
-  if raw > 255 then return 255 end
+  if raw > maxRaw then return maxRaw end
   return raw
 end
 
@@ -264,7 +294,7 @@ end
 -- is derived from the same divisor the live conversion uses, so it can
 -- never drift out of sync with it.
 function rate_curve_scale.displayBounds(rateType, role, axisClass)
-  return 0, rate_curve_scale.toDisplayInt(255, rateType, role, axisClass), decimalsFor(rateType, role, axisClass)
+  return 0, rate_curve_scale.toDisplayInt(rawMaxFor(rateType, role), rateType, role, axisClass), decimalsFor(rateType, role, axisClass)
 end
 
 function rate_curve_scale.displayStep(rateType, role, axisClass)

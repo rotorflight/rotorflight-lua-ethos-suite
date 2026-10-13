@@ -516,6 +516,174 @@ end
 
 -- ---------------------------------------------------------------------------
 
+-- Optional instruction budgets must preserve queued frames and partial replies.
+do
+  local usage = 0
+  system.getInstructionsUsage = function() return usage end
+  local frames = replyFrames(POOL_CMD, 20, chunksOf(20, 5))
+  local transport = newMspTransport(frames)
+  local poll = transport.mspPoll
+  transport.mspPoll = function()
+    usage = usage + 30
+    return poll()
+  end
+  local common = newCommon(transport)
+  common.mspSendRequest(POOL_CMD, {})
+  local cmd = common.mspPollReply()
+  check("instruction pressure pauses MSP between frames", cmd == nil and transport.polls == 2)
+  local buf
+  for _ = 1, 5 do
+    usage = 0
+    cmd, buf = common.mspPollReply()
+    if cmd then break end
+  end
+  local intact = cmd == POOL_CMD and buf and #buf == 20
+  if intact then
+    for i = 1, 20 do if buf[i] ~= i then intact = false end end
+  end
+  check("MSP resumes with every payload byte intact", intact)
+
+  usage = 100
+  local before = transport.polls
+  common.mspClearBufs()
+  check("cleanup resets state without draining at exhausted budget", transport.polls == before)
+  check("cleanup still releases the outstanding request", common.mspSendRequest(0x09, {}) == true)
+
+  local longTransport = newMspTransport(replyFrames(POOL_CMD, POOL_BYTES, chunksOf(POOL_BYTES, 5)))
+  local longPoll = longTransport.mspPoll
+  longTransport.mspPoll = function()
+    usage = usage + 30
+    return longPoll()
+  end
+  local Queue = dofile(MSP .. "/queue.lua")
+  local queue = Queue.new(newCommon(longTransport))
+  local result, failure
+  queue:add({command = POOL_CMD, payload = {},
+    processReply = function(_, reply) result = reply end,
+    errorHandler = function(reason) failure = reason end})
+  for _ = 1, 100 do
+    clock.now = clock.now + WAKEUP_SECONDS
+    usage = 0
+    queue:processQueue()
+    if result or failure then break end
+  end
+  check("instruction-sliced long reply survives beyond the retry window",
+    result and #result == POOL_BYTES and not failure and #longTransport.queue == 0)
+
+  local elrs = dofile(TASKS .. "/elrs_sensors.lua")
+  local remaining = 5
+  local custom = { popCustomTelemetryFrame = function()
+    if remaining == 0 then return nil end
+    remaining = remaining - 1
+    usage = usage + 35
+    return 0x88, {0, 0, 0x11, 0x10, 0x30, 1, 2}
+  end }
+  usage = 70
+  check("ELRS leaves frames queued and requests a retry at the limit",
+    elrs.wakeup(custom, nil) == true and remaining == 5)
+  usage = 0
+  check("ELRS stops between complete frames under pressure",
+    elrs.wakeup(custom, nil) == true and remaining == 3)
+  for _ = 1, 3 do usage = 0; elrs.wakeup(custom, nil) end
+  check("ELRS resumes and drains the remaining frames", remaining == 0)
+
+  -- The native S.Port search is an inner loop: bounding common.lua alone
+  -- cannot stop a backlog of unrelated frames from exhausting the allowance.
+  local pops = 0
+  local frame = {
+    physId = function() return pops < 3 and 0x01 or 0x1B end,
+    primId = function() return 0x32 end,
+    appId = function() return 0x1234 end,
+    value = function() return 0x12345678 end,
+  }
+  sport = { getSensor = function() return {
+    popFrame = function()
+      pops = pops + 1
+      usage = usage + 30
+      return frame
+    end,
+  } end }
+  local transportSport = dofile(MSP .. "/transport_sport.lua")
+  usage = 0
+  check("S.Port yields while searching unrelated frames",
+    transportSport.mspPoll() == nil and pops == 2)
+  usage = 0
+  local packet = transportSport.mspPoll()
+  check("S.Port finds the queued reply on the next wakeup",
+    packet and packet[1] == 0x34 and packet[6] == 0x12 and pops == 3)
+
+  system.getInstructionsUsage = nil
+  pops = 0
+  transportSport = dofile(MSP .. "/transport_sport.lua")
+  packet = transportSport.mspPoll()
+  check("older Ethos keeps the original S.Port search", packet and pops == 3)
+  sport = nil
+end
+
+-- Exercise the real dashboard engine through its public wakeup API. The fake
+-- object charges instruction usage; all cursor/pass state belongs to the engine.
+do
+  local function dashboardScenario(hasApi)
+    local usage, calls, messages = 0, {}, {}
+    local object = {wakeup = function(box)
+      calls[#calls + 1] = box.id
+      usage = usage + 35
+    end}
+    local context = {
+      setWidget = function() end,
+      widgets = {dashboard = {utils = {isFullScreen = function() return false end}}},
+    }
+    local env = setmetatable({
+      system = hasApi and {getInstructionsUsage = function() return usage end} or {},
+      package = {loaded = {["rfsuite.lib.require"] = function(path)
+        assert(path == "widgets/dashboard/context.lua", path)
+        return context
+      end}},
+      loadfile = function(path)
+        assert(path == "widgets/dashboard/objects/test.lua", path)
+        return function() return object end
+      end,
+      print = function(message) messages[#messages + 1] = message end,
+    }, {__index = _G})
+    local engine = assert(loadfile(ROOT .. "/src/rfsuite/widgets/dashboard/engine.lua", "t", env))()
+    local config = {scheduler = {spread_scheduling = false}, boxes = {
+      {type = "test", id = 1}, {type = "test", id = 2}, {type = "test", id = 3},
+    }}
+    engine.preload({}, config) -- Isolate object waking from module-load pacing.
+    return engine, config, calls, messages, function(value) usage = value end
+  end
+
+  local engine, config, calls, messages, setUsage = dashboardScenario(true)
+  check("dashboard pauses between objects at 70 percent",
+    engine.wakeup({}, config, 480, 320) == false and #calls == 2)
+  check("dashboard leaves deferred objects unwoken",
+    config.boxes[1]._dashboardWoken and config.boxes[2]._dashboardWoken
+      and config.boxes[3]._dashboardWoken ~= true)
+  for _ = 1, 5 do
+    setUsage(70)
+    check("dashboard pressure keeps the current object pending",
+      engine.wakeup({}, config, 480, 320) == false and #calls == 2)
+  end
+  setUsage(0)
+  check("dashboard resumes without skipping or repeating objects",
+    engine.wakeup({}, config, 480, 320) == true and table.concat(calls, ",") == "1,2,3")
+  check("normal budget deferral is silent", #messages == 0)
+  setUsage(0)
+  check("steady-state dashboard passes also pause",
+    engine.wakeup({}, config, 480, 320, {maxObjects = 3}) == false and #calls == 5)
+  engine.reset()
+  setUsage(0)
+  engine.wakeup({}, config, 480, 320)
+  check("dashboard reset discards the paused cursor", calls[6] == 1 and calls[7] == 2)
+
+  local oldEngine, oldConfig, oldCalls = dashboardScenario(false)
+  check("dashboard without the API completes its original first pass",
+    oldEngine.wakeup({}, oldConfig, 480, 320) == true and #oldCalls == 3)
+  check("dashboard without the API still obeys explicit object pacing",
+    oldEngine.wakeup({}, oldConfig, 480, 320, {maxObjects = 1}) == false
+      and #oldCalls == 4 and oldCalls[4] == 1)
+end
+
 print()
 if failures == 0 then
   print(string.format("all %d checks passed", checks))

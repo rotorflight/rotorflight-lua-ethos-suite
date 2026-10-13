@@ -1,0 +1,13 @@
+{
+  "extraKnownMarketplaces": {
+    "ethos-tools": {
+      "source": {
+        "source": "github",
+        "repo": "FrSkyRC/ethos-tools"
+      }
+    }
+  },
+  "enabledPlugins": {
+    "ethos-simulator@ethos-tools": true
+  }
+}

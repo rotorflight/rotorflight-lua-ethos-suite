@@ -127,6 +127,8 @@ return function(decoders)
     [0x1213] = {name = "LED Profile", unit = UNIT_RAW, prec = 0, min = 1, max = 6, dec = decU8},
     [0x1214] = {name = "Battery Profile", unit = UNIT_RAW, prec = 0, min = 1, max = 6, dec = decU8},
     [0x1220] = {name = "ADJ", unit = UNIT_RAW, prec = 0, dec = decAdjFunc},
+    [0x1230] = {name = "System Status", unit = UNIT_RAW, prec = 0, min = 0, max = 2147483647, dec = decU32},
+    [0x1231] = {name = "System Config", unit = UNIT_RAW, prec = 0, min = 0, max = 2147483647, dec = decU32},
     [0xDB00] = {name = "Debug 0", unit = UNIT_RAW, prec = 0, dec = decS32},
     [0xDB01] = {name = "Debug 1", unit = UNIT_RAW, prec = 0, dec = decS32},
     [0xDB02] = {name = "Debug 2", unit = UNIT_RAW, prec = 0, dec = decS32},

@@ -240,7 +240,12 @@ _G.form = {
   -- esc_error.addTextLine calls form.addStaticText(line, rect, text, LEFT), so
   -- the text is the THIRD argument. Reading the fourth collected LEFT on every
   -- call and the message checks passed or failed for the wrong reason.
-  addStaticText = function(_, _, text) obs.staticTexts[#obs.staticTexts + 1] = text end,
+  addStaticText = function(line, _, text)
+    obs.staticTexts[#obs.staticTexts + 1] = text
+    if line and text and obs.lines[line] == "" then
+      obs.lines[line] = text
+    end
+  end,
   addNumberField = function() return widgetStub("numberField") end,
   addChoiceField = function() return widgetStub("choiceField") end,
   addExpansionPanel = function()

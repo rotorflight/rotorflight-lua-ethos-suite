@@ -222,6 +222,10 @@ system = permissive({
   end,
   getSource = function() return newSource() end,
   getMemoryUsage = function() return {} end,
+  -- Model the current callback allowance rather than the permissive nil stub.
+  getInstructionsUsage = function()
+    return math.min(100, math.floor((count - callbackStart) * 100 / H.LIMIT))
+  end,
   registerWidget = function(def) table.insert(H.registered.widgets, def) end,
   registerTask = function(def) table.insert(H.registered.tasks, def) end,
   registerSystemTool = function(def) table.insert(H.registered.tools, def); return def end,

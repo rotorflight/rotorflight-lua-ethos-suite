@@ -23,6 +23,7 @@ local THEME_DEFS = {
   {label = "@i18n(app.modules.settings.dashboard_theme_default)@", folder = "default"},
   {label = "@i18n(app.modules.settings.dashboard_theme_gismo)@", folder = "gismo"},
   {label = "@i18n(app.modules.settings.dashboard_theme_kevd)@", folder = "kevd", minResolution = {x = 784, y = 294}},
+  {label = "@i18n(app.modules.settings.dashboard_theme_kse5)@", folder = "kse5"},
   {label = "@i18n(app.modules.settings.dashboard_theme_rfstatus)@", folder = "rfstatus"},
   {label = "@i18n(app.modules.settings.dashboard_theme_rt_rc)@", folder = "rt-rc"},
   {label = "@i18n(app.modules.settings.dashboard_theme_rt_rc_n)@", folder = "rt-rc-n"},
@@ -42,15 +43,26 @@ local function themeVisible(theme)
   return not (w and h and (w < (minRes.x or 0) or h < (minRes.y or 0)))
 end
 
+local function fileExists(path)
+  local f = io.open(path, "rb")
+  if f then
+    f:close()
+    return true
+  end
+  if readSource then
+    return readSource(path) ~= nil
+  end
+  return false
+end
+
 -- Session-cached (mirrors objects/dial/image.lua's rfsuite.session.dialImageCache):
 -- this page module is loadfile()'d fresh on every visit (no require()-style
 -- caching -- see docs/memory-and-module-lifecycle.md), so a plain local
 -- wouldn't survive a second open(). Which themes ship a configure.lua and
 -- which are hidden by minResolution can't change while the script is
--- running, so probing that via loadfile() (a full compile of each theme's
--- configure.lua, thrown away immediately after) on every single page visit
--- was pure repeat waste -- a real, previously observed contributor to
--- Ethos's "Max instructions count reached" on dashboard-theme navigation.
+-- running, so probing that via file presence rather than loadfile() avoids
+-- compiling each theme's configure.lua chunk into memory, eliminating an
+-- acute allocation spike on radios near the Lua heap ceiling (#2295, #2530).
 local function configuredThemes()
   local cached = dashboardContext.session.dashboardConfiguredThemes
   if cached then return cached end
@@ -59,8 +71,7 @@ local function configuredThemes()
   for _, theme in ipairs(THEME_DEFS) do
     if themeVisible(theme) then
       local dir = themeDir(theme.folder)
-      local ok = pcall(function() return assert(loadfile(dir .. "/configure.lua")) end)
-      if ok then
+      if fileExists(dir .. "/configure.lua") then
         themes[#themes + 1] = {
           label = theme.label,
           folder = theme.folder,

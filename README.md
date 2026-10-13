@@ -242,14 +242,14 @@ Rotorflight is a community-driven open-source project. You can contribute by:
     
 -   Testing and giving feedback on new versions
     
--   Updating documentation and tutorials on the [Rotorflight Website](https://www.rotorflight.org/)
+-   Updating the [Rotorflight documentation](https://doc.rotorflight.org/contributing/editing-the-docs/)
     
 -   Translating the configurator to other languages
     
 -   Contributing code (fixes, features, enhancements)
     
 
-🔧 See the full [Contributing Guide](https://www.rotorflight.org/docs/Contributing/intro)
+🔧 See the full [Contributing Guide](https://doc.rotorflight.org/contributing/)
 
 ----------
 

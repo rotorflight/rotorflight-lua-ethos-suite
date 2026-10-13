@@ -28,6 +28,10 @@ local settingsStore = requireModule("lib/settings_store.lua")
 local mspBattery = requireModule("lib/msp_battery.lua")
 local batteryProfileIndex = requireModule("lib/battery_profile_index.lua")
 local dataflashSummary = requireModule("lib/msp_dataflash_summary.lua")
+local mainPower = requireModule("lib/main_power.lua")
+-- The latch lives with the session, not in the audio task, so the dashboard and the
+-- audio alert read one flag from one place (#2358).
+local mainPowerLatch = mainPower.newLatch()
 local governorConfig = requireModule("lib/msp_governor_config.lua")
 local modelPreferences = requireModule("lib/model_preferences.lua")
 local flightStats = requireModule("lib/msp_flight_stats.lua")
@@ -74,6 +78,9 @@ local session = {
   -- true/false once lib/msp_api_version.lua's read completes; nil while
   -- still unknown (never reads as "unsupported" -- see its own isSupported()).
   apiVersionSupported = nil,
+  -- true while the flight pack is gone and the receiver runs on backup power (#2358).
+  -- Evaluated in updateMainPower(); the audio alert and the dashboard both read it.
+  mainPowerLost = false,
   mcuId = nil,
   craftName = nil,
   clockSynced = false,
@@ -94,6 +101,13 @@ local session = {
   governorState = nil,
   flightModeFlags = nil, -- "flight_mode" telemetry sensor, the FC's flightModeFlags bitmask
   gpsSats = nil, -- "GPS Sats" telemetry sensor; nil until the FC broadcasts it
+  -- Decoded "system_status" / "system_config" sensors (lib/system_status.lua),
+  -- nil until the FC sends them (firmware before MSP API 12.10 never does).
+  -- While they are present, isArmed and the profile numbers are read from them
+  -- instead of the individual armflags/profile sensors. Each is a new table on
+  -- every change and never modified afterwards, so it is published as-is.
+  systemStatus = nil,
+  systemConfig = nil,
   mspTransport = nil,
   telemetrySlots = nil, -- 40-entry S.Port sensor-slot array, see lib/msp_telemetry_config.lua
   pidProfile = nil,
@@ -382,6 +396,7 @@ local function flush()
     apiVersionMajor = session.apiVersionMajor,
     apiVersionMinor = session.apiVersionMinor,
     apiVersionSupported = session.apiVersionSupported,
+    mainPowerLost = session.mainPowerLost,
     mcuId = session.mcuId,
     craftName = session.craftName,
     batteryConfig = copyBatteryConfig(session.batteryConfig),
@@ -395,9 +410,12 @@ local function flush()
     becVoltage = session.becVoltage,
     fuelPercent = session.fuelPercent,
     governorMode = session.governorMode,
+    governorModeKnown = session.governorModeKnown,
     governorState = session.governorState,
     flightModeFlags = session.flightModeFlags,
     gpsSats = session.gpsSats,
+    systemStatus = session.systemStatus,
+    systemConfig = session.systemConfig,
     mspTransport = session.mspTransport,
     pidProfile = session.pidProfile,
     rateProfile = session.rateProfile,
@@ -452,6 +470,19 @@ local function loadModelPreferences()
   updateModelSnapshots()
   publish()
   return true
+end
+
+-- Keep what the FC calls itself next to its preferences (lib/known_models.lua lists it with
+-- no link up). The UID and the name arrive in separate replies, in either order, so both
+-- callbacks come here and the second one finds both halves; a name that has not changed
+-- writes nothing.
+local function recordCraftName()
+  if not (session.modelPreferences and session.modelPreferencesFile and session.craftName) then return end
+  local prefs, changed = modelPreferences.setCraftName(session.modelPreferences, session.craftName)
+  if changed then
+    session.modelPreferences = prefs
+    saveModelPreferences()
+  end
 end
 
 local function scheduleStatsSync(delay)
@@ -638,6 +669,14 @@ local function runHandshake(mspQueue, protocol)
         playConnectBeep()
       end
       publish()
+      -- Phased handshake (issue #2362): the identity/config reads below are
+      -- held back until this verdict is a verified "yes" (see the gate a few
+      -- lines down). Now that API_VERSION has answered, resume the handshake
+      -- in the same turn rather than waiting for wakeup()'s own 2s retry tick,
+      -- so the remaining phases start as soon as the version is known. On an
+      -- incompatible FC this call lands on the gate and does nothing, which is
+      -- the point: no further requests are queued.
+      runHandshake(mspQueue, protocol)
     end, function(reason)
       handshakeInFlight.apiVersion = false
       if reason ~= "cleared" then
@@ -647,6 +686,25 @@ local function runHandshake(mspQueue, protocol)
     if queued == false then
       handshakeInFlight.apiVersion = false
     end
+  end
+
+  -- Phased handshake (issue #2362). Every read below is a post-connect read
+  -- that only makes sense once the FC has proven it speaks this suite's own
+  -- MSP dialect. `session.apiVersionSupported` is nil until MSP_API_VERSION
+  -- has been answered, and false when the answer was an incompatible family,
+  -- or this family with a minor below this rebuild's floor -- see
+  -- lib/msp_api_version.lua's isSupported(). This function used to queue the
+  -- whole identity/config burst unconditionally, in one call: on an
+  -- incompatible FC that put FC_VERSION, UID, NAME, the RTC sync and the
+  -- battery/smartfuel/governor/rx-map reads on the wire ahead of any verdict,
+  -- and because the queue is single-in-flight, one unanswerable request at its
+  -- head -- the 5 x 0.8s retry budget of MSP_UID, say -- starved every page
+  -- read behind it for seconds. API_VERSION above is the one request allowed
+  -- to run unverified; it is cheap, and its own success callback resumes this
+  -- function the moment the verdict is in. Nothing below is queued until the
+  -- verdict is a verified "yes".
+  if session.apiVersionSupported ~= true then
+    return
   end
 
   if not session.handshake.fcVariant and not handshakeInFlight.fcVariant then
@@ -675,6 +733,7 @@ local function runHandshake(mspQueue, protocol)
       session.handshake.mcuId = true
       session.mcuId = mcuId
       loadModelPreferences()
+      recordCraftName()
       scheduleStatsSync(0)
       publish()
     end, function(reason)
@@ -694,6 +753,7 @@ local function runHandshake(mspQueue, protocol)
       handshakeInFlight.craftName = false
       session.handshake.craftName = true
       session.craftName = name
+      recordCraftName()
       if settingsStore.syncNameEnabled(settingsStore.load()) and model and model.name
         and session.craftName and session.craftName ~= "" then
         if not originalModelName then
@@ -779,12 +839,15 @@ local function runHandshake(mspQueue, protocol)
       handshakeInFlight.governorConfig = false
       session.handshake.governorConfig = true
       session.governorMode = data.gov_mode
+      session.governorModeKnown = true
       publish()
     end, function(reason)
       handshakeInFlight.governorConfig = false
       if reason == "cleared" then return end
       session.handshake.governorConfig = true
+      -- The read failed: 0 is the audio fallback (silent), not a known mode.
       session.governorMode = 0
+      session.governorModeKnown = false
       publish()
     end))
     if queued == false then
@@ -828,6 +891,10 @@ local function clearAircraftIdentity()
   session.modelPreferencesMcuId = nil
   session.modelStats = nil
 end
+
+-- Set once system_status has reported a healthy GPS this connection; see
+-- updateSystemStatus().
+local gpsSeenHealthy = false
 
 local function setConnected(value, mspQueue, protocol)
   if session.connected == value then return end
@@ -888,14 +955,20 @@ local function setConnected(value, mspQueue, protocol)
     session.tempEsc = nil
     session.tempMcu = nil
     session.becVoltage = nil
+    session.mainPowerLost = false
+    mainPowerLatch.packSeen = false
     session.smartfuelMode = nil
     session.smartfuelVoltageFallPerSecond = nil
     session.smartfuelChargeDropPerSecond = nil
     session.fuelPercent = nil
     session.governorMode = nil
+    session.governorModeKnown = nil
     session.governorState = nil
     session.flightModeFlags = nil
     session.gpsSats = nil
+    session.systemStatus = nil
+    session.systemConfig = nil
+    gpsSeenHealthy = false
     session.rxMap = nil
     session.telemetrySlots = nil
     session.pidProfile = nil
@@ -935,11 +1008,19 @@ local function setConnected(value, mspQueue, protocol)
   publish()
 end
 
+-- Main power lost (#2358): evaluated on every voltage change, so the latch sees each
+-- reading (the latch itself is declared with the requires, above setConnected()).
+local function updateMainPower()
+  session.mainPowerLost = mainPower.evaluate(
+    tonumber(session.voltage), tonumber(session.becVoltage), mainPowerLatch)
+end
+
 local function updateVoltage(protocol)
   if not telemetrySensors then return end
   local value = telemetrySensors.getValue(protocol, "voltage")
   if value ~= session.voltage then
     session.voltage = value
+    updateMainPower()
     publish()
   end
 end
@@ -1021,15 +1102,46 @@ local function activeProfile1(value)
   return nil
 end
 
+-- lib/system_status.lua, loaded the first time the FC sends one of its packed
+-- words: firmware before MSP API 12.10, or a model without either sensor
+-- selected, never needs it.
+local systemStatusCodec = nil
+
+-- One packed status word as a plain integer, or nil when there is no reading.
+local function readSystemWord(protocol, name)
+  local value = telemetrySensors.getValue(protocol, name)
+  if value == nil then return nil end
+  if not systemStatusCodec then systemStatusCodec = requireModule("lib/system_status.lua") end
+  return systemStatusCodec.toRaw(value)
+end
+
+-- Decodes the FC's "system_config" sensor into session.systemConfig when its
+-- word changes. Returns the current decoded table, or nil when the FC is not
+-- sending it (firmware before MSP API 12.10, or the sensor not selected).
+local function updateSystemConfig(protocol)
+  local raw = readSystemWord(protocol, "system_config")
+  if raw == nil then return nil end
+  if session.systemConfig == nil or raw ~= session.systemConfig.raw then
+    session.systemConfig = systemStatusCodec.decodeConfig(raw)
+    publish()
+  end
+  return session.systemConfig
+end
+
+-- The profile numbers come from system_config when the FC sends it, and from
+-- the individual pid/rate/battery profile sensors otherwise. Both carry the
+-- same 1-based values, so the validation below is shared.
 local function updateProfiles(protocol)
   if not telemetrySensors then return end
-  local pidProfile = activeProfile1(telemetrySensors.getValue(protocol, "pid_profile"))
+  local config = updateSystemConfig(protocol)
+
+  local pidProfile = activeProfile1(config and config.pidProfile or telemetrySensors.getValue(protocol, "pid_profile"))
   if pidProfile ~= nil and pidProfile ~= session.pidProfile then
     session.pidProfile = pidProfile
     publish()
   end
 
-  local rateProfile = activeProfile1(telemetrySensors.getValue(protocol, "rate_profile"))
+  local rateProfile = activeProfile1(config and config.rateProfile or telemetrySensors.getValue(protocol, "rate_profile"))
   if rateProfile ~= nil and rateProfile ~= session.rateProfile then
     session.rateProfile = rateProfile
     publish()
@@ -1041,12 +1153,41 @@ local function updateProfiles(protocol)
   -- here, at its single ingress point, so session.batteryProfile is 0-based
   -- from here on -- every other reader (the SmartFuel packCapacity, the
   -- dashboard selector, the capacity announcement) consumes it as-is.
-  local batteryProfile = batteryProfileIndex.fromTelemetrySensor(telemetrySensors.getValue(protocol, "battery_profile"))
-  if batteryProfile ~= session.batteryProfile then
+  -- A tick with no valid reading keeps the last pack, like the pid/rate
+  -- profiles above: clearing it would reset SmartFuel, and the next good
+  -- reading would reset it again.
+  local batteryProfile = batteryProfileIndex.fromTelemetrySensor(config and config.batteryProfile or telemetrySensors.getValue(protocol, "battery_profile"))
+  if batteryProfile ~= nil and batteryProfile ~= session.batteryProfile then
     session.batteryProfile = batteryProfile
     if applyActiveProfileCells(session.batteryConfig, batteryProfile) then localSmartFuel:reset() end
     publish()
   end
+end
+
+-- Decodes the FC's "system_status" sensor (lib/system_status.lua) into
+-- session.systemStatus when its word changes. Runs every wakeup tick from
+-- updateArmState(), so an unchanged word costs one compare and no
+-- allocation. Returns the decoded table, or nil when this tick has no
+-- reading (firmware before MSP API 12.10, the sensor not selected, or a
+-- missed frame). session.systemStatus keeps the last decoded state either
+-- way. The nil return is deliberate: updateArmState() then reads the armflags
+-- sensor if there is one, and otherwise leaves session.isArmed unchanged, so
+-- a missed frame never flips the arm state.
+--
+-- gpsCommsLost is added here: the FC clears "GPS healthy" when the module
+-- stops talking, so the loss can only be seen as "was healthy earlier this
+-- connection, isn't now" (lib/system_alerts.lua).
+local function updateSystemStatus(protocol)
+  local raw = readSystemWord(protocol, "system_status")
+  if raw == nil then return nil end
+  if session.systemStatus ~= nil and raw == session.systemStatus.raw then return session.systemStatus end
+
+  local status = systemStatusCodec.decodeStatus(raw)
+  if status.gpsHealthy then gpsSeenHealthy = true end
+  status.gpsCommsLost = gpsSeenHealthy and not status.gpsHealthy
+  session.systemStatus = status
+  publish()
+  return status
 end
 
 -- Bit 0 (ARMED, firmware src/main/fc/runtime_config.h) is the only bit
@@ -1065,13 +1206,21 @@ end
 -- - On disarm (wasArmed -> false): if handshake elements were cleared during
 --   initial arming, automatically resumes runHandshake() so session metadata
 --   (API version, FC version, MCU UID, craft name) is established cleanly.
+--
+-- The ARMED bit comes from system_status when the FC sends it (see
+-- updateSystemStatus()), and from the armflags sensor otherwise.
 local function updateArmState(protocol, mspQueue)
   if not telemetrySensors then return end
 
-  local armFlags = telemetrySensors.getValue(protocol, "armflags")
   local isArmed
-  if armFlags ~= nil then
-    isArmed = (math.floor(armFlags) & 1) == 1
+  local status = updateSystemStatus(protocol)
+  if status then
+    isArmed = status.armed
+  else
+    local armFlags = telemetrySensors.getValue(protocol, "armflags")
+    if armFlags ~= nil then
+      isArmed = (math.floor(armFlags) & 1) == 1
+    end
   end
   if isArmed ~= nil and isArmed ~= session.isArmed then
     local wasArmed = session.isArmed
@@ -1152,13 +1301,19 @@ local function updateBecVoltage(protocol)
   local value = telemetrySensors.getValue(protocol, "bec_voltage")
   if value ~= session.becVoltage then
     session.becVoltage = value
+    updateMainPower()
     publish()
   end
 end
 
+-- The governor sensor when it is selected, otherwise the governor state field
+-- of system_status.
 local function updateGovernor(protocol)
   if not telemetrySensors then return end
   local governorState = telemetrySensors.getValue(protocol, "governor")
+  if governorState == nil and session.systemStatus then
+    governorState = session.systemStatus.governorState
+  end
   if governorState ~= session.governorState then
     session.governorState = governorState
     publish()
@@ -1304,6 +1459,23 @@ local function onSmartfuelConfigSaved()
 end
 bus.subscribe("smartfuel.config.saved", onSmartfuelConfigSaved)
 
+local function onCraftNameSaved(name)
+  if not session.connected then return end
+  if type(name) ~= "string" or name == "" then return end
+  session.craftName = name
+  recordCraftName()
+  if settingsStore.syncNameEnabled(settingsStore.load()) and model and model.name
+    and session.craftName and session.craftName ~= "" then
+    if not originalModelName then
+      local ok, current = pcall(model.name)
+      if ok then originalModelName = current end
+    end
+    pcall(model.name, session.craftName)
+  end
+  publish()
+end
+bus.subscribe("craft.name.saved", onCraftNameSaved)
+
 -- If the FC computes smartfuel itself (smartfuelMode > 0), just mirror its
 -- broadcast sensor. Otherwise run the local sigmoid/slew estimator
 -- (lib/smartfuel_calc.lua) against live voltage/consumption telemetry.
@@ -1399,8 +1571,12 @@ local function wakeup(mspQueue, protocol, transport, simSensors)
 
   -- If any handshake queries were cleared by an early arming transition,
   -- or if packets were lost during initial connect, retry pending items
-  -- periodically while connected and disarmed.
-  if session.connected and session.isArmed ~= true and not isHandshakeComplete() then
+  -- periodically while connected and disarmed. Skipped once API_VERSION has
+  -- been answered as incompatible (issue #2362): the handshake can then never
+  -- complete, so the 2s tick would only re-enter runHandshake() to hit its own
+  -- version gate and return -- a no-op every 2s for the lifetime of the link.
+  if session.connected and session.isArmed ~= true and not isHandshakeComplete()
+      and session.apiVersionSupported ~= false then
     if shouldRunScheduled("handshake_retry", 2.0, now) then
       runHandshake(mspQueue, protocol)
     end

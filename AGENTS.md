@@ -105,6 +105,15 @@ Rules:
   `.vscode/logs/i18n-unresolved.json` (git-ignored; deleted when a deploy
   resolves everything). If that file exists, tell the user which keys are
   missing and where, even if the current task did not touch them.
+- Every string must fit where it is shown on the smallest screen (X18,
+  480x320). `max_length` only caps characters; check pixels with
+  `python bin/i18n/check-fit.py [--lang <locale...>]` (exit 1 and file:line for
+  each string too wide; the `i18n-fit` CI job runs it). Budgets on the X18:
+  menu tile 98px, page title 178px (only the page's own name: the header drops
+  leading breadcrumb levels), form label 215px, choice 200px. Fix an overflow by
+  shortening the text in `bin/i18n/json/`, not by widening the layout. When you
+  change English, also set the same `english` in every locale file and supply a
+  short translation, or `update-missing-translations.py` resets it to English.
 
 ## 8) MSP/API/Scheduler Notes
 
@@ -118,9 +127,13 @@ Before finishing:
 - Verify no generated file drift (`menu`/`i18n`) if source files were touched.
 - If you added or changed any `@i18n(...)@` tag, run `python bin/i18n/check-tags.py`
   and fix what it reports.
+- If you added or changed any i18n string, or where one is used, run
+  `python bin/i18n/check-fit.py` and shorten what it reports.
 - Check for hot-path allocations introduced by the change.
 - Confirm close/cleanup path exists for new dialogs, handles, or caches.
 - Run targeted sanity checks for affected module flows.
+- For UI changes, open the affected page in the simulator when the tooling is available
+  (Section 11), and include screenshots with the pull request.
 - If the change is one a pilot can observe, update that page's file under `docs/pages/` in
   the same pull request, or state on a line of its own why it needs none. The rule is
   [.agents/rules/documentation.md](.agents/rules/documentation.md); the `Documentation rule`
@@ -132,3 +145,46 @@ If the repository is already dirty:
 - Do not modify unrelated files.
 - Touch only files needed for the requested task.
 
+## 11) Testing in the Ethos Simulator
+
+Agents can check UI changes in the Ethos WASM simulator. They can boot the radio, see its screen and operate it with touch, keys and the rotary encoder. Use this to confirm that a page, dialog or widget looks and behaves right before calling a pilot-visible change done.
+
+Tooling:
+- **Claude Code:** this repository's `.claude/settings.json` lists the `ethos-tools` marketplace and
+  enables its `ethos-simulator` plugin, so Claude Code offers to install it when you trust the folder.
+  To install it by hand: `/plugin marketplace add FrSkyRC/ethos-tools` and then
+  `/plugin install ethos-simulator@ethos-tools`.
+  Its `ethos-navigate` skill covers starting the simulator, the screenshot loop and the radio buttons.
+  If `ethos-navigate` is not in the session's skill list (the plugin was installed mid-session, or the
+  install was declined), restart the session, or read `simulation/skills/ethos-navigate/SKILL.md` from a
+  clone of [FrSkyRC/ethos-tools](https://github.com/FrSkyRC/ethos-tools) and follow it by hand.
+- **Other agents:** run `simulation/run_wasm.js --serve` from a clone of
+  [FrSkyRC/ethos-tools](https://github.com/FrSkyRC/ethos-tools) directly. Its README lists the commands.
+
+This repository:
+- **Simulator build:** board and protocol come from `ethos.board` / `ethos.protocol` in `.vscode/settings.json`.
+  The Ethos VS Code extension caches the `<BOARD>_<PROTOCOL>.js` + `.wasm` pair in its global storage
+  (`<VS Code user dir>/globalStorage/bsongis.ethos/cache`).
+- **Deploy first:** `python .vscode/scripts/deploy.py --lang en --step i18n --step soundpack --step sensors`
+  (the same command as the "Deploy & Launch [SIM]" VS Code task).
+  This writes `src/rfsuite` to `simulators/<BOARD>_<PROTOCOL>@<release>/scripts/rfsuite`.
+- **Mount that folder** (`simulators/<BOARD>_<PROTOCOL>@<release>/`) as the radio's root directory.
+  It is git-ignored, so mounting it directly is fine. Don't run a second simulator on the same folder at the same time, for example the VS Code extension's.
+- **Boot dialogs:** booting shows a *Select Battery* dialog, then *Battery Profile*, then *Checklist warning*.
+  Dismiss each one before any other input. Menu keys are ignored while a dialog is open.
+- **Opening the app:** `SYS`, then `PAGE` to System page 2, then the **Rotorflight** tile. The app's own pages are tile grids with a **BACK** button at the top right.
+- **Another board, or a fresh radio folder:** a model saved by a newer Ethos build
+  will not load on an older one ("Need firmware update"), so for a second board
+  (e.g. `X18S_EU`, the smallest screen at 480x320) mount a new folder under the
+  scratchpad holding only `scripts/rfsuite` copied from the deployed one. It boots
+  through *Select language*, *Storage error, default settings restored* and the
+  *Create model* wizard; finish the wizard, then set the model up, or every app tile
+  shows *Background task not running*:
+  1. Model menu, page 3, **Lua**: turn **Rotorflight [Background]** on.
+  2. Model menu, page 1, **RF system**, **Internal module**: turn **State** on.
+  3. Model menu, page 2, **Telemetry**: discover sensors if the list is empty.
+- **Cached modules:** `app/header.lua` and other shared modules cache themselves in
+  `package.loaded`, so a redeploy is not picked up until the simulator restarts
+  (`quit`, then start it again).
+- **No flight controller needed:** the suite's built-in simulated sensors and MSP responses (`src/rfsuite/sim/sensors/` and the `simulatorResponse` tables in `src/rfsuite/lib/msp_*.lua`) populate pages such as PIDs.
+- **Lua errors** appear in the output of the `log` command, not on screen.

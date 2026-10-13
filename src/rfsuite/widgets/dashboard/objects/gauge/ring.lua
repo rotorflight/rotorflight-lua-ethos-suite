@@ -40,6 +40,10 @@ Appearance/Theming
     fillcolor           : color     -- (Optional) Ring foreground color (theme fallback)
 Geometry
     thickness           : number    -- (Optional) Ring thickness in pixels (default is proportional to radius)
+Progress Mode (Optional; ignored when ringbatt is set)
+    max                 : number    -- (Optional) When set, fill only the share of the ring the value covers between min and max (otherwise the ring is drawn full)
+    min                 : number    -- (Optional) Value at an empty ring in progress mode (default: 0)
+    stattype            : string    -- (Optional) "min", "max" or "avg": show that flight stat for `source` instead of the live value
 Battery Ring Mode (Optional fuel-based battery style)
     ringbatt                 : bool      -- If true, draws 360° fill ring based on fuel (%) and shows mAh consumption
     ringbattsubfont          : font      -- (Optional) Font for subtext in ringbatt mode (e.g., FONT_XS, FONT_S, FONT_STD; default: FONT_XS)
@@ -62,6 +66,7 @@ local floor = math.floor
 local min = math.min
 local max = math.max
 local format = string.format
+local tonumber = tonumber
 
 local render = {}
 
@@ -127,6 +132,13 @@ local function prepareGeometry(x, y, w, h, box, c)
     local baseSize = min(w, h - (c.title and ringPadding * 2 or 0))
     local ringSize = min(0.88 * (c.title and 1 or 1.05), 1.0)
     local radius = baseSize * 0.5 * ringSize
+    -- Keep the ring clear of its own title: baseSize ignores the title's
+    -- height, so in a near-square tile the ring ran into the text.
+    if c.titlepos == "top" then
+        radius = min(radius, (h - titleHeight) * 0.45 - ringPadding)
+    elseif c.titlepos == "bottom" then
+        radius = min(radius, (h - titleHeight) * 0.5 - ringPadding)
+    end
     local thickness = c.thickness or max(8, radius * 0.18)
 
     g.cx = x + w / 2
@@ -146,6 +158,14 @@ function render.wakeup(box)
     local value, _, dynamicUnit
     if telemetry and source then value, _, dynamicUnit = telemetry.getSensor(source) end
 
+    -- Postflight rings: show the flight's min/max/avg; the live value
+    -- stands in until the stat exists.
+    local stattype = getParam(box, "stattype")
+    if stattype and telemetry and source and telemetry.getSensorStats then
+        local stats = telemetry.getSensorStats(source)
+        if stats and stats[stattype] ~= nil then value = stats[stattype] end
+    end
+
     local ringbatt = getParam(box, "ringbatt")
     local percent = 0
     local mahUnit = ""
@@ -163,6 +183,22 @@ function render.wakeup(box)
             mahUnit = nil
         elseif override then
             mahUnit = override
+        end
+    end
+
+    -- Progress mode: the ring fills by value between min and max. Without a
+    -- max the ring is drawn full, as before.
+    local progress = nil
+    if not ringbatt then
+        local gmax = tonumber(getParam(box, "max"))
+        if gmax then
+            local gmin = tonumber(getParam(box, "min")) or 0
+            local v = tonumber(value)
+            if v and gmax > gmin then
+                progress = max(0, min(1, (v - gmin) / (gmax - gmin)))
+            else
+                progress = 0
+            end
         end
     end
 
@@ -204,6 +240,7 @@ function render.wakeup(box)
     c.unit = unit
     c.ringbatt = ringbatt
     c.percent = percent
+    c.progress = progress
     c.mahUnit = mahUnit
     c.novalue = getParam(box, "novalue") or "-"
     c.fillcolor = resolveThresholdColor(value, box, "fillcolor", "fillcolor", thresholds)
@@ -277,7 +314,11 @@ function render.paint(x, y, w, h, box)
     else
 
         drawArc(cx, cy, radius, thickness, 0, 360, c.fillbgcolor)
-        drawArc(cx, cy, radius, thickness, 0, 360, c.fillcolor)
+        if c.progress == nil then
+            drawArc(cx, cy, radius, thickness, 0, 360, c.fillcolor)
+        elseif c.progress > 0 then
+            drawArc(cx, cy, radius, thickness, 0, c.progress * 360, c.fillcolor)
+        end
     end
 
     if c.ringbatt and c.mahUnit then

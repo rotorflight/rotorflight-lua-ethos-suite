@@ -1,5 +1,18 @@
--- Indexed MSP_GET_SERVO_CONFIG / MSP_SET_SERVO_CONFIG helpers
--- (cmd 125 read / 212 write).
+-- Indexed servo configuration helpers: MSP_GET_SERVO_CONFIG (125, read),
+-- MSP_SET_SERVO_CONFIG (124, raw write) and MSP_SET_SERVO_CONFIGURATION
+-- (212, packed write). Command numbers as in rotorflight-firmware
+-- src/main/msp/msp_protocol.h:174-175 and :260.
+--
+-- Two index spaces, and the commands do not share one:
+--   * raw index: servoParams(i). Read (125) and raw write (124) take it.
+--     Bus servos sit at raw 8..25 (BUS_SERVO_OFFSET = 8, pg/bus_servo.h:33-35).
+--   * packed index: the PWM servos 0..n-1, then the bus servos. The packed
+--     write (212) takes it. With bus servos configured, the bus servo at raw r
+--     is packed n + (r - 8) (msp.c:3066), where n is the PWM servo count and
+--     MSP_STATUS reports n + 18 (msp.c:1098-1100). The caller therefore sends
+--     servo_count - 18 as the offset (servos_bus.lua configWriteIndex).
+-- A PWM servo has the same index in both spaces, which is why forIndex() can
+-- use the packed write unchanged.
 --
 -- Rotorflight 2.3 / MSP API >= 12.09 is the floor for this rebuild, so
 -- the indexed API is always available. The original suite still carries a
@@ -13,8 +26,9 @@ end
 local requireModule = package.loaded["rfsuite.lib.require"] or assert(loadfile("lib/require.lua"))()
 local mspcodec = requireModule("lib/mspcodec.lua")
 
-local READ_COMMAND = 125
-local WRITE_COMMAND = 212
+local READ_COMMAND = 125          -- MSP_GET_SERVO_CONFIG, raw index
+local WRITE_RAW_COMMAND = 124     -- MSP_SET_SERVO_CONFIG, raw index
+local WRITE_PACKED_COMMAND = 212  -- MSP_SET_SERVO_CONFIGURATION, packed index
 
 local SIMULATOR_RESPONSE = {
   220, 5,   -- mid = 1500
@@ -29,7 +43,8 @@ local SIMULATOR_RESPONSE = {
 
 local msp_servo_config = {
   READ_COMMAND = READ_COMMAND,
-  WRITE_COMMAND = WRITE_COMMAND,
+  WRITE_RAW_COMMAND = WRITE_RAW_COMMAND,
+  WRITE_PACKED_COMMAND = WRITE_PACKED_COMMAND,
   FIELD_META = {
     mid = {min = 50, max = 2250, default = 1500},
     min = {min = -1000, max = 1000, default = -700},
@@ -88,9 +103,9 @@ function msp_servo_config.buildReadMessage(index, onData, onError)
   }
 end
 
-function msp_servo_config.buildWriteMessage(index, data, onWritten, onError)
+local function buildWrite(command, index, data, onWritten, onError)
   return {
-    command = WRITE_COMMAND,
+    command = command,
     payload = msp_servo_config.encode(index, data),
     isWrite = true,
     processReply = function()
@@ -101,6 +116,18 @@ function msp_servo_config.buildWriteMessage(index, data, onWritten, onError)
   }
 end
 
+-- Packed index (cmd 212): the index is passed through unchanged; the caller
+-- computes the packed value (see the header).
+function msp_servo_config.buildWriteMessage(index, data, onWritten, onError)
+  return buildWrite(WRITE_PACKED_COMMAND, index, data, onWritten, onError)
+end
+
+-- Raw index (cmd 124): the same 17-byte payload as cmd 212, addressed by the
+-- slot cmd 125 reads back.
+function msp_servo_config.buildRawWriteMessage(index, data, onWritten, onError)
+  return buildWrite(WRITE_RAW_COMMAND, index, data, onWritten, onError)
+end
+
 function msp_servo_config.forIndex(index)
   return {
     FIELD_META = msp_servo_config.FIELD_META,
@@ -109,6 +136,9 @@ function msp_servo_config.forIndex(index)
     end,
     buildWriteMessage = function(data, onWritten, onError)
       return msp_servo_config.buildWriteMessage(index, data, onWritten, onError)
+    end,
+    buildRawWriteMessage = function(data, onWritten, onError)
+      return msp_servo_config.buildRawWriteMessage(index, data, onWritten, onError)
     end,
   }
 end

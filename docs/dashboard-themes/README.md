@@ -51,6 +51,18 @@ You can change them via the Suite Menu "Settings - Dashboard - Theme"
 | --- | --- | --- |
 | ![Kevd preflight](Kevd/preflight.png) | ![Kevd inflight](Kevd/inflight.png) | ![Kevd postflight](Kevd/postflight.png) |
 
+## KSE4
+
+| Preflight | Inflight | Postflight |
+| --- | --- | --- |
+| ![KSE4 preflight](KSE4/preflight.png) | ![KSE4 inflight](KSE4/inflight.png) | ![KSE4 postflight](KSE4/postflight.png) |
+
+## KSE5
+
+| Preflight | Inflight | Postflight |
+| --- | --- | --- |
+| ![KSE5 preflight](KSE5/preflight.png) | ![KSE5 inflight](KSE5/inflight.png) | ![KSE5 postflight](KSE5/postflight.png) |
+
 ## RF Status
 
 | Preflight | Inflight | Postflight |

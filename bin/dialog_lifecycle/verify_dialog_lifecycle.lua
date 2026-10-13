@@ -315,6 +315,14 @@ package.loaded["rfsuite.lib.msp_rx_config"] = {
     return { onData = onData, onError = onError, data = { serialrx_provider = 0 } }
   end,
 }
+package.loaded["rfsuite.lib.msp_board_info"] = {
+  buildReadMessage = function(onData, onError)
+    return { onData = onData, onError = onError, data = {} }
+  end,
+}
+package.loaded["rfsuite.lib.port_labels"] = {
+  lookup = function() return nil end,
+}
 package.loaded["rfsuite.app.header"] = headerStub()
 
 -- One MSP module shape shared by every runtime built below.

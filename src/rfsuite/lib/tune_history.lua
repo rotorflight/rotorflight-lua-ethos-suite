@@ -3,6 +3,7 @@
 --
 --   LOGS:/rfsuite/tune/<mcuId>/history.csv   (mcuId: the session's aircraft ID)
 --   LOGS:/rfsuite/tune/<mcuId>/logs.ini      (model name, as the flight log folders)
+--   LOGS:/rfsuite/tune/<mcuId>/changes.csv   (what the page's Apply wrote, see logChanges())
 --
 -- The FC's statistics are cleared after each capture, so a row is one flight.
 -- One row per axis per flight; only the last MAX_FLIGHTS flights are kept,
@@ -64,7 +65,7 @@ do
   HEADER = table.concat(names, ",")
 end
 
-local tuneHistory = {MAX_FLIGHTS = MAX_FLIGHTS, AXIS_COUNT = AXIS_COUNT}
+local tuneHistory = {MAX_FLIGHTS = MAX_FLIGHTS, AXIS_COUNT = AXIS_COUNT, TUNE_KEYS = TUNE_KEYS}
 
 local function safeMkdir(path)
   if os and os.mkdir then pcall(os.mkdir, path) end
@@ -140,6 +141,26 @@ function tuneHistory.save(mcuId, modelName, replies)
   for axis = 1, AXIS_COUNT do out[#out + 1] = row(date, seconds, axis, replies[axis].a) end
   out[#out + 1] = ""
   return atomicWrite.write(path, table.concat(out, "\n"))
+end
+
+-- The Tune Advisor's Apply record, beside the history: one row per setting
+-- changed, with the value it replaced, so a change can be undone by hand.
+-- Appended, never trimmed, and kept by erase(): it is the pilot's record.
+local CHANGES_HEADER = "date,axis,setting,from,to"
+
+-- changes: {key, from, to} as the Tune Advisor page builds them
+function tuneHistory.logChanges(mcuId, axis, changes)
+  local path = BASE_DIR .. "/" .. mcuId .. "/changes.csv"
+  local isNew = not fileExists(path)
+  local file = io.open(path, "a")
+  if not file then return false end
+  local date = os.date("%Y-%m-%d %H:%M:%S")
+  if isNew then file:write(CHANGES_HEADER, "\n") end
+  for _, c in ipairs(changes) do
+    file:write(string.format("%s,%s,%s,%d,%d\n", date, AXIS_NAMES[axis], c.key, c.from, c.to))
+  end
+  file:close()
+  return true
 end
 
 function tuneHistory.erase(mcuId)

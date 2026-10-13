@@ -19,6 +19,13 @@
 -- explicit local instead of a global lookup.
 
 local os_clock = os.clock
+
+-- Optional Ethos 26.1.3+ instruction budget. Cache the capability once; older
+-- radios keep the existing drain behaviour. Leave headroom for the rest of
+-- the background wakeup; this is a cooperative bound, not preemption.
+local getInstructionsUsage = system and system.getInstructionsUsage
+local DRAIN_INSTRUCTION_LIMIT = 60
+
 local math_floor = math.floor
 
 local MSP_VERSION_BITS = 2 << 5 -- MSPv2 version bits
@@ -220,6 +227,7 @@ local function mspPollReply()
   if not transport then return nil, nil, nil end
   local deadline = os_clock() + POLL_SLICE_SECONDS
   while os_clock() < deadline do
+    if getInstructionsUsage and getInstructionsUsage() >= DRAIN_INSTRUCTION_LIMIT then break end
     local pkt = transport.mspPoll()
     if pkt == nil then
       return nil, nil, nil
@@ -255,6 +263,7 @@ local function mspClearBufs()
   mspRxError = false
   if transport then
     for _ = 1, CLEAR_FRAME_CAP do
+      if getInstructionsUsage and getInstructionsUsage() >= DRAIN_INSTRUCTION_LIMIT then break end
       if not transport.mspPoll() then break end
     end
   end

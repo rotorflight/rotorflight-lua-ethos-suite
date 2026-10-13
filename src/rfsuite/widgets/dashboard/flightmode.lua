@@ -53,7 +53,7 @@ local function resolveThrottleChannelValue(widget)
   if type(member) ~= "number" then return nil end
 
   if widget._throttleChannelMember ~= member then
-    if system and system.getSource and CATEGORY_CHANNEL ~= nil then
+    if CATEGORY_CHANNEL ~= nil then
       widget._throttleChannelSource = system.getSource({category = CATEGORY_CHANNEL, member = member, options = 0})
     else
       widget._throttleChannelSource = nil

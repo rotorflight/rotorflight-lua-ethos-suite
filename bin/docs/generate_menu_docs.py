@@ -157,6 +157,7 @@ SCRIPT_TO_DOC_PATH = {
     "app/pages/esc_motors_throttle.lua": "setup/esc_motors/throttle.md",
     "app/pages/esc_motors_telemetry.lua": "setup/esc_motors/telemetry.md",
     "app/pages/esc_motors_rpm.lua": "setup/esc_motors/rpm.md",
+    "app/pages/motor_override.lua": "setup/esc_motors/motor_override.md",
     "app/pages/esc_forward_hw5.lua": "setup/esc_motors/esc_tools/hw5.md",
     "app/pages/esc_forward_am32.lua": "setup/esc_motors/esc_tools/am32.md",
     "app/pages/esc_forward_blheli_s.lua": "setup/esc_motors/esc_tools/blheli_s.md",
@@ -193,7 +194,17 @@ SCRIPT_TO_DOC_PATH = {
     "app/pages/settings_activelook_preflight.lua": "settings/activelook/preflight.md",
     "app/pages/settings_activelook_inflight.lua": "settings/activelook/inflight.md",
     "app/pages/settings_activelook_postflight.lua": "settings/activelook/postflight.md",
-    "app/pages/settings_audio_events.lua": "settings/audio/events.md",
+    # Issue #2308 split the one Events page into these six category pages.
+    # Their shared helper (settings_audio_events_common.lua) is not reachable
+    # from a menu entry, so it has no document of its own -- same as
+    # settings_activelook_common.lua.
+    "app/pages/settings_audio_events_voltage.lua": "settings/audio/events/voltage.md",
+    "app/pages/settings_audio_events_esc.lua": "settings/audio/events/esc.md",
+    "app/pages/settings_audio_events_fuel.lua": "settings/audio/events/fuel.md",
+    "app/pages/settings_audio_events_state.lua": "settings/audio/events/state.md",
+    "app/pages/settings_audio_events_status.lua": "settings/audio/events/status.md",
+    "app/pages/settings_audio_events_link.lua": "settings/audio/events/link.md",
+    "app/pages/settings_audio_events_announcement.lua": "settings/audio/events/announcement.md",
     "app/pages/settings_audio_switches.lua": "settings/audio/switches.md",
     "app/pages/settings_audio_timer.lua": "settings/audio/timer.md",
     "app/pages/developer_settings.lua": "settings/developer.md",
@@ -580,7 +591,7 @@ sidebar_position: {order}
 
 {notes_section}## Related
 
-- [Rotorflight documentation](https://www.rotorflight.org/docs/)
+- [Rotorflight documentation](https://doc.rotorflight.org/)
 
 *Documented against RFSuite Ethos {suite_version}.*
 """

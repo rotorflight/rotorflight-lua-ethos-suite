@@ -233,6 +233,7 @@ local MENUS = {
   esc_motors_menu = {
     title = "@i18n(app.modules.esc_motors.name)@",
     entries = {
+      {title = "@i18n(app.modules.esc_motors.motor_override)@", icon = lcd.loadMask("app/gfx/esc_motors_motor_override.png"), script = "app/pages/motor_override.lua", lockedWhileArmed = true},
       {title = "@i18n(app.modules.esc_motors.throttle)@", icon = lcd.loadMask("app/gfx/esc_motors_throttle.png"), script = "app/pages/esc_motors_throttle.lua", lockedWhileArmed = true},
       {title = "@i18n(app.modules.esc_motors.telemetry)@", icon = lcd.loadMask("app/gfx/esc_motors_telemetry.png"), script = "app/pages/esc_motors_telemetry.lua", lockedWhileArmed = true},
       {title = "@i18n(app.modules.esc_motors.rpm)@", icon = lcd.loadMask("app/gfx/esc_motors_rpm.png"), script = "app/pages/esc_motors_rpm.lua", lockedWhileArmed = true},
@@ -319,9 +320,43 @@ local MENUS = {
   settings_audio_menu = {
     title = "@i18n(app.modules.settings.name)@ / @i18n(app.modules.settings.audio)@",
     entries = {
-      {title = "@i18n(app.modules.settings.txt_audio_events)@", icon = lcd.loadMask("app/gfx/settings_audio_events.png"), script = "app/pages/settings_audio_events.lua", offline = true},
+      {title = "@i18n(app.modules.settings.txt_audio_events)@", icon = lcd.loadMask("app/gfx/settings_audio_events.png"), menuId = "settings_audio_events_menu", offline = true},
       {title = "@i18n(app.modules.settings.txt_audio_switches)@", icon = lcd.loadMask("app/gfx/settings_audio_switches.png"), script = "app/pages/settings_audio_switches.lua", offline = true},
       {title = "@i18n(app.modules.settings.txt_audio_timer)@", icon = lcd.loadMask("app/gfx/settings_audio_timer.png"), script = "app/pages/settings_audio_timer.lua", offline = true},
+    },
+  },
+  -- Issue #2308. This was one page, settings_audio_events.lua, holding every
+  -- settings.events key as a run of expansion panels; on a 480x320 radio that
+  -- meant scrolling past every unrelated event to change one, and it built
+  -- every widget for every event at once. It is a menu of category pages now,
+  -- each of which builds only its own fields on open.
+  --
+  -- The FC status entry is PR #2488's "Status alerts" panel, kept as its own
+  -- tile for the reasons on settings_audio_events_status.lua: it is the only
+  -- category that needs a live flight controller, and #2488 drew that boundary
+  -- deliberately.
+  --
+  -- The Link entry is issue #2311's telemetry lost/recovered pair. A Link tile
+  -- used to be offered by nothing on purpose: settings.events had no link key
+  -- and tasks/audio_events.lua answered a down link by clearing its alert state
+  -- and returning -- it announced nothing about the link, so there was nothing
+  -- for a toggle to switch. That is no longer true, and the announcement is
+  -- gated on the model having been armed when the link went, which is what
+  -- keeps a bench power-down silent.
+  --
+  -- Every entry carries offline = true: the whole subtree is local settings
+  -- with no MSP read, which is why it was reachable without a flight
+  -- controller before and must stay reachable now.
+  settings_audio_events_menu = {
+    title = "@i18n(app.modules.settings.name)@ / @i18n(app.modules.settings.audio)@ / @i18n(app.modules.settings.txt_audio_events)@",
+    entries = {
+      {title = "@i18n(app.modules.settings.voltage)@", icon = lcd.loadMask("app/gfx/power_battery.png"), script = "app/pages/settings_audio_events_voltage.lua", offline = true},
+      {title = "@i18n(app.modules.settings.esc_temperature)@", icon = lcd.loadMask("app/gfx/esc_motors.png"), script = "app/pages/settings_audio_events_esc.lua", offline = true},
+      {title = "@i18n(app.modules.settings.fuel)@", icon = lcd.loadMask("app/gfx/power_smartfuel.png"), script = "app/pages/settings_audio_events_fuel.lua", offline = true},
+      {title = "@i18n(app.modules.settings.audio_event_state)@", icon = lcd.loadMask("app/gfx/governor.png"), script = "app/pages/settings_audio_events_state.lua", offline = true},
+      {title = "@i18n(app.modules.settings.status_alerts)@", icon = lcd.loadMask("app/gfx/diagnostics_info.png"), script = "app/pages/settings_audio_events_status.lua", offline = true},
+      {title = "@i18n(app.modules.settings.link)@", icon = lcd.loadMask("app/gfx/diagnostics_elrs_link.png"), script = "app/pages/settings_audio_events_link.lua", offline = true},
+      {title = "@i18n(app.modules.settings.model_announcement)@", icon = lcd.loadMask("app/gfx/beepers.png"), script = "app/pages/settings_audio_events_announcement.lua", offline = true},
     },
   },
   developer_menu = {

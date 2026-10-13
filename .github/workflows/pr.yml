@@ -13,10 +13,14 @@ jobs:
   flight-record:
     name: Flight record across a link loss
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
       - name: Install Lua 5.4
         run: sudo apt-get update && sudo apt-get install -y lua5.4
@@ -34,10 +38,14 @@ jobs:
   atomic-writes:
     name: Settings survive an interrupted write
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
       - name: Install Lua 5.4
         run: sudo apt-get update && sudo apt-get install -y lua5.4
@@ -51,10 +59,14 @@ jobs:
   esc-guard-retry:
     name: ESC tiles recover from a failed read
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
       - name: Install Lua 5.4
         run: sudo apt-get update && sudo apt-get install -y lua5.4
@@ -70,16 +82,95 @@ jobs:
   msp-queue:
     name: MSP queue after an aborted request
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
       - name: Install Lua 5.4
         run: sudo apt-get update && sudo apt-get install -y lua5.4
 
       - name: Check the MSP queue behaviour
         run: lua5.4 bin/msp_queue/verify_msp_queue.lua
+
+  # A page's processReply and errorHandler run inside the background task's
+  # wakeup, ahead of the scheduler (#2363). Ethos does not stop a task whose wakeup
+  # raises -- it logs the error and calls wakeup again -- but the rest of that tick is
+  # skipped, and an error that repeats skips it on every tick. The same goes for an
+  # error from the transport inside processQueue(). Nothing in the build or the
+  # package step reaches that, and the failure is quiet: the audio alerts, the
+  # session and the flight record go silent with only a log line to say why.
+  #
+  # So the real queue is driven against a transport that can be told to fail and a
+  # page whose callbacks raise. A raising processReply must not escape, must be
+  # printed, must reach the page's errorHandler as "callback_error", and must leave
+  # the next message to be delivered. A raising errorHandler must not escape, and
+  # clear() must still tell every dropped message. A transport error must leave
+  # Queue:wakeup() printed, retire the message in flight as "queue_error" and let the
+  # next one go out, which only works if the TX buffer was handed back. A callback
+  # that fails on every poll is printed once a second, with the count held back.
+  #
+  # Copies of the queue with one guard removed each are loaded and each has to let its
+  # error escape. If one of those ever stops turning red, the instrument has gone
+  # blind.
+  msp-callback-guard:
+    name: A failing MSP callback does not take the queue down
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Install Lua 5.4
+        run: sudo apt-get update && sudo apt-get install -y lua5.4
+
+      - name: Check the MSP queue error isolation
+        run: lua5.4 bin/msp_queue/verify_queue_callback_guard.lua
+
+  # A reply callback or a subtask can raise on every tick, and when it raises ahead of
+  # the heartbeat publish the tick never completes. Ethos does not stop the task for
+  # it (#2363, measured in the WASM simulator): the task is called again and goes on
+  # failing, silent, with only a log line in Ethos to say why. The per-call guards of
+  # the msp-callback-guard job keep one failure from skipping the rest of a tick; they
+  # cannot help when the same failure repeats, because by then there is nothing left
+  # to skip into.
+  #
+  # So the real lib/task_watchdog.lua is driven against a controllable clock: a task
+  # that never completed a tick is not due, a beat holds it closed until the threshold
+  # and only the threshold opens it, a beat after that closes it again, and every
+  # revival is counted. The wiring is pinned by reading tasks/background.lua: the
+  # stall check has to run before the queue is used, the beat after the scheduler ran,
+  # and the revival has to rebuild queue and scheduler, register the subtasks through
+  # the one path taskInit uses, and not re-subscribe the bus handlers -- a duplicate
+  # handler per revival is worse than the stall. A copy of the watchdog with the
+  # threshold blown open and a copy of background.lua with the beat moved ahead of the
+  # scheduler each have to turn the matching pin red; if one of those stops turning
+  # red, the instrument has gone blind.
+  queue-watchdog:
+    name: A stalled background tick rebuilds the pipeline
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Install Lua 5.4
+        run: sudo apt-get update && sudo apt-get install -y lua5.4
+
+      - name: Check the watchdog and the pipeline revival
+        run: lua5.4 bin/queue_watchdog/verify_queue_watchdog.lua
 
   # Every 4-way forward-programming page -- AM32, BLHeli_S, Bluejay,
   # FlyRotor, Scorpion, HW5, OMP, XDFly, YGE, ZTW -- opens on
@@ -127,10 +218,14 @@ jobs:
   esc-target-selector:
     name: The ESC selector offers only the ESCs that exist
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
       - name: Install Lua 5.4
         run: sudo apt-get update && sudo apt-get install -y lua5.4
@@ -153,16 +248,50 @@ jobs:
   log-flush-retry:
     name: Flight log keeps samples it could not write
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
       - name: Install Lua 5.4
         run: sudo apt-get update && sudo apt-get install -y lua5.4
 
       - name: Check that an unwritable card does not discard the buffer
         run: lua5.4 bin/logging/verify_log_flush_retry.lua
+
+  # The flight log wrote a sensor the aircraft was not sending as 0. A 0 in the CSV
+  # is indistinguishable from a measured zero -- a 0 A current draw is a real
+  # reading -- so anything that reads the file later takes an absent value for a
+  # measurement. The logger's sensorValue() replaced nil with 0 on the output side,
+  # after telemetry_sensors had already done the right thing on the input side.
+  #
+  # So the real logger is driven against a fake sensor that returns nil for a column,
+  # a real 0, or nothing at all, and the bytes that reach the CSV are checked: an
+  # absent column is an empty field, a real zero stays "0", a sensor that starts
+  # sending later is written from then on, and no "nil" text or short row ever
+  # reaches the file. Cases 1, 2 and 4 go red on the pre-fix logging.lua; the other
+  # two pin the behaviour the fix must not break.
+  absent-sensor-log:
+    name: A sensor that is not sending is an empty field in the flight log
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Install Lua 5.4
+        run: sudo apt-get update && sudo apt-get install -y lua5.4
+
+      - name: Check that an absent sensor is not logged as 0
+        run: lua5.4 bin/logging/verify_absent_sensor.lua
 
   # Three drain loops run inside one background-task wakeup with no yield point
   # in between, and each was bounded by a wall-clock deadline set well above what
@@ -178,10 +307,14 @@ jobs:
   clock-budgets:
     name: Background task drain budgets
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
       - name: Install Lua 5.4
         run: sudo apt-get update && sudo apt-get install -y lua5.4
@@ -205,10 +338,14 @@ jobs:
   msp-codec-battery:
     name: A short MSP payload is reported, not decoded
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
       - name: Install Lua 5.4
         run: sudo apt-get update && sudo apt-get install -y lua5.4
@@ -219,10 +356,14 @@ jobs:
   tool-ui-lazy:
     name: Tool UI not loaded at boot
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
       - name: Install Lua 5.4
         run: sudo apt-get update && sudo apt-get install -y lua5.4
@@ -238,16 +379,74 @@ jobs:
   tool-ui-no-extra-msp:
     name: Tool adds no MSP requests and accumulates nothing
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
       - name: Install Lua 5.4
         run: sudo apt-get update && sudo apt-get install -y lua5.4
 
       - name: Check the MSP request pattern over repeated tool cycles
         run: lua5.4 bin/tool_ui/verify_no_extra_msp.lua
+
+  # #2425 measured ~30 kB of Lua heap retained per tool open/close cycle on an
+  # X18RS, surviving a forced full collect, and left the live reference
+  # unidentified -- the most plausible mechanism behind the "slowly creeping up"
+  # heap across a flying day. The issue's own suggested investigation is to count
+  # at the source rather than observe the result, which no build and no package
+  # step can do.
+  #
+  # This harness drives the exact cycle #2425 measured -- open the tool, drill
+  # into the ESC menus, open one ESC vendor page, let its editor build, return,
+  # close -- through the real tool.lua, menu_container, page_runtime and
+  # field_layout. The ESC read is answered from the codec's own simulatorResponse,
+  # so the page does not stop on its preload shell: page_runtime and every
+  # field_layout field are built (the pool reaches 16), which is what the pool
+  # check below has to mean anything.
+  #
+  # After every cycle it counts the tables and strings actually reachable from _G
+  # and package.loaded. That is the sharp instrument: an exact integer, unaffected
+  # by allocator accounting, which any live Lua reference would necessarily move.
+  # It also pins the live bus subscribers, the rfsuite.* entries in
+  # package.loaded, the field_layout pool size, the form-widget count and the
+  # post-collect heap.
+  #
+  # The object counts are flat; the heap byte count stays within a small tolerance
+  # (it shifts by a fraction of a KB between Lua builds, so it is a backstop, not
+  # the check). The suite's own Lua tree retains nothing per cycle, so #2425's
+  # ~30 kB is not reachable from Lua -- consistent with docs/memory-and-module-lifecycle.md
+  # section 8, where Ethos's own form widget system retains widget/callback
+  # allocations past form.clear() outside Lua's GC graph. It is a platform trait,
+  # not something this repository fixes by dropping references. The harness stays
+  # as the regression guard: a module-level table that grows per screen rebuild,
+  # or a page handler that stops unsubscribing, turns the flat-from-cycle-2
+  # property red.
+  #
+  # Pass --self-test to prove that rather than take it on trust: it retains every
+  # form widget's options table per cycle, exactly as a live Ethos widget would
+  # retain its callback, and requires the census checks to go red.
+  tool-lifecycle-retention:
+    name: Tool open/close retains no Lua memory
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Install Lua 5.4
+        run: sudo apt-get update && sudo apt-get install -y lua5.4
+
+      - name: Check that repeated tool cycles retain nothing
+        run: lua5.4 bin/tool_ui/verify_tool_lifecycle_retention.lua
 
   # Ethos form widgets retain closures across form.clear(), so app/field_layout.lua
   # pools accessor slots to prevent unbounded closure growth across repeat page visits.
@@ -256,10 +455,14 @@ jobs:
   field-layout:
     name: Field layout slot pooling and lifecycle
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
       - name: Install Lua 5.4
         run: sudo apt-get update && sudo apt-get install -y lua5.4
@@ -276,10 +479,14 @@ jobs:
   dashboard-image-caches:
     name: Dashboard image cache eviction and theme reload
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
       - name: Install Lua 5.4
         run: sudo apt-get update && sudo apt-get install -y lua5.4
@@ -296,10 +503,14 @@ jobs:
   msp-disconnect-gc:
     name: MSP queue on disconnect and the per-message GC
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
       - name: Install Lua 5.4
         run: sudo apt-get update && sudo apt-get install -y lua5.4
@@ -318,10 +529,14 @@ jobs:
   stack-bounds:
     name: Bus publish is bounded, stack minimum is tracked
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
       - name: Install Lua 5.4
         run: sudo apt-get update && sudo apt-get install -y lua5.4
@@ -342,16 +557,128 @@ jobs:
   dialog-lifecycle:
     name: Dialog teardown when a page is left
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
       - name: Install Lua 5.4
         run: sudo apt-get update && sudo apt-get install -y lua5.4
 
       - name: Check the dialog teardown
         run: lua5.4 bin/dialog_lifecycle/verify_dialog_lifecycle.lua
+
+  # #2308 split one Settings -> Audio -> Events page into category pages,
+  # #2310 added the main-power alert to the voltage page, and #2311 added the Link
+  # page with the telemetry lost/recovered pair. The risk in the split is not that
+  # the build breaks -- it is that a key quietly stops having a toggle. Nothing in
+  # the build or the package step can see a setting that no page offers any more; the
+  # pilot finds out in the air, and the settings store still holds the key, so
+  # nothing reports a mismatch either.
+  #
+  # So the coverage is checked against the store itself: the keys in
+  # lib/settings_store.lua's DEFAULTS.events, read out of that file, against the
+  # keys each category page actually edits. A key with no page, a key with two, and a
+  # page editing a key the store never had all go red.
+  #
+  # The on-demand half is measured rather than asserted: a form stub counts the
+  # field widgets each page builds, so the pages together have to total exactly the
+  # store's key count and no single page may build the set again. And the round trip
+  # is driven per field -- every field is set, saved, and read back through the
+  # page's own getter after re-opening, which is what a setter writing the wrong key
+  # cannot pass (two of these fields store in different units than they display, so
+  # reading back through the getter is also what keeps the harness from needing to
+  # know that).
+  #
+  # The task behaviour is driven against the real tasks/audio_events.lua with the
+  # bus, the settings store, system audio, os.clock and the packaged sound paths
+  # stubbed: a pack that has read a voltage and then goes, with a BEC still up,
+  # fires the main-power alert, speaks the BEC voltage and buzzes; a pack that is
+  # never measured, or one with no BEC reading, stays silent; the alert repeats only
+  # after its interval; and the pack coming back speaks once. The link is announced
+  # only for a loss that happened while the model was armed, and the recovery only
+  # for a loss that was announced -- so a bench power-down says nothing at all, and
+  # a model that was told it lost the link is told it got it back.
+  #
+  # Copies of the task with a guard or a source re-pointed are then loaded and
+  # required to behave differently from the real one -- a never-measured pack with
+  # the pack-seen latch removed has to fire, a disarmed loss with the armed gate
+  # removed has to fire, and a gate reading the armed state off the session instead
+  # of the snapshot has to stay quiet, because the session has already cleared it by
+  # the time a down link is visible. If those ever stop turning red, the instrument
+  # has gone blind.
+  #
+  # The same harness checks the low-voltage hold filter and spoken reading (#2309):
+  # a brief sag stays silent, recovery restarts the hold, hold = 0 fires at once,
+  # and the callout speaks the pack total, average cell or nothing. Stripping the
+  # hold guard must make a brief sag fire.
+  #
+  # The instrument guards itself twice. Case 1 counts the add* call sites in the
+  # page sources and fails if its own scanner missed one, so a partial read cannot
+  # understate coverage. Case 3 watches the snapshot table a page was handed rather
+  # than the settings store, because save() takes its own deep copy -- a write into a
+  # released snapshot is invisible from the store and only shows there. Dropping the
+  # disposed guard, dropping the snapshot release, dropping a field, moving a menu
+  # entry, dropping the pack-seen or BEC guard or restoring the old page were each
+  # run against this harness and each turns it red.
+  audio-events-categories:
+    name: Audio events reachable after the split, and what they announce
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Install Lua 5.4
+        run: sudo apt-get update && sudo apt-get install -y lua5.4
+
+      - name: Check the Audio -> Events pages and the audio events
+        run: lua5.4 bin/audio_events/verify_audio_events.lua
+
+  # An in-flight adjustment is announced from tasks/audio_events.lua's
+  # announceAdjustment(). Before #2315 it spoke the first step of a burst and dropped
+  # every step that landed while that announcement was still playing, so three clicks
+  # on a trim switch announced a value the model no longer had. Nothing in the build
+  # or the package step reaches it, and the failure is quiet: the pilot hears a
+  # plausible number.
+  #
+  # The real task is driven one wakeup at a time, every 0.25 s -- the interval
+  # tasks/background.lua schedules it at -- against a controllable clock. A burst of
+  # steps has to say one number, and it has to be the last one. Nothing is spoken
+  # until the value has stood still for the settle window. A function change says the
+  # name once and then the settled value. A step that settles while an announcement is
+  # still playing is spoken afterwards, not dropped. adj_v = false keeps a value-only
+  # change silent, function 0 says nothing, and a change still waiting when the link
+  # drops is not spoken later.
+  #
+  # A copy of the task with the settle guard removed is then loaded, and the first
+  # step of the burst has to be spoken there. If that ever stops turning red, the
+  # instrument has gone blind.
+  adj-voice-settle:
+    name: In-flight adjustments settle before they are spoken
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Install Lua 5.4
+        run: sudo apt-get update && sudo apt-get install -y lua5.4
+
+      - name: Check the in-flight adjustment announcement
+        run: lua5.4 bin/adj_voice/verify_adj_voice.lua
 
   # A page tags its data with the profile it was read for, and the tag used to
   # be taken when the read finished rather than when it started. A pilot who
@@ -369,10 +696,14 @@ jobs:
   profile-anchor:
     name: A page's data stays tagged with the profile it came from
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
       - name: Install Lua 5.4
         run: sudo apt-get update && sudo apt-get install -y lua5.4
@@ -390,10 +721,14 @@ jobs:
   tool-focus:
     name: The Tool button hands a page a callable focus function
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
       - name: Install Lua 5.4
         run: sudo apt-get update && sudo apt-get install -y lua5.4
@@ -423,10 +758,14 @@ jobs:
   wakeup-allocations:
     name: Wakeup path allocates nothing per call
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
       - name: Install Lua 5.4
         run: sudo apt-get update && sudo apt-get install -y lua5.4
@@ -460,10 +799,14 @@ jobs:
   gc-pause:
     name: The incremental collector is tuned, and reads no pause it did not set
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
       - name: Install Lua 5.4
         run: sudo apt-get update && sudo apt-get install -y lua5.4
@@ -492,10 +835,14 @@ jobs:
   root-close-key:
     name: The physical Back key closes the suite from every screen
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
       - name: Install Lua 5.4
         run: sudo apt-get update && sudo apt-get install -y lua5.4
@@ -527,10 +874,14 @@ jobs:
   governor-profile-write:
     name: A governor profile is never written from an incomplete table
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
       - name: Install Lua 5.4
         run: sudo apt-get update && sudo apt-get install -y lua5.4
@@ -554,10 +905,14 @@ jobs:
   instruction-budget:
     name: Callbacks stay under the Ethos instruction limit
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
       - name: Install Lua 5.4
         run: sudo apt-get update && sudo apt-get install -y lua5.4
@@ -601,10 +956,14 @@ jobs:
   esc-signature:
     name: An ESC editor never opens on another vendor's ESC
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
       - name: Install Lua 5.4
         run: sudo apt-get update && sudo apt-get install -y lua5.4
@@ -645,10 +1004,14 @@ jobs:
   esc-parameters-yge:
     name: YGE timing words and the flags byte
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
       - name: Install Lua 5.4
         run: sudo apt-get update && sudo apt-get install -y lua5.4
@@ -725,10 +1088,14 @@ jobs:
   esc-raw-bytes:
     name: An ESC save rewrites only the row the pilot moved
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
       - name: Install Lua 5.4
         run: sudo apt-get update && sudo apt-get install -y lua5.4
@@ -782,10 +1149,14 @@ jobs:
   esc-parameters-yge-bec12v:
     name: YGE 12 V BEC ceiling and the HV-BEC bit
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
       - name: Install Lua 5.4
         run: sudo apt-get update && sudo apt-get install -y lua5.4
@@ -834,10 +1205,14 @@ jobs:
   esc-parameters-yge-serial:
     name: YGE ESCs can be told apart by their serial number
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
       - name: Install Lua 5.4
         run: sudo apt-get update && sudo apt-get install -y lua5.4
@@ -926,16 +1301,126 @@ jobs:
   esc-flyrotor-payload:
     name: FlyRotor writes 56 bytes and refuses a short block
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
       - name: Install Lua 5.4
         run: sudo apt-get update && sudo apt-get install -y lua5.4
 
       - name: Check the FlyRotor block length and the length guard
         run: lua5.4 bin/esc_flyrotor_payload/verify_flyrotor_payload.lua
+
+  # app/pages/esc_forward_bluejay.lua declared an LED Control row and gated it on
+  # msp.supportsLedControl(), which read _raw[67] and compared it with the five ASCII
+  # letters naming Bluejay's five LED-capable pinouts. The MSP 217 reply is 66 bytes --
+  # two header bytes plus BLHELI_S_MSP_NUM_EEPROM_BYTES (0x40) -- so _raw[67] is nil,
+  # the comparison is false, and esc_forward_vendor.lua's fieldEnabled() requires
+  # `== true`: the row could never be shown on any ESC. Measured here rather than
+  # assumed, because the whole case rests on the length.
+  #
+  # The row is gone rather than repaired, and the reasons are in the firmware.
+  # mathiasvr/bluejay lists all 26 supported ESCs with their LED counts in
+  # Bluejay.asm:63-91 and exactly five have one (E_ 3, J_ 3, M_ 1, Q_ 2, U_ 3; every
+  # other layout reads "_" there, Z_ reads "-"), but those letters are EQU constants of
+  # the build. The EEPROM segment at 1A00h
+  # (Bluejay.asm:321-364) holds 41 parameter bytes and not one is a layout letter; the
+  # only layout-related byte is Eep_Layout_Revision, written from the firmware-wide
+  # EEPROM_LAYOUT_REVISION = 204 (Bluejay.asm:319), which every layout shares. Byte 43
+  # of the block IS the LED byte -- Eep_Pgm_LED_Control, segment offset 0x28 -- so the
+  # byte can be written, but nothing on the wire says whether writing it does anything.
+  # And the row's choice list was BLHeli_S's: Bluejay drives one pin per LED, two bits
+  # each, lit when the pair is non-zero (Bluejay.asm:1525-1556), so that list's "Green"
+  # is one LED on rather than a colour. Putting the row back means per-LED on/off, which
+  # is a decision about the UI and not a repair of this byte. Byte 43 is kept as the name
+  # reserved_28, so the block still decodes and re-encodes all 66 bytes -- the flight
+  # controller commits exactly escGetParamBufferLength() of them, so a dropped field
+  # entry would have shortened the payload rather than removed a row.
+  #
+  # Three gates. The first is the defect class and outlives this row: no criterion and no
+  # label on the page may read a byte the reply does not carry. The reads are traced
+  # through a metatable on _raw, so the check reports WHICH byte was reached for, and a
+  # revision test like atLeast(209) -- correctly false for a layout-204 ESC -- is not
+  # caught, because it reads layout_revision, which decode() did produce. The other two
+  # pin the decision itself, so a correct LED row can come back only deliberately, with
+  # the criterion that makes it reachable.
+  #
+  # Four checks are deliberately NOT gates, because they were true before the fix as
+  # well: the reply is 66 bytes and has no byte 67, byte 43 round-trips unchanged over
+  # all 256 values, every one of the 66 positions still has exactly one owning field,
+  # and byte 43 is among them under the name reserved_28. They are the guard on what the
+  # rename could have broken.
+  #
+  # 3 of its 7 checks go red on the pre-fix page and codec. Pass --self-test to prove
+  # that rather than take it on trust: it splices the pre-fix row and the pre-fix
+  # criterion back into copies of both files, proves each splice is the pre-fix code
+  # before letting it stand in for one -- different file, reads back, loads, and writes
+  # the same 66 bytes -- and requires all three to fail.
+  bluejay-led-control:
+    name: The Bluejay LED row is either reachable or absent
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Install Lua 5.4
+        run: sudo apt-get update && sudo apt-get install -y lua5.4
+
+      - name: Check the Bluejay LED Control row
+        run: lua5.4 bin/bluejay_led_control/verify_bluejay_led_control.lua
+
+  # app/pages/esc_forward_bluejay.lua gates rows on the ESC's layout_revision byte, and
+  # issue #2454 read the bounds as sitting ahead of the firmware's release history -- six
+  # rows invisible on every released Bluejay. The finding is real; the implication is not.
+  # The bounds are a port of the forward model one client keeps, stylesuxx/esc-configurator
+  # src/sources/Bluejay/settings.js's COMMON map, whose revisions are the released layouts
+  # 200 (v0.9), 201 (v0.10), 203 (v0.12) and 204 (v0.15, bluejay master = v0.16) plus six
+  # that never shipped: 202 carried a damping-mode braking strength, 205 the three-way
+  # startup beep and a PWM frequency, 206 the power rating, 207 force-edt-arm, 208 dropped
+  # dithering, and 209 the dynamic PWM frequency and the two thresholds.
+  #
+  # mathiasvr/bluejay has never released an EEPROM_LAYOUT_REVISION other than 33, 200, 201, 203
+  # and 204 (Bluejay.asm:319 is 204 on master), so on 203/204 the two rows the bounds hide are
+  # exactly the two the firmware stopped applying there: Pwm_Freq is written from its
+  # default and never read on any released tag, and the startup-beep application ("Read
+  # programmed startup beep setting") is gone from v0.12 onward. The rows come back on
+  # their own when a layout that carries them ships, so the bounds must not be "fixed" to
+  # make them appear early.
+  #
+  # Two gates. The first reads the page's own FIELDS per revision and requires the
+  # visibility table the model implies, so a bound loosened for a released revision turns
+  # it red and the change has to be deliberate. The second requires the shipped
+  # simulatorResponse to report a revision that was actually released -- 204 -- which is
+  # what stops the Ethos simulator from showing a Bluejay that does not exist; it read 209
+  # before. Both mutations turn their gate red under --self-test (a loosened bound, and a
+  # fixture on 209), so neither gate can pass by being unable to fail.
+  bluejay-layout-revs:
+    name: The Bluejay layout-revision bounds stay where they belong
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Install Lua 5.4
+        run: sudo apt-get update && sudo apt-get install -y lua5.4
+
+      - name: Check the Bluejay layout-revision bounds
+        run: lua5.4 bin/bluejay_layout_revs/verify_bluejay_layout_revs.lua
 
   # The FC keeps its tune advisor statistics in RAM; the radio saves each
   # flight on disarm, clears the FC, and the page combines the last 5 flights
@@ -946,16 +1431,45 @@ jobs:
   tune-history:
     name: Tune Advisor history on disarm
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
       - name: Install Lua 5.4
         run: sudo apt-get update && sudo apt-get install -y lua5.4
 
       - name: Check the Tune Advisor history on disarm
         run: lua5.4 bin/tune_history/verify_tune_history.lua
+
+  # The Tune Advisor's Save writes its suggested changes to the FC. Pins
+  # what reaches the FC: only the advised fields change, and nothing is
+  # written unless every read is complete (a short reply would decode as a
+  # tune of zeros), the FC still holds the tune the flights were flown on
+  # (same values and profiles) and the model is disarmed; a failed write is
+  # never committed to EEPROM; F is never applied without its rates (a
+  # percentage-only rates_type applies neither); each stage is shown.
+  tune-advisor-apply:
+    name: Tune Advisor Apply
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Install Lua 5.4
+        run: sudo apt-get update && sudo apt-get install -y lua5.4
+
+      - name: Check the Tune Advisor Apply
+        run: lua5.4 bin/tune_advisor_apply/verify_tune_advisor_apply.lua
 
   # Bytes 57..62 of the Scorpion block were carried as three anonymous U16s named
   # padding_1, padding_2 and padding_3, and the summary line read two byte offsets out of
@@ -1006,10 +1520,14 @@ jobs:
   esc-parameters-scorpion-serial:
     name: Scorpion ESCs can be told apart, and the word labelled FW was not one
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
       - name: Install Lua 5.4
         run: sudo apt-get update && sudo apt-get install -y lua5.4
@@ -1072,10 +1590,14 @@ jobs:
   yge-block-length:
     name: The YGE block is as long as the count the ESC reports
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
       - name: Install Lua 5.4
         run: sudo apt-get update && sudo apt-get install -y lua5.4
@@ -1135,10 +1657,14 @@ jobs:
   esc-hw5-opto:
     name: Hobbywing V5 OPTO layout
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
       - name: Install Lua 5.4
         run: sudo apt-get update && sudo apt-get install -y lua5.4
@@ -1201,10 +1727,14 @@ jobs:
   esc-hw5-startup:
     name: Hobbywing V5 Startup Time byte
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
       - name: Install Lua 5.4
         run: sudo apt-get update && sudo apt-get install -y lua5.4
@@ -1262,10 +1792,14 @@ jobs:
   esc-xdfly-bias:
     name: The biased ESC words never reach 0xFFFF
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
       - name: Install Lua 5.4
         run: sudo apt-get update && sudo apt-get install -y lua5.4
@@ -1334,16 +1868,649 @@ jobs:
   motor-protocol:
     name: Throttle Protocol list follows the flight controller
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
       - name: Install Lua 5.4
         run: sudo apt-get update && sudo apt-get install -y lua5.4
 
       - name: Check the motor protocol list and its defaults
         run: lua5.4 bin/motor_protocol/verify_motor_protocol.lua
+
+  # lib/msp_esc_parameters_scorpion.lua described 76 bytes where the flight
+  # controller's block for a Scorpion is 84. The last eight are two U32 words the sibling
+  # suite names stick_max and stick_zero; this codec stopped at gov_integral.
+  #
+  # That is not cosmetic on the write path. msp.c's MSP_SET_ESC_PARAMETERS is an opaque move
+  # of escGetParamBufferLength() bytes, and its only length check is `len == 0`.
+  #
+  #     const uint8_t len = escGetParamBufferLength();
+  #     if (len == 0) return MSP_RESULT_ERROR;
+  #     sbufReadData(src, escGetParamUpdBuffer(), len);
+  #     if (!escCommitParameters()) return MSP_RESULT_ERROR;
+  #
+  # sbufReadData is an unchecked memcpy and the destination paramUpdBuffer is a persistent
+  # static array nothing clears per message -- escGetParamUpdBuffer() re-fills it from
+  # paramBuffer only in the BLHeli_S case. So a 76-byte payload leaves the firmware copying
+  # eight bytes from past the end of the received frame into escCommitParameters and on to
+  # the ESC, and the last two words are stored from whatever those bytes were.
+  #
+  # Where 84 comes from (rotorflight-firmware src/main/sensors/esc_sensor.c; the Scorpion is
+  # ESC_SIG_TRIB = 0x53, served by tribSensorInit, not the 4-way path):
+  #
+  #     static uint16_t tribParamAddrLen[] =
+  #         { 0x0020, 0x1008, 0x230E, 0x8204, 0x8502, 0x1406, 0x1808, 0x3408 };
+  #     tribCalcParamBufferLength() sums (x & 0xFF)      -> 32+8+14+4+2+6+8+8 = 82
+  #     #define PARAM_HEADER_SIZE 2
+  #     escGetParamBufferLength() = PARAM_HEADER_SIZE + it -> 2 + 82 = 84
+  #
+  # The TRIB path sets paramPayloadLength = tribCalcParamBufferLength() when the ESC's
+  # UNC/status handshake completes (tribDecodeReadStatusResp), so the length is a constant 84
+  # for this vendor, not a count the ESC varies.
+  #
+  # The codec and its fixture now carry the two words, taken verbatim from the sibling's
+  # FIELD_SPEC / SIM_RESPONSE, and the page builds no row for either -- they are carried through
+  # a read and written back verbatim.
+  #
+  # 6 of the harness's 12 checks go red without the fix, proven by --self-test: it cuts the
+  # two stick fields out of REST_FIELDS and the eight fixture bytes back out and requires every
+  # one to fail. Two checks that look like gates are deliberately not -- the transcribed trib
+  # table is a constant here, and the two-transcription offset parity check never reads the
+  # codec -- and the file says so.
+  esc-parameters-scorpion-block-length:
+    name: The Scorpion block is the length the flight controller asks for
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Install Lua 5.4
+        run: sudo apt-get update && sudo apt-get install -y lua5.4
+
+      - name: Check the Scorpion block length and the appended stick words
+        run: lua5.4 bin/esc_parameters_scorpion/verify_scorpion_block_length.lua
+
+  # In app/pages/esc_forward_vendor.lua, the ESC summary header was rendered using
+  # form.addLine(mspModule.summaryFor(data, pageTitle)). In Ethos, form.addLine()
+  # splits each line into a left label column and a right widget column, clipping
+  # the label column at ~32 characters on standard screens (e.g. 480x320).
+  # When the summary line includes the model name, firmware version, and serial number
+  # (e.g. "YGE Saphir 125 / 1.03576 / S/N 100770", 37 characters), the text past 32 chars
+  # was vertically sliced on the column boundary (showing "... S/N 1C"), and the rest of
+  # the serial number was clipped off while the right half of the line remained empty.
+  #
+  # The summary is now rendered via escError.addTextLine(summary), which creates an empty
+  # line and spans form.addStaticText across the full display width (x = 0, w =
+  # lcd.getWindowSize()).
+  #
+  # 2 of the 5 checks in bin/esc_summary/verify_esc_summary.lua are gates and go red on
+  # the pre-fix code, proven by --self-test.
+  esc-summary-full-width:
+    name: ESC summary header spans full width without 2-column clipping
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Install Lua 5.4
+        run: sudo apt-get update && sudo apt-get install -y lua5.4
+
+      - name: Check the ESC summary header width and line layout
+        run: lua5.4 bin/esc_summary/verify_esc_summary.lua
+
+  # EEPROM_WRITE is refused by the FC while the model is armed -- the firmware rejects
+  # flight-critical memory outright in that state -- but the per-page MSP_SET_* writes
+  # already landed and the FC commits them on disarm. app/page_runtime.lua turned that
+  # benign refusal into a modal form.openDialog(): it seized the whole form from the MSP
+  # callback chain's wakeup tick and held it until the pilot pressed OK, mid-flight.
+  #
+  # #2303 replaces the modal with a transient footer banner. app/header.lua builds it:
+  # a text drawn from a paint handler for 2.5 s (the dashboard's own footer alerts are
+  # drawn the same way, widgets/dashboard.lua's drawFooterBanner()), with a haptic pulse,
+  # not a form line -- a line would reserve a row for the life of the page for a message
+  # that is usually not there. page_runtime installs the paint handler unconditionally now
+  # (not only for pages with their own onPaint), draws the banner from it, and closes it
+  # from the wakeup tick, which invalidates once for the clearing frame because a radio
+  # does not repaint when a timer elapses.
+  #
+  # The issue's other half -- a local-settings page must save while armed -- is the new
+  # `localSettings` config flag, honored by canSave()'s armed gate. The finding worth
+  # reading: no page sets isMspPage, so the gate has been inert since it was added
+  # (#2305), and the reachable armed path is the EEPROM rejection above. This PR does NOT
+  # start marking FC pages with isMspPage, because pre-blocking the save would throw the
+  # pilot's edit away: the FC applies MSP_SET_* in RAM and commits on disarm, which is
+  # exactly what the old dialog's own body text promised ("your changes are safe and
+  # will be written to flash when you disarm"). Refusing the write pre-emptively would
+  # make that sentence false. The banner is the whole fix; the flag is there for a page
+  # that genuinely writes only local storage.
+  #
+  # 3 of its 17 checks are gates and go red on the pre-fix page_runtime/header. Pass
+  # --self-test to prove that: it splices showSaveArmed()'s banner call back to the
+  # pre-fix modal and requires both the banner gate and the no-modal gate to fail, and
+  # splices BANNER_SECONDS past the fake clock's reach and requires the expiry gate to
+  # fail. The remaining checks are controls: an unarmed rejection must still be a real
+  # failure dialog, a local-settings page must save while armed, and an FC page without
+  # the flag must stay gated.
+  #
+  # This entry also repairs bin/ci/pr_jobs.py itself. #2479 inserted the
+  # esc-parameters-scorpion-block-length entry without its closing terminator, so that
+  # job's rationale swallowed the esc-summary-full-width job and the module stopped
+  # parsing -- `python bin/ci/verify_pr_workflow.py` raised a SyntaxError on master, and
+  # every pull request inherited it.
+  armed-save-banner:
+    name: An armed save is reported without a modal
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Install Lua 5.4
+        run: sudo apt-get update && sudo apt-get install -y lua5.4
+
+      - name: Check the armed-save warning and the local-settings bypass
+        run: lua5.4 bin/armed_save/verify_armed_save.lua
+
+  # Rotorflight 2 applies governor, filter, PID and rate writes in RAM immediately,
+  # so a governor save must not restart the board. The four Setup -> Governor pages
+  # declared rebootAfterSave = true, so every RPM or curve correction at the field
+  # dropped telemetry, twitched the servos on re-initialization and cost 5-10 s of
+  # reconnection. The EdgeTX suite fixed the same thing in ac950276 (PR #25); this is
+  # the Ethos half.
+  #
+  # What replaces the reboot flag is not nothing, though: the save path sent
+  # MSP_REBOOT fire-and-forget and closed the dialog at once, reporting the save done
+  # while the board was still booting, so a page left open kept showing pre-restart
+  # values. A save that DOES restart the FC now holds a "Restarting..." dialog until
+  # the link drops and the handshake answers again, then reloads.
+  #
+  # Neither half reaches a build or a package step: one is a field in a page's config,
+  # the other needs a link that drops and a background task to notice. The harness
+  # loads the four real governor pages and reads the config they hand PageRuntime.new,
+  # and drives the real page_runtime through a save, a drop and a reconnect.
+  #
+  # Three checks are gates, proven by --self-test: it splices rebootAfterSave back to
+  # true in a copy of a governor page and requires the governor check to fail, and it
+  # loads a copy of page_runtime.lua with `self_.pendingReboot = true` spliced to
+  # false -- the one line that arms the wait -- and requires the hold and reload
+  # checks to fail. The remaining checks are controls: a page with no reboot must
+  # finish at once, an armed save must publish no reboot, and a board that never
+  # returns must still end the wait on its 20 s bound.
+  governor-reboot-policy:
+    name: Governor saves do not reboot the FC, and a reboot is waited for
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Install Lua 5.4
+        run: sudo apt-get update && sudo apt-get install -y lua5.4
+
+      - name: Check the governor reboot policy and the save-and-reboot wait
+        run: lua5.4 bin/reboot_policy/verify_reboot_policy.lua
+
+  # Issue #2307 asks for the EdgeTX suite's motor-override safeguards on Ethos. The
+  # interlocks are not free choices; three of the four are the firmware's own deadlines,
+  # and a page that gets any of them wrong leaves a motor turning that the pilot cannot
+  # see or stop.
+  #
+  # THE 1-SECOND DEADLINE IS WHY THE KEEP-ALIVE EXISTS. MOTOR_OVERRIDE_TIMEOUT is 1000000
+  # (rotorflight-firmware src/main/flight/motors.h:27), and motors.c:301-303 resets EVERY
+  # override once it passes:
+  #
+  #     if (motorOverrideTimeout) {
+  #         if (cmp32(currentTimeUs, motorOverrideTimeout) > 0)
+  #             resetMotorOverride();
+  #     }
+  #
+  # So one write is not "the motor is on", it is "the motor turns for one more second". A
+  # page that writes on every wheel click looks like it works and is the most dangerous
+  # shape available: the motor stops whenever the pilot stops scrolling. The page
+  # therefore re-sends the current value at 4 Hz -- four times inside the window, which is
+  # also what the Configurator sends -- and keeps ONE write in flight, because a link
+  # slower than 4 Hz would otherwise grow the queue without bound.
+  #
+  # THE ARMED CHECK IS IN THE FIRMWARE, SO THE PAGE'S ONLY LEVER IS TO REFUSE.
+  # motors.c:114-120:
+  #
+  #     if (!ARMING_FLAG(ARMED) && motor < motorCount) {
+  #         motorOverride[motor] = value;
+  #         motorOverrideTimeout = timeout ? (micros() + timeout) | BIT(0) : 0;
+  #     }
+  #
+  # An armed craft cannot be overridden at all. The switch is therefore disabled rather
+  # than shown as a control that would quietly do nothing, and an override that was
+  # already running when the model armed is handed straight back -- with the zeros
+  # actually written, since the page cannot know whether its last write arrived.
+  #
+  # THE WRITE NAMES ONE MOTOR, so leaving has to name them all. msp.c:2966-2972 reads a
+  # u8 index and one u16 value, so a release that names only the selected motor leaves
+  # every other motor at whatever it had. The release names all of them, unconditionally,
+  # because that is the path that has to work when something has already gone wrong.
+  #
+  # One correction to the issue as filed: it asks for the same heartbeat on the servo
+  # override pages. There is nothing to service. servos.c:95-98 is
+  #
+  #     int16_t setServoOverride(uint8_t servo, int16_t val)
+  #     {
+  #         return servoOverride[servo] = val;
+  #     }
+  #
+  # -- it stores the value and nothing else. The only override deadline in the firmware is
+  # motorOverrideTimeout; there is no servo counterpart, so a servo override holds until
+  # something writes SERVO_OVERRIDE_OFF. Adding a heartbeat there would have re-sent
+  # OVERRIDE_CENTER every 250 ms, overwriting the value the pilot had just dialled in.
+  #
+  # `lockedWhileArmed` does not exist in this suite either -- grep-verified over
+  # src/rfsuite: it is an EdgeTX manifest flag, and the Ethos menu layer has no armed
+  # handling at all. The armed gate is the page refusing, not a menu lock.
+  #
+  # 9 of the harness's 43 checks are gates, proven by --self-test: it loads spliced copies
+  # of the page with the keep-alive interval neutralised, the armed guard dropped from
+  # both places it is enforced (the disabled switch and the refusal to open the confirm),
+  # the every-motor release narrowed to the selected motor, and the session-driven release
+  # replaced by a bare flag clear -- and requires each to go red. The splices assert they
+  # applied, because a pattern that has moved must fail the run rather than pass silently.
+  #
+  # The remaining checks are controls, and the file says which: a page that is not
+  # overriding writes nothing at all over five seconds, the throttle and the motor
+  # selector are locked while overriding, a cancel leaves the page as it was, and a newly
+  # selected motor starts at zero instead of inheriting its predecessor's throttle.
+  motor-override-safety:
+    name: Motor override is confirmed, kept alive, armed-guarded and released
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Install Lua 5.4
+        run: sudo apt-get update && sudo apt-get install -y lua5.4
+
+      - name: Check the motor override interlocks against the firmware deadlines
+        run: lua5.4 bin/motor_override/verify_motor_override.lua
+
+  # tasks/session.lua's runHandshake() queued its whole identity/config burst in one
+  # call, ahead of any API-version verdict: MSP_FC_VERSION, MSP_UID, MSP_NAME, the RTC
+  # sync and the battery/smartfuel/governor/rx-map reads all went on the wire before
+  # MSP_API_VERSION had even been answered, let alone checked. On a weak link, or
+  # against firmware from a different family, one unanswerable request at the head of
+  # the single-in-flight queue blocks every page read behind it for its full retry
+  # budget -- 5 x 0.8s for UID -- which is the queue starvation #2362 reports.
+  #
+  # The handshake is now phased: API_VERSION is the only request allowed to run
+  # unverified, its own success callback resumes the handshake the moment the verdict
+  # is in, and nothing else is queued until that verdict is a verified "yes". An
+  # incompatible or too-old FC stops after the version read; the UI banner for it
+  # already existed (widgets/dashboard.lua's drawFooterAlert). No build and no package
+  # step reaches any of this -- it needs a queue, a clock and an FC that answers, or
+  # does not -- so it is pinned here.
+  #
+  # 5 of the harness's 12 checks are gates on the queue contents, proven by --self-test:
+  # it neuters the gate's condition in a copy of session.lua and requires the central
+  # check (no identity read before the verdict) to go red.
+  handshake-gate:
+    name: Post-connect reads wait for a verified API_VERSION
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Install Lua 5.4
+        run: sudo apt-get update && sudo apt-get install -y lua5.4
+
+      - name: Check the phased startup handshake
+        run: lua5.4 bin/handshake_gate/verify_handshake_gate.lua
+
+  # System Status and System Config (MSP API 12.10) pack arm state, failsafe,
+  # governor, battery, profiles and a dozen flags into two 31-bit words. A field read
+  # from the wrong bit is a different but plausible state -- FALLBACK reads as
+  # AUTOROTATION -- so no screen shows the mistake; the decoder is pinned against the
+  # firmware's bit layout here.
+  #
+  # The same check pins how tasks/session.lua and lib/system_alerts.lua handle a
+  # missing word: a tick without a battery-profile reading keeps the last pack, a
+  # dropped status frame leaves the arm state alone, System Config's own alerts still
+  # fire when System Status is not selected, a callout waits for the word its rule
+  # reads before recording its starting state, and the decoder is only loaded once
+  # either word arrives. --self-test reverts each of the four fixes in a copy of the
+  # source and requires its check to go red.
+  system-status:
+    name: Packed FC status sensors decode and alert correctly
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Install Lua 5.4
+        run: sudo apt-get update && sudo apt-get install -y lua5.4
+
+      - name: Check the System Status/Config sensors
+        run: lua5.4 bin/system_status/verify_system_status.lua
+
+  # Issue #2357: the Battery tile opened form.openDialog with one button per
+  # battery profile. Ethos lays a dialog's buttons out in one row, so six profiles
+  # overflowed a 480x320 screen. The pack choice is now painted by
+  # widgets/dashboard/battery_picker.lua as a grid: three across at 400 px and wider,
+  # every cell at least 44 px in both directions.
+  #
+  # No build and no package step reaches this -- it is a touch and rotary path
+  # through a running widget. The harness drives the real widgets/dashboard.lua
+  # through the descriptor the radio calls: the picker opens by itself once per
+  # connection, the Battery tile opens it from the toolbar, and a tap or Enter writes
+  # the pack under the cursor as the msp.request the old dialog sent. Exit, Return, a
+  # tap outside the grid and choosing the active pack change nothing. It counts
+  # form.openDialog calls with the picker's title and requires none. --self-test
+  # puts back one row of six and requires the three-across check to go red.
+  battery-picker:
+    name: Battery tile picker lays the packs out as a grid
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Install Lua 5.4
+        run: sudo apt-get update && sudo apt-get install -y lua5.4
+
+      - name: Check the Battery tile picker
+        run: lua5.4 bin/battery_picker/verify_battery_picker.lua
+
+  # Issue #2353: with the FC's governor mode set to None or Limit, the firmware never
+  # leaves THROTTLE_OFF (governor.c: governorUpdate() has no state change for
+  # GOV_MODE_NONE, and govUpdateLimitedThrottle() only sets throttleOutput), so the
+  # dashboard's governor tile read OFF in big letters for a whole flight. The label
+  # now comes from the mode the FC reported, once it has been read.
+  #
+  # The harness drives the real widgets/dashboard/context.lua through
+  # utils.getGovernorState(): None and Limit with state 0 read PASSTHRU, DIRECT and
+  # ELECTRIC keep their real OFF, a state other than 0 is unchanged, a disarmed craft
+  # still reads DISARMED, and a mode that was never read (the session's error fallback
+  # sets 0) reads OFF, not PASSTHRU. --self-test swaps the new condition for false and
+  # requires the None case to go red.
+  governor-state:
+    name: Stateless governor modes show PASSTHRU, not OFF
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Install Lua 5.4
+        run: sudo apt-get update && sudo apt-get install -y lua5.4
+
+      - name: Check the governor label in None and Limit modes
+        run: lua5.4 bin/governor_state/verify_governor_state.lua
+
+  # Issue #2323: with no flight controller connected the radio cannot say which
+  # helicopters it has stored preferences for, because the per-controller store
+  # (lib/model_preferences.lua, one file per MCU id) carries no name and nothing can
+  # list the files. Two things had to change, and neither is reachable from a build or
+  # a package step.
+  #
+  # The name is recorded by tasks/session.lua. The UID and the NAME replies are
+  # independent reads and either may arrive first, so both callbacks call
+  # recordCraftName() and the second one writes. The harness drives the real
+  # session.lua through its own handshake and delivers the two replies in both orders;
+  # a name that has not changed writes nothing, an empty answer never replaces a stored
+  # name, and a rename is one write.
+  #
+  # The name is stored in quotes. lib/ini.lua reads "007", "0x10" and "1e3" back as
+  # numbers and "true" as a boolean, so a bare `name=007` would not survive a save and
+  # a load. The first gate writes fifteen names that look like exactly those things (and
+  # quotes, `=`, `;`, a control character, 40 characters) and requires each to come back
+  # as written or, where it is cleaned on purpose, as cleaned.
+  #
+  # lib/known_models.lua lists the stores through system.listFiles, which the suite
+  # already uses for its log browser (app/pages/logs.lua). Its shape was measured on the
+  # Ethos 26.1.3 simulator and the harness's fake card answers in it: an array of names
+  # that carries ".." and sub-directories, nil for a directory that is not there. The
+  # fake lists in descending order on purpose, so a listing that leans on the card's
+  # order is caught. The ".tmp" file a write in flight leaves behind must not be listed.
+  # The module is loaded where it is called and writes nothing; one of the controls
+  # snapshots the card before and after.
+  #
+  # `modified` is returned as the table os.stat() gives, not as an epoch: on the simulator
+  # os.time() of a stat table drops the minutes and seconds (13:16:08 came back as
+  # 13:00:00), so an epoch would claim a precision it does not have.
+  #
+  # --self-test takes out one piece at a time -- the quoting, each of the two session
+  # hooks, the id sort, the ".ini" end anchor -- and requires the gate named for it to go
+  # red. The baseline run is required to be green first.
+  known-models:
+    name: The radio remembers each controller by name and lists them offline
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Install Lua 5.4
+        run: sudo apt-get update && sudo apt-get install -y lua5.4
+
+      - name: Check the stored craft name and the known-models listing
+        run: lua5.4 bin/known_models/verify_known_models.lua
+
+  # The rates page offered every rate field up to 255. The firmware keeps one
+  # limit set per rates_type (src/main/fc/rc_rates.c:39-46: rc_rate, srate and expo)
+  # and clamps the stored values to it when the config is loaded (config.c:184-194).
+  # A pilot could enter a value the firmware then cut at the next boot, so the shown
+  # value changed after a reboot.
+  #
+  # lib/rate_curve_scale.lua now takes each field's maximum from the table of firmware
+  # limits, for the display bounds and for the value stored from the page.
+  #
+  # The harness checks the limit for every rates_type and field, the display maximum,
+  # the clamp of a value above the limit, and that the limit survives a round trip
+  # through the display. --self-test puts back the flat 255 ceiling and requires the
+  # value checks to go red.
+  rate-limits:
+    name: Rate and expo maximums follow the rate table, as the firmware clamps them
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Install Lua 5.4
+        run: sudo apt-get update && sudo apt-get install -y lua5.4
+
+      - name: Check the rate table limits
+        run: lua5.4 bin/rate_limits/verify_rate_limits.lua
+
+  # MSP_ACC_CALIBRATION is acknowledged as soon as it arrives, but the flight
+  # controller finishes the calibration afterwards: it sets ARMING_DISABLED_CALIBRATING
+  # (bit 12 of arming_disable_flags) while it runs and clears it when it is done. The
+  # accelerometer page used to save to the EEPROM and play the beep on the acknowledgement,
+  # so it reported a calibration as finished before the flight controller had finished it.
+  #
+  # lib/acc_calibration_wait.lua decides from MSP_STATUS polls: done once the bit has been
+  # seen set and is clear again, timeout after 15 seconds while it stays set or the polls fail.
+  # One assumption is stated in the module: a bit never seen set counts as done after 3 seconds,
+  # because a calibration shorter than one poll interval is never seen set.
+  #
+  # The harness drives the real module with a simulated clock: no done while the bit is set,
+  # done on the first clear poll after it was seen set, the fallback time, the timeout, the
+  # poll interval. --self-test replaces the rule with a naive one that reports done on the
+  # first clear poll, and requires that to be caught.
+  acc-calibration-wait:
+    name: Accelerometer calibration waits for the flight controller before it saves
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Install Lua 5.4
+        run: sudo apt-get update && sudo apt-get install -y lua5.4
+
+      - name: Check the accelerometer calibration wait
+        run: lua5.4 bin/acc_calibration_wait/verify_acc_calibration_wait.lua
+
+  # Issue #2358: the audio alert and the dashboard footer banner both show that the
+  # flight pack is gone while the receiver still runs on backup power. The test lives in
+  # lib/main_power.lua; tasks/session.lua evaluates it on every voltage change and publishes
+  # session.mainPowerLost, so both consumers read one flag.
+  #
+  # The harness checks the threshold, the latch (a pack never seen this connection stays
+  # quiet), recovery, and that the shared test gives the same answer as the function it
+  # replaced in tasks/audio_events.lua on master, for a fixed set of readings. A mutated
+  # threshold turns it red.
+  main-power-lost:
+    name: Main power lost test shared by audio alert and dashboard banner
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Install Lua 5.4
+        run: sudo apt-get update && sudo apt-get install -y lua5.4
+
+      - name: Check the main power lost test and its audio equivalence
+        run: lua5.4 bin/main_power/verify_main_power.lua
+
+  # Port labels on the Ports page (#2359). The table is copied from the Rotorflight
+  # Configurator (GPL-3.0); the check pins the lookup and the MSP_BOARD_INFO parser.
+  port-labels:
+    name: Port labels from the board design
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Install Lua 5.4
+        run: sudo apt-get update && sudo apt-get install -y lua5.4
+
+      - name: Check the label table and the MSP_BOARD_INFO parser
+        run: lua5.4 bin/port_labels/verify_port_labels.lua
+
+  # Opening dashboard settings synchronously compiled all theme configure.lua files
+  # via loadfile(), causing an acute memory spike on radios operating close to the
+  # 2048 kB Lua ceiling (#2295, #2530). Diagnostics status ran at 20-30 Hz without
+  # rate limiting, churning memory on every wakeup frame. This pins that theme
+  # discovery probes file presence without compiling chunks and that diagnostics
+  # status updates are rate-limited to at most 1 Hz.
+  memory-bursts:
+    name: Memory bursts in dashboard settings and diagnostics status
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Install Lua 5.4
+        run: sudo apt-get update && sudo apt-get install -y lua5.4
+
+      - name: Check memory burst and churn mitigations
+        run: lua5.4 bin/memory_bursts/verify_memory_bursts.lua
+
+  # Issue #2444: lib/msp_servo_config.lua named the packed write 212 as its
+  # "WRITE_COMMAND", next to a read that takes a raw index, and nothing pinned the
+  # numbers. Against rotorflight-firmware src/main/msp/msp_protocol.h, 212
+  # (MSP_SET_SERVO_CONFIGURATION) takes the packed index and 124 (MSP_SET_SERVO_CONFIG)
+  # takes the raw one, the same index space as the read, 125. A mapping slip there
+  # writes a valid-looking slot on another servo with no error, so a plausible edit
+  # must not pass unseen.
+  #
+  # The module now names each command for what it is, states the two index spaces in
+  # its header, and exposes the raw write as buildRawWriteMessage. Nothing in the suite
+  # uses the raw write yet; that is a separate decision.
+  #
+  # The harness reads the command number and the payload off the messages the modules
+  # build: 125, 212 and 124 in lib/msp_servo_config.lua, 213 in lib/msp_servo_center.lua,
+  # 193 in lib/msp_servo_override.lua, and the 17-byte layout shared by 124 and 212.
+  # --self-test swaps one number at a time in a copy of each module and requires the
+  # pin to go red every time, after the unmodified modules have passed.
+  servo-config-commands:
+    name: Servo command numbers (read 125, raw write 124, packed write 212, centre 213, override 193)
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Install Lua 5.4
+        run: sudo apt-get update && sudo apt-get install -y lua5.4
+
+      - name: Check the servo command numbers and payloads
+        run: lua5.4 bin/servo_config_commands/verify_servo_config_commands.lua
 
   # Per-language PR builds (mirrors push.yml behavior)
   create-zip:
@@ -1453,6 +2620,31 @@ jobs:
       - name: Check every broadcast appId has a decoder
         run: python bin/telemetry/verify_sensor_table.py
 
+  # A string too wide for where it is shown is cut off on the radio: a form label
+  # runs under its field, a menu tile label ends in "...". max_length caps a
+  # translation at the English character count, which says nothing about pixels,
+  # so German and Polish labels overflowed while passing it. check-fit.py measures
+  # every locale's strings against the budget of the place each key is used, with
+  # character widths measured on the X18 (the smallest screen).
+  i18n-fit:
+    name: i18n strings fit the X18
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Prove the check can go red
+        run: python bin/i18n/check-fit.py --self-test
+
+      - name: Check every locale fits
+        run: python bin/i18n/check-fit.py
+
   # The rule in .agents/rules/documentation.md asks that a change a pilot can observe
   # updates its page file in the same pull request, and that a pull request which needs
   # no documentation change says why. Nothing checked either half, so both rested on
@@ -1494,6 +2686,40 @@ jobs:
           python bin/docs/verify_documentation_rule.py \
             --base '${{ github.event.pull_request.base.sha }}' \
             --body-file pr-body.txt
+
+  # A tag that does not resolve is shown on the radio as the raw text "@i18n(...)@",
+  # and a hardcoded English label draws perfectly in every language, so neither
+  # shows up in a build. check-tags.py fails when a @i18n tag in src/ has no key in
+  # en.json. check_translations.py counts the literals that never reach the translator
+  # and fails when that count grows past its baseline (71 on master, 2026-10-11): the
+  # count is a ratchet, not a target, so the existing strings are reported rather than
+  # blocking. --self-test proves the detector finds and keeps quiet where it should.
+  i18n-tags:
+    name: i18n tags resolve and no new hardcoded labels
+    runs-on: ubuntu-latest
+    # Read-only token: the checkers run code from the pull request.
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Prove the translation check can go red
+        run: python bin/i18n/check_translations.py --self-test
+
+      - name: Check every @i18n tag resolves against en.json
+        run: python bin/i18n/check-tags.py
+
+      - name: Check the untranslated-literal ratchet
+        run: python bin/i18n/check_translations.py
 
   # pr.yml used to be edited by hand, and every pull request that added a
   # harness job put it in the same place in the file. Three of them were open
