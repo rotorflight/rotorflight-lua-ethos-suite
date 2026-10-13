@@ -24,7 +24,7 @@ is dimmed.
 ## Armed warning
 
 While the model is armed, the dashboard shows a red frame around its edge and an
-"Armed" badge in the top-left corner, on every theme. It is drawn over the theme and
+"Armed" badge centred on the top edge, on every theme. It is drawn over the theme and
 moves nothing. It appears only once the FC reports the armed state, and it goes away
 when the model is disarmed.
 

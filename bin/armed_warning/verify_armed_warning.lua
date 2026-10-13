@@ -212,6 +212,17 @@ local function redFrameEdges()
   return edges
 end
 
+-- The badge is centred on the top edge: its text sits where a label of its own
+-- width, plus the 12 px of badge padding, centred in the 480 px window would put it.
+local function labelCentred()
+  local tw = #LABEL * 7   -- the stub's getTextSize
+  local expected = math.floor((480 - tw - 12) / 2) + 6
+  for _, t in ipairs(texts) do
+    if t.text == LABEL then return t.x == expected and t.y == 3 end
+  end
+  return false
+end
+
 local function hasLabel()
   for _, t in ipairs(texts) do
     if t.text == LABEL then return true end
@@ -235,6 +246,7 @@ check("armed: the red frame is drawn on the bottom edge", e.bottom)
 check("armed: the red frame is drawn on the left edge", e.left)
 check("armed: the red frame is drawn on the right edge", e.right)
 check("armed: the Armed badge is drawn", hasLabel())
+check("armed: the Armed badge is centred on the top edge", labelCentred())
 
 -- 3. Disarmed again: the warning goes away.
 setArmed(false)

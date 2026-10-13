@@ -577,7 +577,8 @@ local function drawArmedWarning(widget, w, h)
   local label = "@i18n(widgets.dashboard.info_armed)@"
   lcd.font(FONT_S)
   local tw, th = lcd.getTextSize(label)
-  local bx, by = ARMED_FRAME, ARMED_FRAME
+  -- Centred on the top edge of the frame, as in the menu.
+  local bx, by = math.floor((w - tw - 12) / 2), 0
   lcd.color(ARMED_RED)
   lcd.drawFilledRectangle(bx, by, tw + 12, th + 6)
   lcd.color(ARMED_WHITE)
