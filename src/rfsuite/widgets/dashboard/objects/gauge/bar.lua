@@ -499,15 +499,22 @@ function render.wakeup(box)
 
     if cfg.hidevalue == true then displayValue = nil end
 
-    -- The last valid reading is held only in postflight, for review, as
-    -- text/telemetry.lua does. Before and during flight a dropped sensor shows
-    -- the loading state, not a stale percentage (#2534).
-    local inPostflight = rfsuite.flightmode and rfsuite.flightmode.current == "postflight"
+    -- A dropped sensor shows the loading state only on the bench, before the
+    -- flight has started (#2534): there a bar frozen at 85% is a wrong number,
+    -- and the pilot has to see that the source is gone. Once a flight is under
+    -- way the last reading is HELD, in flight as well as in postflight: a
+    -- momentary telemetry gap -- one missed appId, one dropped frame behind an
+    -- obstacle -- must not blank a fuel gauge the pilot is flying on, and must
+    -- not discard the reading it had. flightmode itself turns a disconnect
+    -- during a flight into "postflight" (flightmode.lua:103), so holding from
+    -- "inflight" onwards also covers the link going away mid-flight.
+    local mode = rfsuite.flightmode and rfsuite.flightmode.current or "preflight"
+    local holdLastValue = mode ~= "preflight"
     if value ~= nil then
         c._lastValidValue = value
         c._lastValidDisplayValue = displayValue
         c._lastValidUnit = unit
-    elseif inPostflight and c._lastValidValue ~= nil then
+    elseif holdLastValue and c._lastValidValue ~= nil then
         value = c._lastValidValue
         displayValue = c._lastValidDisplayValue
         unit = c._lastValidUnit

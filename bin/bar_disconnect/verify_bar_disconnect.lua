@@ -5,22 +5,17 @@
 --
 -- Drives the real widgets/dashboard/objects/gauge/bar.lua (render.wakeup) with a
 -- fake telemetry source. The claim: when the sensor drops out before flight, the bar
--- shows the loading state instead of the last percentage, and in postflight the last
--- value is kept for review. Against unpatched master the first claim fails.
+-- shows the loading state instead of the last percentage; once a flight is under way
+-- the last reading is held, in flight as well as in postflight, so a momentary
+-- telemetry gap does not blank a gauge the pilot is flying on. Against unpatched
+-- master the preflight claims fail.
 
---   * The claim the change makes: while the model is armed, the two toolbar
---     items that write to the flight controller (blackbox erase, battery
---     profile) are disabled, a battery picker open at the moment of arming
---     is closed, and a write that a dialog confirmed after arming is refused
---     at the write itself. Disarmed, both items work as before.
---   * The Reset and Info tiles are not written to the FC here and are checked
---     only to show that the arm state does not disable everything.
---
--- Not established here: that a rotor turning is safe to observe on a
--- simulator, or how the greyed tiles look on a 480x320 radio. The stub lcd
--- does not rasterise. The Ethos simulator check is named in the PR body.
---
--- Against unpatched upstream/master the armed checks must fail; that run is
+-- Not established here: that a momentary loss in flight is short. The harness shows
+-- that the reading SURVIVES a drop in "inflight" and across a second drop; it does
+-- not measure how long the source stays away, which is the flight controller's
+-- telemetry rate and not this gauge's business.
+
+-- Against unpatched upstream/master the preflight checks must fail; that run is
 -- the proof that the checks can go red.
 
 local function scriptDir()
@@ -197,11 +192,24 @@ check("disconnected before flight: the bar does not keep the last 85%",
 check("disconnected before flight: the bar shows the loading state",
   LOADING[tostring(c.displayValue)] == true, "displayValue=" .. tostring(c.displayValue))
 
--- 3. Postflight keeps the last value on purpose (flight statistics for review).
+-- 3. Reconnected before flight: the new value is shown.
 sensors.smartfuel = {60, nil, "%"}
 rfsuite.flightmode.current = "preflight"
 c = wake()
 check("reconnected: the bar shows 60", c.value == 60, "value=" .. tostring(c.value))
+
+-- 4. In flight the last reading is HELD, so a momentary telemetry gap does not
+--    blank a gauge the pilot is flying on, and does not discard the reading.
+rfsuite.flightmode.current = "inflight"
+sensors.smartfuel = nil
+c = wake()
+check("inflight: a dropped sensor keeps the last 60%", c.value == 60, "value=" .. tostring(c.value))
+check("inflight: a dropped sensor does not show the loading state",
+  LOADING[tostring(c.displayValue)] ~= true, "displayValue=" .. tostring(c.displayValue))
+c = wake()
+check("inflight: the value survives a second drop", c.value == 60, "value=" .. tostring(c.value))
+
+-- 5. Postflight keeps the last value on purpose (flight statistics for review).
 rfsuite.flightmode.current = "postflight"
 sensors.smartfuel = nil
 c = wake()

@@ -1770,16 +1770,20 @@ puts back one row of six and requires the three-across check to go red.
         script='bin/bar_disconnect/verify_bar_disconnect.lua',
         rationale=r'''Issue #2534: the bar gauge kept its last valid reading whenever the sensor
 dropped out, so a fuel bar stayed at 85% after the pack was unplugged on the
-bench. widgets/dashboard/objects/gauge/bar.lua now holds the last reading only
-in postflight, as text/telemetry.lua does; before and during flight a dropped
-sensor shows the loading dots.
+bench. widgets/dashboard/objects/gauge/bar.lua now shows the loading dots while
+the flight has not started yet; once a flight is under way the last reading is
+held, in flight as well as in postflight, so a momentary telemetry gap cannot
+blank a gauge the pilot is flying on nor discard the reading it had.
 
 No build and no package step reaches this -- it is a render path through a
 running widget. The harness drives the real bar gauge (render.wakeup) with a fake
 telemetry source and the flight mode: connected shows the value, a dropout before
 flight must not keep it and must show the loading state, reconnect shows the new
-value, and a dropout in postflight keeps the last value. Against unpatched master
-the two dropout-before-flight checks fail.
+value, a dropout in flight keeps it across two consecutive wakeups, and a
+dropout in postflight keeps the last value. Against unpatched master the two
+dropout-before-flight checks fail; against the first cut of this branch, which
+held the reading only in postflight and discarded the cache in flight, the four
+flight and postflight checks fail.
 '''
     ),
     LuaJob(
