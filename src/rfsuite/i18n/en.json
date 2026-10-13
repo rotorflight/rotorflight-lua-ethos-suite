@@ -7080,6 +7080,12 @@
       "needs_translation": false,
       "translation": "Settings were not saved to the flight controller. Please try again."
     },
+    "msg_save_failed_local_body": {
+      "english": "Settings were not saved to the radio. Please try again.",
+      "max_length": 67,
+      "needs_translation": false,
+      "translation": "Settings were not saved to the radio. Please try again."
+    },
     "msg_save_failed_title": {
       "english": "Save failed",
       "max_length": 11,

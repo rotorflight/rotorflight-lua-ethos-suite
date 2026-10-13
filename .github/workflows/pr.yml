@@ -2259,6 +2259,37 @@ jobs:
       - name: Check the Battery tile picker
         run: lua5.4 bin/battery_picker/verify_battery_picker.lua
 
+  # Issue #2500: settingsStore.save() returns false when the INI file cannot be
+  # written, and ten local settings pages threw that value away. They published
+  # settings.update and cleared their dirty flag anyway, so the Save button went dark
+  # and the setting was gone at the next start, with no message. Each page now
+  # checks the result and reports a refusal through app/settings_save.lua, keeping its
+  # dirty state and publishing nothing.
+  #
+  # No build and no package step reaches this -- it is a save path through a running
+  # page. The harness drives the real settings_general page with the real bus and the
+  # real helper, against a store stub whose save() is refused or accepted, and presses
+  # Save the way the pilot does. Against unpatched master the refused-save checks fail.
+  # The other settings pages carry the same three-line change and are covered by the
+  # review, not by this harness.
+  settings-save-refusal:
+    name: Local settings pages report a refused save and keep their dirty state
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Install Lua 5.4
+        run: sudo apt-get update && sudo apt-get install -y lua5.4
+
+      - name: Check that a refused settings save is reported
+        run: lua5.4 bin/settings_save/verify_settings_save.lua
+
   # Issue #2353: with the FC's governor mode set to None or Limit, the firmware never
   # leaves THROTTLE_OFF (governor.c: governorUpdate() has no state change for
   # GOV_MODE_NONE, and govUpdateLimitedThrottle() only sets throttleOutput), so the

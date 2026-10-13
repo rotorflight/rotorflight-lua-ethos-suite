@@ -6,6 +6,7 @@ local closeKey = requireModule("app/close_key.lua")
 local header = requireModule("app/header.lua")
 local modelPreferences = requireModule("lib/model_preferences.lua")
 local settingsStore = requireModule("lib/settings_store.lua")
+local settingsSave = requireModule("app/settings_save.lua")
 local tableClone = requireModule("lib/table_clone.lua")
 
 local PAGE_TITLE = "@i18n(app.modules.settings.name)@ / @i18n(app.modules.settings.dashboard)@ / @i18n(app.modules.settings.dashboard_theme)@"
@@ -266,8 +267,13 @@ local function open(opts)
     if disposed then return end
     settings.dashboard = normalizeDashboard(settings.dashboard, false)
     if settings.dashboard.use_same_theme then copyPreflightToAll(settings.dashboard, false, pathById, idByPath, fallbackId) end
-    settingsStore.save(settings)
+    if not settingsStore.save(settings) then
+      settingsSave.reportFailure(focusFn)
+      return
+    end
     originalDashboard = tableClone.shallow(settings.dashboard)
+
+    local modelFailed = false
 
     if modelEnabled() and modelPrefs and modelPath then
       modelDashboard = normalizeDashboard(modelDashboard, true)
@@ -278,12 +284,19 @@ local function open(opts)
         modelDashboard = normalizeDashboard(nil, true)
         modelPrefs.dashboard = nil
       end
-      modelPreferences.save(modelPath, modelPrefs)
-      originalModelDashboard = tableClone.shallow(modelDashboard)
+      if modelPreferences.save(modelPath, modelPrefs) then
+        originalModelDashboard = tableClone.shallow(modelDashboard)
+      else
+        modelFailed = true
+      end
     end
 
     bus.publish("settings.update", settingsStore.clone(settings))
     updateSaveEnabled()
+    if modelFailed then
+      settingsSave.reportFailure(focusFn)
+      return
+    end
     if focusFn then focusFn() end
   end
 

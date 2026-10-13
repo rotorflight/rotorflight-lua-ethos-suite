@@ -1764,6 +1764,26 @@ puts back one row of six and requires the three-across check to go red.
 '''
     ),
     LuaJob(
+        id='settings-save-refusal',
+        name='Local settings pages report a refused save and keep their dirty state',
+        step='Check that a refused settings save is reported',
+        script='bin/settings_save/verify_settings_save.lua',
+        rationale=r'''Issue #2500: settingsStore.save() returns false when the INI file cannot be
+written, and ten local settings pages threw that value away. They published
+settings.update and cleared their dirty flag anyway, so the Save button went dark
+and the setting was gone at the next start, with no message. Each page now
+checks the result and reports a refusal through app/settings_save.lua, keeping its
+dirty state and publishing nothing.
+
+No build and no package step reaches this -- it is a save path through a running
+page. The harness drives the real settings_general page with the real bus and the
+real helper, against a store stub whose save() is refused or accepted, and presses
+Save the way the pilot does. Against unpatched master the refused-save checks fail.
+The other settings pages carry the same three-line change and are covered by the
+review, not by this harness.
+'''
+    ),
+    LuaJob(
         id='governor-state',
         name='Stateless governor modes show PASSTHRU, not OFF',
         step='Check the governor label in None and Limit modes',
