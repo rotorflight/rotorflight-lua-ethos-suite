@@ -8238,6 +8238,13 @@
       "reverse_text": true,
       "translation": "ההגדרות לא נשמרו בבקר הטיסה. נא לנסות שוב."
     },
+    "msg_save_failed_local_body": {
+      "english": "Settings were not saved to the radio. Please try again.",
+      "max_length": 67,
+      "needs_translation": false,
+      "reverse_text": true,
+      "translation": "ההגדרות לא נשמרו במשדר. נסה שוב."
+    },
     "msg_save_failed_title": {
       "english": "Save failed",
       "max_length": 11,

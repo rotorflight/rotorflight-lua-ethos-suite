@@ -10,6 +10,7 @@ local closeKey = requireModule("app/close_key.lua")
 local header = requireModule("app/header.lua")
 local tileGrid = requireModule("app/tile_grid.lua")
 local settingsStore = requireModule("lib/settings_store.lua")
+local settingsSave = requireModule("app/settings_save.lua")
 local dashboardContext = requireModule("widgets/dashboard/context.lua")
 
 local PAGE_TITLE = "@i18n(app.modules.settings.name)@ / @i18n(app.modules.settings.dashboard)@ / @i18n(app.modules.settings.dashboard_settings)@"
@@ -88,7 +89,10 @@ end
 local function saveThemePrefs(settings, themeModule, folder)
   if themeModule and themeModule.write then themeModule.write() end
   settingsStore.setDashboardTheme(settings, folder, dashboardContext.widgets.dashboard.preferences())
-  settingsStore.save(settings)
+  if not settingsStore.save(settings) then
+    settingsSave.reportFailure()
+    return
+  end
   bus.publish("settings.update", settingsStore.clone(settings))
 end
 

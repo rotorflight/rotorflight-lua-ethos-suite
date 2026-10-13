@@ -2273,6 +2273,76 @@ jobs:
   # fail.
   ports-readback:
     name: Ports page reads the serial ports back after a save, and not the RX config
+  # Issue #2498: the Select Profile page closed its progress dialog on a refused
+  # PID or rate profile write and said nothing, so the pilot saw the dialog go away and
+  # the Save button still lit. The refusal now opens the save-failed dialog that the FC
+  # pages already use, and the page keeps its state, so a second attempt is possible.
+  #
+  # No build and no package step reaches this -- it is a write path through a running
+  # page. The harness drives the real profile_select page with the real bus and the real
+  # select-profile message builder, and answers each write as the FC would: accepted or
+  # refused. Against unpatched master the two refused-write dialog checks fail.
+  profile-select-refusal:
+    name: Select Profile reports a refused profile write and keeps Save lit
+  # Issue #2500: settingsStore.save() returns false when the INI file cannot be
+  # written, and ten local settings pages threw that value away. They published
+  # settings.update and cleared their dirty flag anyway, so the Save button went dark
+  # and the setting was gone at the next start, with no message. Each page now
+  # checks the result and reports a refusal through app/settings_save.lua, keeping its
+  # dirty state and publishing nothing.
+  #
+  # No build and no package step reaches this -- it is a save path through a running
+  # page. The harness drives the real settings_general page with the real bus and the
+  # real helper, against a store stub whose save() is refused or accepted, and presses
+  # Save the way the pilot does. Against unpatched master the refused-save checks fail.
+  # The other settings pages carry the same three-line change and are covered by the
+  # review, not by this harness.
+  settings-save-refusal:
+    name: Local settings pages report a refused save and keep their dirty state
+  # Issue #2534: the bar gauge kept its last valid reading whenever the sensor
+  # dropped out, so a fuel bar stayed at 85% after the pack was unplugged on the
+  # bench. widgets/dashboard/objects/gauge/bar.lua now shows the loading dots while
+  # the flight has not started yet; once a flight is under way the last reading is
+  # held, in flight as well as in postflight, so a momentary telemetry gap cannot
+  # blank a gauge the pilot is flying on nor discard the reading it had.
+  #
+  # No build and no package step reaches this -- it is a render path through a
+  # running widget. The harness drives the real bar gauge (render.wakeup) with a fake
+  # telemetry source and the flight mode: connected shows the value, a dropout before
+  # flight must not keep it and must show the loading state, reconnect shows the new
+  # value, a dropout in flight keeps it across two consecutive wakeups, and a
+  # dropout in postflight keeps the last value. Against unpatched master the two
+  # dropout-before-flight checks fail; against the first cut of this branch, which
+  # held the reading only in postflight and discarded the cache in flight, the four
+  # flight and postflight checks fail.
+  bar-disconnect:
+    name: Battery and fuel bar shows loading after telemetry loss before flight
+  # Issue #2505: two dashboard toolbar items write to the flight controller,
+  # blackbox erase and battery profile, and neither their enable check nor their
+  # write path looked at the arm state. A battery picker open at arming, or an erase
+  # confirmation answered after arming, still wrote.
+  #
+  # No build and no package step reaches this -- it is a touch path through a running
+  # widget. The harness drives the real widgets/dashboard.lua through the descriptor
+  # the radio calls, and feeds the arm state through session.update the way the
+  # session does. While armed the Erase and Battery tiles are disabled, arming closes
+  # an open battery picker, and a confirmed erase answered after arming publishes no
+  # msp.request. Disarmed, the same paths publish their write again. The checks that
+  # depend on the toolbar being reachable assert that it is reachable first, so a
+  # run that cannot reach the tiles fails instead of passing vacuously.
+  #
+  # The armed state is also UNKNOWN after having been armed, and the write items stay
+  # refused then: losing the link in flight clears the armed state and the reconnect is
+  # published before the first arm flags arrive, so the flight controller is briefly
+  # connected with no armed answer while the rotor may still be turning. A flight
+  # controller that has never reported arm flags is not locked out by that. Those checks
+  # are what separate this from a bare "isArmed == true" guard: against the first cut of
+  # this branch four of them fail, and one of them asserts that a confirmed erase in that
+  # window publishes no write.
+  #
+  # Run against unpatched master, 20 of 30 checks fail.
+  toolbar-armed:
+    name: Dashboard write items are refused while armed
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -2288,6 +2358,14 @@ jobs:
 
       - name: Check the Ports page read-back and its reads
         run: lua5.4 bin/ports_readback/verify_ports_readback.lua
+      - name: Check that a refused profile write is reported
+        run: lua5.4 bin/profile_select/verify_profile_select.lua
+      - name: Check that a refused settings save is reported
+        run: lua5.4 bin/settings_save/verify_settings_save.lua
+      - name: Check the dashboard bar after telemetry loss
+        run: lua5.4 bin/bar_disconnect/verify_bar_disconnect.lua
+      - name: Check the dashboard Erase and Battery tiles while armed
+        run: lua5.4 bin/toolbar_armed/verify_toolbar_armed.lua
 
   # Issue #2353: with the FC's governor mode set to None or Limit, the firmware never
   # leaves THROTTLE_OFF (governor.c: governorUpdate() has no state change for
