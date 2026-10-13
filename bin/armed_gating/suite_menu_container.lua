@@ -1,6 +1,6 @@
 -- Standalone behaviour tests for Issue #2302 menu tile badging / gating.
 --
--- Run:  lua5.3 test_2302_menu_container.lua <path-to-repo-root>
+-- Run (through bin/armed_gating/verify_armed_gating.lua): lua5.4 bin/armed_gating/verify_armed_gating.lua
 --
 -- Loads the REAL app/menu_container.lua and the REAL app/tile_grid.lua
 -- under a stubbed form/lcd/system, so the badge text, the press refusal and

@@ -1,6 +1,6 @@
 -- Standalone tests for Issue #2302 armed-state menu gating.
 --
--- Run:  lua5.3 test_2302_armed_gating.lua <path-to-repo-root>
+-- Run (through bin/armed_gating/verify_armed_gating.lua): lua5.4 bin/armed_gating/verify_armed_gating.lua
 --
 -- Two suites:
 --   1. app/armed_gating.lua's derivation rules, on synthetic trees.

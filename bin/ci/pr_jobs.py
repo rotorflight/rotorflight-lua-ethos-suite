@@ -1764,6 +1764,25 @@ puts back one row of six and requires the three-across check to go red.
 '''
     ),
     LuaJob(
+        id='armed-gating',
+        name='Armed state gates configuration pages and badges their tiles',
+        step='Check the armed gating of the menu tiles',
+        script='bin/armed_gating/verify_armed_gating.lua',
+        rationale=r'''Issue #2302: the menu showed identical tiles whether the model was disarmed on
+the bench or armed with spinning blades. Flight-critical configuration pages are
+now classified (app/armed_gating.lua), their tiles carry a [!] badge while armed,
+a press on a locked tile is refused with a non-modal notice, and the grid is rebuilt
+on arm and disarm.
+
+No build and no package step reaches this -- it is a menu path through the real
+app/menu_container.lua and app/tile_grid.lua. The harness runs both suites in one
+process: the derivation rules and the real menu tree against an explicit expected
+classification (suite_armed_gating.lua), and the badge, the refusal and the rebuild
+(suite_menu_container.lua). A deliberately broken classification (submenu lock
+disabled) makes the runner exit non-zero.
+'''
+    ),
+    LuaJob(
         id='governor-state',
         name='Stateless governor modes show PASSTHRU, not OFF',
         step='Check the governor label in None and Limit modes',
