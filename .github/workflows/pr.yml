@@ -2259,6 +2259,36 @@ jobs:
       - name: Check the Battery tile picker
         run: lua5.4 bin/battery_picker/verify_battery_picker.lua
 
+  # Issue #2497 (findings 1 and 2): the Ports page never read the board back after a
+  # save, so its rows showed what was sent; and it read MSP_RX_CONFIG on every open
+  # although the value was never used, which held up the loading dialog for one round
+  # trip. After an accepted EEPROM write the page now reads the serial ports back before
+  # it reboots, and the RX config read is gone.
+  #
+  # No build and no package step reaches this -- it is a read and write path through a
+  # running page. The harness drives the real ports page with the real bus and the real
+  # port-label library, and answers each message the way the FC would: a board that
+  # reports a different function than the one sent, a refused read-back, and the reboot
+  # that must wait for the read-back. Against unpatched master five of the seven checks
+  # fail.
+  ports-readback:
+    name: Ports page reads the serial ports back after a save, and not the RX config
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Install Lua 5.4
+        run: sudo apt-get update && sudo apt-get install -y lua5.4
+
+      - name: Check the Ports page read-back and its reads
+        run: lua5.4 bin/ports_readback/verify_ports_readback.lua
+
   # Issue #2353: with the FC's governor mode set to None or Limit, the firmware never
   # leaves THROTTLE_OFF (governor.c: governorUpdate() has no state change for
   # GOV_MODE_NONE, and govUpdateLimitedThrottle() only sets throttleOutput), so the

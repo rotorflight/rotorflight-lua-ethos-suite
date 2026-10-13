@@ -1764,6 +1764,25 @@ puts back one row of six and requires the three-across check to go red.
 '''
     ),
     LuaJob(
+        id='ports-readback',
+        name='Ports page reads the serial ports back after a save, and not the RX config',
+        step='Check the Ports page read-back and its reads',
+        script='bin/ports_readback/verify_ports_readback.lua',
+        rationale=r'''Issue #2497 (findings 1 and 2): the Ports page never read the board back after a
+save, so its rows showed what was sent; and it read MSP_RX_CONFIG on every open
+although the value was never used, which held up the loading dialog for one round
+trip. After an accepted EEPROM write the page now reads the serial ports back before
+it reboots, and the RX config read is gone.
+
+No build and no package step reaches this -- it is a read and write path through a
+running page. The harness drives the real ports page with the real bus and the real
+port-label library, and answers each message the way the FC would: a board that
+reports a different function than the one sent, a refused read-back, and the reboot
+that must wait for the read-back. Against unpatched master five of the seven checks
+fail.
+'''
+    ),
+    LuaJob(
         id='governor-state',
         name='Stateless governor modes show PASSTHRU, not OFF',
         step='Check the governor label in None and Limit modes',
