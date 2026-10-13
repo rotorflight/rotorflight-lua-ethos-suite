@@ -407,6 +407,27 @@ local function openScreen(nav, menus, rootEntries, screen, setEventHandler, setW
   -- form.height() reflects the header line's actual rendered height, so
   -- the tile grid starts right below it regardless of the radio's line
   -- height -- no hardcoded offset to get wrong.
+  -- PROTOTYPE: centre each row. rowCount() counts the visible tiles that
+  -- share a row with entries[i] (same group, up to numPerRow); rowLeft(n)
+  -- is the left edge that centres a row of n tiles in the window.
+  local function rowLeft(n)
+    local width = n * tileW + (n - 1) * tilePadding
+    return math.max(0, math.floor((windowWidth - width) / 2))
+  end
+  local function rowCount(i)
+    local group = entries[i].group
+    local n = 0
+    for j = i, #entries do
+      local e = entries[j]
+      if e.group ~= group then break end
+      if isEntryVisible(e) then
+        n = n + 1
+        if n >= numPerRow then break end
+      end
+    end
+    return n
+  end
+
   local x, y = 0, form.height() + tilePadding
   local lastGroup = firstGroup
   local col = 0
@@ -428,6 +449,7 @@ local function openScreen(nav, menus, rootEntries, screen, setEventHandler, setW
       -- spill over the button border (Issue #2299), and let the armed
       -- badge share that same budget (Issue #2302) rather than sitting
       -- outside it.
+      if col == 0 then x = rowLeft(rowCount(i)) end
       local label = tileLabel(entry, isArmed)
       local tileIcon = entry.icon
       if isArmed and entry.lockedWhileArmed == true then
