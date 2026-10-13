@@ -75,46 +75,21 @@ local menu_container = {}
 -- of leaving it to PageRuntime:showSaveArmed() after the page is already open
 -- and the form is already on screen.
 --
--- A rejected press answers with a haptic pulse plus a short-lived header
--- title flash rather than a modal dialog -- a modal here would be the very
--- distraction this is meant to avoid, and it would also stack on top of
--- whatever the pilot was already looking at.
+-- While armed, a locked tile is disabled and shows a forbidden sign in place of
+-- its module icon; its title is unchanged, and a press on it does nothing.
 --
--- The badge is one character, and that is a measured decision rather than
--- taste. tile_grid.fitLabel() has only 108px (~15 characters at the real
--- FONT_S) at 800x480 and 98px at 480x320, and every character of badge is a
--- character of module name the pilot loses. The original "[!] " prefix
--- measured at four characters and visibly truncated "Configuration" to
--- "Configura...", "Radio Config" to "Radio Con..." and "ESC & Motors" to
--- "ESC & Mo..." on the simulator; all three fit again with "!" alone.
+-- Why a sign and not a badge or a greyed-out tile, measured on the simulator:
 --
--- Everything that could carry the warning without touching the label was
--- measured and ruled out first:
+--   * A greyed-out tile does not work. :enable(false) is not rendered on a tile
+--     built by form.addButton(nil, {x,y,w,h}, ...): no visual change.
+--   * A coloured badge is impossible. form.addButton takes text, icon, options
+--     and press and no colour, and the icons in app/gfx are lcd.loadMask, so an
+--     icon is tinted by the theme.
+--   * Swapping the tile's icon costs the module icon that identifies the tile.
+--     The forbidden sign is drawn as a separate icon, and the title stays.
 --
---   * A glyph is not available. Probed in the simulator by rendering a row
---     of candidates in the menu header: U+26A0 (warning sign), U+25B2 and
---     U+25BC (triangles) and U+2713 and U+2717 (check/cross) all rendered
---     blank, while U+00B0 and U+2192 rendered. Those five are what was
---     measured -- the whole range above U+2500 was not swept, so this is
---     not a claim that the fonts stop there.
---   * A greyed-out tile does not work. :enable(false) -- used at 101 call
---     sites across 35 files elsewhere in this suite, 11 of them on buttons
---     including the header's Save and Reload -- is not rendered on a tile
---     built by form.addButton(nil, {x,y,w,h}, ...). Verified by disabling
---     two tiles in the simulator: no visual change.
---   * A coloured badge is impossible. form.addButton takes text, icon,
---     options and press and no colour of any kind, and all 116 icons in
---     app/gfx are lcd.loadMask, so an icon is tinted by the theme rather
---     than carrying a colour of its own.
---   * Swapping the tile's own icon for a warning triangle works, but costs
---     the pilot the module icon that identifies the tile, which is the one
---     thing a pilot scanning the menu is reading. Rejected on that ground.
---
--- So the label is the only channel left, and one character is what it can
--- be had.
-local ARMED_BADGE = "!"
 
--- PROTOTYPE: icon for a locked tile while armed, a forbidden sign. Loaded on first use.
+-- Forbidden sign for a locked tile while armed. Loaded on first use.
 local forbiddenMask = nil
 local function forbiddenIcon()
   if not forbiddenMask then forbiddenMask = lcd.loadMask("app/gfx/armed_locked.png") end
@@ -307,7 +282,8 @@ local function openScreen(nav, menus, rootEntries, screen, setEventHandler, setW
   -- before navigating here.
   setWakeupHandler(nil)
   if setPaintHandler then
-    -- PROTOTYPE (not for merge): red frame and Armed badge while armed, drawn over the menu.
+    -- Armed frame and badge, drawn over the menu while armed. The form draws its
+    -- headings and separator lines over the frame's left edge (see the PR body).
     setPaintHandler(function()
       local ok, armed = pcall(armedState)
       if ok and armed == true then
@@ -359,26 +335,21 @@ local function openScreen(nav, menus, rootEntries, screen, setEventHandler, setW
   local windowWidth, windowHeight = lcd.getWindowSize()
   local numPerRow, tileW, tileH, tilePadding, tileFont = tileGrid.metrics(windowWidth, windowHeight)
 
-  -- The label one entry contributes to its tile, badge included. Routed
-  -- through tile_grid.fitLabel() rather than concatenated onto an
-  -- already-fitted label, so the badge is absorbed into the same ellipsis
-  -- budget instead of pushing the text past the border (Issue #2299).
+  -- The label one entry contributes to its tile. Pre-truncated with
+  -- tile_grid.fitLabel() so a long title never spills over the border (Issue #2299).
   --
   -- Declared here rather than next to entryIsLockedNow above because it
   -- closes over tileW/tileFont, which tileGrid.metrics() only produces on
   -- the line below -- a function defined earlier would resolve them as
   -- globals (nil) instead of these locals.
-  local function tileLabel(entry, armed)
-    if armed and entry.lockedWhileArmed == true then
-      return tileGrid.fitLabel(entry.title, tileW, tileFont)
-    end
+  local function tileLabel(entry)
     return tileGrid.fitLabel(entry.title, tileW, tileFont)
   end
 
   -- form.height() reflects the header line's actual rendered height, so
   -- the tile grid starts right below it regardless of the radio's line
   -- height -- no hardcoded offset to get wrong.
-  -- PROTOTYPE: tiles start at a fixed left gap, so they sit clear of the frame.
+  -- Tiles start at a fixed left gap, so they sit clear of the frame.
   local TILE_LEFT_GAP = 4
 
   local x, y = 0, form.height() + tilePadding
@@ -403,7 +374,7 @@ local function openScreen(nav, menus, rootEntries, screen, setEventHandler, setW
       -- badge share that same budget (Issue #2302) rather than sitting
       -- outside it.
       if col == 0 then x = TILE_LEFT_GAP end
-      local label = tileLabel(entry, isArmed)
+      local label = tileLabel(entry)
       local tileIcon = entry.icon
       if isArmed and entry.lockedWhileArmed == true then
         tileIcon = forbiddenIcon()
