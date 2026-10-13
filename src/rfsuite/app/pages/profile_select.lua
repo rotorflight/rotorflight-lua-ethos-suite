@@ -168,14 +168,14 @@ local function open(opts)
       end, function()
         if disposed then return end
         busy = false
-        closeDialog(focusFn)
+        closeDialog()
         updateEnabled()
         showSaveFailed(focusFn)
       end))
     end, function()
       if disposed then return end
       busy = false
-      closeDialog(focusFn)
+      closeDialog()
       updateEnabled()
       showSaveFailed(focusFn)
     end))
