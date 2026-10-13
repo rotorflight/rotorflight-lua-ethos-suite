@@ -5120,6 +5120,12 @@
           "needs_translation": false,
           "translation": "Selected"
         },
+        "edit_battery": {
+          "english": "Edit Battery",
+          "max_length": 16,
+          "needs_translation": false,
+          "translation": "Edit Battery"
+        },
         "smartfuel_charge_drop_rate": {
           "english": "Charge Drop Rate",
           "max_length": 16,

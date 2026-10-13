@@ -5956,6 +5956,12 @@
           "reverse_text": false,
           "translation": "已选择"
         },
+        "edit_battery": {
+          "english": "Edit Battery",
+          "max_length": 16,
+          "needs_translation": false,
+          "translation": "编辑电池"
+        },
         "smartfuel_charge_drop_rate": {
           "english": "Charge Drop Rate",
           "max_length": 16,

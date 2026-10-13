@@ -1764,6 +1764,23 @@ puts back one row of six and requires the three-across check to go red.
 '''
     ),
     LuaJob(
+        id='battery-edit-profile',
+        name='Editing another battery profile does not activate it on save',
+        step='Check the battery page edits the chosen profile without activating it',
+        script='bin/battery_edit_profile/verify_battery_edit_profile.lua',
+        rationale=r'''Issue #2502: the Battery page had one profile selector, and the cell rows followed
+it. To edit the cells of profile 4 the pilot had to make profile 4 active, and saving
+then activated it. The page now has an Edit Battery choice that only the cell rows
+follow; the saved profile stays on the active one.
+
+No build and no package step reaches this -- it is a save path through a running
+page. The harness drives the real power_battery page with the real page runtime and
+field layout, and answers every write the way the FC would. Against unpatched master
+the page has no Edit Battery choice, and saving a cell edit of profile 3 writes
+profile 3 as the active one.
+'''
+    ),
+    LuaJob(
         id='governor-state',
         name='Stateless governor modes show PASSTHRU, not OFF',
         step='Check the governor label in None and Limit modes',

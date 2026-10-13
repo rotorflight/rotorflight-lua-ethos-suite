@@ -66,6 +66,8 @@ local function open(opts)
   local lastActiveProfile = nil
   local capacityField = nil
   local profileField = nil
+  -- The profile the cell rows show and edit (#2502). nil follows the active profile.
+  local editProfile = nil
 
   local runtime
   runtime = pageRuntime.new({
@@ -89,6 +91,7 @@ local function open(opts)
         runtime.data.profile.batteryProfile = normalizeProfile(runtime.data.profile.batteryProfile) or 0
       end
       lastActiveProfile = active
+      editProfile = nil
       if form.invalidate then form.invalidate() end
     end,
     beforeSave = function(rt)
@@ -119,6 +122,7 @@ local function open(opts)
       local active = normalizeProfile(rt.lastProfile)
       if active ~= lastActiveProfile then
         lastActiveProfile = active
+        editProfile = nil
         if active ~= nil and rt.data.profile then
           rt.data.profile.batteryProfile = active
           if profileField and profileField.value then profileField:value(active) end
@@ -164,6 +168,20 @@ local function open(opts)
     end)
   runtime:registerField("profile:batteryProfile", profileField)
 
+  -- Edit Battery (#2502): only the cell rows below follow this choice. It is not a
+  -- source and never reaches the board, so picking a profile here does not
+  -- activate it on save.
+  line = form.addLine("    @i18n(app.modules.power.edit_battery)@")
+  form.addChoiceField(line, nil, batteryProfile.PROFILE_CHOICES,
+    function()
+      if editProfile ~= nil then return editProfile end
+      return normalizeProfile(dataRef.data.profile and dataRef.data.profile.batteryProfile) or 0
+    end,
+    function(value)
+      editProfile = normalizeProfile(value) or 0
+      if form.invalidate then form.invalidate() end
+    end)
+
   line = form.addLine("    @i18n(app.modules.power.capacity)@")
   capacityField = form.addNumberField(line, nil, 0, 40000,
     function()
@@ -181,20 +199,26 @@ local function open(opts)
   runtime:registerField("battery:capacityActive", capacityField)
 
   form.addLine("@i18n(telemetry.group_battery)@")
-  -- Cell count / cell voltages follow the selected profile (same as capacity
-  -- above), so they can't go through fieldLayout's fixed-key buildSingle().
+  -- Cell count and cell voltages follow the Edit Battery choice (#2502), while
+  -- capacity and the saved selection stay on the active profile. They cannot go
+  -- through fieldLayout's fixed-key buildSingle().
+  local function editedProfile()
+    if editProfile ~= nil then return editProfile end
+    return normalizeProfile(dataRef.data.profile and dataRef.data.profile.batteryProfile) or 0
+  end
+
   local function addCellField(label, base)
     local meta = batteryConfig.FIELD_META[base]
     line = form.addLine(label)
     local field = form.addNumberField(line, nil, meta.min, meta.max,
       function()
-        local selected = normalizeProfile(dataRef.data.profile and dataRef.data.profile.batteryProfile) or 0
+        local selected = editedProfile()
         local battery = dataRef.data.battery or {}
         return battery[cellKey(battery, base, selected)] or 0
       end,
       function(value)
         markDirty()
-        local selected = normalizeProfile(dataRef.data.profile and dataRef.data.profile.batteryProfile) or 0
+        local selected = editedProfile()
         local battery = dataRef.data.battery
         battery[cellKey(battery, base, selected)] = value
       end)

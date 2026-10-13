@@ -26,6 +26,7 @@ Greyed out until the flight controller answers. Read-only while the model is arm
 | @i18n(app.modules.power.consumption_warning_percentage)@ | Configures @i18n(app.modules.power.consumption_warning_percentage)@. Range: 0 to 60 %. Default: 35 %. |
 | Profiles | Configures Profiles. |
 | @i18n(app.modules.power.selected)@ | Configures @i18n(app.modules.power.selected)@. |
+| @i18n(app.modules.power.edit_battery)@ | Chooses the profile whose cell count and cell voltages the rows below show and edit. It does not change the active profile. |
 | @i18n(app.modules.power.capacity)@ | Configures @i18n(app.modules.power.capacity)@. |
 | Battery | Configures Battery. |
 
@@ -33,10 +34,12 @@ Greyed out until the flight controller answers. Read-only while the model is arm
 
 - Changes are written to the flight controller EEPROM upon Save.
 - On firmware that carries the per-profile cell settings (rotorflight-firmware
-  #508), the cell count and the four cell voltage thresholds follow the
-  profile selected under *Profiles*, the same way *Capacity* already does, and
-  switching the profile reloads them. Older firmware only reports the values of
-  the active profile, so on it those five settings apply to every profile.
+  #508), the cell count and the four cell voltage thresholds follow *Edit Battery*,
+  not the active profile. Editing another profile's cells therefore does not make
+  that profile active when you save (#2502). *Profiles* and *Capacity* stay on the
+  active profile. Older firmware only reports the values of the active profile, so
+  on it those five settings apply to every profile.
+- *Edit Battery* starts on the active profile each time the page is opened.
 
 ## Related
 
