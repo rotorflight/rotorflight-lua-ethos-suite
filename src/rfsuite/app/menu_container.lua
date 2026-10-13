@@ -409,7 +409,7 @@ local function openScreen(nav, menus, rootEntries, screen, setEventHandler, setW
   -- the tile grid starts right below it regardless of the radio's line
   -- height -- no hardcoded offset to get wrong.
   -- PROTOTYPE: tiles start at a fixed left gap, so they sit clear of the frame.
-  local TILE_LEFT_GAP = 12
+  local TILE_LEFT_GAP = 8
 
   local x, y = 0, form.height() + tilePadding
   local lastGroup = firstGroup
@@ -420,7 +420,8 @@ local function openScreen(nav, menus, rootEntries, screen, setEventHandler, setW
     if isEntryVisible(entry) and entry.group ~= lastGroup then
       lastGroup = entry.group
       if lastGroup then
-        form.addLine(lastGroup)
+        -- PROTOTYPE: one leading space, so the heading sits right of the frame edge.
+        form.addLine(" " .. lastGroup)
         y = form.height() + tilePadding
       end
       x = 0
