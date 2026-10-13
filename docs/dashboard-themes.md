@@ -200,6 +200,10 @@ Bar, ring, and arc gauges under `objects/gauge/`:
 | `ring`    | Ring gauge | Circular ring with fill `%`                                                            |
 | `arc`     | Arc gauge  | `startAngle`, `sweep`, `arcThickness`, `arcColor`, `arcBgColor`, `thresholds`          |
 
+A `bar` whose `source` drops out **before the flight** shows the loading dots (`.`, `..`, `...`), not its last value: on the bench a bar frozen at 85% is a wrong number, and the pilot has to see that the source is gone (#2534).
+
+Once a flight is under way the last reading is **held**, in flight as well as in postflight. A momentary telemetry gap -- one missed appId, one dropped frame behind an obstacle -- must not blank a gauge the pilot is flying on, and must not discard the reading it had. A disconnect during a flight counts as postflight (`flightmode.lua`), so the reading is held across the link going away and coming back.
+
 **Shared Gauge Parameters:**
 
 * `source` / `value`, `unit`, `transform`, `decimals`, `font`.

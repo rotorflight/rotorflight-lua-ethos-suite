@@ -400,9 +400,13 @@ package.loaded["rfsuite.lib.settings_store"] = {
   end,
   clone = function(t) return deepCopy(t) end,
   same = deepSame,
+  -- The real store returns true when the INI file is written (lib/ini.lua
+  -- save_ini_file, through atomicWrite.commit). The pages check that result
+  -- since #2500, so the stub must return it too.
   save = function(t)
     saves = saves + 1
     snapshot = deepCopy(t)
+    return true
   end,
 }
 package.loaded["rfsuite.lib.bus"] = {

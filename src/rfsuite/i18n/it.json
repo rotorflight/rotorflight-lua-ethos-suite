@@ -8244,6 +8244,13 @@
       "reverse_text": false,
       "translation": "Le impostazioni non sono state salvate nel flight controller."
     },
+    "msg_save_failed_local_body": {
+      "english": "Settings were not saved to the radio. Please try again.",
+      "max_length": 67,
+      "needs_translation": false,
+      "reverse_text": false,
+      "translation": "Le impostazioni non sono state salvate sulla radio. Riprova."
+    },
     "msg_save_failed_title": {
       "english": "Save failed",
       "max_length": 11,

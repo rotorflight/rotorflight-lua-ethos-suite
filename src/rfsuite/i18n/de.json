@@ -8244,6 +8244,13 @@
       "reverse_text": false,
       "translation": "Einstellungen wurden nicht zum FC übertragen. Bitte erneut"
     },
+    "msg_save_failed_local_body": {
+      "english": "Settings were not saved to the radio. Please try again.",
+      "max_length": 67,
+      "needs_translation": false,
+      "reverse_text": false,
+      "translation": "Einstellungen wurden nicht auf dem Radio gespeichert. Bitte erneut versuchen."
+    },
     "msg_save_failed_title": {
       "english": "Save failed",
       "max_length": 11,
