@@ -125,6 +125,23 @@ local function pinCommands(cfg, center, override)
     o.command == 193 and bytes(o.payload) == "12,220,5",
     string.format("command %s, payload %s", tostring(o.command), bytes(o.payload)))
 
+  print("Factory forIndex")
+  local inst = cfg.forIndex(12)
+  local fiRead = inst.buildReadMessage(function() end, function() end)
+  check("forIndex buildReadMessage delegates to 125 with bound index 12",
+    fiRead.command == 125 and bytes(fiRead.payload) == "12",
+    string.format("command %s, payload %s", tostring(fiRead.command), bytes(fiRead.payload)))
+
+  local fiPacked = inst.buildWriteMessage(data, nil, nil)
+  check("forIndex buildWriteMessage delegates to 212 with bound index 12",
+    fiPacked.command == 212 and fiPacked.payload[1] == 12,
+    string.format("command %s, index %s", tostring(fiPacked.command), tostring(fiPacked.payload[1])))
+
+  local fiRaw = inst.buildRawWriteMessage(data, nil, nil)
+  check("forIndex buildRawWriteMessage delegates to 124 with bound index 12",
+    fiRaw.command == 124 and fiRaw.payload[1] == 12,
+    string.format("command %s, index %s", tostring(fiRaw.command), tostring(fiRaw.payload[1])))
+
   return failures - before
 end
 

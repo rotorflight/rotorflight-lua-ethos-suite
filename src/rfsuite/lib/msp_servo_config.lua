@@ -137,6 +137,9 @@ function msp_servo_config.forIndex(index)
     buildWriteMessage = function(data, onWritten, onError)
       return msp_servo_config.buildWriteMessage(index, data, onWritten, onError)
     end,
+    buildRawWriteMessage = function(data, onWritten, onError)
+      return msp_servo_config.buildRawWriteMessage(index, data, onWritten, onError)
+    end,
   }
 end
 
