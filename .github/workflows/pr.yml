@@ -2259,6 +2259,36 @@ jobs:
       - name: Check the Battery tile picker
         run: lua5.4 bin/battery_picker/verify_battery_picker.lua
 
+  # Issue #2534: the bar gauge kept its last valid reading whenever the sensor
+  # dropped out, so a fuel bar stayed at 85% after the pack was unplugged on the
+  # bench. widgets/dashboard/objects/gauge/bar.lua now holds the last reading only
+  # in postflight, as text/telemetry.lua does; before and during flight a dropped
+  # sensor shows the loading dots.
+  #
+  # No build and no package step reaches this -- it is a render path through a
+  # running widget. The harness drives the real bar gauge (render.wakeup) with a fake
+  # telemetry source and the flight mode: connected shows the value, a dropout before
+  # flight must not keep it and must show the loading state, reconnect shows the new
+  # value, and a dropout in postflight keeps the last value. Against unpatched master
+  # the two dropout-before-flight checks fail.
+  bar-disconnect:
+    name: Battery and fuel bar shows loading after telemetry loss before flight
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Install Lua 5.4
+        run: sudo apt-get update && sudo apt-get install -y lua5.4
+
+      - name: Check the dashboard bar after telemetry loss
+        run: lua5.4 bin/bar_disconnect/verify_bar_disconnect.lua
+
   # Issue #2353: with the FC's governor mode set to None or Limit, the firmware never
   # leaves THROTTLE_OFF (governor.c: governorUpdate() has no state change for
   # GOV_MODE_NONE, and govUpdateLimitedThrottle() only sets throttleOutput), so the

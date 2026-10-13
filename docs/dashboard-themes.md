@@ -200,6 +200,8 @@ Bar, ring, and arc gauges under `objects/gauge/`:
 | `ring`    | Ring gauge | Circular ring with fill `%`                                                            |
 | `arc`     | Arc gauge  | `startAngle`, `sweep`, `arcThickness`, `arcColor`, `arcBgColor`, `thresholds`          |
 
+A `bar` whose `source` drops out shows the loading dots (`.`, `..`, `...`), not its last value. The last value is held only in postflight, so the flight statistics stay readable after landing (#2534).
+
 **Shared Gauge Parameters:**
 
 * `source` / `value`, `unit`, `transform`, `decimals`, `font`.

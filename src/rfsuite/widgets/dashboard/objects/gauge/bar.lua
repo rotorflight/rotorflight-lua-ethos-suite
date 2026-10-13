@@ -499,21 +499,26 @@ function render.wakeup(box)
 
     if cfg.hidevalue == true then displayValue = nil end
 
+    -- The last valid reading is held only in postflight, for review, as
+    -- text/telemetry.lua does. Before and during flight a dropped sensor shows
+    -- the loading state, not a stale percentage (#2534).
+    local inPostflight = rfsuite.flightmode and rfsuite.flightmode.current == "postflight"
     if value ~= nil then
         c._lastValidValue = value
         c._lastValidDisplayValue = displayValue
         c._lastValidUnit = unit
+    elseif inPostflight and c._lastValidValue ~= nil then
+        value = c._lastValidValue
+        displayValue = c._lastValidDisplayValue
+        unit = c._lastValidUnit
     else
-        if c._lastValidValue ~= nil then
-            value = c._lastValidValue
-            displayValue = c._lastValidDisplayValue
-            unit = c._lastValidUnit
-        else
-            if c._dotCount == nil then c._dotCount = 0 end
-            c._dotCount = (c._dotCount + 1) % 4
-            displayValue = LOADING_DOTS[c._dotCount + 1]
-            unit = nil
-        end
+        c._lastValidValue = nil
+        c._lastValidDisplayValue = nil
+        c._lastValidUnit = nil
+        if c._dotCount == nil then c._dotCount = 0 end
+        c._dotCount = (c._dotCount + 1) % 4
+        displayValue = LOADING_DOTS[c._dotCount + 1]
+        unit = nil
     end
 
     local vmin, vmax, thresholds

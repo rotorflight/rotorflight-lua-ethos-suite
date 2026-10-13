@@ -1764,6 +1764,25 @@ puts back one row of six and requires the three-across check to go red.
 '''
     ),
     LuaJob(
+        id='bar-disconnect',
+        name='Battery and fuel bar shows loading after telemetry loss before flight',
+        step='Check the dashboard bar after telemetry loss',
+        script='bin/bar_disconnect/verify_bar_disconnect.lua',
+        rationale=r'''Issue #2534: the bar gauge kept its last valid reading whenever the sensor
+dropped out, so a fuel bar stayed at 85% after the pack was unplugged on the
+bench. widgets/dashboard/objects/gauge/bar.lua now holds the last reading only
+in postflight, as text/telemetry.lua does; before and during flight a dropped
+sensor shows the loading dots.
+
+No build and no package step reaches this -- it is a render path through a
+running widget. The harness drives the real bar gauge (render.wakeup) with a fake
+telemetry source and the flight mode: connected shows the value, a dropout before
+flight must not keep it and must show the loading state, reconnect shows the new
+value, and a dropout in postflight keeps the last value. Against unpatched master
+the two dropout-before-flight checks fail.
+'''
+    ),
+    LuaJob(
         id='governor-state',
         name='Stateless governor modes show PASSTHRU, not OFF',
         step='Check the governor label in None and Limit modes',
