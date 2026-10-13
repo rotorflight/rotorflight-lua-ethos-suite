@@ -16,10 +16,19 @@ is dimmed.
 | Tile | Does | Greyed out when |
 | --- | --- | --- |
 | Reset | Resets the flight (timers and min/max stats) after a confirmation. | Never. |
-| Erase | Erases the blackbox dataflash after a confirmation. | Not connected. |
-| Battery | Opens the battery picker (below) to choose the active battery profile. | Not connected, or fewer than two battery profiles are set. |
+| Erase | Erases the blackbox dataflash after a confirmation. | Not connected, armed, or the armed state is currently unknown after having been armed. |
+| Battery | Opens the battery picker (below) to choose the active battery profile. | Not connected, armed or unknown-after-armed, or fewer than two battery profiles are set. |
 | Info | Opens the info panel (below). | Never. |
 | Setup | Opens the RFSuite system tool. | Ethos is older than 26.1. |
+
+Erase and Battery write to the flight controller, so both are greyed out while the
+model is armed and do nothing when tapped. Arming also closes an open battery picker.
+
+They stay greyed out while the armed state is *unknown after having been armed*. Losing
+the link in flight clears the armed state, and the reconnect is published before the
+first arm flags arrive, so for a moment the flight controller is connected and its
+armed state is missing while the rotor may still be turning. A flight controller that has
+never reported arm flags at all is not affected: these two tiles stay usable for it.
 
 ## Battery picker
 
@@ -55,7 +64,7 @@ dashboard), and updates live. The dashboard behind it is dimmed. Unlike the
 toolbar it does not time out. It closes when you:
 
 - press Exit, Return or Enter, slide up, or tap anywhere on the dashboard;
-- arm the model. You can open it again while armed.
+- arm the model. It cannot be opened while armed.
 
 When the toolbar is open, sliding down closes the toolbar first. Only one of the
 two is open at a time. Exit reaches the panel only while the dashboard widget
