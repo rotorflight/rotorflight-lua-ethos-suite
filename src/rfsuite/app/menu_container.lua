@@ -351,14 +351,6 @@ local function openScreen(nav, menus, rootEntries, screen, setEventHandler, setW
   form.clear()
   local headerTitle = firstGroup or title
   local headerHandle = header.build(headerTitle, {onBack = goBack})
-  -- PROTOTYPE: the fixed header shows "Armed" while armed, so the state stays
-  -- visible when the tile area scrolls. The header never scrolls.
-  local ARMED_HEADER_LABEL = "@i18n(widgets.dashboard.info_armed)@"
-  local function headerTitleFor(armed)
-    if armed then return headerTitle .. " - " .. ARMED_HEADER_LABEL end
-    return headerTitle
-  end
-  headerHandle.setTitle(headerTitleFor(readArmed(armedState)))
 
   -- Transient "locked while armed" notice, shown by flashing the header
   -- title (header.build exposes setTitle, and header.lua's own comment
@@ -384,7 +376,7 @@ local function openScreen(nav, menus, rootEntries, screen, setEventHandler, setW
     if not noticeShownAt then return end
     if (os.clock() - noticeShownAt) < ARMED_NOTICE_HOLD then return end
     noticeShownAt = nil
-    headerHandle.setTitle(headerTitleFor(readArmed(armedState)))
+    headerHandle.setTitle(headerTitle)
   end
 
   local isArmed = readArmed(armedState)
