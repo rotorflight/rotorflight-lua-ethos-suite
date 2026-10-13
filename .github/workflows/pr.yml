@@ -2277,6 +2277,32 @@ jobs:
   # flight and postflight checks fail.
   bar-disconnect:
     name: Battery and fuel bar shows loading after telemetry loss before flight
+  # Issue #2505: two dashboard toolbar items write to the flight controller,
+  # blackbox erase and battery profile, and neither their enable check nor their
+  # write path looked at the arm state. A battery picker open at arming, or an erase
+  # confirmation answered after arming, still wrote.
+  #
+  # No build and no package step reaches this -- it is a touch path through a running
+  # widget. The harness drives the real widgets/dashboard.lua through the descriptor
+  # the radio calls, and feeds the arm state through session.update the way the
+  # session does. While armed the Erase and Battery tiles are disabled, arming closes
+  # an open battery picker, and a confirmed erase answered after arming publishes no
+  # msp.request. Disarmed, the same paths publish their write again. The checks that
+  # depend on the toolbar being reachable assert that it is reachable first, so a
+  # run that cannot reach the tiles fails instead of passing vacuously.
+  #
+  # The armed state is also UNKNOWN after having been armed, and the write items stay
+  # refused then: losing the link in flight clears the armed state and the reconnect is
+  # published before the first arm flags arrive, so the flight controller is briefly
+  # connected with no armed answer while the rotor may still be turning. A flight
+  # controller that has never reported arm flags is not locked out by that. Those checks
+  # are what separate this from a bare "isArmed == true" guard: against the first cut of
+  # this branch four of them fail, and one of them asserts that a confirmed erase in that
+  # window publishes no write.
+  #
+  # Run against unpatched master, 20 of 30 checks fail.
+  toolbar-armed:
+    name: Dashboard write items are refused while armed
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -2292,6 +2318,8 @@ jobs:
 
       - name: Check the dashboard bar after telemetry loss
         run: lua5.4 bin/bar_disconnect/verify_bar_disconnect.lua
+      - name: Check the dashboard Erase and Battery tiles while armed
+        run: lua5.4 bin/toolbar_armed/verify_toolbar_armed.lua
 
   # Issue #2353: with the FC's governor mode set to None or Limit, the firmware never
   # leaves THROTTLE_OFF (governor.c: governorUpdate() has no state change for
