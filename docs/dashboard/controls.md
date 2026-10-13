@@ -21,6 +21,13 @@ is dimmed.
 | Info | Opens the info panel (below). | Never. |
 | Setup | Opens the RFSuite system tool. | Ethos is older than 26.1. |
 
+## Armed warning
+
+While the model is armed, the dashboard shows a red frame around its edge and an
+"Armed" badge in the top-left corner, on every theme. It is drawn over the theme and
+moves nothing. It appears only once the FC reports the armed state, and it goes away
+when the model is disarmed.
+
 ## Battery picker
 
 The picker shows the battery profiles as a grid, one cell per pack, with the

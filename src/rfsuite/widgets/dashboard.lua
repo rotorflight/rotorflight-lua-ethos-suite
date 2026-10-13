@@ -558,6 +558,32 @@ end
 -- (battery_picker.lua DIM_ALPHA).
 local OVERLAY_DIM = lcd.RGB(0, 0, 0, 0.6)
 
+-- Armed warning (#2352): a red frame and an "Armed" badge over whatever theme is
+-- on screen, so a live model is obvious on every page and theme. Drawn only for a
+-- confirmed armed state (widget.isArmed == true), the same test as the write
+-- guards. It is an overlay: it does not move any theme layout.
+local ARMED_RED = lcd.RGB(214, 40, 40)
+local ARMED_WHITE = lcd.RGB(255, 255, 255)
+local ARMED_FRAME = 4
+
+local function drawArmedWarning(widget, w, h)
+  if widget.isArmed ~= true then return end
+  lcd.color(ARMED_RED)
+  lcd.drawFilledRectangle(0, 0, w, ARMED_FRAME)
+  lcd.drawFilledRectangle(0, h - ARMED_FRAME, w, ARMED_FRAME)
+  lcd.drawFilledRectangle(0, 0, ARMED_FRAME, h)
+  lcd.drawFilledRectangle(w - ARMED_FRAME, 0, ARMED_FRAME, h)
+
+  local label = "@i18n(widgets.dashboard.info_armed)@"
+  lcd.font(FONT_S)
+  local tw, th = lcd.getTextSize(label)
+  local bx, by = ARMED_FRAME, ARMED_FRAME
+  lcd.color(ARMED_RED)
+  lcd.drawFilledRectangle(bx, by, tw + 12, th + 6)
+  lcd.color(ARMED_WHITE)
+  lcd.drawText(bx + 6, by + 3, label)
+end
+
 local function dimDashboard(w, h)
   lcd.color(OVERLAY_DIM)
   lcd.drawFilledRectangle(0, 0, w, h)
@@ -1920,6 +1946,7 @@ local function paint(widget)
     invalidateWidgetGlobal(widget)
     return
   end
+  drawArmedWarning(widget, w, h)
   if widget.toolbarVisible then dimDashboard(w, h) end
   drawToolbar(widget, w, h)
   if widget.batteryPicker then

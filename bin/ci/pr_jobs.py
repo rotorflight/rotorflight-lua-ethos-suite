@@ -1764,6 +1764,23 @@ puts back one row of six and requires the three-across check to go red.
 '''
     ),
     LuaJob(
+        id='armed-warning',
+        name='Dashboard shows a red frame and an Armed badge while armed',
+        step='Check the dashboard armed warning',
+        script='bin/armed_warning/verify_armed_warning.lua',
+        rationale=r'''Issue #2352 (armed part only): a model on the ground was shown on the dashboard
+with no visual warning that the rotor can spool up. The dashboard now draws a red
+frame and an "Armed" badge over whatever theme is shown while the FC reports the
+armed state, and draws nothing red while disarmed.
+
+No build and no package step reaches this -- it is a paint path through a running
+widget. The harness drives the real widgets/dashboard.lua paint with a recording
+lcd and feeds the arm state through session.update the way the session does. It
+requires the red frame on all four edges and the badge while armed, and none of
+them while disarmed. Against unpatched master the armed checks fail.
+'''
+    ),
+    LuaJob(
         id='governor-state',
         name='Stateless governor modes show PASSTHRU, not OFF',
         step='Check the governor label in None and Limit modes',

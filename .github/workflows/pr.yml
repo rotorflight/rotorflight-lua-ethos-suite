@@ -2259,6 +2259,34 @@ jobs:
       - name: Check the Battery tile picker
         run: lua5.4 bin/battery_picker/verify_battery_picker.lua
 
+  # Issue #2352 (armed part only): a model on the ground was shown on the dashboard
+  # with no visual warning that the rotor can spool up. The dashboard now draws a red
+  # frame and an "Armed" badge over whatever theme is shown while the FC reports the
+  # armed state, and draws nothing red while disarmed.
+  #
+  # No build and no package step reaches this -- it is a paint path through a running
+  # widget. The harness drives the real widgets/dashboard.lua paint with a recording
+  # lcd and feeds the arm state through session.update the way the session does. It
+  # requires the red frame on all four edges and the badge while armed, and none of
+  # them while disarmed. Against unpatched master the armed checks fail.
+  armed-warning:
+    name: Dashboard shows a red frame and an Armed badge while armed
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Install Lua 5.4
+        run: sudo apt-get update && sudo apt-get install -y lua5.4
+
+      - name: Check the dashboard armed warning
+        run: lua5.4 bin/armed_warning/verify_armed_warning.lua
+
   # Issue #2353: with the FC's governor mode set to None or Limit, the firmware never
   # leaves THROTTLE_OFF (governor.c: governorUpdate() has no state change for
   # GOV_MODE_NONE, and govUpdateLimitedThrottle() only sets throttleOutput), so the
