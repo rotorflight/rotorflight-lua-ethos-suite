@@ -308,7 +308,11 @@ if selector and maxField then
   selector.set(2)                           -- profile 3
   check("the cell row now shows profile 3's value", maxField.get() == 4.2,
         "shown=" .. tostring(maxField.get()))
+  local capacityField = findField("power.capacity", "number")
+  check("the capacity row shows profile 3's capacity", capacityField and capacityField.get() == 4000,
+        "shown=" .. tostring(capacityField and capacityField.get()))
   maxField.set(4.3)                         -- change profile 3's max cell voltage
+  if capacityField then capacityField.set(4500) end   -- and its capacity
   save()
 
   local profileWrite = lastWrite("profileWrite")
@@ -323,6 +327,11 @@ if selector and maxField then
         "vbatmaxcellvoltage_2=" .. tostring(batteryWrite and batteryWrite.values and batteryWrite.values.vbatmaxcellvoltage_2))
   check("the active profile's cell value is untouched",
         batteryWrite and batteryWrite.values and batteryWrite.values.vbatmaxcellvoltage_0 == 4.2)
+  check("the capacity lands under profile 3's key",
+        batteryWrite and batteryWrite.values and batteryWrite.values.batteryCapacity_2 == 4500,
+        "batteryCapacity_2=" .. tostring(batteryWrite and batteryWrite.values and batteryWrite.values.batteryCapacity_2))
+  check("the active profile's capacity is untouched",
+        batteryWrite and batteryWrite.values and batteryWrite.values.batteryCapacity_0 == 2200)
 end
 
 -- ---------------------------------------------------------------------------

@@ -182,31 +182,28 @@ local function open(opts)
       if form.invalidate then form.invalidate() end
     end)
 
+  -- The profile the capacity and cell rows show and edit (#2502).
+  local function editedProfile()
+    if editProfile ~= nil then return editProfile end
+    return normalizeProfile(dataRef.data.profile and dataRef.data.profile.batteryProfile) or 0
+  end
   line = form.addLine("    @i18n(app.modules.power.capacity)@")
   capacityField = form.addNumberField(line, nil, 0, 40000,
     function()
-      local selected = normalizeProfile(dataRef.data.profile and dataRef.data.profile.batteryProfile) or 0
       local battery = dataRef.data.battery or {}
-      return battery[profileKey(selected)] or 0
+      return battery[profileKey(editedProfile())] or 0
     end,
     function(value)
       markDirty()
-      local selected = normalizeProfile(dataRef.data.profile and dataRef.data.profile.batteryProfile) or 0
-      dataRef.data.battery[profileKey(selected)] = clampCapacity(value)
+      dataRef.data.battery[profileKey(editedProfile())] = clampCapacity(value)
     end)
   capacityField:suffix("mAh")
   capacityField:default(0)
   runtime:registerField("battery:capacityActive", capacityField)
 
   form.addLine("@i18n(telemetry.group_battery)@")
-  -- Cell count and cell voltages follow the Edit Battery choice (#2502), while
-  -- capacity and the saved selection stay on the active profile. They cannot go
-  -- through fieldLayout's fixed-key buildSingle().
-  local function editedProfile()
-    if editProfile ~= nil then return editProfile end
-    return normalizeProfile(dataRef.data.profile and dataRef.data.profile.batteryProfile) or 0
-  end
-
+  -- Cell count and cell voltages follow the Edit Battery choice (#2502), like the
+  -- capacity row above. They cannot go through fieldLayout's fixed-key buildSingle().
   local function addCellField(label, base)
     local meta = batteryConfig.FIELD_META[base]
     line = form.addLine(label)
