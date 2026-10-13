@@ -1780,8 +1780,18 @@ session does. While armed the Erase and Battery tiles are disabled, arming close
 an open battery picker, and a confirmed erase answered after arming publishes no
 msp.request. Disarmed, the same paths publish their write again. The checks that
 depend on the toolbar being reachable assert that it is reachable first, so a
-run that cannot reach the tiles fails instead of passing vacuously. Run against
-unpatched master, 11 of 19 checks fail.
+run that cannot reach the tiles fails instead of passing vacuously.
+
+The armed state is also UNKNOWN after having been armed, and the write items stay
+refused then: losing the link in flight clears the armed state and the reconnect is
+published before the first arm flags arrive, so the flight controller is briefly
+connected with no armed answer while the rotor may still be turning. A flight
+controller that has never reported arm flags is not locked out by that. Those checks
+are what separate this from a bare "isArmed == true" guard: against the first cut of
+this branch four of them fail, and one of them asserts that a confirmed erase in that
+window publishes no write.
+
+Run against unpatched master, 20 of 30 checks fail.
 '''
     ),
     LuaJob(

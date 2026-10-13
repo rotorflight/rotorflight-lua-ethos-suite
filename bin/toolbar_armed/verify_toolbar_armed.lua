@@ -280,5 +280,66 @@ end
 check("disarmed: a confirmed Erase publishes its write", #requests == requestsStart + 1,
   "requests=" .. (#requests - requestsStart))
 
+-- 5. The link drops while the model is armed and comes back: the session clears
+--    isArmed together with connected and publishes the reconnect before the first
+--    arm frame, so for a moment the FC is connected and its arm state is nil. That
+--    is not disarmed for the two write items, and must not be treated as one.
+setArmed(true)
+descriptor.wakeup(state)
+setArmed(nil)
+descriptor.wakeup(state)
+openToolbar()
+check("arm state lost after arming: the Erase tile is disabled", enabled(TILE.erase) == false)
+check("arm state lost after arming: the Battery tile is disabled", enabled(TILE.battery) == false)
+check("arm state lost after arming: the Info tile stays enabled", enabled(TILE.info) == true)
+local dialogsLost = #dialogs
+-- Block 4 confirmed an Erase, which left eraseActive set, and doEraseBlackbox
+-- refuses a second one for that reason alone. Cleared here so the write check
+-- below measures the arm state and not a leftover run.
+state.eraseActive = nil
+state.eraseDone = false
+check("arm state lost after arming: the precondition erase is cleared",
+  state.eraseActive == nil)
+tap(TILE.erase)
+check("arm state lost after arming: tapping Erase opens no confirmation",
+  #dialogs == dialogsLost)
+local lostConfirm = dialogs[#dialogs]
+if lostConfirm and lostConfirm.buttons and lostConfirm.buttons[1] then
+  pcall(lostConfirm.buttons[1].action)
+end
+check("arm state lost after arming: a confirmed Erase writes nothing",
+  #requests == requestsStart + 1, "requests=" .. (#requests - requestsStart))
+
+-- 6. The answer arrives again and says armed: still refused.
+setArmed(true)
+descriptor.wakeup(state)
+openToolbar()
+check("armed again: the Erase tile is disabled", enabled(TILE.erase) == false)
+
+-- 7. Disarmed, and THEN the answer is lost: the model was confirmed disarmed, so
+--    the missing answer must not grey the tiles out on every reconnect.
+setArmed(false)
+descriptor.wakeup(state)
+setArmed(nil)
+descriptor.wakeup(state)
+openToolbar()
+check("arm state lost after being disarmed: the Erase tile stays enabled",
+  enabled(TILE.erase) == true)
+check("arm state lost after being disarmed: the Battery tile stays enabled",
+  enabled(TILE.battery) == true)
+
+-- 8. An FC that never reports arm flags at all must stay usable: nil with no latch
+--    set is "never answered", not "answered and lost", and must not lock the tiles.
+setArmed(false)
+descriptor.wakeup(state)
+state.isArmed = nil
+state.armedUnconfirmed = false
+descriptor.wakeup(state)
+openToolbar()
+check("an FC that never reports arm flags: the Erase tile stays enabled",
+  enabled(TILE.erase) == true)
+check("an FC that never reports arm flags: the Battery tile stays enabled",
+  enabled(TILE.battery) == true)
+
 print(string.format("\n%d checks, %d failed", checks, failures))
 os.exit(failures == 0 and 0 or 1)
