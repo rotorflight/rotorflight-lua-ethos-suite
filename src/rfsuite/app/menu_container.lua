@@ -303,7 +303,18 @@ local function openScreen(nav, menus, rootEntries, screen, setEventHandler, setW
   -- before navigating here.
   setWakeupHandler(nil)
   if setPaintHandler then
-    setPaintHandler(nil)
+    -- PROTOTYPE (not for merge): red frame while armed, drawn over the menu.
+    setPaintHandler(function()
+      local ok, armed = pcall(armedState)
+      if ok and armed == true then
+        local w, h = lcd.getWindowSize()
+        lcd.color(lcd.RGB(214, 40, 40))
+        lcd.drawFilledRectangle(0, 0, w, 4)
+        lcd.drawFilledRectangle(0, h - 4, w, 4)
+        lcd.drawFilledRectangle(0, 0, 4, h)
+        lcd.drawFilledRectangle(w - 4, 0, 4, h)
+      end
+    end)
   end
   if setCleanupHandler then
     setCleanupHandler(nil)
