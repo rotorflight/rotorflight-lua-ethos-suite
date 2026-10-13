@@ -8238,6 +8238,13 @@
       "reverse_text": false,
       "translation": "Ustawienia nie zostały zapisane w kontrolerze lotu. Spróbuj"
     },
+    "msg_save_failed_local_body": {
+      "english": "Settings were not saved to the radio. Please try again.",
+      "max_length": 67,
+      "needs_translation": false,
+      "reverse_text": false,
+      "translation": "Ustawienia nie zostały zapisane w radiu. Spróbuj ponownie."
+    },
     "msg_save_failed_title": {
       "english": "Save failed",
       "max_length": 11,

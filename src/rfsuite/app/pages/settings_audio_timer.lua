@@ -5,6 +5,7 @@ local bus = requireModule("lib/bus.lua")
 local closeKey = requireModule("app/close_key.lua")
 local header = requireModule("app/header.lua")
 local settingsStore = requireModule("lib/settings_store.lua")
+local settingsSave = requireModule("app/settings_save.lua")
 
 local PAGE_TITLE = "@i18n(app.modules.settings.name)@ / @i18n(app.modules.settings.audio)@ / @i18n(app.modules.settings.txt_audio_timer)@"
 local BTN_OK = "@i18n(app.btn_ok)@"
@@ -81,7 +82,10 @@ local function open(opts)
 
   local function save(focusFn)
     if disposed then return end
-    settingsStore.save(settings)
+    if not settingsStore.save(settings) then
+      settingsSave.reportFailure(focusFn)
+      return
+    end
     original = settingsStore.clone(settings)
     bus.publish("settings.update", settingsStore.clone(settings))
     updateSaveEnabled()

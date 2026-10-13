@@ -499,21 +499,33 @@ function render.wakeup(box)
 
     if cfg.hidevalue == true then displayValue = nil end
 
+    -- A dropped sensor shows the loading state only on the bench, before the
+    -- flight has started (#2534): there a bar frozen at 85% is a wrong number,
+    -- and the pilot has to see that the source is gone. Once a flight is under
+    -- way the last reading is HELD, in flight as well as in postflight: a
+    -- momentary telemetry gap -- one missed appId, one dropped frame behind an
+    -- obstacle -- must not blank a fuel gauge the pilot is flying on, and must
+    -- not discard the reading it had. flightmode itself turns a disconnect
+    -- during a flight into "postflight" (flightmode.lua:103), so holding from
+    -- "inflight" onwards also covers the link going away mid-flight.
+    local mode = rfsuite.flightmode and rfsuite.flightmode.current or "preflight"
+    local holdLastValue = mode ~= "preflight"
     if value ~= nil then
         c._lastValidValue = value
         c._lastValidDisplayValue = displayValue
         c._lastValidUnit = unit
+    elseif holdLastValue and c._lastValidValue ~= nil then
+        value = c._lastValidValue
+        displayValue = c._lastValidDisplayValue
+        unit = c._lastValidUnit
     else
-        if c._lastValidValue ~= nil then
-            value = c._lastValidValue
-            displayValue = c._lastValidDisplayValue
-            unit = c._lastValidUnit
-        else
-            if c._dotCount == nil then c._dotCount = 0 end
-            c._dotCount = (c._dotCount + 1) % 4
-            displayValue = LOADING_DOTS[c._dotCount + 1]
-            unit = nil
-        end
+        c._lastValidValue = nil
+        c._lastValidDisplayValue = nil
+        c._lastValidUnit = nil
+        if c._dotCount == nil then c._dotCount = 0 end
+        c._dotCount = (c._dotCount + 1) % 4
+        displayValue = LOADING_DOTS[c._dotCount + 1]
+        unit = nil
     end
 
     local vmin, vmax, thresholds

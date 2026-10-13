@@ -5,6 +5,7 @@ local bus = requireModule("lib/bus.lua")
 local closeKey = requireModule("app/close_key.lua")
 local header = requireModule("app/header.lua")
 local settingsStore = requireModule("lib/settings_store.lua")
+local settingsSave = requireModule("app/settings_save.lua")
 local mspExp = requireModule("lib/msp_experimental.lua")
 local eeprom = requireModule("lib/msp_eeprom.lua")
 
@@ -191,9 +192,10 @@ local function open(opts)
       for i = 1, 16 do values[i] = bytes[i] or 0 end
       if #bytes > 0 and #bytes ~= totalBytes then
         settings.developer.mspexpbytes = #bytes
-        settingsStore.save(settings)
+        local saved = settingsStore.save(settings)
         closeDialog()
         open(opts)
+        if not saved then settingsSave.reportFailure() end
         return
       end
       closeDialog(headerHandle and headerHandle.focusReload)
