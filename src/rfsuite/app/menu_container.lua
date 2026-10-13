@@ -113,6 +113,13 @@ local menu_container = {}
 -- So the label is the only channel left, and one character is what it can
 -- be had.
 local ARMED_BADGE = "!"
+
+-- PROTOTYPE: icon for a locked tile while armed, a forbidden sign. Loaded on first use.
+local forbiddenMask = nil
+local function forbiddenIcon()
+  if not forbiddenMask then forbiddenMask = lcd.loadMask("app/gfx/armed_locked.png") end
+  return forbiddenMask
+end
 local ARMED_LOCKED_NOTICE = "@i18n(app.msg_menu_locked_while_armed)@"
 local ARMED_NOTICE_HOLD = 2.0
 local ARMED_HAPTIC_PATTERN = ". . ."
@@ -303,7 +310,7 @@ local function openScreen(nav, menus, rootEntries, screen, setEventHandler, setW
   -- before navigating here.
   setWakeupHandler(nil)
   if setPaintHandler then
-    -- PROTOTYPE (not for merge): red frame while armed, drawn over the menu.
+    -- PROTOTYPE (not for merge): red frame and Armed badge while armed, drawn over the menu.
     setPaintHandler(function()
       local ok, armed = pcall(armedState)
       if ok and armed == true then
@@ -313,6 +320,15 @@ local function openScreen(nav, menus, rootEntries, screen, setEventHandler, setW
         lcd.drawFilledRectangle(0, h - 4, w, 4)
         lcd.drawFilledRectangle(0, 0, 4, h)
         lcd.drawFilledRectangle(w - 4, 0, 4, h)
+        -- Armed badge, top-left, as on the dashboard widget
+        local label = "@i18n(widgets.dashboard.info_armed)@"
+        lcd.font(FONT_S)
+        local tw, th = lcd.getTextSize(label)
+        local by = math.floor(h * 0.16)
+        lcd.color(lcd.RGB(214, 40, 40))
+        lcd.drawFilledRectangle(6, by, tw + 12, th + 6)
+        lcd.color(lcd.RGB(255, 255, 255))
+        lcd.drawText(12, by + 3, label)
       end
     end)
   end
@@ -383,7 +399,7 @@ local function openScreen(nav, menus, rootEntries, screen, setEventHandler, setW
   -- globals (nil) instead of these locals.
   local function tileLabel(entry, armed)
     if armed and entry.lockedWhileArmed == true then
-      return tileGrid.fitLabel(ARMED_BADGE .. entry.title, tileW, tileFont)
+      return tileGrid.fitLabel(entry.title, tileW, tileFont)
     end
     return tileGrid.fitLabel(entry.title, tileW, tileFont)
   end
@@ -413,9 +429,13 @@ local function openScreen(nav, menus, rootEntries, screen, setEventHandler, setW
       -- badge share that same budget (Issue #2302) rather than sitting
       -- outside it.
       local label = tileLabel(entry, isArmed)
+      local tileIcon = entry.icon
+      if isArmed and entry.lockedWhileArmed == true then
+        tileIcon = forbiddenIcon()
+      end
       tileButtons[i] = form.addButton(nil, {x = x, y = y, w = tileW, h = tileH}, {
         text = label,
-        icon = entry.icon,
+        icon = tileIcon,
         options = tileFont,
         press = function()
           -- Armed gating comes first, ahead of the task/entry guards: a
