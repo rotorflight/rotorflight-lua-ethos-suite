@@ -324,11 +324,12 @@ local function openScreen(nav, menus, rootEntries, screen, setEventHandler, setW
         local label = "@i18n(widgets.dashboard.info_armed)@"
         lcd.font(FONT_S)
         local tw, th = lcd.getTextSize(label)
-        local by = math.floor(h * 0.16)
+        -- centred on the top edge of the frame
+        local bx = math.floor((w - tw - 12) / 2)
         lcd.color(lcd.RGB(214, 40, 40))
-        lcd.drawFilledRectangle(6, by, tw + 12, th + 6)
+        lcd.drawFilledRectangle(bx, 0, tw + 12, th + 6)
         lcd.color(lcd.RGB(255, 255, 255))
-        lcd.drawText(12, by + 3, label)
+        lcd.drawText(bx + 6, 3, label)
       end
     end)
   end
