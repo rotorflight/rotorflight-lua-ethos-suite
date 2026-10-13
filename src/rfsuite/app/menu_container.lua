@@ -346,8 +346,7 @@ local function openScreen(nav, menus, rootEntries, screen, setEventHandler, setW
   end
 
   form.clear()
-  -- PROTOTYPE: the first group is the header line, indented like the others.
-  local headerTitle = firstGroup and (" " .. firstGroup) or title
+  local headerTitle = firstGroup or title
   local headerHandle = header.build(headerTitle, {onBack = goBack})
 
   local isArmed = readArmed(armedState)
@@ -391,8 +390,7 @@ local function openScreen(nav, menus, rootEntries, screen, setEventHandler, setW
     if isEntryVisible(entry) and entry.group ~= lastGroup then
       lastGroup = entry.group
       if lastGroup then
-        -- PROTOTYPE: one leading space, so the heading sits right of the frame edge.
-        form.addLine(" " .. lastGroup)
+        form.addLine(lastGroup)
         y = form.height() + tilePadding
       end
       x = 0
