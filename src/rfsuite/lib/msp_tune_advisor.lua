@@ -106,8 +106,23 @@ local function readBands(buf)
   return bands
 end
 
--- Returns {version, collecting, seconds, axis (1-3), a = {per-axis fields}}
+-- The layout above is payload version 1 and a 67-byte reply. A reply of another
+-- version or length is refused, not decoded: a reworded record would otherwise
+-- come out as plausible numbers, and tune_history saves them.
+local PAYLOAD_VERSION = 1
+local REPLY_LENGTH = 67
+
+-- Returns {version, collecting, seconds, axis (1-3), a = {per-axis fields}},
+-- or nil and a reason.
 function msp_tune_advisor.decode(buf)
+  local length = #buf
+  if length ~= REPLY_LENGTH then
+    return nil, "tune advisor reply is " .. length .. " bytes, expected " .. REPLY_LENGTH
+  end
+  if buf[1] ~= PAYLOAD_VERSION then
+    return nil, "tune advisor payload version " .. tostring(buf[1]) .. ", expected " .. PAYLOAD_VERSION
+  end
+
   buf.offset = 1
   local data = {
     version = mspcodec.readU8(buf),
@@ -154,7 +169,12 @@ function msp_tune_advisor.buildReadMessage(axis, onData, onError)
     command = READ_COMMAND,
     payload = {axis - 1},
     processReply = function(_, buf)
-      onData(msp_tune_advisor.decode(buf))
+      local data, reason = msp_tune_advisor.decode(buf)
+      if not data then
+        if onError then onError(reason) end
+        return
+      end
+      onData(data)
     end,
     errorHandler = onError,
     simulatorResponse = simulatorResponses[axis],
