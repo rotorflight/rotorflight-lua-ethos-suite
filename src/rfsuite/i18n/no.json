@@ -5956,6 +5956,12 @@
           "reverse_text": false,
           "translation": "Valgt"
         },
+        "edit_battery": {
+          "english": "Edit Battery",
+          "max_length": 16,
+          "needs_translation": false,
+          "translation": "Rediger batteri"
+        },
         "smartfuel_charge_drop_rate": {
           "english": "Charge Drop Rate",
           "max_length": 16,
@@ -8237,6 +8243,13 @@
       "needs_translation": false,
       "reverse_text": false,
       "translation": "Innstillinger ble ikke lagret på flight controller. Prøv igjen."
+    },
+    "msg_save_failed_local_body": {
+      "english": "Settings were not saved to the radio. Please try again.",
+      "max_length": 67,
+      "needs_translation": false,
+      "reverse_text": false,
+      "translation": "Innstillinger ble ikke lagret på radioen. Prøv igjen."
     },
     "msg_save_failed_title": {
       "english": "Save failed",

@@ -136,11 +136,31 @@ local INSTRUCTION_BUDGET_ERROR = "Max instructions count reached"
 
 local TOOLBAR_ITEMS = {
   {name = "Reset", icon = "widgets/dashboard/gfx/toolbar_reset.png", action = "reset_flight"},
-  {name = "Erase", icon = "widgets/dashboard/gfx/toolbar_erase.png", action = "erase_blackbox", isConnected = true},
-  {name = "Battery", icon = "widgets/dashboard/gfx/toolbar_battery.png", action = "battery_profile", isConnected = true, requiresBatteryProfiles = true},
+  {name = "Erase", icon = "widgets/dashboard/gfx/toolbar_erase.png", action = "erase_blackbox", isConnected = true, blockedWhileArmed = true},
+  {name = "Battery", icon = "widgets/dashboard/gfx/toolbar_battery.png", action = "battery_profile", isConnected = true, requiresBatteryProfiles = true, blockedWhileArmed = true},
   {name = "Info", icon = "widgets/dashboard/gfx/toolbar_info.png", action = "info_panel"},
   {name = "Setup", icon = "widgets/dashboard/gfx/toolbar_app.png", action = "launch_app", requiresOpenPage = true},
 }
+
+--- Is this a model that must not be written to? True when the FC says it is armed, and
+--- also when it said so and the answer is currently missing.
+--
+-- A link that drops in flight clears the armed state in the same step that clears
+-- connected (tasks/session.lua's setConnected), and on reconnect setConnected
+-- publishes before updateArmState has run -- so there is a window in which the FC is
+-- connected and its arm state is nil, while the rotor may well still be turning. That
+-- window is not one tick wide: the sensor-resolution cache is cleared with it, so the
+-- arm flags have to be looked up again, and a miss backs off (lib/telemetry_sensors.lua).
+--
+-- So nil alone must NOT block: an FC that has never reported arm flags at all would be
+-- locked out of these two items for good. armedUnconfirmed is the latch that tells the
+-- two apart -- it is set while the model has been armed and not yet seen disarmed, so
+-- a lost answer counts as armed and an FC that never answered does not (#2505).
+local function armedOrUnconfirmed(widget)
+  if not widget then return false end
+  if widget.isArmed == true then return true end
+  return widget.isArmed == nil and widget.armedUnconfirmed == true
+end
 
 local function trimDashboardCaches(options)
   local dashboard = dashboardContext and dashboardContext.widgets and dashboardContext.widgets.dashboard
@@ -548,6 +568,9 @@ local function isToolbarItemEnabled(widget, item)
   -- version doesn't wrongly block a toolbar item before the handshake has
   -- even had a chance to answer -- only a *confirmed* unsupported FC does.
   if item.isConnected == true and not (widget and widget.connected == true and widget.apiVersionSupported ~= false) then return false end
+  -- Items that write to the FC are refused while the model is armed, or while its arm
+  -- state is missing after having said armed (#2505, armedOrUnconfirmed).
+  if item.blockedWhileArmed == true and armedOrUnconfirmed(widget) then return false end
   if item.requiresOpenPage == true and not canOpenSystemTool() then return false end
   if item.requiresBatteryProfiles == true and not hasSelectableBatteryProfiles(widget) then return false end
   return true
@@ -1108,7 +1131,7 @@ local function readBlackboxSummaryAfterErase(widget)
 end
 
 local function doEraseBlackbox(widget)
-  if not widget or widget.connected ~= true or widget.eraseActive == true then return end
+  if not widget or widget.connected ~= true or armedOrUnconfirmed(widget) or widget.eraseActive == true then return end
 
   widget.eraseActive = true
   widget.eraseStartedAt = clock()
@@ -1228,7 +1251,7 @@ local function showBatteryInfo(message)
 end
 
 local function writeBatteryProfile(widget, profileIndex, profileName)
-  if not widget or widget.connected ~= true or widget.batteryActive == true then return end
+  if not widget or widget.connected ~= true or armedOrUnconfirmed(widget) or widget.batteryActive == true then return end
   -- profileIndex is profile.idx from buildBatteryProfileList(), which walks
   -- widget.batteryConfig.profiles[0]..profiles[5] -- already the 0-based index
   -- the MSP 176 payload wants. This only rejects an out-of-range value; it
@@ -1294,7 +1317,7 @@ local function closeBatteryPicker(widget)
 end
 
 local function chooseBatteryProfile(widget)
-  if not widget or widget.connected ~= true then return end
+  if not widget or widget.connected ~= true or armedOrUnconfirmed(widget) then return end
   local profileList = buildBatteryProfileList(widget)
   if #profileList == 0 then
     showBatteryInfo("@i18n(widgets.battery.no_profiles)@")
@@ -1476,6 +1499,9 @@ local function create()
   return {
     connected = false,
     isArmed = nil,
+    -- Set while the model has been armed and not yet seen disarmed; nil isArmed
+    -- with this set means the answer was lost, not never given. See armedOrUnconfirmed.
+    armedUnconfirmed = false,
     craftName = nil,
     mcuId = nil,
     lastConnectedMcuId = nil,
@@ -1610,8 +1636,20 @@ local function update(widget, snapshot)
   local previousArmed = widget.isArmed
   widget.connected = snapshot.connected == true
   widget.isArmed = snapshot.isArmed
+  -- The latch armedOrUnconfirmed reads: set while the model has been armed and not yet
+  -- seen disarmed. A nil answer leaves it alone on purpose -- that is the lost-answer
+  -- window, and clearing the latch there is what would open the writes again (#2505).
+  if widget.isArmed == true then
+    widget.armedUnconfirmed = true
+  elseif widget.isArmed == false then
+    widget.armedUnconfirmed = false
+  end
   -- The info panel covers most of the dashboard, so arming closes it.
   if widget.isArmed == true and previousArmed ~= true then setInfoPanelVisible(widget, false) end
+  -- Arming also closes an open battery picker, because a pack write is refused
+  -- while armed; the picker must not stay open to accept one (#2505).
+  if widget.isArmed == true and previousArmed ~= true then closeBatteryPicker(widget) end
+  if widget.isArmed ~= previousArmed then invalidateWidget(widget) end
   widget.armDisableFlags = snapshot.armDisableFlags
   widget.systemStatus = snapshot.systemStatus
   widget.systemConfig = snapshot.systemConfig
