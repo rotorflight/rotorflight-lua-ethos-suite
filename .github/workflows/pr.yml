@@ -2271,6 +2271,22 @@ jobs:
   # profile 3 as the active one.
   battery-edit-profile:
     name: Editing another battery profile does not activate it on save
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Install Lua 5.4
+        run: sudo apt-get update && sudo apt-get install -y lua5.4
+
+      - name: Check the battery page edits the chosen profile without activating it
+        run: lua5.4 bin/battery_edit_profile/verify_battery_edit_profile.lua
+
   # Issue #2497 (findings 1 and 2): the Ports page never read the board back after a
   # save, so its rows showed what was sent; and it read MSP_RX_CONFIG on every open
   # although the value was never used, which held up the loading dialog for one round
@@ -2285,6 +2301,22 @@ jobs:
   # fail.
   ports-readback:
     name: Ports page reads the serial ports back after a save, and not the RX config
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Install Lua 5.4
+        run: sudo apt-get update && sudo apt-get install -y lua5.4
+
+      - name: Check the Ports page read-back and its reads
+        run: lua5.4 bin/ports_readback/verify_ports_readback.lua
+
   # Issue #2498: the Select Profile page closed its progress dialog on a refused
   # PID or rate profile write and said nothing, so the pilot saw the dialog go away and
   # the Save button still lit. The refusal now opens the save-failed dialog that the FC
@@ -2296,6 +2328,22 @@ jobs:
   # refused. Against unpatched master the two refused-write dialog checks fail.
   profile-select-refusal:
     name: Select Profile reports a refused profile write and keeps Save lit
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Install Lua 5.4
+        run: sudo apt-get update && sudo apt-get install -y lua5.4
+
+      - name: Check that a refused profile write is reported
+        run: lua5.4 bin/profile_select/verify_profile_select.lua
+
   # Issue #2500: settingsStore.save() returns false when the INI file cannot be
   # written, and ten local settings pages threw that value away. They published
   # settings.update and cleared their dirty flag anyway, so the Save button went dark
@@ -2311,6 +2359,22 @@ jobs:
   # review, not by this harness.
   settings-save-refusal:
     name: Local settings pages report a refused save and keep their dirty state
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Install Lua 5.4
+        run: sudo apt-get update && sudo apt-get install -y lua5.4
+
+      - name: Check that a refused settings save is reported
+        run: lua5.4 bin/settings_save/verify_settings_save.lua
+
   # Issue #2534: the bar gauge kept its last valid reading whenever the sensor
   # dropped out, so a fuel bar stayed at 85% after the pack was unplugged on the
   # bench. widgets/dashboard/objects/gauge/bar.lua now shows the loading dots while
@@ -2329,6 +2393,22 @@ jobs:
   # flight and postflight checks fail.
   bar-disconnect:
     name: Battery and fuel bar shows loading after telemetry loss before flight
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Install Lua 5.4
+        run: sudo apt-get update && sudo apt-get install -y lua5.4
+
+      - name: Check the dashboard bar after telemetry loss
+        run: lua5.4 bin/bar_disconnect/verify_bar_disconnect.lua
+
   # Issue #2505: two dashboard toolbar items write to the flight controller,
   # blackbox erase and battery profile, and neither their enable check nor their
   # write path looked at the arm state. A battery picker open at arming, or an erase
@@ -2368,16 +2448,6 @@ jobs:
       - name: Install Lua 5.4
         run: sudo apt-get update && sudo apt-get install -y lua5.4
 
-      - name: Check the battery page edits the chosen profile without activating it
-        run: lua5.4 bin/battery_edit_profile/verify_battery_edit_profile.lua
-      - name: Check the Ports page read-back and its reads
-        run: lua5.4 bin/ports_readback/verify_ports_readback.lua
-      - name: Check that a refused profile write is reported
-        run: lua5.4 bin/profile_select/verify_profile_select.lua
-      - name: Check that a refused settings save is reported
-        run: lua5.4 bin/settings_save/verify_settings_save.lua
-      - name: Check the dashboard bar after telemetry loss
-        run: lua5.4 bin/bar_disconnect/verify_bar_disconnect.lua
       - name: Check the dashboard Erase and Battery tiles while armed
         run: lua5.4 bin/toolbar_armed/verify_toolbar_armed.lua
 

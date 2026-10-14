@@ -1778,6 +1778,9 @@ page. The harness drives the real power_battery page with the real page runtime 
 field layout, and answers every write the way the FC would. Against unpatched master
 the page has no Edit Battery choice, and saving a cell edit of profile 3 writes
 profile 3 as the active one.
+'''
+    ),
+    LuaJob(
         id='ports-readback',
         name='Ports page reads the serial ports back after a save, and not the RX config',
         step='Check the Ports page read-back and its reads',
@@ -1794,6 +1797,9 @@ port-label library, and answers each message the way the FC would: a board that
 reports a different function than the one sent, a refused read-back, and the reboot
 that must wait for the read-back. Against unpatched master five of the seven checks
 fail.
+'''
+    ),
+    LuaJob(
         id='profile-select-refusal',
         name='Select Profile reports a refused profile write and keeps Save lit',
         step='Check that a refused profile write is reported',
@@ -1807,6 +1813,9 @@ No build and no package step reaches this -- it is a write path through a runnin
 page. The harness drives the real profile_select page with the real bus and the real
 select-profile message builder, and answers each write as the FC would: accepted or
 refused. Against unpatched master the two refused-write dialog checks fail.
+'''
+    ),
+    LuaJob(
         id='settings-save-refusal',
         name='Local settings pages report a refused save and keep their dirty state',
         step='Check that a refused settings save is reported',
@@ -1824,6 +1833,9 @@ real helper, against a store stub whose save() is refused or accepted, and press
 Save the way the pilot does. Against unpatched master the refused-save checks fail.
 The other settings pages carry the same three-line change and are covered by the
 review, not by this harness.
+'''
+    ),
+    LuaJob(
         id='bar-disconnect',
         name='Battery and fuel bar shows loading after telemetry loss before flight',
         step='Check the dashboard bar after telemetry loss',
@@ -1844,6 +1856,9 @@ dropout in postflight keeps the last value. Against unpatched master the two
 dropout-before-flight checks fail; against the first cut of this branch, which
 held the reading only in postflight and discarded the cache in flight, the four
 flight and postflight checks fail.
+'''
+    ),
+    LuaJob(
         id='toolbar-armed',
         name='Dashboard write items are refused while armed',
         step='Check the dashboard Erase and Battery tiles while armed',
