@@ -173,7 +173,13 @@ local function open(opts)
               inOverride = false
             else
               -- The live write below waits for the read; so must the override.
-              if not runtime.loaded then return true end
+              -- focusFn() runs on this path too: the form loses its focus when a
+              -- dialog closes (app/page_runtime.lua's own note on closeDialog),
+              -- so every outcome of this dialog has to hand focus back.
+              if not runtime.loaded then
+                if focusFn then focusFn() end
+                return true
+              end
               queueOverride(mixerOverride.OVERRIDE_PASSTHROUGH)
               inOverride = true
               lastLiveDigest = digest(formData)

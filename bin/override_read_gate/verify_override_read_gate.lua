@@ -98,8 +98,20 @@ form.addButton = function(_, _, opts)
 end
 
 local lastHeaderOpts = nil
+local focusCalls = 0
+-- The real header handle. page_runtime hands the page runtime.onTool() exactly
+-- one focus function -- headerHandle.focusTool (app/page_runtime.lua:1314) --
+-- and the dialog owes that one a call on every path: the form loses its focus
+-- when a dialog closes (page_runtime.lua's own note on closeDialog). Counting
+-- the calls here is therefore the only way to see the hand-off; the function
+-- the harness passes to onTool is never forwarded.
+local function headerHandleStub()
+  local h = setmetatable({}, {__index = function() return function() end end})
+  h.focusTool = function() focusCalls = focusCalls + 1 end
+  return h
+end
 package.loaded["rfsuite.app.header"] = {
-  build = function(_, opts) lastHeaderOpts = opts; return anything() end,
+  build = function(_, opts) lastHeaderOpts = opts; return headerHandleStub() end,
 }
 package.loaded["rfsuite.app.close_key"] = {shouldHandleClose = function() return true end}
 package.loaded["rfsuite.app.progress_dialog"] = {
@@ -237,6 +249,7 @@ local function resetScenario()
   tiles = {}
   lastHeaderOpts = nil
   currentWake = nil
+  focusCalls = 0
 end
 
 local function pageOpts()
@@ -288,7 +301,11 @@ end
 local function pressToolAndConfirm()
   local before = #dialogs
   if not lastHeaderOpts or not lastHeaderOpts.onTool then return nil, "no Tool handler registered" end
-  local ok, err = pcall(function() lastHeaderOpts.onTool(function() end) end)
+  -- The focus hand-off the dialog owes the page: page_runtime hands the page
+  -- runtime.headerHandle.focusTool as focusFn (page_runtime.lua:1314), so the
+  -- counter lives on the header handle, not on this function's argument.
+  focusCalls = 0
+  local ok, err = pcall(function() lastHeaderOpts.onTool() end)
   if not ok then return nil, "Tool press raised: " .. tostring(err) end
   if #dialogs == before then return nil, "Tool press opened no dialog" end
   local d = dialogs[#dialogs]
@@ -309,6 +326,8 @@ local function runScenarios(label, expectedWrites, openFn)
     countKind("override") == 0,
     "override messages sent: " .. countKind("override"))
   check("the dialog closes on OK", result == true, "action returned " .. tostring(result))
+  check("a refused confirmation still hands the focus back", focusCalls == 1,
+    "focusFn calls: " .. focusCalls)
 
   print(label .. ": read succeeds, the override is written as before")
   opened, why = openFn("ok")
@@ -319,6 +338,8 @@ local function runScenarios(label, expectedWrites, openFn)
     countKind("override") == expectedWrites,
     "override messages sent: " .. countKind("override"))
   check("the dialog closes on OK", result == true, "action returned " .. tostring(result))
+  check("an accepted confirmation hands the focus back", focusCalls == 1,
+    "focusFn calls: " .. focusCalls)
 end
 
 -- ---------------------------------------------------------------------------
