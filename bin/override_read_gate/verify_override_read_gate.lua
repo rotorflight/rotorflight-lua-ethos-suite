@@ -197,6 +197,18 @@ package.loaded["rfsuite.lib.msp_mixer_input"] = {
   pitch = inputSource, roll = inputSource, collective = inputSource,
 }
 
+-- Serial config: the PWM page reads it at open to decide what servo_count means
+-- (Issue #2445), and the page waits for that reply before it builds the list. The
+-- builder is stubbed here so answerReads() can match it: the real module's message
+-- carries no kind, and a read the scenario cannot answer would leave the list shut
+-- and fail this harness for a reason that has nothing to do with the override.
+do
+  local serialConfig = requireModule("lib/msp_serial_config.lua")
+  serialConfig.buildReadMessage = function(onData, onError)
+    return {kind = "serialRead", onData = onData, onError = onError}
+  end
+end
+
 local sent = {}
 local bus = requireModule("lib/bus.lua")
 bus.subscribe("msp.request", function(m) sent[#sent + 1] = m end)
@@ -278,13 +290,14 @@ local function openMixerPage(page, outcome)
   runWakeups(5)
 end
 
--- servos_pwm and servos_bus: status and mixer reads, then a list, then a tap on a
--- tile opens the editor for that servo.
+-- servos_pwm and servos_bus: status, mixer and (on the PWM page) serial-config reads,
+-- then a list, then a tap on a tile opens the editor for that servo.
 local function openServoPage(page, outcome)
   resetScenario()
   page.open(pageOpts())
-  answerReads({statusRead = true, mixerRead = true}, "ok", function(kind)
+  answerReads({statusRead = true, mixerRead = true, serialRead = true}, "ok", function(kind)
     if kind == "statusRead" then return {servo_count = 2} end
+    if kind == "serialRead" then return {ports = {}} end
     return {swash_type = 0, tail_rotor_mode = 0}
   end)
   runWakeups(1)
