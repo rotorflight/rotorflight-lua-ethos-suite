@@ -75,10 +75,10 @@ end
 
 -- Feeds one reply through the read message's processReply and records what happened.
 local function deliver(buf)
-  local got = {data = nil, reason = nil, errors = 0}
+  local got = {data = nil, reason = nil, refused = nil, errors = 0}
   local msg = tuneAdvisor.buildReadMessage(1,
-    function(data) got.data = data end,
-    function(reason) got.errors = got.errors + 1; got.reason = reason end)
+  function(data) got.data = data end,
+  function(reason, refused) got.errors = got.errors + 1; got.reason = reason; got.refused = refused end)
   msg.processReply(nil, buf)
   return got
 end
@@ -95,6 +95,15 @@ do
   check("the decoded axis and P gain are the reply's", got.data ~= nil and got.data.axis == 1
     and got.data.a ~= nil and got.data.a.P == sim[6] + sim[7] * 256,
     "axis " .. tostring(got.data and got.data.axis))
+  check("a reply that decodes is not a refusal", got.refused == nil,
+    "refused " .. tostring(got.refused))
+end
+
+-- Every refusal below must be marked as one. The history task reads that flag to tell a
+-- deterministic answer from a lost link, and it is the flag that stops the five-second retry.
+local function checkRefused(label, got)
+  check(label .. ": it is marked refused", got.refused == true,
+    "refused " .. tostring(got.refused))
 end
 
 print("payload version 2 (a layout this suite does not know)")
@@ -107,6 +116,7 @@ do
   check("onError is called with the reason", got.errors == 1 and type(got.reason) == "string"
     and got.reason:find("version 2", 1, true) ~= nil,
     "errors " .. got.errors .. ", reason " .. tostring(got.reason))
+  checkRefused("version 2", got)
 end
 
 print("a truncated reply (66 bytes)")
@@ -118,6 +128,7 @@ do
     "decoded, with the missing bytes as zeros: P = " .. tostring(got.data and got.data.a and got.data.a.relaxCutoff))
   check("onError is called with the reason", got.errors == 1 and type(got.reason) == "string",
     "errors " .. got.errors)
+  checkRefused("truncated", got)
 end
 
 print("a longer reply (68 bytes)")
@@ -128,6 +139,7 @@ do
   check("onData is not called", got.data == nil)
   check("onError is called with the reason", got.errors == 1 and type(got.reason) == "string",
     "errors " .. got.errors)
+  checkRefused("longer", got)
 end
 
 print(string.format("\n%d checks, %d failed", checks, failures))

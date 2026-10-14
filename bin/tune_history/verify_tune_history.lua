@@ -187,6 +187,33 @@ do
     #requests .. " requests")
 end
 
+-- The third answer, and the one that has to differ from a link error: a reply this suite
+-- refuses is deterministic. The same bytes come back on every request, so waiting out
+-- RETRY_SECONDS buys nothing -- the block below runs the same clock the link-error case
+-- above needs before it asks again, and asserts that nothing is asked at all.
+do
+  load()
+  clock = 200
+  update({isArmed = true})
+  update({isArmed = false})
+  requests[1].errorHandler("tune advisor payload version 2, expected 1", true)
+  for j = #requests, 1, -1 do requests[j] = nil end
+  update({isArmed = false})
+  check("a refused reply is not asked again straight away", #requests == 0, #requests .. " requests")
+  clock = 206 -- past RETRY_SECONDS
+  update({isArmed = false})
+  check("a refused reply is never retried", #requests == 0, #requests .. " requests")
+  clock = 212
+  update({isArmed = false})
+  check("a refused reply stays refused, flight by flight", #requests == 0, #requests .. " requests")
+  check("a refused flight is not saved", files[HISTORY] == nil, tostring(files[HISTORY]))
+  -- The next DISARM asks again, once: the suite may learn the layout, and a pilot who
+  -- reconnects expects the capture to run.
+  update({isArmed = true})
+  update({isArmed = false})
+  check("the next disarm asks once", #requests == 1, #requests .. " requests")
+end
+
 do
   load()
   clock = 100

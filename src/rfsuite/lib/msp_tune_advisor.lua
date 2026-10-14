@@ -113,14 +113,20 @@ local PAYLOAD_VERSION = 1
 local REPLY_LENGTH = 67
 
 -- Returns {version, collecting, seconds, axis (1-3), a = {per-axis fields}},
--- or nil and a reason.
+-- or nil, a reason, and true when the reply was REFUSED rather than lost.
+--
+-- The third value is what separates the two reasons a caller can do nothing about differently.
+-- `true` from the transport means the firmware has no tune advisor at all; a refusal means it has
+-- one and answered, in a layout this suite does not know. Both are deterministic -- asking again
+-- cannot change either -- so a caller retries neither. The reason text stays a string, so a log
+-- line and a pilot-facing message can name what came back.
 function msp_tune_advisor.decode(buf)
   local length = #buf
   if length ~= REPLY_LENGTH then
-    return nil, "tune advisor reply is " .. length .. " bytes, expected " .. REPLY_LENGTH
+    return nil, "tune advisor reply is " .. length .. " bytes, expected " .. REPLY_LENGTH, true
   end
   if buf[1] ~= PAYLOAD_VERSION then
-    return nil, "tune advisor payload version " .. tostring(buf[1]) .. ", expected " .. PAYLOAD_VERSION
+    return nil, "tune advisor payload version " .. tostring(buf[1]) .. ", expected " .. PAYLOAD_VERSION, true
   end
 
   buf.offset = 1
@@ -169,9 +175,11 @@ function msp_tune_advisor.buildReadMessage(axis, onData, onError)
     command = READ_COMMAND,
     payload = {axis - 1},
     processReply = function(_, buf)
-      local data, reason = msp_tune_advisor.decode(buf)
+      local data, reason, refused = msp_tune_advisor.decode(buf)
       if not data then
-        if onError then onError(reason) end
+        -- `errorHandler` below answers an MSP error reply with `reason` alone, so a caller
+        -- that tests the third value sees nil there and can still tell the two apart.
+        if onError then onError(reason, refused) end
         return
       end
       onData(data)
