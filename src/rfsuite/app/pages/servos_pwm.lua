@@ -67,6 +67,9 @@ end
 
 local function buildRows(servoCount, mixer)
   local rows = {}
+  -- servoCount is the PWM count here (see pwmServoCount), and the firmware caps
+  -- PWM outputs at BUS_SERVO_OFFSET (8), so the 16 is only a guard against a
+  -- reply that does not add up - not a limit this page applies.
   local count = math.max(0, math.min(tonumber(servoCount) or 0, 16))
   for i = 1, count do
     rows[i] = {index = i - 1, title = servoTitle(i), icon = "servo" .. i .. ".png"}
@@ -149,6 +152,11 @@ local function openEditor(opts, listState, row)
       "rfsuite.lib.msp_servo_center",
       "rfsuite.lib.msp_servo_config",
       "rfsuite.lib.msp_servo_override",
+      -- Read at open to decide what servo_count means, and not needed after the
+      -- list is built. lib/require.lua memoises in package.loaded, so leaving it
+      -- here would hold its parse heap for the rest of the session; app/pages/
+      -- ports.lua clears the same module on dispose.
+      "rfsuite.lib.msp_serial_config",
     },
     onLoaded = function()
       unpackFlags(runtime.data)
@@ -386,7 +394,9 @@ local function open(opts)
         closeDialog()
         form.clear()
         header.build(PAGE_TITLE, {onBack = goBack})
-        form.addLine(MSG_LOAD_ERROR .. " STATUS/MIXER_CONFIG")
+        -- This page reads STATUS, MIXER_CONFIG and SERIAL_CONFIG; a refusal from
+        -- any of them lands here, so all three are named.
+        form.addLine(MSG_LOAD_ERROR .. " STATUS/MIXER_CONFIG/SERIAL_CONFIG")
         return
       end
       if pendingStatus and pendingMixer and pendingPorts then
