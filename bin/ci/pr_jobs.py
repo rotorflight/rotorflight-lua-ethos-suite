@@ -2054,6 +2054,24 @@ build: 125, 212 and 124 in lib/msp_servo_config.lua, 213 in lib/msp_servo_center
 pin to go red every time, after the unmodified modules have passed.
 '''
     ),
+    LuaJob(
+        id='runtime-read-validator',
+        name='A page refuses a reply it does not know on every read, not only the first',
+        step='Check the page runtime refuses a reload whose reply fails the page validator',
+        script='bin/runtime_read_validator/verify_runtime_read_validator.lua',
+        rationale=r'''Issue #2494: the ESC vendor page checked the codec signature only on its first read.
+The Reload path reads through the page runtime, which took the reply into the page's data
+without any check, so an ESC with another signature in the same slot built the editor from
+its parameters. The runtime now takes an optional validateRead (or validate on a source);
+a refused reply is a failed read, exactly as a read error is. The ESC page passes its
+signature check there.
+
+No build and no package step reaches this -- it is a reload path through the page runtime.
+The harness drives the real page_runtime through loadData(): a reply with another signature
+is refused and leaves the page unloaded, a reply with the page's signature loads it, and a
+read error is refused as before. Against unpatched master the refused reply loads the page.
+''',
+    ),
 ]
 
 VERBATIM_JOBS = [
