@@ -93,6 +93,8 @@ local function openEditor(opts, initialMode)
               queueOverride(mixerOverride.OVERRIDE_OFF)
               inOverride = false
             else
+              -- The live write below waits for the read; so must the override.
+              if not runtime.loaded then return true end
               queueOverride(0)
               inOverride = true
               lastLiveDigest = digest(formData)

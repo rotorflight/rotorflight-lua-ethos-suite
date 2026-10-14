@@ -2704,6 +2704,37 @@ jobs:
       - name: Check the servo command numbers and payloads
         run: lua5.4 bin/servo_config_commands/verify_servo_config_commands.lua
 
+  # Issue #2496: on four pages the override could be switched on before the visit
+  # had read anything, while the live write that the confirmation promises was held back.
+  # The OK action of the override dialog now refuses to switch the override on until the
+  # runtime is loaded, as the live write already does.
+  #
+  # No build and no package step reaches this -- it is a dialog path through a running
+  # page. The harness drives the real mixer_trims and mixer_geometry pages with the real
+  # page runtime: with the read failed, pressing Tool and OK writes no override; with the
+  # read completed, the four axes are written as before. Against unpatched master the
+  # read-failed checks fail on both pages.
+  #
+  # The servo pages (servos_pwm, servos_bus) carry the same guard. They are not covered
+  # by this harness and are not claimed as verified.
+  override-read-gate:
+    name: Mixer override is not switched on before the page has read its values
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Install Lua 5.4
+        run: sudo apt-get update && sudo apt-get install -y lua5.4
+
+      - name: Check the mixer trims and geometry overrides wait for the read
+        run: lua5.4 bin/override_read_gate/verify_override_read_gate.lua
+
   # Per-language PR builds (mirrors push.yml behavior)
   create-zip:
     name: Build PR ZIP (${{ matrix.lang }})

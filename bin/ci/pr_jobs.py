@@ -2054,6 +2054,26 @@ build: 125, 212 and 124 in lib/msp_servo_config.lua, 213 in lib/msp_servo_center
 pin to go red every time, after the unmodified modules have passed.
 '''
     ),
+    LuaJob(
+        id='override-read-gate',
+        name='Mixer override is not switched on before the page has read its values',
+        step='Check the mixer trims and geometry overrides wait for the read',
+        script='bin/override_read_gate/verify_override_read_gate.lua',
+        rationale=r'''Issue #2496: on four pages the override could be switched on before the visit
+had read anything, while the live write that the confirmation promises was held back.
+The OK action of the override dialog now refuses to switch the override on until the
+runtime is loaded, as the live write already does.
+
+No build and no package step reaches this -- it is a dialog path through a running
+page. The harness drives the real mixer_trims and mixer_geometry pages with the real
+page runtime: with the read failed, pressing Tool and OK writes no override; with the
+read completed, the four axes are written as before. Against unpatched master the
+read-failed checks fail on both pages.
+
+The servo pages (servos_pwm, servos_bus) carry the same guard. They are not covered
+by this harness and are not claimed as verified.
+''',
+    ),
 ]
 
 VERBATIM_JOBS = [

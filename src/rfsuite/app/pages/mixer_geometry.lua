@@ -172,6 +172,8 @@ local function open(opts)
               queueOverride(mixerOverride.OVERRIDE_OFF)
               inOverride = false
             else
+              -- The live write below waits for the read; so must the override.
+              if not runtime.loaded then return true end
               queueOverride(mixerOverride.OVERRIDE_PASSTHROUGH)
               inOverride = true
               lastLiveDigest = digest(formData)
