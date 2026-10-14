@@ -1764,22 +1764,129 @@ puts back one row of six and requires the three-across check to go red.
 '''
     ),
     LuaJob(
-        id='armed-gating',
-        name='Armed state gates configuration pages and badges their tiles',
-        step='Check the armed gating of the menu tiles',
-        script='bin/armed_gating/verify_armed_gating.lua',
-        rationale=r'''Issue #2302: the menu showed identical tiles whether the model was disarmed on
-the bench or armed with spinning blades. Flight-critical configuration pages are
-now classified (app/armed_gating.lua), their tiles carry a [!] badge while armed,
-a press on a locked tile is refused with a non-modal notice, and the grid is rebuilt
-on arm and disarm.
+        id='battery-edit-profile',
+        name='Editing another battery profile does not activate it on save',
+        step='Check the battery page edits the chosen profile without activating it',
+        script='bin/battery_edit_profile/verify_battery_edit_profile.lua',
+        rationale=r'''Issue #2502: the Battery page had one profile selector, and the cell rows followed
+it. To edit the cells of profile 4 the pilot had to make profile 4 active, and saving
+then activated it. The page now has an Edit Battery choice that only the cell rows
+follow; the saved profile stays on the active one.
 
-No build and no package step reaches this -- it is a menu path through the real
-app/menu_container.lua and app/tile_grid.lua. The harness runs both suites in one
-process: the derivation rules and the real menu tree against an explicit expected
-classification (suite_armed_gating.lua), and the badge, the refusal and the rebuild
-(suite_menu_container.lua). A deliberately broken classification (submenu lock
-disabled) makes the runner exit non-zero.
+No build and no package step reaches this -- it is a save path through a running
+page. The harness drives the real power_battery page with the real page runtime and
+field layout, and answers every write the way the FC would. Against unpatched master
+the page has no Edit Battery choice, and saving a cell edit of profile 3 writes
+profile 3 as the active one.
+'''
+    ),
+    LuaJob(
+        id='ports-readback',
+        name='Ports page reads the serial ports back after a save, and not the RX config',
+        step='Check the Ports page read-back and its reads',
+        script='bin/ports_readback/verify_ports_readback.lua',
+        rationale=r'''Issue #2497 (findings 1 and 2): the Ports page never read the board back after a
+save, so its rows showed what was sent; and it read MSP_RX_CONFIG on every open
+although the value was never used, which held up the loading dialog for one round
+trip. After an accepted EEPROM write the page now reads the serial ports back before
+it reboots, and the RX config read is gone.
+
+No build and no package step reaches this -- it is a read and write path through a
+running page. The harness drives the real ports page with the real bus and the real
+port-label library, and answers each message the way the FC would: a board that
+reports a different function than the one sent, a refused read-back, and the reboot
+that must wait for the read-back. Against unpatched master five of the seven checks
+fail.
+'''
+    ),
+    LuaJob(
+        id='profile-select-refusal',
+        name='Select Profile reports a refused profile write and keeps Save lit',
+        step='Check that a refused profile write is reported',
+        script='bin/profile_select/verify_profile_select.lua',
+        rationale=r'''Issue #2498: the Select Profile page closed its progress dialog on a refused
+PID or rate profile write and said nothing, so the pilot saw the dialog go away and
+the Save button still lit. The refusal now opens the save-failed dialog that the FC
+pages already use, and the page keeps its state, so a second attempt is possible.
+
+No build and no package step reaches this -- it is a write path through a running
+page. The harness drives the real profile_select page with the real bus and the real
+select-profile message builder, and answers each write as the FC would: accepted or
+refused. Against unpatched master the two refused-write dialog checks fail.
+'''
+    ),
+    LuaJob(
+        id='settings-save-refusal',
+        name='Local settings pages report a refused save and keep their dirty state',
+        step='Check that a refused settings save is reported',
+        script='bin/settings_save/verify_settings_save.lua',
+        rationale=r'''Issue #2500: settingsStore.save() returns false when the INI file cannot be
+written, and ten local settings pages threw that value away. They published
+settings.update and cleared their dirty flag anyway, so the Save button went dark
+and the setting was gone at the next start, with no message. Each page now
+checks the result and reports a refusal through app/settings_save.lua, keeping its
+dirty state and publishing nothing.
+
+No build and no package step reaches this -- it is a save path through a running
+page. The harness drives the real settings_general page with the real bus and the
+real helper, against a store stub whose save() is refused or accepted, and presses
+Save the way the pilot does. Against unpatched master the refused-save checks fail.
+The other settings pages carry the same three-line change and are covered by the
+review, not by this harness.
+'''
+    ),
+    LuaJob(
+        id='bar-disconnect',
+        name='Battery and fuel bar shows loading after telemetry loss before flight',
+        step='Check the dashboard bar after telemetry loss',
+        script='bin/bar_disconnect/verify_bar_disconnect.lua',
+        rationale=r'''Issue #2534: the bar gauge kept its last valid reading whenever the sensor
+dropped out, so a fuel bar stayed at 85% after the pack was unplugged on the
+bench. widgets/dashboard/objects/gauge/bar.lua now shows the loading dots while
+the flight has not started yet; once a flight is under way the last reading is
+held, in flight as well as in postflight, so a momentary telemetry gap cannot
+blank a gauge the pilot is flying on nor discard the reading it had.
+
+No build and no package step reaches this -- it is a render path through a
+running widget. The harness drives the real bar gauge (render.wakeup) with a fake
+telemetry source and the flight mode: connected shows the value, a dropout before
+flight must not keep it and must show the loading state, reconnect shows the new
+value, a dropout in flight keeps it across two consecutive wakeups, and a
+dropout in postflight keeps the last value. Against unpatched master the two
+dropout-before-flight checks fail; against the first cut of this branch, which
+held the reading only in postflight and discarded the cache in flight, the four
+flight and postflight checks fail.
+'''
+    ),
+    LuaJob(
+        id='toolbar-armed',
+        name='Dashboard write items are refused while armed',
+        step='Check the dashboard Erase and Battery tiles while armed',
+        script='bin/toolbar_armed/verify_toolbar_armed.lua',
+        rationale=r'''Issue #2505: two dashboard toolbar items write to the flight controller,
+blackbox erase and battery profile, and neither their enable check nor their
+write path looked at the arm state. A battery picker open at arming, or an erase
+confirmation answered after arming, still wrote.
+
+No build and no package step reaches this -- it is a touch path through a running
+widget. The harness drives the real widgets/dashboard.lua through the descriptor
+the radio calls, and feeds the arm state through session.update the way the
+session does. While armed the Erase and Battery tiles are disabled, arming closes
+an open battery picker, and a confirmed erase answered after arming publishes no
+msp.request. Disarmed, the same paths publish their write again. The checks that
+depend on the toolbar being reachable assert that it is reachable first, so a
+run that cannot reach the tiles fails instead of passing vacuously.
+
+The armed state is also UNKNOWN after having been armed, and the write items stay
+refused then: losing the link in flight clears the armed state and the reconnect is
+published before the first arm flags arrive, so the flight controller is briefly
+connected with no armed answer while the rotor may still be turning. A flight
+controller that has never reported arm flags is not locked out by that. Those checks
+are what separate this from a bare "isArmed == true" guard: against the first cut of
+this branch four of them fail, and one of them asserts that a confirmed erase in that
+window publishes no write.
+
+Run against unpatched master, 20 of 30 checks fail.
 '''
     ),
     LuaJob(
@@ -1945,6 +2052,25 @@ build: 125, 212 and 124 in lib/msp_servo_config.lua, 213 in lib/msp_servo_center
 193 in lib/msp_servo_override.lua, and the 17-byte layout shared by 124 and 212.
 --self-test swaps one number at a time in a copy of each module and requires the
 pin to go red every time, after the unmodified modules have passed.
+'''
+    ),
+    LuaJob(
+        id='armed-gating',
+        name='Armed state gates configuration pages and badges their tiles',
+        step='Check the armed gating of the menu tiles',
+        script='bin/armed_gating/verify_armed_gating.lua',
+        rationale=r'''Issue #2302: the menu showed identical tiles whether the model was disarmed on
+the bench or armed with spinning blades. Flight-critical configuration pages are
+now classified (app/armed_gating.lua), their tiles carry a [!] badge while armed,
+a press on a locked tile is refused with a non-modal notice, and the grid is rebuilt
+on arm and disarm.
+
+No build and no package step reaches this -- it is a menu path through the real
+app/menu_container.lua and app/tile_grid.lua. The harness runs both suites in one
+process: the derivation rules and the real menu tree against an explicit expected
+classification (suite_armed_gating.lua), and the badge, the refusal and the rebuild
+(suite_menu_container.lua). A deliberately broken classification (submenu lock
+disabled) makes the runner exit non-zero.
 '''
     ),
 ]

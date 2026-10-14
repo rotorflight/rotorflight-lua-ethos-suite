@@ -5956,6 +5956,12 @@
           "reverse_text": false,
           "translation": "Ausgewählt"
         },
+        "edit_battery": {
+          "english": "Edit Battery",
+          "max_length": 16,
+          "needs_translation": false,
+          "translation": "Batterie bearbeiten"
+        },
         "smartfuel_charge_drop_rate": {
           "english": "Charge Drop Rate",
           "max_length": 16,
@@ -8237,6 +8243,13 @@
       "needs_translation": false,
       "reverse_text": false,
       "translation": "Einstellungen wurden nicht zum FC übertragen. Bitte erneut"
+    },
+    "msg_save_failed_local_body": {
+      "english": "Settings were not saved to the radio. Please try again.",
+      "max_length": 67,
+      "needs_translation": false,
+      "reverse_text": false,
+      "translation": "Einstellungen wurden nicht auf dem Radio gespeichert. Bitte erneut versuchen."
     },
     "msg_save_failed_title": {
       "english": "Save failed",
