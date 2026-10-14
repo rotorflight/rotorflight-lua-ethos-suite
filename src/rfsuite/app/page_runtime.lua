@@ -689,7 +689,17 @@ function PageRuntime:loadData(focusFn)
       -- A page may refuse a reply it does not know (for example a codec whose
       -- signature does not match the device). The refused reply never reaches
       -- the page's data: it is a failed read, exactly as a read error is.
-      local validate = self_.singleSource and self_.validateRead or source.validate
+      --
+      -- Two places to look, picked in an if rather than in one expression: a
+      -- single-source page passes validateRead, a multi-source page gives each
+      -- of its own sources a validate. ("a and b or c" would read the same here,
+      -- but only because a single-source page's source can never carry one.)
+      local validate
+      if self_.singleSource then
+        validate = self_.validateRead
+      else
+        validate = source.validate
+      end
       if validate then
         local ok, why = validate(values)
         if not ok then

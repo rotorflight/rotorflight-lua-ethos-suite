@@ -168,5 +168,27 @@ do
   check("the load error is reported", runtime.pendingLoadError == true)
 end
 
+-- The scenario the issue describes: a page that is already loaded and is being
+-- reloaded. The two checks above all start from a fresh runtime, where "the page
+-- is not loaded" is also true before anything happens; on a loaded page the
+-- refusal leaves the previous data in place and only flips `loaded`, so what has
+-- to be pinned is that the stale values cannot be written back.
+print("a LOADED page reloaded with a foreign signature cannot save the old data")
+do
+  local runtime = newRuntime()
+  local ok, why = reloadWith(runtime, function(m) m.onData({esc_signature = 194, motor = 7}) end)
+  check("the page is loaded before the foreign reload", ok and runtime.loaded == true, why)
+  local dataBefore = runtime.data
+
+  ok, why = reloadWith(runtime, function(m) m.onData({esc_signature = 83, motor = 999}) end)
+  check("the second reload reads the device", ok, why)
+  check("the page is not loaded any more", runtime.loaded ~= true)
+  check("the old data is left alone, not replaced",
+    runtime.data == dataBefore, "the refused reply replaced the page's data")
+  runtime:markDirty()
+  check("a dirty page can no longer be saved", runtime:canSave() ~= true,
+    "canSave() = " .. tostring(runtime:canSave()))
+end
+
 print(string.format("\n%d checks, %d failed", checks, failures))
 os.exit(failures == 0 and 0 or 1)
