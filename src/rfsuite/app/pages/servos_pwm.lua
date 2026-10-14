@@ -20,6 +20,8 @@ local servoCenter = requireModule("lib/msp_servo_center.lua")
 local servoConfig = requireModule("lib/msp_servo_config.lua")
 local servoOverride = requireModule("lib/msp_servo_override.lua")
 local status = requireModule("lib/msp_status.lua")
+local serialConfig = requireModule("lib/msp_serial_config.lua")
+local servoBusGuard = requireModule("app/servo_bus_guard.lua")
 
 local PAGE_TITLE = "@i18n(app.modules.servos.pwm)@"
 local MSG_LOADING_TITLE = "@i18n(app.msg_loading)@"
@@ -48,6 +50,19 @@ local function applyMixerNames(rows, swashMode, tailMode)
     rows[4].title = "@i18n(app.modules.servos.tail)@"
     rows[4].icon = "servos_tail.png"
   end
+end
+
+-- MSP_STATUS servo_count is the packed total when a SBUS or FBUS port is configured:
+-- the PWM outputs plus the bus channels (firmware msp.c, 4.6.0). Only the PWM outputs
+-- are listed here. The bus channels are on the Bus page.
+local BUS_SERVO_CHANNELS = 18
+
+local function pwmServoCount(servoCount, ports)
+  local total = tonumber(servoCount) or 0
+  if servoBusGuard.portsHaveServoBus(ports) then
+    return math.max(0, total - BUS_SERVO_CHANNELS)
+  end
+  return total
 end
 
 local function buildRows(servoCount, mixer)
@@ -83,6 +98,18 @@ end
 
 local openList
 
+-- A PWM servo is written raw (cmd 124). Cmd 212 takes the packed index, and the
+-- firmware translates it once a bus port is configured, so the tile's index would
+-- reach a bus servo. Reads stay on the same index.
+local function pwmServoModule(index)
+  local servo = servoConfig.forIndex(index)
+  return {
+    FIELD_META = servo.FIELD_META,
+    buildReadMessage = servo.buildReadMessage,
+    buildWriteMessage = servo.buildRawWriteMessage,
+  }
+end
+
 local function openEditor(opts, listState, row)
   local inheritedOverride = listState.inOverride == true
   local inOverride = inheritedOverride
@@ -104,7 +131,7 @@ local function openEditor(opts, listState, row)
   runtime = pageRuntime.new({
     pageTitle = PAGE_TITLE .. " / " .. row.title,
     logTag = "servos_pwm_editor",
-    mspModule = servoConfig.forIndex(index),
+    mspModule = pwmServoModule(index),
     opts = {
       onBack = function()
         if inOverride and not inheritedOverride then
@@ -309,6 +336,7 @@ local function open(opts)
   local disposed = false
   local pendingStatus = nil
   local pendingMixer = nil
+  local pendingPorts = nil
   local pendingError = nil
   local dialog = nil
   local listState = {inOverride = false}
@@ -361,8 +389,8 @@ local function open(opts)
         form.addLine(MSG_LOAD_ERROR .. " STATUS/MIXER_CONFIG")
         return
       end
-      if pendingStatus and pendingMixer then
-        listState.rows = buildRows(pendingStatus.servo_count, pendingMixer)
+      if pendingStatus and pendingMixer and pendingPorts then
+        listState.rows = buildRows(pwmServoCount(pendingStatus.servo_count, pendingPorts), pendingMixer)
         closeDialog()
         opts.setWakeupHandler(nil)
         openList(opts, listState)
@@ -380,6 +408,14 @@ local function open(opts)
   bus.publish("msp.request", mixerConfig.buildReadMessage(function(data)
     if disposed then return end
     pendingMixer = data
+  end, function()
+    if disposed then return end
+    pendingError = true
+  end))
+  -- The ports say whether bus servos are on, which decides what servo_count means.
+  bus.publish("msp.request", serialConfig.buildReadMessage(function(data)
+    if disposed then return end
+    pendingPorts = (data and data.ports) or {}
   end, function()
     if disposed then return end
     pendingError = true

@@ -31,6 +31,7 @@ Greyed out until the flight controller answers. Read-only while the model is arm
 ## Notes
 
 - Changes are written to the flight controller EEPROM upon Save.
+- The list shows only the PWM outputs. When a SBUS or FBUS port is configured, the bus channels are not listed here; they are on the Bus page.
 
 ## Related
 

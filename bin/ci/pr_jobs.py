@@ -2054,6 +2054,26 @@ build: 125, 212 and 124 in lib/msp_servo_config.lua, 213 in lib/msp_servo_center
 pin to go red every time, after the unmodified modules have passed.
 '''
     ),
+    LuaJob(
+        id='pwm-servo-write',
+        name='PWM servo page lists the PWM outputs only and writes each one raw',
+        step='Check the PWM servo list count and the raw write of each servo',
+        script='bin/pwm_servo_write/verify_pwm_servo_write.lua',
+        rationale=r'''Issue #2445: with a SBUS or FBUS port configured, MSP_STATUS servo_count is the packed
+total (PWM outputs plus the 18 bus channels). The PWM page listed min(total, 16) tiles, so
+tiles past the PWM outputs wrote bus servos, and each save went out as cmd 212, which the
+firmware translates to the bus servo at that packed index. The list now counts the PWM
+outputs using the same port test as the bus guard, and every PWM save is written raw
+(cmd 124).
+
+No build and no package step reaches this -- it is a list and a save path through a
+running page. The harness drives the real servos_pwm page with the real page runtime,
+the real bus guard and the real servo-config write builders, in three bench layouts:
+no bus port, a FBUS port and a SBUS port. Against unpatched master the bus layouts show
+16 tiles and write cmd 212, and the first layout writes cmd 212 where the page now writes
+cmd 124.
+''',
+    ),
 ]
 
 VERBATIM_JOBS = [
