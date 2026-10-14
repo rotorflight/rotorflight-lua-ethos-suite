@@ -5,15 +5,16 @@
 --     lua5.4 bin/override_read_gate/verify_override_read_gate.lua
 --
 -- What it drives, and why:
---   * The real app/pages/mixer_trims.lua and app/pages/mixer_geometry.lua, with the
---     real app/page_runtime.lua. The MSP modules, the header and the progress dialog
---     are stubs; every message the page publishes is recorded by the bus, and the
---     scenario answers each read the way the FC would.
+--   * The real app/pages/mixer_trims.lua, mixer_geometry.lua, servos_pwm.lua and
+--     servos_bus.lua, with the real app/page_runtime.lua. The header, the progress
+--     dialog and the tile grid are stubs; the MSP modules are the real ones with their
+--     message builders replaced, so every message the page publishes is recorded by the
+--     bus and the scenario answers each read the way the FC would.
 --   * Two scenarios per page. In "read fails" the page's read errors out, so the
 --     runtime is not loaded. In "read succeeds" the page is loaded. Pressing Tool and
 --     confirming the override dialog must write the override only in the second.
 --   * Against unpatched master the "read fails" scenario writes the override anyway:
---     four override messages, while the live write is held back. That is the defect.
+--     the live write is held back, the override is not. That is the defect.
 
 local function scriptDir()
   local src = debug.getinfo(1, "S").source
@@ -85,10 +86,16 @@ lcd.getWindowSize = function() return 800, 480 end
 system = anything()
 
 local dialogs = {}
+local tiles = {}
 form = anything()
 form.clear = function() end
 form.invalidate = function() end
+form.height = function() return 0 end
 form.openDialog = function(opts) dialogs[#dialogs + 1] = opts end
+form.addButton = function(_, _, opts)
+  tiles[#tiles + 1] = opts
+  return anything()
+end
 
 local lastHeaderOpts = nil
 package.loaded["rfsuite.app.header"] = {
@@ -99,6 +106,10 @@ package.loaded["rfsuite.app.progress_dialog"] = {
   SPEED = {DEFAULT = 1},
   open = function() return {value = function() end, close = function() end} end,
 }
+package.loaded["rfsuite.app.tile_grid"] = {
+  metrics = function() return 3, 120, 90, 4, 0 end,
+  fitLabel = function(text) return text end,
+}
 package.loaded["rfsuite.lib.memstats"] = {print = function() end}
 package.loaded["rfsuite.lib.debug_log"] = anything()
 package.loaded["rfsuite.lib.settings_store"] = {
@@ -108,8 +119,7 @@ package.loaded["rfsuite.lib.settings_store"] = {
   save = function() return true end,
 }
 
--- The mixer config read: the page's open read and the runtime's source read both go
--- through here. Messages are recorded once, by the bus subscriber below.
+-- Mixer config: replaced builders, so the page's reads are recorded and answered here.
 package.loaded["rfsuite.lib.msp_mixer_config"] = {
   buildReadMessage = function(onData, onError)
     return {kind = "mixerRead", onData = onData, onError = onError}
@@ -119,13 +129,46 @@ package.loaded["rfsuite.lib.msp_mixer_config"] = {
   end,
 }
 
-package.loaded["rfsuite.lib.msp_mixer_override"] = {
-  OVERRIDE_OFF = 2501,
-  OVERRIDE_PASSTHROUGH = 2502,
-  buildWriteMessage = function(index, value)
+-- Mixer override: real constants, replaced builders.
+do
+  local mixerOverride = requireModule("lib/msp_mixer_override.lua")
+  mixerOverride.buildWriteMessage = function(index, value)
     return {kind = "override", index = index, value = value}
+  end
+end
+
+-- Status (servo count) and servo config: real modules, read builders replaced.
+package.loaded["rfsuite.lib.msp_status"] = {
+  buildReadMessage = function(onData, onError)
+    return {kind = "statusRead", onData = onData, onError = onError}
   end,
 }
+do
+  local servoConfig = requireModule("lib/msp_servo_config.lua")
+  -- servos_bus reads through the module-level builder with its own index
+  servoConfig.buildReadMessage = function(_, onData, onError)
+    return {kind = "servoRead", onData = onData, onError = onError}
+  end
+  servoConfig.forIndex = function()
+    return {
+      FIELD_META = servoConfig.FIELD_META,
+      buildReadMessage = function(onData, onError)
+        return {kind = "servoRead", onData = onData, onError = onError}
+      end,
+      buildWriteMessage = function() return {kind = "servoWrite"} end,
+      buildRawWriteMessage = function() return {kind = "servoWrite"} end,
+    }
+  end
+end
+do
+  local servoOverride = requireModule("lib/msp_servo_override.lua")
+  servoOverride.buildWriteMessage = function(index, value)
+    return {kind = "override", index = index, value = value}
+  end
+  servoOverride.buildWriteAllMessage = function(value)
+    return {kind = "overrideAll", value = value}
+  end
+end
 
 -- The three stick-input sources mixer_geometry reads alongside the mixer config.
 local function inputSource()
@@ -150,10 +193,14 @@ bus.subscribe("msp.request", function(m) sent[#sent + 1] = m end)
 -- Scenario driver
 -- ---------------------------------------------------------------------------
 
-local FIXTURE = {
+local MIXER_FIXTURE = {
   tail_rotor_mode = 0,
   swash_trim_0 = 0, swash_trim_1 = 0, swash_trim_2 = 0,
   tail_center_trim = 0, tail_motor_idle = 0,
+}
+local SERVO_FIXTURE = {
+  mid = 1500, min = 1000, max = 2000, rneg = 100, rpos = 100,
+  rate = 0, speed = 0, reverse = 0, geometry = 0,
 }
 
 local function countKind(kind)
@@ -162,20 +209,48 @@ local function countKind(kind)
   return n
 end
 
--- Answers the open read first, then the runtime's source reads with the outcome,
--- then runs the UI ticks so the outcome takes effect, as on the radio.
-local function openPage(page, outcome)
+-- Answers every not-yet-answered read of the given kinds with the outcome.
+-- Returns how many reads were answered.
+local function answerReads(kinds, outcome, fixtureFor)
+  local answered = 0
+  for _, m in ipairs(sent) do
+    if kinds[m.kind] and not m.answered then
+      m.answered = true
+      answered = answered + 1
+      if outcome == "ok" then m.onData(fixtureFor(m.kind))
+      else m.onError("read timed out") end
+    end
+  end
+  return answered
+end
+
+-- The wakeup handler the page or its runtime registered last. A page's list sets it
+-- to nil, and the editor it opens registers its own.
+local currentWake = nil
+local function runWakeups(n)
+  for _ = 1, n do if currentWake then currentWake() end end
+end
+
+local function resetScenario()
   sent = {}
   dialogs = {}
+  tiles = {}
   lastHeaderOpts = nil
-  local wakeup = nil
-  page.open({
+  currentWake = nil
+end
+
+local function pageOpts()
+  return {
     onBack = function() end,
-    setWakeupHandler = function(fn) wakeup = fn end,
-  })
-  -- Only the open read (the first read the page sends) gets the mode answer here.
-  -- Some pages create their runtime at once, so the value reads must wait for the
-  -- scenario below and must not be answered by this loop.
+    setWakeupHandler = function(fn) currentWake = fn end,
+  }
+end
+
+-- mixer_trims and mixer_geometry: the page opens its editor directly.
+local function openMixerPage(page, outcome)
+  resetScenario()
+  page.open(pageOpts())
+  -- the open read: tail rotor mode, always answered with success
   for _, m in ipairs(sent) do
     if m.kind == "mixerRead" and not m.answered then
       m.answered = true
@@ -183,25 +258,36 @@ local function openPage(page, outcome)
       break
     end
   end
-  if wakeup then wakeup() end
+  runWakeups(1)
   for _ = 1, 10 do
-    local progressed = false
-    for _, m in ipairs(sent) do
-      if m.kind == "mixerRead" and not m.answered then
-        m.answered = true
-        progressed = true
-        if outcome == "ok" then m.onData(FIXTURE)
-        else m.onError("read timed out") end
-      end
-    end
-    if not progressed then break end
+    if answerReads({mixerRead = true}, outcome, function() return MIXER_FIXTURE end) == 0 then break end
   end
-  for _ = 1, 5 do if wakeup then wakeup() end end
+  runWakeups(5)
+end
+
+-- servos_pwm and servos_bus: status and mixer reads, then a list, then a tap on a
+-- tile opens the editor for that servo.
+local function openServoPage(page, outcome)
+  resetScenario()
+  page.open(pageOpts())
+  answerReads({statusRead = true, mixerRead = true}, "ok", function(kind)
+    if kind == "statusRead" then return {servo_count = 2} end
+    return {swash_type = 0, tail_rotor_mode = 0}
+  end)
+  runWakeups(1)
+  if #tiles == 0 then return false, "the list shows no servo tile" end
+  tiles[1].press()
+  for _ = 1, 10 do
+    if answerReads({servoRead = true}, outcome, function() return SERVO_FIXTURE end) == 0 then break end
+  end
+  runWakeups(5)
+  return true, nil
 end
 
 -- Presses Tool, then OK on the dialog it opens. Returns the dialog's OK result.
 local function pressToolAndConfirm()
   local before = #dialogs
+  if not lastHeaderOpts or not lastHeaderOpts.onTool then return nil, "no Tool handler registered" end
   local ok, err = pcall(function() lastHeaderOpts.onTool(function() end) end)
   if not ok then return nil, "Tool press raised: " .. tostring(err) end
   if #dialogs == before then return nil, "Tool press opened no dialog" end
@@ -212,36 +298,44 @@ local function pressToolAndConfirm()
   return okResult, nil
 end
 
+local function runScenarios(label, expectedWrites, openFn)
+  print(label .. ": read fails, the override is not written")
+  local opened, why = openFn("fail")
+  check("the page opens its editor", opened ~= false, why)
+  check("Tool opens the override dialog", lastHeaderOpts ~= nil and lastHeaderOpts.onTool ~= nil)
+  local result, err = pressToolAndConfirm()
+  check("pressing Tool and OK raises no error", err == nil, err)
+  check("no override is written while the read has not completed",
+    countKind("override") == 0,
+    "override messages sent: " .. countKind("override"))
+  check("the dialog closes on OK", result == true, "action returned " .. tostring(result))
+
+  print(label .. ": read succeeds, the override is written as before")
+  opened, why = openFn("ok")
+  check("the page opens its editor", opened ~= false, why)
+  result, err = pressToolAndConfirm()
+  check("pressing Tool and OK raises no error", err == nil, err)
+  check("the override is written once the read has completed",
+    countKind("override") == expectedWrites,
+    "override messages sent: " .. countKind("override"))
+  check("the dialog closes on OK", result == true, "action returned " .. tostring(result))
+end
+
 -- ---------------------------------------------------------------------------
 -- Checks
 -- ---------------------------------------------------------------------------
 
-for _, pageName in ipairs({"mixer_trims", "mixer_geometry"}) do
-  local page = requireModule("app/pages/" .. pageName .. ".lua")
-
-  print(pageName .. ": read fails, the override is not written")
-  openPage(page, "fail")
-  check("Tool opens the override dialog", lastHeaderOpts ~= nil and lastHeaderOpts.onTool ~= nil)
-  do
-    local result, why = pressToolAndConfirm()
-    check("pressing Tool and OK raises no error", why == nil, why)
-    check("no override is written while the read has not completed",
-      countKind("override") == 0,
-      "override messages sent: " .. countKind("override"))
-    check("the dialog closes on OK", result == true, "action returned " .. tostring(result))
-  end
-
-  print(pageName .. ": read succeeds, the override is written as before")
-  openPage(page, "ok")
-  do
-    local result, why = pressToolAndConfirm()
-    check("pressing Tool and OK raises no error", why == nil, why)
-    check("the override is written to all four axes once the read has completed",
-      countKind("override") == 4,
-      "override messages sent: " .. countKind("override"))
-    check("the dialog closes on OK", result == true, "action returned " .. tostring(result))
-  end
+local function mixerOpener(page)
+  return function(outcome) openMixerPage(page, outcome); return true end
 end
+local function servoOpener(page)
+  return function(outcome) return openServoPage(page, outcome) end
+end
+
+runScenarios("mixer_trims", 4, mixerOpener(requireModule("app/pages/mixer_trims.lua")))
+runScenarios("mixer_geometry", 4, mixerOpener(requireModule("app/pages/mixer_geometry.lua")))
+runScenarios("servos_pwm", 1, servoOpener(requireModule("app/pages/servos_pwm.lua")))
+runScenarios("servos_bus", 1, servoOpener(requireModule("app/pages/servos_bus.lua")))
 
 print(string.format("\n%d checks, %d failed", checks, failures))
 os.exit(failures == 0 and 0 or 1)
