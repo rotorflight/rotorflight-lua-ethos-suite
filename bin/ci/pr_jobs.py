@@ -2074,6 +2074,23 @@ no bus port, a FBUS port and a SBUS port. Against unpatched master the bus layou
 cmd 124.
 ''',
     ),
+    LuaJob(
+        id='override-read-gate',
+        name='Mixer and servo override is not switched on before the page has read its values',
+        step='Check the mixer and servo overrides wait for the read',
+        script='bin/override_read_gate/verify_override_read_gate.lua',
+        rationale=r'''Issue #2496: on four pages the override could be switched on before the visit
+had read anything, while the live write that the confirmation promises was held back.
+The OK action of the override dialog now refuses to switch the override on until the
+runtime is loaded, as the live write already does.
+
+No build and no package step reaches this -- it is a dialog path through a running
+page. The harness drives the real mixer_trims, mixer_geometry, servos_pwm and servos_bus
+pages with the real page runtime: with the read failed, pressing Tool and OK writes
+no override; with the read completed, the override is written as before. Against
+unpatched master the read-failed checks fail on all four pages.
+''',
+    ),
 ]
 
 VERBATIM_JOBS = [
