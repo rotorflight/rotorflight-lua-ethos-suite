@@ -5,8 +5,10 @@
 -- Run it:
 --     lua5.4 bin/esc_sensor_protocol/verify_esc_sensor_protocol.lua
 --
--- What it drives: the real src/rfsuite/lib/msp_esc_sensor_config.lua. Against unpatched
--- master there is no API-dependent list, so the checks that need one go red.
+-- What it drives: the real src/rfsuite/lib/msp_esc_sensor_config.lua, and the real
+-- app/pages/esc_motors_telemetry.lua with stub runtime and field layout, to pin that the page
+-- hands the field the list for the version the runtime holds after buildChrome(). Against
+-- unpatched master there is no API-dependent list, so the checks that need one go red.
 
 local function scriptDir()
   local src = debug.getinfo(1, "S").source
@@ -111,6 +113,46 @@ do
   check("no SRXL2 and no RECORD are offered", list ~= nil and valueOf(list, "SRXL2") == nil
     and valueOf(list, "RECORD") == nil)
   check("the base list is still there", valueOf(list, "FrSky F.BUS") == 13)
+end
+
+-- The page itself: it must hand the field the list for the version the runtime holds when
+-- the field is built. The runtime stub copies the session snapshot in buildChrome(), the way
+-- the real one does through the bus replay (app/page_runtime.lua, buildChrome()). A page that
+-- built the field before buildChrome() would read nil and offer the base list on every
+-- board, and a page that kept the static table would offer RECORD at 14 on API 10.
+local function pageProtocolList(apiMinor)
+  local seen = {}
+  package.loaded["rfsuite.app.page_runtime"] = {
+    new = function()
+      local rt = {data = {}, fields = {}}
+      function rt:buildChrome() self.apiVersionMinor = apiMinor end
+      function rt:loadInitial() end
+      return rt
+    end,
+  }
+  package.loaded["rfsuite.app.field_layout"] = {
+    buildSingle = function(_, _, spec)
+      if spec.key == "protocol" then seen.choices = spec.choices end
+    end,
+  }
+  form = {clear = function() end}
+  local page = assert(loadfile("app/pages/esc_motors_telemetry.lua"))()
+  page.open({})
+  return seen.choices
+end
+
+print("the page builds the list for the version the runtime holds")
+do
+  local on9 = pageProtocolList(9)
+  check("API 9: the page offers RECORD at 14 and no SRXL2", valueOf(on9, "RECORD") == 14
+    and valueOf(on9, "SRXL2") == nil, "RECORD = " .. tostring(valueOf(on9, "RECORD")))
+  local on10 = pageProtocolList(10)
+  check("API 10: the page offers SRXL2 at 14 and RECORD at 15", valueOf(on10, "SRXL2") == 14
+    and valueOf(on10, "RECORD") == 15, "SRXL2 = " .. tostring(valueOf(on10, "SRXL2"))
+    .. ", RECORD = " .. tostring(valueOf(on10, "RECORD")))
+  local onNil = pageProtocolList(nil)
+  check("no version: the page offers the base list only", onNil ~= nil
+    and valueOf(onNil, "SRXL2") == nil and valueOf(onNil, "RECORD") == nil)
 end
 
 print(string.format("\n%d checks, %d failed", checks, failures))

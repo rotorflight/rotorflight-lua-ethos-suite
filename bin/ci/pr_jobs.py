@@ -2065,8 +2065,10 @@ Changes.md, MSP Changes). A board on 12.10 therefore got RECORD written as SRXL2
 now follows the API version the board reports, the way the motor protocol list already does.
 
 No build and no package step reaches this -- it is the list a pilot picks from and the
-value it writes. The harness drives the real codec for API 9, API 10 and no version. Against
-unpatched master SRXL2 is not offered and RECORD is offered as 14 on API 10.
+value it writes. The harness drives the real codec for API 9, API 10 and no version, and the
+real telemetry page for the same three, with the runtime handing it the version in buildChrome()
+as the bus replay does. Against unpatched master SRXL2 is not offered and RECORD is offered as
+14 on API 10, in the codec and on the page.
 ''',
     ),
 ]
