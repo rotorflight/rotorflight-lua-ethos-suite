@@ -20,6 +20,7 @@ end
 
 local function open(opts)
   local lastProtocol = nil
+  local builtApiMinor = nil
 
   local runtime
   runtime = pageRuntime.new({
@@ -35,6 +36,14 @@ local function open(opts)
       refreshProtocolFields(runtime)
     end,
     onWakeup = function(rt)
+      -- The protocol list was built for builtApiMinor. If the board reports another
+      -- version now (the handshake finished after the page opened, or another FC is
+      -- on the link), the list is wrong: RECORD is 14 or 15 depending on the version.
+      -- Leave the page; reopening builds it from the current version.
+      if builtApiMinor ~= rt.apiVersionMinor and not rt.activeDialog then
+        rt:goBack()
+        return
+      end
       local protocol = tonumber(rt.data.protocol or 0) or 0
       if protocol ~= lastProtocol then
         lastProtocol = protocol
@@ -45,11 +54,13 @@ local function open(opts)
 
   form.clear()
   runtime:buildChrome()
+  -- The version the protocol list below is built for; see onWakeup.
+  builtApiMinor = runtime.apiVersionMinor
 
   fieldLayout.buildSingle(runtime, "@i18n(app.modules.esc_motors.telemetry_protocol)@", {
     key = "protocol",
     -- The board decides the list: RECORD is 14 before API 12.10 and 15 from it.
-    choices = escSensorConfig.choicesFor(runtime.apiVersionMinor),
+    choices = escSensorConfig.choicesFor(builtApiMinor),
   })
   fieldLayout.buildSingle(runtime, "@i18n(app.modules.esc_motors.half_duplex)@", {
     key = "half_duplex",
