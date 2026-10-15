@@ -529,6 +529,68 @@ local function drive(tool, staged)
   }
 end
 
+-- The Reload path (Issue #2494). drive() above proves the FIRST read of a visit
+-- is gated; this one proves the later reads are too, which is the whole of
+-- #2494: a slot that held this vendor's ESC at the first read and another
+-- vendor's after a re-plug or a retarget.
+--
+-- It opens the page and its editor with the page's OWN reply, so the editor is
+-- built and the runtime is loaded -- then stages a foreign reply and asks the
+-- runtime to read again. loadData() is what the Reload button reaches through
+-- confirmReload(); it is called directly here so the check does not depend on
+-- the confirmation modal. The wiring under test is the page's validateRead,
+-- which is why this case goes red when esc_forward_vendor.lua stops passing it.
+local function driveReload(tool, stagedReload)
+  resetModules()
+  resetObs()
+  headerBuilds = {}
+  replyFails = false
+  reply = codecFor(tool.codec)._simulatorResponse
+
+  local captured
+  package.loaded["rfsuite.app.pages.esc_forward_4way"] = {
+    open = function(_, config) captured = config end,
+  }
+
+  local opts = optsWithHandlers()
+  local page = requireModule("app/pages/" .. tool.page .. ".lua")
+  page.open(opts, {})
+  if captured and captured.openEditor then
+    captured.openEditor(opts, {label = "Parameters"})
+  end
+  tick(opts)
+
+  local runtime = obs.runtime
+  if not runtime then return {built = false} end
+
+  local fieldsBefore = obs.fieldsBuilt
+  -- The table itself, not its signature: BLHeli_S and Bluejay share 0xC1 and
+  -- are told apart by main_revision, so comparing signatures would be blind to
+  -- exactly the pair that is hardest to tell apart.
+  local dataBefore = runtime.data
+  local signatureBefore = dataBefore and dataBefore.esc_signature
+
+  -- The pilot presses Reload; the slot now answers with another vendor's block.
+  reply = stagedReload
+  runtime:loadData(function() end)
+  tick(opts)
+  tick(opts)
+
+  -- canSave() also wants dirty == true, so the question "can this page still be
+  -- written" is asked with a dirty page -- otherwise it answers no in both
+  -- passes and cannot see a missing gate.
+  runtime:markDirty()
+
+  return {
+    loaded = runtime.loaded,
+    canSave = runtime:canSave(),
+    dataUnchanged = (runtime.data == dataBefore),
+    signatureBefore = signatureBefore,
+    fieldsBefore = fieldsBefore,
+    fieldsAfter = obs.fieldsBuilt,
+  }
+end
+
 -- Every static text the page put on the form, as one string, so a check can ask
 -- "was the wrong-ESC message the one shown" without depending on line order.
 local function shownText(run)
@@ -766,6 +828,49 @@ local function runChecks()
     end
     check(string.format("all %d ESC tool pages declare an EXPECTED_SIGNATURE", #pages),
       #ungated == 0, table.concat(ungated, ", "))
+  end
+
+  out("")
+  out("case 10: a RELOAD whose reply belongs to another ESC is refused  <- the gate (Issue #2494)")
+  do
+    -- The first read is gated on every page already; this is the path the issue
+    -- is about. An editor is built and loaded with the page's own reply, and
+    -- then the same slot answers with another vendor's block.
+    for _, page in ipairs(TOOLS) do
+      for _, esc in ipairs(TOOLS) do
+        if page.label ~= esc.label then
+          local codec = codecFor(esc.codec)
+          local run = driveReload(page, codec._simulatorResponse)
+          gateCheck(string.format("%s page, reloaded onto a %s ESC: the editor is not loaded",
+            page.label, esc.label),
+            run.loaded ~= true, "the page is still loaded after the refused reload")
+          gateCheck(string.format("%s page, reloaded onto a %s ESC: nothing can be saved",
+            page.label, esc.label),
+            run.canSave ~= true, "canSave() still returns true")
+          gateCheck(string.format("%s page, reloaded onto a %s ESC: the foreign reply does not become the data",
+            page.label, esc.label),
+            run.dataUnchanged == true,
+            "the runtime's data table was replaced by the refused reply")
+          -- Not a gate check: the reload path builds no second editor either way,
+          -- so this one cannot detect a missing gate. It is here because it is
+          -- the invariant a future change could break quietly.
+          check(string.format("%s page, reloaded onto a %s ESC: no editor is built a second time",
+            page.label, esc.label),
+            run.fieldsAfter == run.fieldsBefore,
+            string.format("fields built: %d -> %d", run.fieldsBefore or 0, run.fieldsAfter or 0))
+        end
+      end
+    end
+
+    -- And the half that must not be lost: the same reload with the page's OWN
+    -- reply still loads, so the gate cannot be passing by refusing everything.
+    -- Not a gate check either -- it is green with and without the gate by design.
+    for _, page in ipairs(TOOLS) do
+      local run = driveReload(page, codecFor(page.codec)._simulatorResponse)
+      check(string.format("%s page, reloaded onto its own ESC: the editor is loaded again",
+        page.label),
+        run.loaded == true, "the page refused its own reply on a reload")
+    end
   end
 end
 
