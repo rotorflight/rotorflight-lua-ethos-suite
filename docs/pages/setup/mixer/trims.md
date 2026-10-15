@@ -24,7 +24,7 @@ Greyed out until the flight controller answers. Read-only while the model is arm
 ## Notes
 
 - Changes are written to the flight controller EEPROM upon Save.
-- The Tool button's mixer override is switched on only after the page has read its values. Until then, confirming the override dialog does nothing.
+- The Tool button is disabled until the page has loaded its values. In addition, confirming the override dialog before values are read is prevented as defence in depth.
 
 ## Related
 
