@@ -36,7 +36,9 @@
 local requireModule = package.loaded["rfsuite.lib.require"] or assert(loadfile("lib/require.lua"))()
 local bus = requireModule("lib/bus.lua")
 local settingsStore = requireModule("lib/settings_store.lua")
-local armedGating = requireModule("app/armed_gating.lua")
+-- Loaded at its one call site in init(), not here: it is only needed when the tool
+-- opens, so the module stays out of the boot closure.
+local armedGating = nil
 
 local navigation = nil
 local menuContainer = nil
@@ -608,6 +610,7 @@ local function create()
   -- reads the guard assignments out of MENUS, so it has to run after
   -- installMenuGuards() has put them there, and before openRoot() builds the
   -- tiles from what it resolved.
+  armedGating = armedGating or requireModule("app/armed_gating.lua")
   armedGating.resolve(ROOT_ENTRIES, MENUS)
   -- ensureNav() rather than the `nav` local, because master made the
   -- navigation module lazy in #2421. The ninth argument is this pull
