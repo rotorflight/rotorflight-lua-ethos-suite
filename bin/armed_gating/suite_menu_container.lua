@@ -1,12 +1,13 @@
--- Standalone behaviour tests for Issue #2302 menu tile badging / gating.
+-- Standalone behaviour tests for Issue #2302 menu tile gating.
 --
 -- Run (through bin/armed_gating/verify_armed_gating.lua): lua5.4 bin/armed_gating/verify_armed_gating.lua
 --
 -- Loads the REAL app/menu_container.lua and the REAL app/tile_grid.lua
--- under a stubbed form/lcd/system, so the badge text, the press refusal and
--- the arm/disarm rebuild are exercised as written rather than described.
--- app/header.lua is stubbed (its setTitle is what the notice drives) but
--- records every title it is given, so the flash and its restore are checked.
+-- under a stubbed form/lcd/system, so the forbidden icon, the disabled state,
+-- the silent press refusal and the arm/disarm rebuild are exercised as
+-- written rather than described. app/header.lua is stubbed (its setTitle
+-- would drive a notice) but records every title it is given, so "the header
+-- is not touched" is checked too.
 
 local ROOT = arg and arg[1] or "."
 package.path = ROOT .. "/src/?.lua;" .. package.path

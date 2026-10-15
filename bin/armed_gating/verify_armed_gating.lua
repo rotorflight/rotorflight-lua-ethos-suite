@@ -5,7 +5,7 @@
 -- suite_armed_gating.lua: the derivation rules of app/armed_gating.lua, and the real
 --   menu tree of app/tool.lua against an explicit expected classification.
 -- suite_menu_container.lua: the real app/menu_container.lua and tile_grid.lua: the
---   [!] badge, the refused press with its notice, and the rebuild on arm/disarm.
+--   forbidden icon, the silent refused press, and the rebuild on arm/disarm.
 --
 -- Each suite ends in os.exit, so the runner replaces os.exit for the duration of a
 -- suite and reads the code the suite asked for. Both suites must pass.

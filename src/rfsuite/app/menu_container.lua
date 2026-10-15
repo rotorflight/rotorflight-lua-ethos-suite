@@ -66,14 +66,15 @@ local tileGrid = requireModule("app/tile_grid.lua")
 
 local menu_container = {}
 
--- Armed-state tile badging and navigation gating (Issue #2302).
+-- Armed-state tile gating (Issue #2302).
 --
 -- A `lockedWhileArmed` entry is one that leads to a flight-critical write
 -- path (an FC/ESC parameter page -- see how app/tool.lua classifies the
--- tree). While the model is armed those tiles carry a "!" prefix and refuse
--- to navigate, which moves the warning *ahead* of the pilot's finger instead
--- of leaving it to PageRuntime:showSaveArmed() after the page is already open
--- and the form is already on screen.
+-- tree). While the model is armed those tiles show a forbidden sign in place
+-- of their module icon and refuse to navigate, which moves the warning
+-- *ahead* of the pilot's finger instead of leaving it to
+-- PageRuntime:showSaveArmed() after the page is already open and the form is
+-- already on screen.
 --
 -- While armed, a locked tile is disabled and shows a forbidden sign in place of
 -- its module icon; its title is unchanged, and a press on it does nothing.
@@ -85,8 +86,10 @@ local menu_container = {}
 --   * A coloured badge is impossible. form.addButton takes text, icon, options
 --     and press and no colour, and the icons in app/gfx are lcd.loadMask, so an
 --     icon is tinted by the theme.
---   * Swapping the tile's icon costs the module icon that identifies the tile.
---     The forbidden sign is drawn as a separate icon, and the title stays.
+--   * The sign replaces the tile's module icon, and that is its price: while
+--     armed the tile no longer says which module it belongs to. The title is
+--     untouched, so the tile keeps its name. This is the chosen trade -- the
+--     label is not touched at all, so nothing has to be fitted into it.
 --
 
 -- Forbidden sign for a locked tile while armed. Loaded on first use.
@@ -370,9 +373,9 @@ local function openScreen(nav, menus, rootEntries, screen, setEventHandler, setW
 
     if isEntryVisible(entry) then
       -- Pre-truncate with ellipsis so long titles never collide with or
-      -- spill over the button border (Issue #2299), and let the armed
-      -- badge share that same budget (Issue #2302) rather than sitting
-      -- outside it.
+      -- spill over the button border (Issue #2299). The arm state does not
+      -- reach the label: a locked tile keeps its title and changes only its
+      -- icon, so there is nothing arm-related for fitLabel() to absorb.
       if col == 0 then x = TILE_LEFT_GAP end
       local label = tileLabel(entry)
       local tileIcon = entry.icon
@@ -384,11 +387,12 @@ local function openScreen(nav, menus, rootEntries, screen, setEventHandler, setW
         icon = tileIcon,
         options = tileFont,
         press = function()
-          -- Armed gating comes first, ahead of the task/entry guards: a
-          -- locked tile has to answer with the armed notice even when the
-          -- background task is also down, otherwise the pilot gets silence
-          -- for tapping a tile that is visibly badged.
-          -- A locked tile is disabled while armed; this is only a silent guard.
+          -- Armed gating comes first, ahead of the task/entry guards. A
+          -- locked tile is disabled while armed (below), so this branch is
+          -- normally unreachable: it is the guard for the tick in which the
+          -- arm state changed and the grid has not been rebuilt yet. It is
+          -- deliberately silent -- the forbidden sign and the red frame carry
+          -- the state, and a refused press answers with nothing (#2302).
           if entryIsLockedNow(entry) then return end
           if not canOpenEntry(entry, taskGuard) then
             if taskGuard and (not taskGuard.isRunning()) and taskGuard.requestAlert then
@@ -459,14 +463,13 @@ local function openScreen(nav, menus, rootEntries, screen, setEventHandler, setW
   if taskGuard or menuGuard or armedGated then
     local lastEnabled = {}
     local function updateMenuState()
-      -- Arm/disarm transition: the badges are part of each button's
-      -- `text`, and a form.addButton result has no documented way to
-      -- change its text at runtime (only form.addStaticText does, see
-      -- header.lua) -- so the grid is rebuilt in place instead. Rebuilding
-      -- is the right trade here precisely because transitions are rare
-      -- (twice per flight, or never on the bench) and because it keeps the
-      -- badge inside fitLabel()'s ellipsis budget, which mutating a label
-      -- in place could not guarantee.
+      -- Arm/disarm transition: the tile's icon is fixed when the button is
+      -- created, and the form API documents no runtime update for a
+      -- form.addButton result (the one runtime text update, on
+      -- form.addStaticText, has no button counterpart -- see header.lua) --
+      -- so the grid is rebuilt in place instead of mutating the buttons.
+      -- Rebuilding is the right trade here precisely because transitions are
+      -- rare (twice per flight, or never on the bench).
       --
       -- isArmed is also the value entryIsLockedNow() and the tile labels
       -- above closed over, so it is refreshed before the rebuild test and
