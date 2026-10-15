@@ -2715,7 +2715,7 @@ jobs:
   # as the bus replay does. Against unpatched master SRXL2 is not offered and RECORD is offered as
   # 14 on API 10, in the codec and on the page.
   esc-sensor-protocol:
-    name: ESC telemetry protocol list follows the API version: RECORD is 15 from 12.10
+    name: ESC telemetry protocol list follows the API version, RECORD is 15 from 12.10
     runs-on: ubuntu-latest
     permissions:
       contents: read

@@ -2056,7 +2056,7 @@ pin to go red every time, after the unmodified modules have passed.
     ),
     LuaJob(
         id='esc-sensor-protocol',
-        name='ESC telemetry protocol list follows the API version: RECORD is 15 from 12.10',
+        name='ESC telemetry protocol list follows the API version, RECORD is 15 from 12.10',
         step='Check the ESC telemetry protocol list per reported API version',
         script='bin/esc_sensor_protocol/verify_esc_sensor_protocol.lua',
         rationale=r'''Issue #2492: the ESC telemetry protocol list was a static table, RECORD fixed at 14.
