@@ -10,7 +10,14 @@ local mspcodec = requireModule("lib/mspcodec.lua")
 local READ_COMMAND = 123
 local WRITE_COMMAND = 216
 
-local PROTOCOL_CHOICES = {
+-- The telemetry protocol enum moved with API 12.10 (Changes.md, MSP Changes): SRXL2 was
+-- inserted at 14, which shifted RECORD from 14 to 15. Before 12.10, RECORD is 14.
+local SRXL2 = 14
+local RECORD_BEFORE_SRXL2 = 14
+local RECORD_FROM_SRXL2 = 15
+local SRXL2_MIN_API_MINOR = 10
+
+local BASE_PROTOCOL_CHOICES = {
   {"NONE", 0},
   {"BLHELI32", 1},
   {"HOBBYWING V4", 2},
@@ -25,8 +32,26 @@ local PROTOCOL_CHOICES = {
   {"GRAUPNER", 11},
   {"XDFLY", 12},
   {"FrSky F.BUS", 13},
-  {"RECORD", 14},
 }
+
+-- The list for the API version the board reports. With no version yet, the base list
+-- only: RECORD's value differs between the two lists, so offering it blind could write
+-- the wrong protocol.
+local function choicesFor(apiMinor)
+  local choices = {}
+  for i = 1, #BASE_PROTOCOL_CHOICES do
+    choices[i] = BASE_PROTOCOL_CHOICES[i]
+  end
+  if type(apiMinor) == "number" then
+    if apiMinor >= SRXL2_MIN_API_MINOR then
+      choices[#choices + 1] = {"SRXL2", SRXL2}
+      choices[#choices + 1] = {"RECORD", RECORD_FROM_SRXL2}
+    else
+      choices[#choices + 1] = {"RECORD", RECORD_BEFORE_SRXL2}
+    end
+  end
+  return choices
+end
 
 local ON_OFF_CHOICES = {
   {"@i18n(api.ESC_SENSOR_CONFIG.tbl_off)@", 0},
@@ -48,7 +73,7 @@ local FIELDS = {
 }
 
 local FIELD_META = {
-  protocol = {choices = PROTOCOL_CHOICES},
+  protocol = {choices = choicesFor(nil)},
   half_duplex = {choices = ON_OFF_CHOICES},
   update_hz = {min = 10, max = 500, default = 200, suffix = "Hz"},
   current_offset = {min = 0, max = 1000, default = 0},
@@ -79,7 +104,8 @@ local msp_esc_sensor_config = {
   READ_COMMAND = READ_COMMAND,
   WRITE_COMMAND = WRITE_COMMAND,
   FIELD_META = FIELD_META,
-  PROTOCOL_CHOICES = PROTOCOL_CHOICES,
+  choicesFor = choicesFor,
+  SRXL2_MIN_API_MINOR = SRXL2_MIN_API_MINOR,
   ON_OFF_CHOICES = ON_OFF_CHOICES,
 }
 

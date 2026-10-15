@@ -2704,6 +2704,32 @@ jobs:
       - name: Check the servo command numbers and payloads
         run: lua5.4 bin/servo_config_commands/verify_servo_config_commands.lua
 
+  # Issue #2492: the ESC telemetry protocol list was a static table, RECORD fixed at 14.
+  # Firmware API 12.10 inserted SRXL2 at 14 and moved RECORD to 15 (rotorflight-firmware
+  # Changes.md, MSP Changes). A board on 12.10 therefore got RECORD written as SRXL2. The list
+  # now follows the API version the board reports, the way the motor protocol list already does.
+  #
+  # No build and no package step reaches this -- it is the list a pilot picks from and the
+  # value it writes. The harness drives the real codec for API 9, API 10 and no version. Against
+  # unpatched master SRXL2 is not offered and RECORD is offered as 14 on API 10.
+  esc-sensor-protocol:
+    name: ESC telemetry protocol list follows the API version: RECORD is 15 from 12.10
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Install Lua 5.4
+        run: sudo apt-get update && sudo apt-get install -y lua5.4
+
+      - name: Check the ESC telemetry protocol list per reported API version
+        run: lua5.4 bin/esc_sensor_protocol/verify_esc_sensor_protocol.lua
+
   # Per-language PR builds (mirrors push.yml behavior)
   create-zip:
     name: Build PR ZIP (${{ matrix.lang }})

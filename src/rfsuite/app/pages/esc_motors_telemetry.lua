@@ -48,7 +48,8 @@ local function open(opts)
 
   fieldLayout.buildSingle(runtime, "@i18n(app.modules.esc_motors.telemetry_protocol)@", {
     key = "protocol",
-    choices = escSensorConfig.PROTOCOL_CHOICES,
+    -- The board decides the list: RECORD is 14 before API 12.10 and 15 from it.
+    choices = escSensorConfig.choicesFor(runtime.apiVersionMinor),
   })
   fieldLayout.buildSingle(runtime, "@i18n(app.modules.esc_motors.half_duplex)@", {
     key = "half_duplex",
