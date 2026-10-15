@@ -2073,6 +2073,23 @@ read error is refused as before. Against unpatched master the refused reply load
 ''',
     ),
     LuaJob(
+        id='tune-advisor-payload',
+        name='Tune advisor reply is refused unless it is the layout this suite knows',
+        step='Check the tune advisor codec refuses an unknown payload version or length',
+        script='bin/tune_advisor_payload/verify_tune_advisor_payload.lua',
+        rationale=r'''Issue #2493: the tune advisor decode() read the payload version byte and never
+compared it, and ran with no length guard. A reply of another layout decoded into
+plausible numbers, and tune_history saves them to the flight-history file. The codec now
+refuses a reply that is not 67 bytes or not payload version 1, and reports the reason
+through the error path.
+
+No build and no package step reaches this -- it is a reply path through the codec. The
+harness drives the real codec through its read message with the firmware's own 67-byte
+reply, a version-2 reply, a truncated reply and a longer reply. Against unpatched master
+the version-2, truncated and longer replies reach onData as decoded numbers.
+''',
+    ),
+    LuaJob(
         id='pwm-servo-write',
         name='PWM servo page lists the PWM outputs only and writes each one raw',
         step='Check the PWM servo list count and the raw write of each servo',
