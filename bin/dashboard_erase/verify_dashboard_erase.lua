@@ -145,6 +145,9 @@ end
 local function startErase(w)
   w.eraseActive = true
   w.eraseStartedAt = now
+  w.eraseWaited = 0
+  w.eraseLastTick = now
+  w.eraseGeneration = (w.eraseGeneration or 0) + 1
   w.eraseProgressValue = 0
   w.eraseReadPending = false
   w.eraseDone = false
@@ -212,18 +215,59 @@ local function runChecks()
   end
 
   -- D4: an erase that never reports ready fails after the timeout, and shows the failure.
+  -- The timeout is 240 s of awake time (a full chip erase takes up to 200 s).
   do
     local w = freshWidget()
     w.eraseActive = true
     w.eraseStartedAt = now
+    w.eraseLastTick = now
+    w.eraseWaited = 0
     w.eraseReadPending = true
     wake(w)
     summaryReply(FLAG_SUPPORTED)
-    now = now + 31
-    wake(w)
+    for _ = 1, 230 do
+      now = now + 1
+      wake(w)
+    end
+    check("D4 an erase still running after 230 s is not reported as failed", w.eraseActive == true,
+      "eraseActive = " .. tostring(w.eraseActive))
+    for _ = 1, 20 do
+      now = now + 1
+      wake(w)
+    end
     check("D4 an erase that never reports ready ends after the timeout", w.eraseActive ~= true,
       "eraseActive = " .. tostring(w.eraseActive))
     check("D4 the timeout shows the erase failure", #dialogs >= 1)
+  end
+
+  -- D5: time the dashboard was hidden does not count towards the timeout.
+  do
+    local w = freshWidget()
+    w.eraseActive = true
+    w.eraseStartedAt = now
+    w.eraseLastTick = now
+    w.eraseWaited = 0
+    w.eraseReadPending = true
+    wake(w)
+    summaryReply(FLAG_SUPPORTED)
+    now = now + 600                     -- hidden for ten minutes: no wakeup reaches the wait
+    wake(w)
+    check("D5 time spent hidden does not fail the erase", w.eraseActive == true,
+      "eraseActive = " .. tostring(w.eraseActive))
+  end
+
+  -- D6: a reply to a read of an earlier erase does not end a newer erase.
+  do
+    local w = freshWidget()
+    startErase(w)                       -- erase A
+    w.eraseReadPending = true           -- the acknowledgement asks for the first read
+    wake(w)
+    local staleSummary = latest("summary")
+    startErase(w)                       -- erase B starts while A's read is still outstanding
+    staleSummary.ok({ flags = FLAG_READY + FLAG_SUPPORTED, total = 100, used = 10 })
+    wake(w)                             -- the dashboard looks at the wait again
+    check("D6 a reply to an earlier erase does not end a newer one", w.eraseActive == true,
+      "eraseActive = " .. tostring(w.eraseActive))
   end
 end
 

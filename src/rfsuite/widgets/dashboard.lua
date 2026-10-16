@@ -1064,6 +1064,7 @@ local function finishErase(widget, failed)
   widget.eraseReadPending = false
   widget.eraseReadInFlight = false
   widget.eraseNextReadAt = nil
+  widget.eraseWaited = 0
   widget.eraseDone = false
   widget.eraseError = false
   widget.eraseStartedAt = 0
@@ -1096,10 +1097,20 @@ end
 -- board reports no dataflash. The firmware acknowledges the erase before it runs, and the
 -- ready bit is false until the flash is idle, so one read is not enough (#2495 follow-up).
 local ERASE_RETRY_SECONDS = 0.5
-local ERASE_TIMEOUT_SECONDS = 30
+-- A full chip erase takes 40 s typical and up to 200 s (W25Q128FV datasheet, see
+-- flash_w25q128fv.c:97). The timeout is above that, and counts only the time the
+-- dashboard was awake to wait (see the wakeup).
+local ERASE_TIMEOUT_SECONDS = 240
+local ERASE_MAX_TICK_SECONDS = 1
 
 local function summaryHasBit(mask, bit)
   return math.floor((tonumber(mask or 0) or 0) / (2 ^ bit)) % 2 >= 1
+end
+
+-- One retry path for both outcomes that do not end the wait (not ready, or a failed read).
+local function scheduleEraseRetry(widget)
+  widget.eraseReadPending = true
+  widget.eraseNextReadAt = clock() + ERASE_RETRY_SECONDS
 end
 
 local function readBlackboxSummaryAfterErase(widget)
@@ -1107,25 +1118,26 @@ local function readBlackboxSummaryAfterErase(widget)
   if widget.eraseNextReadAt and clock() < widget.eraseNextReadAt then return end
   widget.eraseReadPending = false
   widget.eraseReadInFlight = true
+  -- A reply that arrives after its erase has ended, or after a newer erase has started,
+  -- must not touch the newer erase.
+  local generation = widget.eraseGeneration
   bus.publish("msp.request", dataflashSummary.buildReadMessage(function(data)
+    if widget.eraseGeneration ~= generation then return end
     widget.eraseReadInFlight = false
     if data then
       widget.bblFlags = data.flags or widget.bblFlags
       widget.bblSize = data.total or widget.bblSize
       widget.bblUsed = data.used or widget.bblUsed
-      local ready = summaryHasBit(data.flags, 0)
-      local supported = summaryHasBit(data.flags, 1)
-      if ready or not supported then
+      if summaryHasBit(data.flags, 0) or not summaryHasBit(data.flags, 1) then
         widget.eraseDone = true
         return
       end
     end
-    widget.eraseReadPending = true
-    widget.eraseNextReadAt = clock() + ERASE_RETRY_SECONDS
+    scheduleEraseRetry(widget)
   end, function()
+    if widget.eraseGeneration ~= generation then return end
     widget.eraseReadInFlight = false
-    widget.eraseReadPending = true
-    widget.eraseNextReadAt = clock() + ERASE_RETRY_SECONDS
+    scheduleEraseRetry(widget)
   end))
 end
 
@@ -1134,8 +1146,13 @@ local function doEraseBlackbox(widget)
 
   widget.eraseActive = true
   widget.eraseStartedAt = clock()
+  widget.eraseWaited = 0
+  widget.eraseLastTick = widget.eraseStartedAt
+  widget.eraseGeneration = (widget.eraseGeneration or 0) + 1
   widget.eraseProgressValue = 0
   widget.eraseReadPending = false
+  widget.eraseReadInFlight = false
+  widget.eraseNextReadAt = nil
   widget.eraseDone = false
   widget.eraseError = false
 
@@ -2312,9 +2329,12 @@ local function wakeup(widget)
         widget.eraseDialog:value(progress)
       end
     end
+    local tick = now - (widget.eraseLastTick or now)
+    widget.eraseLastTick = now
+    widget.eraseWaited = (widget.eraseWaited or 0) + math.min(math.max(tick, 0), ERASE_MAX_TICK_SECONDS)
     if widget.eraseDone or widget.eraseError then
       finishErase(widget, widget.eraseError == true)
-    elseif now - (widget.eraseStartedAt or now) > ERASE_TIMEOUT_SECONDS then
+    elseif widget.eraseWaited > ERASE_TIMEOUT_SECONDS then
       finishErase(widget, true)
     end
   end
