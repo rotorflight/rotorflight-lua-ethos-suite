@@ -4600,6 +4600,12 @@
           "needs_translation": false,
           "reverse_text": false,
           "max_length": 17
+        },
+        "edit_battery": {
+          "english": "Edit Battery",
+          "max_length": 16,
+          "needs_translation": false,
+          "translation": "Batterie bearbeiten"
         }
       },
       "esc_motors": {
@@ -8057,6 +8063,20 @@
       "needs_translation": false,
       "reverse_text": false,
       "max_length": 8
+    },
+    "msg_main_power_lost_banner": {
+      "english": "MAIN POWER LOST",
+      "max_length": 27,
+      "needs_translation": false,
+      "reverse_text": false,
+      "translation": "HAUPTAKKU-AUSFALL"
+    },
+    "msg_save_failed_local_body": {
+      "english": "Settings were not saved to the radio. Please try again.",
+      "max_length": 67,
+      "needs_translation": false,
+      "reverse_text": false,
+      "translation": "Einstellungen wurden nicht auf dem Radio gespeichert. Bitte erneut versuchen."
     }
   },
   "telemetry": {
