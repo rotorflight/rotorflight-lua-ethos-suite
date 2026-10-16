@@ -5,8 +5,10 @@
 --     lua5.4 bin/dashboard_erase/verify_dashboard_erase.lua
 --
 -- What it drives: the real src/rfsuite/widgets/dashboard.lua through the widget table
--- it registers with system.registerWidget(). The bus, the MSP messages, the clock and the
--- forms are stubs; every message is recorded and each reply is given by the scenario.
+-- it registers with system.registerWidget(). The erase starts the way a user starts it:
+-- the Erase toolbar item (key event), then OK on the confirmation dialog. The bus, the MSP
+-- messages, the clock and the forms are stubs; every message is recorded and each reply
+-- (acknowledgement, summary, failure) is given by the scenario.
 --
 -- The firmware acknowledges the erase before it runs (blackboxErase() only sets a state),
 -- and the summary's ready bit is false until the flash is idle. A single read after the
@@ -34,6 +36,8 @@ local function check(label, ok, detail)
 end
 
 local FLAG_READY, FLAG_SUPPORTED = 1, 2
+local ERASE_TOOLBAR_INDEX = 2           -- TOOLBAR_ITEMS[2] is Erase
+local ERASE_FAILED_MESSAGE = "@i18n(app.modules.blackbox.erase_failed)@"
 
 -- ---------------------------------------------------------------------------
 -- Clock: the wait is timed with os.clock(), so the scenario moves it by hand.
@@ -46,14 +50,18 @@ os.clock = function() return now end
 -- ---------------------------------------------------------------------------
 local sent, registered, dialogs, progresses = {}, nil, {}, {}
 
-local function anyStub()
-  return setmetatable({}, { __index = function() return function() return {} end end })
-end
-
 local function noop() end
+
+-- Event codes the widget compares against. Any distinct values do.
+EVT_KEY, EVT_TOUCH = 1, 2
+KEY_ENTER_BREAK, KEY_PAGE_LONG, KEY_DOWN_BREAK = 10, 11, 12
+ROTARY_LEFT, ROTARY_RIGHT = 13, 14
+TOUCH_START, TOUCH_END = 20, 21
 
 lcd = setmetatable({ RGB = function() return 0 end, isVisible = function() return true end },
   { __index = function() return noop end })
+lcd.hasFocus = function() return true end
+
 system = {
   registerWidget = function(w) registered = w end,
   getVersion = function() return { simulation = false } end,
@@ -73,6 +81,10 @@ form = {
   addStaticText = function() return {} end,
 }
 
+local function anyStub()
+  return setmetatable({}, { __index = function() return function() return {} end end })
+end
+
 local dataflashSummaryMsg = {
   buildReadMessage = function(ok, err) return { kind = "summary", ok = ok, err = err } end,
 }
@@ -87,6 +99,7 @@ package.loaded["rfsuite.lib.require"] = function(name)
         if topic == "msp.request" then sent[#sent + 1] = msg end
       end,
       subscribe = noop,
+      unsubscribe = noop,
     }
   elseif name == "lib/msp_dataflash_summary.lua" then
     return dataflashSummaryMsg
@@ -141,20 +154,21 @@ local function wake(w)
   w.needsPaint = false
 end
 
--- Starts an erase the way the toolbar does, bypassing the confirmation dialog.
+-- Awake wakeups, one per second, as the dashboard runs them.
+local function advance(w, seconds)
+  for _ = 1, seconds do
+    now = now + 1
+    wake(w)
+  end
+end
+
+-- Starts an erase the way the user does: the Erase toolbar item, then OK on the confirmation.
+-- Returns the erase command message, so the scenario can answer its acknowledgement.
 local function startErase(w)
-  w.eraseActive = true
-  w.eraseStartedAt = now
-  w.eraseWaited = 0
-  w.eraseLastTick = now
-  w.eraseGeneration = (w.eraseGeneration or 0) + 1
-  w.eraseProgressValue = 0
-  w.eraseReadPending = false
-  w.eraseDone = false
-  w.eraseError = false
-  -- doEraseBlackbox() is local; its effect is the erase command and the progress dialog.
-  progresses[#progresses + 1] = { closed = false, value = noop, closeAllowed = noop,
-    close = function() progresses[#progresses].closed = true end }
+  w.toolbarVisible = true
+  w.selectedToolbarIndex = ERASE_TOOLBAR_INDEX
+  registered.event(w, EVT_KEY, KEY_ENTER_BREAK)
+  dialogs[#dialogs].buttons[1].action()
   return latest("erase")
 end
 
@@ -162,112 +176,188 @@ local function summaryReply(flags)
   latest("summary").ok({ flags = flags, total = 100, used = 10 })
 end
 
+local function failureShown()
+  for _, d in ipairs(dialogs) do
+    if d.message == ERASE_FAILED_MESSAGE then return true end
+  end
+  return false
+end
+
 -- ---------------------------------------------------------------------------
 -- Scenarios.
 -- ---------------------------------------------------------------------------
 local function runChecks()
-  -- D1: a read right after the erase acknowledgement that reports "not ready yet" does not
-  -- end the wait; a later read that reports ready does.
+  -- D1: a read that reports "not ready" does not end the wait; the next read follows after
+  -- half a second, and not before; a read that reports ready ends it.
   do
     local w = freshWidget()
-    -- the erase command is acknowledged: the page now reads the summary once
-    w.eraseActive = true
-    w.eraseStartedAt = now
-    w.eraseReadPending = true
+    local erase = startErase(w)
+    erase.ok()
     wake(w)
+    check("D1 the acknowledged erase reads the summary", countOf("summary") == 1,
+      "summaries = " .. countOf("summary"))
+    local t0 = now
     summaryReply(FLAG_SUPPORTED)                 -- not ready: still erasing
     wake(w)
     check("D1 a read that reports not ready does not finish the erase", w.eraseActive == true,
       "eraseActive = " .. tostring(w.eraseActive))
-    now = now + 1                                 -- the retry is due after half a second
+    now = t0 + 0.2
     wake(w)
-    check("D1 the wait reads again while the erase runs", latest("summary") ~= nil and countOf("summary") >= 2)
-    summaryReply(FLAG_READY + FLAG_SUPPORTED)     -- ready now
+    check("D1 no read is sent before the half-second retry", countOf("summary") == 1,
+      "summaries = " .. countOf("summary"))
+    now = t0 + 0.5
+    wake(w)
+    check("D1 the wait reads again after half a second", countOf("summary") == 2,
+      "summaries = " .. countOf("summary"))
+    summaryReply(FLAG_READY + FLAG_SUPPORTED)    -- ready now
     wake(w)
     check("D1 a read that reports ready finishes the erase", w.eraseActive ~= true,
       "eraseActive = " .. tostring(w.eraseActive))
+    check("D1 a finished erase shows no failure", not failureShown())
   end
 
-  -- D2: a board without dataflash finishes the wait at the first answer.
+  -- D2: a reply without flags cannot end the wait; it is read again.
   do
     local w = freshWidget()
-    w.eraseActive = true
-    w.eraseStartedAt = now
-    w.eraseReadPending = true
+    local erase = startErase(w)
+    erase.ok()
+    wake(w)
+    latest("summary").ok({ total = 100, used = 10 })
+    wake(w)
+    check("D2 a reply without flags does not finish the erase", w.eraseActive == true,
+      "eraseActive = " .. tostring(w.eraseActive))
+    local t0 = now
+    now = t0 + 0.5
+    wake(w)
+    check("D2 a reply without flags is read again", countOf("summary") == 2,
+      "summaries = " .. countOf("summary"))
+  end
+
+  -- D3: a board without dataflash finishes the wait at the first answer, without a failure.
+  do
+    local w = freshWidget()
+    local erase = startErase(w)
+    erase.ok()
     wake(w)
     summaryReply(0)
     wake(w)
-    check("D2 a board without dataflash finishes the erase", w.eraseActive ~= true,
+    check("D3 a board without dataflash finishes the erase", w.eraseActive ~= true,
       "eraseActive = " .. tostring(w.eraseActive))
+    check("D3 that finish shows no failure", not failureShown())
   end
 
-  -- D3: a read that fails does not finish the wait.
+  -- D4: a read that fails does not finish the wait, and is followed by another read.
   do
     local w = freshWidget()
-    w.eraseActive = true
-    w.eraseStartedAt = now
-    w.eraseReadPending = true
+    local erase = startErase(w)
+    erase.ok()
     wake(w)
     latest("summary").err()
     wake(w)
-    check("D3 a failed read does not finish the erase", w.eraseActive == true,
+    check("D4 a failed read does not finish the erase", w.eraseActive == true,
+      "eraseActive = " .. tostring(w.eraseActive))
+    now = now + 0.5
+    wake(w)
+    check("D4 a failed read is followed by another read", countOf("summary") == 2,
+      "summaries = " .. countOf("summary"))
+  end
+
+  -- D5: the timeout counts from the acknowledgement. Time before the acknowledgement does not
+  -- count, and an erase that never reports ready fails 240 s after it.
+  do
+    local w = freshWidget()
+    local erase = startErase(w)
+    advance(w, 200)                              -- no acknowledgement yet
+    erase.ok()
+    advance(w, 230)
+    check("D5 230 s after the acknowledgement the erase is still running", w.eraseActive == true,
+      "eraseActive = " .. tostring(w.eraseActive))
+    advance(w, 20)
+    check("D5 an erase still not ready 240 s after the acknowledgement ends", w.eraseActive ~= true,
+      "eraseActive = " .. tostring(w.eraseActive))
+    check("D5 the timeout shows the erase failure", failureShown())
+  end
+
+  -- D6: time the dashboard was hidden does not count towards the timeout.
+  do
+    local w = freshWidget()
+    local erase = startErase(w)
+    erase.ok()
+    wake(w)
+    now = now + 600                              -- hidden for ten minutes: no wakeup reaches the wait
+    wake(w)
+    check("D6 time spent hidden does not fail the erase", w.eraseActive == true,
       "eraseActive = " .. tostring(w.eraseActive))
   end
 
-  -- D4: an erase that never reports ready fails after the timeout, and shows the failure.
-  -- The timeout is 240 s of awake time (a full chip erase takes up to 200 s).
+  -- D7: the real acknowledgement path starts the first read.
   do
     local w = freshWidget()
-    w.eraseActive = true
-    w.eraseStartedAt = now
-    w.eraseLastTick = now
-    w.eraseWaited = 0
-    w.eraseReadPending = true
+    local erase = startErase(w)
     wake(w)
-    summaryReply(FLAG_SUPPORTED)
-    for _ = 1, 230 do
-      now = now + 1
-      wake(w)
-    end
-    check("D4 an erase still running after 230 s is not reported as failed", w.eraseActive == true,
-      "eraseActive = " .. tostring(w.eraseActive))
-    for _ = 1, 20 do
-      now = now + 1
-      wake(w)
-    end
-    check("D4 an erase that never reports ready ends after the timeout", w.eraseActive ~= true,
-      "eraseActive = " .. tostring(w.eraseActive))
-    check("D4 the timeout shows the erase failure", #dialogs >= 1)
+    check("D7 no read is sent before the erase is acknowledged", countOf("summary") == 0,
+      "summaries = " .. countOf("summary"))
+    erase.ok()
+    wake(w)
+    check("D7 the acknowledgement starts the first read", countOf("summary") == 1,
+      "summaries = " .. countOf("summary"))
   end
 
-  -- D5: time the dashboard was hidden does not count towards the timeout.
+  -- D8: the late acknowledgement and error of an erase that timed out do not touch a newer erase.
   do
     local w = freshWidget()
-    w.eraseActive = true
-    w.eraseStartedAt = now
-    w.eraseLastTick = now
-    w.eraseWaited = 0
-    w.eraseReadPending = true
+    local stale = startErase(w)
+    advance(w, 241)                              -- never acknowledged: times out from the start
+    check("D8 an erase never acknowledged times out", w.eraseActive ~= true)
+    local fresh = startErase(w)
+    stale.ok()
+    stale.err()
     wake(w)
-    summaryReply(FLAG_SUPPORTED)
-    now = now + 600                     -- hidden for ten minutes: no wakeup reaches the wait
+    check("D8 a late acknowledgement and error of an earlier erase leave a newer one alone",
+      w.eraseActive == true and w.eraseError ~= true and countOf("summary") == 0,
+      "eraseActive = " .. tostring(w.eraseActive) .. ", eraseError = " .. tostring(w.eraseError))
+    fresh.ok()
     wake(w)
-    check("D5 time spent hidden does not fail the erase", w.eraseActive == true,
-      "eraseActive = " .. tostring(w.eraseActive))
+    check("D8 the newer erase reads once it is acknowledged", countOf("summary") == 1)
   end
 
-  -- D6: a reply to a read of an earlier erase does not end a newer erase.
+  -- D9: a summary reply to a read of an earlier erase does not end a newer erase.
   do
     local w = freshWidget()
-    startErase(w)                       -- erase A
-    w.eraseReadPending = true           -- the acknowledgement asks for the first read
+    local first = startErase(w)
+    first.ok()
     wake(w)
-    local staleSummary = latest("summary")
-    startErase(w)                       -- erase B starts while A's read is still outstanding
+    local staleSummary = latest("summary")       -- the first erase's read is still outstanding
+    advance(w, 241)                              -- the first erase times out
+    check("D9 the first erase times out while its read is outstanding", w.eraseActive ~= true)
+    local second = startErase(w)
+    second.ok()
+    wake(w)
     staleSummary.ok({ flags = FLAG_READY + FLAG_SUPPORTED, total = 100, used = 10 })
-    wake(w)                             -- the dashboard looks at the wait again
-    check("D6 a reply to an earlier erase does not end a newer one", w.eraseActive == true,
+    wake(w)
+    check("D9 a reply to an earlier erase does not end a newer one", w.eraseActive == true,
       "eraseActive = " .. tostring(w.eraseActive))
+    check("D9 the newer erase still reads for itself", countOf("summary") == 2,
+      "summaries = " .. countOf("summary"))
+  end
+
+  -- D10: closing the widget during a read clears that read, so a reused widget's next erase
+  -- reads as soon as it is acknowledged.
+  do
+    local w = freshWidget()
+    local erase = startErase(w)
+    erase.ok()
+    wake(w)
+    check("D10 a read is in flight before the close", w.eraseReadInFlight == true)
+    registered.close(w)
+    check("D10 close clears the in-flight read and its retry time",
+      w.eraseReadInFlight ~= true and w.eraseNextReadAt == nil and w.eraseActive ~= true,
+      "inFlight = " .. tostring(w.eraseReadInFlight) .. ", nextReadAt = " .. tostring(w.eraseNextReadAt))
+    local again = startErase(w)
+    again.ok()
+    wake(w)
+    check("D10 the next erase reads as soon as it is acknowledged", countOf("summary") == 2,
+      "summaries = " .. countOf("summary"))
   end
 end
 
