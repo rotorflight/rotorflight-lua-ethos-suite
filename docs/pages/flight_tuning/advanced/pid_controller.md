@@ -37,7 +37,7 @@ Greyed out until the flight controller answers. Read-only while the model is arm
 
 - Changes are written to the flight controller EEPROM upon Save.
 - Parameters are scoped to the currently active PID profile.
-- Master Gain needs firmware with MSP API 12.10 or later; on older firmware both fields stay greyed out.
+- Master Gain needs firmware that reports the master gains (rotorflight-firmware#538 or later). The page checks what the flight controller sends, not the API version, because some API 12.10 builds do not have them. On firmware without them, both fields stay greyed out.
 - A master gain changed in flight (Cyclic/Yaw Master Gain adjustment functions) does not disturb trim already held by I and Offset; only how fast they build up changes.
 
 ## Related

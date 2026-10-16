@@ -7,7 +7,9 @@
 -- active PID profile on the flight controller. Exposes the same field
 -- subset as the original suite's app/modules/profile_pidcontroller module:
 -- error decay (ground/cyclic), error limit (roll/pitch/yaw), HSI offset
--- limit (roll/pitch), and iterm relax (type + roll/pitch/yaw cutoffs).
+-- limit (roll/pitch), and iterm relax (type + roll/pitch/yaw cutoffs) --
+-- plus the cyclic/yaw master gains, greyed out on firmware that does not
+-- report them.
 -- The other ~30 fields in that MSP command (gyro/dterm/bterm cutoffs, yaw
 -- stop gains, angle/horizon/trainer, cross-coupling, inertia precomp,
 -- etc.) are still read and written back unchanged every round-trip --
@@ -58,8 +60,9 @@ local function open(opts)
     mspModule = pidProfile,
     opts = opts,
     unloadPackageKeys = {"rfsuite.lib.msp_pid_profile"},
-    -- Firmware before API 12.10 has no master gains: loadData() has just
-    -- enabled every field, so take those two back out.
+    -- Firmware without rotorflight-firmware#538 has no master gains (the
+    -- reply is shorter than 46 bytes): loadData() has just enabled every
+    -- field, so take those two back out.
     onLoaded = function()
       local rt = controlRef and controlRef.runtime
       if rt and rt.data and not rt.data.has_master_gain then

@@ -81,13 +81,16 @@ local FIELDS = {
   "yaw_inertia_precomp_cutoff",
 }
 
--- Trailing fields newer firmware appends (API 12.10). Read only when the
--- reply is long enough, and written back only when they were read, so an
--- older FC never gets bytes it doesn't expect and error_decay_gain_cyclic
--- is never overwritten with a default. `has_master_gain` tells pages
--- whether the master gains exist on the connected FC.
+-- Trailing fields newer firmware appends, each gated on the reply length
+-- rather than the API version: error_decay_gain_cyclic is byte 44 on every
+-- API 12.10 build (a 44-byte reply), and the master gains follow it only on
+-- firmware carrying rotorflight-firmware#538 (46 bytes), which did not bump
+-- the API version. Each group is written back only when it was read, so an
+-- older FC never gets bytes it doesn't expect and nothing is overwritten
+-- with a default. `has_master_gain` tells pages whether the master gains
+-- exist on the connected FC.
+local DECAY_GAIN_FIELD = "error_decay_gain_cyclic"
 local MASTER_GAIN_FIELDS = {
-  "error_decay_gain_cyclic",
   "cyclic_master_gain",
   "yaw_master_gain",
 }
@@ -214,7 +217,10 @@ function msp_pid_profile.decode(buf)
   for i = 1, #FIELDS do
     data[FIELDS[i]] = mspcodec.readU8(buf)
   end
-  data.has_master_gain = #buf >= #FIELDS + #MASTER_GAIN_FIELDS
+  if #buf >= #FIELDS + 1 then
+    data[DECAY_GAIN_FIELD] = mspcodec.readU8(buf)
+  end
+  data.has_master_gain = #buf >= #FIELDS + 1 + #MASTER_GAIN_FIELDS
   if data.has_master_gain then
     for i = 1, #MASTER_GAIN_FIELDS do
       data[MASTER_GAIN_FIELDS[i]] = mspcodec.readU8(buf)
@@ -231,6 +237,9 @@ function msp_pid_profile.encode(data)
   for i = 1, #FIELDS do
     mspcodec.writeU8(payload, data[FIELDS[i]] or 0)
   end
+  local decayGain = data[DECAY_GAIN_FIELD]
+  if decayGain == nil then return payload end
+  mspcodec.writeU8(payload, decayGain)
   if data.has_master_gain then
     for i = 1, #MASTER_GAIN_FIELDS do
       mspcodec.writeU8(payload, data[MASTER_GAIN_FIELDS[i]] or 0)
