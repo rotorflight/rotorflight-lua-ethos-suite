@@ -85,8 +85,32 @@ local function anyStub()
   return setmetatable({}, { __index = function() return function() return {} end end })
 end
 
+-- The real summary decoder, over a byte-level codec, so a reply is checked as its bytes arrive.
+local codec = {
+  readU8 = function(buf)
+    local o = buf.offset or 1
+    buf.offset = o + 1
+    return buf[o] or 0
+  end,
+  readU32 = function(buf)
+    local o = buf.offset or 1
+    local v = 0
+    for i = 3, 0, -1 do v = v * 256 + (buf[o + i] or 0) end
+    buf.offset = o + 4
+    return v
+  end,
+}
+local realSummaryModule
+local function realSummary()
+  realSummaryModule = realSummaryModule or dofile(ROOT .. "/src/rfsuite/lib/msp_dataflash_summary.lua")
+  return realSummaryModule
+end
+
 local dataflashSummaryMsg = {
-  buildReadMessage = function(ok, err) return { kind = "summary", ok = ok, err = err } end,
+  buildReadMessage = function(ok, err)
+    local real = realSummary().buildReadMessage(ok, err)
+    return { kind = "summary", ok = ok, err = err, processReply = real.processReply }
+  end,
 }
 local dataflashEraseMsg = {
   buildWriteMessage = function(ok, err) return { kind = "erase", ok = ok, err = err } end,
@@ -101,6 +125,8 @@ package.loaded["rfsuite.lib.require"] = function(name)
       subscribe = noop,
       unsubscribe = noop,
     }
+  elseif name == "lib/mspcodec.lua" then
+    return codec
   elseif name == "lib/msp_dataflash_summary.lua" then
     return dataflashSummaryMsg
   elseif name == "lib/msp_dataflash_erase.lua" then
@@ -363,5 +389,38 @@ end
 
 print("widget: src/rfsuite/widgets/dashboard.lua")
 runChecks()
+-- D11, D12: the real decoder, fed the bytes a reply carries.
+local function runDecoderChecks()
+  -- D11: a reply shorter than the summary is an error, and the wait reads again.
+  do
+    local w = freshWidget()
+    local erase = startErase(w)
+    erase.ok()
+    wake(w)
+    latest("summary").processReply(nil, { 3, 0, 0 })   -- three bytes, not thirteen
+    wake(w)
+    check("D11 a short summary reply does not finish the erase", w.eraseActive == true,
+      "eraseActive = " .. tostring(w.eraseActive))
+    local t0 = now
+    now = t0 + 0.5
+    wake(w)
+    check("D11 a short summary reply is read again", countOf("summary") == 2,
+      "summaries = " .. countOf("summary"))
+  end
+
+  -- D12: a full summary reply that reports ready finishes the erase.
+  do
+    local w = freshWidget()
+    local erase = startErase(w)
+    erase.ok()
+    wake(w)
+    latest("summary").processReply(nil, { 1, 235, 3, 0, 0, 0, 0, 214, 7, 0, 112, 13, 0 })
+    wake(w)
+    check("D12 a full summary reply that reports ready finishes the erase", w.eraseActive ~= true,
+      "eraseActive = " .. tostring(w.eraseActive))
+  end
+end
+
+runDecoderChecks()
 print(string.format("%d checks, %d failures", checks, failures))
 if failures > 0 then os.exit(1) end

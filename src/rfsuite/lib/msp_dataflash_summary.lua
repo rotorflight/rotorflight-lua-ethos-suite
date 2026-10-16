@@ -8,6 +8,8 @@ local requireModule = package.loaded["rfsuite.lib.require"] or assert(loadfile("
 local mspcodec = requireModule("lib/mspcodec.lua")
 
 local READ_COMMAND = 70
+-- flags (1) + sectors, total and used (4 each).
+local SUMMARY_SIZE = 13
 local SIMULATOR_RESPONSE = {
   3, -- ready + supported
   235, 3, 0, 0, -- sectors
@@ -31,6 +33,12 @@ function msp_dataflash_summary.buildReadMessage(onData, onError)
   return {
     command = READ_COMMAND,
     processReply = function(_, buf)
+      -- A short reply would decode its missing bytes as zero, which reads as "no dataflash".
+      -- It is an error instead, and the caller decides how to retry.
+      if type(buf) ~= "table" or #buf < SUMMARY_SIZE then
+        if onError then onError("short_payload") end
+        return
+      end
       onData(msp_dataflash_summary.decode(buf))
     end,
     errorHandler = onError,
