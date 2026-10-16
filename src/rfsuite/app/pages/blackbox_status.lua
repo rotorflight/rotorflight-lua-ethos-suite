@@ -42,6 +42,12 @@ local function open(opts)
   local dialog = nil
   local pending = 0
   local lastPoll = 0
+  -- #2495: each read gets a sequence number. The erase is finished only by a read
+  -- requested after the erase command completed (eraseDoneSeq), and a read asked
+  -- for while another is in flight is queued, not dropped (pollQueued).
+  local pollSeq = 0
+  local eraseDoneSeq = nil
+  local pollQueued = false
   local eraseInProgress = false
   local dataflash = {ready = false, supported = false, total = 0, used = 0}
   local sdcard = {supported = false, state = 0, filesystemLastError = 0, freeSizeKB = 0, totalSizeKB = 0}
@@ -73,6 +79,9 @@ local function open(opts)
     if dataflashField and dataflashField.value then dataflashField:value(dataflashText()) end
     if sdcardField and sdcardField.value then sdcardField:value(sdcardText()) end
     if headerHandle then headerHandle.setReloadEnabled(pending == 0) end
+    if headerHandle and headerHandle.setToolEnabled then
+      headerHandle.setToolEnabled(dataflash.supported and dataflash.ready and not eraseInProgress)
+    end
   end
 
   local function closeDialog(focusFn)
@@ -94,19 +103,30 @@ local function open(opts)
     })
   end
 
-  local function finishRead()
+  local poll
+
+  local function finishRead(seq)
     if disposed then return end
     pending = pending - 1
     if pending < 0 then pending = 0 end
-    if eraseInProgress and dataflash.ready then
+    if eraseInProgress and eraseDoneSeq and seq and seq >= eraseDoneSeq and pending == 0 and dataflash.ready then
       eraseInProgress = false
+      eraseDoneSeq = nil
       closeDialog(headerHandle and headerHandle.focusTool)
     end
+    if pending == 0 and pollQueued then poll() end
     updateFields()
   end
 
-  local function poll()
-    if disposed or pending > 0 then return end
+  poll = function()
+    if disposed then return end
+    if pending > 0 then
+      pollQueued = true
+      return
+    end
+    pollQueued = false
+    pollSeq = pollSeq + 1
+    local seq = pollSeq
     pending = 2
     updateFields()
     bus.publish("msp.request", dataflashSummary.buildReadMessage(function(data)
@@ -115,8 +135,8 @@ local function open(opts)
       dataflash.supported = hasBit(data.flags, 1)
       dataflash.total = data.total or 0
       dataflash.used = data.used or 0
-      finishRead()
-    end, finishRead))
+      finishRead(seq)
+    end, function() finishRead(seq) end))
     bus.publish("msp.request", sdcardSummary.buildReadMessage(function(data)
       if disposed then return end
       sdcard.supported = hasBit(data.flags, 0)
@@ -124,8 +144,8 @@ local function open(opts)
       sdcard.filesystemLastError = data.filesystemLastError or 0
       sdcard.freeSizeKB = data.freeSizeKB or 0
       sdcard.totalSizeKB = data.totalSizeKB or 0
-      finishRead()
-    end, finishRead))
+      finishRead(seq)
+    end, function() finishRead(seq) end))
   end
 
   local function goBack()
@@ -137,25 +157,30 @@ local function open(opts)
   end
 
   local function erase(focusFn)
-    if disposed then return end
+    if disposed or eraseInProgress then return end
     eraseInProgress = true
     showProgress("@i18n(app.modules.blackbox.erasing_dataflash)@")
     bus.publish("msp.request", dataflashErase.buildWriteMessage(function()
       if disposed then return end
+      -- Only a read requested from here on can end the wait (#2495).
+      eraseDoneSeq = pollSeq + 1
       poll()
       if not dataflash.supported then
         eraseInProgress = false
+        eraseDoneSeq = nil
         closeDialog(focusFn)
       end
     end, function()
       if disposed then return end
       eraseInProgress = false
+      eraseDoneSeq = nil
       closeDialog(focusFn)
     end))
     updateFields()
   end
 
   local function confirmErase(focusFn)
+    if disposed or eraseInProgress or not dataflash.supported then return end
     form.openDialog({
       title = "@i18n(app.modules.blackbox.name)@",
       message = "@i18n(app.modules.blackbox.erase_prompt)@",
