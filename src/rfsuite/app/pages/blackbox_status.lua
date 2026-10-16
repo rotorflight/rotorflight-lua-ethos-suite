@@ -176,7 +176,10 @@ local function open(opts)
       if disposed then return end
       eraseInProgress = false
       eraseDoneSeq = nil
+      -- The erase may or may not have run: the flash is not known to be ready until a read says so.
+      dataflash.ready = false
       closeDialog(focusFn)
+      poll()
     end))
     updateFields()
   end

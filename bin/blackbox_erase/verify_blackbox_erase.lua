@@ -222,6 +222,17 @@ local function runChecks()
     check("S4 the next read that answers ends the wait", progresses[#progresses].closed == true)
   end
 
+  -- S6: an erase that reports an error does not leave the pre-erase flash state in place.
+  do
+    openReady()
+    local erase = startErase()
+    erase.err()
+    check("S6 an erase error closes the dialog", progresses[#progresses].closed == true)
+    check("S6 an erase error takes the Tool button off until a read says the flash is ready",
+      header.toolEnabled == false, "toolEnabled = " .. tostring(header.toolEnabled))
+    check("S6 an erase error reads the board again", latest("summary") ~= nil and countOf("summary") >= 2)
+  end
+
   -- S5: a read after the erase that reports no dataflash ends the wait.
   do
     openReady()
