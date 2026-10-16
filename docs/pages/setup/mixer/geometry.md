@@ -6,7 +6,7 @@ sidebar_position: 20
 
 # Geometry
 
-Mixer -> Geometry page. Ports the API >= 12.0.9 swash geometry page, including Swash Setup Mode: the Tool button toggles passthrough mixer override and live-writes edits without EEPROM while it is enabled. The override is switched on only after the page has read its values; until then, confirming the override dialog does nothing.
+Mixer -> Geometry page. Ports the API >= 12.0.9 swash geometry page, including Swash Setup Mode: the Tool button toggles passthrough mixer override and live-writes edits without EEPROM while it is enabled. The Tool button remains disabled until the page has loaded its values; in addition, the override is switched on only after the read has answered.
 
 ## Where to find it
 
