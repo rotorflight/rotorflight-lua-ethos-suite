@@ -91,6 +91,9 @@ end
 function render.wakeup(box)
 
     local cfg = ensureCfg(box)
+    -- The unit belongs to a capacity only. "Not supported", the loading dots and a missing
+    -- value get none (#2566 follow-up).
+    box._showUnit = false
 
     local totalSize = rfsuite.session.bblSize
     local usedSize = rfsuite.session.bblUsed
@@ -106,6 +109,7 @@ function render.wakeup(box)
         box._lastUsedSize = nil
         box._lastTotalSize = nil
     elseif totalSize and usedSize then
+        box._showUnit = true
         local usedMB = usedSize / (1024 * 1024)
         local totalMB = totalSize / (1024 * 1024)
         percentUsed = totalSize > 0 and (usedSize / totalSize) * 100 or 0
@@ -139,7 +143,7 @@ function render.wakeup(box)
     box._currentDisplayValue = displayValue
 
     if box._dashboardRectW and box._dashboardRectH then
-        local unitForPaint = box._isLoadingDots and nil or cfg.unit
+        local unitForPaint = box._showUnit and cfg.unit or nil
         local x, y = utils.applyOffset(box._dashboardRectX or 0, box._dashboardRectY or 0, box)
         local w, h
         x, y, w, h = utils.boxContentRect(x, y, box._dashboardRectW, box._dashboardRectH, cfg.bgcolor)
@@ -151,7 +155,7 @@ function render.paint(x, y, w, h, box)
     x, y = utils.applyOffset(x, y, box)
     local c = box._cfg or {}
 
-    local unitForPaint = box._isLoadingDots and nil or c.unit
+    local unitForPaint = box._showUnit and c.unit or nil
     local textColor = box._dynamicTextColor or c.defaultTextColor
 
     x, y, w, h = utils.drawBoxBackground(x, y, w, h, c.bgcolor)
