@@ -2875,6 +2875,31 @@ jobs:
       - name: Check the header Tool button follows the page load state
         run: lua5.4 bin/tool_button_loaded/verify_tool_button_loaded.lua
 
+  # Issue #2507: a board without dataflash answers total = 0, and the BLACKBOX text
+  # object treated that as a real capacity and drew 0.0/0.0 MB. The widget now shows the
+  # existing "Not supported" text for total = 0, and keeps the loading dots for "no answer yet".
+  #
+  # The harness drives the real widget through render.wakeup() with the session values the
+  # summary sets. Against unpatched master the no-dataflash checks fail. --self-test removes
+  # the new branch and requires those checks to go red.
+  blackbox-no-dataflash:
+    name: A board without dataflash shows Not supported, not a zero capacity
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Install Lua 5.4
+        run: sudo apt-get update && sudo apt-get install -y lua5.4
+
+      - name: Check the blackbox text object on a board without dataflash
+        run: lua5.4 bin/blackbox_text/verify_blackbox_text.lua
+
   # Per-language PR builds (mirrors push.yml behavior)
   create-zip:
     name: Build PR ZIP (${{ matrix.lang }})
