@@ -2144,6 +2144,22 @@ unpatched master the read-failed checks fail on all four pages.
 ''',
     ),
     LuaJob(
+        id='tool-button-loaded',
+        name='Header Tool button stays disabled until the page has loaded its values',
+        step='Check the header Tool button follows the page load state',
+        script='bin/tool_button_loaded/verify_tool_button_loaded.lua',
+        rationale=r'''Issue #2553: the header Tool button was enabled whenever a page passed an onTool,
+before the page had read its values. Save is gated by the page runtime; Tool was not.
+The runtime now drives the Tool button from the same loaded flag as Save, through a
+new setToolEnabled() on the header handle.
+
+No build and no package step reaches this -- it is the enable state of a button on a
+running page. The harness drives the real page runtime through a held, answered and
+failed read and checks the button the real header builds. Against unpatched master the
+header has no setToolEnabled and the Tool button stays enabled while the page is unloaded.
+''',
+    ),
+    LuaJob(
         id='armed-unconfirmed',
         name='A disconnected armed model is not writable until a fresh answer clears it',
         step='Check the armed-unconfirmed latch and the save gate',

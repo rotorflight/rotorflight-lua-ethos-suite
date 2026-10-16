@@ -2848,6 +2848,33 @@ jobs:
       - name: Check the mixer and servo overrides wait for the read
         run: lua5.4 bin/override_read_gate/verify_override_read_gate.lua
 
+  # Issue #2553: the header Tool button was enabled whenever a page passed an onTool,
+  # before the page had read its values. Save is gated by the page runtime; Tool was not.
+  # The runtime now drives the Tool button from the same loaded flag as Save, through a
+  # new setToolEnabled() on the header handle.
+  #
+  # No build and no package step reaches this -- it is the enable state of a button on a
+  # running page. The harness drives the real page runtime through a held, answered and
+  # failed read and checks the button the real header builds. Against unpatched master the
+  # header has no setToolEnabled and the Tool button stays enabled while the page is unloaded.
+  tool-button-loaded:
+    name: Header Tool button stays disabled until the page has loaded its values
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Install Lua 5.4
+        run: sudo apt-get update && sudo apt-get install -y lua5.4
+
+      - name: Check the header Tool button follows the page load state
+        run: lua5.4 bin/tool_button_loaded/verify_tool_button_loaded.lua
+
   # Issue #2548: isArmed goes nil on every disconnect, and a gate written as
   # `isArmed == true` reads that nil as "disarmed". On a reconnect into an armed model the
   # save button and the stats write then opened before the arm flags were read again.

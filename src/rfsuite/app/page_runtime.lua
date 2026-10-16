@@ -528,6 +528,7 @@ function PageRuntime:setBusy(busy)
   self.busy = busy and true or false
   if not self.headerHandle then return end
   self:updateSaveEnabled()
+  self:updateToolEnabled()
   self.headerHandle.setReloadEnabled(not busy)
 end
 
@@ -538,6 +539,15 @@ end
 local function armedOrUnconfirmed(runtime)
   if runtime.isArmed == true then return true end
   return runtime.isArmed == nil and runtime.armedUnconfirmed == true
+end
+
+-- Tool is only ever enabled once the page has a completed load, the same
+-- gate Save uses, and is not mid-operation (busy). A page's onTool edits
+-- the values it has not read yet otherwise (see issue #2553). Only pages
+-- that pass an onTool have a Tool button to drive.
+function PageRuntime:updateToolEnabled()
+  if self.disposed or not self.headerHandle or not self.onTool then return end
+  self.headerHandle.setToolEnabled(self.loaded == true and not self.busy)
 end
 
 -- Bounded page save predicate: saving is only permitted when data has been
@@ -624,6 +634,7 @@ function PageRuntime:loadData(focusFn)
 
   self:setBusy(true)
   self.loaded = false
+  self:updateToolEnabled()
   for _, field in pairs(self.fields) do
     field:enable(false)
   end
