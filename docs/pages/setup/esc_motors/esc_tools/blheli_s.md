@@ -23,6 +23,10 @@ Greyed out until the flight controller answers. Read-only while the model is arm
 
 ## Notes
 
+- Every read is checked against this vendor's signature, Reload included: a reply that is
+  not this vendor's (or that carries no signature at all) is refused, the editor is not
+  loaded and the page cannot be saved, so another vendor's block in the slot is never
+  written back.
 - Changes are written to the flight controller EEPROM upon Save.
 
 ## Choosing the ESC

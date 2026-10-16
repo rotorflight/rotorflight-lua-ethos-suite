@@ -2055,6 +2055,95 @@ pin to go red every time, after the unmodified modules have passed.
 '''
     ),
     LuaJob(
+        id='esc-sensor-protocol',
+        name='ESC telemetry protocol list follows the API version, RECORD is 15 from 12.10',
+        step='Check the ESC telemetry protocol list per reported API version',
+        script='bin/esc_sensor_protocol/verify_esc_sensor_protocol.lua',
+        rationale=r'''Issue #2492: the ESC telemetry protocol list was a static table, RECORD fixed at 14.
+Firmware API 12.10 inserted SRXL2 at 14 and moved RECORD to 15 (rotorflight-firmware
+Changes.md, MSP Changes). A board on 12.10 therefore got RECORD written as SRXL2. The list
+now follows the API version the board reports, the way the motor protocol list already does.
+
+No build and no package step reaches this -- it is the list a pilot picks from and the
+value it writes. The harness drives the real codec for API 9, API 10 and no version, and the
+real telemetry page for the same three, with the runtime handing it the version in buildChrome()
+as the bus replay does. Against unpatched master SRXL2 is not offered and RECORD is offered as
+14 on API 10, in the codec and on the page.
+''',
+    ),
+    LuaJob(
+        id='runtime-read-validator',
+        name='A page refuses a reply it does not know on every read, not only the first',
+        step='Check the page runtime refuses a reload whose reply fails the page validator',
+        script='bin/runtime_read_validator/verify_runtime_read_validator.lua',
+        rationale=r'''Issue #2494: the ESC vendor page checked the codec signature only on its first read.
+The Reload path reads through the page runtime, which took the reply into the page's data
+without any check, so an ESC with another signature in the same slot built the editor from
+its parameters. The runtime now takes an optional validateRead (or validate on a source);
+a refused reply is a failed read, exactly as a read error is. The ESC page passes its
+signature check there.
+
+No build and no package step reaches this -- it is a reload path through the page runtime.
+The harness drives the real page_runtime through loadData(): a reply with another signature
+is refused and leaves the page unloaded, a reply with the page's signature loads it, and a
+read error is refused as before. Against unpatched master the refused reply loads the page.
+''',
+    ),
+    LuaJob(
+        id='tune-advisor-payload',
+        name='Tune advisor reply is refused unless it is the layout this suite knows',
+        step='Check the tune advisor codec refuses an unknown payload version or length',
+        script='bin/tune_advisor_payload/verify_tune_advisor_payload.lua',
+        rationale=r'''Issue #2493: the tune advisor decode() read the payload version byte and never
+compared it, and ran with no length guard. A reply of another layout decoded into
+plausible numbers, and tune_history saves them to the flight-history file. The codec now
+refuses a reply that is not 67 bytes or not payload version 1, and reports the reason
+through the error path.
+
+No build and no package step reaches this -- it is a reply path through the codec. The
+harness drives the real codec through its read message with the firmware's own 67-byte
+reply, a version-2 reply, a truncated reply and a longer reply. Against unpatched master
+the version-2, truncated and longer replies reach onData as decoded numbers.
+''',
+    ),
+    LuaJob(
+        id='pwm-servo-write',
+        name='PWM servo page lists the PWM outputs only and writes each one raw',
+        step='Check the PWM servo list count and the raw write of each servo',
+        script='bin/pwm_servo_write/verify_pwm_servo_write.lua',
+        rationale=r'''Issue #2445: with a SBUS or FBUS port configured, MSP_STATUS servo_count is the packed
+total (PWM outputs plus the 18 bus channels). The PWM page listed min(total, 16) tiles, so
+tiles past the PWM outputs wrote bus servos, and each save went out as cmd 212, which the
+firmware translates to the bus servo at that packed index. The list now counts the PWM
+outputs using the same port test as the bus guard, and every PWM save is written raw
+(cmd 124).
+
+No build and no package step reaches this -- it is a list and a save path through a
+running page. The harness drives the real servos_pwm page with the real page runtime,
+the real bus guard and the real servo-config write builders, in three bench layouts:
+no bus port, a FBUS port and a SBUS port. Against unpatched master the bus layouts show
+16 tiles and write cmd 212, and the first layout writes cmd 212 where the page now writes
+cmd 124.
+''',
+    ),
+    LuaJob(
+        id='override-read-gate',
+        name='Mixer and servo override is not switched on before the page has read its values',
+        step='Check the mixer and servo overrides wait for the read',
+        script='bin/override_read_gate/verify_override_read_gate.lua',
+        rationale=r'''Issue #2496: on four pages the override could be switched on before the visit
+had read anything, while the live write that the confirmation promises was held back.
+The OK action of the override dialog now refuses to switch the override on until the
+runtime is loaded, as the live write already does.
+
+No build and no package step reaches this -- it is a dialog path through a running
+page. The harness drives the real mixer_trims, mixer_geometry, servos_pwm and servos_bus
+pages with the real page runtime: with the read failed, pressing Tool and OK writes
+no override; with the read completed, the override is written as before. Against
+unpatched master the read-failed checks fail on all four pages.
+''',
+    ),
+    LuaJob(
         id='armed-gating',
         name='Armed state gates configuration pages and badges their tiles',
         step='Check the armed gating of the menu tiles',
@@ -2071,7 +2160,7 @@ process: the derivation rules and the real menu tree against an explicit expecte
 classification (suite_armed_gating.lua), and the badge, the refusal and the rebuild
 (suite_menu_container.lua). A deliberately broken classification (submenu lock
 disabled) makes the runner exit non-zero.
-'''
+''',
     ),
 ]
 

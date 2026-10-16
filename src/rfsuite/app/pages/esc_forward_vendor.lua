@@ -195,6 +195,19 @@ function esc_forward_vendor.open(opts, config)
     if onBack then onBack() end
   end
 
+  -- The codec's signature check. The first read uses it below, and every later
+  -- read of the same page (Reload, profile switch) uses it through validateRead,
+  -- so no read can build the editor from another ESC's parameter block.
+  local function isCompatibleEsc(data)
+    if mspModule.isCompatible and not mspModule.isCompatible(data) then
+      return false
+    end
+
+    local expected = mspModule.EXPECTED_SIGNATURE
+    if expected == nil then return true end
+    return tonumber(data and data.esc_signature) == tonumber(expected)
+  end
+
   local function buildEditor(data)
     if disposed then return end
     closeDialog(false)
@@ -204,6 +217,10 @@ function esc_forward_vendor.open(opts, config)
       pageTitle = pageTitle,
       logTag = config.logTag or pageTitle,
       mspModule = mspModule,
+      validateRead = function(data)
+        if isCompatibleEsc(data) then return true end
+        return false, "ESC signature does not match the page"
+      end,
       opts = opts,
       profileField = "none",
       beforeSave = config.beforeSave,
@@ -240,16 +257,6 @@ function esc_forward_vendor.open(opts, config)
     end
 
     runtime:loadInitial()
-  end
-
-  local function isCompatibleEsc(data)
-    if mspModule.isCompatible and not mspModule.isCompatible(data) then
-      return false
-    end
-
-    local expected = mspModule.EXPECTED_SIGNATURE
-    if expected == nil then return true end
-    return tonumber(data and data.esc_signature) == tonumber(expected)
   end
 
   form.clear()

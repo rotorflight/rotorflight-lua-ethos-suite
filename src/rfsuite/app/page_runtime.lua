@@ -153,6 +153,7 @@ end
 --   logTag,                     -- e.g. "pids" -- debug print prefix; defaults to pageTitle
 --   mspModule,                  -- single-source pages: buildReadMessage(onData,onError) / buildWriteMessage(data,onWritten,onError)
 --   sources,                    -- multi-source pages instead of mspModule: {{key=, mspModule=}, ...} -- see below.
+--   validateRead,               -- optional, single-source: validateRead(values) -> ok, reason. A refused reply is a failed read.
 --                               -- A source's mspModule may omit buildWriteMessage entirely if it's
 --                               -- genuinely read-only (e.g. lib/msp_status.lua) -- performSave() skips
 --                               -- writing that source rather than erroring.
@@ -237,6 +238,9 @@ function PageRuntime.new(config)
   self.logTag = config.logTag or config.pageTitle
   self.sources = config.sources or {{key = "default", mspModule = assert(config.mspModule)}}
   self.singleSource = (#self.sources == 1) and not config.sources
+  -- optional, single-source pages: validateRead(values) -> ok, reason. A reply it
+  -- refuses is a failed read. Multi-source pages set validate on their own sources.
+  self.validateRead = config.validateRead
   self.opts = assert(config.opts)
   self.profileField = config.profileField or "pidProfile"
   self.unloadPackageKeys = config.unloadPackageKeys
@@ -620,6 +624,24 @@ function PageRuntime:loadData(focusFn)
   local profileAtReadStart = self.lastProfile
 
   local self_ = self
+
+  -- A read that fails, or whose reply the page refuses, leaves the page unloaded.
+  local function failRead(key, reason)
+    self_:queueUiAction(function()
+      self_:log("loadData: read FAILED (" .. key .. "): " .. tostring(reason))
+      -- Strict safety guard: if any source read fails or times out, the page
+      -- MUST NOT be considered loaded. Keep fields disabled and disallow saving
+      -- to prevent writing unpopulated/default values to the FC.
+      self_.loaded = false
+      for _, field in pairs(self_.fields) do
+        field:enable(false)
+      end
+      self_:setBusy(false)
+      self_:closeDialog(focusFn)
+      self_.pendingLoadError = true
+    end)
+  end
+
   local function readSource(index)
     if self_.disposed then return end
     if index > #self_.sources then
@@ -664,6 +686,27 @@ function PageRuntime:loadData(focusFn)
     self_:log("loadData: publishing msp.request (read " .. source.key .. ")")
     bus.publish("msp.request", source.mspModule.buildReadMessage(function(values)
       if self_.disposed then return end
+      -- A page may refuse a reply it does not know (for example a codec whose
+      -- signature does not match the device). The refused reply never reaches
+      -- the page's data: it is a failed read, exactly as a read error is.
+      --
+      -- Two places to look, picked in an if rather than in one expression: a
+      -- single-source page passes validateRead, a multi-source page gives each
+      -- of its own sources a validate. ("a and b or c" would read the same here,
+      -- but only because a single-source page's source can never carry one.)
+      local validate
+      if self_.singleSource then
+        validate = self_.validateRead
+      else
+        validate = source.validate
+      end
+      if validate then
+        local ok, why = validate(values)
+        if not ok then
+          failRead(source.key, why or "reply refused")
+          return
+        end
+      end
       if self_.singleSource then
         self_.data = values
         self_.dataRef.data = values
@@ -673,19 +716,7 @@ function PageRuntime:loadData(focusFn)
       readSource(index + 1)
     end, function(reason)
       if self_.disposed then return end
-      self_:queueUiAction(function()
-        self_:log("loadData: read FAILED (" .. source.key .. "): " .. tostring(reason))
-        -- Strict safety guard: if any source read fails or times out, the page
-        -- MUST NOT be considered loaded. Keep fields disabled and disallow saving
-        -- to prevent writing unpopulated/default values to the FC.
-        self_.loaded = false
-        for _, field in pairs(self_.fields) do
-          field:enable(false)
-        end
-        self_:setBusy(false)
-        self_:closeDialog(focusFn)
-        self_.pendingLoadError = true
-      end)
+      failRead(source.key, reason)
     end))
   end
 
