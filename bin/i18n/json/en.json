@@ -1555,6 +1555,12 @@
           "translation": "Loading log data",
           "needs_translation": false,
           "max_length": 16
+        },
+        "msg_no_columns": {
+          "english": "No plottable columns in this file",
+          "max_length": 40,
+          "needs_translation": false,
+          "translation": "No plottable columns in this file"
         }
       },
       "settings": {

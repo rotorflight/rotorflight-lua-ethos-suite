@@ -2208,6 +2208,29 @@ Tool button is enabled only on a ready board and not while erasing. The harness 
 real blackbox_status page with the messages answered by hand, in the order that exposes each
 defect. Against unpatched master the erase-wait and Tool-gate checks fail. --self-test
 splices the sequence test out and requires the erase-wait check to go red.
+        id='logs-named-columns',
+        name='The Logs page reads CSV columns by their header name',
+        step='Check the CSV column reader behind the Logs page',
+        script='bin/log_columns/verify_log_columns.lua',
+        rationale=r'''Issue #2506: the Logs page read every column by its position and never parsed the
+header row, so a log written by another tool was plotted from the wrong columns, and an
+empty file was drawn as a flat zero line.
+
+The reader is lib/log_columns.lua, pure functions over the file text. The harness checks
+name-based lookup against a file in another column order, a missing column, a header-only
+and an empty file, CRLF line endings and non-numeric values. --self-test swaps in a
+position-based header lookup and requires the foreign-order checks to go red.
+        id='blackbox-no-dataflash',
+        name='A board without dataflash shows Not supported, not a zero capacity',
+        step='Check the blackbox text object on a board without dataflash',
+        script='bin/blackbox_text/verify_blackbox_text.lua',
+        rationale=r'''Issue #2507: a board without dataflash answers total = 0, and the BLACKBOX text
+object treated that as a real capacity and drew 0.0/0.0 MB. The widget now shows the
+existing "Not supported" text for total = 0, and keeps the loading dots for "no answer yet".
+
+The harness drives the real widget through render.wakeup() with the session values the
+summary sets. Against unpatched master the no-dataflash checks fail. --self-test removes
+the new branch and requires those checks to go red.
 ''',
     ),
 ]
