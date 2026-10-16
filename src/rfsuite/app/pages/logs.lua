@@ -5,6 +5,7 @@ local closeKey = requireModule("app/close_key.lua")
 local header = requireModule("app/header.lua")
 local ini = requireModule("lib/ini.lua")
 local tileGrid = requireModule("app/tile_grid.lua")
+local logColumns = requireModule("lib/log_columns.lua")
 
 local PAGE_TITLE = "@i18n(app.modules.logs.name)@"
 local BASE_DIR = "LOGS:/rfsuite/telemetry"
@@ -130,36 +131,6 @@ end
 
 local function formatTime(seconds)
   return string.format("%02d:%02d", math.floor(seconds / 60), seconds % 60)
-end
-
-local function getColumn(csvData, colIndex)
-  local column = {}
-  local start = 1
-  local len = #csvData
-  while start <= len do
-    local newlinePos = csvData:find("\n", start) or (len + 1)
-    local row = csvData:sub(start, newlinePos - 1)
-    local colStart = 1
-    local colCount = 0
-    while true do
-      local colEnd = row:find(",", colStart) or (#row + 1)
-      colCount = colCount + 1
-      if colCount == colIndex then
-        column[#column + 1] = row:sub(colStart, colEnd - 1)
-        break
-      end
-      colStart = colEnd + 1
-      if colEnd == #row + 1 then break end
-    end
-    start = newlinePos + 1
-  end
-  return column
-end
-
-local function cleanColumn(data)
-  local out = {}
-  for i = 2, #data do out[i - 1] = tonumber(data[i]) or 0 end
-  return out
 end
 
 local function padTable(tbl, padCount)
@@ -482,24 +453,30 @@ local function open(opts)
       return
     end
 
-    local cleaned = cleanColumn(getColumn(rawData or "", processIndex + 1))
-    local padded = padTable(cleaned, LOG_PADDING)
-    local minimum, maximum, average = minMaxAvg(padded)
-    logData[processIndex] = {
-      name = meta.name,
-      keyindex = meta.keyindex,
-      keyname = meta.keyname,
-      keyunit = meta.keyunit,
-      keyminmax = meta.keyminmax,
-      keyfloor = meta.keyfloor,
-      color = meta.color,
-      pen = meta.pen,
-      graph = meta.graph,
-      data = padded,
-      minimum = minimum,
-      maximum = maximum,
-      average = average,
-    }
+    -- Read the column the file names, not the one its position suggests (#2506).
+    -- A column the file does not carry is skipped, and so is every column of a file
+    -- with no data rows: nothing is drawn for them instead of a flat zero line.
+    local colIndex = logColumns.headerIndex(rawData or "")[meta.name]
+    if colIndex and logColumns.dataRowCount(rawData or "") > 0 then
+      local cleaned = logColumns.column(rawData or "", colIndex)
+      local padded = padTable(cleaned, LOG_PADDING)
+      local minimum, maximum, average = minMaxAvg(padded)
+      logData[#logData + 1] = {
+        name = meta.name,
+        keyindex = meta.keyindex,
+        keyname = meta.keyname,
+        keyunit = meta.keyunit,
+        keyminmax = meta.keyminmax,
+        keyfloor = meta.keyfloor,
+        color = meta.color,
+        pen = meta.pen,
+        graph = meta.graph,
+        data = padded,
+        minimum = minimum,
+        maximum = maximum,
+        average = average,
+      }
+    end
     if progress then progress:value(math.floor((processIndex / #LOG_COLUMNS) * 100)) end
     processIndex = processIndex + 1
   end
@@ -602,6 +579,10 @@ local function open(opts)
 
     paintHandler = function()
       if not processed or not graphPos or not graph.points or not graph.laneHeight then return end
+      if #logData == 0 then
+        lcd.drawText(graphPos.x + 5, graphPos.y + 5, "@i18n(app.modules.logs.msg_no_columns)@", SMALL_LEFT)
+        return
+      end
       for lane = 1, #graph.points do
         local laneData = graph.points[lane]
         local laneY = graphPos.y + (lane - 1) * graph.laneHeight

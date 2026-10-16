@@ -87,7 +87,7 @@ has focus, the same as the toolbar's keys.
 | Arming | **Ready** (green), **Blocked** (amber), or **Armed** (red). When blocked, each reason is listed at the bottom of the column. `-` until the FC reports its arming flags (or System Status). |
 | Profile | Active PID, rate and battery profile numbers. |
 | BEC Voltage | BEC voltage, when the sensor reports it. |
-| Blackbox | How full the blackbox dataflash is. |
+| Blackbox | How full the blackbox dataflash is. On a board without dataflash it shows *Not supported* instead of a capacity. |
 
 **Right column: Battery, then GPS**
 

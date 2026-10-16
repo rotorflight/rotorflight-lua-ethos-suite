@@ -2848,6 +2848,168 @@ jobs:
       - name: Check the mixer and servo overrides wait for the read
         run: lua5.4 bin/override_read_gate/verify_override_read_gate.lua
 
+  # Issue #2553: the header Tool button was enabled whenever a page passed an onTool,
+  # before the page had read its values. Save is gated by the page runtime; Tool was not.
+  # The runtime now drives the Tool button from the same loaded flag as Save, through a
+  # new setToolEnabled() on the header handle.
+  #
+  # No build and no package step reaches this -- it is the enable state of a button on a
+  # running page. The harness drives the real page runtime through a held, answered and
+  # failed read and checks the button the real header builds. Against unpatched master the
+  # header has no setToolEnabled and the Tool button stays enabled while the page is unloaded.
+  tool-button-loaded:
+    name: Header Tool button stays disabled until the page has loaded its values
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Install Lua 5.4
+        run: sudo apt-get update && sudo apt-get install -y lua5.4
+
+      - name: Check the header Tool button follows the page load state
+        run: lua5.4 bin/tool_button_loaded/verify_tool_button_loaded.lua
+
+  # Issue #2548: isArmed goes nil on every disconnect, and a gate written as
+  # `isArmed == true` reads that nil as "disarmed". On a reconnect into an armed model the
+  # save button and the stats write then opened before the arm flags were read again.
+  # Neither the firmware nor the page could tell that from a real disarm.
+  #
+  # tasks/session.lua keeps a latch, armedUnconfirmed: set on an armed read, cleared only by
+  # a fresh disarmed read, untouched by a disconnect. app/page_runtime.lua's save gate and
+  # the reboot-after-save gate read it through armedOrUnconfirmed(). The harness drives the
+  # real session.lua through session.wakeup() and the real page_runtime canSave(). Against
+  # unpatched master the latch and the disconnected-page checks fail. --self-test splices
+  # the latch and the gate back out and requires them to go red.
+  armed-unconfirmed:
+    name: A disconnected armed model is not writable until a fresh answer clears it
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Install Lua 5.4
+        run: sudo apt-get update && sudo apt-get install -y lua5.4
+
+      - name: Check the armed-unconfirmed latch and the save gate
+        run: lua5.4 bin/armed_unconfirmed/verify_armed_unconfirmed.lua
+
+  # Issue #2561: the locale build regenerates src/rfsuite/i18n from bin/i18n/json/
+  # and drops any key that is missing from a source. Three keys the code shows
+  # (edit_battery, msg_main_power_lost_banner, msg_save_failed_local_body) were missing from
+  # all twelve sources, so the next regeneration would have removed them from every locale.
+  #
+  # The harness reads each source with a small JSON reader and checks every @i18n(key)@
+  # reference in src/rfsuite against it. Against unpatched master it fails on all twelve
+  # locales with exactly those three keys. --self-test removes them from a copy of the
+  # English source and requires them to be reported.
+  i18n-sources:
+    name: Every referenced i18n key resolves in every locale source
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Install Lua 5.4
+        run: sudo apt-get update && sudo apt-get install -y lua5.4
+
+      - name: Check the i18n sources against the code references
+        run: lua5.4 bin/i18n_sources/verify_i18n_sources.lua
+
+  # Issue #2495: the erase wait could end on a read asked for before the erase, a read
+  # asked for while another was in flight was dropped so no read followed the erase, and the
+  # Tool button was always offered, so a second erase could start while one ran.
+  #
+  # Each read carries a sequence number; the erase is finished only by a read requested after
+  # the erase command completed, a read asked for while another is in flight is queued, and the
+  # Tool button is enabled only on a ready board and not while erasing. The harness drives the
+  # real blackbox_status page with the messages answered by hand, in the order that exposes each
+  # defect. Against unpatched master the erase-wait and Tool-gate checks fail. --self-test
+  # splices the sequence test out and requires the erase-wait check to go red.
+  blackbox-erase:
+    name: The dataflash erase waits for a read taken after it, and the Tool button follows the board
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Install Lua 5.4
+        run: sudo apt-get update && sudo apt-get install -y lua5.4
+
+      - name: Check the blackbox status erase wait and its Tool gate
+        run: lua5.4 bin/blackbox_erase/verify_blackbox_erase.lua
+
+  # Issue #2506: the Logs page read every column by its position and never parsed the
+  # header row, so a log written by another tool was plotted from the wrong columns, and an
+  # empty file was drawn as a flat zero line.
+  #
+  # The reader is lib/log_columns.lua, pure functions over the file text. The harness checks
+  # name-based lookup against a file in another column order, a missing column, a header-only
+  # and an empty file, CRLF line endings and non-numeric values. --self-test swaps in a
+  # position-based header lookup and requires the foreign-order checks to go red.
+  logs-named-columns:
+    name: The Logs page reads CSV columns by their header name
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Install Lua 5.4
+        run: sudo apt-get update && sudo apt-get install -y lua5.4
+
+      - name: Check the CSV column reader behind the Logs page
+        run: lua5.4 bin/log_columns/verify_log_columns.lua
+
+  # Issue #2507: a board without dataflash answers total = 0, and the BLACKBOX text
+  # object treated that as a real capacity and drew 0.0/0.0 MB. The widget now shows the
+  # existing "Not supported" text for total = 0, and keeps the loading dots for "no answer yet".
+  #
+  # The harness drives the real widget through render.wakeup() with the session values the
+  # summary sets. Against unpatched master the no-dataflash checks fail. --self-test removes
+  # the new branch and requires those checks to go red.
+  blackbox-no-dataflash:
+    name: A board without dataflash shows Not supported, not a zero capacity
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Install Lua 5.4
+        run: sudo apt-get update && sudo apt-get install -y lua5.4
+
+      - name: Check the blackbox text object on a board without dataflash
+        run: lua5.4 bin/blackbox_text/verify_blackbox_text.lua
+
   # Issue #2352 (armed part only): a model on the ground was shown on the dashboard
   # with no visual warning that the rotor can spool up. The dashboard now draws a red
   # frame and an "Armed" badge over whatever theme is shown while the FC reports the

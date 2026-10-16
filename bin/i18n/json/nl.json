@@ -1809,6 +1809,12 @@
           "needs_translation": false,
           "reverse_text": false,
           "max_length": 16
+        },
+        "msg_no_columns": {
+          "english": "No plottable columns in this file",
+          "max_length": 40,
+          "needs_translation": true,
+          "translation": "No plottable columns in this file"
         }
       },
       "settings": {
@@ -4594,6 +4600,12 @@
           "needs_translation": false,
           "max_length": 17,
           "reverse_text": false
+        },
+        "edit_battery": {
+          "english": "Edit Battery",
+          "max_length": 16,
+          "needs_translation": false,
+          "translation": "Batterij bewerken"
         }
       },
       "esc_motors": {
@@ -8051,6 +8063,20 @@
       "needs_translation": false,
       "reverse_text": false,
       "max_length": 8
+    },
+    "msg_main_power_lost_banner": {
+      "english": "MAIN POWER LOST",
+      "max_length": 27,
+      "needs_translation": false,
+      "reverse_text": false,
+      "translation": "HOOFDVOEDING UITGEVALLEN"
+    },
+    "msg_save_failed_local_body": {
+      "english": "Settings were not saved to the radio. Please try again.",
+      "max_length": 67,
+      "needs_translation": false,
+      "reverse_text": false,
+      "translation": "Instellingen niet opgeslagen op de zender. Probeer het opnieuw."
     }
   },
   "telemetry": {
