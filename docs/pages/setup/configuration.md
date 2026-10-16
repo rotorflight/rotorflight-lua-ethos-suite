@@ -27,6 +27,7 @@ Greyed out until the flight controller answers. Read-only while the model is arm
 ## Notes
 
 - Saving changes on this page reboots the flight controller.
+- While the model is armed, or while its armed state is *unknown after having been armed* (see [Dashboard controls](../../dashboard/controls.md)), Save stays greyed out. The reboot after a save is skipped in that state.
 - Changes are written to the flight controller EEPROM upon Save.
 
 ## Related
