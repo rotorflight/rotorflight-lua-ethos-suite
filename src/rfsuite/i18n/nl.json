@@ -4851,6 +4851,12 @@
           "reverse_text": false,
           "translation": "Loggegevens laden"
         },
+        "msg_no_columns": {
+          "english": "No plottable columns in this file",
+          "max_length": 40,
+          "needs_translation": true,
+          "translation": "No plottable columns in this file"
+        },
         "msg_no_logs_found": {
           "english": "NO LOG FILES FOUND",
           "max_length": 18,
@@ -5893,6 +5899,12 @@
           "reverse_text": false,
           "translation": "Stroom Bron"
         },
+        "edit_battery": {
+          "english": "Edit Battery",
+          "max_length": 16,
+          "needs_translation": false,
+          "translation": "Batterij bewerken"
+        },
         "full_cell_voltage": {
           "english": "Full Cell Voltage",
           "max_length": 17,
@@ -5955,12 +5967,6 @@
           "needs_translation": false,
           "reverse_text": false,
           "translation": "Gekozen"
-        },
-        "edit_battery": {
-          "english": "Edit Battery",
-          "max_length": 16,
-          "needs_translation": false,
-          "translation": "Batterij bewerken"
         },
         "smartfuel_charge_drop_rate": {
           "english": "Charge Drop Rate",
@@ -8160,13 +8166,6 @@
       "reverse_text": false,
       "translation": "Rotorflight-achtergrondtaak wordt niet uitgevoerd. Schakel het in voordat u menu's opent."
     },
-    "msg_main_power_lost_banner": {
-      "english": "MAIN POWER LOST",
-      "max_length": 27,
-      "needs_translation": false,
-      "reverse_text": false,
-      "translation": "HOOFDVOEDING UITGEVALLEN"
-    },
     "msg_background_task_missing_title": {
       "english": "Background task not running",
       "max_length": 27,
@@ -8201,6 +8200,13 @@
       "needs_translation": false,
       "reverse_text": false,
       "translation": "Laden data van vliegcontroller..."
+    },
+    "msg_main_power_lost_banner": {
+      "english": "MAIN POWER LOST",
+      "max_length": 27,
+      "needs_translation": false,
+      "reverse_text": false,
+      "translation": "HOOFDVOEDING UITGEVALLEN"
     },
     "msg_please_disarm_to_save_warning": {
       "english": "The flight controller rejected the save while armed. Your changes are safe and will be written to flash when you disarm.",

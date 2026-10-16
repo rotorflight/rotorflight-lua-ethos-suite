@@ -98,7 +98,14 @@ function render.wakeup(box)
     local displayValue
     local percentUsed
 
-    if totalSize and usedSize then
+    if totalSize == 0 then
+        -- A board without dataflash answers total = 0. That is an answer, not a
+        -- capacity (#2507): say the board has no dataflash instead of drawing 0.00/0.00 MB.
+        displayValue = "@i18n(app.modules.blackbox.not_supported)@"
+        percentUsed = nil
+        box._lastUsedSize = nil
+        box._lastTotalSize = nil
+    elseif totalSize and usedSize then
         local usedMB = usedSize / (1024 * 1024)
         local totalMB = totalSize / (1024 * 1024)
         percentUsed = totalSize > 0 and (usedSize / totalSize) * 100 or 0

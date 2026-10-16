@@ -214,7 +214,8 @@ end
 --   onTool = function() ... end,   -- optional; enables the "Tool" button
 -- }
 -- Returns {setTitle = fn(text), setSaveEnabled = fn(enabled),
--- setReloadEnabled = fn(enabled), focusMenu = fn(), focusSave = fn(),
+-- setReloadEnabled = fn(enabled), setToolEnabled = fn(enabled),
+-- focusMenu = fn(), focusSave = fn(),
 -- focusReload = fn(), focusTool = fn(), showBanner = fn(text),
 -- updateBanner = fn() -> bool, paintBanner = fn()}.
 -- Each focus* re-focuses that specific button -- Ethos has a bug where a
@@ -242,6 +243,7 @@ function header.build(title, opts)
       setTitle = function(newTitle) titleField:value(fitTitle(newTitle, titleRect.w)) end,
       setSaveEnabled = noop,
       setReloadEnabled = noop,
+      setToolEnabled = noop,
       focusMenu = function() menuButton:focus() end,
       focusSave = noop,
       focusReload = noop,
@@ -274,6 +276,9 @@ function header.build(title, opts)
     end,
     setReloadEnabled = function(enabled)
       reloadButton:enable(opts.onReload ~= nil and enabled)
+    end,
+    setToolEnabled = function(enabled)
+      toolButton:enable(opts.onTool ~= nil and enabled)
     end,
     focusMenu = function() menuButton:focus() end,
     focusSave = function() saveButton:focus() end,

@@ -14,6 +14,10 @@ Controls -> Blackbox -> Status page.
 
 Greyed out until the flight controller answers. Read-only while the model is armed.
 
+## Erasing the dataflash
+
+The Tool button erases the dataflash after a confirmation. It is off on a board without dataflash, until the board reports the dataflash as ready, and while an erase runs. The erase dialog closes only once a read taken after the erase shows the flash as ready, so the page never reports an erase as finished on a reading from before it.
+
 ## Settings
 
 | Setting | What it does |

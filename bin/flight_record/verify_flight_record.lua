@@ -234,6 +234,30 @@ end
 -- tasks/logging.lua
 -- ---------------------------------------------------------------------------
 
+-- Scratch output goes to the system temp directory and is removed when the
+-- scenario ends. Windows and POSIX shells differ in mkdir/rmdir and in how
+-- stderr is discarded (`2>nul` on Windows, `2>/dev/null` elsewhere). On Linux
+-- `2>nul` creates a file named "nul" in the working tree, so both are chosen
+-- by platform here.
+local IS_WINDOWS = package.config:sub(1, 1) == "\\"
+
+local function quoted(path)
+  if IS_WINDOWS then path = path:gsub("/", "\\") end
+  return '"' .. path .. '"'
+end
+
+local function shell(cmd)
+  return os.execute(cmd .. (IS_WINDOWS and " 2>nul" or " 2>/dev/null"))
+end
+
+local function removeTree(path)
+  if IS_WINDOWS then
+    shell("rmdir /s /q " .. quoted(path))
+  else
+    shell("rm -rf " .. quoted(path))
+  end
+end
+
 -- logging.lua resolves its dependencies through rfsuite.lib.require and writes
 -- to "LOGS:/...", which is a mount that only exists on a radio. Both are
 -- replaced here: the loader by a stub, the paths by a scratch directory, so the
@@ -305,7 +329,7 @@ local function loadLogging(scratch)
   -- level at a time, which is the order ensureDir() asks for.
   os.mkdir = function(path)
     local target = redirect(path)
-    return os.execute('mkdir "' .. target .. '" 2>nul') == 0
+    return shell("mkdir " .. quoted(target)) == 0
   end
 
   local ok, mod = pcall(dofile, TASKS .. "/logging.lua")
@@ -337,13 +361,13 @@ local function step(ctx, connected, armed, resumable)
 end
 
 local function scratchDir(name)
-  local dir = os.getenv("TEMP") or os.getenv("TMP") or "."
+  local dir = os.getenv("TEMP") or os.getenv("TMP") or os.getenv("TMPDIR") or "/tmp"
   return dir .. "/rfsuite_flight_record_" .. name
 end
 
 local function runLogScenario(name, steps)
   local scratch = scratchDir(name)
-  os.execute("rmdir /s /q " .. scratch:gsub("/", "\\") .. " 2>nul")
+  removeTree(scratch)
   local logging, started, log, handlers, restore = loadLogging(scratch)
   local ctx = { logging = logging, handlers = handlers }
   logging.setSettings({})
@@ -357,7 +381,10 @@ local function runLogScenario(name, steps)
   })
   for _, s in ipairs(steps) do step(ctx, s[1], s[2], s[3]) end
   restore()
-  return #started, log
+  -- `started` and `log` are in-memory tables, so the files can go now.
+  local count = #started
+  removeTree(scratch)
+  return count, log
 end
 
 -- The flight the issue is about: armed, a two-second gap, still armed.
