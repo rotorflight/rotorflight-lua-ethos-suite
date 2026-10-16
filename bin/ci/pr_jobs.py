@@ -2193,6 +2193,23 @@ locales with exactly those three keys. --self-test removes them from a copy of t
 English source and requires them to be reported.
 ''',
     ),
+    LuaJob(
+        id='blackbox-erase',
+        name='The dataflash erase waits for a read taken after it, and the Tool button follows the board',
+        step='Check the blackbox status erase wait and its Tool gate',
+        script='bin/blackbox_erase/verify_blackbox_erase.lua',
+        rationale=r'''Issue #2495: the erase wait could end on a read asked for before the erase, a read
+asked for while another was in flight was dropped so no read followed the erase, and the
+Tool button was always offered, so a second erase could start while one ran.
+
+Each read carries a sequence number; the erase is finished only by a read requested after
+the erase command completed, a read asked for while another is in flight is queued, and the
+Tool button is enabled only on a ready board and not while erasing. The harness drives the
+real blackbox_status page with the messages answered by hand, in the order that exposes each
+defect. Against unpatched master the erase-wait and Tool-gate checks fail. --self-test
+splices the sequence test out and requires the erase-wait check to go red.
+''',
+    ),
 ]
 
 VERBATIM_JOBS = [
