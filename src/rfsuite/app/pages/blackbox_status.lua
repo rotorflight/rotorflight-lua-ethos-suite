@@ -109,13 +109,18 @@ local function open(opts)
     if disposed then return end
     pending = pending - 1
     if pending < 0 then pending = 0 end
-    if eraseInProgress and eraseDoneSeq and seq and seq >= eraseDoneSeq and pending == 0 and dataflash.ready then
+    -- The wait ends on a read taken after the erase that answered: the flash is ready,
+    -- or the board reports no dataflash. A failed read answers nothing, so the wait goes
+    -- on until a later read does (#2495 follow-up).
+    local answered = eraseInProgress and eraseDoneSeq and seq and seq >= eraseDoneSeq and pending == 0
+    local finished = answered and (dataflash.ready or not dataflash.supported)
+    if finished then
       eraseInProgress = false
       eraseDoneSeq = nil
-      closeDialog(headerHandle and headerHandle.focusTool)
     end
-    if pending == 0 and pollQueued then poll() end
     updateFields()
+    if finished then closeDialog(headerHandle and headerHandle.focusTool) end
+    if pending == 0 and pollQueued then poll() end
   end
 
   poll = function()
@@ -163,13 +168,10 @@ local function open(opts)
     bus.publish("msp.request", dataflashErase.buildWriteMessage(function()
       if disposed then return end
       -- Only a read requested from here on can end the wait (#2495).
+      -- The flash is not known to be ready again until a read taken after the erase says so.
+      dataflash.ready = false
       eraseDoneSeq = pollSeq + 1
       poll()
-      if not dataflash.supported then
-        eraseInProgress = false
-        eraseDoneSeq = nil
-        closeDialog(focusFn)
-      end
     end, function()
       if disposed then return end
       eraseInProgress = false

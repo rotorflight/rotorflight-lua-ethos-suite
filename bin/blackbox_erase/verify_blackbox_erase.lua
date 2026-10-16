@@ -207,6 +207,30 @@ local function runChecks()
     check("S3 the erase is still a single command", countOf("erase") == 1)
     erase.ok()
   end
+
+  -- S4: a read after the erase that fails does not end the wait; the next one that answers does.
+  do
+    openReady()
+    local erase = startErase()
+    erase.ok()
+    latest("summary").err()
+    latest("sdcard").ok({ flags = 0, state = 4, filesystemLastError = 0, freeSizeKB = 1000, totalSizeKB = 2000 })
+    check("S4 a failed read after the erase keeps the erase wait open",
+      progresses[#progresses].closed == false, "the dialog closed on a failed read")
+    headerOpts.onReload()
+    answerPoll(latest("summary"), latest("sdcard"), FLAG_READY + FLAG_SUPPORTED)
+    check("S4 the next read that answers ends the wait", progresses[#progresses].closed == true)
+  end
+
+  -- S5: a read after the erase that reports no dataflash ends the wait.
+  do
+    openReady()
+    local erase = startErase()
+    erase.ok()
+    answerPoll(latest("summary"), latest("sdcard"), 0)
+    check("S5 a read after the erase that reports no dataflash ends the wait",
+      progresses[#progresses].closed == true, "the dialog is still open")
+  end
 end
 
 -- ---------------------------------------------------------------------------
@@ -233,8 +257,8 @@ if selfTest then
   print("--self-test: the erase wait must go red without the sequence test")
   local source = readFile(PAGE)
   local spliced, n = source:gsub(
-    "if eraseInProgress and eraseDoneSeq and seq and seq >= eraseDoneSeq and pending == 0 and dataflash%.ready then",
-    "if eraseInProgress and dataflash.ready then", 1)
+    "local answered = eraseInProgress and eraseDoneSeq and seq and seq >= eraseDoneSeq and pending == 0",
+    "local answered = eraseInProgress and pending == 0", 1)
   if n ~= 1 then
     check("the sequence test is present in the page to splice out", false, "no match in blackbox_status.lua")
   else
