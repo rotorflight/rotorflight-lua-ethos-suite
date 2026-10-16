@@ -2931,6 +2931,32 @@ jobs:
       - name: Check the i18n sources against the code references
         run: lua5.4 bin/i18n_sources/verify_i18n_sources.lua
 
+  # Issue #2506: the Logs page read every column by its position and never parsed the
+  # header row, so a log written by another tool was plotted from the wrong columns, and an
+  # empty file was drawn as a flat zero line.
+  #
+  # The reader is lib/log_columns.lua, pure functions over the file text. The harness checks
+  # name-based lookup against a file in another column order, a missing column, a header-only
+  # and an empty file, CRLF line endings and non-numeric values. --self-test swaps in a
+  # position-based header lookup and requires the foreign-order checks to go red.
+  logs-named-columns:
+    name: The Logs page reads CSV columns by their header name
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Install Lua 5.4
+        run: sudo apt-get update && sudo apt-get install -y lua5.4
+
+      - name: Check the CSV column reader behind the Logs page
+        run: lua5.4 bin/log_columns/verify_log_columns.lua
+
   # Per-language PR builds (mirrors push.yml behavior)
   create-zip:
     name: Build PR ZIP (${{ matrix.lang }})
