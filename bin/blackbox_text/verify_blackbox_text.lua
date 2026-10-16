@@ -99,6 +99,21 @@ local function wake(render, box, total, used)
 end
 
 local function runChecks(render)
+  -- U4 and U5: the paint path draws the same unit as the wakeup path (review of #2571).
+  do
+    local box = { _dashboardRectW = 100, _dashboardRectH = 20, _testUnit = "MB" }
+    wake(render, box, 0, 0)
+    render.paint(0, 0, 100, 20, box)
+    check("U4 paint draws a board without dataflash without the unit", lastUnit == nil,
+      "unit drawn: " .. tostring(lastUnit))
+  end
+  do
+    local box = { _dashboardRectW = 100, _dashboardRectH = 20, _testUnit = "MB" }
+    wake(render, box, 2048 * MIB, 1024 * MIB)
+    render.paint(0, 0, 100, 20, box)
+    check("U5 control: paint draws a capacity with its unit", lastUnit == "MB",
+      "unit drawn: " .. tostring(lastUnit))
+  end
   -- U1 to U3 (#2566 follow-up): the unit belongs to a capacity only.
   do
     local box = { _dashboardRectW = 100, _dashboardRectH = 20, _testUnit = "MB" }
@@ -189,6 +204,18 @@ if selfTest then
     local redUnit = failures > before2
     failures = before2
     check("the unit checks go red without the unit rule", redUnit)
+
+    local paintSource, pn = source:gsub("local unitForPaint = box%._showUnit and c%.unit or nil",
+      "local unitForPaint = c.unit", 1)
+    if pn == 1 then
+      local before3 = failures
+      runChecks(loadWidget(paintSource))
+      local redPaint = failures > before3
+      failures = before3
+      check("the paint checks go red without the paint unit rule", redPaint)
+    else
+      check("the paint unit rule is present to splice out", false, "no match")
+    end
   end
 end
 
