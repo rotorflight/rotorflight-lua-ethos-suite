@@ -2904,6 +2904,33 @@ jobs:
       - name: Check the armed-unconfirmed latch and the save gate
         run: lua5.4 bin/armed_unconfirmed/verify_armed_unconfirmed.lua
 
+  # Issue #2561: the locale build regenerates src/rfsuite/i18n from bin/i18n/json/
+  # and drops any key that is missing from a source. Three keys the code shows
+  # (edit_battery, msg_main_power_lost_banner, msg_save_failed_local_body) were missing from
+  # all twelve sources, so the next regeneration would have removed them from every locale.
+  #
+  # The harness reads each source with a small JSON reader and checks every @i18n(key)@
+  # reference in src/rfsuite against it. Against unpatched master it fails on all twelve
+  # locales with exactly those three keys. --self-test removes them from a copy of the
+  # English source and requires them to be reported.
+  i18n-sources:
+    name: Every referenced i18n key resolves in every locale source
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Install Lua 5.4
+        run: sudo apt-get update && sudo apt-get install -y lua5.4
+
+      - name: Check the i18n sources against the code references
+        run: lua5.4 bin/i18n_sources/verify_i18n_sources.lua
+
   # Issue #2507: a board without dataflash answers total = 0, and the BLACKBOX text
   # object treated that as a real capacity and drew 0.0/0.0 MB. The widget now shows the
   # existing "Not supported" text for total = 0, and keeps the loading dots for "no answer yet".
