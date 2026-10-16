@@ -2233,6 +2233,22 @@ summary sets. Against unpatched master the no-dataflash checks fail. --self-test
 the new branch and requires those checks to go red.
 ''',
     ),
+    LuaJob(
+        id='adjfunctions-audio',
+        name='Every adjustment function has a spoken name, and every word of a name has audio',
+        step='Check the adjustment names and their audio files in the English pack',
+        script='bin/adjfunctions_audio/verify_adjfunctions_audio.lua',
+        rationale=r'''Issue #2501: the Adjustments page offers functions 76 to 82 that have no name in the
+audio table, so they are silent when they change, and six names use words that have no
+audio file in the pack, so the value is spoken without its name.
+
+The harness reads the real name table and the real page list, and checks that every
+offered function has a name and that every word of every name has a file in the English
+default, us and gb folders. Against unpatched master it fails for functions 76 to 82 and
+for the six names. --self-test removes the name for function 76 and requires the name
+check to go red.
+''',
+    ),
 ]
 
 VERBATIM_JOBS = [

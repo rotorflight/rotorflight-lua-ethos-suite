@@ -70,4 +70,11 @@ return {
   [73] = "yaw dyn deadband gain",
   [74] = "yaw dyn deadband filter",
   [75] = "yaw precomp cutoff",
+  [76] = "gov idle throttle",
+  [77] = "gov auto throttle",
+  [78] = "gov max throttle",
+  [79] = "gov min throttle",
+  [80] = "gov headspeed",
+  [81] = "gov yaw ff",
+  [82] = "battery profile",
 }
