@@ -60,6 +60,10 @@ The last line is the one that matters: a log that ends while the card was
 unwritable says so and counts what was lost. That is the only case where samples
 cannot be recovered, because there is no next attempt to recover them in.
 
+## Viewing a log
+
+The page reads each column by the name in the file's first row, not by its position, so a log written by another tool is plotted from the columns it really has. A column the file does not name is not drawn. A file without data rows shows *No plottable columns in this file* instead of a flat line.
+
 ## Settings
 
 | Setting | What it does |
