@@ -232,6 +232,53 @@ def case_render_is_wellformed():
     ]
     check("every job has at least one step", not without_steps, without_steps)
 
+    # The same class of defect as a missing runs-on: the file does not load and
+    # the run reports failure with no jobs. A plain value that contains ": " is
+    # read as a nested mapping, and GitHub refuses the whole workflow.
+    defects = plain_scalar_defects(render())
+    check(
+        "no unquoted value contains ': ' (the job-name defect of #2558)",
+        not defects,
+        ["line %d: %s" % (number, text.strip()) for number, text in defects],
+    )
+
+
+def plain_scalar_defects(text):
+    """Return (line number, line) for each `key: value` whose plain value holds ': '.
+
+    Structural, not a parse, for the same stdlib-only reason as job_blocks().
+    A plain scalar cannot contain ": " -- YAML reads it as a nested mapping and
+    the error is "mapping values are not allowed here". Quoted scalars, flow
+    collections and block scalars (`|`, `>`) are not plain and are skipped; the
+    body of a block scalar is skipped by its indentation.
+    """
+    defects = []
+    block_key_col = None
+    for number, line in enumerate(text.split("\n"), 1):
+        stripped = line.strip()
+        if not stripped:
+            continue
+        indent = len(line) - len(line.lstrip(" "))
+        if block_key_col is not None:
+            if indent > block_key_col:
+                continue
+            block_key_col = None
+        if stripped.startswith("#"):
+            continue
+        match = re.match(r"^(\s*(?:- )?)([A-Za-z0-9_.-]+):\s+(\S.*)$", line)
+        if not match:
+            continue
+        key_col = len(match.group(1))
+        value = match.group(3)
+        if value[0] in "|>":
+            block_key_col = key_col
+            continue
+        if value[0] in "\"'[{&*!":
+            continue
+        if ": " in value or value.endswith(":"):
+            defects.append((number, line))
+    return defects
+
 
 def case_render_is_stable():
     print("case 4: rendering twice gives the same bytes")
@@ -327,6 +374,21 @@ def self_test():
     ok = ok and duplicated
     print("  %s  a duplicated id is reported" % ("ok   " if duplicated else "FAIL "))
     pr_jobs.LUA_JOBS = original
+
+    # 5. a plain value containing ": " -- the job name that stopped #2558's workflow from
+    # loading. It is sabotaged into a render that is otherwise valid, and a quoted value
+    # with the same text and the body of a block scalar must stay unreported.
+    sabotaged = render().replace(
+        "    name: MSP queue after an aborted request\n",
+        "    name: MSP queue after an aborted request: really\n",
+        1,
+    )
+    flagged = len(plain_scalar_defects(sabotaged)) == len(plain_scalar_defects(render())) + 1
+    ok = ok and flagged
+    print("  %s  a plain value containing ': ' is reported" % ("ok   " if flagged else "FAIL "))
+    quoted = plain_scalar_defects('    name: "a: b"\n    run: |\n      echo a: b\n')
+    ok = ok and not quoted
+    print("  %s  a quoted value and a block scalar body are not" % ("ok   " if not quoted else "FAIL "))
 
     print("self-test: %s" % ("every check went red as it should" if ok else "SOME CHECKS STAYED GREEN"))
     return 0 if ok else 1
