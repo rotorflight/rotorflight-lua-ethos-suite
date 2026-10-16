@@ -25,6 +25,9 @@ local ROOT = scriptDir() .. "/../.."
 local WAVS = ROOT .. "/src/rfsuite/tasks/adjfunctions/wavs.lua"
 local PAGE = ROOT .. "/src/rfsuite/app/pages/adjustments.lua"
 local PACK = ROOT .. "/src/rfsuite/audio/en"
+-- The English package is built from this folder, not from src/ (bin/package/build_package.py,
+-- copy_sound_pack), so the check covers both.
+local SOUND_PACK = ROOT .. "/bin/sound-generator/soundpack/en"
 local VARIANTS = { "default", "us", "gb" }
 local FIRST_NAMED_ID = 5
 
@@ -80,14 +83,17 @@ local function runChecks(names, offered)
   -- C2: every word of every name has an audio file in every English variant.
   local missing = {}
   local ids = {}
+  local roots = { PACK, SOUND_PACK }
   for id in pairs(names) do ids[#ids + 1] = id end
   table.sort(ids)
   for _, id in ipairs(ids) do
     for word in names[id]:gmatch("%S+") do
-      for _, variant in ipairs(VARIANTS) do
-        local path = PACK .. "/" .. variant .. "/adjfunctions/" .. word .. ".wav"
-        if not exists(path) then
-          missing[#missing + 1] = string.format("%d '%s' (%s)", id, names[id], variant)
+      for _, root in ipairs(roots) do
+        for _, variant in ipairs(VARIANTS) do
+          local path = root .. "/" .. variant .. "/adjfunctions/" .. word .. ".wav"
+          if not exists(path) then
+            missing[#missing + 1] = string.format("%d '%s' (%s, %s)", id, names[id], variant, root:match("([^/]+)$"))
+          end
         end
       end
     end
