@@ -3010,6 +3010,33 @@ jobs:
       - name: Check the blackbox text object on a board without dataflash
         run: lua5.4 bin/blackbox_text/verify_blackbox_text.lua
 
+  # Issue #2501: the Adjustments page offers functions 76 to 82 that have no name in the
+  # audio table, so they are silent when they change, and six names use words that have no
+  # audio file in the pack, so the value is spoken without its name.
+  #
+  # The harness reads the real name table and the real page list, and checks that every
+  # offered function has a name and that every word of every name has a file in the English
+  # default, us and gb folders. Against unpatched master it fails for functions 76 to 82 and
+  # for the six names. --self-test removes the name for function 76 and requires the name
+  # check to go red.
+  adjfunctions-audio:
+    name: Every adjustment function has a spoken name, and every word of a name has audio
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Install Lua 5.4
+        run: sudo apt-get update && sudo apt-get install -y lua5.4
+
+      - name: Check the adjustment names and their audio files in the English pack
+        run: lua5.4 bin/adjfunctions_audio/verify_adjfunctions_audio.lua
+
   # Per-language PR builds (mirrors push.yml behavior)
   create-zip:
     name: Build PR ZIP (${{ matrix.lang }})
