@@ -2208,6 +2208,9 @@ Tool button is enabled only on a ready board and not while erasing. The harness 
 real blackbox_status page with the messages answered by hand, in the order that exposes each
 defect. Against unpatched master the erase-wait and Tool-gate checks fail. --self-test
 splices the sequence test out and requires the erase-wait check to go red.
+''',
+    ),
+    LuaJob(
         id='logs-named-columns',
         name='The Logs page reads CSV columns by their header name',
         step='Check the CSV column reader behind the Logs page',
@@ -2220,6 +2223,9 @@ The reader is lib/log_columns.lua, pure functions over the file text. The harnes
 name-based lookup against a file in another column order, a missing column, a header-only
 and an empty file, CRLF line endings and non-numeric values. --self-test swaps in a
 position-based header lookup and requires the foreign-order checks to go red.
+''',
+    ),
+    LuaJob(
         id='blackbox-no-dataflash',
         name='A board without dataflash shows Not supported, not a zero capacity',
         step='Check the blackbox text object on a board without dataflash',
