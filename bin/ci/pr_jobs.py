@@ -2143,6 +2143,22 @@ no override; with the read completed, the override is written as before. Against
 unpatched master the read-failed checks fail on all four pages.
 ''',
     ),
+    LuaJob(
+        id='i18n-sources',
+        name='Every referenced i18n key resolves in every locale source',
+        step='Check the i18n sources against the code references',
+        script='bin/i18n_sources/verify_i18n_sources.lua',
+        rationale=r'''Issue #2561: the locale build regenerates src/rfsuite/i18n from bin/i18n/json/
+and drops any key that is missing from a source. Three keys the code shows
+(edit_battery, msg_main_power_lost_banner, msg_save_failed_local_body) were missing from
+all twelve sources, so the next regeneration would have removed them from every locale.
+
+The harness reads each source with a small JSON reader and checks every @i18n(key)@
+reference in src/rfsuite against it. Against unpatched master it fails on all twelve
+locales with exactly those three keys. --self-test removes them from a copy of the
+English source and requires them to be reported.
+''',
+    ),
 ]
 
 VERBATIM_JOBS = [

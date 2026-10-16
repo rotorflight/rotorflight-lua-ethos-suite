@@ -3947,6 +3947,12 @@
           "max_length": 17,
           "needs_translation": false,
           "translation": "Warn Cell Voltage"
+        },
+        "edit_battery": {
+          "english": "Edit Battery",
+          "max_length": 16,
+          "needs_translation": false,
+          "translation": "Edit Battery"
         }
       },
       "esc_motors": {
@@ -6917,6 +6923,18 @@
       "translation": "Controls",
       "needs_translation": false,
       "max_length": 8
+    },
+    "msg_main_power_lost_banner": {
+      "english": "MAIN POWER LOST",
+      "max_length": 27,
+      "needs_translation": false,
+      "translation": "MAIN POWER LOST"
+    },
+    "msg_save_failed_local_body": {
+      "english": "Settings were not saved to the radio. Please try again.",
+      "max_length": 67,
+      "needs_translation": false,
+      "translation": "Settings were not saved to the radio. Please try again."
     }
   },
   "telemetry": {
