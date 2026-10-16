@@ -2239,6 +2239,22 @@ summary sets. Against unpatched master the no-dataflash checks fail. --self-test
 the new branch and requires those checks to go red.
 ''',
     ),
+    LuaJob(
+        id='dashboard-erase',
+        name='The dashboard erase finishes on a read that reports the flash ready',
+        step='Check the dashboard erase wait against the flash ready bit',
+        script='bin/dashboard_erase/verify_dashboard_erase.lua',
+        rationale=r'''Found in the review of #2568: the Rotorflight Dashboard ends its erase on the first summary
+read after the erase acknowledgement, whatever that read reports. The firmware acknowledges the
+erase before it runs and reports the flash ready only when it is idle, so the dialog could close
+while the erase was still running.
+
+The harness drives the real dashboard widget through its wakeup and the bus. It checks that a
+read reporting not ready keeps the wait open and is repeated, that a read reporting ready or no
+dataflash ends it, that a failed read does not end it, and that a wait without an answer fails
+after the timeout. Against unpatched master four of the checks fail.
+''',
+    ),
 ]
 
 VERBATIM_JOBS = [

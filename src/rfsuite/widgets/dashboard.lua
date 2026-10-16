@@ -1062,6 +1062,8 @@ local function finishErase(widget, failed)
   if not widget then return end
   widget.eraseActive = false
   widget.eraseReadPending = false
+  widget.eraseReadInFlight = false
+  widget.eraseNextReadAt = nil
   widget.eraseDone = false
   widget.eraseError = false
   widget.eraseStartedAt = 0
@@ -1090,16 +1092,40 @@ local function finishErase(widget, failed)
   end
 end
 
+-- The erase is done when a summary read taken after it reports the flash ready, or the
+-- board reports no dataflash. The firmware acknowledges the erase before it runs, and the
+-- ready bit is false until the flash is idle, so one read is not enough (#2495 follow-up).
+local ERASE_RETRY_SECONDS = 0.5
+local ERASE_TIMEOUT_SECONDS = 30
+
+local function summaryHasBit(mask, bit)
+  return math.floor((tonumber(mask or 0) or 0) / (2 ^ bit)) % 2 >= 1
+end
+
 local function readBlackboxSummaryAfterErase(widget)
-  if not widget or widget.eraseReadPending ~= true then return end
+  if not widget or widget.eraseReadPending ~= true or widget.eraseReadInFlight == true then return end
+  if widget.eraseNextReadAt and clock() < widget.eraseNextReadAt then return end
   widget.eraseReadPending = false
+  widget.eraseReadInFlight = true
   bus.publish("msp.request", dataflashSummary.buildReadMessage(function(data)
-    widget.bblFlags = data and data.flags or widget.bblFlags
-    widget.bblSize = data and data.total or widget.bblSize
-    widget.bblUsed = data and data.used or widget.bblUsed
-    widget.eraseDone = true
+    widget.eraseReadInFlight = false
+    if data then
+      widget.bblFlags = data.flags or widget.bblFlags
+      widget.bblSize = data.total or widget.bblSize
+      widget.bblUsed = data.used or widget.bblUsed
+      local ready = summaryHasBit(data.flags, 0)
+      local supported = summaryHasBit(data.flags, 1)
+      if ready or not supported then
+        widget.eraseDone = true
+        return
+      end
+    end
+    widget.eraseReadPending = true
+    widget.eraseNextReadAt = clock() + ERASE_RETRY_SECONDS
   end, function()
-    widget.eraseDone = true
+    widget.eraseReadInFlight = false
+    widget.eraseReadPending = true
+    widget.eraseNextReadAt = clock() + ERASE_RETRY_SECONDS
   end))
 end
 
@@ -1128,6 +1154,7 @@ local function doEraseBlackbox(widget)
 
   bus.publish("msp.request", dataflashErase.buildWriteMessage(function()
     widget.eraseReadPending = true
+    widget.eraseNextReadAt = nil
   end, function()
     widget.eraseError = true
   end))
@@ -2287,6 +2314,8 @@ local function wakeup(widget)
     end
     if widget.eraseDone or widget.eraseError then
       finishErase(widget, widget.eraseError == true)
+    elseif now - (widget.eraseStartedAt or now) > ERASE_TIMEOUT_SECONDS then
+      finishErase(widget, true)
     end
   end
 
