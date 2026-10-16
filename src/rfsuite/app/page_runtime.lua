@@ -267,6 +267,10 @@ function PageRuntime.new(config)
   -- resolved), treated the same as "not armed" by that gate, matching
   -- the original's own resolveArmedState() fallback.
   self.isArmed = nil
+  -- Latch from tasks/session.lua (#2548): true once the model was seen armed
+  -- and no fresh answer has said disarmed since. Read with isArmed through
+  -- armedOrUnconfirmed() below.
+  self.armedUnconfirmed = false
   -- Connection state and the handshake's apiVersion flag, kept from every
   -- "session.update" for the reboot wait (updateRebootWait()): a save that
   -- restarts the FC holds its page until the link drops and comes back. Both
@@ -527,12 +531,21 @@ function PageRuntime:setBusy(busy)
   self.headerHandle.setReloadEnabled(not busy)
 end
 
+-- #2548: a nil isArmed means "not known yet", not "disarmed". After a disconnect
+-- it is nil until the arm flags are read again, and a gate on `isArmed == true`
+-- alone would open in that window. Same latch as tasks/session.lua's
+-- armedOrUnconfirmed(), carried on the session snapshot as armedUnconfirmed.
+local function armedOrUnconfirmed(runtime)
+  if runtime.isArmed == true then return true end
+  return runtime.isArmed == nil and runtime.armedUnconfirmed == true
+end
+
 -- Bounded page save predicate: saving is only permitted when data has been
 -- fully and successfully loaded from the FC, unsaved modifications exist,
 -- no background read/save/dialog is active, and the page is not armed-gated.
 function PageRuntime:canSave()
   if self.disposed then return false end
-  if self.isMspPage and not self.localSettings and self.isArmed == true then
+  if self.isMspPage and not self.localSettings and armedOrUnconfirmed(self) then
     return false
   end
   return self.loaded == true
@@ -755,17 +768,17 @@ function PageRuntime:performSave(focusFn)
   -- Only consulted from the committed save path (never on failure -- matches
   -- the original's own saveDone(), which is what calls rebootFc(), never
   -- saveFailed()). Skips the reboot (but still lets the rest of the save
-  -- stand -- the EEPROM commit already happened) if `self.isArmed == true`;
-  -- see rebootAfterSave's own config comment and lib/msp_reboot.lua's for why
-  -- this is the one safety gate on that command.
+  -- stand -- the EEPROM commit already happened) while the model is armed or
+  -- unconfirmed (#2548); see rebootAfterSave's own config comment and
+  -- lib/msp_reboot.lua for the firmware's own gate on the same command.
   local function rebootRequested()
     local shouldReboot = self_.rebootAfterSave
     if type(shouldReboot) == "function" then
       shouldReboot = shouldReboot(self_)
     end
     if not shouldReboot then return false end
-    if self_.isArmed == true then
-      self_:log("performSave: rebootAfterSave skipped (isArmed == true)")
+    if armedOrUnconfirmed(self_) then
+      self_:log("performSave: rebootAfterSave skipped (armed or unconfirmed)")
       return false
     end
     return true
@@ -1113,6 +1126,7 @@ function PageRuntime:onSessionUpdate(update)
   if self.disposed then return end
 
   self.isArmed = update.isArmed
+  self.armedUnconfirmed = update.armedUnconfirmed == true
   -- See the declaration above: tasks/session.lua's snapshot carries it, and the
   -- subscription this handler already exists for is the only sanctioned way in.
   self.apiVersionMinor = update.apiVersionMinor

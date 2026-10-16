@@ -2143,6 +2143,24 @@ no override; with the read completed, the override is written as before. Against
 unpatched master the read-failed checks fail on all four pages.
 ''',
     ),
+    LuaJob(
+        id='armed-unconfirmed',
+        name='A disconnected armed model is not writable until a fresh answer clears it',
+        step='Check the armed-unconfirmed latch and the save gate',
+        script='bin/armed_unconfirmed/verify_armed_unconfirmed.lua',
+        rationale=r'''Issue #2548: isArmed goes nil on every disconnect, and a gate written as
+`isArmed == true` reads that nil as "disarmed". On a reconnect into an armed model the
+save button and the stats write then opened before the arm flags were read again.
+Neither the firmware nor the page could tell that from a real disarm.
+
+tasks/session.lua keeps a latch, armedUnconfirmed: set on an armed read, cleared only by
+a fresh disarmed read, untouched by a disconnect. app/page_runtime.lua's save gate and
+the reboot-after-save gate read it through armedOrUnconfirmed(). The harness drives the
+real session.lua through session.wakeup() and the real page_runtime canSave(). Against
+unpatched master the latch and the disconnected-page checks fail. --self-test splices
+the latch and the gate back out and requires them to go red.
+''',
+    ),
 ]
 
 VERBATIM_JOBS = [
