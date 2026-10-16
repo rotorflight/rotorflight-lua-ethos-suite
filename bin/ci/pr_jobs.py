@@ -2206,6 +2206,17 @@ The reader is lib/log_columns.lua, pure functions over the file text. The harnes
 name-based lookup against a file in another column order, a missing column, a header-only
 and an empty file, CRLF line endings and non-numeric values. --self-test swaps in a
 position-based header lookup and requires the foreign-order checks to go red.
+        id='blackbox-no-dataflash',
+        name='A board without dataflash shows Not supported, not a zero capacity',
+        step='Check the blackbox text object on a board without dataflash',
+        script='bin/blackbox_text/verify_blackbox_text.lua',
+        rationale=r'''Issue #2507: a board without dataflash answers total = 0, and the BLACKBOX text
+object treated that as a real capacity and drew 0.0/0.0 MB. The widget now shows the
+existing "Not supported" text for total = 0, and keeps the loading dots for "no answer yet".
+
+The harness drives the real widget through render.wakeup() with the session values the
+summary sets. Against unpatched master the no-dataflash checks fail. --self-test removes
+the new branch and requires those checks to go red.
 ''',
     ),
 ]
