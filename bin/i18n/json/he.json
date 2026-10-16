@@ -4379,6 +4379,12 @@
           "needs_translation": false,
           "reverse_text": true,
           "max_length": 12
+        },
+        "no_dataflash": {
+          "english": "No dataflash",
+          "max_length": 16,
+          "needs_translation": true,
+          "translation": "No dataflash"
         }
       },
       "stats": {

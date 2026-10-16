@@ -37,7 +37,7 @@ local function check(label, ok, detail)
   end
 end
 
-local NOT_SUPPORTED = "@i18n(app.modules.blackbox.not_supported)@"
+local NO_DATAFLASH = "@i18n(app.modules.blackbox.no_dataflash)@"
 local MIB = 1024 * 1024
 
 -- ---------------------------------------------------------------------------
@@ -137,7 +137,7 @@ local function runChecks(render)
   -- A1: the board has no dataflash.
   do
     local shown = wake(render, {}, 0, 0)
-    check("A1 total = 0 shows the no-dataflash text", shown == NOT_SUPPORTED,
+    check("A1 total = 0 shows the no-dataflash text", shown == NO_DATAFLASH,
       "shows: " .. tostring(shown))
     check("A2 total = 0 does not draw a used/total capacity",
       type(shown) == "string" and not shown:find("/", 1, true),

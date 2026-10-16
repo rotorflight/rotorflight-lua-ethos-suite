@@ -104,7 +104,7 @@ function render.wakeup(box)
     if totalSize == 0 then
         -- A board without dataflash answers total = 0. That is an answer, not a
         -- capacity (#2507): say the board has no dataflash instead of drawing 0.00/0.00 MB.
-        displayValue = "@i18n(app.modules.blackbox.not_supported)@"
+        displayValue = "@i18n(app.modules.blackbox.no_dataflash)@"
         percentUsed = nil
         box._lastUsedSize = nil
         box._lastTotalSize = nil

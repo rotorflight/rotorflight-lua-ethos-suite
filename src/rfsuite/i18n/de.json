@@ -1338,6 +1338,12 @@
           "reverse_text": false,
           "translation": "Kein card"
         },
+        "no_dataflash": {
+          "english": "No dataflash",
+          "max_length": 16,
+          "needs_translation": false,
+          "translation": "Kein Dataflash"
+        },
         "not_supported": {
           "english": "Not supported",
           "max_length": 13,

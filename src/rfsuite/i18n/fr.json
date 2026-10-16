@@ -1338,6 +1338,12 @@
           "reverse_text": false,
           "translation": "Pas de carte"
         },
+        "no_dataflash": {
+          "english": "No dataflash",
+          "max_length": 16,
+          "needs_translation": true,
+          "translation": "No dataflash"
+        },
         "not_supported": {
           "english": "Not supported",
           "max_length": 13,
