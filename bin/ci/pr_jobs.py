@@ -2055,6 +2055,191 @@ pin to go red every time, after the unmodified modules have passed.
 '''
     ),
     LuaJob(
+        id='esc-sensor-protocol',
+        name='ESC telemetry protocol list follows the API version, RECORD is 15 from 12.10',
+        step='Check the ESC telemetry protocol list per reported API version',
+        script='bin/esc_sensor_protocol/verify_esc_sensor_protocol.lua',
+        rationale=r'''Issue #2492: the ESC telemetry protocol list was a static table, RECORD fixed at 14.
+Firmware API 12.10 inserted SRXL2 at 14 and moved RECORD to 15 (rotorflight-firmware
+Changes.md, MSP Changes). A board on 12.10 therefore got RECORD written as SRXL2. The list
+now follows the API version the board reports, the way the motor protocol list already does.
+
+No build and no package step reaches this -- it is the list a pilot picks from and the
+value it writes. The harness drives the real codec for API 9, API 10 and no version, and the
+real telemetry page for the same three, with the runtime handing it the version in buildChrome()
+as the bus replay does. Against unpatched master SRXL2 is not offered and RECORD is offered as
+14 on API 10, in the codec and on the page.
+''',
+    ),
+    LuaJob(
+        id='runtime-read-validator',
+        name='A page refuses a reply it does not know on every read, not only the first',
+        step='Check the page runtime refuses a reload whose reply fails the page validator',
+        script='bin/runtime_read_validator/verify_runtime_read_validator.lua',
+        rationale=r'''Issue #2494: the ESC vendor page checked the codec signature only on its first read.
+The Reload path reads through the page runtime, which took the reply into the page's data
+without any check, so an ESC with another signature in the same slot built the editor from
+its parameters. The runtime now takes an optional validateRead (or validate on a source);
+a refused reply is a failed read, exactly as a read error is. The ESC page passes its
+signature check there.
+
+No build and no package step reaches this -- it is a reload path through the page runtime.
+The harness drives the real page_runtime through loadData(): a reply with another signature
+is refused and leaves the page unloaded, a reply with the page's signature loads it, and a
+read error is refused as before. Against unpatched master the refused reply loads the page.
+''',
+    ),
+    LuaJob(
+        id='tune-advisor-payload',
+        name='Tune advisor reply is refused unless it is the layout this suite knows',
+        step='Check the tune advisor codec refuses an unknown payload version or length',
+        script='bin/tune_advisor_payload/verify_tune_advisor_payload.lua',
+        rationale=r'''Issue #2493: the tune advisor decode() read the payload version byte and never
+compared it, and ran with no length guard. A reply of another layout decoded into
+plausible numbers, and tune_history saves them to the flight-history file. The codec now
+refuses a reply that is not 67 bytes or not payload version 1, and reports the reason
+through the error path.
+
+No build and no package step reaches this -- it is a reply path through the codec. The
+harness drives the real codec through its read message with the firmware's own 67-byte
+reply, a version-2 reply, a truncated reply and a longer reply. Against unpatched master
+the version-2, truncated and longer replies reach onData as decoded numbers.
+''',
+    ),
+    LuaJob(
+        id='pwm-servo-write',
+        name='PWM servo page lists the PWM outputs only and writes each one raw',
+        step='Check the PWM servo list count and the raw write of each servo',
+        script='bin/pwm_servo_write/verify_pwm_servo_write.lua',
+        rationale=r'''Issue #2445: with a SBUS or FBUS port configured, MSP_STATUS servo_count is the packed
+total (PWM outputs plus the 18 bus channels). The PWM page listed min(total, 16) tiles, so
+tiles past the PWM outputs wrote bus servos, and each save went out as cmd 212, which the
+firmware translates to the bus servo at that packed index. The list now counts the PWM
+outputs using the same port test as the bus guard, and every PWM save is written raw
+(cmd 124).
+
+No build and no package step reaches this -- it is a list and a save path through a
+running page. The harness drives the real servos_pwm page with the real page runtime,
+the real bus guard and the real servo-config write builders, in three bench layouts:
+no bus port, a FBUS port and a SBUS port. Against unpatched master the bus layouts show
+16 tiles and write cmd 212, and the first layout writes cmd 212 where the page now writes
+cmd 124.
+''',
+    ),
+    LuaJob(
+        id='override-read-gate',
+        name='Mixer and servo override is not switched on before the page has read its values',
+        step='Check the mixer and servo overrides wait for the read',
+        script='bin/override_read_gate/verify_override_read_gate.lua',
+        rationale=r'''Issue #2496: on four pages the override could be switched on before the visit
+had read anything, while the live write that the confirmation promises was held back.
+The OK action of the override dialog now refuses to switch the override on until the
+runtime is loaded, as the live write already does.
+
+No build and no package step reaches this -- it is a dialog path through a running
+page. The harness drives the real mixer_trims, mixer_geometry, servos_pwm and servos_bus
+pages with the real page runtime: with the read failed, pressing Tool and OK writes
+no override; with the read completed, the override is written as before. Against
+unpatched master the read-failed checks fail on all four pages.
+''',
+    ),
+    LuaJob(
+        id='tool-button-loaded',
+        name='Header Tool button stays disabled until the page has loaded its values',
+        step='Check the header Tool button follows the page load state',
+        script='bin/tool_button_loaded/verify_tool_button_loaded.lua',
+        rationale=r'''Issue #2553: the header Tool button was enabled whenever a page passed an onTool,
+before the page had read its values. Save is gated by the page runtime; Tool was not.
+The runtime now drives the Tool button from the same loaded flag as Save, through a
+new setToolEnabled() on the header handle.
+
+No build and no package step reaches this -- it is the enable state of a button on a
+running page. The harness drives the real page runtime through a held, answered and
+failed read and checks the button the real header builds. Against unpatched master the
+header has no setToolEnabled and the Tool button stays enabled while the page is unloaded.
+''',
+    ),
+    LuaJob(
+        id='armed-unconfirmed',
+        name='A disconnected armed model is not writable until a fresh answer clears it',
+        step='Check the armed-unconfirmed latch and the save gate',
+        script='bin/armed_unconfirmed/verify_armed_unconfirmed.lua',
+        rationale=r'''Issue #2548: isArmed goes nil on every disconnect, and a gate written as
+`isArmed == true` reads that nil as "disarmed". On a reconnect into an armed model the
+save button and the stats write then opened before the arm flags were read again.
+Neither the firmware nor the page could tell that from a real disarm.
+
+tasks/session.lua keeps a latch, armedUnconfirmed: set on an armed read, cleared only by
+a fresh disarmed read, untouched by a disconnect. app/page_runtime.lua's save gate and
+the reboot-after-save gate read it through armedOrUnconfirmed(). The harness drives the
+real session.lua through session.wakeup() and the real page_runtime canSave(). Against
+unpatched master the latch and the disconnected-page checks fail. --self-test splices
+the latch and the gate back out and requires them to go red.
+''',
+    ),
+    LuaJob(
+        id='i18n-sources',
+        name='Every referenced i18n key resolves in every locale source',
+        step='Check the i18n sources against the code references',
+        script='bin/i18n_sources/verify_i18n_sources.lua',
+        rationale=r'''Issue #2561: the locale build regenerates src/rfsuite/i18n from bin/i18n/json/
+and drops any key that is missing from a source. Three keys the code shows
+(edit_battery, msg_main_power_lost_banner, msg_save_failed_local_body) were missing from
+all twelve sources, so the next regeneration would have removed them from every locale.
+
+The harness reads each source with a small JSON reader and checks every @i18n(key)@
+reference in src/rfsuite against it. Against unpatched master it fails on all twelve
+locales with exactly those three keys. --self-test removes them from a copy of the
+English source and requires them to be reported.
+''',
+    ),
+    LuaJob(
+        id='blackbox-erase',
+        name='The dataflash erase waits for a read taken after it, and the Tool button follows the board',
+        step='Check the blackbox status erase wait and its Tool gate',
+        script='bin/blackbox_erase/verify_blackbox_erase.lua',
+        rationale=r'''Issue #2495: the erase wait could end on a read asked for before the erase, a read
+asked for while another was in flight was dropped so no read followed the erase, and the
+Tool button was always offered, so a second erase could start while one ran.
+
+Each read carries a sequence number; the erase is finished only by a read requested after
+the erase command completed, a read asked for while another is in flight is queued, and the
+Tool button is enabled only on a ready board and not while erasing. The harness drives the
+real blackbox_status page with the messages answered by hand, in the order that exposes each
+defect. Against unpatched master the erase-wait and Tool-gate checks fail. --self-test
+splices the sequence test out and requires the erase-wait check to go red.
+''',
+    ),
+    LuaJob(
+        id='logs-named-columns',
+        name='The Logs page reads CSV columns by their header name',
+        step='Check the CSV column reader behind the Logs page',
+        script='bin/log_columns/verify_log_columns.lua',
+        rationale=r'''Issue #2506: the Logs page read every column by its position and never parsed the
+header row, so a log written by another tool was plotted from the wrong columns, and an
+empty file was drawn as a flat zero line.
+
+The reader is lib/log_columns.lua, pure functions over the file text. The harness checks
+name-based lookup against a file in another column order, a missing column, a header-only
+and an empty file, CRLF line endings and non-numeric values. --self-test swaps in a
+position-based header lookup and requires the foreign-order checks to go red.
+''',
+    ),
+    LuaJob(
+        id='blackbox-no-dataflash',
+        name='A board without dataflash shows Not supported, not a zero capacity',
+        step='Check the blackbox text object on a board without dataflash',
+        script='bin/blackbox_text/verify_blackbox_text.lua',
+        rationale=r'''Issue #2507: a board without dataflash answers total = 0, and the BLACKBOX text
+object treated that as a real capacity and drew 0.0/0.0 MB. The widget now shows the
+existing "Not supported" text for total = 0, and keeps the loading dots for "no answer yet".
+
+The harness drives the real widget through render.wakeup() with the session values the
+summary sets. Against unpatched master the no-dataflash checks fail. --self-test removes
+the new branch and requires those checks to go red.
+''',
+    ),
+    LuaJob(
         id='pid-profile-tail',
         name='PID profile trailing bytes and master gains',
         step='Check the PID profile reply lengths and the master-gain grey-out',

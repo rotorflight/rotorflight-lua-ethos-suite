@@ -17,14 +17,12 @@
 -- (no session/business-state reads). rotorflight-lua-ethos-suite's own
 -- REBOOT.lua *does* gate this at the API layer (`validateWrite()`,
 -- blocking the write while `resolveArmedState()` says armed) --
--- firmware's own MSP_REBOOT handler has no such guard at all (confirmed
--- reading the same wire handler above: it validates the reboot *mode*
--- byte, nothing about arm state), so that Lua-side check is the only
--- safety net that exists for this command, on either project. This
--- rebuild ports the same gate, just one layer up: app/page_runtime.lua's
--- own reboot-after-save flow (see its own comment) checks
--- `tasks/session.lua`'s `isArmed` before ever building this message, not
--- this file.
+-- rotorflight-firmware also refuses while armed: mspReboot() in
+-- src/main/msp/msp.c returns early when ARMING_FLAG(ARMED) is set (checked at
+-- commit 1b03ca362). So the firmware is a second layer, not an absent one.
+-- The Lua gate is the first layer, and the only one this client controls:
+-- app/page_runtime.lua's reboot-after-save flow checks the armed-or-unconfirmed
+-- state (tasks/session.lua) before building this message, not this file.
 
 -- Self-caches via package.loaded (same mechanism lib/bus.lua uses) --
 -- app/pages/configuration.lua reloads fresh via loadfile() on every

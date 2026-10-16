@@ -143,6 +143,7 @@ package.loaded["rfsuite.app.header"] = {
       setTitle = function() end,
       setSaveEnabled = function() end,
       setReloadEnabled = function() end,
+      setToolEnabled = function() end,
       focusMenu = function() end,
       focusSave = function() end,
       focusReload = function() end,

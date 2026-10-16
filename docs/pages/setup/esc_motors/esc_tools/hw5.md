@@ -102,6 +102,11 @@ goes straight to that ESC.
 If the flight controller does not say how many ESCs there are, all four entries are
 listed and only *ESC 1* can be opened. The page does not guess.
 
+Every read is checked against this vendor's signature, Reload included: a reply that is
+not this vendor's (or that carries no signature at all) is refused, the editor is not
+loaded and the page cannot be saved, so another vendor's block in the slot is never
+written back.
+
 ## Related
 
 - [Rotorflight documentation](https://doc.rotorflight.org/)

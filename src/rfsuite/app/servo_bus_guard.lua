@@ -161,4 +161,7 @@ function servo_bus_guard.new(opts)
   return guard
 end
 
+-- The same port test, for pages that need to know whether bus servos are on.
+servo_bus_guard.portsHaveServoBus = portsHaveServoBus
+
 return servo_bus_guard

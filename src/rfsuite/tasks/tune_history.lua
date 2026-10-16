@@ -50,14 +50,33 @@ local function onCleared()
   clearPending = false
 end
 
--- reason true is the FC's MSP error reply: no tune advisor in this firmware,
--- nothing to capture or clear. Anything else is the link: try again shortly.
-local function onError(reason)
+-- Three answers, and only the third is worth repeating.
+--
+--   reason == true  the FC's MSP error reply: no tune advisor in this firmware. Nothing
+--                   to capture and nothing to clear, so this task stops until the pilot
+--                   disarms again.
+--   refused == true the FC answered, in a layout this suite does not know (see
+--                   lib/msp_tune_advisor.lua's decode). Deterministic: the same reply comes
+--                   back on every request, so RETRY_SECONDS would buy nothing but three
+--                   reads every five seconds for as long as the model sits disarmed and
+--                   connected. This flight is therefore not captured, said so once, and the
+--                   NEXT disarm asks again -- once. `clearPending` is left alone on purpose:
+--                   the flight controller holds a real flight in this case, and dropping it
+--                   to save the retries would throw away data this suite could read once it
+--                   knows the layout.
+--   anything else   the link. Transient, and worth another try shortly.
+local function onError(reason, refused)
   clearReplies()
   if reason == true then
     busy = false
     pending = false
     clearPending = false
+    return
+  end
+  if refused then
+    busy = false
+    pending = false
+    print("[tune_history] reply refused, flight not captured: " .. tostring(reason))
     return
   end
   retryLater()

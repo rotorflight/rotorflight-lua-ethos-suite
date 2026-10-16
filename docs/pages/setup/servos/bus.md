@@ -30,6 +30,8 @@ Greyed out until the flight controller answers. Read-only while the model is arm
 ## Notes
 
 - Changes are written to the flight controller EEPROM upon Save.
+- The Tool button is disabled until the page has loaded the servo's values. In addition, confirming the override dialog before values are read is prevented as defence in depth.
+- The list behind the page has its own Tool button, which switches the override on for all servos at once. It exists only after the status and mixer read has answered; on a failed read the page shows the load error instead and no Tool button.
 
 ## Related
 
