@@ -2943,6 +2943,22 @@ jobs:
   # splices the sequence test out and requires the erase-wait check to go red.
   blackbox-erase:
     name: The dataflash erase waits for a read taken after it, and the Tool button follows the board
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Install Lua 5.4
+        run: sudo apt-get update && sudo apt-get install -y lua5.4
+
+      - name: Check the blackbox status erase wait and its Tool gate
+        run: lua5.4 bin/blackbox_erase/verify_blackbox_erase.lua
+
   # Issue #2506: the Logs page read every column by its position and never parsed the
   # header row, so a log written by another tool was plotted from the wrong columns, and an
   # empty file was drawn as a flat zero line.
@@ -2953,6 +2969,22 @@ jobs:
   # position-based header lookup and requires the foreign-order checks to go red.
   logs-named-columns:
     name: The Logs page reads CSV columns by their header name
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Install Lua 5.4
+        run: sudo apt-get update && sudo apt-get install -y lua5.4
+
+      - name: Check the CSV column reader behind the Logs page
+        run: lua5.4 bin/log_columns/verify_log_columns.lua
+
   # Issue #2507: a board without dataflash answers total = 0, and the BLACKBOX text
   # object treated that as a real capacity and drew 0.0/0.0 MB. The widget now shows the
   # existing "Not supported" text for total = 0, and keeps the loading dots for "no answer yet".
@@ -2975,10 +3007,6 @@ jobs:
       - name: Install Lua 5.4
         run: sudo apt-get update && sudo apt-get install -y lua5.4
 
-      - name: Check the blackbox status erase wait and its Tool gate
-        run: lua5.4 bin/blackbox_erase/verify_blackbox_erase.lua
-      - name: Check the CSV column reader behind the Logs page
-        run: lua5.4 bin/log_columns/verify_log_columns.lua
       - name: Check the blackbox text object on a board without dataflash
         run: lua5.4 bin/blackbox_text/verify_blackbox_text.lua
 
