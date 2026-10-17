@@ -1987,13 +1987,13 @@ local function paint(widget)
     invalidateWidgetGlobal(widget)
     return
   end
-  drawArmedWarning(widget, w, h)
   if widget.toolbarVisible then dimDashboard(w, h) end
   drawToolbar(widget, w, h)
   if widget.batteryPicker then
     -- The picker is modal: nothing is drawn over it. The footer banner would
     -- cover the bottom row of pack cells (CodeRabbit on #2519), so it waits
-    -- until the picker closes.
+    -- until the picker closes. The armed bar stays under the picker, as before.
+    drawArmedWarning(widget, w, h)
     drawBatteryPicker(widget, w, h)
     return
   end
@@ -2013,6 +2013,8 @@ local function paint(widget)
       setInfoPanelVisible(widget, false)
     end
   end
+  -- Last, so the armed bar stays on top of the info panel and the toolbar dim.
+  drawArmedWarning(widget, w, h)
   drawFooterAlert(widget, w, h)
 end
 
