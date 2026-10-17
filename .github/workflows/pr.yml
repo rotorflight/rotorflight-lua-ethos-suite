@@ -3181,6 +3181,35 @@ jobs:
       - name: Check the arming, profile, battery and governor announcements against one gate
         run: lua5.4 bin/audio_serial/verify_audio_serial.lua
 
+  # Issue #2437: the disconnected branch of tasks/audio_events.lua's wakeup was entered as a
+  # state test, not an edge, so its state reset ran on every audio tick while the link was down.
+  # The reset now runs once per outage, on the first disconnected tick, and the first connected
+  # tick re-arms it. Nothing in the reset is written while the link is down, so the behaviour
+  # does not change; what changes is the work done on each tick of an outage.
+  #
+  # The harness pins what the edge must keep: a change made during an outage is not spoken after
+  # the reconnect, and the loss and the recovery of an armed model are announced for each of two
+  # outages. Its can-fail check removes the re-arm from a copy of the task and requires the second
+  # outage to go silent there. Passing on unpatched master is expected: this is a structural
+  # change with no audible effect, so the harness guards the behaviour, not the saving.
+  audio-disconnect-edge:
+    name: The link-loss edge of the audio task resets once per outage
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Install Lua 5.4
+        run: sudo apt-get update && sudo apt-get install -y lua5.4
+
+      - name: Check the audio task across a link loss
+        run: lua5.4 bin/audio_disconnect/verify_audio_disconnect.lua
+
   # Per-language PR builds (mirrors push.yml behavior)
   create-zip:
     name: Build PR ZIP (${{ matrix.lang }})
