@@ -2327,6 +2327,24 @@ checks fail.
 ''',
     ),
     LuaJob(
+        id='audio-serial',
+        name='State changes in one wakeup are spoken one after another',
+        step='Check the arming, profile, battery and governor announcements against one gate',
+        script='bin/audio_serial/verify_audio_serial.lua',
+        rationale=r'''Issue #2503: the wakeup of tasks/audio_events.lua ran the arming, profile, battery and
+governor announcements back to back with no gate between them, so the radio cut each file
+with the next one. Only the adjustment path checked canSpeak(). The four state changes now
+go through the same gate, and a change that has to wait is held out of `previous`, so it is
+compared again on the next wakeup and spoken once.
+
+The harness drives the real task on a controllable clock and logs every file and number it
+asks for with the time it was asked. It checks that two changes in one wakeup are spoken in
+separate wakeups, that a single change is still spoken at once, that a governor change waits
+behind a profile announcement, and that a change still waiting when the link drops is not
+spoken after a reconnect. Against unpatched master four of the checks fail.
+'''
+    ),
+    LuaJob(
         id='armed-gating',
         name='Armed state gates configuration pages and badges their tiles',
         step='Check the armed gating of the menu tiles',

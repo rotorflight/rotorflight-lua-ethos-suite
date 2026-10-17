@@ -232,9 +232,39 @@ out("the session keeps the last value while the estimator settles")
 
 do
   local source = readFile(SESSION_PATH)
-  check("updateFuel() does not write a settling nil to the sensor",
-    source:find("if not (percent == nil and settling) then", 1, true) ~= nil)
+  check("updateFuel() calls refresh() during settling instead of skipping the push",
+    source:find("if percent == nil and settling then", 1, true) ~= nil)
   check("and the estimator's reason reaches it", source:find("percent, settling = localSmartFuel:update({", 1, true) ~= nil)
+end
+
+-- Integration: simulate updateFuel()'s cadence during a settling period and
+-- verify that the sensor never goes more than 2.5 s without a push.
+do
+  local clock = {t = 0}
+  local log = {}
+  _G.system = {getSource = function() return nil end}
+  _G.model = {createSensor = function() return newStubSensor(log, clock) end}
+  os.clock = function() return clock.t end
+  installRequire()
+  local DiySensor = assert(load(readFile(DIY_PATH), "@" .. DIY_PATH))()
+  local sensor = DiySensor.new(0x5FE1, "Smart Fuel", nil, -1, 100)
+
+  -- Arm phase: push a real value so lastValue is known.
+  sensor:set(72, true)
+  clock.t = 0.5; sensor:set(72, true)
+  clock.t = 1.0; sensor:set(72, true)
+
+  -- Settling phase: call refresh() every 0.52 s (as session.lua would) for 5 s.
+  local settlingStart = clock.t
+  while clock.t < settlingStart + 5.0 do
+    clock.t = clock.t + 0.52
+    sensor:refresh()
+  end
+
+  -- Measure the largest gap in pushes during the settling window.
+  local gap = maxGap(log)
+  check("sensor stays alive during settling: max push gap <= 2.5 s", gap <= 2.5,
+    string.format("largest gap %.2f s over %d pushes", gap, #log))
 end
 
 -- Put back what the harness replaced, so nothing after this file sees a stub.

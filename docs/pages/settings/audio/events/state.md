@@ -34,6 +34,9 @@ Always available offline without an active flight controller connection. Read-on
   A burst of trim clicks therefore says one number, the one the model ended up with, rather than
   each step. Nothing is spoken while the value is still moving. A change that settles while the
   previous announcement is still playing is spoken after it.
+- **Several changes at once** are spoken one after another, not on top of each other. The arming,
+  PID profile, rate profile, battery profile and governor callouts each wait until the previous one
+  has finished. A change that has to wait is spoken then, once, and is not dropped.
 - None of these depends on a threshold, so nothing on this page is greyed out by another setting
   here.
 - Changes are saved to the radio's settings store, not to the flight controller.
