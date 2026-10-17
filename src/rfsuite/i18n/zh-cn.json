@@ -5487,6 +5487,13 @@
         }
       },
       "pid_controller": {
+        "cyclic": {
+          "english": "Cyc",
+          "max_length": 3,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "周期"
+        },
         "error_limit": {
           "english": "Error Limit",
           "max_length": 11,
@@ -5535,6 +5542,13 @@
           "needs_translation": false,
           "reverse_text": false,
           "translation": "限制"
+        },
+        "master_gain": {
+          "english": "Master Gain",
+          "max_length": 11,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "主增益"
         },
         "name": {
           "english": "PID Controller",

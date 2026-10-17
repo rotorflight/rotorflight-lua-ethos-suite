@@ -5487,6 +5487,13 @@
         }
       },
       "pid_controller": {
+        "cyclic": {
+          "english": "Cyc",
+          "max_length": 3,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Cyc"
+        },
         "error_limit": {
           "english": "Error Limit",
           "max_length": 11,
@@ -5535,6 +5542,13 @@
           "needs_translation": false,
           "reverse_text": false,
           "translation": "Limiet"
+        },
+        "master_gain": {
+          "english": "Master Gain",
+          "max_length": 11,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Hoofdversterking"
         },
         "name": {
           "english": "PID Controller",
