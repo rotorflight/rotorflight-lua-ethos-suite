@@ -255,10 +255,10 @@ local MENUS = {
   diagnostics_menu = {
     title = "@i18n(app.modules.diagnostics.name)@",
     entries = {
-      {title = "@i18n(app.modules.rfstatus.name)@", icon = lcd.loadMask("app/gfx/diagnostics_rfstatus.png"), script = "app/pages/diagnostics_rfstatus.lua"},
+      {title = "@i18n(app.modules.rfstatus.name)@", icon = lcd.loadMask("app/gfx/diagnostics_rfstatus.png"), script = "app/pages/diagnostics_rfstatus.lua", offline = true},
       {title = "@i18n(app.modules.elrs_telemetry.name)@", icon = lcd.loadMask("app/gfx/diagnostics_elrs_link.png"), script = "app/pages/diagnostics_elrs_link.lua"},
       {title = "@i18n(app.modules.fblstatus.name)@", icon = lcd.loadMask("app/gfx/diagnostics_fblstatus.png"), script = "app/pages/diagnostics_fblstatus.lua"},
-      {title = "@i18n(app.modules.info.name)@", icon = lcd.loadMask("app/gfx/diagnostics_info.png"), script = "app/pages/diagnostics_info.lua"},
+      {title = "@i18n(app.modules.info.name)@", icon = lcd.loadMask("app/gfx/diagnostics_info.png"), script = "app/pages/diagnostics_info.lua", offline = true},
     },
   },
   logs_menu = {title = "@i18n(app.modules.logs.name)@", entries = {}},

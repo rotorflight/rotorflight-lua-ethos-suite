@@ -2344,6 +2344,21 @@ behind a profile announcement, and that a change still waiting when the link dro
 spoken after a reconnect. Against unpatched master four of the checks fail.
 '''
     ),
+    LuaJob(
+        id='diagnostics-offline',
+        name='Diagnostics Status and Info open without a flight controller',
+        step='Check the offline Diagnostics pages',
+        script='bin/diagnostics_offline/verify_diagnostics_offline.lua',
+        rationale=r'''Issue #2582: Status and Info show values that do not need the flight controller,
+but the menu blocked them while disconnected. They are now offline-capable, FBL Status and
+ELRS Telemetry stay FC-only. The Status page's API line showed OK even without a connection;
+it now reads "-" unless the link is live and the MSP API version is supported.
+
+The harness reads the offline flags from tool.lua and drives the real Status page with a
+recording form: no connection gives "-", a live supported link gives OK, and a lost link
+after a supported one gives "-" again. Against the unpatched page and menu it fails.
+''',
+    ),
 ]
 
 VERBATIM_JOBS = [

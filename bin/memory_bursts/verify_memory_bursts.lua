@@ -229,6 +229,7 @@ local function runDiagnosticsStatusCheck(useOldBehavior)
             addValueLine = function() return dummyField end,
             updateField = function() updateFieldCalls = updateFieldCalls + 1 end,
             updateStatus = function() updateStatusCalls = updateStatusCalls + 1 end,
+            setFieldColor = function() end,
             formatBytes = function(n) return tostring(n) end,
           }
         end
