@@ -12,7 +12,7 @@ Tools -> Diagnostics -> Info page.
 
 *System* → *Tools* → *Diagnostics* → *Info*
 
-Greyed out until the flight controller answers. Read-only while the model is armed.
+Open without a flight controller: the suite version, Ethos version, simulation flag and supported MSP versions are shown. The firmware, transport, craft name and MCU ID fields need the flight controller. Read-only while the model is armed.
 
 ## Settings
 

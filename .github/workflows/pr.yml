@@ -3181,6 +3181,32 @@ jobs:
       - name: Check the arming, profile, battery and governor announcements against one gate
         run: lua5.4 bin/audio_serial/verify_audio_serial.lua
 
+  # Issue #2582: Status and Info show values that do not need the flight controller,
+  # but the menu blocked them while disconnected. They are now offline-capable, FBL Status and
+  # ELRS Telemetry stay FC-only. The Status page's API line showed OK even without a connection;
+  # it now reads "-" unless the link is live and the MSP API version is supported.
+  #
+  # The harness reads the offline flags from tool.lua and drives the real Status page with a
+  # recording form: no connection gives "-", a live supported link gives OK, and a lost link
+  # after a supported one gives "-" again. Against the unpatched page and menu it fails.
+  diagnostics-offline:
+    name: Diagnostics Status and Info open without a flight controller
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Install Lua 5.4
+        run: sudo apt-get update && sudo apt-get install -y lua5.4
+
+      - name: Check the offline Diagnostics pages
+        run: lua5.4 bin/diagnostics_offline/verify_diagnostics_offline.lua
+
   # Per-language PR builds (mirrors push.yml behavior)
   create-zip:
     name: Build PR ZIP (${{ matrix.lang }})

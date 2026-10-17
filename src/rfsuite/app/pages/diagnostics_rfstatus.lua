@@ -44,22 +44,30 @@ local function open(opts)
 
     local lastUpdate = 0
     local lastConnected = nil
+    local lastApiSupported = nil
 
     local function update(session, force)
       local now = os.clock()
       local connected = session and session.connected
-      if not force and (now - lastUpdate < REFRESH_INTERVAL) and (connected == lastConnected) then
+      local apiSupported = session and session.apiVersionSupported
+      if not force and (now - lastUpdate < REFRESH_INTERVAL) and (connected == lastConnected)
+        and (apiSupported == lastApiSupported) then
         return
       end
       lastUpdate = now
       lastConnected = connected
+      lastApiSupported = apiSupported
 
       common.updateField(fields.memory, memoryText())
       common.updateField(fields.luaMemory, luaMemoryText())
       common.updateStatus(fields.rfModule, moduleEnabled())
       common.updateStatus(fields.mspSensor, haveMspSensor())
       common.updateStatus(fields.connected, connected)
-      common.updateStatus(fields.api, true)
+      -- The API line is OK only on a live link whose MSP API version the suite supports.
+      -- Without a connection it is unknown, not OK (issue #2582).
+      local apiOk = connected == true and apiSupported == true
+      common.updateField(fields.api, apiOk and "@i18n(app.modules.rfstatus.ok)@" or "-")
+      common.setFieldColor(fields.api, apiOk and GREEN or RED)
     end
 
     update(ctx.session, true)
