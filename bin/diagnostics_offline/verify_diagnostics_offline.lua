@@ -6,6 +6,8 @@
 -- The claim:
 --   * Status and Info are openable with no FC connected (offline = true in the menu),
 --     FBL Status is not.
+--   * The path to them is openable too: the root's Tools tile and the Tools menu's
+--     Diagnostics tile carry the same flag, so the menu never blocks the way in.
 --   * The Status page's API line is OK only on a live link whose MSP API version is
 --     supported. Without a connection it is "-", never OK.
 --
@@ -85,6 +87,26 @@ check("FBL Status stays FC-only", entryLine("app/pages/diagnostics_fblstatus.lua
   and not opensOffline("app/pages/diagnostics_fblstatus.lua"))
 check("ELRS Telemetry stays FC-only", entryLine("app/pages/diagnostics_elrs_link.lua") ~= nil
   and not opensOffline("app/pages/diagnostics_elrs_link.lua"))
+
+-- The way in must open too. menu_container.lua's canOpenEntry gates EVERY entry
+-- on `entry.offline == true or taskGuard.isConnected()`, the menuId parents
+-- included (the root's Tools tile, the Tools menu's Diagnostics tile): a leaf
+-- marked offline stays unreachable while its parent is not.
+local function menuLine(menuId)
+  local needle = 'menuId = "' .. menuId .. '"'
+  for line in toolSource:gmatch("[^\n]+") do
+    if line:find(needle, 1, true) then return line end
+  end
+  return nil
+end
+
+local function menuOpensOffline(menuId)
+  local line = menuLine(menuId)
+  return line ~= nil and line:find("offline = true", 1, true) ~= nil
+end
+
+check("the root Tools tile opens offline", menuOpensOffline("tools_menu"))
+check("the Diagnostics tile opens offline", menuOpensOffline("diagnostics_menu"))
 
 -- ---------------------------------------------------------------------------
 -- 2. Status page: the API line
