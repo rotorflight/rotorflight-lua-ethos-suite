@@ -1,0 +1,7 @@
+{
+  "id": "tune-advisor-gate",
+  "name": "Tune Advisor requests are sent only to firmware that has the command",
+  "step": "Check the Tune Advisor firmware gate",
+  "script": "bin/tune_advisor_gate/verify_tune_advisor_gate.lua",
+  "rationale": "Issue #2579: the background capture requested the Tune Advisor on every disarm, also on\nRotorflight 4.6.0, which has no such command. Each disarm produced a failed request. The\nTune Advisor page also probed the FC on opening. Both now depend on the firmware version\nreported by the FC: below 4.7.0 nothing is sent, and an unknown version sends nothing.\n\nThe harness checks the version comparison (including 4.10.0 against 4.7.0) and drives the\nreal tasks/tune_history.lua through session.update: a disarm on 4.6.0 or with no version\nsends no request, and a disarm on 4.7.0 sends the capture read. Against the unpatched task\nthe 4.6.0 and 4.7.0 checks fail. The Tune Advisor page is checked on the simulator."
+}

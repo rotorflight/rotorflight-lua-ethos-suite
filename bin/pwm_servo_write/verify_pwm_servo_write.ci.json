@@ -1,0 +1,7 @@
+{
+  "id": "pwm-servo-write",
+  "name": "PWM servo page lists the PWM outputs only and writes each one raw",
+  "step": "Check the PWM servo list count and the raw write of each servo",
+  "script": "bin/pwm_servo_write/verify_pwm_servo_write.lua",
+  "rationale": "Issue #2445: with a SBUS or FBUS port configured, MSP_STATUS servo_count is the packed\ntotal (PWM outputs plus the 18 bus channels). The PWM page listed min(total, 16) tiles, so\ntiles past the PWM outputs wrote bus servos, and each save went out as cmd 212, which the\nfirmware translates to the bus servo at that packed index. The list now counts the PWM\noutputs using the same port test as the bus guard, and every PWM save is written raw\n(cmd 124).\n\nNo build and no package step reaches this -- it is a list and a save path through a\nrunning page. The harness drives the real servos_pwm page with the real page runtime,\nthe real bus guard and the real servo-config write builders, in three bench layouts:\nno bus port, a FBUS port and a SBUS port. Against unpatched master the bus layouts show\n16 tiles and write cmd 212, and the first layout writes cmd 212 where the page now writes\ncmd 124."
+}

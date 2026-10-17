@@ -1,0 +1,7 @@
+{
+  "id": "logs-named-columns",
+  "name": "The Logs page reads CSV columns by their header name",
+  "step": "Check the CSV column reader behind the Logs page",
+  "script": "bin/log_columns/verify_log_columns.lua",
+  "rationale": "Issue #2506: the Logs page read every column by its position and never parsed the\nheader row, so a log written by another tool was plotted from the wrong columns, and an\nempty file was drawn as a flat zero line.\n\nThe reader is lib/log_columns.lua, pure functions over the file text. The harness checks\nname-based lookup against a file in another column order, a missing column, a header-only\nand an empty file, CRLF line endings and non-numeric values. --self-test swaps in a\nposition-based header lookup and requires the foreign-order checks to go red."
+}

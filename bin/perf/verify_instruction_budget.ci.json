@@ -1,0 +1,7 @@
+{
+  "id": "instruction-budget",
+  "name": "Callbacks stay under the Ethos instruction limit",
+  "step": "Check the Ethos instruction budget",
+  "script": "bin/perf/verify_instruction_budget.lua",
+  "rationale": "Ethos aborts any Lua callback that runs 20000 VM instructions (\"Max\ninstructions count reached\"), and nothing on the radio says how close one\nruns. This drives the real dashboard widget through every theme and flight\nstate, and the real background task through boot, link up, steady CRSF with\nELRS frames, an ELRS backlog and link down, and the real system tool through\nevery menu and every page (opened cold, read replies served by the MSP\ncodecs' simulator fixtures), counting instructions with a debug hook on\ndesktop Lua. Any callback at or over the limit fails, so a theme with too\nmany boxes, a new per-tick cost, or a page that builds its form in one\noversized pass is caught here instead of as stalled frames, a dropped\nbackground tick in flight, or a page that never draws. The Ports page did\nexactly that before this check covered the app: its function lists cost\n~25k instructions with 4 serial ports and ~255k with 12, in one wakeup."
+}

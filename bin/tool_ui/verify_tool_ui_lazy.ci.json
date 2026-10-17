@@ -1,0 +1,7 @@
+{
+  "id": "tool-ui-lazy",
+  "name": "Tool UI not loaded at boot",
+  "step": "Check the tool's load timing",
+  "script": "bin/tool_ui/verify_tool_ui_lazy.lua",
+  "rationale": ""
+}

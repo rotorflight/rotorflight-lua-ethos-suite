@@ -1,0 +1,7 @@
+{
+  "id": "rate-limits",
+  "name": "Rate and expo maximums follow the rate table, as the firmware clamps them",
+  "step": "Check the rate table limits",
+  "script": "bin/rate_limits/verify_rate_limits.lua",
+  "rationale": "The rates page offered every rate field up to 255. The firmware keeps one\nlimit set per rates_type (src/main/fc/rc_rates.c:39-46: rc_rate, srate and expo)\nand clamps the stored values to it when the config is loaded (config.c:184-194).\nA pilot could enter a value the firmware then cut at the next boot, so the shown\nvalue changed after a reboot.\n\nlib/rate_curve_scale.lua now takes each field's maximum from the table of firmware\nlimits, for the display bounds and for the value stored from the page.\n\nThe harness checks the limit for every rates_type and field, the display maximum,\nthe clamp of a value above the limit, and that the limit survives a round trip\nthrough the display. --self-test puts back the flat 255 ceiling and requires the\nvalue checks to go red."
+}

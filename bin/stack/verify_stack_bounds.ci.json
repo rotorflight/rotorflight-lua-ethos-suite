@@ -1,0 +1,7 @@
+{
+  "id": "stack-bounds",
+  "name": "Bus publish is bounded, stack minimum is tracked",
+  "step": "Check the publish recursion bound and the stack minimum",
+  "script": "bin/stack/verify_stack_bounds.lua",
+  "rationale": "The bus is the only channel between the tool, the dashboard and the\nbackground task, and publish() calls its handlers synchronously -- a\nhandler that publishes back into the same topic recurses, and in the\nreference Lua VM every Lua-to-Lua call is one C stack level. This harness\ndrives a real cycle and asserts it terminates at the guard rather than at\nthe VM's own \"C stack overflow\" (which is what happens without it: 197\nhandler calls), and that the memory log reports the smallest\nmainStackAvailable it has ever seen."
+}

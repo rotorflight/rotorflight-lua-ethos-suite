@@ -1,0 +1,7 @@
+{
+  "id": "memory-bursts",
+  "name": "Memory bursts in dashboard settings and diagnostics status",
+  "step": "Check memory burst and churn mitigations",
+  "script": "bin/memory_bursts/verify_memory_bursts.lua",
+  "rationale": "Opening dashboard settings synchronously compiled all theme configure.lua files\nvia loadfile(), causing an acute memory spike on radios operating close to the\n2048 kB Lua ceiling (#2295, #2530). Diagnostics status ran at 20-30 Hz without\nrate limiting, churning memory on every wakeup frame. This pins that theme\ndiscovery probes file presence without compiling chunks and that diagnostics\nstatus updates are rate-limited to at most 1 Hz."
+}

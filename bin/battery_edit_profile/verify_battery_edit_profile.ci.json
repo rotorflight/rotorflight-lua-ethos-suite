@@ -1,0 +1,7 @@
+{
+  "id": "battery-edit-profile",
+  "name": "Editing another battery profile does not activate it on save",
+  "step": "Check the battery page edits the chosen profile without activating it",
+  "script": "bin/battery_edit_profile/verify_battery_edit_profile.lua",
+  "rationale": "Issue #2502: the Battery page had one profile selector, and the cell rows followed\nit. To edit the cells of profile 4 the pilot had to make profile 4 active, and saving\nthen activated it. The page now has an Edit Battery choice that only the cell rows\nfollow; the saved profile stays on the active one.\n\nNo build and no package step reaches this -- it is a save path through a running\npage. The harness drives the real power_battery page with the real page runtime and\nfield layout, and answers every write the way the FC would. Against unpatched master\nthe page has no Edit Battery choice, and saving a cell edit of profile 3 writes\nprofile 3 as the active one."
+}

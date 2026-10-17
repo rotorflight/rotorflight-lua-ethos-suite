@@ -1,0 +1,7 @@
+{
+  "id": "handshake-gate",
+  "name": "Post-connect reads wait for a verified API_VERSION",
+  "step": "Check the phased startup handshake",
+  "script": "bin/handshake_gate/verify_handshake_gate.lua",
+  "rationale": "tasks/session.lua's runHandshake() queued its whole identity/config burst in one\ncall, ahead of any API-version verdict: MSP_FC_VERSION, MSP_UID, MSP_NAME, the RTC\nsync and the battery/smartfuel/governor/rx-map reads all went on the wire before\nMSP_API_VERSION had even been answered, let alone checked. On a weak link, or\nagainst firmware from a different family, one unanswerable request at the head of\nthe single-in-flight queue blocks every page read behind it for its full retry\nbudget -- 5 x 0.8s for UID -- which is the queue starvation #2362 reports.\n\nThe handshake is now phased: API_VERSION is the only request allowed to run\nunverified, its own success callback resumes the handshake the moment the verdict\nis in, and nothing else is queued until that verdict is a verified \"yes\". An\nincompatible or too-old FC stops after the version read; the UI banner for it\nalready existed (widgets/dashboard.lua's drawFooterAlert). No build and no package\nstep reaches any of this -- it needs a queue, a clock and an FC that answers, or\ndoes not -- so it is pinned here.\n\n5 of the harness's 12 checks are gates on the queue contents, proven by --self-test:\nit neuters the gate's condition in a copy of session.lua and requires the central\ncheck (no identity read before the verdict) to go red."
+}

@@ -1,0 +1,7 @@
+{
+  "id": "tool-ui-no-extra-msp",
+  "name": "Tool adds no MSP requests and accumulates nothing",
+  "step": "Check the MSP request pattern over repeated tool cycles",
+  "script": "bin/tool_ui/verify_no_extra_msp.lua",
+  "rationale": "Deferring the tool's UI raises the obvious question: does it add MSP\ntraffic, and does anything accumulate per open/close cycle? This harness\ncounts the requests at bus.publish over three full tool cycles plus 100\nwakeups inside the guarded menu. It goes red if the guards stop latching\n(a sabotaged guard produces 309 requests instead of 6)."
+}

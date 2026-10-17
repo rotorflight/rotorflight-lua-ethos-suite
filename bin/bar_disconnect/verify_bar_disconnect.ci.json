@@ -1,0 +1,7 @@
+{
+  "id": "bar-disconnect",
+  "name": "Battery and fuel bar shows loading after telemetry loss before flight",
+  "step": "Check the dashboard bar after telemetry loss",
+  "script": "bin/bar_disconnect/verify_bar_disconnect.lua",
+  "rationale": "Issue #2534: the bar gauge kept its last valid reading whenever the sensor\ndropped out, so a fuel bar stayed at 85% after the pack was unplugged on the\nbench. widgets/dashboard/objects/gauge/bar.lua now shows the loading dots while\nthe flight has not started yet; once a flight is under way the last reading is\nheld, in flight as well as in postflight, so a momentary telemetry gap cannot\nblank a gauge the pilot is flying on nor discard the reading it had.\n\nNo build and no package step reaches this -- it is a render path through a\nrunning widget. The harness drives the real bar gauge (render.wakeup) with a fake\ntelemetry source and the flight mode: connected shows the value, a dropout before\nflight must not keep it and must show the loading state, reconnect shows the new\nvalue, a dropout in flight keeps it across two consecutive wakeups, and a\ndropout in postflight keeps the last value. Against unpatched master the two\ndropout-before-flight checks fail; against the first cut of this branch, which\nheld the reading only in postflight and discarded the cache in flight, the four\nflight and postflight checks fail."
+}

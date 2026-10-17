@@ -1,0 +1,7 @@
+{
+  "id": "msp-codec-battery",
+  "name": "A short MSP payload is reported, not decoded",
+  "step": "Check the codec and the battery decoders",
+  "script": "bin/msp_battery/verify_msp_battery.lua",
+  "rationale": "Every MSP decoder in the suite funnels through lib/mspcodec.lua, and the one\nprimitive there was not bounds-safe: readU8 returned nil for a byte past the\nend of the payload where readS8/readU16/readS16/readU32 all substituted 0.\nThat nil was not a missing value. The smartfuel decoder divided a readU8\nresult by 1000, and tasks/msp/queue.lua calls processReply with no pcall and\nthere is none in the task path either, so a short reply raised out of the\nbackground task instead of being reported. The battery decoder had the softer\nversion: a nil or a zero standing in for a profile capacity, in a config that\nstill passed session.lua's `if not session.batteryConfig` guard because that\nguard sees the table and not its contents. A build cannot reach any of that,\nand a radio only produces a short reply under conditions nobody can script on\ndemand, so the payload lengths are pinned here against the firmware handler's\nown byte counts instead. Cases 4, 5 and 6 go red on the pre-fix sources."
+}

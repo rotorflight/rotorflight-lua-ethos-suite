@@ -1,0 +1,7 @@
+{
+  "id": "esc-guard-retry",
+  "name": "ESC tiles recover from a failed read",
+  "step": "Check that a failed ESC read is retried",
+  "script": "bin/esc_guard/verify_esc_guard_retry.lua",
+  "rationale": "The ESC forward-programming tiles are gated by a guard that has to retry a\nfailed MSP read. That retry reaches neither a build nor a package step, so\nit is pinned here. #2387"
+}

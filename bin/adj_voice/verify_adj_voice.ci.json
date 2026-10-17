@@ -1,0 +1,7 @@
+{
+  "id": "adj-voice-settle",
+  "name": "In-flight adjustments settle before they are spoken",
+  "step": "Check the in-flight adjustment announcement",
+  "script": "bin/adj_voice/verify_adj_voice.lua",
+  "rationale": "An in-flight adjustment is announced from tasks/audio_events.lua's\nannounceAdjustment(). Before #2315 it spoke the first step of a burst and dropped\nevery step that landed while that announcement was still playing, so three clicks\non a trim switch announced a value the model no longer had. Nothing in the build\nor the package step reaches it, and the failure is quiet: the pilot hears a\nplausible number.\n\nThe real task is driven one wakeup at a time, every 0.25 s -- the interval\ntasks/background.lua schedules it at -- against a controllable clock. A burst of\nsteps has to say one number, and it has to be the last one. Nothing is spoken\nuntil the value has stood still for the settle window. A function change says the\nname once and then the settled value. A step that settles while an announcement is\nstill playing is spoken afterwards, not dropped. adj_v = false keeps a value-only\nchange silent, function 0 says nothing, and a change still waiting when the link\ndrops is not spoken later.\n\nA copy of the task with the settle guard removed is then loaded, and the first\nstep of the burst has to be spoken there. If that ever stops turning red, the\ninstrument has gone blind."
+}

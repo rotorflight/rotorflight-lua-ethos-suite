@@ -1,0 +1,7 @@
+{
+  "id": "wakeup-allocations",
+  "name": "Wakeup path allocates nothing per call",
+  "step": "Check the wakeup allocation paths",
+  "script": "bin/allocation_churn/verify_allocation_churn.lua",
+  "rationale": "The dashboard wakeup path runs several times a second and session.update\nis published at up to 20 Hz, so a table rebuilt per call there is the\nsawtooth in the '[bgtask mem] lua=' log rather than a detail. Three such\nsites were removed: the subscriber copy in lib/bus.lua, the name table and\nits result table in getSensorStats(), and the per-call closure in\ntransformValue(). #2384.\n\nNo build and no package step reaches this -- it needs the collector held off\nand a loop that calls the function thousands of times, which is what the\nharness does. Every allocation assertion is paired in both directions: the\ncurrent code has to come out under the bound and the removed code over it,\non every run. A bound that both sides meet proves nothing, and the harness\ncarries the removed implementations precisely so that can be seen. The same\nrun also pins what a pooled iteration copy can get wrong -- a handler\nunsubscribed long ago must not come back through a leftover slot -- and the\none value the change alters, an rssi box reading its own min/max instead of\nlink quality's.\n\nPass --self-test to assert only that the bounds still have teeth."
+}

@@ -1,0 +1,7 @@
+{
+  "id": "ports-readback",
+  "name": "Ports page reads the serial ports back after a save, and not the RX config",
+  "step": "Check the Ports page read-back and its reads",
+  "script": "bin/ports_readback/verify_ports_readback.lua",
+  "rationale": "Issue #2497 (findings 1 and 2): the Ports page never read the board back after a\nsave, so its rows showed what was sent; and it read MSP_RX_CONFIG on every open\nalthough the value was never used, which held up the loading dialog for one round\ntrip. After an accepted EEPROM write the page now reads the serial ports back before\nit reboots, and the RX config read is gone.\n\nNo build and no package step reaches this -- it is a read and write path through a\nrunning page. The harness drives the real ports page with the real bus and the real\nport-label library, and answers each message the way the FC would: a board that\nreports a different function than the one sent, a refused read-back, and the reboot\nthat must wait for the read-back. Against unpatched master five of the seven checks\nfail."
+}

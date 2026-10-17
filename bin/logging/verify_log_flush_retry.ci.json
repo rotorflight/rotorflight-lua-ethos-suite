@@ -1,0 +1,7 @@
+{
+  "id": "log-flush-retry",
+  "name": "Flight log keeps samples it could not write",
+  "step": "Check that an unwritable card does not discard the buffer",
+  "script": "bin/logging/verify_log_flush_retry.lua",
+  "rationale": "A flight log is the pilot's evidence after a crash, and both ways it could\nlose rows were silent: an io.open that failed emptied the buffer, and a failed\nwrite() trimmed the rows it had just failed to persist. Neither leaves a trace\n-- the CSV looks like a log that worked and simply recorded nothing.\n\nOnly a card that cannot be written reaches either path, and that is not\nsomething a build or a package step can stage. So the real logger is driven\nhere with io.open and the handle's write() as the seams, and every sample is\nidentifiable, so \"were rows 1 to 20 written?\" is a fact about the bytes.\n\n13 of its 18 cases go red on the pre-fix logging.lua; the ones that do not\npin the healthy path and the once-per-streak report."
+}

@@ -1,0 +1,7 @@
+{
+  "id": "clock-budgets",
+  "name": "Background task drain budgets",
+  "step": "Check the drain budgets",
+  "script": "bin/perf/verify_clock_budgets.lua",
+  "rationale": "Three drain loops run inside one background-task wakeup with no yield point\nin between, and each was bounded by a wall-clock deadline set well above what\nthe work needs -- on a single-core MCU competing with Ethos's C++ UI thread,\nthe budget is UI latency. Nothing could see that, and nothing could see the\nother half: that a deadline read only *between* polls cannot bound one\ntransport.mspPoll() call, which on S.Port walks the sensor's whole native\nframe queue. This harness drives the three loops against a permanently full\nqueue and a clock that charges real time per frame, so it measures the budget\ninstead of trusting it. The last group is the other half -- bounding the\npoll must not break reply assembly, which is what says how far a budget may\nbe cut at all."
+}

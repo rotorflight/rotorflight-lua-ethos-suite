@@ -1,0 +1,7 @@
+{
+  "id": "absent-sensor-log",
+  "name": "A sensor that is not sending is an empty field in the flight log",
+  "step": "Check that an absent sensor is not logged as 0",
+  "script": "bin/logging/verify_absent_sensor.lua",
+  "rationale": "The flight log wrote a sensor the aircraft was not sending as 0. A 0 in the CSV\nis indistinguishable from a measured zero -- a 0 A current draw is a real\nreading -- so anything that reads the file later takes an absent value for a\nmeasurement. The logger's sensorValue() replaced nil with 0 on the output side,\nafter telemetry_sensors had already done the right thing on the input side.\n\nSo the real logger is driven against a fake sensor that returns nil for a column,\na real 0, or nothing at all, and the bytes that reach the CSV are checked: an\nabsent column is an empty field, a real zero stays \"0\", a sensor that starts\nsending later is written from then on, and no \"nil\" text or short row ever\nreaches the file. Cases 1, 2 and 4 go red on the pre-fix logging.lua; the other\ntwo pin the behaviour the fix must not break."
+}

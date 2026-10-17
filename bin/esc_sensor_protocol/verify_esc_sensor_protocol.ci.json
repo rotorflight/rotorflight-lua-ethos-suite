@@ -1,0 +1,7 @@
+{
+  "id": "esc-sensor-protocol",
+  "name": "ESC telemetry protocol list follows the API version, RECORD is 15 from 12.10",
+  "step": "Check the ESC telemetry protocol list per reported API version",
+  "script": "bin/esc_sensor_protocol/verify_esc_sensor_protocol.lua",
+  "rationale": "Issue #2492: the ESC telemetry protocol list was a static table, RECORD fixed at 14.\nFirmware API 12.10 inserted SRXL2 at 14 and moved RECORD to 15 (rotorflight-firmware\nChanges.md, MSP Changes). A board on 12.10 therefore got RECORD written as SRXL2. The list\nnow follows the API version the board reports, the way the motor protocol list already does.\n\nNo build and no package step reaches this -- it is the list a pilot picks from and the\nvalue it writes. The harness drives the real codec for API 9, API 10 and no version, and the\nreal telemetry page for the same three, with the runtime handing it the version in buildChrome()\nas the bus replay does. Against unpatched master SRXL2 is not offered and RECORD is offered as\n14 on API 10, in the codec and on the page."
+}

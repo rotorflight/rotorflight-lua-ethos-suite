@@ -1,0 +1,7 @@
+{
+  "id": "main-power-lost",
+  "name": "Main power lost test shared by audio alert and dashboard banner",
+  "step": "Check the main power lost test and its audio equivalence",
+  "script": "bin/main_power/verify_main_power.lua",
+  "rationale": "Issue #2358: the audio alert and the dashboard footer banner both show that the\nflight pack is gone while the receiver still runs on backup power. The test lives in\nlib/main_power.lua; tasks/session.lua evaluates it on every voltage change and publishes\nsession.mainPowerLost, so both consumers read one flag.\n\nThe harness checks the threshold, the latch (a pack never seen this connection stays\nquiet), recovery, and that the shared test gives the same answer as the function it\nreplaced in tasks/audio_events.lua on master, for a fixed set of readings. A mutated\nthreshold turns it red."
+}

@@ -1,0 +1,7 @@
+{
+  "id": "dialog-lifecycle",
+  "name": "Dialog teardown when a page is left",
+  "step": "Check the dialog teardown",
+  "script": "bin/dialog_lifecycle/verify_dialog_lifecycle.lua",
+  "rationale": "Leaving a page -- with the Back key, or by closing the tool -- ran the\npage's dialog teardown on a form Ethos had already stopped updating, and a\nsave/reload confirmation that was still up outlived the page behind it with\nan OK button that did nothing. Neither is visible from a build: the first\nneeds a form that refuses writes, the second needs a dialog handle that\nsomething else has to own. So the pages are loaded for real here, under a\nform whose writes raise once teardown starts.\n\nFive of its cases go red on the pre-fix pages, each naming the line it\nfails on."
+}

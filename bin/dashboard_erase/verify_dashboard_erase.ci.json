@@ -1,0 +1,7 @@
+{
+  "id": "dashboard-erase",
+  "name": "The dashboard erase finishes on a read that reports the flash ready",
+  "step": "Check the dashboard erase wait against the flash ready bit",
+  "script": "bin/dashboard_erase/verify_dashboard_erase.lua",
+  "rationale": "Found in the review of #2568: the Rotorflight Dashboard ends its erase on the first summary\nread after the erase acknowledgement, whatever that read reports. The firmware acknowledges the\nerase before it runs and reports the flash ready only when it is idle, so the dialog could close\nwhile the erase was still running.\n\nThe harness drives the real dashboard widget through its wakeup and the bus. It checks that a\nread reporting not ready keeps the wait open and is repeated, that a read reporting ready or no\ndataflash ends it, that a failed read does not end it, and that a wait without an answer fails\nafter the timeout. Against unpatched master four of the checks fail."
+}

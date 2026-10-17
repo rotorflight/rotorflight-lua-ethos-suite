@@ -1,0 +1,7 @@
+{
+  "id": "armed-unconfirmed",
+  "name": "A disconnected armed model is not writable until a fresh answer clears it",
+  "step": "Check the armed-unconfirmed latch and the save gate",
+  "script": "bin/armed_unconfirmed/verify_armed_unconfirmed.lua",
+  "rationale": "Issue #2548: isArmed goes nil on every disconnect, and a gate written as\n`isArmed == true` reads that nil as \"disarmed\". On a reconnect into an armed model the\nsave button and the stats write then opened before the arm flags were read again.\nNeither the firmware nor the page could tell that from a real disarm.\n\ntasks/session.lua keeps a latch, armedUnconfirmed: set on an armed read, cleared only by\na fresh disarmed read, untouched by a disconnect. app/page_runtime.lua's save gate and\nthe reboot-after-save gate read it through armedOrUnconfirmed(). The harness drives the\nreal session.lua through session.wakeup() and the real page_runtime canSave(). Against\nunpatched master the latch and the disconnected-page checks fail. --self-test splices\nthe latch and the gate back out and requires them to go red."
+}

@@ -1,0 +1,7 @@
+{
+  "id": "diagnostics-offline",
+  "name": "Diagnostics Status and Info open without a flight controller",
+  "step": "Check the offline Diagnostics pages",
+  "script": "bin/diagnostics_offline/verify_diagnostics_offline.lua",
+  "rationale": "Issue #2582: Status and Info show values that do not need the flight controller,\nbut the menu blocked them while disconnected. They are now offline-capable, FBL Status and\nELRS Telemetry stay FC-only. The Status page's API line showed OK even without a connection;\nit now reads \"-\" unless the link is live and the MSP API version is supported.\n\nThe harness reads the offline flags from tool.lua and drives the real Status page with a\nrecording form: no connection gives \"-\", a live supported link gives OK, and a lost link\nafter a supported one gives \"-\" again. Against the unpatched page and menu it fails, and the two\ntiles that lead to those pages (the root's Tools tile and the Tools menu's Diagnostics tile) are\nchecked as offline too."
+}

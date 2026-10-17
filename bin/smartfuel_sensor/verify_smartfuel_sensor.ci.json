@@ -1,0 +1,7 @@
+{
+  "id": "smartfuel-sensor",
+  "name": "The Smart Fuel sensor is sent often enough and keeps its value while the estimate restarts",
+  "step": "Check the Smart Fuel sensor refresh and the settling answer",
+  "script": "bin/smartfuel_sensor/verify_smartfuel_sensor.lua",
+  "rationale": "Rob Thomson's report: Ethos shows the Smart Fuel telemetry sensor as lost as soon as the\nmodel is disarmed. Two things in the suite make that happen. The same-value refresh of a DIY\nsensor waited 4.0 s, while Ethos wants a value at least every 4 s and the caller ticks every\n0.5 s, so the gap grew past 4 s. And after a disarm, when the pack voltage rises as the load goes\naway, the estimator restarts and answers nil, which the session wrote to the sensor as a reset.\n\nThe harness drives the real sensor on the session's cadence and the real estimator through a\ndisarm with rising voltage. It checks that an unchanged value is pushed again within 2.5 s, that\nthe estimator says it is settling on every nil while it restarts, and that a missing voltage is\nstill a plain nil. Against unpatched master six of the checks fail."
+}

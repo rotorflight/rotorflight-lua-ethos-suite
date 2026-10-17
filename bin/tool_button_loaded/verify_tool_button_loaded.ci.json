@@ -1,0 +1,7 @@
+{
+  "id": "tool-button-loaded",
+  "name": "Header Tool button stays disabled until the page has loaded its values",
+  "step": "Check the header Tool button follows the page load state",
+  "script": "bin/tool_button_loaded/verify_tool_button_loaded.lua",
+  "rationale": "Issue #2553: the header Tool button was enabled whenever a page passed an onTool,\nbefore the page had read its values. Save is gated by the page runtime; Tool was not.\nThe runtime now drives the Tool button from the same loaded flag as Save, through a\nnew setToolEnabled() on the header handle.\n\nNo build and no package step reaches this -- it is the enable state of a button on a\nrunning page. The harness drives the real page runtime through a held, answered and\nfailed read and checks the button the real header builds. Against unpatched master the\nheader has no setToolEnabled and the Tool button stays enabled while the page is unloaded."
+}

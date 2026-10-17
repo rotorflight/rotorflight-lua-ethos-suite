@@ -1,0 +1,7 @@
+{
+  "id": "atomic-writes",
+  "name": "Settings survive an interrupted write",
+  "step": "Check the write path",
+  "script": "bin/storage/verify_atomic_writes.lua",
+  "rationale": "Every file the suite owns was opened for writing directly, and io.open(path,\n\"w\") truncates on open -- so a radio switched off mid-save left\nsettings.ini at 0 bytes or half a section, and the INI reader skips lines it\ndoes not recognise, which means the pilot's settings came back as the\ndefaults with nothing reported anywhere. A build and a package step cannot\nreach that, and no page shows it: this is where the write path is pinned.\nThe first case in the check goes red on the pre-fix ini.lua."
+}

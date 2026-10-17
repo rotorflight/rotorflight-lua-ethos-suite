@@ -1,0 +1,7 @@
+{
+  "id": "msp-disconnect-gc",
+  "name": "MSP queue on disconnect and the per-message GC",
+  "step": "Check the disconnect and GC behaviour",
+  "script": "bin/msp_gc/verify_msp_disconnect.lua",
+  "rationale": "A disconnect used to leave the MSP request queue holding everything an open\npage had queued, so the next handshake queued FIFO behind a backlog that no\nflight controller could answer any more. And every completed message forced\na full GC cycle -- a call section 9 of the lifecycle doc had already measured\nas buying nothing. Both need a session task and a collector that can be\nobserved, which no build or package step provides."
+}
