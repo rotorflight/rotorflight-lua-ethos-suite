@@ -4,33 +4,14 @@
 --     lua5.4 bin/armed_warning/verify_armed_warning.lua
 --
 -- Drives the real widgets/dashboard.lua paint path with a recording lcd. The claim:
--- while the model is confirmed armed, a red frame and an "Armed" badge are drawn over
--- the dashboard, whatever theme is shown; disarmed, nothing red is drawn.
+-- while the model is confirmed armed, a red bar runs across the top edge with an
+-- "Armed" label hanging from its centre, over whatever theme is shown. Disarmed,
+-- nothing red is drawn. The widget property "Armed warning" (default on) switches
+-- the bar off; with it off, nothing red is drawn even while armed.
 --
--- Not established here: how the badge sits on a 480x320 radio over each theme. The
--- stub lcd does not rasterise. That is the Ethos simulator check named in the PR body.
-
--- Behaviour check for the dashboard toolbar's write items while armed (#2505).
---
--- Run it:
---     lua5.4 bin/toolbar_armed/verify_toolbar_armed.lua
---
--- What it drives, and why:
---   * The real widgets/dashboard.lua, through the descriptor the radio calls
---     (create, wakeup, paint, event). The Erase and Battery tiles are opened
---     the way a pilot taps them: Page long press shows the toolbar, a touch
---     start and end on the tile activates it.
---   * The claim the change makes: while the model is armed, the two toolbar
---     items that write to the flight controller (blackbox erase, battery
---     profile) are disabled, a battery picker open at the moment of arming
---     is closed, and a write that a dialog confirmed after arming is refused
---     at the write itself. Disarmed, both items work as before.
---   * The Reset and Info tiles are not written to the FC here and are checked
---     only to show that the arm state does not disable everything.
---
--- Not established here: that a rotor turning is safe to observe on a
--- simulator, or how the greyed tiles look on a 480x320 radio. The stub lcd
--- does not rasterise. The Ethos simulator check is named in the PR body.
+-- Not established here: how the bar and label sit on a 480x320 radio over each
+-- theme. The stub lcd does not rasterise. That is the Ethos simulator check named
+-- in the PR body.
 --
 -- Against unpatched upstream/master the armed checks must fail; that run is
 -- the proof that the checks can go red.
@@ -122,6 +103,13 @@ system = {
 }
 model = {bitmap = function() return nil end}
 
+-- Widget storage (Ethos storage.read / storage.write), kept in memory for the check.
+local stored = {}
+storage = {
+  read = function(key) return stored[key] end,
+  write = function(key, value) stored[key] = value end,
+}
+
 -- Every form.openDialog is recorded, so a confirm button can be pressed by the
 -- check the way a pilot presses OK.
 local dialogs = {}
@@ -133,6 +121,12 @@ form = setmetatable({
     return {value = function() end, closeAllowed = function() end, close = function() end}
   end,
 }, {__index = function() return function() end end})
+
+-- The widget property is built with form.addLine + form.addBooleanField; capture the
+-- field's getter and setter so the check can flip it the way the pilot does.
+local configField = nil
+form.addLine = function() return {} end
+form.addBooleanField = function(_, _, get, set) configField = {get = get, set = set} end
 
 local failures, checks = 0, 0
 
@@ -199,26 +193,32 @@ local function isRed(c)
   return type(c) == "table" and c.r == 214 and c.g == 40 and c.b == 40
 end
 
-local function redFrameEdges()
-  local edges = {top = false, bottom = false, left = false, right = false}
+-- The red bar is the full-width strip at the top, and the label hangs from it at y = 4.
+-- Any other red rectangle (a frame edge, a second bar) is reported as `other`.
+local function redRects()
+  local found = {bar = false, label = false, other = false}
   for _, r in ipairs(rects) do
     if isRed(r.color) then
-      if r.y == 0 and r.w == 480 and r.h == 4 then edges.top = true end
-      if r.y == 316 and r.w == 480 and r.h == 4 then edges.bottom = true end
-      if r.x == 0 and r.w == 4 and r.h == 320 then edges.left = true end
-      if r.x == 476 and r.w == 4 and r.h == 320 then edges.right = true end
+      if r.y == 0 and r.w == 480 and r.h == 4 then
+        found.bar = true
+      elseif r.y == 4 then
+        found.label = true
+      else
+        found.other = true
+      end
     end
   end
-  return edges
+  return found
 end
 
--- The badge is centred on the top edge: its text sits where a label of its own
--- width, plus the 12 px of badge padding, centred in the 480 px window would put it.
+-- The label hangs from the centre of the bar: its text sits where a label of its own
+-- width, plus the 12 px of badge padding, centred in the 480 px window would put it,
+-- and just below the 4 px bar.
 local function labelCentred()
   local tw = #LABEL * 7   -- the stub's getTextSize
   local expected = math.floor((480 - tw - 12) / 2) + 6
   for _, t in ipairs(texts) do
-    if t.text == LABEL then return t.x == expected and t.y == 3 end
+    if t.text == LABEL then return t.x == expected and t.y == 7 end
   end
   return false
 end
@@ -230,29 +230,60 @@ local function hasLabel()
   return false
 end
 
--- 1. Disarmed: no red frame, no badge.
+-- The widget property is stored and read back through the Ethos storage API.
+-- Nothing stored yet counts as on.
+check("property: default on when nothing is stored", stored.armed_warning == nil)
+descriptor.read(state)
+check("property: read with nothing stored leaves the warning on", state.armedWarningEnabled == true)
+
+-- 1. Disarmed: no red, no label.
 setArmed(false)
 paintFrame()
-local e = redFrameEdges()
-check("disarmed: no red frame is drawn", not (e.top or e.bottom or e.left or e.right))
-check("disarmed: no Armed badge is drawn", not hasLabel())
+local r = redRects()
+check("disarmed: no red bar is drawn", not r.bar)
+check("disarmed: no Armed label is drawn", not hasLabel() and not r.label)
+check("disarmed: nothing else red is drawn", not r.other)
 
--- 2. Armed: the frame on all four edges, and the badge.
+-- 2. Armed (property on, default): a bar across the top, the label hanging below it,
+--    and no frame on the other edges.
 setArmed(true)
 paintFrame()
-e = redFrameEdges()
-check("armed: the red frame is drawn on the top edge", e.top)
-check("armed: the red frame is drawn on the bottom edge", e.bottom)
-check("armed: the red frame is drawn on the left edge", e.left)
-check("armed: the red frame is drawn on the right edge", e.right)
-check("armed: the Armed badge is drawn", hasLabel())
-check("armed: the Armed badge is centred on the top edge", labelCentred())
+r = redRects()
+check("armed: the red bar is drawn across the top edge", r.bar)
+check("armed: the Armed label is drawn", hasLabel())
+check("armed: the label hangs from the centre of the bar", labelCentred())
+check("armed: no frame edge or other red rectangle is drawn", not r.other)
 
 -- 3. Disarmed again: the warning goes away.
 setArmed(false)
 paintFrame()
-e = redFrameEdges()
-check("disarmed again: the red frame is gone", not (e.top or e.bottom or e.left or e.right))
+r = redRects()
+check("disarmed again: the red bar is gone", not r.bar and not r.label)
+
+-- 4. The property off: armed draws no warning at all.
+state.armedWarningEnabled = true
+descriptor.configure(state)
+check("property: configure adds the Armed warning field", configField ~= nil)
+configField.set(false)
+check("property: the field reports off after switching it", configField.get() == false)
+descriptor.write(state)
+check("property: write stores off", stored.armed_warning == false)
+state.armedWarningEnabled = nil
+descriptor.read(state)
+check("property: read restores off from storage", state.armedWarningEnabled == false)
+setArmed(true)
+paintFrame()
+r = redRects()
+check("property off, armed: no red bar is drawn", not r.bar and not r.label and not r.other)
+check("property off, armed: no Armed label is drawn", not hasLabel())
+
+-- 5. Switched back on: the warning returns.
+configField.set(true)
+descriptor.write(state)
+check("property: write stores on", stored.armed_warning == true)
+paintFrame()
+r = redRects()
+check("property on again, armed: the red bar is drawn", r.bar)
 
 print(string.format("\n%d checks, %d failed", checks, failures))
 os.exit(failures == 0 and 0 or 1)

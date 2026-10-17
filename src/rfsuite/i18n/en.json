@@ -7905,6 +7905,12 @@
         "needs_translation": false,
         "translation": "Altitude Max"
       },
+      "armed_warning": {
+        "english": "Armed warning",
+        "max_length": 24,
+        "needs_translation": false,
+        "translation": "Armed warning"
+      },
       "battery": {
         "english": "Battery",
         "max_length": 7,

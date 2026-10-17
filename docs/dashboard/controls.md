@@ -32,10 +32,13 @@ never reported arm flags at all is not affected: these two tiles stay usable for
 
 ## Armed warning
 
-While the model is armed, the dashboard shows a red frame around its edge and an
-"Armed" badge centred on the top edge, on every theme. It is drawn over the theme and
+While the model is armed, the dashboard shows a red bar across the top edge with an
+"Armed" label hanging from its centre, on every theme. It is drawn over the theme and
 moves nothing. It appears only once the FC reports the armed state, and it goes away
 when the model is disarmed.
+
+The warning can be switched off in the widget properties with **Armed warning**. It is
+on by default.
 
 ## Battery picker
 

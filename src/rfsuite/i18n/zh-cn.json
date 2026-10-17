@@ -9197,6 +9197,12 @@
         "reverse_text": false,
         "translation": "高度最大值"
       },
+      "armed_warning": {
+        "english": "Armed warning",
+        "max_length": 24,
+        "needs_translation": false,
+        "translation": "Armed 警告"
+      },
       "battery": {
         "english": "Battery",
         "max_length": 7,

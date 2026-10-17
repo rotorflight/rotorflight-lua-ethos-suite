@@ -581,31 +581,31 @@ end
 -- (battery_picker.lua DIM_ALPHA).
 local OVERLAY_DIM = lcd.RGB(0, 0, 0, 0.6)
 
--- Armed warning (#2352): a red frame and an "Armed" badge over whatever theme is
--- on screen, so a live model is obvious on every page and theme. Drawn only for a
--- confirmed armed state (widget.isArmed == true), the same test as the write
--- guards. It is an overlay: it does not move any theme layout.
+-- Armed warning (#2352): a red bar across the top edge with an "Armed" label hanging
+-- from its centre, over whatever theme is on screen, so a live model is obvious on
+-- every page and theme. Drawn only for a confirmed armed state (widget.isArmed == true),
+-- the same test as the write guards, and only while the widget property
+-- "Armed warning" is on (widget.armedWarningEnabled, default on). It is an overlay:
+-- it does not move any theme layout.
 local ARMED_RED = lcd.RGB(214, 40, 40)
 local ARMED_WHITE = lcd.RGB(255, 255, 255)
-local ARMED_FRAME = 4
+local ARMED_BAR = 4
 
 local function drawArmedWarning(widget, w, h)
-  if widget.isArmed ~= true then return end
+  if widget.isArmed ~= true or widget.armedWarningEnabled == false then return end
   lcd.color(ARMED_RED)
-  lcd.drawFilledRectangle(0, 0, w, ARMED_FRAME)
-  lcd.drawFilledRectangle(0, h - ARMED_FRAME, w, ARMED_FRAME)
-  lcd.drawFilledRectangle(0, 0, ARMED_FRAME, h)
-  lcd.drawFilledRectangle(w - ARMED_FRAME, 0, ARMED_FRAME, h)
+  lcd.drawFilledRectangle(0, 0, w, ARMED_BAR)
 
   local label = "@i18n(widgets.dashboard.info_armed)@"
   lcd.font(FONT_S)
   local tw, th = lcd.getTextSize(label)
-  -- Centred on the top edge of the frame, as in the menu.
-  local bx, by = math.floor((w - tw - 12) / 2), 0
+  -- Hangs from the centre of the bar.
+  local badgeW, badgeH = tw + 12, th + 6
+  local bx = math.floor((w - badgeW) / 2)
   lcd.color(ARMED_RED)
-  lcd.drawFilledRectangle(bx, by, tw + 12, th + 6)
+  lcd.drawFilledRectangle(bx, ARMED_BAR, badgeW, badgeH)
   lcd.color(ARMED_WHITE)
-  lcd.drawText(bx + 6, by + 3, label)
+  lcd.drawText(bx + 6, ARMED_BAR + 3, label)
 end
 
 local function dimDashboard(w, h)
@@ -1502,6 +1502,8 @@ local function create()
     -- Set while the model has been armed and not yet seen disarmed; nil isArmed
     -- with this set means the answer was lost, not never given. See armedOrUnconfirmed.
     armedUnconfirmed = false,
+    -- Widget property (see configure); on until the user switches it off.
+    armedWarningEnabled = true,
     craftName = nil,
     mcuId = nil,
     lastConnectedMcuId = nil,
@@ -2345,13 +2347,23 @@ local function wakeup(widget)
   end
 end
 
+-- Widget property "Armed warning" (default on). Stored with the widget through the
+-- Ethos storage API; a missing value counts as on.
+local ARMED_WARNING_STORAGE_KEY = "armed_warning"
+
 local function configure(widget)
+  local line = form.addLine("@i18n(widgets.dashboard.armed_warning)@")
+  form.addBooleanField(line, nil,
+    function() return widget.armedWarningEnabled ~= false end,
+    function(value) widget.armedWarningEnabled = value == true end)
 end
 
 local function read(widget)
+  widget.armedWarningEnabled = storage.read(ARMED_WARNING_STORAGE_KEY) ~= false
 end
 
 local function write(widget)
+  storage.write(ARMED_WARNING_STORAGE_KEY, widget.armedWarningEnabled ~= false)
 end
 
 local function close(widget)

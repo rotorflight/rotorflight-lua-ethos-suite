@@ -8001,6 +8001,12 @@
         "needs_translation": false,
         "translation": "Armed"
       },
+      "armed_warning": {
+        "english": "Armed warning",
+        "max_length": 24,
+        "needs_translation": false,
+        "translation": "Armed warning"
+      },
       "info_arming": {
         "english": "Arming",
         "max_length": 6,
