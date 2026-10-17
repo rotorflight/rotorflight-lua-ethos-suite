@@ -77,4 +77,7 @@ return {
   [80] = "gov headspeed",
   [81] = "gov yaw ff",
   [82] = "battery profile",
+  -- No "master" word is recorded; "cyclic gain" / "yaw gain" name them.
+  [83] = "cyclic gain",
+  [84] = "yaw gain",
 }

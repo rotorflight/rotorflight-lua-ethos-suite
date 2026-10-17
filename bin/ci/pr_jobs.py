@@ -2240,6 +2240,25 @@ the new branch and requires those checks to go red.
 ''',
     ),
     LuaJob(
+        id='pid-profile-tail',
+        name='PID profile trailing bytes and master gains',
+        step='Check the PID profile reply lengths and the master-gain grey-out',
+        script='bin/pid_profile_tail/verify_pid_profile_tail.lua',
+        rationale=r'''MSP_PID_PROFILE grows by reply length, not by API version: API 12.10 master
+answers 44 bytes (error_decay_gain_cyclic appended), and rotorflight-firmware#538
+adds the cyclic and yaw master gains for 46 without bumping the API. Six pages
+share lib/msp_pid_profile.lua, and the fields a page never shows must round-trip
+unchanged, so a 44-byte reply decoded as 43 drops a byte from every save with no
+error anywhere. No build or package step reaches that.
+
+The harness decodes and re-encodes 43-, 44- and 46-byte replies through the real
+codec and requires the write to match the read byte for byte, opens the real PID
+Controller page on each and requires the master-gain fields greyed out unless the
+reply carries them, and pins the voice callouts for adjustments 83 and 84 to
+recorded wavs. The 44-byte checks go red on the first revision of #2550.
+'''
+    ),
+    LuaJob(
         id='adjfunctions-audio',
         name='Every adjustment function has a spoken name, and every word of a name has audio',
         step='Check the adjustment names and their audio files in the English pack',
