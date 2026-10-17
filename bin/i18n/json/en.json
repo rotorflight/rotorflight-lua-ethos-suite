@@ -4372,6 +4372,36 @@
           "needs_translation": false,
           "max_length": 10
         },
+        "bgtask_name": {
+          "english": "Background task",
+          "translation": "Background task",
+          "needs_translation": false,
+          "max_length": 15
+        },
+        "bgtask_heartbeat": {
+          "english": "Heartbeat",
+          "translation": "Heartbeat",
+          "needs_translation": false,
+          "max_length": 9
+        },
+        "bgtask_revivals": {
+          "english": "Revivals",
+          "translation": "Revivals",
+          "needs_translation": false,
+          "max_length": 8
+        },
+        "bgtask_running": {
+          "english": "Running",
+          "translation": "Running",
+          "needs_translation": false,
+          "max_length": 7
+        },
+        "bgtask_stale": {
+          "english": "Not reporting",
+          "translation": "Not reporting",
+          "needs_translation": false,
+          "max_length": 13
+        },
         "name": {
           "english": "Info",
           "translation": "Info",

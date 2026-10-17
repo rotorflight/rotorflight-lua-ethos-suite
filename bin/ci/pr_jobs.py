@@ -2356,7 +2356,60 @@ it now reads "-" unless the link is live and the MSP API version is supported.
 
 The harness reads the offline flags from tool.lua and drives the real Status page with a
 recording form: no connection gives "-", a live supported link gives OK, and a lost link
-after a supported one gives "-" again. Against the unpatched page and menu it fails.
+after a supported one gives "-" again. Against the unpatched page and menu it fails, and the two
+tiles that lead to those pages (the root's Tools tile and the Tools menu's Diagnostics tile) are
+checked as offline too.
+'''
+    ),
+    LuaJob(
+        id='bgtask-status',
+        name='The background task heartbeat reads running, stale or none, with its age and revivals',
+        step='Check the heartbeat state and its text on the Info page',
+        script='bin/bgtask_status/verify_bgtask_status.lua',
+        rationale=r'''Issue #2518: the background task publishes its heartbeat and its revival count on the
+bus, but nothing on a diagnostics page showed them, so a pilot could not tell a rebuilt
+pipeline from a healthy one. The Info page now shows the state, the heartbeat age and the
+revivals. The decision lives in lib/bgtask_status.lua, which needs no form, bus or clock,
+so the harness runs every case here: no heartbeat, a fresh one, one exactly at the stale
+threshold, one older than it, a heartbeat stamped ahead of the reader's clock, and the
+revival text. Its last check reads app/tool.lua and requires its TASK_STATUS_TIMEOUT to be
+the same value as the library's STALE_SECONDS, so the page and the one-shot alert cannot
+disagree about what stale means. Against unpatched master the library does not exist, so
+the job fails there by design.
+'''
+    ),
+    LuaJob(
+        id='audio-disconnect-edge',
+        name='The link-loss edge of the audio task resets once per outage',
+        step='Check the audio task across a link loss',
+        script='bin/audio_disconnect/verify_audio_disconnect.lua',
+        rationale=r'''Issue #2437: the disconnected branch of tasks/audio_events.lua's wakeup was entered as a
+state test, not an edge, so its state reset ran on every audio tick while the link was down.
+The reset now runs once per outage, on the first disconnected tick, and the first connected
+tick re-arms it. Nothing in the reset is written while the link is down, so the behaviour
+does not change; what changes is the work done on each tick of an outage.
+
+The harness pins what the edge must keep: a change made during an outage is not spoken after
+the reconnect, and the loss and the recovery of an armed model are announced for each of two
+outages. Its can-fail check removes the re-arm from a copy of the task and requires the second
+outage to go silent there. Passing on unpatched master is expected: this is a structural
+change with no audible effect, so the harness guards the behaviour, not the saving.
+'''
+    ),
+    LuaJob(
+        id='tune-advisor-gate',
+        name='Tune Advisor requests are sent only to firmware that has the command',
+        step='Check the Tune Advisor firmware gate',
+        script='bin/tune_advisor_gate/verify_tune_advisor_gate.lua',
+        rationale=r'''Issue #2579: the background capture requested the Tune Advisor on every disarm, also on
+Rotorflight 4.6.0, which has no such command. Each disarm produced a failed request. The
+Tune Advisor page also probed the FC on opening. Both now depend on the firmware version
+reported by the FC: below 4.7.0 nothing is sent, and an unknown version sends nothing.
+
+The harness checks the version comparison (including 4.10.0 against 4.7.0) and drives the
+real tasks/tune_history.lua through session.update: a disarm on 4.6.0 or with no version
+sends no request, and a disarm on 4.7.0 sends the capture read. Against the unpatched task
+the 4.6.0 and 4.7.0 checks fail. The Tune Advisor page is checked on the simulator.
 ''',
     ),
 ]

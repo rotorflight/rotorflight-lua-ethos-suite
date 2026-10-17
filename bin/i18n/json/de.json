@@ -1828,7 +1828,8 @@
           "english": "No plottable columns in this file",
           "max_length": 40,
           "needs_translation": false,
-          "translation": "Keine auswertbaren Spalten in dieser Datei"
+          "translation": "Keine auswertbaren Spalten in dieser Datei",
+          "reverse_text": false
         }
       },
       "settings": {
@@ -2673,7 +2674,8 @@
           "english": "The calibration did not finish. Try again.",
           "max_length": 46,
           "needs_translation": false,
-          "translation": "Kalibrierung nicht beendet. Erneut versuchen."
+          "translation": "Kalibrierung nicht beendet. Erneut versuchen.",
+          "reverse_text": false
         },
         "name": {
           "english": "Accelerometer",
@@ -4398,7 +4400,8 @@
           "english": "No dataflash",
           "max_length": 16,
           "needs_translation": false,
-          "translation": "Kein Dataflash"
+          "translation": "Kein Dataflash",
+          "reverse_text": false
         }
       },
       "stats": {
@@ -4625,7 +4628,8 @@
           "english": "Edit Battery",
           "max_length": 16,
           "needs_translation": false,
-          "translation": "Batterie bearbeiten"
+          "translation": "Batterie bearbeiten",
+          "reverse_text": false
         }
       },
       "esc_motors": {
@@ -5084,6 +5088,41 @@
           "needs_translation": false,
           "reverse_text": false,
           "max_length": 10
+        },
+        "bgtask_name": {
+          "english": "Background task",
+          "translation": "Background task",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 15
+        },
+        "bgtask_heartbeat": {
+          "english": "Heartbeat",
+          "translation": "Heartbeat",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 9
+        },
+        "bgtask_revivals": {
+          "english": "Revivals",
+          "translation": "Revivals",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 8
+        },
+        "bgtask_running": {
+          "english": "Running",
+          "translation": "Running",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 7
+        },
+        "bgtask_stale": {
+          "english": "Not reporting",
+          "translation": "Not reporting",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 13
         },
         "name": {
           "english": "Info",
@@ -9333,7 +9372,8 @@
         "english": "Armed warning",
         "max_length": 24,
         "needs_translation": false,
-        "translation": "Armed-Warnung"
+        "translation": "Armed-Warnung",
+        "reverse_text": false
       },
       "info_arming": {
         "english": "Arming",
