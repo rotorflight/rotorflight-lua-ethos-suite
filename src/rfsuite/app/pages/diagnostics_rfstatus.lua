@@ -39,7 +39,7 @@ local function open(opts)
       rfModule = common.addValueLine("@i18n(app.modules.rfstatus.rfmodule)@", "-"),
       mspSensor = common.addValueLine("@i18n(app.modules.rfstatus.mspsensor)@", "-"),
       connected = common.addValueLine("@i18n(app.modules.rfstatus.fblconnected)@", "-"),
-      api = common.addValueLine("@i18n(app.modules.rfstatus.apiversion)@", "@i18n(app.modules.rfstatus.ok)@"),
+      api = common.addValueLine("@i18n(app.modules.rfstatus.apiversion)@", "-"),
     }
 
     local lastUpdate = 0

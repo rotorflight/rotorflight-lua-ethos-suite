@@ -12,7 +12,7 @@ Tools -> Diagnostics -> Status page.
 
 *System* → *Tools* → *Diagnostics* → *Status*
 
-Open without a flight controller: memory, the RF module and MSP sensor state are shown from the radio, and the connection and API lines read "no" and "-". Read-only while the model is armed. The API line reads OK only on a live link whose MSP API version is supported.
+Open without a flight controller: memory, the RF module and MSP sensor state are shown from the radio, and the connection and API lines read "ERROR" (or "-") and "-". Read-only while the model is armed. The API line reads OK only on a live link whose MSP API version is supported.
 
 ## Settings
 
