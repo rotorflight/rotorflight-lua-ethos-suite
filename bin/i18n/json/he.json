@@ -2674,7 +2674,8 @@
           "english": "The calibration did not finish. Try again.",
           "max_length": 46,
           "needs_translation": false,
-          "translation": "הכיול לא הסתיים. נסו שוב."
+          "translation": "הכיול לא הסתיים. נסו שוב.",
+          "reverse_text": true
         },
         "name": {
           "english": "Accelerometer",
@@ -4399,7 +4400,8 @@
           "english": "No dataflash",
           "max_length": 16,
           "needs_translation": false,
-          "translation": "אין dataflash"
+          "translation": "אין dataflash",
+          "reverse_text": true
         }
       },
       "stats": {
@@ -4626,7 +4628,8 @@
           "english": "Edit Battery",
           "max_length": 16,
           "needs_translation": false,
-          "translation": "עריכת סוללה"
+          "translation": "עריכת סוללה",
+          "reverse_text": true
         }
       },
       "esc_motors": {
@@ -5085,6 +5088,41 @@
           "needs_translation": false,
           "translation": "סימולציה",
           "reverse_text": true
+        },
+        "bgtask_name": {
+          "english": "Background task",
+          "translation": "Background task",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 15
+        },
+        "bgtask_heartbeat": {
+          "english": "Heartbeat",
+          "translation": "Heartbeat",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 9
+        },
+        "bgtask_revivals": {
+          "english": "Revivals",
+          "translation": "Revivals",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 8
+        },
+        "bgtask_running": {
+          "english": "Running",
+          "translation": "Running",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 7
+        },
+        "bgtask_stale": {
+          "english": "Not reporting",
+          "translation": "Not reporting",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 13
         },
         "name": {
           "english": "Info",

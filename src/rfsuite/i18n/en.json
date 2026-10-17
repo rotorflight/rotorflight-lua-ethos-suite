@@ -4114,6 +4114,36 @@
         }
       },
       "info": {
+        "bgtask_heartbeat": {
+          "english": "Heartbeat",
+          "max_length": 9,
+          "needs_translation": false,
+          "translation": "Heartbeat"
+        },
+        "bgtask_name": {
+          "english": "Background task",
+          "max_length": 15,
+          "needs_translation": false,
+          "translation": "Background task"
+        },
+        "bgtask_revivals": {
+          "english": "Revivals",
+          "max_length": 8,
+          "needs_translation": false,
+          "translation": "Revivals"
+        },
+        "bgtask_running": {
+          "english": "Running",
+          "max_length": 7,
+          "needs_translation": false,
+          "translation": "Running"
+        },
+        "bgtask_stale": {
+          "english": "Not reporting",
+          "max_length": 13,
+          "needs_translation": false,
+          "translation": "Not reporting"
+        },
         "ethos_version": {
           "english": "Ethos Version",
           "max_length": 13,

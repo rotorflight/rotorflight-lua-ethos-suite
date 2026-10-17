@@ -93,8 +93,18 @@ function diagnostics_common.openReadOnlyPage(opts, pageTitle, build)
   local disposed = false
   local session = {}
   local sessionHandler = nil
+  local topicHandlers = {}
   local headerHandle = nil
   local page = nil
+
+  -- The page's own extra topics (page.topics), removed together with the
+  -- session handler on every way out of the page.
+  local function unsubscribeTopics()
+    for i = 1, #topicHandlers do
+      bus.unsubscribe(topicHandlers[i].topic, topicHandlers[i].handler)
+    end
+    topicHandlers = {}
+  end
 
   local function goBack()
     disposed = true
@@ -102,6 +112,7 @@ function diagnostics_common.openReadOnlyPage(opts, pageTitle, build)
       bus.unsubscribe("session.update", sessionHandler)
       sessionHandler = nil
     end
+    unsubscribeTopics()
     if opts.setWakeupHandler then opts.setWakeupHandler(nil) end
     if opts.setCleanupHandler then opts.setCleanupHandler(nil) end
     if opts.onBack then opts.onBack() end
@@ -137,6 +148,7 @@ function diagnostics_common.openReadOnlyPage(opts, pageTitle, build)
         bus.unsubscribe("session.update", sessionHandler)
         sessionHandler = nil
       end
+      unsubscribeTopics()
     end)
   end
 
@@ -145,6 +157,17 @@ function diagnostics_common.openReadOnlyPage(opts, pageTitle, build)
     header = headerHandle,
     isDisposed = function() return disposed end,
   }) or {}
+
+  -- A retained topic (task.status, for one) replays its last value right here,
+  -- so the page's fields must already exist; build() has returned by now.
+  for topic, handler in pairs(page.topics or {}) do
+    local wrapped = function(payload)
+      if disposed then return end
+      handler(payload)
+    end
+    bus.subscribe(topic, wrapped)
+    topicHandlers[#topicHandlers + 1] = {topic = topic, handler = wrapped}
+  end
 
   sessionHandler = bus.subscribe("session.update", function(snapshot)
     if disposed then return end

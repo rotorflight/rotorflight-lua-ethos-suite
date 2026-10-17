@@ -2344,6 +2344,23 @@ behind a profile announcement, and that a change still waiting when the link dro
 spoken after a reconnect. Against unpatched master four of the checks fail.
 '''
     ),
+    LuaJob(
+        id='bgtask-status',
+        name='The background task heartbeat reads running, stale or none, with its age and revivals',
+        step='Check the heartbeat state and its text on the Info page',
+        script='bin/bgtask_status/verify_bgtask_status.lua',
+        rationale=r'''Issue #2518: the background task publishes its heartbeat and its revival count on the
+bus, but nothing on a diagnostics page showed them, so a pilot could not tell a rebuilt
+pipeline from a healthy one. The Info page now shows the state, the heartbeat age and the
+revivals. The decision lives in lib/bgtask_status.lua, which needs no form, bus or clock,
+so the harness runs every case here: no heartbeat, a fresh one, one exactly at the stale
+threshold, one older than it, a heartbeat stamped ahead of the reader's clock, and the
+revival text. Its last check reads app/tool.lua and requires its TASK_STATUS_TIMEOUT to be
+the same value as the library's STALE_SECONDS, so the page and the one-shot alert cannot
+disagree about what stale means. Against unpatched master the library does not exist, so
+the job fails there by design.
+'''
+    ),
 ]
 
 VERBATIM_JOBS = [

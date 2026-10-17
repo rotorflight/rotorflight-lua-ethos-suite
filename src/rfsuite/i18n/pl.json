@@ -367,6 +367,7 @@
           "english": "The calibration did not finish. Try again.",
           "max_length": 46,
           "needs_translation": false,
+          "reverse_text": false,
           "translation": "Kalibracja nie zakończyła się. Spróbuj znowu."
         },
         "name": {
@@ -1342,6 +1343,7 @@
           "english": "No dataflash",
           "max_length": 16,
           "needs_translation": false,
+          "reverse_text": false,
           "translation": "Brak dataflash"
         },
         "not_supported": {
@@ -4785,6 +4787,41 @@
         }
       },
       "info": {
+        "bgtask_heartbeat": {
+          "english": "Heartbeat",
+          "max_length": 9,
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "Heartbeat"
+        },
+        "bgtask_name": {
+          "english": "Background task",
+          "max_length": 15,
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "Background task"
+        },
+        "bgtask_revivals": {
+          "english": "Revivals",
+          "max_length": 8,
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "Revivals"
+        },
+        "bgtask_running": {
+          "english": "Running",
+          "max_length": 7,
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "Running"
+        },
+        "bgtask_stale": {
+          "english": "Not reporting",
+          "max_length": 13,
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "Not reporting"
+        },
         "ethos_version": {
           "english": "Ethos Version",
           "max_length": 13,
@@ -5924,6 +5961,7 @@
           "english": "Edit Battery",
           "max_length": 16,
           "needs_translation": false,
+          "reverse_text": false,
           "translation": "Edytuj baterię"
         },
         "full_cell_voltage": {
@@ -9222,6 +9260,7 @@
         "english": "Armed warning",
         "max_length": 24,
         "needs_translation": false,
+        "reverse_text": false,
         "translation": "Ostrzeżenie Armed"
       },
       "battery": {

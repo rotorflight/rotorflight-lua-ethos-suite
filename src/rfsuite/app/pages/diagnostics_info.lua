@@ -3,9 +3,16 @@
 local requireModule = package.loaded["rfsuite.lib.require"] or assert(loadfile("lib/require.lua"))()
 local common = requireModule("app/diagnostics_common.lua")
 local buildInfo = requireModule("lib/build_info.lua")
+local bgtaskStatus = requireModule("lib/bgtask_status.lua")
 
 local PAGE_TITLE = "@i18n(app.modules.diagnostics.name)@ / @i18n(app.modules.info.name)@"
 local SUPPORTED_MSP = "12.09+"
+local REFRESH_INTERVAL = 1.0
+local STATE_TEXT = {
+  running = "@i18n(app.modules.info.bgtask_running)@",
+  stale = "@i18n(app.modules.info.bgtask_stale)@",
+  none = "-",
+}
 
 local function ethosVersion()
   if not system or not system.getVersion then return "-" end
@@ -40,6 +47,9 @@ local function open(opts)
       simulation = common.addValueLine("@i18n(app.modules.info.simulation)@", simulationText()),
       craft = common.addValueLine("@i18n(app.modules.diagnostics.craft_name)@", "-"),
       mcu = common.addValueLine("@i18n(app.modules.diagnostics.mcu_id)@", "-"),
+      bgtask = common.addValueLine("@i18n(app.modules.info.bgtask_name)@", STATE_TEXT.none),
+      heartbeat = common.addValueLine("@i18n(app.modules.info.bgtask_heartbeat)@", "-"),
+      revivals = common.addValueLine("@i18n(app.modules.info.bgtask_revivals)@", "-"),
     }
 
     local function update(session)
@@ -50,10 +60,44 @@ local function open(opts)
       common.updateField(fields.mcu, session.mcuId)
     end
 
+    -- The background task's heartbeat. The last text written to each field is
+    -- kept, so a field is only retexted when its value changes.
+    local status = nil
+    local lastRefresh = nil
+    local shown = {}
+
+    local function setText(key, field, text)
+      if shown[key] == text then return end
+      shown[key] = text
+      common.updateField(field, text)
+    end
+
+    local function refreshStatus(force)
+      local now = os.clock()
+      if not force and lastRefresh and (now - lastRefresh) < REFRESH_INTERVAL then return end
+      lastRefresh = now
+      setText("bgtask", fields.bgtask, STATE_TEXT[bgtaskStatus.state(status, now)])
+      setText("heartbeat", fields.heartbeat, bgtaskStatus.heartbeatText(status, now))
+      setText("revivals", fields.revivals, bgtaskStatus.revivalsText(status))
+    end
+
     update(ctx.session)
+    refreshStatus(true)
     return {
       onSession = update,
-      onReload = function() update(ctx.session) end,
+      onReload = function()
+        update(ctx.session)
+        refreshStatus(true)
+      end,
+      -- Ethos only calls this on its own schedule, so the age of the heartbeat
+      -- keeps counting up, and a stalled task turns stale, even with no event.
+      wakeup = function() refreshStatus(false) end,
+      topics = {
+        ["task.status"] = function(snapshot)
+          status = snapshot
+          refreshStatus(true)
+        end,
+      },
     }
   end)
 end

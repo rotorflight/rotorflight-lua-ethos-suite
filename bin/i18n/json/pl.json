@@ -2674,7 +2674,8 @@
           "english": "The calibration did not finish. Try again.",
           "max_length": 46,
           "needs_translation": false,
-          "translation": "Kalibracja nie zakończyła się. Spróbuj znowu."
+          "translation": "Kalibracja nie zakończyła się. Spróbuj znowu.",
+          "reverse_text": false
         },
         "name": {
           "english": "Accelerometer",
@@ -4399,7 +4400,8 @@
           "english": "No dataflash",
           "max_length": 16,
           "needs_translation": false,
-          "translation": "Brak dataflash"
+          "translation": "Brak dataflash",
+          "reverse_text": false
         }
       },
       "stats": {
@@ -4626,7 +4628,8 @@
           "english": "Edit Battery",
           "max_length": 16,
           "needs_translation": false,
-          "translation": "Edytuj baterię"
+          "translation": "Edytuj baterię",
+          "reverse_text": false
         }
       },
       "esc_motors": {
@@ -5085,6 +5088,41 @@
           "needs_translation": false,
           "max_length": 10,
           "reverse_text": false
+        },
+        "bgtask_name": {
+          "english": "Background task",
+          "translation": "Background task",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 15
+        },
+        "bgtask_heartbeat": {
+          "english": "Heartbeat",
+          "translation": "Heartbeat",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 9
+        },
+        "bgtask_revivals": {
+          "english": "Revivals",
+          "translation": "Revivals",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 8
+        },
+        "bgtask_running": {
+          "english": "Running",
+          "translation": "Running",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 7
+        },
+        "bgtask_stale": {
+          "english": "Not reporting",
+          "translation": "Not reporting",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 13
         },
         "name": {
           "english": "Info",
@@ -9334,7 +9372,8 @@
         "english": "Armed warning",
         "max_length": 24,
         "needs_translation": false,
-        "translation": "Ostrzeżenie Armed"
+        "translation": "Ostrzeżenie Armed",
+        "reverse_text": false
       },
       "info_arming": {
         "english": "Arming",
