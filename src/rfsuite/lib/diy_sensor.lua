@@ -55,7 +55,11 @@ end
 
 -- Re-pushed at least this often even when the value hasn't changed, so
 -- Ethos doesn't treat an unchanging DIY sensor as stale/no-signal.
-local STALE_REFRESH_SECONDS = 4.0
+-- Re-push of an unchanged value. Ethos shows a telemetry sensor as lost when it
+-- gets no value for 4 s, and an unchanged value still has to be sent to keep it
+-- alive (Rob Thomson, 2026-10-17). The callers tick every 0.5 s, so a 4.0 s window
+-- let the gap between two pushes grow to 4.5 s. 2.0 s keeps every gap under 2.5 s.
+local STALE_REFRESH_SECONDS = 2.0
 
 -- Default RF-module index, matching the existing "always module 0"
 -- simplification in tasks/msp/transport_sport.lua. Overridable per

@@ -680,6 +680,34 @@ jobs:
       - name: Check the in-flight adjustment announcement
         run: lua5.4 bin/adj_voice/verify_adj_voice.lua
 
+  # Rob Thomson's report: Ethos shows the Smart Fuel telemetry sensor as lost as soon as the
+  # model is disarmed. Two things in the suite make that happen. The same-value refresh of a DIY
+  # sensor waited 4.0 s, while Ethos wants a value at least every 4 s and the caller ticks every
+  # 0.5 s, so the gap grew past 4 s. And after a disarm, when the pack voltage rises as the load goes
+  # away, the estimator restarts and answers nil, which the session wrote to the sensor as a reset.
+  #
+  # The harness drives the real sensor on the session's cadence and the real estimator through a
+  # disarm with rising voltage. It checks that an unchanged value is pushed again within 2.5 s, that
+  # the estimator says it is settling on every nil while it restarts, and that a missing voltage is
+  # still a plain nil. Against unpatched master six of the checks fail.
+  smartfuel-sensor:
+    name: The Smart Fuel sensor is sent often enough and keeps its value while the estimate restarts
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Install Lua 5.4
+        run: sudo apt-get update && sudo apt-get install -y lua5.4
+
+      - name: Check the Smart Fuel sensor refresh and the settling answer
+        run: lua5.4 bin/smartfuel_sensor/verify_smartfuel_sensor.lua
+
   # A page tags its data with the profile it was read for, and the tag used to
   # be taken when the read finished rather than when it started. A pilot who
   # switched profile while that read was in flight therefore got the previous

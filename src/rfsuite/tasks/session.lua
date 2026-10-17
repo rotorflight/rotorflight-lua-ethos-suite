@@ -1527,6 +1527,8 @@ local function updateFuel(protocol)
 
   local bc = session.batteryConfig
   local percent
+  -- Set by the local estimator when a nil answer is only a re-settling, not missing data.
+  local settling
 
   if session.smartfuelMode > 0 then
     local raw = telemetrySensors.getValue(protocol, "smartfuel")
@@ -1534,7 +1536,7 @@ local function updateFuel(protocol)
       percent = smartfuelReserve.applyPercent(raw, bc.consumptionWarningPercentage)
     end
   else
-    percent = localSmartFuel:update({
+    percent, settling = localSmartFuel:update({
       voltage = telemetrySensors.getValue(protocol, "voltage"),
       consumption = telemetrySensors.getValue(protocol, "consumption"),
       cellCount = bc.cellCount,
@@ -1548,7 +1550,13 @@ local function updateFuel(protocol)
     })
   end
 
-  smartfuelSensor:set(percent, session.connected)
+  -- A nil while the estimator re-settles (after disarm the pack voltage rises as the
+  -- load goes away, and the estimate starts again) is not "no data". Writing it would
+  -- reset the Ethos sensor, which then shows as lost. Keep the last value; a real
+  -- loss (no voltage, no config) still clears the sensor.
+  if not (percent == nil and settling) then
+    smartfuelSensor:set(percent, session.connected)
+  end
 
   if percent ~= session.fuelPercent then
     if session.fuelPercent == nil and percent ~= nil then

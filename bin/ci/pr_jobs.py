@@ -493,6 +493,23 @@ step of the burst has to be spoken there. If that ever stops turning red, the
 instrument has gone blind.
 '''
     ),
+    LuaJob(
+        id='smartfuel-sensor',
+        name='The Smart Fuel sensor is sent often enough and keeps its value while the estimate restarts',
+        step='Check the Smart Fuel sensor refresh and the settling answer',
+        script='bin/smartfuel_sensor/verify_smartfuel_sensor.lua',
+        rationale=r'''Rob Thomson's report: Ethos shows the Smart Fuel telemetry sensor as lost as soon as the
+model is disarmed. Two things in the suite make that happen. The same-value refresh of a DIY
+sensor waited 4.0 s, while Ethos wants a value at least every 4 s and the caller ticks every
+0.5 s, so the gap grew past 4 s. And after a disarm, when the pack voltage rises as the load goes
+away, the estimator restarts and answers nil, which the session wrote to the sensor as a reset.
+
+The harness drives the real sensor on the session's cadence and the real estimator through a
+disarm with rising voltage. It checks that an unchanged value is pushed again within 2.5 s, that
+the estimator says it is settling on every nil while it restarts, and that a missing voltage is
+still a plain nil. Against unpatched master six of the checks fail.
+'''
+    ),
     # Registered here because the job was added to pr.yml by hand, so the
     # generator did not know about it and the drift check has been red on master
     # since #2432 landed. Any --write dropped this job from the workflow; the
