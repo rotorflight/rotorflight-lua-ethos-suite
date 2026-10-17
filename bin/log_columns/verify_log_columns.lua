@@ -2,6 +2,9 @@
 -- header row, skips a column the file does not carry, and draws nothing for a file
 -- without data rows instead of a flat zero line.
 --
+-- A foreign log may quote a field (a comma inside it is then data) and may begin
+-- with a UTF-8 byte order mark; both are covered here.
+--
 -- Run it:
 --     lua5.4 bin/log_columns/verify_log_columns.lua
 --     lua5.4 bin/log_columns/verify_log_columns.lua --self-test
@@ -121,6 +124,39 @@ local function runChecks(lib)
   do
     check("C8 spaces around a name are ignored", lib.headerIndex("time,  voltage ,x\n").voltage == 2)
     check("C8 a repeated name keeps its first column", lib.headerIndex("time, voltage, voltage\n").voltage == 2)
+  end
+
+  -- C9: a comma inside a quoted name is part of the name, not a column break.
+  do
+    local csv = "time,\"rpm, motor\",voltage\n1,100,12.5\n"
+    local map = lib.headerIndex(csv)
+    check("C9 a quoted name with a comma does not shift the columns after it",
+      map.voltage == 3 and map["rpm, motor"] == 2,
+      "voltage=" .. tostring(map.voltage) .. " rpm_motor=" .. tostring(map["rpm, motor"]))
+    check("C9 the quoted name's column is read",
+      sameList(lib.column(csv, map["rpm, motor"]), {100}),
+      "got " .. listText(lib.column(csv, map["rpm, motor"])))
+  end
+
+  -- C10: a quoted value is the number it quotes, not 0.
+  do
+    local csv = "time,voltage\n1,\"12.5\"\n"
+    check("C10 a quoted number reads as its number",
+      sameList(lib.column(csv, 2), {12.5}), "got " .. listText(lib.column(csv, 2)))
+  end
+
+  -- C11: a UTF-8 byte order mark is not part of the first name.
+  do
+    local csv = "\239\187\191voltage,rpm\n1,100\n"
+    check("C11 a byte order mark does not hide the first column",
+      lib.headerIndex(csv).voltage == 1, "voltage=" .. tostring(lib.headerIndex(csv).voltage))
+  end
+
+  -- C12: a doubled quote inside a quoted name is one literal quote.
+  do
+    local csv = "\"vo\"\"ltage\",rpm\n1,100\n"
+    check("C12 a doubled quote in a name is one literal quote",
+      lib.headerIndex(csv)['vo"ltage'] == 1)
   end
 end
 

@@ -37,7 +37,7 @@ local function check(label, ok, detail)
   end
 end
 
-local NOT_SUPPORTED = "@i18n(app.modules.blackbox.not_supported)@"
+local NO_DATAFLASH = "@i18n(app.modules.blackbox.no_dataflash)@"
 local MIB = 1024 * 1024
 
 -- ---------------------------------------------------------------------------
@@ -46,10 +46,19 @@ local MIB = 1024 * 1024
 
 local ctx = { session = {}, widgets = { dashboard = {} } }
 
+-- What the widget hands to the text layout last time: the value and the unit it will draw.
+local lastValue, lastUnit = nil, nil
+
 local utils = {
-  getParam = function() return nil end,
+  getParam = function(box, key)
+    if key == "unit" then return box._testUnit end
+    return nil
+  end,
   resolveThemeColor = function() return nil end,
-  prepareTextLayout = function() end,
+  prepareTextLayout = function(...)
+    local a = { ... }
+    lastValue, lastUnit = a[16], a[17]
+  end,
   paintTextLayout = function() end,
   applyOffset = function(x, y) return x, y end,
   boxContentRect = function(x, y, w, h) return x, y, w, h end,
@@ -90,10 +99,45 @@ local function wake(render, box, total, used)
 end
 
 local function runChecks(render)
+  -- U4 and U5: the paint path draws the same unit as the wakeup path (review of #2571).
+  do
+    local box = { _dashboardRectW = 100, _dashboardRectH = 20, _testUnit = "MB" }
+    wake(render, box, 0, 0)
+    render.paint(0, 0, 100, 20, box)
+    check("U4 paint draws a board without dataflash without the unit", lastUnit == nil,
+      "unit drawn: " .. tostring(lastUnit))
+  end
+  do
+    local box = { _dashboardRectW = 100, _dashboardRectH = 20, _testUnit = "MB" }
+    wake(render, box, 2048 * MIB, 1024 * MIB)
+    render.paint(0, 0, 100, 20, box)
+    check("U5 control: paint draws a capacity with its unit", lastUnit == "MB",
+      "unit drawn: " .. tostring(lastUnit))
+  end
+  -- U1 to U3 (#2566 follow-up): the unit belongs to a capacity only.
+  do
+    local box = { _dashboardRectW = 100, _dashboardRectH = 20, _testUnit = "MB" }
+    wake(render, box, 0, 0)
+    check("U1 a board without dataflash is drawn without the unit", lastUnit == nil,
+      "unit drawn: " .. tostring(lastUnit))
+  end
+  do
+    local box = { _dashboardRectW = 100, _dashboardRectH = 20, _testUnit = "MB" }
+    wake(render, box, nil, nil)
+    check("U2 the loading dots are drawn without the unit", lastUnit == nil,
+      "unit drawn: " .. tostring(lastUnit))
+  end
+  do
+    local box = { _dashboardRectW = 100, _dashboardRectH = 20, _testUnit = "MB" }
+    wake(render, box, 2048 * MIB, 1024 * MIB)
+    check("U3 control: a capacity keeps the configured unit", lastUnit == "MB",
+      "unit drawn: " .. tostring(lastUnit))
+  end
+
   -- A1: the board has no dataflash.
   do
     local shown = wake(render, {}, 0, 0)
-    check("A1 total = 0 shows the no-dataflash text", shown == NOT_SUPPORTED,
+    check("A1 total = 0 shows the no-dataflash text", shown == NO_DATAFLASH,
       "shows: " .. tostring(shown))
     check("A2 total = 0 does not draw a used/total capacity",
       type(shown) == "string" and not shown:find("/", 1, true),
@@ -149,6 +193,30 @@ if selfTest then
   local red = failures > before
   failures = before
   check("the no-dataflash checks go red without the branch", red)
+
+  local unitSource, un = source:gsub("local unitForPaint = box%._showUnit and cfg%.unit or nil",
+    "local unitForPaint = cfg.unit", 1)
+  if un ~= 1 then
+    check("the unit rule is present in the widget to splice out", false, "no match")
+  else
+    local before2 = failures
+    runChecks(loadWidget(unitSource))
+    local redUnit = failures > before2
+    failures = before2
+    check("the unit checks go red without the unit rule", redUnit)
+
+    local paintSource, pn = source:gsub("local unitForPaint = box%._showUnit and c%.unit or nil",
+      "local unitForPaint = c.unit", 1)
+    if pn == 1 then
+      local before3 = failures
+      runChecks(loadWidget(paintSource))
+      local redPaint = failures > before3
+      failures = before3
+      check("the paint checks go red without the paint unit rule", redPaint)
+    else
+      check("the paint unit rule is present to splice out", false, "no match")
+    end
+  end
 end
 
 print(string.format("%d checks, %d failures", checks, failures))

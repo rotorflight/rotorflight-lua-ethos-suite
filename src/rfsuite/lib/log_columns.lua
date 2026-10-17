@@ -17,15 +17,55 @@ local function trim(s)
   return (s:gsub("^%s+", ""):gsub("%s+$", ""))
 end
 
+local BOM = "\239\187\191" -- the UTF-8 byte order mark, as it appears at the start of a file
+
+-- Splits one CSV record into its fields. A field that starts with a double quote
+-- runs to its closing quote: a comma inside it is data, and a doubled quote is one
+-- literal quote. The surrounding quotes are removed and what follows a closing
+-- quote is kept. A quoted field that spans more than one line is not supported --
+-- a record is one line here, which is what a log written by this suite is.
+local function fields(line)
+  local out = {}
+  local buf = {}
+  local inQuotes = false
+  local i = 1
+  while i <= #line do
+    local ch = line:sub(i, i)
+    if inQuotes then
+      if ch == '"' then
+        if line:sub(i + 1, i + 1) == '"' then
+          buf[#buf + 1] = '"'
+          i = i + 1
+        else
+          inQuotes = false
+        end
+      else
+        buf[#buf + 1] = ch
+      end
+    elseif ch == "," then
+      out[#out + 1] = table.concat(buf)
+      buf = {}
+    elseif ch == '"' and #buf == 0 then
+      inQuotes = true
+    else
+      buf[#buf + 1] = ch
+    end
+    i = i + 1
+  end
+  out[#out + 1] = table.concat(buf)
+  return out
+end
+
 -- Maps each column name in the header row to its 1-based column index.
 -- A name that appears twice keeps its first column. No header gives an empty map.
+-- A leading byte order mark is not part of the first name.
 function M.headerIndex(csvText)
-  local map = {}
   local firstLine = csvText:match("^([^\r\n]*)") or ""
-  local index = 0
-  for field in (firstLine .. ","):gmatch("([^,]*),") do
-    index = index + 1
-    local name = trim(field)
+  if firstLine:sub(1, #BOM) == BOM then firstLine = firstLine:sub(#BOM + 1) end
+  local map = {}
+  local names = fields(firstLine)
+  for index = 1, #names do
+    local name = trim(names[index])
     if name ~= "" and map[name] == nil then map[name] = index end
   end
   return map
@@ -54,16 +94,7 @@ function M.column(csvText, colIndex)
     if first then
       first = false
     else
-      local index = 0
-      local value = ""
-      for field in (line .. ","):gmatch("([^,]*),") do
-        index = index + 1
-        if index == colIndex then
-          value = field
-          break
-        end
-      end
-      out[#out + 1] = tonumber(value) or 0
+      out[#out + 1] = tonumber(fields(line)[colIndex] or "") or 0
     end
   end
   return out

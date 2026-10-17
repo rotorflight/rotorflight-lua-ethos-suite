@@ -493,6 +493,23 @@ step of the burst has to be spoken there. If that ever stops turning red, the
 instrument has gone blind.
 '''
     ),
+    LuaJob(
+        id='smartfuel-sensor',
+        name='The Smart Fuel sensor is sent often enough and keeps its value while the estimate restarts',
+        step='Check the Smart Fuel sensor refresh and the settling answer',
+        script='bin/smartfuel_sensor/verify_smartfuel_sensor.lua',
+        rationale=r'''Rob Thomson's report: Ethos shows the Smart Fuel telemetry sensor as lost as soon as the
+model is disarmed. Two things in the suite make that happen. The same-value refresh of a DIY
+sensor waited 4.0 s, while Ethos wants a value at least every 4 s and the caller ticks every
+0.5 s, so the gap grew past 4 s. And after a disarm, when the pack voltage rises as the load goes
+away, the estimator restarts and answers nil, which the session wrote to the sensor as a reset.
+
+The harness drives the real sensor on the session's cadence and the real estimator through a
+disarm with rising voltage. It checks that an unchanged value is pushed again within 2.5 s, that
+the estimator says it is settling on every nil while it restarts, and that a missing voltage is
+still a plain nil. Against unpatched master six of the checks fail.
+'''
+    ),
     # Registered here because the job was added to pr.yml by hand, so the
     # generator did not know about it and the drift check has been red on master
     # since #2432 landed. Any --write dropped this job from the workflow; the
@@ -2237,6 +2254,76 @@ existing "Not supported" text for total = 0, and keeps the loading dots for "no 
 The harness drives the real widget through render.wakeup() with the session values the
 summary sets. Against unpatched master the no-dataflash checks fail. --self-test removes
 the new branch and requires those checks to go red.
+''',
+    ),
+    LuaJob(
+        id='pid-profile-tail',
+        name='PID profile trailing bytes and master gains',
+        step='Check the PID profile reply lengths and the master-gain grey-out',
+        script='bin/pid_profile_tail/verify_pid_profile_tail.lua',
+        rationale=r'''MSP_PID_PROFILE grows by reply length, not by API version: API 12.10 master
+answers 44 bytes (error_decay_gain_cyclic appended), and rotorflight-firmware#538
+adds the cyclic and yaw master gains for 46 without bumping the API. Six pages
+share lib/msp_pid_profile.lua, and the fields a page never shows must round-trip
+unchanged, so a 44-byte reply decoded as 43 drops a byte from every save with no
+error anywhere. No build or package step reaches that.
+
+The harness decodes and re-encodes 43-, 44- and 46-byte replies through the real
+codec and requires the write to match the read byte for byte, opens the real PID
+Controller page on each and requires the master-gain fields greyed out unless the
+reply carries them, and pins the voice callouts for adjustments 83 and 84 to
+recorded wavs. The 44-byte checks go red on the first revision of #2550.
+'''
+    ),
+    LuaJob(
+        id='dashboard-erase',
+        name='The dashboard erase finishes on a read that reports the flash ready',
+        step='Check the dashboard erase wait against the flash ready bit',
+        script='bin/dashboard_erase/verify_dashboard_erase.lua',
+        rationale=r'''Found in the review of #2568: the Rotorflight Dashboard ends its erase on the first summary
+read after the erase acknowledgement, whatever that read reports. The firmware acknowledges the
+erase before it runs and reports the flash ready only when it is idle, so the dialog could close
+while the erase was still running.
+
+The harness drives the real dashboard widget through its wakeup and the bus. It checks that a
+read reporting not ready keeps the wait open and is repeated, that a read reporting ready or no
+dataflash ends it, that a failed read does not end it, and that a wait without an answer fails
+after the timeout. Against unpatched master four of the checks fail.
+'''
+    ),
+    LuaJob(
+        id='adjfunctions-audio',
+        name='Every adjustment function has a spoken name, and every word of a name has audio',
+        step='Check the adjustment names and their audio files in the English pack',
+        script='bin/adjfunctions_audio/verify_adjfunctions_audio.lua',
+        rationale=r'''Issue #2501: the Adjustments page offers functions 76 to 82 that have no name in the
+audio table, so they are silent when they change, and six names use words that have no
+audio file in the pack, so the value is spoken without its name.
+
+The harness reads the real name table and the real page list, and checks that every
+offered function has a name and that every word of every name has a file in the English
+default, us and gb folders. Against unpatched master it fails for functions 76 to 82 and
+for the six names. --self-test removes the name for function 76 and requires the name
+check to go red.
+''',
+    ),
+    LuaJob(
+        id='armed-warning',
+        name='Dashboard shows a red bar with an Armed label while armed',
+        step='Check the dashboard armed warning',
+        script='bin/armed_warning/verify_armed_warning.lua',
+        rationale=r'''Issue #2352 (armed part only): a model on the ground was shown on the dashboard
+with no visual warning that the rotor can spool up. The dashboard now draws a red
+bar across the top edge with an "Armed" label hanging from its centre over whatever
+theme is shown while the FC reports the armed state, and draws nothing red while
+disarmed. A widget property "Armed warning" (default on) switches it off.
+
+No build and no package step reaches this -- it is a paint path through a running
+widget. The harness drives the real widgets/dashboard.lua paint with a recording
+lcd and feeds the arm state through session.update the way the session does. It
+requires the red bar and the label while armed, no other red rectangle, and nothing
+red while disarmed or while the property is off. Against unpatched master the armed
+checks fail.
 ''',
     ),
     LuaJob(

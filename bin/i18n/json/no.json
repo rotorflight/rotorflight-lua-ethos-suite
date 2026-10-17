@@ -305,6 +305,20 @@
           "reverse_text": false,
           "max_length": 14
         },
+        "master_gain": {
+          "english": "Master Gain",
+          "translation": "Hovedforsterkning",
+          "needs_translation": false,
+          "reverse_text": false,
+          "max_length": 11
+        },
+        "cyclic": {
+          "english": "Cyc",
+          "translation": "Syk",
+          "needs_translation": false,
+          "reverse_text": false,
+          "max_length": 3
+        },
         "ground_error_decay": {
           "english": "Ground Error Decay",
           "translation": "Jordfeil Decay",
@@ -1813,8 +1827,9 @@
         "msg_no_columns": {
           "english": "No plottable columns in this file",
           "max_length": 40,
-          "needs_translation": true,
-          "translation": "No plottable columns in this file"
+          "needs_translation": false,
+          "translation": "Ingen plottbare kolonner",
+          "reverse_text": false
         }
       },
       "settings": {
@@ -4379,6 +4394,12 @@
           "needs_translation": false,
           "reverse_text": false,
           "max_length": 12
+        },
+        "no_dataflash": {
+          "english": "No dataflash",
+          "max_length": 16,
+          "needs_translation": false,
+          "translation": "Ingen dataflash"
         }
       },
       "stats": {
@@ -9308,6 +9329,12 @@
         "needs_translation": true,
         "reverse_text": false,
         "max_length": 5
+      },
+      "armed_warning": {
+        "english": "Armed warning",
+        "max_length": 24,
+        "needs_translation": false,
+        "translation": "Armed-advarsel"
       },
       "info_arming": {
         "english": "Arming",

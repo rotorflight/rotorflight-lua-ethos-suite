@@ -81,6 +81,20 @@ local FIELDS = {
   "yaw_inertia_precomp_cutoff",
 }
 
+-- Trailing fields newer firmware appends, each gated on the reply length
+-- rather than the API version: error_decay_gain_cyclic is byte 44 on every
+-- API 12.10 build (a 44-byte reply), and the master gains follow it only on
+-- firmware carrying rotorflight-firmware#538 (46 bytes), which did not bump
+-- the API version. Each group is written back only when it was read, so an
+-- older FC never gets bytes it doesn't expect and nothing is overwritten
+-- with a default. `has_master_gain` tells pages whether the master gains
+-- exist on the connected FC.
+local DECAY_GAIN_FIELD = "error_decay_gain_cyclic"
+local MASTER_GAIN_FIELDS = {
+  "cyclic_master_gain",
+  "yaw_master_gain",
+}
+
 -- Fixture reply used automatically when running in the Ethos simulator
 -- (see tasks/msp/queue.lua) -- one U8 per FIELDS entry, in order, using
 -- each field's firmware default (rotorflight-firmware's pid.h defaults,
@@ -118,6 +132,9 @@ local SIMULATOR_RESPONSE = {
   15, 15, 20,   -- bterm_cutoff_0/1/2
   0,    -- yaw_inertia_precomp_gain
   25,   -- yaw_inertia_precomp_cutoff (2.5Hz, scale/10)
+  0,    -- error_decay_gain_cyclic
+  100,  -- cyclic_master_gain (%)
+  100,  -- yaw_master_gain (%)
 }
 
 -- Per-field {min, max, default, decimals, suffix}, sourced from
@@ -180,6 +197,8 @@ local FIELD_META = {
   bterm_cutoff_2 = {min = 0, max = 250, default = 20},
   yaw_inertia_precomp_gain = {min = 0, max = 250, default = 0},
   yaw_inertia_precomp_cutoff = {min = 0, max = 250, default = 25, decimals = 1, suffix = "Hz"},
+  cyclic_master_gain = {min = 25, max = 200, default = 100, suffix = "%"},
+  yaw_master_gain = {min = 25, max = 200, default = 100, suffix = "%"},
 }
 
 local msp_pid_profile = {
@@ -198,6 +217,18 @@ function msp_pid_profile.decode(buf)
   for i = 1, #FIELDS do
     data[FIELDS[i]] = mspcodec.readU8(buf)
   end
+  if #buf >= #FIELDS + 1 then
+    data[DECAY_GAIN_FIELD] = mspcodec.readU8(buf)
+  end
+  data.has_master_gain = #buf >= #FIELDS + 1 + #MASTER_GAIN_FIELDS
+  if data.has_master_gain then
+    for i = 1, #MASTER_GAIN_FIELDS do
+      data[MASTER_GAIN_FIELDS[i]] = mspcodec.readU8(buf)
+    end
+  else
+    data.cyclic_master_gain = 100
+    data.yaw_master_gain = 100
+  end
   return data
 end
 
@@ -205,6 +236,14 @@ function msp_pid_profile.encode(data)
   local payload = {}
   for i = 1, #FIELDS do
     mspcodec.writeU8(payload, data[FIELDS[i]] or 0)
+  end
+  local decayGain = data[DECAY_GAIN_FIELD]
+  if decayGain == nil then return payload end
+  mspcodec.writeU8(payload, decayGain)
+  if data.has_master_gain then
+    for i = 1, #MASTER_GAIN_FIELDS do
+      mspcodec.writeU8(payload, data[MASTER_GAIN_FIELDS[i]] or 0)
+    end
   end
   return payload
 end

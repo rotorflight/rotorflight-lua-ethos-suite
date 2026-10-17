@@ -1152,6 +1152,12 @@
           "needs_translation": false,
           "translation": "No card"
         },
+        "no_dataflash": {
+          "english": "No dataflash",
+          "max_length": 16,
+          "needs_translation": false,
+          "translation": "No dataflash"
+        },
         "not_supported": {
           "english": "Not supported",
           "max_length": 13,
@@ -4718,6 +4724,12 @@
         }
       },
       "pid_controller": {
+        "cyclic": {
+          "english": "Cyc",
+          "max_length": 3,
+          "needs_translation": false,
+          "translation": "Cyc"
+        },
         "error_limit": {
           "english": "Error Limit",
           "max_length": 11,
@@ -4759,6 +4771,12 @@
           "max_length": 5,
           "needs_translation": false,
           "translation": "Limit"
+        },
+        "master_gain": {
+          "english": "Master Gain",
+          "max_length": 11,
+          "needs_translation": false,
+          "translation": "Master Gain"
         },
         "name": {
           "english": "PID Controller",
@@ -7904,6 +7922,12 @@
         "max_length": 12,
         "needs_translation": false,
         "translation": "Altitude Max"
+      },
+      "armed_warning": {
+        "english": "Armed warning",
+        "max_length": 24,
+        "needs_translation": false,
+        "translation": "Armed warning"
       },
       "battery": {
         "english": "Battery",
