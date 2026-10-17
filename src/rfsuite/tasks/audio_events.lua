@@ -111,6 +111,10 @@ local speakingUntil = 0
 -- is compared again on the next tick and spoken then (issue #2503). Cleared by
 -- rememberCurrent().
 local holdPrevious = {}
+-- The armed state as the task last saw it, not held back by holdPrevious. The
+-- telemetry-lost alert reads this, so a waiting arming announcement cannot hide an
+-- armed model from it.
+local lastSeenArmed = nil
 local rollingSamples = {}
 local timerTriggered = false
 local timerLastBeep = nil
@@ -654,7 +658,7 @@ end
 -- says nothing, while the same drop with the rotors turning is the one event a
 -- pilot must not have to notice for himself (issue #2311).
 --
--- The armed state is read from `previous`, not from `session`: the session
+-- The armed state is read from `lastSeenArmed`, not from `session`: the session
 -- clears isArmed in the same step that clears connected (tasks/session.lua's
 -- setConnected()), so by the time a down link is visible here the armed state
 -- is already gone -- and rememberCurrent() overwrites `previous` with that
@@ -662,7 +666,7 @@ end
 -- this runs before it.
 local function announceTelemetryLost(now)
   if not events.telemetry_lost then return end
-  if previous.isArmed ~= true then return end
+  if lastSeenArmed ~= true then return end
 
   connectionLostAt = now
   local path = firstResolvedSound(TELEMETRY_LOST_SOUNDS)
@@ -1029,6 +1033,7 @@ end
 
 local function rememberCurrent()
   previous.connected = session.connected
+  lastSeenArmed = session.isArmed
   if not holdPrevious.isArmed then previous.isArmed = session.isArmed end
   if not holdPrevious.pidProfile then previous.pidProfile = session.pidProfile end
   if not holdPrevious.rateProfile then previous.rateProfile = session.rateProfile end
@@ -1105,6 +1110,7 @@ function audio_events.wakeup()
 end
 
 function audio_events.reset()
+  lastSeenArmed = nil
   initialized = false
   craftNameAnnounced = false
   adjWavs = nil

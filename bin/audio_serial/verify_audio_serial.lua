@@ -120,7 +120,7 @@ local function newRig(events, source)
     playNumber = function(value)
       log[#log + 1] = {t = clock, s = "num:" .. tostring(value)}
     end,
-    playHaptic = function() end,
+    playHaptic = function() log[#log + 1] = {t = clock, s = "haptic"} end,
     getAudioVoice = function() return "en/default" end,
   }
   os.clock = function() return clock end
@@ -199,6 +199,19 @@ do
   runTo(rig, 1.25, 3.00, {connected = true, isArmed = true, pidProfile = 2})
   check("a change still waiting when the link drops is not spoken after the reconnect",
     rig.timeline() == "0.50 armed.wav", "got: " .. rig.timeline())
+end
+
+-- A waiting arming change must not hide the armed model from the telemetry-lost
+-- alert. The alert is judged on the last armed state the task saw, not on the
+-- announcement baseline, which a waiting change keeps behind.
+do
+  local rig = newRig({armflags = true, pid_profile = true, telemetry_lost = true})
+  seed(rig, {connected = true, isArmed = false, pidProfile = 1})
+  rig.setClock(0.50); rig.step({connected = true, isArmed = false, pidProfile = 2})
+  rig.setClock(0.75); rig.step({connected = true, isArmed = true, pidProfile = 2})
+  rig.setClock(1.00); rig.step({connected = false})
+  check("a link drop right after a waiting arming change still raises the telemetry-lost alert",
+    rig.timeline() == "0.50 profile.wav; 0.50 num:2; 1.00 haptic", "got: " .. rig.timeline())
 end
 
 -- Can-fail: take the gate out of announceProfile() in a copy of the task. The
