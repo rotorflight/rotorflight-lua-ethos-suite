@@ -1161,7 +1161,7 @@ local function telemetryLinkChecks()
   -- Can-fail: strip the armed gate and require a disarmed loss to fire. If this
   -- stops turning red, the checks above prove nothing.
   local source = readFile(AUDIO_PATH)
-  local stripped = source:gsub("if previous.isArmed ~= true then return end", "", 1)
+  local stripped = source:gsub("if lastSeenArmed ~= true then return end", "", 1)
   check("the armed gate could be located in announceTelemetryLost()", stripped ~= source)
   local rig = newTaskRig({telemetry_lost = true}, stripped)
   rig.setClock(0); rig.step({connected = true, isArmed = false})
@@ -1175,7 +1175,7 @@ local function telemetryLinkChecks()
   -- connected, so this copy answers with an empty value and has to stay quiet --
   -- and it is what the real code would do if the announcement ran after
   -- rememberCurrent() instead of before it.
-  local stale = source:gsub("if previous.isArmed ~= true then return end",
+  local stale = source:gsub("if lastSeenArmed ~= true then return end",
     "if session.isArmed ~= true then return end", 1)
   check("the armed gate could be re-pointed at the session", stale ~= source)
   local quiet = newTaskRig({telemetry_lost = true}, stale)
