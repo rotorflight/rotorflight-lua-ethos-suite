@@ -89,6 +89,113 @@ do
     text:find("countSelected(selected) >= telemetryConfig.SLOT_COUNT", 1, true) == nil)
 end
 
+print("page behaviour, toggle and save together")
+
+-- The real page, with the form and the page runtime stubbed. The page builds its
+-- switches with form.addBooleanField; the stub keeps each setter by sensor name,
+-- so the check can tap a switch exactly as the pilot does. The save is not run:
+-- the refusal at the tap is the decision under test.
+do
+  local SRC = ROOT .. "/src/rfsuite"
+  local savedForm = form
+  local savedRequire = package.loaded["rfsuite.lib.require"]
+  local catalog = dofile(SRC .. "/lib/telemetry_sensor_catalog.lua")
+
+  -- Sensors that take part in no conflict, so a tap changes nothing else.
+  local inConflict = {}
+  for parent, children in pairs(catalog.NOT_AT_SAME_TIME) do
+    inConflict[parent] = true
+    for _, child in ipairs(children) do inConflict[child] = true end
+  end
+  local candidates = {}
+  for _, id in ipairs(catalog.SENSOR_IDS) do
+    if not inConflict[id] and catalog.SENSOR_LIST[id] then candidates[#candidates + 1] = id end
+  end
+
+  local CUSTOM = 1
+  local pageSource = io.open(SRC .. "/app/pages/telemetry.lua", "rb"):read("*a")
+
+  -- Opens the page with `managed` switches on and `unmanaged` native slots kept,
+  -- then taps one more switch. Returns true when the tap was refused, and the
+  -- number of dialogs that opened.
+  local function tapOneMore(managed, unmanaged, source)
+    local slots = {}
+    for i = 1, managed do slots[i] = candidates[i] end
+    for i = 1, unmanaged do slots[managed + i] = 500 + i end -- not in the catalog
+    for i = #slots + 1, 40 do slots[i] = 0 end
+
+    local spec, setters, dialogs = nil, {}, 0
+    local data = {telemetry = {crsf_telemetry_mode = CUSTOM, slots = slots}, feature = {}}
+    local stubs = {
+      form = {
+        clear = function() end,
+        openDialog = function() dialogs = dialogs + 1 end,
+        addExpansionPanel = function()
+          return {open = function() end,
+            addLine = function(_, name) return {label = name} end}
+        end,
+        addBooleanField = function(line, _, _, setter)
+          setters[line.label] = setter
+          return {enable = function() end}
+        end,
+      },
+    }
+    form = setmetatable({}, {__index = stubs.form})
+    package.loaded["rfsuite.lib.require"] = function(name)
+      if name == "app/page_runtime.lua" then
+        return {new = function(s)
+          spec = s
+          -- A firmware new enough to offer every sensor in the catalog. The chrome
+          -- and the dirty flag are not what is under test, so they do nothing.
+          local rt = setmetatable({data = data, apiVersionMinor = 99, controlRef = {}}, {
+            -- Any other method of the runtime does nothing here.
+            __index = function() return function() end end,
+          })
+          rt.controlRef.runtime = rt
+          return rt
+        end}
+      end
+      return assert(loadfile(SRC .. "/" .. name))()
+    end
+
+    local chunk = assert(load(source, "@telemetry-page"))
+    local page = chunk()
+    page.open({})
+    spec.onLoaded()
+
+    local target = catalog.SENSOR_LIST[candidates[managed + 1]].name
+    local accepted = setters[target](true)
+    return accepted == false, dialogs
+  end
+
+  -- The page as shipped.
+  local refused, dialogs = tapOneMore(37, 3, pageSource)
+  check("37 switches with 3 native slots kept: the 38th tap is refused (the save would refuse it)",
+    refused and dialogs == 1, "refused=" .. tostring(refused) .. " dialogs=" .. dialogs)
+  refused, dialogs = tapOneMore(36, 3, pageSource)
+  check("36 switches with 3 native slots kept: the 37th tap is accepted (the save fits exactly)",
+    (not refused) and dialogs == 0, "refused=" .. tostring(refused) .. " dialogs=" .. dialogs)
+  refused, dialogs = tapOneMore(39, 0, pageSource)
+  check("39 switches and nothing kept: the 40th tap is accepted", (not refused) and dialogs == 0)
+  refused, dialogs = tapOneMore(40, 0, pageSource)
+  check("40 switches and nothing kept: the 41st tap is refused", refused and dialogs == 1)
+
+  -- Can-fail: the same page with the old gate, which counted only the switches.
+  -- The 38th tap must then be accepted, and this check goes red if the gate
+  -- ever stops counting the kept slots.
+  local oldGate = pageSource
+    :gsub("#collectSelected%(selected, crsfMode%),",
+      "(function() local n = 0 for _, id in ipairs(catalog.SENSOR_IDS) do if selected[id] == true then n = n + 1 end end return n end)(),", 1)
+    :gsub("countUnmanaged%(runtime%.data%.telemetry and runtime%.data%.telemetry%.slots%),", "0,", 1)
+  check("the old gate can be reproduced from the page text", oldGate ~= pageSource)
+  refused, dialogs = tapOneMore(37, 3, oldGate)
+  check("the old gate accepts the 38th tap (this check can go red)", (not refused) and dialogs == 0,
+    "refused=" .. tostring(refused) .. " dialogs=" .. dialogs)
+
+  form = savedForm
+  package.loaded["rfsuite.lib.require"] = savedRequire
+end
+
 print(string.rep("-", 60))
 print(string.format("checks: %d   failures: %d", checks, failures))
 if failures > 0 then

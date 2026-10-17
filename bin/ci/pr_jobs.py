@@ -2373,8 +2373,10 @@ in both places with the same managed count, so the tap and the save cannot disag
 
 The harness checks the arithmetic at the limit: the save fits exactly at 40, the 41st switch
 is refused, a 38th switch is refused when three native slots are kept, and the gate matches
-the save for every count it can meet. Its last check reads the page and requires both call
-sites to use the shared functions and the old gate to be gone. Against unpatched master the
+the save for every count it can meet. It then runs the page itself, with the form and the page
+runtime stubbed, and taps a switch the way the pilot does: the 38th tap is refused with three
+native slots kept, the 37th is accepted, and a copy of the page with the old gate accepts the
+38th, so the check can go red. Against unpatched master the
 library does not exist, so the job fails there by design.
 '''
     ),
