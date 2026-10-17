@@ -3181,6 +3181,36 @@ jobs:
       - name: Check the arming, profile, battery and governor announcements against one gate
         run: lua5.4 bin/audio_serial/verify_audio_serial.lua
 
+  # Issue #2302: the menu showed identical tiles whether the model was disarmed on
+  # the bench or armed with spinning blades. Flight-critical configuration pages are
+  # now classified (app/armed_gating.lua), their tiles carry a [!] badge while armed,
+  # a press on a locked tile is refused with a non-modal notice, and the grid is rebuilt
+  # on arm and disarm.
+  #
+  # No build and no package step reaches this -- it is a menu path through the real
+  # app/menu_container.lua and app/tile_grid.lua. The harness runs both suites in one
+  # process: the derivation rules and the real menu tree against an explicit expected
+  # classification (suite_armed_gating.lua), and the badge, the refusal and the rebuild
+  # (suite_menu_container.lua). A deliberately broken classification (submenu lock
+  # disabled) makes the runner exit non-zero.
+  armed-gating:
+    name: Armed state gates configuration pages and badges their tiles
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Install Lua 5.4
+        run: sudo apt-get update && sudo apt-get install -y lua5.4
+
+      - name: Check the armed gating of the menu tiles
+        run: lua5.4 bin/armed_gating/verify_armed_gating.lua
+
   # Per-language PR builds (mirrors push.yml behavior)
   create-zip:
     name: Build PR ZIP (${{ matrix.lang }})
