@@ -1552,18 +1552,23 @@ local function updateFuel(protocol)
 
   -- A nil while the estimator re-settles (after disarm the pack voltage rises as the
   -- load goes away, and the estimate starts again) is not "no data". Writing it would
-  -- reset the Ethos sensor, which then shows as lost. Keep the last value; a real
-  -- loss (no voltage, no config) still clears the sensor.
-  if not (percent == nil and settling) then
+  -- reset the Ethos sensor, which then shows as lost.
+  --   * settling == true  → re-push the last known value so Ethos never goes quiet
+  --     for more than STALE_REFRESH_SECONDS (2.0 s), which is well under the 4.0 s
+  --     lost-sensor threshold. Also keep session.fuelPercent so widgets keep their
+  --     last reading during the re-settle window.
+  --   * settling == nil (real missing input) → clear the sensor as before.
+  if percent == nil and settling then
+    smartfuelSensor:refresh()
+  else
     smartfuelSensor:set(percent, session.connected)
-  end
-
-  if percent ~= session.fuelPercent then
-    if session.fuelPercent == nil and percent ~= nil then
-      debugLog.print("[session] fuelPercent now available: " .. tostring(percent) .. "% (mode=" .. tostring(session.smartfuelMode) .. ")")
+    if percent ~= session.fuelPercent then
+      if session.fuelPercent == nil and percent ~= nil then
+        debugLog.print("[session] fuelPercent now available: " .. tostring(percent) .. "% (mode=" .. tostring(session.smartfuelMode) .. ")")
+      end
+      session.fuelPercent = percent
+      publish()
     end
-    session.fuelPercent = percent
-    publish()
   end
 end
 
