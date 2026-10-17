@@ -680,6 +680,35 @@ jobs:
       - name: Check the in-flight adjustment announcement
         run: lua5.4 bin/adj_voice/verify_adj_voice.lua
 
+  # Issue #2503: the wakeup of tasks/audio_events.lua ran the arming, profile, battery and
+  # governor announcements back to back with no gate between them, so the radio cut each file
+  # with the next one. Only the adjustment path checked canSpeak(). The four state changes now
+  # go through the same gate, and a change that has to wait is held out of `previous`, so it is
+  # compared again on the next wakeup and spoken once.
+  #
+  # The harness drives the real task on a controllable clock and logs every file and number it
+  # asks for with the time it was asked. It checks that two changes in one wakeup are spoken in
+  # separate wakeups, that a single change is still spoken at once, that a governor change waits
+  # behind a profile announcement, and that a change still waiting when the link drops is not
+  # spoken after a reconnect. Against unpatched master four of the checks fail.
+  audio-serial:
+    name: State changes in one wakeup are spoken one after another
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Install Lua 5.4
+        run: sudo apt-get update && sudo apt-get install -y lua5.4
+
+      - name: Check the arming, profile, battery and governor announcements against one gate
+        run: lua5.4 bin/audio_serial/verify_audio_serial.lua
+
   # A page tags its data with the profile it was read for, and the tag used to
   # be taken when the read finished rather than when it started. A pilot who
   # switched profile while that read was in flight therefore got the previous
