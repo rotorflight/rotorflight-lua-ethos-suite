@@ -546,8 +546,25 @@ local function open(opts)
     render()
   end
 
+  -- The probe runs once per aircraft, and only once the firmware version is known
+  -- (issue #2579). Firmware older than the Tune Advisor is shown as unsupported
+  -- without any request; an unknown version waits.
+  local fcVersion = nil
+  local probedFor = nil
+
   local function probe()
-    if disposed or probing or not mcuId then return end
+    if disposed or probing or not mcuId or probedFor == mcuId then return end
+    local support = tuneAdvisor.supportFor(fcVersion)
+    if support == false then
+      probedFor = mcuId
+      if not unsupported then
+        unsupported = true
+        render()
+      end
+      return
+    end
+    if support ~= true then return end
+    probedFor = mcuId
     probing = true
     bus.publish("msp.request", tuneAdvisor.buildReadMessage(1, onProbeData, onProbeError))
   end
@@ -558,11 +575,16 @@ local function open(opts)
       link.connected = snapshot.connected == true
       link.armed = snapshot.isArmed == true
       link.pidProfile, link.rateProfile = snapshot.pidProfile, snapshot.rateProfile
+      if snapshot.fcVersion ~= nil then fcVersion = snapshot.fcVersion end
     end
     -- A link loss keeps the aircraft: its saved flights do not need the link
     local nextMcuId = snapshot and snapshot.mcuId or nil
-    if nextMcuId == nil or nextMcuId == mcuId then return end
+    if nextMcuId == nil or nextMcuId == mcuId then
+      probe()
+      return
+    end
     mcuId = nextMcuId
+    probedFor = nil
     unsupported = false
     load()
     probe()
@@ -581,7 +603,10 @@ local function open(opts)
   local function clear()
     if disposed or not mcuId then return end
     tuneHistory.erase(mcuId)
-    bus.publish("msp.request", tuneAdvisor.buildClearMessage(nil, nil))
+    -- The FC is asked to clear only when its firmware has the command (issue #2579).
+    if tuneAdvisor.supportFor(fcVersion) == true then
+      bus.publish("msp.request", tuneAdvisor.buildClearMessage(nil, nil))
+    end
     load()
   end
 
