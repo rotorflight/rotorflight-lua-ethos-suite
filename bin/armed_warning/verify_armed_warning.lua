@@ -177,14 +177,21 @@ local function setArmed(value)
 end
 
 -- One full paint, retried over wakeups until the theme has drawn something.
+-- Returns false, and records a failed check, when the paint raises or never draws.
+-- The drawing checks after it must not pass against an empty or partial record.
 local function paintFrame()
   rects, texts = {}, {}
   for _ = 1, 20 do
     local ok, err = pcall(descriptor.paint, state)
-    if not ok then print("        paint error: " .. tostring(err)) return end
-    if #rects > 0 then return end
+    if not ok then
+      check("paint: the dashboard paints without error", false, err)
+      return false
+    end
+    if #rects > 0 then return true end
     descriptor.wakeup(state)
   end
+  check("paint: the dashboard draws within 20 wakeups", false)
+  return false
 end
 
 local LABEL = "@i18n(widgets.dashboard.info_armed)@"
