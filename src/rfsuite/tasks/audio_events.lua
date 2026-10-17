@@ -15,6 +15,10 @@ local timer = nil
 local session = {}
 local previous = {}
 local initialized = false
+-- True from the first disconnected tick of an outage until the next connected
+-- tick. The state reset of the falling edge runs once under it, not on every
+-- tick while the link is down.
+local disconnectApplied = false
 local adjWavs = nil
 
 local lastAlertAt = {}
@@ -1048,6 +1052,14 @@ function audio_events.wakeup()
   ensureSettings()
   local now = os.clock()
   if session.connected ~= true then
+    -- Nothing writes the state reset below while the link is down, so only the
+    -- first tick of an outage has anything to reset. Later ticks only keep
+    -- `previous` current, as they always did.
+    if disconnectApplied then
+      rememberCurrent()
+      return
+    end
+    disconnectApplied = true
     -- Whether this tick is the loss itself, read before rememberCurrent()
     -- below overwrites `previous` with the values of the down session. Both
     -- edges the link announcement needs -- that the link went, and that the
@@ -1076,6 +1088,8 @@ function audio_events.wakeup()
     rememberCurrent()
     return
   end
+
+  disconnectApplied = false -- re-arm the falling edge
 
   if not initialized then
     initialized = true
@@ -1112,6 +1126,7 @@ end
 function audio_events.reset()
   lastSeenArmed = nil
   initialized = false
+  disconnectApplied = false
   craftNameAnnounced = false
   adjWavs = nil
   for key in pairs(previous) do previous[key] = nil end

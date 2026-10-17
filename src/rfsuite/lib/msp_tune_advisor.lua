@@ -202,5 +202,23 @@ function msp_tune_advisor.buildClearMessage(onDone, onError)
   }
 end
 
+-- First firmware release that carries the commands above. 4.6.0 has none. That
+-- release is not out yet, so 4.7.0 is the planned minimum (issue #2579); adjust it
+-- once the release that ships the commands is known.
+local FIRST_FIRMWARE = {4, 7, 0}
+
+-- true when the FC firmware version (session.fcVersion, "M.m.p") is at least
+-- FIRST_FIRMWARE, false when it is older, nil while the version is not known.
+function msp_tune_advisor.supportFor(fcVersion)
+  if type(fcVersion) ~= "string" then return nil end
+  local major, minor, patch = fcVersion:match("^(%d+)%.(%d+)%.(%d+)")
+  if not major then return nil end
+  local parts = {tonumber(major), tonumber(minor), tonumber(patch)}
+  for i = 1, 3 do
+    if parts[i] ~= FIRST_FIRMWARE[i] then return parts[i] > FIRST_FIRMWARE[i] end
+  end
+  return true
+end
+
 package.loaded["rfsuite.lib.msp_tune_advisor"] = msp_tune_advisor
 return msp_tune_advisor
