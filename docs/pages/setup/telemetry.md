@@ -30,8 +30,9 @@ Greyed out until the flight controller answers. Read-only while the model is arm
   position* when you save, instead of being cleared. Ticked switches are
   written into the remaining slots in page order.
 - **A maximum of 40 sensors can be active in total**, counting the preserved
-  slots. If your switches plus the preserved ones would exceed 40, the save is
-  refused and a dialog says so, rather than silently dropping sensors.
+  slots. If your switches plus the preserved ones would exceed 40, the switch
+  that would go over is refused when you tap it, with a dialog that says so.
+  The save counts the same way, so the tap and the save no longer disagree.
 - **Some sensors cannot be switched off while the flight controller is in
   native CRSF telemetry mode**: *Altitude*, *Attitude (Combined)* and *Flight
   mode*, and the per-axis children *Pitch Attitude*, *Roll Attitude* and *Yaw

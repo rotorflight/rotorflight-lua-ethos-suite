@@ -22,6 +22,7 @@ local pageRuntime = requireModule("app/page_runtime.lua")
 local featureConfig = requireModule("lib/msp_feature_config.lua")
 local telemetryConfig = requireModule("lib/msp_telemetry_config.lua")
 local catalog = requireModule("lib/telemetry_sensor_catalog.lua")
+local slotBudget = requireModule("lib/telemetry_slot_budget.lua")
 
 local PAGE_TITLE = "@i18n(app.modules.telemetry.name)@"
 local BTN_OK = "@i18n(app.btn_ok)@"
@@ -124,14 +125,6 @@ local function offeredIds(ids, apiVersionMinor)
     end
   end
   return out
-end
-
-local function countSelected(selected)
-  local count = 0
-  for _, id in ipairs(catalog.SENSOR_IDS) do
-    if selected[id] == true then count = count + 1 end
-  end
-  return count
 end
 
 -- The ids to write, in the catalog's own order, so that what the pilot sees
@@ -315,7 +308,7 @@ local function open(opts)
         -- are no longer overwritten with 0.
         local unmanaged = countUnmanaged(telemetry.slots)
         local ordered = collectSelected(selected, crsfMode)
-        if #ordered + unmanaged > telemetryConfig.SLOT_COUNT then
+        if slotBudget.overflows(#ordered, unmanaged, telemetryConfig.SLOT_COUNT) then
           -- Refused: slots and mode are left exactly as read, so the write
           -- that follows re-sends the flight controller's current state
           -- rather than a truncated version of the pilot's wish. The pilot's
@@ -402,8 +395,13 @@ local function open(opts)
             -- page disagree with the FC.
             if isFixedByFc(crsfMode, sensorId) then return false end
 
+            -- The same quantity the save check counts: the switches the save would
+            -- write (native-locked ones included) and the kept native slots.
             if value == true and selected[sensorId] ~= true
-                and countSelected(selected) >= telemetryConfig.SLOT_COUNT then
+                and slotBudget.overflowsWithOneMore(
+                  #collectSelected(selected, crsfMode),
+                  countUnmanaged(runtime.data.telemetry and runtime.data.telemetry.slots),
+                  telemetryConfig.SLOT_COUNT) then
               openTooManyDialog()
               return false
             end

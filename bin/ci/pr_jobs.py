@@ -2360,6 +2360,24 @@ sends no request, and a disarm on 4.7.0 sends the capture read. Against the unpa
 the 4.6.0 and 4.7.0 checks fail. The Tune Advisor page is checked on the simulator.
 ''',
     ),
+    LuaJob(
+        id='telemetry-slot-budget',
+        name='The Telemetry page refuses a switch the save would refuse, at the tap',
+        step='Check the 40-slot budget of the toggle gate and the save check',
+        script='bin/telemetry_slot_budget/verify_telemetry_slot_budget.lua',
+        rationale=r'''Issue #2499: the toggle gate of the Telemetry page counted only the switches the page had
+turned on, while the save check also counted the native slots the radio keeps. With three
+kept slots the gate accepted a 40th switch that the save then refused, with no reason shown
+at the tap. The decision now lives in lib/telemetry_slot_budget.lua, and the page asks it
+in both places with the same managed count, so the tap and the save cannot disagree.
+
+The harness checks the arithmetic at the limit: the save fits exactly at 40, the 41st switch
+is refused, a 38th switch is refused when three native slots are kept, and the gate matches
+the save for every count it can meet. Its last check reads the page and requires both call
+sites to use the shared functions and the old gate to be gone. Against unpatched master the
+library does not exist, so the job fails there by design.
+'''
+    ),
 ]
 
 VERBATIM_JOBS = [
