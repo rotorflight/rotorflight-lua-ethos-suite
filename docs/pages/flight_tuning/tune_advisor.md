@@ -34,9 +34,10 @@ exactly.
 *Configuration* → *Flight Tuning* → *Tune Advisor*
 
 Greyed out until the flight controller answers. The page works from the flights saved for the connected model,
-and updates when you disarm while it is open; through a link loss it keeps showing them. On opening (and on
-Reload) the page asks the flight controller once whether its firmware has the Tune Advisor: firmware from before
-it shows "Needs newer firmware".
+and updates when you disarm while it is open; through a link loss it keeps showing them. The page reads the
+firmware version the flight controller reports. Firmware older than 4.7.0 has no Tune Advisor: the page shows
+"Needs newer firmware" and sends no request, and the same applies to the capture after each flight. Until the
+version is known, nothing is sent.
 
 ## Settings
 

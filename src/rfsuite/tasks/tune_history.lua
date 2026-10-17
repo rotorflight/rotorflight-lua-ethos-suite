@@ -135,6 +135,17 @@ local function onSessionUpdate(snapshot)
   end
   if armed ~= nil then lastArmed = armed end
 
+  -- Firmware without the Tune Advisor (issue #2579): nothing is sent, and a flight
+  -- waiting for capture is dropped. A version not known yet waits, and keeps the
+  -- flags, so a flight still in the FC is captured once the version is known.
+  local support = tuneAdvisor.supportFor(snapshot.fcVersion)
+  if support == false then
+    pending = false
+    clearPending = false
+    return
+  end
+  if support ~= true then return end
+
   if not (pending or clearPending) or busy or armed ~= false or snapshot.connected ~= true then return end
   if not snapshot.mcuId or snapshot.apiVersionSupported == false then return end
   if os.clock() < retryAt then return end

@@ -2326,6 +2326,22 @@ red while disarmed or while the property is off. Against unpatched master the ar
 checks fail.
 ''',
     ),
+    LuaJob(
+        id='tune-advisor-gate',
+        name='Tune Advisor requests are sent only to firmware that has the command',
+        step='Check the Tune Advisor firmware gate',
+        script='bin/tune_advisor_gate/verify_tune_advisor_gate.lua',
+        rationale=r'''Issue #2579: the background capture requested the Tune Advisor on every disarm, also on
+Rotorflight 4.6.0, which has no such command. Each disarm produced a failed request. The
+Tune Advisor page also probed the FC on opening. Both now depend on the firmware version
+reported by the FC: below 4.7.0 nothing is sent, and an unknown version sends nothing.
+
+The harness checks the version comparison (including 4.10.0 against 4.7.0) and drives the
+real tasks/tune_history.lua through session.update: a disarm on 4.6.0 or with no version
+sends no request, and a disarm on 4.7.0 sends the capture read. Against the unpatched task
+the 4.6.0 and 4.7.0 checks fail. The Tune Advisor page is checked on the simulator.
+''',
+    ),
 ]
 
 VERBATIM_JOBS = [
