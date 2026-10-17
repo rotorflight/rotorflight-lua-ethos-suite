@@ -397,10 +397,12 @@ local function open(opts)
 
             -- The same quantity the save check counts: the switches the save would
             -- write (native-locked ones included) and the kept native slots.
+            local rt = controlRef.runtime
+            local telemetrySlots = rt and rt.data and rt.data.telemetry and rt.data.telemetry.slots
             if value == true and selected[sensorId] ~= true
                 and slotBudget.overflowsWithOneMore(
                   #collectSelected(selected, crsfMode),
-                  countUnmanaged(runtime.data.telemetry and runtime.data.telemetry.slots),
+                  countUnmanaged(telemetrySlots),
                   telemetryConfig.SLOT_COUNT) then
               openTooManyDialog()
               return false

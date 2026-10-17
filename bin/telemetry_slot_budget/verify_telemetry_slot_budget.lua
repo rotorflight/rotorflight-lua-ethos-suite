@@ -87,6 +87,8 @@ do
     text:find("slotBudget.overflowsWithOneMore(", 1, true) ~= nil)
   check("the old gate, which counted only the switches, is gone",
     text:find("countSelected(selected) >= telemetryConfig.SLOT_COUNT", 1, true) == nil)
+  check("the switch setter does not capture runtime directly",
+    text:find("countUnmanaged(runtime", 1, true) == nil)
 end
 
 print("page behaviour, toggle and save together")
@@ -186,7 +188,7 @@ do
   local oldGate = pageSource
     :gsub("#collectSelected%(selected, crsfMode%),",
       "(function() local n = 0 for _, id in ipairs(catalog.SENSOR_IDS) do if selected[id] == true then n = n + 1 end end return n end)(),", 1)
-    :gsub("countUnmanaged%(runtime%.data%.telemetry and runtime%.data%.telemetry%.slots%),", "0,", 1)
+    :gsub("countUnmanaged%(telemetrySlots%),", "0,", 1)
   check("the old gate can be reproduced from the page text", oldGate ~= pageSource)
   refused, dialogs = tapOneMore(37, 3, oldGate)
   check("the old gate accepts the 38th tap (this check can go red)", (not refused) and dialogs == 0,
