@@ -1085,14 +1085,25 @@ local function closeEraseDialog(widget)
   if widget then widget.eraseDialog = nil end
 end
 
-local function finishErase(widget, failed)
-  if not widget then return end
+-- Clears the erase wait. The generation moves on, so a reply to the erase that is being
+-- cleared (a late acknowledgement, a late summary) is dropped and cannot touch the next erase.
+local function resetEraseWait(widget)
+  widget.eraseGeneration = (widget.eraseGeneration or 0) + 1
   widget.eraseActive = false
   widget.eraseReadPending = false
+  widget.eraseReadInFlight = false
+  widget.eraseNextReadAt = nil
+  widget.eraseWaited = 0
+  widget.eraseLastTick = nil
   widget.eraseDone = false
   widget.eraseError = false
   widget.eraseStartedAt = 0
   widget.eraseProgressValue = 0
+end
+
+local function finishErase(widget, failed)
+  if not widget then return end
+  resetEraseWait(widget)
   closeEraseDialog(widget)
   setToolbarVisible(widget, false)
   requestPaint(widget)
@@ -1117,28 +1128,66 @@ local function finishErase(widget, failed)
   end
 end
 
+-- The erase is done when a summary read taken after it reports the flash ready, or the
+-- board reports no dataflash. The firmware acknowledges the erase before it runs, and the
+-- ready bit is false until the flash is idle, so one read is not enough (#2495 follow-up).
+local ERASE_RETRY_SECONDS = 0.5
+-- A full chip erase takes 40 s typical and up to 200 s (W25Q128FV datasheet, see
+-- flash_w25q128fv.c:97). The timeout is counted from the erase acknowledgement, above
+-- that worst case, and only while the dashboard is awake to wait (see the wakeup).
+local ERASE_TIMEOUT_SECONDS = 240
+local ERASE_EXPECTED_SECONDS = 40
+local ERASE_MAX_TICK_SECONDS = 1
+
+local function summaryHasBit(mask, bit)
+  return (math.floor(tonumber(mask) or 0) & (1 << bit)) ~= 0
+end
+
+-- One retry path for both outcomes that do not end the wait (not ready, or a failed read).
+local function scheduleEraseRetry(widget)
+  widget.eraseReadPending = true
+  widget.eraseNextReadAt = clock() + ERASE_RETRY_SECONDS
+end
+
 local function readBlackboxSummaryAfterErase(widget)
-  if not widget or widget.eraseReadPending ~= true then return end
+  if not widget or widget.eraseReadPending ~= true or widget.eraseReadInFlight == true then return end
+  if widget.eraseNextReadAt and clock() < widget.eraseNextReadAt then return end
   widget.eraseReadPending = false
+  widget.eraseReadInFlight = true
+  -- A reply that arrives after its erase has ended, or after a newer erase has started,
+  -- must not touch the newer erase.
+  local generation = widget.eraseGeneration
   bus.publish("msp.request", dataflashSummary.buildReadMessage(function(data)
-    widget.bblFlags = data and data.flags or widget.bblFlags
-    widget.bblSize = data and data.total or widget.bblSize
-    widget.bblUsed = data and data.used or widget.bblUsed
-    widget.eraseDone = true
+    if widget.eraseGeneration ~= generation then return end
+    widget.eraseReadInFlight = false
+    if data then
+      widget.bblSize = data.total or widget.bblSize
+      widget.bblUsed = data.used or widget.bblUsed
+    end
+    -- Only a reply that carries the flags can end the wait; any other reply is read again.
+    if data and type(data.flags) == "number" then
+      widget.bblFlags = data.flags
+      if summaryHasBit(data.flags, 0) or not summaryHasBit(data.flags, 1) then
+        widget.eraseDone = true
+        return
+      end
+    end
+    scheduleEraseRetry(widget)
   end, function()
-    widget.eraseDone = true
+    if widget.eraseGeneration ~= generation then return end
+    widget.eraseReadInFlight = false
+    scheduleEraseRetry(widget)
   end))
 end
 
 local function doEraseBlackbox(widget)
   if not widget or widget.connected ~= true or armedOrUnconfirmed(widget) or widget.eraseActive == true then return end
 
+  resetEraseWait(widget)
   widget.eraseActive = true
   widget.eraseStartedAt = clock()
-  widget.eraseProgressValue = 0
-  widget.eraseReadPending = false
-  widget.eraseDone = false
-  widget.eraseError = false
+  widget.eraseLastTick = widget.eraseStartedAt
+  local generation = widget.eraseGeneration
 
   if form and type(form.openProgressDialog) == "function" then
     widget.eraseDialog = form.openProgressDialog({
@@ -1154,8 +1203,14 @@ local function doEraseBlackbox(widget)
   end
 
   bus.publish("msp.request", dataflashErase.buildWriteMessage(function()
+    if widget.eraseGeneration ~= generation then return end
     widget.eraseReadPending = true
+    widget.eraseNextReadAt = nil
+    -- The timeout counts from the acknowledgement: a slow link does not eat into the erase time.
+    widget.eraseWaited = 0
+    widget.eraseLastTick = clock()
   end, function()
+    if widget.eraseGeneration ~= generation then return end
     widget.eraseError = true
   end))
 end
@@ -2309,8 +2364,10 @@ local function wakeup(widget)
   if widget.eraseActive then
     local now = clock()
     readBlackboxSummaryAfterErase(widget)
-    local elapsed = now - (widget.eraseStartedAt or now)
-    local progress = math.min(95, math.floor((elapsed / 5.0) * 100))
+    local tick = now - (widget.eraseLastTick or now)
+    widget.eraseLastTick = now
+    widget.eraseWaited = (widget.eraseWaited or 0) + math.min(math.max(tick, 0), ERASE_MAX_TICK_SECONDS)
+    local progress = math.min(95, math.floor((widget.eraseWaited / ERASE_EXPECTED_SECONDS) * 100))
     if progress > (widget.eraseProgressValue or 0) then
       widget.eraseProgressValue = progress
       if widget.eraseDialog and widget.eraseDialog.value then
@@ -2319,6 +2376,8 @@ local function wakeup(widget)
     end
     if widget.eraseDone or widget.eraseError then
       finishErase(widget, widget.eraseError == true)
+    elseif widget.eraseWaited > ERASE_TIMEOUT_SECONDS then
+      finishErase(widget, true)
     end
   end
 
@@ -2384,10 +2443,7 @@ local function close(widget)
   widget.dashboardPrefsSnapshot = nil
   widget.dashboardPrefsTheme = nil
   widget.dashboardPrefsValues = nil
-  widget.eraseActive = false
-  widget.eraseReadPending = false
-  widget.eraseDone = false
-  widget.eraseError = false
+  resetEraseWait(widget)
   closeEraseDialog(widget)
   widget.batteryActive = false
   widget.batteryDone = false

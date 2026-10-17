@@ -2259,6 +2259,38 @@ recorded wavs. The 44-byte checks go red on the first revision of #2550.
 '''
     ),
     LuaJob(
+        id='dashboard-erase',
+        name='The dashboard erase finishes on a read that reports the flash ready',
+        step='Check the dashboard erase wait against the flash ready bit',
+        script='bin/dashboard_erase/verify_dashboard_erase.lua',
+        rationale=r'''Found in the review of #2568: the Rotorflight Dashboard ends its erase on the first summary
+read after the erase acknowledgement, whatever that read reports. The firmware acknowledges the
+erase before it runs and reports the flash ready only when it is idle, so the dialog could close
+while the erase was still running.
+
+The harness drives the real dashboard widget through its wakeup and the bus. It checks that a
+read reporting not ready keeps the wait open and is repeated, that a read reporting ready or no
+dataflash ends it, that a failed read does not end it, and that a wait without an answer fails
+after the timeout. Against unpatched master four of the checks fail.
+'''
+    ),
+    LuaJob(
+        id='adjfunctions-audio',
+        name='Every adjustment function has a spoken name, and every word of a name has audio',
+        step='Check the adjustment names and their audio files in the English pack',
+        script='bin/adjfunctions_audio/verify_adjfunctions_audio.lua',
+        rationale=r'''Issue #2501: the Adjustments page offers functions 76 to 82 that have no name in the
+audio table, so they are silent when they change, and six names use words that have no
+audio file in the pack, so the value is spoken without its name.
+
+The harness reads the real name table and the real page list, and checks that every
+offered function has a name and that every word of every name has a file in the English
+default, us and gb folders. Against unpatched master it fails for functions 76 to 82 and
+for the six names. --self-test removes the name for function 76 and requires the name
+check to go red.
+''',
+    ),
+    LuaJob(
         id='armed-warning',
         name='Dashboard shows a red bar with an Armed label while armed',
         step='Check the dashboard armed warning',

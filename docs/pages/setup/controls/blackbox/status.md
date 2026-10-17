@@ -16,7 +16,7 @@ Greyed out until the flight controller answers. Read-only while the model is arm
 
 ## Erasing the dataflash
 
-The Tool button erases the dataflash after a confirmation. It is off on a board without dataflash, until the board reports the dataflash as ready, and while an erase runs. The erase dialog closes only once a read taken after the erase shows the flash as ready, so the page never reports an erase as finished on a reading from before it.
+The Tool button erases the dataflash after a confirmation. It is off on a board without dataflash, until the board reports the dataflash as ready, and while an erase runs. The erase dialog closes once the dataflash summary taken after the erase answers: the flash is ready, or the board reports no dataflash. A failed dataflash read does not end the wait, and an erase that reports an error leaves the flash not ready until a read says otherwise, so the page never reports an erase as finished on a reading from before it.
 
 ## Settings
 

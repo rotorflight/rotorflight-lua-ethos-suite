@@ -3040,6 +3040,60 @@ jobs:
       - name: Check the PID profile reply lengths and the master-gain grey-out
         run: lua5.4 bin/pid_profile_tail/verify_pid_profile_tail.lua
 
+  # Found in the review of #2568: the Rotorflight Dashboard ends its erase on the first summary
+  # read after the erase acknowledgement, whatever that read reports. The firmware acknowledges the
+  # erase before it runs and reports the flash ready only when it is idle, so the dialog could close
+  # while the erase was still running.
+  #
+  # The harness drives the real dashboard widget through its wakeup and the bus. It checks that a
+  # read reporting not ready keeps the wait open and is repeated, that a read reporting ready or no
+  # dataflash ends it, that a failed read does not end it, and that a wait without an answer fails
+  # after the timeout. Against unpatched master four of the checks fail.
+  dashboard-erase:
+    name: The dashboard erase finishes on a read that reports the flash ready
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Install Lua 5.4
+        run: sudo apt-get update && sudo apt-get install -y lua5.4
+
+      - name: Check the dashboard erase wait against the flash ready bit
+        run: lua5.4 bin/dashboard_erase/verify_dashboard_erase.lua
+
+  # Issue #2501: the Adjustments page offers functions 76 to 82 that have no name in the
+  # audio table, so they are silent when they change, and six names use words that have no
+  # audio file in the pack, so the value is spoken without its name.
+  #
+  # The harness reads the real name table and the real page list, and checks that every
+  # offered function has a name and that every word of every name has a file in the English
+  # default, us and gb folders. Against unpatched master it fails for functions 76 to 82 and
+  # for the six names. --self-test removes the name for function 76 and requires the name
+  # check to go red.
+  adjfunctions-audio:
+    name: Every adjustment function has a spoken name, and every word of a name has audio
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Install Lua 5.4
+        run: sudo apt-get update && sudo apt-get install -y lua5.4
+
+      - name: Check the adjustment names and their audio files in the English pack
+        run: lua5.4 bin/adjfunctions_audio/verify_adjfunctions_audio.lua
+
   # Issue #2352 (armed part only): a model on the ground was shown on the dashboard
   # with no visual warning that the rotor can spool up. The dashboard now draws a red
   # bar across the top edge with an "Armed" label hanging from its centre over whatever

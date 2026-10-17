@@ -16,7 +16,7 @@ is dimmed.
 | Tile | Does | Greyed out when |
 | --- | --- | --- |
 | Reset | Resets the flight (timers and min/max stats) after a confirmation. | Never. |
-| Erase | Erases the blackbox dataflash after a confirmation. | Not connected, armed, or the armed state is currently unknown after having been armed. |
+| Erase | Erases the blackbox dataflash after a confirmation. The dialog closes once the flash reports ready (or the board has no dataflash); if that does not happen within four minutes of awake time after the erase is acknowledged, an error is shown (a full chip erase takes up to 200 seconds). | Not connected, armed, or the armed state is currently unknown after having been armed. |
 | Battery | Opens the battery picker (below) to choose the active battery profile. | Not connected, armed or unknown-after-armed, or fewer than two battery profiles are set. |
 | Info | Opens the info panel (below). | Never. |
 | Setup | Opens the RFSuite system tool. | Ethos is older than 26.1. |
@@ -90,7 +90,7 @@ has focus, the same as the toolbar's keys.
 | Arming | **Ready** (green), **Blocked** (amber), or **Armed** (red). When blocked, each reason is listed at the bottom of the column. `-` until the FC reports its arming flags (or System Status). |
 | Profile | Active PID, rate and battery profile numbers. |
 | BEC Voltage | BEC voltage, when the sensor reports it. |
-| Blackbox | How full the blackbox dataflash is. On a board without dataflash it shows *Not supported* instead of a capacity. |
+| Blackbox | How full the blackbox dataflash is. On a board without dataflash it shows *No dataflash* instead of a capacity. |
 
 **Right column: Battery, then GPS**
 
