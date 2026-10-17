@@ -2344,6 +2344,24 @@ behind a profile announcement, and that a change still waiting when the link dro
 spoken after a reconnect. Against unpatched master four of the checks fail.
 '''
     ),
+    LuaJob(
+        id='audio-disconnect-edge',
+        name='The link-loss edge of the audio task resets once per outage',
+        step='Check the audio task across a link loss',
+        script='bin/audio_disconnect/verify_audio_disconnect.lua',
+        rationale=r'''Issue #2437: the disconnected branch of tasks/audio_events.lua's wakeup was entered as a
+state test, not an edge, so its state reset ran on every audio tick while the link was down.
+The reset now runs once per outage, on the first disconnected tick, and the first connected
+tick re-arms it. Nothing in the reset is written while the link is down, so the behaviour
+does not change; what changes is the work done on each tick of an outage.
+
+The harness pins what the edge must keep: a change made during an outage is not spoken after
+the reconnect, and the loss and the recovery of an armed model are announced for each of two
+outages. Its can-fail check removes the re-arm from a copy of the task and requires the second
+outage to go silent there. Passing on unpatched master is expected: this is a structural
+change with no audible effect, so the harness guards the behaviour, not the saving.
+'''
+    ),
 ]
 
 VERBATIM_JOBS = [
