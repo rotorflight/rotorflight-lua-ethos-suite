@@ -110,6 +110,17 @@ def discover(root):
     return jobs
 
 
+def matrix_for(jobs):
+    """The strategy.matrix value for the harness job.
+
+    A strategy.matrix is an object. The jobs go under "include": a bare list is
+    refused by the workflow, and then the harness job never starts (run 39061812227).
+    """
+    return {"include": [
+        {"id": j.id, "name": j.name, "step": j.step, "script": j.script} for j in jobs
+    ]}
+
+
 def _write(path, data):
     os.makedirs(os.path.dirname(path), exist_ok=True)
     with open(path, "w", encoding="utf-8", newline="\n") as f:
@@ -184,6 +195,17 @@ def self_test():
         _write(os.path.join(dup, "bin", d, stem + ".ci.json"), dict(_VALID, script="bin/%s/%s.lua" % (d, stem)))
     expect("two harnesses with the same id are refused", dup, False)
 
+    # The matrix the workflow gets must be an object with the jobs under "include".
+    good_root = tree(dict(_VALID))
+    roots.append(good_root)
+    matrix = matrix_for(discover(good_root))
+    shaped = (isinstance(matrix, dict) and list(matrix) == ["include"]
+              and len(matrix["include"]) == 1
+              and matrix["include"][0]["script"] == _VALID["script"])
+    if not shaped:
+        failures.append("the matrix is an object with the jobs under include")
+    print("  %s  the matrix is an object with the jobs under include" % ("ok  " if shaped else "FAIL"))
+
     for root in roots:
         shutil.rmtree(root, ignore_errors=True)
 
@@ -209,7 +231,7 @@ def main(argv):
     matrix = [{"id": j.id, "name": j.name, "step": j.step, "script": j.script} for j in jobs]
     if "--github-output" in argv:
         out = os.environ.get("GITHUB_OUTPUT")
-        line = "matrix=%s\n" % json.dumps(matrix, separators=(",", ":"))
+        line = "matrix=%s\n" % json.dumps(matrix_for(jobs), separators=(",", ":"))
         if out:
             with open(out, "a", encoding="utf-8") as f:
                 f.write(line)
