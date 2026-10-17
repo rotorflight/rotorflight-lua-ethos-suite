@@ -34,7 +34,7 @@
 -- contract around it, not the outcome.
 --
 -- --self-test proves the checks can go red by pointing the same predicates at
--- deliberately sabotaged copies, the way bin/ci/verify_pr_workflow.py does. A
+-- deliberately sabotaged copies, the way bin/ci/harnesses.py --self-test does. A
 -- bound that both the real code and the broken code satisfy proves nothing.
 
 local function scriptDir()
