@@ -193,19 +193,19 @@ function SmartFuel:update(inputs)
   if self.voltageStabilised and inputs.isArmed == false and self.lastPackVoltage
     and voltage > self.lastPackVoltage + STABLE_WINDOW_VOLTS then
     resetFuelState(self, now)
-    return nil
+    return nil, "settling"
   end
 
   if self.stabilizeNotBefore and now < self.stabilizeNotBefore then
     self.lastPackVoltage = voltage
-    return nil
+    return nil, "settling"
   end
 
   addVoltageSample(self, voltage)
   if not self.voltageStabilised then
     if not isVoltageStable(self) then
       self.lastPackVoltage = voltage
-      return nil
+      return nil, "settling"
     end
     self.voltageStabilised = true
   end
