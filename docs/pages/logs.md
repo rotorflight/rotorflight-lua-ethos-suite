@@ -64,6 +64,8 @@ cannot be recovered, because there is no next attempt to recover them in.
 
 The page reads each column by the name in the file's first row, not by its position, so a log written by another tool is plotted from the columns it really has. A column the file does not name is not drawn. A file without data rows shows *No plottable columns in this file* instead of a flat line.
 
+A field the file quotes is read as one field, so a comma inside the quotes is data and does not shift the columns after it. A byte order mark at the start of the file is not part of the first column's name.
+
 ## Settings
 
 | Setting | What it does |

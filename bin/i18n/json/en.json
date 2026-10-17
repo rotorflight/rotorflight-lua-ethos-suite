@@ -3775,6 +3775,12 @@
           "max_length": 12,
           "needs_translation": false,
           "translation": "Used %s / %s"
+        },
+        "no_dataflash": {
+          "english": "No dataflash",
+          "max_length": 16,
+          "needs_translation": false,
+          "translation": "No dataflash"
         }
       },
       "stats": {
