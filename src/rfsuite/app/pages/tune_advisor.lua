@@ -556,6 +556,7 @@ local function open(opts)
     if disposed or probing or not mcuId or probedFor == mcuId then return end
     local support = tuneAdvisor.supportFor(fcVersion)
     if support == false then
+      probedFor = mcuId
       if not unsupported then
         unsupported = true
         render()
