@@ -47,6 +47,8 @@ local function open(opts)
   -- for while another is in flight is queued, not dropped (pollQueued).
   local pollSeq = 0
   local eraseDoneSeq = nil
+  -- Only a read requested from this sequence on may update the flash state (see erase).
+  local stateSeq = 0
   local pollQueued = false
   local eraseInProgress = false
   local dataflash = {ready = false, supported = false, total = 0, used = 0}
@@ -136,10 +138,13 @@ local function open(opts)
     updateFields()
     bus.publish("msp.request", dataflashSummary.buildReadMessage(function(data)
       if disposed then return end
-      dataflash.ready = hasBit(data.flags, 0)
-      dataflash.supported = hasBit(data.flags, 1)
-      dataflash.total = data.total or 0
-      dataflash.used = data.used or 0
+      -- A read requested before the last erase completed or failed describes the old flash state.
+      if seq >= stateSeq then
+        dataflash.ready = hasBit(data.flags, 0)
+        dataflash.supported = hasBit(data.flags, 1)
+        dataflash.total = data.total or 0
+        dataflash.used = data.used or 0
+      end
       finishRead(seq)
     end, function() finishRead(seq) end))
     bus.publish("msp.request", sdcardSummary.buildReadMessage(function(data)
@@ -168,8 +173,10 @@ local function open(opts)
     bus.publish("msp.request", dataflashErase.buildWriteMessage(function()
       if disposed then return end
       -- Only a read requested from here on can end the wait (#2495).
-      -- The flash is not known to be ready again until a read taken after the erase says so.
+      -- The flash is not known to be ready again until a read taken after the erase says so,
+      -- and reads still in flight from before the erase must not say otherwise.
       dataflash.ready = false
+      stateSeq = pollSeq + 1
       eraseDoneSeq = pollSeq + 1
       poll()
     end, function()
@@ -178,6 +185,7 @@ local function open(opts)
       eraseDoneSeq = nil
       -- The erase may or may not have run: the flash is not known to be ready until a read says so.
       dataflash.ready = false
+      stateSeq = pollSeq + 1
       closeDialog(focusFn)
       poll()
     end))
