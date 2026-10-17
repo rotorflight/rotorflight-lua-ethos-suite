@@ -91,7 +91,7 @@ local function load()
 end
 
 local function update(fields)
-  local snapshot = {connected = true, mcuId = MCU, craftName = "Wing"}
+  local snapshot = {connected = true, mcuId = MCU, craftName = "Wing", fcVersion = "4.7.0"}
   for k, v in pairs(fields) do snapshot[k] = v end
   if fields.mcuId == false then snapshot.mcuId = nil end
   handlers["session.update"](snapshot)
