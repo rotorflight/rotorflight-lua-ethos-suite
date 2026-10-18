@@ -300,6 +300,7 @@ package.loaded["rfsuite.app.header"] = nil
 package.loaded["rfsuite.lib.require"] = function(path)
   if path == "app/tile_grid.lua" then return {} end
   if path == "app/connection_details.lua" then return dofile(SUITE .. "/app/connection_details.lua") end
+  if path == "lib/bus.lua" then return package.loaded["rfsuite.lib.bus"] end
   error("unexpected require in header harness: " .. tostring(path))
 end
 local header = dofile(SUITE .. "/app/header.lua")
