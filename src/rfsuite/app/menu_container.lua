@@ -176,6 +176,19 @@ local function screenHasArmedGating(entries, menus, depth)
   return false
 end
 
+-- True once the task has run past its grace period, the link is down and this
+-- menu has a tile that is closed for that reason (#2319). A disabled tile gets no
+-- press, so the notice comes from the menu's own state, not from a tap.
+local function closedByLinkOn(entries, taskGuard)
+  if not (taskGuard and taskGuard.isRunning() and taskGuard.graceExpired()) then return false end
+  for i = 1, #entries do
+    if menuFeedback.closedByLink(entries[i].offline == true, taskGuard.isRunning(), taskGuard.isConnected()) then
+      return true
+    end
+  end
+  return false
+end
+
 -- Armed state comes in as a function rather than a value: the session
 -- snapshot is republished continuously on the bus, and a captured boolean
 -- would freeze at whatever it was when the screen was built. app/tool.lua
@@ -396,12 +409,8 @@ local function openScreen(nav, menus, rootEntries, screen, setEventHandler, setW
           -- the state, and a refused press answers with nothing (#2302).
           if entryIsLockedNow(entry) then return end
           if not canOpenEntry(entry, taskGuard) then
-            local blocked = taskGuard and menuFeedback.blockedBy(entry.offline == true,
-              taskGuard.isRunning(), taskGuard.isConnected())
-            if blocked == menuFeedback.TASK_MISSING and taskGuard.requestAlert then
+            if taskGuard and (not taskGuard.isRunning()) and taskGuard.requestAlert then
               taskGuard.requestAlert()
-            elseif blocked == menuFeedback.NOT_CONNECTED and taskGuard.requestNotConnectedAlert then
-              taskGuard.requestNotConnectedAlert()
             end
             return
           end
@@ -511,6 +520,9 @@ local function openScreen(nav, menus, rootEntries, screen, setEventHandler, setW
 
       if taskGuardExpired(taskGuard) and taskGuard.requestAlert then
         taskGuard.requestAlert()
+      end
+      if closedByLinkOn(entries, taskGuard) and taskGuard.requestNotConnectedAlert then
+        taskGuard.requestNotConnectedAlert()
       end
     end
     updateMenuState()

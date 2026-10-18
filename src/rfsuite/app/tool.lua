@@ -491,6 +491,7 @@ local taskAlertOpen = false
 local taskAlertShown = false
 local notConnectedPending = false
 local notConnectedOpen = false
+local notConnectedShown = false
 
 local function isBackgroundTaskRunning()
   return taskStatusAt ~= nil and (os.clock() - taskStatusAt) <= TASK_STATUS_TIMEOUT
@@ -529,8 +530,9 @@ end
 -- one-shot alert above it is not latched: every press is answered, and a press
 -- waits only while a dialog is already open.
 local function requestNotConnectedAlert()
-  if notConnectedOpen then return end
+  if notConnectedOpen or notConnectedShown then return end
   notConnectedPending = true
+  notConnectedShown = true
 end
 
 local function showNotConnectedAlert()
@@ -604,6 +606,8 @@ bus.subscribe("session.update", function(session)
   -- read as disarmed or every connection-gated menu would badge itself
   -- during the seconds before the first telemetry frame lands.
   sessionArmed = session ~= nil and session.isArmed == true
+  -- The link is back: the next loss gets its own notice (#2319).
+  if sessionConnected then notConnectedShown = false end
 end)
 
 local function updateDeveloperMode(settings)
@@ -635,6 +639,7 @@ local function create()
   taskAlertShown = false
   notConnectedPending = false
   notConnectedOpen = false
+  notConnectedShown = false
   updateDeveloperMode()
   ensureMemstats()
   -- Guards first: menu_container consults them while building the first
