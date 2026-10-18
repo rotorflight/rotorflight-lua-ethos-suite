@@ -188,6 +188,10 @@ local function recordStat(widget, key, value)
   if value > entry.max then entry.max = value end
 end
 
+local function clearStats(stats)
+  for key in pairs(stats) do stats[key] = nil end
+end
+
 local function resetRuntime(widget)
   if not widget then return end
   widget.layout = nil
@@ -376,7 +380,12 @@ local function update(widget, snapshot)
   widget.governorState = snapshot.governorState
   widget.timerLive = snapshot.timerLive or 0
   widget.timerSession = snapshot.timerSession or 0
-  if widget.flightmode:update(widget) == "inflight" then
+  local previousMode = widget.flightmode.current
+  local currentMode = widget.flightmode:update(widget)
+  if currentMode == "inflight" and previousMode ~= "inflight" and previousMode ~= "postflight" then
+    clearStats(widget.stats)
+  end
+  if currentMode == "inflight" then
     recordStat(widget, "fuel", widget.fuelPercent)
     recordStat(widget, "current", widget.current)
     recordStat(widget, "voltage", widget.voltage)
