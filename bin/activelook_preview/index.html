@@ -417,6 +417,21 @@
         return snapshot;
       }
 
+      function configSnapshotFromSettings(settings) {
+        const snapshot = {};
+        for (const phase of phases) {
+          const storedLayout = settings[`layout_${phase}`];
+          const layout = layouts.some(([key]) => key === storedLayout) ? storedLayout : defaults[phase].layout;
+          const slots = [...defaults[phase].slots];
+          for (let index = 0; index < 4; index++) {
+            const storedSlot = settings[`${phase}_${index + 1}`];
+            if (sensorChoices.some(([key]) => key === storedSlot)) slots[index] = storedSlot;
+          }
+          snapshot[phase] = {layout, slots};
+        }
+        return snapshot;
+      }
+
       function updateConfigDirty() {
         if (!savedSimulatorConfig) {
           configDirty = false;
@@ -470,7 +485,7 @@
       function applySimulatorConfig(payload) {
         if (payload.revision === simulatorConfigRevision) return;
         if (configDirty) {
-          configSaveStatus = "Simulator settings changed · save to resolve conflict";
+          configSaveStatus = "Simulator settings changed · local edits kept";
           refreshControls();
           return;
         }
@@ -483,15 +498,12 @@
         simulatorOffsetX = Math.max(-20, Math.min(20, Number(settings.offset_x) || 0));
         simulatorOffsetY = Math.max(-20, Math.min(20, Number(settings.offset_y) || 0));
 
+        const savedConfig = configSnapshotFromSettings(settings);
         for (const phase of phases) {
-          const layoutKey = settings[`layout_${phase}`];
-          if (layouts.some(([key]) => key === layoutKey)) config[phase].layout = layoutKey;
-          for (let index = 0; index < 4; index++) {
-            const sensorKey = settings[`${phase}_${index + 1}`];
-            if (sensorChoices.some(([key]) => key === sensorKey)) config[phase].slots[index] = sensorKey;
-          }
+          config[phase].layout = savedConfig[phase].layout;
+          config[phase].slots = [...savedConfig[phase].slots];
         }
-        savedSimulatorConfig = layoutConfigSnapshot();
+        savedSimulatorConfig = savedConfig;
         layoutSelect.disabled = false;
         slotContainer.querySelectorAll("select").forEach((select) => { select.disabled = false; });
         resetConfigButton.disabled = false;
@@ -783,10 +795,15 @@
           });
           const payload = await response.json();
           if (response.status === 409 && payload.ok) {
-            configDirty = false;
-            simulatorConfigRevision = null;
-            applySimulatorConfig(payload);
-            configSaveStatus = "Lua settings changed · latest settings loaded";
+            simulatorConfigRevision = payload.revision;
+            savedSimulatorConfig = configSnapshotFromSettings(payload.settings || {});
+            simulatorOffsetX = Math.max(-20, Math.min(20, Number(payload.settings.offset_x) || 0));
+            simulatorOffsetY = Math.max(-20, Math.min(20, Number(payload.settings.offset_y) || 0));
+            simulatorConfigEnabled = payload.settings.enabled !== "false";
+            updateConfigDirty();
+            configSaveStatus = configDirty
+              ? "Simulator changed · review edits, then save again to overwrite"
+              : "Matches simulator settings";
           } else if (!response.ok || !payload.ok) {
             throw new Error(payload.error || `HTTP ${response.status}`);
           } else {

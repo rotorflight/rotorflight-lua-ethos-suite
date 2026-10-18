@@ -25,7 +25,7 @@ Always available offline without an active flight controller connection. Read-on
 
 ## Notes
 
-- Changes are written to the flight controller EEPROM upon Save.
+- Changes are stored in `[activelook]` in `SCRIPTS:/rfsuite.user/settings.ini` on Save. They are RFSuite settings, not flight controller EEPROM settings.
 
 ## Related
 

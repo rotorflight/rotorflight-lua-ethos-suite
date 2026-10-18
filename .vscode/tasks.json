@@ -310,6 +310,24 @@
       "presentation": { "reveal": "always", "panel": "shared", "clear": true }
     },
     {
+      "label": "ActiveLook Preview",
+      "type": "shell",
+      "command": "python",
+      "windows": {
+        "command": "${command:python.interpreterPath}"
+      },
+      "args": [
+        "${workspaceFolder}/bin/activelook_preview/server.py",
+        "--open"
+      ],
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated",
+        "clear": true
+      }
+    },
+    {
       "label": "Run RFSuite Sensor Tool",
       "type": "process",
       "command": "${workspaceFolder}/bin/sensors/sensors.exe",

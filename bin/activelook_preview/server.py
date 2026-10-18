@@ -2,11 +2,13 @@
 
 from __future__ import annotations
 
+import argparse
 import json
 import os
 import random
 import re
 import tempfile
+import webbrowser
 from datetime import datetime, timezone
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
@@ -53,11 +55,78 @@ SENSOR_KEYS = {
 PHASES = ("preflight", "inflight", "postflight")
 
 
-def simulator_config() -> tuple[dict, Path, Path]:
-    settings = json.loads((ROOT / ".vscode" / "settings.json").read_text(encoding="utf-8"))
+class SimulatorConfigError(Exception):
+    """The workspace cannot identify a usable Ethos simulator target."""
+
+
+def parse_jsonc(source: str) -> dict:
+    """Parse VS Code JSONC settings without changing comment-like string values."""
+    output = []
+    index = 0
+    in_string = False
+    escaped = False
+    while index < len(source):
+        char = source[index]
+        if in_string:
+            output.append(char)
+            if escaped:
+                escaped = False
+            elif char == "\\":
+                escaped = True
+            elif char == '"':
+                in_string = False
+            index += 1
+            continue
+
+        if char == '"':
+            in_string = True
+            output.append(char)
+            index += 1
+            continue
+        if char == "/" and index + 1 < len(source) and source[index + 1] in ("/", "*"):
+            if source[index + 1] == "/":
+                index += 2
+                while index < len(source) and source[index] not in "\r\n":
+                    index += 1
+                continue
+            index += 2
+            while index + 1 < len(source) and source[index:index + 2] != "*/":
+                if source[index] in "\r\n":
+                    output.append(source[index])
+                index += 1
+            if index + 1 >= len(source):
+                raise ValueError("unterminated block comment in .vscode/settings.json")
+            index += 2
+            continue
+        if char == ",":
+            lookahead = index + 1
+            while lookahead < len(source) and source[lookahead].isspace():
+                lookahead += 1
+            if lookahead < len(source) and source[lookahead] in "]}":
+                index += 1
+                continue
+
+        output.append(char)
+        index += 1
+
+    settings = json.loads("".join(output))
+    if not isinstance(settings, dict):
+        raise ValueError(".vscode/settings.json must contain a JSON object")
+    return settings
+
+
+def simulator_config() -> tuple[dict, Path, Path, Path]:
+    settings_path = ROOT / ".vscode" / "settings.json"
+    try:
+        settings = parse_jsonc(settings_path.read_text(encoding="utf-8"))
+    except (OSError, UnicodeError, json.JSONDecodeError, ValueError) as error:
+        raise SimulatorConfigError(f"Cannot read simulator settings from {settings_path}: {error}") from error
+
     board = settings.get("ethos.board")
     protocol = settings.get("ethos.protocol")
     release = settings.get("ethos.release")
+    if not board or not protocol:
+        raise SimulatorConfigError(f"ethos.board and ethos.protocol must be set in {settings_path}")
     simulators_dir = Path(settings.get("ethos.simulatorsFolder", "simulators"))
     if not simulators_dir.is_absolute():
         simulators_dir = ROOT / simulators_dir
@@ -72,7 +141,7 @@ def simulator_config() -> tuple[dict, Path, Path]:
     simulator_dir = exact if exact.is_dir() else (candidates[0] if candidates else exact)
     sensor_dir = simulator_dir / "scripts" / "rfsuite" / "sim" / "sensors"
     settings_file = simulator_dir / "scripts" / "rfsuite.user" / "settings.ini"
-    return settings, sensor_dir, settings_file
+    return settings, simulator_dir, sensor_dir, settings_file
 
 
 def read_lua_number(path: Path) -> tuple[float | None, bool]:
@@ -95,11 +164,11 @@ def read_lua_number(path: Path) -> tuple[float | None, bool]:
 
 
 def telemetry_payload() -> dict:
-    settings, sensor_dir, _ = simulator_config()
+    _, simulator_dir, sensor_dir, _ = simulator_config()
     if not sensor_dir.is_dir():
         return {
             "ok": False,
-            "target": sensor_dir.parent.parent.parent.parent.name,
+            "target": simulator_dir.name,
             "error": "Simulator sensor profile folder not found. Deploy the suite and save values in sensors.exe.",
             "values": {},
         }
@@ -130,12 +199,9 @@ def telemetry_payload() -> dict:
     if "armflags" in raw:
         values["armed"] = (int(raw["armflags"]) & 1) == 1
 
-    board = settings.get("ethos.board", "unknown")
-    protocol = settings.get("ethos.protocol", "unknown")
-    release = settings.get("ethos.release", "unknown")
     return {
         "ok": bool(values),
-        "target": f"{board}_{protocol}@{release}",
+        "target": simulator_dir.name,
         "updatedAt": datetime.now(timezone.utc).isoformat(),
         "randomFields": random_fields,
         "values": values,
@@ -143,14 +209,14 @@ def telemetry_payload() -> dict:
 
 
 def activelook_config_payload() -> dict:
-    settings, _, settings_file = simulator_config()
+    _, simulator_dir, _, settings_file = simulator_config()
     try:
         file_stat = settings_file.stat()
         contents = settings_file.read_text(encoding="utf-8")
     except OSError:
         return {
             "ok": False,
-            "target": settings_file.parent.parent.name,
+            "target": simulator_dir.name,
             "error": "Simulator settings file not found. Save ActiveLook settings in the simulator first.",
             "settings": {},
         }
@@ -169,19 +235,16 @@ def activelook_config_payload() -> dict:
         key, value = line.split("=", 1)
         values[key.strip()] = value.strip()
 
-    board = settings.get("ethos.board", "unknown")
-    protocol = settings.get("ethos.protocol", "unknown")
-    release = settings.get("ethos.release", "unknown")
     return {
         "ok": bool(values),
-        "target": f"{board}_{protocol}@{release}",
+        "target": simulator_dir.name,
         "revision": str(file_stat.st_mtime_ns),
         "settings": values,
     }
 
 
 def update_activelook_config(request: dict) -> tuple[int, dict]:
-    _, _, settings_file = simulator_config()
+    _, _, _, settings_file = simulator_config()
     current = activelook_config_payload()
     if not current.get("ok"):
         return 404, current
@@ -241,6 +304,8 @@ def update_activelook_config(request: dict) -> tuple[int, dict]:
             seen.add(key)
 
     missing = [f"{key}={value}\n" for key, value in updates.items() if key not in seen]
+    if missing and section_end > 0 and not lines[section_end - 1].endswith(("\n", "\r")):
+        lines[section_end - 1] += "\n"
     lines[section_end:section_end] = missing
     settings_file.parent.mkdir(parents=True, exist_ok=True)
     temp_path = None
@@ -268,33 +333,7 @@ class PreviewHandler(SimpleHTTPRequestHandler):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, directory=str(PREVIEW_DIR), **kwargs)
 
-    def do_GET(self):
-        endpoint = urlparse(self.path).path
-        if endpoint in ("/api/telemetry", "/api/activelook-config"):
-            payload = telemetry_payload() if endpoint == "/api/telemetry" else activelook_config_payload()
-            body = json.dumps(payload).encode("utf-8")
-            self.send_response(200)
-            self.send_header("Content-Type", "application/json; charset=utf-8")
-            self.send_header("Cache-Control", "no-store")
-            self.send_header("Content-Length", str(len(body)))
-            self.end_headers()
-            self.wfile.write(body)
-            return
-        super().do_GET()
-
-    def do_POST(self):
-        if urlparse(self.path).path != "/api/activelook-config":
-            self.send_error(404)
-            return
-        try:
-            length = int(self.headers.get("Content-Length", "0"))
-            if length <= 0 or length > 16384:
-                raise ValueError("invalid request size")
-            request = json.loads(self.rfile.read(length).decode("utf-8"))
-            status, payload = update_activelook_config(request)
-        except (UnicodeDecodeError, json.JSONDecodeError, ValueError) as error:
-            status, payload = 400, {"ok": False, "error": str(error)}
-
+    def send_json(self, status: int, payload: dict) -> None:
         body = json.dumps(payload).encode("utf-8")
         self.send_response(status)
         self.send_header("Content-Type", "application/json; charset=utf-8")
@@ -303,11 +342,58 @@ class PreviewHandler(SimpleHTTPRequestHandler):
         self.end_headers()
         self.wfile.write(body)
 
+    def loopback_host_allowed(self) -> bool:
+        return self.headers.get("Host", "") == f"127.0.0.1:{self.server.server_port}"
+
+    def do_GET(self):
+        endpoint = urlparse(self.path).path
+        if endpoint in ("/api/telemetry", "/api/activelook-config"):
+            if not self.loopback_host_allowed():
+                self.send_json(403, {"ok": False, "error": "invalid Host header"})
+                return
+            try:
+                payload = telemetry_payload() if endpoint == "/api/telemetry" else activelook_config_payload()
+            except SimulatorConfigError as error:
+                self.send_json(503, {"ok": False, "error": str(error), "values": {}, "settings": {}})
+                return
+            self.send_json(200, payload)
+            return
+        super().do_GET()
+
+    def do_POST(self):
+        if urlparse(self.path).path != "/api/activelook-config":
+            self.send_error(404)
+            return
+        if not self.loopback_host_allowed():
+            self.send_json(403, {"ok": False, "error": "invalid Host header"})
+            return
+        if self.headers.get_content_type() != "application/json":
+            self.send_json(415, {"ok": False, "error": "Content-Type must be application/json"})
+            return
+        try:
+            length = int(self.headers.get("Content-Length", "0"))
+            if length <= 0 or length > 16384:
+                raise ValueError("invalid request size")
+            request = json.loads(self.rfile.read(length).decode("utf-8"))
+        except (UnicodeDecodeError, json.JSONDecodeError, ValueError) as error:
+            self.send_json(400, {"ok": False, "error": str(error)})
+            return
+        try:
+            status, payload = update_activelook_config(request)
+        except SimulatorConfigError as error:
+            self.send_json(503, {"ok": False, "error": str(error)})
+            return
+        self.send_json(status, payload)
+
     def log_message(self, format, *args):
         print(f"[{self.log_date_time_string()}] {format % args}")
 
 
 if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="Run the ActiveLook simulator preview.")
+    parser.add_argument("--open", action="store_true", help="Open the preview URL in the default browser")
+    args = parser.parse_args()
+
     server = None
     for port in range(8765, 8776):
         try:
@@ -317,8 +403,11 @@ if __name__ == "__main__":
             continue
     if server is None:
         raise OSError("No available preview port in range 8765-8775")
-    print(f"ActiveLook preview: http://127.0.0.1:{server.server_port}")
+    url = f"http://127.0.0.1:{server.server_port}"
+    print(f"ActiveLook preview: {url}")
     print("Reads sensor profiles from the Ethos simulator folder in .vscode/settings.json.")
+    if args.open:
+        webbrowser.open(url)
     try:
         server.serve_forever()
     except KeyboardInterrupt:

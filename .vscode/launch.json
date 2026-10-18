@@ -113,6 +113,16 @@
       "postDebugTask": "Run RFSuite Sensor Tool"
     },
     {
+      "name": "ActiveLook Preview",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${workspaceFolder}/bin/activelook_preview/server.py",
+      "args": ["--open"],
+      "console": "integratedTerminal",
+      "justMyCode": true,
+      "stopOnEntry": false
+    },
+    {
       "name": "Set Deployment Language",
       "type": "debugpy",
       "request": "launch",
