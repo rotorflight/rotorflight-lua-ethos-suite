@@ -61,12 +61,53 @@ class SimulatorConfigError(Exception):
 
 def parse_jsonc(source: str) -> dict:
     """Parse VS Code JSONC settings without changing comment-like string values."""
-    output = []
+    comment_free = []
     index = 0
     in_string = False
     escaped = False
     while index < len(source):
         char = source[index]
+        if in_string:
+            comment_free.append(char)
+            if escaped:
+                escaped = False
+            elif char == "\\":
+                escaped = True
+            elif char == '"':
+                in_string = False
+            index += 1
+            continue
+
+        if char == '"':
+            in_string = True
+            comment_free.append(char)
+            index += 1
+            continue
+        if char == "/" and index + 1 < len(source) and source[index + 1] in ("/", "*"):
+            if source[index + 1] == "/":
+                index += 2
+                while index < len(source) and source[index] not in "\r\n":
+                    index += 1
+                continue
+            index += 2
+            while index + 1 < len(source) and source[index:index + 2] != "*/":
+                if source[index] in "\r\n":
+                    comment_free.append(source[index])
+                index += 1
+            if index + 1 >= len(source):
+                raise ValueError("unterminated block comment in .vscode/settings.json")
+            index += 2
+            continue
+        comment_free.append(char)
+        index += 1
+
+    comment_free = "".join(comment_free)
+    output = []
+    index = 0
+    in_string = False
+    escaped = False
+    while index < len(comment_free):
+        char = comment_free[index]
         if in_string:
             output.append(char)
             if escaped:
@@ -83,26 +124,11 @@ def parse_jsonc(source: str) -> dict:
             output.append(char)
             index += 1
             continue
-        if char == "/" and index + 1 < len(source) and source[index + 1] in ("/", "*"):
-            if source[index + 1] == "/":
-                index += 2
-                while index < len(source) and source[index] not in "\r\n":
-                    index += 1
-                continue
-            index += 2
-            while index + 1 < len(source) and source[index:index + 2] != "*/":
-                if source[index] in "\r\n":
-                    output.append(source[index])
-                index += 1
-            if index + 1 >= len(source):
-                raise ValueError("unterminated block comment in .vscode/settings.json")
-            index += 2
-            continue
         if char == ",":
             lookahead = index + 1
-            while lookahead < len(source) and source[lookahead].isspace():
+            while lookahead < len(comment_free) and comment_free[lookahead].isspace():
                 lookahead += 1
-            if lookahead < len(source) and source[lookahead] in "]}":
+            if lookahead < len(comment_free) and comment_free[lookahead] in "]}":
                 index += 1
                 continue
 
@@ -259,9 +285,9 @@ def update_activelook_config(request: dict) -> tuple[int, dict]:
     for phase in PHASES:
         layout = requested.get(f"layout_{phase}")
         slots = requested.get(phase)
-        if layout not in LAYOUT_KEYS or not isinstance(slots, list) or len(slots) != 4:
+        if not isinstance(layout, str) or layout not in LAYOUT_KEYS or not isinstance(slots, list) or len(slots) != 4:
             return 400, {"ok": False, "error": f"invalid ActiveLook configuration for {phase}"}
-        if any(slot not in SENSOR_KEYS for slot in slots):
+        if any(not isinstance(slot, str) or slot not in SENSOR_KEYS for slot in slots):
             return 400, {"ok": False, "error": f"invalid ActiveLook slot for {phase}"}
         updates[f"layout_{phase}"] = layout
         for index, slot in enumerate(slots, start=1):
@@ -377,6 +403,9 @@ class PreviewHandler(SimpleHTTPRequestHandler):
             request = json.loads(self.rfile.read(length).decode("utf-8"))
         except (UnicodeDecodeError, json.JSONDecodeError, ValueError) as error:
             self.send_json(400, {"ok": False, "error": str(error)})
+            return
+        if not isinstance(request, dict):
+            self.send_json(400, {"ok": False, "error": "request body must be a JSON object"})
             return
         try:
             status, payload = update_activelook_config(request)
