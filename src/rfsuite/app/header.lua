@@ -237,10 +237,12 @@ function header.build(title, opts)
   local isLeafPage = (opts.onSave ~= nil) or (opts.onReload ~= nil) or (opts.onTool ~= nil)
 
   if not isLeafPage then
-    local slots = form.getFieldSlots(line, {0, SLOT_HINT})
+    -- The info button sits in the same slot as on the leaf pages (#2318), so it reads the same everywhere.
+    local slots = form.getFieldSlots(line, {0, SLOT_HINT, SLOT_HINT, SLOT_HINT, SLOT_HINT, SLOT_HINT})
     local titleRect = buildTitleRect(slots)
     local titleField = form.addStaticText(line, titleRect, fitTitle(title, titleRect.w), LEFT)
     local menuButton = addNavButton(line, slots[2], MENU_ICON, opts.onBack)
+    addNavButton(line, slots[6], INFO_ICON, function() connectionDetails.open() end)
     return {
       setTitle = function(newTitle) titleField:value(fitTitle(newTitle, titleRect.w)) end,
       setSaveEnabled = noop,

@@ -282,11 +282,12 @@ local function runChecks()
   registeredTool.create()
 
   -- menu_container calls form.clear() on every screen build, so `buttons` always
-  -- holds exactly one screen: its header Menu button first, then its tiles.
+  -- holds exactly one screen: its header Menu button first, then the header's info
+  -- button (#2318, on every page), then its tiles.
   local function headerButton() return buttons[1] end
   local function tileButtons()
     local tiles = {}
-    for i = 2, #buttons do tiles[#tiles + 1] = buttons[i] end
+    for i = 3, #buttons do tiles[#tiles + 1] = buttons[i] end
     return tiles
   end
 

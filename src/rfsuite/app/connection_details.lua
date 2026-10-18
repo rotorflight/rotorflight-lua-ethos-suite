@@ -19,7 +19,7 @@ local NOT_KNOWN = "-"
 -- The handshake's steps, as the session records them (tasks/session.lua copyHandshake).
 local HANDSHAKE_STEPS = {
   "apiVersion", "fcVariant", "mcuId", "craftName", "clockSynced",
-  "batteryConfig", "smartfuelConfig", "governorConfig", "rxMap",
+  "batteryConfig", "smartfuelConfig", "rxMap",
 }
 
 local function text(value)

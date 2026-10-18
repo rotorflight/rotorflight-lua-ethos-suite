@@ -131,9 +131,13 @@ do
   local connected = {connected = true, craftName = "Heli", rfVersion = "4.6.0", apiVersion = "12.10",
     handshake = {apiVersion = true, fcVariant = true, mcuId = true}}
   local body = details.body(connected)
-  check("a connected link says so, with the handshake's steps done out of nine",
-    body:find("Link: connected", 1, true) ~= nil and body:find("Handshake: 3 of 9 steps", 1, true) ~= nil,
+  check("a connected link says so, with the handshake's steps done out of eight",
+    body:find("Link: connected", 1, true) ~= nil and body:find("Handshake: 3 of 8 steps", 1, true) ~= nil,
     body)
+  local complete = {connected = true, handshake = {apiVersion = true, fcVariant = true, mcuId = true,
+    craftName = true, clockSynced = true, batteryConfig = true, smartfuelConfig = true, rxMap = true}}
+  check("with every handshake step done the count reaches eight of eight",
+    details.body(complete):find("Handshake: 8 of 8 steps", 1, true) ~= nil, details.body(complete))
   check("the body names the craft, the firmware and the API the session holds",
     body:find("Craft: Heli", 1, true) ~= nil and body:find("Firmware: 4.6.0", 1, true) ~= nil
       and body:find("API: 12.10", 1, true) ~= nil, body)
@@ -143,7 +147,7 @@ do
   local down = {connected = false, handshake = {}}
   local body = details.body(down)
   check("a link that is down says it is not connected", body:find("Link: not connected", 1, true) ~= nil, body)
-  check("with no handshake step done it reads 0 of 9", body:find("Handshake: 0 of 9 steps", 1, true) ~= nil, body)
+  check("with no handshake step done it reads 0 of 8", body:find("Handshake: 0 of 8 steps", 1, true) ~= nil, body)
   check("a name and versions the session does not hold read as a dash",
     body:find("Craft: -", 1, true) ~= nil and body:find("Firmware: -", 1, true) ~= nil, body)
 end
@@ -188,6 +192,20 @@ do
   if info then
     info.opts.press()
     check("pressing the info button opens the connection dialog", #dialogs == 1
+      and resolve(dialogs[1].title) == "Connection")
+  end
+
+  -- A page with no save, reload or tool button (a non-leaf page) has the info button too.
+  buttons = {}
+  dialogs = {}
+  header.build("Test", {onBack = noop})
+  local nonLeafInfo = buttons[#buttons]
+  check("a non-leaf header also has the info button, on the same slot as on leaf pages",
+    nonLeafInfo and nonLeafInfo.rect.x == 50 and nonLeafInfo.opts.icon ~= nil
+      and type(nonLeafInfo.opts.press) == "function")
+  if nonLeafInfo then
+    nonLeafInfo.opts.press()
+    check("pressing the info button on a non-leaf page opens the connection dialog", #dialogs == 1
       and resolve(dialogs[1].title) == "Connection")
   end
 end
