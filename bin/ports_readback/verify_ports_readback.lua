@@ -317,6 +317,14 @@ openAndLoad(CRSF_SENSORS, 9)
 check("a port that already carries CRSF sensors keeps it on a 12.09 board",
   anyFunctionListHas(CRSF_SENSORS))
 
+print("function list after the handshake")
+openAndLoad(0, nil)
+choiceCalls = {}
+require("rfsuite.lib.bus").publish("session.update", {isArmed = false, apiVersionMinor = 10})
+if wakeupHandler then wakeupHandler() end
+check("a handshake that lands after the load rebuilds the list with CRSF sensors",
+  anyFunctionListHas(CRSF_SENSORS))
+
 print("rate field")
 openAndLoad(0, 10)
 local oneEntry = 0

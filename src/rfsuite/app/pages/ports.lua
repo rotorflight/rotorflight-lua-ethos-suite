@@ -248,6 +248,9 @@ local function open(opts)
   local saveError = nil
   local saveNotice = nil
   local needsRender = false
+  -- The API version this page instance last rendered for. Kept per page: a stale subscriber can
+  -- already have stored the shared apiVersionMinor before this page's handler runs.
+  local lastApiMinor = nil
   local isArmed = nil
   local activeDialog = nil
   local confirmDialog = nil
@@ -630,7 +633,14 @@ local function open(opts)
   sessionHandler = function(update)
     if disposed then return end
     isArmed = update and update.isArmed
-    apiVersionMinor = update and update.apiVersionMinor
+    -- The function choices depend on the minor version, so a change rebuilds the rows. A
+    -- load that finished before the handshake would otherwise keep the list built without it.
+    local minor = update and update.apiVersionMinor
+    apiVersionMinor = minor
+    if minor ~= lastApiMinor then
+      lastApiMinor = minor
+      needsRender = true
+    end
   end
   bus.subscribe("session.update", sessionHandler)
 
