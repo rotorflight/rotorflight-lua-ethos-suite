@@ -12,7 +12,7 @@ local WRITE_COMMAND = 218
 
 local MOTOR_DIRECTION = {{"Normal", 0}, {"Reversed", 1}}
 local ON_OFF = {{"Off", 0}, {"On", 1}}
-local TIMING_ADVANCE = {{"0 deg", 0}, {"7.5 deg", 1}, {"15 deg", 2}, {"22.5 deg", 3}}
+local TIMING_ADVANCE = {{"0 deg", 0}, {"7.5 deg", 1}, {"15 deg", 2}, {"22.5 deg", 3}, {"30 deg", 4}}
 local PROTOCOL = {{"Auto", 0}, {"Dshot 300-600", 1}, {"Servo 1-2ms", 2}, {"Serial", 3}, {"BF Safe Arming", 4}}
 local BRAKE_ON_STOP = {
   {"@i18n(app.modules.esc_tools.mfg.am32.tbl_brake_off)@", 0},
@@ -136,13 +136,14 @@ end
 -- direction; a wire type in neither is the identity, which is every plain byte.
 --
 -- timing is the one that costs the ESC something. Two firmware generations
--- number the four timing-advance positions differently -- 0..3 and 10..42 in
+-- number the timing-advance positions differently -- 0..3 and 10..42 in
 -- steps of 8 -- and both spellings are in the field, so the byte a position
 -- came from decides what has to go back. That is why ENCODED.timing takes the
 -- stored byte as its second argument: it is not derivable from the position.
 local NORMALIZE = {
   timing = function(raw)
-    if raw >= 10 and raw <= 42 then return clamp((raw - 10) / 8, 0, 3) end
+    -- raw 42 is the fifth position (30 deg); the older 0..3 numbering stops at 22.5
+    if raw >= 10 and raw <= 42 then return clamp((raw - 10) / 8, 0, 4) end
     return clamp(raw, 0, 3)
   end,
   motor_kv = function(raw) return raw * 40 + 20 end,
@@ -155,8 +156,8 @@ local NORMALIZE = {
 
 local ENCODED = {
   timing = function(value, stored)
-    if stored >= 10 and stored <= 42 then return 10 + value * 8 end
-    return value
+    if stored >= 10 and stored <= 42 then return 10 + clamp(value, 0, 4) * 8 end
+    return clamp(value, 0, 3)
   end,
   motor_kv = function(value) return clamp((value - 20) / 40, 0, 255) end,
   servo_low = function(value) return clamp((value - 750) / 2, 0, 255) end,
