@@ -174,7 +174,8 @@ end
 --                               -- not the instant data arrived, since Ethos doesn't necessarily re-invoke
 --                               -- every field's getter just because loadData() re-enabled them.
 --   beforeSave,                 -- optional; called at the start of performSave(), after the pilot
---                               -- confirms but before any MSP_SET_* write is built.
+--                               -- confirms but before any MSP_SET_* write is built. Returning false
+--                               -- aborts the save (the page reports the failure itself).
 --   extraSaveMessage,           -- optional text appended to the generic save confirmation body.
 --   eepromWrite,                 -- optional; defaults true. Set false for direct targets whose original
 --                               -- page writes its own non-FC storage and does not request MSP_EEPROM_WRITE.
@@ -759,8 +760,10 @@ end
 function PageRuntime:performSave(focusFn)
   if self.disposed or not self:canSave() then return end
 
-  if self.beforeSave then
-    self.beforeSave(self)
+  -- Returning false from beforeSave refuses the whole save: nothing is written,
+  -- the page stays dirty, and beforeSave has already told the pilot why (#2545).
+  if self.beforeSave and self.beforeSave(self) == false then
+    return
   end
 
   self:setBusy(true)

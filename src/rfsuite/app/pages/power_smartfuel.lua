@@ -5,6 +5,7 @@ local pageRuntime = requireModule("app/page_runtime.lua")
 local fieldLayout = requireModule("app/field_layout.lua")
 local smartfuelConfig = requireModule("lib/msp_smartfuel_config.lua")
 local modelPreferences = requireModule("lib/model_preferences.lua")
+local settingsSave = requireModule("app/settings_save.lua")
 local bus = requireModule("lib/bus.lua")
 
 local PAGE_TITLE = "@i18n(app.modules.power.smartfuel_name)@"
@@ -77,7 +78,12 @@ local function open(opts)
       if runtime and runtime.data then runtime.data.smartfuel_model_type = modelType end
       if modelType == cleanModelType(savedModelType) then return end
       prefs = modelPreferences.setSmartfuelModelType(prefs, modelType)
-      modelPreferences.save(prefsFile, prefs)
+      if not modelPreferences.save(prefsFile, prefs) then
+        -- Returning false aborts the whole save (page_runtime performSave): the
+        -- tuning values are not written either, and the page stays dirty (#2545).
+        settingsSave.reportFailure()
+        return false
+      end
       savedModelType = modelType
       bus.publish("model.smartfuel_type.update", {
         mcuId = mcuId,

@@ -1,0 +1,7 @@
+{
+  "id": "model-prefs-save",
+  "name": "A refused model-preference save is reported and keeps the page dirty",
+  "step": "Check the model-preference save failure",
+  "script": "bin/model_prefs_save/verify_model_prefs_save.lua",
+  "rationale": "Issue #2545: three pages (power_alerts, stats, power_smartfuel) saved model preferences and ignored modelPreferences.save()'s return value, so a refused write published the new state and cleared the Save button. They now report the refusal through app/settings_save.lua and keep the page dirty. A beforeSave hook that returns false aborts performSave, so the smartfuel model type is not followed by a tuning write that would leave the page clean with an unsaved model type.\n\nThe harness drives the real pages and the real page_runtime: a session update selects a model, a field setter makes the page dirty, Save is pressed and confirmed. It checks that a refused save publishes nothing, keeps the Save button lit and opens the save-failed dialog, that an accepted save publishes once, that a refused smartfuel model type aborts the save and is tried again on the next one, and that a beforeSave returning nothing still lets the save proceed. Its checks fail on unpatched master (12 of 24)."
+}

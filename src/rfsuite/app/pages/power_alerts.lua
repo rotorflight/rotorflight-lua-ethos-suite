@@ -5,6 +5,7 @@ local bus = requireModule("lib/bus.lua")
 local closeKey = requireModule("app/close_key.lua")
 local header = requireModule("app/header.lua")
 local modelPreferences = requireModule("lib/model_preferences.lua")
+local settingsSave = requireModule("app/settings_save.lua")
 
 local PAGE_TITLE = "@i18n(app.modules.power.alert_name)@"
 local BTN_OK = "@i18n(app.btn_ok)@"
@@ -96,7 +97,11 @@ local function open(opts)
   local function save(focusFn)
     if disposed or not loaded or not mcuId then return end
     prefs = modelPreferences.setPowerAlerts(prefs, alerts)
-    modelPreferences.save(prefsFile, prefs)
+    if not modelPreferences.save(prefsFile, prefs) then
+      -- A refused write keeps the page dirty and publishes nothing (#2545).
+      settingsSave.reportFailure(focusFn)
+      return
+    end
     originalAlerts = copyAlerts(alerts)
     bus.publish("model.timer.update", {
       mcuId = mcuId,
