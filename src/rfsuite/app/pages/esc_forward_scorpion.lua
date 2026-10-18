@@ -3,6 +3,7 @@
 local requireModule = package.loaded["rfsuite.lib.require"] or assert(loadfile("lib/require.lua"))()
 local vendorPage = requireModule("app/pages/esc_forward_vendor.lua")
 local msp = requireModule("lib/msp_esc_parameters_scorpion.lua")
+local escCurrentLimit = requireModule("lib/esc_current_limit.lua")
 
 local PAGE_TITLE = "@i18n(app.modules.esc_tools.mfg.scorp.name)@"
 local EXTRA_SAVE_MESSAGE = "@i18n(app.modules.esc_tools.mfg.scorp.extra_msg_save)@"
@@ -30,6 +31,11 @@ local FIELDS = {
   {label = "@i18n(app.modules.esc_tools.mfg.scorp.motor_startup_sound)@", key = "motor_startup_sound"},
 }
 
+-- max_current is held in hundredths of an amp (msp_esc_parameters_scorpion.lua, scale = 100).
+local function rememberLimit(runtime)
+  escCurrentLimit.remember(runtime and runtime.data and (tonumber(runtime.data.max_current) or 0) / 100)
+end
+
 local function open(opts)
   vendorPage.open(opts, {
     pageTitle = PAGE_TITLE,
@@ -37,6 +43,7 @@ local function open(opts)
     mspModule = msp,
     fields = FIELDS,
     beforeSave = msp.beforeSave,
+    onLoaded = rememberLimit,
     extraSaveMessage = EXTRA_SAVE_MESSAGE,
     eepromWrite = false,
     rebootAfterSave = false,

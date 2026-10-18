@@ -4,6 +4,7 @@ local requireModule = package.loaded["rfsuite.lib.require"] or assert(loadfile("
 local vendorPage = requireModule("app/pages/esc_forward_vendor.lua")
 local fourWayPage = requireModule("app/pages/esc_forward_4way.lua")
 local msp = requireModule("lib/msp_esc_parameters_am32.lua")
+local escCurrentLimit = requireModule("lib/esc_current_limit.lua")
 
 local PAGE_TITLE = "@i18n(app.modules.esc_tools.mfg.am32.name)@"
 local SWITCH_READ_DELAY = 4.0
@@ -61,7 +62,10 @@ local function openEditor(opts, selection)
     logTag = "esc_am32",
     mspModule = msp,
     fields = FIELDS,
-    onLoaded = updateDependentFields,
+    onLoaded = function(runtime)
+      updateDependentFields(runtime)
+      escCurrentLimit.remember(runtime and runtime.data and runtime.data.current_limit)
+    end,
     onWakeup = updateDependentFields,
     eepromWrite = false,
     rebootAfterSave = false,

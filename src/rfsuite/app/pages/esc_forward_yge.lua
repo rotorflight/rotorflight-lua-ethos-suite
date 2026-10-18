@@ -3,6 +3,7 @@
 local requireModule = package.loaded["rfsuite.lib.require"] or assert(loadfile("lib/require.lua"))()
 local vendorPage = requireModule("app/pages/esc_forward_vendor.lua")
 local msp = requireModule("lib/msp_esc_parameters_yge.lua")
+local escCurrentLimit = requireModule("lib/esc_current_limit.lua")
 
 local PAGE_TITLE = "@i18n(app.modules.esc_tools.mfg.yge.name)@"
 
@@ -48,6 +49,11 @@ local FIELDS = {
   {label = "@i18n(app.modules.esc_tools.mfg.yge.stick_range_us)@", key = "stick_range_us"},
 }
 
+-- current_limit is held in hundredths of an amp (msp_esc_parameters_yge.lua, decimals = 2).
+local function rememberLimit(runtime)
+  escCurrentLimit.remember(runtime and runtime.data and (tonumber(runtime.data.current_limit) or 0) / 100)
+end
+
 local function open(opts)
   vendorPage.open(opts, {
     pageTitle = PAGE_TITLE,
@@ -56,6 +62,7 @@ local function open(opts)
     fields = FIELDS,
     -- Selects 12.0 V, sets the flags byte's HV-BEC bit. #2337
     beforeSave = msp.beforeSave,
+    onLoaded = rememberLimit,
     unloadPackageKeys = {"rfsuite.lib.msp_esc_parameters_yge"},
   })
 end

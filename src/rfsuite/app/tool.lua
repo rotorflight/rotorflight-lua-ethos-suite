@@ -230,6 +230,9 @@ local MENUS = {
       {title = "@i18n(app.modules.power.alert_name)@", icon = lcd.loadMask("app/gfx/power.png"), script = "app/pages/power_alerts.lua", lockedWhileArmed = true},
       {title = "@i18n(app.modules.power.source_name)@", icon = lcd.loadMask("app/gfx/power_source.png"), script = "app/pages/power_source.lua", lockedWhileArmed = true},
       {title = "@i18n(app.modules.power.smartfuel_name)@", icon = lcd.loadMask("app/gfx/power_smartfuel.png"), script = "app/pages/power_smartfuel.lua", lockedWhileArmed = true},
+      -- Deliberately not marked: this page stores the model's own ESC current limit and asks the
+      -- flight controller for nothing, so it stays open while armed -- the policy above.
+      {title = "@i18n(app.modules.power.preferences_name)@", icon = lcd.loadMask("app/gfx/power.png"), script = "app/pages/power_preferences.lua"},
     },
   },
   esc_motors_menu = {

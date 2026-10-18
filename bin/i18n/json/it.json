@@ -4491,6 +4491,24 @@
         }
       },
       "power": {
+        "preferences_name": {
+          "english": "Preferences",
+          "translation": "Preferences",
+          "needs_translation": true,
+          "max_length": 11
+        },
+        "esc_current_limit": {
+          "english": "ESC Current Limit",
+          "translation": "ESC Current Limit",
+          "needs_translation": true,
+          "max_length": 17
+        },
+        "save_preferences_prompt": {
+          "english": "Save power preferences?",
+          "translation": "Save power preferences?",
+          "needs_translation": true,
+          "max_length": 23
+        },
         "alert_name": {
           "english": "Alerts",
           "translation": "Avvisi",

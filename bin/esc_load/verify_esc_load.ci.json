@@ -1,0 +1,7 @@
+{
+  "id": "esc-load",
+  "name": "The ESC current limit reaches the dashboard's ESC load, in amps, per model",
+  "step": "Check the ESC current limit and ESC load",
+  "script": "bin/esc_load/verify_esc_load.lua",
+  "rationale": "Issue #2355: the dashboard's ESC load box shows the current as a percentage of the speed controller's own current limit. Three ESC families (AM32, Scorpion, YGE) carry the limit in their parameter block, and their pages read it on every visit; the other seven families are typed in on Setup > Power > Preferences. Each unit is converted to whole amps on the way in: AM32 is already amps, Scorpion and YGE are hundredths of an amp.\n\nThe harness drives the real limit module, the model preferences, the three manufacturer pages (through stand-ins for the vendor and four-way pages, which only capture their config), the Preferences page, tasks/session.lua (through a copy that exports its session table) and widgets/dashboard/context.lua. It pins: the unit conversion of each family, a figure written once per model and not again when unchanged, a figure of another model ignored, a cleared figure stored as not set, a pending edit not overwritten by a snapshot, and esc_load as a percentage that reads nothing without a limit, a zero limit, a reading, or a link.\n\nAgainst unpatched master the harness stops at its first require, because the limit module does not exist there."
+}

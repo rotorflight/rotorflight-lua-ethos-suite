@@ -154,6 +154,7 @@ SCRIPT_TO_DOC_PATH = {
     "app/pages/power_alerts.lua": "setup/power/alerts.md",
     "app/pages/power_source.lua": "setup/power/source.md",
     "app/pages/power_smartfuel.lua": "setup/power/smartfuel.md",
+    "app/pages/power_preferences.lua": "setup/power/preferences.md",
     "app/pages/esc_motors_throttle.lua": "setup/esc_motors/throttle.md",
     "app/pages/esc_motors_telemetry.lua": "setup/esc_motors/telemetry.md",
     "app/pages/esc_motors_rpm.lua": "setup/esc_motors/rpm.md",

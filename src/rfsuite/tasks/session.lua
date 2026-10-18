@@ -441,6 +441,8 @@ local function flush()
     flightResumable = session.flightResumable,
     timerTarget = session.timerTarget,
     smartfuelModelType = session.smartfuelModelType,
+    -- The speed controller's current limit in amps, or nil where none is on file (#2355).
+    escCurrentLimit = session.escCurrentLimit,
     modelStats = copyStats(session.modelStats),
     bblFlags = session.bblFlags,
     bblSize = session.bblSize,
@@ -458,10 +460,12 @@ local function updateModelSnapshots()
     session.modelStats = modelPreferences.stats(session.modelPreferences)
     session.timerTarget = modelPreferences.timerTarget(session.modelPreferences)
     session.smartfuelModelType = modelPreferences.smartfuelModelType(session.modelPreferences)
+    session.escCurrentLimit = modelPreferences.escCurrentLimit(session.modelPreferences)
   else
     session.modelStats = nil
     session.timerTarget = 300
     session.smartfuelModelType = 0
+    session.escCurrentLimit = nil
   end
 end
 
@@ -1449,6 +1453,22 @@ local function onModelSmartfuelTypeUpdate(payload)
 end
 
 bus.subscribe("model.smartfuel_type.update", onModelSmartfuelTypeUpdate)
+
+-- A manufacturer page that has read its ESC's limit, or the Preferences row, hands the figure
+-- here. Only a changed figure is written: a page reads the limit on every visit (#2355).
+local function onModelEscCurrentLimitUpdate(payload)
+  if type(payload) ~= "table" then return end
+  if not session.mcuId or payload.mcuId ~= session.mcuId then return end
+  loadModelPreferences()
+  local updated = modelPreferences.setEscCurrentLimit(session.modelPreferences, payload.amps)
+  if modelPreferences.escCurrentLimit(updated) == session.escCurrentLimit then return end
+  session.modelPreferences = updated
+  saveModelPreferences()
+  updateModelSnapshots()
+  publish()
+end
+
+bus.subscribe("model.esc_current_limit.update", onModelEscCurrentLimitUpdate)
 
 -- Setup > Power > Battery / SmartFuel each write straight to the FC (see
 -- app/pages/power_battery.lua and app/pages/power_smartfuel.lua's own

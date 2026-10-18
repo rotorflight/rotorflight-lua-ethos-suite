@@ -184,6 +184,7 @@ Outputs static or telemetry-based text. Subtypes located in `objects/text/`:
 | `clock`      | Clock display (auto).                  | –                 |
 | `pidrates`   | PID/Rates profile display (auto).      | –                 |
 | `watts`      | Voltage/Current => Power (auto).       | –                 |
+| `esc_load`   | Current as a % of the ESC current limit (auto; `--` until a limit is set). | – |
 
 **Common Parameters:**
 

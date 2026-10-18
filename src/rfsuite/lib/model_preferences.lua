@@ -28,6 +28,9 @@ local DEFAULTS = {
     becalertvalue = 6.5,
     rxalertvalue = 7.5,
     flighttime = 300,
+    -- The speed controller's own current limit in whole amps. 0 is "not set": an
+    -- ESC family that reports no limit, and no page has stored one yet (#2355).
+    esc_current_limit = 0,
   },
   -- What the flight controller calls itself (MSP_NAME), kept next to its preferences so
   -- the radio can name a model with no link up (lib/known_models.lua). Empty until a
@@ -109,6 +112,7 @@ local function normalize(prefs)
   prefs.battery.alert_type = clampNumber(prefs.battery.alert_type, DEFAULTS.battery.alert_type, 0, 2)
   prefs.battery.becalertvalue = clampDecimal(prefs.battery.becalertvalue, DEFAULTS.battery.becalertvalue, 3.0, 14.0)
   prefs.battery.rxalertvalue = clampDecimal(prefs.battery.rxalertvalue, DEFAULTS.battery.rxalertvalue, 3.0, 14.0)
+  prefs.battery.esc_current_limit = clampNumber(prefs.battery.esc_current_limit, DEFAULTS.battery.esc_current_limit, 0, 1000)
   return prefs
 end
 
@@ -222,6 +226,23 @@ function model_preferences.setPowerAlerts(prefs, alerts)
   prefs.battery.alert_type = clampNumber(alerts.alert_type, prefs.battery.alert_type, 0, 2)
   prefs.battery.becalertvalue = clampDecimal(alerts.becalertvalue, prefs.battery.becalertvalue, 3.0, 14.0)
   prefs.battery.rxalertvalue = clampDecimal(alerts.rxalertvalue, prefs.battery.rxalertvalue, 3.0, 14.0)
+  return prefs
+end
+
+-- The speed controller's current limit in whole amps, or nil where none is on file. Zero is how
+-- "not set" is stored, so it is never a limit: read back as one, every current would be an
+-- overload.
+function model_preferences.escCurrentLimit(prefs)
+  prefs = model_preferences.withDefaults(prefs)
+  local amps = clampNumber(prefs.battery.esc_current_limit, DEFAULTS.battery.esc_current_limit, 0, 1000)
+  if amps == 0 then return nil end
+  return amps
+end
+
+-- Stores the limit in whole amps. nil or zero clears it back to "not set".
+function model_preferences.setEscCurrentLimit(prefs, amps)
+  prefs = model_preferences.withDefaults(prefs)
+  prefs.battery.esc_current_limit = clampNumber(amps, 0, 0, 1000)
   return prefs
 end
 

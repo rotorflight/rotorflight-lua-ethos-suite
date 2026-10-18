@@ -4491,6 +4491,24 @@
         }
       },
       "power": {
+        "preferences_name": {
+          "english": "Preferences",
+          "translation": "Einstellungen",
+          "needs_translation": false,
+          "max_length": 11
+        },
+        "esc_current_limit": {
+          "english": "ESC Current Limit",
+          "translation": "ESC-Stromlimit",
+          "needs_translation": false,
+          "max_length": 17
+        },
+        "save_preferences_prompt": {
+          "english": "Save power preferences?",
+          "translation": "Power-Einstellungen speichern?",
+          "needs_translation": false,
+          "max_length": 23
+        },
         "alert_name": {
           "english": "Alerts",
           "translation": "Warnungen",

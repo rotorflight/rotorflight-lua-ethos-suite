@@ -8,7 +8,7 @@ sidebar_label: Pages
 Reference documentation for each configuration and settings page reachable
 within the RFSuite Ethos system tool.
 
-**Status:** 84 reachable pages in navigation hierarchy.
+**Status:** 85 reachable pages in navigation hierarchy.
 
 The *Conditions* column names what hides, greys out or locks a page; the sentences
 and structure follow [_template.md](../_template.md).
@@ -62,6 +62,7 @@ and structure follow [_template.md](../_template.md).
 | Alerts | [setup/power/alerts.md](setup/power/alerts.md) | Greyed out until the flight controller answers. Read-only while the model is armed. | written |
 | Sources | [setup/power/source.md](setup/power/source.md) | Greyed out until the flight controller answers. Read-only while the model is armed. | written |
 | SmartFuel | [setup/power/smartfuel.md](setup/power/smartfuel.md) | Greyed out until the flight controller answers. Read-only while the model is armed. | written |
+| Preferences | [setup/power/preferences.md](setup/power/preferences.md) | Greyed out until the flight controller answers. Read-only while the model is armed. | written |
 | Motor Override | [setup/esc_motors/motor_override.md](setup/esc_motors/motor_override.md) | Greyed out until the flight controller answers. Read-only while the model is armed. | written |
 | Throttle | [setup/esc_motors/throttle.md](setup/esc_motors/throttle.md) | Greyed out until the flight controller answers. Read-only while the model is armed. | written |
 | Telemetry | [setup/esc_motors/telemetry.md](setup/esc_motors/telemetry.md) | Greyed out until the flight controller answers. Read-only while the model is armed. | written |
@@ -85,14 +86,14 @@ and structure follow [_template.md](../_template.md).
 
 | Page | File | Conditions | Status |
 | --- | --- | --- | --- |
-| Copy Profiles | [tools/copy_profiles.md](tools/copy_profiles.md) | Greyed out until the flight controller answers. Read-only while the model is armed. | written |
-| Select Profile | [tools/profile_select.md](tools/profile_select.md) | Greyed out until the flight controller answers. Read-only while the model is armed. | written |
-| Status | [tools/diagnostics/rfstatus.md](tools/diagnostics/rfstatus.md) | Greyed out until the flight controller answers. Read-only while the model is armed. | written |
-| ELRS Telemetry | [tools/diagnostics/elrs_link.md](tools/diagnostics/elrs_link.md) | Greyed out until the flight controller answers. Read-only while the model is armed. | written |
-| FBL Status | [tools/diagnostics/fblstatus.md](tools/diagnostics/fblstatus.md) | Greyed out until the flight controller answers. Read-only while the model is armed. | written |
-| Info | [tools/diagnostics/info.md](tools/diagnostics/info.md) | Greyed out until the flight controller answers. Read-only while the model is armed. | written |
-| MSP Speed | [tools/developer/msp_speed.md](tools/developer/msp_speed.md) | Greyed out until the flight controller answers. Read-only while the model is armed. Hidden until *System* → *Settings* → *Developer* mode is active. | written |
-| MSP Exp. | [tools/developer/msp_exp.md](tools/developer/msp_exp.md) | Greyed out until the flight controller answers. Read-only while the model is armed. Hidden until *System* → *Settings* → *Developer* mode is active. | written |
+| Copy Profiles | [tools/copy_profiles.md](tools/copy_profiles.md) | Always available offline without an active flight controller connection. Read-only while the model is armed. | written |
+| Select Profile | [tools/profile_select.md](tools/profile_select.md) | Always available offline without an active flight controller connection. Read-only while the model is armed. | written |
+| Status | [tools/diagnostics/rfstatus.md](tools/diagnostics/rfstatus.md) | Always available offline without an active flight controller connection. Read-only while the model is armed. | written |
+| ELRS Telemetry | [tools/diagnostics/elrs_link.md](tools/diagnostics/elrs_link.md) | Always available offline without an active flight controller connection. Read-only while the model is armed. | written |
+| FBL Status | [tools/diagnostics/fblstatus.md](tools/diagnostics/fblstatus.md) | Always available offline without an active flight controller connection. Read-only while the model is armed. | written |
+| Info | [tools/diagnostics/info.md](tools/diagnostics/info.md) | Always available offline without an active flight controller connection. Read-only while the model is armed. | written |
+| MSP Speed | [tools/developer/msp_speed.md](tools/developer/msp_speed.md) | Always available offline without an active flight controller connection. Read-only while the model is armed. Hidden until *System* → *Settings* → *Developer* mode is active. | written |
+| MSP Exp. | [tools/developer/msp_exp.md](tools/developer/msp_exp.md) | Always available offline without an active flight controller connection. Read-only while the model is armed. Hidden until *System* → *Settings* → *Developer* mode is active. | written |
 
 ## System → Logs
 
