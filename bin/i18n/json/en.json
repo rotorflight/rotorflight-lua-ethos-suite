@@ -228,18 +228,6 @@
       "needs_translation": false,
       "max_length": 75
     },
-    "msg_fc_not_connected_title": {
-      "english": "Flight controller not connected",
-      "translation": "Flight controller not connected",
-      "needs_translation": false,
-      "max_length": 31
-    },
-    "msg_fc_not_connected_body": {
-      "english": "Connect the flight controller to open this menu. Check its power and the telemetry link.",
-      "translation": "Connect the flight controller to open this menu. Check its power and the telemetry link.",
-      "needs_translation": false,
-      "max_length": 88
-    },
     "menu_section_flight_tuning": {
       "english": "Flight Tuning",
       "translation": "Flight Tuning",

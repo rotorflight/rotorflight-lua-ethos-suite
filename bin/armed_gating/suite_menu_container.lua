@@ -169,11 +169,6 @@ local armed = false
 local function armedState() return armed end
 
 local taskGuard = {isRunning = function() return true end, isConnected = function() return true end}
--- #2604 raises the not-connected notice from the menu's own state, so the container asks the
--- guard whether the background task's grace period has expired (app/tool.lua's
--- backgroundTaskGraceExpired). This stub models a task that is running, which is why the grace
--- period can never have expired here; the notice path itself is verify_menu_feedback's.
-taskGuard.graceExpired = function() return false end
 
 local nav = {
   -- Counted, not appended: nav.push(screen) is called with screen == nil at

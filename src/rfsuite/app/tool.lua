@@ -476,8 +476,6 @@ local TASK_STATUS_TIMEOUT = 3.0
 local TASK_ALERT_GRACE = 10.0
 local TASK_ALERT_TITLE = "@i18n(app.msg_background_task_missing_title)@"
 local TASK_ALERT_BODY = "@i18n(app.msg_background_task_missing_body)@"
-local NOT_CONNECTED_TITLE = "@i18n(app.msg_fc_not_connected_title)@"
-local NOT_CONNECTED_BODY = "@i18n(app.msg_fc_not_connected_body)@"
 local BTN_OK = "@i18n(app.btn_ok)@"
 
 local appOpenedAt = nil
@@ -492,9 +490,6 @@ local sessionArmed = false
 local taskAlertPending = false
 local taskAlertOpen = false
 local taskAlertShown = false
-local notConnectedPending = false
-local notConnectedOpen = false
-local notConnectedShown = false
 
 local function isBackgroundTaskRunning()
   return taskStatusAt ~= nil and (os.clock() - taskStatusAt) <= TASK_STATUS_TIMEOUT
@@ -529,40 +524,11 @@ local function showBackgroundTaskAlert()
   })
 end
 
--- The link is down while the task runs (#2319). The menu raises this from its own
--- state, once per link loss (notConnectedShown); the dialog is shown on the next
--- wakeup, and never twice while it is open.
-local function requestNotConnectedAlert()
-  if notConnectedOpen or notConnectedShown then return end
-  notConnectedPending = true
-  notConnectedShown = true
-end
-
-local function showNotConnectedAlert()
-  if not notConnectedPending or notConnectedOpen then return end
-  notConnectedPending = false
-  notConnectedOpen = true
-  form.openDialog({
-    title = NOT_CONNECTED_TITLE,
-    message = NOT_CONNECTED_BODY,
-    buttons = {
-      {label = BTN_OK, action = function()
-        notConnectedOpen = false
-        return true
-      end},
-    },
-    wakeup = function() end,
-    paint = function() end,
-    options = TEXT_LEFT,
-  })
-end
-
 local taskGuard = {
   isRunning = isBackgroundTaskRunning,
   isConnected = function() return sessionConnected == true end,
   graceExpired = backgroundTaskGraceExpired,
   requestAlert = requestBackgroundTaskAlert,
-  requestNotConnectedAlert = requestNotConnectedAlert,
 }
 
 -- The two menu guards are attached to their menus on first tool open, not at
@@ -609,8 +575,6 @@ bus.subscribe("session.update", function(session)
   -- read as disarmed or every connection-gated menu would badge itself
   -- during the seconds before the first telemetry frame lands.
   sessionArmed = session ~= nil and session.isArmed == true
-  -- The link is back: the next loss gets its own notice (#2319).
-  if sessionConnected then notConnectedShown = false end
 end)
 
 local function updateDeveloperMode(settings)
@@ -640,9 +604,6 @@ local function create()
   taskAlertPending = false
   taskAlertOpen = false
   taskAlertShown = false
-  notConnectedPending = false
-  notConnectedOpen = false
-  notConnectedShown = false
   updateDeveloperMode()
   ensureMemstats()
   -- Guards first: menu_container consults them while building the first
@@ -671,7 +632,6 @@ local function wakeup(state)
     currentWakeupHandler()
   end
   showBackgroundTaskAlert()
-  showNotConnectedAlert()
 end
 
 local function paint(state)

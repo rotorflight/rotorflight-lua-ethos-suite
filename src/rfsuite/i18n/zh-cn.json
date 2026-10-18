@@ -8322,18 +8322,6 @@
       "reverse_text": false,
       "translation": "Background任务未运行"
     },
-    "msg_fc_not_connected_body": {
-      "english": "Connect the flight controller to open this menu. Check its power and the telemetry link.",
-      "max_length": 88,
-      "needs_translation": false,
-      "translation": "请连接飞控以打开此菜单。请检查其供电和遥测连接。"
-    },
-    "msg_fc_not_connected_title": {
-      "english": "Flight controller not connected",
-      "max_length": 31,
-      "needs_translation": false,
-      "translation": "飞控未连接"
-    },
     "msg_load_failed_body": {
       "english": "Data could not be read from the flight controller. Please reload.",
       "max_length": 65,

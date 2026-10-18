@@ -63,7 +63,6 @@ local requireModule = package.loaded["rfsuite.lib.require"] or assert(loadfile("
 local closeKey = requireModule("app/close_key.lua")
 local header = requireModule("app/header.lua")
 local tileGrid = requireModule("app/tile_grid.lua")
-local menuFeedback = requireModule("lib/menu_feedback.lua")
 
 local menu_container = {}
 
@@ -152,7 +151,7 @@ local function isEntryEnabled(entry, taskGuard, menuGuard)
 end
 
 local function taskGuardExpired(taskGuard)
-  return taskGuard and taskGuard.graceExpired and (not taskGuard.isRunning()) and taskGuard.graceExpired()
+  return taskGuard and (not taskGuard.isRunning()) and taskGuard.graceExpired()
 end
 
 -- Whether any entry on this screen is arm-gated at all, directly or through
@@ -171,19 +170,6 @@ local function screenHasArmedGating(entries, menus, depth)
       if screenHasArmedGating(menus[entry.menuId].entries, menus, depth + 1) then
         return true
       end
-    end
-  end
-  return false
-end
-
--- True once the task has run past its grace period, the link is down and this
--- menu has a tile that is closed for that reason (#2319). A disabled tile gets no
--- press, so the notice comes from the menu's own state, not from a tap.
-local function closedByLinkOn(entries, taskGuard)
-  if not (taskGuard and taskGuard.graceExpired and taskGuard.isRunning() and taskGuard.graceExpired()) then return false end
-  for i = 1, #entries do
-    if menuFeedback.closedByLink(entries[i].offline == true, taskGuard.isRunning(), taskGuard.isConnected()) then
-      return true
     end
   end
   return false
@@ -520,9 +506,6 @@ local function openScreen(nav, menus, rootEntries, screen, setEventHandler, setW
 
       if taskGuardExpired(taskGuard) and taskGuard.requestAlert then
         taskGuard.requestAlert()
-      end
-      if closedByLinkOn(entries, taskGuard) and taskGuard.requestNotConnectedAlert then
-        taskGuard.requestNotConnectedAlert()
       end
     end
     updateMenuState()
