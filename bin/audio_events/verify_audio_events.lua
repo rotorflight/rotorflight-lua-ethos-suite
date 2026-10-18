@@ -1061,11 +1061,129 @@ mainPowerChecks()
 local TELEMETRY_LOST_FILE = "SCRIPTS:/rfsuite/audio/en/default/events/alerts/telemetrylost.wav"
 local TELEMETRY_OK_FILE = "SCRIPTS:/rfsuite/audio/en/default/events/alerts/telemetryok.wav"
 
+-- The store's real defaults for the repeat and vibrate keys (issue #2312). DEFAULT_EVENTS above
+-- only lists the keys (its values are placeholders), so these are written out and checked against
+-- the store source by the check below.
+local STORE_DEFAULTS = {
+  voltage_repeats = 0, voltage_haptic = false,
+  rx_voltage_repeats = 0, rx_voltage_haptic = true,
+  temp_esc_repeats = 0, temp_esc_haptic = true,
+  telemetry_lost_haptic = true,
+}
+
+-- The store's defaults under the scenario's own values, as the store fills them on the radio.
+local function withStoreDefaults(events)
+  local merged = {}
+  for key, value in pairs(DEFAULT_EVENTS) do merged[key] = value end
+  for key, value in pairs(STORE_DEFAULTS) do merged[key] = value end
+  for key, value in pairs(events or {}) do merged[key] = value end
+  return merged
+end
+
 local function newLinkRig(events, source)
-  local rig = newTaskRig(events, source)
+  -- The store fills every key the events do not set from its defaults. A rig gets the same
+  -- defaults under the scenario's own values, so a key added with a default (the vibrate
+  -- settings of #2312) behaves as it does on the radio.
+  local merged = {}
+  for key, value in pairs(DEFAULT_EVENTS) do merged[key] = value end
+  for key, value in pairs(events or {}) do merged[key] = value end
+  local rig = newTaskRig(merged, source)
   -- No pack carries either word yet.
   rig.noSounds()
   return rig
+end
+
+-- ---------------------------------------------------------------------------
+-- Repeats per episode and the vibrate settings (issue #2312)
+-- ---------------------------------------------------------------------------
+
+-- The written-out defaults are the store's, line for line.
+do
+  local store = readFile(SUITE .. "/lib/settings_store.lua")
+  local matches = 0
+  for key, value in pairs(STORE_DEFAULTS) do
+    local literal = tostring(value)
+    if store:find(key .. " = " .. literal .. ",", 1, true) then matches = matches + 1 end
+  end
+  check("the repeat and vibrate defaults match lib/settings_store.lua",
+    matches == 7, "matched " .. matches .. " of 7")
+end
+
+local function repeatChecks()
+  local LOW = 9.0   -- 3.0 V per cell, under the 3.3 V warning
+  local OK = 12.5   -- 4.17 V per cell, above it
+  local batteryConfig = {cellCount = 3, vbatWarningCell = 3.3}
+  local function at(voltage)
+    return {connected = true, voltage = voltage, batteryConfig = batteryConfig}
+  end
+  -- The first wakeup only initializes the task, so every scenario starts with a healthy pack at
+  -- t = 0 and the low readings come after it.
+  local function start(rig)
+    rig.setClock(0); rig.step(at(OK))
+  end
+
+  -- The limit: two announcements per episode, however long the pack stays low.
+  do
+    local rig = newTaskRig(withStoreDefaults({voltage = true, voltage_hold = 0, voltage_repeat_interval = 5,
+      voltage_repeats = 2}))
+    start(rig)
+    for _, t in ipairs({1, 6, 11, 16}) do rig.setClock(t); rig.step(at(LOW)) end
+    check("a limit of two repeats stops the low-voltage alert after two announcements",
+      rig.count("lowvoltage.wav") == 2, "lowvoltage.wav played " .. rig.count("lowvoltage.wav") .. "x")
+  end
+
+  -- Without a limit (0, the default) the alert repeats as long as the pack stays low.
+  do
+    local rig = newTaskRig(withStoreDefaults({voltage = true, voltage_hold = 0, voltage_repeat_interval = 5}))
+    start(rig)
+    for _, t in ipairs({1, 6, 11, 16}) do rig.setClock(t); rig.step(at(LOW)) end
+    check("with no limit the alert keeps repeating (as before the setting)",
+      rig.count("lowvoltage.wav") == 4, "lowvoltage.wav played " .. rig.count("lowvoltage.wav") .. "x")
+  end
+
+  -- A new episode, after the pack has recovered, starts its count again.
+  do
+    local rig = newTaskRig(withStoreDefaults({voltage = true, voltage_hold = 0, voltage_repeat_interval = 5,
+      voltage_repeats = 1}))
+    start(rig)
+    rig.setClock(1); rig.step(at(LOW))
+    rig.setClock(6); rig.step(at(OK))
+    rig.setClock(20); rig.step(at(LOW))
+    check("a new episode after recovery is announced again, with its own count",
+      rig.count("lowvoltage.wav") == 2, "lowvoltage.wav played " .. rig.count("lowvoltage.wav") .. "x")
+  end
+
+  -- The voltage alert did not vibrate before: its setting is off by default, and on when set.
+  do
+    local rig = newTaskRig(withStoreDefaults({voltage = true, voltage_hold = 0}))
+    start(rig)
+    rig.setClock(1); rig.step(at(LOW))
+    check("the voltage alert does not vibrate by default", #rig.haptics == 0, #rig.haptics .. " haptic(s)")
+  end
+  do
+    local rig = newTaskRig(withStoreDefaults({voltage = true, voltage_hold = 0, voltage_haptic = true}))
+    start(rig)
+    rig.setClock(1); rig.step(at(LOW))
+    check("the voltage alert vibrates when its setting is on", #rig.haptics >= 1, #rig.haptics .. " haptic(s)")
+  end
+
+  -- ESC temperature vibrated before, so its setting is on by default; off turns it off.
+  local function hot(rig, t)
+    rig.setClock(t)
+    rig.step({connected = true, tempEsc = 110})
+  end
+  do
+    local rig = newTaskRig(withStoreDefaults({temp_esc = true, escalertvalue = 90}))
+    for t = 0, 8 do hot(rig, t) end
+    check("ESC temperature vibrates by default, as before the setting", #rig.haptics >= 1,
+      #rig.haptics .. " haptic(s)")
+  end
+  do
+    local rig = newTaskRig(withStoreDefaults({temp_esc = true, escalertvalue = 90, temp_esc_haptic = false}))
+    for t = 0, 8 do hot(rig, t) end
+    check("ESC temperature stops vibrating when its setting is off", #rig.haptics == 0,
+      #rig.haptics .. " haptic(s)")
+  end
 end
 
 local function telemetryLinkChecks()
@@ -1163,7 +1281,7 @@ local function telemetryLinkChecks()
   local source = readFile(AUDIO_PATH)
   local stripped = source:gsub("if lastSeenArmed ~= true then return end", "", 1)
   check("the armed gate could be located in announceTelemetryLost()", stripped ~= source)
-  local rig = newTaskRig({telemetry_lost = true}, stripped)
+  local rig = newTaskRig(withStoreDefaults({telemetry_lost = true}), stripped)
   rig.setClock(0); rig.step({connected = true, isArmed = false})
   rig.setClock(1); rig.step({connected = true, isArmed = false})
   rig.setClock(2); rig.step({connected = false})
@@ -1189,6 +1307,7 @@ end
 out("")
 out("case 8: the telemetry link, gated by the armed state")
 telemetryLinkChecks()
+repeatChecks()
 
 -- Put the globals the rigs replaced back, so nothing after this case -- the
 -- summary today, anything added later -- runs against a stub.
@@ -1471,6 +1590,7 @@ end
 
 out("")
 out(string.rep("-", 60))
+
 out(string.format("checks: %d   failures: %d", checks, failures))
 out("form.clear() calls: " .. cleared)
 if failures > 0 then

@@ -17,11 +17,16 @@ local function open(opts)
 
     local function updateFields()
       ctx.setEnabled(fields.escTempThreshold, ctx.get("temp_esc") == true)
+      ctx.setEnabled(fields.escTempRepeats, ctx.get("temp_esc") == true)
+      ctx.setEnabled(fields.escTempHaptic, ctx.get("temp_esc") == true)
     end
 
     fields.tempEsc = ctx.addBool("@i18n(app.modules.settings.esc_temperature)@", "temp_esc", updateFields)
     fields.escTempThreshold = ctx.addNumber("@i18n(app.modules.settings.esc_threshold)@", "escalertvalue",
       {min = 60, max = 300, default = 90, suffix = "deg"})
+    fields.escTempRepeats = ctx.addNumber("@i18n(app.modules.settings.alert_max_repeats)@", "temp_esc_repeats",
+      {min = 0, max = 10, default = 0, suffix = "x"})
+    fields.escTempHaptic = ctx.addBool("@i18n(app.modules.settings.alert_vibrate)@", "temp_esc_haptic")
 
     updateFields()
   end)

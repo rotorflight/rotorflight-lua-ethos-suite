@@ -19,6 +19,7 @@ Always available offline without an active flight controller connection. Read-on
 | Setting | What it does |
 | --- | --- |
 | *Telemetry lost* | Calls out the link when it drops **while the model is armed**, and again when it comes back. On by default. |
+| *Vibrate* | Vibrates the radio when the link drops while armed. On by default. A lost link is announced once per loss, so it has no repeat count. |
 
 ## Notes
 

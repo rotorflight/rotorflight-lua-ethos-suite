@@ -22,11 +22,15 @@ Always available offline without an active flight controller connection. Read-on
 | *Voltage callout* | What the low-voltage callout says once it fires: *Alert only* (the default, no number), *Pack voltage* (e.g. "22.4 volts") or *Cell voltage* (the average cell, e.g. "3.65 volts"). Greyed out while *Low voltage alert* is off. |
 | *Hold time* | Seconds the pack must stay below the warning cell voltage before the alert fires, 0.0 to 10.0, default 2.0. This is what filters a momentary voltage sag. Greyed out while *Low voltage alert* is off. |
 | *Repeat interval* | Seconds between repeats of a standing low-voltage callout. Range 5 to 120, default 10. Greyed out while *Low voltage alert* is off. |
+| *Max repeats* | How many times one low-voltage episode may call out. 0 (default) repeats for as long as the pack stays low; 1 to 10 stops after that many callouts. An episode ends when the pack recovers, and a new one starts its count again. Greyed out while *Low voltage alert* is off. |
+| *Vibrate* | Vibrates the radio with the low-voltage callout. Off by default. Greyed out while *Low voltage alert* is off. |
 | *Main power lost* | Calls out a main pack that has gone while the flight controller stays alive on a BEC or a backup battery (a backup guard or a separate receiver pack). Off by default. |
 | *BEC voltage alert* | Calls out when the BEC supply falls below its threshold. |
 | *BEC threshold* | The voltage that counts as low, in volts to one decimal. Range 3.0 to 15.0, default 6.5. Greyed out while *BEC voltage alert* is off. |
 | *RX voltage alert* | Calls out when the receiver supply falls below its threshold. |
 | *RX threshold* | The voltage that counts as low, in volts to one decimal. Range 3.0 to 15.0, default 7.4. Greyed out while *RX voltage alert* is off. |
+| *RX max repeats* | How many times one receiver-voltage episode may call out, as *Max repeats* above. 0 (default) repeats for as long as the voltage stays low. Greyed out while *RX voltage alert* is off. |
+| *RX vibrate* | Vibrates the radio with the receiver-voltage callout. On by default. Greyed out while *RX voltage alert* is off. |
 
 ## Notes
 

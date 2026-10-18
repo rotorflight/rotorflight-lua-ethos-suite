@@ -84,6 +84,16 @@ local DEFAULTS = {
     smartfuelcallout = 0,
     smartfuelrepeats = 1,
     smartfuelhaptic = false,
+    -- Repeats per alert episode (0 = as long as the condition holds, as before) and the vibration
+    -- of each group. The defaults keep what each group did before (#2312): ESC temperature, RX
+    -- voltage and a lost link vibrated; the voltage alarm did not.
+    voltage_repeats = 0,
+    voltage_haptic = false,
+    rx_voltage_repeats = 0,
+    rx_voltage_haptic = true,
+    temp_esc_repeats = 0,
+    temp_esc_haptic = true,
+    telemetry_lost_haptic = true,
     temp_esc = false,
     escalertvalue = 90,
     bec_voltage = false,
@@ -217,6 +227,12 @@ local function normalizeEvents(values)
   events.smartfuelcallout = clampNumber(events.smartfuelcallout, DEFAULTS.events.smartfuelcallout, 0, 50)
   events.smartfuelrepeats = clampNumber(events.smartfuelrepeats, DEFAULTS.events.smartfuelrepeats, 1, 10)
   events.smartfuelhaptic = coerceBool(events.smartfuelhaptic, DEFAULTS.events.smartfuelhaptic)
+  for _, group in ipairs({"voltage", "rx_voltage", "temp_esc"}) do
+    events[group .. "_repeats"] = clampNumber(events[group .. "_repeats"], 0, 0, 10)
+  end
+  for _, group in ipairs({"voltage", "rx_voltage", "temp_esc", "telemetry_lost"}) do
+    events[group .. "_haptic"] = coerceBool(events[group .. "_haptic"], DEFAULTS.events[group .. "_haptic"])
+  end
   events.temp_esc = coerceBool(events.temp_esc, DEFAULTS.events.temp_esc)
   events.escalertvalue = clampNumber(events.escalertvalue, DEFAULTS.events.escalertvalue, 60, 300)
   events.bec_voltage = coerceBool(events.bec_voltage, DEFAULTS.events.bec_voltage)

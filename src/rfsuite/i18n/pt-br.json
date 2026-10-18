@@ -6834,12 +6834,24 @@
           "reverse_text": false,
           "translation": "Valor Ajuste"
         },
+        "alert_max_repeats": {
+          "english": "Max repeats (0 = all)",
+          "max_length": 21,
+          "needs_translation": true,
+          "translation": "Max repeats (0 = all)"
+        },
         "alert_repeat_interval": {
           "english": "Repeat interval",
           "max_length": 15,
           "needs_translation": false,
           "reverse_text": false,
           "translation": "Re intervalo de repetição"
+        },
+        "alert_vibrate": {
+          "english": "Vibrate",
+          "max_length": 7,
+          "needs_translation": true,
+          "translation": "Vibrate"
         },
         "arming_flags": {
           "english": "Arming flags",

@@ -30,8 +30,12 @@ local function open(opts)
       ctx.setEnabled(fields.voltageCallout, voltageOn)
       ctx.setEnabled(fields.voltageHold, voltageOn)
       ctx.setEnabled(fields.voltageRepeat, voltageOn)
+      ctx.setEnabled(fields.voltageRepeats, voltageOn)
+      ctx.setEnabled(fields.voltageHaptic, voltageOn)
       ctx.setEnabled(fields.becVoltageThreshold, ctx.get("bec_voltage") == true)
       ctx.setEnabled(fields.rxVoltageThreshold, ctx.get("rx_voltage") == true)
+      ctx.setEnabled(fields.rxVoltageRepeats, ctx.get("rx_voltage") == true)
+      ctx.setEnabled(fields.rxVoltageHaptic, ctx.get("rx_voltage") == true)
     end
 
     fields.voltage = ctx.addBool("@i18n(app.modules.settings.low_voltage_alert)@", "voltage", updateFields)
@@ -41,6 +45,9 @@ local function open(opts)
       {min = 0, max = 100, default = 2.0, scale = 10, decimals = 1, suffix = "s"})
     fields.voltageRepeat = ctx.addNumber("@i18n(app.modules.settings.alert_repeat_interval)@", "voltage_repeat_interval",
       {min = 5, max = 120, default = 10, suffix = "s"})
+    fields.voltageRepeats = ctx.addNumber("@i18n(app.modules.settings.alert_max_repeats)@", "voltage_repeats",
+      {min = 0, max = 10, default = 0, suffix = "x"})
+    fields.voltageHaptic = ctx.addBool("@i18n(app.modules.settings.alert_vibrate)@", "voltage_haptic")
 
     -- Not a threshold on the pack voltage above but a different event that
     -- happens to be read off the same sensor: the pack reading as gone while
@@ -55,6 +62,9 @@ local function open(opts)
     fields.rxVoltage = ctx.addBool("@i18n(app.modules.settings.rx_voltage_alert)@", "rx_voltage", updateFields)
     fields.rxVoltageThreshold = ctx.addNumber("@i18n(app.modules.settings.rx_voltage_threshold)@", "rxalertvalue",
       {min = 30, max = 150, default = 7.4, scale = 10, decimals = 1, suffix = "V"})
+    fields.rxVoltageRepeats = ctx.addNumber("@i18n(app.modules.settings.alert_max_repeats)@", "rx_voltage_repeats",
+      {min = 0, max = 10, default = 0, suffix = "x"})
+    fields.rxVoltageHaptic = ctx.addBool("@i18n(app.modules.settings.alert_vibrate)@", "rx_voltage_haptic")
 
     -- Runs once here and again on every toggle change, so the thresholds are
     -- greyed from the first frame rather than after the pilot touches the

@@ -20,6 +20,8 @@ local PAGE_TITLE = "@i18n(app.modules.settings.name)@ / @i18n(app.modules.settin
 local function open(opts)
   common.openPage(PAGE_TITLE, opts, function(ctx)
     ctx.fields.telemetryLost = ctx.addBool("@i18n(app.modules.settings.telemetry_lost)@", "telemetry_lost")
+    -- A lost link is announced once per loss, so it has a vibration but no repeat count.
+    ctx.fields.telemetryLostHaptic = ctx.addBool("@i18n(app.modules.settings.alert_vibrate)@", "telemetry_lost_haptic")
   end)
 end
 

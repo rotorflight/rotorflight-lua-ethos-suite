@@ -20,6 +20,8 @@ Always available offline without an active flight controller connection. Read-on
 | --- | --- |
 | *ESC temp* | Calls out when an ESC reports a temperature at or above the threshold. |
 | *ESC threshold* | The temperature that counts as too hot. Range 60 to 300 degrees Celsius, default 90. Greyed out while the alert above it is off. |
+| *Max repeats* | How many times one hot episode may call out. 0 (default) repeats every 10 seconds for as long as the controller stays hot; 1 to 10 stops after that many callouts. Greyed out while *ESC temp* is off. |
+| *Vibrate* | Vibrates the radio with the ESC temperature callout. On by default. Greyed out while *ESC temp* is off. |
 
 ## Notes
 

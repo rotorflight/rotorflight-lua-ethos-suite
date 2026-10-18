@@ -1833,6 +1833,18 @@
         }
       },
       "settings": {
+        "alert_max_repeats": {
+          "english": "Max repeats (0 = all)",
+          "translation": "Max. Wiederh. (0=alle)",
+          "needs_translation": false,
+          "max_length": 22
+        },
+        "alert_vibrate": {
+          "english": "Vibrate",
+          "translation": "Vibration",
+          "needs_translation": false,
+          "max_length": 7
+        },
         "name": {
           "english": "Settings",
           "translation": "Einstellungen",
