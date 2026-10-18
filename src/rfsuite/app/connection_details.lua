@@ -5,6 +5,7 @@
 -- Latency and drop rates are not kept by the session, so they are not shown.
 
 local requireModule = package.loaded["rfsuite.lib.require"] or assert(loadfile("lib/require.lua"))()
+local bus = requireModule("lib/bus.lua")
 
 local connectionDetails = {}
 
@@ -39,21 +40,33 @@ function connectionDetails.handshakeProgress(session)
   return done, #HANDSHAKE_STEPS
 end
 
+local function apiVersionString(session)
+  if session and session.apiVersion then return tostring(session.apiVersion) end
+  if session and session.apiVersionMajor and session.apiVersionMinor then
+    return string.format("%s.%s", session.apiVersionMajor, session.apiVersionMinor)
+  end
+  return NOT_KNOWN
+end
+
 --- The body of the dialog for a session. Pure: the dialog is opened by open().
 function connectionDetails.body(session)
   session = session or {}
   local link = session.connected == true and LINK_UP or LINK_DOWN
   local done, total = connectionDetails.handshakeProgress(session)
   return string.format(BODY_FMT, link, string.format(HANDSHAKE_FMT, done, total),
-    text(session.craftName), text(session.rfVersion), text(session.apiVersion))
+    text(session.craftName), text(session.rfVersion or session.fcVersion), apiVersionString(session))
 end
 
---- Opens the dialog for the current session.
+--- Opens the dialog for the current session. The session is published on the bus, which replays
+--- the latest session.update to a new subscriber. The dialog takes that snapshot and unsubscribes.
 function connectionDetails.open()
-  local session = rfsuite and rfsuite.session or {}
+  local snapshot = {}
+  local handler = function(update) snapshot = update or {} end
+  bus.subscribe("session.update", handler)
+  bus.unsubscribe("session.update", handler)
   form.openDialog({
     title = TITLE,
-    message = connectionDetails.body(session),
+    message = connectionDetails.body(snapshot),
     buttons = {{label = BTN_OK, action = function() return true end}},
     wakeup = function() end,
     paint = function() end,

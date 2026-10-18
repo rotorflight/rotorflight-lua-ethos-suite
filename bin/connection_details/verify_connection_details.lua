@@ -121,6 +121,7 @@ form = {
 }
 
 local details = requireModule("app/connection_details.lua")
+local bus = requireModule("lib/bus.lua")
 
 -- ---------------------------------------------------------------------------
 -- 1. The dialog's text
@@ -159,15 +160,21 @@ end
 
 print("the dialog opens")
 do
+  -- The session reaches the dialog through the bus, the way the session publishes it (tasks/session.lua).
+  local snapshot = {connected = true, craftName = "Heli", fcVersion = "4.6.0",
+    apiVersionMajor = 12, apiVersionMinor = 10, handshake = {apiVersion = true, fcVariant = true, mcuId = true}}
   dialogs = {}
-  _G.rfsuite = {session = {connected = true, craftName = "Heli", rfVersion = "4.6.0", apiVersion = "12.10",
-    handshake = {apiVersion = true}}}
+  bus.publish("session.update", snapshot)
   details.open()
   local d = dialogs[#dialogs]
   check("open() opens one dialog", #dialogs == 1 and d ~= nil)
   if d then
     check("the dialog's title reads Connection", resolve(d.title) == "Connection", "title=" .. tostring(resolve(d.title)))
-    check("the message is the body for the session", d.message == details.body(_G.rfsuite.session))
+    check("the message is the body for the latest session.update", d.message == details.body(snapshot))
+    check("the dialog shows the link, the handshake, the craft, the firmware and the API from the session",
+      d.message:find("Link: connected", 1, true) ~= nil and d.message:find("Handshake: 3 of 8 steps", 1, true) ~= nil
+        and d.message:find("Craft: Heli", 1, true) ~= nil and d.message:find("Firmware: 4.6.0", 1, true) ~= nil
+        and d.message:find("API: 12.10", 1, true) ~= nil, d.message)
     check("the dialog has one OK button", #d.buttons == 1)
   end
 end
