@@ -1,0 +1,870 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ActiveLook Preview</title>
+  <style>
+    @font-face {
+      font-family: "ActiveLook EnGo 2";
+      src: url("./SSP-SemiBold-Spacing.otf") format("opentype");
+      font-style: normal;
+      font-weight: 600;
+      font-display: block;
+    }
+
+    :root {
+      color-scheme: dark;
+      --ink: #e6e8ea;
+      --muted: #9ba2a8;
+      --panel: #1a1d20;
+      --panel-raised: #24282c;
+      --line: #383d42;
+      --rotorflight-blue: #00a8e0;
+      --amber: #e6ad48;
+      --screen: #030708;
+      font-family: "Bahnschrift", "Arial Narrow", sans-serif;
+      font-synthesis: none;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-width: 320px;
+      min-height: 100vh;
+      color: var(--ink);
+      background: #111315;
+    }
+
+    button, select, input { font: inherit; }
+
+    button:focus-visible, select:focus-visible, input:focus-visible {
+      outline: 2px solid var(--rotorflight-blue);
+      outline-offset: 2px;
+    }
+
+    .app-shell { width: min(1440px, 100%); margin: 0 auto; padding: 28px clamp(16px, 3vw, 40px) 40px; }
+
+    header {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 24px;
+      padding-bottom: 20px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .eyebrow, .section-kicker, .screen-meta, .field-label {
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0;
+      text-transform: uppercase;
+    }
+
+    h1 { margin: 5px 0 0; font-family: "Bahnschrift SemiCondensed", "Bahnschrift", "Arial Narrow", sans-serif; font-size: 27px; line-height: 1.1; font-weight: 700; }
+
+    .eyebrow { color: var(--rotorflight-blue); }
+
+    .sim-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 9px;
+      padding: 8px 11px;
+      border: 1px solid #62502f;
+      border-radius: 2px;
+      color: #f4d293;
+      background: #211e18;
+      font-size: 12px;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    .sim-badge::before {
+      width: 6px;
+      height: 6px;
+      border-radius: 1px;
+      background: var(--amber);
+      content: "";
+    }
+
+    .sim-badge[data-state="live"] { border-color: #376f50; color: #b9efc8; background: #1d3025; }
+    .sim-badge[data-state="live"]::before { background: #69dc8a; }
+
+    main { display: grid; grid-template-columns: minmax(0, 1.55fr) minmax(310px, .85fr); gap: 28px; padding-top: 24px; }
+    .preview-column, .controls-column { min-width: 0; }
+    .section-heading { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 12px; }
+    .section-heading h2 { margin: 0; font-size: 15px; font-weight: 650; }
+    .screen-meta { letter-spacing: 0; }
+
+    .screen-frame {
+      padding: 10px;
+      border: 1px solid #444a50;
+      border-radius: 3px;
+      background: #202428;
+    }
+
+    canvas {
+      display: block;
+      width: 100%;
+      aspect-ratio: 19 / 16;
+      border: 1px solid #20292b;
+      background: var(--screen);
+      image-rendering: auto;
+    }
+
+    .screen-footer { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; padding: 12px 4px 2px; color: #c1c8cd; font-size: 14px; line-height: 1.3; }
+    .screen-footer strong { color: var(--rotorflight-blue); font-size: 20px; font-weight: 700; }
+    .screen-footer span:last-child { color: var(--muted); font-size: 11px; }
+
+    .phase-switch {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 4px;
+      padding: 4px;
+      border: 1px solid var(--line);
+      border-radius: 2px;
+      background: #171a1d;
+    }
+
+    .phase-button {
+      min-height: 38px;
+      border: 1px solid transparent;
+      border-radius: 2px;
+      color: #a9b6b7;
+      background: transparent;
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .phase-button[aria-pressed="true"] { border-color: var(--rotorflight-blue); color: #e1f7ff; background: #15313c; }
+
+    .control-block { padding: 19px 0; border-bottom: 1px solid var(--line); }
+    .control-block:first-child { padding-top: 0; }
+    .control-block:last-child { border-bottom: 0; }
+    .control-title { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin-bottom: 13px; }
+    .control-title h3 { margin: 0; font-size: 14px; font-weight: 650; }
+    .control-title span { color: var(--muted); font-size: 11px; }
+
+    .field-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+    .field { display: grid; gap: 6px; min-width: 0; }
+    .telemetry-groups { display: grid; gap: 17px; }
+    .telemetry-group { padding-top: 12px; border-top: 1px solid var(--line); }
+    .telemetry-group:first-child { padding-top: 0; border-top: 0; }
+    .telemetry-group h4 { margin: 0 0 10px; color: #c5cbd0; font-size: 12px; font-weight: 700; }
+    .field-label { font-size: 10px; letter-spacing: 0; }
+    input, select {
+      width: 100%;
+      min-width: 0;
+      height: 36px;
+      padding: 0 9px;
+      border: 1px solid #41474d;
+      border-radius: 2px;
+      color: var(--ink);
+      background: var(--panel);
+    }
+    input[type="number"] { font-variant-numeric: tabular-nums; }
+
+    .slots { display: grid; gap: 8px; }
+    .slot-row { display: grid; grid-template-columns: 34px minmax(0, 1fr); align-items: center; gap: 8px; }
+    .slot-row[hidden] { display: none; }
+    .slot-number { color: var(--rotorflight-blue); font-size: 11px; font-weight: 700; text-align: center; }
+    .slot-row select { height: 34px; }
+
+    .layout-field { margin-bottom: 13px; }
+    .actions { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; margin-top: 14px; }
+    .action-buttons { display: flex; gap: 8px; }
+    .layout-sync-status { color: var(--muted); font-size: 11px; }
+    .reset-button {
+      min-height: 34px;
+      padding: 0 11px;
+      border: 1px solid #494f55;
+      border-radius: 2px;
+      color: var(--ink);
+      background: var(--panel-raised);
+      cursor: pointer;
+      font-size: 12px;
+    }
+    .reset-button:not(:disabled):hover { border-color: var(--rotorflight-blue); }
+    .reset-button:disabled { border-color: #353a3f; color: #80878d; background: #1a1d20; cursor: not-allowed; }
+    .reset-button:disabled:hover { border-color: #353a3f; }
+
+    @media (max-width: 900px) {
+      main { grid-template-columns: minmax(0, 1fr); gap: 30px; }
+      .controls-column { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 24px; }
+      .control-block:nth-child(2) { border-bottom: 1px solid var(--line); }
+    }
+
+    @media (max-width: 560px) {
+      .app-shell { padding-top: 20px; }
+      header { align-items: flex-start; flex-direction: column; gap: 14px; }
+      h1 { font-size: 24px; }
+      .controls-column { display: block; }
+      .section-heading { align-items: flex-start; flex-direction: column; gap: 5px; }
+      .screen-frame { padding: 6px; }
+      .screen-footer { flex-direction: column; gap: 4px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app-shell">
+    <header>
+      <div>
+        <div class="eyebrow">Rotorflight · Bench tools</div>
+        <h1>ActiveLook Preview</h1>
+      </div>
+      <div class="sim-badge" id="source-status" data-state="waiting">Waiting for simulator sensor feed</div>
+    </header>
+
+    <main>
+      <section class="preview-column" aria-labelledby="preview-title">
+        <div class="section-heading">
+          <h2 id="preview-title">ActiveLook display</h2>
+          <span class="screen-meta">304 × 256 · EnGo 2</span>
+        </div>
+        <div class="screen-frame">
+          <canvas id="display" width="304" height="256" aria-label="Simulated ActiveLook display"></canvas>
+          <div class="screen-footer">
+            <span>Phase: <strong id="phase-label">PRE-FLIGHT</strong></span>
+            <span id="layout-label">Stacked Large + Large + Small</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="controls-column" aria-label="Preview controls">
+        <div class="control-block">
+          <div class="control-title">
+            <h3>Flight phase</h3>
+            <span id="phase-source">Automatic from sensors</span>
+          </div>
+          <div class="phase-switch" role="group" aria-label="Select flight phase">
+            <button class="phase-button" data-mode="auto" aria-pressed="true">AUTO</button>
+            <button class="phase-button" data-mode="preflight" aria-pressed="false">PRE</button>
+            <button class="phase-button" data-mode="inflight" aria-pressed="false">FLIGHT</button>
+            <button class="phase-button" data-mode="postflight" aria-pressed="false">POST</button>
+          </div>
+        </div>
+
+        <div class="control-block">
+          <div class="control-title">
+            <h3>Layout &amp; Slots</h3>
+            <span id="slot-state">4 slots · local defaults</span>
+          </div>
+          <label class="field layout-field">
+            <span class="field-label">Layout for this phase</span>
+            <select id="layout"></select>
+          </label>
+          <div class="slots" id="slots"></div>
+          <div class="actions">
+            <span class="layout-sync-status" id="layout-sync-status">Waiting for simulator settings</span>
+            <div class="action-buttons">
+              <button class="reset-button" id="save-config" type="button" disabled>Save to simulator</button>
+              <button class="reset-button" id="reset-config" type="button">Restore defaults</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="control-block">
+          <div class="control-title">
+            <h3>Simulator telemetry</h3>
+            <span id="telemetry-source">Manual fallback values</span>
+          </div>
+          <div class="telemetry-groups">
+            <section class="telemetry-group" aria-labelledby="flight-control-title">
+              <h4 id="flight-control-title">Flight Control</h4>
+              <div class="field-grid">
+                <label class="field"><span class="field-label">Arm</span><input data-value="armed" data-feed="armed" type="checkbox"></label>
+                <label class="field"><span class="field-label">Governor</span>
+                  <select data-value="governorState" data-feed="governorState">
+                    <option value="0">OFF</option><option value="1">IDLE</option><option value="2">SPOOLUP</option>
+                    <option value="3">RECOVERY</option><option value="4">ACTIVE</option><option value="5">THROTTLE-OFF</option>
+                    <option value="6">LOST HEADSPEED</option><option value="7">AUTOROTATION</option><option value="8">BAILOUT</option>
+                    <option value="100">DISABLED</option><option value="101">DISARMED</option>
+                  </select>
+                </label>
+                <label class="field"><span class="field-label">Headspeed · RPM</span><input data-value="rpm" data-feed="rpm" type="number" min="0" max="5000" step="10" value="1840"></label>
+              </div>
+            </section>
+
+            <section class="telemetry-group" aria-labelledby="power-system-title">
+              <h4 id="power-system-title">Power System</h4>
+              <div class="field-grid">
+                <label class="field"><span class="field-label">Main voltage · V</span><input data-value="voltage" data-feed="voltage" type="number" min="0" max="100" step="0.1" value="24.8"></label>
+                <label class="field"><span class="field-label">BEC voltage · V</span><input data-value="becVoltage" data-feed="becVoltage" type="number" min="0" max="20" step="0.01" value="8"></label>
+                <label class="field"><span class="field-label">Current · A</span><input data-value="current" data-feed="current" type="number" min="0" max="200" step="0.1" value="18.6"></label>
+                <label class="field"><span class="field-label">Consumption · mAh</span><input data-value="consumption" data-feed="consumption" type="number" min="0" max="5000" step="1" value="428"></label>
+                <label class="field"><span class="field-label">Fuel · %</span><input data-value="fuel" data-feed="fuel" type="number" min="0" max="100" step="1" value="76"></label>
+              </div>
+            </section>
+
+            <section class="telemetry-group" aria-labelledby="flight-profiles-title">
+              <h4 id="flight-profiles-title">Flight Profiles</h4>
+              <div class="field-grid">
+                <label class="field"><span class="field-label">PID profile</span><select data-value="pidProfile" data-feed="pidProfile"><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option></select></label>
+                <label class="field"><span class="field-label">Rate profile</span><select data-value="rateProfile" data-feed="rateProfile"><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option></select></label>
+                <label class="field"><span class="field-label">Battery profile</span><select data-value="batteryProfile" data-feed="batteryProfile"><option value="0">1</option><option value="1">2</option><option value="2">3</option><option value="3">4</option><option value="4">5</option><option value="5">6</option></select></label>
+              </div>
+            </section>
+
+            <section class="telemetry-group" aria-labelledby="other-sensors-title">
+              <h4 id="other-sensors-title">Other Sensors</h4>
+              <div class="field-grid">
+                <label class="field"><span class="field-label">ESC temperature · °C</span><input data-value="tempEsc" data-feed="tempEsc" type="number" min="-20" max="200" step="1" value="58"></label>
+                <label class="field"><span class="field-label">MCU temperature · °C</span><input data-value="tempMcu" data-feed="tempMcu" type="number" min="-20" max="150" step="1" value="42"></label>
+                <label class="field"><span class="field-label">Throttle · %</span><input data-value="throttlePercent" data-feed="throttlePercent" type="number" min="0" max="100" step="1" value="76"></label>
+                <label class="field"><span class="field-label">Altitude · m</span><input data-value="altitude" data-feed="altitude" type="number" min="-1000" max="1000" step="1" value="25"></label>
+                <label class="field"><span class="field-label">Cell count</span><input data-value="cellCount" data-feed="cellCount" type="number" min="1" max="12" step="1" value="6"></label>
+              </div>
+            </section>
+
+            <section class="telemetry-group" aria-labelledby="preview-values-title">
+              <h4 id="preview-values-title">Preview-only Values</h4>
+              <div class="field-grid">
+                <label class="field"><span class="field-label">Timer · s</span><input data-value="timer" type="number" min="0" max="3600" step="1" value="92"></label>
+                <label class="field"><span class="field-label">Link · dB</span><input data-value="link" type="number" min="0" max="100" step="1" value="82"></label>
+              </div>
+            </section>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    (() => {
+      const phases = ["preflight", "inflight", "postflight"];
+      const VIEW_WIDTH = 304;
+      const VIEW_HEIGHT = 256;
+      const THROTTLE_THRESHOLD = 35;
+      const sensorChoices = [
+        ["off", "Off"], ["flightmode", "Flight Mode"], ["timer", "Timer"],
+        ["governor", "Governor"], ["armed", "Arm Status"], ["temp_esc", "ESC Temp"],
+        ["temp_mcu", "MCU Temp"], ["link", "Link"], ["fuel", "Fuel"],
+        ["current", "Current"], ["voltage", "Voltage"], ["cell_voltage", "Cell Voltage"],
+        ["headspeed", "Headspeed"], ["consumption", "Consumed mAh"],
+        ["temp_esc_max", "Max ESC Temp"], ["temp_mcu_max", "Max MCU Temp"],
+        ["link_min", "Min Link"], ["link_max", "Max Link"], ["fuel_min", "Min Fuel"],
+        ["fuel_max", "Max Fuel"], ["current_min", "Min Current"],
+        ["current_max", "Max Current"], ["voltage_min", "Min Voltage"],
+        ["voltage_max", "Max Voltage"], ["headspeed_min", "Min Headspeed"],
+        ["headspeed_max", "Max Headspeed"],
+      ];
+      const layouts = [
+        ["two_top_one_bottom", "Two Top + One Bottom"],
+        ["two_top_two_bottom", "Two Top + Two Bottom"],
+        ["one_centered", "Single Centered"],
+        ["one_top_two_bottom", "One Top + Two Bottom"],
+        ["stacked_three", "Stacked Large + Large + Small"],
+      ];
+      const defaults = {
+        preflight: {layout: "stacked_three", slots: ["governor", "armed", "flightmode", "off"]},
+        inflight: {layout: "one_top_two_bottom", slots: ["current", "voltage", "fuel", "timer"]},
+        postflight: {layout: "two_top_two_bottom", slots: ["current", "voltage", "fuel", "timer"]},
+      };
+      const sensors = {
+        current: 18.6, voltage: 24.8, becVoltage: 8, fuel: 76, timer: 92, rpm: 1840,
+        tempEsc: 58, tempMcu: 42, link: 82, consumption: 428, cellCount: 6, altitude: 25,
+        throttlePercent: 76, pidProfile: 1, rateProfile: 1, batteryProfile: 0,
+        governor: "ACTIVE", governorState: 4, armed: false,
+      };
+      let mode = "preflight";
+      let phaseSelection = "auto";
+      let hasBeenInFlight = false;
+      let lastArmed = false;
+      let liveFeed = false;
+      let pollInFlight = false;
+      let configPollInFlight = false;
+      let configSaveInFlight = false;
+      let configDirty = false;
+      let simulatorConfigRevision = null;
+      let simulatorConfigLoaded = false;
+      let savedSimulatorConfig = null;
+      let simulatorConfigEnabled = true;
+      let simulatorOffsetX = 0;
+      let simulatorOffsetY = 0;
+      let configSaveStatus = "Waiting for simulator settings";
+      const config = structuredClone(defaults);
+      const stats = {};
+
+      const canvas = document.getElementById("display");
+      const context = canvas.getContext("2d");
+      const layoutSelect = document.getElementById("layout");
+      const slotContainer = document.getElementById("slots");
+      const phaseLabel = document.getElementById("phase-label");
+      const layoutLabel = document.getElementById("layout-label");
+      const slotState = document.getElementById("slot-state");
+      const sourceStatus = document.getElementById("source-status");
+      const phaseSource = document.getElementById("phase-source");
+      const telemetrySource = document.getElementById("telemetry-source");
+      const saveConfigButton = document.getElementById("save-config");
+      const resetConfigButton = document.getElementById("reset-config");
+      const layoutSyncStatus = document.getElementById("layout-sync-status");
+      const layoutActive = {
+        two_top_one_bottom: [true, true, true, false],
+        two_top_two_bottom: [true, true, true, true],
+        one_centered: [true, false, false, false],
+        one_top_two_bottom: [true, false, true, true],
+        stacked_three: [true, true, true, false],
+      };
+
+      function layoutConfigSnapshot() {
+        const snapshot = {};
+        for (const phase of phases) {
+          snapshot[phase] = {layout: config[phase].layout, slots: [...config[phase].slots]};
+        }
+        return snapshot;
+      }
+
+      function updateConfigDirty() {
+        if (!savedSimulatorConfig) {
+          configDirty = false;
+          return;
+        }
+        configDirty = phases.some((phase) =>
+          config[phase].layout !== savedSimulatorConfig[phase].layout ||
+          config[phase].slots.some((slot, index) => slot !== savedSimulatorConfig[phase].slots[index])
+        );
+        configSaveStatus = configDirty ? "Unsaved preview changes" : "Matches simulator settings";
+      }
+
+      for (const [key, label] of layouts) {
+        const option = document.createElement("option");
+        option.value = key;
+        option.textContent = label;
+        layoutSelect.append(option);
+      }
+
+      for (const phase of phases) {
+        for (let index = 0; index < 4; index++) {
+          const row = document.createElement("label");
+          row.className = "slot-row";
+          row.innerHTML = `<span class="slot-number">${index + 1}</span><select aria-label="${phase} slot ${index + 1}" data-phase="${phase}" data-slot="${index}"></select>`;
+          const select = row.querySelector("select");
+          for (const [key, label] of sensorChoices) {
+            const option = document.createElement("option");
+            option.value = key;
+            option.textContent = label;
+            select.append(option);
+          }
+          slotContainer.append(row);
+        }
+      }
+
+      function recordFlightStats() {
+        for (const [key, value] of Object.entries({fuel: sensors.fuel, current: sensors.current, voltage: sensors.voltage, rpm: sensors.rpm, temp_esc: sensors.tempEsc, temp_mcu: sensors.tempMcu, link: sensors.link})) {
+          const sample = Number(value);
+          if (!Number.isFinite(sample)) continue;
+          if (!stats[key]) stats[key] = {min: sample, max: sample};
+          stats[key].min = Math.min(stats[key].min, sample);
+          stats[key].max = Math.max(stats[key].max, sample);
+        }
+      }
+
+      function formatDuration(seconds) {
+        const total = Math.max(0, Math.floor(Number(seconds) + 0.5));
+        return `${String(Math.floor(total / 60)).padStart(2, "0")}:${String(total % 60).padStart(2, "0")}`;
+      }
+
+      function applySimulatorConfig(payload) {
+        if (payload.revision === simulatorConfigRevision) return;
+        if (configDirty) {
+          configSaveStatus = "Simulator settings changed · save to resolve conflict";
+          refreshControls();
+          return;
+        }
+        const settings = payload.settings || {};
+        simulatorConfigRevision = payload.revision;
+        simulatorConfigLoaded = true;
+        configDirty = false;
+        configSaveStatus = "Loaded from simulator";
+        simulatorConfigEnabled = settings.enabled !== "false";
+        simulatorOffsetX = Math.max(-20, Math.min(20, Number(settings.offset_x) || 0));
+        simulatorOffsetY = Math.max(-20, Math.min(20, Number(settings.offset_y) || 0));
+
+        for (const phase of phases) {
+          const layoutKey = settings[`layout_${phase}`];
+          if (layouts.some(([key]) => key === layoutKey)) config[phase].layout = layoutKey;
+          for (let index = 0; index < 4; index++) {
+            const sensorKey = settings[`${phase}_${index + 1}`];
+            if (sensorChoices.some(([key]) => key === sensorKey)) config[phase].slots[index] = sensorKey;
+          }
+        }
+        savedSimulatorConfig = layoutConfigSnapshot();
+        layoutSelect.disabled = false;
+        slotContainer.querySelectorAll("select").forEach((select) => { select.disabled = false; });
+        resetConfigButton.disabled = false;
+        refreshControls();
+      }
+
+      async function pollSimulatorConfig() {
+        if (location.protocol === "file:" || configPollInFlight || configSaveInFlight) return;
+        configPollInFlight = true;
+        try {
+          const response = await fetch("/api/activelook-config", {cache: "no-store"});
+          const payload = await response.json();
+          if (payload.ok) applySimulatorConfig(payload);
+          else if (!simulatorConfigLoaded) {
+            configSaveStatus = payload.error || "Simulator settings unavailable · local defaults";
+            refreshControls();
+          }
+        } catch (_) {
+          if (!simulatorConfigLoaded) {
+            configSaveStatus = "Simulator settings unavailable · local defaults";
+            refreshControls();
+          }
+        } finally {
+          configPollInFlight = false;
+        }
+      }
+
+      function transitionMode(nextMode) {
+        if (nextMode !== mode) {
+          if (nextMode === "inflight" && mode !== "inflight" && mode !== "postflight") {
+            for (const key of Object.keys(stats)) delete stats[key];
+          }
+          mode = nextMode;
+          if (mode === "inflight") recordFlightStats();
+          refreshControls();
+          return;
+        }
+        if (mode === "inflight") recordFlightStats();
+        draw();
+      }
+
+      function updateAutomaticMode() {
+        if (phaseSelection !== "auto") return;
+        const armed = sensors.armed === true;
+        const connected = true;
+        const currentMode = mode || "preflight";
+        let nextMode;
+
+        if ((currentMode === "inflight" || currentMode === "postflight") && !connected) {
+          hasBeenInFlight = true;
+          nextMode = "postflight";
+        } else if (armed && !lastArmed) {
+          hasBeenInFlight = false;
+          nextMode = "preflight";
+        } else {
+          let isFlying = false;
+          if (armed && connected) {
+            const governor = Number(sensors.governorState);
+            if (governor >= 4 && governor <= 8) {
+              isFlying = true;
+            } else {
+              isFlying = Number(sensors.throttlePercent) > THROTTLE_THRESHOLD;
+            }
+          }
+
+          if (isFlying) {
+            hasBeenInFlight = true;
+            nextMode = "inflight";
+          } else if (armed && hasBeenInFlight) {
+            nextMode = "inflight";
+          } else if (hasBeenInFlight) {
+            nextMode = "postflight";
+          } else {
+            nextMode = "preflight";
+          }
+        }
+        lastArmed = armed;
+        transitionMode(nextMode);
+      }
+
+      function applyTelemetry(payload) {
+        const values = payload.values || {};
+        for (const [key, value] of Object.entries(values)) {
+          if (key === "governorState") {
+            sensors.governorState = Number(value);
+            sensors.governor = ({0: "OFF", 1: "IDLE", 2: "SPOOLUP", 3: "RECOVERY", 4: "ACTIVE", 5: "THR OFF", 6: "LOST HS", 7: "AUTOROT", 8: "BAILOUT", 100: "DISABLED", 101: "DISARMED"})[Math.floor(Number(value))] || "UNKNOWN";
+          } else if (key === "armed") {
+            sensors.armed = value === true;
+          } else if (Object.prototype.hasOwnProperty.call(sensors, key)) {
+            sensors[key] = Number(value);
+          }
+        }
+
+        document.querySelectorAll("input[data-feed], select[data-feed]").forEach((input) => {
+          const key = input.dataset.feed;
+          const hasValue = Object.prototype.hasOwnProperty.call(values, key);
+          input.disabled = hasValue;
+          if (!hasValue) return;
+          if (input.type === "checkbox") input.checked = values[key] === true;
+          else input.value = String(values[key]);
+        });
+        liveFeed = true;
+        sourceStatus.dataset.state = "live";
+        sourceStatus.textContent = `Live · ${payload.target}`;
+        phaseSource.textContent = phaseSelection === "auto" ? "Auto · sensor throttle > 35%" : "Manual override";
+        telemetrySource.textContent = "Values read from simulator sensor profiles";
+      }
+
+      async function pollTelemetry() {
+        if (location.protocol === "file:" || pollInFlight) return;
+        pollInFlight = true;
+        try {
+          const response = await fetch("/api/telemetry", {cache: "no-store"});
+          const payload = await response.json();
+          if (!payload.ok) {
+            liveFeed = false;
+            sourceStatus.dataset.state = "waiting";
+            sourceStatus.textContent = "Sensor profile not found";
+            telemetrySource.textContent = payload.error || "Save sensor values in sensors.exe";
+            document.querySelectorAll("input[data-feed], select[data-feed]").forEach((input) => { input.disabled = false; });
+            return;
+          }
+          applyTelemetry(payload);
+          if (phaseSelection === "auto") updateAutomaticMode();
+          else draw();
+        } catch (_) {
+          liveFeed = false;
+          sourceStatus.dataset.state = "waiting";
+          sourceStatus.textContent = "Preview server unavailable";
+          telemetrySource.textContent = "Start server.py to read simulator sensor profiles";
+          document.querySelectorAll("input[data-feed], select[data-feed]").forEach((input) => { input.disabled = false; });
+        } finally {
+          pollInFlight = false;
+        }
+      }
+
+      function valueFor(key) {
+        const stat = (name, kind) => stats[name]?.[kind];
+        const values = {
+          off: "-",
+          flightmode: mode === "inflight" ? "FLY" : mode === "postflight" ? "POST" : "PRE",
+          timer: formatDuration(sensors.timer),
+          governor: sensors.governor,
+          armed: sensors.armed ? "ARMED" : "DISARMED",
+          fuel: `${Math.round(sensors.fuel)}%`,
+          consumption: `${Math.round(sensors.consumption)}mAh`,
+          current: `${Number(sensors.current).toFixed(1)}A`,
+          voltage: `${Number(sensors.voltage).toFixed(1)}V`,
+          cell_voltage: `${(Number(sensors.voltage) / sensors.cellCount).toFixed(2)}V`,
+          headspeed: String(Math.round(sensors.rpm)),
+          temp_esc: `${Math.round(sensors.tempEsc)}°C`,
+          temp_mcu: `${Math.round(sensors.tempMcu)}°C`,
+          link: `${Math.round(sensors.link)}dB`,
+          fuel_min: stat("fuel", "min"), fuel_max: stat("fuel", "max"),
+          current_min: stat("current", "min"), current_max: stat("current", "max"),
+          voltage_min: stat("voltage", "min"), voltage_max: stat("voltage", "max"),
+          headspeed_min: stat("rpm", "min"), headspeed_max: stat("rpm", "max"),
+          temp_esc_max: stat("temp_esc", "max"), temp_mcu_max: stat("temp_mcu", "max"),
+          link_min: stat("link", "min"), link_max: stat("link", "max"),
+        };
+        const value = values[key];
+        if (value === undefined || value === null) return "-";
+        if (["fuel_min", "fuel_max"].includes(key)) return `${Math.round(value)}%`;
+        if (["current_min"].includes(key)) return `${Number(value).toFixed(1)}A`;
+        if (["current_max"].includes(key)) return `${Math.round(value)}A`;
+        if (["voltage_min", "voltage_max"].includes(key)) return `${Number(value).toFixed(1)}V`;
+        if (["headspeed_min", "headspeed_max"].includes(key)) return String(Math.round(value));
+        if (["temp_esc_max", "temp_mcu_max"].includes(key)) return `${Math.round(value)}°C`;
+        if (["link_min", "link_max"].includes(key)) return `${Math.round(value)}dB`;
+        return String(value);
+      }
+
+      function buildSlots(layout) {
+        const scale = (VIEW_HEIGHT - 16) / 256;
+        const areaWidth = VIEW_WIDTH - 16;
+        const gap = Math.max(4, Math.floor(8 * scale));
+        const boxWidth = Math.floor((areaWidth - gap) / 2);
+        const left = simulatorOffsetX;
+        const right = boxWidth + gap + simulatorOffsetX;
+        const center = Math.floor((areaWidth - boxWidth) / 2) + simulatorOffsetX;
+        const top = Math.floor(8 * scale) + simulatorOffsetY;
+        const middle = Math.floor(88 * scale) + simulatorOffsetY;
+        const bottom = Math.floor(186 * scale) + simulatorOffsetY;
+        const pre = mode === "preflight";
+        const large = pre ? 3 : 3;
+        const small = pre ? 1 : 2;
+        const compact = pre ? 1 : 1;
+        const largeOffset = Math.floor((pre ? 14 : 8) * scale);
+        const smallOffset = Math.floor((pre ? 2 : 6) * scale);
+        const slots = Array(4).fill(null);
+        const add = (i, x, y, font, width, align = "left", offset = largeOffset) => {
+          slots[i - 1] = {x, y: y + offset, font, width, align};
+        };
+
+        if (layout === "two_top_one_bottom") {
+          add(1, left, top, large, boxWidth, pre ? "center" : "left");
+          add(2, right, top, large, boxWidth, pre ? "center" : "left");
+          add(3, center, bottom, small, boxWidth, "center", smallOffset);
+        } else if (layout === "stacked_three") {
+          add(1, left, top, large, areaWidth, "center");
+          add(2, left, middle, large, areaWidth, "center");
+          add(3, left, bottom, small, areaWidth, "center", smallOffset);
+        } else if (layout === "one_centered") {
+          add(1, left, middle, large, areaWidth, "center");
+        } else if (layout === "one_top_two_bottom") {
+          add(1, left, top, large, areaWidth, "center");
+          add(3, left, bottom, compact, boxWidth, pre ? "center" : "left", smallOffset);
+          add(4, right, bottom, compact, boxWidth, pre ? "center" : "left", smallOffset);
+        } else {
+          add(1, left, top, large, boxWidth, pre ? "center" : "left");
+          add(2, right, top, large, boxWidth, pre ? "center" : "left");
+          add(3, left, bottom, compact, boxWidth, pre ? "center" : "left", smallOffset);
+          add(4, right, bottom, compact, boxWidth, pre ? "center" : "left", smallOffset);
+        }
+        return slots;
+      }
+
+      function draw() {
+        const pixelRatio = window.devicePixelRatio || 1;
+        const bounds = canvas.getBoundingClientRect();
+        const width = Math.max(1, Math.round(bounds.width * pixelRatio));
+        const height = Math.max(1, Math.round(bounds.height * pixelRatio));
+        if (canvas.width !== width || canvas.height !== height) {
+          canvas.width = width;
+          canvas.height = height;
+        }
+        context.setTransform(canvas.width / VIEW_WIDTH, 0, 0, canvas.height / VIEW_HEIGHT, 0, 0);
+        context.fillStyle = "#030708";
+        context.fillRect(0, 0, VIEW_WIDTH, VIEW_HEIGHT);
+        if (simulatorConfigLoaded && !simulatorConfigEnabled) return;
+        const phaseConfig = config[mode];
+        const active = layoutActive[phaseConfig.layout];
+        const slots = buildSlots(phaseConfig.layout);
+        for (let index = 0; index < 4; index++) {
+          const slot = slots[index];
+          if (!slot || !active[index]) continue;
+          const text = valueFor(phaseConfig.slots[index]);
+          const fontSizes = {1: 24, 2: 38, 3: 64};
+          const fontSize = fontSizes[slot.font] || 24;
+          context.font = `600 ${fontSize}px "ActiveLook EnGo 2"`;
+          context.textBaseline = "top";
+          context.textAlign = "left";
+          let x = 8 + slot.x;
+          if (slot.align === "center") {
+            x += Math.max(0, (slot.width - context.measureText(text).width) / 2);
+          }
+          context.fillStyle = "#f2e300";
+          context.fillText(text, Math.round(x), Math.round(8 + slot.y));
+        }
+      }
+
+      function refreshControls() {
+        layoutSelect.value = config[mode].layout;
+        for (const select of slotContainer.querySelectorAll(`select[data-phase="${mode}"]`)) {
+          select.value = config[mode].slots[Number(select.dataset.slot)];
+        }
+        slotContainer.querySelectorAll(".slot-row").forEach((row) => {
+          row.hidden = row.querySelector("select").dataset.phase !== mode;
+        });
+        const activeSlots = layoutActive[config[mode].layout].filter(Boolean).length;
+        slotState.textContent = `${activeSlots} active slots${simulatorConfigLoaded ? " · simulator settings" : " · local defaults"}`;
+        phaseLabel.textContent = mode === "preflight" ? "PRE-FLIGHT" : mode === "inflight" ? "IN-FLIGHT" : "POST-FLIGHT";
+        layoutLabel.textContent = layouts.find(([key]) => key === config[mode].layout)?.[1] || "Custom layout";
+        phaseSource.textContent = phaseSelection === "auto"
+          ? "Auto · sensor throttle > 35%"
+          : "Manual override";
+        layoutSyncStatus.textContent = configSaveStatus;
+        saveConfigButton.disabled = !simulatorConfigLoaded || !configDirty || configSaveInFlight;
+        document.querySelectorAll(".phase-button").forEach((button) => button.setAttribute("aria-pressed", String(button.dataset.mode === phaseSelection)));
+        draw();
+      }
+
+      async function saveSimulatorConfig() {
+        if (!simulatorConfigLoaded || !configDirty || configSaveInFlight) return;
+        const settings = {};
+        for (const phase of phases) {
+          settings[`layout_${phase}`] = config[phase].layout;
+          settings[phase] = [...config[phase].slots];
+        }
+
+        configSaveInFlight = true;
+        configSaveStatus = "Saving to simulator…";
+        refreshControls();
+        try {
+          const response = await fetch("/api/activelook-config", {
+            method: "POST",
+            headers: {"Content-Type": "application/json"},
+            body: JSON.stringify({revision: simulatorConfigRevision, settings}),
+          });
+          const payload = await response.json();
+          if (response.status === 409 && payload.ok) {
+            configDirty = false;
+            simulatorConfigRevision = null;
+            applySimulatorConfig(payload);
+            configSaveStatus = "Lua settings changed · latest settings loaded";
+          } else if (!response.ok || !payload.ok) {
+            throw new Error(payload.error || `HTTP ${response.status}`);
+          } else {
+            configDirty = false;
+            simulatorConfigRevision = null;
+            applySimulatorConfig(payload);
+            configSaveStatus = "Saved to simulator";
+          }
+        } catch (error) {
+          configSaveStatus = `Save failed: ${error.message}`;
+        } finally {
+          configSaveInFlight = false;
+          refreshControls();
+        }
+      }
+
+      document.querySelectorAll(".phase-button").forEach((button) => {
+        button.addEventListener("click", () => {
+          phaseSelection = button.dataset.mode;
+          if (phaseSelection === "auto") updateAutomaticMode();
+          else transitionMode(phaseSelection);
+          refreshControls();
+        });
+      });
+
+      saveConfigButton.addEventListener("click", saveSimulatorConfig);
+
+      layoutSelect.addEventListener("change", () => {
+        config[mode].layout = layoutSelect.value;
+        updateConfigDirty();
+        refreshControls();
+      });
+
+      slotContainer.addEventListener("change", (event) => {
+        const select = event.target.closest("select[data-phase]");
+        if (!select) return;
+        config[select.dataset.phase].slots[Number(select.dataset.slot)] = select.value;
+        updateConfigDirty();
+        refreshControls();
+      });
+
+      document.querySelectorAll("input[data-value], select[data-value]").forEach((input) => {
+        const updateValue = () => {
+          const key = input.dataset.value;
+          if (input.type === "checkbox") sensors[key] = input.checked;
+          else if (key === "governorState") {
+            sensors.governorState = Number(input.value);
+            sensors.governor = input.selectedOptions[0]?.textContent || "UNKNOWN";
+          } else sensors[key] = Number(input.value);
+          if (mode === "inflight") recordFlightStats();
+          if (phaseSelection === "auto") updateAutomaticMode();
+          else draw();
+        };
+        input.addEventListener(input.tagName === "SELECT" ? "change" : "input", updateValue);
+      });
+
+      document.getElementById("reset-config").addEventListener("click", () => {
+        for (const phase of phases) {
+          config[phase].layout = defaults[phase].layout;
+          config[phase].slots = [...defaults[phase].slots];
+        }
+        updateConfigDirty();
+        refreshControls();
+      });
+
+      window.addEventListener("resize", draw);
+      refreshControls();
+      document.fonts.load('600 64px "ActiveLook EnGo 2"').then(draw);
+      if (location.protocol === "file:") {
+        sourceStatus.textContent = "Open through server.py for live telemetry";
+        telemetrySource.textContent = "Manual fallback values";
+      } else {
+        pollSimulatorConfig();
+        window.setInterval(pollSimulatorConfig, 500);
+        pollTelemetry();
+        window.setInterval(pollTelemetry, 500);
+      }
+    })();
+  </script>
+</body>
+</html>
