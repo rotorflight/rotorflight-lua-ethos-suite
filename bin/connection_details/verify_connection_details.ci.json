@@ -1,0 +1,7 @@
+{
+  "id": "connection-details",
+  "name": "The header's info button opens the flight-controller link's details",
+  "step": "Check the connection details dialog and the header info button",
+  "script": "bin/connection_details/verify_connection_details.lua",
+  "rationale": "Issue #2318: the header shows no sign of the flight-controller link: a page left blank, values that never arrive, or a handshake still running look the same. The issue asks for an info button on the header of every screen. The button shows only an icon, as asked, and opens a dialog with the link state, the handshake progress (of its nine steps) and the craft name, firmware and API version the session holds. Latency is not in the session and is not shown.\n\nThe harness checks the dialog's text for a connected link, a link that is down, and a session with no names or versions (a dash), and that the header carries the button on its own sixth slot and that pressing it opens the dialog. It does not check how the button looks on the radio: that is a simulator check (AGENTS.md section 11), not run here. Against unpatched master the header has no sixth slot and the dialog module does not exist."
+}

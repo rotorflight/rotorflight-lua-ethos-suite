@@ -7,6 +7,36 @@
     "reverse_text": false
   },
   "app": {
+    "connection_title": {
+      "english": "Connection",
+      "translation": "Connection",
+      "needs_translation": true,
+      "max_length": 10
+    },
+    "connection_body_fmt": {
+      "english": "Link: %s\nHandshake: %s\nCraft: %s\nFirmware: %s\nAPI: %s",
+      "translation": "Link: %s\nHandshake: %s\nCraft: %s\nFirmware: %s\nAPI: %s",
+      "needs_translation": true,
+      "max_length": 53
+    },
+    "connection_link_up": {
+      "english": "connected",
+      "translation": "connected",
+      "needs_translation": true,
+      "max_length": 9
+    },
+    "connection_link_down": {
+      "english": "not connected",
+      "translation": "not connected",
+      "needs_translation": true,
+      "max_length": 13
+    },
+    "connection_handshake_fmt": {
+      "english": "%d of %d steps",
+      "translation": "%d of %d steps",
+      "needs_translation": true,
+      "max_length": 14
+    },
     "navigation_menu": {
       "english": "BACK",
       "translation": "ZPET",

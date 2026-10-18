@@ -7,6 +7,36 @@
     "max_length": 6
   },
   "app": {
+    "connection_title": {
+      "english": "Connection",
+      "translation": "Verbindung",
+      "needs_translation": false,
+      "max_length": 10
+    },
+    "connection_body_fmt": {
+      "english": "Link: %s\nHandshake: %s\nCraft: %s\nFirmware: %s\nAPI: %s",
+      "translation": "Verbindung: %s\nHandshake: %s\nModell: %s\nFirmware: %s\nAPI: %s",
+      "needs_translation": false,
+      "max_length": 53
+    },
+    "connection_link_up": {
+      "english": "connected",
+      "translation": "verbunden",
+      "needs_translation": false,
+      "max_length": 9
+    },
+    "connection_link_down": {
+      "english": "not connected",
+      "translation": "nicht verbunden",
+      "needs_translation": false,
+      "max_length": 13
+    },
+    "connection_handshake_fmt": {
+      "english": "%d of %d steps",
+      "translation": "%d von %d Schritten",
+      "needs_translation": false,
+      "max_length": 14
+    },
     "navigation_menu": {
       "english": "BACK",
       "translation": "ZURÜCK",

@@ -284,6 +284,36 @@
       "reverse_text": false,
       "translation": "                OK                "
     },
+    "connection_body_fmt": {
+      "english": "Link: %s\nHandshake: %s\nCraft: %s\nFirmware: %s\nAPI: %s",
+      "max_length": 53,
+      "needs_translation": false,
+      "translation": "Verbindung: %s\nHandshake: %s\nModell: %s\nFirmware: %s\nAPI: %s"
+    },
+    "connection_handshake_fmt": {
+      "english": "%d of %d steps",
+      "max_length": 14,
+      "needs_translation": false,
+      "translation": "%d von %d Schritten"
+    },
+    "connection_link_down": {
+      "english": "not connected",
+      "max_length": 13,
+      "needs_translation": false,
+      "translation": "nicht verbunden"
+    },
+    "connection_link_up": {
+      "english": "connected",
+      "max_length": 9,
+      "needs_translation": false,
+      "translation": "verbunden"
+    },
+    "connection_title": {
+      "english": "Connection",
+      "max_length": 10,
+      "needs_translation": false,
+      "translation": "Verbindung"
+    },
     "header_configuration": {
       "english": "Configuration",
       "max_length": 13,
