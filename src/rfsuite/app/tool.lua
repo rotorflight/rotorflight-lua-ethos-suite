@@ -526,9 +526,9 @@ local function showBackgroundTaskAlert()
   })
 end
 
--- A press on a tile the flight controller has not answered for (#2319). Unlike the
--- one-shot alert above it is not latched: every press is answered, and a press
--- waits only while a dialog is already open.
+-- The link is down while the task runs (#2319). The menu raises this from its own
+-- state, once per link loss (notConnectedShown); the dialog is shown on the next
+-- wakeup, and never twice while it is open.
 local function requestNotConnectedAlert()
   if notConnectedOpen or notConnectedShown then return end
   notConnectedPending = true
