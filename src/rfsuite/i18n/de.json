@@ -274,7 +274,7 @@
       "english": "DISCARD",
       "max_length": 7,
       "needs_translation": false,
-      "translation": "VERWERFEN"
+      "translation": "VERWERF"
     },
     "btn_ok": {
       "english": "OK",
@@ -294,13 +294,13 @@
       "english": "SAVE",
       "max_length": 4,
       "needs_translation": false,
-      "translation": "SPEICHERN"
+      "translation": "SICH"
     },
     "btn_stay": {
       "english": "STAY",
       "max_length": 4,
       "needs_translation": false,
-      "translation": "BLEIBEN"
+      "translation": "HALT"
     },
     "connection_body_fmt": {
       "english": "Link: %s\nHandshake: %s\nCraft: %s\nFirmware: %s\nAPI: %s",
@@ -8427,19 +8427,19 @@
       "english": "Saving is locked while armed. Discard the changes?",
       "max_length": 50,
       "needs_translation": false,
-      "translation": "Speichern ist im Armed-Zustand gesperrt. Änderungen verwerfen?"
+      "translation": "Im Armed-Zustand gesperrt. Verwerfen?"
     },
     "msg_unsaved_body": {
       "english": "Save the changes before leaving?",
       "max_length": 32,
       "needs_translation": false,
-      "translation": "Änderungen vor dem Verlassen speichern?"
+      "translation": "Vor dem Verlassen speichern?"
     },
     "msg_unsaved_title": {
       "english": "Unsaved changes",
       "max_length": 15,
       "needs_translation": false,
-      "translation": "Ungespeicherte Änderungen"
+      "translation": "Ungespeichert"
     },
     "navigation_menu": {
       "english": "BACK",

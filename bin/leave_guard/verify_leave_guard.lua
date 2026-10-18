@@ -340,5 +340,35 @@ do
   bus.unsubscribe("msp.request", sub)
 end
 
+-- ---------------------------------------------------------------------------
+-- The question's text and its tracked handle (review of #239)
+-- ---------------------------------------------------------------------------
+print("leave_confirm: the question's text and handle")
+do
+  local leaveConfirm = requireModule("app/leave_confirm.lua")
+  local function noop() end
+  local function args(canSave, armed)
+    return leaveConfirm.args({canSave = canSave, armed = armed, save = noop, discard = noop, focus = noop})
+  end
+  local plainBody = args(true, false).message
+  check("a page that cannot save for another reason does not say the model is armed",
+    args(false, false).message == plainBody and args(false, false).message ~= args(false, true).message)
+  check("a page that cannot save because the model is armed says so",
+    args(false, true).message ~= plainBody)
+
+  local opened = nil
+  local savedForm = form
+  form = {openDialog = function(spec) opened = spec; return {close = function() end} end}
+  local discarded, cleared = 0, 0
+  local handle = leaveConfirm.open(
+    leaveConfirm.args({canSave = true, save = noop, discard = function() discarded = discarded + 1 end, focus = noop}),
+    function() cleared = cleared + 1 end)
+  local discardButton = opened.buttons[#opened.buttons - 1]
+  discardButton.action()
+  form = savedForm
+  check("the tracked dialog returns its handle", handle ~= nil and handle.close ~= nil)
+  check("a button clears the page's handle before it runs", cleared == 1 and discarded == 1)
+end
+
 print(string.format("\n%d checks, %d failed", checks, failures))
 os.exit(failures == 0 and 0 or 1)

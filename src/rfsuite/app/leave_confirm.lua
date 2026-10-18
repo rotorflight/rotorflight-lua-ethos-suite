@@ -20,6 +20,8 @@ local BTN_STAY = "@i18n(app.btn_stay)@"
 --- The dialog arguments for form.openDialog(), or for PageRuntime:openMessageDialog().
 ---
 --- @param opts.canSave  boolean  true where Save is possible now
+--- @param opts.armed    boolean  true when the lockout comes from the model being armed; only then
+---                               does the question say so
 --- @param opts.save     function called for Save; the page stays open afterwards
 --- @param opts.discard  function called for Discard; the page leaves
 --- @param opts.focus    function optional; returns focus to the Save button after Stay
@@ -41,11 +43,32 @@ function leaveConfirm.args(opts)
   end}
   return {
     title = MSG_TITLE,
-    message = opts.canSave and MSG_BODY or MSG_ARMED_BODY,
+    message = (not opts.canSave and opts.armed) and MSG_ARMED_BODY or MSG_BODY,
     buttons = buttons,
     wakeup = function() end,
     paint = function() end,
   }
+end
+
+-- Opens the dialog and returns its handle, so a page can close it from its cleanup handler. Any
+-- button first calls onButton, which lets the page forget the handle the dialog is closing with.
+function leaveConfirm.open(args, onButton)
+  local buttons = {}
+  for i = 1, #args.buttons do
+    local b = args.buttons[i]
+    buttons[i] = {label = b.label, action = function()
+      if onButton then onButton() end
+      if b.action then return b.action() end
+      return true
+    end}
+  end
+  return form.openDialog({
+    title = args.title,
+    message = args.message,
+    buttons = buttons,
+    wakeup = args.wakeup,
+    paint = args.paint,
+  })
 end
 
 return leaveConfirm

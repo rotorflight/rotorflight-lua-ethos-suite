@@ -558,6 +558,7 @@ local function open(opts)
   end
 
   local function leave()
+    if disposed then return end
     disposed = true
     if opts.setWakeupHandler then opts.setWakeupHandler(nil) end
     if opts.setCleanupHandler then opts.setCleanupHandler(nil) end
@@ -582,8 +583,9 @@ local function open(opts)
       leave()
       return
     end
-    form.openDialog(leaveConfirm.args({
+    dialog = leaveConfirm.open(leaveConfirm.args({
       canSave = canSaveNow(),
+      armed = isArmed == true,
       save = function()
         performSave(headerHandle and headerHandle.focusSave)
       end,
@@ -595,7 +597,7 @@ local function open(opts)
           headerHandle.focusSave()
         end
       end,
-    }))
+    }), function() dialog = nil end)
   end
 
   render = function()

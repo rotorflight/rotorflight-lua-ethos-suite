@@ -1196,6 +1196,7 @@ function PageRuntime:goBack()
   end
   self:openMessageDialog(leaveConfirm.args({
     canSave = self:canSave(),
+    armed = armedOrUnconfirmed(self),
     save = function() self:performSave(nil) end,
     discard = function() self:leave() end,
     focus = function()

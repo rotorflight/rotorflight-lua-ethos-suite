@@ -166,6 +166,7 @@ function blackbox_edit_page.new(pageConfig)
     end
 
     local function leave()
+      if disposed then return end
       disposed = true
       if opts.setWakeupHandler then opts.setWakeupHandler(nil) end
       if opts.setCleanupHandler then opts.setCleanupHandler(nil) end
@@ -301,8 +302,9 @@ function blackbox_edit_page.new(pageConfig)
         leave()
         return
       end
-      form.openDialog(leaveConfirm.args({
+      dialog = leaveConfirm.open(leaveConfirm.args({
         canSave = canSaveNow(),
+        armed = isArmed == true,
         save = function()
           saveData(headerHandle and headerHandle.focusSave)
         end,
@@ -314,7 +316,7 @@ function blackbox_edit_page.new(pageConfig)
             headerHandle.focusSave()
           end
         end,
-      }))
+      }), function() dialog = nil end)
     end
 
     renderPage = function()
