@@ -1,7 +1,8 @@
 {
   "id": "menu-feedback",
-  "name": "A press on a flight-controller tile says why it is closed",
-  "step": "Check the feedback for a press on a blocked menu tile",
+  "name": "The menu explains why flight-controller tiles are closed when the link is down",
+  "step": "Check that the menu explains why flight-controller tiles are closed when the link is down",
   "script": "bin/menu_feedback/verify_menu_feedback.lua",
-  "rationale": "A menu tile that needs the flight controller is closed while the link is down. When the background task was running, the press handler in app/menu_container.lua returned without a word: the one-shot \"background task not running\" alert covers only the task being down. A pilot whose flight controller does not answer saw nothing happen (#2319).\n\nlib/menu_feedback.lua decides what a press reports: the task down, the link down, or nothing when the tile opens. The harness checks the decision against the open rule in all eight combinations, so it reports exactly the tiles that are closed. It also checks that the press handler, the task guard and both locale sources carry the wiring. --self-test replaces the decision with the old silent rule and requires the fix case to fail."
+  "rationale": "A menu tile that needs the flight controller is closed while the link is down. While the background task is running, disabled tiles on Ethos receive no touch events, so the menu raises the notice from its own state after a grace period. A pilot whose flight controller does not answer was previously left with disabled tiles and no feedback (#2319).\n\nlib/menu_feedback.lua decides whether a tile is closed by the link. The harness checks this decision against the open rule in all combinations. It also verifies that the menu state raises the notice after the grace period, that the tool latches it once per link loss and re-arms when telemetry returns, and that all locales contain the notice strings. --self-test replaces the decision with the old silent rule and requires the fix case to fail."
 }
+
