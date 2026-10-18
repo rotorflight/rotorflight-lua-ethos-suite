@@ -281,14 +281,23 @@ local function normalize(settings)
   return settings
 end
 
+-- Sections whose own module decides their keys (activelook_config.withDefaults), so the schema
+-- check below does not prune inside them.
+local SELF_SCHEMA = {activelook = true}
+
+-- Merges what was read over the schema's defaults. What the schema does not define is dropped: a
+-- section the suite no longer has, and a key an older release wrote (#2325). Saving goes through
+-- here too, so a stale key leaves the file the next time settings are saved.
 function settings_store.withDefaults(settings)
   local merged = tableClone.nested(DEFAULTS)
   settings = settings or {}
   for section, values in pairs(settings) do
-    merged[section] = merged[section] or {}
-    if type(values) == "table" then
+    if DEFAULTS[section] ~= nil and type(values) == "table" then
+      merged[section] = merged[section] or {}
       for key, value in pairs(values) do
-        merged[section][key] = value
+        if SELF_SCHEMA[section] or DEFAULTS[section][key] ~= nil then
+          merged[section][key] = value
+        end
       end
     end
   end

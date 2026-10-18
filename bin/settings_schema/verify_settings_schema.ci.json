@@ -1,0 +1,7 @@
+{
+  "id": "settings-schema",
+  "name": "The settings file reads and writes what the schema defines",
+  "step": "Check the settings schema",
+  "script": "bin/settings_schema/verify_settings_schema.lua",
+  "rationale": "Issue #2325: the settings store merged what the file held over the defaults without checking it against the schema. A key an older release wrote stayed in the file and in the heap, and a section the suite no longer has stayed too. Type checks and defaults for the known keys were already in place.\n\nThe store now reads and writes only what the schema defines: a section or a key the schema does not define is dropped on load, and a save writes the pruned settings. The activelook section keeps its own keys, because its module decides them. The harness drives the real settings store with the file replaced by a table: stale keys and sections are dropped, a key the file sets is kept, a missing key is filled from the schema, a wrong type falls back to the default, activelook keys survive, and a save writes only the schema's keys. Against unpatched master the stale key and the unknown section are kept, so those checks fail."
+}
