@@ -281,9 +281,16 @@ local function normalize(settings)
   return settings
 end
 
--- Sections whose own module decides their keys (activelook_config.withDefaults), so the schema
--- check below does not prune inside them.
+-- Sections whose keys the suite's schema does not fix, so the key check below does not prune
+-- inside them: activelook decides its keys in activelook_config.withDefaults.
 local SELF_SCHEMA = {activelook = true}
+
+-- Each dashboard theme keeps its own preferences in a section named after the theme ("dashboard.bastion"),
+-- so those sections belong to the theme and are kept whole. A section the suite no longer has is
+-- still dropped.
+local function themeSection(section)
+  return type(section) == "string" and section:match("^dashboard%.") ~= nil
+end
 
 -- Merges what was read over the schema's defaults. What the schema does not define is dropped: a
 -- section the suite no longer has, and a key an older release wrote (#2325). Saving goes through
@@ -292,7 +299,10 @@ function settings_store.withDefaults(settings)
   local merged = tableClone.nested(DEFAULTS)
   settings = settings or {}
   for section, values in pairs(settings) do
-    if DEFAULTS[section] ~= nil and type(values) == "table" then
+    if type(values) == "table" and themeSection(section) then
+      merged[section] = {}
+      for key, value in pairs(values) do merged[section][key] = value end
+    elseif DEFAULTS[section] ~= nil and type(values) == "table" then
       merged[section] = merged[section] or {}
       for key, value in pairs(values) do
         if SELF_SCHEMA[section] or DEFAULTS[section][key] ~= nil then

@@ -10,7 +10,8 @@
 --   * A key an older release wrote, and a section the suite no longer has, are dropped on load.
 --   * A key the schema defines is kept, a missing one is filled from the schema, and a value of the
 --     wrong type is taken back to the schema's default.
---   * The activelook section keeps its own keys: activelook_config.lua decides them.
+--   * The activelook section keeps its own keys: activelook_config.lua decides them. The dashboard
+--     section keeps the theme preferences it holds, which no schema names.
 --   * A save writes the pruned settings, so a stale key leaves the file the next time it is saved.
 --
 -- Against unpatched master the stale key and the unknown section are kept, so those checks fail.
@@ -115,6 +116,19 @@ do
   check("a value of the wrong type is taken back to the schema's default", read.events.voltage == true,
     "voltage=" .. tostring(read.events.voltage))
   check("a key the file sets is kept", read.general.syncname == true)
+end
+
+print("dashboard keeps the theme's own preferences")
+do
+  -- A theme keeps its preferences in a section of its own, "dashboard.<theme>", named by the theme.
+  local read = store.withDefaults({["dashboard.bastion"] = {rpm_max = 3450, marker = "preserved"},
+    dashboard = {theme_preflight = "system/bastion", stale_key = true}})
+  check("a theme's own section survives whole, with the keys the schema does not name",
+    read["dashboard.bastion"] and read["dashboard.bastion"].rpm_max == 3450
+      and read["dashboard.bastion"].marker == "preserved",
+    "section=" .. tostring(read["dashboard.bastion"]))
+  check("the dashboard section itself is still checked against the schema",
+    read.dashboard.stale_key == nil and read.dashboard.theme_preflight == "system/bastion")
 end
 
 print("activelook keeps its own keys")
