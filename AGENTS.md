@@ -132,6 +132,13 @@ Before finishing:
 - Check for hot-path allocations introduced by the change.
 - Confirm close/cleanup path exists for new dialogs, handles, or caches.
 - Run targeted sanity checks for affected module flows.
+- If you change behaviour under `src/rfsuite/` (a codec, a page, a task), find the `bin/`
+  harnesses that load the changed file (`grep -rl <file name> bin/`) and run each with
+  `lua5.4` (CI's version), passing `--self-test` to any that take it. When the change is
+  intended and a harness still expects the old behaviour, update the harness, and its
+  `.ci.json` rationale if that states the old behaviour, in the same pull request. If
+  you don't, CI fails on the next pull request, whatever it changes: #2602 changed AM32
+  timing decoding and left `bin/esc_raw_bytes` expecting the old positions.
 - For UI changes, open the affected page in the simulator when the tooling is available
   (Section 11), and include screenshots with the pull request.
 - If the change is one a pilot can observe, update that page's file under `docs/pages/` in

@@ -1046,8 +1046,10 @@ local function runAm32Checks()
 
   -- The timing-advance byte is the one the issue names, and the READ direction
   -- is not what this fix changes: decode() decodes the same eight wires to the
-  -- same positions as before. So none of these is a gate -- they all pass on the
-  -- pre-fix codec, and a gate check that cannot go red is worse than no check.
+  -- same positions as before, except 42, which #2602 moved from the fourth
+  -- position to a fifth (30 deg) the 10..42 numbering has and the 0..3 one does
+  -- not. So none of these is a gate -- a gate check that cannot go red is worse
+  -- than no check.
   -- They are here to catch the mistake this change could most easily make, which
   -- is the opposite one: a fix that "normalises" the numbering on the way in and
   -- quietly re-maps what the pilot sees.
@@ -1060,7 +1062,7 @@ local function runAm32Checks()
     { wire = 11, row = 0, note = "10..42, a value the older numbering has no position for" },
     { wire = 26, row = 2, note = "10..42, the third position" },
     { wire = 34, row = 3, note = "10..42, the fourth position" },
-    { wire = 42, row = 3, note = "10..42, above the last position of the older numbering" },
+    { wire = 42, row = 4, note = "10..42, the fifth position, which the older numbering does not have" },
     { wire = 5, row = 3, note = "legacy, clamped into range" },
   }) do
     local label = string.format("timing advance %d decodes to position %d (%s)",
@@ -1123,6 +1125,7 @@ local function runAm32Checks()
   for _, case in ipairs({
     { wire = 11, row = 2, want = 26, note = "an ESC on the 10..42 numbering" },
     { wire = 26, row = 3, want = 34, note = "an ESC on the 10..42 numbering" },
+    { wire = 26, row = 4, want = 42, note = "an ESC on the 10..42 numbering, its fifth position" },
     { wire = 2, row = 1, want = 1, note = "an ESC on the 0..3 numbering" },
   }) do
     local label = string.format("moving the timing advance to position %d writes %d (%s)",
