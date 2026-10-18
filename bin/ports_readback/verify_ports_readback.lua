@@ -90,11 +90,12 @@ form = anything()
 form.clear = function() end
 form.addLine = function() return anything() end
 form.getFieldSlots = function() return {{x = 0, y = 0, w = 10, h = 10}} end
-form.addChoiceField = function(_, _, _, getter, setter)
-  choiceCalls[#choiceCalls + 1] = {get = getter, set = setter}
+form.addChoiceField = function(_, _, items, getter, setter)
+  choiceCalls[#choiceCalls + 1] = {get = getter, set = setter, items = items}
   return anything()
 end
-form.addStaticText = function() return anything() end
+local staticTexts = 0                  -- every addStaticText, counted
+form.addStaticText = function() staticTexts = staticTexts + 1; return anything() end
 form.openDialog = function(opts) dialogs[#dialogs + 1] = opts end
 
 local headerOpts = nil
@@ -177,13 +178,18 @@ end
 local wakeupHandler = nil
 
 -- Opens the page and answers the board-info and the serial read.
-local function openAndLoad(firstFunction)
+local function openAndLoad(firstFunction, apiMinor)
   sent, choiceCalls, dialogs, rxReads = {}, {}, {}, 0
+  staticTexts = 0
   headerOpts, wakeupHandler = nil, nil
   page.open({
     onBack = function() end,
     setWakeupHandler = function(fn) wakeupHandler = fn end,
   })
+  -- The session's snapshot carries the firmware's minor API version (#2497). It is published on
+  -- every open, nil included: the bus retains session.update and replays it to a new page, so a
+  -- stale version from an earlier open would otherwise stand in for "not known yet".
+  require("rfsuite.lib.bus").publish("session.update", {isArmed = false, apiVersionMinor = apiMinor})
   lastMessage().processReply({board_design = "", board_name = "", identifier = 0})   -- boardInfo
   lastMessage().processReply(boardPorts(firstFunction))                              -- serialRead
   -- The unpatched page also reads MSP_RX_CONFIG before it renders. The read is counted
@@ -238,7 +244,24 @@ lastMessage().processReply(boardPorts(2))   -- the board reports function 2, not
 check("the reboot follows the read-back reply", kindCount("reboot") == 1,
       "reboots=" .. kindCount("reboot"))
 if wakeupHandler then wakeupHandler() end   -- render the rows the read-back produced
-local shown = choiceCalls[#choiceCalls - 3] and choiceCalls[#choiceCalls - 3].get()
+local function listHasFunction(items, id)
+  for _, item in ipairs(items or {}) do if item[2] == id then return true end end
+  return false
+end
+
+-- Port 0's function list is the last one that offers GPS: port 1 cannot, GPS is port 0's.
+-- Found by content, not by position, because a single-rate port has no baud dropdown.
+local shown = nil
+for i = #choiceCalls, 1, -1 do
+  local items = choiceCalls[i].items
+  -- A function list is the one that offers Blackbox (128); a rate list does not.
+  if items and listHasFunction(items, 128) then
+    for _, item in ipairs(items) do
+      if item[2] == 2 then shown = choiceCalls[i].get(); break end
+    end
+    if shown ~= nil then break end
+  end
+end
 check("the rows show the value the board reports, not the value sent", shown == 2,
       "shown=" .. tostring(shown))
 
@@ -264,6 +287,44 @@ check("a read-back request exists to be refused", readBackRequest and readBackRe
 if readBackRequest and readBackRequest.errorHandler then readBackRequest.errorHandler() end  -- the read-back is refused
 check("a failed read-back still reboots the board", kindCount("reboot") == 1,
       "reboots=" .. kindCount("reboot"))
+
+-- ---------------------------------------------------------------------------
+-- 6. The function list follows the firmware, and a rate with no choice is text
+-- ---------------------------------------------------------------------------
+
+local CRSF_SENSORS = 4194304
+
+local function listHas(items, id)
+  for _, item in ipairs(items or {}) do if item[2] == id then return true end end
+  return false
+end
+
+local function anyFunctionListHas(id)
+  for _, call in ipairs(choiceCalls) do
+    if call.items and #call.items > 1 and listHas(call.items, id) then return true end
+  end
+  return false
+end
+
+print("function list by firmware")
+openAndLoad(0, 9)
+check("on a 12.09 board CRSF sensors is not offered", not anyFunctionListHas(CRSF_SENSORS))
+openAndLoad(0, 10)
+check("on a 12.10 board CRSF sensors is offered", anyFunctionListHas(CRSF_SENSORS))
+openAndLoad(0, nil)
+check("before the handshake CRSF sensors is not offered", not anyFunctionListHas(CRSF_SENSORS))
+openAndLoad(CRSF_SENSORS, 9)
+check("a port that already carries CRSF sensors keeps it on a 12.09 board",
+  anyFunctionListHas(CRSF_SENSORS))
+
+print("rate field")
+openAndLoad(0, 10)
+local oneEntry = 0
+for _, call in ipairs(choiceCalls) do
+  if call.items and #call.items == 1 then oneEntry = oneEntry + 1 end
+end
+check("no rate dropdown with a single entry", oneEntry == 0, "one-entry dropdowns=" .. oneEntry)
+check("a rate with no choice is shown as text", staticTexts >= 1, "static texts=" .. staticTexts)
 
 print(string.format("\n%d checks, %d failed", checks, failures))
 os.exit(failures == 0 and 0 or 1)
