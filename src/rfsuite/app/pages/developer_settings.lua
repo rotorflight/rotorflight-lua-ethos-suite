@@ -7,6 +7,7 @@ local header = requireModule("app/header.lua")
 local settingsStore = requireModule("lib/settings_store.lua")
 local settingsSave = requireModule("app/settings_save.lua")
 local mspApiVersion = requireModule("lib/msp_api_version.lua")
+local leaveConfirm = requireModule("app/leave_confirm.lua")
 
 local PAGE_TITLE = "@i18n(app.modules.settings.txt_developer)@ / @i18n(app.modules.settings.developer_settings)@"
 
@@ -40,7 +41,7 @@ local function open(opts)
     if headerHandle then headerHandle.setSaveEnabled(isDirty()) end
   end
 
-  local function goBack()
+  local function leave()
     if disposed then return end
     disposed = true
     if opts.setWakeupHandler then opts.setWakeupHandler(nil) end
@@ -81,6 +82,21 @@ local function open(opts)
   end
 
   form.clear()
+  -- Back with unsaved changes asks first (issue #2504): Save saves and keeps the page,
+  -- Discard leaves it, Stay keeps it.
+  local function goBack()
+    if disposed then return end
+    if isDirty() then
+      form.openDialog(leaveConfirm.args({
+        canSave = true,
+        save = function() save(nil) end,
+        discard = function() leave() end,
+      }))
+      return
+    end
+    leave()
+  end
+
   headerHandle = header.build(PAGE_TITLE, {
     onBack = goBack,
     onSave = function() confirmSave(headerHandle and headerHandle.focusSave) end,

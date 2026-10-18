@@ -8,6 +8,7 @@ local closeKey = requireModule("app/close_key.lua")
 local header = requireModule("app/header.lua")
 local settingsStore = requireModule("lib/settings_store.lua")
 local settingsSave = requireModule("app/settings_save.lua")
+local leaveConfirm = requireModule("app/leave_confirm.lua")
 
 local BTN_OK = "@i18n(app.btn_ok)@"
 local BTN_CANCEL = "@i18n(app.btn_cancel)@"
@@ -40,7 +41,7 @@ function common.openPage(title, opts, build)
     original = nil
   end
 
-  local function goBack()
+  local function leave()
     if disposed then return end
     dispose()
     if opts.onBack then opts.onBack() end
@@ -78,6 +79,21 @@ function common.openPage(title, opts, build)
   end
 
   form.clear()
+  -- Back with unsaved changes asks first (issue #2504): Save saves and keeps the page,
+  -- Discard leaves it, Stay keeps it.
+  local function goBack()
+    if disposed then return end
+    if isDirty() then
+      form.openDialog(leaveConfirm.args({
+        canSave = true,
+        save = function() save(nil) end,
+        discard = function() leave() end,
+      }))
+      return
+    end
+    leave()
+  end
+
   headerHandle = header.build(title, {
     onBack = goBack,
     onSave = function() confirmSave(headerHandle and headerHandle.focusSave) end,

@@ -270,6 +270,12 @@
       "reverse_text": false,
       "translation": "Configure the motor and speed controller features."
     },
+    "btn_discard": {
+      "english": "DISCARD",
+      "max_length": 7,
+      "needs_translation": true,
+      "translation": "DISCARD"
+    },
     "btn_ok": {
       "english": "OK",
       "max_length": 2,
@@ -283,6 +289,18 @@
       "needs_translation": false,
       "reverse_text": false,
       "translation": "                OK                "
+    },
+    "btn_save": {
+      "english": "SAVE",
+      "max_length": 4,
+      "needs_translation": true,
+      "translation": "SAVE"
+    },
+    "btn_stay": {
+      "english": "STAY",
+      "max_length": 4,
+      "needs_translation": true,
+      "translation": "STAY"
     },
     "connection_body_fmt": {
       "english": "Link: %s\nHandshake: %s\nCraft: %s\nFirmware: %s\nAPI: %s",
@@ -8404,6 +8422,24 @@
       "needs_translation": false,
       "reverse_text": false,
       "translation": "Salvo settiggi..."
+    },
+    "msg_unsaved_armed_body": {
+      "english": "Saving is locked while armed. Discard the changes?",
+      "max_length": 50,
+      "needs_translation": true,
+      "translation": "Saving is locked while armed. Discard the changes?"
+    },
+    "msg_unsaved_body": {
+      "english": "Save the changes before leaving?",
+      "max_length": 32,
+      "needs_translation": true,
+      "translation": "Save the changes before leaving?"
+    },
+    "msg_unsaved_title": {
+      "english": "Unsaved changes",
+      "max_length": 15,
+      "needs_translation": true,
+      "translation": "Unsaved changes"
     },
     "navigation_menu": {
       "english": "BACK",

@@ -132,6 +132,8 @@ local function openEditor(opts, listState, row)
 
   local runtime
   runtime = pageRuntime.new({
+    -- Writes every change to the flight controller as it is made: nothing to save on Back (#2504).
+    liveWrite = true,
     pageTitle = PAGE_TITLE .. " / " .. row.title,
     logTag = "servos_pwm_editor",
     mspModule = pwmServoModule(index),

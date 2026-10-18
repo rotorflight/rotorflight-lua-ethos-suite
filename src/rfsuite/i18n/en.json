@@ -234,6 +234,12 @@
       "needs_translation": false,
       "translation": "CANCEL"
     },
+    "btn_discard": {
+      "english": "DISCARD",
+      "max_length": 7,
+      "needs_translation": false,
+      "translation": "DISCARD"
+    },
     "btn_ok": {
       "english": "OK",
       "max_length": 2,
@@ -245,6 +251,18 @@
       "max_length": 34,
       "needs_translation": false,
       "translation": "                OK                "
+    },
+    "btn_save": {
+      "english": "SAVE",
+      "max_length": 4,
+      "needs_translation": false,
+      "translation": "SAVE"
+    },
+    "btn_stay": {
+      "english": "STAY",
+      "max_length": 4,
+      "needs_translation": false,
+      "translation": "STAY"
     },
     "connection_body_fmt": {
       "english": "Link: %s\nHandshake: %s\nCraft: %s\nFirmware: %s\nAPI: %s",
@@ -7229,6 +7247,24 @@
       "max_length": 18,
       "needs_translation": false,
       "translation": "Saving settings..."
+    },
+    "msg_unsaved_armed_body": {
+      "english": "Saving is locked while armed. Discard the changes?",
+      "max_length": 50,
+      "needs_translation": false,
+      "translation": "Saving is locked while armed. Discard the changes?"
+    },
+    "msg_unsaved_body": {
+      "english": "Save the changes before leaving?",
+      "max_length": 32,
+      "needs_translation": false,
+      "translation": "Save the changes before leaving?"
+    },
+    "msg_unsaved_title": {
+      "english": "Unsaved changes",
+      "max_length": 15,
+      "needs_translation": false,
+      "translation": "Unsaved changes"
     },
     "navigation_menu": {
       "english": "BACK",

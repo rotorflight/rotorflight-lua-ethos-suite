@@ -8,6 +8,7 @@ local modelPreferences = requireModule("lib/model_preferences.lua")
 local settingsStore = requireModule("lib/settings_store.lua")
 local settingsSave = requireModule("app/settings_save.lua")
 local tableClone = requireModule("lib/table_clone.lua")
+local leaveConfirm = requireModule("app/leave_confirm.lua")
 
 local PAGE_TITLE = "@i18n(app.modules.settings.name)@ / @i18n(app.modules.settings.dashboard)@ / @i18n(app.modules.settings.dashboard_theme)@"
 local BTN_OK = "@i18n(app.btn_ok)@"
@@ -248,7 +249,7 @@ local function open(opts)
     end
   end
 
-  local function goBack()
+  local function leave()
     if disposed then return end
     disposed = true
     if sessionHandler then bus.unsubscribe("session.update", sessionHandler); sessionHandler = nil end
@@ -323,6 +324,21 @@ local function open(opts)
   end
 
   form.clear()
+  -- Back with unsaved changes asks first (issue #2504): Save saves and keeps the page,
+  -- Discard leaves it, Stay keeps it.
+  local function goBack()
+    if disposed then return end
+    if isDirty() then
+      form.openDialog(leaveConfirm.args({
+        canSave = true,
+        save = function() save(nil) end,
+        discard = function() leave() end,
+      }))
+      return
+    end
+    leave()
+  end
+
   headerHandle = header.build(PAGE_TITLE, {
     onBack = goBack,
     onSave = function() confirmSave(headerHandle and headerHandle.focusSave) end,

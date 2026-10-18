@@ -59,6 +59,8 @@ local function open(opts)
 
   local runtime
   runtime = pageRuntime.new({
+    -- Writes every change to the flight controller as it is made: nothing to save on Back (#2504).
+    liveWrite = true,
     pageTitle = PAGE_TITLE,
     logTag = "mixer_swash",
     sources = {

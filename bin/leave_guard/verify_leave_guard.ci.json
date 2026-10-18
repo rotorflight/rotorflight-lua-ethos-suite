@@ -1,0 +1,7 @@
+{
+  "id": "leave-guard",
+  "name": "Back with unsaved changes asks first, and leaves without asking otherwise",
+  "step": "Check Back with unsaved changes",
+  "script": "bin/leave_guard/verify_leave_guard.lua",
+  "rationale": "Issue #2504: Back left a page with unsaved changes without a word, although the Save button was lit. Pages now ask Save, Discard or Stay. The page runtime asks in one place for every runtime page; the local settings pages and the alerts and statistics pages ask in their own goBack. Armed, the question offers Discard and Stay only, because a flight-controller save is refused then. Pages that write every change as it is made (mixer trims, swash, servos) do not ask.\n\nThe harness drives the real page runtime and the real power_alerts page: a dirty page asks and Stay keeps it, Discard leaves, Save saves and keeps it, a clean, live-write or not-yet-loaded page leaves at once, and an armed page offers no Save. Against unpatched master the dirty-page checks fail."
+}

@@ -36,6 +36,42 @@
       "needs_translation": false,
       "max_length": 14
     },
+    "msg_unsaved_title": {
+      "english": "Unsaved changes",
+      "translation": "Unsaved changes",
+      "needs_translation": false,
+      "max_length": 15
+    },
+    "msg_unsaved_body": {
+      "english": "Save the changes before leaving?",
+      "translation": "Save the changes before leaving?",
+      "needs_translation": false,
+      "max_length": 32
+    },
+    "msg_unsaved_armed_body": {
+      "english": "Saving is locked while armed. Discard the changes?",
+      "translation": "Saving is locked while armed. Discard the changes?",
+      "needs_translation": false,
+      "max_length": 50
+    },
+    "btn_save": {
+      "english": "SAVE",
+      "translation": "SAVE",
+      "needs_translation": false,
+      "max_length": 4
+    },
+    "btn_discard": {
+      "english": "DISCARD",
+      "translation": "DISCARD",
+      "needs_translation": false,
+      "max_length": 7
+    },
+    "btn_stay": {
+      "english": "STAY",
+      "translation": "STAY",
+      "needs_translation": false,
+      "max_length": 4
+    },
     "navigation_menu": {
       "english": "BACK",
       "translation": "BACK",

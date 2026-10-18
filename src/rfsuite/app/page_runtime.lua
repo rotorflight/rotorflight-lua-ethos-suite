@@ -61,6 +61,7 @@ local memstats = requireModule("lib/memstats.lua")
 local settingsStore = requireModule("lib/settings_store.lua")
 local debugLog = requireModule("lib/debug_log.lua")
 local progressDialog = requireModule("app/progress_dialog.lua")
+local leaveConfirm = requireModule("app/leave_confirm.lua")
 
 -- Generic dialog/progress text, matching rotorflight-lua-ethos-suite's own
 -- actual strings (app/tasks.lua's triggerSaveDialogs()/triggerReloadDialogs(),
@@ -256,6 +257,9 @@ function PageRuntime.new(config)
   self.onSaved = config.onSaved
   self.rebootAfterSave = config.rebootAfterSave
   self.isMspPage = config.isMspPage
+  -- A page that writes every change to the flight controller as it is made has nothing to save
+  -- when Back is pressed, so it does not ask (issue #2504).
+  self.liveWrite = config.liveWrite == true
   -- #2303: true for a page whose save only writes the radio's own storage
   -- (lib/settings_store.lua) and never requests MSP_EEPROM_WRITE, so the FC
   -- armed gate in canSave() does not apply to it. Off by default -- every page
@@ -1178,7 +1182,25 @@ end
 -- calling this same method (see buildChrome() and header.lua's onBack
 -- below) -- so it's the one place to see a "this module is exiting" RAM
 -- snapshot for any of them, without touching each page individually.
+-- Back with unsaved changes asks first (issue #2504). Stay keeps the page; Discard leaves it;
+-- Save saves and keeps it open, so a second Back leaves once the save has gone through.
+function PageRuntime:hasUnsavedChanges()
+  return not self.disposed and not self.liveWrite and self.loaded == true and self.dirty == true
+end
+
 function PageRuntime:goBack()
+  if not self:hasUnsavedChanges() then
+    self:leave()
+    return
+  end
+  self:openMessageDialog(leaveConfirm.args({
+    canSave = self:canSave(),
+    save = function() self:performSave(nil) end,
+    discard = function() self:leave() end,
+  }))
+end
+
+function PageRuntime:leave()
   local logTag = self.logTag or "page"
   memstats.print(logTag .. " exit")
   local onBack = self.opts and self.opts.onBack
