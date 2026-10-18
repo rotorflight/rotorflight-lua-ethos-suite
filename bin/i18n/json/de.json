@@ -4493,7 +4493,7 @@
       "power": {
         "preferences_name": {
           "english": "Preferences",
-          "translation": "Einstellungen",
+          "translation": "Optionen",
           "needs_translation": false,
           "max_length": 11
         },
@@ -4505,7 +4505,7 @@
         },
         "save_preferences_prompt": {
           "english": "Save power preferences?",
-          "translation": "Power-Einstellungen speichern?",
+          "translation": "Optionen speichern?",
           "needs_translation": false,
           "max_length": 23
         },

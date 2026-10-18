@@ -6051,7 +6051,7 @@
           "english": "Preferences",
           "max_length": 11,
           "needs_translation": false,
-          "translation": "Einstellungen"
+          "translation": "Optionen"
         },
         "reload_alerts_prompt": {
           "english": "Reload local power alert settings?",
@@ -6078,7 +6078,7 @@
           "english": "Save power preferences?",
           "max_length": 23,
           "needs_translation": false,
-          "translation": "Power-Einstellungen speichern?"
+          "translation": "Optionen speichern?"
         },
         "selected": {
           "english": "Selected",

@@ -12,16 +12,35 @@
 local requireModule = package.loaded["rfsuite.lib.require"] or assert(loadfile("lib/require.lua"))()
 local bus = requireModule("lib/bus.lua")
 
+local currentConnected = false
 local currentMcuId = nil
 local currentLimit = nil
+-- A limit read while the link is up but the MCU ID is not known yet. It is handed over
+-- when the ID arrives, and dropped on disconnect so it cannot reach another connection.
+local pendingLimit = nil
 
 bus.subscribe("session.update", function(snapshot)
-  if type(snapshot) == "table" then
-    currentMcuId = snapshot.mcuId
-    currentLimit = snapshot.escCurrentLimit
-  else
+  if type(snapshot) ~= "table" then
+    currentConnected = false
     currentMcuId = nil
     currentLimit = nil
+    pendingLimit = nil
+    return
+  end
+  currentConnected = snapshot.connected == true
+  currentMcuId = snapshot.mcuId
+  currentLimit = snapshot.escCurrentLimit
+  if not currentConnected then
+    pendingLimit = nil
+    return
+  end
+  if pendingLimit and currentMcuId and currentMcuId ~= "" then
+    local limit = pendingLimit
+    pendingLimit = nil
+    if currentLimit ~= limit then
+      bus.publish("model.esc_current_limit.update", {mcuId = currentMcuId, amps = limit})
+      currentLimit = limit
+    end
   end
 end)
 
@@ -38,12 +57,16 @@ function esc_current_limit.normalize(amps)
 end
 
 -- Hands a limit in amps to the session. Returns true when the figure is on file for the
--- connected flight controller, or was just handed over; false when there is nothing to store it
--- for (no flight controller) or the figure is not a limit.
+-- connected flight controller, was just handed over, or is kept until its MCU ID arrives; false
+-- when there is no connected flight controller to store it for or the figure is not a limit.
 function esc_current_limit.remember(amps)
   local limit = esc_current_limit.normalize(amps)
   if limit == nil then return false end
-  if not currentMcuId or currentMcuId == "" then return false end
+  if not currentMcuId or currentMcuId == "" then
+    if not currentConnected then return false end
+    pendingLimit = limit
+    return true
+  end
   if currentLimit == limit then return true end
   bus.publish("model.esc_current_limit.update", {mcuId = currentMcuId, amps = limit})
   currentLimit = limit

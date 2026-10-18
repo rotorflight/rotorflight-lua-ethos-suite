@@ -162,6 +162,28 @@ check("a changed limit is sent", escCurrentLimit.remember(41) == true
 limitEvents = {}
 check("zero is never sent as a limit", escCurrentLimit.remember(0) == false and #limitEvents == 0)
 
+-- A page can read the limit while the link is up but before the MCU ID is known (the
+-- API_VERSION request can fail, and the UID read waits for it). The figure is kept and handed
+-- over when the ID arrives; it does not survive a disconnect.
+bus.publish("session.update", {connected = false})
+bus.publish("session.update", {connected = true})
+limitEvents = {}
+check("connected without an MCU ID yet: the limit is kept, not sent",
+  escCurrentLimit.remember(45) == true and #limitEvents == 0)
+bus.publish("session.update", {connected = true, mcuId = "M2"})
+check("the kept limit is handed over when the MCU ID arrives",
+  #limitEvents == 1 and limitEvents[1].mcuId == "M2" and limitEvents[1].amps == 45,
+  "events=" .. #limitEvents)
+
+bus.publish("session.update", {connected = true})
+limitEvents = {}
+check("another limit is kept again while the ID is unknown",
+  escCurrentLimit.remember(46) == true and #limitEvents == 0)
+bus.publish("session.update", {connected = false})
+bus.publish("session.update", {connected = true, mcuId = "M3"})
+check("a kept limit is dropped on disconnect and never reaches the next connection",
+  #limitEvents == 0, "events=" .. #limitEvents)
+
 -- ---------------------------------------------------------------------------
 -- 2. Model preferences keep the figure per model, zero as not set
 -- ---------------------------------------------------------------------------
