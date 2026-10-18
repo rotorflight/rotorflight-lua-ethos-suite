@@ -170,6 +170,7 @@ Outputs static or telemetry-based text. Subtypes located in `objects/text/`:
 | `telemetry`  | Telemetry value (`source` required).   | –                 |
 | `apiversion` | Shows Rotorflight API version (auto).  | –                 |
 | `craftname`  | Shows current model name (auto).       | –                 |
+| `escstatus`  | Speed controller health in words, coloured by level (auto). | – |
 | `blackbox`   | Used/total Blackbox storage (auto).    | –                 |
 | `governor`   | Governor state (auto).                 | –                 |
 | `armflags`   | Armed status flags (auto).             | –                 |

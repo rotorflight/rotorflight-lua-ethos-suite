@@ -56,6 +56,14 @@ return {
   battery_profile = {
     {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1214},
   },
+  -- rotorflight-firmware telemetry/crsf.c ESC1_STATUS and ESC1_MODEL: the speed controller's
+  -- status word and its signature, decoded by lib/esc_status.lua (issue #2354).
+  esc_status = {
+    {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x104E},
+  },
+  esc_model = {
+    {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x104F},
+  },
   governor = {
     {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1205},
   },

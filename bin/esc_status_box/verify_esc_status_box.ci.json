@@ -1,0 +1,7 @@
+{
+  "id": "esc-status-box",
+  "name": "The speed controller's status word reaches the dashboard as a coloured health line",
+  "step": "Check the speed controller status box",
+  "script": "bin/esc_status_box/verify_esc_status_box.lua",
+  "rationale": "Issue #2354: the status word and signature the flight controller publishes (ESC1 Status and ESC1 Model, 0x5128/0x5129 on S.Port and 0x104E/0x104F on CRSF) reach the dashboard through the session snapshot, and a text object shows lib/esc_status.lua's verdict in words, coloured by level (orange for a warning, red for an error).\n\nThe harness pins the appIds of both protocols against the firmware, the session reading both values and storing a change once, and the object's text and colour for OK, an error, a warning, a restart request and a missing controller ('--'). It also pins that a verdict is not decoded again while its inputs are unchanged. Against unpatched master the sources, the session fields and the object do not exist."
+}

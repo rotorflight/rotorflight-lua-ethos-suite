@@ -1572,6 +1572,8 @@ local function create()
     rpm = nil,
     linkQuality = nil,
     tempEsc = nil,
+    escStatusWord = nil,
+    escSignature = nil,
     tempMcu = nil,
     becVoltage = nil,
     fuelPercent = nil,
@@ -1729,6 +1731,8 @@ local function update(widget, snapshot)
   widget.rpm = snapshot.rpm
   widget.linkQuality = snapshot.linkQuality
   widget.tempEsc = snapshot.tempEsc
+  widget.escStatusWord = snapshot.escStatusWord
+  widget.escSignature = snapshot.escSignature
   widget.tempMcu = snapshot.tempMcu
   widget.becVoltage = snapshot.becVoltage
   widget.fuelPercent = snapshot.fuelPercent

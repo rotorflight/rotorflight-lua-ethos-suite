@@ -2558,6 +2558,8 @@ function context.setWidget(widget)
   context.session.telemetryState = context.session.isConnected
   context.session.mcu_id = widget and widget.mcuId
   context.session.craftName = widget and widget.craftName
+  context.session.escStatusWord = widget and widget.escStatusWord
+  context.session.escSignature = widget and widget.escSignature
   context.session.apiVersion = widget and widget.rfVersion
   context.session.timer.live = widget and widget.timerLive or 0
   context.session.bblFlags = widget and widget.bblFlags

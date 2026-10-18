@@ -91,6 +91,9 @@ local session = {
   rpm = nil,
   linkQuality = nil,
   tempEsc = nil,
+  -- The speed controller's status word and signature, as published by telemetry (issue #2354).
+  escStatusWord = nil,
+  escSignature = nil,
   tempMcu = nil,
   becVoltage = nil,
   smartfuelMode = nil, -- 0 = FC not computing it (run the local fallback), 1/2/3 = mirror the FC's own value
@@ -411,6 +414,8 @@ local function flush()
     rpm = session.rpm,
     linkQuality = session.linkQuality,
     tempEsc = session.tempEsc,
+    escStatusWord = session.escStatusWord,
+    escSignature = session.escSignature,
     tempMcu = session.tempMcu,
     becVoltage = session.becVoltage,
     fuelPercent = session.fuelPercent,
@@ -969,6 +974,8 @@ local function setConnected(value, mspQueue, protocol)
     session.rpm = nil
     session.linkQuality = nil
     session.tempEsc = nil
+    session.escStatusWord = nil
+    session.escSignature = nil
     session.tempMcu = nil
     session.becVoltage = nil
     session.mainPowerLost = false
@@ -1295,6 +1302,17 @@ local function updateAdjustment(protocol)
   local adjValue = telemetrySensors.getValue(protocol, "adj_v")
   if adjValue ~= session.adjValue then
     session.adjValue = adjValue
+    publish()
+  end
+end
+
+local function updateEscStatus(protocol)
+  if not telemetrySensors then return end
+  local word = telemetrySensors.getValue(protocol, "esc_status")
+  local signature = telemetrySensors.getValue(protocol, "esc_model")
+  if word ~= session.escStatusWord or signature ~= session.escSignature then
+    session.escStatusWord = word
+    session.escSignature = signature
     publish()
   end
 end
@@ -1644,6 +1662,7 @@ local function wakeup(mspQueue, protocol, transport, simSensors)
       updateVoltage(sensorProtocol)
       updateRfStatusTelemetry(sensorProtocol)
       updateEscTemp(sensorProtocol)
+      updateEscStatus(sensorProtocol)
       updateMcuTemp(sensorProtocol)
       updateBecVoltage(sensorProtocol)
       updateFuel(sensorProtocol)
