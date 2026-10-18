@@ -261,6 +261,11 @@ do
       return nil
     end,
   }
+  -- The first wakeup is the cold start: it loads the decoder table and pops
+  -- nothing (tasks/elrs_sensors.lua, issue #2436). The steady state is what
+  -- the budget is about, so that is what gets measured.
+  elrs.wakeup(transport, nil)
+  pops = 0
   clock.now = 0.0
   elrs.wakeup(transport, nil)
   check("an idle elrs link costs one pop, not a budget",
@@ -329,6 +334,7 @@ do
       return frameType, data
     end,
   }
+  elrs.wakeup(transport, nil) -- cold start: loads the table, pops nothing
   clock.now = 0.0
   local before = clock.now
   elrs.wakeup(transport, nil)
@@ -578,6 +584,8 @@ do
     usage = usage + 35
     return 0x88, {0, 0, 0x11, 0x10, 0x30, 1, 2}
   end }
+  usage = 0
+  elrs.wakeup(custom, nil) -- cold start: loads the table, pops nothing (#2436)
   usage = 70
   check("ELRS leaves frames queued and requests a retry at the limit",
     elrs.wakeup(custom, nil) == true and remaining == 5)

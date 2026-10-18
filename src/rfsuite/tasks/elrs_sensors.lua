@@ -285,7 +285,14 @@ end
 
 local function wakeup(transport, telemetrySlots)
   if not transport or not transport.popCustomTelemetryFrame then return end
-  if not sensorTable then buildSensorTable() end
+  if not sensorTable then
+    -- Cold start (once per connection): loading the decoder table is a pass of
+    -- its own. Decoding starts on the next wakeup, so this pass does not stack
+    -- the module load on top of a full drain budget. Frames stay queued in
+    -- Ethos meanwhile; nothing is published for a pass that popped nothing.
+    buildSensorTable()
+    return false
+  end
   if telemetrySlots and not relevantSids then buildRelevantSids(telemetrySlots) end
 
   local deadline = os_clock() + POP_BUDGET_SECONDS

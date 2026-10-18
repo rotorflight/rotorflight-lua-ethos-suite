@@ -1,0 +1,7 @@
+{
+  "id": "elrs-cold-start",
+  "name": "The first ELRS wakeup loads the decoder table and decodes nothing",
+  "step": "Check the ELRS cold start",
+  "script": "bin/elrs_cold_start/verify_elrs_cold_start.lua",
+  "rationale": "Issue #2436: the first custom-telemetry wakeup after a connection loaded lib/elrs_sensor_table.lua and drained frames in the same pass, so the module load (about 14.9 kB parse heap, factor 1.35 per the issue's measurement) sat inside POP_BUDGET_SECONDS. The cold-start pass now loads the table only; decoding starts on the next wakeup, about 180 ms later at ELRS_SENSOR_INTERVAL. The table is still loaded once per module instance, so retained heap does not change.\n\nThe harness pins the cold-start pass (one load, no pop, nothing published, frames kept queued), the first decoding pass (the relevant-SID set is in place before its first pop), the steady-state frame cap, and the retry after a failed load. Its can-fail check removes the cold-start return from a copy of the module and requires that copy to pop on its first pass."
+}
