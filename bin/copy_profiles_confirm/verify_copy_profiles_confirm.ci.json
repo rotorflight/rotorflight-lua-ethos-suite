@@ -1,0 +1,7 @@
+{
+  "id": "copy-profiles-confirm",
+  "name": "Copy Profiles names what it overwrites before it writes to the flight controller",
+  "step": "Check the Copy Profiles confirmation",
+  "script": "bin/copy_profiles_confirm/verify_copy_profiles_confirm.lua",
+  "rationale": "Issue #2349: Copy Profiles writes a PID or Rate profile to another slot and commits it to the flight controller's EEPROM at once. The confirmation said only \"Save settings?\", so a source and destination swapped by accident destroyed a tuned profile after one OK. The confirmation now names the profile type, the source profile and the destination that will be overwritten, and says the overwrite is permanent.\n\nThe harness drives the real Copy Profiles page: it sets the type, the source and the destination the way the pilot does, presses Save, and checks the dialog's title and text. The i18n markers are resolved from en.json, so the text checked is the one the pilot reads. Against unpatched master the dialog names no profile, so the text checks fail."
+}

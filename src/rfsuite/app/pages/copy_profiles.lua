@@ -14,6 +14,10 @@ local BTN_CANCEL = "@i18n(app.btn_cancel)@"
 local MSG_SAVING_TITLE = "@i18n(app.msg_saving)@"
 local MSG_SAVING_BODY = "@i18n(app.msg_saving_settings)@"
 local MSG_SAVE_TITLE = "@i18n(app.modules.copyprofiles.msgbox_save)@"
+-- The confirmation names what is copied and what is overwritten (#2349). The arguments are the
+-- profile type, the source number and the destination number, the destination once more.
+local MSG_COPY_TITLE = "@i18n(app.modules.copyprofiles.msgbox_copy_title)@"
+local MSG_COPY_FMT = "@i18n(app.modules.copyprofiles.msgbox_copy_fmt)@"
 local MSG_SAVE_BODY = "@i18n(app.modules.copyprofiles.msgbox_msg)@"
 
 local PROFILE_TYPE_CHOICES = {
@@ -119,9 +123,10 @@ local function open(opts)
   end
 
   local function confirmSave(focusFn)
+    local typeName = PROFILE_TYPE_CHOICES[data.profileType + 1] and PROFILE_TYPE_CHOICES[data.profileType + 1][1] or ""
     form.openDialog({
-      title = MSG_SAVE_TITLE,
-      message = MSG_SAVE_BODY,
+      title = MSG_COPY_TITLE,
+      message = string.format(MSG_COPY_FMT, typeName, data.sourceProfile + 1, data.destProfile + 1, data.destProfile + 1),
       buttons = {
         {label = BTN_OK, action = function() save(focusFn); return true end},
         {label = BTN_CANCEL, action = function() return true end},

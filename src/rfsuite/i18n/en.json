@@ -1252,6 +1252,18 @@
           "needs_translation": false,
           "translation": "Dest. Profile"
         },
+        "msgbox_copy_fmt": {
+          "english": "Copy %s Profile %d to Profile %d? This permanently overwrites Profile %d in the flight controller.",
+          "max_length": 98,
+          "needs_translation": false,
+          "translation": "Copy %s Profile %d to Profile %d? This permanently overwrites Profile %d in the flight controller."
+        },
+        "msgbox_copy_title": {
+          "english": "Copy profile?",
+          "max_length": 13,
+          "needs_translation": false,
+          "translation": "Copy profile?"
+        },
         "msgbox_msg": {
           "english": "Save current page to flight controller?",
           "max_length": 39,

@@ -4218,6 +4218,18 @@
         }
       },
       "copyprofiles": {
+        "msgbox_copy_title": {
+          "english": "Copy profile?",
+          "translation": "Copy profile?",
+          "needs_translation": false,
+          "max_length": 13
+        },
+        "msgbox_copy_fmt": {
+          "english": "Copy %s Profile %d to Profile %d? This permanently overwrites Profile %d in the flight controller.",
+          "translation": "Copy %s Profile %d to Profile %d? This permanently overwrites Profile %d in the flight controller.",
+          "needs_translation": false,
+          "max_length": 98
+        },
         "dest_profile": {
           "english": "Dest. Profile",
           "max_length": 13,
