@@ -832,6 +832,7 @@ local PRESENTATION_STAT_SOURCES = {
   "bec_voltage",
   "altitude",
   "watts",
+  "esc_load",
 }
 
 local function statKey(name)

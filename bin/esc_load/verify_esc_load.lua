@@ -88,7 +88,6 @@ package.loaded["rfsuite.lib.require"] = requireModule
 lcd = anyStub()
 system = anyStub()
 model = anyStub()
-rfsuite = {session = {}}
 
 local bus = requireModule("lib/bus.lua")
 local escCurrentLimit = requireModule("lib/esc_current_limit.lua")
@@ -142,18 +141,18 @@ check("12.6 A rounds to 13", escCurrentLimit.normalize(12.6) == 13)
 check("a figure given as text is read", escCurrentLimit.normalize("47") == 47)
 
 print("esc_current_limit: remember")
-rfsuite.session = {}
+bus.publish("session.update", {})
 limitEvents = {}
 check("no flight controller connected: nothing is remembered",
   escCurrentLimit.remember(40) == false and #limitEvents == 0)
 
-rfsuite.session = {mcuId = "M1"}
+bus.publish("session.update", {mcuId = "M1"})
 check("a new limit is handed to the session for this flight controller",
   escCurrentLimit.remember(40) == true
     and #limitEvents == 1 and limitEvents[1].mcuId == "M1" and limitEvents[1].amps == 40,
   "events=" .. #limitEvents)
 
-rfsuite.session = {mcuId = "M1", escCurrentLimit = 40}
+bus.publish("session.update", {mcuId = "M1", escCurrentLimit = 40})
 limitEvents = {}
 check("the limit already on file is not sent again",
   escCurrentLimit.remember(40) == true and #limitEvents == 0)
@@ -192,7 +191,7 @@ STUBS["lib/msp_esc_parameters_am32.lua"] = anyStub()
 
 print("manufacturer pages: the limit in amps")
 
-rfsuite.session = {mcuId = "M1"}
+bus.publish("session.update", {mcuId = "M1"})
 limitEvents = {}
 requireModule("app/pages/esc_forward_scorpion.lua").open({})
 vendorConfig.onLoaded({data = {max_current = 12000}})
@@ -203,7 +202,7 @@ limitEvents = {}
 vendorConfig.onLoaded({data = {max_current = 0}})
 check("Scorpion: a zero max_current is not a limit", #limitEvents == 0)
 
-rfsuite.session = {mcuId = "M1"}
+bus.publish("session.update", {mcuId = "M1"})
 limitEvents = {}
 requireModule("app/pages/esc_forward_yge.lua").open({})
 vendorConfig.onLoaded({data = {current_limit = 4500}})
@@ -211,7 +210,7 @@ check("YGE: current_limit 4500 (hundredths of an amp) is 45 A",
   #limitEvents == 1 and limitEvents[1].amps == 45,
   "events=" .. #limitEvents .. " amps=" .. tostring(limitEvents[1] and limitEvents[1].amps))
 
-rfsuite.session = {mcuId = "M1"}
+bus.publish("session.update", {mcuId = "M1"})
 limitEvents = {}
 requireModule("app/pages/esc_forward_am32.lua").open({})
 fourWayConfig.openEditor({}, {label = "Set 1"})
@@ -220,7 +219,7 @@ check("AM32: current_limit 60 is already amps",
   #limitEvents == 1 and limitEvents[1].amps == 60,
   "events=" .. #limitEvents .. " amps=" .. tostring(limitEvents[1] and limitEvents[1].amps))
 
-rfsuite.session = {mcuId = "M1", escCurrentLimit = 60}
+bus.publish("session.update", {mcuId = "M1", escCurrentLimit = 60})
 limitEvents = {}
 vendorConfig.onLoaded({loaded = true, data = {current_limit = 60}})
 check("a page visit that finds the limit already on file sends nothing", #limitEvents == 0)
@@ -268,6 +267,7 @@ local function pressSaveAndConfirm()
 end
 
 print("power_preferences: the page")
+bus.publish("session.update", {mcuId = nil})
 openPreferences()
 check("offline (no model) the field is disabled", fieldEnabled == false, tostring(fieldEnabled))
 bus.publish("session.update", {mcuId = "M1", escCurrentLimit = 40})
@@ -373,6 +373,19 @@ check("a limit of zero reads nothing", escLoad({connected = true, escCurrentLimi
 check("no current reading reads nothing", escLoad({connected = true, escCurrentLimit = 50}) == nil)
 check("a link that is down reads nothing",
   escLoad({connected = false, escCurrentLimit = 50, current = 20}) == nil)
+
+local statsWidget = {
+  connected = true,
+  escCurrentLimit = 80,
+  current = 40,
+  flightmodeState = "inflight",
+  dashboardStats = {},
+}
+context.setWidget(statsWidget)
+context.tasks.telemetry.collectPresentationStats()
+check("inflight presentation stats record esc_load",
+  statsWidget.dashboardStats.esc_load and statsWidget.dashboardStats.esc_load.max == 50,
+  "got " .. tostring(statsWidget.dashboardStats.esc_load and statsWidget.dashboardStats.esc_load.max))
 
 print(string.format("\n%d checks, %d failed", checks, failures))
 os.exit(failures == 0 and 0 or 1)

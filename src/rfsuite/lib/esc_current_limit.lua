@@ -12,6 +12,19 @@
 local requireModule = package.loaded["rfsuite.lib.require"] or assert(loadfile("lib/require.lua"))()
 local bus = requireModule("lib/bus.lua")
 
+local currentMcuId = nil
+local currentLimit = nil
+
+bus.subscribe("session.update", function(snapshot)
+  if type(snapshot) == "table" then
+    currentMcuId = snapshot.mcuId
+    currentLimit = snapshot.escCurrentLimit
+  else
+    currentMcuId = nil
+    currentLimit = nil
+  end
+end)
+
 local esc_current_limit = {}
 
 -- Whole amps, or nil where the figure is not a limit. Zero is how the families spell "no limit
@@ -30,10 +43,10 @@ end
 function esc_current_limit.remember(amps)
   local limit = esc_current_limit.normalize(amps)
   if limit == nil then return false end
-  local session = rfsuite and rfsuite.session
-  if not session or session.mcuId == nil or session.mcuId == "" then return false end
-  if session.escCurrentLimit == limit then return true end
-  bus.publish("model.esc_current_limit.update", {mcuId = session.mcuId, amps = limit})
+  if not currentMcuId or currentMcuId == "" then return false end
+  if currentLimit == limit then return true end
+  bus.publish("model.esc_current_limit.update", {mcuId = currentMcuId, amps = limit})
+  currentLimit = limit
   return true
 end
 

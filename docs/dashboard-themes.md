@@ -184,17 +184,18 @@ Outputs static or telemetry-based text. Subtypes located in `objects/text/`:
 | `clock`      | Clock display (auto).                  | –                 |
 | `pidrates`   | PID/Rates profile display (auto).      | –                 |
 | `watts`      | Voltage/Current => Power (auto).       | –                 |
-| `esc_load`   | Current as a % of the ESC current limit (auto; `--` until a limit is set). | – |
 
 **Common Parameters:**
 
 * `value` (for `text` subtype)
-* `source`, `decimals`, `unit`, `font`, `textcolor`, `title`, `titlefont`, `titlecolor`, `align`, `padding`, `novalue`, `transform`.
+* `source`: Telemetry field name (e.g., `"volt"`, `"current"`, `"rpm"`, `"smartfuel"`, `"watts"`, `"esc_load"`). For `"esc_load"`, it displays the current as a percentage of the speed controller's own limit (reads `--` until a limit is configured).
+* `decimals`, `unit`, `font`, `textcolor`, `title`, `titlefont`, `titlecolor`, `align`, `padding`, `novalue`, `transform`.
 
 **Example:**
 
 ```lua
 { type = "text", subtype = "telemetry", source = "volt", title = "VOLTAGE", unit = "V" }
+{ type = "text", subtype = "telemetry", source = "esc_load", title = "ESC LOAD", unit = "%" }
 ```
 
 ### 4.2 Gauge (`type = "gauge")`
