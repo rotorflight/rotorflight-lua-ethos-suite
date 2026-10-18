@@ -30,16 +30,6 @@ first arm flags arrive, so for a moment the flight controller is connected and i
 armed state is missing while the rotor may still be turning. A flight controller that has
 never reported arm flags at all is not affected: these two tiles stay usable for it.
 
-## Armed warning
-
-While the model is armed, the dashboard shows a red bar across the top edge with an
-"Armed" label hanging from its centre, on every theme. It is drawn over the theme and
-moves nothing. It appears only once the FC reports the armed state, and it goes away
-when the model is disarmed.
-
-The warning can be switched off in the widget properties with **Armed warning**. It is
-on by default.
-
 ## Battery picker
 
 The picker shows the battery profiles as a grid, one cell per pack, with the

@@ -9664,13 +9664,6 @@
         "reverse_text": false,
         "max_length": 5
       },
-      "armed_warning": {
-        "english": "Armed warning",
-        "max_length": 24,
-        "needs_translation": false,
-        "translation": "Armed-waarschuwing",
-        "reverse_text": false
-      },
       "info_arming": {
         "english": "Arming",
         "translation": "Arming",

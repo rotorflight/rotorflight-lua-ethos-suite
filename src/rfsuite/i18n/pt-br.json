@@ -9310,13 +9310,6 @@
         "reverse_text": false,
         "translation": "Alt. Máxima"
       },
-      "armed_warning": {
-        "english": "Armed warning",
-        "max_length": 24,
-        "needs_translation": false,
-        "reverse_text": false,
-        "translation": "Aviso Armed"
-      },
       "battery": {
         "english": "Battery",
         "max_length": 7,

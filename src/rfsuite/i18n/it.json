@@ -9310,13 +9310,6 @@
         "reverse_text": false,
         "translation": "Altitudine Max"
       },
-      "armed_warning": {
-        "english": "Armed warning",
-        "max_length": 24,
-        "needs_translation": false,
-        "reverse_text": false,
-        "translation": "Avviso Armed"
-      },
       "battery": {
         "english": "Battery",
         "max_length": 7,
