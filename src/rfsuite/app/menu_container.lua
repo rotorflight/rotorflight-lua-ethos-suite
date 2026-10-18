@@ -66,6 +66,40 @@ local tileGrid = requireModule("app/tile_grid.lua")
 
 local menu_container = {}
 
+-- Armed-state tile gating (Issue #2302).
+--
+-- A `lockedWhileArmed` entry is one that leads to a flight-critical write
+-- path (an FC/ESC parameter page -- see how app/tool.lua classifies the
+-- tree). While the model is armed those tiles show a forbidden sign in place
+-- of their module icon and refuse to navigate, which moves the warning
+-- *ahead* of the pilot's finger instead of leaving it to
+-- PageRuntime:showSaveArmed() after the page is already open and the form is
+-- already on screen.
+--
+-- While armed, a locked tile is disabled and shows a forbidden sign in place of
+-- its module icon; its title is unchanged, and a press on it does nothing.
+--
+-- Why a sign and not a badge or a greyed-out tile, measured on the simulator:
+--
+--   * A greyed-out tile does not work. :enable(false) is not rendered on a tile
+--     built by form.addButton(nil, {x,y,w,h}, ...): no visual change.
+--   * A coloured badge is impossible. form.addButton takes text, icon, options
+--     and press and no colour, and the icons in app/gfx are lcd.loadMask, so an
+--     icon is tinted by the theme.
+--   * The sign replaces the tile's module icon, and that is its price: while
+--     armed the tile no longer says which module it belongs to. The title is
+--     untouched, so the tile keeps its name. This is the chosen trade -- the
+--     label is not touched at all, so nothing has to be fitted into it.
+--
+
+-- Forbidden sign for a locked tile while armed. Loaded on first use.
+local forbiddenMask = nil
+local function forbiddenIcon()
+  if not forbiddenMask then forbiddenMask = lcd.loadMask("app/gfx/armed_locked.png") end
+  return forbiddenMask
+end
+
+
 -- Which tile index was last pressed on a given screen -- mirrors the
 -- original's own `prefs.menulastselected[moduleKey]` convention (see
 -- rotorflight-lua-ethos-suite's app/lib/menu_container.lua), trimmed to
@@ -120,8 +154,43 @@ local function taskGuardExpired(taskGuard)
   return taskGuard and (not taskGuard.isRunning()) and taskGuard.graceExpired()
 end
 
+-- Whether any entry on this screen is arm-gated at all, directly or through
+-- a submenu tile whose lock was derived by app/armed_gating.lua. The walk
+-- matters because a container like Setup is itself open (it holds one
+-- read-only child) while its own children are gated -- checking only the
+-- direct entries would call such a screen ungated, and without a taskGuard
+-- no wakeup handler would be installed, so its badges could never appear.
+-- Depth-capped for the same reason app/armed_gating.lua is.
+local function screenHasArmedGating(entries, menus, depth)
+  if depth > 16 or not menus then return false end
+  for i = 1, #entries do
+    local entry = entries[i]
+    if entry.lockedWhileArmed == true then return true end
+    if entry.menuId and menus[entry.menuId] and menus[entry.menuId].entries then
+      if screenHasArmedGating(menus[entry.menuId].entries, menus, depth + 1) then
+        return true
+      end
+    end
+  end
+  return false
+end
+
+-- Armed state comes in as a function rather than a value: the session
+-- snapshot is republished continuously on the bus, and a captured boolean
+-- would freeze at whatever it was when the screen was built. app/tool.lua
+-- owns the subscription and passes a closure reading its own last value.
+local function readArmed(armedState)
+  if not armedState then return false end
+  local ok, armed = pcall(armedState)
+  if not ok then return false end
+  return armed == true
+end
+
 -- screen: nil = the root menu, otherwise a menuId key into `menus`.
-local function openScreen(nav, menus, rootEntries, screen, setEventHandler, setWakeupHandler, setPaintHandler, setCleanupHandler, taskGuard)
+-- armedState: optional function() -> isArmed, read on every wakeup (see
+--   readArmed above). Without it every arm-gated tile stays ungated, which
+--   is what the tests exercising this file in isolation rely on.
+local function openScreen(nav, menus, rootEntries, screen, setEventHandler, setWakeupHandler, setPaintHandler, setCleanupHandler, taskGuard, armedState)
   local title, entries, menuGuard
   if screen == nil then
     title, entries = "Rotorflight", rootEntries
@@ -169,7 +238,7 @@ local function openScreen(nav, menus, rootEntries, screen, setEventHandler, setW
       system.exit()
       return
     end
-    openScreen(nav, menus, rootEntries, parentScreen, setEventHandler, setWakeupHandler, setPaintHandler, setCleanupHandler, taskGuard)
+    openScreen(nav, menus, rootEntries, parentScreen, setEventHandler, setWakeupHandler, setPaintHandler, setCleanupHandler, taskGuard, armedState)
   end
 
   -- Every screen installs the same handler, the root menu included.
@@ -216,7 +285,29 @@ local function openScreen(nav, menus, rootEntries, screen, setEventHandler, setW
   -- before navigating here.
   setWakeupHandler(nil)
   if setPaintHandler then
-    setPaintHandler(nil)
+    -- Armed frame and badge, drawn over the menu while armed. The form draws its
+    -- headings and separator lines over the frame's left edge (see the PR body).
+    setPaintHandler(function()
+      local ok, armed = pcall(armedState)
+      if ok and armed == true then
+        local w, h = lcd.getWindowSize()
+        lcd.color(lcd.RGB(214, 40, 40))
+        lcd.drawFilledRectangle(0, 0, w, 4)
+        lcd.drawFilledRectangle(0, h - 4, w, 4)
+        lcd.drawFilledRectangle(0, 0, 4, h)
+        lcd.drawFilledRectangle(w - 4, 0, 4, h)
+        -- Armed badge, top-left, as on the dashboard widget
+        local label = "@i18n(widgets.dashboard.info_armed)@"
+        lcd.font(FONT_S)
+        local tw, th = lcd.getTextSize(label)
+        -- centred on the top edge of the frame
+        local bx = math.floor((w - tw - 12) / 2)
+        lcd.color(lcd.RGB(214, 40, 40))
+        lcd.drawFilledRectangle(bx, 0, tw + 12, th + 6)
+        lcd.color(lcd.RGB(255, 255, 255))
+        lcd.drawText(bx + 6, 3, label)
+      end
+    end)
   end
   if setCleanupHandler then
     setCleanupHandler(nil)
@@ -234,16 +325,36 @@ local function openScreen(nav, menus, rootEntries, screen, setEventHandler, setW
   end
 
   form.clear()
-  local headerHandle = header.build(firstGroup or title, {onBack = goBack})
+  local headerTitle = firstGroup or title
+  local headerHandle = header.build(headerTitle, {onBack = goBack})
+
+  local isArmed = readArmed(armedState)
+  local function entryIsLockedNow(entry)
+    return entry.lockedWhileArmed == true and isArmed
+  end
 
   -- At least 1 even on an implausibly narrow screen -- a numPerRow of 0
   -- would divide-by-zero-equivalent (infinite tiles on one "row") below.
   local windowWidth, windowHeight = lcd.getWindowSize()
   local numPerRow, tileW, tileH, tilePadding, tileFont = tileGrid.metrics(windowWidth, windowHeight)
 
+  -- The label one entry contributes to its tile. Pre-truncated with
+  -- tile_grid.fitLabel() so a long title never spills over the border (Issue #2299).
+  --
+  -- Declared here rather than next to entryIsLockedNow above because it
+  -- closes over tileW/tileFont, which tileGrid.metrics() only produces on
+  -- the line below -- a function defined earlier would resolve them as
+  -- globals (nil) instead of these locals.
+  local function tileLabel(entry)
+    return tileGrid.fitLabel(entry.title, tileW, tileFont)
+  end
+
   -- form.height() reflects the header line's actual rendered height, so
   -- the tile grid starts right below it regardless of the radio's line
   -- height -- no hardcoded offset to get wrong.
+  -- Tiles start at a fixed left gap, so they sit clear of the frame.
+  local TILE_LEFT_GAP = 4
+
   local x, y = 0, form.height() + tilePadding
   local lastGroup = firstGroup
   local col = 0
@@ -261,14 +372,28 @@ local function openScreen(nav, menus, rootEntries, screen, setEventHandler, setW
     end
 
     if isEntryVisible(entry) then
-      -- Keep tile labels explicit; pre-truncate with ellipsis so long
-      -- titles never collide with or spill over the button border (Issue #2299).
-      local label = tileGrid.fitLabel(entry.title, tileW, tileFont)
+      -- Pre-truncate with ellipsis so long titles never collide with or
+      -- spill over the button border (Issue #2299). The arm state does not
+      -- reach the label: a locked tile keeps its title and changes only its
+      -- icon, so there is nothing arm-related for fitLabel() to absorb.
+      if col == 0 then x = TILE_LEFT_GAP end
+      local label = tileLabel(entry)
+      local tileIcon = entry.icon
+      if isArmed and entry.lockedWhileArmed == true then
+        tileIcon = forbiddenIcon()
+      end
       tileButtons[i] = form.addButton(nil, {x = x, y = y, w = tileW, h = tileH}, {
         text = label,
-        icon = entry.icon,
+        icon = tileIcon,
         options = tileFont,
         press = function()
+          -- Armed gating comes first, ahead of the task/entry guards. A
+          -- locked tile is disabled while armed (below), so this branch is
+          -- normally unreachable: it is the guard for the tick in which the
+          -- arm state changed and the grid has not been rebuilt yet. It is
+          -- deliberately silent -- the forbidden sign and the red frame carry
+          -- the state, and a refused press answers with nothing (#2302).
+          if entryIsLockedNow(entry) then return end
           if not canOpenEntry(entry, taskGuard) then
             if taskGuard and (not taskGuard.isRunning()) and taskGuard.requestAlert then
               taskGuard.requestAlert()
@@ -280,7 +405,7 @@ local function openScreen(nav, menus, rootEntries, screen, setEventHandler, setW
           lastSelected[key] = i
           nav.push(screen)
           if entry.menuId then
-            openScreen(nav, menus, rootEntries, entry.menuId, setEventHandler, setWakeupHandler, setPaintHandler, setCleanupHandler, taskGuard)
+            openScreen(nav, menus, rootEntries, entry.menuId, setEventHandler, setWakeupHandler, setPaintHandler, setCleanupHandler, taskGuard, armedState)
           elseif entry.script then
             local page = loadPage(entry.script)
             page.open({
@@ -293,6 +418,10 @@ local function openScreen(nav, menus, rootEntries, screen, setEventHandler, setW
           end
         end,
       })
+
+      if tileButtons[i] and tileButtons[i].enable and entryIsLockedNow(entry) then
+        tileButtons[i]:enable(false)
+      end
 
       col = col + 1
       if col >= numPerRow then
@@ -330,9 +459,28 @@ local function openScreen(nav, menus, rootEntries, screen, setEventHandler, setW
 
   focusEnabledTile()
 
-  if taskGuard or menuGuard then
+  local armedGated = screenHasArmedGating(entries, menus, 1)
+  if taskGuard or menuGuard or armedGated then
     local lastEnabled = {}
     local function updateMenuState()
+      -- Arm/disarm transition: the tile's icon is fixed when the button is
+      -- created, and the form API documents no runtime update for a
+      -- form.addButton result (the one runtime text update, on
+      -- form.addStaticText, has no button counterpart -- see header.lua) --
+      -- so the grid is rebuilt in place instead of mutating the buttons.
+      -- Rebuilding is the right trade here precisely because transitions are
+      -- rare (twice per flight, or never on the bench).
+      --
+      -- isArmed is also the value entryIsLockedNow() and the tile labels
+      -- above closed over, so it is refreshed before the rebuild test and
+      -- stays correct for a press that lands in the same tick.
+      local armedNow = readArmed(armedState)
+      if armedGated and armedNow ~= isArmed then
+        openScreen(nav, menus, rootEntries, screen, setEventHandler, setWakeupHandler, setPaintHandler, setCleanupHandler, taskGuard, armedState)
+        return
+      end
+      isArmed = armedNow
+
       local guardChanged = false
       if menuGuard and menuGuard.wakeup then
         guardChanged = menuGuard.wakeup() == true
@@ -343,7 +491,7 @@ local function openScreen(nav, menus, rootEntries, screen, setEventHandler, setW
       local selectedIndex = lastSelected[key]
       for i = 1, #entries do
         local button = tileButtons[i]
-        local enabled = isEntryEnabled(entries[i], taskGuard, menuGuard)
+        local enabled = isEntryEnabled(entries[i], taskGuard, menuGuard) and not entryIsLockedNow(entries[i])
         if selectedIndex == i and enabled then selectedStillEnabled = true end
         if button and button.enable and enabled ~= lastEnabled[i] then
           lastEnabled[i] = enabled
@@ -377,8 +525,10 @@ end
 -- setCleanupHandler(fn|nil): installs a page-owned cleanup function that
 --   app/tool.lua calls if Ethos closes the whole tool while a page is open.
 -- menus: optional {menuId -> {title=, entries={...}}} for `menuId` entries.
-function menu_container.openRoot(nav, rootEntries, setEventHandler, setWakeupHandler, setPaintHandler, setCleanupHandler, menus, taskGuard)
-  openScreen(nav, menus or {}, rootEntries, nil, setEventHandler, setWakeupHandler, setPaintHandler, setCleanupHandler, taskGuard)
+-- armedState: optional function() -> isArmed, polled every wakeup. See
+--   readArmed() and app/tool.lua's session.update subscription.
+function menu_container.openRoot(nav, rootEntries, setEventHandler, setWakeupHandler, setPaintHandler, setCleanupHandler, menus, taskGuard, armedState)
+  openScreen(nav, menus or {}, rootEntries, nil, setEventHandler, setWakeupHandler, setPaintHandler, setCleanupHandler, taskGuard, armedState)
 end
 
 return menu_container
