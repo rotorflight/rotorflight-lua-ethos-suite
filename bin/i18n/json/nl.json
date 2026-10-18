@@ -219,6 +219,18 @@
       "reverse_text": false,
       "max_length": 75
     },
+    "msg_fc_not_connected_title": {
+      "english": "Flight controller not connected",
+      "translation": "Flight controller niet verbonden",
+      "needs_translation": false,
+      "max_length": 31
+    },
+    "msg_fc_not_connected_body": {
+      "english": "Connect the flight controller to open this menu. Check its power and the telemetry link.",
+      "translation": "Verbind de flight controller om dit menu te openen. Controleer de voeding en de telemetrieverbinding.",
+      "needs_translation": false,
+      "max_length": 88
+    },
     "menu_section_flight_tuning": {
       "english": "Flight Tuning",
       "translation": "Vlieginstell.",

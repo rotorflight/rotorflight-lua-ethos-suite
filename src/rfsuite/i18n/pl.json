@@ -8286,6 +8286,18 @@
       "reverse_text": false,
       "translation": "Zadanie Background nie działa"
     },
+    "msg_fc_not_connected_body": {
+      "english": "Connect the flight controller to open this menu. Check its power and the telemetry link.",
+      "max_length": 88,
+      "needs_translation": false,
+      "translation": "Połącz kontroler lotu, aby otworzyć to menu. Sprawdź zasilanie i łącze telemetrii."
+    },
+    "msg_fc_not_connected_title": {
+      "english": "Flight controller not connected",
+      "max_length": 31,
+      "needs_translation": false,
+      "translation": "Kontroler lotu nie jest połączony"
+    },
     "msg_load_failed_body": {
       "english": "Data could not be read from the flight controller. Please reload.",
       "max_length": 65,

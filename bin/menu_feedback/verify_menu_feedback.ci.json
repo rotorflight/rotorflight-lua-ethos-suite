@@ -1,0 +1,7 @@
+{
+  "id": "menu-feedback",
+  "name": "A press on a flight-controller tile says why it is closed",
+  "step": "Check the feedback for a press on a blocked menu tile",
+  "script": "bin/menu_feedback/verify_menu_feedback.lua",
+  "rationale": "A menu tile that needs the flight controller is closed while the link is down. When the background task was running, the press handler in app/menu_container.lua returned without a word: the one-shot \"background task not running\" alert covers only the task being down. A pilot whose flight controller does not answer saw nothing happen (#2319).\n\nlib/menu_feedback.lua decides what a press reports: the task down, the link down, or nothing when the tile opens. The harness checks the decision against the open rule in all eight combinations, so it reports exactly the tiles that are closed. It also checks that the press handler, the task guard and both locale sources carry the wiring. --self-test replaces the decision with the old silent rule and requires the fix case to fail."
+}

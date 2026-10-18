@@ -63,6 +63,7 @@ local requireModule = package.loaded["rfsuite.lib.require"] or assert(loadfile("
 local closeKey = requireModule("app/close_key.lua")
 local header = requireModule("app/header.lua")
 local tileGrid = requireModule("app/tile_grid.lua")
+local menuFeedback = requireModule("lib/menu_feedback.lua")
 
 local menu_container = {}
 
@@ -395,8 +396,12 @@ local function openScreen(nav, menus, rootEntries, screen, setEventHandler, setW
           -- the state, and a refused press answers with nothing (#2302).
           if entryIsLockedNow(entry) then return end
           if not canOpenEntry(entry, taskGuard) then
-            if taskGuard and (not taskGuard.isRunning()) and taskGuard.requestAlert then
+            local blocked = taskGuard and menuFeedback.blockedBy(entry.offline == true,
+              taskGuard.isRunning(), taskGuard.isConnected())
+            if blocked == menuFeedback.TASK_MISSING and taskGuard.requestAlert then
               taskGuard.requestAlert()
+            elseif blocked == menuFeedback.NOT_CONNECTED and taskGuard.requestNotConnectedAlert then
+              taskGuard.requestNotConnectedAlert()
             end
             return
           end

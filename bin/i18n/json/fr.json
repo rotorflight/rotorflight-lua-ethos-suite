@@ -219,6 +219,18 @@
       "reverse_text": false,
       "max_length": 75
     },
+    "msg_fc_not_connected_title": {
+      "english": "Flight controller not connected",
+      "translation": "Contrôleur de vol non connecté",
+      "needs_translation": false,
+      "max_length": 31
+    },
+    "msg_fc_not_connected_body": {
+      "english": "Connect the flight controller to open this menu. Check its power and the telemetry link.",
+      "translation": "Connectez le contrôleur de vol pour ouvrir ce menu. Vérifiez son alimentation et la liaison de télémétrie.",
+      "needs_translation": false,
+      "max_length": 88
+    },
     "menu_section_flight_tuning": {
       "english": "Flight Tuning",
       "translation": "Régl. de vol",
