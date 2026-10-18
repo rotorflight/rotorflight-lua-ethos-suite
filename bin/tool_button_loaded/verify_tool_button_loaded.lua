@@ -299,6 +299,7 @@ out("part 2: the real header sets the Tool button's enable state")
 package.loaded["rfsuite.app.header"] = nil
 package.loaded["rfsuite.lib.require"] = function(path)
   if path == "app/tile_grid.lua" then return {} end
+  if path == "app/connection_details.lua" then return dofile(SUITE .. "/app/connection_details.lua") end
   error("unexpected require in header harness: " .. tostring(path))
 end
 local header = dofile(SUITE .. "/app/header.lua")
