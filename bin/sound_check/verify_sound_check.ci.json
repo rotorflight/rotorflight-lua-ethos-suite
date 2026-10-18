@@ -1,0 +1,7 @@
+{
+  "id": "sound-check",
+  "name": "The announcement manifest reconciles with the audio tree",
+  "step": "Check the announcement manifest against the audio tree",
+  "script": "bin/sound_check/verify_sound_check.lua",
+  "rationale": "The announcement WAV files are generated from bin/sound-generator/json/<locale>.json and copied into src/rfsuite/audio/<locale>/<variant>/. Nothing compared the two: a manifest entry without a WAV, a WAV without an entry, or a key missing from a locale was found only when the suite spoke it or never spoke it.\n\ngenerate-googleapi.py --check reconciles both offline and exits non-zero on a missing WAV, an orphan WAV (except adjfunctions/, which tasks/adjfunctions/wavs.lua generates from its own tables) or a key the English manifest declares and the locale lacks. An entry without a translation is reported but does not fail, because the generator then speaks the English text.\n\nThe harness runs the real script on fixture trees, with speech-library stand-ins that fail on import, so the check is proven to need neither the libraries nor credentials."
+}

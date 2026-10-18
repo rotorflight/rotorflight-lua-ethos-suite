@@ -9,17 +9,94 @@ import shutil
 import sys
 import tempfile
 
-try:
-    import sox
-except ImportError:
-    print("You need sox for python: python -m pip install sox")
-    sys.exit(1)
+# The speech and audio libraries are imported only when prompts are built, so --check runs
+# offline without them (issue #2366).
+sox = None
+texttospeech = None
 
-try:
-    from google.cloud import texttospeech
-except ImportError:
-    print("You need google cloud text-to-speech for python: python -m pip install google-cloud-texttospeech")
-    sys.exit(1)
+
+def require_tts_dependencies():
+    global sox, texttospeech
+    try:
+        import sox as _sox
+    except ImportError:
+        print("You need sox for python: python -m pip install sox")
+        return False
+    try:
+        from google.cloud import texttospeech as _texttospeech
+    except ImportError:
+        print("You need google cloud text-to-speech for python: python -m pip install google-cloud-texttospeech")
+        return False
+    sox, texttospeech = _sox, _texttospeech
+    return True
+
+
+# Files the suite plays that no manifest declares: they are generated from the suite's own tables
+# (tasks/adjfunctions/wavs.lua), so a check does not report them as orphans.
+CHECK_IGNORED_PREFIXES = ("adjfunctions/",)
+
+
+def load_manifest(path):
+    with open(path, 'r', encoding='utf-8') as f:
+        data = json.load(f)
+    return [entry for entry in data if isinstance(entry, dict) and entry.get('file')]
+
+
+def check_manifest(json_file, audio_root, base_dir, variant, english_json=None):
+    """Reconciles one manifest with the audio tree.
+
+    Returns a dict with lists: missing (declared, no WAV), orphans (WAV, no entry),
+    absent (declared in English, not in this manifest), untranslated (entry without a
+    translation, so the generator speaks the English text).
+    """
+    entries = load_manifest(json_file)
+    declared = {entry['file'] for entry in entries}
+    root = os.path.join(audio_root, base_dir, variant)
+    missing = sorted(f for f in declared if not os.path.isfile(os.path.join(root, f)))
+
+    on_disk = set()
+    for dirpath, _, names in os.walk(root):
+        for name in names:
+            if name.lower().endswith('.wav'):
+                rel = os.path.relpath(os.path.join(dirpath, name), root)
+                on_disk.add(rel.replace(os.sep, '/'))
+    orphans = sorted(f for f in on_disk - declared if not f.startswith(CHECK_IGNORED_PREFIXES))
+
+    absent = []
+    if english_json is not None:
+        absent = sorted({entry['file'] for entry in load_manifest(english_json)} - declared)
+    untranslated = sorted(entry['file'] for entry in entries if not entry.get('translation'))
+    return {'missing': missing, 'orphans': orphans, 'absent': absent, 'untranslated': untranslated}
+
+
+def run_check(args):
+    root = os.path.join(args.audio_root, args.base_dir, args.variant)
+    if not os.path.isdir(root):
+        print(f"Error: no audio folder at {root}")
+        return 1
+
+    english = args.english_json
+    if english is None and args.base_dir != 'en':
+        english = os.path.join(os.path.dirname(args.json), 'en.json')
+    if english is not None and not os.path.isfile(english):
+        print(f"Error: no English manifest at {english} (set --english-json)")
+        return 1
+    if english is not None and os.path.abspath(english) == os.path.abspath(args.json):
+        english = None
+
+    result = check_manifest(args.json, args.audio_root, args.base_dir, args.variant, english)
+    sections = (
+        ("Declared, but no WAV file", result['missing'], True),
+        ("WAV file, but no manifest entry", result['orphans'], True),
+        ("Declared in English, not in this manifest", result['absent'], True),
+        ("No translation (the English text is spoken)", result['untranslated'], False),
+    )
+    for title, items, _ in sections:
+        print(f"{title}: {len(items)}")
+        for item in items:
+            print(f"  {item}")
+    failed = any(items for _, items, blocking in sections if blocking)
+    return 1 if failed else 0
 
 
 def extract_entries(json_path, base_dir, variant):
@@ -173,7 +250,12 @@ def main():
     parser = argparse.ArgumentParser(description="Builder for Ethos audio files via JSON")
     parser.add_argument('--json', required=True, help="JSON input file")
     parser.add_argument('--engine', default="google", help="TTS engine")
-    parser.add_argument('--voice', required=True, help="TTS voice name (e.g., en-US-Wavenet-D)")
+    parser.add_argument('--voice', help="TTS voice name (e.g., en-US-Wavenet-D); required to build")
+    parser.add_argument('--check', action="store_true",
+                        help="Reconcile the manifest with the audio tree; offline, no voice needed")
+    parser.add_argument('--audio-root', default=os.path.join('..', '..', 'src', 'rfsuite', 'audio'),
+                        help="Audio tree to check against (default: the suite's)")
+    parser.add_argument('--english-json', help="English manifest to compare with (default: en.json next to --json)")
     parser.add_argument('--cache', help="TTS files cache directory")
     parser.add_argument('--recreate-cache', action="store_true",
                         help="Recreate files cache")
@@ -186,6 +268,15 @@ def main():
     parser.add_argument('--variant', required=True,
                         help="i18n variant (e.g., male, female)")
     args = parser.parse_args()
+
+    if args.check:
+        return run_check(args)
+
+    if not args.voice:
+        print("--voice is required to build (use --check to reconcile without one)")
+        return 1
+    if not require_tts_dependencies():
+        return 1
 
     return build(
         args.engine, args.voice, args.speed,

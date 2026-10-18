@@ -53,6 +53,10 @@ If you support spoken audio:
 
 Note:
 - The release packaging steps copy `bin/sound-generator/soundpack/<locale>` into the locale build if present.
+- Check a locale's manifest against the suite's audio tree before you generate or ship it, offline and without speech credentials:
+  From `bin/sound-generator/`: `python generate-googleapi.py --json json/<locale>.json --base-dir <locale> --variant <variant> --check`
+  It exits 1 for a declared file without a WAV, a WAV without a manifest entry (except `adjfunctions/`, which the suite generates), or a key
+  that `en.json` declares and the locale lacks. Entries without a translation are listed but do not fail the check.
 
 ### 6) Demo/Docs (optional)
 If you want demo links for the new locale:
