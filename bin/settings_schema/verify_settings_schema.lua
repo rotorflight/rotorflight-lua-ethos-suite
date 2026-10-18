@@ -145,6 +145,47 @@ do
     "key=" .. tostring(ownKey) .. " kept=" .. tostring(ownKey and read.activelook[ownKey]) .. " sent=" .. tostring(probe))
 end
 
+print("switches keeps valid keys and drops stale/malformed ones")
+do
+  local read = store.withDefaults({
+    switches = {
+      voltage = "1,2",
+      rpm = "3,4",
+      legacy_sensor = "5,6",
+      altitude = 123,
+      current = "invalid",
+    }
+  })
+  check("a valid switch key is kept", read.switches and read.switches.voltage == "1,2",
+    "voltage=" .. tostring(read.switches and read.switches.voltage))
+  check("multiple valid switch keys are kept", read.switches and read.switches.rpm == "3,4")
+  check("a stale switch key is dropped", read.switches and read.switches.legacy_sensor == nil,
+    "legacy_sensor=" .. tostring(read.switches and read.switches.legacy_sensor))
+  check("a switch with wrong value type is dropped", read.switches and read.switches.altitude == nil,
+    "altitude=" .. tostring(read.switches and read.switches.altitude))
+  check("a switch with malformed string value is dropped", read.switches and read.switches.current == nil,
+    "current=" .. tostring(read.switches and read.switches.current))
+  check("audioSwitches returns the configured switches",
+    store.audioSwitches(read) and store.audioSwitches(read).voltage == "1,2")
+end
+
+print("switches same comparison detects changes")
+do
+  local clean = {switches = {voltage = "1,2"}}
+  local identical = {switches = {voltage = "1,2"}}
+  local changed = {switches = {voltage = "9,9"}}
+  local withStale = {switches = {voltage = "1,2", obsolete = "5,6"}}
+  local empty = {switches = {}}
+  local missing = {}
+
+  check("identical switch assignments are equal", store.same(clean, identical) == true)
+  check("different switch assignment is detected", store.same(clean, changed) == false)
+  check("stale switch key does not cause false dirty", store.same(clean, withStale) == true)
+  check("empty switches and missing switches are equal", store.same(empty, missing) == true)
+  check("assigning a switch is detected against empty", store.same(clean, empty) == false)
+  check("unassigning a switch is detected against clean", store.same(empty, clean) == false)
+end
+
 -- ---------------------------------------------------------------------------
 -- 2. What is written: a save drops what the schema does not define
 -- ---------------------------------------------------------------------------
@@ -152,12 +193,18 @@ end
 print("save writes the pruned settings")
 do
   saved = nil
-  store.save({events = {voltage = true, legacy_beep = true}, old_section = {x = 1}})
+  store.save({
+    events = {voltage = true, legacy_beep = true},
+    old_section = {x = 1},
+    switches = {voltage = "1,2", stale_switch = "9,9"},
+  })
   check("the file is written", saved ~= nil)
   check("the save leaves out a stale key", saved and saved.events and saved.events.legacy_beep == nil,
     "legacy_beep=" .. tostring(saved and saved.events and saved.events.legacy_beep))
   check("the save leaves out an unknown section", saved and saved.old_section == nil)
   check("the save keeps the schema's keys", saved and saved.events and saved.events.voltage == true)
+  check("the save writes valid switches", saved and saved.switches and saved.switches.voltage == "1,2")
+  check("the save drops stale switches", saved and saved.switches and saved.switches.stale_switch == nil)
 end
 
 print(string.format("\n%d checks, %d failed", checks, failures))

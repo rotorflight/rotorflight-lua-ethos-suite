@@ -285,6 +285,20 @@ end
 -- inside them: activelook decides its keys in activelook_config.withDefaults.
 local SELF_SCHEMA = {activelook = true}
 
+-- Audio switches: the schema defines which sensor keys are supported.
+-- Switch values are serialized as "category,member" source identifiers.
+local ALLOWED_SWITCH_KEYS = {
+  altitude = true,
+  bec_voltage = true,
+  consumption = true,
+  current = true,
+  rpm = true,
+  smartfuel = true,
+  temp_esc = true,
+  throttle_percent = true,
+  voltage = true,
+}
+
 -- Each dashboard theme keeps its own preferences in a section named after the theme ("dashboard.bastion"),
 -- so those sections belong to the theme and are kept whole. A section the suite no longer has is
 -- still dropped.
@@ -302,6 +316,16 @@ function settings_store.withDefaults(settings)
     if type(values) == "table" and themeSection(section) then
       merged[section] = {}
       for key, value in pairs(values) do merged[section][key] = value end
+    elseif section == "switches" and type(values) == "table" then
+      local sw = {}
+      for key, value in pairs(values) do
+        if ALLOWED_SWITCH_KEYS[key] and type(value) == "string" and value:match("^%s*%-?%d+%s*,%s*%-?%d+%s*$") then
+          sw[key] = value:match("^%s*(.-)%s*$")
+        end
+      end
+      if next(sw) ~= nil then
+        merged.switches = sw
+      end
     elseif DEFAULTS[section] ~= nil and type(values) == "table" then
       merged[section] = merged[section] or {}
       for key, value in pairs(values) do
