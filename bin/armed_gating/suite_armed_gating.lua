@@ -255,7 +255,7 @@ if ROOT_ENTRIES and MENUS then
   --     individually in 2b-quater below.
   local MUST_LOCK = {
     mixer_menu = true, servos_menu = true,
-    power_menu = true, esc_motors_menu = true, esc_forward_menu = true,
+    esc_motors_menu = true, esc_forward_menu = true,
     setup_governor_menu = true, beepers_menu = true, blackbox_menu = true,
     flight_tuning_menu = true, rates_advanced_menu = true,
     governor_menu = true,
@@ -267,6 +267,22 @@ if ROOT_ENTRIES and MENUS then
       eq("submenu locked: " .. menuId, sub.lockedWhileArmed, true)
     end
   end
+
+  -- power_menu is deliberately absent from MUST_LOCK. Power > Preferences saves the radio's own
+  -- model file, not a flight-controller write, so it stays open. The "all children locked" rule
+  -- therefore leaves the menu open, and its four flight-controller pages badge individually.
+  local powerEntries = MENUS.power_menu and MENUS.power_menu.entries or {}
+  check("power menu present", #powerEntries > 0)
+  check("power menu stays open while armed", MENUS.power_menu ~= nil and MENUS.power_menu.lockedWhileArmed ~= true)
+  local lockedPower = 0
+  for _, entry in ipairs(powerEntries) do
+    if entry.script == "app/pages/power_preferences.lua" then
+      check("power preferences stays open while armed", entry.lockedWhileArmed ~= true)
+    elseif entry.lockedWhileArmed == true then
+      lockedPower = lockedPower + 1
+    end
+  end
+  check("the four flight-controller power pages are locked", lockedPower == 4, "locked=" .. lockedPower)
 
   -- 2b. Mixed containers must stay OPEN, so read-only pages a pilot wants
   --     while armed (Stats, Diagnostics) are not locked out by a sibling.
@@ -307,8 +323,10 @@ if ROOT_ENTRIES and MENUS then
       local e = setup.entries[i]
       if e.lockedWhileArmed ~= true then unlocked[#unlocked + 1] = tostring(e.menuId or e.title) end
     end
-    check("setup_menu: only controls_menu is left open",
-          #unlocked == 1 and unlocked[1] == "controls_menu",
+    -- power_menu stays open too: it has no direct FC write, and its own pages badge individually.
+    table.sort(unlocked)
+    check("setup_menu: only controls_menu and power_menu are left open",
+          #unlocked == 2 and unlocked[1] == "controls_menu" and unlocked[2] == "power_menu",
           table.concat(unlocked, ", "))
   end
 
