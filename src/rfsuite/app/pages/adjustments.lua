@@ -10,6 +10,7 @@ local header = requireModule("app/header.lua")
 local eeprom = requireModule("lib/msp_eeprom.lua")
 local progressDialog = requireModule("app/progress_dialog.lua")
 local adjustmentsMsp = requireModule("lib/msp_adjustments.lua")
+local leaveConfirm = requireModule("app/leave_confirm.lua")
 
 local PAGE_TITLE = "@i18n(app.modules.adjustments.name)@"
 local BTN_OK = "@i18n(app.btn_ok_long)@"
@@ -275,6 +276,8 @@ local function open(opts)
   local autoEna = {}
   local autoAdj = {}
   local saveError = nil
+  local isArmed = nil
+  local sessionHandler = nil
 
   local function windowWidth()
     local w = 800
@@ -486,80 +489,121 @@ local function open(opts)
     })
   end
 
+  local function performSave(focusFn)
+    local changed = {}
+    for slot, isDirty in pairs(dirtySlots) do
+      if isDirty then changed[#changed + 1] = slot end
+    end
+    table.sort(changed)
+    local pos = 1
+    busy = true
+    saveError = nil
+    updateButtons()
+    showProgress("@i18n(app.modules.adjustments.saving_changed_ranges)@")
+
+    local function fail(reason)
+      if disposed then return end
+      busy = false
+      saveError = reason or "Save failed"
+      closeDialog(focusFn or (headerHandle and headerHandle.focusSave))
+      updateButtons()
+      needsRender = true
+    end
+
+    local function writeNext()
+      if disposed then return end
+      local slot = changed[pos]
+      if not slot then
+        bus.publish("msp.request", eeprom.buildWriteMessage(function()
+          if disposed then return end
+          original = cloneRanges(ranges)
+          dirtySlots = {}
+          dirty = false
+          busy = false
+          closeDialog(focusFn or (headerHandle and headerHandle.focusSave))
+          updateButtons()
+          needsRender = true
+        end, fail))
+        return
+      end
+      pos = pos + 1
+      bus.publish("msp.request", adjustmentsMsp.buildWriteMessage(slot, ranges[slot], writeNext, function()
+        fail("SET_ADJUSTMENT_RANGE failed at slot " .. tostring(slot))
+      end))
+    end
+
+    writeNext()
+  end
+
+  local function openSaveDialog()
+    if not loaded or not dirty or busy then return end
+    if autoEna[selected] or autoAdj[selected] then
+      showInfo("@i18n(app.modules.adjustments.msg_auto_detect_lock_save)@")
+      return
+    end
+    form.openDialog({
+      title = MSG_SAVE_TITLE,
+      message = MSG_SAVE_BODY,
+      buttons = {
+        {label = BTN_OK, action = function()
+          performSave(headerHandle and headerHandle.focusSave)
+          return true
+        end},
+        {label = BTN_CANCEL, action = function() return true end},
+      },
+      wakeup = function() end,
+      paint = function() end,
+      options = TEXT_LEFT,
+    })
+  end
+
+  local function leave()
+    disposed = true
+    if opts.setWakeupHandler then opts.setWakeupHandler(nil) end
+    if opts.setCleanupHandler then opts.setCleanupHandler(nil) end
+    if sessionHandler then bus.unsubscribe("session.update", sessionHandler) end
+    closeDialog()
+    if opts.onBack then opts.onBack() end
+  end
+
+  -- Back with unsaved changes asks first (issue #2504): Save saves and keeps the page,
+  -- Discard leaves it, Stay keeps it.
+  local function hasUnsavedChanges()
+    return not disposed and loaded == true and dirty == true
+  end
+
+  local function canSaveNow()
+    return hasUnsavedChanges() and not busy and dialog == nil and isArmed ~= true and not (autoEna[selected] or autoAdj[selected])
+  end
+
+  local function goBack()
+    if busy or dialog ~= nil then return end
+    if not hasUnsavedChanges() then
+      leave()
+      return
+    end
+    form.openDialog(leaveConfirm.args({
+      canSave = canSaveNow(),
+      save = function()
+        performSave(headerHandle and headerHandle.focusSave)
+      end,
+      discard = function()
+        leave()
+      end,
+      focus = function()
+        if headerHandle and headerHandle.focusSave then
+          headerHandle.focusSave()
+        end
+      end,
+    }))
+  end
+
   render = function()
     liveFields = {}
     form.clear()
     headerHandle = header.build(PAGE_TITLE, {
-      onBack = function()
-        disposed = true
-        if opts.setWakeupHandler then opts.setWakeupHandler(nil) end
-        if opts.setCleanupHandler then opts.setCleanupHandler(nil) end
-        closeDialog()
-        if opts.onBack then opts.onBack() end
-      end,
-      onSave = function()
-        if not loaded or not dirty or busy then return end
-        if autoEna[selected] or autoAdj[selected] then
-          showInfo("@i18n(app.modules.adjustments.msg_auto_detect_lock_save)@")
-          return
-        end
-        form.openDialog({
-          title = MSG_SAVE_TITLE,
-          message = MSG_SAVE_BODY,
-          buttons = {
-            {label = BTN_OK, action = function()
-              local changed = {}
-              for slot, isDirty in pairs(dirtySlots) do
-                if isDirty then changed[#changed + 1] = slot end
-              end
-              table.sort(changed)
-              local pos = 1
-              busy = true
-              saveError = nil
-              updateButtons()
-              showProgress("@i18n(app.modules.adjustments.saving_changed_ranges)@")
-
-              local function fail(reason)
-                if disposed then return end
-                busy = false
-                saveError = reason or "Save failed"
-                closeDialog(headerHandle and headerHandle.focusSave)
-                updateButtons()
-                needsRender = true
-              end
-
-              local function writeNext()
-                if disposed then return end
-                local slot = changed[pos]
-                if not slot then
-                  bus.publish("msp.request", eeprom.buildWriteMessage(function()
-                    if disposed then return end
-                    original = cloneRanges(ranges)
-                    dirtySlots = {}
-                    dirty = false
-                    busy = false
-                    closeDialog(headerHandle and headerHandle.focusSave)
-                    updateButtons()
-                    needsRender = true
-                  end, fail))
-                  return
-                end
-                pos = pos + 1
-                bus.publish("msp.request", adjustmentsMsp.buildWriteMessage(slot, ranges[slot], writeNext, function()
-                  fail("SET_ADJUSTMENT_RANGE failed at slot " .. tostring(slot))
-                end))
-              end
-
-              writeNext()
-              return true
-            end},
-            {label = BTN_CANCEL, action = function() return true end},
-          },
-          wakeup = function() end,
-          paint = function() end,
-          options = TEXT_LEFT,
-        })
-      end,
+      onBack = goBack,
+      onSave = openSaveDialog,
       onReload = function()
         if busy then return end
         form.openDialog({
@@ -776,14 +820,16 @@ local function open(opts)
     end
   end
 
+  sessionHandler = function(update)
+    if disposed then return end
+    isArmed = update and update.isArmed
+  end
+  bus.subscribe("session.update", sessionHandler)
+
   if opts.setEventHandler then
     opts.setEventHandler(function(category, value)
       if closeKey.shouldHandleClose(category, value) then
-        disposed = true
-        if opts.setWakeupHandler then opts.setWakeupHandler(nil) end
-        if opts.setCleanupHandler then opts.setCleanupHandler(nil) end
-        closeDialog()
-        if opts.onBack then opts.onBack() end
+        goBack()
         return true
       end
       return false
@@ -793,6 +839,7 @@ local function open(opts)
   if opts.setCleanupHandler then
     opts.setCleanupHandler(function()
       disposed = true
+      if sessionHandler then bus.unsubscribe("session.update", sessionHandler) end
       if opts.setWakeupHandler then opts.setWakeupHandler(nil) end
       closeDialog()
     end)

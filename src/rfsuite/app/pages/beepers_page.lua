@@ -14,6 +14,7 @@ local header = requireModule("app/header.lua")
 local progressDialog = requireModule("app/progress_dialog.lua")
 local eeprom = requireModule("lib/msp_eeprom.lua")
 local beeperConfig = requireModule("lib/msp_beeper_config.lua")
+local leaveConfirm = requireModule("app/leave_confirm.lua")
 
 local BTN_OK = "@i18n(app.btn_ok)@"
 local BTN_CANCEL = "@i18n(app.btn_cancel)@"
@@ -66,6 +67,8 @@ function beepers_page.new(config)
     local original = beeperConfig.defaultConfig()
     local fields = {}
     local pageTitle = config.title
+    local isArmed = nil
+    local sessionHandler = nil
 
     local function closeDialog(focusFn)
       if not dialog then return end
@@ -104,10 +107,11 @@ function beepers_page.new(config)
       end
     end
 
-    local function goBack()
+    local function leave()
       disposed = true
       if opts.setWakeupHandler then opts.setWakeupHandler(nil) end
       if opts.setCleanupHandler then opts.setCleanupHandler(nil) end
+      if sessionHandler then bus.unsubscribe("session.update", sessionHandler) end
       closeDialog()
       if opts.onBack then opts.onBack() end
     end
@@ -181,12 +185,50 @@ function beepers_page.new(config)
       })
     end
 
+    -- Back with unsaved changes asks first (issue #2504): Save saves and keeps the page,
+    -- Discard leaves it, Stay keeps it.
+    local function hasUnsavedChanges()
+      return not disposed and loaded == true and not sameConfig(current, original)
+    end
+
+    local function canSaveNow()
+      return hasUnsavedChanges() and not busy and dialog == nil and isArmed ~= true
+    end
+
+    local function goBack()
+      if busy or dialog ~= nil then return end
+      if not hasUnsavedChanges() then
+        leave()
+        return
+      end
+      form.openDialog(leaveConfirm.args({
+        canSave = canSaveNow(),
+        save = function()
+          saveData(headerHandle and headerHandle.focusSave)
+        end,
+        discard = function()
+          leave()
+        end,
+        focus = function()
+          if headerHandle and headerHandle.focusSave then
+            headerHandle.focusSave()
+          end
+        end,
+      }))
+    end
+
     form.clear()
     headerHandle = header.build(pageTitle, {
       onBack = goBack,
       onSave = function() confirmSave(headerHandle and headerHandle.focusSave) end,
       onReload = function() confirmReload(headerHandle and headerHandle.focusReload) end,
     })
+
+    sessionHandler = function(update)
+      if disposed then return end
+      isArmed = update and update.isArmed
+    end
+    bus.subscribe("session.update", sessionHandler)
 
     if opts.setEventHandler then
       opts.setEventHandler(function(category, value)
@@ -200,6 +242,7 @@ function beepers_page.new(config)
     if opts.setCleanupHandler then
       opts.setCleanupHandler(function()
         disposed = true
+        if sessionHandler then bus.unsubscribe("session.update", sessionHandler) end
         closeDialog()
       end)
     end

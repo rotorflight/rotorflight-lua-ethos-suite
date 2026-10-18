@@ -88,6 +88,11 @@ function common.openPage(title, opts, build)
         canSave = true,
         save = function() save(nil) end,
         discard = function() leave() end,
+        focus = function()
+          if headerHandle and headerHandle.focusSave then
+            headerHandle.focusSave()
+          end
+        end,
       }))
       return
     end

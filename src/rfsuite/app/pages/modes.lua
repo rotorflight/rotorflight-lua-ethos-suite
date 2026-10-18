@@ -12,6 +12,7 @@ local header = requireModule("app/header.lua")
 local eeprom = requireModule("lib/msp_eeprom.lua")
 local progressDialog = requireModule("app/progress_dialog.lua")
 local mspModes = requireModule("lib/msp_modes.lua")
+local leaveConfirm = requireModule("app/leave_confirm.lua")
 
 local PAGE_TITLE = "@i18n(app.modules.modes.name)@"
 local BTN_ADD = "@i18n(app.btn_add)@"
@@ -209,6 +210,8 @@ local function open(opts)
   local liveRangeFields = {}
   local channelSources = {}
   local autoDetectSlots = {}
+  local isArmed = nil
+  local sessionHandler = nil
 
   local function closeDialog(focusFn)
     if not dialog then return end
@@ -558,79 +561,120 @@ local function open(opts)
     })
   end
 
+  local function performSave(focusFn)
+    local slot = 1
+    local total = #modeRanges
+    saving = true
+    saveError = nil
+    setBusy()
+    showProgress(MSG_SAVING_BODY)
+
+    local function fail(reason)
+      if disposed then return end
+      saving = false
+      saveError = reason or "Save failed"
+      closeDialog(focusFn or (headerHandle and headerHandle.focusSave))
+      needsRender = true
+      setBusy()
+    end
+
+    local function writeNext()
+      if disposed then return end
+      if slot > total then
+        bus.publish("msp.request", eeprom.buildWriteMessage(function()
+          if disposed then return end
+          originalRanges = cloneRanges(modeRanges)
+          originalExtras = cloneExtras(modeRangesExtra)
+          dirty = false
+          saving = false
+          closeDialog(focusFn or (headerHandle and headerHandle.focusSave))
+          needsRender = true
+          setBusy()
+        end, fail))
+        return
+      end
+      local writeSlot = slot
+      slot = slot + 1
+      bus.publish("msp.request", mspModes.buildSetModeRangeMessage(
+        writeSlot,
+        modeRanges[writeSlot],
+        modeRangesExtra[writeSlot],
+        writeNext,
+        function() fail("SET_MODE_RANGE failed at slot " .. tostring(writeSlot)) end))
+    end
+
+    writeNext()
+  end
+
+  local function openSaveDialog()
+    if not loaded or loading or saving or not dirty then return end
+    if hasActiveAutoDetect() then
+      showInfo(PAGE_TITLE, "@i18n(app.modules.modes.msg_auto_detect_lock_save)@")
+      return
+    end
+    form.openDialog({
+      title = MSG_SAVE_TITLE,
+      message = MSG_SAVE_BODY,
+      buttons = {
+        {label = BTN_OK, action = function()
+          performSave(headerHandle and headerHandle.focusSave)
+          return true
+        end},
+        {label = BTN_CANCEL, action = function() return true end},
+      },
+      wakeup = function() end,
+      paint = function() end,
+      options = TEXT_LEFT,
+    })
+  end
+
+  local function leave()
+    disposed = true
+    if opts.setWakeupHandler then opts.setWakeupHandler(nil) end
+    if opts.setCleanupHandler then opts.setCleanupHandler(nil) end
+    if sessionHandler then bus.unsubscribe("session.update", sessionHandler) end
+    closeDialog()
+    if opts.onBack then opts.onBack() end
+  end
+
+  -- Back with unsaved changes asks first (issue #2504): Save saves and keeps the page,
+  -- Discard leaves it, Stay keeps it.
+  local function hasUnsavedChanges()
+    return not disposed and loaded == true and dirty == true
+  end
+
+  local function canSaveNow()
+    return hasUnsavedChanges() and not loading and not saving and dialog == nil and isArmed ~= true and not hasActiveAutoDetect()
+  end
+
+  local function goBack()
+    if loading or saving or dialog ~= nil then return end
+    if not hasUnsavedChanges() then
+      leave()
+      return
+    end
+    form.openDialog(leaveConfirm.args({
+      canSave = canSaveNow(),
+      save = function()
+        performSave(headerHandle and headerHandle.focusSave)
+      end,
+      discard = function()
+        leave()
+      end,
+      focus = function()
+        if headerHandle and headerHandle.focusSave then
+          headerHandle.focusSave()
+        end
+      end,
+    }))
+  end
+
   render = function()
     liveRangeFields = {}
     form.clear()
     headerHandle = header.build(PAGE_TITLE, {
-      onBack = function()
-        disposed = true
-        if opts.setWakeupHandler then opts.setWakeupHandler(nil) end
-        if opts.setCleanupHandler then opts.setCleanupHandler(nil) end
-        closeDialog()
-        if opts.onBack then opts.onBack() end
-      end,
-      onSave = function()
-        if not loaded or loading or saving or not dirty then return end
-        if hasActiveAutoDetect() then
-          showInfo(PAGE_TITLE, "@i18n(app.modules.modes.msg_auto_detect_lock_save)@")
-          return
-        end
-        form.openDialog({
-          title = MSG_SAVE_TITLE,
-          message = MSG_SAVE_BODY,
-          buttons = {
-            {label = BTN_OK, action = function()
-              local slot = 1
-              local total = #modeRanges
-              saving = true
-              saveError = nil
-              setBusy()
-              showProgress(MSG_SAVING_BODY)
-
-              local function fail(reason)
-                if disposed then return end
-                saving = false
-                saveError = reason or "Save failed"
-                closeDialog(headerHandle and headerHandle.focusSave)
-                needsRender = true
-                setBusy()
-              end
-
-              local function writeNext()
-                if disposed then return end
-                if slot > total then
-                  bus.publish("msp.request", eeprom.buildWriteMessage(function()
-                    if disposed then return end
-                    originalRanges = cloneRanges(modeRanges)
-                    originalExtras = cloneExtras(modeRangesExtra)
-                    dirty = false
-                    saving = false
-                    closeDialog(headerHandle and headerHandle.focusSave)
-                    needsRender = true
-                    setBusy()
-                  end, fail))
-                  return
-                end
-                local writeSlot = slot
-                slot = slot + 1
-                bus.publish("msp.request", mspModes.buildSetModeRangeMessage(
-                  writeSlot,
-                  modeRanges[writeSlot],
-                  modeRangesExtra[writeSlot],
-                  writeNext,
-                  function() fail("SET_MODE_RANGE failed at slot " .. tostring(writeSlot)) end))
-              end
-
-              writeNext()
-              return true
-            end},
-            {label = BTN_CANCEL, action = function() return true end},
-          },
-          wakeup = function() end,
-          paint = function() end,
-          options = TEXT_LEFT,
-        })
-      end,
+      onBack = goBack,
+      onSave = openSaveDialog,
       onReload = function()
         if saving then return end
         form.openDialog({
@@ -760,14 +804,16 @@ local function open(opts)
     end
   end
 
+  sessionHandler = function(update)
+    if disposed then return end
+    isArmed = update and update.isArmed
+  end
+  bus.subscribe("session.update", sessionHandler)
+
   if opts.setEventHandler then
     opts.setEventHandler(function(category, value)
       if closeKey.shouldHandleClose(category, value) then
-        disposed = true
-        if opts.setWakeupHandler then opts.setWakeupHandler(nil) end
-        if opts.setCleanupHandler then opts.setCleanupHandler(nil) end
-        closeDialog()
-        if opts.onBack then opts.onBack() end
+        goBack()
         return true
       end
       return false
@@ -777,6 +823,7 @@ local function open(opts)
   if opts.setCleanupHandler then
     opts.setCleanupHandler(function()
       disposed = true
+      if sessionHandler then bus.unsubscribe("session.update", sessionHandler) end
       closeDialog()
     end)
   end

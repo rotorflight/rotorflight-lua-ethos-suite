@@ -1189,6 +1189,7 @@ function PageRuntime:hasUnsavedChanges()
 end
 
 function PageRuntime:goBack()
+  if self.busy or self.activeDialog then return end
   if not self:hasUnsavedChanges() then
     self:leave()
     return
@@ -1197,6 +1198,11 @@ function PageRuntime:goBack()
     canSave = self:canSave(),
     save = function() self:performSave(nil) end,
     discard = function() self:leave() end,
+    focus = function()
+      if self.headerHandle and self.headerHandle.focusSave then
+        self.headerHandle.focusSave()
+      end
+    end,
   }))
 end
 

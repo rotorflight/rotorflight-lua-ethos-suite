@@ -16,6 +16,7 @@ local eeprom = requireModule("lib/msp_eeprom.lua")
 local reboot = requireModule("lib/msp_reboot.lua")
 local boardInfo = requireModule("lib/msp_board_info.lua")
 local portLabels = requireModule("lib/port_labels.lua")
+local leaveConfirm = requireModule("app/leave_confirm.lua")
 
 local PAGE_TITLE = "@i18n(app.modules.ports.name)@"
 local MSG_SAVE_TITLE = "@i18n(app.msg_save_settings)@"
@@ -295,7 +296,23 @@ local function open(opts)
   -- app/page_runtime.lua's openMessageDialog() -- nothing in this suite has
   -- ever kept one of these handles, so nothing in-repo proves its shape.
   local function openConfirmDialog(args)
-    confirmDialog = form.openDialog(args)
+    if not args then return nil end
+    local originalButtons = args.buttons or {}
+    local wrappedButtons = {}
+    for i = 1, #originalButtons do
+      local b = originalButtons[i]
+      wrappedButtons[#wrappedButtons + 1] = {
+        label = b.label,
+        action = function()
+          confirmDialog = nil
+          if b.action then return b.action() end
+          return true
+        end,
+      }
+    end
+    local dialogArgs = shallowCopy(args)
+    dialogArgs.buttons = wrappedButtons
+    confirmDialog = form.openDialog(dialogArgs)
     return confirmDialog
   end
 
@@ -351,7 +368,7 @@ local function open(opts)
     memstats.print("ports disposed")
   end
 
-  local function goBack()
+  local function leave()
     memstats.print("ports exit")
     dispose()
     if opts.onBack then opts.onBack() end
@@ -437,6 +454,69 @@ local function open(opts)
     end))
   end
 
+  local function performSave(focusFn)
+    if disposed or busy or not loaded or not dirty then return end
+    applyReceiverGuard()
+    setBusy(true)
+    activeDialog = openProgress(MSG_SAVING_TITLE, MSG_SAVING_BODY)
+    saveError = nil
+    saveNotice = nil
+
+    local index = 1
+    local function fail()
+      if disposed then return end
+      loaded = true
+      saveError = "@i18n(app.modules.ports.error_save_failed)@"
+      closeDialog(focusFn or (headerHandle and headerHandle.focusSave))
+      setBusy(false)
+      needsRender = true
+    end
+    -- EEPROM_WRITE is rejected by the FC while armed -- not a real
+    -- failure, the per-port MSP_SET_SERIAL_CONFIG writes above
+    -- already landed and the FC commits them for real on disarm.
+    -- Mirrors app/page_runtime.lua's own performSave()/showSaveArmed().
+    local function failEeprom()
+      if disposed then return end
+      if isArmed == true then
+        loaded = true
+        dirty = false
+        portsOriginal = clonePorts(portsWorking)
+        saveNotice = "@i18n(app.modules.ports.save_armed)@"
+        closeDialog(focusFn or (headerHandle and headerHandle.focusSave))
+        setBusy(false)
+        needsRender = true
+        return
+      end
+      fail()
+    end
+    local function writeNext()
+      if disposed then return end
+      if index > #portsWorking then
+        bus.publish("msp.request", eeprom.buildWriteMessage(function()
+          if disposed then return end
+          readBackPorts(function()
+            if disposed then return end
+            dirty = false
+            portsOriginal = clonePorts(portsWorking)
+            closeDialog(focusFn or (headerHandle and headerHandle.focusSave))
+            setBusy(false)
+            if isArmed ~= true then
+              bus.publish("msp.request", reboot.buildWriteMessage())
+            end
+          end)
+        end, failEeprom))
+        return
+      end
+      local port = portsWorking[index]
+      bus.publish("msp.request", serialConfig.buildWriteMessage(port, function()
+        if disposed then return end
+        index = index + 1
+        writeNext()
+      end, fail))
+    end
+    writeNext()
+  end
+
   local function openSaveDialog()
     if not loaded or not dirty or busy then return end
     openConfirmDialog({
@@ -444,67 +524,7 @@ local function open(opts)
       message = MSG_SAVE_BODY,
       buttons = {
         {label = BTN_OK, action = function()
-          if not disposed then
-            applyReceiverGuard()
-            setBusy(true)
-            activeDialog = openProgress(MSG_SAVING_TITLE, MSG_SAVING_BODY)
-            saveError = nil
-            saveNotice = nil
-
-            local index = 1
-            local function fail()
-              if disposed then return end
-              loaded = true
-              saveError = "@i18n(app.modules.ports.error_save_failed)@"
-              closeDialog(headerHandle and headerHandle.focusSave)
-              setBusy(false)
-              needsRender = true
-            end
-            -- EEPROM_WRITE is rejected by the FC while armed -- not a real
-            -- failure, the per-port MSP_SET_SERIAL_CONFIG writes above
-            -- already landed and the FC commits them for real on disarm.
-            -- Mirrors app/page_runtime.lua's own performSave()/showSaveArmed().
-            local function failEeprom()
-              if disposed then return end
-              if isArmed == true then
-                loaded = true
-                dirty = false
-                portsOriginal = clonePorts(portsWorking)
-                saveNotice = "@i18n(app.modules.ports.save_armed)@"
-                closeDialog(headerHandle and headerHandle.focusSave)
-                setBusy(false)
-                needsRender = true
-                return
-              end
-              fail()
-            end
-            local function writeNext()
-              if disposed then return end
-              if index > #portsWorking then
-                bus.publish("msp.request", eeprom.buildWriteMessage(function()
-                  if disposed then return end
-                  readBackPorts(function()
-                    if disposed then return end
-                    dirty = false
-                    portsOriginal = clonePorts(portsWorking)
-                    closeDialog(headerHandle and headerHandle.focusSave)
-                    setBusy(false)
-                    if isArmed ~= true then
-                      bus.publish("msp.request", reboot.buildWriteMessage())
-                    end
-                  end)
-                end, failEeprom))
-                return
-              end
-              local port = portsWorking[index]
-              bus.publish("msp.request", serialConfig.buildWriteMessage(port, function()
-                if disposed then return end
-                index = index + 1
-                writeNext()
-              end, fail))
-            end
-            writeNext()
-          end
+          performSave(headerHandle and headerHandle.focusSave)
           return true
         end},
         {label = BTN_CANCEL, action = function() return true end},
@@ -512,6 +532,38 @@ local function open(opts)
       wakeup = function() end,
       paint = function() end,
     })
+  end
+
+  -- Back with unsaved changes asks first (issue #2504): Save saves and keeps the page,
+  -- Discard leaves it, Stay keeps it.
+  local function hasUnsavedChanges()
+    return not disposed and loaded == true and dirty == true
+  end
+
+  local function canSaveNow()
+    return hasUnsavedChanges() and not busy and confirmDialog == nil and activeDialog == nil and isArmed ~= true
+  end
+
+  local function goBack()
+    if busy or confirmDialog ~= nil or activeDialog ~= nil then return end
+    if not hasUnsavedChanges() then
+      leave()
+      return
+    end
+    openConfirmDialog(leaveConfirm.args({
+      canSave = canSaveNow(),
+      save = function()
+        performSave(headerHandle and headerHandle.focusSave)
+      end,
+      discard = function()
+        leave()
+      end,
+      focus = function()
+        if headerHandle and headerHandle.focusSave then
+          headerHandle.focusSave()
+        end
+      end,
+    }))
   end
 
   local function render()

@@ -67,6 +67,7 @@ local function anyStub()
 end
 
 lcd = anyStub()
+lcd.getWindowSize = function() return 480, 320 end
 system = anyStub()
 model = anyStub()
 TEXT_LEFT = nil
@@ -99,6 +100,8 @@ form = {
   invalidate = noop,
   openDialog = function(opts) dialogs[#dialogs + 1] = opts; return {close = noop} end,
   addLine = function(label) return {label = label} end,
+  getFieldSlots = function() return {{x = 0, y = 0, w = 10, h = 10}} end,
+  addStaticText = function() return {enable = noop} end,
   addNumberField = function(_, _, _, _, getter, setter)
     _G.fieldSetter = setter
     return {enable = noop, suffix = noop}
@@ -187,6 +190,34 @@ end
 do
   dialogs = {}
   local left = 0
+  local rt = newRuntime({opts = {onBack = function() left = left + 1 end}})
+  rt.busy = true
+  rt:goBack()
+  check("busy: Back does not open a dialog and does not leave", left == 0 and #dialogs == 0)
+end
+
+do
+  dialogs = {}
+  local left = 0
+  local rt = newRuntime({opts = {onBack = function() left = left + 1 end}})
+  rt.activeDialog = {}
+  rt:goBack()
+  check("active dialog: Back does not open a dialog and does not leave", left == 0 and #dialogs == 0)
+end
+
+do
+  dialogs = {}
+  local focused = 0
+  local rt = newRuntime()
+  rt.headerHandle = {focusSave = function() focused = focused + 1 end}
+  rt:goBack()
+  pressButton(lastDialog(), "STAY")
+  check("Stay returns focus to the Save button", focused == 1)
+end
+
+do
+  dialogs = {}
+  local left = 0
   local rt = newRuntime({isMspPage = true, opts = {onBack = function() left = left + 1 end}})
   rt.isArmed = true
   rt:goBack()
@@ -203,7 +234,7 @@ end
 local headerOpts
 package.loaded["rfsuite.app.header"] = {build = function(_, opts)
   headerOpts = opts
-  return {setSaveEnabled = noop, setReloadEnabled = noop, focusSave = noop, focusReload = noop}
+  return {setSaveEnabled = noop, setReloadEnabled = noop, focusSave = noop, focusReload = noop, focusMenu = noop}
 end}
 package.loaded["rfsuite.app.close_key"] = {shouldHandleClose = function() return false end}
 package.loaded["rfsuite.lib.model_preferences"] = {
@@ -237,6 +268,76 @@ do
   headerOpts.onBack()
   check("Back on a clean alerts page leaves at once", left == 1 and #dialogs == 0,
     "left=" .. left .. " dialogs=" .. #dialogs)
+end
+
+print("ports: Back with unsaved changes")
+do
+  local sent = {}
+  local sub = bus.subscribe("msp.request", function(m) sent[#sent + 1] = m end)
+  local wakeupHandler = nil
+  package.loaded["rfsuite.lib.msp_board_info"] = {
+    buildReadMessage = function(onOk)
+      return {processReply = function(self, data) onOk(data or self) end}
+    end,
+  }
+  package.loaded["rfsuite.lib.msp_serial_config"] = {
+    buildReadMessage = function(onOk)
+      return {processReply = function(self, data) onOk(data or self) end}
+    end,
+    buildWriteMessage = function(_, onOk)
+      return {processReply = function(self, data) onOk(data or self) end}
+    end,
+  }
+  package.loaded["rfsuite.lib.msp_eeprom"] = {
+    buildWriteMessage = function(onOk)
+      return {processReply = function(_) onOk() end}
+    end,
+  }
+  package.loaded["rfsuite.lib.msp_reboot"] = {
+    buildWriteMessage = function() return {} end,
+  }
+
+  local page = requireModule("app/pages/ports.lua")
+  local left = 0
+  page.open({
+    onBack = function() left = left + 1 end,
+    setWakeupHandler = function(fn) wakeupHandler = fn end,
+  })
+  sent[1].processReply({board_design = "", board_name = "", identifier = 0})
+  sent[2].processReply({ports = {{identifier = 0, function_mask = 0, msp_baud_index = 5, gps_baud_index = 5, blackbox_baud_index = 5, telem_baud_index = 5}}})
+  if wakeupHandler then wakeupHandler() end
+
+  dialogs = {}
+  headerOpts.onBack()
+  check("Back on a clean ports page leaves at once", left == 1 and #dialogs == 0)
+
+  left = 0
+  sent = {}
+  page.open({
+    onBack = function() left = left + 1 end,
+    setWakeupHandler = function(fn) wakeupHandler = fn end,
+  })
+  sent[1].processReply({board_design = "", board_name = "", identifier = 0})
+  sent[2].processReply({ports = {{identifier = 0, function_mask = 0, msp_baud_index = 5, gps_baud_index = 5, blackbox_baud_index = 5, telem_baud_index = 5}}})
+  if wakeupHandler then wakeupHandler() end
+
+  _G.choiceSetter(1)
+  dialogs = {}
+  headerOpts.onBack()
+  check("Back on a dirty ports page asks first and does not leave", left == 0 and #dialogs == 1)
+  check("the ports question offers Save, Discard and Stay",
+    #dialogs == 1 and table.concat(buttonLabels(lastDialog()), ",") == "SAVE,DISCARD,STAY")
+
+  pressButton(lastDialog(), "STAY")
+  dialogs = {}
+  bus.publish("session.update", {isArmed = true})
+  headerOpts.onBack()
+  check("armed ports page offers Discard and Stay, not Save",
+    #dialogs == 1 and table.concat(buttonLabels(lastDialog()), ",") == "DISCARD,STAY")
+
+  pressButton(lastDialog(), "DISCARD")
+  check("Discard on ports page leaves", left == 1)
+  bus.unsubscribe("msp.request", sub)
 end
 
 print(string.format("\n%d checks, %d failed", checks, failures))
