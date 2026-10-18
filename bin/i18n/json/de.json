@@ -9150,37 +9150,37 @@
       },
       "restart": {
         "english": "RESTART ESC",
-        "translation": "ESC NEU STARTEN",
+        "translation": "NEU STARTEN",
         "needs_translation": false,
         "max_length": 11
       },
       "no_status": {
         "english": "NO STATUS",
-        "translation": "KEIN STATUS",
+        "translation": "KEIN INFO",
         "needs_translation": false,
         "max_length": 9
       },
       "unknown": {
         "english": "UNKNOWN ESC",
-        "translation": "ESC UNBEKANNT",
+        "translation": "UNBEKANNT",
         "needs_translation": false,
         "max_length": 11
       },
       "fault": {
         "english": "FAULT",
-        "translation": "FEHLER",
+        "translation": "STÖR.",
         "needs_translation": false,
         "max_length": 5
       },
       "undervoltage": {
         "english": "UNDERVOLTAGE",
-        "translation": "UNTERSPANNUNG",
+        "translation": "UNTERSPANN.",
         "needs_translation": false,
         "max_length": 12
       },
       "overvoltage": {
         "english": "OVERVOLTAGE",
-        "translation": "ÜBERSPANNUNG",
+        "translation": "ÜBERSPANN.",
         "needs_translation": false,
         "max_length": 11
       },
@@ -9198,7 +9198,7 @@
       },
       "overheat": {
         "english": "OVERHEAT",
-        "translation": "ÜBERTEMPERATUR",
+        "translation": "ZU HEISS",
         "needs_translation": false,
         "max_length": 8
       },
@@ -9210,13 +9210,13 @@
       },
       "bec_undervoltage": {
         "english": "BEC UNDERVOLTAGE",
-        "translation": "BEC UNTERSPANNUNG",
+        "translation": "BEC UNTERSPANN.",
         "needs_translation": false,
         "max_length": 16
       },
       "bec_overvoltage": {
         "english": "BEC OVERVOLTAGE",
-        "translation": "BEC ÜBERSPANNUNG",
+        "translation": "BEC ÜBERSPANN.",
         "needs_translation": false,
         "max_length": 15
       },
@@ -9228,31 +9228,31 @@
       },
       "bec_overheat": {
         "english": "BEC OVERHEAT",
-        "translation": "BEC ÜBERTEMPERATUR",
+        "translation": "BEC ZU HEISS",
         "needs_translation": false,
         "max_length": 12
       },
       "bec_voltage": {
         "english": "BEC VOLTAGE",
-        "translation": "BEC SPANNUNG",
+        "translation": "BEC SPANN.",
         "needs_translation": false,
         "max_length": 11
       },
       "motor_hot": {
         "english": "MOTOR HOT",
-        "translation": "MOTOR HEISS",
+        "translation": "MOT HEISS",
         "needs_translation": false,
         "max_length": 9
       },
       "input_voltage": {
         "english": "INPUT VOLTAGE",
-        "translation": "EINGANGSSPANNUNG",
+        "translation": "EING.SPANNUNG",
         "needs_translation": false,
         "max_length": 13
       },
       "motor_locked": {
         "english": "MOTOR LOCKED",
-        "translation": "MOTOR BLOCKIERT",
+        "translation": "MOTOR BLOCK.",
         "needs_translation": false,
         "max_length": 12
       },
@@ -9264,31 +9264,31 @@
       },
       "throttle_lost": {
         "english": "THROTTLE LOST",
-        "translation": "GASSIGNAL VERLOREN",
+        "translation": "GAS VERLOREN",
         "needs_translation": false,
         "max_length": 13
       },
       "throttle": {
         "english": "THROTTLE",
-        "translation": "GASSIGNAL",
+        "translation": "GASSIGN.",
         "needs_translation": false,
         "max_length": 8
       },
       "motor_wiring": {
         "english": "MOTOR WIRING",
-        "translation": "MOTORANSCHLUSS",
+        "translation": "MOTORANSCHL.",
         "needs_translation": false,
         "max_length": 12
       },
       "startup": {
         "english": "STARTUP FAILED",
-        "translation": "START FEHLGESCHLAGEN",
+        "translation": "START FEHLER",
         "needs_translation": false,
         "max_length": 14
       },
       "motor_saturated": {
         "english": "MOTOR SATURATED",
-        "translation": "MOTOR AM ANSCHLAG",
+        "translation": "MOTOR ANSCHLAG",
         "needs_translation": false,
         "max_length": 15
       },
@@ -9300,7 +9300,7 @@
       },
       "capacity_limit": {
         "english": "CAPACITY LIMIT",
-        "translation": "KAPAZITÄTSGRENZE",
+        "translation": "KAPAZ.GRENZE",
         "needs_translation": false,
         "max_length": 14
       },
@@ -9330,7 +9330,7 @@
       },
       "rudder_cutoff": {
         "english": "RUDDER CUTOFF",
-        "translation": "ABSCHALTUNG HECK",
+        "translation": "HECK-STOPP",
         "needs_translation": false,
         "max_length": 13
       },
@@ -9348,7 +9348,7 @@
       },
       "self_test": {
         "english": "SELF TEST",
-        "translation": "SELBSTTEST",
+        "translation": "TESTLAUF",
         "needs_translation": false,
         "max_length": 9
       },
@@ -9366,19 +9366,19 @@
       },
       "programming_open": {
         "english": "PROGRAMMING OPEN",
-        "translation": "PROGRAMMIERUNG OFFEN",
+        "translation": "PROGRAMM. OFFEN",
         "needs_translation": false,
         "max_length": 16
       },
       "rpm_low": {
         "english": "RPM BELOW LIMIT",
-        "translation": "DREHZAHL ZU NIEDRIG",
+        "translation": "DREHZAHL NIEDR.",
         "needs_translation": false,
         "max_length": 15
       },
       "setpoint_noise": {
         "english": "SETPOINT NOISE",
-        "translation": "SOLLWERT STÖRUNG",
+        "translation": "SOLLW. STÖRUNG",
         "needs_translation": false,
         "max_length": 14
       }
