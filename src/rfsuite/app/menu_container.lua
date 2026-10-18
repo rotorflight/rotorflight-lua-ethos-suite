@@ -152,7 +152,7 @@ local function isEntryEnabled(entry, taskGuard, menuGuard)
 end
 
 local function taskGuardExpired(taskGuard)
-  return taskGuard and (not taskGuard.isRunning()) and taskGuard.graceExpired()
+  return taskGuard and taskGuard.graceExpired and (not taskGuard.isRunning()) and taskGuard.graceExpired()
 end
 
 -- Whether any entry on this screen is arm-gated at all, directly or through
@@ -180,7 +180,7 @@ end
 -- menu has a tile that is closed for that reason (#2319). A disabled tile gets no
 -- press, so the notice comes from the menu's own state, not from a tap.
 local function closedByLinkOn(entries, taskGuard)
-  if not (taskGuard and taskGuard.isRunning() and taskGuard.graceExpired()) then return false end
+  if not (taskGuard and taskGuard.graceExpired and taskGuard.isRunning() and taskGuard.graceExpired()) then return false end
   for i = 1, #entries do
     if menuFeedback.closedByLink(entries[i].offline == true, taskGuard.isRunning(), taskGuard.isConnected()) then
       return true
