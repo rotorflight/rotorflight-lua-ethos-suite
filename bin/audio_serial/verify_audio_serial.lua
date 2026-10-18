@@ -91,6 +91,11 @@ local savedRequire = package.loaded["rfsuite.lib.require"]
 -- changes, the previous values) cannot carry between them. `source` replaces
 -- the file the task is loaded from, which is what the can-fail check uses.
 local function newRig(events, source)
+  -- The store fills the keys a scenario does not set from its defaults. The loss vibrate switch
+  -- defaults on (#2312), so a rig that leaves it out gets the same default.
+  local merged = {telemetry_lost_haptic = true}
+  for key, value in pairs(events or {}) do merged[key] = value end
+  events = merged
   local handlers = {}
   local log = {}
   local clock = 0
