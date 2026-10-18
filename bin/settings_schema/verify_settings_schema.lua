@@ -129,6 +129,13 @@ do
     "section=" .. tostring(read["dashboard.bastion"]))
   check("the dashboard section itself is still checked against the schema",
     read.dashboard.stale_key == nil and read.dashboard.theme_preflight == "system/bastion")
+
+  -- A section for a theme the suite no longer has is dropped, and so is one with no theme name.
+  local dropped = store.withDefaults({["dashboard.gone"] = {rpm_max = 1}, ["dashboard."] = {x = 1}})
+  check("a section for a removed theme is dropped on load",
+    dropped["dashboard.gone"] == nil, "section=" .. tostring(dropped["dashboard.gone"]))
+  check("a dashboard section with no theme name is dropped on load",
+    dropped["dashboard."] == nil)
 end
 
 print("activelook keeps its own keys")
