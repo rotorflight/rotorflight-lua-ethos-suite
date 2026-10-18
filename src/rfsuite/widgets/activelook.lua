@@ -366,6 +366,7 @@ local function update(widget, snapshot)
   snapshot = snapshot or {}
   widget.connected = snapshot.connected == true
   widget.isArmed = snapshot.isArmed
+  widget.rxMap = snapshot.rxMap
   widget.voltage = snapshot.voltage
   widget.batteryConfig = snapshot.batteryConfig
   widget.consumption = snapshot.consumption
