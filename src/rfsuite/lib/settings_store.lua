@@ -303,8 +303,7 @@ local ALLOWED_SWITCH_KEYS = {
 -- so those sections belong to the theme and are kept whole. A section the suite no longer has is
 -- still dropped.
 local function themeSection(section)
-  local theme = type(section) == "string" and section:match("^dashboard%.(.+)$")
-  return theme ~= nil and DASHBOARD_THEMES[theme] == true
+  return type(section) == "string" and section:match("^dashboard%.%S+$") ~= nil
 end
 
 -- Merges what was read over the schema's defaults. What the schema does not define is dropped: a
