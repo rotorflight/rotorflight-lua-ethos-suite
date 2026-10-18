@@ -100,16 +100,18 @@ function Tracker:update(widget)
   local current = self.current or "preflight"
   local mode
 
-  if (current == "inflight" or current == "postflight") and not connected then
+  if (current == "inflight" or current == "postflight" or current == "offline") and not connected then
+    -- The link is gone after a flight: the flight's summary and extremes stay frozen on
+    -- screen as "offline" until a connection returns (#2352).
     self.hasBeenInFlight = true
-    mode = "postflight"
+    mode = "offline"
   elseif armed and not self.lastArmed then
     -- Fresh disarmed->armed edge: start this flight's own detection over
     -- rather than carrying over the previous flight's hasBeenInFlight, so
     -- a rearm doesn't depend on inFlight(widget) already reading true on
     -- this exact tick to leave "postflight".
     self.hasBeenInFlight = false
-    mode = "preflight"
+    mode = "armed"
   elseif inFlight(widget) then
     self.hasBeenInFlight = true
     mode = "inflight"
@@ -120,12 +122,23 @@ function Tracker:update(widget)
     mode = "inflight"
   elseif self.hasBeenInFlight then
     mode = "postflight"
+  elseif armed then
+    mode = "armed"
   else
     mode = "preflight"
   end
 
   self.lastArmed = armed
   self.current = mode
+  return mode
+end
+
+-- The layout a phase draws with. Themes have three layouts; a phase without one of its own draws
+-- the nearest of them: armed draws preflight (its warning is the armed bar, not the layout), and
+-- offline draws postflight, which is where the frozen summary lives (#2352).
+function flightmode.layoutPhase(mode)
+  if mode == "armed" then return "preflight" end
+  if mode == "offline" then return "postflight" end
   return mode
 end
 

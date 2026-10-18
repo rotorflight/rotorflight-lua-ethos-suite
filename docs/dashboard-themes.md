@@ -79,6 +79,11 @@ Each theme may implement the following Lua modules:
 * **`preflight.lua`** (optional): returns a layout table for preflight.
 * **`inflight.lua`** (optional): returns a layout table for inflight.
 * **`postflight.lua`** (optional): returns a layout table for postflight.
+
+The dashboard tracks five phases, and themes have three layouts. `armed` (armed on the ground, before
+spool-up) draws the `preflight` layout; the armed bar is its warning. `offline` (the link is gone after a
+flight) draws the `postflight` layout with the flight's summary and extremes frozen, until a connection
+returns or the model changes. A theme therefore does not need files of its own for them.
 * **`configure.lua`** (optional): exposes a configuration UI and saves preferences.
 
 Example **`init.lua`**:

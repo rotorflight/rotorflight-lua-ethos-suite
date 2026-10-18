@@ -1,0 +1,7 @@
+{
+  "id": "flight-phases",
+  "name": "The dashboard's flight phases: armed before spool-up, offline after a flight",
+  "step": "Check the dashboard flight phases",
+  "script": "bin/flight_phases/verify_flight_phases.lua",
+  "rationale": "Issue #2352: the dashboard tracked three phases, preflight, inflight and postflight. Arming on the ground showed the preflight layout, with no sign that the throttle is live, and a disconnect after a flight left the widget in postflight with no defined frozen state. The tracker now has armed (armed before flight) and offline (the link is gone after a flight; the summary and extremes stay frozen until a connection returns or the model changes).\n\nThe harness drives the real tracker through a flight from the ground, a flight that ends with the link lost, a disconnect without a flight, and the governor counting as flight; it checks the layout each phase draws with (armed draws preflight, offline draws postflight), so themes with three layouts need no change. The bar gauge's hold rule is not run here; that module needs the whole widget. Against unpatched master the tracker has no armed or offline phase, so the checks fail."
+}
