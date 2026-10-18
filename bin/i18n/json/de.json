@@ -9141,6 +9141,248 @@
     }
   },
   "widgets": {
+    "escstatus": {
+      "ok": {
+        "english": "OK",
+        "translation": "OK",
+        "needs_translation": false,
+        "max_length": 2
+      },
+      "restart": {
+        "english": "RESTART ESC",
+        "translation": "ESC NEU STARTEN",
+        "needs_translation": false,
+        "max_length": 11
+      },
+      "no_status": {
+        "english": "NO STATUS",
+        "translation": "KEIN STATUS",
+        "needs_translation": false,
+        "max_length": 9
+      },
+      "unknown": {
+        "english": "UNKNOWN ESC",
+        "translation": "ESC UNBEKANNT",
+        "needs_translation": false,
+        "max_length": 11
+      },
+      "fault": {
+        "english": "FAULT",
+        "translation": "FEHLER",
+        "needs_translation": false,
+        "max_length": 5
+      },
+      "undervoltage": {
+        "english": "UNDERVOLTAGE",
+        "translation": "UNTERSPANNUNG",
+        "needs_translation": false,
+        "max_length": 12
+      },
+      "overvoltage": {
+        "english": "OVERVOLTAGE",
+        "translation": "ÜBERSPANNUNG",
+        "needs_translation": false,
+        "max_length": 11
+      },
+      "overcurrent": {
+        "english": "OVERCURRENT",
+        "translation": "ÜBERSTROM",
+        "needs_translation": false,
+        "max_length": 11
+      },
+      "current_warning": {
+        "english": "CURRENT WARNING",
+        "translation": "STROM WARNUNG",
+        "needs_translation": false,
+        "max_length": 15
+      },
+      "overheat": {
+        "english": "OVERHEAT",
+        "translation": "ÜBERTEMPERATUR",
+        "needs_translation": false,
+        "max_length": 8
+      },
+      "temp_warning": {
+        "english": "TEMP WARNING",
+        "translation": "TEMP WARNUNG",
+        "needs_translation": false,
+        "max_length": 12
+      },
+      "bec_undervoltage": {
+        "english": "BEC UNDERVOLTAGE",
+        "translation": "BEC UNTERSPANNUNG",
+        "needs_translation": false,
+        "max_length": 16
+      },
+      "bec_overvoltage": {
+        "english": "BEC OVERVOLTAGE",
+        "translation": "BEC ÜBERSPANNUNG",
+        "needs_translation": false,
+        "max_length": 15
+      },
+      "bec_overcurrent": {
+        "english": "BEC OVERCURRENT",
+        "translation": "BEC ÜBERSTROM",
+        "needs_translation": false,
+        "max_length": 15
+      },
+      "bec_overheat": {
+        "english": "BEC OVERHEAT",
+        "translation": "BEC ÜBERTEMPERATUR",
+        "needs_translation": false,
+        "max_length": 12
+      },
+      "bec_voltage": {
+        "english": "BEC VOLTAGE",
+        "translation": "BEC SPANNUNG",
+        "needs_translation": false,
+        "max_length": 11
+      },
+      "motor_hot": {
+        "english": "MOTOR HOT",
+        "translation": "MOTOR HEISS",
+        "needs_translation": false,
+        "max_length": 9
+      },
+      "input_voltage": {
+        "english": "INPUT VOLTAGE",
+        "translation": "EINGANGSSPANNUNG",
+        "needs_translation": false,
+        "max_length": 13
+      },
+      "motor_locked": {
+        "english": "MOTOR LOCKED",
+        "translation": "MOTOR BLOCKIERT",
+        "needs_translation": false,
+        "max_length": 12
+      },
+      "throttle_at_start": {
+        "english": "THROTTLE AT START",
+        "translation": "GAS BEIM START",
+        "needs_translation": false,
+        "max_length": 17
+      },
+      "throttle_lost": {
+        "english": "THROTTLE LOST",
+        "translation": "GASSIGNAL VERLOREN",
+        "needs_translation": false,
+        "max_length": 13
+      },
+      "throttle": {
+        "english": "THROTTLE",
+        "translation": "GASSIGNAL",
+        "needs_translation": false,
+        "max_length": 8
+      },
+      "motor_wiring": {
+        "english": "MOTOR WIRING",
+        "translation": "MOTORANSCHLUSS",
+        "needs_translation": false,
+        "max_length": 12
+      },
+      "startup": {
+        "english": "STARTUP FAILED",
+        "translation": "START FEHLGESCHLAGEN",
+        "needs_translation": false,
+        "max_length": 14
+      },
+      "motor_saturated": {
+        "english": "MOTOR SATURATED",
+        "translation": "MOTOR AM ANSCHLAG",
+        "needs_translation": false,
+        "max_length": 15
+      },
+      "consumption": {
+        "english": "CONSUMPTION",
+        "translation": "VERBRAUCH",
+        "needs_translation": false,
+        "max_length": 11
+      },
+      "capacity_limit": {
+        "english": "CAPACITY LIMIT",
+        "translation": "KAPAZITÄTSGRENZE",
+        "needs_translation": false,
+        "max_length": 14
+      },
+      "current_limit": {
+        "english": "CURRENT LIMIT",
+        "translation": "STROMGRENZE",
+        "needs_translation": false,
+        "max_length": 13
+      },
+      "battery_limit": {
+        "english": "BATTERY LIMIT",
+        "translation": "AKKUGRENZE",
+        "needs_translation": false,
+        "max_length": 13
+      },
+      "esc_temp_limit": {
+        "english": "ESC TEMP LIMIT",
+        "translation": "ESC TEMPGRENZE",
+        "needs_translation": false,
+        "max_length": 14
+      },
+      "bec_temp_limit": {
+        "english": "BEC TEMP LIMIT",
+        "translation": "BEC TEMPGRENZE",
+        "needs_translation": false,
+        "max_length": 14
+      },
+      "rudder_cutoff": {
+        "english": "RUDDER CUTOFF",
+        "translation": "ABSCHALTUNG HECK",
+        "needs_translation": false,
+        "max_length": 13
+      },
+      "operation": {
+        "english": "OPERATION FAULT",
+        "translation": "BETRIEBSFEHLER",
+        "needs_translation": false,
+        "max_length": 15
+      },
+      "operation_warning": {
+        "english": "OPERATION WARNING",
+        "translation": "BETRIEBSWARNUNG",
+        "needs_translation": false,
+        "max_length": 17
+      },
+      "self_test": {
+        "english": "SELF TEST",
+        "translation": "SELBSTTEST",
+        "needs_translation": false,
+        "max_length": 9
+      },
+      "eeprom": {
+        "english": "EEPROM",
+        "translation": "EEPROM",
+        "needs_translation": false,
+        "max_length": 6
+      },
+      "watchdog": {
+        "english": "WATCHDOG",
+        "translation": "WATCHDOG",
+        "needs_translation": false,
+        "max_length": 8
+      },
+      "programming_open": {
+        "english": "PROGRAMMING OPEN",
+        "translation": "PROGRAMMIERUNG OFFEN",
+        "needs_translation": false,
+        "max_length": 16
+      },
+      "rpm_low": {
+        "english": "RPM BELOW LIMIT",
+        "translation": "DREHZAHL ZU NIEDRIG",
+        "needs_translation": false,
+        "max_length": 15
+      },
+      "setpoint_noise": {
+        "english": "SETPOINT NOISE",
+        "translation": "SOLLWERT STÖRUNG",
+        "needs_translation": false,
+        "max_length": 14
+      }
+    },
     "battery": {
       "msg_battery_selected": {
         "english": "Selected battery:",

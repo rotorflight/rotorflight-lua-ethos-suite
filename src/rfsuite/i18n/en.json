@@ -8398,6 +8398,248 @@
         "translation": "Max Watts"
       }
     },
+    "escstatus": {
+      "battery_limit": {
+        "english": "BATTERY LIMIT",
+        "max_length": 13,
+        "needs_translation": false,
+        "translation": "BATTERY LIMIT"
+      },
+      "bec_overcurrent": {
+        "english": "BEC OVERCURRENT",
+        "max_length": 15,
+        "needs_translation": false,
+        "translation": "BEC OVERCURRENT"
+      },
+      "bec_overheat": {
+        "english": "BEC OVERHEAT",
+        "max_length": 12,
+        "needs_translation": false,
+        "translation": "BEC OVERHEAT"
+      },
+      "bec_overvoltage": {
+        "english": "BEC OVERVOLTAGE",
+        "max_length": 15,
+        "needs_translation": false,
+        "translation": "BEC OVERVOLTAGE"
+      },
+      "bec_temp_limit": {
+        "english": "BEC TEMP LIMIT",
+        "max_length": 14,
+        "needs_translation": false,
+        "translation": "BEC TEMP LIMIT"
+      },
+      "bec_undervoltage": {
+        "english": "BEC UNDERVOLTAGE",
+        "max_length": 16,
+        "needs_translation": false,
+        "translation": "BEC UNDERVOLTAGE"
+      },
+      "bec_voltage": {
+        "english": "BEC VOLTAGE",
+        "max_length": 11,
+        "needs_translation": false,
+        "translation": "BEC VOLTAGE"
+      },
+      "capacity_limit": {
+        "english": "CAPACITY LIMIT",
+        "max_length": 14,
+        "needs_translation": false,
+        "translation": "CAPACITY LIMIT"
+      },
+      "consumption": {
+        "english": "CONSUMPTION",
+        "max_length": 11,
+        "needs_translation": false,
+        "translation": "CONSUMPTION"
+      },
+      "current_limit": {
+        "english": "CURRENT LIMIT",
+        "max_length": 13,
+        "needs_translation": false,
+        "translation": "CURRENT LIMIT"
+      },
+      "current_warning": {
+        "english": "CURRENT WARNING",
+        "max_length": 15,
+        "needs_translation": false,
+        "translation": "CURRENT WARNING"
+      },
+      "eeprom": {
+        "english": "EEPROM",
+        "max_length": 6,
+        "needs_translation": false,
+        "translation": "EEPROM"
+      },
+      "esc_temp_limit": {
+        "english": "ESC TEMP LIMIT",
+        "max_length": 14,
+        "needs_translation": false,
+        "translation": "ESC TEMP LIMIT"
+      },
+      "fault": {
+        "english": "FAULT",
+        "max_length": 5,
+        "needs_translation": false,
+        "translation": "FAULT"
+      },
+      "input_voltage": {
+        "english": "INPUT VOLTAGE",
+        "max_length": 13,
+        "needs_translation": false,
+        "translation": "INPUT VOLTAGE"
+      },
+      "motor_hot": {
+        "english": "MOTOR HOT",
+        "max_length": 9,
+        "needs_translation": false,
+        "translation": "MOTOR HOT"
+      },
+      "motor_locked": {
+        "english": "MOTOR LOCKED",
+        "max_length": 12,
+        "needs_translation": false,
+        "translation": "MOTOR LOCKED"
+      },
+      "motor_saturated": {
+        "english": "MOTOR SATURATED",
+        "max_length": 15,
+        "needs_translation": false,
+        "translation": "MOTOR SATURATED"
+      },
+      "motor_wiring": {
+        "english": "MOTOR WIRING",
+        "max_length": 12,
+        "needs_translation": false,
+        "translation": "MOTOR WIRING"
+      },
+      "no_status": {
+        "english": "NO STATUS",
+        "max_length": 9,
+        "needs_translation": false,
+        "translation": "NO STATUS"
+      },
+      "ok": {
+        "english": "OK",
+        "max_length": 2,
+        "needs_translation": false,
+        "translation": "OK"
+      },
+      "operation": {
+        "english": "OPERATION FAULT",
+        "max_length": 15,
+        "needs_translation": false,
+        "translation": "OPERATION FAULT"
+      },
+      "operation_warning": {
+        "english": "OPERATION WARNING",
+        "max_length": 17,
+        "needs_translation": false,
+        "translation": "OPERATION WARNING"
+      },
+      "overcurrent": {
+        "english": "OVERCURRENT",
+        "max_length": 11,
+        "needs_translation": false,
+        "translation": "OVERCURRENT"
+      },
+      "overheat": {
+        "english": "OVERHEAT",
+        "max_length": 8,
+        "needs_translation": false,
+        "translation": "OVERHEAT"
+      },
+      "overvoltage": {
+        "english": "OVERVOLTAGE",
+        "max_length": 11,
+        "needs_translation": false,
+        "translation": "OVERVOLTAGE"
+      },
+      "programming_open": {
+        "english": "PROGRAMMING OPEN",
+        "max_length": 16,
+        "needs_translation": false,
+        "translation": "PROGRAMMING OPEN"
+      },
+      "restart": {
+        "english": "RESTART ESC",
+        "max_length": 11,
+        "needs_translation": false,
+        "translation": "RESTART ESC"
+      },
+      "rpm_low": {
+        "english": "RPM BELOW LIMIT",
+        "max_length": 15,
+        "needs_translation": false,
+        "translation": "RPM BELOW LIMIT"
+      },
+      "rudder_cutoff": {
+        "english": "RUDDER CUTOFF",
+        "max_length": 13,
+        "needs_translation": false,
+        "translation": "RUDDER CUTOFF"
+      },
+      "self_test": {
+        "english": "SELF TEST",
+        "max_length": 9,
+        "needs_translation": false,
+        "translation": "SELF TEST"
+      },
+      "setpoint_noise": {
+        "english": "SETPOINT NOISE",
+        "max_length": 14,
+        "needs_translation": false,
+        "translation": "SETPOINT NOISE"
+      },
+      "startup": {
+        "english": "STARTUP FAILED",
+        "max_length": 14,
+        "needs_translation": false,
+        "translation": "STARTUP FAILED"
+      },
+      "temp_warning": {
+        "english": "TEMP WARNING",
+        "max_length": 12,
+        "needs_translation": false,
+        "translation": "TEMP WARNING"
+      },
+      "throttle": {
+        "english": "THROTTLE",
+        "max_length": 8,
+        "needs_translation": false,
+        "translation": "THROTTLE"
+      },
+      "throttle_at_start": {
+        "english": "THROTTLE AT START",
+        "max_length": 17,
+        "needs_translation": false,
+        "translation": "THROTTLE AT START"
+      },
+      "throttle_lost": {
+        "english": "THROTTLE LOST",
+        "max_length": 13,
+        "needs_translation": false,
+        "translation": "THROTTLE LOST"
+      },
+      "undervoltage": {
+        "english": "UNDERVOLTAGE",
+        "max_length": 12,
+        "needs_translation": false,
+        "translation": "UNDERVOLTAGE"
+      },
+      "unknown": {
+        "english": "UNKNOWN ESC",
+        "max_length": 11,
+        "needs_translation": false,
+        "translation": "UNKNOWN ESC"
+      },
+      "watchdog": {
+        "english": "WATCHDOG",
+        "max_length": 8,
+        "needs_translation": false,
+        "translation": "WATCHDOG"
+      }
+    },
     "governor": {
       "ACTIVE": {
         "english": "ACTIVE",

@@ -1,0 +1,7 @@
+{
+  "id": "esc-status",
+  "name": "The speed controller's status word reads as the protocol's own warnings and faults",
+  "step": "Check the speed controller status words",
+  "script": "bin/esc_status/verify_esc_status.lua",
+  "rationale": "Issue #2354: the flight controller publishes the speed controller's status word and signature (ESC1 Status, ESC1 Model) but nothing decoded them. Each protocol lays out its word differently, so the layout is chosen by the signature (the firmware's ESC_SIG_* defines, src/main/sensors/esc_sensor.c). The layouts are the ones the firmware's own protocol comments document: Kontronik error flags, APD status flags, Hobbywing V5 fault codes, Scorpion error code bits, Graupner warning flags and the OpenYGE state and warning nibbles.\n\nThe harness pins each layout's text and level, the masked APD motor-started bit, the information-only Kontronik programming bit, the worst-first rule with ties to the lower bit, the restart signature as a transient warning, unknown and status-less signatures, and that a protocol's layout module is loaded only when that protocol is read. A mutated Kontronik level turns it red."
+}

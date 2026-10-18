@@ -9775,6 +9775,248 @@
         "translation": "Max. Watt"
       }
     },
+    "escstatus": {
+      "battery_limit": {
+        "english": "BATTERY LIMIT",
+        "max_length": 13,
+        "needs_translation": false,
+        "translation": "AKKUGRENZE"
+      },
+      "bec_overcurrent": {
+        "english": "BEC OVERCURRENT",
+        "max_length": 15,
+        "needs_translation": false,
+        "translation": "BEC ÜBERSTROM"
+      },
+      "bec_overheat": {
+        "english": "BEC OVERHEAT",
+        "max_length": 12,
+        "needs_translation": false,
+        "translation": "BEC ÜBERTEMPERATUR"
+      },
+      "bec_overvoltage": {
+        "english": "BEC OVERVOLTAGE",
+        "max_length": 15,
+        "needs_translation": false,
+        "translation": "BEC ÜBERSPANNUNG"
+      },
+      "bec_temp_limit": {
+        "english": "BEC TEMP LIMIT",
+        "max_length": 14,
+        "needs_translation": false,
+        "translation": "BEC TEMPGRENZE"
+      },
+      "bec_undervoltage": {
+        "english": "BEC UNDERVOLTAGE",
+        "max_length": 16,
+        "needs_translation": false,
+        "translation": "BEC UNTERSPANNUNG"
+      },
+      "bec_voltage": {
+        "english": "BEC VOLTAGE",
+        "max_length": 11,
+        "needs_translation": false,
+        "translation": "BEC SPANNUNG"
+      },
+      "capacity_limit": {
+        "english": "CAPACITY LIMIT",
+        "max_length": 14,
+        "needs_translation": false,
+        "translation": "KAPAZITÄTSGRENZE"
+      },
+      "consumption": {
+        "english": "CONSUMPTION",
+        "max_length": 11,
+        "needs_translation": false,
+        "translation": "VERBRAUCH"
+      },
+      "current_limit": {
+        "english": "CURRENT LIMIT",
+        "max_length": 13,
+        "needs_translation": false,
+        "translation": "STROMGRENZE"
+      },
+      "current_warning": {
+        "english": "CURRENT WARNING",
+        "max_length": 15,
+        "needs_translation": false,
+        "translation": "STROM WARNUNG"
+      },
+      "eeprom": {
+        "english": "EEPROM",
+        "max_length": 6,
+        "needs_translation": false,
+        "translation": "EEPROM"
+      },
+      "esc_temp_limit": {
+        "english": "ESC TEMP LIMIT",
+        "max_length": 14,
+        "needs_translation": false,
+        "translation": "ESC TEMPGRENZE"
+      },
+      "fault": {
+        "english": "FAULT",
+        "max_length": 5,
+        "needs_translation": false,
+        "translation": "FEHLER"
+      },
+      "input_voltage": {
+        "english": "INPUT VOLTAGE",
+        "max_length": 13,
+        "needs_translation": false,
+        "translation": "EINGANGSSPANNUNG"
+      },
+      "motor_hot": {
+        "english": "MOTOR HOT",
+        "max_length": 9,
+        "needs_translation": false,
+        "translation": "MOTOR HEISS"
+      },
+      "motor_locked": {
+        "english": "MOTOR LOCKED",
+        "max_length": 12,
+        "needs_translation": false,
+        "translation": "MOTOR BLOCKIERT"
+      },
+      "motor_saturated": {
+        "english": "MOTOR SATURATED",
+        "max_length": 15,
+        "needs_translation": false,
+        "translation": "MOTOR AM ANSCHLAG"
+      },
+      "motor_wiring": {
+        "english": "MOTOR WIRING",
+        "max_length": 12,
+        "needs_translation": false,
+        "translation": "MOTORANSCHLUSS"
+      },
+      "no_status": {
+        "english": "NO STATUS",
+        "max_length": 9,
+        "needs_translation": false,
+        "translation": "KEIN STATUS"
+      },
+      "ok": {
+        "english": "OK",
+        "max_length": 2,
+        "needs_translation": false,
+        "translation": "OK"
+      },
+      "operation": {
+        "english": "OPERATION FAULT",
+        "max_length": 15,
+        "needs_translation": false,
+        "translation": "BETRIEBSFEHLER"
+      },
+      "operation_warning": {
+        "english": "OPERATION WARNING",
+        "max_length": 17,
+        "needs_translation": false,
+        "translation": "BETRIEBSWARNUNG"
+      },
+      "overcurrent": {
+        "english": "OVERCURRENT",
+        "max_length": 11,
+        "needs_translation": false,
+        "translation": "ÜBERSTROM"
+      },
+      "overheat": {
+        "english": "OVERHEAT",
+        "max_length": 8,
+        "needs_translation": false,
+        "translation": "ÜBERTEMPERATUR"
+      },
+      "overvoltage": {
+        "english": "OVERVOLTAGE",
+        "max_length": 11,
+        "needs_translation": false,
+        "translation": "ÜBERSPANNUNG"
+      },
+      "programming_open": {
+        "english": "PROGRAMMING OPEN",
+        "max_length": 16,
+        "needs_translation": false,
+        "translation": "PROGRAMMIERUNG OFFEN"
+      },
+      "restart": {
+        "english": "RESTART ESC",
+        "max_length": 11,
+        "needs_translation": false,
+        "translation": "ESC NEU STARTEN"
+      },
+      "rpm_low": {
+        "english": "RPM BELOW LIMIT",
+        "max_length": 15,
+        "needs_translation": false,
+        "translation": "DREHZAHL ZU NIEDRIG"
+      },
+      "rudder_cutoff": {
+        "english": "RUDDER CUTOFF",
+        "max_length": 13,
+        "needs_translation": false,
+        "translation": "ABSCHALTUNG HECK"
+      },
+      "self_test": {
+        "english": "SELF TEST",
+        "max_length": 9,
+        "needs_translation": false,
+        "translation": "SELBSTTEST"
+      },
+      "setpoint_noise": {
+        "english": "SETPOINT NOISE",
+        "max_length": 14,
+        "needs_translation": false,
+        "translation": "SOLLWERT STÖRUNG"
+      },
+      "startup": {
+        "english": "STARTUP FAILED",
+        "max_length": 14,
+        "needs_translation": false,
+        "translation": "START FEHLGESCHLAGEN"
+      },
+      "temp_warning": {
+        "english": "TEMP WARNING",
+        "max_length": 12,
+        "needs_translation": false,
+        "translation": "TEMP WARNUNG"
+      },
+      "throttle": {
+        "english": "THROTTLE",
+        "max_length": 8,
+        "needs_translation": false,
+        "translation": "GASSIGNAL"
+      },
+      "throttle_at_start": {
+        "english": "THROTTLE AT START",
+        "max_length": 17,
+        "needs_translation": false,
+        "translation": "GAS BEIM START"
+      },
+      "throttle_lost": {
+        "english": "THROTTLE LOST",
+        "max_length": 13,
+        "needs_translation": false,
+        "translation": "GASSIGNAL VERLOREN"
+      },
+      "undervoltage": {
+        "english": "UNDERVOLTAGE",
+        "max_length": 12,
+        "needs_translation": false,
+        "translation": "UNTERSPANNUNG"
+      },
+      "unknown": {
+        "english": "UNKNOWN ESC",
+        "max_length": 11,
+        "needs_translation": false,
+        "translation": "ESC UNBEKANNT"
+      },
+      "watchdog": {
+        "english": "WATCHDOG",
+        "max_length": 8,
+        "needs_translation": false,
+        "translation": "WATCHDOG"
+      }
+    },
     "governor": {
       "ACTIVE": {
         "english": "ACTIVE",
