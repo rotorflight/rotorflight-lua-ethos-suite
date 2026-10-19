@@ -33,7 +33,9 @@ local BTN_CANCEL = "@i18n(app.btn_cancel)@"
 -- reserve room for it and are never drawn.
 local NATIVE_TAG = "@i18n(app.modules.elrs_telemetry.mode_native)@"
 local NATIVE_TAG_HINT = "  WWWWWW  "
-local SWITCH_HINT = "  WWW  "
+-- Sized like the switch's own "OFF [switch] ON" run, so the switch keeps its
+-- width beside the tag.
+local SWITCH_HINT = "  OFF  WWW  ON  "
 
 -- Firmware's CRSF_TELEMETRY_MODE_* (src/main/pg/telemetry.h, 0 = NATIVE).
 local CRSF_TELEMETRY_MODE_NATIVE = 0
