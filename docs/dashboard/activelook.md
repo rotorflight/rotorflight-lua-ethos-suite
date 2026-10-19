@@ -34,6 +34,15 @@ Select a Min/Max entry in a phase's slot assignment to show an extreme.
 
 ## Simulator preview
 
+The browser preview projects the live display transparently into an ENGO glasses
+photograph, following [WingFlight PR #251](https://github.com/WingFlight/wingflight-lua-ethos-suite/pull/251).
+The header uses the Rotorflight logo alongside the ActiveLook animation.
+The preview controls follow [rotorflight.org](https://rotorflight.org/): its system
+font stack (including Segoe UI and Roboto), brand blue `#007cc7` and dark palette.
+The projected display uses the separate bundled ActiveLook EnGo 2 font to match
+the glasses, rather than the interface font.
+The photograph and the CC0 animation/license are included with the preview.
+
 The suite-local EnGo 2 preview reads telemetry profiles from the simulator's
 `sim/sensors/` folder and layouts/slots from its `rfsuite.user/settings.ini`.
 Changes made in the preview can be saved back; the simulator's Lua settings
