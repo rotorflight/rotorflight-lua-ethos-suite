@@ -38,8 +38,9 @@ Greyed out until the flight controller answers. Read-only while the model is arm
   mode*, and the per-axis children *Pitch Attitude*, *Roll Attitude* and *Yaw
   Attitude*. The flight controller sends those as whole CRSF frames in that
   mode whether a slot selects them or not, so their switches read as on, stay
-  greyed out and ignore taps. This is not a fault — those sensors really are
-  being sent. The lock applies only in native mode: in custom mode all of them
+  greyed out and ignore taps. Beside each of these switches, the word *native*
+  shows while the flight controller is in native mode. This is not a fault —
+  those sensors really are being sent. The lock applies only in native mode: in custom mode all of them
   are ordinary selectable sensors, and the page gives them back.
 - **Saving sets the flight controller's CRSF telemetry mode to *Custom*.** The
   suite reads custom telemetry only, so it cannot show sensors otherwise. The
