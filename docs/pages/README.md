@@ -8,7 +8,7 @@ sidebar_label: Pages
 Reference documentation for each configuration and settings page reachable
 within the RFSuite Ethos system tool.
 
-**Status:** 85 reachable pages in navigation hierarchy.
+**Status:** 86 reachable pages in navigation hierarchy.
 
 The *Conditions* column names what hides, greys out or locks a page; the sentences
 and structure follow [_template.md](../_template.md).
@@ -112,6 +112,7 @@ and structure follow [_template.md](../_template.md).
 | Preflight | [settings/activelook/preflight.md](settings/activelook/preflight.md) | Always available offline without an active flight controller connection. Read-only while the model is armed. | written |
 | Inflight | [settings/activelook/inflight.md](settings/activelook/inflight.md) | Always available offline without an active flight controller connection. Read-only while the model is armed. | written |
 | Postflight | [settings/activelook/postflight.md](settings/activelook/postflight.md) | Always available offline without an active flight controller connection. Read-only while the model is armed. | written |
+| Low Fuel | [settings/activelook/low_fuel.md](settings/activelook/low_fuel.md) | Always available offline without an active flight controller connection. Read-only while the model is armed. | written |
 | Voltage | [settings/audio/events/voltage.md](settings/audio/events/voltage.md) | Always available offline without an active flight controller connection. Read-only while the model is armed. | written |
 | ESC temp | [settings/audio/events/esc.md](settings/audio/events/esc.md) | Always available offline without an active flight controller connection. Read-only while the model is armed. | written |
 | Fuel | [settings/audio/events/fuel.md](settings/audio/events/fuel.md) | Always available offline without an active flight controller connection. Read-only while the model is armed. | written |

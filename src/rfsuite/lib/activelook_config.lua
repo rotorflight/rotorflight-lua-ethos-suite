@@ -8,7 +8,12 @@ local config = {}
 
 config.DEFAULTS = {
   enabled = false,
+  inflight_fuel_icon = false,
   display_switch = "",
+  low_fuel_warning = false,
+  low_fuel_seconds = 8,
+  low_fuel_repeats = 1,
+  low_fuel_icon = true,
   offset_x = 0,
   offset_y = 0,
   layout_preflight = "stacked_three",
@@ -174,6 +179,25 @@ function config.clampOffset(value)
   return clamp(value, -20, 20)
 end
 
+config.LOW_FUEL_SECONDS_MIN = 3
+config.LOW_FUEL_SECONDS_MAX = 30
+
+function config.clampLowFuelSeconds(value)
+  value = tonumber(value)
+  if not value then return config.DEFAULTS.low_fuel_seconds end
+  return clamp(value, config.LOW_FUEL_SECONDS_MIN, config.LOW_FUEL_SECONDS_MAX)
+end
+
+-- Total number of times the overlay is shown, like the voice alert's "Low fuel repeats".
+config.LOW_FUEL_REPEATS_MIN = 1
+config.LOW_FUEL_REPEATS_MAX = 10
+
+function config.clampLowFuelRepeats(value)
+  value = tonumber(value)
+  if not value then return config.DEFAULTS.low_fuel_repeats end
+  return clamp(value, config.LOW_FUEL_REPEATS_MIN, config.LOW_FUEL_REPEATS_MAX)
+end
+
 function config.withDefaults(values)
   local out = {}
   values = values or {}
@@ -181,6 +205,11 @@ function config.withDefaults(values)
   for key, value in pairs(values) do out[key] = value end
 
   out.enabled = coerceBool(out.enabled, config.DEFAULTS.enabled)
+  out.inflight_fuel_icon = coerceBool(out.inflight_fuel_icon, config.DEFAULTS.inflight_fuel_icon)
+  out.low_fuel_warning = coerceBool(out.low_fuel_warning, config.DEFAULTS.low_fuel_warning)
+  out.low_fuel_seconds = config.clampLowFuelSeconds(out.low_fuel_seconds)
+  out.low_fuel_repeats = config.clampLowFuelRepeats(out.low_fuel_repeats)
+  out.low_fuel_icon = coerceBool(out.low_fuel_icon, config.DEFAULTS.low_fuel_icon)
   out.offset_x = config.clampOffset(out.offset_x)
   out.offset_y = config.clampOffset(out.offset_y)
   out.display_switch = tostring(out.display_switch or "")

@@ -4,6 +4,7 @@ local requireModule = package.loaded["rfsuite.lib.require"] or assert(loadfile("
 local bus = requireModule("lib/bus.lua")
 local settingsStore = requireModule("lib/settings_store.lua")
 local activeConfig = requireModule("lib/activelook_config.lua")
+local engineType = requireModule("lib/engine_type.lua")
 local flightmode = requireModule("widgets/dashboard/flightmode.lua")
 
 local os_clock = os.clock
@@ -19,6 +20,16 @@ local SMALL_FONT = 2
 local COMPACT_FONT = 1
 local PREFLIGHT_TOP_FONT = 3
 local PREFLIGHT_BOTTOM_FONT = 1
+local LOW_FUEL_KEY = "low_fuel"
+-- Symbols in the tested frsky configuration: fuel pump / battery.
+local LOW_FUEL_ICON_NITRO = 11
+local LOW_FUEL_ICON_ELECTRIC = 21
+local LOW_FUEL_ICON_PX = 40
+local LOW_FUEL_BLINK_SECONDS = 1
+-- Ethos uses a fixed 40x40 frame to flip standalone bitmaps, even for 28x28 images.
+local ETHOS_BITMAP_FRAME_PX = 40
+-- Hardware test at the calculated bottom edge cleared only the first icon row.
+local FUEL_ICON_BOTTOM_CLEARANCE = 26
 local fmtCache = {}
 
 local FONT_PX = {
@@ -195,9 +206,16 @@ end
 local function resetRuntime(widget)
   if not widget then return end
   widget.layout = nil
+  widget.lowFuelSlots = nil
+  widget.lowFuelBlinkStart = nil
+  widget.phaseLayouts = nil
   widget.lastMode = nil
   widget.lastConfigKey = nil
-  widget.lastValues = {}
+  if widget.lastValues then
+    for key in pairs(widget.lastValues) do widget.lastValues[key] = nil end
+  end
+  widget.lastFuelIcon = nil
+  widget.lastLowFuelIcon = nil
   widget.displayBlanked = false
   widget.displaySwitchKey = nil
   widget.displaySwitchSource = nil
@@ -238,7 +256,7 @@ local function displayEnabled(widget)
 end
 
 local function mode(widget)
-  if widget.previewMode == "preflight" or widget.previewMode == "inflight" or widget.previewMode == "postflight" then
+  if widget.previewMode == "preflight" or widget.previewMode == "inflight" or widget.previewMode == "postflight" or widget.previewMode == LOW_FUEL_KEY then
     return widget.previewMode
   end
   return flightmode.layoutPhase(widget.flightmode:update(widget))
@@ -255,6 +273,14 @@ local function buildLayout(widget)
   local offsetY = clamp(widget.settings.offset_y, -20, 20)
   local gap = math.max(4, floor(ICON_GAP * scale))
   local boxW = floor((areaW - gap) * 0.5)
+  -- Ethos flips standalone bitmaps using a fixed 40x40 frame.
+  -- Leave an additional image-height clearance: the device test at the calculated
+  -- bottom edge erased only the icon's top row. This bound needs device validation.
+  -- See docs/reference/activelook-coordinate-mapping.md.
+  local maxIconX = math.max(0, areaW - ETHOS_BITMAP_FRAME_PX)
+  local maxIconY = math.max(0, areaH - ETHOS_BITMAP_FRAME_PX - FUEL_ICON_BOTTOM_CLEARANCE)
+  widget.fuelIconX = floor(clamp(offsetX, 0, maxIconX))
+  widget.fuelIconY = floor(clamp(maxIconY + offsetY, 0, maxIconY))
   widget.offsetX = offsetX
   widget.offsetY = offsetY
   widget.iconGap = gap
@@ -337,7 +363,18 @@ local function valueFor(widget, modeKey, key)
   return tostring(value)
 end
 
-local function render(widget, modeKey, values, slots, configKey)
+-- Use the existing Smart Fuel percentage; missing telemetry stays hidden.
+local function fuelIcon(widget, modeKey, configKey)
+  if modeKey ~= "inflight" or configKey == LOW_FUEL_KEY
+      or widget.settings.inflight_fuel_icon ~= true then return nil end
+  local fuel = tonumber(widget.fuelPercent)
+  if not fuel or fuel ~= fuel then return nil end
+  local percent = clamp(fuel, 0, 100)
+  -- Nearest quarter: empty, quarter, half, three quarters, full (frsky IDs 02-06).
+  return 2 + floor(percent / 25 + 0.5)
+end
+
+local function render(widget, modeKey, values, slots, configKey, fuelIconId)
   local commands = {}
   local function toInt(value)
     value = tonumber(value) or 0
@@ -349,17 +386,137 @@ local function render(widget, modeKey, values, slots, configKey)
     if slot and slot.enabled ~= false then
       local text = values[i] or "-"
       local textX = slot.x
+      local textW = estimateTextWidth(text, slot.font)
+      local iconW = (slot.icon or slot.reserveIconSpace) and (LOW_FUEL_ICON_PX + ICON_GAP) or 0
       if slot.align == "center" and slot.width then
-        textX = slot.x + math.max(0, (slot.width - estimateTextWidth(text, slot.font)) * 0.5)
+        textX = slot.x + math.max(0, (slot.width - textW - iconW) * 0.5) + iconW
       end
       commands[#commands + 1] = {text = {text = text, x = toInt(textX), y = toInt(slot.y + (slot.textYOffset or 0)), font = slot.font}}
+      if slot.icon then
+        -- Align the symbol with the percentage text.
+        local iconY = slot.y + (slot.textYOffset or 0)
+        commands[#commands + 1] = {bitmap = {id = slot.icon,
+          x = math.max(0, toInt(textX - iconW)), y = math.max(0, toInt(iconY))}}
+      end
     end
   end
   widget.layout:clearAndDisplayExtended({x = 0, y = 0, text = "", commands = commands})
+  if fuelIconId and glasses.bitmap then
+    glasses.bitmap(widget.fuelIconX, widget.fuelIconY, fuelIconId)
+  end
+  widget.lastFuelIcon = fuelIconId
+  widget.lastLowFuelIcon = configKey == LOW_FUEL_KEY and slots[2].icon or nil
   widget.lastMode = modeKey
   widget.lastConfigKey = configKey
   widget.displayBlanked = false
   for i = 1, #values do widget.lastValues[i] = values[i] end
+end
+
+-- Starts the temporary overlay when smart fuel reaches 0 (the flight controller's consumption
+-- warning). The first reading after connecting only seeds, as the voice alert does, so a sensor
+-- that has not reported yet cannot read as an empty pack.
+local function resetLowFuelEpisode(widget)
+  widget.lowFuelLatched = false
+  widget.lowFuelCount = 0
+  widget.lowFuelNextAt = nil
+end
+
+local function updateLowFuel(widget, currentMode)
+  if not widget.connected then
+    widget.lowFuelSeeded = false
+    widget.lowFuelEnd = nil
+    resetLowFuelEpisode(widget)
+    return
+  end
+  -- Leaving inflight ends the overlay and re-arms it for the next flight.
+  if currentMode ~= "inflight" then
+    widget.lowFuelEnd = nil
+    resetLowFuelEpisode(widget)
+  end
+  local fuel = tonumber(widget.fuelPercent)
+  if fuel == nil then return end
+  if fuel > 0 then resetLowFuelEpisode(widget) end
+  if not widget.lowFuelSeeded then
+    widget.lowFuelSeeded = true
+    return
+  end
+  if currentMode == "inflight" and fuel <= 0 and not widget.lowFuelLatched
+      and widget.settings and widget.settings.low_fuel_warning == true then
+    local seconds = widget.settings.low_fuel_seconds
+    widget.lowFuelLatched = true
+    widget.lowFuelCount = 1
+    widget.lowFuelEnd = os_clock() + seconds
+    -- A repeat starts one display duration after the overlay ends.
+    widget.lowFuelNextAt = widget.settings.low_fuel_repeats > 1 and (widget.lowFuelEnd + seconds) or nil
+  end
+end
+
+-- Shows the overlay again while the pack stays low, until the configured number of shows is reached.
+local function lowFuelRepeat(widget, modeKey, now)
+  local nextAt = widget.lowFuelNextAt
+  if not nextAt or now < nextAt then return end
+  local settings = widget.settings
+  if modeKey ~= "inflight" or not widget.lowFuelLatched or settings.low_fuel_warning ~= true
+      or widget.lowFuelCount >= settings.low_fuel_repeats then
+    widget.lowFuelNextAt = nil
+    return
+  end
+  widget.lowFuelCount = widget.lowFuelCount + 1
+  widget.lowFuelEnd = now + settings.low_fuel_seconds
+  widget.lowFuelNextAt = widget.lowFuelEnd + settings.low_fuel_seconds
+end
+
+local function lowFuelActive(widget, modeKey, now)
+  local finish = widget.lowFuelEnd
+  if not finish then return false end
+  if now >= finish or modeKey ~= "inflight" or widget.previewMode ~= nil
+      or widget.settings.low_fuel_warning ~= true then
+    widget.lowFuelEnd = nil
+    return false
+  end
+  return true
+end
+
+local function lowFuelSlots(widget, now)
+  local slots = widget.lowFuelSlots
+  local showIcon = widget.settings.low_fuel_icon
+  local started = widget.lowFuelBlinkStart
+  if not started then
+    started = now
+    widget.lowFuelBlinkStart = started
+  end
+  local visible = floor((now - started) / LOW_FUEL_BLINK_SECONDS) % 2 == 0
+  local iconId = widget.electricModel and LOW_FUEL_ICON_ELECTRIC or LOW_FUEL_ICON_NITRO
+  local icon = showIcon and visible and iconId or nil
+  if slots then
+    slots[2].icon = icon
+    slots[2].reserveIconSpace = showIcon
+    return slots
+  end
+  local m = widget.metrics
+  slots = {
+    {enabled = true, x = m.offsetX, y = m.topRowY, font = 2, textYOffset = m.largeOffset, width = m.areaW, align = "center"},
+    {enabled = true, x = m.offsetX, y = m.midRowY, font = 3, textYOffset = m.largeOffset, width = m.areaW, align = "center", icon = icon, reserveIconSpace = showIcon},
+    {enabled = true, x = m.offsetX, y = m.bottomRowY, font = 1, textYOffset = m.smallOffset, width = m.boxW, align = "center"},
+    {enabled = true, x = m.rightX, y = m.bottomRowY, font = 1, textYOffset = m.smallOffset, width = m.boxW, align = "center"},
+  }
+  widget.lowFuelSlots = slots
+  return slots
+end
+
+-- Read current Smart Fuel on every refresh, including while the warning is visible.
+local function lowFuelValues(widget)
+  local values = widget.lowFuelValues
+  if not values then
+    values = {}
+    widget.lowFuelValues = values
+  end
+  local fuel = tonumber(widget.fuelPercent)
+  values[1] = "LOW FUEL"
+  values[2] = formatNumber(fuel, 0, "%")
+  values[3] = formatNumber(widget.voltage, 1, "V")
+  values[4] = formatNumber(widget.consumption, 0, "mAh")
+  return values
 end
 
 local function update(widget, snapshot)
@@ -369,6 +526,7 @@ local function update(widget, snapshot)
   widget.rxMap = snapshot.rxMap
   widget.voltage = snapshot.voltage
   widget.batteryConfig = snapshot.batteryConfig
+  widget.electricModel = engineType.isElectric(snapshot.batteryConfig, snapshot.smartfuelModelType)
   widget.consumption = snapshot.consumption
   widget.current = snapshot.current
   widget.throttlePercent = snapshot.throttlePercent
@@ -386,6 +544,7 @@ local function update(widget, snapshot)
   if currentMode == "inflight" and previousMode ~= "inflight" and previousMode ~= "postflight" then
     clearStats(widget.stats)
   end
+  updateLowFuel(widget, currentMode)
   if currentMode == "inflight" then
     recordStat(widget, "fuel", widget.fuelPercent)
     recordStat(widget, "current", widget.current)
@@ -415,7 +574,9 @@ local function create()
   end)
   widget.controlHandler = bus.subscribe("activelook.control", function(action)
     if type(action) ~= "table" then return end
-    widget.previewMode = action.previewMode
+    if not action.reset then
+      widget.previewMode = action.previewMode
+    end
     if action.reset then resetRuntime(widget) end
   end)
   return widget
@@ -439,19 +600,43 @@ local function wakeup(widget)
   widget.lastDraw = now
 
   local modeKey = mode(widget)
-  local layoutChoice = widget.settings["layout_" .. modeKey] or activeConfig.DEFAULTS["layout_" .. modeKey]
-  local layout = {}
-  for i = 1, 4 do layout[i] = widget.settings[modeKey .. "_" .. i] or activeConfig.DEFAULTS[modeKey .. "_" .. i] end
-  local configKey = layoutChoice .. "|" .. concat(layout, "|")
-  local slots = computeSlots(widget, modeKey, layoutChoice)
-  local values = {}
-  for i = 1, 4 do values[i] = valueFor(widget, modeKey, layout[i]) end
+  lowFuelRepeat(widget, modeKey, now)
+  local configKey, slots, values
+  if modeKey == LOW_FUEL_KEY or lowFuelActive(widget, modeKey, now) then
+    configKey = LOW_FUEL_KEY
+    slots = lowFuelSlots(widget, now)
+    values = lowFuelValues(widget)
+  else
+    widget.lowFuelBlinkStart = nil
+    -- Settings updates and geometry rebuilds invalidate these phase caches.
+    local phases = widget.phaseLayouts
+    if not phases then
+      phases = {}
+      widget.phaseLayouts = phases
+    end
+    local phase = phases[modeKey]
+    if not phase then
+      local layoutChoice = widget.settings["layout_" .. modeKey] or activeConfig.DEFAULTS["layout_" .. modeKey]
+      local layout = {}
+      for i = 1, 4 do layout[i] = widget.settings[modeKey .. "_" .. i] or activeConfig.DEFAULTS[modeKey .. "_" .. i] end
+      phase = {keys = layout, configKey = layoutChoice .. "|" .. concat(layout, "|"),
+        slots = computeSlots(widget, modeKey, layoutChoice), values = {}}
+      phases[modeKey] = phase
+    end
+    configKey = phase.configKey
+    slots = phase.slots
+    values = phase.values
+    for i = 1, 4 do values[i] = valueFor(widget, modeKey, phase.keys[i]) end
+  end
 
+  local fuelIconId = fuelIcon(widget, modeKey, configKey)
   local dirty = modeKey ~= widget.lastMode or configKey ~= widget.lastConfigKey
+    or fuelIconId ~= widget.lastFuelIcon
+    or (configKey == LOW_FUEL_KEY and slots[2].icon ~= widget.lastLowFuelIcon)
   for i = 1, #values do
     if values[i] ~= widget.lastValues[i] then dirty = true end
   end
-  if dirty then render(widget, modeKey, values, slots, configKey) end
+  if dirty then render(widget, modeKey, values, slots, configKey, fuelIconId) end
 end
 
 local function build(widget)
@@ -461,6 +646,7 @@ end
 
 local function close(widget)
   if not widget then return end
+  clearDisplay(widget)
   if widget.sessionHandler then
     bus.unsubscribe("session.update", widget.sessionHandler)
     widget.sessionHandler = nil
@@ -473,6 +659,8 @@ local function close(widget)
     bus.unsubscribe("activelook.control", widget.controlHandler)
     widget.controlHandler = nil
   end
+  resetRuntime(widget)
+  widget.lowFuelValues = nil
 end
 
 local widgetDef = {

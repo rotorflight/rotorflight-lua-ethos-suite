@@ -11,67 +11,78 @@
       "english": "Connection",
       "translation": "Connection",
       "needs_translation": true,
-      "max_length": 10
+      "max_length": 10,
+      "reverse_text": false
     },
     "connection_body_fmt": {
       "english": "Link: %s\nHandshake: %s\nCraft: %s\nFirmware: %s\nAPI: %s",
       "translation": "Link: %s\nHandshake: %s\nCraft: %s\nFirmware: %s\nAPI: %s",
       "needs_translation": true,
-      "max_length": 53
+      "max_length": 53,
+      "reverse_text": false
     },
     "connection_link_up": {
       "english": "connected",
       "translation": "connected",
       "needs_translation": true,
-      "max_length": 9
+      "max_length": 9,
+      "reverse_text": false
     },
     "connection_link_down": {
       "english": "not connected",
       "translation": "not connected",
       "needs_translation": true,
-      "max_length": 13
+      "max_length": 13,
+      "reverse_text": false
     },
     "connection_handshake_fmt": {
       "english": "%d of %d steps",
       "translation": "%d of %d steps",
       "needs_translation": true,
-      "max_length": 14
+      "max_length": 14,
+      "reverse_text": false
     },
     "msg_unsaved_title": {
       "english": "Unsaved changes",
       "translation": "Unsaved changes",
       "needs_translation": true,
-      "max_length": 15
+      "max_length": 15,
+      "reverse_text": false
     },
     "msg_unsaved_body": {
       "english": "Save the changes before leaving?",
       "translation": "Save the changes before leaving?",
       "needs_translation": true,
-      "max_length": 32
+      "max_length": 32,
+      "reverse_text": false
     },
     "msg_unsaved_armed_body": {
       "english": "Saving is locked while armed. Discard the changes?",
       "translation": "Saving is locked while armed. Discard the changes?",
       "needs_translation": true,
-      "max_length": 50
+      "max_length": 50,
+      "reverse_text": false
     },
     "btn_save": {
       "english": "SAVE",
       "translation": "SAVE",
       "needs_translation": true,
-      "max_length": 4
+      "max_length": 4,
+      "reverse_text": false
     },
     "btn_discard": {
       "english": "DISCARD",
       "translation": "DISCARD",
       "needs_translation": true,
-      "max_length": 7
+      "max_length": 7,
+      "reverse_text": false
     },
     "btn_stay": {
       "english": "STAY",
       "translation": "STAY",
       "needs_translation": true,
-      "max_length": 4
+      "max_length": 4,
+      "reverse_text": false
     },
     "navigation_menu": {
       "english": "BACK",
@@ -1892,7 +1903,7 @@
         },
         "msg_no_columns": {
           "english": "No plottable columns in this file",
-          "max_length": 40,
+          "max_length": 33,
           "needs_translation": false,
           "translation": "Brak kolumn do wykresu",
           "reverse_text": false
@@ -1903,13 +1914,15 @@
           "english": "Max repeats (0 = all)",
           "translation": "Max repeats (0 = all)",
           "needs_translation": true,
-          "max_length": 21
+          "max_length": 21,
+          "reverse_text": false
         },
         "alert_vibrate": {
           "english": "Vibrate",
           "translation": "Vibrate",
           "needs_translation": true,
-          "max_length": 7
+          "max_length": 7,
+          "reverse_text": false
         },
         "name": {
           "english": "Settings",
@@ -1987,6 +2000,48 @@
           "needs_translation": false,
           "reverse_text": false,
           "max_length": 12
+        },
+        "activelook_low_fuel": {
+          "english": "Low Fuel",
+          "translation": "Mało paliwa",
+          "needs_translation": false,
+          "reverse_text": false,
+          "max_length": 8
+        },
+        "activelook_low_fuel_warning": {
+          "english": "Low Fuel Warning",
+          "translation": "Ostrzeżenie: mało paliwa",
+          "needs_translation": false,
+          "reverse_text": false,
+          "max_length": 16
+        },
+        "activelook_low_fuel_repeats": {
+          "english": "Repeats",
+          "translation": "Powtórzenia",
+          "needs_translation": false,
+          "reverse_text": false,
+          "max_length": 7
+        },
+        "activelook_low_fuel_icon": {
+          "english": "Symbol",
+          "translation": "Symbol",
+          "needs_translation": false,
+          "reverse_text": false,
+          "max_length": 6
+        },
+        "activelook_low_fuel_seconds": {
+          "english": "Warning Duration",
+          "translation": "Czas ostrzeżenia",
+          "needs_translation": false,
+          "reverse_text": false,
+          "max_length": 16
+        },
+        "activelook_inflight_fuel_icon": {
+          "english": "Fuel icon",
+          "translation": "Fuel icon",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 9
         },
         "activelook_inflight": {
           "english": "Inflight",
@@ -2750,7 +2805,7 @@
         },
         "msg_calibration_timeout": {
           "english": "The calibration did not finish. Try again.",
-          "max_length": 46,
+          "max_length": 42,
           "needs_translation": false,
           "translation": "Kalibracja nie zakończyła się. Spróbuj znowu.",
           "reverse_text": false
@@ -3353,85 +3408,99 @@
           "english": "Tail pin",
           "translation": "Tail pin",
           "needs_translation": true,
-          "reverse_text": false
+          "reverse_text": false,
+          "max_length": 8
         },
         "tail_pin_servo": {
           "english": "Servo 4",
           "translation": "Servo 4",
           "needs_translation": true,
-          "reverse_text": false
+          "reverse_text": false,
+          "max_length": 7
         },
         "tail_pin_motor": {
           "english": "Motor 2",
           "translation": "Motor 2",
           "needs_translation": true,
-          "reverse_text": false
+          "reverse_text": false,
+          "max_length": 7
         },
         "tail_pin_both": {
           "english": "Own motor pin",
           "translation": "Own motor pin",
           "needs_translation": true,
-          "reverse_text": false
+          "reverse_text": false,
+          "max_length": 13
         },
         "tail_pin_none": {
           "english": "No pin",
           "translation": "No pin",
           "needs_translation": true,
-          "reverse_text": false
+          "reverse_text": false,
+          "max_length": 6
         },
         "tail_pin_to_motor": {
           "english": "Save: to motor 2",
           "translation": "Save: to motor 2",
           "needs_translation": true,
-          "reverse_text": false
+          "reverse_text": false,
+          "max_length": 16
         },
         "tail_pin_to_servo": {
           "english": "Save: to servo 4",
           "translation": "Save: to servo 4",
           "needs_translation": true,
-          "reverse_text": false
+          "reverse_text": false,
+          "max_length": 16
         },
         "tail_pin_refused_custom": {
           "english": "Kept: custom pins",
           "translation": "Kept: custom pins",
           "needs_translation": true,
-          "reverse_text": false
+          "reverse_text": false,
+          "max_length": 17
         },
         "tail_pin_refused_no_motor": {
           "english": "Kept: no motor 1",
           "translation": "Kept: no motor 1",
           "needs_translation": true,
-          "reverse_text": false
+          "reverse_text": false,
+          "max_length": 16
         },
         "tail_pin_refused_no_timer": {
           "english": "Kept: no timer",
           "translation": "Kept: no timer",
           "needs_translation": true,
-          "reverse_text": false
+          "reverse_text": false,
+          "max_length": 14
         },
         "tail_pin_refused_timer": {
           "english": "Kept: timer shared",
           "translation": "Kept: timer shared",
           "needs_translation": true,
-          "reverse_text": false
+          "reverse_text": false,
+          "max_length": 18
         },
         "tail_pin_refused_no_dma": {
           "english": "Kept: no DMA",
           "translation": "Kept: no DMA",
           "needs_translation": true,
-          "reverse_text": false
+          "reverse_text": false,
+          "max_length": 12
         },
         "tail_tta_on": {
           "english": "Also sets Tail Torque Assist to 100 in every profile.",
           "translation": "Also sets Tail Torque Assist to 100 in every profile.",
           "needs_translation": true,
-          "reverse_text": false
+          "reverse_text": false,
+          "max_length": 53
         },
         "tail_tta_off": {
           "english": "Also sets Tail Torque Assist to 0 in every profile.",
           "translation": "Also sets Tail Torque Assist to 0 in every profile.",
           "needs_translation": true,
-          "reverse_text": false
+          "reverse_text": false,
+          "max_length": 51
         }
       },
       "trim": {
@@ -4560,7 +4629,7 @@
         },
         "no_dataflash": {
           "english": "No dataflash",
-          "max_length": 16,
+          "max_length": 12,
           "needs_translation": false,
           "translation": "Brak dataflash",
           "reverse_text": false
@@ -4615,19 +4684,22 @@
           "english": "Preferences",
           "translation": "Preferences",
           "needs_translation": true,
-          "max_length": 11
+          "max_length": 11,
+          "reverse_text": false
         },
         "esc_current_limit": {
           "english": "ESC Current Limit",
           "translation": "ESC Current Limit",
           "needs_translation": true,
-          "max_length": 17
+          "max_length": 17,
+          "reverse_text": false
         },
         "save_preferences_prompt": {
           "english": "Save power preferences?",
           "translation": "Save power preferences?",
           "needs_translation": true,
-          "max_length": 23
+          "max_length": 23,
+          "reverse_text": false
         },
         "alert_name": {
           "english": "Alerts",
@@ -4806,7 +4878,7 @@
         },
         "edit_battery": {
           "english": "Edit Battery",
-          "max_length": 16,
+          "max_length": 12,
           "needs_translation": false,
           "translation": "Edytuj baterię",
           "reverse_text": false
@@ -5094,13 +5166,15 @@
           "english": "Copy profile?",
           "translation": "Copy profile?",
           "needs_translation": true,
-          "max_length": 13
+          "max_length": 13,
+          "reverse_text": false
         },
         "msgbox_copy_fmt": {
           "english": "Copy %s Profile %d to Profile %d? This permanently overwrites Profile %d in the flight controller.",
           "translation": "Copy %s Profile %d to Profile %d? This permanently overwrites Profile %d in the flight controller.",
           "needs_translation": true,
-          "max_length": 98
+          "max_length": 98,
+          "reverse_text": false
         },
         "dest_profile": {
           "english": "Dest. Profile",
@@ -5632,7 +5706,8 @@
           "english": "Override",
           "translation": "Override",
           "needs_translation": true,
-          "reverse_text": false
+          "reverse_text": false,
+          "max_length": 8
         }
       },
       "elrs_telemetry": {
@@ -8323,14 +8398,14 @@
     },
     "msg_main_power_lost_banner": {
       "english": "MAIN POWER LOST",
-      "max_length": 27,
+      "max_length": 15,
       "needs_translation": false,
       "reverse_text": false,
       "translation": "UTRATA ZASILANIA GŁÓWNEGO"
     },
     "msg_save_failed_local_body": {
       "english": "Settings were not saved to the radio. Please try again.",
-      "max_length": 67,
+      "max_length": 55,
       "needs_translation": false,
       "reverse_text": false,
       "translation": "Ustawienia nie zostały zapisane w radiu. Spróbuj ponownie."
@@ -9344,241 +9419,281 @@
         "english": "OK",
         "translation": "OK",
         "needs_translation": true,
-        "max_length": 2
+        "max_length": 2,
+        "reverse_text": false
       },
       "restart": {
         "english": "RESTART ESC",
         "translation": "RESTART ESC",
         "needs_translation": true,
-        "max_length": 11
+        "max_length": 11,
+        "reverse_text": false
       },
       "no_status": {
         "english": "NO STATUS",
         "translation": "NO STATUS",
         "needs_translation": true,
-        "max_length": 9
+        "max_length": 9,
+        "reverse_text": false
       },
       "unknown": {
         "english": "UNKNOWN ESC",
         "translation": "UNKNOWN ESC",
         "needs_translation": true,
-        "max_length": 11
+        "max_length": 11,
+        "reverse_text": false
       },
       "fault": {
         "english": "FAULT",
         "translation": "FAULT",
         "needs_translation": true,
-        "max_length": 5
+        "max_length": 5,
+        "reverse_text": false
       },
       "undervoltage": {
         "english": "UNDERVOLTAGE",
         "translation": "UNDERVOLTAGE",
         "needs_translation": true,
-        "max_length": 12
+        "max_length": 12,
+        "reverse_text": false
       },
       "overvoltage": {
         "english": "OVERVOLTAGE",
         "translation": "OVERVOLTAGE",
         "needs_translation": true,
-        "max_length": 11
+        "max_length": 11,
+        "reverse_text": false
       },
       "overcurrent": {
         "english": "OVERCURRENT",
         "translation": "OVERCURRENT",
         "needs_translation": true,
-        "max_length": 11
+        "max_length": 11,
+        "reverse_text": false
       },
       "current_warning": {
         "english": "CURRENT WARNING",
         "translation": "CURRENT WARNING",
         "needs_translation": true,
-        "max_length": 15
+        "max_length": 15,
+        "reverse_text": false
       },
       "overheat": {
         "english": "OVERHEAT",
         "translation": "OVERHEAT",
         "needs_translation": true,
-        "max_length": 8
+        "max_length": 8,
+        "reverse_text": false
       },
       "temp_warning": {
         "english": "TEMP WARNING",
         "translation": "TEMP WARNING",
         "needs_translation": true,
-        "max_length": 12
+        "max_length": 12,
+        "reverse_text": false
       },
       "bec_undervoltage": {
         "english": "BEC UNDERVOLTAGE",
         "translation": "BEC UNDERVOLTAGE",
         "needs_translation": true,
-        "max_length": 16
+        "max_length": 16,
+        "reverse_text": false
       },
       "bec_overvoltage": {
         "english": "BEC OVERVOLTAGE",
         "translation": "BEC OVERVOLTAGE",
         "needs_translation": true,
-        "max_length": 15
+        "max_length": 15,
+        "reverse_text": false
       },
       "bec_overcurrent": {
         "english": "BEC OVERCURRENT",
         "translation": "BEC OVERCURRENT",
         "needs_translation": true,
-        "max_length": 15
+        "max_length": 15,
+        "reverse_text": false
       },
       "bec_overheat": {
         "english": "BEC OVERHEAT",
         "translation": "BEC OVERHEAT",
         "needs_translation": true,
-        "max_length": 12
+        "max_length": 12,
+        "reverse_text": false
       },
       "bec_voltage": {
         "english": "BEC VOLTAGE",
         "translation": "BEC VOLTAGE",
         "needs_translation": true,
-        "max_length": 11
+        "max_length": 11,
+        "reverse_text": false
       },
       "motor_hot": {
         "english": "MOTOR HOT",
         "translation": "MOTOR HOT",
         "needs_translation": true,
-        "max_length": 9
+        "max_length": 9,
+        "reverse_text": false
       },
       "input_voltage": {
         "english": "INPUT VOLTAGE",
         "translation": "INPUT VOLTAGE",
         "needs_translation": true,
-        "max_length": 13
+        "max_length": 13,
+        "reverse_text": false
       },
       "motor_locked": {
         "english": "MOTOR LOCKED",
         "translation": "MOTOR LOCKED",
         "needs_translation": true,
-        "max_length": 12
+        "max_length": 12,
+        "reverse_text": false
       },
       "throttle_at_start": {
         "english": "THROTTLE AT START",
         "translation": "THROTTLE AT START",
         "needs_translation": true,
-        "max_length": 17
+        "max_length": 17,
+        "reverse_text": false
       },
       "throttle_lost": {
         "english": "THROTTLE LOST",
         "translation": "THROTTLE LOST",
         "needs_translation": true,
-        "max_length": 13
+        "max_length": 13,
+        "reverse_text": false
       },
       "throttle": {
         "english": "THROTTLE",
         "translation": "THROTTLE",
         "needs_translation": true,
-        "max_length": 8
+        "max_length": 8,
+        "reverse_text": false
       },
       "motor_wiring": {
         "english": "MOTOR WIRING",
         "translation": "MOTOR WIRING",
         "needs_translation": true,
-        "max_length": 12
+        "max_length": 12,
+        "reverse_text": false
       },
       "startup": {
         "english": "STARTUP FAILED",
         "translation": "STARTUP FAILED",
         "needs_translation": true,
-        "max_length": 14
+        "max_length": 14,
+        "reverse_text": false
       },
       "motor_saturated": {
         "english": "MOTOR SATURATED",
         "translation": "MOTOR SATURATED",
         "needs_translation": true,
-        "max_length": 15
+        "max_length": 15,
+        "reverse_text": false
       },
       "consumption": {
         "english": "CONSUMPTION",
         "translation": "CONSUMPTION",
         "needs_translation": true,
-        "max_length": 11
+        "max_length": 11,
+        "reverse_text": false
       },
       "capacity_limit": {
         "english": "CAPACITY LIMIT",
         "translation": "CAPACITY LIMIT",
         "needs_translation": true,
-        "max_length": 14
+        "max_length": 14,
+        "reverse_text": false
       },
       "current_limit": {
         "english": "CURRENT LIMIT",
         "translation": "CURRENT LIMIT",
         "needs_translation": true,
-        "max_length": 13
+        "max_length": 13,
+        "reverse_text": false
       },
       "battery_limit": {
         "english": "BATTERY LIMIT",
         "translation": "BATTERY LIMIT",
         "needs_translation": true,
-        "max_length": 13
+        "max_length": 13,
+        "reverse_text": false
       },
       "esc_temp_limit": {
         "english": "ESC TEMP LIMIT",
         "translation": "ESC TEMP LIMIT",
         "needs_translation": true,
-        "max_length": 14
+        "max_length": 14,
+        "reverse_text": false
       },
       "bec_temp_limit": {
         "english": "BEC TEMP LIMIT",
         "translation": "BEC TEMP LIMIT",
         "needs_translation": true,
-        "max_length": 14
+        "max_length": 14,
+        "reverse_text": false
       },
       "rudder_cutoff": {
         "english": "RUDDER CUTOFF",
         "translation": "RUDDER CUTOFF",
         "needs_translation": true,
-        "max_length": 13
+        "max_length": 13,
+        "reverse_text": false
       },
       "operation": {
         "english": "OPERATION FAULT",
         "translation": "OPERATION FAULT",
         "needs_translation": true,
-        "max_length": 15
+        "max_length": 15,
+        "reverse_text": false
       },
       "operation_warning": {
         "english": "OPERATION WARNING",
         "translation": "OPERATION WARNING",
         "needs_translation": true,
-        "max_length": 17
+        "max_length": 17,
+        "reverse_text": false
       },
       "self_test": {
         "english": "SELF TEST",
         "translation": "SELF TEST",
         "needs_translation": true,
-        "max_length": 9
+        "max_length": 9,
+        "reverse_text": false
       },
       "eeprom": {
         "english": "EEPROM",
         "translation": "EEPROM",
         "needs_translation": true,
-        "max_length": 6
+        "max_length": 6,
+        "reverse_text": false
       },
       "watchdog": {
         "english": "WATCHDOG",
         "translation": "WATCHDOG",
         "needs_translation": true,
-        "max_length": 8
+        "max_length": 8,
+        "reverse_text": false
       },
       "programming_open": {
         "english": "PROGRAMMING OPEN",
         "translation": "PROGRAMMING OPEN",
         "needs_translation": true,
-        "max_length": 16
+        "max_length": 16,
+        "reverse_text": false
       },
       "rpm_low": {
         "english": "RPM BELOW LIMIT",
         "translation": "RPM BELOW LIMIT",
         "needs_translation": true,
-        "max_length": 15
+        "max_length": 15,
+        "reverse_text": false
       },
       "setpoint_noise": {
         "english": "SETPOINT NOISE",
         "translation": "SETPOINT NOISE",
         "needs_translation": true,
-        "max_length": 14
+        "max_length": 14,
+        "reverse_text": false
       }
     },
     "battery": {

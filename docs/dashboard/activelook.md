@@ -9,7 +9,8 @@ for each phase.
 
 Open **System → Settings → ActiveLook** on the transmitter. The Settings page
 enables the widget and sets its display offset. The Preflight, Inflight and
-Postflight pages each select a layout and assign up to four values to it.
+Postflight pages each select a layout and assign up to four values to it. The
+Low Fuel page switches the low fuel warning on and sets how long it stays.
 These settings are available offline and become read-only while the model is
 armed.
 
@@ -32,6 +33,36 @@ Min/max values are collected only while inflight. They are cleared when the
 next flight first enters inflight and remain available throughout postflight.
 Select a Min/Max entry in a phase's slot assignment to show an extreme.
 
+## Low fuel warning
+
+The **Low Fuel Warning** switch on the Low Fuel page (off by default) shows a
+temporary overlay while inflight. It appears once when the smart fuel level
+reaches 0, which is the *Consumption Warning %* from the battery settings and
+the same point at which the voice alert plays. The overlay shows `LOW FUEL`, the
+current Smart Fuel percentage with an optional warning symbol beside it, the voltage and
+the consumed capacity (mAh) for the configured **Warning Duration** (3 to 30
+seconds, default 8), then the configured Inflight layout returns. When enabled,
+the symbol blinks slowly (one second on, one second off); the text stays visible
+and retains its position. This also applies to the Low Fuel settings preview.
+By default the overlay appears once per flight; **Repeats** sets how many
+times it is shown in total while the pack stays low (1 to 10, like the voice
+alert's "Low fuel repeats"), with a pause between shows as long as the Warning
+Duration. Repeating stops when the fuel level recovers, the model is disarmed or
+the link is lost. The first fuel reading
+after connecting only seeds the check, so a sensor that has not reported yet
+cannot trigger it.
+
+The symbol uses image **11** (fuel pump) for Nitro models and image **21**
+(battery) for Electric models in the tested glasses configuration. It uses the
+same engine-type detection as the dashboard and audio alerts: an explicit
+Smart Fuel model type takes precedence; Auto checks the configured battery
+cell count or capacity. Nothing is uploaded to the glasses.
+Image mappings can differ between configurations; use the **Symbol** switch to
+disable it if a different image or no image appears. See the
+[observed image IDs](../reference/activelook-observed-image-ids.md).
+The browser preview still uses the older battery-low reference asset and does
+not reproduce the engine-specific symbol selection or blinking on the glasses.
+
 ## Simulator preview
 
 The suite-local EnGo 2 preview reads telemetry profiles from the simulator's
@@ -39,7 +70,13 @@ The suite-local EnGo 2 preview reads telemetry profiles from the simulator's
 Changes made in the preview can be saved back; the simulator's Lua settings
 remain the source of truth. For randomized sensor profiles, the preview samples
 the same configured range but cannot read the exact random sample already held
-inside the simulator.
+inside the simulator. The preview also draws the low fuel overlay when the
+switch is on in the simulator's settings. It treats the Fuel value as the raw
+pack level and shows the overlay when it reaches 30 %, the Consumption
+Warning the simulator reports, because the preview cannot read the battery
+settings. It shows the overlay in the Auto phase only, not when a phase is
+chosen by hand. The preview draws all text at 40 % brightness, the level the
+battery-low symbol peaks at; the widget itself sets no text color.
 
 Source: `src/rfsuite/widgets/activelook.lua` and
 `src/rfsuite/widgets/dashboard/flightmode.lua`.

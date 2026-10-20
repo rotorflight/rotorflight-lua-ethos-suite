@@ -338,6 +338,13 @@
       const VIEW_WIDTH = 304;
       const VIEW_HEIGHT = 256;
       const THROTTLE_THRESHOLD = 35;
+      const ICON_PX = 40;
+      const ICON_GAP = 8;
+      // The glasses' grey levels: the battery-low symbol peaks at 40 %, so text is dimmed to match it.
+      const TEXT_BRIGHTNESS = 0.4;
+      const TEXT_COLOR = `rgb(${Math.round(242 * TEXT_BRIGHTNESS)}, ${Math.round(227 * TEXT_BRIGHTNESS)}, 0)`;
+      // The simulator's battery config answers a Consumption Warning of 30 %; the preview cannot read the real one.
+      const LOW_FUEL_RESERVE = 30;
       const sensorChoices = [
         ["off", "Off"], ["flightmode", "Flight Mode"], ["timer", "Timer"],
         ["governor", "Governor"], ["armed", "Arm Status"], ["temp_esc", "ESC Temp"],
@@ -384,6 +391,15 @@
       let simulatorConfigEnabled = true;
       let simulatorOffsetX = 0;
       let simulatorOffsetY = 0;
+      let simulatorLowFuelWarning = false;
+      let simulatorLowFuelMs = 8000;
+      let simulatorLowFuelRepeats = 1;
+      let simulatorLowFuelIcon = true;
+      let lowFuelCount = 0;
+      let lowFuelNextAt = null;
+      let lowFuelSeeded = false;
+      let lowFuelLatched = false;
+      let lowFuelEnd = null;
       let configSaveStatus = "Waiting for simulator settings";
       const config = structuredClone(defaults);
       const stats = {};
@@ -482,8 +498,17 @@
         return `${String(Math.floor(total / 60)).padStart(2, "0")}:${String(total % 60).padStart(2, "0")}`;
       }
 
+      // Low fuel settings are not editable in the preview, so they always follow the simulator's file.
+      function applyLowFuelSettings(settings) {
+        simulatorLowFuelWarning = settings.low_fuel_warning === "true";
+        simulatorLowFuelMs = lowFuelMsFrom(settings);
+        simulatorLowFuelRepeats = lowFuelRepeatsFrom(settings);
+        simulatorLowFuelIcon = settings.low_fuel_icon !== "false";
+      }
+
       function applySimulatorConfig(payload) {
         if (payload.revision === simulatorConfigRevision) return;
+        applyLowFuelSettings(payload.settings || {});
         if (configDirty) {
           configSaveStatus = "Simulator settings changed · local edits kept";
           refreshControls();
@@ -531,18 +556,88 @@
         }
       }
 
+      // Same range as the Warning Duration setting (3-30 s, default 8 s).
+      function lowFuelMsFrom(settings) {
+        const seconds = Number(settings.low_fuel_seconds);
+        return (Number.isFinite(seconds) ? Math.max(3, Math.min(30, Math.round(seconds))) : 8) * 1000;
+      }
+
+      // Same range as the Repeats setting (1-10 shows in total, default 1).
+      function lowFuelRepeatsFrom(settings) {
+        const repeats = Number(settings.low_fuel_repeats);
+        return Number.isFinite(repeats) ? Math.max(1, Math.min(10, Math.round(repeats))) : 1;
+      }
+
+      function resetLowFuelEpisode() {
+        lowFuelLatched = false;
+        lowFuelCount = 0;
+        lowFuelNextAt = null;
+      }
+
+      // Same rules as widgets/activelook.lua, applied to the raw Fuel sensor: smart fuel reads 0 at the
+      // Consumption Warning, so the raw value reaching it is the trigger. The first reading only seeds,
+      // the overlay starts once while inflight, and leaving inflight re-arms it.
+      function updateLowFuel() {
+        if (mode !== "inflight") {
+          lowFuelEnd = null;
+          resetLowFuelEpisode();
+        }
+        const fuel = Number(sensors.fuel);
+        if (!Number.isFinite(fuel)) return;
+        if (fuel > LOW_FUEL_RESERVE) resetLowFuelEpisode();
+        if (!lowFuelSeeded) {
+          lowFuelSeeded = true;
+          return;
+        }
+        if (mode === "inflight" && fuel <= LOW_FUEL_RESERVE && !lowFuelLatched && simulatorLowFuelWarning) {
+          lowFuelLatched = true;
+          lowFuelCount = 1;
+          lowFuelEnd = performance.now() + simulatorLowFuelMs;
+          window.setTimeout(draw, simulatorLowFuelMs + 50);
+          // A repeat starts one display duration after the overlay ends.
+          if (simulatorLowFuelRepeats > 1) {
+            lowFuelNextAt = lowFuelEnd + simulatorLowFuelMs;
+            window.setTimeout(draw, 2 * simulatorLowFuelMs + 50);
+          }
+        }
+      }
+
+      // Shows the overlay again while the pack stays low, until the configured number of shows is reached.
+      function lowFuelRepeat() {
+        if (lowFuelNextAt === null || performance.now() < lowFuelNextAt) return;
+        if (mode !== "inflight" || !lowFuelLatched || !simulatorLowFuelWarning || lowFuelCount >= simulatorLowFuelRepeats) {
+          lowFuelNextAt = null;
+          return;
+        }
+        lowFuelCount += 1;
+        lowFuelEnd = performance.now() + simulatorLowFuelMs;
+        window.setTimeout(draw, simulatorLowFuelMs + 50);
+        if (lowFuelCount < simulatorLowFuelRepeats) {
+          lowFuelNextAt = lowFuelEnd + simulatorLowFuelMs;
+          window.setTimeout(draw, 2 * simulatorLowFuelMs + 50);
+        } else {
+          lowFuelNextAt = null;
+        }
+      }
+
+      // A manually chosen phase is a layout preview, which the widget never overlays either.
+      function lowFuelActive() {
+        return lowFuelEnd !== null && performance.now() < lowFuelEnd && mode === "inflight" &&
+          phaseSelection === "auto" && simulatorLowFuelWarning;
+      }
+
       function transitionMode(nextMode) {
-        if (nextMode !== mode) {
+        const changed = nextMode !== mode;
+        if (changed) {
           if (nextMode === "inflight" && mode !== "inflight" && mode !== "postflight") {
             for (const key of Object.keys(stats)) delete stats[key];
           }
           mode = nextMode;
-          if (mode === "inflight") recordFlightStats();
-          refreshControls();
-          return;
         }
         if (mode === "inflight") recordFlightStats();
-        draw();
+        updateLowFuel();
+        if (changed) refreshControls();
+        else draw();
       }
 
       function updateAutomaticMode() {
@@ -676,17 +771,24 @@
         return String(value);
       }
 
-      function buildSlots(layout) {
+      function layoutMetrics() {
         const scale = (VIEW_HEIGHT - 16) / 256;
         const areaWidth = VIEW_WIDTH - 16;
         const gap = Math.max(4, Math.floor(8 * scale));
         const boxWidth = Math.floor((areaWidth - gap) / 2);
-        const left = simulatorOffsetX;
-        const right = boxWidth + gap + simulatorOffsetX;
-        const center = Math.floor((areaWidth - boxWidth) / 2) + simulatorOffsetX;
-        const top = Math.floor(8 * scale) + simulatorOffsetY;
-        const middle = Math.floor(88 * scale) + simulatorOffsetY;
-        const bottom = Math.floor(186 * scale) + simulatorOffsetY;
+        return {
+          scale, areaWidth, boxWidth,
+          left: simulatorOffsetX,
+          right: boxWidth + gap + simulatorOffsetX,
+          center: Math.floor((areaWidth - boxWidth) / 2) + simulatorOffsetX,
+          top: Math.floor(8 * scale) + simulatorOffsetY,
+          middle: Math.floor(88 * scale) + simulatorOffsetY,
+          bottom: Math.floor(186 * scale) + simulatorOffsetY,
+        };
+      }
+
+      function buildSlots(layout) {
+        const {scale, areaWidth, boxWidth, left, right, center, top, middle, bottom} = layoutMetrics();
         const pre = mode === "preflight";
         const large = pre ? 3 : 3;
         const small = pre ? 1 : 2;
@@ -721,6 +823,39 @@
         return slots;
       }
 
+      function buildLowFuelSlots() {
+        const m = layoutMetrics();
+        const largeOffset = Math.floor(8 * m.scale);
+        const smallOffset = Math.floor(6 * m.scale);
+        return [
+          {x: m.left, y: m.top + largeOffset, font: 2, width: m.areaWidth, align: "center"},
+          {x: m.left, y: m.middle + largeOffset, font: 3, width: m.areaWidth, align: "center", icon: simulatorLowFuelIcon},
+          {x: m.left, y: m.bottom + smallOffset, font: 1, width: m.boxWidth, align: "center"},
+          {x: m.right, y: m.bottom + smallOffset, font: 1, width: m.boxWidth, align: "center"},
+        ];
+      }
+
+      function lowFuelTexts() {
+        return ["LOW FUEL", `${Math.round(Number(sensors.fuel))}%`, `${Number(sensors.voltage).toFixed(1)}V`, `${Math.round(Number(sensors.consumption))}mAh`];
+      }
+
+      // ActiveLook default-config image 33 (battery-low_40x40, CC0), tinted like the text once loaded.
+      let lowFuelIcon = null;
+      const lowFuelIconSource = new Image();
+      lowFuelIconSource.onload = () => {
+        const tinted = document.createElement("canvas");
+        tinted.width = ICON_PX;
+        tinted.height = ICON_PX;
+        const tintContext = tinted.getContext("2d");
+        tintContext.drawImage(lowFuelIconSource, 0, 0);
+        tintContext.globalCompositeOperation = "multiply";
+        tintContext.fillStyle = "#f2e300";
+        tintContext.fillRect(0, 0, ICON_PX, ICON_PX);
+        lowFuelIcon = tinted;
+        draw();
+      };
+      lowFuelIconSource.src = "./33_battery-low_40x40.png";
+
       function draw() {
         const pixelRatio = window.devicePixelRatio || 1;
         const bounds = canvas.getBoundingClientRect();
@@ -734,24 +869,33 @@
         context.fillStyle = "#030708";
         context.fillRect(0, 0, VIEW_WIDTH, VIEW_HEIGHT);
         if (simulatorConfigLoaded && !simulatorConfigEnabled) return;
+        lowFuelRepeat();
+        const overlay = lowFuelActive();
         const phaseConfig = config[mode];
-        const active = layoutActive[phaseConfig.layout];
-        const slots = buildSlots(phaseConfig.layout);
+        const active = overlay ? [true, true, true, true] : layoutActive[phaseConfig.layout];
+        const slots = overlay ? buildLowFuelSlots() : buildSlots(phaseConfig.layout);
+        const overlayTexts = overlay ? lowFuelTexts() : null;
         for (let index = 0; index < 4; index++) {
           const slot = slots[index];
           if (!slot || !active[index]) continue;
-          const text = valueFor(phaseConfig.slots[index]);
+          const text = overlay ? overlayTexts[index] : valueFor(phaseConfig.slots[index]);
           const fontSizes = {1: 24, 2: 38, 3: 64};
           const fontSize = fontSizes[slot.font] || 24;
           context.font = `600 ${fontSize}px "ActiveLook EnGo 2"`;
           context.textBaseline = "top";
           context.textAlign = "left";
-          let x = 8 + slot.x;
+          const iconWidth = slot.icon ? ICON_PX + ICON_GAP : 0;
+          let x = 8 + slot.x + iconWidth;
           if (slot.align === "center") {
-            x += Math.max(0, (slot.width - context.measureText(text).width) / 2);
+            x += Math.max(0, (slot.width - context.measureText(text).width - iconWidth) / 2);
           }
-          context.fillStyle = "#f2e300";
+          context.fillStyle = TEXT_COLOR;
           context.fillText(text, Math.round(x), Math.round(8 + slot.y));
+          if (slot.icon && lowFuelIcon) {
+            context.globalCompositeOperation = "lighter";
+            context.drawImage(lowFuelIcon, Math.round(x - iconWidth), Math.round(8 + slot.y + (fontSize - ICON_PX) / 2));
+            context.globalCompositeOperation = "source-over";
+          }
         }
       }
 
@@ -764,7 +908,7 @@
           row.hidden = row.querySelector("select").dataset.phase !== mode;
         });
         const activeSlots = layoutActive[config[mode].layout].filter(Boolean).length;
-        slotState.textContent = `${activeSlots} active slots${simulatorConfigLoaded ? " · simulator settings" : " · local defaults"}`;
+        slotState.textContent = `${activeSlots} active slots${simulatorConfigLoaded ? " · simulator settings" : " · local defaults"}${simulatorLowFuelWarning ? " · low fuel warning on" : ""}`;
         phaseLabel.textContent = mode === "preflight" ? "PRE-FLIGHT" : mode === "inflight" ? "IN-FLIGHT" : "POST-FLIGHT";
         layoutLabel.textContent = layouts.find(([key]) => key === config[mode].layout)?.[1] || "Custom layout";
         phaseSource.textContent = phaseSelection === "auto"
@@ -800,6 +944,7 @@
             simulatorOffsetX = Math.max(-20, Math.min(20, Number(payload.settings.offset_x) || 0));
             simulatorOffsetY = Math.max(-20, Math.min(20, Number(payload.settings.offset_y) || 0));
             simulatorConfigEnabled = payload.settings.enabled !== "false";
+            applyLowFuelSettings(payload.settings);
             updateConfigDirty();
             configSaveStatus = configDirty
               ? "Simulator changed · review edits, then save again to overwrite"
