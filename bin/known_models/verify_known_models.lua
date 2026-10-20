@@ -461,6 +461,7 @@ local function newRig(sessionSource)
   end
   local modules = {}
   package.loaded["rfsuite.lib.require"] = function(name)
+    if name == "lib/flight_stats.lua" then return dofile(SRC .. "/lib/flight_stats.lua") end
     if SESSION_REAL[name] then
       if modules[name] == nil then modules[name] = assert(loadfile(SRC .. "/" .. name))() end
       return modules[name]

@@ -1,0 +1,7 @@
+{
+  "id": "flight-stats",
+  "name": "Flight phase and extremes are kept by the session, not by the dashboard",
+  "step": "Check the session flight phase and extremes",
+  "script": "bin/flight_stats/verify_flight_stats.lua",
+  "rationale": "Issue #2344: the flight phase and the flight extremes lived in the dashboard widget, so with the dashboard closed nothing was tracked. lib/flight_stats.lua holds the same phase rules and the same recording, and the session drives it every tick; the dashboard and the ActiveLook widget read the result from the session snapshot.\n\nThe harness feeds the module a session-shaped table through a flight, a link loss and a reconnect, a second flight, a craft change, the governor counting as flight, and checks the recorded min, max, average and headspeed variance. Against master the module does not exist, so the harness fails."
+}

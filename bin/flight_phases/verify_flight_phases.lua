@@ -5,11 +5,11 @@
 --     lua5.4 bin/flight_phases/verify_flight_phases.lua
 --
 -- What it drives, and why:
---   * widgets/dashboard/flightmode.lua, real: the tracker is fed the widget fields it reads
+--   * lib/flight_stats.lua, real: the session's flight phase is fed the session fields it reads
 --     (connected, isArmed, governorState, throttlePercent) tick by tick, and the phase it returns
---     is checked. There is no radio channel here (CATEGORY_CHANNEL is nil), so flight is read from
+--     is checked (#2344 moved it out of the dashboard). There is no radio channel here (CATEGORY_CHANNEL is nil), so flight is read from
 --     the telemetry throttle, the path a radio without a resolved RX map takes.
---   * Flightmode.layoutPhase: armed draws preflight and offline draws postflight, because themes
+--   * flight_stats.layoutPhase: armed draws preflight and offline draws postflight, because themes
 --     have three layouts. The bar gauge hold rule in objects/gauge/bar.lua is not run here: that
 --     module needs the whole widget, so that change is covered by review only.
 --
@@ -67,12 +67,12 @@ end
 CATEGORY_CHANNEL = nil
 system = {}
 
-local flightmode = requireModule("widgets/dashboard/flightmode.lua")
+local flightStats = requireModule("lib/flight_stats.lua")
 
 -- A widget as the tracker sees it. `tick` feeds one state and returns the phase.
 local function newWidget()
   local widget = {connected = false, isArmed = false, governorState = 0, throttlePercent = 0}
-  local tracker = flightmode.new()
+  local tracker = flightStats.new()
   local function tick(connected, armed, throttle, governor)
     widget.connected = connected
     widget.isArmed = armed
@@ -105,7 +105,8 @@ do
   tick(true, true, 60)
   check("the link drops after the flight: offline", tick(false, false, 0) == "offline")
   check("it stays offline while the link is down", tick(false, false, 0) == "offline")
-  check("a connection returns: postflight, with the flight behind it", tick(true, false, 0) == "postflight")
+  -- The dashboard always closed the flight here; the rule now lives in the session phase.
+  check("a connection returns: the finished flight is closed, preflight", tick(true, false, 0) == "preflight")
 end
 
 print("no flight, then the link drops")
@@ -127,11 +128,11 @@ end
 -- ---------------------------------------------------------------------------
 
 print("layout phase")
-check("armed draws the preflight layout", flightmode.layoutPhase("armed") == "preflight")
-check("offline draws the postflight layout", flightmode.layoutPhase("offline") == "postflight")
-check("preflight is unchanged", flightmode.layoutPhase("preflight") == "preflight")
-check("inflight is unchanged", flightmode.layoutPhase("inflight") == "inflight")
-check("postflight is unchanged", flightmode.layoutPhase("postflight") == "postflight")
+check("armed draws the preflight layout", flightStats.layoutPhase("armed") == "preflight")
+check("offline draws the postflight layout", flightStats.layoutPhase("offline") == "postflight")
+check("preflight is unchanged", flightStats.layoutPhase("preflight") == "preflight")
+check("inflight is unchanged", flightStats.layoutPhase("inflight") == "inflight")
+check("postflight is unchanged", flightStats.layoutPhase("postflight") == "postflight")
 
 print(string.format("\n%d checks, %d failed", checks, failures))
 os.exit(failures == 0 and 0 or 1)

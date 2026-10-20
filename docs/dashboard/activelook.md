@@ -41,7 +41,7 @@ remain the source of truth. For randomized sensor profiles, the preview samples
 the same configured range but cannot read the exact random sample already held
 inside the simulator.
 
-Source: `src/rfsuite/widgets/activelook.lua` and
-`src/rfsuite/widgets/dashboard/flightmode.lua`.
+Source: `src/rfsuite/widgets/activelook.lua`. The flight phase comes from the
+session (`src/rfsuite/lib/flight_stats.lua`), the same one the dashboard shows.
 
 Review: [PR #2598](https://github.com/rotorflight/rotorflight-lua-ethos-suite/pull/2598).

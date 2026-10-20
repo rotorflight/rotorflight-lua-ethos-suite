@@ -90,6 +90,8 @@ local function loadSession(opts)
   local flightTimer = opts.flightTimer or dofile(TASKS .. "/flight_timer.lua")
 
   package.loaded["rfsuite.lib.require"] = function(name)
+
+    if name == "lib/flight_stats.lua" then return dofile(TASKS .. "/../lib/flight_stats.lua") end
     if name == "lib/bus.lua" then
       return {
         publish = function(topic, payload) published[#published + 1] = { topic, payload } end,
@@ -218,6 +220,7 @@ end
 -- budget. Enough to load them; the GC question needs no reply traffic.
 local function newRig()
   package.loaded["rfsuite.lib.require"] = function(name)
+    if name == "lib/flight_stats.lua" then return dofile(TASKS .. "/../lib/flight_stats.lua") end
     if name == "lib/debug_log.lua" then
       return { print = function() end, msp = function() end }
     end

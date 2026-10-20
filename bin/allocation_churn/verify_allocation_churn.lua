@@ -342,6 +342,8 @@ package.loaded["rfsuite.lib.require"] = function(name)
   if name == "lib/build_info.lua" then return { version = "harness" } end
   if name == "lib/engine_type.lua" then return {} end
   if name == "lib/ethos_version.lua" then return "1.0" end
+  -- The shared min/max/average sampler the dashboard records with (#2344).
+  if name == "lib/flight_stats.lua" then return assert(loadfile(ROOT .. "/src/rfsuite/lib/flight_stats.lua"))() end
   error("unexpected dependency: " .. tostring(name))
 end
 lcd = { RGB = function(r, g, b, a) return r end }

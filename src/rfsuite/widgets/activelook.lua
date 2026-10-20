@@ -4,7 +4,7 @@ local requireModule = package.loaded["rfsuite.lib.require"] or assert(loadfile("
 local bus = requireModule("lib/bus.lua")
 local settingsStore = requireModule("lib/settings_store.lua")
 local activeConfig = requireModule("lib/activelook_config.lua")
-local flightmode = requireModule("widgets/dashboard/flightmode.lua")
+local flightStats = requireModule("lib/flight_stats.lua")
 
 local os_clock = os.clock
 local floor = math.floor
@@ -241,7 +241,7 @@ local function mode(widget)
   if widget.previewMode == "preflight" or widget.previewMode == "inflight" or widget.previewMode == "postflight" then
     return widget.previewMode
   end
-  return flightmode.layoutPhase(widget.flightmode:update(widget))
+  return flightStats.layoutPhase(widget.flightState or "preflight")
 end
 
 local function buildLayout(widget)
@@ -381,8 +381,11 @@ local function update(widget, snapshot)
   widget.governorState = snapshot.governorState
   widget.timerLive = snapshot.timerLive or 0
   widget.timerSession = snapshot.timerSession or 0
-  local previousMode = widget.flightmode.current
-  local currentMode = widget.flightmode:update(widget)
+  -- The phase comes from the session (lib/flight_stats.lua), the same one the
+  -- dashboard shows (#2344).
+  local previousMode = widget.flightState
+  local currentMode = snapshot.flightState or "preflight"
+  widget.flightState = currentMode
   if currentMode == "inflight" and previousMode ~= "inflight" and previousMode ~= "postflight" then
     clearStats(widget.stats)
   end
@@ -402,7 +405,7 @@ local function create()
   local widget = {
     settings = settingsStore.activelook(settingsSnapshot),
     temperatureUnit = temperatureUnit(settingsSnapshot),
-    flightmode = flightmode.new(),
+    flightState = "preflight",
     stats = {},
     lastDraw = 0,
     lastValues = {},

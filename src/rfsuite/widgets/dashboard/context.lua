@@ -8,6 +8,7 @@ if cached then return cached end
 
 local requireModule = package.loaded["rfsuite.lib.require"] or assert(loadfile("lib/require.lua"))()
 local buildInfo = requireModule("lib/build_info.lua")
+local flightStats = requireModule("lib/flight_stats.lua")
 local engineType = requireModule("lib/engine_type.lua")
 local ethosVersion = requireModule("lib/ethos_version.lua")
 
@@ -769,13 +770,6 @@ local function roundSigned(value)
   return -math.floor(-value + 0.5)
 end
 
-local function updateMinMax(stats, minKey, maxKey, value)
-  value = tonumber(value)
-  if value == nil then return end
-  if stats[minKey] == nil or value < stats[minKey] then stats[minKey] = value end
-  if stats[maxKey] == nil or value > stats[maxKey] then stats[maxKey] = value end
-end
-
 local STAT_SUFFIXES = {
   rssi = "Rssi",
   link = "Link",
@@ -847,27 +841,25 @@ local function recordSensorStat(name, value)
 
   local key = statKey(name)
   local stats = widget.dashboardStats
-  local entry = stats[key]
-  if not entry then
-    entry = {min = value, max = value, sum = 0, count = 0, avg = value}
-    stats[key] = entry
+  -- The same min/max/average rule as the session's samples (lib/flight_stats.lua).
+  local suffix = STAT_SUFFIXES[name or ""]
+  if suffix then
+    flightStats.sample(stats, "min" .. suffix, "max" .. suffix, key, value)
+  else
+    flightStats.sample(stats, nil, nil, key, value)
   end
-  if value < entry.min then entry.min = value end
-  if value > entry.max then entry.max = value end
-  entry.sum = (entry.sum or 0) + value
-  entry.count = (entry.count or 0) + 1
-  entry.avg = entry.sum / entry.count
+  local entry = stats[key]
 
-  if key == "rpm" then
+  -- The variance lives on the session's flight object (lib/flight_stats.lua).
+  local flight = widget.flight
+  if key == "rpm" and flight then
     if entry.avg and entry.avg > 0 then
-      widget.headspeedVariancePct = roundSigned((math.abs(value - entry.avg) / entry.avg) * 100)
+      flight.headspeedVariancePct = roundSigned((math.abs(value - entry.avg) / entry.avg) * 100)
     else
-      widget.headspeedVariancePct = nil
+      flight.headspeedVariancePct = nil
     end
   end
 
-  local suffix = STAT_SUFFIXES[name or ""]
-  if suffix then updateMinMax(stats, "min" .. suffix, "max" .. suffix, value) end
 end
 
 local function sensorValue(name)
@@ -2575,7 +2567,7 @@ function context.setWidget(widget)
   context.session.bblFlags = widget and widget.bblFlags
   context.session.bblSize = widget and widget.bblSize
   context.session.bblUsed = widget and widget.bblUsed
-  context.session.headspeedVariancePct = widget and widget.headspeedVariancePct
+  context.session.headspeedVariancePct = widget and widget.flight and widget.flight.headspeedVariancePct or nil
   context.session.governorMode = widget and widget.governorMode
   context.session.governorModeKnown = widget and widget.governorModeKnown
   local modelPrefs = context.session.modelPreferences

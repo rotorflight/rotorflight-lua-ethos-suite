@@ -70,6 +70,8 @@ end
 -- ---------------------------------------------------------------------------
 
 package.loaded["rfsuite.lib.require"] = function(name)
+
+  if name == "lib/flight_stats.lua" then return dofile(TASKS .. "/../lib/flight_stats.lua") end
   if name == "lib/mspcodec.lua" then
     return assert(loadfile(SRC .. "/lib/mspcodec.lua"))()
   end
@@ -153,6 +155,8 @@ local function newRig(opts)
   end
 
   package.loaded["rfsuite.lib.require"] = function(name)
+
+    if name == "lib/flight_stats.lua" then return dofile(TASKS .. "/../lib/flight_stats.lua") end
     if REAL[name] then
       return realModule(name)
     elseif name == "lib/bus.lua" then

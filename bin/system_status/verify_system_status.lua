@@ -87,6 +87,7 @@ end
 local function installPureLoader(overrides)
   overrides = overrides or {}
   package.loaded["rfsuite.lib.require"] = function(name)
+    if name == "lib/flight_stats.lua" then return dofile(SRC .. "/lib/flight_stats.lua") end
     local path = SRC .. "/" .. name
     local source = overrides[name] or readFile(path)
     return assert(load(source, "@" .. path))()
@@ -233,6 +234,7 @@ local function newRig(source)
 
   local realModules = {}
   package.loaded["rfsuite.lib.require"] = function(name)
+    if name == "lib/flight_stats.lua" then return dofile(SRC .. "/lib/flight_stats.lua") end
     required[name] = true
     if REAL[name] then
       if realModules[name] == nil then
@@ -401,6 +403,7 @@ local function newAudioRig(source, alertsSource)
   local onSession
   local played = {}
   package.loaded["rfsuite.lib.require"] = function(name)
+    if name == "lib/flight_stats.lua" then return dofile(SRC .. "/lib/flight_stats.lua") end
     if name == "lib/bus.lua" then
       return { publish = function() end,
         subscribe = function(topic, fn) if topic == "session.update" then onSession = fn end end }
