@@ -78,7 +78,8 @@ local function newWidget()
     widget.isArmed = armed
     widget.throttlePercent = throttle or 0
     widget.governorState = governor or 0
-    return tracker:update(widget)
+    -- Phases only: no sensor values are read here.
+    return tracker:update(widget, function() return nil end)
   end
   return tick, tracker
 end

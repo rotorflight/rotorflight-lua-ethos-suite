@@ -9,6 +9,7 @@ if cached then return cached end
 local requireModule = package.loaded["rfsuite.lib.require"] or assert(loadfile("lib/require.lua"))()
 local buildInfo = requireModule("lib/build_info.lua")
 local flightStats = requireModule("lib/flight_stats.lua")
+local liveSensors = requireModule("lib/live_sensors.lua")
 local engineType = requireModule("lib/engine_type.lua")
 local ethosVersion = requireModule("lib/ethos_version.lua")
 
@@ -95,35 +96,9 @@ local imageBitmapClock = 0
 -- Assigned next to context.utils.loadImage() below; declared here because
 -- drawImageInRect() sits earlier in the file.
 local loadImageEntry
-local liveSourceCache = {}
-local liveMissRetryAt = {}
-local liveMissCount = {}
-local liveRevalidateAt = {}
 local electricEngineCacheConfig = nil
 local electricEngineCacheModelType = nil
 local electricEngineCacheResult = false
--- Same fix as lib/telemetry_sensors.lua's own MISS_RETRY_INITIAL/_MAX: a flat
--- 5s lockout from the first miss meant a box whose sensor simply hadn't
--- broadcast yet (common right after connect) stayed blank for up to 5s
--- rather than the fraction of a second it actually took to start
--- broadcasting. Exponential backoff keeps the same eventual 5s cap for a
--- sensor that's genuinely absent on this build, while resolving a merely-late
--- one much sooner.
-local LIVE_MISS_RETRY_INITIAL = 0.5
-local LIVE_MISS_RETRY_MAX = 5.0
-local LIVE_MISS_RETRY_MULTIPLIER = 2
--- Same fix as lib/telemetry_sensors.lua's own REVALIDATE_INTERVAL, ported
--- here after noticing this cache never got it: liveSensorSource() picks the
--- *first* candidate that resolves and, unlike the miss path above, kept it
--- forever with no way back through the candidate list. If that first hit is
--- a stale/unwired duplicate sensor slot -- or one Ethos discovered before it
--- ever carried a real reading -- the box using it (e.g. the header's rssi
--- step-gauge) gets stuck showing that slot's value (often 0/nil) for the
--- rest of the session, exactly the "populates once, then stops updating"
--- symptom lib/telemetry_sensors.lua's own comment describes. Re-running the
--- scan every LIVE_REVALIDATE_INTERVAL seconds gives a better candidate that
--- shows up later a chance to take over, without rescanning every wakeup.
-local LIVE_REVALIDATE_INTERVAL = 8.0
 local DASHBOARD_RESOLUTION_TOLERANCE = 12
 local DASHBOARD_SUPPORTED_RESOLUTIONS = {
   {784, 294}, {784, 316}, {800, 458}, {800, 480},
@@ -167,134 +142,6 @@ local THEME_STATE_KEYS = {
   {"safeColor", "THEME_SAFE_COLOR"},
   {"safeContrastingColor", "THEME_SAFE_CONTRASTING_COLOR"},
   {"pageBgColor", "THEME_PAGE_BGCOLOR"},
-}
-local LIVE_SENSOR_CANDIDATES = {
-  sport = {
-    rssi = {
-      {appId = 0xF010, subId = 0},
-    },
-    voltage = {
-      {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x0210},
-      {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x0211},
-      {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x0218},
-      {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x021A},
-    },
-    consumption = {
-      {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5250},
-    },
-    current = {
-      {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x0200},
-      {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x0208},
-      {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x0201},
-    },
-    throttle_percent = {
-      {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5440},
-      {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x51A4},
-      {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5269},
-    },
-    rpm = {
-      {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x0500},
-    },
-    tailspeed = {
-      {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x0501},
-    },
-    link = {
-      {appId = 0xF101, subId = 0},
-      "RSSI",
-    },
-    vfr = {
-      {appId = 0xF010, subId = 0},
-    },
-    smartfuel = {
-      {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x0600},
-      {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5FE1},
-    },
-    temp_esc = {
-      {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x0401},
-      {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x0418},
-    },
-    temp_mcu = {
-      {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x0400},
-      {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x0401},
-    },
-    bec_voltage = {
-      {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x0901},
-      {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x0219},
-    },
-    altitude = {
-      {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x0100},
-    },
-  },
-  crsf = {
-    -- subId=2 is the dedicated Link Quality field on firmware that broadcasts
-    -- Rotorflight's newer CRSF telemetry frame (probed pre-rewrite via a
-    -- 0xEE01 marker sensor -- see tasks/scheduler/telemetry/telemetry.lua's
-    -- detectSourceMode() in the pre-rewrite tree). Older firmware without
-    -- that marker never exposed subId=2 at all and instead used this
-    -- subIdStart/subIdEnd range (see that same tree's
-    -- sources/crsf_legacy.lua), which is what "link" below also uses as its
-    -- structured candidate. Kept as a plain fallback here rather than fully
-    -- reviving the old two-table firmware-format split: it stops rssi being
-    -- permanently stuck on nil for old-firmware users, though the range's
-    -- value is raw antenna RSSI rather than a true 0-100 LQ%, so it may not
-    -- land on this box's step gauge as cleanly as subId=2 does.
-    rssi = {
-      {crsfId = 0x14, subId = 2},
-      {crsfId = 0x14, subIdStart = 0, subIdEnd = 1},
-    },
-    voltage = {
-      {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1011},
-      {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1041},
-      {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1051},
-      {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1080},
-    },
-    consumption = {
-      {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1013},
-    },
-    current = {
-      {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1012},
-      {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1042},
-      {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x104A},
-    },
-    throttle_percent = {
-      {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1035},
-    },
-    rpm = {
-      {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x10C0},
-    },
-    tailspeed = {
-      {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x10C1},
-    },
-    link = {
-      {crsfId = 0x14, subIdStart = 0, subIdEnd = 1},
-      "Rx RSSI1",
-    },
-    -- Same rssi/subId=2 fallback reasoning as above -- vfr mirrors rssi
-    -- one-for-one in this table (see sensorValue()'s `name == "rssi" or
-    -- name == "vfr"` branch, which already treats them identically).
-    vfr = {
-      {crsfId = 0x14, subId = 2},
-      {crsfId = 0x14, subIdStart = 0, subIdEnd = 1},
-    },
-    smartfuel = {
-      {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1014},
-      {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5FE1},
-    },
-    temp_esc = {
-      {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x10A0},
-      {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1047},
-    },
-    temp_mcu = {
-      {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x10A3},
-    },
-    bec_voltage = {
-      {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1081},
-      {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1049},
-    },
-    altitude = {
-      {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x10B2},
-    },
-  },
 }
 
 local NAMED_COLORS = {
@@ -653,11 +500,8 @@ local GOVERNOR_LABELS = {
   [101] = "DISARMED",
 }
 
-local function normalizeLiveSensorName(name)
-  if name == "headspeed" then return "rpm" end
-  return name
-end
-
+-- The live source lookups and the sensor values are in lib/live_sensors.lua, shared
+-- with the session's flight recording (#2344). These keep the dashboard's own names.
 local function liveProtocol()
   local protocol = currentWidget and currentWidget.mspTransport
   if protocol == "sport" or protocol == "crsf" then return protocol end
@@ -665,72 +509,11 @@ local function liveProtocol()
 end
 
 local function liveSensorSource(protocol, name)
-  protocol = protocol or liveProtocol()
-  name = normalizeLiveSensorName(name)
-  if not protocol or not name then return nil end
-
-  local byProtocol = liveSourceCache[protocol]
-  if not byProtocol then
-    byProtocol = {}
-    liveSourceCache[protocol] = byProtocol
-  end
-
-  local now = os.clock()
-  local source = byProtocol[name]
-  if source then
-    local revalidate = liveRevalidateAt[protocol]
-    local dueAt = revalidate and revalidate[name]
-    if not dueAt or now < dueAt then return source end
-    -- Due for a recheck: fall through and re-scan candidates instead of
-    -- trusting this cached source forever (see LIVE_REVALIDATE_INTERVAL's
-    -- comment above).
-    byProtocol[name] = nil
-    source = nil
-  end
-
-  local misses = liveMissRetryAt[protocol]
-  if misses and misses[name] and now < misses[name] then return nil end
-
-  local candidates = LIVE_SENSOR_CANDIDATES[protocol] and LIVE_SENSOR_CANDIDATES[protocol][name]
-  if not candidates then return nil end
-  for i = 1, #candidates do
-    source = system.getSource(candidates[i])
-    if source then
-      byProtocol[name] = source
-      if misses then misses[name] = nil end
-      local missCounts = liveMissCount[protocol]
-      if missCounts then missCounts[name] = nil end
-      local revalidate = liveRevalidateAt[protocol]
-      if not revalidate then
-        revalidate = {}
-        liveRevalidateAt[protocol] = revalidate
-      end
-      revalidate[name] = now + LIVE_REVALIDATE_INTERVAL
-      return source
-    end
-  end
-
-  if not misses then
-    misses = {}
-    liveMissRetryAt[protocol] = misses
-  end
-  local missCounts = liveMissCount[protocol]
-  if not missCounts then
-    missCounts = {}
-    liveMissCount[protocol] = missCounts
-  end
-  local count = (missCounts[name] or 0) + 1
-  missCounts[name] = count
-  local interval = math.min(LIVE_MISS_RETRY_INITIAL * (LIVE_MISS_RETRY_MULTIPLIER ^ (count - 1)), LIVE_MISS_RETRY_MAX)
-  misses[name] = now + interval
-  return nil
+  return liveSensors.source(protocol or liveProtocol(), name)
 end
 
 local function liveSensorValue(name)
-  local source = liveSensorSource(nil, name)
-  if not source then return nil end
-  if source.state and source:state() == false then return nil end
-  return source:value()
+  return liveSensors.value(liveProtocol(), name)
 end
 
 local function temperatureUnit()
@@ -786,38 +569,9 @@ local function localizeTemperature(value, minValue, maxValue, thresholds)
   return convertedValue, nil, unit, convertedMin, convertedMax, convertedThresholds
 end
 
-local function roundSigned(value)
-  if value >= 0 then return math.floor(value + 0.5) end
-  return -math.floor(-value + 0.5)
-end
-
-local STAT_SUFFIXES = {
-  rssi = "Rssi",
-  link = "Link",
-  vfr = "Vfr",
-  voltage = "Voltage",
-  cell_voltage = "CellVoltage",
-  consumption = "Consumption",
-  smartconsumption = "Consumption",
-  current = "Current",
-  throttle_percent = "ThrottlePercent",
-  rpm = "Rpm",
-  headspeed = "Rpm",
-  tailspeed = "Tailspeed",
-  smartfuel = "FuelPercent",
-  fuel = "FuelPercent",
-  temp_mcu = "TempMcu",
-  temp_esc = "TempEsc",
-  bec_voltage = "BecVoltage",
-  altitude = "Altitude",
-  watts = "Watts",
-}
-
-local STAT_ALIASES = {
-  headspeed = "rpm",
-  smartconsumption = "consumption",
-  fuel = "smartfuel",
-}
+-- Stat keys and min/max suffixes are the session's (lib/flight_stats.lua, #2344).
+local STAT_SUFFIXES = flightStats.STAT_SUFFIXES
+local statKey = flightStats.statKey
 
 -- getSensorStats() returns one table per sensor, overwritten on each call, for
 -- every sensor whose min/max live in the flat "min<Suffix>"/"max<Suffix>" keys.
@@ -827,118 +581,8 @@ local STAT_ALIASES = {
 -- as the temperature cache just above.
 local sensorStatsResults = {}
 
-local PRESENTATION_STAT_SOURCES = {
-  "voltage",
-  "cell_voltage",
-  "current",
-  "consumption",
-  "smartconsumption",
-  "throttle_percent",
-  "rpm",
-  "headspeed",
-  "tailspeed",
-  "link",
-  "rssi",
-  "vfr",
-  "smartfuel",
-  "fuel",
-  "temp_mcu",
-  "temp_esc",
-  "bec_voltage",
-  "altitude",
-  "watts",
-  "esc_load",
-}
-
-local function statKey(name)
-  return STAT_ALIASES[name or ""] or name
-end
-
-local function recordSensorStat(name, value)
-  local widget = currentWidget
-  if not widget or widget.flightmodeState ~= "inflight" or type(widget.dashboardStats) ~= "table" then return end
-  value = tonumber(value)
-  if value == nil then return end
-
-  local key = statKey(name)
-  local stats = widget.dashboardStats
-  -- The same min/max/average rule as the session's samples (lib/flight_stats.lua).
-  local suffix = STAT_SUFFIXES[name or ""]
-  if suffix then
-    flightStats.sample(stats, "min" .. suffix, "max" .. suffix, key, value)
-  else
-    flightStats.sample(stats, nil, nil, key, value)
-  end
-  local entry = stats[key]
-
-  -- The variance lives on the session's flight object (lib/flight_stats.lua).
-  local flight = widget.flight
-  if key == "rpm" and flight then
-    if entry.avg and entry.avg > 0 then
-      flight.headspeedVariancePct = roundSigned((math.abs(value - entry.avg) / entry.avg) * 100)
-    else
-      flight.headspeedVariancePct = nil
-    end
-  end
-
-end
-
 local function sensorValue(name)
-  local widget = currentWidget
-  if not widget then return nil end
-  if widget.connected ~= true then return nil end
-  if name == "voltage" then return widget.voltage or liveSensorValue(name), "V" end
-  if name == "cell_voltage" then
-    local cells = widget.batteryConfig and tonumber(widget.batteryConfig.cellCount)
-    local voltage = tonumber(widget.voltage) or tonumber(liveSensorValue("voltage"))
-    if cells and cells > 0 and voltage then return voltage / cells, "V" end
-    return nil, "V"
-  end
-  if name == "consumption" or name == "smartconsumption" then return widget.consumption or liveSensorValue("consumption"), "mAh" end
-  if name == "current" then return widget.current or liveSensorValue(name), "A" end
-  if name == "throttle_percent" then return widget.throttlePercent or liveSensorValue(name), "%" end
-  if name == "rpm" or name == "headspeed" then return widget.rpm or liveSensorValue(name), "rpm" end
-  if name == "tailspeed" then return liveSensorValue(name), "rpm" end
-  if name == "link" then return widget.linkQuality or liveSensorValue(name), "dB" end
-  if name == "rssi" or name == "vfr" then return liveSensorValue(name), "%" end
-  if name == "smartfuel" or name == "fuel" then return widget.fuelPercent or liveSensorValue("smartfuel"), "%" end
-  if name == "watts" then
-    local voltage = tonumber(widget.voltage) or tonumber(liveSensorValue("voltage"))
-    local current = tonumber(widget.current) or tonumber(liveSensorValue("current"))
-    if voltage and current then return voltage * current, "W" end
-    return nil, "W"
-  end
-  -- Derived, not measured: the current as a percentage of the speed controller's own limit (#2355).
-  -- Nil where no limit is on file for the model, which a box draws as `--`.
-  if name == "esc_load" then
-    local limit = tonumber(widget.escCurrentLimit)
-    local current = tonumber(widget.current) or tonumber(liveSensorValue("current"))
-    if limit and limit > 0 and current then return current / limit * 100, "%" end
-    return nil, "%"
-  end
-  if name == "governor" then return widget.governorState end
-  if name == "pid_profile" then return widget.pidProfile end
-  if name == "rate_profile" then return widget.rateProfile end
-  if name == "battery_profile" then return widget.batteryProfile end
-  if name == "temp_mcu" then return widget.tempMcu or liveSensorValue(name), "°C" end
-  if name == "temp_esc" then return widget.tempEsc or liveSensorValue(name), "°C" end
-  if name == "bec_voltage" then return widget.becVoltage or liveSensorValue(name), "V" end
-  if name == "altitude" then return liveSensorValue(name), "m" end
-  if name == "armflags" then
-    if widget.isArmed == true then return 1 end
-    if widget.isArmed == false then return 0 end
-  end
-  if name == "armdisableflags" then return widget.armDisableFlags end
-  return nil
-end
-
-function context.tasks.telemetry.collectPresentationStats()
-  if not currentWidget or currentWidget.flightmodeState ~= "inflight" then return end
-  for i = 1, #PRESENTATION_STAT_SOURCES do
-    local name = PRESENTATION_STAT_SOURCES[i]
-    local value = sensorValue(name)
-    recordSensorStat(name, value)
-  end
+  return liveSensors.read(currentWidget, name)
 end
 
 context.tasks.telemetry.sensorTable = {
@@ -966,7 +610,6 @@ context.tasks.telemetry.sensorTable = {
 
 function context.tasks.telemetry.getSensor(name, minValue, maxValue, thresholds)
   local value, unit = sensorValue(name)
-  recordSensorStat(name, value)
   local sensorDef = context.tasks.telemetry.sensorTable[name]
   local localize = sensorDef and sensorDef.localizations
   if type(localize) == "function" then
@@ -1008,9 +651,9 @@ function context.tasks.telemetry.getSensorStats(name)
     return cache
   end
   if entry then return entry end
-  -- recordSensorStat() writes stats[statKey(name)] and the flat
-  -- min<Suffix>/max<Suffix> keys from the same value, and clearDashboardStats()
-  -- empties the table as a whole (dashboard.lua). A flat key therefore only
+  -- The session's sample() (lib/flight_stats.lua) writes stats[statKey(name)] and
+  -- the flat min<Suffix>/max<Suffix> keys from the same value, and its clear()
+  -- empties the table as a whole. A flat key therefore only
   -- exists while the record above does, which the two returns above already
   -- cover -- so the temperature branch this path used to carry was unreachable.
   local suffix = STAT_SUFFIXES[name or ""]
@@ -1614,9 +1257,7 @@ function context.widgets.dashboard.clearCaches(options)
     end
   end
   if options.liveSources then
-    clearTable(liveSourceCache)
-    clearTable(liveMissRetryAt)
-    clearTable(liveMissCount)
+    liveSensors.reset()
   end
 end
 

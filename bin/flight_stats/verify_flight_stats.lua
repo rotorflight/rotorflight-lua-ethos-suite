@@ -28,6 +28,10 @@ end
 
 CATEGORY_CHANNEL = nil
 
+-- The sensor reader the session passes: the same values the dashboard shows. No
+-- transport is set here, so it reads the session fields and never a live source.
+local READ = assert(loadfile(ROOT .. "/src/rfsuite/lib/live_sensors.lua"))().read
+
 -- A fresh copy of the module, so each section starts from clean state.
 local function newFlightStats()
   package.loaded["rfsuite.lib.flight_stats"] = nil
@@ -39,7 +43,7 @@ local function tick(fs, connected, armed, values, mcu)
   local s = {connected = connected, isArmed = armed, mcuId = mcu or "craft-A",
     governorState = nil, throttlePercent = 0}
   for k, v in pairs(values or {}) do s[k] = v end
-  return fs:update(s)
+  return fs:update(s, READ)
 end
 
 local function sample(rpm, current, extra)
@@ -113,6 +117,16 @@ do
   check("every recorded value has min, max and an average entry",
     r.stats.minFuelPercent == 80 and r.stats.maxBecVoltage == 6.0 and r.stats.temp_esc.avg == 40
     and r.stats.link.count == 3 and r.stats.minConsumption == 100)
+  check("rpm has one sample per tick: the headspeed alias is not counted twice",
+    r.stats.rpm.count == 3)
+
+  local c = newFlightStats()
+  tick(c, true, true)
+  tick(c, true, true, sample(1500, 10, {governorState = 4, batteryConfig = {cellCount = 6}}))
+  check("cell voltage is the pack voltage over the cell count (22.2 V, 6 cells)",
+    c.stats.minCellVoltage ~= nil and math.abs(c.stats.minCellVoltage - 3.7) < 1e-9)
+  check("no cell count, no cell voltage", r.stats.minCellVoltage == nil)
+
   local before = r.stats.rpm.count
   tick(r, true, true, {governorState = 4, rpm = nil})
   check("a missing value is skipped, not recorded as zero", r.stats.rpm.count == before)

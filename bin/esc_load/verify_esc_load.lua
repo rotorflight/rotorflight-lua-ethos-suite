@@ -396,18 +396,17 @@ check("no current reading reads nothing", escLoad({connected = true, escCurrentL
 check("a link that is down reads nothing",
   escLoad({connected = false, escCurrentLimit = 50, current = 20}) == nil)
 
-local statsWidget = {
-  connected = true,
-  escCurrentLimit = 80,
-  current = 40,
-  flightmodeState = "inflight",
-  dashboardStats = {},
-}
-context.setWidget(statsWidget)
-context.tasks.telemetry.collectPresentationStats()
+-- The extremes are recorded by the session's flight record (lib/flight_stats.lua, #2344),
+-- from the same sensor values the dashboard shows (lib/live_sensors.lua).
+local statsState = {connected = true, isArmed = true, governorState = 4, mcuId = "esc-load",
+  escCurrentLimit = 80, current = 40}
+local record = requireModule("lib/flight_stats.lua").new()
+local liveSensors = requireModule("lib/live_sensors.lua")
+record:update(statsState, liveSensors.read) -- the armed edge
+record:update(statsState, liveSensors.read) -- governor active: in flight
 check("inflight presentation stats record esc_load",
-  statsWidget.dashboardStats.esc_load and statsWidget.dashboardStats.esc_load.max == 50,
-  "got " .. tostring(statsWidget.dashboardStats.esc_load and statsWidget.dashboardStats.esc_load.max))
+  record.stats.esc_load and record.stats.esc_load.max == 50,
+  "got " .. tostring(record.stats.esc_load and record.stats.esc_load.max))
 
 print(string.format("\n%d checks, %d failed", checks, failures))
 os.exit(failures == 0 and 0 or 1)
