@@ -120,14 +120,14 @@ do
   -- Opens the page with `managed` switches on and `unmanaged` native slots kept,
   -- then taps one more switch. Returns true when the tap was refused, and the
   -- number of dialogs that opened.
-  local function tapOneMore(managed, unmanaged, source)
+  local function tapOneMore(managed, unmanaged, source, mode)
     local slots = {}
     for i = 1, managed do slots[i] = candidates[i] end
     for i = 1, unmanaged do slots[managed + i] = 500 + i end -- not in the catalog
     for i = #slots + 1, 40 do slots[i] = 0 end
 
-    local spec, setters, dialogs = nil, {}, 0
-    local data = {telemetry = {crsf_telemetry_mode = CUSTOM, slots = slots}, feature = {}}
+    local spec, setters, dialogs, tags = nil, {}, 0, {}
+    local data = {telemetry = {crsf_telemetry_mode = mode or CUSTOM, slots = slots}, feature = {}}
     local stubs = {
       form = {
         clear = function() end,
@@ -135,6 +135,17 @@ do
         addExpansionPanel = function()
           return {open = function() end,
             addLine = function(_, name) return {label = name} end}
+        end,
+        getFieldSlots = function(_, hints)
+          local out = {}
+          for i = 1, #hints do out[i] = {x = i, y = 0, w = 10, h = 10} end
+          return out
+        end,
+        addStaticText = function(line, _, text)
+          local tag = {text = text}
+          function tag:value(v) self.text = v end
+          tags[line.label] = tag
+          return tag
         end,
         addBooleanField = function(line, _, _, setter)
           setters[line.label] = setter
@@ -167,7 +178,7 @@ do
 
     local target = catalog.SENSOR_LIST[candidates[managed + 1]].name
     local accepted = setters[target](true)
-    return accepted == false, dialogs
+    return accepted == false, dialogs, tags
   end
 
   -- The page as shipped.
@@ -193,6 +204,36 @@ do
   refused, dialogs = tapOneMore(37, 3, oldGate)
   check("the old gate accepts the 38th tap (this check can go red)", (not refused) and dialogs == 0,
     "refused=" .. tostring(refused) .. " dialogs=" .. dialogs)
+
+  -- Native tags (#2407): only the native-locked rows get one, and it reads
+  -- "native" only while the FC is in NATIVE mode.
+  local NATIVE = 0
+  local lockedNames, lockedCount = {}, 0
+  for id in pairs(catalog.NATIVE_LOCKED_IDS) do
+    lockedNames[catalog.SENSOR_LIST[id].name] = true
+    lockedCount = lockedCount + 1
+  end
+  local _, _, nativeTags = tapOneMore(0, 0, pageSource, NATIVE)
+  local tagged, wrong = 0, 0
+  for name, tag in pairs(nativeTags) do
+    if lockedNames[name] then
+      tagged = tagged + 1
+      if tag.text ~= "@i18n(app.modules.elrs_telemetry.mode_native)@" then wrong = wrong + 1 end
+    end
+  end
+  check("NATIVE mode: every native-locked row carries the native tag",
+    tagged == lockedCount and wrong == 0, "tagged=" .. tagged .. "/" .. lockedCount .. " wrong=" .. wrong)
+  local strayTags = 0
+  for name in pairs(nativeTags) do
+    if not lockedNames[name] then strayTags = strayTags + 1 end
+  end
+  check("NATIVE mode: no other row gets a tag", strayTags == 0, "stray=" .. strayTags)
+  local _, _, customTags = tapOneMore(0, 0, pageSource, CUSTOM)
+  local customText = 0
+  for _, tag in pairs(customTags) do
+    if tag.text ~= "" then customText = customText + 1 end
+  end
+  check("CUSTOM mode: the tags exist but stay empty", customText == 0, "non-empty=" .. customText)
 
   form = savedForm
   package.loaded["rfsuite.lib.require"] = savedRequire

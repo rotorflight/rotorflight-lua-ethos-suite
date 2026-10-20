@@ -28,6 +28,15 @@ local PAGE_TITLE = "@i18n(app.modules.telemetry.name)@"
 local BTN_OK = "@i18n(app.btn_ok)@"
 local BTN_CANCEL = "@i18n(app.btn_cancel)@"
 
+-- Shown beside a native-locked switch while the FC is in NATIVE mode (#2407).
+-- Reuses the ELRS page's existing "native" string; the sizing hints only
+-- reserve room for it and are never drawn.
+local NATIVE_TAG = "@i18n(app.modules.elrs_telemetry.mode_native)@"
+local NATIVE_TAG_HINT = "  WWWWWW  "
+-- Sized like the switch's own "OFF [switch] ON" run, so the switch keeps its
+-- width beside the tag.
+local SWITCH_HINT = "  OFF  WWW  ON  "
+
 -- Firmware's CRSF_TELEMETRY_MODE_* (src/main/pg/telemetry.h, 0 = NATIVE).
 local CRSF_TELEMETRY_MODE_NATIVE = 0
 local CRSF_TELEMETRY_MODE_CUSTOM = 1
@@ -240,6 +249,15 @@ local function open(opts)
   -- loading. Read into a local rather than read back off runtime.data, so
   -- beforeSave/collectSelected see the mode the *page* was built against.
   local crsfMode = nil
+  -- Native-lock tags by sensor id, filled in while the rows are built and
+  -- retexted once the FC's mode is known (see refreshNativeTags()).
+  local nativeTags = {}
+
+  local function refreshNativeTags()
+    for id, tag in pairs(nativeTags) do
+      tag:value(isNativeLocked(crsfMode, id) and NATIVE_TAG or "")
+    end
+  end
 
   local function refreshConflictFields()
     for id, field in pairs(fieldsBySensor) do
@@ -291,6 +309,7 @@ local function open(opts)
       selectedFromSlots(telemetry.slots, selected)
       previousConflictState = {}
       refreshConflictFields()
+      refreshNativeTags()
       if form.invalidate then form.invalidate() end
     end,
     beforeSave = function(rt)
@@ -381,7 +400,15 @@ local function open(opts)
         local sensor = catalog.SENSOR_LIST[id]
         local sensorId = id
         local line = panel:addLine(sensor.name)
-        local field = form.addBooleanField(line, nil,
+        -- Only the native-locked rows carry a tag. The tag and the switch
+        -- share the line; the switch keeps the right-hand slot it always had.
+        local switchSlot = nil
+        if catalog.NATIVE_LOCKED_IDS[sensorId] == true then
+          local slots = form.getFieldSlots(line, {0, NATIVE_TAG_HINT, SWITCH_HINT})
+          nativeTags[sensorId] = form.addStaticText(line, slots[2], "")
+          switchSlot = slots[3]
+        end
+        local field = form.addBooleanField(line, switchSlot,
           function()
             -- Fixed-by-FC reads as on even if nothing put it in `selected`:
             -- the FC is sending it, so the switch must not show off.

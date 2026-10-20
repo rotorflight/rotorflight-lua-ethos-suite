@@ -34,13 +34,17 @@ Greyed out until the flight controller answers. Read-only while the model is arm
   that would go over is refused when you tap it, with a dialog that says so.
   The save counts the same slots, so the tap and the save agree on the number. One case is still refused at the tap: a switch that turns off a conflicting child while all 40 slots are in use, even when the save would accept the result.
 - **Some sensors cannot be switched off while the flight controller is in
-  native CRSF telemetry mode**: *Altitude*, *Attitude (Combined)* and *Flight
-  mode*, and the per-axis children *Pitch Attitude*, *Roll Attitude* and *Yaw
-  Attitude*. The flight controller sends those as whole CRSF frames in that
+  native CRSF telemetry mode**: *Altitude*, *Attitude (Combined)* and the native
+  *Flight mode*. The flight controller sends those as whole CRSF frames in that
   mode whether a slot selects them or not, so their switches read as on, stay
-  greyed out and ignore taps. This is not a fault — those sensors really are
-  being sent. The lock applies only in native mode: in custom mode all of them
-  are ordinary selectable sensors, and the page gives them back.
+  greyed out and ignore taps. The per-axis children *Pitch Attitude*, *Roll
+  Attitude* and *Yaw Attitude* are greyed out for a different reason: they
+  conflict with *Attitude (Combined)*, so the flight controller sends the
+  combined sensor instead. Beside *Altitude*, *Attitude (Combined)* and *Flight
+  mode*, the word *native* shows while the flight controller is in native mode.
+  This is not a fault — those sensors really are being sent. The lock applies
+  only in native mode: in custom mode all of them are ordinary selectable
+  sensors, and the page gives them back.
 - **Saving sets the flight controller's CRSF telemetry mode to *Custom*.** The
   suite reads custom telemetry only, so it cannot show sensors otherwise. The
   flight controller's mode is *Native* or *Custom* and this page has no control

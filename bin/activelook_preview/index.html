@@ -15,15 +15,18 @@
 
     :root {
       color-scheme: dark;
-      --ink: #e6e8ea;
-      --muted: #9ba2a8;
-      --panel: #1a1d20;
-      --panel-raised: #24282c;
-      --line: #383d42;
-      --rotorflight-blue: #00a8e0;
+      /* UI typography and dark palette: https://rotorflight.org/.
+         The canvas keeps the glasses' own ActiveLook font and yellow projection. */
+      --ink: #f2f5f8;
+      --muted: #98a4b0;
+      --panel: #18212a;
+      --panel-raised: #24303c;
+      --line: rgba(255, 255, 255, 0.12);
+      --rotorflight-blue: #007cc7;
+      --accent-text: #4fb3f0;
+      --secondary-text: #c3ccd5;
       --amber: #e6ad48;
-      --screen: #030708;
-      font-family: "Bahnschrift", "Arial Narrow", sans-serif;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
       font-synthesis: none;
     }
 
@@ -34,7 +37,7 @@
       min-width: 320px;
       min-height: 100vh;
       color: var(--ink);
-      background: #111315;
+      background: #0e1318;
     }
 
     button, select, input { font: inherit; }
@@ -49,6 +52,7 @@
     header {
       display: flex;
       align-items: flex-end;
+      flex-wrap: wrap;
       justify-content: space-between;
       gap: 24px;
       padding-bottom: 20px;
@@ -63,9 +67,12 @@
       text-transform: uppercase;
     }
 
-    h1 { margin: 5px 0 0; font-family: "Bahnschrift SemiCondensed", "Bahnschrift", "Arial Narrow", sans-serif; font-size: 27px; line-height: 1.1; font-weight: 700; }
+    h1 { margin: 5px 0 0; font-size: 27px; line-height: 1.1; font-weight: 700; }
 
-    .eyebrow { color: var(--rotorflight-blue); }
+    .eyebrow { color: var(--accent-text); }
+    .brand-heading { display: flex; align-items: center; gap: 24px; flex-wrap: wrap; }
+    .brand-logo { display: block; width: 200px; max-width: 100%; height: auto; }
+    .activelook-logo { display: block; width: 100px; height: auto; mix-blend-mode: screen; }
 
     .sim-badge {
       display: inline-flex;
@@ -73,7 +80,7 @@
       gap: 9px;
       padding: 8px 11px;
       border: 1px solid #62502f;
-      border-radius: 2px;
+      border-radius: 4px;
       color: #f4d293;
       background: #211e18;
       font-size: 12px;
@@ -95,27 +102,38 @@
     main { display: grid; grid-template-columns: minmax(0, 1.55fr) minmax(310px, .85fr); gap: 28px; padding-top: 24px; }
     .preview-column, .controls-column { min-width: 0; }
     .section-heading { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 12px; }
-    .section-heading h2 { margin: 0; font-size: 15px; font-weight: 650; }
+    .section-heading h2 { margin: 0; font-size: 15px; font-weight: 600; }
     .screen-meta { letter-spacing: 0; }
 
     .screen-frame {
       padding: 10px;
-      border: 1px solid #444a50;
-      border-radius: 3px;
-      background: #202428;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      background: #141b22;
     }
 
-    canvas {
+    .eyewear-preview { position: relative; overflow: hidden; background: #060906; }
+    .eyewear-photo { display: block; width: 100%; height: auto; }
+    /* Cover the photograph's printed telemetry without changing the source image. */
+    .lens-cleanup {
+      position: absolute;
+      left: 70%; top: 23%; width: 17%; height: 16%;
+      background: linear-gradient(120deg, #0f0f0f, #0b0c0e 75%, #0e0f11);
+      filter: blur(4px);
+    }
+    #display {
+      position: absolute;
+      left: 71.2%; top: 23.2%; width: 15.5%;
       display: block;
-      width: 100%;
       aspect-ratio: 19 / 16;
-      border: 1px solid #20292b;
-      background: var(--screen);
+      background: transparent;
+      transform: rotate(-4deg) skewX(-3deg);
+      filter: blur(0.25px);
       image-rendering: auto;
     }
 
-    .screen-footer { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; padding: 12px 4px 2px; color: #c1c8cd; font-size: 14px; line-height: 1.3; }
-    .screen-footer strong { color: var(--rotorflight-blue); font-size: 20px; font-weight: 700; }
+    .screen-footer { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; padding: 12px 4px 2px; color: var(--secondary-text); font-size: 14px; line-height: 1.3; }
+    .screen-footer strong { color: var(--accent-text); font-size: 20px; font-weight: 700; }
     .screen-footer span:last-child { color: var(--muted); font-size: 11px; }
 
     .phase-switch {
@@ -124,28 +142,28 @@
       gap: 4px;
       padding: 4px;
       border: 1px solid var(--line);
-      border-radius: 2px;
-      background: #171a1d;
+      border-radius: 4px;
+      background: #131a21;
     }
 
     .phase-button {
       min-height: 38px;
       border: 1px solid transparent;
-      border-radius: 2px;
-      color: #a9b6b7;
+      border-radius: 4px;
+      color: var(--muted);
       background: transparent;
       cursor: pointer;
       font-size: 12px;
       font-weight: 700;
     }
 
-    .phase-button[aria-pressed="true"] { border-color: var(--rotorflight-blue); color: #e1f7ff; background: #15313c; }
+    .phase-button[aria-pressed="true"] { border-color: var(--rotorflight-blue); color: var(--ink); background: rgba(0, 124, 199, 0.2); }
 
     .control-block { padding: 19px 0; border-bottom: 1px solid var(--line); }
     .control-block:first-child { padding-top: 0; }
     .control-block:last-child { border-bottom: 0; }
     .control-title { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin-bottom: 13px; }
-    .control-title h3 { margin: 0; font-size: 14px; font-weight: 650; }
+    .control-title h3 { margin: 0; font-size: 14px; font-weight: 600; }
     .control-title span { color: var(--muted); font-size: 11px; }
 
     .field-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
@@ -153,15 +171,15 @@
     .telemetry-groups { display: grid; gap: 17px; }
     .telemetry-group { padding-top: 12px; border-top: 1px solid var(--line); }
     .telemetry-group:first-child { padding-top: 0; border-top: 0; }
-    .telemetry-group h4 { margin: 0 0 10px; color: #c5cbd0; font-size: 12px; font-weight: 700; }
+    .telemetry-group h4 { margin: 0 0 10px; color: var(--secondary-text); font-size: 12px; font-weight: 700; }
     .field-label { font-size: 10px; letter-spacing: 0; }
     input, select {
       width: 100%;
       min-width: 0;
       height: 36px;
       padding: 0 9px;
-      border: 1px solid #41474d;
-      border-radius: 2px;
+      border: 1px solid var(--line);
+      border-radius: 4px;
       color: var(--ink);
       background: var(--panel);
     }
@@ -170,7 +188,7 @@
     .slots { display: grid; gap: 8px; }
     .slot-row { display: grid; grid-template-columns: 34px minmax(0, 1fr); align-items: center; gap: 8px; }
     .slot-row[hidden] { display: none; }
-    .slot-number { color: var(--rotorflight-blue); font-size: 11px; font-weight: 700; text-align: center; }
+    .slot-number { color: var(--accent-text); font-size: 11px; font-weight: 700; text-align: center; }
     .slot-row select { height: 34px; }
 
     .layout-field { margin-bottom: 13px; }
@@ -180,16 +198,16 @@
     .reset-button {
       min-height: 34px;
       padding: 0 11px;
-      border: 1px solid #494f55;
-      border-radius: 2px;
+      border: 1px solid var(--line);
+      border-radius: 4px;
       color: var(--ink);
       background: var(--panel-raised);
       cursor: pointer;
       font-size: 12px;
     }
     .reset-button:not(:disabled):hover { border-color: var(--rotorflight-blue); }
-    .reset-button:disabled { border-color: #353a3f; color: #80878d; background: #1a1d20; cursor: not-allowed; }
-    .reset-button:disabled:hover { border-color: #353a3f; }
+    .reset-button:disabled { border-color: var(--line); color: var(--muted); background: #131a21; cursor: not-allowed; }
+    .reset-button:disabled:hover { border-color: var(--line); }
 
     @media (max-width: 900px) {
       main { grid-template-columns: minmax(0, 1fr); gap: 30px; }
@@ -201,6 +219,7 @@
       .app-shell { padding-top: 20px; }
       header { align-items: flex-start; flex-direction: column; gap: 14px; }
       h1 { font-size: 24px; }
+      .brand-heading { align-items: flex-start; flex-direction: column; gap: 12px; }
       .controls-column { display: block; }
       .section-heading { align-items: flex-start; flex-direction: column; gap: 5px; }
       .screen-frame { padding: 6px; }
@@ -211,9 +230,14 @@
 <body>
   <div class="app-shell">
     <header>
-      <div>
+      <div class="brand-heading">
+        <img class="brand-logo" src="./rotorflight-logo.png" alt="Rotorflight" width="400" height="84">
+        <div>
         <div class="eyebrow">Rotorflight · Bench tools</div>
         <h1>ActiveLook Preview</h1>
+        </div>
+        <!-- Original asset: https://github.com/ActiveLook/Activelook-Visual-Assets (CC0). -->
+        <img class="activelook-logo" src="./0_splash_10fps.gif" alt="ActiveLook" width="187" height="168">
       </div>
       <div class="sim-badge" id="source-status" data-state="waiting">Waiting for simulator sensor feed</div>
     </header>
@@ -225,7 +249,11 @@
           <span class="screen-meta">304 × 256 · EnGo 2</span>
         </div>
         <div class="screen-frame">
-          <canvas id="display" width="304" height="256" aria-label="Simulated ActiveLook display"></canvas>
+          <div class="eyewear-preview">
+            <img class="eyewear-photo" src="./Engo-Sports-Eyewear.jpg" alt="ENGO sports glasses with live telemetry projected in the lens" width="900" height="780">
+            <div class="lens-cleanup" aria-hidden="true"></div>
+            <canvas id="display" width="304" height="256" aria-label="Simulated ActiveLook display"></canvas>
+          </div>
           <div class="screen-footer">
             <span>Phase: <strong id="phase-label">PRE-FLIGHT</strong></span>
             <span id="layout-label">Stacked Large + Large + Small</span>
@@ -866,8 +894,7 @@
           canvas.height = height;
         }
         context.setTransform(canvas.width / VIEW_WIDTH, 0, 0, canvas.height / VIEW_HEIGHT, 0, 0);
-        context.fillStyle = "#030708";
-        context.fillRect(0, 0, VIEW_WIDTH, VIEW_HEIGHT);
+        context.clearRect(0, 0, VIEW_WIDTH, VIEW_HEIGHT);
         if (simulatorConfigLoaded && !simulatorConfigEnabled) return;
         lowFuelRepeat();
         const overlay = lowFuelActive();
@@ -889,7 +916,7 @@
           if (slot.align === "center") {
             x += Math.max(0, (slot.width - context.measureText(text).width - iconWidth) / 2);
           }
-          context.fillStyle = TEXT_COLOR;
+          context.fillStyle = "#f2e300";
           context.fillText(text, Math.round(x), Math.round(8 + slot.y));
           if (slot.icon && lowFuelIcon) {
             context.globalCompositeOperation = "lighter";
