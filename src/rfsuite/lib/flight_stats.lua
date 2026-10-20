@@ -83,23 +83,61 @@ end
 -- One value into the extremes: flat min/max keys (when given) and the
 -- {min, max, sum, count, avg} entry under `key`. Shared with the dashboard's own
 -- sensor samples (widgets/dashboard/context.lua).
-local function sample(stats, minKey, maxKey, key, value)
+-- `noMin` leaves both minima out: those are taken by the powered gate below.
+local function sample(stats, minKey, maxKey, key, value, noMin)
   value = tonumber(value)
   if value == nil then return end
   if minKey then
-    if stats[minKey] == nil or value < stats[minKey] then stats[minKey] = value end
+    if not noMin and (stats[minKey] == nil or value < stats[minKey]) then stats[minKey] = value end
     if stats[maxKey] == nil or value > stats[maxKey] then stats[maxKey] = value end
   end
   local entry = stats[key]
   if not entry then
-    entry = {min = value, max = value, sum = 0, count = 0, avg = value}
+    entry = {min = (not noMin) and value or nil, max = value, sum = 0, count = 0, avg = value}
     stats[key] = entry
   end
-  if value < entry.min then entry.min = value end
+  if not noMin and value < entry.min then entry.min = value end
   if value > entry.max then entry.max = value end
   entry.sum = entry.sum + value
   entry.count = entry.count + 1
   entry.avg = entry.sum / entry.count
+end
+
+-- The powered gate for the minima of headspeed and current (#2344), as the EdgeTX suite's
+-- flight record has it (tasks/events/telemetry/flight_record.lua, EdgeTX PR #384).
+--
+-- A minimum taken over the whole flight phase is the minimum of the spool-up and the
+-- spool-down: the first readings after arming are the lowest of the flight, and minimum
+-- current reads 0 A. So these two minima are only taken while the rotor is under power.
+-- The maxima, and every other value, keep the whole flight phase.
+--
+-- With the FC's governor state, "under power" is ACTIVE (4) or BYPASS (9) held for 2 s. The
+-- state is trusted once a value in its own range has been seen in this flight; without it
+-- (governor off, or the sensor not sent) the head has to turn (>= 100 rpm) and be driven
+-- (throttle >= 25 % or current >= 1.5 A) for 2 s, and the minimum is offered the reading of
+-- 2 s ago, so the last 2 s of a driven stretch -- a spool-down, a bogging head -- never count.
+-- The gate runs on the EdgeTX cadence of 0.5 s, so the hold and the delay are the same there.
+local POWERED_GOVERNOR_STATE = {[4] = true, [9] = true}
+local SPINNING_RPM = 100
+local DRIVEN_THROTTLE_PERCENT = 25
+local DRIVEN_CURRENT = 1.5
+local GATE_INTERVAL = 0.5
+local POWERED_HOLD_SAMPLES = 4
+local POWERED_TAIL_SAMPLES = 4
+
+-- Offers one minimum through the gate. `line` holds the last four gate samples of this
+-- sensor; without a governor state the value offered is the one of four samples ago.
+local function offerMin(self, line, key, minKey, value, positive)
+  value = tonumber(value)
+  if value == nil then return end
+  if not self.govStateSeen then
+    value, line[1], line[2], line[3], line[4] = line[1], line[2], line[3], line[4], value
+  end
+  if not self.powered or value == nil or (positive and value <= 0) then return end
+  local stats = self.stats
+  if stats[minKey] == nil or value < stats[minKey] then stats[minKey] = value end
+  local entry = stats[key]
+  if entry and (entry.min == nil or value < entry.min) then entry.min = value end
 end
 
 local FlightStats = {}
@@ -108,6 +146,10 @@ FlightStats.__index = FlightStats
 function FlightStats:clear()
   for key in pairs(self.stats) do self.stats[key] = nil end
   self.headspeedVariancePct = nil
+  self.govStateSeen = false
+  self.poweredSamples = 0
+  self.powered = false
+  self.gateAt = nil
 end
 
 -- The dashboard's "reset flight" action, and the start state.
@@ -119,14 +161,14 @@ function FlightStats:reset()
 end
 
 function flight_stats.new()
-  local self = setmetatable({stats = {}}, FlightStats)
+  local self = setmetatable({stats = {}, rpmLine = {}, currentLine = {}}, FlightStats)
   self:reset()
   return self
 end
 
 -- One tick. `s` is the session: connected, isArmed, mcuId, governorState, rxMap,
 -- throttlePercent and the fields `read` takes its values from. Returns the phase.
-function FlightStats:update(s, read)
+function FlightStats:update(s, read, now)
   local previous = self.phase
   local connected = s.connected == true
   local armed = s.isArmed == true
@@ -187,12 +229,35 @@ function FlightStats:update(s, read)
 
   if mode == "inflight" then
     if previous == "preflight" or previous == "armed" then self:clear() end
-    local stats, rpm = self.stats, nil
+    local stats, rpm, current, throttle = self.stats, nil, nil, nil
     for i = 1, #ROWS, 3 do
       local name = ROWS[i]
       local value = read(s, name)
-      sample(stats, ROWS[i + 1], ROWS[i + 2], name, value)
-      if name == "rpm" then rpm = tonumber(value) end
+      local gated = name == "rpm" or name == "current"
+      sample(stats, ROWS[i + 1], ROWS[i + 2], name, value, gated)
+      if name == "rpm" then rpm = tonumber(value)
+      elseif name == "current" then current = tonumber(value)
+      elseif name == "throttle_percent" then throttle = tonumber(value) end
+    end
+
+    now = now or os.clock()
+    if self.gateAt == nil or now >= self.gateAt then
+      self.gateAt = now + GATE_INTERVAL
+      local governor = tonumber(s.governorState)
+      if governor and governor >= 1 and governor <= 9 then self.govStateSeen = true end
+      local gate, need
+      if self.govStateSeen then
+        gate = POWERED_GOVERNOR_STATE[governor] == true
+        need = POWERED_HOLD_SAMPLES
+      else
+        gate = (rpm or 0) >= SPINNING_RPM
+          and ((throttle or 0) >= DRIVEN_THROTTLE_PERCENT or (current or 0) >= DRIVEN_CURRENT)
+        need = POWERED_HOLD_SAMPLES + POWERED_TAIL_SAMPLES
+      end
+      self.poweredSamples = gate and self.poweredSamples + 1 or 0
+      self.powered = self.poweredSamples >= need
+      offerMin(self, self.rpmLine, "rpm", "minRpm", rpm, true)
+      offerMin(self, self.currentLine, "current", "minCurrent", current, false)
     end
     local entry = stats.rpm
     if rpm and entry and entry.avg > 0 then

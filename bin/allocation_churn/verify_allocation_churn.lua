@@ -547,14 +547,14 @@ do
     "headspeed", "link", "fuel", "smartfuel", "throttle_percent", "temp_mcu", "temp_esc",
     "bec_voltage" }
 
-  -- Record once through the real path: two ticks of the session's flight record on
-  -- this state, the armed edge and then in flight with the governor active.
+  -- Record through the real path: the session's flight record on this state, the armed
+  -- edge and then 2.5 s in flight with the governor active, so the powered gate has
+  -- opened and the rpm and current minima are taken too.
   local liveSensors = package.loaded["rfsuite.lib.live_sensors"]
   local record = package.loaded["rfsuite.lib.flight_stats"].new()
   record.stats = stats
   widget.isArmed, widget.governorState, widget.mcuId = true, 4, "churn"
-  record:update(widget, liveSensors.read)
-  record:update(widget, liveSensors.read)
+  for tick = 1, 6 do record:update(widget, liveSensors.read, tick * 0.5) end
 
   local problems = {}
   for _, name in ipairs(flatOnly) do

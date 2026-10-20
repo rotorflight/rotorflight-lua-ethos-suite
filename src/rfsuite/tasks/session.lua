@@ -1729,7 +1729,7 @@ local function wakeup(mspQueue, protocol, transport, simSensors)
   end
 
   updateFlightTimer(now)
-  local flightPhase = flightRecord:update(session, liveSensors.read)
+  local flightPhase = flightRecord:update(session, liveSensors.read, now)
   if flightPhase ~= session.flightState then
     session.flightState = flightPhase
     publish()

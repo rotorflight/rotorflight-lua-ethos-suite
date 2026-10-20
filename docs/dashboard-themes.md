@@ -189,6 +189,12 @@ The min, max and average values these objects show are recorded by the backgroun
 model is in flight, once per tick, whether a dashboard is on screen or not (`lib/flight_stats.lua`).
 Drawing a dashboard does not add samples.
 
+The minimum headspeed and the minimum current are taken only while the rotor is under power, so
+the spool-up and the spool-down do not set them: with the flight controller's governor state, after
+2 s in ACTIVE or BYPASS; without it, after the head has turned at 100 rpm or more and been driven
+(throttle at 25 % or more, or current at 1.5 A or more) for 2 s, from the readings of 2 s earlier.
+Until then these two minima read `--`. The maxima and all other values cover the whole flight.
+
 **Common Parameters:**
 
 * `value` (for `text` subtype)
