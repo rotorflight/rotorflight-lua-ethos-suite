@@ -182,6 +182,7 @@ end
 --                               -- page writes its own non-FC storage and does not request MSP_EEPROM_WRITE.
 --   onTool,                     -- optional; enables the header Tool button and runs page-specific
 --                               -- actions from the app tool's own callback context.
+--   toolIcon,                   -- optional mask path for the Tool button (default app/gfx/nav/tool.png).
 --   onWakeup,                   -- optional; called from the page_runtime wakeup handler after its own
 --                               -- deferred dialog/reload work.
 --   onPaint,                    -- optional; called from app/tool.lua's paint callback while page is open.
@@ -251,6 +252,7 @@ function PageRuntime.new(config)
   self.extraSaveMessage = config.extraSaveMessage
   self.eepromWrite = config.eepromWrite ~= false
   self.onTool = config.onTool
+  self.toolIcon = config.toolIcon
   self.onWakeup = config.onWakeup
   self.onPaint = config.onPaint
   self.onDispose = config.onDispose
@@ -1287,6 +1289,7 @@ function PageRuntime:dispose()
   self.onLoaded = nil
   self.beforeSave = nil
   self.onTool = nil
+  self.toolIcon = nil
   self.onWakeup = nil
   self.onPaint = nil
   self.onDispose = nil
@@ -1402,6 +1405,7 @@ function PageRuntime:buildChrome()
         runtime.onTool(runtime.headerHandle.focusTool)
       end
     end or nil,
+    toolIcon = self.toolIcon,
   })
   self:setBusy(true)
 

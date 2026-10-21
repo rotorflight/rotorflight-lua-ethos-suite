@@ -101,6 +101,23 @@ local RELOAD_ICON = lcd.loadMask("app/gfx/nav/reload.png")
 local TOOL_ICON = lcd.loadMask("app/gfx/nav/tool.png")
 local INFO_ICON = lcd.loadMask("app/gfx/nav/info.png")
 
+-- Pages may swap the Tool button's icon for one that says what their tool
+-- does (opts.toolIcon, a mask path). Ethos has no setter for a button's
+-- icon, so it is chosen when the header is built. Masks are cached by path
+-- for the module's lifetime, like the ones above, so reopening a page loads
+-- nothing; the cache only ever holds the few icons pages actually name.
+local toolIconCache = {}
+
+local function resolveToolIcon(path)
+  if not path then return TOOL_ICON end
+  local mask = toolIconCache[path]
+  if mask == nil then
+    mask = lcd.loadMask(path) or false
+    toolIconCache[path] = mask
+  end
+  return mask or TOOL_ICON
+end
+
 -- Width hint for every icon button slot (see the header comment above).
 local SLOT_HINT = "  WWW  "
 
@@ -214,6 +231,7 @@ end
 --   onSave = function() ... end,   -- optional; enables the "Save" button
 --   onReload = function() ... end, -- optional; enables the "Reload" button
 --   onTool = function() ... end,   -- optional; enables the "Tool" button
+--   toolIcon = "app/gfx/nav/x.png", -- optional; Tool button icon (default tool.png)
 -- }
 -- Returns {setTitle = fn(text), setSaveEnabled = fn(enabled),
 -- setReloadEnabled = fn(enabled), setToolEnabled = fn(enabled),
@@ -270,7 +288,7 @@ function header.build(title, opts)
   local reloadButton = addNavButton(line, slots[4], RELOAD_ICON, opts.onReload or noop)
   reloadButton:enable(opts.onReload ~= nil)
 
-  local toolButton = addNavButton(line, slots[5], TOOL_ICON, opts.onTool or noop)
+  local toolButton = addNavButton(line, slots[5], resolveToolIcon(opts.toolIcon), opts.onTool or noop)
   -- The connection details, on every page (#2318): an icon only, opens the link's status.
   local infoButton = addNavButton(line, slots[6], INFO_ICON, function() connectionDetails.open() end)
   toolButton:enable(opts.onTool ~= nil)
