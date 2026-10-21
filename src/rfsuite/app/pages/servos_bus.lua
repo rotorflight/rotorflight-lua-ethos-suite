@@ -170,6 +170,7 @@ local function openEditor(opts, listState, row)
     beforeSave = function(rt)
       rt.data.flags = flagsFor(rt.data.reverse, rt.data.geometry)
     end,
+    toolIcon = "app/gfx/nav/override.png",
     onTool = function(focusFn)
       form.openDialog({
         title = inOverride and "@i18n(app.modules.servos.disable_servo_override)@"
@@ -261,6 +262,7 @@ openList = function(opts, listState)
   form.clear()
   local headerHandle = header.build(PAGE_TITLE, {
     onBack = leaveList,
+    toolIcon = "app/gfx/nav/override.png",
     onTool = function(focusFn)
       form.openDialog({
         title = listState.inOverride and "@i18n(app.modules.servos.disable_servo_override)@"

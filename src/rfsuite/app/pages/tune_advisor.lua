@@ -868,6 +868,7 @@ local function open(opts)
       probe()
       if headerHandle then headerHandle.focusReload() end
     end,
+    toolIcon = "app/gfx/nav/erase.png",
     onTool = confirmClear,
   })
 

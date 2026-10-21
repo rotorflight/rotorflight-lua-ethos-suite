@@ -160,6 +160,7 @@ local function open(opts)
         collective.min_stabilized_collective = s16ToU16(-math.abs(collectiveLimit))
       end
     end,
+    toolIcon = "app/gfx/nav/override.png",
     onTool = function(focusFn)
       form.openDialog({
         title = inOverride and "@i18n(app.modules.mixer.disable_swash_override)@"

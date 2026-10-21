@@ -188,6 +188,7 @@ local function open(opts)
   form.clear()
   headerHandle = header.build(PAGE_TITLE, {
     onBack = goBack,
+    toolIcon = "app/gfx/nav/start.png",
     onTool = openStartDialog,
   })
 

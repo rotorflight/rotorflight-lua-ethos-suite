@@ -122,6 +122,7 @@ local function open(opts)
       waitingFocus = nil
       statusInFlight = false
     end,
+    toolIcon = "app/gfx/nav/calibrate.png",
     onTool = function(focusFn)
       if not runtime.loaded then return end
       form.openDialog({

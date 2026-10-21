@@ -243,6 +243,7 @@ local function open(opts)
       syncDisplayFromData()
       visual.draw(state)
     end,
+    toolIcon = "app/gfx/nav/recenter.png",
     onTool = function(focusFn)
       form.openDialog({
         title = PAGE_TITLE,
