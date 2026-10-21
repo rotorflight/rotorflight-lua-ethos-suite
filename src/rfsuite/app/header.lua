@@ -15,9 +15,8 @@
 -- disabled, same as the original's own pids.lua (which never defines
 -- onToolMenu, and navButtons defaults tool=false unless a page opts in).
 -- A screen that provides none of onSave/onReload/onTool (menu/tile
--- screens, see app/menu_container.lua) gets a Menu-only header instead --
--- matching the original forcing MENU_ONLY_NAV_BUTTONS on submenu/tile
--- screens.
+-- screens, see app/menu_container.lua) gets the same row with Save/Reload/
+-- Tool all disabled, so the Menu button never sits alone mid-row.
 --
 -- Built entirely from the same proven idiom already used elsewhere in
 -- this app (see app/pages/pids.lua's grid: form.addLine(label) +
@@ -226,6 +225,20 @@ local function buildTitleRect(slots)
   return {x = 0, y = slots[1].y, w = slots[2].x, h = slots[1].h}
 end
 
+-- Lays out the row: title, then Menu/Save/Reload/Tool at full width and the
+-- info button at half width, right-aligned. The four nav buttons move right
+-- by the width the info button gives up, so the title gains that space.
+local function layoutSlots(line)
+  local slots = form.getFieldSlots(line, {0, SLOT_HINT, SLOT_HINT, SLOT_HINT, SLOT_HINT, SLOT_HINT})
+  local info = slots[6]
+  local infoW = math.floor(info.w / 2)
+  local shift = info.w - infoW
+  info.x = info.x + shift
+  info.w = infoW
+  for i = 2, 5 do slots[i].x = slots[i].x + shift end
+  return slots
+end
+
 -- opts: {
 --   onBack = function() ... end,   -- required; the permanent "Menu" button
 --   onSave = function() ... end,   -- optional; enables the "Save" button
@@ -255,11 +268,16 @@ function header.build(title, opts)
   local isLeafPage = (opts.onSave ~= nil) or (opts.onReload ~= nil) or (opts.onTool ~= nil)
 
   if not isLeafPage then
-    -- The info button sits in the same slot as on the leaf pages (#2318), so it reads the same everywhere.
-    local slots = form.getFieldSlots(line, {0, SLOT_HINT, SLOT_HINT, SLOT_HINT, SLOT_HINT, SLOT_HINT})
+    -- Same row as the leaf pages, with Save/Reload/Tool shown disabled, so
+    -- the Menu button sits in the same place on every screen instead of
+    -- floating alone mid-row.
+    local slots = layoutSlots(line)
     local titleRect = buildTitleRect(slots)
     local titleField = form.addStaticText(line, titleRect, fitTitle(title, titleRect.w), LEFT)
     local menuButton = addNavButton(line, slots[2], MENU_ICON, opts.onBack)
+    addNavButton(line, slots[3], SAVE_ICON, noop):enable(false)
+    addNavButton(line, slots[4], RELOAD_ICON, noop):enable(false)
+    addNavButton(line, slots[5], TOOL_ICON, noop):enable(false)
     addNavButton(line, slots[6], INFO_ICON, function() connectionDetails.open() end)
     return {
       setTitle = function(newTitle) titleField:value(fitTitle(newTitle, titleRect.w)) end,
@@ -276,7 +294,7 @@ function header.build(title, opts)
     }
   end
 
-  local slots = form.getFieldSlots(line, {0, SLOT_HINT, SLOT_HINT, SLOT_HINT, SLOT_HINT, SLOT_HINT})
+  local slots = layoutSlots(line)
 
   local titleRect = buildTitleRect(slots)
   local titleField = form.addStaticText(line, titleRect, fitTitle(title, titleRect.w), LEFT)
