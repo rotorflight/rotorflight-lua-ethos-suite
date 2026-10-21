@@ -193,8 +193,10 @@ do
   check("the header adds six buttons on the line (back, save, reload, tool, info)", #buttons >= 5,
     "buttons=" .. #buttons)
   local info = buttons[#buttons]
-  check("the info button is the last one, on the sixth slot", info and info.rect.x == 50,
-    "x=" .. tostring(info and info.rect.x))
+  -- Slot six is x=50 w=10; the info button takes its right half (#2618).
+  check("the info button is the last one, half of the sixth slot at the right edge",
+    info and info.rect.x == 55 and info.rect.w == 5,
+    "x=" .. tostring(info and info.rect.x) .. " w=" .. tostring(info and info.rect.w))
   check("the info button has an icon and a press action", info and info.opts.icon ~= nil and type(info.opts.press) == "function")
   if info then
     info.opts.press()
@@ -208,7 +210,7 @@ do
   header.build("Test", {onBack = noop})
   local nonLeafInfo = buttons[#buttons]
   check("a non-leaf header also has the info button, on the same slot as on leaf pages",
-    nonLeafInfo and nonLeafInfo.rect.x == 50 and nonLeafInfo.opts.icon ~= nil
+    nonLeafInfo and nonLeafInfo.rect.x == 55 and nonLeafInfo.rect.w == 5 and nonLeafInfo.opts.icon ~= nil
       and type(nonLeafInfo.opts.press) == "function")
   if nonLeafInfo then
     nonLeafInfo.opts.press()

@@ -149,11 +149,12 @@ _G.form = {
     obs.lines[#obs.lines + 1] = text
     return text
   end,
-  getFieldSlots = function()
-    return {
-      {x = 0, y = 0, w = 300, h = 30},
-      {x = 310, y = 0, w = 80, h = 30},
-    }
+  getFieldSlots = function(_, hints)
+    -- One rect per hint, as Ethos does: the header asks for six.
+    local n = type(hints) == "table" and #hints or 2
+    local out = {{x = 0, y = 0, w = 300, h = 30}}
+    for i = 2, n do out[i] = {x = 310 + (i - 2) * 85, y = 0, w = 80, h = 30} end
+    return out
   end,
   addStaticText = function(line, _rect, text)
     local w = widgetStub("staticText", line)

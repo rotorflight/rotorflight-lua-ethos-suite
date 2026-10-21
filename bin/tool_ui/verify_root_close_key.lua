@@ -193,8 +193,7 @@ _G.form = {
   height = function() return 30 end,
   invalidate = function() end,
   getFieldSlots = function(_, hints)
-    -- header.lua asks for 2 slots on a menu screen and 5 on a leaf page; follow
-    -- the hints it passes rather than guessing a fixed count.
+    -- Follow the hints header.lua passes rather than guessing a fixed count.
     return slotList(type(hints) == "table" and #hints or 6)
   end,
   addStaticText = function(_, rect) return fieldStub(rect) end,
@@ -282,12 +281,13 @@ local function runChecks()
   registeredTool.create()
 
   -- menu_container calls form.clear() on every screen build, so `buttons` always
-  -- holds exactly one screen: its header Menu button first, then the header's info
-  -- button (#2318, on every page), then its tiles.
+  -- holds exactly one screen: its header's five buttons first (Menu, then Save,
+  -- Reload and Tool shown disabled, then info: #2318, #2618), then its tiles.
+  local HEADER_BUTTONS = 5
   local function headerButton() return buttons[1] end
   local function tileButtons()
     local tiles = {}
-    for i = 3, #buttons do tiles[#tiles + 1] = buttons[i] end
+    for i = HEADER_BUTTONS + 1, #buttons do tiles[#tiles + 1] = buttons[i] end
     return tiles
   end
 

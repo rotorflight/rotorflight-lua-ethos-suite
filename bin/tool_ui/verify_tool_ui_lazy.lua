@@ -140,8 +140,9 @@ local function slotsStub(width)
 end
 
 -- Ethos widgets: form.addButton/addStaticText return objects with methods.
--- The menu path calls :focus() (header.lua:162/198-201,
--- menu_container.lua:289/295); everything else is only read. The fields are
+-- The menu path calls :focus() (header.lua, menu_container.lua) and
+-- :enable(false) on the header's Save/Reload/Tool buttons, which a menu
+-- screen shows disabled; everything else is only read. The fields are
 -- deliberately minimal -- any extra method would be an assumption about
 -- behaviour that this check does not make.
 local function fieldStub(slot)
@@ -150,6 +151,7 @@ local function fieldStub(slot)
     focus = function() end,
     setText = function() end,
     setEnabled = function() end,
+    enable = function() end,
     setValue = function() end,
     getValue = function() return nil end,
     show = function() end,
