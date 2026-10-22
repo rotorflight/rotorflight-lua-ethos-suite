@@ -7764,6 +7764,2080 @@
           "translation": "Hold time"
         }
       },
+      "setup_wizard": {
+        "armed": {
+          "english": "Armed: servos can't be moved.",
+          "max_length": 29,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "חמוש: לא ניתן להזיז סרווים."
+        },
+        "btn_again": {
+          "english": "Again",
+          "max_length": 5,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "שוב"
+        },
+        "btn_next": {
+          "english": "Next",
+          "max_length": 4,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "הבא"
+        },
+        "btn_save_restart": {
+          "english": "Save and restart",
+          "max_length": 16,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "שמור ואתחל"
+        },
+        "btn_start": {
+          "english": "Start",
+          "max_length": 5,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "התחל"
+        },
+        "con_blades": {
+          "english": "Blades stay off, and keep clear of the motor.",
+          "max_length": 45,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "הלהבים נשארים מורדים, והתרחק מהמנוע."
+        },
+        "con_checking": {
+          "english": "Checking",
+          "max_length": 8,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "בודק"
+        },
+        "con_main_motor": {
+          "english": "Main motor",
+          "max_length": 10,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "מנוע ראשי"
+        },
+        "con_missing": {
+          "english": "Missing",
+          "max_length": 7,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "חסר"
+        },
+        "con_ok": {
+          "english": "OK",
+          "max_length": 4,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "תקין"
+        },
+        "con_plug": {
+          "english": "Plug the servos in now and power them.",
+          "max_length": 38,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "חבר כעת את הסרווים והפעל להם מתח."
+        },
+        "con_reboot": {
+          "english": "Keep the servos unplugged. Save and restart now, so the new outputs take effect before anything moves.",
+          "max_length": 102,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "השאר את הסרווים מנותקים. שמור ואתחל כעת, כדי שהיציאות החדשות ייכנסו לתוקף לפני שמשהו זז."
+        },
+        "con_servo_missing": {
+          "english": "Some servos are missing: check the outputs and the swash type.",
+          "max_length": 62,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "חסרים סרווים: בדוק את היציאות ואת סוג הסוואש."
+        },
+        "con_tail_motor": {
+          "english": "Tail motor",
+          "max_length": 10,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "מנוע זנב"
+        },
+        "con_title": {
+          "english": "Connect the servos",
+          "max_length": 18,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "חיבור הסרווים"
+        },
+        "dir_coll": {
+          "english": "Raise the collective stick. The whole swash should move up.",
+          "max_length": 59,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "הרם את מקל הקולקטיב. כל הסוואש צריך לעלות."
+        },
+        "dir_coll_title": {
+          "english": "Collective",
+          "max_length": 10,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "קולקטיב"
+        },
+        "dir_correct": {
+          "english": "Correct",
+          "max_length": 7,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "נכון"
+        },
+        "dir_done": {
+          "english": "Roll, pitch and collective move the right way.",
+          "max_length": 46,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "רול, פיץ' וקולקטיב זזים בכיוון הנכון."
+        },
+        "dir_done_title": {
+          "english": "Directions set",
+          "max_length": 15,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "הכיוונים הוגדרו"
+        },
+        "dir_intro": {
+          "english": "The sticks now drive the swash directly, without the gyro. Move each stick as asked and watch the swash.",
+          "max_length": 104,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "המקלות מזיזים כעת את הסוואש ישירות, ללא הג'ירו. הזז כל מקל כמבוקש וצפה בסוואש."
+        },
+        "dir_pitch": {
+          "english": "Push the pitch stick forward. The swash should tilt forward.",
+          "max_length": 60,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "דחוף את מקל הפיץ' קדימה. הסוואש צריך לנטות קדימה."
+        },
+        "dir_pitch_title": {
+          "english": "Pitch",
+          "max_length": 5,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "פיץ'"
+        },
+        "dir_q": {
+          "english": "Does the swash move as shown?",
+          "max_length": 29,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "האם הסוואש זז כמוצג?"
+        },
+        "dir_reversed": {
+          "english": "Reversed. Check it again.",
+          "max_length": 25,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "הופך. בדוק שוב."
+        },
+        "dir_roll": {
+          "english": "Push the roll stick right. The swash should tilt right.",
+          "max_length": 55,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "דחוף את מקל הרול ימינה. הסוואש צריך לנטות ימינה."
+        },
+        "dir_roll_title": {
+          "english": "Roll",
+          "max_length": 4,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "רול"
+        },
+        "dir_save_next": {
+          "english": "Save and continue",
+          "max_length": 17,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "שמור והמשך"
+        },
+        "dir_title": {
+          "english": "Control directions",
+          "max_length": 18,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "כיווני שליטה"
+        },
+        "dir_wrong": {
+          "english": "Wrong",
+          "max_length": 5,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "שגוי"
+        },
+        "disconnected": {
+          "english": "No link to the flight controller.",
+          "max_length": 33,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "אין קישור לבקר הטיסה."
+        },
+        "fin_before": {
+          "english": "Fit the blades and do a careful first hover. Modes, rates and governor are on their own pages.",
+          "max_length": 94,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "התקן את הלהבים ובצע ריחוף ראשון זהיר. מצבים, רייטים ומושל נמצאים בדפים משלהם."
+        },
+        "fin_button": {
+          "english": "Save and finish",
+          "max_length": 15,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "שמור וסיים"
+        },
+        "fin_ccw": {
+          "english": "CCW",
+          "max_length": 3,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "CCW"
+        },
+        "fin_cw": {
+          "english": "CW",
+          "max_length": 2,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "CW"
+        },
+        "fin_esc": {
+          "english": "ESC protocol",
+          "max_length": 12,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "פרוטוקול ESC"
+        },
+        "fin_intro": {
+          "english": "What the wizard set:",
+          "max_length": 20,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "מה האשף הגדיר:"
+        },
+        "fin_none": {
+          "english": "None",
+          "max_length": 4,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "ללא"
+        },
+        "fin_pitch": {
+          "english": "Pitch limits",
+          "max_length": 12,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "הגבלות פיץ'"
+        },
+        "fin_pitch_fmt": {
+          "english": "Coll. %s°, cyc. %s°",
+          "max_length": 19,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "קול. %s°, מחז. %s°"
+        },
+        "fin_swash": {
+          "english": "Swash",
+          "max_length": 5,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "סוואש"
+        },
+        "fin_tail": {
+          "english": "Tail",
+          "max_length": 4,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "זנב"
+        },
+        "fin_tail_bidir": {
+          "english": "Motor, bidirectional",
+          "max_length": 20,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "מנוע, דו-כיווני"
+        },
+        "fin_tail_motor": {
+          "english": "Motor",
+          "max_length": 5,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "מנוע"
+        },
+        "fin_tail_variable": {
+          "english": "Servo",
+          "max_length": 5,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "סרוו"
+        },
+        "fin_title": {
+          "english": "Finish",
+          "max_length": 6,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "סיום"
+        },
+        "go_swash": {
+          "english": "Swashplate",
+          "max_length": 10,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "סוואש"
+        },
+        "gyr_against": {
+          "english": "Against",
+          "max_length": 7,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "נגד"
+        },
+        "gyr_done": {
+          "english": "The gyro corrects every axis against the movement.",
+          "max_length": 50,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "הג'ירו מתקן כל ציר נגד התנועה."
+        },
+        "gyr_done_title": {
+          "english": "Gyro checked",
+          "max_length": 12,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "הג'ירו נבדק"
+        },
+        "gyr_go_sensors": {
+          "english": "Orientation",
+          "max_length": 11,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "כיוון"
+        },
+        "gyr_intro": {
+          "english": "Blades off, disarmed. Move the helicopter by hand: the swash should push back against each movement.",
+          "max_length": 100,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "להבים מורדים, לא חמוש. הזז את המסוק ביד: הסוואש צריך לנגוד כל תנועה."
+        },
+        "gyr_pitch": {
+          "english": "Tip the nose down quickly. The swash should tilt back, against the movement.",
+          "max_length": 76,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "הטה את האף מהר למטה. הסוואש צריך לנטות אחורה, נגד התנועה."
+        },
+        "gyr_pitch_title": {
+          "english": "Pitch",
+          "max_length": 5,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "פיץ'"
+        },
+        "gyr_roll": {
+          "english": "Roll the helicopter quickly to the right. The swash should tilt left, against the movement.",
+          "max_length": 91,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "גלגל את המסוק מהר ימינה. הסוואש צריך לנטות שמאלה, נגד התנועה."
+        },
+        "gyr_roll_title": {
+          "english": "Roll",
+          "max_length": 4,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "רול"
+        },
+        "gyr_title": {
+          "english": "Gyro check",
+          "max_length": 11,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "בדיקת ג'ירו"
+        },
+        "gyr_with": {
+          "english": "With",
+          "max_length": 4,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "עם"
+        },
+        "gyr_wrong": {
+          "english": "The gyro corrects the wrong way: the board orientation is wrong. Fix it in Board orientation; do not reverse servos for it.",
+          "max_length": 123,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "הג'ירו מתקן בכיוון השגוי: כיוון הבקר שגוי. תקן אותו בכיוון הבקר; אל תהפוך סרווים בשביל זה."
+        },
+        "gyr_yaw": {
+          "english": "Turn the nose quickly to the right. The tail blades should push the nose back to the left.",
+          "max_length": 90,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "סובב את האף מהר ימינה. להבי הזנב צריכים להחזיר את האף שמאלה."
+        },
+        "gyr_yaw_title": {
+          "english": "Yaw",
+          "max_length": 3,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "יאו"
+        },
+        "leave_body": {
+          "english": "Save the wizard's changes to the flight controller, or discard them?",
+          "max_length": 68,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "לשמור את שינויי האשף בבקר הטיסה, או לבטל אותם?"
+        },
+        "leave_discard": {
+          "english": "Discard",
+          "max_length": 7,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "בטל"
+        },
+        "leave_save": {
+          "english": "Save",
+          "max_length": 4,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "שמור"
+        },
+        "leave_title": {
+          "english": "Unsaved changes",
+          "max_length": 17,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "שינויים לא שמורים"
+        },
+        "lvl_coll": {
+          "english": "Trim until the main blades are at zero pitch.",
+          "max_length": 45,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "כוונן עד שהלהבים הראשיים בפיץ' אפס."
+        },
+        "lvl_coll_title": {
+          "english": "Collective trim",
+          "max_length": 15,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "טרים קולקטיב"
+        },
+        "lvl_done": {
+          "english": "The swash is level at zero pitch.",
+          "max_length": 33,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "הסוואש ישר בפיץ' אפס."
+        },
+        "lvl_done_title": {
+          "english": "Swash level",
+          "max_length": 11,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "הסוואש ישר"
+        },
+        "lvl_intro": {
+          "english": "The swash is held at its centre. Trim it until it is level and the blades sit at zero pitch.",
+          "max_length": 92,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "הסוואש מוחזק במרכזו. כוונן טרים עד שהוא ישר והלהבים בפיץ' אפס."
+        },
+        "lvl_pitch": {
+          "english": "Seen from the side, trim until the swash is level front to back.",
+          "max_length": 64,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "במבט מהצד, כוונן עד שהסוואש ישר מקדימה לאחור."
+        },
+        "lvl_pitch_title": {
+          "english": "Pitch trim",
+          "max_length": 10,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "טרים פיץ'"
+        },
+        "lvl_reset": {
+          "english": "Reset",
+          "max_length": 5,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "איפוס"
+        },
+        "lvl_roll": {
+          "english": "Seen from behind, trim until the swash is level left to right.",
+          "max_length": 62,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "במבט מאחור, כוונן עד שהסוואש ישר משמאל לימין."
+        },
+        "lvl_roll_title": {
+          "english": "Roll trim",
+          "max_length": 9,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "טרים רול"
+        },
+        "lvl_title": {
+          "english": "Level the swash",
+          "max_length": 15,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "יישור הסוואש"
+        },
+        "lvl_trim": {
+          "english": "Trim",
+          "max_length": 4,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "טרים"
+        },
+        "lvl_value_fmt": {
+          "english": "%s",
+          "max_length": 2,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "%s"
+        },
+        "missing_servos_fmt": {
+          "english": "Servo %s is needed for this setup, but the board has no output for it.",
+          "max_length": 70,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "סרוו %s נדרש להגדרה זו, אך אין לו יציאה בבקר."
+        },
+        "mot_done_title": {
+          "english": "Motor & ESC set",
+          "max_length": 17,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "מנוע ו-ESC הוגדרו"
+        },
+        "mot_intro": {
+          "english": "How does the FC talk to the ESC? Use PWM if unsure. Blades off.",
+          "max_length": 63,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "איך ה-FC מתקשר עם ה-ESC? אם לא בטוח, השתמש ב-PWM. להבים מורדים."
+        },
+        "mot_main_gear": {
+          "english": "Main gear teeth",
+          "max_length": 15,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "שיני גלגל ראשי"
+        },
+        "mot_main_gear_text": {
+          "english": "Teeth on the main gear.",
+          "max_length": 27,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "שיניים בגלגל השיניים הראשי."
+        },
+        "mot_main_ratio": {
+          "english": "Main ratio",
+          "max_length": 10,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "יחס ראשי"
+        },
+        "mot_other": {
+          "english": "Keep %s",
+          "max_length": 7,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "השאר %s"
+        },
+        "mot_pinion": {
+          "english": "Pinion teeth",
+          "max_length": 12,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "שיני פיניון"
+        },
+        "mot_pinion_text": {
+          "english": "Teeth on the motor pinion.",
+          "max_length": 26,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "שיניים בפיניון המנוע."
+        },
+        "mot_poles": {
+          "english": "Motor poles",
+          "max_length": 11,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "קטבי מנוע"
+        },
+        "mot_poles_text": {
+          "english": "Magnet poles of the main motor, from its data sheet (often 10 or 12).",
+          "max_length": 69,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "קטבי המגנט של המנוע הראשי, לפי דף הנתונים (לרוב 10 או 12)."
+        },
+        "mot_protocol": {
+          "english": "Protocol",
+          "max_length": 8,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "פרוטוקול"
+        },
+        "mot_ratio_fmt": {
+          "english": "%.2f:1",
+          "max_length": 6,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "%.2f:1"
+        },
+        "mot_tail_in": {
+          "english": "Tail gear in",
+          "max_length": 14,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "גלגל זנב כניסה"
+        },
+        "mot_tail_in_text": {
+          "english": "Teeth on the tail drive gear at the main shaft (or its pulley).",
+          "max_length": 63,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "שיניים בגלגל הנעת הזנב שעל הציר הראשי (או בגלגלת שלו)."
+        },
+        "mot_tail_out": {
+          "english": "Tail gear out",
+          "max_length": 14,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "גלגל זנב יציאה"
+        },
+        "mot_tail_out_text": {
+          "english": "Teeth on the tail rotor shaft gear (or its pulley).",
+          "max_length": 51,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "שיניים בגלגל שעל ציר רוטור הזנב (או בגלגלת שלו)."
+        },
+        "mot_tail_ratio": {
+          "english": "Tail ratio",
+          "max_length": 10,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "יחס זנב"
+        },
+        "mot_title": {
+          "english": "ESC protocol",
+          "max_length": 12,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "פרוטוקול ESC"
+        },
+        "name": {
+          "english": "Setup Wizard",
+          "max_length": 12,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "אשף הגדרה"
+        },
+        "no_swash": {
+          "english": "This step works on the swashplate servos. Pick a swashplate type first.",
+          "max_length": 71,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "שלב זה עובד על סרווי הסוואש. בחר קודם סוג סוואש."
+        },
+        "pit_calibrate": {
+          "english": "Calibrate",
+          "max_length": 9,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "כייל"
+        },
+        "pit_calibrated": {
+          "english": "Calibrated. Measure again to check.",
+          "max_length": 35,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "כויל. מדוד שוב לבדיקה."
+        },
+        "pit_coll_text": {
+          "english": "The collective is held at 9 degrees. Measure the blade pitch, enter it, then Calibrate.",
+          "max_length": 87,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "הקולקטיב מוחזק ב-9 מעלות. מדוד את פיץ' הלהבים, הזן אותו, ואז כייל."
+        },
+        "pit_coll_title": {
+          "english": "Collective",
+          "max_length": 10,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "קולקטיב"
+        },
+        "pit_cyc_text": {
+          "english": "Turn the blades to point left and right. Pitch is held at 9 degrees. Measure, enter it, then Calibrate.",
+          "max_length": 103,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "סובב את הלהבים כך שיפנו שמאלה וימינה. הפיץ' מוחזק ב-9 מעלות. מדוד, הזן, ואז כייל."
+        },
+        "pit_cyc_title": {
+          "english": "Cyclic",
+          "max_length": 6,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "מחזורי"
+        },
+        "pit_done": {
+          "english": "Blade pitch is calibrated and limited.",
+          "max_length": 38,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "פיץ' הלהבים מכויל ומוגבל."
+        },
+        "pit_done_title": {
+          "english": "Pitch set",
+          "max_length": 11,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "הפיץ' הוגדר"
+        },
+        "pit_fine_text": {
+          "english": "Fine adjust the rate until the gauge reads 9 degrees.",
+          "max_length": 53,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "כוונן עדין את הקצב עד שהמד מראה 9 מעלות."
+        },
+        "pit_intro": {
+          "english": "You need a pitch gauge. The wizard holds the blades at a set pitch; you measure it and enter what you read.",
+          "max_length": 107,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "נדרש מד פיץ'. האשף מחזיק את הלהבים בפיץ' קבוע; מדוד אותו והזן את הקריאה."
+        },
+        "pit_lim_coll_title": {
+          "english": "Collective limit",
+          "max_length": 16,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "הגבלת קולקטיב"
+        },
+        "pit_lim_cyc_title": {
+          "english": "Cyclic limit",
+          "max_length": 12,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "הגבלת מחזורי"
+        },
+        "pit_lim_text": {
+          "english": "The most blade pitch the sticks can command.",
+          "max_length": 44,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "פיץ' הלהבים המרבי שהמקלות יכולים לפקד."
+        },
+        "pit_lim_total_text": {
+          "english": "The most blade pitch cyclic and collective together may reach.",
+          "max_length": 62,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "פיץ' הלהבים המרבי שמחזורי וקולקטיב יחד יכולים להגיע אליו."
+        },
+        "pit_lim_total_title": {
+          "english": "Total limit",
+          "max_length": 11,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "הגבלה כוללת"
+        },
+        "pit_limit": {
+          "english": "Limit",
+          "max_length": 5,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "הגבלה"
+        },
+        "pit_measured": {
+          "english": "Measured",
+          "max_length": 8,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "נמדד"
+        },
+        "pit_rate": {
+          "english": "Rate",
+          "max_length": 4,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "קצב"
+        },
+        "pit_suggest_fmt": {
+          "english": "Use %.0f",
+          "max_length": 10,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "השתמש %.0f"
+        },
+        "pit_title": {
+          "english": "Blade pitch",
+          "max_length": 11,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "פיץ' להבים"
+        },
+        "progress_fmt": {
+          "english": "%d of %d",
+          "max_length": 10,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "%d מתוך %d"
+        },
+        "rcv_blades_off": {
+          "english": "Keep the blades off: the motor may start.",
+          "max_length": 41,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "השאר את הלהבים מורדים: המנוע עלול להתניע."
+        },
+        "rcv_ch_collective": {
+          "english": "Collective",
+          "max_length": 10,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "קולקטיב"
+        },
+        "rcv_ch_fmt": {
+          "english": "CH%d",
+          "max_length": 4,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "CH%d"
+        },
+        "rcv_ch_pitch": {
+          "english": "Pitch",
+          "max_length": 5,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "פיץ'"
+        },
+        "rcv_ch_roll": {
+          "english": "Roll",
+          "max_length": 4,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "רול"
+        },
+        "rcv_ch_throttle": {
+          "english": "Throttle",
+          "max_length": 8,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "מצערת"
+        },
+        "rcv_ch_yaw": {
+          "english": "Yaw",
+          "max_length": 3,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "יאו"
+        },
+        "rcv_custom": {
+          "english": "Custom",
+          "max_length": 6,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "מותאם"
+        },
+        "rcv_defaults": {
+          "english": "Defaults",
+          "max_length": 10,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "ברירת מחדל"
+        },
+        "rcv_detect": {
+          "english": "Detect",
+          "max_length": 6,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "זהה"
+        },
+        "rcv_detect_done": {
+          "english": "Channel order set from the sticks.",
+          "max_length": 34,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "סדר הערוצים הוגדר מהמקלות."
+        },
+        "rcv_detect_text_fmt": {
+          "english": "%s Leave the other sticks still.",
+          "max_length": 32,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "%s השאר את שאר המקלות במקום."
+        },
+        "rcv_done": {
+          "english": "The channel order and throttle range are set.",
+          "max_length": 45,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "סדר הערוצים וטווח המצערת הוגדרו."
+        },
+        "rcv_done_title": {
+          "english": "Receiver done",
+          "max_length": 13,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "המקלט הוגדר"
+        },
+        "rcv_intro": {
+          "english": "The radio talks to the flight controller through this receiver, so its protocol and port are set in the Configurator. Here you set the channel order, check the sticks and set the throttle range.",
+          "max_length": 194,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "השלט מתקשר עם בקר הטיסה דרך מקלט זה, ולכן הפרוטוקול והפורט שלו מוגדרים ב-Configurator. כאן מגדירים את סדר הערוצים, בודקים את המקלות ומגדירים את טווח המצערת."
+        },
+        "rcv_measure": {
+          "english": "Measure",
+          "max_length": 7,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "מדוד"
+        },
+        "rcv_move_collective": {
+          "english": "Move the collective stick fully up and down.",
+          "max_length": 44,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "הזז את מקל הקולקטיב עד הסוף למעלה ולמטה."
+        },
+        "rcv_move_pitch": {
+          "english": "Move the pitch stick fully forward and back.",
+          "max_length": 44,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "הזז את מקל הפיץ' עד הסוף קדימה ואחורה."
+        },
+        "rcv_move_roll": {
+          "english": "Move the roll stick fully left and right.",
+          "max_length": 41,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "הזז את מקל הרול עד הסוף שמאלה וימינה."
+        },
+        "rcv_move_throttle": {
+          "english": "Flip the throttle switch, or move the throttle, end to end.",
+          "max_length": 59,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "הפוך את מתג המצערת, או הזז את המצערת, מקצה לקצה."
+        },
+        "rcv_move_yaw": {
+          "english": "Move the yaw stick fully left and right.",
+          "max_length": 40,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "הזז את מקל היאו עד הסוף שמאלה וימינה."
+        },
+        "rcv_order_now_fmt": {
+          "english": "Now: %s.",
+          "max_length": 8,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "כעת: %s."
+        },
+        "rcv_order_text": {
+          "english": "Each bar should follow its own stick. If not, pick a preset or detect the order.",
+          "max_length": 80,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "כל פס צריך לעקוב אחרי הסטיק שלו. אם לא, בחר הגדרה מוכנה או זהה את הסדר."
+        },
+        "rcv_order_title": {
+          "english": "Channel order",
+          "max_length": 13,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "סדר ערוצים"
+        },
+        "rcv_preset_elrs": {
+          "english": "ELRS",
+          "max_length": 4,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "ELRS"
+        },
+        "rcv_preset_frsky": {
+          "english": "FrSky",
+          "max_length": 5,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "FrSky"
+        },
+        "rcv_preset_futaba": {
+          "english": "Futaba/Hitec",
+          "max_length": 12,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Futaba/Hitec"
+        },
+        "rcv_preset_spektrum": {
+          "english": "Spektrum/JR",
+          "max_length": 11,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Spektrum/JR"
+        },
+        "rcv_presets": {
+          "english": "Presets",
+          "max_length": 7,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "מוכנים"
+        },
+        "rcv_presets_text": {
+          "english": "Pick your radio's channel order.",
+          "max_length": 32,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "בחר את סדר הערוצים של המשדר."
+        },
+        "rcv_range_fmt": {
+          "english": "%d - %d us",
+          "max_length": 10,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "%d - %d us"
+        },
+        "rcv_signal_none": {
+          "english": "No valid receiver signal.",
+          "max_length": 25,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "אין אות מקלט תקין."
+        },
+        "rcv_signal_ok": {
+          "english": "Receiver signal: OK",
+          "max_length": 19,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "אות מקלט: תקין"
+        },
+        "rcv_skip": {
+          "english": "Skip",
+          "max_length": 4,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "דלג"
+        },
+        "rcv_sticks_text": {
+          "english": "Roll right, pitch forward, yaw right and collective up should each move its own bar to the right.",
+          "max_length": 97,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "רול ימינה, פיץ' קדימה, יאו ימינה וקולקטיב למעלה מזיזים כל אחד את הפס שלו ימינה."
+        },
+        "rcv_sticks_title": {
+          "english": "Check the sticks",
+          "max_length": 16,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "בדיקת מקלות"
+        },
+        "rcv_stop": {
+          "english": "Stop",
+          "max_length": 4,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "עצור"
+        },
+        "rcv_throttle_legend": {
+          "english": "Grey marks: FC range. Band: measured travel.",
+          "max_length": 44,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "סימנים אפורים: טווח FC. רצועה: מהלך שנמדד."
+        },
+        "rcv_throttle_text": {
+          "english": "Press Measure, move the throttle switch through every position, then Stop and Use.",
+          "max_length": 82,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "לחץ מדוד, העבר את מתג המצערת בכל המצבים, ואז עצור והשתמש."
+        },
+        "rcv_throttle_title": {
+          "english": "Throttle range",
+          "max_length": 14,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "טווח מצערת"
+        },
+        "rcv_title": {
+          "english": "Receiver",
+          "max_length": 8,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "מקלט"
+        },
+        "rcv_too_short": {
+          "english": "Under 300 us of travel: move it end to end.",
+          "max_length": 43,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "פחות מ-300 us מהלך: הזז מקצה לקצה."
+        },
+        "rcv_use": {
+          "english": "Use",
+          "max_length": 5,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "השתמש"
+        },
+        "reboot_skipped": {
+          "english": "A restart is still owed: go back to Connect the servos.",
+          "max_length": 55,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "עדיין נדרש אתחול: חזור לשלב חיבור הסרווים."
+        },
+        "reboot_wait_fmt": {
+          "english": "Reconnecting, up to %d s",
+          "max_length": 24,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "מתחבר מחדש, עד %d שניות"
+        },
+        "role_centre": {
+          "english": "Centre",
+          "max_length": 6,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "מרכז"
+        },
+        "role_collective": {
+          "english": "Collective",
+          "max_length": 10,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "קולקטיב"
+        },
+        "role_front": {
+          "english": "Front",
+          "max_length": 5,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "קדמי"
+        },
+        "role_front_left": {
+          "english": "Front left",
+          "max_length": 10,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "קדמי שמאל"
+        },
+        "role_front_right": {
+          "english": "Front right",
+          "max_length": 11,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "קדמי ימין"
+        },
+        "role_left": {
+          "english": "Left",
+          "max_length": 4,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "שמאל"
+        },
+        "role_pitch": {
+          "english": "Pitch",
+          "max_length": 5,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "פיץ'"
+        },
+        "role_right": {
+          "english": "Right",
+          "max_length": 5,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "ימין"
+        },
+        "role_roll": {
+          "english": "Roll",
+          "max_length": 4,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "רול"
+        },
+        "role_tail": {
+          "english": "Tail",
+          "max_length": 4,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "זנב"
+        },
+        "sen_acc_busy": {
+          "english": "Calibrating... keep it still.",
+          "max_length": 29,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "מכייל... החזק יציב."
+        },
+        "sen_acc_done": {
+          "english": "Accelerometer calibrated.",
+          "max_length": 25,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "האקסלרומטר כויל."
+        },
+        "sen_acc_failed": {
+          "english": "Calibration failed. Keep the model still and try again.",
+          "max_length": 55,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "הכיול נכשל. החזק את הדגם יציב ונסה שוב."
+        },
+        "sen_acc_text": {
+          "english": "Stand the helicopter on its skids on a level surface and keep it still, then calibrate.",
+          "max_length": 87,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "העמד את המסוק על המגלשיים על משטח ישר והחזק אותו יציב, ואז כייל."
+        },
+        "sen_acc_title": {
+          "english": "Accelerometer",
+          "max_length": 13,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "אקסלרומטר"
+        },
+        "sen_align_done_fmt": {
+          "english": "Found: roll %d, pitch %d, yaw %d degrees.",
+          "max_length": 41,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "נמצא: רול %d, פיץ' %d, יאו %d מעלות."
+        },
+        "sen_align_lift": {
+          "english": "Lift the tail 20 degrees and hold it still...",
+          "max_length": 45,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "הרם את הזנב 20 מעלות והחזק יציב..."
+        },
+        "sen_align_text": {
+          "english": "Stand the helicopter level, press Start, then lift the tail by at least 20 degrees and hold it still.",
+          "max_length": 101,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "העמד את המסוק ישר, לחץ התחל, ואז הרם את הזנב ב-20 מעלות לפחות והחזק יציב."
+        },
+        "sen_align_title": {
+          "english": "Find the orientation",
+          "max_length": 20,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "מציאת הכיוון"
+        },
+        "sen_calibrate": {
+          "english": "Calibrate",
+          "max_length": 9,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "כייל"
+        },
+        "sen_done_restart": {
+          "english": "The new orientation takes effect after the restart at the Connect the servos step.",
+          "max_length": 82,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "הכיוון החדש ייכנס לתוקף אחרי האתחול בשלב חיבור הסרווים."
+        },
+        "sen_done_same": {
+          "english": "Nothing to change here.",
+          "max_length": 23,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "אין מה לשנות כאן."
+        },
+        "sen_done_title": {
+          "english": "Orientation done",
+          "max_length": 16,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "הכיוון הוגדר"
+        },
+        "sen_intro": {
+          "english": "First tell the flight controller how it is mounted. Take the main and tail blades off, and leave the servos unplugged until the Connect the servos step.",
+          "max_length": 152,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "קודם הגדר לבקר הטיסה איך הוא מותקן. הסר את להבי הרוטור הראשי והזנב, והשאר את הסרווים מנותקים עד שלב חיבור הסרווים."
+        },
+        "sen_no_acc": {
+          "english": "This board has no accelerometer: set the orientation on the Alignment page.",
+          "max_length": 75,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "לבקר זה אין אקסלרומטר: הגדר את הכיוון בדף היישור."
+        },
+        "sen_no_match": {
+          "english": "No orientation matched. Lift the tail straight up and try again.",
+          "max_length": 64,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "לא נמצא כיוון תואם. הרם את הזנב ישר למעלה ונסה שוב."
+        },
+        "sen_rejected_armed": {
+          "english": "Refused: the model is armed.",
+          "max_length": 28,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "נדחה: הדגם חמוש."
+        },
+        "sen_rejected_uncal": {
+          "english": "Calibrate the accelerometer first.",
+          "max_length": 34,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "כייל קודם את האקסלרומטר."
+        },
+        "sen_timeout": {
+          "english": "Timed out. Lift the tail a little further and try again.",
+          "max_length": 56,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "תם הזמן. הרם את הזנב מעט יותר ונסה שוב."
+        },
+        "sen_title": {
+          "english": "Board orientation",
+          "max_length": 17,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "כיוון הבקר"
+        },
+        "sen_unsupported": {
+          "english": "This firmware cannot find the orientation: set it on the Alignment page.",
+          "max_length": 72,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "קושחה זו לא יכולה למצוא את הכיוון: הגדר אותו בדף היישור."
+        },
+        "servo_role_fmt": {
+          "english": "Servo %d (%s)",
+          "max_length": 13,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "סרוו %d (%s)"
+        },
+        "srv_centre_text": {
+          "english": "Nudge the centre until the servo arm is level.",
+          "max_length": 46,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "כוונן את המרכז עד שזרוע הסרוו ישרה."
+        },
+        "srv_done": {
+          "english": "Every servo moves the right way and is centred.",
+          "max_length": 47,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "כל סרוו זז בכיוון הנכון וממורכז."
+        },
+        "srv_done_title": {
+          "english": "Servos set",
+          "max_length": 14,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "הסרווים הוגדרו"
+        },
+        "srv_down": {
+          "english": "No, down",
+          "max_length": 8,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "לא, למטה"
+        },
+        "srv_far": {
+          "english": "Far from centre: move the arm a spline instead.",
+          "max_length": 47,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "רחוק מהמרכז: הזז את הזרוע בשן אחת במקום."
+        },
+        "srv_reversed": {
+          "english": "Reversed. Check the arm moved up now.",
+          "max_length": 37,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "הופך. בדוק שהזרוע זזה כעת למעלה."
+        },
+        "srv_tail_text": {
+          "english": "Nudge the centre until the tail servo arm is at 90 degrees to the pushrod.",
+          "max_length": 74,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "כוונן את המרכז עד שזרוע סרוו הזנב בזווית 90 מעלות למוט הדחיפה."
+        },
+        "srv_test_q": {
+          "english": "Did the arm move up, towards the swash?",
+          "max_length": 39,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "האם הזרוע זזה למעלה, לכיוון הסוואש?"
+        },
+        "srv_test_text": {
+          "english": "The servo is held 20 degrees up.",
+          "max_length": 32,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "הסרוו מוחזק 20 מעלות למעלה."
+        },
+        "srv_up": {
+          "english": "Yes, up",
+          "max_length": 9,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "כן, למעלה"
+        },
+        "srv_value_fmt": {
+          "english": "Centre %d us (%s).",
+          "max_length": 18,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "מרכז %d us (%s)."
+        },
+        "step_connect": {
+          "english": "Connect servos",
+          "max_length": 14,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "חיבור סרווים"
+        },
+        "step_direction": {
+          "english": "Directions",
+          "max_length": 10,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "כיוונים"
+        },
+        "step_finish": {
+          "english": "Finish",
+          "max_length": 6,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "סיום"
+        },
+        "step_gyro": {
+          "english": "Gyro check",
+          "max_length": 11,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "בדיקת ג'ירו"
+        },
+        "step_level": {
+          "english": "Level swash",
+          "max_length": 11,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "יישור סוואש"
+        },
+        "step_motor": {
+          "english": "Motor & ESC",
+          "max_length": 11,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "מנוע ו-ESC"
+        },
+        "step_pitch": {
+          "english": "Blade pitch",
+          "max_length": 11,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "פיץ' להבים"
+        },
+        "step_receiver": {
+          "english": "Receiver",
+          "max_length": 8,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "מקלט"
+        },
+        "step_sensors": {
+          "english": "Board orientation",
+          "max_length": 17,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "כיוון הבקר"
+        },
+        "step_servos": {
+          "english": "Servo centre",
+          "max_length": 12,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "מרכז סרוו"
+        },
+        "step_servotype": {
+          "english": "Servo type",
+          "max_length": 10,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "סוג סרוו"
+        },
+        "step_swash": {
+          "english": "Swashplate",
+          "max_length": 10,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "סוואש"
+        },
+        "step_tail": {
+          "english": "Tail rotor",
+          "max_length": 10,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "רוטור זנב"
+        },
+        "sty_analog": {
+          "english": "Analog",
+          "max_length": 6,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "אנלוגי"
+        },
+        "sty_custom": {
+          "english": "Custom",
+          "max_length": 6,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "מותאם"
+        },
+        "sty_digital": {
+          "english": "Digital",
+          "max_length": 7,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "דיגיטלי"
+        },
+        "sty_hz_fmt": {
+          "english": "%d Hz",
+          "max_length": 5,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "%d Hz"
+        },
+        "sty_intro": {
+          "english": "Pick the servo type. It sets the update rate and the centre pulse.",
+          "max_length": 66,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "בחר את סוג הסרוו. הוא קובע את קצב העדכון ואת פולס המרכז."
+        },
+        "sty_mixed": {
+          "english": "Mixed",
+          "max_length": 5,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "מעורב"
+        },
+        "sty_narrow": {
+          "english": "Narrow",
+          "max_length": 6,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "צר"
+        },
+        "sty_row_type": {
+          "english": "Type",
+          "max_length": 4,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "סוג"
+        },
+        "sty_swash_title": {
+          "english": "Cyclic servos",
+          "max_length": 13,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "סרווי מחזורי"
+        },
+        "sty_tail_title": {
+          "english": "Tail servo",
+          "max_length": 10,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "סרוו זנב"
+        },
+        "sty_unplugged": {
+          "english": "Keep the servos unplugged until the Connect step.",
+          "max_length": 49,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "השאר את הסרווים מנותקים עד שלב החיבור."
+        },
+        "sty_us_fmt": {
+          "english": "%d us",
+          "max_length": 5,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "%d us"
+        },
+        "swa_ccw": {
+          "english": "Counter-CW",
+          "max_length": 10,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "נגד השעון"
+        },
+        "swa_current_fmt": {
+          "english": "Now: %s",
+          "max_length": 7,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "כעת: %s"
+        },
+        "swa_cw": {
+          "english": "Clockwise",
+          "max_length": 9,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "עם השעון"
+        },
+        "swa_dir_text": {
+          "english": "Seen from above, which way do the main blades turn?",
+          "max_length": 51,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "במבט מלמעלה, לאיזה כיוון מסתובבים הלהבים הראשיים?"
+        },
+        "swa_dir_title": {
+          "english": "Main rotor direction",
+          "max_length": 20,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "כיוון רוטור ראשי"
+        },
+        "swa_direct": {
+          "english": "Direct",
+          "max_length": 6,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "ישיר"
+        },
+        "swa_done_title": {
+          "english": "Swashplate set",
+          "max_length": 14,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "הסוואש הוגדר"
+        },
+        "swa_from_above": {
+          "english": "Seen from above, nose at the top",
+          "max_length": 32,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "מבט מלמעלה, האף למעלה"
+        },
+        "swa_pin_both": {
+          "english": "Own pin",
+          "max_length": 8,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "פין נפרד"
+        },
+        "swa_pin_motor": {
+          "english": "Motor 2",
+          "max_length": 7,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "מנוע 2"
+        },
+        "swa_pin_move": {
+          "english": "Moves on save",
+          "max_length": 13,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "יזוז בשמירה"
+        },
+        "swa_pin_none": {
+          "english": "None",
+          "max_length": 4,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "ללא"
+        },
+        "swa_pin_servo": {
+          "english": "Servo 4",
+          "max_length": 7,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "סרוו 4"
+        },
+        "swa_pin_stuck": {
+          "english": "Set in Mixer",
+          "max_length": 12,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "הגדר במיקסר"
+        },
+        "swa_restart": {
+          "english": "Applies after the restart at the Connect step.",
+          "max_length": 46,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "ייכנס לתוקף אחרי האתחול בשלב החיבור."
+        },
+        "swa_row_dir": {
+          "english": "Rotor",
+          "max_length": 5,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "רוטור"
+        },
+        "swa_row_pin": {
+          "english": "Tail pin",
+          "max_length": 8,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "פין זנב"
+        },
+        "swa_row_tail": {
+          "english": "Tail",
+          "max_length": 4,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "זנב"
+        },
+        "swa_row_type": {
+          "english": "Swash type",
+          "max_length": 10,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "סוג סוואש"
+        },
+        "swa_show_text": {
+          "english": "The servos sit here, seen from above with the nose at the top. Servo numbers are the FC outputs.",
+          "max_length": 96,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "הסרווים ממוקמים כאן, במבט מלמעלה עם האף למעלה. מספרי הסרווים הם יציאות ה-FC."
+        },
+        "swa_tail_bidir": {
+          "english": "Motor, 2-way",
+          "max_length": 15,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "מנוע, דו-כיווני"
+        },
+        "swa_tail_motor": {
+          "english": "Motor",
+          "max_length": 5,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "מנוע"
+        },
+        "swa_tail_text": {
+          "english": "A pitch tail uses a servo. A motor tail spins its own motor, one way or both ways.",
+          "max_length": 82,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "זנב פיץ' משתמש בסרוו. זנב מנוע מסובב מנוע משלו, לכיוון אחד או לשני הכיוונים."
+        },
+        "swa_tail_title": {
+          "english": "Tail type",
+          "max_length": 9,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "סוג זנב"
+        },
+        "swa_tail_variable": {
+          "english": "Pitch (servo)",
+          "max_length": 13,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "פיץ' (סרוו)"
+        },
+        "swa_type_text": {
+          "english": "How are the swash servos laid out? 120 degrees is the most common.",
+          "max_length": 66,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "איך מסודרים סרווי הסוואש? 120 מעלות הוא הנפוץ ביותר."
+        },
+        "swa_type_title": {
+          "english": "Swashplate type",
+          "max_length": 15,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "סוג סוואש"
+        },
+        "tal_cal": {
+          "english": "The tail is held at 22 degrees. Measure the tail blade pitch and adjust until it reads 22 degrees each way.",
+          "max_length": 107,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "הזנב מוחזק ב-22 מעלות. מדוד את פיץ' להבי הזנב וכוונן עד שהוא 22 מעלות לכל כיוון."
+        },
+        "tal_cal_title": {
+          "english": "Tail calibration",
+          "max_length": 16,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "כיול זנב"
+        },
+        "tal_ccw": {
+          "english": "CCW limit",
+          "max_length": 9,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "הגבלת CCW"
+        },
+        "tal_centre": {
+          "english": "The tail is held at zero. Adjust until the tail blades have zero pitch.",
+          "max_length": 71,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "הזנב מוחזק באפס. כוונן עד שללהבי הזנב פיץ' אפס."
+        },
+        "tal_centre_title": {
+          "english": "Tail centre",
+          "max_length": 11,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "מרכז זנב"
+        },
+        "tal_cw": {
+          "english": "CW limit",
+          "max_length": 8,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "הגבלת CW"
+        },
+        "tal_dir": {
+          "english": "Push the yaw stick right. The tail blades should push the tail left, turning the nose right.",
+          "max_length": 92,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "דחוף את מקל היאו ימינה. להבי הזנב צריכים לדחוף את הזנב שמאלה, ולסובב את האף ימינה."
+        },
+        "tal_dir_title": {
+          "english": "Tail direction",
+          "max_length": 14,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "כיוון זנב"
+        },
+        "tal_done": {
+          "english": "The tail rotor is set up.",
+          "max_length": 25,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "רוטור הזנב מוגדר."
+        },
+        "tal_done_title": {
+          "english": "Tail done",
+          "max_length": 10,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "הזנב הוגדר"
+        },
+        "tal_idle": {
+          "english": "The power the tail motor keeps at zero yaw. Blades still off.",
+          "max_length": 61,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "ההספק שמנוע הזנב שומר ביאו אפס. הלהבים עדיין מורדים."
+        },
+        "tal_idle_title": {
+          "english": "Tail idle",
+          "max_length": 9,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "סרק זנב"
+        },
+        "tal_idle_value": {
+          "english": "Tail idle",
+          "max_length": 9,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "סרק זנב"
+        },
+        "tal_intro": {
+          "english": "Check the tail servo with the tail blades off: centre, direction, travel and end stops.",
+          "max_length": 87,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "בדוק את סרוו הזנב כשלהבי הזנב מורדים: מרכז, כיוון, מהלך ועצירות קצה."
+        },
+        "tal_lim_ccw": {
+          "english": "Now the other way. Lower the limit until the slider stops short of binding.",
+          "max_length": 75,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "כעת לכיוון השני. הורד את ההגבלה עד שהסליידר נעצר לפני היתקעות."
+        },
+        "tal_lim_cw": {
+          "english": "The tail is held at full travel one way. Lower the limit until the slider stops short of binding.",
+          "max_length": 97,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "הזנב מוחזק במהלך מלא לכיוון אחד. הורד את ההגבלה עד שהסליידר נעצר לפני היתקעות."
+        },
+        "tal_lim_title": {
+          "english": "Tail end stops",
+          "max_length": 14,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "עצירות קצה זנב"
+        },
+        "tal_motor": {
+          "english": "Take the tail blades off. Spin the tail motor at low power to check it runs.",
+          "max_length": 76,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "הסר את להבי הזנב. סובב את מנוע הזנב בהספק נמוך כדי לבדוק שהוא פועל."
+        },
+        "tal_motor_title": {
+          "english": "Tail motor",
+          "max_length": 10,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "מנוע זנב"
+        },
+        "tal_no_motor": {
+          "english": "No tail motor output (motor 2) on this flight controller.",
+          "max_length": 57,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "אין יציאת מנוע זנב (מנוע 2) בבקר טיסה זה."
+        },
+        "tal_ok": {
+          "english": "Correct",
+          "max_length": 7,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "נכון"
+        },
+        "tal_other_side": {
+          "english": "Swap",
+          "max_length": 4,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "החלף"
+        },
+        "tal_output": {
+          "english": "Tail motor",
+          "max_length": 10,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "מנוע זנב"
+        },
+        "tal_power": {
+          "english": "Test power",
+          "max_length": 10,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "הספק בדיקה"
+        },
+        "tal_rate": {
+          "english": "Tail rate",
+          "max_length": 9,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "קצב זנב"
+        },
+        "tal_reverse": {
+          "english": "Wrong way",
+          "max_length": 10,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "כיוון שגוי"
+        },
+        "tal_run_idle": {
+          "english": "Run idle",
+          "max_length": 8,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "הפעל סרק"
+        },
+        "tal_running": {
+          "english": "Running",
+          "max_length": 7,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "פועל"
+        },
+        "tal_side": {
+          "english": "Held side",
+          "max_length": 9,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "צד מוחזק"
+        },
+        "tal_spin": {
+          "english": "Spin",
+          "max_length": 4,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "סובב"
+        },
+        "tal_spin_rev": {
+          "english": "Reverse",
+          "max_length": 7,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "הפוך"
+        },
+        "tal_stop": {
+          "english": "Stop",
+          "max_length": 4,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "עצור"
+        },
+        "tal_stopped": {
+          "english": "Stopped",
+          "max_length": 7,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "עצור"
+        },
+        "tal_title": {
+          "english": "Tail rotor",
+          "max_length": 10,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "רוטור זנב"
+        },
+        "tal_trim": {
+          "english": "Centre trim",
+          "max_length": 11,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "טרים מרכז"
+        },
+        "tal_use_idle": {
+          "english": "Use test",
+          "max_length": 12,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "השתמש בבדיקה"
+        }
+      },
       "stats": {
         "flightcount": {
           "english": "Flight Count",

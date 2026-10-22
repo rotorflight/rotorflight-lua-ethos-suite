@@ -279,7 +279,9 @@ local MENUS = {
       -- locked. That leaves Diagnostics and Developer unlocked below, which
       -- is the intent: link/ELRS diagnostics are exactly what a pilot wants
       -- reachable while armed, so this menu stays open and badges only its
-      -- two write entries.
+      -- two write entries. The Setup Wizard moves servos and writes
+      -- the whole setup, so it is locked too.
+      {title = "@i18n(app.modules.setup_wizard.name)@", icon = lcd.loadMask("app/gfx/setup_wizard.png"), script = "app/pages/setup_wizard.lua", lockedWhileArmed = true},
       {title = "@i18n(app.modules.copyprofiles.name)@", icon = lcd.loadMask("app/gfx/copy_profiles.png"), script = "app/pages/copy_profiles.lua", lockedWhileArmed = true},
       {title = "@i18n(app.modules.profile_select.name)@", icon = lcd.loadMask("app/gfx/profile_select.png"), script = "app/pages/profile_select.lua", lockedWhileArmed = true},
       {title = "@i18n(app.modules.diagnostics.name)@", icon = lcd.loadMask("app/gfx/diagnostics.png"), menuId = "diagnostics_menu", offline = true},
