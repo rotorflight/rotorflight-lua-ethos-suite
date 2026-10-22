@@ -1,0 +1,7 @@
+{
+  "id": "setup-wizard-heli",
+  "name": "Setup Wizard helicopter rules match the Configurator's",
+  "step": "Check the Setup Wizard's swash, servo and pitch math",
+  "script": "bin/setup_wizard_heli/verify_setup_wizard_heli.lua",
+  "rationale": "Tools -> Setup Wizard is the radio's copy of rotorflight-configurator's helicopter\nSetup Wizard, and every step leans on lib/setup_wizard_heli.lua for the same rules:\nwhich servos each swash type drives, the mixer and servo override units (1000 = 12 degrees\nmain, 24 degrees tail, 50 degrees servo arm), the pitch calibration that rescales a mixer\nrate from a measured blade angle, the servo type bands, and the receiver channel\ndetection and throttle range.\n\nThe harness pins each against the value the Configurator's heli.js gives for the same\ninput. --self-test re-runs it against a copy whose pitch calibration ignores the\nmeasurement, and requires that to fail."
+}

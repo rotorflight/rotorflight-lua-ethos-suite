@@ -1537,6 +1537,19 @@ local function onCraftNameSaved(name)
 end
 bus.subscribe("craft.name.saved", onCraftNameSaved)
 
+-- The Setup Wizard's Receiver step changed the RX map (in the FC's RAM; the
+-- wizard saves or reverts it). The FC uses the new map straight away, so the
+-- local copy behind the throttle and switch signals follows it now rather
+-- than at the next connect.
+local function onRxMapSaved(map)
+  if not session.connected or type(map) ~= "table" then return end
+  local copy = {}
+  for k, v in pairs(map) do copy[k] = v end
+  session.rxMap = copy
+  publish()
+end
+bus.subscribe("rx.map.saved", onRxMapSaved)
+
 -- If the FC computes smartfuel itself (smartfuelMode > 0), just mirror its
 -- broadcast sensor. Otherwise run the local sigmoid/slew estimator
 -- (lib/smartfuel_calc.lua) against live voltage/consumption telemetry.
