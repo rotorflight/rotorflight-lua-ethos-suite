@@ -355,6 +355,20 @@ local function openScreen(nav, menus, rootEntries, screen, setEventHandler, setW
   -- Tiles start at a fixed left gap, so they sit clear of the frame.
   local TILE_LEFT_GAP = 4
 
+  -- Spread the columns so the last one ends where the header's button row
+  -- ends; the fixed tile gap alone leaves the grid a few pixels short (X20:
+  -- 4 + 6 x 120 + 5 x 10 = 774 of 780). Rows keep the fixed vertical gap.
+  local colX = {}
+  local spread = 0
+  local rightEdge = headerHandle.rightEdge
+  if numPerRow > 1 and type(rightEdge) == "number" then
+    spread = rightEdge - (TILE_LEFT_GAP + numPerRow * tileW + (numPerRow - 1) * tilePadding)
+    if spread < 0 or spread >= tileW then spread = 0 end
+  end
+  for c = 0, numPerRow - 1 do
+    colX[c] = TILE_LEFT_GAP + c * (tileW + tilePadding) + (numPerRow > 1 and math.floor(c * spread / (numPerRow - 1) + 0.5) or 0)
+  end
+
   local x, y = 0, form.height() + tilePadding
   local lastGroup = firstGroup
   local col = 0
@@ -429,7 +443,7 @@ local function openScreen(nav, menus, rootEntries, screen, setEventHandler, setW
         x = 0
         y = y + tileH + tilePadding
       else
-        x = x + tileW + tilePadding
+        x = colX[col]
       end
     end
   end
