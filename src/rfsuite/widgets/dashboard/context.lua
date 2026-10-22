@@ -2210,7 +2210,10 @@ function utils.drawArc(cx, cy, radius, thickness, startAngle, endAngle, arcColor
     else
       local mid = startAngle + sweep / 2
       lcd.drawAnnulusSector(cx, cy, inner, outer, startAngle, mid)
-      lcd.drawAnnulusSector(cx, cy, inner, outer, mid, endAngle)
+      -- Overlap the split edges to hide the antialiasing seam. Keep each
+      -- sector at most 180 degrees, including for full-circle callers.
+      local overlap = math.min(1, 180 - sweep / 2)
+      lcd.drawAnnulusSector(cx, cy, inner, outer, mid - overlap, endAngle)
     end
   else
     lcd.drawCircle(cx, cy, outer)
