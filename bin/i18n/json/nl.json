@@ -8305,6 +8305,2080 @@
           "reverse_text": false,
           "max_length": 97
         }
+      },
+      "setup_wizard": {
+        "name": {
+          "english": "Setup Wizard",
+          "translation": "Setup-wizard",
+          "needs_translation": false,
+          "max_length": 12,
+          "reverse_text": false
+        },
+        "btn_next": {
+          "english": "Next",
+          "translation": "Volgende",
+          "needs_translation": false,
+          "max_length": 8,
+          "reverse_text": false
+        },
+        "btn_start": {
+          "english": "Start",
+          "translation": "Start",
+          "needs_translation": false,
+          "max_length": 5,
+          "reverse_text": false
+        },
+        "btn_again": {
+          "english": "Again",
+          "translation": "Opnieuw",
+          "needs_translation": false,
+          "max_length": 7,
+          "reverse_text": false
+        },
+        "btn_save_restart": {
+          "english": "Save and restart",
+          "translation": "Opslaan & herstart",
+          "needs_translation": false,
+          "max_length": 18,
+          "reverse_text": false
+        },
+        "dir_save_next": {
+          "english": "Save and continue",
+          "translation": "Opslaan & verder",
+          "needs_translation": false,
+          "max_length": 17,
+          "reverse_text": false
+        },
+        "fin_button": {
+          "english": "Save and finish",
+          "translation": "Opslaan & klaar",
+          "needs_translation": false,
+          "max_length": 15,
+          "reverse_text": false
+        },
+        "reboot_wait_fmt": {
+          "english": "Reconnecting, up to %d s",
+          "translation": "Opnieuw verbinden, max. %d s",
+          "needs_translation": false,
+          "max_length": 28,
+          "reverse_text": false
+        },
+        "disconnected": {
+          "english": "No link to the flight controller.",
+          "translation": "Geen verbinding met de vliegcontroller.",
+          "needs_translation": false,
+          "max_length": 39,
+          "reverse_text": false
+        },
+        "leave_title": {
+          "english": "Unsaved changes",
+          "translation": "Niet opgeslagen",
+          "needs_translation": false,
+          "max_length": 15,
+          "reverse_text": false
+        },
+        "leave_body": {
+          "english": "Save the wizard's changes to the flight controller, or discard them?",
+          "translation": "Wijzigingen van de wizard opslaan in de vliegcontroller, of verwerpen?",
+          "needs_translation": false,
+          "max_length": 70,
+          "reverse_text": false
+        },
+        "leave_save": {
+          "english": "Save",
+          "translation": "Opslaan",
+          "needs_translation": false,
+          "max_length": 7,
+          "reverse_text": false
+        },
+        "leave_discard": {
+          "english": "Discard",
+          "translation": "Verwerpen",
+          "needs_translation": false,
+          "max_length": 9,
+          "reverse_text": false
+        },
+        "progress_fmt": {
+          "english": "%d of %d",
+          "translation": "%d van %d",
+          "needs_translation": false,
+          "max_length": 9,
+          "reverse_text": false
+        },
+        "step_receiver": {
+          "english": "Receiver",
+          "translation": "Ontvanger",
+          "needs_translation": false,
+          "max_length": 9,
+          "reverse_text": false
+        },
+        "step_finish": {
+          "english": "Finish",
+          "translation": "Afronden",
+          "needs_translation": false,
+          "max_length": 8,
+          "reverse_text": false
+        },
+        "servo_role_fmt": {
+          "english": "Servo %d (%s)",
+          "translation": "Servo %d (%s)",
+          "needs_translation": false,
+          "max_length": 13,
+          "reverse_text": false
+        },
+        "armed": {
+          "english": "Armed: servos can't be moved.",
+          "translation": "Armed: servo's kunnen niet bewegen.",
+          "needs_translation": false,
+          "max_length": 35,
+          "reverse_text": false
+        },
+        "missing_servos_fmt": {
+          "english": "Servo %s is needed for this setup, but the board has no output for it.",
+          "translation": "Servo %s is nodig voor deze setup, maar het board heeft er geen uitgang voor.",
+          "needs_translation": false,
+          "max_length": 77,
+          "reverse_text": false
+        },
+        "reboot_skipped": {
+          "english": "A restart is still owed: go back to Connect the servos.",
+          "translation": "Herstart nog nodig: ga terug naar Servo's aansluiten.",
+          "needs_translation": false,
+          "max_length": 55,
+          "reverse_text": false
+        },
+        "no_swash": {
+          "english": "This step works on the swashplate servos. Pick a swashplate type first.",
+          "translation": "Deze stap werkt op de swash-servo's. Kies eerst een swashtype.",
+          "needs_translation": false,
+          "max_length": 71,
+          "reverse_text": false
+        },
+        "go_swash": {
+          "english": "Swashplate",
+          "translation": "Swashplate",
+          "needs_translation": false,
+          "max_length": 10,
+          "reverse_text": false
+        },
+        "step_sensors": {
+          "english": "Board orientation",
+          "translation": "Oriëntatie",
+          "needs_translation": false,
+          "max_length": 17,
+          "reverse_text": false
+        },
+        "step_swash": {
+          "english": "Swashplate",
+          "translation": "Swashplate",
+          "needs_translation": false,
+          "max_length": 10,
+          "reverse_text": false
+        },
+        "step_servotype": {
+          "english": "Servo type",
+          "translation": "Servotype",
+          "needs_translation": false,
+          "max_length": 10,
+          "reverse_text": false
+        },
+        "step_motor": {
+          "english": "Motor & ESC",
+          "translation": "Motor & ESC",
+          "needs_translation": false,
+          "max_length": 11,
+          "reverse_text": false
+        },
+        "step_connect": {
+          "english": "Connect servos",
+          "translation": "Servo's aansl.",
+          "needs_translation": false,
+          "max_length": 14,
+          "reverse_text": false
+        },
+        "step_servos": {
+          "english": "Servo centre",
+          "translation": "Servomidden",
+          "needs_translation": false,
+          "max_length": 12,
+          "reverse_text": false
+        },
+        "step_direction": {
+          "english": "Directions",
+          "translation": "Richtingen",
+          "needs_translation": false,
+          "max_length": 10,
+          "reverse_text": false
+        },
+        "step_level": {
+          "english": "Level swash",
+          "translation": "Swash waterpas",
+          "needs_translation": false,
+          "max_length": 14,
+          "reverse_text": false
+        },
+        "step_pitch": {
+          "english": "Blade pitch",
+          "translation": "Bladpitch",
+          "needs_translation": false,
+          "max_length": 11,
+          "reverse_text": false
+        },
+        "step_tail": {
+          "english": "Tail rotor",
+          "translation": "Staartrotor",
+          "needs_translation": false,
+          "max_length": 11,
+          "reverse_text": false
+        },
+        "step_gyro": {
+          "english": "Gyro check",
+          "translation": "Gyrocontrole",
+          "needs_translation": false,
+          "max_length": 12,
+          "reverse_text": false
+        },
+        "role_pitch": {
+          "english": "Pitch",
+          "translation": "Pitch",
+          "needs_translation": false,
+          "max_length": 5,
+          "reverse_text": false
+        },
+        "role_roll": {
+          "english": "Roll",
+          "translation": "Rol",
+          "needs_translation": false,
+          "max_length": 4,
+          "reverse_text": false
+        },
+        "role_collective": {
+          "english": "Collective",
+          "translation": "Collectief",
+          "needs_translation": false,
+          "max_length": 10,
+          "reverse_text": false
+        },
+        "role_centre": {
+          "english": "Centre",
+          "translation": "Midden",
+          "needs_translation": false,
+          "max_length": 6,
+          "reverse_text": false
+        },
+        "role_left": {
+          "english": "Left",
+          "translation": "Links",
+          "needs_translation": false,
+          "max_length": 5,
+          "reverse_text": false
+        },
+        "role_right": {
+          "english": "Right",
+          "translation": "Rechts",
+          "needs_translation": false,
+          "max_length": 6,
+          "reverse_text": false
+        },
+        "role_front": {
+          "english": "Front",
+          "translation": "Voor",
+          "needs_translation": false,
+          "max_length": 5,
+          "reverse_text": false
+        },
+        "role_front_left": {
+          "english": "Front left",
+          "translation": "Linksvoor",
+          "needs_translation": false,
+          "max_length": 10,
+          "reverse_text": false
+        },
+        "role_front_right": {
+          "english": "Front right",
+          "translation": "Rechtsvoor",
+          "needs_translation": false,
+          "max_length": 11,
+          "reverse_text": false
+        },
+        "role_tail": {
+          "english": "Tail",
+          "translation": "Staart",
+          "needs_translation": false,
+          "max_length": 6,
+          "reverse_text": false
+        },
+        "sen_title": {
+          "english": "Board orientation",
+          "translation": "Board-oriëntatie",
+          "needs_translation": false,
+          "max_length": 17,
+          "reverse_text": false
+        },
+        "sen_intro": {
+          "english": "First tell the flight controller how it is mounted. Take the main and tail blades off, and leave the servos unplugged until the Connect the servos step.",
+          "translation": "Vertel eerst de vliegcontroller hoe hij gemonteerd is. Haal hoofd- en staartbladen eraf en laat de servo's los tot de stap Servo's aansluiten.",
+          "needs_translation": false,
+          "max_length": 152,
+          "reverse_text": false
+        },
+        "sen_no_acc": {
+          "english": "This board has no accelerometer: set the orientation on the Alignment page.",
+          "translation": "Dit board heeft geen accelerometer: stel de oriëntatie in op de pagina Uitlijning.",
+          "needs_translation": false,
+          "max_length": 82,
+          "reverse_text": false
+        },
+        "sen_acc_title": {
+          "english": "Accelerometer",
+          "translation": "Accelerometer",
+          "needs_translation": false,
+          "max_length": 13,
+          "reverse_text": false
+        },
+        "sen_acc_text": {
+          "english": "Stand the helicopter on its skids on a level surface and keep it still, then calibrate.",
+          "translation": "Zet de heli op zijn landingsgestel op een vlakke ondergrond, houd hem stil en kalibreer.",
+          "needs_translation": false,
+          "max_length": 88,
+          "reverse_text": false
+        },
+        "sen_acc_busy": {
+          "english": "Calibrating... keep it still.",
+          "translation": "Kalibreren... stil houden.",
+          "needs_translation": false,
+          "max_length": 29,
+          "reverse_text": false
+        },
+        "sen_acc_done": {
+          "english": "Accelerometer calibrated.",
+          "translation": "Accelerometer gekalibreerd.",
+          "needs_translation": false,
+          "max_length": 27,
+          "reverse_text": false
+        },
+        "sen_acc_failed": {
+          "english": "Calibration failed. Keep the model still and try again.",
+          "translation": "Kalibratie mislukt. Houd het model stil en probeer opnieuw.",
+          "needs_translation": false,
+          "max_length": 59,
+          "reverse_text": false
+        },
+        "sen_calibrate": {
+          "english": "Calibrate",
+          "translation": "Kalibreren",
+          "needs_translation": false,
+          "max_length": 10,
+          "reverse_text": false
+        },
+        "sen_align_title": {
+          "english": "Find the orientation",
+          "translation": "Oriëntatie zoeken",
+          "needs_translation": false,
+          "max_length": 20,
+          "reverse_text": false
+        },
+        "sen_align_text": {
+          "english": "Stand the helicopter level, press Start, then lift the tail by at least 20 degrees and hold it still.",
+          "translation": "Zet de heli waterpas, druk Start, til de staart minstens 20 graden op en houd stil.",
+          "needs_translation": false,
+          "max_length": 101,
+          "reverse_text": false
+        },
+        "sen_align_lift": {
+          "english": "Lift the tail 20 degrees and hold it still...",
+          "translation": "Til de staart 20 graden op en houd stil...",
+          "needs_translation": false,
+          "max_length": 45,
+          "reverse_text": false
+        },
+        "sen_align_done_fmt": {
+          "english": "Found: roll %d, pitch %d, yaw %d degrees.",
+          "translation": "Gevonden: rol %d, pitch %d, yaw %d graden.",
+          "needs_translation": false,
+          "max_length": 42,
+          "reverse_text": false
+        },
+        "sen_rejected_armed": {
+          "english": "Refused: the model is armed.",
+          "translation": "Geweigerd: het model is armed.",
+          "needs_translation": false,
+          "max_length": 30,
+          "reverse_text": false
+        },
+        "sen_rejected_uncal": {
+          "english": "Calibrate the accelerometer first.",
+          "translation": "Kalibreer eerst de accelerometer.",
+          "needs_translation": false,
+          "max_length": 34,
+          "reverse_text": false
+        },
+        "sen_timeout": {
+          "english": "Timed out. Lift the tail a little further and try again.",
+          "translation": "Tijd verstreken. Til de staart iets hoger en probeer opnieuw.",
+          "needs_translation": false,
+          "max_length": 61,
+          "reverse_text": false
+        },
+        "sen_no_match": {
+          "english": "No orientation matched. Lift the tail straight up and try again.",
+          "translation": "Geen oriëntatie gevonden. Til de staart recht op en probeer opnieuw.",
+          "needs_translation": false,
+          "max_length": 68,
+          "reverse_text": false
+        },
+        "sen_unsupported": {
+          "english": "This firmware cannot find the orientation: set it on the Alignment page.",
+          "translation": "Deze firmware kan de oriëntatie niet vinden: stel hem in op de pagina Uitlijning.",
+          "needs_translation": false,
+          "max_length": 81,
+          "reverse_text": false
+        },
+        "sen_done_title": {
+          "english": "Orientation done",
+          "translation": "Oriëntatie klaar",
+          "needs_translation": false,
+          "max_length": 16,
+          "reverse_text": false
+        },
+        "sen_done_restart": {
+          "english": "The new orientation takes effect after the restart at the Connect the servos step.",
+          "translation": "De nieuwe oriëntatie werkt na de herstart bij de stap Servo's aansluiten.",
+          "needs_translation": false,
+          "max_length": 82,
+          "reverse_text": false
+        },
+        "sen_done_same": {
+          "english": "Nothing to change here.",
+          "translation": "Hier valt niets te wijzigen.",
+          "needs_translation": false,
+          "max_length": 28,
+          "reverse_text": false
+        },
+        "rcv_title": {
+          "english": "Receiver",
+          "translation": "Ontvanger",
+          "needs_translation": false,
+          "max_length": 9,
+          "reverse_text": false
+        },
+        "rcv_intro": {
+          "english": "The radio talks to the flight controller through this receiver, so its protocol and port are set in the Configurator. Here you set the channel order, check the sticks and set the throttle range.",
+          "translation": "De zender praat via deze ontvanger met de vliegcontroller; protocol en poort stel je in de Configurator in. Hier stel je de kanaalvolgorde in, test je de sticks en het gasbereik.",
+          "needs_translation": false,
+          "max_length": 194,
+          "reverse_text": false
+        },
+        "rcv_signal_ok": {
+          "english": "Receiver signal: OK",
+          "translation": "Ontvangersignaal: OK",
+          "needs_translation": false,
+          "max_length": 20,
+          "reverse_text": false
+        },
+        "rcv_signal_none": {
+          "english": "No valid receiver signal.",
+          "translation": "Geen geldig ontvangersignaal.",
+          "needs_translation": false,
+          "max_length": 29,
+          "reverse_text": false
+        },
+        "rcv_order_title": {
+          "english": "Channel order",
+          "translation": "Kanaalvolgorde",
+          "needs_translation": false,
+          "max_length": 14,
+          "reverse_text": false
+        },
+        "rcv_order_text": {
+          "english": "Each bar should follow its own stick. If not, pick a preset or detect the order.",
+          "translation": "Elke balk moet zijn eigen stick volgen. Zo niet, kies een preset of detecteer de volgorde.",
+          "needs_translation": false,
+          "max_length": 90,
+          "reverse_text": false
+        },
+        "rcv_order_now_fmt": {
+          "english": "Now: %s.",
+          "translation": "Nu: %s.",
+          "needs_translation": false,
+          "max_length": 8,
+          "reverse_text": false
+        },
+        "rcv_custom": {
+          "english": "Custom",
+          "translation": "Aangepast",
+          "needs_translation": false,
+          "max_length": 9,
+          "reverse_text": false
+        },
+        "rcv_preset_elrs": {
+          "english": "ELRS",
+          "translation": "ELRS",
+          "needs_translation": false,
+          "max_length": 4,
+          "reverse_text": false
+        },
+        "rcv_preset_frsky": {
+          "english": "FrSky",
+          "translation": "FrSky",
+          "needs_translation": false,
+          "max_length": 5,
+          "reverse_text": false
+        },
+        "rcv_preset_futaba": {
+          "english": "Futaba/Hitec",
+          "translation": "Futaba/Hitec",
+          "needs_translation": false,
+          "max_length": 12,
+          "reverse_text": false
+        },
+        "rcv_preset_spektrum": {
+          "english": "Spektrum/JR",
+          "translation": "Spektrum/JR",
+          "needs_translation": false,
+          "max_length": 11,
+          "reverse_text": false
+        },
+        "rcv_detect": {
+          "english": "Detect",
+          "translation": "Detecteer",
+          "needs_translation": false,
+          "max_length": 9,
+          "reverse_text": false
+        },
+        "rcv_detect_text_fmt": {
+          "english": "%s Leave the other sticks still.",
+          "translation": "%s Laat de andere sticks stil.",
+          "needs_translation": false,
+          "max_length": 32,
+          "reverse_text": false
+        },
+        "rcv_detect_done": {
+          "english": "Channel order set from the sticks.",
+          "translation": "Kanaalvolgorde ingesteld via de sticks.",
+          "needs_translation": false,
+          "max_length": 39,
+          "reverse_text": false
+        },
+        "rcv_skip": {
+          "english": "Skip",
+          "translation": "Overslaan",
+          "needs_translation": false,
+          "max_length": 9,
+          "reverse_text": false
+        },
+        "rcv_move_roll": {
+          "english": "Move the roll stick fully left and right.",
+          "translation": "Beweeg de rolstick volledig links en rechts.",
+          "needs_translation": false,
+          "max_length": 44,
+          "reverse_text": false
+        },
+        "rcv_move_pitch": {
+          "english": "Move the pitch stick fully forward and back.",
+          "translation": "Beweeg de pitchstick volledig voor en achter.",
+          "needs_translation": false,
+          "max_length": 45,
+          "reverse_text": false
+        },
+        "rcv_move_yaw": {
+          "english": "Move the yaw stick fully left and right.",
+          "translation": "Beweeg de yawstick volledig links en rechts.",
+          "needs_translation": false,
+          "max_length": 44,
+          "reverse_text": false
+        },
+        "rcv_move_collective": {
+          "english": "Move the collective stick fully up and down.",
+          "translation": "Beweeg de collectiefstick volledig op en neer.",
+          "needs_translation": false,
+          "max_length": 46,
+          "reverse_text": false
+        },
+        "rcv_move_throttle": {
+          "english": "Flip the throttle switch, or move the throttle, end to end.",
+          "translation": "Zet de gasschakelaar om, of beweeg het gas van eind tot eind.",
+          "needs_translation": false,
+          "max_length": 61,
+          "reverse_text": false
+        },
+        "rcv_ch_roll": {
+          "english": "Roll",
+          "translation": "Rol",
+          "needs_translation": false,
+          "max_length": 4,
+          "reverse_text": false
+        },
+        "rcv_ch_pitch": {
+          "english": "Pitch",
+          "translation": "Pitch",
+          "needs_translation": false,
+          "max_length": 5,
+          "reverse_text": false
+        },
+        "rcv_ch_yaw": {
+          "english": "Yaw",
+          "translation": "Yaw",
+          "needs_translation": false,
+          "max_length": 3,
+          "reverse_text": false
+        },
+        "rcv_ch_collective": {
+          "english": "Collective",
+          "translation": "Collectief",
+          "needs_translation": false,
+          "max_length": 10,
+          "reverse_text": false
+        },
+        "rcv_ch_throttle": {
+          "english": "Throttle",
+          "translation": "Gas",
+          "needs_translation": false,
+          "max_length": 8,
+          "reverse_text": false
+        },
+        "rcv_sticks_title": {
+          "english": "Check the sticks",
+          "translation": "Sticks testen",
+          "needs_translation": false,
+          "max_length": 16,
+          "reverse_text": false
+        },
+        "rcv_sticks_text": {
+          "english": "Roll right, pitch forward, yaw right and collective up should each move its own bar to the right.",
+          "translation": "Rol rechts, pitch vooruit, yaw rechts en collectief omhoog bewegen elk hun eigen balk naar rechts.",
+          "needs_translation": false,
+          "max_length": 98,
+          "reverse_text": false
+        },
+        "rcv_throttle_title": {
+          "english": "Throttle range",
+          "translation": "Gasbereik",
+          "needs_translation": false,
+          "max_length": 14,
+          "reverse_text": false
+        },
+        "rcv_throttle_text": {
+          "english": "Press Measure, move the throttle switch through every position, then Stop and Use.",
+          "translation": "Druk Meten, zet de gasschakelaar in elke stand, dan Stop en Gebruik.",
+          "needs_translation": false,
+          "max_length": 82,
+          "reverse_text": false
+        },
+        "rcv_blades_off": {
+          "english": "Keep the blades off: the motor may start.",
+          "translation": "Bladen eraf laten: de motor kan starten.",
+          "needs_translation": false,
+          "max_length": 41,
+          "reverse_text": false
+        },
+        "rcv_measure": {
+          "english": "Measure",
+          "translation": "Meten",
+          "needs_translation": false,
+          "max_length": 7,
+          "reverse_text": false
+        },
+        "rcv_stop": {
+          "english": "Stop",
+          "translation": "Stop",
+          "needs_translation": false,
+          "max_length": 4,
+          "reverse_text": false
+        },
+        "rcv_use": {
+          "english": "Use",
+          "translation": "Gebruik",
+          "needs_translation": false,
+          "max_length": 7,
+          "reverse_text": false
+        },
+        "rcv_defaults": {
+          "english": "Defaults",
+          "translation": "Standaard",
+          "needs_translation": false,
+          "max_length": 9,
+          "reverse_text": false
+        },
+        "rcv_too_short": {
+          "english": "Under 300 us of travel: move it end to end.",
+          "translation": "Minder dan 300 us uitslag: beweeg van eind tot eind.",
+          "needs_translation": false,
+          "max_length": 52,
+          "reverse_text": false
+        },
+        "rcv_range_fmt": {
+          "english": "%d - %d us",
+          "translation": "%d - %d us",
+          "needs_translation": false,
+          "max_length": 10,
+          "reverse_text": false
+        },
+        "rcv_done_title": {
+          "english": "Receiver done",
+          "translation": "Ontvanger klaar",
+          "needs_translation": false,
+          "max_length": 15,
+          "reverse_text": false
+        },
+        "rcv_done": {
+          "english": "The channel order and throttle range are set.",
+          "translation": "Kanaalvolgorde en gasbereik zijn ingesteld.",
+          "needs_translation": false,
+          "max_length": 45,
+          "reverse_text": false
+        },
+        "swa_type_title": {
+          "english": "Swashplate type",
+          "translation": "Swashplate-type",
+          "needs_translation": false,
+          "max_length": 15,
+          "reverse_text": false
+        },
+        "swa_type_text": {
+          "english": "How are the swash servos laid out? 120 degrees is the most common.",
+          "translation": "Hoe zijn de swash-servo's geplaatst? 120 graden komt het meest voor.",
+          "needs_translation": false,
+          "max_length": 68,
+          "reverse_text": false
+        },
+        "swa_current_fmt": {
+          "english": "Now: %s",
+          "translation": "Nu: %s",
+          "needs_translation": false,
+          "max_length": 7,
+          "reverse_text": false
+        },
+        "swa_show_text": {
+          "english": "The servos sit here, seen from above with the nose at the top. Servo numbers are the FC outputs.",
+          "translation": "Hier zitten de servo's, van boven gezien met de neus boven. Servonummers zijn de FC-uitgangen.",
+          "needs_translation": false,
+          "max_length": 96,
+          "reverse_text": false
+        },
+        "swa_from_above": {
+          "english": "Seen from above, nose at the top",
+          "translation": "Van boven, neus boven",
+          "needs_translation": false,
+          "max_length": 32,
+          "reverse_text": false
+        },
+        "swa_dir_title": {
+          "english": "Main rotor direction",
+          "translation": "Draairichting hoofdrotor",
+          "needs_translation": false,
+          "max_length": 24,
+          "reverse_text": false
+        },
+        "swa_dir_text": {
+          "english": "Seen from above, which way do the main blades turn?",
+          "translation": "Van boven gezien, welke kant draaien de hoofdbladen op?",
+          "needs_translation": false,
+          "max_length": 55,
+          "reverse_text": false
+        },
+        "swa_cw": {
+          "english": "Clockwise",
+          "translation": "Rechtsom",
+          "needs_translation": false,
+          "max_length": 9,
+          "reverse_text": false
+        },
+        "swa_ccw": {
+          "english": "Counter-CW",
+          "translation": "Linksom",
+          "needs_translation": false,
+          "max_length": 10,
+          "reverse_text": false
+        },
+        "swa_tail_title": {
+          "english": "Tail type",
+          "translation": "Staarttype",
+          "needs_translation": false,
+          "max_length": 10,
+          "reverse_text": false
+        },
+        "swa_tail_text": {
+          "english": "A pitch tail uses a servo. A motor tail spins its own motor, one way or both ways.",
+          "translation": "Een pitchstaart gebruikt een servo. Een motorstaart heeft een eigen motor, één of twee richtingen.",
+          "needs_translation": false,
+          "max_length": 98,
+          "reverse_text": false
+        },
+        "swa_tail_variable": {
+          "english": "Pitch (servo)",
+          "translation": "Pitch (servo)",
+          "needs_translation": false,
+          "max_length": 13,
+          "reverse_text": false
+        },
+        "swa_tail_motor": {
+          "english": "Motor",
+          "translation": "Motor",
+          "needs_translation": false,
+          "max_length": 5,
+          "reverse_text": false
+        },
+        "swa_tail_bidir": {
+          "english": "Motor, 2-way",
+          "translation": "Motor, 2-weg",
+          "needs_translation": false,
+          "max_length": 12,
+          "reverse_text": false
+        },
+        "swa_pin_move": {
+          "english": "Moves on save",
+          "translation": "Wijzigt bij opslaan",
+          "needs_translation": false,
+          "max_length": 19,
+          "reverse_text": false
+        },
+        "swa_pin_stuck": {
+          "english": "Set in Mixer",
+          "translation": "In Mixer instellen",
+          "needs_translation": false,
+          "max_length": 18,
+          "reverse_text": false
+        },
+        "swa_restart": {
+          "english": "Applies after the restart at the Connect step.",
+          "translation": "Werkt na de herstart bij de stap Aansluiten.",
+          "needs_translation": false,
+          "max_length": 46,
+          "reverse_text": false
+        },
+        "swa_done_title": {
+          "english": "Swashplate set",
+          "translation": "Swashplate ingesteld",
+          "needs_translation": false,
+          "max_length": 20,
+          "reverse_text": false
+        },
+        "swa_row_type": {
+          "english": "Swash type",
+          "translation": "Swashtype",
+          "needs_translation": false,
+          "max_length": 10,
+          "reverse_text": false
+        },
+        "swa_row_dir": {
+          "english": "Rotor",
+          "translation": "Rotor",
+          "needs_translation": false,
+          "max_length": 5,
+          "reverse_text": false
+        },
+        "swa_row_tail": {
+          "english": "Tail",
+          "translation": "Staart",
+          "needs_translation": false,
+          "max_length": 6,
+          "reverse_text": false
+        },
+        "swa_row_pin": {
+          "english": "Tail pin",
+          "translation": "Staartpin",
+          "needs_translation": false,
+          "max_length": 9,
+          "reverse_text": false
+        },
+        "swa_pin_servo": {
+          "english": "Servo 4",
+          "translation": "Servo 4",
+          "needs_translation": false,
+          "max_length": 7,
+          "reverse_text": false
+        },
+        "swa_pin_motor": {
+          "english": "Motor 2",
+          "translation": "Motor 2",
+          "needs_translation": false,
+          "max_length": 7,
+          "reverse_text": false
+        },
+        "swa_pin_both": {
+          "english": "Own pin",
+          "translation": "Eigen pin",
+          "needs_translation": false,
+          "max_length": 9,
+          "reverse_text": false
+        },
+        "swa_pin_none": {
+          "english": "None",
+          "translation": "Geen",
+          "needs_translation": false,
+          "max_length": 4,
+          "reverse_text": false
+        },
+        "swa_direct": {
+          "english": "Direct",
+          "translation": "Direct",
+          "needs_translation": false,
+          "max_length": 6,
+          "reverse_text": false
+        },
+        "sty_intro": {
+          "english": "Pick the servo type. It sets the update rate and the centre pulse.",
+          "translation": "Kies het servotype. Dit bepaalt de frequentie en de middenpuls.",
+          "needs_translation": false,
+          "max_length": 66,
+          "reverse_text": false
+        },
+        "sty_unplugged": {
+          "english": "Keep the servos unplugged until the Connect step.",
+          "translation": "Laat de servo's los tot de stap Aansluiten.",
+          "needs_translation": false,
+          "max_length": 49,
+          "reverse_text": false
+        },
+        "sty_swash_title": {
+          "english": "Cyclic servos",
+          "translation": "Cyclische servo's",
+          "needs_translation": false,
+          "max_length": 17,
+          "reverse_text": false
+        },
+        "sty_tail_title": {
+          "english": "Tail servo",
+          "translation": "Staartservo",
+          "needs_translation": false,
+          "max_length": 11,
+          "reverse_text": false
+        },
+        "sty_custom": {
+          "english": "Custom",
+          "translation": "Aangepast",
+          "needs_translation": false,
+          "max_length": 9,
+          "reverse_text": false
+        },
+        "sty_mixed": {
+          "english": "Mixed",
+          "translation": "Gemengd",
+          "needs_translation": false,
+          "max_length": 7,
+          "reverse_text": false
+        },
+        "sty_analog": {
+          "english": "Analog",
+          "translation": "Analoog",
+          "needs_translation": false,
+          "max_length": 7,
+          "reverse_text": false
+        },
+        "sty_digital": {
+          "english": "Digital",
+          "translation": "Digitaal",
+          "needs_translation": false,
+          "max_length": 8,
+          "reverse_text": false
+        },
+        "sty_narrow": {
+          "english": "Narrow",
+          "translation": "Narrow",
+          "needs_translation": false,
+          "max_length": 6,
+          "reverse_text": false
+        },
+        "sty_row_type": {
+          "english": "Type",
+          "translation": "Type",
+          "needs_translation": false,
+          "max_length": 4,
+          "reverse_text": false
+        },
+        "sty_hz_fmt": {
+          "english": "%d Hz",
+          "translation": "%d Hz",
+          "needs_translation": false,
+          "max_length": 5,
+          "reverse_text": false
+        },
+        "sty_us_fmt": {
+          "english": "%d us",
+          "translation": "%d us",
+          "needs_translation": false,
+          "max_length": 5,
+          "reverse_text": false
+        },
+        "mot_title": {
+          "english": "ESC protocol",
+          "translation": "ESC-protocol",
+          "needs_translation": false,
+          "max_length": 12,
+          "reverse_text": false
+        },
+        "mot_intro": {
+          "english": "How does the FC talk to the ESC? Use PWM if unsure. Blades off.",
+          "translation": "Hoe praat de FC met de ESC? Gebruik PWM bij twijfel. Bladen eraf.",
+          "needs_translation": false,
+          "max_length": 65,
+          "reverse_text": false
+        },
+        "mot_other": {
+          "english": "Keep %s",
+          "translation": "%s houden",
+          "needs_translation": false,
+          "max_length": 9,
+          "reverse_text": false
+        },
+        "mot_poles": {
+          "english": "Motor poles",
+          "translation": "Motorpolen",
+          "needs_translation": false,
+          "max_length": 11,
+          "reverse_text": false
+        },
+        "mot_poles_text": {
+          "english": "Magnet poles of the main motor, from its data sheet (often 10 or 12).",
+          "translation": "Magneetpolen van de hoofdmotor, uit de datasheet (vaak 10 of 12).",
+          "needs_translation": false,
+          "max_length": 69,
+          "reverse_text": false
+        },
+        "mot_pinion": {
+          "english": "Pinion teeth",
+          "translation": "Tanden rondsel",
+          "needs_translation": false,
+          "max_length": 14,
+          "reverse_text": false
+        },
+        "mot_pinion_text": {
+          "english": "Teeth on the motor pinion.",
+          "translation": "Tanden op het motorrondsel.",
+          "needs_translation": false,
+          "max_length": 27,
+          "reverse_text": false
+        },
+        "mot_main_gear": {
+          "english": "Main gear teeth",
+          "translation": "Tanden hoofdtandwiel",
+          "needs_translation": false,
+          "max_length": 20,
+          "reverse_text": false
+        },
+        "mot_main_gear_text": {
+          "english": "Teeth on the main gear.",
+          "translation": "Tanden op het hoofdtandwiel.",
+          "needs_translation": false,
+          "max_length": 28,
+          "reverse_text": false
+        },
+        "mot_tail_in": {
+          "english": "Tail gear in",
+          "translation": "Staartwiel in",
+          "needs_translation": false,
+          "max_length": 13,
+          "reverse_text": false
+        },
+        "mot_tail_in_text": {
+          "english": "Teeth on the tail drive gear at the main shaft (or its pulley).",
+          "translation": "Tanden op het staartaandrijfwiel aan de hoofdas (of de poelie).",
+          "needs_translation": false,
+          "max_length": 63,
+          "reverse_text": false
+        },
+        "mot_tail_out": {
+          "english": "Tail gear out",
+          "translation": "Staartwiel uit",
+          "needs_translation": false,
+          "max_length": 14,
+          "reverse_text": false
+        },
+        "mot_tail_out_text": {
+          "english": "Teeth on the tail rotor shaft gear (or its pulley).",
+          "translation": "Tanden op het wiel van de staartrotoras (of de poelie).",
+          "needs_translation": false,
+          "max_length": 55,
+          "reverse_text": false
+        },
+        "mot_ratio_fmt": {
+          "english": "%.2f:1",
+          "translation": "%.2f:1",
+          "needs_translation": false,
+          "max_length": 6,
+          "reverse_text": false
+        },
+        "mot_main_ratio": {
+          "english": "Main ratio",
+          "translation": "Hoofdverh.",
+          "needs_translation": false,
+          "max_length": 10,
+          "reverse_text": false
+        },
+        "mot_tail_ratio": {
+          "english": "Tail ratio",
+          "translation": "Staartverh.",
+          "needs_translation": false,
+          "max_length": 11,
+          "reverse_text": false
+        },
+        "mot_protocol": {
+          "english": "Protocol",
+          "translation": "Protocol",
+          "needs_translation": false,
+          "max_length": 8,
+          "reverse_text": false
+        },
+        "mot_done_title": {
+          "english": "Motor & ESC set",
+          "translation": "Motor & ESC ingesteld",
+          "needs_translation": false,
+          "max_length": 21,
+          "reverse_text": false
+        },
+        "con_title": {
+          "english": "Connect the servos",
+          "translation": "Servo's aansluiten",
+          "needs_translation": false,
+          "max_length": 18,
+          "reverse_text": false
+        },
+        "con_reboot": {
+          "english": "Keep the servos unplugged. Save and restart now, so the new outputs take effect before anything moves.",
+          "translation": "Laat de servo's los. Sla nu op en herstart, zodat de nieuwe uitgangen werken voordat er iets beweegt.",
+          "needs_translation": false,
+          "max_length": 102,
+          "reverse_text": false
+        },
+        "con_plug": {
+          "english": "Plug the servos in now and power them.",
+          "translation": "Sluit de servo's nu aan en zet er spanning op.",
+          "needs_translation": false,
+          "max_length": 46,
+          "reverse_text": false
+        },
+        "con_blades": {
+          "english": "Blades stay off, and keep clear of the motor.",
+          "translation": "Bladen blijven eraf; blijf uit de buurt van de motor.",
+          "needs_translation": false,
+          "max_length": 53,
+          "reverse_text": false
+        },
+        "con_main_motor": {
+          "english": "Main motor",
+          "translation": "Hoofdmotor",
+          "needs_translation": false,
+          "max_length": 10,
+          "reverse_text": false
+        },
+        "con_tail_motor": {
+          "english": "Tail motor",
+          "translation": "Staartmotor",
+          "needs_translation": false,
+          "max_length": 11,
+          "reverse_text": false
+        },
+        "con_ok": {
+          "english": "OK",
+          "translation": "OK",
+          "needs_translation": false,
+          "max_length": 2,
+          "reverse_text": false
+        },
+        "con_missing": {
+          "english": "Missing",
+          "translation": "Ontbreekt",
+          "needs_translation": false,
+          "max_length": 9,
+          "reverse_text": false
+        },
+        "con_checking": {
+          "english": "Checking",
+          "translation": "Controle",
+          "needs_translation": false,
+          "max_length": 8,
+          "reverse_text": false
+        },
+        "con_servo_missing": {
+          "english": "Some servos are missing: check the outputs and the swash type.",
+          "translation": "Er ontbreken servo's: controleer de uitgangen en het swashtype.",
+          "needs_translation": false,
+          "max_length": 63,
+          "reverse_text": false
+        },
+        "srv_test_text": {
+          "english": "The servo is held 20 degrees up.",
+          "translation": "De servo wordt 20 graden omhoog gehouden.",
+          "needs_translation": false,
+          "max_length": 41,
+          "reverse_text": false
+        },
+        "srv_test_q": {
+          "english": "Did the arm move up, towards the swash?",
+          "translation": "Ging de arm omhoog, richting swash?",
+          "needs_translation": false,
+          "max_length": 39,
+          "reverse_text": false
+        },
+        "srv_reversed": {
+          "english": "Reversed. Check the arm moved up now.",
+          "translation": "Omgekeerd. Controleer of de arm nu omhoog gaat.",
+          "needs_translation": false,
+          "max_length": 47,
+          "reverse_text": false
+        },
+        "srv_up": {
+          "english": "Yes, up",
+          "translation": "Ja, omhoog",
+          "needs_translation": false,
+          "max_length": 10,
+          "reverse_text": false
+        },
+        "srv_down": {
+          "english": "No, down",
+          "translation": "Nee, omlaag",
+          "needs_translation": false,
+          "max_length": 11,
+          "reverse_text": false
+        },
+        "srv_centre_text": {
+          "english": "Nudge the centre until the servo arm is level.",
+          "translation": "Verstel het midden tot de servoarm waterpas staat.",
+          "needs_translation": false,
+          "max_length": 50,
+          "reverse_text": false
+        },
+        "srv_tail_text": {
+          "english": "Nudge the centre until the tail servo arm is at 90 degrees to the pushrod.",
+          "translation": "Verstel het midden tot de staartservoarm 90 graden op de stuurstang staat.",
+          "needs_translation": false,
+          "max_length": 74,
+          "reverse_text": false
+        },
+        "srv_value_fmt": {
+          "english": "Centre %d us (%s).",
+          "translation": "Midden %d us (%s).",
+          "needs_translation": false,
+          "max_length": 18,
+          "reverse_text": false
+        },
+        "srv_far": {
+          "english": "Far from centre: move the arm a spline instead.",
+          "translation": "Ver van het midden: verzet de arm liever een tand.",
+          "needs_translation": false,
+          "max_length": 50,
+          "reverse_text": false
+        },
+        "srv_done_title": {
+          "english": "Servos set",
+          "translation": "Servo's ingesteld",
+          "needs_translation": false,
+          "max_length": 17,
+          "reverse_text": false
+        },
+        "srv_done": {
+          "english": "Every servo moves the right way and is centred.",
+          "translation": "Elke servo beweegt de goede kant op en staat in het midden.",
+          "needs_translation": false,
+          "max_length": 59,
+          "reverse_text": false
+        },
+        "dir_title": {
+          "english": "Control directions",
+          "translation": "Stuurrichtingen",
+          "needs_translation": false,
+          "max_length": 18,
+          "reverse_text": false
+        },
+        "dir_intro": {
+          "english": "The sticks now drive the swash directly, without the gyro. Move each stick as asked and watch the swash.",
+          "translation": "De sticks sturen de swash nu direct, zonder gyro. Beweeg elke stick zoals gevraagd en kijk naar de swash.",
+          "needs_translation": false,
+          "max_length": 105,
+          "reverse_text": false
+        },
+        "dir_q": {
+          "english": "Does the swash move as shown?",
+          "translation": "Beweegt de swash zoals getoond?",
+          "needs_translation": false,
+          "max_length": 31,
+          "reverse_text": false
+        },
+        "dir_reversed": {
+          "english": "Reversed. Check it again.",
+          "translation": "Omgekeerd. Controleer opnieuw.",
+          "needs_translation": false,
+          "max_length": 30,
+          "reverse_text": false
+        },
+        "dir_correct": {
+          "english": "Correct",
+          "translation": "Goed",
+          "needs_translation": false,
+          "max_length": 7,
+          "reverse_text": false
+        },
+        "dir_wrong": {
+          "english": "Wrong",
+          "translation": "Fout",
+          "needs_translation": false,
+          "max_length": 5,
+          "reverse_text": false
+        },
+        "dir_roll_title": {
+          "english": "Roll",
+          "translation": "Rol",
+          "needs_translation": false,
+          "max_length": 4,
+          "reverse_text": false
+        },
+        "dir_roll": {
+          "english": "Push the roll stick right. The swash should tilt right.",
+          "translation": "Duw de rolstick naar rechts. De swash moet naar rechts kantelen.",
+          "needs_translation": false,
+          "max_length": 64,
+          "reverse_text": false
+        },
+        "dir_pitch_title": {
+          "english": "Pitch",
+          "translation": "Pitch",
+          "needs_translation": false,
+          "max_length": 5,
+          "reverse_text": false
+        },
+        "dir_pitch": {
+          "english": "Push the pitch stick forward. The swash should tilt forward.",
+          "translation": "Duw de pitchstick naar voren. De swash moet naar voren kantelen.",
+          "needs_translation": false,
+          "max_length": 64,
+          "reverse_text": false
+        },
+        "dir_coll_title": {
+          "english": "Collective",
+          "translation": "Collectief",
+          "needs_translation": false,
+          "max_length": 10,
+          "reverse_text": false
+        },
+        "dir_coll": {
+          "english": "Raise the collective stick. The whole swash should move up.",
+          "translation": "Zet de collectiefstick omhoog. De hele swash moet omhoog gaan.",
+          "needs_translation": false,
+          "max_length": 62,
+          "reverse_text": false
+        },
+        "dir_done_title": {
+          "english": "Directions set",
+          "translation": "Richtingen ingesteld",
+          "needs_translation": false,
+          "max_length": 20,
+          "reverse_text": false
+        },
+        "dir_done": {
+          "english": "Roll, pitch and collective move the right way.",
+          "translation": "Rol, pitch en collectief bewegen de goede kant op.",
+          "needs_translation": false,
+          "max_length": 50,
+          "reverse_text": false
+        },
+        "lvl_title": {
+          "english": "Level the swash",
+          "translation": "Swash waterpas",
+          "needs_translation": false,
+          "max_length": 15,
+          "reverse_text": false
+        },
+        "lvl_intro": {
+          "english": "The swash is held at its centre. Trim it until it is level and the blades sit at zero pitch.",
+          "translation": "De swash staat in het midden. Trim tot hij waterpas is en de bladen op nul pitch staan.",
+          "needs_translation": false,
+          "max_length": 92,
+          "reverse_text": false
+        },
+        "lvl_trim": {
+          "english": "Trim",
+          "translation": "Trim",
+          "needs_translation": false,
+          "max_length": 4,
+          "reverse_text": false
+        },
+        "lvl_value_fmt": {
+          "english": "%s",
+          "translation": "%s",
+          "needs_translation": false,
+          "max_length": 2,
+          "reverse_text": false
+        },
+        "lvl_reset": {
+          "english": "Reset",
+          "translation": "Reset",
+          "needs_translation": false,
+          "max_length": 5,
+          "reverse_text": false
+        },
+        "lvl_roll_title": {
+          "english": "Roll trim",
+          "translation": "Roltrim",
+          "needs_translation": false,
+          "max_length": 9,
+          "reverse_text": false
+        },
+        "lvl_roll": {
+          "english": "Seen from behind, trim until the swash is level left to right.",
+          "translation": "Van achteren gezien: trim tot de swash links-rechts waterpas is.",
+          "needs_translation": false,
+          "max_length": 64,
+          "reverse_text": false
+        },
+        "lvl_pitch_title": {
+          "english": "Pitch trim",
+          "translation": "Pitchtrim",
+          "needs_translation": false,
+          "max_length": 10,
+          "reverse_text": false
+        },
+        "lvl_pitch": {
+          "english": "Seen from the side, trim until the swash is level front to back.",
+          "translation": "Van opzij gezien: trim tot de swash voor-achter waterpas is.",
+          "needs_translation": false,
+          "max_length": 64,
+          "reverse_text": false
+        },
+        "lvl_coll_title": {
+          "english": "Collective trim",
+          "translation": "Collectieftrim",
+          "needs_translation": false,
+          "max_length": 15,
+          "reverse_text": false
+        },
+        "lvl_coll": {
+          "english": "Trim until the main blades are at zero pitch.",
+          "translation": "Trim tot de hoofdbladen op nul pitch staan.",
+          "needs_translation": false,
+          "max_length": 45,
+          "reverse_text": false
+        },
+        "lvl_done_title": {
+          "english": "Swash level",
+          "translation": "Swash waterpas",
+          "needs_translation": false,
+          "max_length": 14,
+          "reverse_text": false
+        },
+        "lvl_done": {
+          "english": "The swash is level at zero pitch.",
+          "translation": "De swash is waterpas op nul pitch.",
+          "needs_translation": false,
+          "max_length": 34,
+          "reverse_text": false
+        },
+        "pit_title": {
+          "english": "Blade pitch",
+          "translation": "Bladpitch",
+          "needs_translation": false,
+          "max_length": 11,
+          "reverse_text": false
+        },
+        "pit_intro": {
+          "english": "You need a pitch gauge. The wizard holds the blades at a set pitch; you measure it and enter what you read.",
+          "translation": "Je hebt een pitchmeter nodig. De wizard houdt de bladen op een vaste pitch; jij meet en vult de waarde in.",
+          "needs_translation": false,
+          "max_length": 107,
+          "reverse_text": false
+        },
+        "pit_coll_title": {
+          "english": "Collective",
+          "translation": "Collectief",
+          "needs_translation": false,
+          "max_length": 10,
+          "reverse_text": false
+        },
+        "pit_coll_text": {
+          "english": "The collective is held at 9 degrees. Measure the blade pitch, enter it, then Calibrate.",
+          "translation": "Collectief staat op 9 graden. Meet de bladpitch, vul in, dan Kalibreren.",
+          "needs_translation": false,
+          "max_length": 87,
+          "reverse_text": false
+        },
+        "pit_cyc_title": {
+          "english": "Cyclic",
+          "translation": "Cyclisch",
+          "needs_translation": false,
+          "max_length": 8,
+          "reverse_text": false
+        },
+        "pit_cyc_text": {
+          "english": "Turn the blades to point left and right. Pitch is held at 9 degrees. Measure, enter it, then Calibrate.",
+          "translation": "Draai de bladen naar links en rechts. Pitch staat op 9 graden. Meet, vul in, dan Kalibreren.",
+          "needs_translation": false,
+          "max_length": 103,
+          "reverse_text": false
+        },
+        "pit_fine_text": {
+          "english": "Fine adjust the rate until the gauge reads 9 degrees.",
+          "translation": "Stel de rate fijn af tot de meter 9 graden aangeeft.",
+          "needs_translation": false,
+          "max_length": 53,
+          "reverse_text": false
+        },
+        "pit_measured": {
+          "english": "Measured",
+          "translation": "Gemeten",
+          "needs_translation": false,
+          "max_length": 8,
+          "reverse_text": false
+        },
+        "pit_rate": {
+          "english": "Rate",
+          "translation": "Rate",
+          "needs_translation": false,
+          "max_length": 4,
+          "reverse_text": false
+        },
+        "pit_calibrate": {
+          "english": "Calibrate",
+          "translation": "Kalibreren",
+          "needs_translation": false,
+          "max_length": 10,
+          "reverse_text": false
+        },
+        "pit_calibrated": {
+          "english": "Calibrated. Measure again to check.",
+          "translation": "Gekalibreerd. Meet opnieuw ter controle.",
+          "needs_translation": false,
+          "max_length": 40,
+          "reverse_text": false
+        },
+        "pit_lim_cyc_title": {
+          "english": "Cyclic limit",
+          "translation": "Cyclische limiet",
+          "needs_translation": false,
+          "max_length": 16,
+          "reverse_text": false
+        },
+        "pit_lim_coll_title": {
+          "english": "Collective limit",
+          "translation": "Collectieve limiet",
+          "needs_translation": false,
+          "max_length": 18,
+          "reverse_text": false
+        },
+        "pit_lim_total_title": {
+          "english": "Total limit",
+          "translation": "Totale limiet",
+          "needs_translation": false,
+          "max_length": 13,
+          "reverse_text": false
+        },
+        "pit_lim_text": {
+          "english": "The most blade pitch the sticks can command.",
+          "translation": "De maximale bladpitch die de sticks kunnen geven.",
+          "needs_translation": false,
+          "max_length": 49,
+          "reverse_text": false
+        },
+        "pit_lim_total_text": {
+          "english": "The most blade pitch cyclic and collective together may reach.",
+          "translation": "De maximale bladpitch van cyclisch en collectief samen.",
+          "needs_translation": false,
+          "max_length": 62,
+          "reverse_text": false
+        },
+        "pit_limit": {
+          "english": "Limit",
+          "translation": "Limiet",
+          "needs_translation": false,
+          "max_length": 6,
+          "reverse_text": false
+        },
+        "pit_suggest_fmt": {
+          "english": "Use %.0f",
+          "translation": "Neem %.0f",
+          "needs_translation": false,
+          "max_length": 9,
+          "reverse_text": false
+        },
+        "pit_done_title": {
+          "english": "Pitch set",
+          "translation": "Pitch ingesteld",
+          "needs_translation": false,
+          "max_length": 15,
+          "reverse_text": false
+        },
+        "pit_done": {
+          "english": "Blade pitch is calibrated and limited.",
+          "translation": "Bladpitch is gekalibreerd en begrensd.",
+          "needs_translation": false,
+          "max_length": 38,
+          "reverse_text": false
+        },
+        "tal_title": {
+          "english": "Tail rotor",
+          "translation": "Staartrotor",
+          "needs_translation": false,
+          "max_length": 11,
+          "reverse_text": false
+        },
+        "tal_intro": {
+          "english": "Check the tail servo with the tail blades off: centre, direction, travel and end stops.",
+          "translation": "Controleer de staartservo zonder staartbladen: midden, richting, uitslag en eindstops.",
+          "needs_translation": false,
+          "max_length": 87,
+          "reverse_text": false
+        },
+        "tal_centre_title": {
+          "english": "Tail centre",
+          "translation": "Staartmidden",
+          "needs_translation": false,
+          "max_length": 12,
+          "reverse_text": false
+        },
+        "tal_centre": {
+          "english": "The tail is held at zero. Adjust until the tail blades have zero pitch.",
+          "translation": "De staart staat op nul. Verstel tot de staartbladen nul pitch hebben.",
+          "needs_translation": false,
+          "max_length": 71,
+          "reverse_text": false
+        },
+        "tal_dir_title": {
+          "english": "Tail direction",
+          "translation": "Staartrichting",
+          "needs_translation": false,
+          "max_length": 14,
+          "reverse_text": false
+        },
+        "tal_dir": {
+          "english": "Push the yaw stick right. The tail blades should push the tail left, turning the nose right.",
+          "translation": "Duw de yawstick naar rechts. De staartbladen moeten de staart naar links duwen, zodat de neus naar rechts draait.",
+          "needs_translation": false,
+          "max_length": 113,
+          "reverse_text": false
+        },
+        "tal_cal_title": {
+          "english": "Tail calibration",
+          "translation": "Staartkalibratie",
+          "needs_translation": false,
+          "max_length": 16,
+          "reverse_text": false
+        },
+        "tal_cal": {
+          "english": "The tail is held at 22 degrees. Measure the tail blade pitch and adjust until it reads 22 degrees each way.",
+          "translation": "De staart staat op 22 graden. Meet de staartbladpitch en verstel tot die in beide richtingen 22 graden is.",
+          "needs_translation": false,
+          "max_length": 107,
+          "reverse_text": false
+        },
+        "tal_lim_title": {
+          "english": "Tail end stops",
+          "translation": "Staart-eindstops",
+          "needs_translation": false,
+          "max_length": 16,
+          "reverse_text": false
+        },
+        "tal_lim_cw": {
+          "english": "The tail is held at full travel one way. Lower the limit until the slider stops short of binding.",
+          "translation": "De staart staat op volle uitslag naar één kant. Verlaag de limiet tot de slider net vóór het vastlopen stopt.",
+          "needs_translation": false,
+          "max_length": 109,
+          "reverse_text": false
+        },
+        "tal_lim_ccw": {
+          "english": "Now the other way. Lower the limit until the slider stops short of binding.",
+          "translation": "Nu de andere kant. Verlaag de limiet tot de slider net vóór het vastlopen stopt.",
+          "needs_translation": false,
+          "max_length": 80,
+          "reverse_text": false
+        },
+        "tal_done_title": {
+          "english": "Tail done",
+          "translation": "Staart klaar",
+          "needs_translation": false,
+          "max_length": 12,
+          "reverse_text": false
+        },
+        "tal_done": {
+          "english": "The tail rotor is set up.",
+          "translation": "De staartrotor is ingesteld.",
+          "needs_translation": false,
+          "max_length": 28,
+          "reverse_text": false
+        },
+        "tal_trim": {
+          "english": "Centre trim",
+          "translation": "Middentrim",
+          "needs_translation": false,
+          "max_length": 11,
+          "reverse_text": false
+        },
+        "tal_rate": {
+          "english": "Tail rate",
+          "translation": "Staartrate",
+          "needs_translation": false,
+          "max_length": 10,
+          "reverse_text": false
+        },
+        "tal_side": {
+          "english": "Held side",
+          "translation": "Kant",
+          "needs_translation": false,
+          "max_length": 9,
+          "reverse_text": false
+        },
+        "tal_cw": {
+          "english": "CW limit",
+          "translation": "CW-limiet",
+          "needs_translation": false,
+          "max_length": 9,
+          "reverse_text": false
+        },
+        "tal_ccw": {
+          "english": "CCW limit",
+          "translation": "CCW-limiet",
+          "needs_translation": false,
+          "max_length": 10,
+          "reverse_text": false
+        },
+        "tal_reverse": {
+          "english": "Wrong way",
+          "translation": "Verkeerd",
+          "needs_translation": false,
+          "max_length": 9,
+          "reverse_text": false
+        },
+        "tal_ok": {
+          "english": "Correct",
+          "translation": "Goed",
+          "needs_translation": false,
+          "max_length": 7,
+          "reverse_text": false
+        },
+        "tal_other_side": {
+          "english": "Swap",
+          "translation": "Wissel",
+          "needs_translation": false,
+          "max_length": 6,
+          "reverse_text": false
+        },
+        "tal_motor_title": {
+          "english": "Tail motor",
+          "translation": "Staartmotor",
+          "needs_translation": false,
+          "max_length": 11,
+          "reverse_text": false
+        },
+        "tal_motor": {
+          "english": "Take the tail blades off. Spin the tail motor at low power to check it runs.",
+          "translation": "Haal de staartbladen eraf. Laat de staartmotor op laag vermogen draaien om te testen.",
+          "needs_translation": false,
+          "max_length": 85,
+          "reverse_text": false
+        },
+        "tal_no_motor": {
+          "english": "No tail motor output (motor 2) on this flight controller.",
+          "translation": "Geen staartmotoruitgang (motor 2) op deze vliegcontroller.",
+          "needs_translation": false,
+          "max_length": 58,
+          "reverse_text": false
+        },
+        "tal_power": {
+          "english": "Test power",
+          "translation": "Testvermogen",
+          "needs_translation": false,
+          "max_length": 12,
+          "reverse_text": false
+        },
+        "tal_output": {
+          "english": "Tail motor",
+          "translation": "Staartmotor",
+          "needs_translation": false,
+          "max_length": 11,
+          "reverse_text": false
+        },
+        "tal_spin": {
+          "english": "Spin",
+          "translation": "Draaien",
+          "needs_translation": false,
+          "max_length": 7,
+          "reverse_text": false
+        },
+        "tal_spin_rev": {
+          "english": "Reverse",
+          "translation": "Achteruit",
+          "needs_translation": false,
+          "max_length": 9,
+          "reverse_text": false
+        },
+        "tal_stop": {
+          "english": "Stop",
+          "translation": "Stop",
+          "needs_translation": false,
+          "max_length": 4,
+          "reverse_text": false
+        },
+        "tal_running": {
+          "english": "Running",
+          "translation": "Draait",
+          "needs_translation": false,
+          "max_length": 7,
+          "reverse_text": false
+        },
+        "tal_stopped": {
+          "english": "Stopped",
+          "translation": "Gestopt",
+          "needs_translation": false,
+          "max_length": 7,
+          "reverse_text": false
+        },
+        "tal_idle_title": {
+          "english": "Tail idle",
+          "translation": "Staart-idle",
+          "needs_translation": false,
+          "max_length": 11,
+          "reverse_text": false
+        },
+        "tal_idle": {
+          "english": "The power the tail motor keeps at zero yaw. Blades still off.",
+          "translation": "Vermogen dat de staartmotor houdt bij nul yaw. Bladen nog steeds eraf.",
+          "needs_translation": false,
+          "max_length": 70,
+          "reverse_text": false
+        },
+        "tal_idle_value": {
+          "english": "Tail idle",
+          "translation": "Staart-idle",
+          "needs_translation": false,
+          "max_length": 11,
+          "reverse_text": false
+        },
+        "tal_use_idle": {
+          "english": "Use test",
+          "translation": "Neem test",
+          "needs_translation": false,
+          "max_length": 9,
+          "reverse_text": false
+        },
+        "tal_run_idle": {
+          "english": "Run idle",
+          "translation": "Idle aan",
+          "needs_translation": false,
+          "max_length": 8,
+          "reverse_text": false
+        },
+        "gyr_title": {
+          "english": "Gyro check",
+          "translation": "Gyrocontrole",
+          "needs_translation": false,
+          "max_length": 12,
+          "reverse_text": false
+        },
+        "gyr_intro": {
+          "english": "Blades off, disarmed. Move the helicopter by hand: the swash should push back against each movement.",
+          "translation": "Bladen eraf, disarmed. Beweeg de heli met de hand: de swash moet tegen elke beweging in sturen.",
+          "needs_translation": false,
+          "max_length": 100,
+          "reverse_text": false
+        },
+        "gyr_roll_title": {
+          "english": "Roll",
+          "translation": "Rol",
+          "needs_translation": false,
+          "max_length": 4,
+          "reverse_text": false
+        },
+        "gyr_roll": {
+          "english": "Roll the helicopter quickly to the right. The swash should tilt left, against the movement.",
+          "translation": "Rol de heli snel naar rechts. De swash moet naar links kantelen, tegen de beweging in.",
+          "needs_translation": false,
+          "max_length": 91,
+          "reverse_text": false
+        },
+        "gyr_pitch_title": {
+          "english": "Pitch",
+          "translation": "Pitch",
+          "needs_translation": false,
+          "max_length": 5,
+          "reverse_text": false
+        },
+        "gyr_pitch": {
+          "english": "Tip the nose down quickly. The swash should tilt back, against the movement.",
+          "translation": "Kantel de neus snel omlaag. De swash moet naar achteren kantelen, tegen de beweging in.",
+          "needs_translation": false,
+          "max_length": 87,
+          "reverse_text": false
+        },
+        "gyr_yaw_title": {
+          "english": "Yaw",
+          "translation": "Yaw",
+          "needs_translation": false,
+          "max_length": 3,
+          "reverse_text": false
+        },
+        "gyr_yaw": {
+          "english": "Turn the nose quickly to the right. The tail blades should push the nose back to the left.",
+          "translation": "Draai de neus snel naar rechts. De staartbladen moeten de neus terug naar links duwen.",
+          "needs_translation": false,
+          "max_length": 90,
+          "reverse_text": false
+        },
+        "gyr_against": {
+          "english": "Against",
+          "translation": "Tegen in",
+          "needs_translation": false,
+          "max_length": 8,
+          "reverse_text": false
+        },
+        "gyr_with": {
+          "english": "With",
+          "translation": "Mee",
+          "needs_translation": false,
+          "max_length": 4,
+          "reverse_text": false
+        },
+        "gyr_wrong": {
+          "english": "The gyro corrects the wrong way: the board orientation is wrong. Fix it in Board orientation; do not reverse servos for it.",
+          "translation": "De gyro corrigeert verkeerd om: de board-oriëntatie klopt niet. Herstel die bij Oriëntatie; keer hiervoor geen servo's om.",
+          "needs_translation": false,
+          "max_length": 123,
+          "reverse_text": false
+        },
+        "gyr_go_sensors": {
+          "english": "Orientation",
+          "translation": "Oriëntatie",
+          "needs_translation": false,
+          "max_length": 11,
+          "reverse_text": false
+        },
+        "gyr_done_title": {
+          "english": "Gyro checked",
+          "translation": "Gyro gecontroleerd",
+          "needs_translation": false,
+          "max_length": 18,
+          "reverse_text": false
+        },
+        "gyr_done": {
+          "english": "The gyro corrects every axis against the movement.",
+          "translation": "De gyro corrigeert elke as tegen de beweging in.",
+          "needs_translation": false,
+          "max_length": 50,
+          "reverse_text": false
+        },
+        "fin_title": {
+          "english": "Finish",
+          "translation": "Afronden",
+          "needs_translation": false,
+          "max_length": 8,
+          "reverse_text": false
+        },
+        "fin_intro": {
+          "english": "What the wizard set:",
+          "translation": "Wat de wizard instelde:",
+          "needs_translation": false,
+          "max_length": 23,
+          "reverse_text": false
+        },
+        "fin_before": {
+          "english": "Fit the blades and do a careful first hover. Modes, rates and governor are on their own pages.",
+          "translation": "Monteer de bladen en doe voorzichtig een eerste hover. Modi, rates en governor hebben eigen pagina's.",
+          "needs_translation": false,
+          "max_length": 101,
+          "reverse_text": false
+        },
+        "fin_swash": {
+          "english": "Swash",
+          "translation": "Swash",
+          "needs_translation": false,
+          "max_length": 5,
+          "reverse_text": false
+        },
+        "fin_tail": {
+          "english": "Tail",
+          "translation": "Staart",
+          "needs_translation": false,
+          "max_length": 6,
+          "reverse_text": false
+        },
+        "fin_pitch": {
+          "english": "Pitch limits",
+          "translation": "Pitchlimieten",
+          "needs_translation": false,
+          "max_length": 13,
+          "reverse_text": false
+        },
+        "fin_pitch_fmt": {
+          "english": "Coll. %s°, cyc. %s°",
+          "translation": "Coll. %s°, cycl. %s°",
+          "needs_translation": false,
+          "max_length": 20,
+          "reverse_text": false
+        },
+        "fin_esc": {
+          "english": "ESC protocol",
+          "translation": "ESC-protocol",
+          "needs_translation": false,
+          "max_length": 12,
+          "reverse_text": false
+        },
+        "fin_cw": {
+          "english": "CW",
+          "translation": "CW",
+          "needs_translation": false,
+          "max_length": 2,
+          "reverse_text": false
+        },
+        "fin_ccw": {
+          "english": "CCW",
+          "translation": "CCW",
+          "needs_translation": false,
+          "max_length": 3,
+          "reverse_text": false
+        },
+        "fin_none": {
+          "english": "None",
+          "translation": "Geen",
+          "needs_translation": false,
+          "max_length": 4,
+          "reverse_text": false
+        },
+        "fin_tail_variable": {
+          "english": "Servo",
+          "translation": "Servo",
+          "needs_translation": false,
+          "max_length": 5,
+          "reverse_text": false
+        },
+        "fin_tail_motor": {
+          "english": "Motor",
+          "translation": "Motor",
+          "needs_translation": false,
+          "max_length": 5,
+          "reverse_text": false
+        },
+        "fin_tail_bidir": {
+          "english": "Motor, bidirectional",
+          "translation": "Motor, 2-weg",
+          "needs_translation": false,
+          "max_length": 20,
+          "reverse_text": false
+        },
+        "rcv_presets": {
+          "english": "Presets",
+          "translation": "Presets",
+          "needs_translation": false,
+          "max_length": 7,
+          "reverse_text": false
+        },
+        "rcv_presets_text": {
+          "english": "Pick your radio's channel order.",
+          "translation": "Kies de kanaalvolgorde van je zender.",
+          "needs_translation": false,
+          "max_length": 37,
+          "reverse_text": false
+        },
+        "rcv_ch_fmt": {
+          "english": "CH%d",
+          "translation": "K%d",
+          "needs_translation": false,
+          "max_length": 4,
+          "reverse_text": false
+        },
+        "rcv_throttle_legend": {
+          "english": "Grey marks: FC range. Band: measured travel.",
+          "translation": "Grijze streepjes: FC-bereik. Band: gemeten slag.",
+          "needs_translation": false,
+          "max_length": 48,
+          "reverse_text": false
+        }
       }
     },
     "menu_section_board_radio": {
