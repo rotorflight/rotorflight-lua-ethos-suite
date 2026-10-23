@@ -8,7 +8,7 @@ sidebar_label: Pages
 Reference documentation for each configuration and settings page reachable
 within the RFSuite Ethos system tool.
 
-**Status:** 85 reachable pages in navigation hierarchy.
+**Status:** 86 reachable pages in navigation hierarchy.
 
 The *Conditions* column names what hides, greys out or locks a page; the sentences
 and structure follow [_template.md](../_template.md).
@@ -86,6 +86,7 @@ and structure follow [_template.md](../_template.md).
 
 | Page | File | Conditions | Status |
 | --- | --- | --- | --- |
+| Setup Wizard | [tools/setup_wizard.md](tools/setup_wizard.md) | Always available offline without an active flight controller connection. Read-only while the model is armed. | written |
 | Copy Profiles | [tools/copy_profiles.md](tools/copy_profiles.md) | Always available offline without an active flight controller connection. Read-only while the model is armed. | written |
 | Select Profile | [tools/profile_select.md](tools/profile_select.md) | Always available offline without an active flight controller connection. Read-only while the model is armed. | written |
 | Status | [tools/diagnostics/rfstatus.md](tools/diagnostics/rfstatus.md) | Always available offline without an active flight controller connection. Read-only while the model is armed. | written |
