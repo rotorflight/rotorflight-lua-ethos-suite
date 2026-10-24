@@ -63,6 +63,7 @@ local function new(wiz)
     scr:begin()
     if screen == "intro" then
       scr:text(T.title, T.intro)
+      scr:step(1, 3)
       scr:picture(art.tilt("rear", "level"))
       return scr:row(nil, {
         {text = T.start, primary = true, press = function() ci = 1; go("check") end},
@@ -70,6 +71,7 @@ local function new(wiz)
     elseif screen == "check" then
       local c = checks[ci]
       scr:text(c.title, c.text, nil, string.format(T.progress, ci, #checks))
+      scr:step(2, 3)
       scr:picture(c.tail and art.tail(c.motion) or art.tilt(c.view, c.motion))
       return scr:row(function()
         if ci > 1 then ci = ci - 1; go("check") else go("intro") end
@@ -79,11 +81,13 @@ local function new(wiz)
       }, false)
     elseif screen == "wrong" then
       scr:text(checks[ci].title, T.wrong, nil, true)
+      scr:step(2, 3)
       return scr:row(function() go("check") end, {
         {text = T.goSensors, primary = true, press = function() wiz.goToStep("sensors") end},
       }, {text = T.next, press = nextCheck})
     end
     scr:text(T.doneTitle, T.done)
+    scr:step(3, 3)
     return scr:row(function() ci = #checks; go("check") end,
       {{text = T.again, press = function() ci = 1; go("check") end}})
   end

@@ -208,6 +208,7 @@ local function new(wiz)
     if screen == "protocol" then
       local current = cfg.motor_pwm_protocol
       scr:text(T.title, T.intro, string.format(T.current, protocolName(current)))
+      scr:step(1, 3)
       local forward = scr:row(nil, nil, {text = T.next, press = function()
         ni = 1
         screen = "number"
@@ -229,6 +230,7 @@ local function new(wiz)
     elseif screen == "number" then
       local n = numbers[ni]
       scr:text(n.title, n.text, wiz.rebootPending() and T.restart or nil, string.format(T.progress, ni, #numbers))
+      scr:step(2, 3)
       scr:rows({{n.title, tostring(cfg[n.field] or 0), true}})
       -- The magnets, or the gear pair drawn to its tooth counts with the ratio.
       if n.field == "motor_pole_count_0" then
@@ -254,6 +256,7 @@ local function new(wiz)
 
     -- done
     scr:text(T.doneTitle, nil, wiz.rebootPending() and T.restart or nil)
+    scr:step(3, 3)
     local rows = {
       {T.protocol, protocolName(cfg.motor_pwm_protocol)},
       {T.poles, tostring(cfg.motor_pole_count_0 or 0)},

@@ -8732,11 +8732,22 @@
           "translation": "Přijímač hotov"
         },
         "rcv_intro": {
-          "english": "The radio talks to the flight controller through this receiver, so its protocol and port are set in the Configurator. Here you set the channel order, check the sticks and set the throttle range.",
-          "max_length": 194,
+          "english": "The radio talks to the flight controller through this receiver. Here you set the channel order, check the sticks and set the throttle range.",
+          "max_length": 140,
           "needs_translation": false,
-          "reverse_text": false,
-          "translation": "Vysílač komunikuje s řídicí jednotkou přes tento přijímač; protokol a port se nastavují v Configuratoru. Zde nastavíte pořadí kanálů, ověříte páky a rozsah plynu."
+          "translation": "Vysílačka mluví s letovým kontrolérem přes tento přijímač. Zde nastavíte pořadí kanálů, zkontrolujete páčky a nastavíte rozsah plynu."
+        },
+        "rcv_link_text": {
+          "english": "The protocol must match your receiver, or the radio link breaks.",
+          "max_length": 73,
+          "needs_translation": false,
+          "translation": "Protokol musí odpovídat přijímači, jinak se spojení s vysílačkou přeruší."
+        },
+        "rcv_link_warning": {
+          "english": "Experienced pilots only: a setting that cuts the receiver link ends this setup.",
+          "max_length": 86,
+          "needs_translation": false,
+          "translation": "Jen pro zkušené: nastavení, které přeruší spojení s přijímačem, ukončí toto nastavení."
         },
         "rcv_measure": {
           "english": "Measure",
@@ -8801,6 +8812,18 @@
           "reverse_text": false,
           "translation": "Pořadí kanálů"
         },
+        "rcv_prepare_text": {
+          "english": "This step uses the settings already in the FC. Confirm the physical prerequisites before continuing.",
+          "max_length": 100,
+          "needs_translation": false,
+          "translation": "Tento krok používá nastavení již uložená v FC. Před pokračováním potvrďte fyzické předpoklady."
+        },
+        "rcv_prepare_title": {
+          "english": "Before this step",
+          "max_length": 17,
+          "needs_translation": false,
+          "translation": "Před tímto krokem"
+        },
         "rcv_preset_elrs": {
           "english": "ELRS",
           "max_length": 4,
@@ -8843,6 +8866,18 @@
           "reverse_text": false,
           "translation": "Vyberte pořadí kanálů svého vysílače."
         },
+        "rcv_protocol": {
+          "english": "Protocol",
+          "max_length": 8,
+          "needs_translation": false,
+          "translation": "Protokol"
+        },
+        "rcv_protocol_title": {
+          "english": "Choose the protocol",
+          "max_length": 19,
+          "needs_translation": false,
+          "translation": "Vyberte protokol"
+        },
         "rcv_range_fmt": {
           "english": "%d - %d us",
           "max_length": 10,
@@ -8870,6 +8905,12 @@
           "needs_translation": false,
           "reverse_text": false,
           "translation": "Přeskočit"
+        },
+        "rcv_standard_order": {
+          "english": "Standard channel order",
+          "max_length": 24,
+          "needs_translation": false,
+          "translation": "Standardní pořadí kanálů"
         },
         "rcv_sticks_text": {
           "english": "Roll right, pitch forward, yaw right and collective up should each move its own bar to the right.",

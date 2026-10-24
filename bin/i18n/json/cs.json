@@ -8847,11 +8847,10 @@
           "reverse_text": false
         },
         "rcv_intro": {
-          "english": "The radio talks to the flight controller through this receiver, so its protocol and port are set in the Configurator. Here you set the channel order, check the sticks and set the throttle range.",
-          "translation": "Vysílač komunikuje s řídicí jednotkou přes tento přijímač; protokol a port se nastavují v Configuratoru. Zde nastavíte pořadí kanálů, ověříte páky a rozsah plynu.",
+          "english": "The radio talks to the flight controller through this receiver. Here you set the channel order, check the sticks and set the throttle range.",
+          "translation": "Vysílačka mluví s letovým kontrolérem přes tento přijímač. Zde nastavíte pořadí kanálů, zkontrolujete páčky a nastavíte rozsah plynu.",
           "needs_translation": false,
-          "max_length": 194,
-          "reverse_text": false
+          "max_length": 140
         },
         "rcv_signal_ok": {
           "english": "Receiver signal: OK",
@@ -10462,6 +10461,48 @@
           "needs_translation": false,
           "max_length": 44,
           "reverse_text": false
+        },
+        "rcv_prepare_title": {
+          "english": "Before this step",
+          "translation": "Před tímto krokem",
+          "needs_translation": false,
+          "max_length": 17
+        },
+        "rcv_prepare_text": {
+          "english": "This step uses the settings already in the FC. Confirm the physical prerequisites before continuing.",
+          "translation": "Tento krok používá nastavení již uložená v FC. Před pokračováním potvrďte fyzické předpoklady.",
+          "needs_translation": false,
+          "max_length": 100
+        },
+        "rcv_protocol": {
+          "english": "Protocol",
+          "translation": "Protokol",
+          "needs_translation": false,
+          "max_length": 8
+        },
+        "rcv_protocol_title": {
+          "english": "Choose the protocol",
+          "translation": "Vyberte protokol",
+          "needs_translation": false,
+          "max_length": 19
+        },
+        "rcv_link_warning": {
+          "english": "Experienced pilots only: a setting that cuts the receiver link ends this setup.",
+          "translation": "Jen pro zkušené: nastavení, které přeruší spojení s přijímačem, ukončí toto nastavení.",
+          "needs_translation": false,
+          "max_length": 86
+        },
+        "rcv_link_text": {
+          "english": "The protocol must match your receiver, or the radio link breaks.",
+          "translation": "Protokol musí odpovídat přijímači, jinak se spojení s vysílačkou přeruší.",
+          "needs_translation": false,
+          "max_length": 73
+        },
+        "rcv_standard_order": {
+          "english": "Standard channel order",
+          "translation": "Standardní pořadí kanálů",
+          "needs_translation": false,
+          "max_length": 24
         }
       },
       "wizards": {

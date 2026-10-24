@@ -141,9 +141,10 @@ local function new(wiz)
       scr:picture(art.swash(wiz.servos(), nil, nil))
       return scr:row(#list > 0 and function() go(#list, "centre") end or nil)
     end
-    local progress = string.format(T.progress, index, #list)
+    -- Each servo is one step of this screen: its test, then its centring.
+    scr:step(index, #list)
     if screen == "test" then
-      scr:text(wiz.servoName(s), T.testText .. " " .. T.q, reversedNote and T.reversed or nil, progress)
+      scr:text(wiz.servoName(s), T.testText .. " " .. T.q, reversedNote and T.reversed or nil)
       scr:picture(art.swash(wiz.servos(), s.servo, "up"))
       return scr:row(back, {
         {text = T.down, needsMotion = true, press = reverse},
@@ -154,7 +155,7 @@ local function new(wiz)
     local offset = config.mid - heli.bandCentre(config)
     local body = (s.tail and T.tailText or T.centreText) .. " "
       .. string.format(T.value, config.mid, (offset >= 0 and "+" or "") .. offset)
-    scr:text(wiz.servoName(s), body, math.abs(offset) > FAR_US and T.far or nil, progress)
+    scr:text(wiz.servoName(s), body, math.abs(offset) > FAR_US and T.far or nil)
     scr:draw(drawGauge)
     local specs = {}
     for _, d in ipairs(NUDGES) do

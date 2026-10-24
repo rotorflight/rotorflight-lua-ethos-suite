@@ -177,6 +177,7 @@ local function new(wiz)
 
     if screen == "type" then
       scr:text(T.typeTitle, T.typeText, string.format(T.current, swashName(m.swash_type)))
+      scr:step(1, 5)
       if heli.SWASH[m.swash_type] then
         scr:picture(art.swash(heli.wizardServos(m.swash_type, heli.TAIL_MOTORIZED, 8), nil, nil))
       end
@@ -195,11 +196,13 @@ local function new(wiz)
     elseif screen == "show" then
       local servos = heli.wizardServos(m.swash_type, heli.TAIL_MOTORIZED, 8)
       scr:text(swashName(m.swash_type), T.showText, wiz.rebootPending() and T.restart or nil)
+      scr:step(2, 5)
       scr:picture(art.swash(servos, nil, nil), T.fromAbove)
       return scr:row(function() go("type") end, nil, {text = T.next, press = function() go("dir") end})
 
     elseif screen == "dir" then
       scr:text(T.dirTitle, T.dirText)
+      scr:step(3, 5)
       scr:picture(art.rotor(m.main_rotor_dir), T.fromAbove)
       return scr:row(function() go(heli.SWASH[m.swash_type] and "show" or "type") end, {
         {text = T.cw, primary = m.main_rotor_dir == 0, press = function() setDirection(0); wiz.rebuild() end},
@@ -208,6 +211,7 @@ local function new(wiz)
 
     elseif screen == "tail" then
       scr:text(T.tailTitle, T.tailText, string.format(T.current, TAIL_NAMES[m.tail_rotor_mode] or "-"))
+      scr:step(4, 5)
       scr:picture(art.tailType(m.tail_rotor_mode))
       local forward = scr:row(function() go("dir") end, nil, {text = T.next, press = function() go("done") end})
       local specs = {}
@@ -222,6 +226,7 @@ local function new(wiz)
 
     -- done
     scr:text(T.doneTitle, nil, wiz.rebootPending() and T.restart or nil)
+    scr:step(5, 5)
     local rows = {
       {T.rowType, swashName(m.swash_type)},
       {T.rowDir, m.main_rotor_dir == 1 and T.ccw or T.cw},

@@ -8732,11 +8732,22 @@
           "translation": "接收机已完成"
         },
         "rcv_intro": {
-          "english": "The radio talks to the flight controller through this receiver, so its protocol and port are set in the Configurator. Here you set the channel order, check the sticks and set the throttle range.",
-          "max_length": 194,
+          "english": "The radio talks to the flight controller through this receiver. Here you set the channel order, check the sticks and set the throttle range.",
+          "max_length": 140,
           "needs_translation": false,
-          "reverse_text": false,
-          "translation": "遥控器通过此接收机与飞控通信，其协议和端口在 Configurator 中设置。此处设置通道顺序、检查摇杆并设置油门范围。"
+          "translation": "遥控器通过此接收机与飞控通信。此处设置通道顺序、检查摇杆并设置油门范围。"
+        },
+        "rcv_link_text": {
+          "english": "The protocol must match your receiver, or the radio link breaks.",
+          "max_length": 64,
+          "needs_translation": false,
+          "translation": "协议必须与接收机匹配，否则无线连接会中断。"
+        },
+        "rcv_link_warning": {
+          "english": "Experienced pilots only: a setting that cuts the receiver link ends this setup.",
+          "max_length": 79,
+          "needs_translation": false,
+          "translation": "仅限有经验的飞手：会断开接收机连接的设置将结束本次设置。"
         },
         "rcv_measure": {
           "english": "Measure",
@@ -8801,6 +8812,18 @@
           "reverse_text": false,
           "translation": "通道顺序"
         },
+        "rcv_prepare_text": {
+          "english": "This step uses the settings already in the FC. Confirm the physical prerequisites before continuing.",
+          "max_length": 100,
+          "needs_translation": false,
+          "translation": "此步骤使用飞控中已有的设置。继续前请确认模型上的实际准备工作。"
+        },
+        "rcv_prepare_title": {
+          "english": "Before this step",
+          "max_length": 16,
+          "needs_translation": false,
+          "translation": "开始此步骤前"
+        },
         "rcv_preset_elrs": {
           "english": "ELRS",
           "max_length": 4,
@@ -8843,6 +8866,18 @@
           "reverse_text": false,
           "translation": "选择遥控器的通道顺序。"
         },
+        "rcv_protocol": {
+          "english": "Protocol",
+          "max_length": 8,
+          "needs_translation": false,
+          "translation": "协议"
+        },
+        "rcv_protocol_title": {
+          "english": "Choose the protocol",
+          "max_length": 19,
+          "needs_translation": false,
+          "translation": "选择协议"
+        },
         "rcv_range_fmt": {
           "english": "%d - %d us",
           "max_length": 10,
@@ -8870,6 +8905,12 @@
           "needs_translation": false,
           "reverse_text": false,
           "translation": "跳过"
+        },
+        "rcv_standard_order": {
+          "english": "Standard channel order",
+          "max_length": 22,
+          "needs_translation": false,
+          "translation": "标准通道顺序"
         },
         "rcv_sticks_text": {
           "english": "Roll right, pitch forward, yaw right and collective up should each move its own bar to the right.",

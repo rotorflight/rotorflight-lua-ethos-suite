@@ -60,7 +60,6 @@ local T = {
   waiting = "@i18n(app.modules.setup_wizard.sen_attitude_waiting)@",
   doneRestart = "@i18n(app.modules.setup_wizard.sen_done_restart)@",
   saveRestart = "@i18n(app.modules.setup_wizard.btn_save_restart)@",
-  stepOf = "@i18n(app.modules.setup_wizard.step_progress_fmt)@",
   start = "@i18n(app.modules.setup_wizard.btn_start)@",
   next = "@i18n(app.modules.setup_wizard.btn_next)@",
   again = "@i18n(app.modules.setup_wizard.btn_again)@",
@@ -256,7 +255,7 @@ local function new(wiz)
       return nil
     end
 
-    scr:status(string.format(T.stepOf, SCREEN_INDEX[screen], SCREEN_COUNT))
+    scr:step(SCREEN_INDEX[screen], SCREEN_COUNT)
     if screen == "intro" then
       scr:text(T.title, T.intro, (not hasAcc) and T.noAcc or nil)
       scr:picture(bladesPicture)

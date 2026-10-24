@@ -95,8 +95,9 @@ local function new(wiz)
     local current = groupType(g)
     local currentName = TYPE_NAMES[current] or (current == "mixed" and T.mixed or T.custom)
     local first = wiz.configs[g.servos[1]]
-    scr:text(g.title, T.intro .. " " .. T.unplugged, wiz.rebootPending() and T.restart or nil,
-      #groups > 1 and string.format(T.progress, index, #groups) or nil)
+    scr:text(g.title, T.intro .. " " .. T.unplugged, wiz.rebootPending() and T.restart or nil)
+    -- One step per group of servos, when there is more than one.
+    if #groups > 1 then scr:step(index, #groups) end
     -- The rate and centre are in the picture.
     scr:rows({{T.rowType, currentName}})
     -- The pulse this type sends, with the other band ghosted behind it.

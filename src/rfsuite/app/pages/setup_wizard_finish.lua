@@ -74,6 +74,7 @@ local function new(wiz)
     end
     if screen == "before" then
       scr:text(T.title, T.before)
+      scr:step(2, 2)
       scr:picture(art.heli(0))
       -- The last step: the default way forward is Save and finish.
       return scr:row(function() screen = "summary"; wiz.rebuild() end)
@@ -82,6 +83,7 @@ local function new(wiz)
     local swash = heli.SWASH[cfg.swash_type or 0]
     local swashText = swash and (swash.name .. ", " .. ((cfg.main_rotor_dir or 0) == 1 and T.ccw or T.cw)) or T.none
     scr:text(T.title, T.intro)
+    scr:step(1, 2)
     scr:rows({
       {T.swash, swashText},
       {T.tail, TAIL_NAMES[cfg.tail_rotor_mode or 0] or "-"},

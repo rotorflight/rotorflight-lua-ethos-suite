@@ -86,6 +86,7 @@ local function new(wiz)
     local mix = wiz.mixConfig()
     if screen == "intro" then
       scr:text(T.title, T.intro)
+      scr:step(1, 3)
       scr:picture(levelLayout(nil))
       return scr:row(nil, {
         {text = T.start, primary = true, needsMotion = true, press = function() ti = 1; go("trim") end},
@@ -94,6 +95,7 @@ local function new(wiz)
       local t = TRIMS[ti]
       local raw = heli.signed16(mix and mix[t.field] or 0)
       scr:text(t.title, t.text, nil, string.format(T.progress, ti, #TRIMS))
+      scr:step(2, 3)
       scr:rows({{T.trim, string.format(T.value, trimText(raw)), raw ~= 0}})
       scr:picture(levelLayout(t.axis))
       local specs = {}
@@ -110,6 +112,7 @@ local function new(wiz)
       end})
     end
     scr:text(T.doneTitle, T.done)
+    scr:step(3, 3)
     scr:picture(levelLayout(nil))
     return scr:row(function() ti = #TRIMS; go("trim") end)
   end
