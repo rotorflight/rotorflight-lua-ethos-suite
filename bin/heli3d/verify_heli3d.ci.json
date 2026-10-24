@@ -1,0 +1,7 @@
+{
+  "id": "heli3d",
+  "name": "3D helicopter stays in budget, the right way up",
+  "step": "Check the 3D helicopter library",
+  "script": "bin/heli3d/verify_heli3d.lua",
+  "rationale": "lib/heli3d.lua draws the Rotorflight Configurator's helicopter at any attitude: the\nAlignment page uses it, and it is built to be shared by any page that shows a\nhelicopter. Ethos stops a callback after 20000 Lua instructions, and building the\nmesh or computing a frame costs more than that in one go, so the work is split into\nwakeup steps and paint only replays a finished list of triangles.\n\nNo build and no package step reaches this -- it needs the model built, posed and\ndrawn against a fake lcd with an instruction-counting hook. The harness keeps every\nstep and every paint under 12000 instructions through a build, a pose and a rotor\nchange; pins the orientation the Alignment page relies on (the cw tail rotor right of\nthe boom seen from behind and the ccw one left; roll > 0 dips the right side, pitch >\n0 the nose, as MSP_ATTITUDE gives them); pins what pose() does (hide, lit, a disc\ntilt); and keeps paint free of allocation."
+}

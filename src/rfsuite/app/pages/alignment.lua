@@ -213,6 +213,7 @@ local function open(opts)
     rebootAfterSave = true,
     unloadPackageKeys = {
       "rfsuite.app.alignment_visual",
+      "rfsuite.lib.heli3d",
       "rfsuite.lib.msp_attitude",
       "rfsuite.lib.msp_board_alignment_config",
       "rfsuite.lib.msp_sensor_alignment",
@@ -226,6 +227,7 @@ local function open(opts)
     end,
     onWakeup = function()
       local now = os.clock()
+      visual.service()
       if state.pendingAttitude and (now - state.pendingAt) > state.pendingTimeout then
         state.pendingAttitude = false
       end
