@@ -8307,6 +8307,20 @@
           "max_length": 5,
           "reverse_text": false
         },
+        "btn_yes": {
+          "english": "Yes",
+          "translation": "Tak",
+          "needs_translation": false,
+          "max_length": 3,
+          "reverse_text": false
+        },
+        "btn_no": {
+          "english": "No",
+          "translation": "Nie",
+          "needs_translation": false,
+          "max_length": 3,
+          "reverse_text": false
+        },
         "btn_again": {
           "english": "Again",
           "translation": "Ponów",
@@ -8382,6 +8396,13 @@
           "translation": "%d z %d",
           "needs_translation": false,
           "max_length": 8,
+          "reverse_text": false
+        },
+        "step_progress_fmt": {
+          "english": "Step %d of %d",
+          "translation": "Krok %d z %d",
+          "needs_translation": false,
+          "max_length": 13,
           "reverse_text": false
         },
         "step_receiver": {
@@ -8595,10 +8616,38 @@
           "reverse_text": false
         },
         "sen_intro": {
-          "english": "First tell the flight controller how it is mounted. Take the main and tail blades off, and leave the servos unplugged until the Connect the servos step.",
-          "translation": "Najpierw podaj kontrolerowi, jak jest zamontowany. Zdejmij łopaty główne i ogonowe, a serwa zostaw odłączone do kroku Podłącz serwa.",
+          "english": "Remove main and tail blades. Unplug all servos before starting.",
+          "translation": "Zdejmij łopaty wirnika głównego i ogonowego. Przed rozpoczęciem odłącz wszystkie serwa.",
           "needs_translation": false,
-          "max_length": 152,
+          "max_length": 87,
+          "reverse_text": false
+        },
+        "sen_servos_unplugged": {
+          "english": "Servos unplugged",
+          "translation": "Serwa odłączone",
+          "needs_translation": false,
+          "max_length": 16,
+          "reverse_text": false
+        },
+        "sen_blades_removed": {
+          "english": "All blades removed",
+          "translation": "Wszystkie łopaty zdjęte",
+          "needs_translation": false,
+          "max_length": 23,
+          "reverse_text": false
+        },
+        "art_side": {
+          "english": "Side view",
+          "translation": "Widok z boku",
+          "needs_translation": false,
+          "max_length": 12,
+          "reverse_text": false
+        },
+        "art_front": {
+          "english": "Front",
+          "translation": "Przód",
+          "needs_translation": false,
+          "max_length": 5,
           "reverse_text": false
         },
         "sen_no_acc": {
@@ -8609,17 +8658,31 @@
           "reverse_text": false
         },
         "sen_acc_title": {
+          "english": "Calibrate the accelerometer",
+          "translation": "Kalibracja akcelerometru",
+          "needs_translation": false,
+          "max_length": 27,
+          "reverse_text": false
+        },
+        "sen_acc_text": {
+          "english": "Stand the helicopter on its skids on a level surface and keep it still.",
+          "translation": "Postaw śmigłowiec na płozach na równej powierzchni i trzymaj go nieruchomo.",
+          "needs_translation": false,
+          "max_length": 75,
+          "reverse_text": false
+        },
+        "sen_accelerometer": {
           "english": "Accelerometer",
           "translation": "Akcelerometr",
           "needs_translation": false,
           "max_length": 13,
           "reverse_text": false
         },
-        "sen_acc_text": {
-          "english": "Stand the helicopter on its skids on a level surface and keep it still, then calibrate.",
-          "translation": "Postaw helikopter na płozach na równej powierzchni, trzymaj nieruchomo i skalibruj.",
+        "sen_available": {
+          "english": "Available",
+          "translation": "Dostępny",
           "needs_translation": false,
-          "max_length": 87,
+          "max_length": 9,
           "reverse_text": false
         },
         "sen_acc_busy": {
@@ -8644,24 +8707,52 @@
           "reverse_text": false
         },
         "sen_calibrate": {
-          "english": "Calibrate",
-          "translation": "Kalibruj",
+          "english": "Calibrate accelerometer",
+          "translation": "Kalibruj akcelerometr",
           "needs_translation": false,
-          "max_length": 9,
+          "max_length": 23,
           "reverse_text": false
         },
         "sen_align_title": {
-          "english": "Find the orientation",
-          "translation": "Wykryj orientację",
+          "english": "Board orientation",
+          "translation": "Orientacja płytki",
           "needs_translation": false,
-          "max_length": 20,
+          "max_length": 17,
           "reverse_text": false
         },
         "sen_align_text": {
-          "english": "Stand the helicopter level, press Start, then lift the tail by at least 20 degrees and hold it still.",
-          "translation": "Postaw helikopter poziomo, naciśnij Start, potem unieś ogon o co najmniej 20 stopni i trzymaj nieruchomo.",
+          "english": "Keep level, start detection, then lift the tail about 20 degrees.",
+          "translation": "Trzymaj poziomo, uruchom wykrywanie, potem unieś ogon o ok. 20 stopni.",
           "needs_translation": false,
-          "max_length": 105,
+          "max_length": 70,
+          "reverse_text": false
+        },
+        "sen_auto_align": {
+          "english": "Detect board orientation",
+          "translation": "Wykryj orientację",
+          "needs_translation": false,
+          "max_length": 24,
+          "reverse_text": false
+        },
+        "sen_roll": {
+          "english": "Roll",
+          "translation": "Przechył",
+          "needs_translation": false,
+          "max_length": 8,
+          "reverse_text": false
+        },
+        "sen_pitch": {
+          "english": "Pitch",
+          "translation": "Pochylenie",
+          "needs_translation": false,
+          "max_length": 10,
+          "reverse_text": false
+        },
+        "sen_yaw": {
+          "english": "Yaw",
+          "translation": "Odchylenie",
+          "needs_translation": false,
+          "max_length": 10,
           "reverse_text": false
         },
         "sen_align_lift": {
@@ -8713,25 +8804,39 @@
           "max_length": 72,
           "reverse_text": false
         },
-        "sen_done_title": {
-          "english": "Orientation done",
-          "translation": "Orientacja gotowa",
+        "sen_check_title": {
+          "english": "Check orientation",
+          "translation": "Sprawdź orientację",
           "needs_translation": false,
-          "max_length": 17,
+          "max_length": 18,
+          "reverse_text": false
+        },
+        "sen_check_text": {
+          "english": "Tilt the helicopter left/right and nose down/up: the picture must follow every movement.",
+          "translation": "Przechyl śmigłowiec w lewo/prawo i nos w dół/górę: obraz musi podążać za każdym ruchem.",
+          "needs_translation": false,
+          "max_length": 88,
+          "reverse_text": false
+        },
+        "sen_direction_ok": {
+          "english": "Direction is correct",
+          "translation": "Kierunek jest poprawny",
+          "needs_translation": false,
+          "max_length": 22,
+          "reverse_text": false
+        },
+        "sen_attitude_waiting": {
+          "english": "Waiting for live attitude...",
+          "translation": "Czekam na bieżące położenie...",
+          "needs_translation": false,
+          "max_length": 30,
           "reverse_text": false
         },
         "sen_done_restart": {
-          "english": "The new orientation takes effect after the restart at the Connect the servos step.",
-          "translation": "Nowa orientacja zadziała po restarcie w kroku Podłącz serwa.",
+          "english": "The new orientation applies after a restart. Restart now to check it, or Next: the restart then follows at the Connect the servos step.",
+          "translation": "Nowa orientacja działa dopiero po restarcie. Zrestartuj teraz, aby ją sprawdzić, lub Dalej: restart nastąpi w kroku Podłącz serwa.",
           "needs_translation": false,
-          "max_length": 82,
-          "reverse_text": false
-        },
-        "sen_done_same": {
-          "english": "Nothing to change here.",
-          "translation": "Nic do zmiany.",
-          "needs_translation": false,
-          "max_length": 23,
+          "max_length": 135,
           "reverse_text": false
         },
         "rcv_title": {
@@ -10356,6 +10461,22 @@
           "translation": "Szare znaczniki: zakres FC. Pasek: zmierzony skok.",
           "needs_translation": false,
           "max_length": 50,
+          "reverse_text": false
+        }
+      },
+      "wizards": {
+        "name": {
+          "english": "Wizards",
+          "translation": "Kreatory",
+          "needs_translation": false,
+          "max_length": 8,
+          "reverse_text": false
+        },
+        "model_setup": {
+          "english": "Model setup",
+          "translation": "Ustaw model",
+          "needs_translation": false,
+          "max_length": 11,
           "reverse_text": false
         }
       }

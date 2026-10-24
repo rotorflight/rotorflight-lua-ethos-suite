@@ -7772,6 +7772,20 @@
           "reverse_text": false,
           "translation": "Armato: i servi non possono muoversi."
         },
+        "art_front": {
+          "english": "Front",
+          "max_length": 7,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Davanti"
+        },
+        "art_side": {
+          "english": "Side view",
+          "max_length": 14,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Vista laterale"
+        },
         "btn_again": {
           "english": "Again",
           "max_length": 6,
@@ -7786,6 +7800,13 @@
           "reverse_text": false,
           "translation": "Avanti"
         },
+        "btn_no": {
+          "english": "No",
+          "max_length": 2,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "No"
+        },
         "btn_save_restart": {
           "english": "Save and restart",
           "max_length": 16,
@@ -7799,6 +7820,13 @@
           "needs_translation": false,
           "reverse_text": false,
           "translation": "Avvia"
+        },
+        "btn_yes": {
+          "english": "Yes",
+          "max_length": 3,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Sì"
         },
         "con_blades": {
           "english": "Blades stay off, and keep clear of the motor.",
@@ -9012,13 +9040,20 @@
           "translation": "Calibrazione fallita. Tieni fermo il modello e riprova."
         },
         "sen_acc_text": {
-          "english": "Stand the helicopter on its skids on a level surface and keep it still, then calibrate.",
-          "max_length": 87,
+          "english": "Stand the helicopter on its skids on a level surface and keep it still.",
+          "max_length": 74,
           "needs_translation": false,
           "reverse_text": false,
-          "translation": "Appoggia l'elicottero sui pattini su una superficie in piano, fermo, poi calibra."
+          "translation": "Appoggia l'elicottero sui pattini su una superficie piana e tienilo fermo."
         },
         "sen_acc_title": {
+          "english": "Calibrate the accelerometer",
+          "max_length": 27,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Calibra l'accelerometro"
+        },
+        "sen_accelerometer": {
           "english": "Accelerometer",
           "max_length": 13,
           "needs_translation": false,
@@ -9040,53 +9075,88 @@
           "translation": "Alza la coda di 20 gradi e tienila ferma..."
         },
         "sen_align_text": {
-          "english": "Stand the helicopter level, press Start, then lift the tail by at least 20 degrees and hold it still.",
-          "max_length": 101,
+          "english": "Keep level, start detection, then lift the tail about 20 degrees.",
+          "max_length": 76,
           "needs_translation": false,
           "reverse_text": false,
-          "translation": "Metti l'elicottero in piano, premi Avvia, poi alza la coda di almeno 20 gradi e tienila ferma."
+          "translation": "Tieni in piano, avvia il rilevamento, poi solleva la coda di circa 20 gradi."
         },
         "sen_align_title": {
-          "english": "Find the orientation",
-          "max_length": 20,
+          "english": "Board orientation",
+          "max_length": 25,
           "needs_translation": false,
           "reverse_text": false,
-          "translation": "Trova orientamento"
+          "translation": "Orientamento della scheda"
+        },
+        "sen_attitude_waiting": {
+          "english": "Waiting for live attitude...",
+          "max_length": 28,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "In attesa dell'assetto..."
+        },
+        "sen_auto_align": {
+          "english": "Detect board orientation",
+          "max_length": 24,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Rileva orientamento"
+        },
+        "sen_available": {
+          "english": "Available",
+          "max_length": 11,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Disponibile"
+        },
+        "sen_blades_removed": {
+          "english": "All blades removed",
+          "max_length": 21,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Tutte le pale rimosse"
         },
         "sen_calibrate": {
-          "english": "Calibrate",
-          "max_length": 9,
-          "needs_translation": false,
-          "reverse_text": false,
-          "translation": "Calibra"
-        },
-        "sen_done_restart": {
-          "english": "The new orientation takes effect after the restart at the Connect the servos step.",
-          "max_length": 82,
-          "needs_translation": false,
-          "reverse_text": false,
-          "translation": "Il nuovo orientamento vale dopo il riavvio al passo Collega i servi."
-        },
-        "sen_done_same": {
-          "english": "Nothing to change here.",
+          "english": "Calibrate accelerometer",
           "max_length": 23,
           "needs_translation": false,
           "reverse_text": false,
-          "translation": "Niente da cambiare qui."
+          "translation": "Calibra accelerometro"
         },
-        "sen_done_title": {
-          "english": "Orientation done",
-          "max_length": 18,
+        "sen_check_text": {
+          "english": "Tilt the helicopter left/right and nose down/up: the picture must follow every movement.",
+          "max_length": 96,
           "needs_translation": false,
           "reverse_text": false,
-          "translation": "Orientamento fatto"
+          "translation": "Inclina l'elicottero a sinistra/destra e il muso giù/su: l'immagine deve seguire ogni movimento."
+        },
+        "sen_check_title": {
+          "english": "Check orientation",
+          "max_length": 21,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Verifica orientamento"
+        },
+        "sen_direction_ok": {
+          "english": "Direction is correct",
+          "max_length": 23,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "La direzione è corretta"
+        },
+        "sen_done_restart": {
+          "english": "The new orientation applies after a restart. Restart now to check it, or Next: the restart then follows at the Connect the servos step.",
+          "max_length": 135,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Il nuovo orientamento vale dopo un riavvio. Riavvia ora per verificarlo, oppure Avanti: il riavvio avverrà al passo Collega i servi."
         },
         "sen_intro": {
-          "english": "First tell the flight controller how it is mounted. Take the main and tail blades off, and leave the servos unplugged until the Connect the servos step.",
-          "max_length": 152,
+          "english": "Remove main and tail blades. Unplug all servos before starting.",
+          "max_length": 79,
           "needs_translation": false,
           "reverse_text": false,
-          "translation": "Prima indica come è montato il flight controller. Togli le pale principali e di coda, e lascia i servi scollegati fino al passo Collega i servi."
+          "translation": "Rimuovi le pale principali e di coda. Scollega tutti i servi prima di iniziare."
         },
         "sen_no_acc": {
           "english": "This board has no accelerometer: set the orientation on the Alignment page.",
@@ -9102,6 +9172,13 @@
           "reverse_text": false,
           "translation": "Nessun orientamento trovato. Alza la coda dritta e riprova."
         },
+        "sen_pitch": {
+          "english": "Pitch",
+          "max_length": 10,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Beccheggio"
+        },
         "sen_rejected_armed": {
           "english": "Refused: the model is armed.",
           "max_length": 31,
@@ -9115,6 +9192,20 @@
           "needs_translation": false,
           "reverse_text": false,
           "translation": "Calibra prima l'accelerometro."
+        },
+        "sen_roll": {
+          "english": "Roll",
+          "max_length": 6,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Rollio"
+        },
+        "sen_servos_unplugged": {
+          "english": "Servos unplugged",
+          "max_length": 16,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Servi scollegati"
         },
         "sen_timeout": {
           "english": "Timed out. Lift the tail a little further and try again.",
@@ -9136,6 +9227,13 @@
           "needs_translation": false,
           "reverse_text": false,
           "translation": "Questo firmware non trova l'orientamento: impostalo nella pagina Allineamento."
+        },
+        "sen_yaw": {
+          "english": "Yaw",
+          "max_length": 9,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Imbardata"
         },
         "servo_role_fmt": {
           "english": "Servo %d (%s)",
@@ -9269,6 +9367,13 @@
           "needs_translation": false,
           "reverse_text": false,
           "translation": "Passo pale"
+        },
+        "step_progress_fmt": {
+          "english": "Step %d of %d",
+          "max_length": 14,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Passo %d di %d"
         },
         "step_receiver": {
           "english": "Receiver",
@@ -10469,6 +10574,22 @@
           "needs_translation": true,
           "reverse_text": false,
           "translation": "Yaw"
+        }
+      },
+      "wizards": {
+        "model_setup": {
+          "english": "Model setup",
+          "max_length": 15,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Config. modello"
+        },
+        "name": {
+          "english": "Wizards",
+          "max_length": 10,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Assistenti"
         }
       }
     },

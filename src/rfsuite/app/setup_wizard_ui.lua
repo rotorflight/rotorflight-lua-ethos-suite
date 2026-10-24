@@ -11,6 +11,8 @@
 --   screen:begin()
 --   screen:text(title, body, accentLine)
 --   screen:picture(art.layout(...), caption)   -- or screen:draw(fn)
+--   screen:checks({{label =, answer =, press =}, ...}, focus) -- Yes/No beside it
+--   screen:status("Step 1 of 4")              -- in the row, before row()
 --   return screen:row(backFn, {{text =, press =, primary =, needsMotion =, small =, weight =}, ...}, forwardSpec)
 --   -- in step.paint():
 --   screen:paint()
@@ -68,8 +70,28 @@ function ui.action(key, target)
   return slot.press
 end
 
+-- The same for a number field's getter and setter.
+local values = {}
+function ui.value(key, get, set)
+  local slot = values[key]
+  if not slot then
+    slot = {}
+    slot.get = function()
+      if slot.getTarget then return slot.getTarget() end
+      return 0
+    end
+    slot.set = function(value)
+      if slot.setTarget then slot.setTarget(value) end
+    end
+    values[key] = slot
+  end
+  slot.getTarget, slot.setTarget = get, set
+  return slot.get, slot.set
+end
+
 function ui.releaseActions()
   for _, slot in pairs(actions) do slot.target = nil end
+  for _, slot in pairs(values) do slot.getTarget, slot.setTarget = nil, nil end
 end
 
 -- Modules a step loads only for itself are freed when the step closes, as
@@ -106,6 +128,8 @@ function Screen:begin()
   v.rows = {}
   v.textStop = nil
   v.pictureStop = nil
+  v.checks, v.checksX = nil, nil
+  v.status, v.statusX, v.statusY, v.statusH = nil, nil, nil, nil
   self.buttonList = {}
 end
 
@@ -168,6 +192,92 @@ local function addButton(self, rect, key, s, font)
   return field
 end
 
+-- Where the screen is within its step ("Step 1 of 4"), in the row of buttons:
+-- centred on the screen, or in the gap between the buttons when one covers
+-- the middle; left out when it does not fit. Call before row().
+function Screen:status(text)
+  self.view.status = text
+end
+
+-- The right half beside the picture, as the EdgeTX suite's cards. Each entry
+-- is one row:
+--   {label =, answer =, press =}   a question: the label, its answer a button
+--                                  on the right ("Yes" / "No")
+--   {answer =, press =, disabled =, needsMotion =}
+--                                  an action: a button across the whole half
+--   {label =, value =}             a fact: the label, its value where the
+--                                  answers sit ("Accelerometer  Available")
+--   {label =, number = {min, max, get, set, suffix}, disabled =}
+--                                  a value to edit: the label, a number field
+--                                  where the answers sit
+--   {note =}                       a result in the accent colour, wrapped to
+--                                  the half (last, so it moves nothing else)
+--   focus  index of the button to return (the one just pressed), or nil
+-- The picture moves to the left half. Call after text() (the rows start below
+-- it). Returns the field at `focus`.
+local CHECK_ROW_GAP = 8
+local CHECK_BUTTON_SHARE = 0.2
+local CHECK_BUTTON_MIN = 64
+
+function Screen:checks(list, focus)
+  local v = self.view
+  local width, height = lcd.getWindowSize()
+  local room = width - self.wiz.FORM_RIGHT_PADDING
+  local x = floor(width / 2)
+  lcd.font(FONT_STD)
+  local _, titleH = lcd.getTextSize("Ag")
+  lcd.font(FONT_S)
+  local _, lineH = lcd.getTextSize("Ag")
+  local y = v.top + (v.title and (titleH + 2) or 0) + #v.lines * lineH + 8
+  local h = math.max(30, floor(height * 0.09))
+  local bw = math.max(CHECK_BUTTON_MIN, floor(room * CHECK_BUTTON_SHARE))
+  local labelW = room - bw - x - 8
+  v.checks, v.checksX = {}, x
+  local field
+  for i = 1, #list do
+    local c = list[i]
+    local row = {}
+    if c.label then
+      local label = c.label
+      lcd.font(FONT_S)
+      if lcd.getTextSize(label) > labelW then label = ui.fit(label, labelW) end
+      row.label = label
+    end
+    if c.press then
+      local bx = c.label and (room - bw) or x
+      local w = room - bx
+      -- A long action drops to the small font rather than lose its end.
+      lcd.font(FONT_STD)
+      local font = (lcd.getTextSize(c.answer) > w - 16) and FONT_S or FONT_STD
+      local f = addButton(self, {x = bx, y = y, w = w, h = h}, "check_" .. i,
+        {text = c.answer, press = c.press, disabled = c.disabled, needsMotion = c.needsMotion}, font)
+      if i == focus then field = f end
+      row.y = y + floor((h - lineH) / 2)
+      y = y + h + CHECK_ROW_GAP
+    elseif c.number then
+      -- A number to edit: {min, max, get, set, suffix}.
+      local n = c.number
+      local get, set = ui.value("check_" .. i, n[3], n[4])
+      local f = form.addNumberField(nil, {x = room - bw, y = y, w = bw, h = h}, n[1], n[2], get, set)
+      if n[5] and f.suffix then f:suffix(n[5]) end
+      self.buttonList[#self.buttonList + 1] = {field = f, needsMotion = c.needsMotion, disabled = c.disabled}
+      if i == focus then field = f end
+      row.y = y + floor((h - lineH) / 2)
+      y = y + h + CHECK_ROW_GAP
+    elseif c.note then
+      row.lines = self.wiz.wrapLines(c.note, room - x, FONT_S)
+      row.y = y
+      y = y + #row.lines * lineH + CHECK_ROW_GAP
+    else
+      row.value, row.valueX = c.value, room - bw
+      row.y = y
+      y = y + lineH + CHECK_ROW_GAP
+    end
+    v.checks[i] = row
+  end
+  return field
+end
+
 -- One row of buttons along the bottom, always in the same order: Back on the
 -- left, the screen's own buttons, the way forward on the right.
 --   back     function; nil goes to the previous step (no Back on the first)
@@ -207,6 +317,7 @@ function Screen:row(back, specs, forward)
     right = room - w - NAV_GAP
   end
 
+  local specsEnd = left   -- right edge of the screen's own buttons
   if #specs > 0 then
     local total = 0
     for i = 1, #specs do total = total + (specs[i].weight or 1) end
@@ -220,8 +331,23 @@ function Screen:row(back, specs, forward)
       if s.primary then focus = field end
       x = x + w + BUTTON_GAP
     end
+    specsEnd = x - BUTTON_GAP
   end
 
+  local v = self.view
+  if v.status then
+    lcd.font(FONT_S)
+    local tw = lcd.getTextSize(v.status)
+    local gapL = specsEnd + 8
+    local gapR = (forward and (right + NAV_GAP) or room) - 8
+    local cx = floor(width / 2)
+    if cx - floor(tw / 2) < gapL or cx + floor(tw / 2) > gapR then cx = floor((gapL + gapR) / 2) end
+    if gapR - gapL >= tw then
+      v.statusX, v.statusY, v.statusH = cx, y, h
+    else
+      v.statusX = nil
+    end
+  end
   self.view.bottom = y - 4
   self:refresh()
   return focus or forwardField
@@ -348,8 +474,32 @@ function Screen:paint()
     lcd.drawText(MARGIN, bottom - ch, v.caption, LEFT)
     bottom = bottom - ch
   end
+  if v.status and v.statusX then
+    lcd.font(FONT_S)
+    local _, sh = lcd.getTextSize(v.status)
+    lcd.color(colors.muted)
+    lcd.drawText(v.statusX, v.statusY + floor((v.statusH - sh) / 2), v.status, CENTERED)
+  end
+  -- checks(): labels and values in the right half, the picture in the left.
+  local pictureW = width
+  if v.checks then
+    lcd.font(FONT_S)
+    lcd.color(colors.text)
+    for i = 1, #v.checks do
+      local c = v.checks[i]
+      if c.label then lcd.drawText(v.checksX, c.y, c.label, LEFT) end
+      if c.value then lcd.drawText(c.valueX, c.y, c.value, LEFT) end
+      if c.lines then
+        lcd.color(colors.active)
+        local _, lineH = lcd.getTextSize("Ag")
+        for j = 1, #c.lines do lcd.drawText(v.checksX, c.y + (j - 1) * lineH, c.lines[j], LEFT) end
+        lcd.color(colors.text)
+      end
+    end
+    pictureW = v.checksX - MARGIN
+  end
   if v.picture then
-    art.draw(v.picture, 0, y + 4, width, bottom - y - 6, colors)
+    art.draw(v.picture, 0, y + 4, pictureW, bottom - y - 6, colors)
   elseif v.drawFn then
     v.drawFn(MARGIN, y + 4, width - 2 * MARGIN, bottom - y - 6, colors)
   end

@@ -26,6 +26,14 @@
 --   art.rotor(dir)             the rotor disc from above, turning CW or CCW
 --   art.tailType(mode)         pitch tail with its servo, or a tail motor
 --   art.tailMotor(reverse)     the tail motor from above (live field running)
+--   art.attitude(state, style) the live helicopter of the orientation check:
+--                              solid (default) or "wire"
+--   art.service(picture)       from wakeup: the solid model's next frame (one
+--                              step per call); true when paint would change
+--   art.photo(name, view, front)
+--                              a picture from app/gfx/setup_wizard/ (the EdgeTX
+--                              suite's helicopter_setup artwork), with the view
+--                              named at the top and an arrow to the front
 --
 -- Each returns a small layout table, built when a screen is built.
 -- art.draw() runs from paint and only draws what the layout says, without
@@ -41,6 +49,10 @@ local rad = math.rad
 local sin, cos = math.sin, math.cos
 
 local art = {}
+
+-- The solid helicopter (lib/heli_model.lua), made and drawn by it.
+local requireModule = package.loaded["rfsuite.lib.require"] or assert(loadfile("lib/require.lua"))()
+local model = requireModule("lib/heli_model.lua")
 
 -- opts (optional): status = true colours a missing servo (s.missing) as a
 -- fault; dir = 0 (CW) / 1 (CCW) draws the main rotor direction round the
@@ -670,6 +682,190 @@ local function drawHeli(l, x, y, w, h, colors)
   end
 end
 
+---------------------------------------------------------------------------
+-- Pictures: the EdgeTX suite's helicopter side views (rotorflight-lua-edgetx-suite
+-- PR #839, artwork/helicopter_setup/), each in a 220 by 160 frame with the
+-- helicopter between 25 and 135 (rotor at about 55, skids at about 125). The
+-- view is named just above the rotor and an arrow under the skids points to
+-- the front (nose left), as on the EdgeTX cards.
+--
+-- Ethos scales a bitmap without smoothing, so each picture comes in the
+-- frame sizes of PHOTO_SCALES (name.png, name-125.png, ...: the 2000 by 1000
+-- accepted image resampled to 220k by 110k, 25k from the top). The largest
+-- that fits is drawn as it is; only a space smaller than the 1x frame scales.
+---------------------------------------------------------------------------
+
+local PHOTO_DIR = "app/gfx/setup_wizard/"
+local PHOTO_W, PHOTO_H = 220, 160
+local PHOTO_SCALES = {2, 1.5, 1.25, 1}
+local PHOTO_SUFFIX = {[2] = "-200", [1.5] = "-150", [1.25] = "-125", [1] = ""}
+local PHOTO_TOP = 55     -- top of the rotor head in the frame
+local PHOTO_ARROW = 150  -- the front arrow, below the skids
+
+function art.photo(name, view, front)
+  return {kind = "photo", name = name, view = view, front = front, lift = 0}
+end
+
+-- The bitmap for scale k, loaded the first time a screen of that size draws
+-- it (once per step: the layout lives as long as the step). false when the
+-- file is missing.
+local function photoBitmap(l, k)
+  local bitmap = l[k]
+  if bitmap == nil then
+    bitmap = lcd.loadBitmap and lcd.loadBitmap(PHOTO_DIR .. l.name .. PHOTO_SUFFIX[k] .. ".png") or false
+    l[k] = bitmap
+  end
+  return bitmap
+end
+
+local function drawPhoto(l, x, y, w, h, colors)
+  local fit = min(w / PHOTO_W, h / PHOTO_H)
+  local k = 1
+  for i = 1, #PHOTO_SCALES do
+    if PHOTO_SCALES[i] <= fit then k = PHOTO_SCALES[i]; break end
+  end
+  local bitmap = photoBitmap(l, k)
+  if not bitmap then return drawHeli(l, x, y, w, h, colors) end
+  local s = (fit < 1) and fit or k
+  local fw, fh = floor(PHOTO_W * s), floor(PHOTO_H * s)
+  local ox, oy = x + floor((w - fw) / 2), y + floor((h - fh) / 2)
+  if s == k then
+    lcd.drawBitmap(ox, oy, bitmap)
+  else
+    lcd.drawBitmap(ox, oy, bitmap, fw, fh)
+  end
+  lcd.font(FONT_S)
+  if l.view then
+    local _, th = lcd.getTextSize(l.view)
+    lcd.color(colors.text)
+    lcd.drawText(ox + floor(5 * s), oy + floor(PHOTO_TOP * s) - th - 2, l.view, LEFT)
+  end
+  if l.front then
+    -- As EdgeTX draws it: a shaft from 70 to 24 with a 9 by 5 head.
+    local ay = oy + floor(PHOTO_ARROW * s)
+    local tip, tail = ox + floor(24 * s), ox + floor(70 * s)
+    local head, half = floor(9 * s), math.max(3, floor(5 * s))
+    local t = math.max(2, floor(3 * s))
+    lcd.color(colors.active)
+    lcd.drawFilledRectangle(tip + head, ay - floor(t / 2), tail - tip - head, t)
+    lcd.drawFilledTriangle(tip, ay, tip + head, ay - half, tip + head, ay + half)
+    local _, th = lcd.getTextSize(l.front)
+    lcd.color(colors.text)
+    lcd.drawText(ox + floor(89 * s), ay - floor(th / 2), l.front, LEFT)
+  end
+end
+
+---------------------------------------------------------------------------
+-- Orientation check: the EdgeTX suite's live wireframe (rotorflight-lua-edgetx-
+-- suite PR #839, app/pages/helicopter_setup/attitude_view.lua), turned by the
+-- flight controller's MSP_ATTITUDE. Body axes: forward, right, up; positive
+-- pitch lowers the nose, positive roll the right side. Seen from behind the
+-- left side and a little above, nose left; the rotor disc a level ellipse.
+--
+--   art.attitude(state)   state = {roll =, pitch =, valid =, readout =},
+--                         degrees; the step updates it in place
+---------------------------------------------------------------------------
+
+local ATT_V = {
+  {1.125,0,-0.125},{0.9,-0.28,0.575},{0.375,-0.32,0.875},{-0.65,-0.3,0.775},{-1.05,-0.18,0},
+  {-0.675,-0.4,-0.275},{0.725,-0.4,-0.275},{0.9,0.28,0.575},{0.375,0.32,0.875},{-0.65,0.3,0.775},
+  {-1.05,0.18,0},{-0.675,0.4,-0.275},{0.725,0.4,-0.275},{2.9,0,1.375},{2.511,1.45,1.375},{1.45,2.511,1.375},
+  {0,2.9,1.375},{-1.45,2.511,1.375},{-2.511,1.45,1.375},{-2.9,0,1.375},{-2.511,-1.45,1.375},
+  {-1.45,-2.511,1.375},{-0,-2.9,1.375},{1.45,-2.511,1.375},{2.511,-1.45,1.375},{0,0,0.875},{0,0,1.375},
+  {-0.85,0,0.425},{-3.075,0,0.725},{-3.225,0,0.5},{-1,0,0},{-3.15,0,0.675},{-3.15,0,1.275},{-3.475,0,0.6},
+  {-3.3,0,0.15},{-3.15,0,0.5},{-3,-0.2,1.125},{-3.475,-0.2,0.25},{-2.875,-0.2,0.45},{-3.575,-0.2,0.925},
+  {0.825,-0.36,0.55},{0.225,-0.36,0.625},{-0.075,-0.36,0.1},{1,-0.36,0.1},{1.25,-0.55,-0.55},{1.1,-0.55,-0.7},
+  {0.75,-0.55,-0.7},{0.65,-0.55,-0.275},{-0.925,-0.55,-0.7},{-0.8,-0.55,-0.275},{-1.3,-0.55,-0.7},
+  {1.25,0.55,-0.55},{1.1,0.55,-0.7},{0.75,0.55,-0.7},{0.65,0.55,-0.275},{-0.925,0.55,-0.7},{-0.8,0.55,-0.275},
+  {-1.3,0.55,-0.7}
+}
+local ATT_PATHS = {
+  {1,2,3,4,5,6,7,1},{1,8,9,10,11,12,13,1},{3,9},{6,12},{41,42,43,44,41},{28,29,30,31},{32,33,34,35,36},
+  {37,38},{39,40},{26,27},{14,15,16,17,18,19,20,21,22,23,24,25,14},{45,46,47,48,47,49,50,49,51},
+  {52,53,54,55,54,56,57,56,58}
+}
+local ATT_THICK = {3,1,1,1,2,2,2,2,2,3,2,2,1}
+local ATT_ACCENT = {false,false,false,false,true,false,false,true,true,false,true,false,false}
+-- Projected points, filled in place by paint (no allocation there).
+local attX, attY = {}, {}
+for i = 1, #ATT_V do attX[i], attY[i] = 0, 0 end
+
+-- style: nil for the solid model (below), "wire" for the EdgeTX wireframe.
+function art.attitude(state, style)
+  return {kind = "attitude", state = state, wire = style == "wire"}
+end
+
+-- A line t pixels wide: offset across its steeper direction.
+local function attLine(x1, y1, x2, y2, t)
+  if t <= 1 then lcd.drawLine(x1, y1, x2, y2) return end
+  local half = floor(t / 2)
+  local steep = math.abs(y2 - y1) > math.abs(x2 - x1)
+  for k = -half, t - 1 - half do
+    if steep then lcd.drawLine(x1 + k, y1, x2 + k, y2) else lcd.drawLine(x1, y1 + k, x2, y2 + k) end
+  end
+end
+
+local function drawAttitude(l, x, y, w, h, colors)
+  local s = l.state
+  lcd.font(FONT_S)
+  local _, th = lcd.getTextSize("Ag")
+  -- The readout under the picture: the angles, or that none are current.
+  lcd.color(s.valid and colors.text or colors.muted)
+  lcd.drawText(x + 8, y + h - th, s.readout or "", LEFT)
+  if not s.valid then return end
+  h = h - th - 4
+  local r, p = rad(s.roll or 0), rad(s.pitch or 0)
+  local cr, sr, cp, sp = cos(r), sin(r), cos(p), sin(p)
+  local minX, maxX, minY, maxY = math.huge, -math.huge, math.huge, -math.huge
+  for i = 1, #ATT_V do
+    local v = ATT_V[i]
+    local vy, vz = v[2], v[3]
+    local yr, zr = vy * cr + vz * sr, -vy * sr + vz * cr
+    local xp, zp = v[1] * cp + zr * sp, -v[1] * sp + zr * cp
+    local px, py = -0.766 * xp + 0.643 * yr, -0.94 * zp - 0.22 * xp - 0.262 * yr
+    attX[i], attY[i] = px, py
+    if px < minX then minX = px end
+    if px > maxX then maxX = px end
+    if py < minY then minY = py end
+    if py > maxY then maxY = py end
+  end
+  -- Fit the whole helicopter, steep tilts included.
+  local scale = min((w - 12) / (maxX - minX), (h - 6) / (maxY - minY))
+  local ox = x + w / 2 - scale * (minX + maxX) / 2 + 0.5
+  local oy = y + h / 2 - scale * (minY + maxY) / 2 + 0.5
+  for i = 1, #ATT_V do
+    attX[i], attY[i] = floor(ox + scale * attX[i]), floor(oy + scale * attY[i])
+  end
+  for i = 1, #ATT_PATHS do
+    local path = ATT_PATHS[i]
+    lcd.color(ATT_ACCENT[i] and colors.active or colors.text)
+    for j = 2, #path do
+      local a, b = path[j - 1], path[j]
+      attLine(attX[a], attY[a], attX[b], attY[b], ATT_THICK[i])
+    end
+  end
+end
+
+---------------------------------------------------------------------------
+-- The helicopter of the orientation check, solid: lib/heli_model.lua makes
+-- and draws it. Paint only asks for its box; the wakeup (art.service) makes
+-- the frames, one stage per call.
+local function drawAttitudeSolid(l, x, y, w, h, colors)
+  local s = l.state
+  lcd.font(FONT_S)
+  local _, th = lcd.getTextSize("Ag")
+  lcd.color(s.valid and colors.text or colors.muted)
+  lcd.drawText(x + 8, y + h - th, s.readout or "", LEFT)
+  if s.valid then model.draw(x, y, w, h - th - 4) end
+end
+
+-- From wakeup: the solid model's next stage (lib/heli_model.lua). true
+-- when a new frame is ready, so the page asks for a redraw.
+function art.service(l)
+  if not l or l.wire or not l.state or not l.state.valid then return false end
+  return model.service(l.state.roll or 0, l.state.pitch or 0)
+end
+
 -- state: nil (not run), "busy", "done", "failed".
 function art.bubble(state)
   return {kind = "bubble", state = state}
@@ -823,6 +1019,10 @@ function art.draw(l, x, y, w, h, colors)
     drawMap(l, x, y, w, h, colors)
   elseif k == "heli" then
     drawHeli(l, x, y, w, h, colors)
+  elseif k == "photo" then
+    drawPhoto(l, x, y, w, h, colors)
+  elseif k == "attitude" then
+    if l.wire then drawAttitude(l, x, y, w, h, colors) else drawAttitudeSolid(l, x, y, w, h, colors) end
   elseif k == "bubble" then
     drawBubble(l, x, y, w, h, colors)
   elseif k == "rotor" then

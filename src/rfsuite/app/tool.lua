@@ -133,6 +133,8 @@ local APP_SESSION_PACKAGE_KEYS = {
 local ROOT_ENTRIES = {
   {title = "@i18n(app.menu_section_flight_tuning)@", icon = lcd.loadMask("app/gfx/flight_tuning.png"), menuId = "flight_tuning_menu", group = "@i18n(app.header_configuration)@"},
   {title = "@i18n(app.modules.hardware_setup.name)@", icon = lcd.loadMask("app/gfx/hardware.png"), menuId = "setup_menu", group = "@i18n(app.header_configuration)@"},
+  -- Wizards, beside Setup as in the EdgeTX suite (app/manifest.lua's wizards_menu).
+  {title = "@i18n(app.modules.wizards.name)@", icon = lcd.loadMask("app/gfx/setup_wizard.png"), menuId = "wizards_menu", group = "@i18n(app.header_configuration)@"},
   {title = "@i18n(app.menu_section_tools)@", icon = lcd.loadMask("app/gfx/tools.png"), menuId = "tools_menu", group = "@i18n(app.header_system)@", offline = true},
   {title = "@i18n(app.modules.logs.name)@", icon = lcd.loadMask("app/gfx/logs.png"), script = "app/pages/logs.lua", group = "@i18n(app.header_system)@", offline = true},
   {title = "@i18n(app.modules.settings.name)@", icon = lcd.loadMask("app/gfx/settings.png"), menuId = "settings_menu", group = "@i18n(app.header_system)@", offline = true},
@@ -272,6 +274,14 @@ local MENUS = {
       {title = "@i18n(app.modules.governor.menu_curves)@", icon = lcd.loadMask("app/gfx/setup_governor_curves.png"), script = "app/pages/setup_governor_curves.lua", lockedWhileArmed = true},
     },
   },
+  -- The guided setups. Model setup (app/pages/setup_wizard.lua) moves servos
+  -- and writes the whole setup, so it is locked while armed.
+  wizards_menu = {
+    title = "@i18n(app.modules.wizards.name)@",
+    entries = {
+      {title = "@i18n(app.modules.wizards.model_setup)@", icon = lcd.loadMask("app/gfx/setup_wizard.png"), script = "app/pages/setup_wizard.lua", lockedWhileArmed = true},
+    },
+  },
   tools_menu = {
     title = "@i18n(app.menu_section_tools)@",
     entries = {
@@ -279,9 +289,7 @@ local MENUS = {
       -- locked. That leaves Diagnostics and Developer unlocked below, which
       -- is the intent: link/ELRS diagnostics are exactly what a pilot wants
       -- reachable while armed, so this menu stays open and badges only its
-      -- two write entries. The Setup Wizard moves servos and writes
-      -- the whole setup, so it is locked too.
-      {title = "@i18n(app.modules.setup_wizard.name)@", icon = lcd.loadMask("app/gfx/setup_wizard.png"), script = "app/pages/setup_wizard.lua", lockedWhileArmed = true},
+      -- two write entries.
       {title = "@i18n(app.modules.copyprofiles.name)@", icon = lcd.loadMask("app/gfx/copy_profiles.png"), script = "app/pages/copy_profiles.lua", lockedWhileArmed = true},
       {title = "@i18n(app.modules.profile_select.name)@", icon = lcd.loadMask("app/gfx/profile_select.png"), script = "app/pages/profile_select.lua", lockedWhileArmed = true},
       {title = "@i18n(app.modules.diagnostics.name)@", icon = lcd.loadMask("app/gfx/diagnostics.png"), menuId = "diagnostics_menu", offline = true},

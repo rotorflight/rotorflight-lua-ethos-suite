@@ -4,13 +4,19 @@
 -- runs the accelerometer calibration and the automatic board orientation
 -- (AutoAlignWizard.svelte). One screen each, in that order:
 --
---   intro   blades off, servos unplugged; Start, or Next to leave the step
+--   intro   blades off, servos unplugged, as the EdgeTX suite's first card: the
+--           side view with the blades crossed out, and two Yes/No answers;
+--           Start once both are Yes, or Next to leave the step
 --   acc     calibrate the accelerometer (MSP_ACC_CALIBRATION, then wait for
 --           the FC to clear ARMING_DISABLED_CALIBRATING, lib/acc_calibration_wait.lua)
 --   align   MSP2_BOARD_AUTO_ALIGN: level, Start, lift the tail 20 deg; the
 --           result is written as the board alignment
---   done    board alignment only applies after a restart, which the wizard
---           does at the Connect the servos step (wiz.requestReboot())
+--   check   as the EdgeTX suite's last card: a live wireframe turned by
+--           MSP_ATTITUDE, and "Direction correct" Yes/No (Next once Yes).
+--           The board alignment only applies after a restart: while one is
+--           owed the check offers Save and restart (wiz.saveAndReboot(), back
+--           on this screen through wiz.setResume()), or Next, which leaves the
+--           restart to the Connect the servos step (wiz.requestReboot())
 --
 -- A board without an accelerometer (sensor_status bit 0, as the
 -- configurator's have_sensor()) gets a note and Next only. Firmware without
@@ -22,12 +28,13 @@ local ui = requireModule("app/setup_wizard_ui.lua")
 local art = requireModule("app/setup_wizard_art.lua")
 -- Freed when the step closes (app/setup_wizard_ui.lua's notLoaded()).
 local OWNED = ui.notLoaded({"rfsuite.lib.msp_acc_calibration", "rfsuite.lib.acc_calibration_wait",
-  "rfsuite.lib.msp_board_auto_align", "rfsuite.lib.msp_board_alignment_config"})
+  "rfsuite.lib.msp_board_auto_align", "rfsuite.lib.msp_board_alignment_config", "rfsuite.lib.msp_attitude"})
 local status = requireModule("lib/msp_status.lua")
 local accCalibration = requireModule("lib/msp_acc_calibration.lua")
 local calibrationWait = requireModule("lib/acc_calibration_wait.lua")
 local autoAlign = requireModule("lib/msp_board_auto_align.lua")
 local boardAlignment = requireModule("lib/msp_board_alignment_config.lua")
+local attitudeMsp = requireModule("lib/msp_attitude.lua")
 
 local T = {
   title = "@i18n(app.modules.setup_wizard.sen_title)@",
@@ -47,14 +54,29 @@ local T = {
   timeout = "@i18n(app.modules.setup_wizard.sen_timeout)@",
   noMatch = "@i18n(app.modules.setup_wizard.sen_no_match)@",
   unsupported = "@i18n(app.modules.setup_wizard.sen_unsupported)@",
-  doneTitle = "@i18n(app.modules.setup_wizard.sen_done_title)@",
+  checkTitle = "@i18n(app.modules.setup_wizard.sen_check_title)@",
+  checkText = "@i18n(app.modules.setup_wizard.sen_check_text)@",
+  directionOk = "@i18n(app.modules.setup_wizard.sen_direction_ok)@",
+  waiting = "@i18n(app.modules.setup_wizard.sen_attitude_waiting)@",
   doneRestart = "@i18n(app.modules.setup_wizard.sen_done_restart)@",
-  doneSame = "@i18n(app.modules.setup_wizard.sen_done_same)@",
-  progress = "@i18n(app.modules.setup_wizard.progress_fmt)@",
+  saveRestart = "@i18n(app.modules.setup_wizard.btn_save_restart)@",
+  stepOf = "@i18n(app.modules.setup_wizard.step_progress_fmt)@",
   start = "@i18n(app.modules.setup_wizard.btn_start)@",
   next = "@i18n(app.modules.setup_wizard.btn_next)@",
   again = "@i18n(app.modules.setup_wizard.btn_again)@",
   calibrate = "@i18n(app.modules.setup_wizard.sen_calibrate)@",
+  unplugged = "@i18n(app.modules.setup_wizard.sen_servos_unplugged)@",
+  bladesOff = "@i18n(app.modules.setup_wizard.sen_blades_removed)@",
+  yes = "@i18n(app.modules.setup_wizard.btn_yes)@",
+  no = "@i18n(app.modules.setup_wizard.btn_no)@",
+  sideView = "@i18n(app.modules.setup_wizard.art_side)@",
+  front = "@i18n(app.modules.setup_wizard.art_front)@",
+  accelerometer = "@i18n(app.modules.setup_wizard.sen_accelerometer)@",
+  available = "@i18n(app.modules.setup_wizard.sen_available)@",
+  autoAlign = "@i18n(app.modules.setup_wizard.sen_auto_align)@",
+  roll = "@i18n(app.modules.setup_wizard.sen_roll)@",
+  pitch = "@i18n(app.modules.setup_wizard.sen_pitch)@",
+  yaw = "@i18n(app.modules.setup_wizard.sen_yaw)@",
 }
 
 -- Auto align: poll every quarter second while the FC works.
@@ -63,11 +85,24 @@ local AUTO_POLL = 0.25
 -- keeps answering IDLE), as the EdgeTX suite does after 60 s.
 local AUTO_GIVE_UP = 60
 
+-- The step's screens in order, for "Step 1 of 4" beside the buttons.
+local SCREEN_INDEX = {intro = 1, acc = 2, align = 3, check = 4}
+local SCREEN_COUNT = 4
+
+-- Orientation check: ask for the attitude every quarter second, one request
+-- at a time (msp_attitude retries for up to ~1.6 s, so a request older than
+-- ATT_LOST is given up); a picture older than ATT_STALE is not shown, so no
+-- one confirms against an old one.
+local ATT_POLL = 0.25
+local ATT_LOST = 2.5
+local ATT_STALE = 2.0
+
 local function new(wiz)
   local self = {}
   local scr = ui.new(wiz)
 
-  local screen = "intro"
+  -- Back from the restart the check asked for: straight to the check.
+  local screen = wiz.takeResume() or "intro"
   local hasAcc = nil
   local alignment = nil
   local note, noteAccent = nil, nil   -- result line for the current screen
@@ -77,8 +112,21 @@ local function new(wiz)
   local autoReply = nil               -- latest decoded auto reply
   local nextPollAt = 0
   local alignStartedAt = 0
-  local changed = false
-  local picture = art.heli(0)
+  -- Intro: the side view with the blades crossed out, and the two answers
+  -- (servos unplugged, blades off) that let Start run.
+  local bladesPicture = art.photo("heli-remove-blades", T.sideView, T.front)
+  local answers = {unplugged = false, blades = false}
+  local answered = nil                -- the answer just pressed keeps the focus
+  -- Calibration: the helicopter standing level.
+  local levelPicture = art.photo("heli-level", T.sideView, T.front)
+  -- Orientation: the tail lifted 20 degrees (the arrow is labelled with it).
+  local tailPicture = art.photo("heli-tail-lift", T.sideView, "20°")
+  -- Check: the live wireframe, and the answer that lets Next on.
+  local attitude = {roll = 0, pitch = 0, valid = false, readout = T.waiting}
+  local attitudePicture = art.attitude(attitude)
+  local attInFlight, attAskedAt, attAt, nextAttAt = false, 0, nil, 0
+  local attFresh = false              -- a new attitude to draw (see wakeup)
+  local directionOk = false
 
   wiz.fetch({
     status = function(ok, err) return status.buildReadMessage(ok, err) end,
@@ -118,14 +166,66 @@ local function new(wiz)
     wiz.rebuild()
   end
 
+  local function restoreAlignment(o)
+    if o then bus.publish("msp.request", boardAlignment.buildWriteMessage(o)) end
+  end
+
   local function writeAlignment(data)
-    wiz.change("board_alignment", alignment, function(o)
-      if o then bus.publish("msp.request", boardAlignment.buildWriteMessage(o)) end
-    end)
+    wiz.change("board_alignment", alignment, restoreAlignment)
     alignment = {roll_degrees = data.roll_degrees, pitch_degrees = data.pitch_degrees, yaw_degrees = data.yaw_degrees}
     bus.publish("msp.request", boardAlignment.buildWriteMessage(alignment))
     wiz.requestReboot()
-    changed = true
+    directionOk = false
+  end
+
+  -- Angles typed in the Roll / Pitch / Yaw fields. A field sends every step
+  -- of the encoder, so one write is in flight at a time and the latest angles
+  -- follow when it is answered. After the step closes nothing follows: a
+  -- Discard has written the originals back by then.
+  local alignInFlight, alignDirty, closed = false, false, false
+  local sendAlignment
+  local function alignSettled()
+    alignInFlight = false
+    if alignDirty and not closed then sendAlignment() end
+  end
+  sendAlignment = function()
+    alignInFlight, alignDirty = true, false
+    bus.publish("msp.request", boardAlignment.buildWriteMessage(alignment, alignSettled, alignSettled))
+  end
+
+  local function getAxis(axis)
+    return function() return alignment and alignment[axis] or 0 end
+  end
+  local function setAxis(axis)
+    return function(value)
+      if not alignment or busy or alignment[axis] == value then return end
+      wiz.change("board_alignment", alignment, restoreAlignment)
+      alignment[axis] = value
+      if alignInFlight then alignDirty = true else sendAlignment() end
+      wiz.requestReboot()
+      directionOk = false
+    end
+  end
+
+  -- Attitude replies: roll and pitch come in tenths of a degree. They are
+  -- handled in the background task, where lcd.invalidate() does not reach
+  -- this page: the redraw is asked for from wakeup (attFresh).
+  local function onAttitude(d)
+    attInFlight = false
+    if closed or screen ~= "check" then return end
+    attAt = os.clock()
+    local roll, pitch = (d.roll or 0) / 10, (d.pitch or 0) / 10
+    if not attitude.valid or roll ~= attitude.roll or pitch ~= attitude.pitch then
+      attitude.roll, attitude.pitch, attitude.valid = roll, pitch, true
+      attitude.readout = string.format("%s %.1f°   %s %.1f°", T.roll, roll, T.pitch, pitch)
+      attFresh = true
+    end
+  end
+  local function onAttitudeError() attInFlight = false end
+
+  local function restartAndCheck()
+    wiz.setResume("check")
+    wiz.saveAndReboot()
   end
 
   -- An auto align reply, from wakeup. true when the run is over.
@@ -156,42 +256,115 @@ local function new(wiz)
       return nil
     end
 
+    scr:status(string.format(T.stepOf, SCREEN_INDEX[screen], SCREEN_COUNT))
     if screen == "intro" then
       scr:text(T.title, T.intro, (not hasAcc) and T.noAcc or nil)
-      scr:picture(picture)
-      return scr:row(nil, hasAcc and {{text = T.start, primary = true, press = function() go("acc") end}} or nil)
+      scr:picture(bladesPicture)
+      local function answer(key, index)
+        return function()
+          answers[key], answered = not answers[key], index
+          wiz.rebuild()
+        end
+      end
+      local ready = answers.unplugged and answers.blades
+      -- Focus: Start once both are Yes, else the answer just pressed, else the first No.
+      local answerField = scr:checks({
+        {label = T.unplugged, answer = answers.unplugged and T.yes or T.no, press = answer("unplugged", 1)},
+        {label = T.bladesOff, answer = answers.blades and T.yes or T.no, press = answer("blades", 2)},
+      }, (not ready) and (answered or (not answers.unplugged and 1) or 2) or nil)
+      answered = nil
+      local rowField = scr:row(nil, hasAcc and {{text = T.start, primary = ready, disabled = not ready,
+        press = function() go("acc") end}} or nil)
+      return answerField or rowField
 
     elseif screen == "acc" then
-      scr:text(T.accTitle, T.accText, noteAccent or note, string.format(T.progress, 1, 2))
-      -- A spirit level: orange while calibrating, green when done, red if not.
-      scr:picture(art.bubble(busy and "busy" or (noteAccent and "failed") or (note and "done") or nil))
+      -- As the EdgeTX card: the level helicopter on the left, the calibrate
+      -- button and the sensor's state on the right, and under them the result
+      -- (busy, done, failed), so the picture stays put when it comes.
+      scr:text(T.accTitle, T.accText)
+      scr:picture(levelPicture)
       -- Once it has calibrated, the focus moves on to Next.
       local done = note ~= nil and not busy
-      return scr:row(function() go("intro") end, {
-        {text = done and T.again or T.calibrate, primary = not done, needsMotion = true, disabled = busy,
-          press = startAcc},
-      }, {text = T.next, disabled = busy, press = function() go("align") end})
+      local result = noteAccent or note
+      local actionField = scr:checks({
+        {answer = done and T.again or T.calibrate, needsMotion = true, disabled = busy, press = startAcc},
+        {label = T.accelerometer, value = T.available},
+        result and {note = result} or nil,
+      }, (not done) and 1 or nil)
+      local rowField = scr:row(function() go("intro") end, nil,
+        {text = T.next, disabled = busy, press = function() go("align") end})
+      return actionField or rowField
 
     elseif screen == "align" then
-      scr:text(T.alignTitle, T.alignText, noteAccent or note, string.format(T.progress, 2, 2))
-      -- Waiting for the tail lift: the picture lifts the tail, with an arrow.
-      scr:picture(aligning and art.heli(20, true) or picture)
+      -- As the EdgeTX card: the helicopter with its tail lifted 20 degrees on
+      -- the left; on the right the detection, the angles it found (which can
+      -- also be set by hand) and, under them, the result.
+      scr:text(T.alignTitle, T.alignText)
+      scr:picture(tailPicture)
       local done = note ~= nil and not busy
-      return scr:row(function() go("acc") end, {
-        {text = done and T.again or T.start, primary = not done, needsMotion = true, disabled = busy,
-          press = startAlign},
-      }, {text = T.next, disabled = busy, press = function() go("done") end})
+      local result = noteAccent or note
+      local noAngles = busy or alignment == nil
+      local actionField = scr:checks({
+        {answer = done and T.again or T.autoAlign, needsMotion = true, disabled = busy, press = startAlign},
+        {label = T.roll, number = {-180, 180, getAxis("roll_degrees"), setAxis("roll_degrees"), "°"},
+          disabled = noAngles},
+        {label = T.pitch, number = {-180, 180, getAxis("pitch_degrees"), setAxis("pitch_degrees"), "°"},
+          disabled = noAngles},
+        {label = T.yaw, number = {-180, 180, getAxis("yaw_degrees"), setAxis("yaw_degrees"), "°"},
+          disabled = noAngles},
+        result and {note = result} or nil,
+      }, (not done) and 1 or nil)
+      local rowField = scr:row(function() go("acc") end, nil,
+        {text = T.next, disabled = busy, press = function() go("check") end})
+      return actionField or rowField
 
-    else -- done
-      scr:text(T.doneTitle, (changed or wiz.rebootPending()) and T.doneRestart or T.doneSame)
-      scr:picture(picture)
-      return scr:row(function() go("align") end)
+    else -- check
+      scr:text(T.checkTitle, T.checkText)
+      local forward = wiz.forward()
+      local field
+      if wiz.rebootPending() then
+        -- The FC still runs on the old orientation: a live picture now would
+        -- show that one. Restart first, or leave it to Connect the servos.
+        scr:picture(tailPicture)
+        field = scr:checks({
+          {note = T.doneRestart},
+          {answer = T.saveRestart, press = restartAndCheck},
+        }, 2)
+      else
+        scr:picture(attitudePicture)
+        field = scr:checks({
+          {label = T.directionOk, answer = directionOk and T.yes or T.no, press = function()
+            directionOk = not directionOk
+            wiz.rebuild()
+          end},
+        }, (not directionOk) and 1 or nil)
+        forward.disabled = not directionOk
+      end
+      local rowField = scr:row(function() go("align") end, nil, forward)
+      return field or rowField
     end
   end
 
   function self.paint() scr:paint() end
 
   function self.wakeup(now)
+    if screen == "check" and not wiz.rebootPending() then
+      -- The model's next frame is worked out here, not in paint (Ethos stops
+      -- a paint that runs too long); paint only replays it.
+      if art.service(attitudePicture) then wiz.invalidate() end
+      if attFresh then
+        attFresh = false
+        wiz.invalidate()
+      end
+      if attitude.valid and attAt and os.clock() - attAt > ATT_STALE then
+        attitude.valid, attitude.readout = false, T.waiting
+        wiz.invalidate()
+      end
+      if (not attInFlight or now - attAskedAt > ATT_LOST) and now >= nextAttAt then
+        attInFlight, attAskedAt, nextAttAt = true, now, now + ATT_POLL
+        bus.publish("msp.request", attitudeMsp.buildReadMessage(onAttitude, onAttitudeError))
+      end
+    end
     if accWait then
       if calibrationWait.shouldPoll(accWait, now) then
         local waiting = accWait
@@ -235,7 +408,7 @@ local function new(wiz)
   end
 
   function self.released() scr:refresh() end
-  function self.leave() accWait, aligning = nil, false end
+  function self.leave() accWait, aligning, closed = nil, false, true end
 
   return self
 end

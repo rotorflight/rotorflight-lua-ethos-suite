@@ -7772,6 +7772,20 @@
           "reverse_text": true,
           "translation": "חמוש: לא ניתן להזיז סרווים."
         },
+        "art_front": {
+          "english": "Front",
+          "max_length": 5,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "חזית"
+        },
+        "art_side": {
+          "english": "Side view",
+          "max_length": 9,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "מבט צד"
+        },
         "btn_again": {
           "english": "Again",
           "max_length": 5,
@@ -7786,6 +7800,13 @@
           "reverse_text": true,
           "translation": "הבא"
         },
+        "btn_no": {
+          "english": "No",
+          "max_length": 2,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "לא"
+        },
         "btn_save_restart": {
           "english": "Save and restart",
           "max_length": 16,
@@ -7799,6 +7820,13 @@
           "needs_translation": false,
           "reverse_text": true,
           "translation": "התחל"
+        },
+        "btn_yes": {
+          "english": "Yes",
+          "max_length": 3,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "כן"
         },
         "con_blades": {
           "english": "Blades stay off, and keep clear of the motor.",
@@ -9012,18 +9040,25 @@
           "translation": "הכיול נכשל. החזק את הדגם יציב ונסה שוב."
         },
         "sen_acc_text": {
-          "english": "Stand the helicopter on its skids on a level surface and keep it still, then calibrate.",
-          "max_length": 87,
+          "english": "Stand the helicopter on its skids on a level surface and keep it still.",
+          "max_length": 71,
           "needs_translation": false,
           "reverse_text": true,
-          "translation": "העמד את המסוק על המגלשיים על משטח ישר והחזק אותו יציב, ואז כייל."
+          "translation": "העמד את המסוק על המגלשיים על משטח ישר והחזק אותו יציב."
         },
         "sen_acc_title": {
+          "english": "Calibrate the accelerometer",
+          "max_length": 27,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "כיול מד התאוצה"
+        },
+        "sen_accelerometer": {
           "english": "Accelerometer",
           "max_length": 13,
           "needs_translation": false,
           "reverse_text": true,
-          "translation": "אקסלרומטר"
+          "translation": "מד תאוצה"
         },
         "sen_align_done_fmt": {
           "english": "Found: roll %d, pitch %d, yaw %d degrees.",
@@ -9040,53 +9075,88 @@
           "translation": "הרם את הזנב 20 מעלות והחזק יציב..."
         },
         "sen_align_text": {
-          "english": "Stand the helicopter level, press Start, then lift the tail by at least 20 degrees and hold it still.",
-          "max_length": 101,
+          "english": "Keep level, start detection, then lift the tail about 20 degrees.",
+          "max_length": 65,
           "needs_translation": false,
           "reverse_text": true,
-          "translation": "העמד את המסוק ישר, לחץ התחל, ואז הרם את הזנב ב-20 מעלות לפחות והחזק יציב."
+          "translation": "החזק מאוזן, הפעל זיהוי, ואז הרם את הזנב כ-20 מעלות."
         },
         "sen_align_title": {
-          "english": "Find the orientation",
-          "max_length": 20,
+          "english": "Board orientation",
+          "max_length": 17,
           "needs_translation": false,
           "reverse_text": true,
-          "translation": "מציאת הכיוון"
+          "translation": "כיוון הבקר"
         },
-        "sen_calibrate": {
-          "english": "Calibrate",
+        "sen_attitude_waiting": {
+          "english": "Waiting for live attitude...",
+          "max_length": 28,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "ממתין למצב חי..."
+        },
+        "sen_auto_align": {
+          "english": "Detect board orientation",
+          "max_length": 24,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "זהה כיוון בקר"
+        },
+        "sen_available": {
+          "english": "Available",
           "max_length": 9,
           "needs_translation": false,
           "reverse_text": true,
-          "translation": "כייל"
+          "translation": "זמין"
         },
-        "sen_done_restart": {
-          "english": "The new orientation takes effect after the restart at the Connect the servos step.",
-          "max_length": 82,
+        "sen_blades_removed": {
+          "english": "All blades removed",
+          "max_length": 18,
           "needs_translation": false,
           "reverse_text": true,
-          "translation": "הכיוון החדש ייכנס לתוקף אחרי האתחול בשלב חיבור הסרווים."
+          "translation": "כל הלהבים הוסרו"
         },
-        "sen_done_same": {
-          "english": "Nothing to change here.",
+        "sen_calibrate": {
+          "english": "Calibrate accelerometer",
           "max_length": 23,
           "needs_translation": false,
           "reverse_text": true,
-          "translation": "אין מה לשנות כאן."
+          "translation": "כייל מד תאוצה"
         },
-        "sen_done_title": {
-          "english": "Orientation done",
-          "max_length": 16,
+        "sen_check_text": {
+          "english": "Tilt the helicopter left/right and nose down/up: the picture must follow every movement.",
+          "max_length": 88,
           "needs_translation": false,
           "reverse_text": true,
-          "translation": "הכיוון הוגדר"
+          "translation": "הטה את המסוק שמאלה/ימינה ואת האף מטה/מעלה: התמונה חייבת לעקוב אחרי כל תנועה."
+        },
+        "sen_check_title": {
+          "english": "Check orientation",
+          "max_length": 17,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "בדיקת כיוון"
+        },
+        "sen_direction_ok": {
+          "english": "Direction is correct",
+          "max_length": 20,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "הכיוון נכון"
+        },
+        "sen_done_restart": {
+          "english": "The new orientation applies after a restart. Restart now to check it, or Next: the restart then follows at the Connect the servos step.",
+          "max_length": 135,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "הכיוון החדש חל רק לאחר אתחול. אתחל עכשיו כדי לבדוק אותו, או הבא: האתחול יתבצע בשלב חיבור הסרווים."
         },
         "sen_intro": {
-          "english": "First tell the flight controller how it is mounted. Take the main and tail blades off, and leave the servos unplugged until the Connect the servos step.",
-          "max_length": 152,
+          "english": "Remove main and tail blades. Unplug all servos before starting.",
+          "max_length": 63,
           "needs_translation": false,
           "reverse_text": true,
-          "translation": "קודם הגדר לבקר הטיסה איך הוא מותקן. הסר את להבי הרוטור הראשי והזנב, והשאר את הסרווים מנותקים עד שלב חיבור הסרווים."
+          "translation": "הסר את להבי הרוטור הראשי והזנב. נתק את כל הסרווים לפני ההתחלה."
         },
         "sen_no_acc": {
           "english": "This board has no accelerometer: set the orientation on the Alignment page.",
@@ -9102,6 +9172,13 @@
           "reverse_text": true,
           "translation": "לא נמצא כיוון תואם. הרם את הזנב ישר למעלה ונסה שוב."
         },
+        "sen_pitch": {
+          "english": "Pitch",
+          "max_length": 5,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "עלרוד"
+        },
         "sen_rejected_armed": {
           "english": "Refused: the model is armed.",
           "max_length": 28,
@@ -9115,6 +9192,20 @@
           "needs_translation": false,
           "reverse_text": true,
           "translation": "כייל קודם את האקסלרומטר."
+        },
+        "sen_roll": {
+          "english": "Roll",
+          "max_length": 5,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "גלגול"
+        },
+        "sen_servos_unplugged": {
+          "english": "Servos unplugged",
+          "max_length": 16,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "הסרווים מנותקים"
         },
         "sen_timeout": {
           "english": "Timed out. Lift the tail a little further and try again.",
@@ -9136,6 +9227,13 @@
           "needs_translation": false,
           "reverse_text": true,
           "translation": "קושחה זו לא יכולה למצוא את הכיוון: הגדר אותו בדף היישור."
+        },
+        "sen_yaw": {
+          "english": "Yaw",
+          "max_length": 5,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "סבסוב"
         },
         "servo_role_fmt": {
           "english": "Servo %d (%s)",
@@ -9269,6 +9367,13 @@
           "needs_translation": false,
           "reverse_text": true,
           "translation": "פיץ' להבים"
+        },
+        "step_progress_fmt": {
+          "english": "Step %d of %d",
+          "max_length": 14,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "שלב %d מתוך %d"
         },
         "step_receiver": {
           "english": "Receiver",
@@ -10469,6 +10574,22 @@
           "needs_translation": true,
           "reverse_text": false,
           "translation": "Yaw"
+        }
+      },
+      "wizards": {
+        "model_setup": {
+          "english": "Model setup",
+          "max_length": 11,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "הגדרת דגם"
+        },
+        "name": {
+          "english": "Wizards",
+          "max_length": 7,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "אשפים"
         }
       }
     },

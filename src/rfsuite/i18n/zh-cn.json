@@ -7772,6 +7772,20 @@
           "reverse_text": false,
           "translation": "已解锁：舵机无法移动。"
         },
+        "art_front": {
+          "english": "Front",
+          "max_length": 5,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "前方"
+        },
+        "art_side": {
+          "english": "Side view",
+          "max_length": 9,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "侧视图"
+        },
         "btn_again": {
           "english": "Again",
           "max_length": 5,
@@ -7786,6 +7800,13 @@
           "reverse_text": false,
           "translation": "下一步"
         },
+        "btn_no": {
+          "english": "No",
+          "max_length": 2,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "否"
+        },
         "btn_save_restart": {
           "english": "Save and restart",
           "max_length": 16,
@@ -7799,6 +7820,13 @@
           "needs_translation": false,
           "reverse_text": false,
           "translation": "开始"
+        },
+        "btn_yes": {
+          "english": "Yes",
+          "max_length": 3,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "是"
         },
         "con_blades": {
           "english": "Blades stay off, and keep clear of the motor.",
@@ -9012,13 +9040,20 @@
           "translation": "校准失败。保持模型静止后重试。"
         },
         "sen_acc_text": {
-          "english": "Stand the helicopter on its skids on a level surface and keep it still, then calibrate.",
-          "max_length": 87,
+          "english": "Stand the helicopter on its skids on a level surface and keep it still.",
+          "max_length": 71,
           "needs_translation": false,
           "reverse_text": false,
-          "translation": "将直升机脚架着地放在水平面上并保持静止，然后校准。"
+          "translation": "将直升机的起落架放在水平面上，并保持静止。"
         },
         "sen_acc_title": {
+          "english": "Calibrate the accelerometer",
+          "max_length": 27,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "校准加速度计"
+        },
+        "sen_accelerometer": {
           "english": "Accelerometer",
           "max_length": 13,
           "needs_translation": false,
@@ -9040,53 +9075,88 @@
           "translation": "将尾部抬起20度并保持静止..."
         },
         "sen_align_text": {
-          "english": "Stand the helicopter level, press Start, then lift the tail by at least 20 degrees and hold it still.",
-          "max_length": 101,
+          "english": "Keep level, start detection, then lift the tail about 20 degrees.",
+          "max_length": 65,
           "needs_translation": false,
           "reverse_text": false,
-          "translation": "将直升机放平，按开始，然后将尾部抬起至少20度并保持静止。"
+          "translation": "保持水平，开始检测，然后将尾部抬起约 20 度。"
         },
         "sen_align_title": {
-          "english": "Find the orientation",
-          "max_length": 20,
+          "english": "Board orientation",
+          "max_length": 17,
           "needs_translation": false,
           "reverse_text": false,
-          "translation": "查找方向"
+          "translation": "飞控安装方向"
         },
-        "sen_calibrate": {
-          "english": "Calibrate",
+        "sen_attitude_waiting": {
+          "english": "Waiting for live attitude...",
+          "max_length": 28,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "正在等待实时姿态..."
+        },
+        "sen_auto_align": {
+          "english": "Detect board orientation",
+          "max_length": 24,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "检测安装方向"
+        },
+        "sen_available": {
+          "english": "Available",
           "max_length": 9,
           "needs_translation": false,
           "reverse_text": false,
-          "translation": "校准"
+          "translation": "可用"
         },
-        "sen_done_restart": {
-          "english": "The new orientation takes effect after the restart at the Connect the servos step.",
-          "max_length": 82,
+        "sen_blades_removed": {
+          "english": "All blades removed",
+          "max_length": 18,
           "needs_translation": false,
           "reverse_text": false,
-          "translation": "新方向将在连接舵机步骤重启后生效。"
+          "translation": "所有桨叶已拆下"
         },
-        "sen_done_same": {
-          "english": "Nothing to change here.",
+        "sen_calibrate": {
+          "english": "Calibrate accelerometer",
           "max_length": 23,
           "needs_translation": false,
           "reverse_text": false,
-          "translation": "此处无需更改。"
+          "translation": "校准加速度计"
         },
-        "sen_done_title": {
-          "english": "Orientation done",
-          "max_length": 16,
+        "sen_check_text": {
+          "english": "Tilt the helicopter left/right and nose down/up: the picture must follow every movement.",
+          "max_length": 88,
           "needs_translation": false,
           "reverse_text": false,
-          "translation": "方向已设置"
+          "translation": "将直升机左右倾斜、机头上下倾斜：画面必须跟随每个动作。"
+        },
+        "sen_check_title": {
+          "english": "Check orientation",
+          "max_length": 17,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "检查安装方向"
+        },
+        "sen_direction_ok": {
+          "english": "Direction is correct",
+          "max_length": 20,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "方向正确"
+        },
+        "sen_done_restart": {
+          "english": "The new orientation applies after a restart. Restart now to check it, or Next: the restart then follows at the Connect the servos step.",
+          "max_length": 135,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "新的安装方向需重启后生效。立即重启进行检查，或点下一步：将在“连接舵机”步骤重启。"
         },
         "sen_intro": {
-          "english": "First tell the flight controller how it is mounted. Take the main and tail blades off, and leave the servos unplugged until the Connect the servos step.",
-          "max_length": 152,
+          "english": "Remove main and tail blades. Unplug all servos before starting.",
+          "max_length": 63,
           "needs_translation": false,
           "reverse_text": false,
-          "translation": "先告诉飞控它的安装方向。拆下主桨和尾桨，在连接舵机步骤之前不要插上舵机。"
+          "translation": "拆下主旋翼和尾旋翼桨叶。开始前拔掉所有舵机。"
         },
         "sen_no_acc": {
           "english": "This board has no accelerometer: set the orientation on the Alignment page.",
@@ -9102,6 +9172,13 @@
           "reverse_text": false,
           "translation": "没有匹配的方向。将尾部垂直抬起后重试。"
         },
+        "sen_pitch": {
+          "english": "Pitch",
+          "max_length": 5,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "俯仰"
+        },
         "sen_rejected_armed": {
           "english": "Refused: the model is armed.",
           "max_length": 28,
@@ -9115,6 +9192,20 @@
           "needs_translation": false,
           "reverse_text": false,
           "translation": "请先校准加速度计。"
+        },
+        "sen_roll": {
+          "english": "Roll",
+          "max_length": 4,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "横滚"
+        },
+        "sen_servos_unplugged": {
+          "english": "Servos unplugged",
+          "max_length": 16,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "舵机已拔掉"
         },
         "sen_timeout": {
           "english": "Timed out. Lift the tail a little further and try again.",
@@ -9136,6 +9227,13 @@
           "needs_translation": false,
           "reverse_text": false,
           "translation": "此固件无法查找方向：请在对准页面设置。"
+        },
+        "sen_yaw": {
+          "english": "Yaw",
+          "max_length": 3,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "偏航"
         },
         "servo_role_fmt": {
           "english": "Servo %d (%s)",
@@ -9269,6 +9367,13 @@
           "needs_translation": false,
           "reverse_text": false,
           "translation": "桨叶螺距"
+        },
+        "step_progress_fmt": {
+          "english": "Step %d of %d",
+          "max_length": 13,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "第 %d 步，共 %d 步"
         },
         "step_receiver": {
           "english": "Receiver",
@@ -10469,6 +10574,22 @@
           "needs_translation": true,
           "reverse_text": false,
           "translation": "Yaw"
+        }
+      },
+      "wizards": {
+        "model_setup": {
+          "english": "Model setup",
+          "max_length": 11,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "模型设置"
+        },
+        "name": {
+          "english": "Wizards",
+          "max_length": 7,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "向导"
         }
       }
     },

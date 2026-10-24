@@ -1,4 +1,4 @@
--- Tools -> Setup Wizard.
+-- Wizards -> Model setup (beside Setup on the main menu, as in the EdgeTX suite).
 --
 -- The radio's copy of rotorflight-configurator's helicopter Setup Wizard
 -- (src/tabs/setup_wizard/SetupWizard.svelte; the EdgeTX suite's
@@ -52,7 +52,7 @@ local SHELL_MODULES = {
   "rfsuite.lib.msp_mixer_input", "rfsuite.lib.msp_mixer_config", "rfsuite.lib.msp_servo_config",
   "rfsuite.lib.msp_servo", "rfsuite.lib.msp_rc_channels", "rfsuite.lib.msp_motor",
   "rfsuite.lib.msp_arming_disabled", "rfsuite.lib.setup_wizard_heli",
-  "rfsuite.app.setup_wizard_ui", "rfsuite.app.setup_wizard_art",
+  "rfsuite.app.setup_wizard_ui", "rfsuite.app.setup_wizard_art", "rfsuite.lib.heli_model",
 }
 local shellOwned = {}
 for i = 1, #SHELL_MODULES do
@@ -527,6 +527,18 @@ local function open(opts)
   -- the Connect the servos step (or straight away from a step after it).
   function wiz.requestReboot() memory.rebootPending = true end
   function wiz.rebootPending() return memory.rebootPending == true end
+  -- The screen a step reopens on after wiz.saveAndReboot() (the board
+  -- orientation check, which needs the new orientation live). Set before the
+  -- restart; taken once, by the same step.
+  function wiz.setResume(screen)
+    memory.resume = {key = STEPS[stepIndex].key, screen = screen}
+  end
+  function wiz.takeResume()
+    local resume = memory.resume
+    memory.resume = nil
+    if resume and resume.key == STEPS[stepIndex].key then return resume.screen end
+    return nil
+  end
 
   -- Reads for a step: specs = {key = function(onData, onError) return msg end}.
   -- onDone(results, failed) runs from the page's wakeup once every reply is
