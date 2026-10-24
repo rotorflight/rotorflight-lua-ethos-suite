@@ -69,17 +69,24 @@ local T = {
   protocol = "@i18n(app.modules.setup_wizard.rcv_protocol)@",
   protocolTitle = "@i18n(app.modules.setup_wizard.rcv_protocol_title)@",
   saveRestart = "@i18n(app.modules.setup_wizard.btn_save_restart)@",
+  dirLeft = "@i18n(app.modules.setup_wizard.role_left)@",
+  dirBack = "@i18n(app.modules.setup_wizard.rcv_dir_back)@",
+  dirDown = "@i18n(app.modules.setup_wizard.rcv_dir_down)@",
+  dirRight = "@i18n(app.modules.setup_wizard.role_right)@",
+  dirForward = "@i18n(app.modules.setup_wizard.rcv_dir_forward)@",
+  dirUp = "@i18n(app.modules.setup_wizard.rcv_dir_up)@",
   yes ="@i18n(app.modules.setup_wizard.btn_yes)@",
   no = "@i18n(app.modules.setup_wizard.btn_no)@",
   throttleText = "@i18n(app.modules.setup_wizard.rcv_throttle_text)@",
-  throttleLegend = "@i18n(app.modules.setup_wizard.rcv_throttle_legend)@",
+  throttleName = "@i18n(app.modules.setup_wizard.rcv_ch_throttle)@",
+  fcRange = "@i18n(app.modules.setup_wizard.rcv_fc_range)@",
+  measured = "@i18n(app.modules.setup_wizard.rcv_measured)@",
   bladesOff = "@i18n(app.modules.setup_wizard.rcv_blades_off)@",
   measure = "@i18n(app.modules.setup_wizard.rcv_measure)@",
   stop = "@i18n(app.modules.setup_wizard.rcv_stop)@",
   use = "@i18n(app.modules.setup_wizard.rcv_use)@",
   defaults = "@i18n(app.modules.setup_wizard.rcv_defaults)@",
   tooShort = "@i18n(app.modules.setup_wizard.rcv_too_short)@",
-  rangeFmt = "@i18n(app.modules.setup_wizard.rcv_range_fmt)@",
   doneTitle = "@i18n(app.modules.setup_wizard.rcv_done_title)@",
   done = "@i18n(app.modules.setup_wizard.rcv_done)@",
   progress = "@i18n(app.modules.setup_wizard.progress_fmt)@",
@@ -165,6 +172,33 @@ local function new(wiz)
   local baseline = {}
   local peaks = {}
   local haveBaseline = false
+
+  -- Sticks: the travel each of the four sticks reached, in percent of the FC's
+  -- range (low, high). Both ends must reach TRAVEL_OK before Next.
+  local TRAVEL_OK = 95
+  local travel = {{0, 0}, {0, 0}, {0, 0}, {0, 0}}
+  local pcts = {}                      -- the live percentage of each row, or nil
+  local sideWords = {T.dirRight, T.dirForward, T.dirRight, T.dirUp, T.dirUp}
+  local oppWords = {T.dirLeft, T.dirBack, T.dirLeft, T.dirDown, T.dirDown}
+  local travelWasOk = false
+  local function resetTravel()
+    for i = 1, 4 do travel[i][1], travel[i][2] = 0, 0 end
+    travelWasOk = false
+  end
+  local function travelOk()
+    for i = 1, 4 do
+      if travel[i][1] > -TRAVEL_OK or travel[i][2] < TRAVEL_OK then return false end
+    end
+    return true
+  end
+  -- A reading in percent of the FC's range, centred on rc_center.
+  local function percentOf(us)
+    if not us or us <= 0 then return nil end
+    local centre = rcConfig and rcConfig.rc_center or 1500
+    local defl = rcConfig and rcConfig.rc_deflection or 500
+    if defl <= 0 then defl = 500 end
+    return floor((us - centre) * 100 / defl + (us >= centre and 0.5 or -0.5))
+  end
 
   -- Live bars: labels and label colours set on build; fractions (0..1, or
   -- false when there is no reading) set from wakeup. barCount rows are drawn.
@@ -290,6 +324,7 @@ local function new(wiz)
 
   local function go(name)
     screen, note, noteAccent, measuring = name, nil, nil, false
+    if name == "sticks" then resetTravel() end
     setLive()
     wiz.rebuild()
   end
@@ -313,6 +348,13 @@ local function new(wiz)
   end
 
   -- The raw channel behind RX map slot i, through the map as it stands.
+  -- The bar's name with its receiver channel, from the receiver map.
+  local function channelLabel(slot)
+    local ch = rxMap and rxMap[rxMapCodec.FIELDS[slot]]
+    if ch == nil then return FUNCTION_NAMES[slot] end
+    return string.format("%s (CH%d)", FUNCTION_NAMES[slot], ch + 1)
+  end
+
   local function mappedRaw(slot)
     local ch = rxMap and rxMap[rxMapCodec.FIELDS[slot]]
     return ch and wiz.rcRaw[ch + 1] or nil
@@ -330,12 +372,29 @@ local function new(wiz)
       else
         us = mappedRaw(i)
       end
+      if screen == "sticks" then
+        local p = percentOf(us)
+        pcts[i] = p
+        if p and i <= 4 then
+          local t = travel[i]
+          if p < t[1] then t[1] = math.max(p, -100) end
+          if p > t[2] then t[2] = math.min(p, 100) end
+        end
+      end
       local f = fraction(us)
       fracs[i] = f
       local q = f and floor(f * 1000 / QUANT) or -1
       if q ~= lastShown[i] then
         lastShown[i] = q
         changed = true
+      end
+    end
+    -- Next is decided when the screen is built: rebuild once the travel is complete.
+    if screen == "sticks" then
+      local ok = travelOk()
+      if ok ~= travelWasOk then
+        travelWasOk = ok
+        wiz.rebuild()
       end
     end
     return changed
@@ -371,7 +430,9 @@ local function new(wiz)
       local bx = x + c * (colW + gap)
       local by = y + r * rowH
       lcd.color(labelColor(kinds[i], colors))
-      lcd.drawText(bx, by + floor((rowH - th) / 2), labels[i], LEFT)
+      local name, nameMax = labels[i], labelW - 4
+      if lcd.getTextSize(name) > nameMax then name = ui.fit(name, nameMax) end
+      lcd.drawText(bx, by + floor((rowH - th) / 2), name, LEFT)
       local f = fracs[i]
       ui.gauge(bx + labelW, by + 2, colW - labelW - 8, rowH - 4, f or nil, colors, 0.48, 0.52)
       if i == hotRow and f then
@@ -389,14 +450,31 @@ local function new(wiz)
     return f
   end
 
-  -- One wide bar: the FC's end points (muted ticks), the measured travel
-  -- (an accent band), and the throttle now (the gauge mark).
-  local function drawThrottle(x, y, w, h, colors)
-    if h < 20 then return end
-    local barH = math.min(h - 4, 36)
-    local by = y + floor((h - barH) / 2)
+  -- The throttle in percent of its 1000 - 2000 us travel (0 % at 1000 us).
+  local function thrPct(us)
+    if not us then return "--" end
+    return string.format("%d %%", floor((us - 1000) / 10 + 0.5))
+  end
+  local function fcRangeText()
     local zero, full = heli.throttleEnds(rcConfig)
-    -- Measured travel, under the mark.
+    return thrPct(zero) .. " - " .. thrPct(full)
+  end
+  local function measuredText()
+    if low and high then return thrPct(low) .. " - " .. thrPct(high) end
+    return "--"
+  end
+
+  -- The gas: one wide bar, with the FC's end points (muted ticks), the measured
+  -- travel (an accent band) and the live position; under it, in percent, the
+  -- value now, the FC's range and the measured travel.
+  local function drawThrottle(x, y, w, h, colors)
+    lcd.font(FONT_S)
+    local _, th = lcd.getTextSize("Ag")
+    local textH = 3 * (th + 2)
+    if h < textH + 16 then return end
+    local barH = math.min(36, h - textH - 12)
+    local by = y + 4
+    local zero, full = heli.throttleEnds(rcConfig)
     if low and high then
       lcd.color(colors.surface)
       local lx = x + floor(w * thrFrac(low))
@@ -404,10 +482,14 @@ local function new(wiz)
       lcd.drawFilledRectangle(lx, by + floor(barH / 2) - 6, math.max(2, hx - lx), 12)
     end
     ui.gauge(x, by, w, barH, thrNow and thrFrac(thrNow) or nil, colors)
-    -- The FC's end points.
     lcd.color(colors.muted)
     lcd.drawFilledRectangle(x + floor(w * thrFrac(zero)) - 1, by - 4, 3, barH + 8)
     lcd.drawFilledRectangle(x + floor(w * thrFrac(full)) - 1, by - 4, 3, barH + 8)
+    local ty = by + barH + 12
+    lcd.color(colors.text)
+    lcd.drawText(x, ty, T.throttleName .. ": " .. thrPct(thrNow), LEFT)
+    lcd.drawText(x, ty + th + 2, T.fcRange .. ": " .. fcRangeText(), LEFT)
+    lcd.drawText(x, ty + 2 * (th + 2), T.measured .. ": " .. measuredText(), LEFT)
   end
 
   -- Bar setups (build only) ----------------------------------------------------
@@ -419,11 +501,63 @@ local function new(wiz)
     for k in pairs(fracs) do fracs[k] = nil end
   end
 
+  -- Sticks: each control's bar on the left two thirds, and on the right third
+  -- the way it has to move and its live position in percent.
+  local function drawSticks(x, y, w, h, colors)
+    if barCount == 0 or h < 10 then return end
+    lcd.font(FONT_S)
+    local _, th = lcd.getTextSize("Ag")
+    local rowH = math.min(floor(h / barCount), th + 12)
+    local leftW = floor(w * 2 / 3)
+    local nameW = floor(leftW * 0.27)
+    local oppW = floor(leftW * 0.2)
+    local barX = x + nameW + oppW
+    local barW = leftW - nameW - oppW - 8
+    local colX = x + leftW + 8
+    local colW = w - leftW - 8
+    for i = 1, barCount do
+      local by = y + (i - 1) * rowH
+      local ty = by + floor((rowH - th) / 2)
+      lcd.color(labelColor(kinds[i], colors))
+      local name, nameMax = labels[i], nameW - 4
+      if lcd.getTextSize(name) > nameMax then name = ui.fit(name, nameMax) end
+      lcd.drawText(x, ty, name, LEFT)
+      lcd.color(colors.muted)
+      local opp, oppMax = oppWords[i] or "", oppW - 6
+      if lcd.getTextSize(opp) > oppMax then opp = ui.fit(opp, oppMax) end
+      lcd.drawText(x + nameW, ty, opp, LEFT)
+      ui.gauge(barX, by + 2, barW, rowH - 4, fracs[i] or nil, colors, 0.48, 0.52)
+      local p = pcts[i]
+      local valueText = "--"
+      if p then valueText = (p == 0) and "0 %" or string.format("%+d %%", p) end
+      lcd.font(FONT_S)
+      local tw = lcd.getTextSize(valueText)
+      local reached = i > 4 or (travel[i][1] <= -TRAVEL_OK and travel[i][2] >= TRAVEL_OK)
+      lcd.color(reached and colors.text or colors.active)
+      lcd.drawText(colX + colW - tw, ty, valueText, LEFT)
+      lcd.color(colors.muted)
+      local word, maxW = sideWords[i] or "", colW - tw - 6
+      if lcd.getTextSize(word) > maxW then word = ui.fit(word, maxW) end
+      lcd.drawText(colX, ty, word, LEFT)
+    end
+  end
+
+  local function stickBars()
+    clearBars()
+    barCount = FUNCTION_ROWS
+    for i = 1, FUNCTION_ROWS do
+      labels[i] = channelLabel(i)
+      kinds[i] = KIND_TEXT
+      fracs[i] = false
+    end
+    scr:draw(drawSticks)
+  end
+
   local function functionBars(activeSlot)
     clearBars()
     barCount = FUNCTION_ROWS
     for i = 1, FUNCTION_ROWS do
-      labels[i] = FUNCTION_NAMES[i]
+      labels[i] = channelLabel(i)
       kinds[i] = (i == activeSlot) and KIND_ACTIVE or KIND_TEXT
       fracs[i] = false
     end
@@ -533,10 +667,6 @@ local function new(wiz)
     if changed then wiz.invalidate() end
   end
 
-  local function fcRangeText()
-    local zero, full = heli.throttleEnds(rcConfig)
-    return string.format(T.rangeFmt, zero, full)
-  end
 
   -- Screens -----------------------------------------------------------------
 
@@ -649,19 +779,18 @@ local function new(wiz)
     elseif screen == "sticks" then
       scr:text(T.sticksTitle, T.sticksText)
       scr:step(5, RECEIVER_SCREENS)
-      functionBars(nil)
-      return scr:row(function() go("order") end, nil, {text = T.next, press = function() go("throttle") end})
+      stickBars()
+      return scr:row(function() go("order") end, nil,
+        {text = T.next, disabled = not travelOk(), press = function() go("throttle") end})
 
     elseif screen == "throttle" then
       local accent = noteAccent or T.bladesOff
-      local body = T.throttleText .. " " .. fcRangeText()
-      if low and high then body = body .. " / " .. string.format(T.rangeFmt, low, high) end
-      scr:text(T.throttleTitle, body, accent)
+      scr:text(T.throttleTitle, T.throttleText, accent)
       scr:step(6, RECEIVER_SCREENS)
-      scr:draw(drawThrottle, T.throttleLegend)
+      scr:draw(drawThrottle)
       local canUse = heli.throttleFromMeasured(low, high) ~= nil and not measuring
-      return scr:row(function() go("sticks") end, {
-        {text = measuring and T.stop or T.measure, primary = not canUse, press = function()
+      local field = scr:checks({
+        {answer = measuring and T.stop or T.measure, press = function()
           if measuring then
             measuring = false
             if not heli.throttleFromMeasured(low, high) then noteAccent = T.tooShort end
@@ -670,16 +799,18 @@ local function new(wiz)
           end
           wiz.rebuild()
         end},
-        {text = T.use, disabled = not canUse, primary = canUse, press = function()
+        {answer = T.use, disabled = not canUse, press = function()
           local minUs, maxUs = heli.throttleFromMeasured(low, high)
           if minUs then writeThrottle(minUs, maxUs) end
           wiz.rebuild()
         end},
-        {text = T.defaults, small = true, press = function()
+        {answer = T.defaults, press = function()
           writeThrottle(0, 0)
           wiz.rebuild()
         end},
-      }, {text = T.next, disabled = measuring, press = function() go("done") end})
+      }, canUse and 2 or 1)
+      return field or scr:row(function() go("sticks") end, nil,
+        {text = T.next, disabled = measuring, press = function() go("done") end})
 
     else -- done
       scr:text(T.doneTitle, T.done)

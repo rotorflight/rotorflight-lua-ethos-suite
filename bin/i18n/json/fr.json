@@ -9049,11 +9049,10 @@
           "reverse_text": false
         },
         "rcv_sticks_text": {
-          "english": "Roll right, pitch forward, yaw right and collective up should each move its own bar to the right.",
-          "translation": "Roulis à droite, tangage avant, lacet à droite et collectif haut déplacent chacun leur barre vers la droite.",
+          "english": "Each stick must reach ±100 %; if it does not, adjust the travel on the transmitter.",
+          "translation": "Chaque manche doit atteindre ±100 % ; sinon, réglez la course sur l'émetteur.",
           "needs_translation": false,
-          "max_length": 108,
-          "reverse_text": false
+          "max_length": 83
         },
         "rcv_throttle_title": {
           "english": "Throttle range",
@@ -9109,13 +9108,6 @@
           "translation": "Moins de 300 us de course : allez d'un bout à l'autre.",
           "needs_translation": false,
           "max_length": 54,
-          "reverse_text": false
-        },
-        "rcv_range_fmt": {
-          "english": "%d - %d us",
-          "translation": "%d - %d us",
-          "needs_translation": false,
-          "max_length": 10,
           "reverse_text": false
         },
         "rcv_done_title": {
@@ -10476,13 +10468,6 @@
           "max_length": 4,
           "reverse_text": false
         },
-        "rcv_throttle_legend": {
-          "english": "Grey marks: FC range. Band: measured travel.",
-          "translation": "Repères gris : plage FC. Bande : course mesurée.",
-          "needs_translation": false,
-          "max_length": 48,
-          "reverse_text": false
-        },
         "rcv_prepare_title": {
           "english": "Before this step",
           "translation": "Avant cette étape",
@@ -10524,6 +10509,42 @@
           "translation": "Ordre des canaux standard",
           "needs_translation": false,
           "max_length": 25
+        },
+        "rcv_dir_forward": {
+          "english": "Forward",
+          "translation": "Avant",
+          "needs_translation": false,
+          "max_length": 7
+        },
+        "rcv_dir_up": {
+          "english": "Up",
+          "translation": "Haut",
+          "needs_translation": false,
+          "max_length": 4
+        },
+        "rcv_dir_back": {
+          "english": "Back",
+          "translation": "Arrière",
+          "needs_translation": false,
+          "max_length": 7
+        },
+        "rcv_dir_down": {
+          "english": "Down",
+          "translation": "Bas",
+          "needs_translation": false,
+          "max_length": 4
+        },
+        "rcv_fc_range": {
+          "english": "FC range",
+          "translation": "Plage FC",
+          "needs_translation": false,
+          "max_length": 8
+        },
+        "rcv_measured": {
+          "english": "Measured",
+          "translation": "Mesuré",
+          "needs_translation": false,
+          "max_length": 8
         }
       },
       "wizards": {

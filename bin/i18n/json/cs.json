@@ -9049,11 +9049,10 @@
           "reverse_text": false
         },
         "rcv_sticks_text": {
-          "english": "Roll right, pitch forward, yaw right and collective up should each move its own bar to the right.",
-          "translation": "Klonění vpravo, klopení vpřed, bočení vpravo a kolektiv nahoru posunou každý svůj pruh doprava.",
+          "english": "Each stick must reach ±100 %; if it does not, adjust the travel on the transmitter.",
+          "translation": "Každá páčka musí dosáhnout ±100 %; pokud ne, upravte rozsah na vysílačce.",
           "needs_translation": false,
-          "max_length": 97,
-          "reverse_text": false
+          "max_length": 83
         },
         "rcv_throttle_title": {
           "english": "Throttle range",
@@ -9109,13 +9108,6 @@
           "translation": "Rozsah pod 300 us: posuňte z kraje na kraj.",
           "needs_translation": false,
           "max_length": 43,
-          "reverse_text": false
-        },
-        "rcv_range_fmt": {
-          "english": "%d - %d us",
-          "translation": "%d - %d us",
-          "needs_translation": false,
-          "max_length": 10,
           "reverse_text": false
         },
         "rcv_done_title": {
@@ -10476,13 +10468,6 @@
           "max_length": 4,
           "reverse_text": false
         },
-        "rcv_throttle_legend": {
-          "english": "Grey marks: FC range. Band: measured travel.",
-          "translation": "Šedé značky: rozsah FC. Pás: změřený zdvih.",
-          "needs_translation": false,
-          "max_length": 44,
-          "reverse_text": false
-        },
         "rcv_prepare_title": {
           "english": "Before this step",
           "translation": "Před tímto krokem",
@@ -10524,6 +10509,42 @@
           "translation": "Standardní pořadí kanálů",
           "needs_translation": false,
           "max_length": 24
+        },
+        "rcv_dir_forward": {
+          "english": "Forward",
+          "translation": "Vpřed",
+          "needs_translation": false,
+          "max_length": 7
+        },
+        "rcv_dir_up": {
+          "english": "Up",
+          "translation": "Nahoru",
+          "needs_translation": false,
+          "max_length": 6
+        },
+        "rcv_dir_back": {
+          "english": "Back",
+          "translation": "Dozadu",
+          "needs_translation": false,
+          "max_length": 6
+        },
+        "rcv_dir_down": {
+          "english": "Down",
+          "translation": "Dolů",
+          "needs_translation": false,
+          "max_length": 4
+        },
+        "rcv_fc_range": {
+          "english": "FC range",
+          "translation": "Rozsah FC",
+          "needs_translation": false,
+          "max_length": 9
+        },
+        "rcv_measured": {
+          "english": "Measured",
+          "translation": "Naměřeno",
+          "needs_translation": false,
+          "max_length": 8
         }
       },
       "wizards": {

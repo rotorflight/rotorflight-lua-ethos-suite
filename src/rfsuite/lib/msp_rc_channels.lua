@@ -39,6 +39,31 @@ end
 local SIM_CHANNELS = simulated({1500, 1500, 1500, 1500, 1000, 1000, 1000, 1000, 1000, 1000, 1000, 1000})
 local SIM_COMMAND = simulated({0, 0, 0, 0, -500})
 
+-- Only in the simulator (read once, at load): the four sticks swing about
+-- centre, the throttle sweeps low to high, each at its own slow period.
+local SIMULATED = (system and system.getVersion and system.getVersion().simulation == true) or false
+local SWEEP_PERIOD = {4, 5, 6, 7}
+local function sweepSticks(now)
+  local out = {}
+  for i = 1, 4 do
+    out[i] = math.floor(500 * math.sin(2 * math.pi * now / SWEEP_PERIOD[i]) + 0.5)
+  end
+  out[5] = math.floor(500 * (1 + math.sin(2 * math.pi * now / 8)) + 0.5)
+  return out
+end
+local function sweepChannels(now)
+  local sticks = sweepSticks(now)
+  local values = {}
+  for i = 1, 4 do values[i] = 1500 + sticks[i] end
+  values[5] = 1000 + sticks[5]
+  for i = 6, 12 do values[i] = 1000 end
+  return simulated(values)
+end
+local function sweepCommand(now)
+  local sticks = sweepSticks(now)
+  return simulated({sticks[1], sticks[2], sticks[3], sticks[4], sticks[5] - 500})
+end
+
 -- Returns the channel count; entries past it are cleared.
 function M.decode(buf, out, signed)
   buf.offset = 1
@@ -61,7 +86,8 @@ function M.buildReadMessage(command, out, onData, onError)
       if onData then onData(out, count) end
     end,
     errorHandler = onError,
-    simulatorResponse = signed and SIM_COMMAND or SIM_CHANNELS,
+    simulatorResponse = SIMULATED and (signed and sweepCommand(os.clock()) or sweepChannels(os.clock()))
+      or (signed and SIM_COMMAND or SIM_CHANNELS),
   }
 end
 
