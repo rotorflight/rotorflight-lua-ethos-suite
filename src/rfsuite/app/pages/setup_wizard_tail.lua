@@ -214,24 +214,23 @@ local function new(wiz)
 
   local function buildServo()
     local i = input()
-    local progress = string.format(T.progress, index, #screens)
     local back = function() goIndex(index - 1) end
     local forward = {text = T.next, press = function() goIndex(index + 1) end}
     if screen == "centre" then
       local trim = (wiz.mixConfig() or {}).tail_center_trim or 0
-      scr:text(T.centreTitle, T.centre, nil, progress)
+      scr:text(T.centreTitle, T.centre)
       scr:rows({{T.trim, string.format("%.1f°", heli.tailTrimDegrees(trim))}})
       scr:picture(art.tail(nil, string.format("%+.1f°", heli.tailTrimDegrees(trim))))
       return scr:row(back, nudgeSpecs({-1, -0.1, 0.1, 1}, nudgeTrim, "%s%.1f"), forward)
     elseif screen == "direction" then
-      scr:text(T.dirTitle, T.dir, nil, progress)
+      scr:text(T.dirTitle, T.dir)
       scr:draw(drawDirection)
       return scr:row(back, {
         {text = T.reverse, press = reverseYaw},
         {text = T.ok, primary = true, press = function() goIndex(index + 1) end},
       }, false)
     elseif screen == "calibrate" then
-      scr:text(T.calTitle, T.cal, nil, progress)
+      scr:text(T.calTitle, T.cal)
       scr:rows({
         {T.rate, string.format("%.1f%%", math.abs(i and i.rate or 0) / 10)},
         {T.side, calSide > 0 and T.sideCcw or T.sideCw},
@@ -247,7 +246,7 @@ local function new(wiz)
     else -- limit_cw / limit_ccw
       local cw = screen == "limit_cw"
       local field = cw and "min" or "max"
-      scr:text(T.limTitle, cw and T.limCw or T.limCcw, nil, progress)
+      scr:text(T.limTitle, cw and T.limCw or T.limCcw)
       scr:rows({{cw and T.cw or T.ccw, string.format("%.1f°", heli.limitDegrees(i and i[field] or 0, true))}})
       scr:picture(art.tail(cw and "left" or "right",
         string.format("%.1f°", heli.limitDegrees(i and i[field] or 0, true))))
@@ -256,12 +255,11 @@ local function new(wiz)
   end
 
   local function buildMotor()
-    local progress = string.format(T.progress, index, #screens)
     local back = function() wiz.releaseMotor(); goIndex(index - 1) end
     local forward = {text = T.next, press = function() wiz.releaseMotor(); goIndex(index + 1) end}
     local hasMotor = wiz.motorCount() >= 2
     if screen == "motor" then
-      scr:text(T.motorTitle, T.motor, (not hasMotor) and T.noMotor or nil, progress)
+      scr:text(T.motorTitle, T.motor, (not hasMotor) and T.noMotor or nil)
       scr:rows({
         {T.power, string.format("%d%%", power)},
         {T.output, wiz.motorRunning() and T.running or T.stopped, wiz.motorRunning()},
@@ -283,7 +281,7 @@ local function new(wiz)
     end
     -- idle
     local idle = (wiz.mixConfig() or {}).tail_motor_idle or 0
-    scr:text(T.idleTitle, T.idleText, (not hasMotor) and T.noMotor or nil, progress)
+    scr:text(T.idleTitle, T.idleText, (not hasMotor) and T.noMotor or nil)
     scr:rows({
       {T.idle, string.format("%.1f%%", idle / 10)},
       {T.output, wiz.motorRunning() and T.running or T.stopped, wiz.motorRunning()},
@@ -308,6 +306,9 @@ local function new(wiz)
 
   function self.build()
     scr:begin()
+    -- The intro is step 1 (index 0), each screen of the tail follows, and the
+    -- done screen is the last one.
+    scr:step(index + 1, #screens + 2)
     applyHold()
     self.liveRc = (screen == "direction") and "command" or nil
     self.liveMotors = motorised and (screen == "motor" or screen == "idle") or nil

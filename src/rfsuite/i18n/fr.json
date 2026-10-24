@@ -8753,11 +8753,22 @@
           "translation": "Récepteur fait"
         },
         "rcv_intro": {
-          "english": "The radio talks to the flight controller through this receiver, so its protocol and port are set in the Configurator. Here you set the channel order, check the sticks and set the throttle range.",
-          "max_length": 194,
+          "english": "The radio talks to the flight controller through this receiver. Here you set the channel order, check the sticks and set the throttle range.",
+          "max_length": 151,
           "needs_translation": false,
-          "reverse_text": false,
-          "translation": "La radio parle au contrôleur de vol via ce récepteur ; son protocole et son port se règlent dans le Configurator. Ici, réglez l'ordre des voies, vérifiez les manches et la plage des gaz."
+          "translation": "L'émetteur communique avec le contrôleur de vol par ce récepteur. Ici, vous réglez l'ordre des canaux, vérifiez les manches et réglez la plage des gaz."
+        },
+        "rcv_link_text": {
+          "english": "The protocol must match your receiver, or the radio link breaks.",
+          "max_length": 84,
+          "needs_translation": false,
+          "translation": "Le protocole doit correspondre à votre récepteur, sinon la liaison radio est coupée."
+        },
+        "rcv_link_warning": {
+          "english": "Experienced pilots only: a setting that cuts the receiver link ends this setup.",
+          "max_length": 113,
+          "needs_translation": false,
+          "translation": "Réservé aux pilotes expérimentés : un réglage qui coupe la liaison avec le récepteur termine cette configuration."
         },
         "rcv_measure": {
           "english": "Measure",
@@ -8822,6 +8833,18 @@
           "reverse_text": false,
           "translation": "Ordre des voies"
         },
+        "rcv_prepare_text": {
+          "english": "This step uses the settings already in the FC. Confirm the physical prerequisites before continuing.",
+          "max_length": 113,
+          "needs_translation": false,
+          "translation": "Cette étape utilise les réglages déjà présents dans le FC. Confirmez les conditions physiques avant de continuer."
+        },
+        "rcv_prepare_title": {
+          "english": "Before this step",
+          "max_length": 17,
+          "needs_translation": false,
+          "translation": "Avant cette étape"
+        },
         "rcv_preset_elrs": {
           "english": "ELRS",
           "max_length": 4,
@@ -8864,6 +8887,18 @@
           "reverse_text": false,
           "translation": "Choisissez l'ordre des voies de votre radio."
         },
+        "rcv_protocol": {
+          "english": "Protocol",
+          "max_length": 9,
+          "needs_translation": false,
+          "translation": "Protocole"
+        },
+        "rcv_protocol_title": {
+          "english": "Choose the protocol",
+          "max_length": 20,
+          "needs_translation": false,
+          "translation": "Choisir le protocole"
+        },
         "rcv_range_fmt": {
           "english": "%d - %d us",
           "max_length": 10,
@@ -8891,6 +8926,12 @@
           "needs_translation": false,
           "reverse_text": false,
           "translation": "Passer"
+        },
+        "rcv_standard_order": {
+          "english": "Standard channel order",
+          "max_length": 25,
+          "needs_translation": false,
+          "translation": "Ordre des canaux standard"
         },
         "rcv_sticks_text": {
           "english": "Roll right, pitch forward, yaw right and collective up should each move its own bar to the right.",

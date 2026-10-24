@@ -8753,11 +8753,22 @@
           "translation": "Ontvanger klaar"
         },
         "rcv_intro": {
-          "english": "The radio talks to the flight controller through this receiver, so its protocol and port are set in the Configurator. Here you set the channel order, check the sticks and set the throttle range.",
-          "max_length": 194,
+          "english": "The radio talks to the flight controller through this receiver. Here you set the channel order, check the sticks and set the throttle range.",
+          "max_length": 147,
           "needs_translation": false,
-          "reverse_text": false,
-          "translation": "De zender praat via deze ontvanger met de vliegcontroller; protocol en poort stel je in de Configurator in. Hier stel je de kanaalvolgorde in, test je de sticks en het gasbereik."
+          "translation": "De zender praat met de flightcontroller via deze ontvanger. Hier stel je de kanaalvolgorde in, controleer je de sticks en stel je het gasbereik in."
+        },
+        "rcv_link_text": {
+          "english": "The protocol must match your receiver, or the radio link breaks.",
+          "max_length": 72,
+          "needs_translation": false,
+          "translation": "Het protocol moet bij je ontvanger passen, anders valt de radiolink weg."
+        },
+        "rcv_link_warning": {
+          "english": "Experienced pilots only: a setting that cuts the receiver link ends this setup.",
+          "max_length": 103,
+          "needs_translation": false,
+          "translation": "Alleen voor ervaren piloten: een instelling die de ontvangerlink verbreekt, beëindigt deze installatie."
         },
         "rcv_measure": {
           "english": "Measure",
@@ -8822,6 +8833,18 @@
           "reverse_text": false,
           "translation": "Kanaalvolgorde"
         },
+        "rcv_prepare_text": {
+          "english": "This step uses the settings already in the FC. Confirm the physical prerequisites before continuing.",
+          "max_length": 112,
+          "needs_translation": false,
+          "translation": "Deze stap gebruikt de instellingen die al in de FC staan. Bevestig de fysieke voorwaarden voordat je verdergaat."
+        },
+        "rcv_prepare_title": {
+          "english": "Before this step",
+          "max_length": 16,
+          "needs_translation": false,
+          "translation": "Vóór deze stap"
+        },
         "rcv_preset_elrs": {
           "english": "ELRS",
           "max_length": 4,
@@ -8864,6 +8887,18 @@
           "reverse_text": false,
           "translation": "Kies de kanaalvolgorde van je zender."
         },
+        "rcv_protocol": {
+          "english": "Protocol",
+          "max_length": 8,
+          "needs_translation": false,
+          "translation": "Protocol"
+        },
+        "rcv_protocol_title": {
+          "english": "Choose the protocol",
+          "max_length": 19,
+          "needs_translation": false,
+          "translation": "Kies het protocol"
+        },
         "rcv_range_fmt": {
           "english": "%d - %d us",
           "max_length": 10,
@@ -8891,6 +8926,12 @@
           "needs_translation": false,
           "reverse_text": false,
           "translation": "Overslaan"
+        },
+        "rcv_standard_order": {
+          "english": "Standard channel order",
+          "max_length": 24,
+          "needs_translation": false,
+          "translation": "Standaard kanaalvolgorde"
         },
         "rcv_sticks_text": {
           "english": "Roll right, pitch forward, yaw right and collective up should each move its own bar to the right.",

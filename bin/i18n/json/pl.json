@@ -8868,11 +8868,10 @@
           "reverse_text": false
         },
         "rcv_intro": {
-          "english": "The radio talks to the flight controller through this receiver, so its protocol and port are set in the Configurator. Here you set the channel order, check the sticks and set the throttle range.",
-          "translation": "Aparatura łączy się z kontrolerem przez ten odbiornik; protokół i port ustawia się w Configuratorze. Tu ustawisz kolejność kanałów, sprawdzisz drążki i zakres gazu.",
+          "english": "The radio talks to the flight controller through this receiver. Here you set the channel order, check the sticks and set the throttle range.",
+          "translation": "Radio komunikuje się z kontrolerem lotu przez ten odbiornik. Tutaj ustawiasz kolejność kanałów, sprawdzasz drążki i zakres gazu.",
           "needs_translation": false,
-          "max_length": 194,
-          "reverse_text": false
+          "max_length": 140
         },
         "rcv_signal_ok": {
           "english": "Receiver signal: OK",
@@ -10483,6 +10482,48 @@
           "needs_translation": false,
           "max_length": 50,
           "reverse_text": false
+        },
+        "rcv_prepare_title": {
+          "english": "Before this step",
+          "translation": "Przed tym krokiem",
+          "needs_translation": false,
+          "max_length": 17
+        },
+        "rcv_prepare_text": {
+          "english": "This step uses the settings already in the FC. Confirm the physical prerequisites before continuing.",
+          "translation": "Ten krok używa ustawień już zapisanych w FC. Przed przejściem dalej potwierdź warunki fizyczne.",
+          "needs_translation": false,
+          "max_length": 100
+        },
+        "rcv_protocol": {
+          "english": "Protocol",
+          "translation": "Protokół",
+          "needs_translation": false,
+          "max_length": 8
+        },
+        "rcv_protocol_title": {
+          "english": "Choose the protocol",
+          "translation": "Wybierz protokół",
+          "needs_translation": false,
+          "max_length": 19
+        },
+        "rcv_link_warning": {
+          "english": "Experienced pilots only: a setting that cuts the receiver link ends this setup.",
+          "translation": "Tylko dla doświadczonych pilotów: ustawienie, które przerywa łącze z odbiornikiem, kończy tę konfigurację.",
+          "needs_translation": false,
+          "max_length": 106
+        },
+        "rcv_link_text": {
+          "english": "The protocol must match your receiver, or the radio link breaks.",
+          "translation": "Protokół musi pasować do odbiornika, inaczej łącze radiowe zostanie przerwane.",
+          "needs_translation": false,
+          "max_length": 78
+        },
+        "rcv_standard_order": {
+          "english": "Standard channel order",
+          "translation": "Standardowa kolejność kanałów",
+          "needs_translation": false,
+          "max_length": 29
         }
       },
       "wizards": {

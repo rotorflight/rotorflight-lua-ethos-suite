@@ -30,6 +30,7 @@
 --                              solid (default) or "wire"
 --   art.service(picture)       from wakeup: the solid model's next frame (one
 --                              step per call); true when paint would change
+--   art.image(name, w, h)      a picture of its own size, as the Configurator's
 --   art.photo(name, view, front)
 --                              a picture from app/gfx/setup_wizard/ (the EdgeTX
 --                              suite's helicopter_setup artwork), with the view
@@ -706,6 +707,37 @@ function art.photo(name, view, front)
   return {kind = "photo", name = name, view = view, front = front, lift = 0}
 end
 
+-- A picture of its own size, such as the Configurator's: w x h is the size of
+-- the 1x file (name.png), and name-200.png is the 2x one for a larger screen.
+-- Drawn centred, as the 1x or 2x file that fits, or smaller when the space is.
+function art.image(name, w, h)
+  return {kind = "image", name = name, w = w, h = h}
+end
+
+local function imageBitmap(l, k)
+  local bitmap = l[k]
+  if bitmap == nil then
+    bitmap = lcd.loadBitmap and lcd.loadBitmap(PHOTO_DIR .. l.name .. (k == 2 and "-200" or "") .. ".png") or false
+    l[k] = bitmap
+  end
+  return bitmap
+end
+
+local function drawImage(l, x, y, w, h, colors)
+  local fit = min(w / l.w, h / l.h)
+  local k = (fit >= 2) and 2 or 1
+  local bitmap = imageBitmap(l, k)
+  if not bitmap then return end
+  local s = (fit < 1) and fit or k
+  local fw, fh = floor(l.w * s), floor(l.h * s)
+  local ox, oy = x + floor((w - fw) / 2), y + floor((h - fh) / 2)
+  if s == k then
+    lcd.drawBitmap(ox, oy, bitmap)
+  else
+    lcd.drawBitmap(ox, oy, bitmap, fw, fh)
+  end
+end
+
 -- The bitmap for scale k, loaded the first time a screen of that size draws
 -- it (once per step: the layout lives as long as the step). false when the
 -- file is missing.
@@ -1021,6 +1053,8 @@ function art.draw(l, x, y, w, h, colors)
     drawHeli(l, x, y, w, h, colors)
   elseif k == "photo" then
     drawPhoto(l, x, y, w, h, colors)
+  elseif k == "image" then
+    drawImage(l, x, y, w, h, colors)
   elseif k == "attitude" then
     if l.wire then drawAttitude(l, x, y, w, h, colors) else drawAttitudeSolid(l, x, y, w, h, colors) end
   elseif k == "bubble" then

@@ -58,6 +58,8 @@ local HOLD_CYC = {roll = 0, pitch = TEST_RAW, collective = 0}
 
 -- Screens in order; `group` says which inputs a calibration screen works on.
 local SCREENS = {"coll_measure", "coll_fine", "cyc_measure", "cyc_fine", "lim_cyc", "lim_coll", "lim_total"}
+-- The steps of the page: the intro, each of SCREENS, and the done screen.
+local PITCH_STEPS = #SCREENS + 2
 local GROUP = {
   coll_measure = {"collective"}, coll_fine = {"collective"},
   cyc_measure = {"roll", "pitch"}, cyc_fine = {"roll", "pitch"},
@@ -205,7 +207,9 @@ local function new(wiz)
   function self.build()
     scr:begin()
     hold()
-    local progress = indexOf(screen) and string.format(T.progress, indexOf(screen), #SCREENS) or nil
+    -- The intro is step 1, the SCREENS follow, the done screen is the last.
+    local stepNo = (screen == "intro" and 1) or (indexOf(screen) and indexOf(screen) + 1) or PITCH_STEPS
+    scr:step(stepNo, PITCH_STEPS)
 
     if screen == "intro" then
       scr:text(T.title, T.intro)
@@ -217,7 +221,7 @@ local function new(wiz)
     elseif screen == "coll_measure" or screen == "cyc_measure" then
       local coll = screen == "coll_measure"
       scr:text(coll and T.collTitle or T.cycTitle, coll and T.collText or T.cycText,
-        calibratedNote and T.calibrated or nil, progress)
+        calibratedNote and T.calibrated or nil)
       local rows = rateRows()
       table.insert(rows, 1, {T.measured, string.format("%.1f\194\176", measured / 10), true})
       scr:rows(rows)
@@ -232,7 +236,7 @@ local function new(wiz)
 
     elseif screen == "coll_fine" or screen == "cyc_fine" then
       local coll = screen == "coll_fine"
-      scr:text(coll and T.collTitle or T.cycTitle, T.fineText, nil, progress)
+      scr:text(coll and T.collTitle or T.cycTitle, T.fineText)
       scr:rows(rateRows())
       scr:picture(layoutTest)
       local specs = nudgeSpecs(RATE_NUDGES, nudgeRate)
@@ -243,7 +247,7 @@ local function new(wiz)
       local total = screen == "lim_total"
       local title = (screen == "lim_cyc" and T.limCycTitle) or (screen == "lim_coll" and T.limCollTitle) or T.limTotalTitle
       local tenths = limitTenths()
-      scr:text(title, total and T.limTotalText or T.limText, nil, progress)
+      scr:text(title, total and T.limTotalText or T.limText)
       scr:rows({{T.limit, string.format("%.1f\194\176", tenths / 10), true}})
       -- A cyclic or collective limit works both ways; the total is one angle.
       local deg = tenths / 10

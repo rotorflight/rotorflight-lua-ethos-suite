@@ -101,6 +101,7 @@ local function new(wiz)
     scr:begin()
     if screen == "intro" then
       scr:text(T.title, T.intro)
+      scr:step(1, 3)
       scr:picture(art.tilt("rear", "level"))
       return scr:row(nil, {
         {text = T.start, primary = true, needsMotion = true, press = function() ci = 1; go("check") end},
@@ -109,6 +110,7 @@ local function new(wiz)
       local c = CHECKS[ci]
       scr:text(c.title, c.text .. " " .. T.q, reversedNote and T.reversed or nil,
         string.format(T.progress, ci, #CHECKS))
+      scr:step(2, 3)
       scr:draw(drawCheck)
       return scr:row(function()
         if ci > 1 then ci = ci - 1; go("check") else go("intro") end
@@ -118,6 +120,7 @@ local function new(wiz)
       }, false)
     end
     scr:text(T.doneTitle, T.done)
+    scr:step(3, 3)
     scr:picture(art.tilt("rear", "level"))
     return scr:row(function() ci = #CHECKS; go("check") end, {
       {text = T.again, needsMotion = true, press = function() ci = 1; go("check") end},

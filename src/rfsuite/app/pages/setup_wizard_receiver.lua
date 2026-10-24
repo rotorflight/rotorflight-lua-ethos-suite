@@ -1,15 +1,19 @@
 -- Setup Wizard step: Receiver. Opened by app/pages/setup_wizard.lua.
 --
--- The radio's part of rotorflight-configurator's StepReceiver.svelte. The
--- radio talks to the flight controller through this very receiver, so the
--- protocol, port and wiring stay in the Configurator; this step never
--- touches them. What it does:
+-- The radio's part of rotorflight-configurator's StepReceiver.svelte, and the
+-- EdgeTX suite's receiver card. The radio talks to the flight controller
+-- through this very receiver, so a wrong protocol cuts the link (the warning
+-- on the link card says so); the port and wiring stay in the Configurator.
+-- What it does:
 --
---   intro     is the receiver sending (MSP_STATUS, RX_FAILSAFE clear), with
---             a live bar per function
---   order     the channel order (MSP_SET_RX_MAP): a live bar per function,
---             read through the current map, so a wrong order shows as a bar
---             that follows the wrong stick; then a preset, or
+--   prepare   the EdgeTX card "Before this step": blades off and servos
+--             unplugged, both Yes before Next
+--   link      the protocol (its own grid of choices), and Save & restart, which
+--             reopens on this card
+--   order     the receiver sending (MSP_STATUS, RX_FAILSAFE clear, the signal
+--             line), a live bar per function, and the channel order
+--             (MSP_SET_RX_MAP), read through the current map, so a wrong order
+--             shows as a bar that follows the wrong stick; then a preset, or
 --   detect    found from the sticks, one at a time (collective, roll,
 --             pitch, yaw, throttle) on MSP_RX_CHANNELS, as the
 --             configurator's "Detect from the sticks" (heli.moved()), with a
@@ -26,6 +30,7 @@
 local requireModule = package.loaded["rfsuite.lib.require"] or assert(loadfile("lib/require.lua"))()
 local bus = requireModule("lib/bus.lua")
 local ui = requireModule("app/setup_wizard_ui.lua")
+local art = requireModule("app/setup_wizard_art.lua")
 -- Freed when the step closes (app/setup_wizard_ui.lua's notLoaded()). Not
 -- msp_rx_map: the background task's session reads it on every connect.
 local OWNED = ui.notLoaded({"rfsuite.lib.msp_rc_config"})
@@ -33,18 +38,18 @@ local heli = requireModule("lib/setup_wizard_heli.lua")
 local status = requireModule("lib/msp_status.lua")
 local rxMapCodec = requireModule("lib/msp_rx_map.lua")
 local rcConfigCodec = requireModule("lib/msp_rc_config.lua")
+local rxConfigCodec = requireModule("lib/msp_rx_config.lua")
+local featureCodec = requireModule("lib/msp_feature_config.lua")
 
 local floor = math.floor
 
 local T = {
   title = "@i18n(app.modules.setup_wizard.rcv_title)@",
-  intro = "@i18n(app.modules.setup_wizard.rcv_intro)@",
   signalOk = "@i18n(app.modules.setup_wizard.rcv_signal_ok)@",
   signalNone = "@i18n(app.modules.setup_wizard.rcv_signal_none)@",
   orderTitle = "@i18n(app.modules.setup_wizard.rcv_order_title)@",
   orderText = "@i18n(app.modules.setup_wizard.rcv_order_text)@",
-  orderNow = "@i18n(app.modules.setup_wizard.rcv_order_now_fmt)@",
-  presets = "@i18n(app.modules.setup_wizard.rcv_presets)@",
+  standardOrder = "@i18n(app.modules.setup_wizard.rcv_standard_order)@",
   presetsText = "@i18n(app.modules.setup_wizard.rcv_presets_text)@",
   custom = "@i18n(app.modules.setup_wizard.rcv_custom)@",
   detect = "@i18n(app.modules.setup_wizard.rcv_detect)@",
@@ -55,6 +60,17 @@ local T = {
   sticksTitle = "@i18n(app.modules.setup_wizard.rcv_sticks_title)@",
   sticksText = "@i18n(app.modules.setup_wizard.rcv_sticks_text)@",
   throttleTitle = "@i18n(app.modules.setup_wizard.rcv_throttle_title)@",
+  prepareTitle = "@i18n(app.modules.setup_wizard.rcv_prepare_title)@",
+  prepareText = "@i18n(app.modules.setup_wizard.rcv_prepare_text)@",
+  unplugged = "@i18n(app.modules.setup_wizard.sen_servos_unplugged)@",
+  blades = "@i18n(app.modules.setup_wizard.sen_blades_removed)@",
+  linkText = "@i18n(app.modules.setup_wizard.rcv_link_text)@",
+  linkWarn = "@i18n(app.modules.setup_wizard.rcv_link_warning)@",
+  protocol = "@i18n(app.modules.setup_wizard.rcv_protocol)@",
+  protocolTitle = "@i18n(app.modules.setup_wizard.rcv_protocol_title)@",
+  saveRestart = "@i18n(app.modules.setup_wizard.btn_save_restart)@",
+  yes ="@i18n(app.modules.setup_wizard.btn_yes)@",
+  no = "@i18n(app.modules.setup_wizard.btn_no)@",
   throttleText = "@i18n(app.modules.setup_wizard.rcv_throttle_text)@",
   throttleLegend = "@i18n(app.modules.setup_wizard.rcv_throttle_legend)@",
   bladesOff = "@i18n(app.modules.setup_wizard.rcv_blades_off)@",
@@ -70,6 +86,10 @@ local T = {
   next = "@i18n(app.modules.setup_wizard.btn_next)@",
   start = "@i18n(app.modules.setup_wizard.btn_start)@",
 }
+
+-- The screens of the step, in order: prepare, link (and its protocol), order
+-- (and its presets, with the signal check), detect, sticks, throttle, done.
+local RECEIVER_SCREENS = 7
 
 local PRESET_NAMES = {
   elrs = "@i18n(app.modules.setup_wizard.rcv_preset_elrs)@",
@@ -121,9 +141,18 @@ local function new(wiz)
   local self = {}
   local scr = ui.new(wiz)
 
-  local screen = "intro"
+  -- The EdgeTX suite's "Before this step" card: blades off and servos
+  -- unplugged, both answered Yes before the step goes on.
+  -- Back from a restart the step reopens on the link card (the new protocol is
+  -- live then); otherwise the safety card comes first.
+  local screen = wiz.takeResume() or "prepare"
+  local answers = {blades = false, unplugged = false}
+  local answered = nil     -- the answer just pressed keeps the focus
+  local receiverPicture = art.image("receiver", 140, 70)
   local rxMap = nil        -- decoded MSP_RX_MAP (named fields)
   local rcConfig = nil     -- decoded MSP_RC_CONFIG
+  local rxConfig = nil     -- decoded MSP_RX_CONFIG (the protocol)
+  local feature = nil      -- decoded MSP_FEATURE_CONFIG (the serial receiver bit)
   local loadFailed = false
   local signal = nil       -- true / false / nil (unknown)
   local statusAt = 0
@@ -154,9 +183,12 @@ local function new(wiz)
   wiz.fetch({
     map = function(ok, err) return rxMapCodec.buildReadMessage(ok, err) end,
     rc = function(ok, err) return rcConfigCodec.buildReadMessage(ok, err) end,
+    rx = function(ok, err) return rxConfigCodec.buildReadMessage(ok, err) end,
+    feature = function(ok, err) return featureCodec.buildReadMessage(ok, err) end,
   }, function(results, failed)
     rxMap, rcConfig = results.map, results.rc
-    loadFailed = failed or not rxMap or not rcConfig
+    rxConfig, feature = results.rx, results.feature
+    loadFailed = failed or not rxMap or not rcConfig or not rxConfig or not feature
     wiz.rebuild()
   end)
 
@@ -191,6 +223,52 @@ local function new(wiz)
     bus.publish("rx.map.saved", rxMap)
   end
 
+  -- The protocol, as the EdgeTX suite lists it: the firmware's provider numbers.
+  -- The later ones need the newer API.
+  local FEATURE_SERIAL_RX = 3
+  local FEATURE_CLASH = {0, 3, 13, 14, 25}
+  local function protocolList()
+    local e = {{9, "CRSF / ELRS"}, {2, "S.BUS"}, {0, "DSM/1024"}, {1, "DSM/2048"}, {10, "SRXL"},
+      {13, "SRXL2"}, {14, "GHOST"}, {3, "SUMD"}, {4, "SUMH"}, {7, "IBUS"}, {5, "XBUS B"},
+      {6, "XBUS RJ01"}, {8, "Jeti EXBUS"}, {12, "F.PORT"}}
+    if wiz.apiAtLeast(7) then e[#e + 1] = {15, "S.BUS2"}; e[#e + 1] = {16, "F.PORT2"}; e[#e + 1] = {17, "FBUS"} end
+    if wiz.apiAtLeast(8) then e[#e + 1] = {18, "XBUS A"} end
+    if wiz.apiAtLeast(9) then e[#e + 1] = {19, "IBUS2"} end
+    return e
+  end
+
+  -- The protocol the FC uses: only once the serial receiver is on.
+  local function currentProtocol()
+    if not rxConfig or not feature then return nil end
+    if featureCodec.getBit(feature.enabledFeatures, FEATURE_SERIAL_RX) then return rxConfig.serialrx_provider end
+    return nil
+  end
+
+  local function protocolName(id)
+    for _, p in ipairs(protocolList()) do
+      if p[1] == id then return p[2] end
+    end
+    return "-"
+  end
+
+  -- Writes the protocol and the serial receiver feature, as the EdgeTX suite
+  -- does, and asks for the restart that makes them live. Registered for Discard.
+  local function setProtocol(id)
+    wiz.change("rx_config", rxConfig, function(o)
+      bus.publish("msp.request", rxConfigCodec.buildWriteMessage(o))
+    end)
+    wiz.change("feature_config", feature, function(o)
+      bus.publish("msp.request", featureCodec.buildWriteMessage(o))
+    end)
+    rxConfig.serialrx_provider = id
+    bus.publish("msp.request", rxConfigCodec.buildWriteMessage(rxConfig))
+    local value = feature.enabledFeatures
+    for _, bit in ipairs(FEATURE_CLASH) do value = featureCodec.setBit(value, bit, false) end
+    feature.enabledFeatures = featureCodec.setBit(value, FEATURE_SERIAL_RX, true)
+    bus.publish("msp.request", featureCodec.buildWriteMessage(feature))
+    wiz.requestReboot()
+  end
+
   local function writeThrottle(minUs, maxUs)
     wiz.change("rc_config", rcConfig, function(o)
       bus.publish("msp.request", rcConfigCodec.buildWriteMessage(o))
@@ -201,7 +279,7 @@ local function new(wiz)
   end
 
   local function setLive()
-    if screen == "intro" or screen == "order" or screen == "presets" or screen == "detect" then
+    if screen == "order" or screen == "presets" or screen == "detect" then
       self.liveRc = "raw"
     elseif screen == "sticks" or screen == "throttle" then
       self.liveRc = "rc"
@@ -285,7 +363,8 @@ local function new(wiz)
     local rowH = math.min(floor(h / rows), th + 12)
     local gap = 16
     local colW = floor((w - gap * (cols - 1)) / cols)
-    local labelW = floor(colW * (cols == 1 and 0.26 or 0.42))
+    -- Beside the order's checks the bars are narrow: their names get more room.
+    local labelW = floor(colW * ((cols == 1 and w >= 320) and 0.26 or 0.42))
     for i = 1, barCount do
       local c = floor((i - 1) / rows)
       local r = (i - 1) % rows
@@ -473,24 +552,78 @@ local function new(wiz)
       return scr:row(nil)
     end
 
-    if screen == "intro" then
-      local accent = nil
-      if signal == true then accent = T.signalOk elseif signal == false then accent = T.signalNone end
-      scr:text(T.title, T.intro, accent)
-      functionBars(nil)
-      return scr:row(nil, {{text = T.start, primary = true, press = function() go("order") end}})
+    if screen == "prepare" then
+      scr:text(T.prepareTitle, T.prepareText)
+      scr:picture(receiverPicture)
+      scr:step(1, RECEIVER_SCREENS)
+      local function answer(key, index)
+        return function()
+          answers[key], answered = not answers[key], index
+          wiz.rebuild()
+        end
+      end
+      local ready = answers.unplugged and answers.blades
+      -- Focus: Next once both are Yes, else the answer just pressed, else the first No.
+      local answerField = scr:checks({
+        {label = T.unplugged, answer = answers.unplugged and T.yes or T.no, press = answer("unplugged", 1)},
+        {label = T.blades, answer = answers.blades and T.yes or T.no, press = answer("blades", 2)},
+      }, (not ready) and (answered or (not answers.unplugged and 1) or 2) or nil)
+      answered = nil
+      -- As the other steps: Start goes into the step, Next leaves it.
+      local rowField = scr:row(nil, {{text = T.start, primary = ready, disabled = not ready,
+        press = function() go("link") end}})
+      return answerField or rowField
+
+    elseif screen == "link" then
+      -- The EdgeTX suite's receiver card, without its unlock: the protocol and the
+      -- restart, which cut the link the radio talks over (the warning says so).
+      scr:text(T.title, T.linkText, T.linkWarn)
+      scr:picture(receiverPicture)
+      scr:step(2, RECEIVER_SCREENS)
+      local rows = {
+        {label = T.protocol, answer = protocolName(currentProtocol()), press = function() go("protocol") end},
+        {answer = T.saveRestart, press = function()
+          wiz.setResume("link")
+          wiz.saveAndReboot()
+        end},
+      }
+      local field = scr:checks(rows)
+      local rowField = scr:row(function() go("prepare") end, nil, {text = T.next, press = function() go("order") end})
+      return field or rowField
+
+    elseif screen == "protocol" then
+      scr:text(T.protocolTitle)
+      scr:step(2, RECEIVER_SCREENS)
+      local current = currentProtocol()
+      local specs = {}
+      for _, p in ipairs(protocolList()) do
+        specs[#specs + 1] = {text = p[2], primary = p[1] == current, press = function()
+          setProtocol(p[1])
+          go("link")
+        end}
+      end
+      scr:row(function() go("link") end, nil, false)
+      return scr:grid(specs, 4)
 
     elseif screen == "order" then
-      scr:text(T.orderTitle, T.orderText .. " " .. string.format(T.orderNow, presetName(mapArray(rxMap))),
-        noteAccent or note, string.format(T.progress, 1, 3))
+      -- The signal check is on this card too (it was the intro screen): the
+      -- status line, and the live bars that show the sticks reaching the FC.
+      local signalLine = (signal == true and T.signalOk) or (signal == false and T.signalNone) or nil
+      scr:text(T.orderTitle, T.orderText,
+        noteAccent or note or signalLine)
+      scr:step(3, RECEIVER_SCREENS)
+      -- The bars on the left, as the other screens' pictures; the detection and
+      -- the standard order on the right, as the EdgeTX card.
       functionBars(nil)
-      return scr:row(function() go("intro") end, {
-        {text = T.presets, press = function() go("presets") end},
-        {text = T.detect, needsMotion = true, press = startDetect},
-      }, {text = T.next, press = function() go("sticks") end})
+      local field = scr:checks({
+        {answer = T.detect, needsMotion = true, press = startDetect},
+        {label = T.standardOrder, answer = presetName(mapArray(rxMap)), press = function() go("presets") end},
+      })
+      return field or scr:row(function() go("link") end, nil, {text = T.next, press = function() go("sticks") end})
 
     elseif screen == "presets" then
-      scr:text(T.orderTitle, T.presetsText .. " " .. string.format(T.orderNow, presetName(mapArray(rxMap))))
+      scr:text(T.orderTitle, T.presetsText)
+      scr:step(3, RECEIVER_SCREENS)
       local specs = {}
       local current = heli.presetOf(mapArray(rxMap))
       for _, p in ipairs(heli.CHANNEL_PRESETS) do
@@ -507,13 +640,15 @@ local function new(wiz)
       local slot = heli.DETECT_ORDER[detectIndex]
       scr:text(FUNCTION_NAMES[slot], string.format(T.detectText, DETECT_HINTS[slot]), nil,
         string.format(T.progress, detectIndex, #heli.DETECT_ORDER))
+      scr:step(4, RECEIVER_SCREENS)
       channelBars()
       return scr:row(function() go("order") end, {
         {text = T.skip, press = function() nextStick(nil) end},
       }, false)
 
     elseif screen == "sticks" then
-      scr:text(T.sticksTitle, T.sticksText, nil, string.format(T.progress, 2, 3))
+      scr:text(T.sticksTitle, T.sticksText)
+      scr:step(5, RECEIVER_SCREENS)
       functionBars(nil)
       return scr:row(function() go("order") end, nil, {text = T.next, press = function() go("throttle") end})
 
@@ -521,7 +656,8 @@ local function new(wiz)
       local accent = noteAccent or T.bladesOff
       local body = T.throttleText .. " " .. fcRangeText()
       if low and high then body = body .. " / " .. string.format(T.rangeFmt, low, high) end
-      scr:text(T.throttleTitle, body, accent, string.format(T.progress, 3, 3))
+      scr:text(T.throttleTitle, body, accent)
+      scr:step(6, RECEIVER_SCREENS)
       scr:draw(drawThrottle, T.throttleLegend)
       local canUse = heli.throttleFromMeasured(low, high) ~= nil and not measuring
       return scr:row(function() go("sticks") end, {
@@ -547,6 +683,7 @@ local function new(wiz)
 
     else -- done
       scr:text(T.doneTitle, T.done)
+      scr:step(7, RECEIVER_SCREENS)
       return scr:row(function() go("throttle") end)
     end
   end
@@ -554,7 +691,7 @@ local function new(wiz)
   function self.paint() scr:paint() end
 
   function self.wakeup(now)
-    if screen == "intro" then
+    if screen == "order" then
       if now >= statusAt then
         statusAt = now + STATUS_POLL
         bus.publish("msp.request", status.buildReadMessage(function(data)

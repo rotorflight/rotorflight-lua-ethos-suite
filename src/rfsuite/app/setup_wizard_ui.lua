@@ -33,6 +33,7 @@ local MARGIN = 8
 local GRID_MIN_H = 30
 local GRID_MAX_H = 56
 local NEXT = "@i18n(app.modules.setup_wizard.btn_next)@"
+local STEP_OF = "@i18n(app.modules.setup_wizard.step_progress_fmt)@"
 
 -- The row's Back and plain Next are small icon-only buttons (as the
 -- header's): chevrons, not the header's arrow, which leaves the wizard.
@@ -199,6 +200,14 @@ function Screen:status(text)
   self.view.status = text
 end
 
+-- The screen's place in its step: step(2, 5) reads "Schritt 2 von 5" (the
+-- wording of the locale). Every step with more than one screen calls it on
+-- each screen; a step with one screen does not. Items inside a screen (a
+-- servo, a check) keep their own count beside the title.
+function Screen:step(i, n)
+  self.view.status = string.format(STEP_OF, i, n)
+end
+
 -- The right half beside the picture, as the EdgeTX suite's cards. Each entry
 -- is one row:
 --   {label =, answer =, press =}   a question: the label, its answer a button
@@ -237,11 +246,14 @@ function Screen:checks(list, focus)
   for i = 1, #list do
     local c = list[i]
     local row = {}
+    local rowTop = y
     if c.label then
-      local label = c.label
+      -- A label wraps onto two lines when it does not fit beside the answer;
+      -- anything beyond the second line is cut short.
       lcd.font(FONT_S)
-      if lcd.getTextSize(label) > labelW then label = ui.fit(label, labelW) end
-      row.label = label
+      local lines = self.wiz.wrapLines(c.label, labelW, FONT_S)
+      if #lines > 2 then lines = {lines[1], ui.fit(table.concat(lines, " ", 2), labelW)} end
+      row.labelLines = lines
     end
     if c.press then
       local bx = c.label and (room - bw) or x
@@ -273,6 +285,11 @@ function Screen:checks(list, focus)
       row.y = y
       y = y + lineH + CHECK_ROW_GAP
     end
+    if row.labelLines then
+      -- Beside a button the label is centred on it; a plain fact sits on its line.
+      local centred = c.press or c.number
+      row.labelY = centred and (rowTop + floor((h - #row.labelLines * lineH) / 2)) or rowTop
+    end
     v.checks[i] = row
   end
   return field
@@ -300,7 +317,10 @@ function Screen:row(back, specs, forward)
   local h = math.max(36, floor(height * 0.15))
   local y = height - h - 4
   local room = width - self.wiz.FORM_RIGHT_PADDING
-  local left, right = 0, room
+  -- The back slot is kept free even where there is no Back (the first screen
+  -- of the first step), so the screen's own buttons and the step counter sit
+  -- at the same place on every start screen.
+  local left, right = NAV_W + NAV_GAP, room
   local focus, forwardField
 
   if back then
@@ -485,9 +505,12 @@ function Screen:paint()
   if v.checks then
     lcd.font(FONT_S)
     lcd.color(colors.text)
+    local _, labelH = lcd.getTextSize("Ag")
     for i = 1, #v.checks do
       local c = v.checks[i]
-      if c.label then lcd.drawText(v.checksX, c.y, c.label, LEFT) end
+      if c.labelLines then
+        for j = 1, #c.labelLines do lcd.drawText(v.checksX, c.labelY + (j - 1) * labelH, c.labelLines[j], LEFT) end
+      end
       if c.value then lcd.drawText(c.valueX, c.y, c.value, LEFT) end
       if c.lines then
         lcd.color(colors.active)
@@ -501,7 +524,8 @@ function Screen:paint()
   if v.picture then
     art.draw(v.picture, 0, y + 4, pictureW, bottom - y - 6, colors)
   elseif v.drawFn then
-    v.drawFn(MARGIN, y + 4, width - 2 * MARGIN, bottom - y - 6, colors)
+    -- Beside a list of checks the drawing keeps to the left of them.
+    v.drawFn(MARGIN, y + 4, pictureW - 2 * MARGIN, bottom - y - 6, colors)
   end
 end
 
