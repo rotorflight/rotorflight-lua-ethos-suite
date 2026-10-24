@@ -27,9 +27,13 @@
 --   art.tailType(mode)         pitch tail with its servo, or a tail motor
 --   art.tailMotor(reverse)     the tail motor from above (live field running)
 --   art.attitude(state, style) the live helicopter of the orientation check:
---                              solid (default) or "wire"
---   art.service(picture)       from wakeup: the solid model's next frame (one
---                              step per call); true when paint would change
+--                              solid (default, lib/heli3d.lua: the
+--                              Configurator's helicopter) or "wire";
+--                              state.rotorDir (main_rotor_dir) puts its tail
+--                              rotor on the right side
+--   art.service(picture)       from wakeup: the solid model's next step (one
+--                              per call); lib/heli3d.lua redraws the screen
+--                              itself when a frame is ready
 --   art.image(name, w, h)      a picture of its own size, as the Configurator's
 --   art.photo(name, view, front)
 --                              a picture from app/gfx/setup_wizard/ (the EdgeTX
@@ -51,9 +55,10 @@ local sin, cos = math.sin, math.cos
 
 local art = {}
 
--- The solid helicopter (lib/heli_model.lua), made and drawn by it.
+-- The solid helicopter (lib/heli3d.lua, shared with the Alignment page),
+-- made and drawn by it.
 local requireModule = package.loaded["rfsuite.lib.require"] or assert(loadfile("lib/require.lua"))()
-local model = requireModule("lib/heli_model.lua")
+local heli3d = requireModule("lib/heli3d.lua")
 
 -- opts (optional): status = true colours a missing servo (s.missing) as a
 -- fault; dir = 0 (CW) / 1 (CCW) draws the main rotor direction round the
@@ -879,23 +884,31 @@ local function drawAttitude(l, x, y, w, h, colors)
 end
 
 ---------------------------------------------------------------------------
--- The helicopter of the orientation check, solid: lib/heli_model.lua makes
--- and draws it. Paint only asks for its box; the wakeup (art.service) makes
--- the frames, one stage per call.
+-- The helicopter of the orientation check, solid: lib/heli3d.lua makes and
+-- draws it, seen from behind on the left (nose to the left, as in the
+-- photos) and a little above. Paint only asks for its box and attitude; the
+-- wakeup (art.service) makes the frames, one step per call.
+local ATT_VIEW_YAW = -68
+local ROTOR_CW, ROTOR_CCW = {rotor = "cw"}, {rotor = "ccw"}
+
 local function drawAttitudeSolid(l, x, y, w, h, colors)
   local s = l.state
   lcd.font(FONT_S)
   local _, th = lcd.getTextSize("Ag")
   lcd.color(s.valid and colors.text or colors.muted)
   lcd.drawText(x + 8, y + h - th, s.readout or "", LEFT)
-  if s.valid then model.draw(x, y, w, h - th - 4) end
+  if not s.valid then return end
+  heli3d.setup(s.rotorDir == 1 and ROTOR_CCW or ROTOR_CW)
+  heli3d.pose(nil)
+  heli3d.draw(x, y, w, h - th - 4, s.roll or 0, s.pitch or 0, ATT_VIEW_YAW)
 end
 
--- From wakeup: the solid model's next stage (lib/heli_model.lua). true
--- when a new frame is ready, so the page asks for a redraw.
+-- From wakeup: the solid model's next step (lib/heli3d.lua). It builds the
+-- model ahead of the first attitude, and redraws the screen itself when a
+-- frame is ready, so this never asks the page for one.
 function art.service(l)
-  if not l or l.wire or not l.state or not l.state.valid then return false end
-  return model.service(l.state.roll or 0, l.state.pitch or 0)
+  if l and not l.wire then heli3d.service() end
+  return false
 end
 
 -- state: nil (not run), "busy", "done", "failed".
