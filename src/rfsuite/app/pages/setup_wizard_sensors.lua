@@ -120,7 +120,7 @@ local function new(wiz)
   local levelPicture = art.photo("heli-level", T.sideView, T.front)
   -- Orientation: the tail lifted 20 degrees (the arrow is labelled with it).
   local tailPicture = art.photo("heli-tail-lift", T.sideView, "20°")
-  -- Check: the live wireframe, and the answer that lets Next on.
+  -- Check: the live helicopter, and the answer that lets Next on.
   local attitude = {roll = 0, pitch = 0, valid = false, readout = T.waiting}
   local attitudePicture = art.attitude(attitude)
   local attInFlight, attAskedAt, attAt, nextAttAt = false, 0, nil, 0
@@ -330,6 +330,7 @@ local function new(wiz)
           {answer = T.saveRestart, press = restartAndCheck},
         }, 2)
       else
+        attitude.rotorDir = (wiz.mixConfig() or {}).main_rotor_dir
         scr:picture(attitudePicture)
         field = scr:checks({
           {label = T.directionOk, answer = directionOk and T.yes or T.no, press = function()

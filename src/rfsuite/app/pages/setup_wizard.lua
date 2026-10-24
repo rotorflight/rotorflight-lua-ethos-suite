@@ -52,7 +52,7 @@ local SHELL_MODULES = {
   "rfsuite.lib.msp_mixer_input", "rfsuite.lib.msp_mixer_config", "rfsuite.lib.msp_servo_config",
   "rfsuite.lib.msp_servo", "rfsuite.lib.msp_rc_channels", "rfsuite.lib.msp_motor",
   "rfsuite.lib.msp_arming_disabled", "rfsuite.lib.setup_wizard_heli",
-  "rfsuite.app.setup_wizard_ui", "rfsuite.app.setup_wizard_art", "rfsuite.lib.heli_model",
+  "rfsuite.app.setup_wizard_ui", "rfsuite.app.setup_wizard_art", "rfsuite.lib.heli3d",
 }
 local shellOwned = {}
 for i = 1, #SHELL_MODULES do
