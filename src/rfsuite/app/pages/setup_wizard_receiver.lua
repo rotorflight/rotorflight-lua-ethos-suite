@@ -749,7 +749,9 @@ local function new(wiz)
         {answer = T.detect, needsMotion = true, press = startDetect},
         {label = T.standardOrder, answer = presetName(mapArray(rxMap)), press = function() go("presets") end},
       })
-      return field or scr:row(function() go("link") end, nil, {text = T.next, press = function() go("sticks") end})
+      -- The navigation row is always drawn; the focus is the checks' field, if any.
+      local rowField = scr:row(function() go("link") end, nil, {text = T.next, press = function() go("sticks") end})
+      return field or rowField
 
     elseif screen == "presets" then
       scr:text(T.orderTitle, T.presetsText)
@@ -809,8 +811,9 @@ local function new(wiz)
           wiz.rebuild()
         end},
       }, canUse and 2 or 1)
-      return field or scr:row(function() go("sticks") end, nil,
+      local rowField = scr:row(function() go("sticks") end, nil,
         {text = T.next, disabled = measuring, press = function() go("done") end})
+      return field or rowField
 
     else -- done
       scr:text(T.doneTitle, T.done)
