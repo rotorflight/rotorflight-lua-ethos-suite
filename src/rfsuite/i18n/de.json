@@ -8717,6 +8717,30 @@
           "reverse_text": false,
           "translation": "%s Andere Knüppel ruhig lassen."
         },
+        "rcv_dir_back": {
+          "english": "Back",
+          "max_length": 6,
+          "needs_translation": false,
+          "translation": "Zurück"
+        },
+        "rcv_dir_down": {
+          "english": "Down",
+          "max_length": 6,
+          "needs_translation": false,
+          "translation": "Runter"
+        },
+        "rcv_dir_forward": {
+          "english": "Forward",
+          "max_length": 7,
+          "needs_translation": false,
+          "translation": "Vor"
+        },
+        "rcv_dir_up": {
+          "english": "Up",
+          "max_length": 4,
+          "needs_translation": false,
+          "translation": "Hoch"
+        },
         "rcv_done": {
           "english": "The channel order and throttle range are set.",
           "max_length": 45,
@@ -8730,6 +8754,12 @@
           "needs_translation": false,
           "reverse_text": false,
           "translation": "Empfänger fertig"
+        },
+        "rcv_fc_range": {
+          "english": "FC range",
+          "max_length": 10,
+          "needs_translation": false,
+          "translation": "FC-Bereich"
         },
         "rcv_intro": {
           "english": "The radio talks to the flight controller through this receiver. Here you set the channel order, check the sticks and set the throttle range.",
@@ -8755,6 +8785,12 @@
           "needs_translation": false,
           "reverse_text": false,
           "translation": "Messen"
+        },
+        "rcv_measured": {
+          "english": "Measured",
+          "max_length": 8,
+          "needs_translation": false,
+          "translation": "Gemessen"
         },
         "rcv_move_collective": {
           "english": "Move the collective stick fully up and down.",
@@ -8878,13 +8914,6 @@
           "needs_translation": false,
           "translation": "Protokoll wählen"
         },
-        "rcv_range_fmt": {
-          "english": "%d - %d us",
-          "max_length": 10,
-          "needs_translation": false,
-          "reverse_text": false,
-          "translation": "%d - %d us"
-        },
         "rcv_signal_none": {
           "english": "No valid receiver signal.",
           "max_length": 30,
@@ -8913,11 +8942,10 @@
           "translation": "Standard-Kanalreihenfolge"
         },
         "rcv_sticks_text": {
-          "english": "Roll right, pitch forward, yaw right and collective up should each move its own bar to the right.",
-          "max_length": 99,
+          "english": "Each stick must reach ±100 %; if it does not, adjust the travel on the transmitter.",
+          "max_length": 83,
           "needs_translation": false,
-          "reverse_text": false,
-          "translation": "Roll rechts, Nick vor, Gier rechts und Pitch hoch bewegen jeweils ihren eigenen Balken nach rechts."
+          "translation": "Jeder Knüppel muss ±100 % erreichen; reicht der Weg nicht, am Sender justieren."
         },
         "rcv_sticks_title": {
           "english": "Check the sticks",
@@ -8932,13 +8960,6 @@
           "needs_translation": false,
           "reverse_text": false,
           "translation": "Stopp"
-        },
-        "rcv_throttle_legend": {
-          "english": "Grey marks: FC range. Band: measured travel.",
-          "max_length": 47,
-          "needs_translation": false,
-          "reverse_text": false,
-          "translation": "Graue Marken: FC-Bereich. Band: gemessener Weg."
         },
         "rcv_throttle_text": {
           "english": "Press Measure, move the throttle switch through every position, then Stop and Use.",

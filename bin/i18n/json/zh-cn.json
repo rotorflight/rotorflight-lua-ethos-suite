@@ -9028,11 +9028,10 @@
           "reverse_text": false
         },
         "rcv_sticks_text": {
-          "english": "Roll right, pitch forward, yaw right and collective up should each move its own bar to the right.",
-          "translation": "横滚向右、俯仰向前、偏航向右和总距向上，应各自让对应的条向右移动。",
+          "english": "Each stick must reach ±100 %; if it does not, adjust the travel on the transmitter.",
+          "translation": "每根摇杆都必须达到 ±100%；不够的话，请在遥控器上调整行程。",
           "needs_translation": false,
-          "max_length": 97,
-          "reverse_text": false
+          "max_length": 83
         },
         "rcv_throttle_title": {
           "english": "Throttle range",
@@ -9088,13 +9087,6 @@
           "translation": "行程不足 300 us：请从一端推到另一端。",
           "needs_translation": false,
           "max_length": 43,
-          "reverse_text": false
-        },
-        "rcv_range_fmt": {
-          "english": "%d - %d us",
-          "translation": "%d - %d us",
-          "needs_translation": false,
-          "max_length": 10,
           "reverse_text": false
         },
         "rcv_done_title": {
@@ -10455,13 +10447,6 @@
           "max_length": 4,
           "reverse_text": false
         },
-        "rcv_throttle_legend": {
-          "english": "Grey marks: FC range. Band: measured travel.",
-          "translation": "灰色标记：飞控范围。色带：实测行程。",
-          "needs_translation": false,
-          "max_length": 44,
-          "reverse_text": false
-        },
         "rcv_prepare_title": {
           "english": "Before this step",
           "translation": "开始此步骤前",
@@ -10503,6 +10488,42 @@
           "translation": "标准通道顺序",
           "needs_translation": false,
           "max_length": 22
+        },
+        "rcv_dir_forward": {
+          "english": "Forward",
+          "translation": "向前",
+          "needs_translation": false,
+          "max_length": 7
+        },
+        "rcv_dir_up": {
+          "english": "Up",
+          "translation": "向上",
+          "needs_translation": false,
+          "max_length": 2
+        },
+        "rcv_dir_back": {
+          "english": "Back",
+          "translation": "向后",
+          "needs_translation": false,
+          "max_length": 4
+        },
+        "rcv_dir_down": {
+          "english": "Down",
+          "translation": "向下",
+          "needs_translation": false,
+          "max_length": 4
+        },
+        "rcv_fc_range": {
+          "english": "FC range",
+          "translation": "FC 范围",
+          "needs_translation": false,
+          "max_length": 8
+        },
+        "rcv_measured": {
+          "english": "Measured",
+          "translation": "已测量",
+          "needs_translation": false,
+          "max_length": 8
         }
       },
       "wizards": {

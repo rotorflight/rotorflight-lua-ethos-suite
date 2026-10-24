@@ -8717,6 +8717,30 @@
           "reverse_text": false,
           "translation": "%s 其他摇杆保持不动。"
         },
+        "rcv_dir_back": {
+          "english": "Back",
+          "max_length": 4,
+          "needs_translation": false,
+          "translation": "向后"
+        },
+        "rcv_dir_down": {
+          "english": "Down",
+          "max_length": 4,
+          "needs_translation": false,
+          "translation": "向下"
+        },
+        "rcv_dir_forward": {
+          "english": "Forward",
+          "max_length": 7,
+          "needs_translation": false,
+          "translation": "向前"
+        },
+        "rcv_dir_up": {
+          "english": "Up",
+          "max_length": 2,
+          "needs_translation": false,
+          "translation": "向上"
+        },
         "rcv_done": {
           "english": "The channel order and throttle range are set.",
           "max_length": 45,
@@ -8730,6 +8754,12 @@
           "needs_translation": false,
           "reverse_text": false,
           "translation": "接收机已完成"
+        },
+        "rcv_fc_range": {
+          "english": "FC range",
+          "max_length": 8,
+          "needs_translation": false,
+          "translation": "FC 范围"
         },
         "rcv_intro": {
           "english": "The radio talks to the flight controller through this receiver. Here you set the channel order, check the sticks and set the throttle range.",
@@ -8755,6 +8785,12 @@
           "needs_translation": false,
           "reverse_text": false,
           "translation": "测量"
+        },
+        "rcv_measured": {
+          "english": "Measured",
+          "max_length": 8,
+          "needs_translation": false,
+          "translation": "已测量"
         },
         "rcv_move_collective": {
           "english": "Move the collective stick fully up and down.",
@@ -8878,13 +8914,6 @@
           "needs_translation": false,
           "translation": "选择协议"
         },
-        "rcv_range_fmt": {
-          "english": "%d - %d us",
-          "max_length": 10,
-          "needs_translation": false,
-          "reverse_text": false,
-          "translation": "%d - %d us"
-        },
         "rcv_signal_none": {
           "english": "No valid receiver signal.",
           "max_length": 25,
@@ -8913,11 +8942,10 @@
           "translation": "标准通道顺序"
         },
         "rcv_sticks_text": {
-          "english": "Roll right, pitch forward, yaw right and collective up should each move its own bar to the right.",
-          "max_length": 97,
+          "english": "Each stick must reach ±100 %; if it does not, adjust the travel on the transmitter.",
+          "max_length": 83,
           "needs_translation": false,
-          "reverse_text": false,
-          "translation": "横滚向右、俯仰向前、偏航向右和总距向上，应各自让对应的条向右移动。"
+          "translation": "每根摇杆都必须达到 ±100%；不够的话，请在遥控器上调整行程。"
         },
         "rcv_sticks_title": {
           "english": "Check the sticks",
@@ -8932,13 +8960,6 @@
           "needs_translation": false,
           "reverse_text": false,
           "translation": "停止"
-        },
-        "rcv_throttle_legend": {
-          "english": "Grey marks: FC range. Band: measured travel.",
-          "max_length": 44,
-          "needs_translation": false,
-          "reverse_text": false,
-          "translation": "灰色标记：飞控范围。色带：实测行程。"
         },
         "rcv_throttle_text": {
           "english": "Press Measure, move the throttle switch through every position, then Stop and Use.",

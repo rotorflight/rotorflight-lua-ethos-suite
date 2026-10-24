@@ -9028,11 +9028,10 @@
           "reverse_text": true
         },
         "rcv_sticks_text": {
-          "english": "Roll right, pitch forward, yaw right and collective up should each move its own bar to the right.",
-          "translation": "רול ימינה, פיץ' קדימה, יאו ימינה וקולקטיב למעלה מזיזים כל אחד את הפס שלו ימינה.",
+          "english": "Each stick must reach ±100 %; if it does not, adjust the travel on the transmitter.",
+          "translation": "כל מקל חייב להגיע ל-±100%; אם לא, יש לכוון את המהלך בשלט.",
           "needs_translation": false,
-          "max_length": 97,
-          "reverse_text": true
+          "max_length": 83
         },
         "rcv_throttle_title": {
           "english": "Throttle range",
@@ -9089,13 +9088,6 @@
           "needs_translation": false,
           "max_length": 43,
           "reverse_text": true
-        },
-        "rcv_range_fmt": {
-          "english": "%d - %d us",
-          "translation": "%d - %d us",
-          "needs_translation": false,
-          "max_length": 10,
-          "reverse_text": false
         },
         "rcv_done_title": {
           "english": "Receiver done",
@@ -10455,13 +10447,6 @@
           "max_length": 4,
           "reverse_text": false
         },
-        "rcv_throttle_legend": {
-          "english": "Grey marks: FC range. Band: measured travel.",
-          "translation": "סימנים אפורים: טווח FC. רצועה: מהלך שנמדד.",
-          "needs_translation": false,
-          "max_length": 44,
-          "reverse_text": true
-        },
         "rcv_prepare_title": {
           "english": "Before this step",
           "translation": "לפני השלב הזה",
@@ -10503,6 +10488,42 @@
           "translation": "סדר ערוצים סטנדרטי",
           "needs_translation": false,
           "max_length": 22
+        },
+        "rcv_dir_forward": {
+          "english": "Forward",
+          "translation": "קדימה",
+          "needs_translation": false,
+          "max_length": 7
+        },
+        "rcv_dir_up": {
+          "english": "Up",
+          "translation": "למעלה",
+          "needs_translation": false,
+          "max_length": 5
+        },
+        "rcv_dir_back": {
+          "english": "Back",
+          "translation": "אחורה",
+          "needs_translation": false,
+          "max_length": 5
+        },
+        "rcv_dir_down": {
+          "english": "Down",
+          "translation": "למטה",
+          "needs_translation": false,
+          "max_length": 4
+        },
+        "rcv_fc_range": {
+          "english": "FC range",
+          "translation": "טווח FC",
+          "needs_translation": false,
+          "max_length": 8
+        },
+        "rcv_measured": {
+          "english": "Measured",
+          "translation": "נמדד",
+          "needs_translation": false,
+          "max_length": 8
         }
       },
       "wizards": {

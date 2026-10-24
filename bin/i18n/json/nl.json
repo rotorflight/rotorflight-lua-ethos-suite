@@ -9028,11 +9028,10 @@
           "reverse_text": false
         },
         "rcv_sticks_text": {
-          "english": "Roll right, pitch forward, yaw right and collective up should each move its own bar to the right.",
-          "translation": "Rol rechts, pitch vooruit, yaw rechts en collectief omhoog bewegen elk hun eigen balk naar rechts.",
+          "english": "Each stick must reach ±100 %; if it does not, adjust the travel on the transmitter.",
+          "translation": "Elke stick moet ±100 % bereiken; zo niet, stel dan de uitslag op de zender in.",
           "needs_translation": false,
-          "max_length": 98,
-          "reverse_text": false
+          "max_length": 83
         },
         "rcv_throttle_title": {
           "english": "Throttle range",
@@ -9088,13 +9087,6 @@
           "translation": "Minder dan 300 us uitslag: beweeg van eind tot eind.",
           "needs_translation": false,
           "max_length": 52,
-          "reverse_text": false
-        },
-        "rcv_range_fmt": {
-          "english": "%d - %d us",
-          "translation": "%d - %d us",
-          "needs_translation": false,
-          "max_length": 10,
           "reverse_text": false
         },
         "rcv_done_title": {
@@ -10455,13 +10447,6 @@
           "max_length": 4,
           "reverse_text": false
         },
-        "rcv_throttle_legend": {
-          "english": "Grey marks: FC range. Band: measured travel.",
-          "translation": "Grijze streepjes: FC-bereik. Band: gemeten slag.",
-          "needs_translation": false,
-          "max_length": 48,
-          "reverse_text": false
-        },
         "rcv_prepare_title": {
           "english": "Before this step",
           "translation": "Vóór deze stap",
@@ -10503,6 +10488,42 @@
           "translation": "Standaard kanaalvolgorde",
           "needs_translation": false,
           "max_length": 24
+        },
+        "rcv_dir_forward": {
+          "english": "Forward",
+          "translation": "Vooruit",
+          "needs_translation": false,
+          "max_length": 7
+        },
+        "rcv_dir_up": {
+          "english": "Up",
+          "translation": "Omhoog",
+          "needs_translation": false,
+          "max_length": 6
+        },
+        "rcv_dir_back": {
+          "english": "Back",
+          "translation": "Achteruit",
+          "needs_translation": false,
+          "max_length": 9
+        },
+        "rcv_dir_down": {
+          "english": "Down",
+          "translation": "Omlaag",
+          "needs_translation": false,
+          "max_length": 6
+        },
+        "rcv_fc_range": {
+          "english": "FC range",
+          "translation": "FC-bereik",
+          "needs_translation": false,
+          "max_length": 9
+        },
+        "rcv_measured": {
+          "english": "Measured",
+          "translation": "Gemeten",
+          "needs_translation": false,
+          "max_length": 8
         }
       },
       "wizards": {

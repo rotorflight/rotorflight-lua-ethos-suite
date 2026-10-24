@@ -9028,11 +9028,10 @@
           "reverse_text": false
         },
         "rcv_sticks_text": {
-          "english": "Roll right, pitch forward, yaw right and collective up should each move its own bar to the right.",
-          "translation": "Przechylenie w prawo, pochylenie do przodu, odchylenie w prawo i kolektyw w górę przesuwają każdy swój pasek w prawo.",
+          "english": "Each stick must reach ±100 %; if it does not, adjust the travel on the transmitter.",
+          "translation": "Każdy drążek musi osiągnąć ±100 %; jeśli nie, wyreguluj skok na nadajniku.",
           "needs_translation": false,
-          "max_length": 117,
-          "reverse_text": false
+          "max_length": 83
         },
         "rcv_throttle_title": {
           "english": "Throttle range",
@@ -9088,13 +9087,6 @@
           "translation": "Zakres poniżej 300 us: przesuń od końca do końca.",
           "needs_translation": false,
           "max_length": 49,
-          "reverse_text": false
-        },
-        "rcv_range_fmt": {
-          "english": "%d - %d us",
-          "translation": "%d - %d us",
-          "needs_translation": false,
-          "max_length": 10,
           "reverse_text": false
         },
         "rcv_done_title": {
@@ -10455,13 +10447,6 @@
           "max_length": 4,
           "reverse_text": false
         },
-        "rcv_throttle_legend": {
-          "english": "Grey marks: FC range. Band: measured travel.",
-          "translation": "Szare znaczniki: zakres FC. Pasek: zmierzony skok.",
-          "needs_translation": false,
-          "max_length": 50,
-          "reverse_text": false
-        },
         "rcv_prepare_title": {
           "english": "Before this step",
           "translation": "Przed tym krokiem",
@@ -10503,6 +10488,42 @@
           "translation": "Standardowa kolejność kanałów",
           "needs_translation": false,
           "max_length": 29
+        },
+        "rcv_dir_forward": {
+          "english": "Forward",
+          "translation": "Do przodu",
+          "needs_translation": false,
+          "max_length": 9
+        },
+        "rcv_dir_up": {
+          "english": "Up",
+          "translation": "W górę",
+          "needs_translation": false,
+          "max_length": 6
+        },
+        "rcv_dir_back": {
+          "english": "Back",
+          "translation": "Do tyłu",
+          "needs_translation": false,
+          "max_length": 7
+        },
+        "rcv_dir_down": {
+          "english": "Down",
+          "translation": "W dół",
+          "needs_translation": false,
+          "max_length": 5
+        },
+        "rcv_fc_range": {
+          "english": "FC range",
+          "translation": "Zakres FC",
+          "needs_translation": false,
+          "max_length": 9
+        },
+        "rcv_measured": {
+          "english": "Measured",
+          "translation": "Zmierzono",
+          "needs_translation": false,
+          "max_length": 9
         }
       },
       "wizards": {
