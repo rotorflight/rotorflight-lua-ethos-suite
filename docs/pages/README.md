@@ -8,7 +8,7 @@ sidebar_label: Pages
 Reference documentation for each configuration and settings page reachable
 within the RFSuite Ethos system tool.
 
-**Status:** 85 reachable pages in navigation hierarchy.
+**Status:** 86 reachable pages in navigation hierarchy.
 
 The *Conditions* column names what hides, greys out or locks a page; the sentences
 and structure follow [_template.md](../_template.md).
@@ -81,6 +81,12 @@ and structure follow [_template.md](../_template.md).
 | Ramp Time | [setup/governor/time.md](setup/governor/time.md) | Greyed out until the flight controller answers. Read-only while the model is armed. | written |
 | Filters | [setup/governor/filters.md](setup/governor/filters.md) | Greyed out until the flight controller answers. Read-only while the model is armed. | written |
 | Bypass Curve | [setup/governor/curves.md](setup/governor/curves.md) | Greyed out until the flight controller answers. Read-only while the model is armed. | written |
+
+## Configuration → Wizards
+
+| Page | File | Conditions | Status |
+| --- | --- | --- | --- |
+| Model setup | [tools/setup_wizard.md](tools/setup_wizard.md) | Greyed out until the flight controller answers. Read-only while the model is armed. | written |
 
 ## System → Tools
 

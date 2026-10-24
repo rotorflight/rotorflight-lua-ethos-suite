@@ -8284,6 +8284,2201 @@
           "reverse_text": false,
           "max_length": 97
         }
+      },
+      "setup_wizard": {
+        "name": {
+          "english": "Setup Wizard",
+          "translation": "Průvodce",
+          "needs_translation": false,
+          "max_length": 12,
+          "reverse_text": false
+        },
+        "btn_next": {
+          "english": "Next",
+          "translation": "Další",
+          "needs_translation": false,
+          "max_length": 5,
+          "reverse_text": false
+        },
+        "btn_start": {
+          "english": "Start",
+          "translation": "Start",
+          "needs_translation": false,
+          "max_length": 5,
+          "reverse_text": false
+        },
+        "btn_yes": {
+          "english": "Yes",
+          "translation": "Ano",
+          "needs_translation": false,
+          "max_length": 3,
+          "reverse_text": false
+        },
+        "btn_no": {
+          "english": "No",
+          "translation": "Ne",
+          "needs_translation": false,
+          "max_length": 2,
+          "reverse_text": false
+        },
+        "btn_again": {
+          "english": "Again",
+          "translation": "Znovu",
+          "needs_translation": false,
+          "max_length": 5,
+          "reverse_text": false
+        },
+        "btn_save_restart": {
+          "english": "Save and restart",
+          "translation": "Uložit a restart",
+          "needs_translation": false,
+          "max_length": 16,
+          "reverse_text": false
+        },
+        "dir_save_next": {
+          "english": "Save and continue",
+          "translation": "Uložit a pokračovat",
+          "needs_translation": false,
+          "max_length": 19,
+          "reverse_text": false
+        },
+        "fin_button": {
+          "english": "Save and finish",
+          "translation": "Uložit a dokončit",
+          "needs_translation": false,
+          "max_length": 17,
+          "reverse_text": false
+        },
+        "reboot_wait_fmt": {
+          "english": "Reconnecting, up to %d s",
+          "translation": "Připojuji, až %d s",
+          "needs_translation": false,
+          "max_length": 24,
+          "reverse_text": false
+        },
+        "disconnected": {
+          "english": "No link to the flight controller.",
+          "translation": "Není spojení s řídicí jednotkou.",
+          "needs_translation": false,
+          "max_length": 33,
+          "reverse_text": false
+        },
+        "leave_title": {
+          "english": "Unsaved changes",
+          "translation": "Neuložené změny",
+          "needs_translation": false,
+          "max_length": 15,
+          "reverse_text": false
+        },
+        "leave_body": {
+          "english": "Save the wizard's changes to the flight controller, or discard them?",
+          "translation": "Uložit změny průvodce do řídicí jednotky, nebo je zahodit?",
+          "needs_translation": false,
+          "max_length": 68,
+          "reverse_text": false
+        },
+        "leave_save": {
+          "english": "Save",
+          "translation": "Uložit",
+          "needs_translation": false,
+          "max_length": 6,
+          "reverse_text": false
+        },
+        "leave_discard": {
+          "english": "Discard",
+          "translation": "Zahodit",
+          "needs_translation": false,
+          "max_length": 7,
+          "reverse_text": false
+        },
+        "progress_fmt": {
+          "english": "%d of %d",
+          "translation": "%d z %d",
+          "needs_translation": false,
+          "max_length": 8,
+          "reverse_text": false
+        },
+        "step_progress_fmt": {
+          "english": "Step %d of %d",
+          "translation": "Krok %d z %d",
+          "needs_translation": false,
+          "max_length": 13,
+          "reverse_text": false
+        },
+        "step_receiver": {
+          "english": "Receiver",
+          "translation": "Přijímač",
+          "needs_translation": false,
+          "max_length": 8,
+          "reverse_text": false
+        },
+        "step_finish": {
+          "english": "Finish",
+          "translation": "Dokončit",
+          "needs_translation": false,
+          "max_length": 8,
+          "reverse_text": false
+        },
+        "servo_role_fmt": {
+          "english": "Servo %d (%s)",
+          "translation": "Servo %d (%s)",
+          "needs_translation": false,
+          "max_length": 13,
+          "reverse_text": false
+        },
+        "armed": {
+          "english": "Armed: servos can't be moved.",
+          "translation": "Odjištěno: serva nelze hýbat.",
+          "needs_translation": false,
+          "max_length": 29,
+          "reverse_text": false
+        },
+        "missing_servos_fmt": {
+          "english": "Servo %s is needed for this setup, but the board has no output for it.",
+          "translation": "Servo %s je potřeba, ale deska pro něj nemá výstup.",
+          "needs_translation": false,
+          "max_length": 70,
+          "reverse_text": false
+        },
+        "reboot_skipped": {
+          "english": "A restart is still owed: go back to Connect the servos.",
+          "translation": "Chybí restart: vraťte se na Připojení serv.",
+          "needs_translation": false,
+          "max_length": 55,
+          "reverse_text": false
+        },
+        "no_swash": {
+          "english": "This step works on the swashplate servos. Pick a swashplate type first.",
+          "translation": "Tento krok pracuje se servy desky. Nejprve zvolte typ desky.",
+          "needs_translation": false,
+          "max_length": 71,
+          "reverse_text": false
+        },
+        "go_swash": {
+          "english": "Swashplate",
+          "translation": "Deska",
+          "needs_translation": false,
+          "max_length": 10,
+          "reverse_text": false
+        },
+        "step_sensors": {
+          "english": "Board orientation",
+          "translation": "Orientace desky",
+          "needs_translation": false,
+          "max_length": 17,
+          "reverse_text": false
+        },
+        "step_swash": {
+          "english": "Swashplate",
+          "translation": "Cyklická deska",
+          "needs_translation": false,
+          "max_length": 14,
+          "reverse_text": false
+        },
+        "step_servotype": {
+          "english": "Servo type",
+          "translation": "Typ serv",
+          "needs_translation": false,
+          "max_length": 10,
+          "reverse_text": false
+        },
+        "step_motor": {
+          "english": "Motor & ESC",
+          "translation": "Motor a ESC",
+          "needs_translation": false,
+          "max_length": 11,
+          "reverse_text": false
+        },
+        "step_connect": {
+          "english": "Connect servos",
+          "translation": "Připojení serv",
+          "needs_translation": false,
+          "max_length": 14,
+          "reverse_text": false
+        },
+        "step_servos": {
+          "english": "Servo centre",
+          "translation": "Střed serv",
+          "needs_translation": false,
+          "max_length": 12,
+          "reverse_text": false
+        },
+        "step_direction": {
+          "english": "Directions",
+          "translation": "Směry",
+          "needs_translation": false,
+          "max_length": 10,
+          "reverse_text": false
+        },
+        "step_level": {
+          "english": "Level swash",
+          "translation": "Vyrovnání desky",
+          "needs_translation": false,
+          "max_length": 15,
+          "reverse_text": false
+        },
+        "step_pitch": {
+          "english": "Blade pitch",
+          "translation": "Úhel listů",
+          "needs_translation": false,
+          "max_length": 11,
+          "reverse_text": false
+        },
+        "step_tail": {
+          "english": "Tail rotor",
+          "translation": "Ocasní rotor",
+          "needs_translation": false,
+          "max_length": 12,
+          "reverse_text": false
+        },
+        "step_gyro": {
+          "english": "Gyro check",
+          "translation": "Kontrola gyra",
+          "needs_translation": false,
+          "max_length": 13,
+          "reverse_text": false
+        },
+        "role_pitch": {
+          "english": "Pitch",
+          "translation": "Klopení",
+          "needs_translation": false,
+          "max_length": 7,
+          "reverse_text": false
+        },
+        "role_roll": {
+          "english": "Roll",
+          "translation": "Klonění",
+          "needs_translation": false,
+          "max_length": 7,
+          "reverse_text": false
+        },
+        "role_collective": {
+          "english": "Collective",
+          "translation": "Kolektiv",
+          "needs_translation": false,
+          "max_length": 10,
+          "reverse_text": false
+        },
+        "role_centre": {
+          "english": "Centre",
+          "translation": "Střed",
+          "needs_translation": false,
+          "max_length": 6,
+          "reverse_text": false
+        },
+        "role_left": {
+          "english": "Left",
+          "translation": "Vlevo",
+          "needs_translation": false,
+          "max_length": 5,
+          "reverse_text": false
+        },
+        "role_right": {
+          "english": "Right",
+          "translation": "Vpravo",
+          "needs_translation": false,
+          "max_length": 6,
+          "reverse_text": false
+        },
+        "role_front": {
+          "english": "Front",
+          "translation": "Vpředu",
+          "needs_translation": false,
+          "max_length": 6,
+          "reverse_text": false
+        },
+        "role_front_left": {
+          "english": "Front left",
+          "translation": "Vpředu vl.",
+          "needs_translation": false,
+          "max_length": 10,
+          "reverse_text": false
+        },
+        "role_front_right": {
+          "english": "Front right",
+          "translation": "Vpředu vpr.",
+          "needs_translation": false,
+          "max_length": 11,
+          "reverse_text": false
+        },
+        "role_tail": {
+          "english": "Tail",
+          "translation": "Ocas",
+          "needs_translation": false,
+          "max_length": 4,
+          "reverse_text": false
+        },
+        "sen_title": {
+          "english": "Board orientation",
+          "translation": "Orientace desky",
+          "needs_translation": false,
+          "max_length": 17,
+          "reverse_text": false
+        },
+        "sen_intro": {
+          "english": "Remove main and tail blades. Unplug all servos before starting.",
+          "translation": "Sundejte hlavní a ocasní listy. Před začátkem odpojte všechna serva.",
+          "needs_translation": false,
+          "max_length": 68,
+          "reverse_text": false
+        },
+        "sen_servos_unplugged": {
+          "english": "Servos unplugged",
+          "translation": "Serva odpojena",
+          "needs_translation": false,
+          "max_length": 16,
+          "reverse_text": false
+        },
+        "sen_blades_removed": {
+          "english": "All blades removed",
+          "translation": "Všechny listy sundány",
+          "needs_translation": false,
+          "max_length": 21,
+          "reverse_text": false
+        },
+        "art_side": {
+          "english": "Side view",
+          "translation": "Boční pohled",
+          "needs_translation": false,
+          "max_length": 12,
+          "reverse_text": false
+        },
+        "art_front": {
+          "english": "Front",
+          "translation": "Předek",
+          "needs_translation": false,
+          "max_length": 6,
+          "reverse_text": false
+        },
+        "sen_no_acc": {
+          "english": "This board has no accelerometer: set the orientation on the Alignment page.",
+          "translation": "Deska nemá akcelerometr: nastavte orientaci na stránce Zarovnání.",
+          "needs_translation": false,
+          "max_length": 75,
+          "reverse_text": false
+        },
+        "sen_acc_title": {
+          "english": "Calibrate the accelerometer",
+          "translation": "Kalibrace akcelerometru",
+          "needs_translation": false,
+          "max_length": 27,
+          "reverse_text": false
+        },
+        "sen_acc_text": {
+          "english": "Stand the helicopter on its skids on a level surface and keep it still.",
+          "translation": "Postavte vrtulník na ližiny na rovnou plochu a držte ho v klidu.",
+          "needs_translation": false,
+          "max_length": 71,
+          "reverse_text": false
+        },
+        "sen_accelerometer": {
+          "english": "Accelerometer",
+          "translation": "Akcelerometr",
+          "needs_translation": false,
+          "max_length": 13,
+          "reverse_text": false
+        },
+        "sen_available": {
+          "english": "Available",
+          "translation": "K dispozici",
+          "needs_translation": false,
+          "max_length": 11,
+          "reverse_text": false
+        },
+        "sen_acc_busy": {
+          "english": "Calibrating... keep it still.",
+          "translation": "Kalibrace... nehýbat.",
+          "needs_translation": false,
+          "max_length": 29,
+          "reverse_text": false
+        },
+        "sen_acc_done": {
+          "english": "Accelerometer calibrated.",
+          "translation": "Akcelerometr zkalibrován.",
+          "needs_translation": false,
+          "max_length": 25,
+          "reverse_text": false
+        },
+        "sen_acc_failed": {
+          "english": "Calibration failed. Keep the model still and try again.",
+          "translation": "Kalibrace selhala. Nehýbejte modelem a zkuste znovu.",
+          "needs_translation": false,
+          "max_length": 55,
+          "reverse_text": false
+        },
+        "sen_calibrate": {
+          "english": "Calibrate accelerometer",
+          "translation": "Kalibrovat akcelerometr",
+          "needs_translation": false,
+          "max_length": 23,
+          "reverse_text": false
+        },
+        "sen_align_title": {
+          "english": "Board orientation",
+          "translation": "Orientace desky",
+          "needs_translation": false,
+          "max_length": 17,
+          "reverse_text": false
+        },
+        "sen_align_text": {
+          "english": "Keep level, start detection, then lift the tail about 20 degrees.",
+          "translation": "Držte vodorovně, spusťte detekci, pak zvedněte ocas asi o 20 stupňů.",
+          "needs_translation": false,
+          "max_length": 68,
+          "reverse_text": false
+        },
+        "sen_auto_align": {
+          "english": "Detect board orientation",
+          "translation": "Zjistit orientaci desky",
+          "needs_translation": false,
+          "max_length": 24,
+          "reverse_text": false
+        },
+        "sen_roll": {
+          "english": "Roll",
+          "translation": "Klonění",
+          "needs_translation": false,
+          "max_length": 7,
+          "reverse_text": false
+        },
+        "sen_pitch": {
+          "english": "Pitch",
+          "translation": "Klopení",
+          "needs_translation": false,
+          "max_length": 7,
+          "reverse_text": false
+        },
+        "sen_yaw": {
+          "english": "Yaw",
+          "translation": "Bočení",
+          "needs_translation": false,
+          "max_length": 6,
+          "reverse_text": false
+        },
+        "sen_align_lift": {
+          "english": "Lift the tail 20 degrees and hold it still...",
+          "translation": "Zvedněte ocas o 20 stupňů a držte v klidu...",
+          "needs_translation": false,
+          "max_length": 45,
+          "reverse_text": false
+        },
+        "sen_align_done_fmt": {
+          "english": "Found: roll %d, pitch %d, yaw %d degrees.",
+          "translation": "Zjištěno: klonění %d, klopení %d, bočení %d stupňů.",
+          "needs_translation": false,
+          "max_length": 51,
+          "reverse_text": false
+        },
+        "sen_rejected_armed": {
+          "english": "Refused: the model is armed.",
+          "translation": "Odmítnuto: model je odjištěn.",
+          "needs_translation": false,
+          "max_length": 29,
+          "reverse_text": false
+        },
+        "sen_rejected_uncal": {
+          "english": "Calibrate the accelerometer first.",
+          "translation": "Nejprve kalibrujte akcelerometr.",
+          "needs_translation": false,
+          "max_length": 34,
+          "reverse_text": false
+        },
+        "sen_timeout": {
+          "english": "Timed out. Lift the tail a little further and try again.",
+          "translation": "Vypršel čas. Zvedněte ocas o něco výš a zkuste znovu.",
+          "needs_translation": false,
+          "max_length": 56,
+          "reverse_text": false
+        },
+        "sen_no_match": {
+          "english": "No orientation matched. Lift the tail straight up and try again.",
+          "translation": "Žádná orientace nesouhlasí. Zvedněte ocas přímo nahoru a zkuste znovu.",
+          "needs_translation": false,
+          "max_length": 70,
+          "reverse_text": false
+        },
+        "sen_unsupported": {
+          "english": "This firmware cannot find the orientation: set it on the Alignment page.",
+          "translation": "Tento firmware neumí zjistit orientaci: nastavte ji na stránce Zarovnání.",
+          "needs_translation": false,
+          "max_length": 73,
+          "reverse_text": false
+        },
+        "sen_check_title": {
+          "english": "Check orientation",
+          "translation": "Kontrola orientace",
+          "needs_translation": false,
+          "max_length": 18,
+          "reverse_text": false
+        },
+        "sen_check_text": {
+          "english": "Tilt the helicopter left/right and nose down/up: the picture must follow every movement.",
+          "translation": "Nakloňte vrtulník doleva/doprava a nosem dolů/nahoru: obrázek musí sledovat každý pohyb.",
+          "needs_translation": false,
+          "max_length": 88,
+          "reverse_text": false
+        },
+        "sen_direction_ok": {
+          "english": "Direction is correct",
+          "translation": "Směr je správný",
+          "needs_translation": false,
+          "max_length": 20,
+          "reverse_text": false
+        },
+        "sen_attitude_waiting": {
+          "english": "Waiting for live attitude...",
+          "translation": "Čekám na aktuální polohu...",
+          "needs_translation": false,
+          "max_length": 28,
+          "reverse_text": false
+        },
+        "sen_done_restart": {
+          "english": "The new orientation applies after a restart. Restart now to check it, or Next: the restart then follows at the Connect the servos step.",
+          "translation": "Nová orientace platí až po restartu. Restartujte nyní a zkontrolujte ji, nebo Další: restart pak proběhne v kroku Připojení serv.",
+          "needs_translation": false,
+          "max_length": 135,
+          "reverse_text": false
+        },
+        "rcv_title": {
+          "english": "Receiver",
+          "translation": "Přijímač",
+          "needs_translation": false,
+          "max_length": 8,
+          "reverse_text": false
+        },
+        "rcv_intro": {
+          "english": "The radio talks to the flight controller through this receiver, so its protocol and port are set in the Configurator. Here you set the channel order, check the sticks and set the throttle range.",
+          "translation": "Vysílač komunikuje s řídicí jednotkou přes tento přijímač; protokol a port se nastavují v Configuratoru. Zde nastavíte pořadí kanálů, ověříte páky a rozsah plynu.",
+          "needs_translation": false,
+          "max_length": 194,
+          "reverse_text": false
+        },
+        "rcv_signal_ok": {
+          "english": "Receiver signal: OK",
+          "translation": "Signál přijímače: OK",
+          "needs_translation": false,
+          "max_length": 20,
+          "reverse_text": false
+        },
+        "rcv_signal_none": {
+          "english": "No valid receiver signal.",
+          "translation": "Žádný platný signál přijímače.",
+          "needs_translation": false,
+          "max_length": 30,
+          "reverse_text": false
+        },
+        "rcv_order_title": {
+          "english": "Channel order",
+          "translation": "Pořadí kanálů",
+          "needs_translation": false,
+          "max_length": 13,
+          "reverse_text": false
+        },
+        "rcv_order_text": {
+          "english": "Each bar should follow its own stick. If not, pick a preset or detect the order.",
+          "translation": "Každý pruh má sledovat svou páku. Pokud ne, vyberte předvolbu nebo zjistěte pořadí.",
+          "needs_translation": false,
+          "max_length": 83,
+          "reverse_text": false
+        },
+        "rcv_order_now_fmt": {
+          "english": "Now: %s.",
+          "translation": "Nyní: %s.",
+          "needs_translation": false,
+          "max_length": 9,
+          "reverse_text": false
+        },
+        "rcv_custom": {
+          "english": "Custom",
+          "translation": "Vlastní",
+          "needs_translation": false,
+          "max_length": 7,
+          "reverse_text": false
+        },
+        "rcv_preset_elrs": {
+          "english": "ELRS",
+          "translation": "ELRS",
+          "needs_translation": false,
+          "max_length": 4,
+          "reverse_text": false
+        },
+        "rcv_preset_frsky": {
+          "english": "FrSky",
+          "translation": "FrSky",
+          "needs_translation": false,
+          "max_length": 5,
+          "reverse_text": false
+        },
+        "rcv_preset_futaba": {
+          "english": "Futaba/Hitec",
+          "translation": "Futaba/Hitec",
+          "needs_translation": false,
+          "max_length": 12,
+          "reverse_text": false
+        },
+        "rcv_preset_spektrum": {
+          "english": "Spektrum/JR",
+          "translation": "Spektrum/JR",
+          "needs_translation": false,
+          "max_length": 11,
+          "reverse_text": false
+        },
+        "rcv_detect": {
+          "english": "Detect",
+          "translation": "Zjistit",
+          "needs_translation": false,
+          "max_length": 7,
+          "reverse_text": false
+        },
+        "rcv_detect_text_fmt": {
+          "english": "%s Leave the other sticks still.",
+          "translation": "%s Ostatními pákami nehýbejte.",
+          "needs_translation": false,
+          "max_length": 32,
+          "reverse_text": false
+        },
+        "rcv_detect_done": {
+          "english": "Channel order set from the sticks.",
+          "translation": "Pořadí kanálů nastaveno podle pák.",
+          "needs_translation": false,
+          "max_length": 34,
+          "reverse_text": false
+        },
+        "rcv_skip": {
+          "english": "Skip",
+          "translation": "Přeskočit",
+          "needs_translation": false,
+          "max_length": 9,
+          "reverse_text": false
+        },
+        "rcv_move_roll": {
+          "english": "Move the roll stick fully left and right.",
+          "translation": "Pohněte pákou klonění naplno vlevo a vpravo.",
+          "needs_translation": false,
+          "max_length": 44,
+          "reverse_text": false
+        },
+        "rcv_move_pitch": {
+          "english": "Move the pitch stick fully forward and back.",
+          "translation": "Pohněte pákou klopení naplno dopředu a dozadu.",
+          "needs_translation": false,
+          "max_length": 46,
+          "reverse_text": false
+        },
+        "rcv_move_yaw": {
+          "english": "Move the yaw stick fully left and right.",
+          "translation": "Pohněte pákou bočení naplno vlevo a vpravo.",
+          "needs_translation": false,
+          "max_length": 43,
+          "reverse_text": false
+        },
+        "rcv_move_collective": {
+          "english": "Move the collective stick fully up and down.",
+          "translation": "Pohněte pákou kolektivu naplno nahoru a dolů.",
+          "needs_translation": false,
+          "max_length": 45,
+          "reverse_text": false
+        },
+        "rcv_move_throttle": {
+          "english": "Flip the throttle switch, or move the throttle, end to end.",
+          "translation": "Přepněte spínač plynu, nebo plyn posuňte z kraje na kraj.",
+          "needs_translation": false,
+          "max_length": 59,
+          "reverse_text": false
+        },
+        "rcv_ch_roll": {
+          "english": "Roll",
+          "translation": "Klonění",
+          "needs_translation": false,
+          "max_length": 7,
+          "reverse_text": false
+        },
+        "rcv_ch_pitch": {
+          "english": "Pitch",
+          "translation": "Klopení",
+          "needs_translation": false,
+          "max_length": 7,
+          "reverse_text": false
+        },
+        "rcv_ch_yaw": {
+          "english": "Yaw",
+          "translation": "Bočení",
+          "needs_translation": false,
+          "max_length": 6,
+          "reverse_text": false
+        },
+        "rcv_ch_collective": {
+          "english": "Collective",
+          "translation": "Kolektiv",
+          "needs_translation": false,
+          "max_length": 10,
+          "reverse_text": false
+        },
+        "rcv_ch_throttle": {
+          "english": "Throttle",
+          "translation": "Plyn",
+          "needs_translation": false,
+          "max_length": 8,
+          "reverse_text": false
+        },
+        "rcv_sticks_title": {
+          "english": "Check the sticks",
+          "translation": "Kontrola pák",
+          "needs_translation": false,
+          "max_length": 16,
+          "reverse_text": false
+        },
+        "rcv_sticks_text": {
+          "english": "Roll right, pitch forward, yaw right and collective up should each move its own bar to the right.",
+          "translation": "Klonění vpravo, klopení vpřed, bočení vpravo a kolektiv nahoru posunou každý svůj pruh doprava.",
+          "needs_translation": false,
+          "max_length": 97,
+          "reverse_text": false
+        },
+        "rcv_throttle_title": {
+          "english": "Throttle range",
+          "translation": "Rozsah plynu",
+          "needs_translation": false,
+          "max_length": 14,
+          "reverse_text": false
+        },
+        "rcv_throttle_text": {
+          "english": "Press Measure, move the throttle switch through every position, then Stop and Use.",
+          "translation": "Stiskněte Měřit, projděte spínačem plynu všechny polohy, pak Stop a Použít.",
+          "needs_translation": false,
+          "max_length": 82,
+          "reverse_text": false
+        },
+        "rcv_blades_off": {
+          "english": "Keep the blades off: the motor may start.",
+          "translation": "Listy nechte sundané: motor se může roztočit.",
+          "needs_translation": false,
+          "max_length": 45,
+          "reverse_text": false
+        },
+        "rcv_measure": {
+          "english": "Measure",
+          "translation": "Měřit",
+          "needs_translation": false,
+          "max_length": 7,
+          "reverse_text": false
+        },
+        "rcv_stop": {
+          "english": "Stop",
+          "translation": "Stop",
+          "needs_translation": false,
+          "max_length": 4,
+          "reverse_text": false
+        },
+        "rcv_use": {
+          "english": "Use",
+          "translation": "Použít",
+          "needs_translation": false,
+          "max_length": 6,
+          "reverse_text": false
+        },
+        "rcv_defaults": {
+          "english": "Defaults",
+          "translation": "Výchozí",
+          "needs_translation": false,
+          "max_length": 8,
+          "reverse_text": false
+        },
+        "rcv_too_short": {
+          "english": "Under 300 us of travel: move it end to end.",
+          "translation": "Rozsah pod 300 us: posuňte z kraje na kraj.",
+          "needs_translation": false,
+          "max_length": 43,
+          "reverse_text": false
+        },
+        "rcv_range_fmt": {
+          "english": "%d - %d us",
+          "translation": "%d - %d us",
+          "needs_translation": false,
+          "max_length": 10,
+          "reverse_text": false
+        },
+        "rcv_done_title": {
+          "english": "Receiver done",
+          "translation": "Přijímač hotov",
+          "needs_translation": false,
+          "max_length": 14,
+          "reverse_text": false
+        },
+        "rcv_done": {
+          "english": "The channel order and throttle range are set.",
+          "translation": "Pořadí kanálů a rozsah plynu jsou nastaveny.",
+          "needs_translation": false,
+          "max_length": 45,
+          "reverse_text": false
+        },
+        "swa_type_title": {
+          "english": "Swashplate type",
+          "translation": "Typ desky",
+          "needs_translation": false,
+          "max_length": 15,
+          "reverse_text": false
+        },
+        "swa_type_text": {
+          "english": "How are the swash servos laid out? 120 degrees is the most common.",
+          "translation": "Jak jsou rozmístěna serva desky? Nejběžnější je 120 stupňů.",
+          "needs_translation": false,
+          "max_length": 66,
+          "reverse_text": false
+        },
+        "swa_current_fmt": {
+          "english": "Now: %s",
+          "translation": "Nyní: %s",
+          "needs_translation": false,
+          "max_length": 8,
+          "reverse_text": false
+        },
+        "swa_show_text": {
+          "english": "The servos sit here, seen from above with the nose at the top. Servo numbers are the FC outputs.",
+          "translation": "Serva jsou zde, při pohledu shora s nosem nahoře. Čísla serv jsou výstupy FC.",
+          "needs_translation": false,
+          "max_length": 96,
+          "reverse_text": false
+        },
+        "swa_from_above": {
+          "english": "Seen from above, nose at the top",
+          "translation": "Pohled shora, nos nahoře",
+          "needs_translation": false,
+          "max_length": 32,
+          "reverse_text": false
+        },
+        "swa_dir_title": {
+          "english": "Main rotor direction",
+          "translation": "Směr hlavního rotoru",
+          "needs_translation": false,
+          "max_length": 20,
+          "reverse_text": false
+        },
+        "swa_dir_text": {
+          "english": "Seen from above, which way do the main blades turn?",
+          "translation": "Při pohledu shora, kterým směrem se točí hlavní listy?",
+          "needs_translation": false,
+          "max_length": 54,
+          "reverse_text": false
+        },
+        "swa_cw": {
+          "english": "Clockwise",
+          "translation": "Po směru",
+          "needs_translation": false,
+          "max_length": 9,
+          "reverse_text": false
+        },
+        "swa_ccw": {
+          "english": "Counter-CW",
+          "translation": "Proti směru",
+          "needs_translation": false,
+          "max_length": 11,
+          "reverse_text": false
+        },
+        "swa_tail_title": {
+          "english": "Tail type",
+          "translation": "Typ ocasu",
+          "needs_translation": false,
+          "max_length": 9,
+          "reverse_text": false
+        },
+        "swa_tail_text": {
+          "english": "A pitch tail uses a servo. A motor tail spins its own motor, one way or both ways.",
+          "translation": "Ocas s řízením úhlu používá servo. Motorový ocas točí vlastní motor, jedním či oběma směry.",
+          "needs_translation": false,
+          "max_length": 91,
+          "reverse_text": false
+        },
+        "swa_tail_variable": {
+          "english": "Pitch (servo)",
+          "translation": "Úhel (servo)",
+          "needs_translation": false,
+          "max_length": 13,
+          "reverse_text": false
+        },
+        "swa_tail_motor": {
+          "english": "Motor",
+          "translation": "Motor",
+          "needs_translation": false,
+          "max_length": 5,
+          "reverse_text": false
+        },
+        "swa_tail_bidir": {
+          "english": "Motor, 2-way",
+          "translation": "Motor, 2 směry",
+          "needs_translation": false,
+          "max_length": 14,
+          "reverse_text": false
+        },
+        "swa_pin_move": {
+          "english": "Moves on save",
+          "translation": "Změní se uložením",
+          "needs_translation": false,
+          "max_length": 17,
+          "reverse_text": false
+        },
+        "swa_pin_stuck": {
+          "english": "Set in Mixer",
+          "translation": "Nastavit v Mixéru",
+          "needs_translation": false,
+          "max_length": 17,
+          "reverse_text": false
+        },
+        "swa_restart": {
+          "english": "Applies after the restart at the Connect step.",
+          "translation": "Platí po restartu v kroku Připojení.",
+          "needs_translation": false,
+          "max_length": 46,
+          "reverse_text": false
+        },
+        "swa_done_title": {
+          "english": "Swashplate set",
+          "translation": "Deska nastavena",
+          "needs_translation": false,
+          "max_length": 15,
+          "reverse_text": false
+        },
+        "swa_row_type": {
+          "english": "Swash type",
+          "translation": "Typ desky",
+          "needs_translation": false,
+          "max_length": 10,
+          "reverse_text": false
+        },
+        "swa_row_dir": {
+          "english": "Rotor",
+          "translation": "Rotor",
+          "needs_translation": false,
+          "max_length": 5,
+          "reverse_text": false
+        },
+        "swa_row_tail": {
+          "english": "Tail",
+          "translation": "Ocas",
+          "needs_translation": false,
+          "max_length": 4,
+          "reverse_text": false
+        },
+        "swa_row_pin": {
+          "english": "Tail pin",
+          "translation": "Pin ocasu",
+          "needs_translation": false,
+          "max_length": 9,
+          "reverse_text": false
+        },
+        "swa_pin_servo": {
+          "english": "Servo 4",
+          "translation": "Servo 4",
+          "needs_translation": false,
+          "max_length": 7,
+          "reverse_text": false
+        },
+        "swa_pin_motor": {
+          "english": "Motor 2",
+          "translation": "Motor 2",
+          "needs_translation": false,
+          "max_length": 7,
+          "reverse_text": false
+        },
+        "swa_pin_both": {
+          "english": "Own pin",
+          "translation": "Vlastní pin",
+          "needs_translation": false,
+          "max_length": 11,
+          "reverse_text": false
+        },
+        "swa_pin_none": {
+          "english": "None",
+          "translation": "Žádný",
+          "needs_translation": false,
+          "max_length": 5,
+          "reverse_text": false
+        },
+        "swa_direct": {
+          "english": "Direct",
+          "translation": "Přímé",
+          "needs_translation": false,
+          "max_length": 6,
+          "reverse_text": false
+        },
+        "sty_intro": {
+          "english": "Pick the servo type. It sets the update rate and the centre pulse.",
+          "translation": "Zvolte typ serv. Určuje obnovovací frekvenci a střední impuls.",
+          "needs_translation": false,
+          "max_length": 66,
+          "reverse_text": false
+        },
+        "sty_unplugged": {
+          "english": "Keep the servos unplugged until the Connect step.",
+          "translation": "Serva nechte odpojená až do kroku Připojení.",
+          "needs_translation": false,
+          "max_length": 49,
+          "reverse_text": false
+        },
+        "sty_swash_title": {
+          "english": "Cyclic servos",
+          "translation": "Cyklická serva",
+          "needs_translation": false,
+          "max_length": 14,
+          "reverse_text": false
+        },
+        "sty_tail_title": {
+          "english": "Tail servo",
+          "translation": "Ocasní servo",
+          "needs_translation": false,
+          "max_length": 12,
+          "reverse_text": false
+        },
+        "sty_custom": {
+          "english": "Custom",
+          "translation": "Vlastní",
+          "needs_translation": false,
+          "max_length": 7,
+          "reverse_text": false
+        },
+        "sty_mixed": {
+          "english": "Mixed",
+          "translation": "Smíšené",
+          "needs_translation": false,
+          "max_length": 7,
+          "reverse_text": false
+        },
+        "sty_analog": {
+          "english": "Analog",
+          "translation": "Analogové",
+          "needs_translation": false,
+          "max_length": 9,
+          "reverse_text": false
+        },
+        "sty_digital": {
+          "english": "Digital",
+          "translation": "Digitální",
+          "needs_translation": false,
+          "max_length": 9,
+          "reverse_text": false
+        },
+        "sty_narrow": {
+          "english": "Narrow",
+          "translation": "Narrow",
+          "needs_translation": false,
+          "max_length": 6,
+          "reverse_text": false
+        },
+        "sty_row_type": {
+          "english": "Type",
+          "translation": "Typ",
+          "needs_translation": false,
+          "max_length": 4,
+          "reverse_text": false
+        },
+        "sty_hz_fmt": {
+          "english": "%d Hz",
+          "translation": "%d Hz",
+          "needs_translation": false,
+          "max_length": 5,
+          "reverse_text": false
+        },
+        "sty_us_fmt": {
+          "english": "%d us",
+          "translation": "%d us",
+          "needs_translation": false,
+          "max_length": 5,
+          "reverse_text": false
+        },
+        "mot_title": {
+          "english": "ESC protocol",
+          "translation": "Protokol ESC",
+          "needs_translation": false,
+          "max_length": 12,
+          "reverse_text": false
+        },
+        "mot_intro": {
+          "english": "How does the FC talk to the ESC? Use PWM if unsure. Blades off.",
+          "translation": "Jak FC komunikuje s ESC? Pokud si nejste jisti, použijte PWM. Bez listů.",
+          "needs_translation": false,
+          "max_length": 72,
+          "reverse_text": false
+        },
+        "mot_other": {
+          "english": "Keep %s",
+          "translation": "Ponechat %s",
+          "needs_translation": false,
+          "max_length": 11,
+          "reverse_text": false
+        },
+        "mot_poles": {
+          "english": "Motor poles",
+          "translation": "Póly motoru",
+          "needs_translation": false,
+          "max_length": 11,
+          "reverse_text": false
+        },
+        "mot_poles_text": {
+          "english": "Magnet poles of the main motor, from its data sheet (often 10 or 12).",
+          "translation": "Počet magnetických pólů hlavního motoru podle datového listu (často 10 nebo 12).",
+          "needs_translation": false,
+          "max_length": 80,
+          "reverse_text": false
+        },
+        "mot_pinion": {
+          "english": "Pinion teeth",
+          "translation": "Zuby pastorku",
+          "needs_translation": false,
+          "max_length": 13,
+          "reverse_text": false
+        },
+        "mot_pinion_text": {
+          "english": "Teeth on the motor pinion.",
+          "translation": "Počet zubů pastorku motoru.",
+          "needs_translation": false,
+          "max_length": 27,
+          "reverse_text": false
+        },
+        "mot_main_gear": {
+          "english": "Main gear teeth",
+          "translation": "Zuby hl. kola",
+          "needs_translation": false,
+          "max_length": 15,
+          "reverse_text": false
+        },
+        "mot_main_gear_text": {
+          "english": "Teeth on the main gear.",
+          "translation": "Počet zubů hlavního ozubeného kola.",
+          "needs_translation": false,
+          "max_length": 35,
+          "reverse_text": false
+        },
+        "mot_tail_in": {
+          "english": "Tail gear in",
+          "translation": "Ocas. kolo vstup",
+          "needs_translation": false,
+          "max_length": 16,
+          "reverse_text": false
+        },
+        "mot_tail_in_text": {
+          "english": "Teeth on the tail drive gear at the main shaft (or its pulley).",
+          "translation": "Zuby kola pohonu ocasu na hlavní hřídeli (nebo jeho řemenice).",
+          "needs_translation": false,
+          "max_length": 63,
+          "reverse_text": false
+        },
+        "mot_tail_out": {
+          "english": "Tail gear out",
+          "translation": "Ocas. kolo výstup",
+          "needs_translation": false,
+          "max_length": 17,
+          "reverse_text": false
+        },
+        "mot_tail_out_text": {
+          "english": "Teeth on the tail rotor shaft gear (or its pulley).",
+          "translation": "Zuby kola na hřídeli ocasního rotoru (nebo jeho řemenice).",
+          "needs_translation": false,
+          "max_length": 58,
+          "reverse_text": false
+        },
+        "mot_ratio_fmt": {
+          "english": "%.2f:1",
+          "translation": "%.2f:1",
+          "needs_translation": false,
+          "max_length": 6,
+          "reverse_text": false
+        },
+        "mot_main_ratio": {
+          "english": "Main ratio",
+          "translation": "Převod hl.",
+          "needs_translation": false,
+          "max_length": 10,
+          "reverse_text": false
+        },
+        "mot_tail_ratio": {
+          "english": "Tail ratio",
+          "translation": "Převod ocasu",
+          "needs_translation": false,
+          "max_length": 12,
+          "reverse_text": false
+        },
+        "mot_protocol": {
+          "english": "Protocol",
+          "translation": "Protokol",
+          "needs_translation": false,
+          "max_length": 8,
+          "reverse_text": false
+        },
+        "mot_done_title": {
+          "english": "Motor & ESC set",
+          "translation": "Motor a ESC hotovo",
+          "needs_translation": false,
+          "max_length": 18,
+          "reverse_text": false
+        },
+        "con_title": {
+          "english": "Connect the servos",
+          "translation": "Připojení serv",
+          "needs_translation": false,
+          "max_length": 18,
+          "reverse_text": false
+        },
+        "con_reboot": {
+          "english": "Keep the servos unplugged. Save and restart now, so the new outputs take effect before anything moves.",
+          "translation": "Serva nechte odpojená. Nyní uložte a restartujte, aby nové výstupy platily dřív, než se cokoli pohne.",
+          "needs_translation": false,
+          "max_length": 102,
+          "reverse_text": false
+        },
+        "con_plug": {
+          "english": "Plug the servos in now and power them.",
+          "translation": "Nyní serva připojte a zapněte napájení.",
+          "needs_translation": false,
+          "max_length": 39,
+          "reverse_text": false
+        },
+        "con_blades": {
+          "english": "Blades stay off, and keep clear of the motor.",
+          "translation": "Listy zůstávají sundané; držte se od motoru.",
+          "needs_translation": false,
+          "max_length": 45,
+          "reverse_text": false
+        },
+        "con_main_motor": {
+          "english": "Main motor",
+          "translation": "Hlavní motor",
+          "needs_translation": false,
+          "max_length": 12,
+          "reverse_text": false
+        },
+        "con_tail_motor": {
+          "english": "Tail motor",
+          "translation": "Ocasní motor",
+          "needs_translation": false,
+          "max_length": 12,
+          "reverse_text": false
+        },
+        "con_ok": {
+          "english": "OK",
+          "translation": "OK",
+          "needs_translation": false,
+          "max_length": 2,
+          "reverse_text": false
+        },
+        "con_missing": {
+          "english": "Missing",
+          "translation": "Chybí",
+          "needs_translation": false,
+          "max_length": 7,
+          "reverse_text": false
+        },
+        "con_checking": {
+          "english": "Checking",
+          "translation": "Kontrola",
+          "needs_translation": false,
+          "max_length": 8,
+          "reverse_text": false
+        },
+        "con_servo_missing": {
+          "english": "Some servos are missing: check the outputs and the swash type.",
+          "translation": "Některá serva chybí: zkontrolujte výstupy a typ desky.",
+          "needs_translation": false,
+          "max_length": 62,
+          "reverse_text": false
+        },
+        "srv_test_text": {
+          "english": "The servo is held 20 degrees up.",
+          "translation": "Servo je drženo 20 stupňů nahoru.",
+          "needs_translation": false,
+          "max_length": 33,
+          "reverse_text": false
+        },
+        "srv_test_q": {
+          "english": "Did the arm move up, towards the swash?",
+          "translation": "Pohnula se páka nahoru, k desce?",
+          "needs_translation": false,
+          "max_length": 39,
+          "reverse_text": false
+        },
+        "srv_reversed": {
+          "english": "Reversed. Check the arm moved up now.",
+          "translation": "Obráceno. Ověřte, že páka teď jde nahoru.",
+          "needs_translation": false,
+          "max_length": 41,
+          "reverse_text": false
+        },
+        "srv_up": {
+          "english": "Yes, up",
+          "translation": "Ano, nahoru",
+          "needs_translation": false,
+          "max_length": 11,
+          "reverse_text": false
+        },
+        "srv_down": {
+          "english": "No, down",
+          "translation": "Ne, dolů",
+          "needs_translation": false,
+          "max_length": 8,
+          "reverse_text": false
+        },
+        "srv_centre_text": {
+          "english": "Nudge the centre until the servo arm is level.",
+          "translation": "Dolaďte střed, až bude páka serva vodorovně.",
+          "needs_translation": false,
+          "max_length": 46,
+          "reverse_text": false
+        },
+        "srv_tail_text": {
+          "english": "Nudge the centre until the tail servo arm is at 90 degrees to the pushrod.",
+          "translation": "Dolaďte střed, až bude páka ocasního serva v 90 stupních k táhlu.",
+          "needs_translation": false,
+          "max_length": 74,
+          "reverse_text": false
+        },
+        "srv_value_fmt": {
+          "english": "Centre %d us (%s).",
+          "translation": "Střed %d us (%s).",
+          "needs_translation": false,
+          "max_length": 18,
+          "reverse_text": false
+        },
+        "srv_far": {
+          "english": "Far from centre: move the arm a spline instead.",
+          "translation": "Daleko od středu: přesaďte páku o zub drážkování.",
+          "needs_translation": false,
+          "max_length": 49,
+          "reverse_text": false
+        },
+        "srv_done_title": {
+          "english": "Servos set",
+          "translation": "Serva hotova",
+          "needs_translation": false,
+          "max_length": 12,
+          "reverse_text": false
+        },
+        "srv_done": {
+          "english": "Every servo moves the right way and is centred.",
+          "translation": "Všechna serva jdou správným směrem a jsou vystředěna.",
+          "needs_translation": false,
+          "max_length": 53,
+          "reverse_text": false
+        },
+        "dir_title": {
+          "english": "Control directions",
+          "translation": "Směry řízení",
+          "needs_translation": false,
+          "max_length": 18,
+          "reverse_text": false
+        },
+        "dir_intro": {
+          "english": "The sticks now drive the swash directly, without the gyro. Move each stick as asked and watch the swash.",
+          "translation": "Páky teď ovládají desku přímo, bez gyra. Pohněte každou pákou podle pokynu a sledujte desku.",
+          "needs_translation": false,
+          "max_length": 104,
+          "reverse_text": false
+        },
+        "dir_q": {
+          "english": "Does the swash move as shown?",
+          "translation": "Pohybuje se deska podle obrázku?",
+          "needs_translation": false,
+          "max_length": 32,
+          "reverse_text": false
+        },
+        "dir_reversed": {
+          "english": "Reversed. Check it again.",
+          "translation": "Obráceno. Zkontrolujte znovu.",
+          "needs_translation": false,
+          "max_length": 29,
+          "reverse_text": false
+        },
+        "dir_correct": {
+          "english": "Correct",
+          "translation": "Správně",
+          "needs_translation": false,
+          "max_length": 7,
+          "reverse_text": false
+        },
+        "dir_wrong": {
+          "english": "Wrong",
+          "translation": "Špatně",
+          "needs_translation": false,
+          "max_length": 6,
+          "reverse_text": false
+        },
+        "dir_roll_title": {
+          "english": "Roll",
+          "translation": "Klonění",
+          "needs_translation": false,
+          "max_length": 7,
+          "reverse_text": false
+        },
+        "dir_roll": {
+          "english": "Push the roll stick right. The swash should tilt right.",
+          "translation": "Dejte páku klonění vpravo. Deska se má naklonit vpravo.",
+          "needs_translation": false,
+          "max_length": 55,
+          "reverse_text": false
+        },
+        "dir_pitch_title": {
+          "english": "Pitch",
+          "translation": "Klopení",
+          "needs_translation": false,
+          "max_length": 7,
+          "reverse_text": false
+        },
+        "dir_pitch": {
+          "english": "Push the pitch stick forward. The swash should tilt forward.",
+          "translation": "Dejte páku klopení dopředu. Deska se má naklonit dopředu.",
+          "needs_translation": false,
+          "max_length": 60,
+          "reverse_text": false
+        },
+        "dir_coll_title": {
+          "english": "Collective",
+          "translation": "Kolektiv",
+          "needs_translation": false,
+          "max_length": 10,
+          "reverse_text": false
+        },
+        "dir_coll": {
+          "english": "Raise the collective stick. The whole swash should move up.",
+          "translation": "Zvedněte páku kolektivu. Celá deska se má posunout nahoru.",
+          "needs_translation": false,
+          "max_length": 59,
+          "reverse_text": false
+        },
+        "dir_done_title": {
+          "english": "Directions set",
+          "translation": "Směry hotovy",
+          "needs_translation": false,
+          "max_length": 14,
+          "reverse_text": false
+        },
+        "dir_done": {
+          "english": "Roll, pitch and collective move the right way.",
+          "translation": "Klonění, klopení a kolektiv jdou správným směrem.",
+          "needs_translation": false,
+          "max_length": 49,
+          "reverse_text": false
+        },
+        "lvl_title": {
+          "english": "Level the swash",
+          "translation": "Vyrovnání desky",
+          "needs_translation": false,
+          "max_length": 15,
+          "reverse_text": false
+        },
+        "lvl_intro": {
+          "english": "The swash is held at its centre. Trim it until it is level and the blades sit at zero pitch.",
+          "translation": "Deska je držena ve středu. Trimujte, až bude vodorovně a listy budou na nulovém úhlu.",
+          "needs_translation": false,
+          "max_length": 92,
+          "reverse_text": false
+        },
+        "lvl_trim": {
+          "english": "Trim",
+          "translation": "Trim",
+          "needs_translation": false,
+          "max_length": 4,
+          "reverse_text": false
+        },
+        "lvl_value_fmt": {
+          "english": "%s",
+          "translation": "%s",
+          "needs_translation": false,
+          "max_length": 2,
+          "reverse_text": false
+        },
+        "lvl_reset": {
+          "english": "Reset",
+          "translation": "Reset",
+          "needs_translation": false,
+          "max_length": 5,
+          "reverse_text": false
+        },
+        "lvl_roll_title": {
+          "english": "Roll trim",
+          "translation": "Trim klonění",
+          "needs_translation": false,
+          "max_length": 12,
+          "reverse_text": false
+        },
+        "lvl_roll": {
+          "english": "Seen from behind, trim until the swash is level left to right.",
+          "translation": "Při pohledu zezadu trimujte, až bude deska vodorovně zleva doprava.",
+          "needs_translation": false,
+          "max_length": 67,
+          "reverse_text": false
+        },
+        "lvl_pitch_title": {
+          "english": "Pitch trim",
+          "translation": "Trim klopení",
+          "needs_translation": false,
+          "max_length": 12,
+          "reverse_text": false
+        },
+        "lvl_pitch": {
+          "english": "Seen from the side, trim until the swash is level front to back.",
+          "translation": "Při pohledu z boku trimujte, až bude deska vodorovně zepředu dozadu.",
+          "needs_translation": false,
+          "max_length": 68,
+          "reverse_text": false
+        },
+        "lvl_coll_title": {
+          "english": "Collective trim",
+          "translation": "Trim kolektivu",
+          "needs_translation": false,
+          "max_length": 15,
+          "reverse_text": false
+        },
+        "lvl_coll": {
+          "english": "Trim until the main blades are at zero pitch.",
+          "translation": "Trimujte, až budou hlavní listy na nulovém úhlu.",
+          "needs_translation": false,
+          "max_length": 48,
+          "reverse_text": false
+        },
+        "lvl_done_title": {
+          "english": "Swash level",
+          "translation": "Deska vyrovnána",
+          "needs_translation": false,
+          "max_length": 15,
+          "reverse_text": false
+        },
+        "lvl_done": {
+          "english": "The swash is level at zero pitch.",
+          "translation": "Deska je vodorovně při nulovém úhlu.",
+          "needs_translation": false,
+          "max_length": 36,
+          "reverse_text": false
+        },
+        "pit_title": {
+          "english": "Blade pitch",
+          "translation": "Úhel listů",
+          "needs_translation": false,
+          "max_length": 11,
+          "reverse_text": false
+        },
+        "pit_intro": {
+          "english": "You need a pitch gauge. The wizard holds the blades at a set pitch; you measure it and enter what you read.",
+          "translation": "Potřebujete měrku úhlu. Průvodce drží listy na daném úhlu; změřte ho a zadejte, co čtete.",
+          "needs_translation": false,
+          "max_length": 107,
+          "reverse_text": false
+        },
+        "pit_coll_title": {
+          "english": "Collective",
+          "translation": "Kolektiv",
+          "needs_translation": false,
+          "max_length": 10,
+          "reverse_text": false
+        },
+        "pit_coll_text": {
+          "english": "The collective is held at 9 degrees. Measure the blade pitch, enter it, then Calibrate.",
+          "translation": "Kolektiv je držen na 9 stupních. Změřte úhel listu, zadejte ho a dejte Kalibrovat.",
+          "needs_translation": false,
+          "max_length": 87,
+          "reverse_text": false
+        },
+        "pit_cyc_title": {
+          "english": "Cyclic",
+          "translation": "Cyklika",
+          "needs_translation": false,
+          "max_length": 7,
+          "reverse_text": false
+        },
+        "pit_cyc_text": {
+          "english": "Turn the blades to point left and right. Pitch is held at 9 degrees. Measure, enter it, then Calibrate.",
+          "translation": "Natočte listy vlevo a vpravo. Úhel je držen na 9 stupních. Změřte, zadejte a dejte Kalibrovat.",
+          "needs_translation": false,
+          "max_length": 103,
+          "reverse_text": false
+        },
+        "pit_fine_text": {
+          "english": "Fine adjust the rate until the gauge reads 9 degrees.",
+          "translation": "Jemně dolaďte rate, až měrka ukáže 9 stupňů.",
+          "needs_translation": false,
+          "max_length": 53,
+          "reverse_text": false
+        },
+        "pit_measured": {
+          "english": "Measured",
+          "translation": "Změřeno",
+          "needs_translation": false,
+          "max_length": 8,
+          "reverse_text": false
+        },
+        "pit_rate": {
+          "english": "Rate",
+          "translation": "Rate",
+          "needs_translation": false,
+          "max_length": 4,
+          "reverse_text": false
+        },
+        "pit_calibrate": {
+          "english": "Calibrate",
+          "translation": "Kalibrovat",
+          "needs_translation": false,
+          "max_length": 10,
+          "reverse_text": false
+        },
+        "pit_calibrated": {
+          "english": "Calibrated. Measure again to check.",
+          "translation": "Zkalibrováno. Pro kontrolu změřte znovu.",
+          "needs_translation": false,
+          "max_length": 40,
+          "reverse_text": false
+        },
+        "pit_lim_cyc_title": {
+          "english": "Cyclic limit",
+          "translation": "Limit cykliky",
+          "needs_translation": false,
+          "max_length": 13,
+          "reverse_text": false
+        },
+        "pit_lim_coll_title": {
+          "english": "Collective limit",
+          "translation": "Limit kolektivu",
+          "needs_translation": false,
+          "max_length": 16,
+          "reverse_text": false
+        },
+        "pit_lim_total_title": {
+          "english": "Total limit",
+          "translation": "Celkový limit",
+          "needs_translation": false,
+          "max_length": 13,
+          "reverse_text": false
+        },
+        "pit_lim_text": {
+          "english": "The most blade pitch the sticks can command.",
+          "translation": "Největší úhel listů, který páky mohou zadat.",
+          "needs_translation": false,
+          "max_length": 44,
+          "reverse_text": false
+        },
+        "pit_lim_total_text": {
+          "english": "The most blade pitch cyclic and collective together may reach.",
+          "translation": "Největší úhel listů, který cyklika a kolektiv spolu smí dosáhnout.",
+          "needs_translation": false,
+          "max_length": 66,
+          "reverse_text": false
+        },
+        "pit_limit": {
+          "english": "Limit",
+          "translation": "Limit",
+          "needs_translation": false,
+          "max_length": 5,
+          "reverse_text": false
+        },
+        "pit_suggest_fmt": {
+          "english": "Use %.0f",
+          "translation": "Použít %.0f",
+          "needs_translation": false,
+          "max_length": 11,
+          "reverse_text": false
+        },
+        "pit_done_title": {
+          "english": "Pitch set",
+          "translation": "Úhel nastaven",
+          "needs_translation": false,
+          "max_length": 13,
+          "reverse_text": false
+        },
+        "pit_done": {
+          "english": "Blade pitch is calibrated and limited.",
+          "translation": "Úhel listů je zkalibrován a omezen.",
+          "needs_translation": false,
+          "max_length": 38,
+          "reverse_text": false
+        },
+        "tal_title": {
+          "english": "Tail rotor",
+          "translation": "Ocasní rotor",
+          "needs_translation": false,
+          "max_length": 12,
+          "reverse_text": false
+        },
+        "tal_intro": {
+          "english": "Check the tail servo with the tail blades off: centre, direction, travel and end stops.",
+          "translation": "Zkontrolujte ocasní servo se sundanými ocasními listy: střed, směr, výchylku a dorazy.",
+          "needs_translation": false,
+          "max_length": 87,
+          "reverse_text": false
+        },
+        "tal_centre_title": {
+          "english": "Tail centre",
+          "translation": "Střed ocasu",
+          "needs_translation": false,
+          "max_length": 11,
+          "reverse_text": false
+        },
+        "tal_centre": {
+          "english": "The tail is held at zero. Adjust until the tail blades have zero pitch.",
+          "translation": "Ocas je držen na nule. Dolaďte, až budou ocasní listy na nulovém úhlu.",
+          "needs_translation": false,
+          "max_length": 71,
+          "reverse_text": false
+        },
+        "tal_dir_title": {
+          "english": "Tail direction",
+          "translation": "Směr ocasu",
+          "needs_translation": false,
+          "max_length": 14,
+          "reverse_text": false
+        },
+        "tal_dir": {
+          "english": "Push the yaw stick right. The tail blades should push the tail left, turning the nose right.",
+          "translation": "Dejte páku bočení vpravo. Ocasní listy mají tlačit ocas vlevo, takže se nos otočí vpravo.",
+          "needs_translation": false,
+          "max_length": 92,
+          "reverse_text": false
+        },
+        "tal_cal_title": {
+          "english": "Tail calibration",
+          "translation": "Kalibrace ocasu",
+          "needs_translation": false,
+          "max_length": 16,
+          "reverse_text": false
+        },
+        "tal_cal": {
+          "english": "The tail is held at 22 degrees. Measure the tail blade pitch and adjust until it reads 22 degrees each way.",
+          "translation": "Ocas je držen na 22 stupních. Změřte úhel ocasního listu a dolaďte, až ukáže 22 stupňů na obě strany.",
+          "needs_translation": false,
+          "max_length": 107,
+          "reverse_text": false
+        },
+        "tal_lim_title": {
+          "english": "Tail end stops",
+          "translation": "Dorazy ocasu",
+          "needs_translation": false,
+          "max_length": 14,
+          "reverse_text": false
+        },
+        "tal_lim_cw": {
+          "english": "The tail is held at full travel one way. Lower the limit until the slider stops short of binding.",
+          "translation": "Ocas je držen na plné výchylce na jednu stranu. Snižte limit, až se posuvka zastaví před zadřením.",
+          "needs_translation": false,
+          "max_length": 98,
+          "reverse_text": false
+        },
+        "tal_lim_ccw": {
+          "english": "Now the other way. Lower the limit until the slider stops short of binding.",
+          "translation": "Teď na druhou stranu. Snižte limit, až se posuvka zastaví před zadřením.",
+          "needs_translation": false,
+          "max_length": 75,
+          "reverse_text": false
+        },
+        "tal_done_title": {
+          "english": "Tail done",
+          "translation": "Ocas hotov",
+          "needs_translation": false,
+          "max_length": 10,
+          "reverse_text": false
+        },
+        "tal_done": {
+          "english": "The tail rotor is set up.",
+          "translation": "Ocasní rotor je nastaven.",
+          "needs_translation": false,
+          "max_length": 25,
+          "reverse_text": false
+        },
+        "tal_trim": {
+          "english": "Centre trim",
+          "translation": "Trim středu",
+          "needs_translation": false,
+          "max_length": 11,
+          "reverse_text": false
+        },
+        "tal_rate": {
+          "english": "Tail rate",
+          "translation": "Rate ocasu",
+          "needs_translation": false,
+          "max_length": 10,
+          "reverse_text": false
+        },
+        "tal_side": {
+          "english": "Held side",
+          "translation": "Držená strana",
+          "needs_translation": false,
+          "max_length": 13,
+          "reverse_text": false
+        },
+        "tal_cw": {
+          "english": "CW limit",
+          "translation": "Limit CW",
+          "needs_translation": false,
+          "max_length": 8,
+          "reverse_text": false
+        },
+        "tal_ccw": {
+          "english": "CCW limit",
+          "translation": "Limit CCW",
+          "needs_translation": false,
+          "max_length": 9,
+          "reverse_text": false
+        },
+        "tal_reverse": {
+          "english": "Wrong way",
+          "translation": "Špatně",
+          "needs_translation": false,
+          "max_length": 9,
+          "reverse_text": false
+        },
+        "tal_ok": {
+          "english": "Correct",
+          "translation": "Správně",
+          "needs_translation": false,
+          "max_length": 7,
+          "reverse_text": false
+        },
+        "tal_other_side": {
+          "english": "Swap",
+          "translation": "Prohodit",
+          "needs_translation": false,
+          "max_length": 8,
+          "reverse_text": false
+        },
+        "tal_motor_title": {
+          "english": "Tail motor",
+          "translation": "Ocasní motor",
+          "needs_translation": false,
+          "max_length": 12,
+          "reverse_text": false
+        },
+        "tal_motor": {
+          "english": "Take the tail blades off. Spin the tail motor at low power to check it runs.",
+          "translation": "Sundejte ocasní listy. Roztočte ocasní motor na nízký výkon a ověřte, že běží.",
+          "needs_translation": false,
+          "max_length": 78,
+          "reverse_text": false
+        },
+        "tal_no_motor": {
+          "english": "No tail motor output (motor 2) on this flight controller.",
+          "translation": "Tato řídicí jednotka nemá výstup ocasního motoru (motor 2).",
+          "needs_translation": false,
+          "max_length": 59,
+          "reverse_text": false
+        },
+        "tal_power": {
+          "english": "Test power",
+          "translation": "Test. výkon",
+          "needs_translation": false,
+          "max_length": 11,
+          "reverse_text": false
+        },
+        "tal_output": {
+          "english": "Tail motor",
+          "translation": "Ocasní motor",
+          "needs_translation": false,
+          "max_length": 12,
+          "reverse_text": false
+        },
+        "tal_spin": {
+          "english": "Spin",
+          "translation": "Roztočit",
+          "needs_translation": false,
+          "max_length": 8,
+          "reverse_text": false
+        },
+        "tal_spin_rev": {
+          "english": "Reverse",
+          "translation": "Obráceně",
+          "needs_translation": false,
+          "max_length": 8,
+          "reverse_text": false
+        },
+        "tal_stop": {
+          "english": "Stop",
+          "translation": "Stop",
+          "needs_translation": false,
+          "max_length": 4,
+          "reverse_text": false
+        },
+        "tal_running": {
+          "english": "Running",
+          "translation": "Běží",
+          "needs_translation": false,
+          "max_length": 7,
+          "reverse_text": false
+        },
+        "tal_stopped": {
+          "english": "Stopped",
+          "translation": "Zastaveno",
+          "needs_translation": false,
+          "max_length": 9,
+          "reverse_text": false
+        },
+        "tal_idle_title": {
+          "english": "Tail idle",
+          "translation": "Volnoběh ocasu",
+          "needs_translation": false,
+          "max_length": 14,
+          "reverse_text": false
+        },
+        "tal_idle": {
+          "english": "The power the tail motor keeps at zero yaw. Blades still off.",
+          "translation": "Výkon, který ocasní motor drží při nulovém bočení. Listy stále sundané.",
+          "needs_translation": false,
+          "max_length": 71,
+          "reverse_text": false
+        },
+        "tal_idle_value": {
+          "english": "Tail idle",
+          "translation": "Volnoběh ocasu",
+          "needs_translation": false,
+          "max_length": 14,
+          "reverse_text": false
+        },
+        "tal_use_idle": {
+          "english": "Use test",
+          "translation": "Použít test",
+          "needs_translation": false,
+          "max_length": 11,
+          "reverse_text": false
+        },
+        "tal_run_idle": {
+          "english": "Run idle",
+          "translation": "Spustit volnoběh",
+          "needs_translation": false,
+          "max_length": 16,
+          "reverse_text": false
+        },
+        "gyr_title": {
+          "english": "Gyro check",
+          "translation": "Kontrola gyra",
+          "needs_translation": false,
+          "max_length": 13,
+          "reverse_text": false
+        },
+        "gyr_intro": {
+          "english": "Blades off, disarmed. Move the helicopter by hand: the swash should push back against each movement.",
+          "translation": "Bez listů, zajištěno. Hýbejte vrtulníkem rukou: deska má působit proti každému pohybu.",
+          "needs_translation": false,
+          "max_length": 100,
+          "reverse_text": false
+        },
+        "gyr_roll_title": {
+          "english": "Roll",
+          "translation": "Klonění",
+          "needs_translation": false,
+          "max_length": 7,
+          "reverse_text": false
+        },
+        "gyr_roll": {
+          "english": "Roll the helicopter quickly to the right. The swash should tilt left, against the movement.",
+          "translation": "Rychle nakloňte vrtulník doprava. Deska se má naklonit vlevo, proti pohybu.",
+          "needs_translation": false,
+          "max_length": 91,
+          "reverse_text": false
+        },
+        "gyr_pitch_title": {
+          "english": "Pitch",
+          "translation": "Klopení",
+          "needs_translation": false,
+          "max_length": 7,
+          "reverse_text": false
+        },
+        "gyr_pitch": {
+          "english": "Tip the nose down quickly. The swash should tilt back, against the movement.",
+          "translation": "Rychle skloňte nos dolů. Deska se má naklonit dozadu, proti pohybu.",
+          "needs_translation": false,
+          "max_length": 76,
+          "reverse_text": false
+        },
+        "gyr_yaw_title": {
+          "english": "Yaw",
+          "translation": "Bočení",
+          "needs_translation": false,
+          "max_length": 6,
+          "reverse_text": false
+        },
+        "gyr_yaw": {
+          "english": "Turn the nose quickly to the right. The tail blades should push the nose back to the left.",
+          "translation": "Rychle otočte nos doprava. Ocasní listy mají vrátit nos zpět doleva.",
+          "needs_translation": false,
+          "max_length": 90,
+          "reverse_text": false
+        },
+        "gyr_against": {
+          "english": "Against",
+          "translation": "Proti",
+          "needs_translation": false,
+          "max_length": 7,
+          "reverse_text": false
+        },
+        "gyr_with": {
+          "english": "With",
+          "translation": "S pohybem",
+          "needs_translation": false,
+          "max_length": 9,
+          "reverse_text": false
+        },
+        "gyr_wrong": {
+          "english": "The gyro corrects the wrong way: the board orientation is wrong. Fix it in Board orientation; do not reverse servos for it.",
+          "translation": "Gyro koriguje špatným směrem: orientace desky je chybná. Opravte ji v Orientaci desky; serva kvůli tomu neobracejte.",
+          "needs_translation": false,
+          "max_length": 123,
+          "reverse_text": false
+        },
+        "gyr_go_sensors": {
+          "english": "Orientation",
+          "translation": "Orientace",
+          "needs_translation": false,
+          "max_length": 11,
+          "reverse_text": false
+        },
+        "gyr_done_title": {
+          "english": "Gyro checked",
+          "translation": "Gyro ověřeno",
+          "needs_translation": false,
+          "max_length": 12,
+          "reverse_text": false
+        },
+        "gyr_done": {
+          "english": "The gyro corrects every axis against the movement.",
+          "translation": "Gyro koriguje každou osu proti pohybu.",
+          "needs_translation": false,
+          "max_length": 50,
+          "reverse_text": false
+        },
+        "fin_title": {
+          "english": "Finish",
+          "translation": "Dokončit",
+          "needs_translation": false,
+          "max_length": 8,
+          "reverse_text": false
+        },
+        "fin_intro": {
+          "english": "What the wizard set:",
+          "translation": "Co průvodce nastavil:",
+          "needs_translation": false,
+          "max_length": 21,
+          "reverse_text": false
+        },
+        "fin_before": {
+          "english": "Fit the blades and do a careful first hover. Modes, rates and governor are on their own pages.",
+          "translation": "Nasaďte listy a opatrně proveďte první visení. Režimy, rates a governor mají vlastní stránky.",
+          "needs_translation": false,
+          "max_length": 94,
+          "reverse_text": false
+        },
+        "fin_swash": {
+          "english": "Swash",
+          "translation": "Deska",
+          "needs_translation": false,
+          "max_length": 5,
+          "reverse_text": false
+        },
+        "fin_tail": {
+          "english": "Tail",
+          "translation": "Ocas",
+          "needs_translation": false,
+          "max_length": 4,
+          "reverse_text": false
+        },
+        "fin_pitch": {
+          "english": "Pitch limits",
+          "translation": "Limity úhlu",
+          "needs_translation": false,
+          "max_length": 12,
+          "reverse_text": false
+        },
+        "fin_pitch_fmt": {
+          "english": "Coll. %s°, cyc. %s°",
+          "translation": "Kol. %s°, cykl. %s°",
+          "needs_translation": false,
+          "max_length": 19,
+          "reverse_text": false
+        },
+        "fin_esc": {
+          "english": "ESC protocol",
+          "translation": "Protokol ESC",
+          "needs_translation": false,
+          "max_length": 12,
+          "reverse_text": false
+        },
+        "fin_cw": {
+          "english": "CW",
+          "translation": "CW",
+          "needs_translation": false,
+          "max_length": 2,
+          "reverse_text": false
+        },
+        "fin_ccw": {
+          "english": "CCW",
+          "translation": "CCW",
+          "needs_translation": false,
+          "max_length": 3,
+          "reverse_text": false
+        },
+        "fin_none": {
+          "english": "None",
+          "translation": "Žádný",
+          "needs_translation": false,
+          "max_length": 5,
+          "reverse_text": false
+        },
+        "fin_tail_variable": {
+          "english": "Servo",
+          "translation": "Servo",
+          "needs_translation": false,
+          "max_length": 5,
+          "reverse_text": false
+        },
+        "fin_tail_motor": {
+          "english": "Motor",
+          "translation": "Motor",
+          "needs_translation": false,
+          "max_length": 5,
+          "reverse_text": false
+        },
+        "fin_tail_bidir": {
+          "english": "Motor, bidirectional",
+          "translation": "Motor, obousměrný",
+          "needs_translation": false,
+          "max_length": 20,
+          "reverse_text": false
+        },
+        "rcv_presets": {
+          "english": "Presets",
+          "translation": "Předvolby",
+          "needs_translation": false,
+          "max_length": 9,
+          "reverse_text": false
+        },
+        "rcv_presets_text": {
+          "english": "Pick your radio's channel order.",
+          "translation": "Vyberte pořadí kanálů svého vysílače.",
+          "needs_translation": false,
+          "max_length": 37,
+          "reverse_text": false
+        },
+        "rcv_ch_fmt": {
+          "english": "CH%d",
+          "translation": "K%d",
+          "needs_translation": false,
+          "max_length": 4,
+          "reverse_text": false
+        },
+        "rcv_throttle_legend": {
+          "english": "Grey marks: FC range. Band: measured travel.",
+          "translation": "Šedé značky: rozsah FC. Pás: změřený zdvih.",
+          "needs_translation": false,
+          "max_length": 44,
+          "reverse_text": false
+        }
+      },
+      "wizards": {
+        "name": {
+          "english": "Wizards",
+          "translation": "Průvodci",
+          "needs_translation": false,
+          "max_length": 8,
+          "reverse_text": false
+        },
+        "model_setup": {
+          "english": "Model setup",
+          "translation": "Nastavit model",
+          "needs_translation": false,
+          "max_length": 14,
+          "reverse_text": false
+        }
       }
     },
     "menu_section_board_radio": {

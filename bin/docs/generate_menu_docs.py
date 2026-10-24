@@ -175,6 +175,7 @@ SCRIPT_TO_DOC_PATH = {
     "app/pages/setup_governor_curves.lua": "setup/governor/curves.md",
 
     # System -> Tools
+    "app/pages/setup_wizard.lua": "tools/setup_wizard.md",
     "app/pages/copy_profiles.lua": "tools/copy_profiles.md",
     "app/pages/profile_select.lua": "tools/profile_select.md",
     "app/pages/diagnostics_rfstatus.lua": "tools/diagnostics/rfstatus.md",
