@@ -2699,6 +2699,12 @@
           "translation": "Saved; written to flash on disarm",
           "needs_translation": false,
           "max_length": 33
+        },
+        "function_rx_input_backup": {
+          "english": "Serial Rx (Backup)",
+          "translation": "Serial Rx (Backup)",
+          "needs_translation": false,
+          "max_length": 19
         }
       },
       "mixer": {
@@ -4867,6 +4873,18 @@
           "max_length": 8,
           "needs_translation": false,
           "translation": "Override"
+        },
+        "arming_disable_flag_26": {
+          "english": "No Filter",
+          "translation": "No Filter",
+          "needs_translation": false,
+          "max_length": 14
+        },
+        "arming_disable_flag_27": {
+          "english": "Backup RX",
+          "translation": "Backup RX",
+          "needs_translation": false,
+          "max_length": 14
         }
       },
       "elrs_telemetry": {
@@ -7143,6 +7161,68 @@
           "translation": "Saved, but reading back did not confirm it. Check the settings on PIDs, Rates and PID Controller.",
           "needs_translation": false,
           "max_length": 97
+        }
+      },
+      "rx_input_backup_status": {
+        "active_backup": {
+          "english": "Backup",
+          "translation": "Backup",
+          "needs_translation": false,
+          "max_length": 6
+        },
+        "active_main": {
+          "english": "Main",
+          "translation": "Main",
+          "needs_translation": false,
+          "max_length": 4
+        },
+        "active_source": {
+          "english": "Active Source",
+          "translation": "Active Source",
+          "needs_translation": false,
+          "max_length": 13
+        },
+        "channel": {
+          "english": "Channel",
+          "translation": "Channel",
+          "needs_translation": false,
+          "max_length": 7
+        },
+        "link": {
+          "english": "Link",
+          "translation": "Link",
+          "needs_translation": false,
+          "max_length": 4
+        },
+        "link_down": {
+          "english": "Down",
+          "translation": "Down",
+          "needs_translation": false,
+          "max_length": 4
+        },
+        "link_up": {
+          "english": "Up",
+          "translation": "Up",
+          "needs_translation": false,
+          "max_length": 2
+        },
+        "name": {
+          "english": "Backup RX",
+          "translation": "Backup RX",
+          "needs_translation": false,
+          "max_length": 9
+        },
+        "not_configured": {
+          "english": "Not Configured",
+          "translation": "Not Configured",
+          "needs_translation": false,
+          "max_length": 14
+        },
+        "protocol": {
+          "english": "Protocol",
+          "translation": "Protocol",
+          "needs_translation": false,
+          "max_length": 8
         }
       }
     },

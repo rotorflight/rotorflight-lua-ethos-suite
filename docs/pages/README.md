@@ -8,7 +8,7 @@ sidebar_label: Pages
 Reference documentation for each configuration and settings page reachable
 within the RFSuite Ethos system tool.
 
-**Status:** 85 reachable pages in navigation hierarchy.
+**Status:** 86 reachable pages in navigation hierarchy.
 
 The *Conditions* column names what hides, greys out or locks a page; the sentences
 and structure follow [_template.md](../_template.md).
@@ -91,6 +91,7 @@ and structure follow [_template.md](../_template.md).
 | Status | [tools/diagnostics/rfstatus.md](tools/diagnostics/rfstatus.md) | Always available offline without an active flight controller connection. Read-only while the model is armed. | written |
 | ELRS Telemetry | [tools/diagnostics/elrs_link.md](tools/diagnostics/elrs_link.md) | Always available offline without an active flight controller connection. Read-only while the model is armed. | written |
 | FBL Status | [tools/diagnostics/fblstatus.md](tools/diagnostics/fblstatus.md) | Always available offline without an active flight controller connection. Read-only while the model is armed. | written |
+| Backup RX | [tools/diagnostics/rx_input_backup.md](tools/diagnostics/rx_input_backup.md) | Always available offline without an active flight controller connection. Read-only while the model is armed. | written |
 | Info | [tools/diagnostics/info.md](tools/diagnostics/info.md) | Always available offline without an active flight controller connection. Read-only while the model is armed. | written |
 | MSP Speed | [tools/developer/msp_speed.md](tools/developer/msp_speed.md) | Always available offline without an active flight controller connection. Read-only while the model is armed. Hidden until *System* → *Settings* → *Developer* mode is active. | written |
 | MSP Exp. | [tools/developer/msp_exp.md](tools/developer/msp_exp.md) | Always available offline without an active flight controller connection. Read-only while the model is armed. Hidden until *System* → *Settings* → *Developer* mode is active. | written |

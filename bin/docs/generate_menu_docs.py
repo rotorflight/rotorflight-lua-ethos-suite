@@ -180,6 +180,7 @@ SCRIPT_TO_DOC_PATH = {
     "app/pages/diagnostics_rfstatus.lua": "tools/diagnostics/rfstatus.md",
     "app/pages/diagnostics_elrs_link.lua": "tools/diagnostics/elrs_link.md",
     "app/pages/diagnostics_fblstatus.lua": "tools/diagnostics/fblstatus.md",
+    "app/pages/diagnostics_rx_input_backup.lua": "tools/diagnostics/rx_input_backup.md",
     "app/pages/diagnostics_info.lua": "tools/diagnostics/info.md",
     "app/pages/developer_msp_speed.lua": "tools/developer/msp_speed.md",
     "app/pages/developer_msp_exp.lua": "tools/developer/msp_exp.md",

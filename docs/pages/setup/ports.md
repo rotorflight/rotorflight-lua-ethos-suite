@@ -41,6 +41,12 @@ Greyed out until the flight controller answers. Read-only while the model is arm
   twelve, all in the one wakeup that draws the page; it now costs ~3,000 and
   ~11,000. The choices offered are unchanged. Measured off-device with
   `bin/perf/measure_app_instructions.lua`. (`src/rfsuite/app/pages/ports.lua`)
+- *Serial Rx (Backup)* makes a port a backup receiver input, which takes over
+  when the main RX link is lost. Only one port can have it. The protocol is
+  chosen in the firmware (`rx_input_backup_provider`), and
+  [Diagnostics → Backup RX](../tools/diagnostics/rx_input_backup.md) shows
+  whether it is linked. Needs firmware with backup RX support
+  (rotorflight-firmware#490). (`src/rfsuite/app/pages/ports.lua`)
 
 ## Related
 

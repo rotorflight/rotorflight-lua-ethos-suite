@@ -4244,6 +4244,20 @@
           "reverse_text": false,
           "translation": "Armbryter"
         },
+        "arming_disable_flag_26": {
+          "english": "No Filter",
+          "max_length": 10,
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "No Filter"
+        },
+        "arming_disable_flag_27": {
+          "english": "Backup RX",
+          "max_length": 10,
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "Backup RX"
+        },
         "arming_disable_flag_3": {
           "english": "Bad RX Recovery",
           "max_length": 15,
@@ -5930,6 +5944,13 @@
           "reverse_text": false,
           "translation": "FBus ut"
         },
+        "function_rx_input_backup": {
+          "english": "Serial Rx (Backup)",
+          "max_length": 19,
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "Serial Rx (Backup)"
+        },
         "function_rx_serial": {
           "english": "RX Serial",
           "max_length": 9,
@@ -6780,6 +6801,78 @@
           "needs_translation": false,
           "reverse_text": false,
           "translation": "RF-modul"
+        }
+      },
+      "rx_input_backup_status": {
+        "active_backup": {
+          "english": "Backup",
+          "max_length": 6,
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "Backup"
+        },
+        "active_main": {
+          "english": "Main",
+          "max_length": 4,
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "Main"
+        },
+        "active_source": {
+          "english": "Active Source",
+          "max_length": 13,
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "Active Source"
+        },
+        "channel": {
+          "english": "Channel",
+          "max_length": 7,
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "Channel"
+        },
+        "link": {
+          "english": "Link",
+          "max_length": 4,
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "Link"
+        },
+        "link_down": {
+          "english": "Down",
+          "max_length": 4,
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "Down"
+        },
+        "link_up": {
+          "english": "Up",
+          "max_length": 2,
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "Up"
+        },
+        "name": {
+          "english": "Backup RX",
+          "max_length": 9,
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "Backup RX"
+        },
+        "not_configured": {
+          "english": "Not Configured",
+          "max_length": 14,
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "Not Configured"
+        },
+        "protocol": {
+          "english": "Protocol",
+          "max_length": 8,
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "Protocol"
         }
       },
       "servos": {

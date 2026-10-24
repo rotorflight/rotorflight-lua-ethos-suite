@@ -59,6 +59,7 @@ local PORT_FUNCTIONS = {
   -- FUNCTION_CRSF_SENSORS (firmware serial.h, added by rotorflight-firmware #497). MSP API 12.10 was
   -- already set before it, so a 12.10 board built earlier lacks it too; this gate only excludes 12.09 (#2497).
   {id = 4194304, excl = 4194304, name = "@i18n(app.modules.ports.function_crsf_sensors)@", type = PORT_TYPE_AUTO, minApiMinor = 10},
+  {id = 8388608, excl = 8388608, name = "@i18n(app.modules.ports.function_rx_input_backup)@", type = PORT_TYPE_AUTO},
   {id = 4, excl = 4668, name = "@i18n(app.modules.ports.function_telem_frsky)@", type = PORT_TYPE_TELEM},
   {id = 32, excl = 4668, name = "@i18n(app.modules.ports.function_telem_smartport)@", type = PORT_TYPE_TELEM},
   {id = 4096, excl = 4668, name = "@i18n(app.modules.ports.function_telem_ibus)@", type = PORT_TYPE_TELEM},
