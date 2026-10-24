@@ -8328,6 +8328,20 @@
           "max_length": 5,
           "reverse_text": false
         },
+        "btn_yes": {
+          "english": "Yes",
+          "translation": "Ano",
+          "needs_translation": false,
+          "max_length": 3,
+          "reverse_text": false
+        },
+        "btn_no": {
+          "english": "No",
+          "translation": "Ne",
+          "needs_translation": false,
+          "max_length": 2,
+          "reverse_text": false
+        },
         "btn_again": {
           "english": "Again",
           "translation": "Znovu",
@@ -8403,6 +8417,13 @@
           "translation": "%d z %d",
           "needs_translation": false,
           "max_length": 8,
+          "reverse_text": false
+        },
+        "step_progress_fmt": {
+          "english": "Step %d of %d",
+          "translation": "Krok %d z %d",
+          "needs_translation": false,
+          "max_length": 13,
           "reverse_text": false
         },
         "step_receiver": {
@@ -8616,10 +8637,38 @@
           "reverse_text": false
         },
         "sen_intro": {
-          "english": "First tell the flight controller how it is mounted. Take the main and tail blades off, and leave the servos unplugged until the Connect the servos step.",
-          "translation": "Nejprve řídicí jednotce řekněte, jak je namontovaná. Sundejte hlavní i ocasní listy a serva nechte odpojená až do kroku Připojení serv.",
+          "english": "Remove main and tail blades. Unplug all servos before starting.",
+          "translation": "Sundejte hlavní a ocasní listy. Před začátkem odpojte všechna serva.",
           "needs_translation": false,
-          "max_length": 152,
+          "max_length": 68,
+          "reverse_text": false
+        },
+        "sen_servos_unplugged": {
+          "english": "Servos unplugged",
+          "translation": "Serva odpojena",
+          "needs_translation": false,
+          "max_length": 16,
+          "reverse_text": false
+        },
+        "sen_blades_removed": {
+          "english": "All blades removed",
+          "translation": "Všechny listy sundány",
+          "needs_translation": false,
+          "max_length": 21,
+          "reverse_text": false
+        },
+        "art_side": {
+          "english": "Side view",
+          "translation": "Boční pohled",
+          "needs_translation": false,
+          "max_length": 12,
+          "reverse_text": false
+        },
+        "art_front": {
+          "english": "Front",
+          "translation": "Předek",
+          "needs_translation": false,
+          "max_length": 6,
           "reverse_text": false
         },
         "sen_no_acc": {
@@ -8630,17 +8679,31 @@
           "reverse_text": false
         },
         "sen_acc_title": {
+          "english": "Calibrate the accelerometer",
+          "translation": "Kalibrace akcelerometru",
+          "needs_translation": false,
+          "max_length": 27,
+          "reverse_text": false
+        },
+        "sen_acc_text": {
+          "english": "Stand the helicopter on its skids on a level surface and keep it still.",
+          "translation": "Postavte vrtulník na ližiny na rovnou plochu a držte ho v klidu.",
+          "needs_translation": false,
+          "max_length": 71,
+          "reverse_text": false
+        },
+        "sen_accelerometer": {
           "english": "Accelerometer",
           "translation": "Akcelerometr",
           "needs_translation": false,
           "max_length": 13,
           "reverse_text": false
         },
-        "sen_acc_text": {
-          "english": "Stand the helicopter on its skids on a level surface and keep it still, then calibrate.",
-          "translation": "Postavte vrtulník na ližiny na rovnou plochu, nehýbejte s ním a kalibrujte.",
+        "sen_available": {
+          "english": "Available",
+          "translation": "K dispozici",
           "needs_translation": false,
-          "max_length": 87,
+          "max_length": 11,
           "reverse_text": false
         },
         "sen_acc_busy": {
@@ -8665,24 +8728,52 @@
           "reverse_text": false
         },
         "sen_calibrate": {
-          "english": "Calibrate",
-          "translation": "Kalibrovat",
+          "english": "Calibrate accelerometer",
+          "translation": "Kalibrovat akcelerometr",
           "needs_translation": false,
-          "max_length": 10,
+          "max_length": 23,
           "reverse_text": false
         },
         "sen_align_title": {
-          "english": "Find the orientation",
-          "translation": "Zjistit orientaci",
+          "english": "Board orientation",
+          "translation": "Orientace desky",
           "needs_translation": false,
-          "max_length": 20,
+          "max_length": 17,
           "reverse_text": false
         },
         "sen_align_text": {
-          "english": "Stand the helicopter level, press Start, then lift the tail by at least 20 degrees and hold it still.",
-          "translation": "Postavte vrtulník rovně, stiskněte Start, pak zvedněte ocas aspoň o 20 stupňů a držte v klidu.",
+          "english": "Keep level, start detection, then lift the tail about 20 degrees.",
+          "translation": "Držte vodorovně, spusťte detekci, pak zvedněte ocas asi o 20 stupňů.",
           "needs_translation": false,
-          "max_length": 101,
+          "max_length": 68,
+          "reverse_text": false
+        },
+        "sen_auto_align": {
+          "english": "Detect board orientation",
+          "translation": "Zjistit orientaci desky",
+          "needs_translation": false,
+          "max_length": 24,
+          "reverse_text": false
+        },
+        "sen_roll": {
+          "english": "Roll",
+          "translation": "Klonění",
+          "needs_translation": false,
+          "max_length": 7,
+          "reverse_text": false
+        },
+        "sen_pitch": {
+          "english": "Pitch",
+          "translation": "Klopení",
+          "needs_translation": false,
+          "max_length": 7,
+          "reverse_text": false
+        },
+        "sen_yaw": {
+          "english": "Yaw",
+          "translation": "Bočení",
+          "needs_translation": false,
+          "max_length": 6,
           "reverse_text": false
         },
         "sen_align_lift": {
@@ -8734,25 +8825,39 @@
           "max_length": 73,
           "reverse_text": false
         },
-        "sen_done_title": {
-          "english": "Orientation done",
-          "translation": "Orientace hotova",
+        "sen_check_title": {
+          "english": "Check orientation",
+          "translation": "Kontrola orientace",
           "needs_translation": false,
-          "max_length": 16,
+          "max_length": 18,
+          "reverse_text": false
+        },
+        "sen_check_text": {
+          "english": "Tilt the helicopter left/right and nose down/up: the picture must follow every movement.",
+          "translation": "Nakloňte vrtulník doleva/doprava a nosem dolů/nahoru: obrázek musí sledovat každý pohyb.",
+          "needs_translation": false,
+          "max_length": 88,
+          "reverse_text": false
+        },
+        "sen_direction_ok": {
+          "english": "Direction is correct",
+          "translation": "Směr je správný",
+          "needs_translation": false,
+          "max_length": 20,
+          "reverse_text": false
+        },
+        "sen_attitude_waiting": {
+          "english": "Waiting for live attitude...",
+          "translation": "Čekám na aktuální polohu...",
+          "needs_translation": false,
+          "max_length": 28,
           "reverse_text": false
         },
         "sen_done_restart": {
-          "english": "The new orientation takes effect after the restart at the Connect the servos step.",
-          "translation": "Nová orientace platí po restartu v kroku Připojení serv.",
+          "english": "The new orientation applies after a restart. Restart now to check it, or Next: the restart then follows at the Connect the servos step.",
+          "translation": "Nová orientace platí až po restartu. Restartujte nyní a zkontrolujte ji, nebo Další: restart pak proběhne v kroku Připojení serv.",
           "needs_translation": false,
-          "max_length": 82,
-          "reverse_text": false
-        },
-        "sen_done_same": {
-          "english": "Nothing to change here.",
-          "translation": "Zde není co měnit.",
-          "needs_translation": false,
-          "max_length": 23,
+          "max_length": 135,
           "reverse_text": false
         },
         "rcv_title": {
@@ -10377,6 +10482,22 @@
           "translation": "Šedé značky: rozsah FC. Pás: změřený zdvih.",
           "needs_translation": false,
           "max_length": 44,
+          "reverse_text": false
+        }
+      },
+      "wizards": {
+        "name": {
+          "english": "Wizards",
+          "translation": "Průvodci",
+          "needs_translation": false,
+          "max_length": 8,
+          "reverse_text": false
+        },
+        "model_setup": {
+          "english": "Model setup",
+          "translation": "Nastavit model",
+          "needs_translation": false,
+          "max_length": 14,
           "reverse_text": false
         }
       }

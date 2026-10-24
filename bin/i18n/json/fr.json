@@ -8328,6 +8328,20 @@
           "max_length": 8,
           "reverse_text": false
         },
+        "btn_yes": {
+          "english": "Yes",
+          "translation": "Oui",
+          "needs_translation": false,
+          "max_length": 3,
+          "reverse_text": false
+        },
+        "btn_no": {
+          "english": "No",
+          "translation": "Non",
+          "needs_translation": false,
+          "max_length": 3,
+          "reverse_text": false
+        },
         "btn_again": {
           "english": "Again",
           "translation": "Refaire",
@@ -8403,6 +8417,13 @@
           "translation": "%d sur %d",
           "needs_translation": false,
           "max_length": 9,
+          "reverse_text": false
+        },
+        "step_progress_fmt": {
+          "english": "Step %d of %d",
+          "translation": "Étape %d sur %d",
+          "needs_translation": false,
+          "max_length": 15,
           "reverse_text": false
         },
         "step_receiver": {
@@ -8616,10 +8637,38 @@
           "reverse_text": false
         },
         "sen_intro": {
-          "english": "First tell the flight controller how it is mounted. Take the main and tail blades off, and leave the servos unplugged until the Connect the servos step.",
-          "translation": "Indiquez d'abord comment le contrôleur de vol est monté. Retirez les pales principales et de queue, et laissez les servos débranchés jusqu'à l'étape Brancher les servos.",
+          "english": "Remove main and tail blades. Unplug all servos before starting.",
+          "translation": "Retirez les pales principales et d'anticouple. Débranchez tous les servos avant de commencer.",
           "needs_translation": false,
-          "max_length": 169,
+          "max_length": 93,
+          "reverse_text": false
+        },
+        "sen_servos_unplugged": {
+          "english": "Servos unplugged",
+          "translation": "Servos débranchés",
+          "needs_translation": false,
+          "max_length": 17,
+          "reverse_text": false
+        },
+        "sen_blades_removed": {
+          "english": "All blades removed",
+          "translation": "Toutes les pales retirées",
+          "needs_translation": false,
+          "max_length": 25,
+          "reverse_text": false
+        },
+        "art_side": {
+          "english": "Side view",
+          "translation": "Vue de côté",
+          "needs_translation": false,
+          "max_length": 11,
+          "reverse_text": false
+        },
+        "art_front": {
+          "english": "Front",
+          "translation": "Avant",
+          "needs_translation": false,
+          "max_length": 5,
           "reverse_text": false
         },
         "sen_no_acc": {
@@ -8630,17 +8679,31 @@
           "reverse_text": false
         },
         "sen_acc_title": {
+          "english": "Calibrate the accelerometer",
+          "translation": "Calibrer l'accéléromètre",
+          "needs_translation": false,
+          "max_length": 27,
+          "reverse_text": false
+        },
+        "sen_acc_text": {
+          "english": "Stand the helicopter on its skids on a level surface and keep it still.",
+          "translation": "Posez l'hélicoptère sur ses patins sur une surface plane et gardez-le immobile.",
+          "needs_translation": false,
+          "max_length": 79,
+          "reverse_text": false
+        },
+        "sen_accelerometer": {
           "english": "Accelerometer",
           "translation": "Accéléromètre",
           "needs_translation": false,
           "max_length": 13,
           "reverse_text": false
         },
-        "sen_acc_text": {
-          "english": "Stand the helicopter on its skids on a level surface and keep it still, then calibrate.",
-          "translation": "Posez l'hélico sur ses patins sur une surface plane et immobile, puis calibrez.",
+        "sen_available": {
+          "english": "Available",
+          "translation": "Disponible",
           "needs_translation": false,
-          "max_length": 87,
+          "max_length": 10,
           "reverse_text": false
         },
         "sen_acc_busy": {
@@ -8665,24 +8728,52 @@
           "reverse_text": false
         },
         "sen_calibrate": {
-          "english": "Calibrate",
-          "translation": "Calibrer",
+          "english": "Calibrate accelerometer",
+          "translation": "Calibrer l'accéléromètre",
           "needs_translation": false,
-          "max_length": 9,
+          "max_length": 24,
           "reverse_text": false
         },
         "sen_align_title": {
-          "english": "Find the orientation",
-          "translation": "Trouver l'orientation",
+          "english": "Board orientation",
+          "translation": "Orientation de la carte",
           "needs_translation": false,
-          "max_length": 21,
+          "max_length": 23,
           "reverse_text": false
         },
         "sen_align_text": {
-          "english": "Stand the helicopter level, press Start, then lift the tail by at least 20 degrees and hold it still.",
-          "translation": "Posez l'hélico à plat, appuyez sur Démarrer, puis levez la queue d'au moins 20 degrés et tenez-la immobile.",
+          "english": "Keep level, start detection, then lift the tail about 20 degrees.",
+          "translation": "Gardez à plat, lancez la détection, puis levez la queue d'environ 20 degrés.",
           "needs_translation": false,
-          "max_length": 107,
+          "max_length": 76,
+          "reverse_text": false
+        },
+        "sen_auto_align": {
+          "english": "Detect board orientation",
+          "translation": "Détecter l'orientation",
+          "needs_translation": false,
+          "max_length": 24,
+          "reverse_text": false
+        },
+        "sen_roll": {
+          "english": "Roll",
+          "translation": "Roulis",
+          "needs_translation": false,
+          "max_length": 6,
+          "reverse_text": false
+        },
+        "sen_pitch": {
+          "english": "Pitch",
+          "translation": "Tangage",
+          "needs_translation": false,
+          "max_length": 7,
+          "reverse_text": false
+        },
+        "sen_yaw": {
+          "english": "Yaw",
+          "translation": "Lacet",
+          "needs_translation": false,
+          "max_length": 5,
           "reverse_text": false
         },
         "sen_align_lift": {
@@ -8734,25 +8825,39 @@
           "max_length": 82,
           "reverse_text": false
         },
-        "sen_done_title": {
-          "english": "Orientation done",
-          "translation": "Orientation faite",
+        "sen_check_title": {
+          "english": "Check orientation",
+          "translation": "Vérifier l'orientation",
           "needs_translation": false,
-          "max_length": 17,
+          "max_length": 22,
+          "reverse_text": false
+        },
+        "sen_check_text": {
+          "english": "Tilt the helicopter left/right and nose down/up: the picture must follow every movement.",
+          "translation": "Inclinez l'hélicoptère à gauche/droite et le nez vers le bas/haut : l'image doit suivre chaque mouvement.",
+          "needs_translation": false,
+          "max_length": 105,
+          "reverse_text": false
+        },
+        "sen_direction_ok": {
+          "english": "Direction is correct",
+          "translation": "La direction est correcte",
+          "needs_translation": false,
+          "max_length": 25,
+          "reverse_text": false
+        },
+        "sen_attitude_waiting": {
+          "english": "Waiting for live attitude...",
+          "translation": "En attente de l'attitude...",
+          "needs_translation": false,
+          "max_length": 28,
           "reverse_text": false
         },
         "sen_done_restart": {
-          "english": "The new orientation takes effect after the restart at the Connect the servos step.",
-          "translation": "La nouvelle orientation s'applique après le redémarrage à l'étape Brancher les servos.",
+          "english": "The new orientation applies after a restart. Restart now to check it, or Next: the restart then follows at the Connect the servos step.",
+          "translation": "La nouvelle orientation s'applique après un redémarrage. Redémarrez maintenant pour la vérifier, ou Suivant : le redémarrage aura lieu à l'étape Brancher les servos.",
           "needs_translation": false,
-          "max_length": 86,
-          "reverse_text": false
-        },
-        "sen_done_same": {
-          "english": "Nothing to change here.",
-          "translation": "Rien à changer ici.",
-          "needs_translation": false,
-          "max_length": 23,
+          "max_length": 165,
           "reverse_text": false
         },
         "rcv_title": {
@@ -10377,6 +10482,22 @@
           "translation": "Repères gris : plage FC. Bande : course mesurée.",
           "needs_translation": false,
           "max_length": 48,
+          "reverse_text": false
+        }
+      },
+      "wizards": {
+        "name": {
+          "english": "Wizards",
+          "translation": "Assistants",
+          "needs_translation": false,
+          "max_length": 10,
+          "reverse_text": false
+        },
+        "model_setup": {
+          "english": "Model setup",
+          "translation": "Config. modèle",
+          "needs_translation": false,
+          "max_length": 14,
           "reverse_text": false
         }
       }

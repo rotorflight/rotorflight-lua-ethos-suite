@@ -12,7 +12,7 @@ version of the Rotorflight Configurator's Setup Wizard and applies the same rule
 
 ## Where to find it
 
-*System* → *Tools* → *Setup Wizard*
+*Configuration* → *Wizards* → *Model setup*
 
 Greyed out until the flight controller answers. Read-only while the model is armed.
 
@@ -24,7 +24,7 @@ the step you left, until the radio is restarted.
 
 | Step | What it does |
 | --- | --- |
-| 1. Board orientation | Calibrates the accelerometer (helicopter level and still), then finds the board orientation automatically: press Start and lift the tail about 20°. Needs firmware with automatic board alignment (API 12.10). Applies after the restart at step 6. |
+| 1. Board orientation | Confirms that the servos are unplugged and the blades are off (Yes on both enables Start). Then calibrates the accelerometer (helicopter level and still), then finds the board orientation automatically: press Detect and lift the tail about 20° (or enter roll, pitch and yaw by hand). Needs firmware with automatic board alignment (API 12.10). Last, a live picture follows the helicopter as you tilt it; confirm that the direction is correct. A changed orientation applies after a restart: Save and restart there to check it now, or Next to leave the restart to step 6. |
 | 2. Receiver | Checks the receiver is sending, sets the channel order (ELRS, FrSky, Futaba/Hitec or Spektrum/JR preset, or detected from the sticks), shows each stick read back by function, and sets the throttle range (measured from the throttle travel, or the defaults). The receiver protocol and port are not changed here: the radio talks to the flight controller through this receiver, so they stay in the Configurator. |
 | 3. Swashplate | Swash type (120°, 135°, 140°, 90° L, 90° V or Direct), a picture of where its servos sit, main rotor direction (CW or CCW), and tail type (variable pitch, motorised or bidirectional). A new tail type resets the yaw mixer rate, moves the tail pin between SERVO 4 and MOTOR 2 on save where the firmware supports it, and sets Tail Torque Assist on every PID profile. Swash and tail type apply after the restart at step 6. |
 | 4. Servo type | Analog (50 Hz), Digital (333 Hz) or Narrow band (560 Hz, 760 µs centre), for the swash servos and the tail servo. A new update rate applies after the restart at step 6. |

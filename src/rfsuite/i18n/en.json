@@ -6722,6 +6722,18 @@
           "needs_translation": false,
           "translation": "Armed: servos can't be moved."
         },
+        "art_front": {
+          "english": "Front",
+          "max_length": 5,
+          "needs_translation": false,
+          "translation": "Front"
+        },
+        "art_side": {
+          "english": "Side view",
+          "max_length": 9,
+          "needs_translation": false,
+          "translation": "Side view"
+        },
         "btn_again": {
           "english": "Again",
           "max_length": 5,
@@ -6734,6 +6746,12 @@
           "needs_translation": false,
           "translation": "Next"
         },
+        "btn_no": {
+          "english": "No",
+          "max_length": 2,
+          "needs_translation": false,
+          "translation": "No"
+        },
         "btn_save_restart": {
           "english": "Save and restart",
           "max_length": 16,
@@ -6745,6 +6763,12 @@
           "max_length": 5,
           "needs_translation": false,
           "translation": "Start"
+        },
+        "btn_yes": {
+          "english": "Yes",
+          "max_length": 3,
+          "needs_translation": false,
+          "translation": "Yes"
         },
         "con_blades": {
           "english": "Blades stay off, and keep clear of the motor.",
@@ -7785,12 +7809,18 @@
           "translation": "Calibration failed. Keep the model still and try again."
         },
         "sen_acc_text": {
-          "english": "Stand the helicopter on its skids on a level surface and keep it still, then calibrate.",
-          "max_length": 87,
+          "english": "Stand the helicopter on its skids on a level surface and keep it still.",
+          "max_length": 71,
           "needs_translation": false,
-          "translation": "Stand the helicopter on its skids on a level surface and keep it still, then calibrate."
+          "translation": "Stand the helicopter on its skids on a level surface and keep it still."
         },
         "sen_acc_title": {
+          "english": "Calibrate the accelerometer",
+          "max_length": 27,
+          "needs_translation": false,
+          "translation": "Calibrate the accelerometer"
+        },
+        "sen_accelerometer": {
           "english": "Accelerometer",
           "max_length": 13,
           "needs_translation": false,
@@ -7809,46 +7839,76 @@
           "translation": "Lift the tail 20 degrees and hold it still..."
         },
         "sen_align_text": {
-          "english": "Stand the helicopter level, press Start, then lift the tail by at least 20 degrees and hold it still.",
-          "max_length": 101,
+          "english": "Keep level, start detection, then lift the tail about 20 degrees.",
+          "max_length": 65,
           "needs_translation": false,
-          "translation": "Stand the helicopter level, press Start, then lift the tail by at least 20 degrees and hold it still."
+          "translation": "Keep level, start detection, then lift the tail about 20 degrees."
         },
         "sen_align_title": {
-          "english": "Find the orientation",
-          "max_length": 20,
+          "english": "Board orientation",
+          "max_length": 17,
           "needs_translation": false,
-          "translation": "Find the orientation"
+          "translation": "Board orientation"
         },
-        "sen_calibrate": {
-          "english": "Calibrate",
+        "sen_attitude_waiting": {
+          "english": "Waiting for live attitude...",
+          "max_length": 28,
+          "needs_translation": false,
+          "translation": "Waiting for live attitude..."
+        },
+        "sen_auto_align": {
+          "english": "Detect board orientation",
+          "max_length": 24,
+          "needs_translation": false,
+          "translation": "Detect board orientation"
+        },
+        "sen_available": {
+          "english": "Available",
           "max_length": 9,
           "needs_translation": false,
-          "translation": "Calibrate"
+          "translation": "Available"
         },
-        "sen_done_restart": {
-          "english": "The new orientation takes effect after the restart at the Connect the servos step.",
-          "max_length": 82,
+        "sen_blades_removed": {
+          "english": "All blades removed",
+          "max_length": 18,
           "needs_translation": false,
-          "translation": "The new orientation takes effect after the restart at the Connect the servos step."
+          "translation": "All blades removed"
         },
-        "sen_done_same": {
-          "english": "Nothing to change here.",
+        "sen_calibrate": {
+          "english": "Calibrate accelerometer",
           "max_length": 23,
           "needs_translation": false,
-          "translation": "Nothing to change here."
+          "translation": "Calibrate accelerometer"
         },
-        "sen_done_title": {
-          "english": "Orientation done",
-          "max_length": 16,
+        "sen_check_text": {
+          "english": "Tilt the helicopter left/right and nose down/up: the picture must follow every movement.",
+          "max_length": 88,
           "needs_translation": false,
-          "translation": "Orientation done"
+          "translation": "Tilt the helicopter left/right and nose down/up: the picture must follow every movement."
+        },
+        "sen_check_title": {
+          "english": "Check orientation",
+          "max_length": 17,
+          "needs_translation": false,
+          "translation": "Check orientation"
+        },
+        "sen_direction_ok": {
+          "english": "Direction is correct",
+          "max_length": 20,
+          "needs_translation": false,
+          "translation": "Direction is correct"
+        },
+        "sen_done_restart": {
+          "english": "The new orientation applies after a restart. Restart now to check it, or Next: the restart then follows at the Connect the servos step.",
+          "max_length": 135,
+          "needs_translation": false,
+          "translation": "The new orientation applies after a restart. Restart now to check it, or Next: the restart then follows at the Connect the servos step."
         },
         "sen_intro": {
-          "english": "First tell the flight controller how it is mounted. Take the main and tail blades off, and leave the servos unplugged until the Connect the servos step.",
-          "max_length": 152,
+          "english": "Remove main and tail blades. Unplug all servos before starting.",
+          "max_length": 63,
           "needs_translation": false,
-          "translation": "First tell the flight controller how it is mounted. Take the main and tail blades off, and leave the servos unplugged until the Connect the servos step."
+          "translation": "Remove main and tail blades. Unplug all servos before starting."
         },
         "sen_no_acc": {
           "english": "This board has no accelerometer: set the orientation on the Alignment page.",
@@ -7862,6 +7922,12 @@
           "needs_translation": false,
           "translation": "No orientation matched. Lift the tail straight up and try again."
         },
+        "sen_pitch": {
+          "english": "Pitch",
+          "max_length": 5,
+          "needs_translation": false,
+          "translation": "Pitch"
+        },
         "sen_rejected_armed": {
           "english": "Refused: the model is armed.",
           "max_length": 28,
@@ -7873,6 +7939,18 @@
           "max_length": 34,
           "needs_translation": false,
           "translation": "Calibrate the accelerometer first."
+        },
+        "sen_roll": {
+          "english": "Roll",
+          "max_length": 4,
+          "needs_translation": false,
+          "translation": "Roll"
+        },
+        "sen_servos_unplugged": {
+          "english": "Servos unplugged",
+          "max_length": 16,
+          "needs_translation": false,
+          "translation": "Servos unplugged"
         },
         "sen_timeout": {
           "english": "Timed out. Lift the tail a little further and try again.",
@@ -7891,6 +7969,12 @@
           "max_length": 72,
           "needs_translation": false,
           "translation": "This firmware cannot find the orientation: set it on the Alignment page."
+        },
+        "sen_yaw": {
+          "english": "Yaw",
+          "max_length": 3,
+          "needs_translation": false,
+          "translation": "Yaw"
         },
         "servo_role_fmt": {
           "english": "Servo %d (%s)",
@@ -8005,6 +8089,12 @@
           "max_length": 11,
           "needs_translation": false,
           "translation": "Blade pitch"
+        },
+        "step_progress_fmt": {
+          "english": "Step %d of %d",
+          "max_length": 13,
+          "needs_translation": false,
+          "translation": "Step %d of %d"
         },
         "step_receiver": {
           "english": "Receiver",
@@ -9035,6 +9125,20 @@
           "max_length": 3,
           "needs_translation": false,
           "translation": "Yaw"
+        }
+      },
+      "wizards": {
+        "model_setup": {
+          "english": "Model setup",
+          "max_length": 11,
+          "needs_translation": false,
+          "translation": "Model setup"
+        },
+        "name": {
+          "english": "Wizards",
+          "max_length": 7,
+          "needs_translation": false,
+          "translation": "Wizards"
         }
       }
     },

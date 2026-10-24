@@ -82,11 +82,16 @@ and structure follow [_template.md](../_template.md).
 | Filters | [setup/governor/filters.md](setup/governor/filters.md) | Greyed out until the flight controller answers. Read-only while the model is armed. | written |
 | Bypass Curve | [setup/governor/curves.md](setup/governor/curves.md) | Greyed out until the flight controller answers. Read-only while the model is armed. | written |
 
+## Configuration → Wizards
+
+| Page | File | Conditions | Status |
+| --- | --- | --- | --- |
+| Model setup | [tools/setup_wizard.md](tools/setup_wizard.md) | Greyed out until the flight controller answers. Read-only while the model is armed. | written |
+
 ## System → Tools
 
 | Page | File | Conditions | Status |
 | --- | --- | --- | --- |
-| Setup Wizard | [tools/setup_wizard.md](tools/setup_wizard.md) | Always available offline without an active flight controller connection. Read-only while the model is armed. | written |
 | Copy Profiles | [tools/copy_profiles.md](tools/copy_profiles.md) | Always available offline without an active flight controller connection. Read-only while the model is armed. | written |
 | Select Profile | [tools/profile_select.md](tools/profile_select.md) | Always available offline without an active flight controller connection. Read-only while the model is armed. | written |
 | Status | [tools/diagnostics/rfstatus.md](tools/diagnostics/rfstatus.md) | Always available offline without an active flight controller connection. Read-only while the model is armed. | written |

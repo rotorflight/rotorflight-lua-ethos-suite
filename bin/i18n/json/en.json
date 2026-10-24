@@ -7182,6 +7182,18 @@
           "needs_translation": false,
           "max_length": 5
         },
+        "btn_yes": {
+          "english": "Yes",
+          "translation": "Yes",
+          "needs_translation": false,
+          "max_length": 3
+        },
+        "btn_no": {
+          "english": "No",
+          "translation": "No",
+          "needs_translation": false,
+          "max_length": 2
+        },
         "btn_again": {
           "english": "Again",
           "translation": "Again",
@@ -7247,6 +7259,12 @@
           "translation": "%d of %d",
           "needs_translation": false,
           "max_length": 8
+        },
+        "step_progress_fmt": {
+          "english": "Step %d of %d",
+          "translation": "Step %d of %d",
+          "needs_translation": false,
+          "max_length": 13
         },
         "step_receiver": {
           "english": "Receiver",
@@ -7429,10 +7447,34 @@
           "max_length": 17
         },
         "sen_intro": {
-          "english": "First tell the flight controller how it is mounted. Take the main and tail blades off, and leave the servos unplugged until the Connect the servos step.",
-          "translation": "First tell the flight controller how it is mounted. Take the main and tail blades off, and leave the servos unplugged until the Connect the servos step.",
+          "english": "Remove main and tail blades. Unplug all servos before starting.",
+          "translation": "Remove main and tail blades. Unplug all servos before starting.",
           "needs_translation": false,
-          "max_length": 152
+          "max_length": 63
+        },
+        "sen_servos_unplugged": {
+          "english": "Servos unplugged",
+          "translation": "Servos unplugged",
+          "needs_translation": false,
+          "max_length": 16
+        },
+        "sen_blades_removed": {
+          "english": "All blades removed",
+          "translation": "All blades removed",
+          "needs_translation": false,
+          "max_length": 18
+        },
+        "art_side": {
+          "english": "Side view",
+          "translation": "Side view",
+          "needs_translation": false,
+          "max_length": 9
+        },
+        "art_front": {
+          "english": "Front",
+          "translation": "Front",
+          "needs_translation": false,
+          "max_length": 5
         },
         "sen_no_acc": {
           "english": "This board has no accelerometer: set the orientation on the Alignment page.",
@@ -7441,16 +7483,28 @@
           "max_length": 75
         },
         "sen_acc_title": {
+          "english": "Calibrate the accelerometer",
+          "translation": "Calibrate the accelerometer",
+          "needs_translation": false,
+          "max_length": 27
+        },
+        "sen_acc_text": {
+          "english": "Stand the helicopter on its skids on a level surface and keep it still.",
+          "translation": "Stand the helicopter on its skids on a level surface and keep it still.",
+          "needs_translation": false,
+          "max_length": 71
+        },
+        "sen_accelerometer": {
           "english": "Accelerometer",
           "translation": "Accelerometer",
           "needs_translation": false,
           "max_length": 13
         },
-        "sen_acc_text": {
-          "english": "Stand the helicopter on its skids on a level surface and keep it still, then calibrate.",
-          "translation": "Stand the helicopter on its skids on a level surface and keep it still, then calibrate.",
+        "sen_available": {
+          "english": "Available",
+          "translation": "Available",
           "needs_translation": false,
-          "max_length": 87
+          "max_length": 9
         },
         "sen_acc_busy": {
           "english": "Calibrating... keep it still.",
@@ -7471,22 +7525,46 @@
           "max_length": 55
         },
         "sen_calibrate": {
-          "english": "Calibrate",
-          "translation": "Calibrate",
+          "english": "Calibrate accelerometer",
+          "translation": "Calibrate accelerometer",
           "needs_translation": false,
-          "max_length": 9
+          "max_length": 23
         },
         "sen_align_title": {
-          "english": "Find the orientation",
-          "translation": "Find the orientation",
+          "english": "Board orientation",
+          "translation": "Board orientation",
           "needs_translation": false,
-          "max_length": 20
+          "max_length": 17
         },
         "sen_align_text": {
-          "english": "Stand the helicopter level, press Start, then lift the tail by at least 20 degrees and hold it still.",
-          "translation": "Stand the helicopter level, press Start, then lift the tail by at least 20 degrees and hold it still.",
+          "english": "Keep level, start detection, then lift the tail about 20 degrees.",
+          "translation": "Keep level, start detection, then lift the tail about 20 degrees.",
           "needs_translation": false,
-          "max_length": 101
+          "max_length": 65
+        },
+        "sen_auto_align": {
+          "english": "Detect board orientation",
+          "translation": "Detect board orientation",
+          "needs_translation": false,
+          "max_length": 24
+        },
+        "sen_roll": {
+          "english": "Roll",
+          "translation": "Roll",
+          "needs_translation": false,
+          "max_length": 4
+        },
+        "sen_pitch": {
+          "english": "Pitch",
+          "translation": "Pitch",
+          "needs_translation": false,
+          "max_length": 5
+        },
+        "sen_yaw": {
+          "english": "Yaw",
+          "translation": "Yaw",
+          "needs_translation": false,
+          "max_length": 3
         },
         "sen_align_lift": {
           "english": "Lift the tail 20 degrees and hold it still...",
@@ -7530,23 +7608,35 @@
           "needs_translation": false,
           "max_length": 72
         },
-        "sen_done_title": {
-          "english": "Orientation done",
-          "translation": "Orientation done",
+        "sen_check_title": {
+          "english": "Check orientation",
+          "translation": "Check orientation",
           "needs_translation": false,
-          "max_length": 16
+          "max_length": 17
+        },
+        "sen_check_text": {
+          "english": "Tilt the helicopter left/right and nose down/up: the picture must follow every movement.",
+          "translation": "Tilt the helicopter left/right and nose down/up: the picture must follow every movement.",
+          "needs_translation": false,
+          "max_length": 88
+        },
+        "sen_direction_ok": {
+          "english": "Direction is correct",
+          "translation": "Direction is correct",
+          "needs_translation": false,
+          "max_length": 20
+        },
+        "sen_attitude_waiting": {
+          "english": "Waiting for live attitude...",
+          "translation": "Waiting for live attitude...",
+          "needs_translation": false,
+          "max_length": 28
         },
         "sen_done_restart": {
-          "english": "The new orientation takes effect after the restart at the Connect the servos step.",
-          "translation": "The new orientation takes effect after the restart at the Connect the servos step.",
+          "english": "The new orientation applies after a restart. Restart now to check it, or Next: the restart then follows at the Connect the servos step.",
+          "translation": "The new orientation applies after a restart. Restart now to check it, or Next: the restart then follows at the Connect the servos step.",
           "needs_translation": false,
-          "max_length": 82
-        },
-        "sen_done_same": {
-          "english": "Nothing to change here.",
-          "translation": "Nothing to change here.",
-          "needs_translation": false,
-          "max_length": 23
+          "max_length": 135
         },
         "rcv_title": {
           "english": "Receiver",
@@ -8939,6 +9029,20 @@
           "translation": "Grey marks: FC range. Band: measured travel.",
           "needs_translation": false,
           "max_length": 44
+        }
+      },
+      "wizards": {
+        "name": {
+          "english": "Wizards",
+          "translation": "Wizards",
+          "needs_translation": false,
+          "max_length": 7
+        },
+        "model_setup": {
+          "english": "Model setup",
+          "translation": "Model setup",
+          "needs_translation": false,
+          "max_length": 11
         }
       }
     },
