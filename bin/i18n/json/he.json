@@ -9418,6 +9418,13 @@
           "max_length": 5,
           "reverse_text": true
         },
+        "mot_dshot150_note": {
+          "english": "DShot150 sends no RPM. Governor and RPM filter need DShot300 or an RPM sensor.",
+          "translation": "DShot150 לא שולח RPM. הגוברנר ומסנן ה-RPM דורשים DShot300 או חיישן RPM.",
+          "needs_translation": false,
+          "max_length": 78,
+          "reverse_text": true
+        },
         "mot_poles": {
           "english": "Motor poles",
           "translation": "קטבי מנוע",

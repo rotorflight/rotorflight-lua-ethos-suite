@@ -9418,6 +9418,13 @@
           "max_length": 5,
           "reverse_text": false
         },
+        "mot_dshot150_note": {
+          "english": "DShot150 sends no RPM. Governor and RPM filter need DShot300 or an RPM sensor.",
+          "translation": "DShot150 sender ikke turtall. Governor og RPM-filter krever DShot300 eller en turtallsensor.",
+          "needs_translation": false,
+          "max_length": 92,
+          "reverse_text": false
+        },
         "mot_poles": {
           "english": "Motor poles",
           "translation": "Motorpoler",

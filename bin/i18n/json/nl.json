@@ -9418,6 +9418,13 @@
           "max_length": 6,
           "reverse_text": false
         },
+        "mot_dshot150_note": {
+          "english": "DShot150 sends no RPM. Governor and RPM filter need DShot300 or an RPM sensor.",
+          "translation": "DShot150 geeft geen toerental. Governor en RPM-filter vereisen DShot300 of een toerentalsensor.",
+          "needs_translation": false,
+          "max_length": 95,
+          "reverse_text": false
+        },
         "mot_poles": {
           "english": "Motor poles",
           "translation": "Motorpolen",

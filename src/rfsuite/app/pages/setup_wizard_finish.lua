@@ -4,7 +4,9 @@
 -- wizard set (swash type and rotor direction, tail type, pitch limits, ESC
 -- protocol, the servos it worked on), the checks to do before the first
 -- flight, and Save and finish (the footer's way forward on the last step),
--- which saves and leaves the wizard.
+-- which saves and leaves the wizard. With DShot150 the summary repeats the
+-- Motor step's note: no bidirectional DShot, so no RPM for the governor or
+-- the RPM filter (setup_wizard_motor.lua).
 
 local requireModule = package.loaded["rfsuite.lib.require"] or assert(loadfile("lib/require.lua"))()
 local ui = requireModule("app/setup_wizard_ui.lua")
@@ -23,6 +25,7 @@ local T = {
   pitch = "@i18n(app.modules.setup_wizard.fin_pitch)@",
   pitchFmt = "@i18n(app.modules.setup_wizard.fin_pitch_fmt)@",
   esc = "@i18n(app.modules.setup_wizard.fin_esc)@",
+  dshot150Note = "@i18n(app.modules.setup_wizard.mot_dshot150_note)@",
   cw = "@i18n(app.modules.setup_wizard.fin_cw)@",
   ccw = "@i18n(app.modules.setup_wizard.fin_ccw)@",
   none = "@i18n(app.modules.setup_wizard.fin_none)@",
@@ -35,11 +38,13 @@ local TAIL_NAMES = {
   [heli.TAIL_BIDIRECTIONAL] = "@i18n(app.modules.setup_wizard.fin_tail_bidir)@",
 }
 
+local DSHOT150 = 5
+
 -- The protocols as the Motor step's tiles and Other drop-down name them; the
 -- rest by the codec's name, then the number.
 local PROTOCOL_NAMES = {
   [0] = "PWM",
-  [5] = "DShot150",
+  [DSHOT150] = "DShot150",
   [6] = "DShot300",
   [7] = "DShot600",
   [motorConfig.CASTLE_PROTOCOL] = "Castle",
@@ -93,13 +98,14 @@ local function new(wiz)
     local cfg = wiz.mixConfig() or {}
     local swash = heli.SWASH[cfg.swash_type or 0]
     local swashText = swash and (swash.name .. ", " .. ((cfg.main_rotor_dir or 0) == 1 and T.ccw or T.cw)) or T.none
-    scr:text(T.title, T.intro)
+    local protocol = motor and motor.motor_pwm_protocol
+    scr:text(T.title, T.intro, protocol == DSHOT150 and T.dshot150Note or nil)
     scr:step(1, 2)
     scr:rows({
       {T.swash, swashText},
       {T.tail, TAIL_NAMES[cfg.tail_rotor_mode or 0] or "-"},
       {T.pitch, string.format(T.pitchFmt, degrees("collective"), degrees("pitch"))},
-      {T.esc, protocolName(motor and motor.motor_pwm_protocol)},
+      {T.esc, protocolName(protocol)},
     })
     -- The outputs the wizard set up: the swash servos by number, the rotor
     -- direction, and the tail.
