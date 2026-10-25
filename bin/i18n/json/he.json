@@ -10056,10 +10056,10 @@
           "reverse_text": true
         },
         "tal_cal": {
-          "english": "The tail is held at 22 degrees. Measure the tail blade pitch and adjust until it reads 22 degrees each way.",
-          "translation": "הזנב מוחזק ב-22 מעלות. מדוד את פיץ' להבי הזנב וכוונן עד שהוא 22 מעלות לכל כיוון.",
+          "english": "The tail is held at 22.5° each way. Measure the tail blade pitch and adjust until it reads 22.5°. No pitch gauge? Fold a square of paper corner to corner (45°): seen from the tail tip, the fold fits flush between the blades.",
+          "translation": "הזנב מוחזק ב-22.5° לכל כיוון. מדוד את פיץ' להבי הזנב וכוונן עד שהוא 22.5°. אין מד? קפל ריבוע נייר פינה לפינה (45°): במבט מקצה הלהב, הקפל נכנס בדיוק בין הלהבים.",
           "needs_translation": false,
-          "max_length": 107,
+          "max_length": 224,
           "reverse_text": true
         },
         "tal_lim_title": {

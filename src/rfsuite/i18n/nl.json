@@ -9781,11 +9781,11 @@
           "translation": "Swashplate-type"
         },
         "tal_cal": {
-          "english": "The tail is held at 22 degrees. Measure the tail blade pitch and adjust until it reads 22 degrees each way.",
-          "max_length": 107,
+          "english": "The tail is held at 22.5° each way. Measure the tail blade pitch and adjust until it reads 22.5°. No pitch gauge? Fold a square of paper corner to corner (45°): seen from the tail tip, the fold fits flush between the blades.",
+          "max_length": 224,
           "needs_translation": false,
           "reverse_text": false,
-          "translation": "De staart staat op 22 graden. Meet de staartbladpitch en verstel tot die in beide richtingen 22 graden is."
+          "translation": "De staart staat op 22,5° in beide richtingen. Meet de staartbladpitch en verstel tot die 22,5° is. Geen meter? Vouw een vierkant papier van hoek tot hoek (45°): vanaf de bladpunt gezien past de vouw precies tussen de bladen."
         },
         "tal_cal_title": {
           "english": "Tail calibration",

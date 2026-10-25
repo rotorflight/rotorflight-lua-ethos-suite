@@ -10056,10 +10056,10 @@
           "reverse_text": false
         },
         "tal_cal": {
-          "english": "The tail is held at 22 degrees. Measure the tail blade pitch and adjust until it reads 22 degrees each way.",
-          "translation": "Das Heck wird auf 22 Grad gehalten. Heckblattwinkel messen und anpassen, bis er in beide Richtungen 22 Grad zeigt.",
+          "english": "The tail is held at 22.5° each way. Measure the tail blade pitch and adjust until it reads 22.5°. No pitch gauge? Fold a square of paper corner to corner (45°): seen from the tail tip, the fold fits flush between the blades.",
+          "translation": "Das Heck wird auf 22,5° je Richtung gehalten. Heckblattwinkel messen und anpassen, bis er 22,5° zeigt. Keine Lehre? Quadratisches Papier diagonal falten (45°): von der Blattspitze aus gesehen passt der Falz genau zwischen die Blätter.",
           "needs_translation": false,
-          "max_length": 114,
+          "max_length": 234,
           "reverse_text": false
         },
         "tal_lim_title": {

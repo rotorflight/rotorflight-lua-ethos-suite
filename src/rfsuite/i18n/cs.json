@@ -9781,11 +9781,11 @@
           "translation": "Typ desky"
         },
         "tal_cal": {
-          "english": "The tail is held at 22 degrees. Measure the tail blade pitch and adjust until it reads 22 degrees each way.",
-          "max_length": 107,
+          "english": "The tail is held at 22.5° each way. Measure the tail blade pitch and adjust until it reads 22.5°. No pitch gauge? Fold a square of paper corner to corner (45°): seen from the tail tip, the fold fits flush between the blades.",
+          "max_length": 224,
           "needs_translation": false,
           "reverse_text": false,
-          "translation": "Ocas je držen na 22 stupních. Změřte úhel ocasního listu a dolaďte, až ukáže 22 stupňů na obě strany."
+          "translation": "Ocas je držen na 22,5° na obě strany. Změřte úhel ocasního listu a dolaďte, až ukáže 22,5°. Nemáte měrku? Přeložte čtverec papíru úhlopříčně (45°): při pohledu od špičky listu sedí přehyb přesně mezi listy."
         },
         "tal_cal_title": {
           "english": "Tail calibration",

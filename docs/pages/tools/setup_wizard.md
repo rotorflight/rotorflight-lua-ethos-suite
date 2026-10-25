@@ -38,7 +38,7 @@ stays beside the title. A step with one screen shows no count.
 | 8. Directions | Puts roll, pitch and collective in passthrough. Move each stick as shown: if the swash moves the wrong way, Wrong reverses that mixer input. |
 | 9. Level swash | Holds the swash at its middle and trims roll, pitch and collective (0.1 % steps) until it is level and the blades are at zero pitch. |
 | 10. Blade pitch | Holds 9° of collective, then 9° of cyclic: measure the blades with a pitch gauge, enter the reading, and Calibrate scales the mixer so 9° is 9°. Then the cyclic limit, collective limit (0 to 20°) and total pitch limit (0 to 36°). |
-| 11. Tail rotor | Variable-pitch tail: centre trim, stick direction, calibration at 22° each way, and CW/CCW end stops at up to 60°. Motorised tail: a short spin test at a set power (reverse too on a bidirectional tail) and the tail idle. |
+| 11. Tail rotor | Variable-pitch tail: centre trim, stick direction, calibration at 22.5° each way (no pitch gauge: a square of paper folded corner to corner, 45°, fits between the blades seen end-on from the tip), and CW/CCW end stops at up to 60°. Motorised tail: a short spin test at a set power (reverse too on a bidirectional tail) and the tail idle. |
 | 12. Gyro check | No overrides: move the helicopter by hand and check the swash (and a servo tail) pushes back against the movement. A wrong answer means the board orientation is wrong: go back to step 1, and don't reverse any servos for it. |
 | 13. Finish | A summary of what was set and the checks before the first flight. With DShot150 it repeats the Motor & ESC step's note that there is no RPM for the governor or the RPM filter. Save and finish saves and leaves the wizard. |
 

@@ -9781,11 +9781,11 @@
           "translation": "Type de plateau"
         },
         "tal_cal": {
-          "english": "The tail is held at 22 degrees. Measure the tail blade pitch and adjust until it reads 22 degrees each way.",
-          "max_length": 115,
+          "english": "The tail is held at 22.5° each way. Measure the tail blade pitch and adjust until it reads 22.5°. No pitch gauge? Fold a square of paper corner to corner (45°): seen from the tail tip, the fold fits flush between the blades.",
+          "max_length": 231,
           "needs_translation": false,
           "reverse_text": false,
-          "translation": "La queue est tenue à 22 degrés. Mesurez le pas des pales de queue et ajustez jusqu'à lire 22 degrés de chaque côté."
+          "translation": "La queue est tenue à 22,5° de chaque côté. Mesurez le pas des pales de queue et ajustez jusqu'à lire 22,5°. Pas de jauge ? Pliez un carré de papier en diagonale (45°) : vu depuis le bout des pales, le pli s'ajuste pile entre elles."
         },
         "tal_cal_title": {
           "english": "Tail calibration",

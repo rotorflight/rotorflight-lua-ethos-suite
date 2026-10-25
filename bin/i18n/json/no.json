@@ -10056,10 +10056,10 @@
           "reverse_text": false
         },
         "tal_cal": {
-          "english": "The tail is held at 22 degrees. Measure the tail blade pitch and adjust until it reads 22 degrees each way.",
-          "translation": "Halen holdes på 22 grader. Mål halebladpitchen og juster til den viser 22 grader begge veier.",
+          "english": "The tail is held at 22.5° each way. Measure the tail blade pitch and adjust until it reads 22.5°. No pitch gauge? Fold a square of paper corner to corner (45°): seen from the tail tip, the fold fits flush between the blades.",
+          "translation": "Halen holdes på 22,5° begge veier. Mål halebladpitchen og juster til den viser 22,5°. Ingen måler? Brett et kvadratisk papir hjørne mot hjørne (45°): sett fra bladtuppen passer bretten nøyaktig mellom bladene.",
           "needs_translation": false,
-          "max_length": 107,
+          "max_length": 224,
           "reverse_text": false
         },
         "tal_lim_title": {

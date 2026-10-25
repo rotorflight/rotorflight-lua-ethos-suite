@@ -10056,10 +10056,10 @@
           "reverse_text": false
         },
         "tal_cal": {
-          "english": "The tail is held at 22 degrees. Measure the tail blade pitch and adjust until it reads 22 degrees each way.",
-          "translation": "Ogon jest trzymany na 22 stopniach. Zmierz skok łopaty ogona i koryguj, aż pokaże 22 stopnie w każdą stronę.",
+          "english": "The tail is held at 22.5° each way. Measure the tail blade pitch and adjust until it reads 22.5°. No pitch gauge? Fold a square of paper corner to corner (45°): seen from the tail tip, the fold fits flush between the blades.",
+          "translation": "Ogon jest trzymany na 22,5° w każdą stronę. Zmierz skok łopat ogona i koryguj, aż pokaże 22,5°. Brak miernika? Złóż kwadrat papieru po przekątnej (45°): patrząc od końcówki łopaty, zgięcie pasuje dokładnie między łopaty.",
           "needs_translation": false,
-          "max_length": 108,
+          "max_length": 224,
           "reverse_text": false
         },
         "tal_lim_title": {
