@@ -26,6 +26,12 @@
 --   art.rotor(dir)             the rotor disc from above, turning CW or CCW
 --   art.tailType(mode)         pitch tail with its servo, or a tail motor
 --   art.tailMotor(reverse)     the tail motor from above (live field running)
+--   art.modeSwitch(icons)      the Configurator's toggle switch (live fields
+--                              angle, -28..28 degrees, and state "listen" /
+--                              "on" / "off" for its tip), under a row of mode
+--                              icons if given ("arm", "rescue", "trainer"; the
+--                              live list set lights the assigned ones)
+--   art.modeIcon(name, cx, cy, s, color)  one of those icons, for a title line
 --   art.attitude(state, style) the live helicopter of the orientation check:
 --                              solid (default, lib/heli3d.lua: the
 --                              Configurator's helicopter) or "wire";
@@ -900,7 +906,7 @@ local function drawAttitudeSolid(l, x, y, w, h, colors)
   if not s.valid then return end
   heli3d.setup(s.rotorDir == 1 and ROTOR_CCW or ROTOR_CW)
   heli3d.pose(nil)
-  heli3d.draw(x, y, w, h - th - 4, s.roll or 0, s.pitch or 0, ATT_VIEW_YAW)
+  heli3d.draw(x, y, w, h - th - 4, s.roll or 0, s.pitch or 0, ATT_VIEW_YAW + (s.yaw or 0))
 end
 
 -- From wakeup: the solid model's next step (lib/heli3d.lua). It builds the
@@ -1039,6 +1045,125 @@ local function drawTailMotor(l, x, y, w, h, colors)
   end
 end
 
+---------------------------------------------------------------------------
+-- Mode switches: rotorflight-configurator's SwitchFlick.svelte (a 40 x 48
+-- toggle: plate, lever, tip, pivot) and Font Awesome's power-off, life-ring and
+-- graduation-cap, as the Configurator's cards show them.
+---------------------------------------------------------------------------
+
+function art.modeSwitch(icons)
+  return {kind = "modeSwitch", icons = icons, set = {}, angle = -28, state = "off"}
+end
+
+-- A thick segment at any slope: the fan runs across the line, not along it.
+local function thickSeg(x1, y1, x2, y2, t)
+  local half = floor(t / 2)
+  local steep = math.abs(y2 - y1) > math.abs(x2 - x1)
+  for k = -half, half do
+    if steep then lcd.drawLine(x1 + k, y1, x2 + k, y2) else lcd.drawLine(x1, y1 + k, x2, y2 + k) end
+  end
+end
+
+-- A filled ring from a0 to a1 degrees (onCircle()'s angles: from 3 o'clock,
+-- counter-clockwise), as triangles: the same on every firmware, where
+-- drawAnnulusSector's angles are not pinned down.
+local function ring(cx, cy, ri, ro, a0, a1)
+  local steps = math.max(4, floor(math.abs(a1 - a0) / 10))
+  local ox, oy = onCircle(cx, cy, ro, a0)
+  local ix, iy = onCircle(cx, cy, ri, a0)
+  for i = 1, steps do
+    local a = a0 + (a1 - a0) * i / steps
+    local nox, noy = onCircle(cx, cy, ro, a)
+    local nix, niy = onCircle(cx, cy, ri, a)
+    quad(ox, oy, nox, noy, nix, niy, ix, iy)
+    ox, oy, ix, iy = nox, noy, nix, niy
+  end
+end
+
+local function modeIcon(name, cx, cy, s, color, colors)
+  lcd.color(color)
+  local t = math.max(2, floor(s * 0.14))
+  if name == "arm" then
+    -- Power (Font Awesome power-off): a ring open 40 degrees either side of the
+    -- top, and the stroke from just above it down to the middle.
+    local ro = floor(s * 0.44)
+    local ccy = cy + floor(s * 0.06)
+    ring(cx, ccy, ro - t, ro, 130, 410)
+    local top = ccy - ro - floor(t / 2)
+    lcd.drawFilledRectangle(cx - floor(t / 2), top, t, ccy - top)
+    lcd.drawFilledCircle(cx, top, floor(t / 2))
+    lcd.drawFilledCircle(cx, ccy, floor(t / 2))
+  elseif name == "rescue" then
+    -- Life ring: eight bands, the colour and a grey in turn.
+    local ro, ri = floor(s * 0.46), floor(s * 0.24)
+    for k = 0, 7 do
+      lcd.color(k % 2 == 0 and color or colors.surface)
+      ring(cx, cy, ri, ro, k * 45 + 22, k * 45 + 67)
+    end
+  elseif name == "trainer" then
+    -- Mortarboard: the board, the cap under it, the tassel at the right.
+    local by = cy - floor(s * 0.12)
+    local bw, bh = floor(s * 0.5), floor(s * 0.2)
+    quad(cx - bw, by, cx, by - bh, cx + bw, by, cx, by + bh)
+    local cw = floor(s * 0.28)
+    quad(cx - cw, by + floor(bh * 0.4), cx + cw, by + floor(bh * 0.4), cx + cw, by + floor(s * 0.36),
+      cx - cw, by + floor(s * 0.36))
+    local tx = cx + bw - floor(s * 0.1)
+    lcd.drawFilledRectangle(tx, by, math.max(2, floor(s * 0.05)), floor(s * 0.34))
+    lcd.drawFilledCircle(tx + 1, by + floor(s * 0.36), math.max(2, floor(s * 0.06)))
+  end
+end
+
+-- The toggle in a box w wide (h tall): SwitchFlick's 40 x 48 view, scaled.
+local function toggle(x, y, w, h, angle, tipColor, colors)
+  local u = min(w / 40, h / 48)
+  local ox = x + floor((w - 40 * u) / 2)
+  local oy = y + floor((h - 48 * u) / 2)
+  local function X(v) return ox + floor(v * u + 0.5) end
+  local function Y(v) return oy + floor(v * u + 0.5) end
+  -- The plate (6, 30, 28 x 14, corners 4).
+  lcd.color(colors.body)
+  local r = math.max(2, floor(4 * u))
+  lcd.drawFilledRectangle(X(6) + r, Y(30), X(34) - X(6) - 2 * r, Y(44) - Y(30))
+  lcd.drawFilledRectangle(X(6), Y(30) + r, X(34) - X(6), Y(44) - Y(30) - 2 * r)
+  lcd.drawFilledCircle(X(6) + r, Y(30) + r, r)
+  lcd.drawFilledCircle(X(34) - r, Y(30) + r, r)
+  lcd.drawFilledCircle(X(6) + r, Y(44) - r, r)
+  lcd.drawFilledCircle(X(34) - r, Y(44) - r, r)
+  -- The lever: 28 long from the pivot (20, 36), turned by angle.
+  local a = rad(angle)
+  local px, py = X(20), Y(36)
+  local tx, ty = px + floor(sin(a) * 28 * u + 0.5), py - floor(cos(a) * 28 * u + 0.5)
+  lcd.color(colors.text)
+  thickSeg(px, py, tx, ty, math.max(2, floor(3.5 * u)))
+  lcd.color(tipColor)
+  lcd.drawFilledCircle(tx, ty, math.max(3, floor(4 * u)))
+  lcd.color(colors.text)
+  lcd.drawFilledCircle(px, py, math.max(2, floor(3.5 * u)))
+end
+
+local function drawModeSwitch(l, x, y, w, h, colors)
+  local iconH = 0
+  if l.icons then
+    local n = #l.icons
+    local s = floor(min(w / (n * 1.5), h * 0.28))
+    local gap = floor((w - n * s) / (n + 1))
+    for i = 1, n do
+      local cx = x + gap * i + s * (i - 1) + floor(s / 2)
+      modeIcon(l.icons[i], cx, y + floor(s / 2) + 4, s, l.set[i] and colors.good or colors.muted, colors)
+    end
+    iconH = s + 12
+  end
+  local tip = (l.state == "listen" and colors.active) or (l.state == "on" and colors.good) or colors.muted
+  local sw = floor(min(w * 0.5, (h - iconH) * 40 / 48))
+  toggle(x + floor((w - sw) / 2), y + iconH, sw, h - iconH, l.angle or -28, tip, colors)
+end
+
+-- A mode's icon, s px, for a title line (app/setup_wizard_ui.lua).
+function art.modeIcon(name, cx, cy, s, color)
+  modeIcon(name, cx, cy, s, color, art.colors())
+end
+
 function art.draw(l, x, y, w, h, colors)
   if not l or w <= 0 or h <= 20 then return end
   local k = l.kind
@@ -1078,6 +1203,8 @@ function art.draw(l, x, y, w, h, colors)
     drawTailType(l, x, y, w, h, colors)
   elseif k == "tailMotor" then
     drawTailMotor(l, x, y, w, h, colors)
+  elseif k == "modeSwitch" then
+    drawModeSwitch(l, x, y, w, h, colors)
   end
 end
 

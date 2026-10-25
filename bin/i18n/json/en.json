@@ -7272,6 +7272,12 @@
           "needs_translation": false,
           "max_length": 8
         },
+        "step_modes": {
+          "english": "Mode switches",
+          "translation": "Mode switches",
+          "needs_translation": false,
+          "max_length": 13
+        },
         "step_finish": {
           "english": "Finish",
           "translation": "Finish",
@@ -7783,10 +7789,10 @@
           "max_length": 3
         },
         "rcv_ch_collective": {
-          "english": "Collective",
-          "translation": "Collective",
+          "english": "Coll.",
+          "translation": "Coll.",
           "needs_translation": false,
-          "max_length": 10
+          "max_length": 5
         },
         "rcv_ch_throttle": {
           "english": "Throttle",
@@ -7860,11 +7866,143 @@
           "needs_translation": false,
           "max_length": 13
         },
-        "rcv_done": {
-          "english": "The channel order and throttle range are set.",
-          "translation": "The channel order and throttle range are set.",
+        "rcv_done_keep": {
+          "english": "Nothing has changed: the flight controller keeps its receiver settings. Next goes on to the swashplate.",
+          "translation": "Nothing has changed: the flight controller keeps its receiver settings. Next goes on to the swashplate.",
           "needs_translation": false,
-          "max_length": 45
+          "max_length": 103
+        },
+        "rcv_done_save": {
+          "english": "The changes already work on the flight controller, but are not stored yet. Save and continue writes them to its memory (EEPROM), so they survive a restart.",
+          "translation": "The changes already work on the flight controller, but are not stored yet. Save and continue writes them to its memory (EEPROM), so they survive a restart.",
+          "needs_translation": false,
+          "max_length": 155
+        },
+        "mod_intro": {
+          "english": "Put modes on switches on your radio: press Assign, then flick the switch to the position that should turn the mode on. Only ARM is required; the others can be added later under Modes.",
+          "translation": "Put modes on switches on your radio: press Assign, then flick the switch to the position that should turn the mode on. Only ARM is required; the others can be added later under Modes.",
+          "needs_translation": false,
+          "max_length": 183
+        },
+        "mod_required": {
+          "english": "Required",
+          "translation": "Required",
+          "needs_translation": false,
+          "max_length": 8
+        },
+        "mod_assign": {
+          "english": "Assign",
+          "translation": "Assign",
+          "needs_translation": false,
+          "max_length": 6
+        },
+        "mod_reassign": {
+          "english": "Assign again",
+          "translation": "Assign again",
+          "needs_translation": false,
+          "max_length": 12
+        },
+        "mod_remove": {
+          "english": "Remove",
+          "translation": "Remove",
+          "needs_translation": false,
+          "max_length": 6
+        },
+        "mod_cancel": {
+          "english": "Cancel",
+          "translation": "Cancel",
+          "needs_translation": false,
+          "max_length": 6
+        },
+        "mod_listening": {
+          "english": "Flick the switch now…",
+          "translation": "Flick the switch now…",
+          "needs_translation": false,
+          "max_length": 21
+        },
+        "mod_no_switch": {
+          "english": "No switch moved. Press Assign and flick it within 15 s.",
+          "translation": "No switch moved. Press Assign and flick it within 15 s.",
+          "needs_translation": false,
+          "max_length": 55
+        },
+        "mod_no_slot": {
+          "english": "No free mode slot on the FC: remove one under Modes.",
+          "translation": "No free mode slot on the FC: remove one under Modes.",
+          "needs_translation": false,
+          "max_length": 52
+        },
+        "mod_not_set": {
+          "english": "Not assigned",
+          "translation": "Not assigned",
+          "needs_translation": false,
+          "max_length": 12
+        },
+        "mod_range_fmt": {
+          "english": "CH%d (%d - %d us)",
+          "translation": "CH%d (%d - %d us)",
+          "needs_translation": false,
+          "max_length": 17
+        },
+        "mod_on": {
+          "english": "On",
+          "translation": "On",
+          "needs_translation": false,
+          "max_length": 2
+        },
+        "mod_off": {
+          "english": "Off",
+          "translation": "Off",
+          "needs_translation": false,
+          "max_length": 3
+        },
+        "mod_done_title": {
+          "english": "Switches done",
+          "translation": "Switches done",
+          "needs_translation": false,
+          "max_length": 13
+        },
+        "mod_done_keep": {
+          "english": "Nothing has changed: the flight controller keeps its mode switches. Next goes on to the swashplate.",
+          "translation": "Nothing has changed: the flight controller keeps its mode switches. Next goes on to the swashplate.",
+          "needs_translation": false,
+          "max_length": 99
+        },
+        "mod_arm": {
+          "english": "Arm",
+          "translation": "Arm",
+          "needs_translation": false,
+          "max_length": 3
+        },
+        "mod_rescue": {
+          "english": "Rescue",
+          "translation": "Rescue",
+          "needs_translation": false,
+          "max_length": 6
+        },
+        "mod_trainer": {
+          "english": "Trainer",
+          "translation": "Trainer",
+          "needs_translation": false,
+          "max_length": 7
+        },
+        "mod_help_arm": {
+          "english": "Arms the motor. Use a switch you won't knock by accident.",
+          "translation": "Arms the motor. Use a switch you won't knock by accident.",
+          "needs_translation": false,
+          "max_length": 57
+        },
+        "mod_help_rescue": {
+          "english": "Turns the helicopter upright and holds it level.",
+          "translation": "Turns the helicopter upright and holds it level.",
+          "needs_translation": false,
+          "max_length": 48
+        },
+        "mod_help_trainer": {
+          "english": "Limits how far the helicopter can tilt, to help while learning.",
+          "translation": "Limits how far the helicopter can tilt, to help while learning.",
+          "needs_translation": false,
+          "max_length": 63
         },
         "swa_type_title": {
           "english": "Swashplate type",
@@ -9061,10 +9199,10 @@
           "max_length": 64
         },
         "rcv_standard_order": {
-          "english": "Standard channel order",
-          "translation": "Standard channel order",
+          "english": "Std. order",
+          "translation": "Std. order",
           "needs_translation": false,
-          "max_length": 22
+          "max_length": 10
         },
         "rcv_dir_forward": {
           "english": "Forward",
@@ -9101,6 +9239,12 @@
           "translation": "Measured",
           "needs_translation": false,
           "max_length": 8
+        },
+        "rcv_link_mismatch_fmt": {
+          "english": "The FC reads %s differently: check the radio's channel outputs.",
+          "translation": "The FC reads %s differently: check the radio's channel outputs.",
+          "needs_translation": false,
+          "max_length": 63
         }
       },
       "wizards": {

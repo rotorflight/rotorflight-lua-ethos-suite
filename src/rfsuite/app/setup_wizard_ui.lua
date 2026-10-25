@@ -123,6 +123,7 @@ function Screen:begin()
   v.top = form.height() + 4
   v.bottom = nil
   v.title = nil
+  v.titleIcon, v.badge = nil, nil
   v.lines = {}
   v.accentFrom = nil
   v.picture, v.caption, v.drawFn = nil, nil, nil
@@ -153,6 +154,12 @@ function Screen:text(title, body, accent, progress)
   end
 end
 
+-- The title line as the Configurator's cards: a mode icon before the title
+-- (art.modeIcon's name) and a badge after it ("Required"). Call after text().
+function Screen:titleExtras(icon, badge)
+  self.view.titleIcon, self.view.badge = icon, badge
+end
+
 function Screen:picture(layout, caption)
   self.view.picture = layout
   self.view.caption = caption
@@ -168,6 +175,15 @@ end
 -- Values may be changed in place later (screen:setRow) without a rebuild.
 function Screen:rows(list)
   self.view.rows = list
+end
+
+-- A checks() fact's value, changed in place (from wakeup, then invalidate):
+-- true when it changed. Not for a row with a button.
+function Screen:setCheckValue(i, value)
+  local row = self.view.checks and self.view.checks[i]
+  if not row or row.value == value then return false end
+  row.value = value
+  return true
 end
 
 function Screen:setRow(i, value, accent)
@@ -251,8 +267,10 @@ function Screen:checks(list, focus)
       -- A label wraps onto two lines when it does not fit beside the answer;
       -- anything beyond the second line is cut short.
       lcd.font(FONT_S)
-      local lines = self.wiz.wrapLines(c.label, labelW, FONT_S)
-      if #lines > 2 then lines = {lines[1], ui.fit(table.concat(lines, " ", 2), labelW)} end
+      -- A label with nothing beside it (no button, field or value) has the width.
+      local w = (c.press or c.number or c.value) and labelW or (room - x)
+      local lines = self.wiz.wrapLines(c.label, w, FONT_S)
+      if #lines > 2 then lines = {lines[1], ui.fit(table.concat(lines, " ", 2), w)} end
       row.labelLines = lines
     end
     if c.press then
@@ -438,9 +456,32 @@ function Screen:paint()
   local y = v.top
   if v.title then
     lcd.font(FONT_STD)
-    lcd.color(v.progress and colors.active or colors.text)
-    lcd.drawText(MARGIN, y, v.title, LEFT)
     local tw, th = lcd.getTextSize(v.title)
+    local tx = MARGIN
+    if v.titleIcon then
+      art.modeIcon(v.titleIcon, MARGIN + floor(th / 2), y + floor(th / 2), th, colors.text)
+      tx = MARGIN + th + 8
+    end
+    lcd.font(FONT_STD)
+    lcd.color(v.progress and colors.active or colors.text)
+    lcd.drawText(tx, y, v.title, LEFT)
+    if v.badge then
+      -- A pill in the accent colour, dark text on it.
+      lcd.font(FONT_S)
+      local bw, bh = lcd.getTextSize(v.badge)
+      local ph = bh + 4
+      local r = floor(ph / 2)
+      local px, py = tx + tw + 12, y + floor((th - ph) / 2)
+      local pw = bw + 2 * r
+      lcd.color(colors.active)
+      lcd.drawFilledRectangle(px + r, py, pw - 2 * r, ph)
+      lcd.drawFilledCircle(px + r, py + r, r)
+      lcd.drawFilledCircle(px + pw - r, py + r, r)
+      lcd.color(lcd.GREY(20))
+      lcd.drawText(px + r, py + 2, v.badge, LEFT)
+      lcd.font(FONT_STD)
+    end
+    tw = tw + (tx - MARGIN)
     if type(v.progress) == "string" then
       lcd.color(colors.muted)
       lcd.drawText(MARGIN + tw + 12, y, v.progress, LEFT)

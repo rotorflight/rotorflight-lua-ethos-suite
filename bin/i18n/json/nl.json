@@ -8433,6 +8433,12 @@
           "max_length": 9,
           "reverse_text": false
         },
+        "step_modes": {
+          "english": "Mode switches",
+          "translation": "Schakelaars",
+          "needs_translation": false,
+          "max_length": 13
+        },
         "step_finish": {
           "english": "Finish",
           "translation": "Afronden",
@@ -9028,11 +9034,10 @@
           "reverse_text": false
         },
         "rcv_ch_collective": {
-          "english": "Collective",
-          "translation": "Collectief",
+          "english": "Coll.",
+          "translation": "Coll.",
           "needs_translation": false,
-          "max_length": 10,
-          "reverse_text": false
+          "max_length": 5
         },
         "rcv_ch_throttle": {
           "english": "Throttle",
@@ -9117,12 +9122,143 @@
           "max_length": 15,
           "reverse_text": false
         },
-        "rcv_done": {
-          "english": "The channel order and throttle range are set.",
-          "translation": "Kanaalvolgorde en gasbereik zijn ingesteld.",
+        "rcv_done_keep": {
+          "english": "Nothing has changed: the flight controller keeps its receiver settings. Next goes on to the swashplate.",
+          "translation": "Er is niets gewijzigd: de FC houdt zijn ontvangerinstellingen. Volgende gaat verder naar de swashplate.",
           "needs_translation": false,
-          "max_length": 45,
-          "reverse_text": false
+          "max_length": 103
+        },
+        "rcv_done_save": {
+          "english": "The changes already work on the flight controller, but are not stored yet. Save and continue writes them to its memory (EEPROM), so they survive a restart.",
+          "translation": "De wijzigingen werken al in de FC, maar zijn nog niet opgeslagen. Opslaan & verder schrijft ze in zijn geheugen (EEPROM), zodat ze een herstart overleven.",
+          "needs_translation": false,
+          "max_length": 155
+        },
+        "mod_intro": {
+          "english": "Put modes on switches on your radio: press Assign, then flick the switch to the position that should turn the mode on. Only ARM is required; the others can be added later under Modes.",
+          "translation": "Zet modi op schakelaars: druk op Toewijzen en zet de schakelaar in de stand die de modus moet inschakelen. Alleen ARM is verplicht; de rest kan later bij Modi.",
+          "needs_translation": false,
+          "max_length": 183
+        },
+        "mod_required": {
+          "english": "Required",
+          "translation": "Verplicht",
+          "needs_translation": false,
+          "max_length": 9
+        },
+        "mod_assign": {
+          "english": "Assign",
+          "translation": "Toewijzen",
+          "needs_translation": false,
+          "max_length": 9
+        },
+        "mod_reassign": {
+          "english": "Assign again",
+          "translation": "Opnieuw",
+          "needs_translation": false,
+          "max_length": 12
+        },
+        "mod_remove": {
+          "english": "Remove",
+          "translation": "Verwijderen",
+          "needs_translation": false,
+          "max_length": 11
+        },
+        "mod_cancel": {
+          "english": "Cancel",
+          "translation": "Annuleren",
+          "needs_translation": false,
+          "max_length": 9
+        },
+        "mod_listening": {
+          "english": "Flick the switch now…",
+          "translation": "Zet nu de schakelaar om…",
+          "needs_translation": false,
+          "max_length": 24
+        },
+        "mod_no_switch": {
+          "english": "No switch moved. Press Assign and flick it within 15 s.",
+          "translation": "Geen schakelaar bewogen. Druk op Toewijzen en zet hem binnen 15 s om.",
+          "needs_translation": false,
+          "max_length": 69
+        },
+        "mod_no_slot": {
+          "english": "No free mode slot on the FC: remove one under Modes.",
+          "translation": "Geen vrije modusplek in de FC: verwijder er een bij Modi.",
+          "needs_translation": false,
+          "max_length": 57
+        },
+        "mod_not_set": {
+          "english": "Not assigned",
+          "translation": "Niet toegewezen",
+          "needs_translation": false,
+          "max_length": 15
+        },
+        "mod_range_fmt": {
+          "english": "CH%d (%d - %d us)",
+          "translation": "CH%d (%d - %d us)",
+          "needs_translation": false,
+          "max_length": 17
+        },
+        "mod_on": {
+          "english": "On",
+          "translation": "Aan",
+          "needs_translation": false,
+          "max_length": 3
+        },
+        "mod_off": {
+          "english": "Off",
+          "translation": "Uit",
+          "needs_translation": false,
+          "max_length": 3
+        },
+        "mod_done_title": {
+          "english": "Switches done",
+          "translation": "Schakelaars klaar",
+          "needs_translation": false,
+          "max_length": 17
+        },
+        "mod_done_keep": {
+          "english": "Nothing has changed: the flight controller keeps its mode switches. Next goes on to the swashplate.",
+          "translation": "Er is niets gewijzigd: de FC houdt zijn modusschakelaars. Volgende gaat verder naar de swashplate.",
+          "needs_translation": false,
+          "max_length": 99
+        },
+        "mod_arm": {
+          "english": "Arm",
+          "translation": "Armen",
+          "needs_translation": false,
+          "max_length": 5
+        },
+        "mod_rescue": {
+          "english": "Rescue",
+          "translation": "Redding",
+          "needs_translation": false,
+          "max_length": 7
+        },
+        "mod_trainer": {
+          "english": "Trainer",
+          "translation": "Trainer",
+          "needs_translation": false,
+          "max_length": 7
+        },
+        "mod_help_arm": {
+          "english": "Arms the motor. Use a switch you won't knock by accident.",
+          "translation": "Schakelt de motor scherp. Kies een schakelaar die je niet per ongeluk raakt.",
+          "needs_translation": false,
+          "max_length": 76
+        },
+        "mod_help_rescue": {
+          "english": "Turns the helicopter upright and holds it level.",
+          "translation": "Zet de helikopter rechtop en houdt hem vlak.",
+          "needs_translation": false,
+          "max_length": 48
+        },
+        "mod_help_trainer": {
+          "english": "Limits how far the helicopter can tilt, to help while learning.",
+          "translation": "Beperkt hoe ver de helikopter kan kantelen, als hulp bij het leren.",
+          "needs_translation": false,
+          "max_length": 67
         },
         "swa_type_title": {
           "english": "Swashplate type",
@@ -10512,10 +10648,10 @@
           "max_length": 72
         },
         "rcv_standard_order": {
-          "english": "Standard channel order",
-          "translation": "Standaard kanaalvolgorde",
+          "english": "Std. order",
+          "translation": "Std. volgorde",
           "needs_translation": false,
-          "max_length": 24
+          "max_length": 13
         },
         "rcv_dir_forward": {
           "english": "Forward",
@@ -10552,6 +10688,12 @@
           "translation": "Gemeten",
           "needs_translation": false,
           "max_length": 8
+        },
+        "rcv_link_mismatch_fmt": {
+          "english": "The FC reads %s differently: check the radio's channel outputs.",
+          "translation": "De FC leest %s anders: controleer de kanaaluitgangen van de zender.",
+          "needs_translation": false,
+          "max_length": 67
         }
       },
       "wizards": {

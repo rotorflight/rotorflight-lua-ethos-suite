@@ -88,12 +88,15 @@ local AUTO_GIVE_UP = 60
 local SCREEN_INDEX = {intro = 1, acc = 2, align = 3, check = 4}
 local SCREEN_COUNT = 4
 
--- Orientation check: ask for the attitude every quarter second, one request
--- at a time (msp_attitude retries for up to ~1.6 s, so a request older than
--- ATT_LOST is given up); a picture older than ATT_STALE is not shown, so no
--- one confirms against an old one.
-local ATT_POLL = 0.25
-local ATT_LOST = 2.5
+-- Orientation check: ask for the attitude every ATT_POLL, one request at a time
+-- (msp_attitude retries for up to 3 x 0.8 s, so a request older than ATT_LOST is
+-- given up); a picture older than ATT_STALE is not shown, so no one confirms
+-- against an old one. Faster than this crowds the telemetry on the same link
+-- (each MSP reply blanks the FC's sensors for 250 ms on S.Port, F.Port and FBUS).
+local ATT_POLL = 0.4
+-- Above msp_attitude's own retries (3 x 0.8 s): shorter, a new read was queued
+-- behind the one still being retried.
+local ATT_LOST = 3.0
 local ATT_STALE = 2.0
 
 local function new(wiz)
@@ -121,7 +124,8 @@ local function new(wiz)
   -- Orientation: the tail lifted 20 degrees (the arrow is labelled with it).
   local tailPicture = art.photo("heli-tail-lift", T.sideView, "20°")
   -- Check: the live helicopter, and the answer that lets Next on.
-  local attitude = {roll = 0, pitch = 0, valid = false, readout = T.waiting}
+  local attitude = {roll = 0, pitch = 0, yaw = 0, valid = false, readout = T.waiting}
+  local yawRef = nil                  -- the heading when the check screen was entered
   local attitudePicture = art.attitude(attitude)
   local attInFlight, attAskedAt, attAt, nextAttAt = false, 0, nil, 0
   local attFresh = false              -- a new attitude to draw (see wakeup)
@@ -139,6 +143,7 @@ local function new(wiz)
 
   local function go(name)
     screen, note, noteAccent, busy, aligning, accWait = name, nil, nil, false, false, nil
+    if name == "check" then yawRef = nil end
     wiz.rebuild()
   end
 
@@ -214,8 +219,11 @@ local function new(wiz)
     if closed or screen ~= "check" then return end
     attAt = os.clock()
     local roll, pitch = (d.roll or 0) / 10, (d.pitch or 0) / 10
-    if not attitude.valid or roll ~= attitude.roll or pitch ~= attitude.pitch then
-      attitude.roll, attitude.pitch, attitude.valid = roll, pitch, true
+    local heading = d.yaw or 0
+    if yawRef == nil then yawRef = heading end
+    local yaw = ((heading - yawRef + 180) % 360) - 180
+    if not attitude.valid or roll ~= attitude.roll or pitch ~= attitude.pitch or yaw ~= attitude.yaw then
+      attitude.roll, attitude.pitch, attitude.yaw, attitude.valid = roll, pitch, yaw, true
       attitude.readout = string.format("%s %.1f°   %s %.1f°", T.roll, roll, T.pitch, pitch)
       attFresh = true
     end

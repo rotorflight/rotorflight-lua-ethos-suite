@@ -8367,6 +8367,132 @@
           "reverse_text": false,
           "translation": "此设置需要舵机 %s，但飞控没有对应输出。"
         },
+        "mod_arm": {
+          "english": "Arm",
+          "max_length": 3,
+          "needs_translation": false,
+          "translation": "解锁"
+        },
+        "mod_assign": {
+          "english": "Assign",
+          "max_length": 6,
+          "needs_translation": false,
+          "translation": "分配"
+        },
+        "mod_cancel": {
+          "english": "Cancel",
+          "max_length": 6,
+          "needs_translation": false,
+          "translation": "取消"
+        },
+        "mod_done_keep": {
+          "english": "Nothing has changed: the flight controller keeps its mode switches. Next goes on to the swashplate.",
+          "max_length": 99,
+          "needs_translation": false,
+          "translation": "未做任何更改：飞控保留其模式开关。下一步进入斜盘设置。"
+        },
+        "mod_done_title": {
+          "english": "Switches done",
+          "max_length": 13,
+          "needs_translation": false,
+          "translation": "开关完成"
+        },
+        "mod_help_arm": {
+          "english": "Arms the motor. Use a switch you won't knock by accident.",
+          "max_length": 57,
+          "needs_translation": false,
+          "translation": "解锁电机。请使用不会误碰的开关。"
+        },
+        "mod_help_rescue": {
+          "english": "Turns the helicopter upright and holds it level.",
+          "max_length": 48,
+          "needs_translation": false,
+          "translation": "将直升机翻正并保持水平。"
+        },
+        "mod_help_trainer": {
+          "english": "Limits how far the helicopter can tilt, to help while learning.",
+          "max_length": 63,
+          "needs_translation": false,
+          "translation": "限制直升机的倾斜幅度，帮助学习。"
+        },
+        "mod_intro": {
+          "english": "Put modes on switches on your radio: press Assign, then flick the switch to the position that should turn the mode on. Only ARM is required; the others can be added later under Modes.",
+          "max_length": 183,
+          "needs_translation": false,
+          "translation": "将模式分配到遥控器开关：按“分配”，然后把开关拨到应开启该模式的位置。只有 ARM 是必需的；其他可稍后在“模式”中添加。"
+        },
+        "mod_listening": {
+          "english": "Flick the switch now…",
+          "max_length": 21,
+          "needs_translation": false,
+          "translation": "现在拨动开关…"
+        },
+        "mod_no_slot": {
+          "english": "No free mode slot on the FC: remove one under Modes.",
+          "max_length": 52,
+          "needs_translation": false,
+          "translation": "飞控中没有空闲的模式槽：请在“模式”中移除一个。"
+        },
+        "mod_no_switch": {
+          "english": "No switch moved. Press Assign and flick it within 15 s.",
+          "max_length": 55,
+          "needs_translation": false,
+          "translation": "没有开关动作。按“分配”并在 15 秒内拨动开关。"
+        },
+        "mod_not_set": {
+          "english": "Not assigned",
+          "max_length": 12,
+          "needs_translation": false,
+          "translation": "未分配"
+        },
+        "mod_off": {
+          "english": "Off",
+          "max_length": 3,
+          "needs_translation": false,
+          "translation": "关"
+        },
+        "mod_on": {
+          "english": "On",
+          "max_length": 2,
+          "needs_translation": false,
+          "translation": "开"
+        },
+        "mod_range_fmt": {
+          "english": "CH%d (%d - %d us)",
+          "max_length": 17,
+          "needs_translation": false,
+          "translation": "CH%d (%d - %d us)"
+        },
+        "mod_reassign": {
+          "english": "Assign again",
+          "max_length": 12,
+          "needs_translation": false,
+          "translation": "重新分配"
+        },
+        "mod_remove": {
+          "english": "Remove",
+          "max_length": 6,
+          "needs_translation": false,
+          "translation": "移除"
+        },
+        "mod_required": {
+          "english": "Required",
+          "max_length": 8,
+          "needs_translation": false,
+          "translation": "必需"
+        },
+        "mod_rescue": {
+          "english": "Rescue",
+          "max_length": 6,
+          "needs_translation": false,
+          "translation": "救援"
+        },
+        "mod_trainer": {
+          "english": "Trainer",
+          "max_length": 7,
+          "needs_translation": false,
+          "translation": "教练"
+        },
         "mot_done_title": {
           "english": "Motor & ESC set",
           "max_length": 15,
@@ -8669,10 +8795,9 @@
           "translation": "保持桨叶拆下：电机可能会启动。"
         },
         "rcv_ch_collective": {
-          "english": "Collective",
-          "max_length": 10,
+          "english": "Coll.",
+          "max_length": 5,
           "needs_translation": false,
-          "reverse_text": false,
           "translation": "总距"
         },
         "rcv_ch_fmt": {
@@ -8769,12 +8894,17 @@
           "needs_translation": false,
           "translation": "向上"
         },
-        "rcv_done": {
-          "english": "The channel order and throttle range are set.",
-          "max_length": 45,
+        "rcv_done_keep": {
+          "english": "Nothing has changed: the flight controller keeps its receiver settings. Next goes on to the swashplate.",
+          "max_length": 103,
           "needs_translation": false,
-          "reverse_text": false,
-          "translation": "通道顺序和油门范围已设置。"
+          "translation": "未做任何更改：飞控保留其接收机设置。下一步进入斜盘设置。"
+        },
+        "rcv_done_save": {
+          "english": "The changes already work on the flight controller, but are not stored yet. Save and continue writes them to its memory (EEPROM), so they survive a restart.",
+          "max_length": 155,
+          "needs_translation": false,
+          "translation": "更改已在飞控中生效，但尚未保存。保存并继续会将其写入飞控存储（EEPROM），重启后仍然保留。"
         },
         "rcv_done_title": {
           "english": "Receiver done",
@@ -8794,6 +8924,12 @@
           "max_length": 140,
           "needs_translation": false,
           "translation": "遥控器通过此接收机与飞控通信。此处设置通道顺序、检查摇杆并设置油门范围。"
+        },
+        "rcv_link_mismatch_fmt": {
+          "english": "The FC reads %s differently: check the radio's channel outputs.",
+          "max_length": 63,
+          "needs_translation": false,
+          "translation": "飞控读取的%s与遥控器不同：请检查遥控器的通道输出。"
         },
         "rcv_link_text": {
           "english": "The protocol must match your receiver, or the radio link breaks.",
@@ -8964,10 +9100,10 @@
           "translation": "跳过"
         },
         "rcv_standard_order": {
-          "english": "Standard channel order",
-          "max_length": 22,
+          "english": "Std. order",
+          "max_length": 10,
           "needs_translation": false,
-          "translation": "标准通道顺序"
+          "translation": "标准顺序"
         },
         "rcv_sticks_text": {
           "english": "Each stick must reach ±100 %; if it does not, adjust the travel on the transmitter.",
@@ -9443,6 +9579,12 @@
           "needs_translation": false,
           "reverse_text": false,
           "translation": "斜盘调平"
+        },
+        "step_modes": {
+          "english": "Mode switches",
+          "max_length": 13,
+          "needs_translation": false,
+          "translation": "模式开关"
         },
         "step_motor": {
           "english": "Motor & ESC",

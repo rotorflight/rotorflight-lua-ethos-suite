@@ -8367,6 +8367,132 @@
           "reverse_text": false,
           "translation": "Servo %s je potřeba, ale deska pro něj nemá výstup."
         },
+        "mod_arm": {
+          "english": "Arm",
+          "max_length": 3,
+          "needs_translation": false,
+          "translation": "Arm"
+        },
+        "mod_assign": {
+          "english": "Assign",
+          "max_length": 8,
+          "needs_translation": false,
+          "translation": "Přiřadit"
+        },
+        "mod_cancel": {
+          "english": "Cancel",
+          "max_length": 6,
+          "needs_translation": false,
+          "translation": "Zrušit"
+        },
+        "mod_done_keep": {
+          "english": "Nothing has changed: the flight controller keeps its mode switches. Next goes on to the swashplate.",
+          "max_length": 99,
+          "needs_translation": false,
+          "translation": "Nic se nezměnilo: FC si ponechá přepínače režimů. Další pokračuje na cyklickou desku."
+        },
+        "mod_done_title": {
+          "english": "Switches done",
+          "max_length": 16,
+          "needs_translation": false,
+          "translation": "Přepínače hotové"
+        },
+        "mod_help_arm": {
+          "english": "Arms the motor. Use a switch you won't knock by accident.",
+          "max_length": 58,
+          "needs_translation": false,
+          "translation": "Odjistí motor. Použijte přepínač, který omylem nepřepnete."
+        },
+        "mod_help_rescue": {
+          "english": "Turns the helicopter upright and holds it level.",
+          "max_length": 54,
+          "needs_translation": false,
+          "translation": "Otočí vrtulník do normální polohy a drží ho vodorovně."
+        },
+        "mod_help_trainer": {
+          "english": "Limits how far the helicopter can tilt, to help while learning.",
+          "max_length": 63,
+          "needs_translation": false,
+          "translation": "Omezí, jak moc se vrtulník může naklonit – pomáhá při učení."
+        },
+        "mod_intro": {
+          "english": "Put modes on switches on your radio: press Assign, then flick the switch to the position that should turn the mode on. Only ARM is required; the others can be added later under Modes.",
+          "max_length": 183,
+          "needs_translation": false,
+          "translation": "Přiřaďte režimy přepínačům: stiskněte Přiřadit a přepněte přepínač do polohy, která má režim zapnout. Povinný je jen ARM; ostatní lze přidat později v Režimech."
+        },
+        "mod_listening": {
+          "english": "Flick the switch now…",
+          "max_length": 22,
+          "needs_translation": false,
+          "translation": "Teď přepněte přepínač…"
+        },
+        "mod_no_slot": {
+          "english": "No free mode slot on the FC: remove one under Modes.",
+          "max_length": 60,
+          "needs_translation": false,
+          "translation": "Ve FC není volné místo pro režim: jeden odeberte v Režimech."
+        },
+        "mod_no_switch": {
+          "english": "No switch moved. Press Assign and flick it within 15 s.",
+          "max_length": 69,
+          "needs_translation": false,
+          "translation": "Žádný přepínač se nepohnul. Stiskněte Přiřadit a přepněte ho do 15 s."
+        },
+        "mod_not_set": {
+          "english": "Not assigned",
+          "max_length": 12,
+          "needs_translation": false,
+          "translation": "Nepřiřazeno"
+        },
+        "mod_off": {
+          "english": "Off",
+          "max_length": 3,
+          "needs_translation": false,
+          "translation": "Vyp"
+        },
+        "mod_on": {
+          "english": "On",
+          "max_length": 3,
+          "needs_translation": false,
+          "translation": "Zap"
+        },
+        "mod_range_fmt": {
+          "english": "CH%d (%d - %d us)",
+          "max_length": 17,
+          "needs_translation": false,
+          "translation": "CH%d (%d - %d us)"
+        },
+        "mod_reassign": {
+          "english": "Assign again",
+          "max_length": 14,
+          "needs_translation": false,
+          "translation": "Přiřadit znovu"
+        },
+        "mod_remove": {
+          "english": "Remove",
+          "max_length": 7,
+          "needs_translation": false,
+          "translation": "Odebrat"
+        },
+        "mod_required": {
+          "english": "Required",
+          "max_length": 8,
+          "needs_translation": false,
+          "translation": "Povinné"
+        },
+        "mod_rescue": {
+          "english": "Rescue",
+          "max_length": 8,
+          "needs_translation": false,
+          "translation": "Záchrana"
+        },
+        "mod_trainer": {
+          "english": "Trainer",
+          "max_length": 7,
+          "needs_translation": false,
+          "translation": "Trenér"
+        },
         "mot_done_title": {
           "english": "Motor & ESC set",
           "max_length": 18,
@@ -8669,11 +8795,10 @@
           "translation": "Listy nechte sundané: motor se může roztočit."
         },
         "rcv_ch_collective": {
-          "english": "Collective",
-          "max_length": 10,
+          "english": "Coll.",
+          "max_length": 5,
           "needs_translation": false,
-          "reverse_text": false,
-          "translation": "Kolektiv"
+          "translation": "Kol."
         },
         "rcv_ch_fmt": {
           "english": "CH%d",
@@ -8769,12 +8894,17 @@
           "needs_translation": false,
           "translation": "Nahoru"
         },
-        "rcv_done": {
-          "english": "The channel order and throttle range are set.",
-          "max_length": 45,
+        "rcv_done_keep": {
+          "english": "Nothing has changed: the flight controller keeps its receiver settings. Next goes on to the swashplate.",
+          "max_length": 103,
           "needs_translation": false,
-          "reverse_text": false,
-          "translation": "Pořadí kanálů a rozsah plynu jsou nastaveny."
+          "translation": "Nic se nezměnilo: FC si ponechá nastavení přijímače. Další pokračuje na cyklickou desku."
+        },
+        "rcv_done_save": {
+          "english": "The changes already work on the flight controller, but are not stored yet. Save and continue writes them to its memory (EEPROM), so they survive a restart.",
+          "max_length": 155,
+          "needs_translation": false,
+          "translation": "Změny už ve FC platí, ale ještě nejsou uložené. Uložit a pokračovat je zapíše do jeho paměti (EEPROM), aby přežily restart."
         },
         "rcv_done_title": {
           "english": "Receiver done",
@@ -8794,6 +8924,12 @@
           "max_length": 140,
           "needs_translation": false,
           "translation": "Vysílačka mluví s letovým kontrolérem přes tento přijímač. Zde nastavíte pořadí kanálů, zkontrolujete páčky a nastavíte rozsah plynu."
+        },
+        "rcv_link_mismatch_fmt": {
+          "english": "The FC reads %s differently: check the radio's channel outputs.",
+          "max_length": 63,
+          "needs_translation": false,
+          "translation": "FC čte %s jinak: zkontrolujte výstupy kanálů ve vysílači."
         },
         "rcv_link_text": {
           "english": "The protocol must match your receiver, or the radio link breaks.",
@@ -8964,10 +9100,10 @@
           "translation": "Přeskočit"
         },
         "rcv_standard_order": {
-          "english": "Standard channel order",
-          "max_length": 24,
+          "english": "Std. order",
+          "max_length": 11,
           "needs_translation": false,
-          "translation": "Standardní pořadí kanálů"
+          "translation": "Std. pořadí"
         },
         "rcv_sticks_text": {
           "english": "Each stick must reach ±100 %; if it does not, adjust the travel on the transmitter.",
@@ -9443,6 +9579,12 @@
           "needs_translation": false,
           "reverse_text": false,
           "translation": "Vyrovnání desky"
+        },
+        "step_modes": {
+          "english": "Mode switches",
+          "max_length": 16,
+          "needs_translation": false,
+          "translation": "Přepínače režimů"
         },
         "step_motor": {
           "english": "Motor & ESC",

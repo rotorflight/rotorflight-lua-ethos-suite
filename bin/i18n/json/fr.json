@@ -8433,6 +8433,12 @@
           "max_length": 9,
           "reverse_text": false
         },
+        "step_modes": {
+          "english": "Mode switches",
+          "translation": "Interrupteurs",
+          "needs_translation": false,
+          "max_length": 13
+        },
         "step_finish": {
           "english": "Finish",
           "translation": "Fin",
@@ -9028,11 +9034,10 @@
           "reverse_text": false
         },
         "rcv_ch_collective": {
-          "english": "Collective",
-          "translation": "Collectif",
+          "english": "Coll.",
+          "translation": "Coll.",
           "needs_translation": false,
-          "max_length": 10,
-          "reverse_text": false
+          "max_length": 5
         },
         "rcv_ch_throttle": {
           "english": "Throttle",
@@ -9117,12 +9122,143 @@
           "max_length": 14,
           "reverse_text": false
         },
-        "rcv_done": {
-          "english": "The channel order and throttle range are set.",
-          "translation": "L'ordre des voies et la plage des gaz sont réglés.",
+        "rcv_done_keep": {
+          "english": "Nothing has changed: the flight controller keeps its receiver settings. Next goes on to the swashplate.",
+          "translation": "Rien n'a changé : le FC garde ses réglages de récepteur. Suivant passe au plateau.",
           "needs_translation": false,
-          "max_length": 50,
-          "reverse_text": false
+          "max_length": 103
+        },
+        "rcv_done_save": {
+          "english": "The changes already work on the flight controller, but are not stored yet. Save and continue writes them to its memory (EEPROM), so they survive a restart.",
+          "translation": "Les changements agissent déjà dans le FC, mais ne sont pas encore enregistrés. Enreg. et suivant les écrit dans sa mémoire (EEPROM) pour qu'ils survivent à un redémarrage.",
+          "needs_translation": false,
+          "max_length": 171
+        },
+        "mod_intro": {
+          "english": "Put modes on switches on your radio: press Assign, then flick the switch to the position that should turn the mode on. Only ARM is required; the others can be added later under Modes.",
+          "translation": "Placez les modes sur des interrupteurs : appuyez sur Affecter, puis basculez l'interrupteur sur la position qui doit activer le mode. Seul ARM est obligatoire ; les autres peuvent être ajoutés plus tard dans Modes.",
+          "needs_translation": false,
+          "max_length": 214
+        },
+        "mod_required": {
+          "english": "Required",
+          "translation": "Obligatoire",
+          "needs_translation": false,
+          "max_length": 11
+        },
+        "mod_assign": {
+          "english": "Assign",
+          "translation": "Affecter",
+          "needs_translation": false,
+          "max_length": 8
+        },
+        "mod_reassign": {
+          "english": "Assign again",
+          "translation": "Réaffecter",
+          "needs_translation": false,
+          "max_length": 12
+        },
+        "mod_remove": {
+          "english": "Remove",
+          "translation": "Retirer",
+          "needs_translation": false,
+          "max_length": 7
+        },
+        "mod_cancel": {
+          "english": "Cancel",
+          "translation": "Annuler",
+          "needs_translation": false,
+          "max_length": 7
+        },
+        "mod_listening": {
+          "english": "Flick the switch now…",
+          "translation": "Basculez l'interrupteur maintenant…",
+          "needs_translation": false,
+          "max_length": 35
+        },
+        "mod_no_switch": {
+          "english": "No switch moved. Press Assign and flick it within 15 s.",
+          "translation": "Aucun interrupteur n'a bougé. Appuyez sur Affecter et basculez-le dans les 15 s.",
+          "needs_translation": false,
+          "max_length": 80
+        },
+        "mod_no_slot": {
+          "english": "No free mode slot on the FC: remove one under Modes.",
+          "translation": "Plus d'emplacement de mode libre dans le FC : retirez-en un dans Modes.",
+          "needs_translation": false,
+          "max_length": 71
+        },
+        "mod_not_set": {
+          "english": "Not assigned",
+          "translation": "Non affecté",
+          "needs_translation": false,
+          "max_length": 12
+        },
+        "mod_range_fmt": {
+          "english": "CH%d (%d - %d us)",
+          "translation": "CH%d (%d - %d us)",
+          "needs_translation": false,
+          "max_length": 17
+        },
+        "mod_on": {
+          "english": "On",
+          "translation": "Actif",
+          "needs_translation": false,
+          "max_length": 5
+        },
+        "mod_off": {
+          "english": "Off",
+          "translation": "Inactif",
+          "needs_translation": false,
+          "max_length": 7
+        },
+        "mod_done_title": {
+          "english": "Switches done",
+          "translation": "Interrupteurs terminés",
+          "needs_translation": false,
+          "max_length": 22
+        },
+        "mod_done_keep": {
+          "english": "Nothing has changed: the flight controller keeps its mode switches. Next goes on to the swashplate.",
+          "translation": "Rien n'a changé : le FC garde ses interrupteurs de mode. Suivant passe au plateau.",
+          "needs_translation": false,
+          "max_length": 99
+        },
+        "mod_arm": {
+          "english": "Arm",
+          "translation": "Armer",
+          "needs_translation": false,
+          "max_length": 5
+        },
+        "mod_rescue": {
+          "english": "Rescue",
+          "translation": "Sauvetage",
+          "needs_translation": false,
+          "max_length": 9
+        },
+        "mod_trainer": {
+          "english": "Trainer",
+          "translation": "Entraîneur",
+          "needs_translation": false,
+          "max_length": 10
+        },
+        "mod_help_arm": {
+          "english": "Arms the motor. Use a switch you won't knock by accident.",
+          "translation": "Arme le moteur. Choisissez un interrupteur que vous ne toucherez pas par accident.",
+          "needs_translation": false,
+          "max_length": 82
+        },
+        "mod_help_rescue": {
+          "english": "Turns the helicopter upright and holds it level.",
+          "translation": "Remet l'hélicoptère à l'endroit et le maintient à plat.",
+          "needs_translation": false,
+          "max_length": 55
+        },
+        "mod_help_trainer": {
+          "english": "Limits how far the helicopter can tilt, to help while learning.",
+          "translation": "Limite l'inclinaison de l'hélicoptère, pour aider pendant l'apprentissage.",
+          "needs_translation": false,
+          "max_length": 74
         },
         "swa_type_title": {
           "english": "Swashplate type",
@@ -10512,10 +10648,10 @@
           "max_length": 84
         },
         "rcv_standard_order": {
-          "english": "Standard channel order",
-          "translation": "Ordre des canaux standard",
+          "english": "Std. order",
+          "translation": "Ordre std.",
           "needs_translation": false,
-          "max_length": 25
+          "max_length": 10
         },
         "rcv_dir_forward": {
           "english": "Forward",
@@ -10552,6 +10688,12 @@
           "translation": "Mesuré",
           "needs_translation": false,
           "max_length": 8
+        },
+        "rcv_link_mismatch_fmt": {
+          "english": "The FC reads %s differently: check the radio's channel outputs.",
+          "translation": "Le FC lit %s autrement : vérifiez les sorties de voies de la radio.",
+          "needs_translation": false,
+          "max_length": 67
         }
       },
       "wizards": {

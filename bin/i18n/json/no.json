@@ -8433,6 +8433,12 @@
           "max_length": 8,
           "reverse_text": false
         },
+        "step_modes": {
+          "english": "Mode switches",
+          "translation": "Brytere",
+          "needs_translation": false,
+          "max_length": 13
+        },
         "step_finish": {
           "english": "Finish",
           "translation": "Fullfør",
@@ -9028,11 +9034,10 @@
           "reverse_text": false
         },
         "rcv_ch_collective": {
-          "english": "Collective",
-          "translation": "Kollektiv",
+          "english": "Coll.",
+          "translation": "Kol.",
           "needs_translation": false,
-          "max_length": 10,
-          "reverse_text": false
+          "max_length": 5
         },
         "rcv_ch_throttle": {
           "english": "Throttle",
@@ -9117,12 +9122,143 @@
           "max_length": 15,
           "reverse_text": false
         },
-        "rcv_done": {
-          "english": "The channel order and throttle range are set.",
-          "translation": "Kanalrekkefølge og gassområde er satt.",
+        "rcv_done_keep": {
+          "english": "Nothing has changed: the flight controller keeps its receiver settings. Next goes on to the swashplate.",
+          "translation": "Ingenting er endret: FC beholder mottakerinnstillingene. Neste går videre til swashplate.",
           "needs_translation": false,
-          "max_length": 45,
-          "reverse_text": false
+          "max_length": 103
+        },
+        "rcv_done_save": {
+          "english": "The changes already work on the flight controller, but are not stored yet. Save and continue writes them to its memory (EEPROM), so they survive a restart.",
+          "translation": "Endringene virker allerede i FC, men er ikke lagret ennå. Lagre og fortsett skriver dem til minnet (EEPROM), slik at de overlever en omstart.",
+          "needs_translation": false,
+          "max_length": 155
+        },
+        "mod_intro": {
+          "english": "Put modes on switches on your radio: press Assign, then flick the switch to the position that should turn the mode on. Only ARM is required; the others can be added later under Modes.",
+          "translation": "Legg moduser på brytere: trykk Tildel, og sett bryteren i stillingen som skal slå modusen på. Bare ARM er påkrevd; resten kan legges til senere under Moduser.",
+          "needs_translation": false,
+          "max_length": 183
+        },
+        "mod_required": {
+          "english": "Required",
+          "translation": "Påkrevd",
+          "needs_translation": false,
+          "max_length": 8
+        },
+        "mod_assign": {
+          "english": "Assign",
+          "translation": "Tildel",
+          "needs_translation": false,
+          "max_length": 6
+        },
+        "mod_reassign": {
+          "english": "Assign again",
+          "translation": "Tildel på nytt",
+          "needs_translation": false,
+          "max_length": 14
+        },
+        "mod_remove": {
+          "english": "Remove",
+          "translation": "Fjern",
+          "needs_translation": false,
+          "max_length": 6
+        },
+        "mod_cancel": {
+          "english": "Cancel",
+          "translation": "Avbryt",
+          "needs_translation": false,
+          "max_length": 6
+        },
+        "mod_listening": {
+          "english": "Flick the switch now…",
+          "translation": "Slå bryteren nå…",
+          "needs_translation": false,
+          "max_length": 21
+        },
+        "mod_no_switch": {
+          "english": "No switch moved. Press Assign and flick it within 15 s.",
+          "translation": "Ingen bryter beveget seg. Trykk Tildel og slå den innen 15 s.",
+          "needs_translation": false,
+          "max_length": 61
+        },
+        "mod_no_slot": {
+          "english": "No free mode slot on the FC: remove one under Modes.",
+          "translation": "Ingen ledig modusplass i FC: fjern en under Moduser.",
+          "needs_translation": false,
+          "max_length": 52
+        },
+        "mod_not_set": {
+          "english": "Not assigned",
+          "translation": "Ikke tildelt",
+          "needs_translation": false,
+          "max_length": 12
+        },
+        "mod_range_fmt": {
+          "english": "CH%d (%d - %d us)",
+          "translation": "CH%d (%d - %d us)",
+          "needs_translation": false,
+          "max_length": 17
+        },
+        "mod_on": {
+          "english": "On",
+          "translation": "På",
+          "needs_translation": false,
+          "max_length": 2
+        },
+        "mod_off": {
+          "english": "Off",
+          "translation": "Av",
+          "needs_translation": false,
+          "max_length": 3
+        },
+        "mod_done_title": {
+          "english": "Switches done",
+          "translation": "Brytere ferdig",
+          "needs_translation": false,
+          "max_length": 14
+        },
+        "mod_done_keep": {
+          "english": "Nothing has changed: the flight controller keeps its mode switches. Next goes on to the swashplate.",
+          "translation": "Ingenting er endret: FC beholder modusbryterne. Neste går videre til swashplate.",
+          "needs_translation": false,
+          "max_length": 99
+        },
+        "mod_arm": {
+          "english": "Arm",
+          "translation": "Arm",
+          "needs_translation": false,
+          "max_length": 3
+        },
+        "mod_rescue": {
+          "english": "Rescue",
+          "translation": "Redning",
+          "needs_translation": false,
+          "max_length": 7
+        },
+        "mod_trainer": {
+          "english": "Trainer",
+          "translation": "Trener",
+          "needs_translation": false,
+          "max_length": 7
+        },
+        "mod_help_arm": {
+          "english": "Arms the motor. Use a switch you won't knock by accident.",
+          "translation": "Armer motoren. Bruk en bryter du ikke kommer borti ved et uhell.",
+          "needs_translation": false,
+          "max_length": 64
+        },
+        "mod_help_rescue": {
+          "english": "Turns the helicopter upright and holds it level.",
+          "translation": "Snur helikopteret rett vei og holder det i vater.",
+          "needs_translation": false,
+          "max_length": 49
+        },
+        "mod_help_trainer": {
+          "english": "Limits how far the helicopter can tilt, to help while learning.",
+          "translation": "Begrenser hvor mye helikopteret kan helle, som hjelp mens du lærer.",
+          "needs_translation": false,
+          "max_length": 67
         },
         "swa_type_title": {
           "english": "Swashplate type",
@@ -10512,10 +10648,10 @@
           "max_length": 64
         },
         "rcv_standard_order": {
-          "english": "Standard channel order",
-          "translation": "Standard kanalrekkefølge",
+          "english": "Std. order",
+          "translation": "Std. rekkefølge",
           "needs_translation": false,
-          "max_length": 24
+          "max_length": 15
         },
         "rcv_dir_forward": {
           "english": "Forward",
@@ -10552,6 +10688,12 @@
           "translation": "Målt",
           "needs_translation": false,
           "max_length": 8
+        },
+        "rcv_link_mismatch_fmt": {
+          "english": "The FC reads %s differently: check the radio's channel outputs.",
+          "translation": "FC leser %s annerledes: sjekk kanalutgangene på senderen.",
+          "needs_translation": false,
+          "max_length": 63
         }
       },
       "wizards": {

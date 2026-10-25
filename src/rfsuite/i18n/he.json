@@ -8367,6 +8367,132 @@
           "reverse_text": true,
           "translation": "סרוו %s נדרש להגדרה זו, אך אין לו יציאה בבקר."
         },
+        "mod_arm": {
+          "english": "Arm",
+          "max_length": 5,
+          "needs_translation": false,
+          "translation": "חימוש"
+        },
+        "mod_assign": {
+          "english": "Assign",
+          "max_length": 6,
+          "needs_translation": false,
+          "translation": "הקצה"
+        },
+        "mod_cancel": {
+          "english": "Cancel",
+          "max_length": 6,
+          "needs_translation": false,
+          "translation": "ביטול"
+        },
+        "mod_done_keep": {
+          "english": "Nothing has changed: the flight controller keeps its mode switches. Next goes on to the swashplate.",
+          "max_length": 99,
+          "needs_translation": false,
+          "translation": "לא השתנה דבר: ה-FC שומר את מתגי המצבים שלו. הבא ממשיך לסוואש."
+        },
+        "mod_done_title": {
+          "english": "Switches done",
+          "max_length": 13,
+          "needs_translation": false,
+          "translation": "המתגים מוכנים"
+        },
+        "mod_help_arm": {
+          "english": "Arms the motor. Use a switch you won't knock by accident.",
+          "max_length": 57,
+          "needs_translation": false,
+          "translation": "מחמש את המנוע. בחרו מתג שלא תזיזו בטעות."
+        },
+        "mod_help_rescue": {
+          "english": "Turns the helicopter upright and holds it level.",
+          "max_length": 48,
+          "needs_translation": false,
+          "translation": "מיישר את המסוק ומחזיק אותו מאוזן."
+        },
+        "mod_help_trainer": {
+          "english": "Limits how far the helicopter can tilt, to help while learning.",
+          "max_length": 63,
+          "needs_translation": false,
+          "translation": "מגביל את הטיית המסוק, כעזרה בזמן הלמידה."
+        },
+        "mod_intro": {
+          "english": "Put modes on switches on your radio: press Assign, then flick the switch to the position that should turn the mode on. Only ARM is required; the others can be added later under Modes.",
+          "max_length": 183,
+          "needs_translation": false,
+          "translation": "הקצו מצבים למתגים: לחצו הקצה, ואז העבירו את המתג למצב שאמור להפעיל את המצב. רק ARM חובה; את השאר אפשר להוסיף אחר כך במצבים."
+        },
+        "mod_listening": {
+          "english": "Flick the switch now…",
+          "max_length": 21,
+          "needs_translation": false,
+          "translation": "העבירו את המתג עכשיו…"
+        },
+        "mod_no_slot": {
+          "english": "No free mode slot on the FC: remove one under Modes.",
+          "max_length": 52,
+          "needs_translation": false,
+          "translation": "אין מקום פנוי למצב ב-FC: הסירו אחד במצבים."
+        },
+        "mod_no_switch": {
+          "english": "No switch moved. Press Assign and flick it within 15 s.",
+          "max_length": 55,
+          "needs_translation": false,
+          "translation": "אף מתג לא זז. לחצו הקצה והעבירו אותו תוך 15 שניות."
+        },
+        "mod_not_set": {
+          "english": "Not assigned",
+          "max_length": 12,
+          "needs_translation": false,
+          "translation": "לא הוקצה"
+        },
+        "mod_off": {
+          "english": "Off",
+          "max_length": 4,
+          "needs_translation": false,
+          "translation": "כבוי"
+        },
+        "mod_on": {
+          "english": "On",
+          "max_length": 4,
+          "needs_translation": false,
+          "translation": "פעיל"
+        },
+        "mod_range_fmt": {
+          "english": "CH%d (%d - %d us)",
+          "max_length": 17,
+          "needs_translation": false,
+          "translation": "CH%d (%d - %d us)"
+        },
+        "mod_reassign": {
+          "english": "Assign again",
+          "max_length": 12,
+          "needs_translation": false,
+          "translation": "הקצה מחדש"
+        },
+        "mod_remove": {
+          "english": "Remove",
+          "max_length": 6,
+          "needs_translation": false,
+          "translation": "הסר"
+        },
+        "mod_required": {
+          "english": "Required",
+          "max_length": 8,
+          "needs_translation": false,
+          "translation": "חובה"
+        },
+        "mod_rescue": {
+          "english": "Rescue",
+          "max_length": 6,
+          "needs_translation": false,
+          "translation": "חילוץ"
+        },
+        "mod_trainer": {
+          "english": "Trainer",
+          "max_length": 7,
+          "needs_translation": false,
+          "translation": "אימון"
+        },
         "mot_done_title": {
           "english": "Motor & ESC set",
           "max_length": 17,
@@ -8669,11 +8795,10 @@
           "translation": "השאר את הלהבים מורדים: המנוע עלול להתניע."
         },
         "rcv_ch_collective": {
-          "english": "Collective",
-          "max_length": 10,
+          "english": "Coll.",
+          "max_length": 5,
           "needs_translation": false,
-          "reverse_text": true,
-          "translation": "קולקטיב"
+          "translation": "קול׳"
         },
         "rcv_ch_fmt": {
           "english": "CH%d",
@@ -8769,12 +8894,17 @@
           "needs_translation": false,
           "translation": "למעלה"
         },
-        "rcv_done": {
-          "english": "The channel order and throttle range are set.",
-          "max_length": 45,
+        "rcv_done_keep": {
+          "english": "Nothing has changed: the flight controller keeps its receiver settings. Next goes on to the swashplate.",
+          "max_length": 103,
           "needs_translation": false,
-          "reverse_text": true,
-          "translation": "סדר הערוצים וטווח המצערת הוגדרו."
+          "translation": "לא השתנה דבר: ה-FC שומר את הגדרות המקלט. הבא ממשיך לסוואש."
+        },
+        "rcv_done_save": {
+          "english": "The changes already work on the flight controller, but are not stored yet. Save and continue writes them to its memory (EEPROM), so they survive a restart.",
+          "max_length": 155,
+          "needs_translation": false,
+          "translation": "השינויים כבר פעילים ב-FC אך עוד לא נשמרו. שמור והמשך כותב אותם לזיכרון שלו (EEPROM), כדי שיישמרו גם אחרי הפעלה מחדש."
         },
         "rcv_done_title": {
           "english": "Receiver done",
@@ -8794,6 +8924,12 @@
           "max_length": 140,
           "needs_translation": false,
           "translation": "השלט מתקשר עם בקר הטיסה דרך המקלט הזה. כאן מגדירים את סדר הערוצים, בודקים את המקלות וקובעים את טווח הגז."
+        },
+        "rcv_link_mismatch_fmt": {
+          "english": "The FC reads %s differently: check the radio's channel outputs.",
+          "max_length": 63,
+          "needs_translation": false,
+          "translation": "ה-FC קורא את %s אחרת: בדקו את יציאות הערוצים במשדר."
         },
         "rcv_link_text": {
           "english": "The protocol must match your receiver, or the radio link breaks.",
@@ -8964,10 +9100,10 @@
           "translation": "דלג"
         },
         "rcv_standard_order": {
-          "english": "Standard channel order",
-          "max_length": 22,
+          "english": "Std. order",
+          "max_length": 10,
           "needs_translation": false,
-          "translation": "סדר ערוצים סטנדרטי"
+          "translation": "סדר סטנד׳"
         },
         "rcv_sticks_text": {
           "english": "Each stick must reach ±100 %; if it does not, adjust the travel on the transmitter.",
@@ -9443,6 +9579,12 @@
           "needs_translation": false,
           "reverse_text": true,
           "translation": "יישור סוואש"
+        },
+        "step_modes": {
+          "english": "Mode switches",
+          "max_length": 13,
+          "needs_translation": false,
+          "translation": "מתגי מצבים"
         },
         "step_motor": {
           "english": "Motor & ESC",

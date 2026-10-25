@@ -64,6 +64,18 @@ local function sweepCommand(now)
   return simulated({sticks[1], sticks[2], sticks[3], sticks[4], sticks[5] - 500})
 end
 
+-- The same sweep as us by receiver channel (ch1-4 the sticks, ch5 the throttle,
+-- the rest low), filled into out; for pages that read the radio's own channels.
+M.SIMULATED = SIMULATED
+function M.sweepChannelsUs(now, out)
+  for i = 1, 4 do
+    out[i] = 1500 + math.floor(500 * math.sin(2 * math.pi * now / SWEEP_PERIOD[i]) + 0.5)
+  end
+  out[5] = 1000 + math.floor(500 * (1 + math.sin(2 * math.pi * now / 8)) + 0.5)
+  for i = 6, 12 do out[i] = 1000 end
+  return 12
+end
+
 -- Returns the channel count; entries past it are cleared.
 function M.decode(buf, out, signed)
   buf.offset = 1

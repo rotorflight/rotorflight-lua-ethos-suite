@@ -8367,6 +8367,132 @@
           "reverse_text": false,
           "translation": "Servo %s wird benötigt, aber das Board hat keinen Ausgang dafür."
         },
+        "mod_arm": {
+          "english": "Arm",
+          "max_length": 3,
+          "needs_translation": false,
+          "translation": "Arm"
+        },
+        "mod_assign": {
+          "english": "Assign",
+          "max_length": 8,
+          "needs_translation": false,
+          "translation": "Zuweisen"
+        },
+        "mod_cancel": {
+          "english": "Cancel",
+          "max_length": 9,
+          "needs_translation": false,
+          "translation": "Abbrechen"
+        },
+        "mod_done_keep": {
+          "english": "Nothing has changed: the flight controller keeps its mode switches. Next goes on to the swashplate.",
+          "max_length": 99,
+          "needs_translation": false,
+          "translation": "Nichts geändert: Der FC behält seine Modus-Schalter. Weiter geht es zur Taumelscheibe."
+        },
+        "mod_done_title": {
+          "english": "Switches done",
+          "max_length": 15,
+          "needs_translation": false,
+          "translation": "Schalter fertig"
+        },
+        "mod_help_arm": {
+          "english": "Arms the motor. Use a switch you won't knock by accident.",
+          "max_length": 85,
+          "needs_translation": false,
+          "translation": "Schaltet den Motor scharf. Einen Schalter wählen, den man nicht versehentlich umlegt."
+        },
+        "mod_help_rescue": {
+          "english": "Turns the helicopter upright and holds it level.",
+          "max_length": 48,
+          "needs_translation": false,
+          "translation": "Dreht den Heli aufrecht und hält ihn waagerecht."
+        },
+        "mod_help_trainer": {
+          "english": "Limits how far the helicopter can tilt, to help while learning.",
+          "max_length": 65,
+          "needs_translation": false,
+          "translation": "Begrenzt, wie weit sich der Heli neigen kann – hilft beim Lernen."
+        },
+        "mod_intro": {
+          "english": "Put modes on switches on your radio: press Assign, then flick the switch to the position that should turn the mode on. Only ARM is required; the others can be added later under Modes.",
+          "max_length": 190,
+          "needs_translation": false,
+          "translation": "Modi auf Schalter legen: Zuweisen drücken, dann den Schalter in die Stellung bringen, die den Modus einschalten soll. Nur ARM ist Pflicht; die anderen lassen sich später unter Modi ergänzen."
+        },
+        "mod_listening": {
+          "english": "Flick the switch now…",
+          "max_length": 27,
+          "needs_translation": false,
+          "translation": "Jetzt den Schalter umlegen…"
+        },
+        "mod_no_slot": {
+          "english": "No free mode slot on the FC: remove one under Modes.",
+          "max_length": 58,
+          "needs_translation": false,
+          "translation": "Kein freier Modus-Platz im FC: unter Modi einen entfernen."
+        },
+        "mod_no_switch": {
+          "english": "No switch moved. Press Assign and flick it within 15 s.",
+          "max_length": 74,
+          "needs_translation": false,
+          "translation": "Kein Schalter bewegt. Zuweisen drücken und ihn innerhalb von 15 s umlegen."
+        },
+        "mod_not_set": {
+          "english": "Not assigned",
+          "max_length": 16,
+          "needs_translation": false,
+          "translation": "Nicht zugewiesen"
+        },
+        "mod_off": {
+          "english": "Off",
+          "max_length": 3,
+          "needs_translation": false,
+          "translation": "Aus"
+        },
+        "mod_on": {
+          "english": "On",
+          "max_length": 3,
+          "needs_translation": false,
+          "translation": "Ein"
+        },
+        "mod_range_fmt": {
+          "english": "CH%d (%d - %d us)",
+          "max_length": 17,
+          "needs_translation": false,
+          "translation": "CH%d (%d - %d us)"
+        },
+        "mod_reassign": {
+          "english": "Assign again",
+          "max_length": 12,
+          "needs_translation": false,
+          "translation": "Neu zuweisen"
+        },
+        "mod_remove": {
+          "english": "Remove",
+          "max_length": 9,
+          "needs_translation": false,
+          "translation": "Entfernen"
+        },
+        "mod_required": {
+          "english": "Required",
+          "max_length": 8,
+          "needs_translation": false,
+          "translation": "Pflicht"
+        },
+        "mod_rescue": {
+          "english": "Rescue",
+          "max_length": 7,
+          "needs_translation": false,
+          "translation": "Rettung"
+        },
+        "mod_trainer": {
+          "english": "Trainer",
+          "max_length": 7,
+          "needs_translation": false,
+          "translation": "Trainer"
+        },
         "mot_done_title": {
           "english": "Motor & ESC set",
           "max_length": 21,
@@ -8669,11 +8795,10 @@
           "translation": "Blätter ab lassen: Motor kann anlaufen."
         },
         "rcv_ch_collective": {
-          "english": "Collective",
-          "max_length": 10,
+          "english": "Coll.",
+          "max_length": 5,
           "needs_translation": false,
-          "reverse_text": false,
-          "translation": "Kollektiv"
+          "translation": "Kol."
         },
         "rcv_ch_fmt": {
           "english": "CH%d",
@@ -8769,12 +8894,17 @@
           "needs_translation": false,
           "translation": "Hoch"
         },
-        "rcv_done": {
-          "english": "The channel order and throttle range are set.",
-          "max_length": 45,
+        "rcv_done_keep": {
+          "english": "Nothing has changed: the flight controller keeps its receiver settings. Next goes on to the swashplate.",
+          "max_length": 103,
           "needs_translation": false,
-          "reverse_text": false,
-          "translation": "Kanalfolge und Gasbereich sind gesetzt."
+          "translation": "Nichts geändert: Der FC behält seine Empfänger-Einstellungen. Weiter geht es zur Taumelscheibe."
+        },
+        "rcv_done_save": {
+          "english": "The changes already work on the flight controller, but are not stored yet. Save and continue writes them to its memory (EEPROM), so they survive a restart.",
+          "max_length": 166,
+          "needs_translation": false,
+          "translation": "Die Änderungen wirken schon im FC, sind aber noch nicht gespeichert. Speichern & weiter schreibt sie in seinen Speicher (EEPROM), damit sie einen Neustart überstehen."
         },
         "rcv_done_title": {
           "english": "Receiver done",
@@ -8794,6 +8924,12 @@
           "max_length": 140,
           "needs_translation": false,
           "translation": "Der Sender spricht über diesen Empfänger mit dem Flugcontroller. Hier: Kanalfolge, Knüppeltest und Gasbereich."
+        },
+        "rcv_link_mismatch_fmt": {
+          "english": "The FC reads %s differently: check the radio's channel outputs.",
+          "max_length": 63,
+          "needs_translation": false,
+          "translation": "Der FC liest %s anders: Kanalausgänge am Sender prüfen."
         },
         "rcv_link_text": {
           "english": "The protocol must match your receiver, or the radio link breaks.",
@@ -8964,10 +9100,10 @@
           "translation": "Überspr."
         },
         "rcv_standard_order": {
-          "english": "Standard channel order",
-          "max_length": 25,
+          "english": "Std. order",
+          "max_length": 16,
           "needs_translation": false,
-          "translation": "Standard-Kanalreihenfolge"
+          "translation": "Std.-Reihenfolge"
         },
         "rcv_sticks_text": {
           "english": "Each stick must reach ±100 %; if it does not, adjust the travel on the transmitter.",
@@ -9443,6 +9579,12 @@
           "needs_translation": false,
           "reverse_text": false,
           "translation": "TS ausrichten"
+        },
+        "step_modes": {
+          "english": "Mode switches",
+          "max_length": 13,
+          "needs_translation": false,
+          "translation": "Schalter"
         },
         "step_motor": {
           "english": "Motor & ESC",

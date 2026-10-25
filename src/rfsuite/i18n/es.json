@@ -8367,6 +8367,132 @@
           "reverse_text": false,
           "translation": "El servo %s es necesario para esta config., pero la placa no tiene salida para él."
         },
+        "mod_arm": {
+          "english": "Arm",
+          "max_length": 5,
+          "needs_translation": false,
+          "translation": "Armar"
+        },
+        "mod_assign": {
+          "english": "Assign",
+          "max_length": 7,
+          "needs_translation": false,
+          "translation": "Asignar"
+        },
+        "mod_cancel": {
+          "english": "Cancel",
+          "max_length": 8,
+          "needs_translation": false,
+          "translation": "Cancelar"
+        },
+        "mod_done_keep": {
+          "english": "Nothing has changed: the flight controller keeps its mode switches. Next goes on to the swashplate.",
+          "max_length": 99,
+          "needs_translation": false,
+          "translation": "No ha cambiado nada: el FC conserva sus interruptores de modo. Siguiente pasa al plato."
+        },
+        "mod_done_title": {
+          "english": "Switches done",
+          "max_length": 20,
+          "needs_translation": false,
+          "translation": "Interruptores listos"
+        },
+        "mod_help_arm": {
+          "english": "Arms the motor. Use a switch you won't knock by accident.",
+          "max_length": 62,
+          "needs_translation": false,
+          "translation": "Arma el motor. Usa un interruptor que no toques por accidente."
+        },
+        "mod_help_rescue": {
+          "english": "Turns the helicopter upright and holds it level.",
+          "max_length": 51,
+          "needs_translation": false,
+          "translation": "Pone el helicóptero derecho y lo mantiene nivelado."
+        },
+        "mod_help_trainer": {
+          "english": "Limits how far the helicopter can tilt, to help while learning.",
+          "max_length": 71,
+          "needs_translation": false,
+          "translation": "Limita cuánto puede inclinarse el helicóptero, para ayudar al aprender."
+        },
+        "mod_intro": {
+          "english": "Put modes on switches on your radio: press Assign, then flick the switch to the position that should turn the mode on. Only ARM is required; the others can be added later under Modes.",
+          "max_length": 183,
+          "needs_translation": false,
+          "translation": "Asigna modos a interruptores: pulsa Asignar y mueve el interruptor a la posición que debe activar el modo. Solo ARM es obligatorio; los demás se pueden añadir luego en Modos."
+        },
+        "mod_listening": {
+          "english": "Flick the switch now…",
+          "max_length": 27,
+          "needs_translation": false,
+          "translation": "Mueve el interruptor ahora…"
+        },
+        "mod_no_slot": {
+          "english": "No free mode slot on the FC: remove one under Modes.",
+          "max_length": 56,
+          "needs_translation": false,
+          "translation": "No hay hueco libre de modo en el FC: quita uno en Modos."
+        },
+        "mod_no_switch": {
+          "english": "No switch moved. Press Assign and flick it within 15 s.",
+          "max_length": 64,
+          "needs_translation": false,
+          "translation": "No se movió ningún interruptor. Pulsa Asignar y muévelo en 15 s."
+        },
+        "mod_not_set": {
+          "english": "Not assigned",
+          "max_length": 12,
+          "needs_translation": false,
+          "translation": "Sin asignar"
+        },
+        "mod_off": {
+          "english": "Off",
+          "max_length": 3,
+          "needs_translation": false,
+          "translation": "Off"
+        },
+        "mod_on": {
+          "english": "On",
+          "max_length": 2,
+          "needs_translation": false,
+          "translation": "On"
+        },
+        "mod_range_fmt": {
+          "english": "CH%d (%d - %d us)",
+          "max_length": 17,
+          "needs_translation": false,
+          "translation": "CH%d (%d - %d us)"
+        },
+        "mod_reassign": {
+          "english": "Assign again",
+          "max_length": 12,
+          "needs_translation": false,
+          "translation": "Reasignar"
+        },
+        "mod_remove": {
+          "english": "Remove",
+          "max_length": 6,
+          "needs_translation": false,
+          "translation": "Quitar"
+        },
+        "mod_required": {
+          "english": "Required",
+          "max_length": 11,
+          "needs_translation": false,
+          "translation": "Obligatorio"
+        },
+        "mod_rescue": {
+          "english": "Rescue",
+          "max_length": 7,
+          "needs_translation": false,
+          "translation": "Rescate"
+        },
+        "mod_trainer": {
+          "english": "Trainer",
+          "max_length": 10,
+          "needs_translation": false,
+          "translation": "Entrenador"
+        },
         "mot_done_title": {
           "english": "Motor & ESC set",
           "max_length": 18,
@@ -8669,11 +8795,10 @@
           "translation": "Sin palas: el motor puede arrancar."
         },
         "rcv_ch_collective": {
-          "english": "Collective",
-          "max_length": 10,
+          "english": "Coll.",
+          "max_length": 5,
           "needs_translation": false,
-          "reverse_text": false,
-          "translation": "Colectivo"
+          "translation": "Col."
         },
         "rcv_ch_fmt": {
           "english": "CH%d",
@@ -8769,12 +8894,17 @@
           "needs_translation": false,
           "translation": "Arriba"
         },
-        "rcv_done": {
-          "english": "The channel order and throttle range are set.",
-          "max_length": 54,
+        "rcv_done_keep": {
+          "english": "Nothing has changed: the flight controller keeps its receiver settings. Next goes on to the swashplate.",
+          "max_length": 103,
           "needs_translation": false,
-          "reverse_text": false,
-          "translation": "El orden de canales y el rango de gas están ajustados."
+          "translation": "No ha cambiado nada: el FC conserva sus ajustes de receptor. Siguiente pasa al plato."
+        },
+        "rcv_done_save": {
+          "english": "The changes already work on the flight controller, but are not stored yet. Save and continue writes them to its memory (EEPROM), so they survive a restart.",
+          "max_length": 155,
+          "needs_translation": false,
+          "translation": "Los cambios ya funcionan en el FC, pero aún no están guardados. Guardar y seguir los escribe en su memoria (EEPROM) para que se conserven al reiniciar."
         },
         "rcv_done_title": {
           "english": "Receiver done",
@@ -8794,6 +8924,12 @@
           "max_length": 153,
           "needs_translation": false,
           "translation": "La emisora se comunica con la controladora de vuelo a través de este receptor. Aquí ajustas el orden de canales, compruebas los sticks y el rango de gas."
+        },
+        "rcv_link_mismatch_fmt": {
+          "english": "The FC reads %s differently: check the radio's channel outputs.",
+          "max_length": 70,
+          "needs_translation": false,
+          "translation": "El FC lee %s de otra forma: revisa las salidas de canal de la emisora."
         },
         "rcv_link_text": {
           "english": "The protocol must match your receiver, or the radio link breaks.",
@@ -8964,10 +9100,10 @@
           "translation": "Omitir"
         },
         "rcv_standard_order": {
-          "english": "Standard channel order",
-          "max_length": 25,
+          "english": "Std. order",
+          "max_length": 13,
           "needs_translation": false,
-          "translation": "Orden de canales estándar"
+          "translation": "Orden estánd."
         },
         "rcv_sticks_text": {
           "english": "Each stick must reach ±100 %; if it does not, adjust the travel on the transmitter.",
@@ -9443,6 +9579,12 @@
           "needs_translation": false,
           "reverse_text": false,
           "translation": "Nivelar plato"
+        },
+        "step_modes": {
+          "english": "Mode switches",
+          "max_length": 13,
+          "needs_translation": false,
+          "translation": "Interruptores"
         },
         "step_motor": {
           "english": "Motor & ESC",
