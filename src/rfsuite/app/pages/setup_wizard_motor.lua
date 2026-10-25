@@ -20,6 +20,13 @@
 -- telemetry protocol off; leaving Castle turns ESC_SENSOR off when no serial
 -- ESC telemetry protocol is set. (The configurator also keeps ESC_SENSOR on
 -- for a serial telemetry port; with Castle that protocol is 0, so the same.)
+--
+-- DShot150 has no bidirectional DShot, so it gives the FC no RPM: the
+-- governor and the RPM filter need a fast RPM source, bidirectional DShot
+-- (DShot300 and up) or an RPM sensor (isMotorFastRpmSourceActive() in the
+-- firmware). While DShot150 is set the protocol screen says so, and choosing
+-- it turns bidirectional DShot (use_dshot_telemetry) off in the same write:
+-- an ESC that does not answer bidirectional requests may not arm.
 
 local requireModule = package.loaded["rfsuite.lib.require"] or assert(loadfile("lib/require.lua"))()
 local ui = requireModule("app/setup_wizard_ui.lua")
@@ -36,6 +43,7 @@ local T = {
   intro = "@i18n(app.modules.setup_wizard.mot_intro)@",
   current = "@i18n(app.modules.setup_wizard.swa_current_fmt)@",
   other = "@i18n(app.modules.setup_wizard.mot_other)@",
+  dshot150Note = "@i18n(app.modules.setup_wizard.mot_dshot150_note)@",
   poles = "@i18n(app.modules.setup_wizard.mot_poles)@",
   polesText = "@i18n(app.modules.setup_wizard.mot_poles_text)@",
   pinion = "@i18n(app.modules.setup_wizard.mot_pinion)@",
@@ -57,10 +65,12 @@ local T = {
 }
 
 local CASTLE = motorConfig.CASTLE_PROTOCOL
+-- No bidirectional DShot, so no RPM (see the header).
+local DSHOT150 = 5
 -- The tiles.
 local COMMON = {
   {value = 0, name = "PWM"},
-  {value = 5, name = "DShot150"},
+  {value = DSHOT150, name = "DShot150"},
   {value = 6, name = "DShot300"},
 }
 -- Names for the protocols in the Other drop-down; the rest keep the codec's.
@@ -210,7 +220,10 @@ local function new(wiz)
 
   local function setProtocol(value)
     if cfg.motor_pwm_protocol == value then return end
-    edit(function(c) c.motor_pwm_protocol = value end)
+    edit(function(c)
+      c.motor_pwm_protocol = value
+      if value == DSHOT150 then c.use_dshot_telemetry = 0 end
+    end)
     stageEscTelemetry()
   end
 
@@ -239,7 +252,11 @@ local function new(wiz)
 
     if screen == "protocol" then
       local current = cfg.motor_pwm_protocol
-      scr:text(T.title, T.intro, string.format(T.current, protocolName(current)))
+      local status = string.format(T.current, protocolName(current))
+      -- The note goes in the accent lines, which a grid that runs into the
+      -- text keeps (the body loses lines first).
+      if current == DSHOT150 then status = T.dshot150Note .. " " .. status end
+      scr:text(T.title, T.intro, status)
       scr:step(1, 3)
       local forward = scr:row(nil, nil, {text = T.next, press = function()
         ni = 1

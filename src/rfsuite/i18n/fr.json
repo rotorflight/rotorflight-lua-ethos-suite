@@ -8353,6 +8353,13 @@
           "reverse_text": false,
           "translation": "Moteur et ESC réglés"
         },
+        "mot_dshot150_note": {
+          "english": "DShot150 sends no RPM. Governor and RPM filter need DShot300 or an RPM sensor.",
+          "max_length": 94,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "DShot150 n'envoie pas de RPM. Le governor et le filtre RPM exigent DShot300 ou un capteur RPM."
+        },
         "mot_intro": {
           "english": "How does the FC talk to the ESC? Use PWM if unsure. Blades off.",
           "max_length": 72,
