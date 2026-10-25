@@ -8403,11 +8403,11 @@
           "translation": "Hoofdverh."
         },
         "mot_other": {
-          "english": "Keep %s",
-          "max_length": 9,
+          "english": "Other",
+          "max_length": 6,
           "needs_translation": false,
           "reverse_text": false,
-          "translation": "%s houden"
+          "translation": "Anders"
         },
         "mot_pinion": {
           "english": "Pinion teeth",

@@ -35,8 +35,19 @@ local TAIL_NAMES = {
   [heli.TAIL_BIDIRECTIONAL] = "@i18n(app.modules.setup_wizard.fin_tail_bidir)@",
 }
 
+-- The protocols as the Motor step's tiles and Other drop-down name them; the
+-- rest by the codec's name, then the number.
+local PROTOCOL_NAMES = {
+  [0] = "PWM",
+  [5] = "DShot150",
+  [6] = "DShot300",
+  [7] = "DShot600",
+  [motorConfig.CASTLE_PROTOCOL] = "Castle",
+}
+
 local function protocolName(protocol)
   if protocol == nil then return "-" end
+  if PROTOCOL_NAMES[protocol] then return PROTOCOL_NAMES[protocol] end
   local choices = motorConfig.BASE_PROTOCOL_CHOICES
   for i = 1, #choices do
     if choices[i][2] == protocol then return choices[i][1] end

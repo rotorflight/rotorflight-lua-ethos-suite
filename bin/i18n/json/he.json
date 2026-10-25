@@ -9412,10 +9412,10 @@
           "reverse_text": true
         },
         "mot_other": {
-          "english": "Keep %s",
-          "translation": "השאר %s",
+          "english": "Other",
+          "translation": "אחר",
           "needs_translation": false,
-          "max_length": 7,
+          "max_length": 5,
           "reverse_text": true
         },
         "mot_poles": {

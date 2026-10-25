@@ -8403,11 +8403,11 @@
           "translation": "Rapporto princ."
         },
         "mot_other": {
-          "english": "Keep %s",
-          "max_length": 8,
+          "english": "Other",
+          "max_length": 5,
           "needs_translation": false,
           "reverse_text": false,
-          "translation": "Tieni %s"
+          "translation": "Altro"
         },
         "mot_pinion": {
           "english": "Pinion teeth",

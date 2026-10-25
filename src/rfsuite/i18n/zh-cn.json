@@ -8403,11 +8403,11 @@
           "translation": "主齿比"
         },
         "mot_other": {
-          "english": "Keep %s",
-          "max_length": 7,
+          "english": "Other",
+          "max_length": 5,
           "needs_translation": false,
           "reverse_text": false,
-          "translation": "保留 %s"
+          "translation": "其他"
         },
         "mot_pinion": {
           "english": "Pinion teeth",

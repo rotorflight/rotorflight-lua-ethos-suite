@@ -8403,11 +8403,11 @@
           "translation": "Převod hl."
         },
         "mot_other": {
-          "english": "Keep %s",
-          "max_length": 11,
+          "english": "Other",
+          "max_length": 5,
           "needs_translation": false,
           "reverse_text": false,
-          "translation": "Ponechat %s"
+          "translation": "Jiný"
         },
         "mot_pinion": {
           "english": "Pinion teeth",

@@ -374,8 +374,10 @@ function Screen:row(back, specs, forward)
 end
 
 -- Many choices: a grid of buttons filling the space between the text and
--- the row (call row() first). A grid screen has no picture. Returns the
--- field to focus (a spec with primary =), or nil.
+-- the row (call row() first). A grid screen has no picture. A spec with
+-- values = (a form.addChoiceField list, {{text, value}, ...}), get = and
+-- set = is a drop-down in its tile's place, for the choices without a tile.
+-- Returns the field to focus (a spec with primary =), or nil.
 function Screen:grid(specs, cols)
   local focus
   local width, height = lcd.getWindowSize()
@@ -398,8 +400,15 @@ function Screen:grid(specs, cols)
   local w = math.floor((width - self.wiz.FORM_RIGHT_PADDING - BUTTON_GAP * (cols - 1)) / cols)
   for i, s in ipairs(specs) do
     local col, r = (i - 1) % cols, math.floor((i - 1) / cols)
-    local field = addButton(self, {x = col * (w + BUTTON_GAP), y = top + r * (h + BUTTON_GAP), w = w, h = h},
-      "grid_" .. i, s, FONT_S)
+    local rect = {x = col * (w + BUTTON_GAP), y = top + r * (h + BUTTON_GAP), w = w, h = h}
+    local field
+    if s.values then
+      local get, set = ui.value("grid_" .. i, s.get, s.set)
+      field = form.addChoiceField(nil, rect, s.values, get, set)
+      self.buttonList[#self.buttonList + 1] = {field = field, needsMotion = s.needsMotion, disabled = s.disabled}
+    else
+      field = addButton(self, rect, "grid_" .. i, s, FONT_S)
+    end
     if s.primary then focus = field end
   end
   v.gridUsed = true

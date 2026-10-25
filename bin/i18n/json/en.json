@@ -8113,10 +8113,10 @@
           "max_length": 63
         },
         "mot_other": {
-          "english": "Keep %s",
-          "translation": "Keep %s",
+          "english": "Other",
+          "translation": "Other",
           "needs_translation": false,
-          "max_length": 7
+          "max_length": 5
         },
         "mot_poles": {
           "english": "Motor poles",
