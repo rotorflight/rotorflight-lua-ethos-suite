@@ -8382,11 +8382,11 @@
           "translation": "Hovedutv."
         },
         "mot_other": {
-          "english": "Keep %s",
-          "max_length": 9,
+          "english": "Other",
+          "max_length": 5,
           "needs_translation": false,
           "reverse_text": false,
-          "translation": "Behold %s"
+          "translation": "Annet"
         },
         "mot_pinion": {
           "english": "Pinion teeth",

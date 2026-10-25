@@ -9391,10 +9391,10 @@
           "reverse_text": false
         },
         "mot_other": {
-          "english": "Keep %s",
-          "translation": "Ponechat %s",
+          "english": "Other",
+          "translation": "Jiný",
           "needs_translation": false,
-          "max_length": 11,
+          "max_length": 5,
           "reverse_text": false
         },
         "mot_poles": {

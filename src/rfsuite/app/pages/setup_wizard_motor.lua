@@ -3,9 +3,11 @@
 -- The radio's copy of rotorflight-configurator's StepMotor.svelte:
 --
 --   protocol  the ESC protocol (MSP_MOTOR_CONFIG motor_pwm_protocol): PWM,
---             DShot300, DShot600 or Castle as tiles; any other protocol the
---             FC already has is shown and kept (the ESC & Motors page sets
---             the rest)
+--             DShot150 or DShot300 as tiles, every other protocol (DShot600,
+--             Castle, OneShot, ProShot, DISABLED, ...) in an Other drop-down
+--             beside them, which shows the protocol set when it is one of
+--             those. DShot600 is not a tile: on long ESC leads it picks up
+--             noise, so only a pilot who knows that should choose it.
 --   numbers   one screen each: main motor poles, pinion and main gear teeth,
 --             and for a pitch tail the tail drive's two gears, nudged with
 --             buttons
@@ -55,12 +57,20 @@ local T = {
 }
 
 local CASTLE = motorConfig.CASTLE_PROTOCOL
+-- The tiles.
 local COMMON = {
   {value = 0, name = "PWM"},
+  {value = 5, name = "DShot150"},
   {value = 6, name = "DShot300"},
-  {value = 7, name = "DShot600"},
-  {value = CASTLE, name = "Castle"},
 }
+-- Names for the protocols in the Other drop-down; the rest keep the codec's.
+local NAMES = {
+  [7] = "DShot600",
+  [CASTLE] = "Castle",
+}
+-- The Other drop-down's first entry, shown while a tile's protocol is set;
+-- choosing it writes nothing.
+local OTHER_NONE = -1
 
 local ESC_SENSOR_BIT = 27
 
@@ -74,6 +84,7 @@ local function protocolName(value)
   for _, c in ipairs(COMMON) do
     if c.value == value then return c.name end
   end
+  if NAMES[value] then return NAMES[value] end
   local list = motorConfig.BASE_PROTOCOL_CHOICES
   for i = 1, #list do
     if list[i][2] == value then return list[i][1] end
@@ -122,6 +133,27 @@ local function new(wiz)
       min = 1, max = 50000, steps = {-10, -1, 1, 10}}
   end
   local ni = 1
+
+  -- The Other drop-down: "Other", then every protocol this FC takes that has
+  -- no tile (SRXL2 only from the API version that has it), by name.
+  local otherValues = {{T.other, OTHER_NONE}}
+  local isTile = {}
+  for _, c in ipairs(COMMON) do isTile[c.value] = true end
+  local function addOther(value)
+    if not isTile[value] then otherValues[#otherValues + 1] = {protocolName(value), value} end
+  end
+  for _, entry in ipairs(motorConfig.BASE_PROTOCOL_CHOICES) do
+    if entry[2] == motorConfig.DISABLED_PROTOCOL and wiz.apiAtLeast(motorConfig.SRXL2_MIN_API_MINOR) then
+      addOther(motorConfig.SRXL2_PROTOCOL)
+    end
+    addOther(entry[2])
+  end
+  local function inOther(value)
+    for i = 2, #otherValues do
+      if otherValues[i][2] == value then return true end
+    end
+    return false
+  end
 
   wiz.fetch({
     motor = function(ok, err) return motorConfig.buildReadMessage(ok, err) end,
@@ -215,16 +247,19 @@ local function new(wiz)
         wiz.rebuild()
       end})
       local specs = {}
-      local known = false
       for _, c in ipairs(COMMON) do
-        if c.value == current then known = true end
         specs[#specs + 1] = {text = c.name, primary = c.value == current, press = function() setProtocol(c.value) end}
       end
-      if not known then
-        -- The FC's own protocol, kept: picking it again changes nothing.
-        specs[#specs + 1] = {text = string.format(T.other, protocolName(current)), primary = true,
-          press = function() end}
-      end
+      -- The rest in the Other drop-down, which shows the protocol set when
+      -- it has no tile. A protocol it does not list (a newer FC's) is added,
+      -- so it is shown and kept.
+      if not isTile[current] and current ~= nil and not inOther(current) then addOther(current) end
+      specs[#specs + 1] = {values = otherValues, primary = not isTile[current],
+        get = function() return isTile[current] and OTHER_NONE or current end,
+        set = function(value)
+          value = tonumber(value)
+          if value ~= nil and value ~= OTHER_NONE then setProtocol(value) end
+        end}
       return scr:grid(specs, 2) or forward
 
     elseif screen == "number" then

@@ -7227,10 +7227,10 @@
           "translation": "Main ratio"
         },
         "mot_other": {
-          "english": "Keep %s",
-          "max_length": 7,
+          "english": "Other",
+          "max_length": 5,
           "needs_translation": false,
-          "translation": "Keep %s"
+          "translation": "Other"
         },
         "mot_pinion": {
           "english": "Pinion teeth",

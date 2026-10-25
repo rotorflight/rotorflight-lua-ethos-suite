@@ -9391,10 +9391,10 @@
           "reverse_text": false
         },
         "mot_other": {
-          "english": "Keep %s",
-          "translation": "保留 %s",
+          "english": "Other",
+          "translation": "其他",
           "needs_translation": false,
-          "max_length": 7,
+          "max_length": 5,
           "reverse_text": false
         },
         "mot_poles": {

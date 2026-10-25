@@ -8382,11 +8382,11 @@
           "translation": "Przekł. gł."
         },
         "mot_other": {
-          "english": "Keep %s",
-          "max_length": 9,
+          "english": "Other",
+          "max_length": 5,
           "needs_translation": false,
           "reverse_text": false,
-          "translation": "Zostaw %s"
+          "translation": "Inny"
         },
         "mot_pinion": {
           "english": "Pinion teeth",

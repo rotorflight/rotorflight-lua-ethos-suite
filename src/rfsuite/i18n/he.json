@@ -8382,11 +8382,11 @@
           "translation": "יחס ראשי"
         },
         "mot_other": {
-          "english": "Keep %s",
-          "max_length": 7,
+          "english": "Other",
+          "max_length": 5,
           "needs_translation": false,
           "reverse_text": true,
-          "translation": "השאר %s"
+          "translation": "אחר"
         },
         "mot_pinion": {
           "english": "Pinion teeth",
