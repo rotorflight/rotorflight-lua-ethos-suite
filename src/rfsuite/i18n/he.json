@@ -9760,11 +9760,11 @@
           "translation": "סוג סוואש"
         },
         "tal_cal": {
-          "english": "The tail is held at 22 degrees. Measure the tail blade pitch and adjust until it reads 22 degrees each way.",
-          "max_length": 107,
+          "english": "The tail is held at 22.5° each way. Measure the tail blade pitch and adjust until it reads 22.5°. No pitch gauge? Fold a square of paper corner to corner (45°): seen from the tail tip, the fold fits flush between the blades.",
+          "max_length": 224,
           "needs_translation": false,
           "reverse_text": true,
-          "translation": "הזנב מוחזק ב-22 מעלות. מדוד את פיץ' להבי הזנב וכוונן עד שהוא 22 מעלות לכל כיוון."
+          "translation": "הזנב מוחזק ב-22.5° לכל כיוון. מדוד את פיץ' להבי הזנב וכוונן עד שהוא 22.5°. אין מד? קפל ריבוע נייר פינה לפינה (45°): במבט מקצה הלהב, הקפל נכנס בדיוק בין הלהבים."
         },
         "tal_cal_title": {
           "english": "Tail calibration",

@@ -43,6 +43,7 @@ local function run(M)
   -- Override units.
   check("swashRaw(9)", M.swashRaw(9), 750)
   check("tailRaw(22)", M.tailRaw(22), 917)
+  check("tailRaw(22.5)", M.tailRaw(22.5), 938)
   check("tailRaw(60)", M.tailRaw(60), 2500)
   check("servoRaw(20)", M.servoRaw(20), 400)
   check("limitRaw(12)", M.limitRaw(12), 1000)

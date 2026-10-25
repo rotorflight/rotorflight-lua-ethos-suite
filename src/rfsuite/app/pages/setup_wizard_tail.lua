@@ -9,8 +9,10 @@
 --              the tail blades sit at zero pitch
 --   direction  yaw passed through from the stick: push it right and the tail
 --              should push the nose right; Wrong reverses the yaw input rate
---   calibrate  yaw held at 22 degrees each way: nudge |rate| (100..5000)
---              until the blades measure 22 degrees
+--   calibrate  yaw held at 22.5 degrees each way: nudge |rate| (100..5000)
+--              until the blades measure 22.5 degrees (end-on, the two
+--              blades then open to 45 degrees: a square of paper folded
+--              corner to corner fits between them)
 --   limits     yaw held at 60 degrees each way (raw 2500): the CW and CCW
 --              limits (yaw input min / max) set where the slider stops
 --              short of binding
@@ -72,7 +74,8 @@ local T = {
 local SERVO_SCREENS = {"centre", "direction", "calibrate", "limit_cw", "limit_ccw"}
 local MOTOR_SCREENS = {"motor", "idle"}
 
-local CAL_DEGREES = 22
+local CAL_DEGREES = 22.5
+local CAL_LABEL = string.format("%.1f°", CAL_DEGREES)   -- "22.5°"
 local LIMIT_DEGREES = 60
 local SPIN_SECONDS = 3
 local IDLE_RUN_SECONDS = 5
@@ -235,7 +238,7 @@ local function new(wiz)
         {T.rate, string.format("%.1f%%", math.abs(i and i.rate or 0) / 10)},
         {T.side, calSide > 0 and T.sideCcw or T.sideCw},
       })
-      scr:picture(art.tail(calSide > 0 and "right" or "left", string.format("%d°", CAL_DEGREES)))
+      scr:picture(art.tail(calSide > 0 and "right" or "left", CAL_LABEL))
       local specs = nudgeSpecs({-10, -1, 1, 10}, nudgeRate, "%s%d")
       specs[#specs + 1] = {text = T.other, small = true, needsMotion = true, press = function()
         calSide = -calSide

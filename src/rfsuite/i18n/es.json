@@ -9760,11 +9760,11 @@
           "translation": "Tipo de plato"
         },
         "tal_cal": {
-          "english": "The tail is held at 22 degrees. Measure the tail blade pitch and adjust until it reads 22 degrees each way.",
-          "max_length": 109,
+          "english": "The tail is held at 22.5° each way. Measure the tail blade pitch and adjust until it reads 22.5°. No pitch gauge? Fold a square of paper corner to corner (45°): seen from the tail tip, the fold fits flush between the blades.",
+          "max_length": 233,
           "needs_translation": false,
           "reverse_text": false,
-          "translation": "La cola se fija a 22 grados. Mida el paso de las palas de cola y ajuste hasta leer 22 grados en cada sentido."
+          "translation": "La cola se fija a 22,5° en cada sentido. Mida el paso de las palas de cola y ajuste hasta leer 22,5°. ¿Sin medidor? Doble un cuadrado de papel de esquina a esquina (45°): visto desde la punta, el pliegue encaja justo entre las palas."
         },
         "tal_cal_title": {
           "english": "Tail calibration",

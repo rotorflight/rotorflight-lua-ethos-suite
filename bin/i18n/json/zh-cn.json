@@ -10035,10 +10035,10 @@
           "reverse_text": false
         },
         "tal_cal": {
-          "english": "The tail is held at 22 degrees. Measure the tail blade pitch and adjust until it reads 22 degrees each way.",
-          "translation": "尾桨保持在22度。测量尾桨叶螺距并调整至两侧均为22度。",
+          "english": "The tail is held at 22.5° each way. Measure the tail blade pitch and adjust until it reads 22.5°. No pitch gauge? Fold a square of paper corner to corner (45°): seen from the tail tip, the fold fits flush between the blades.",
+          "translation": "尾桨两侧各保持在 22.5°。 测量尾桨叶螺距 并调整至 22.5°。 没有螺距尺？ 将正方形纸 沿对角线对折（45°）： 从桨尖看去， 折痕应正好 贴合两片桨叶之间。",
           "needs_translation": false,
-          "max_length": 107,
+          "max_length": 224,
           "reverse_text": false
         },
         "tal_lim_title": {

@@ -9760,11 +9760,11 @@
           "translation": "Swashplate-type"
         },
         "tal_cal": {
-          "english": "The tail is held at 22 degrees. Measure the tail blade pitch and adjust until it reads 22 degrees each way.",
-          "max_length": 107,
+          "english": "The tail is held at 22.5° each way. Measure the tail blade pitch and adjust until it reads 22.5°. No pitch gauge? Fold a square of paper corner to corner (45°): seen from the tail tip, the fold fits flush between the blades.",
+          "max_length": 224,
           "needs_translation": false,
           "reverse_text": false,
-          "translation": "Halen holdes på 22 grader. Mål halebladpitchen og juster til den viser 22 grader begge veier."
+          "translation": "Halen holdes på 22,5° begge veier. Mål halebladpitchen og juster til den viser 22,5°. Ingen måler? Brett et kvadratisk papir hjørne mot hjørne (45°): sett fra bladtuppen passer bretten nøyaktig mellom bladene."
         },
         "tal_cal_title": {
           "english": "Tail calibration",

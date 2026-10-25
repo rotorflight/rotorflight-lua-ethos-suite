@@ -9760,11 +9760,11 @@
           "translation": "Tipo di piatto"
         },
         "tal_cal": {
-          "english": "The tail is held at 22 degrees. Measure the tail blade pitch and adjust until it reads 22 degrees each way.",
-          "max_length": 107,
+          "english": "The tail is held at 22.5° each way. Measure the tail blade pitch and adjust until it reads 22.5°. No pitch gauge? Fold a square of paper corner to corner (45°): seen from the tail tip, the fold fits flush between the blades.",
+          "max_length": 225,
           "needs_translation": false,
           "reverse_text": false,
-          "translation": "La coda è tenuta a 22 gradi. Misura il passo delle pale di coda e regola finché legge 22 gradi per lato."
+          "translation": "La coda è tenuta a 22,5° per lato. Misura il passo delle pale di coda e regola finché legge 22,5°. Niente misuratore? Piega un quadrato di carta da angolo ad angolo (45°): visto dalla punta, la piega entra esatta tra le pale."
         },
         "tal_cal_title": {
           "english": "Tail calibration",
