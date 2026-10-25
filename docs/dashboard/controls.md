@@ -37,8 +37,8 @@ While the model is armed, the dashboard shows a red bar across the top edge with
 moves nothing. It appears only once the FC reports the armed state, and it goes away
 when the model is disarmed.
 
-The warning can be switched off in the widget properties with **Armed warning**. It is
-on by default.
+The warning can be switched off in *Settings* → *General* → *Display* with
+**Dashboard armed warning**. It is on by default.
 
 ## Battery picker
 

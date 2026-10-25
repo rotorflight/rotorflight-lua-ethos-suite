@@ -6,8 +6,13 @@
 -- Drives the real widgets/dashboard.lua paint path with a recording lcd. The claim:
 -- while the model is confirmed armed, a red bar runs across the top edge with an
 -- "Armed" label hanging from its centre, over whatever theme is shown. Disarmed,
--- nothing red is drawn. The widget property "Armed warning" (default on) switches
--- the bar off; with it off, nothing red is drawn even while armed.
+-- nothing red is drawn. The setting "Armed warning" in Settings > General (default
+-- on) switches the bar off; with it off, nothing red is drawn even while armed.
+--
+-- The setting is driven through the real app/pages/settings_general.lua: the field
+-- is switched the way the pilot switches it and Save is pressed, so the dashboard
+-- sees it through the same settings.update the radio publishes. The dashboard
+-- widget itself has no property for it any more.
 --
 -- Not established here: how the bar and label sit on a 480x320 radio over each
 -- theme. The stub lcd does not rasterise. That is the Ethos simulator check named
@@ -122,11 +127,24 @@ form = setmetatable({
   end,
 }, {__index = function() return function() end end})
 
--- The widget property is built with form.addLine + form.addBooleanField; capture the
--- field's getter and setter so the check can flip it the way the pilot does.
-local configField = nil
-form.addLine = function() return {} end
-form.addBooleanField = function(_, _, get, set) configField = {get = get, set = set} end
+-- Every boolean field is recorded by the label of its line, so the check can find
+-- "Armed warning" and flip it the way the pilot does.
+local fields = {}
+local function addLine(_, label) return {label = label} end
+form.addLine = function(label) return {label = label} end
+form.addExpansionPanel = function()
+  return {open = function() end, addLine = addLine}
+end
+form.addBooleanField = function(line, _, get, set)
+  fields[#fields + 1] = {label = line and line.label, get = get, set = set}
+end
+
+local function fieldByLabel(label)
+  for _, f in ipairs(fields) do
+    if f.label == label then return f end
+  end
+  return nil
+end
 
 local failures, checks = 0, 0
 
@@ -237,11 +255,60 @@ local function hasLabel()
   return false
 end
 
--- The widget property is stored and read back through the Ethos storage API.
--- Nothing stored yet counts as on.
-check("property: default on when nothing is stored", stored.armed_warning == nil)
-descriptor.read(state)
-check("property: read with nothing stored leaves the warning on", state.armedWarningEnabled == true)
+-- The dashboard widget has no property for the warning any more: configure adds no
+-- field and nothing is stored with the widget.
+fields = {}
+descriptor.configure(state)
+check("widget: configure adds no Armed warning property", #fields == 0)
+descriptor.write(state)
+check("widget: nothing is stored with the widget", next(stored) == nil)
+
+-- The real Settings > General page, with a stub header that lets the check press
+-- Save. The store's file write and read are replaced by memory, so a save succeeds
+-- without a radio file system and the page reopens with what was saved; everything
+-- else on the save path is the real code.
+local settingsStore = requireModule("lib/settings_store.lua")
+local saved = nil
+local realLoad = settingsStore.load
+settingsStore.save = function(settings) saved = settingsStore.clone(settings); return true end
+settingsStore.load = function()
+  if saved then return settingsStore.clone(saved) end
+  return realLoad()
+end
+
+local headerOpts = nil
+local realHeader = package.loaded["rfsuite.app.header"]
+local realCloseKey = package.loaded["rfsuite.app.close_key"]
+package.loaded["rfsuite.app.header"] = {
+  build = function(_, opts)
+    headerOpts = opts
+    return {setSaveEnabled = function() end, focusSave = function() end}
+  end,
+}
+package.loaded["rfsuite.app.close_key"] = {shouldHandleClose = function() return false end}
+local settingsPage = assert(loadfile("app/pages/settings_general.lua"))()
+package.loaded["rfsuite.app.header"] = realHeader
+package.loaded["rfsuite.app.close_key"] = realCloseKey
+
+-- Opens the page, sets "Armed warning" and presses Save, confirming the dialog.
+local SETTING_LABEL = "@i18n(app.modules.settings.armed_warning)@"
+local function setWarningInSettings(value)
+  fields, dialogs, headerOpts = {}, {}, nil
+  settingsPage.open({onBack = function() end})
+  local field = fieldByLabel(SETTING_LABEL)
+  if not check("settings: General has an Armed warning field", field ~= nil) then return nil end
+  field.set(value)
+  headerOpts.onSave()
+  local confirm = dialogs[#dialogs]
+  if confirm and confirm.buttons and confirm.buttons[1] then confirm.buttons[1].action() end
+  descriptor.wakeup(state)
+  return field
+end
+
+-- Nothing saved yet: the setting reads on.
+settingsPage.open({onBack = function() end})
+local field = fieldByLabel(SETTING_LABEL)
+check("settings: the Armed warning field is on by default", field ~= nil and field.get() == true)
 
 -- 1. Disarmed: no red, no label.
 setArmed(false)
@@ -267,30 +334,23 @@ paintFrame()
 r = redRects()
 check("disarmed again: the red bar is gone", not r.bar and not r.label)
 
--- 4. The property off: armed draws no warning at all.
-state.armedWarningEnabled = true
-descriptor.configure(state)
-check("property: configure adds the Armed warning field", configField ~= nil)
-configField.set(false)
-check("property: the field reports off after switching it", configField.get() == false)
-descriptor.write(state)
-check("property: write stores off", stored.armed_warning == false)
-state.armedWarningEnabled = nil
-descriptor.read(state)
-check("property: read restores off from storage", state.armedWarningEnabled == false)
+-- 4. Switched off in Settings > General and saved: armed draws no warning at all.
+setWarningInSettings(false)
+check("settings: save stores armed_warning off",
+  saved ~= nil and saved.general and saved.general.armed_warning == false)
 setArmed(true)
 paintFrame()
 r = redRects()
-check("property off, armed: no red bar is drawn", not r.bar and not r.label and not r.other)
-check("property off, armed: no Armed label is drawn", not hasLabel())
+check("setting off, armed: no red bar is drawn", not r.bar and not r.label and not r.other)
+check("setting off, armed: no Armed label is drawn", not hasLabel())
 
--- 5. Switched back on: the warning returns.
-configField.set(true)
-descriptor.write(state)
-check("property: write stores on", stored.armed_warning == true)
+-- 5. Switched back on and saved: the warning returns.
+setWarningInSettings(true)
+check("settings: save stores armed_warning on",
+  saved ~= nil and saved.general and saved.general.armed_warning == true)
 paintFrame()
 r = redRects()
-check("property on again, armed: the red bar is drawn", r.bar)
+check("setting on again, armed: the red bar is drawn", r.bar)
 
 print(string.format("\n%d checks, %d failed", checks, failures))
 os.exit(failures == 0 and 0 or 1)

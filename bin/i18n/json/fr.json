@@ -2715,6 +2715,13 @@
           "needs_translation": false,
           "reverse_text": false,
           "max_length": 16
+        },
+        "armed_warning": {
+          "english": "Dashboard armed warning",
+          "max_length": 28,
+          "needs_translation": false,
+          "translation": "Alerte Armed tab. de bord",
+          "reverse_text": false
         }
       },
       "telemetry": {
@@ -9821,13 +9828,6 @@
         "needs_translation": true,
         "reverse_text": false,
         "max_length": 5
-      },
-      "armed_warning": {
-        "english": "Armed warning",
-        "max_length": 24,
-        "needs_translation": false,
-        "translation": "Alerte Armed",
-        "reverse_text": false
       },
       "info_arming": {
         "english": "Arming",

@@ -2343,6 +2343,12 @@
           "max_length": 16,
           "needs_translation": false,
           "translation": "Temperature Unit"
+        },
+        "armed_warning": {
+          "english": "Dashboard armed warning",
+          "max_length": 28,
+          "needs_translation": false,
+          "translation": "Dashboard armed warning"
         }
       },
       "telemetry": {
@@ -8500,12 +8506,6 @@
         "max_length": 5,
         "needs_translation": false,
         "translation": "Armed"
-      },
-      "armed_warning": {
-        "english": "Armed warning",
-        "max_length": 24,
-        "needs_translation": false,
-        "translation": "Armed warning"
       },
       "info_arming": {
         "english": "Arming",

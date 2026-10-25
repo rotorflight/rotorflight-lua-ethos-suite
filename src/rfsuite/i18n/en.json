@@ -6072,6 +6072,12 @@
           "needs_translation": false,
           "translation": "Vibrate"
         },
+        "armed_warning": {
+          "english": "Dashboard armed warning",
+          "max_length": 28,
+          "needs_translation": false,
+          "translation": "Dashboard armed warning"
+        },
         "arming_flags": {
           "english": "Arming flags",
           "max_length": 12,
@@ -8162,12 +8168,6 @@
         "max_length": 12,
         "needs_translation": false,
         "translation": "Altitude Max"
-      },
-      "armed_warning": {
-        "english": "Armed warning",
-        "max_length": 24,
-        "needs_translation": false,
-        "translation": "Armed warning"
       },
       "battery": {
         "english": "Battery",
