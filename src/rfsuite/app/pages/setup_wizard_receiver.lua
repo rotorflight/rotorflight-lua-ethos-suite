@@ -323,17 +323,24 @@ local function new(wiz)
     bus.publish("rx.map.saved", rxMap)
   end
 
-  -- The protocol, as the EdgeTX suite lists it: the firmware's provider numbers.
-  -- The later ones need the newer API.
+  -- The protocols: the firmware's provider numbers, in alphabetical order. The
+  -- later ones need the newer API. F.Port2 (16) as the Configurator's
+  -- receiver/protocols.js: offered on API 12.7-12.9 only; from 12.10 the FBUS
+  -- driver detects F.Port2 itself (firmware rx/rx.c), and a stored 16 reads as FBUS.
   local FEATURE_SERIAL_RX = 3
   local FEATURE_CLASH = {0, 3, 13, 14, 25}
   local function protocolList()
     local e = {{9, "CRSF / ELRS"}, {2, "S.BUS"}, {0, "DSM/1024"}, {1, "DSM/2048"}, {10, "SRXL"},
       {13, "SRXL2"}, {14, "GHOST"}, {3, "SUMD"}, {4, "SUMH"}, {7, "IBUS"}, {5, "XBUS B"},
       {6, "XBUS RJ01"}, {8, "Jeti EXBUS"}, {12, "F.PORT"}}
-    if wiz.apiAtLeast(7) then e[#e + 1] = {15, "S.BUS2"}; e[#e + 1] = {16, "F.PORT2"}; e[#e + 1] = {17, "FBUS"} end
+    if wiz.apiAtLeast(7) then
+      e[#e + 1] = {15, "S.BUS2"}
+      if not wiz.apiAtLeast(10) then e[#e + 1] = {16, "F.PORT2"} end
+      e[#e + 1] = {17, "FBUS"}
+    end
     if wiz.apiAtLeast(8) then e[#e + 1] = {18, "XBUS A"} end
     if wiz.apiAtLeast(9) then e[#e + 1] = {19, "IBUS2"} end
+    table.sort(e, function(a, b) return a[2]:lower() < b[2]:lower() end)
     return e
   end
 
@@ -348,6 +355,7 @@ local function new(wiz)
     for _, p in ipairs(protocolList()) do
       if p[1] == id then return p[2] end
     end
+    if id == 16 then return "FBUS" end
     return "-"
   end
 
@@ -804,17 +812,18 @@ local function new(wiz)
       scr:text(T.prepareTitle, T.prepareText)
       scr:picture(receiverPicture)
       scr:step(1, RECEIVER_SCREENS)
-      local function answer(key, index)
-        return function()
-          answers[key], answered = not answers[key], index
+      -- Safety confirmation toggles: 1-click toggle buttons (No/Yes). Start follows once both are Yes.
+      local function toggle(key, index)
+        return {function() return answers[key] == true end, function(v)
+          answers[key], answered = v and true or false, index
           wiz.rebuild()
-        end
+        end}
       end
       local ready = answers.unplugged and answers.blades
-      -- Focus: Next once both are Yes, else the answer just pressed, else the first No.
+      -- Focus: Start once both are Yes, else the toggle just set, else the first No.
       local answerField = scr:checks({
-        {label = T.unplugged, answer = answers.unplugged and T.yes or T.no, press = answer("unplugged", 1)},
-        {label = T.blades, answer = answers.blades and T.yes or T.no, press = answer("blades", 2)},
+        {label = T.unplugged, toggle = toggle("unplugged", 1)},
+        {label = T.blades, toggle = toggle("blades", 2)},
       }, (not ready) and (answered or (not answers.unplugged and 1) or 2) or nil)
       answered = nil
       -- As the other steps: Start goes into the step, Next leaves it.

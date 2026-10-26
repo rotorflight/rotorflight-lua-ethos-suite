@@ -34,6 +34,8 @@ local GRID_MIN_H = 30
 local GRID_MAX_H = 56
 local NEXT = "@i18n(app.modules.setup_wizard.btn_next)@"
 local STEP_OF = "@i18n(app.modules.setup_wizard.step_progress_fmt)@"
+local YES = "@i18n(app.modules.setup_wizard.btn_yes)@"
+local NO = "@i18n(app.modules.setup_wizard.btn_no)@"
 
 -- The row's Back and plain Next are small icon-only buttons (as the
 -- header's): chevrons, not the header's arrow, which leaves the wizard.
@@ -232,6 +234,7 @@ end
 --                                  an action: a button across the whole half
 --   {label =, value =}             a fact: the label, its value where the
 --                                  answers sit ("Accelerometer  Available")
+--   {label =, toggle = {get, set}}  a yes/no toggle button: the label, its answer a 1-click button ("No" / "Yes")
 --   {label =, number = {min, max, get, set, suffix}, disabled =}
 --                                  a value to edit: the label, a number field
 --                                  where the answers sit
@@ -268,7 +271,7 @@ function Screen:checks(list, focus)
       -- anything beyond the second line is cut short.
       lcd.font(FONT_S)
       -- A label with nothing beside it (no button, field or value) has the width.
-      local w = (c.press or c.number or c.value) and labelW or (room - x)
+      local w = (c.press or c.number or c.toggle or c.value) and labelW or (room - x)
       local lines = self.wiz.wrapLines(c.label, w, FONT_S)
       if #lines > 2 then lines = {lines[1], ui.fit(table.concat(lines, " ", 2), w)} end
       row.labelLines = lines
@@ -294,6 +297,22 @@ function Screen:checks(list, focus)
       if i == focus then field = f end
       row.y = y + floor((h - lineH) / 2)
       y = y + h + CHECK_ROW_GAP
+    elseif c.toggle then
+      local get, set = c.toggle[1], c.toggle[2]
+      local current = get and get() == true
+      local text = current and (c.toggle[4] or YES) or (c.toggle[3] or NO)
+      lcd.font(FONT_STD)
+      local font = (lcd.getTextSize(text) > bw - 16) and FONT_S or FONT_STD
+      local f = addButton(self, {x = room - bw, y = y, w = bw, h = h}, "check_" .. i, {
+        text = text,
+        disabled = c.disabled,
+        press = function()
+          if set then set(not current) end
+        end,
+      }, font)
+      if i == focus then field = f end
+      row.y = y + floor((h - lineH) / 2)
+      y = y + h + CHECK_ROW_GAP
     elseif c.note then
       row.lines = self.wiz.wrapLines(c.note, room - x, FONT_S)
       row.y = y
@@ -305,7 +324,7 @@ function Screen:checks(list, focus)
     end
     if row.labelLines then
       -- Beside a button the label is centred on it; a plain fact sits on its line.
-      local centred = c.press or c.number
+      local centred = c.press or c.number or c.toggle
       row.labelY = centred and (rowTop + floor((h - #row.labelLines * lineH) / 2)) or rowTop
     end
     v.checks[i] = row

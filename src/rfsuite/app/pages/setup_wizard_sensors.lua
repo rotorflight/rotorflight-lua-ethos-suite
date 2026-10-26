@@ -267,17 +267,18 @@ local function new(wiz)
     if screen == "intro" then
       scr:text(T.title, T.intro, (not hasAcc) and T.noAcc or nil)
       scr:picture(bladesPicture)
-      local function answer(key, index)
-        return function()
-          answers[key], answered = not answers[key], index
+      -- Safety confirmation toggles: 1-click toggle buttons (No/Yes). Start follows once both are Yes.
+      local function toggle(key, index)
+        return {function() return answers[key] == true end, function(v)
+          answers[key], answered = v and true or false, index
           wiz.rebuild()
-        end
+        end}
       end
       local ready = answers.unplugged and answers.blades
-      -- Focus: Start once both are Yes, else the answer just pressed, else the first No.
+      -- Focus: Start once both are Yes, else the toggle just set, else the first No.
       local answerField = scr:checks({
-        {label = T.unplugged, answer = answers.unplugged and T.yes or T.no, press = answer("unplugged", 1)},
-        {label = T.bladesOff, answer = answers.blades and T.yes or T.no, press = answer("blades", 2)},
+        {label = T.unplugged, toggle = toggle("unplugged", 1)},
+        {label = T.bladesOff, toggle = toggle("blades", 2)},
       }, (not ready) and (answered or (not answers.unplugged and 1) or 2) or nil)
       answered = nil
       local rowField = scr:row(nil, hasAcc and {{text = T.start, primary = ready, disabled = not ready,
@@ -341,10 +342,11 @@ local function new(wiz)
         attitude.rotorDir = (wiz.mixConfig() or {}).main_rotor_dir
         scr:picture(attitudePicture)
         field = scr:checks({
-          {label = T.directionOk, answer = directionOk and T.yes or T.no, press = function()
-            directionOk = not directionOk
+          -- The same toggle as the safety questions: Next once it is Yes.
+          {label = T.directionOk, toggle = {function() return directionOk end, function(v)
+            directionOk = v and true or false
             wiz.rebuild()
-          end},
+          end}},
         }, (not directionOk) and 1 or nil)
         forward.disabled = not directionOk
       end

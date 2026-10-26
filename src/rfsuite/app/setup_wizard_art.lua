@@ -1155,8 +1155,10 @@ local function drawModeSwitch(l, x, y, w, h, colors)
     iconH = s + 12
   end
   local tip = (l.state == "listen" and colors.active) or (l.state == "on" and colors.good) or colors.muted
-  local sw = floor(min(w * 0.5, (h - iconH) * 40 / 48))
-  toggle(x + floor((w - sw) / 2), y + iconH, sw, h - iconH, l.angle or -28, tip, colors)
+  -- About the size of the other steps' pictures: a third of the width, 60 % of the height.
+  local sw = floor(min(w * 0.33, (h - iconH) * 0.6 * 40 / 48))
+  local sh = floor(sw * 48 / 40)
+  toggle(x + floor((w - sw) / 2), y + iconH + floor((h - iconH - sh) / 2), sw, sh, l.angle or -28, tip, colors)
 end
 
 -- A mode's icon, s px, for a title line (app/setup_wizard_ui.lua).
