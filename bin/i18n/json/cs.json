@@ -9687,11 +9687,35 @@
           "max_length": 15,
           "reverse_text": false
         },
-        "swa_type_text": {
-          "english": "How are the swash servos laid out? 120 degrees is the most common.",
-          "translation": "Jak jsou rozmístěna serva desky? Nejběžnější je 120 stupňů.",
+        "swa_servo1": {
+          "english": "Servo 1",
+          "translation": "Servo 1",
           "needs_translation": false,
-          "max_length": 66,
+          "max_length": 7
+        },
+        "swa_prepare_text": {
+          "english": "Unplug the servos and remove the blades before the swashplate and the tail are set.",
+          "translation": "Před nastavením talíře a ocasu odpojte serva a sejměte listy.",
+          "needs_translation": false,
+          "max_length": 83
+        },
+        "swa_front": {
+          "english": "Front",
+          "translation": "Vpředu",
+          "needs_translation": false,
+          "max_length": 6
+        },
+        "swa_rear": {
+          "english": "Rear",
+          "translation": "Vzadu",
+          "needs_translation": false,
+          "max_length": 5
+        },
+        "swa_type_text": {
+          "english": "The servo numbers are the flight controller's servo outputs. Servo 1 can be in front of the main shaft or behind it.",
+          "translation": "Čísla serv jsou výstupy serv na FC. Servo 1 může být před hřídelí nebo za ní.",
+          "needs_translation": false,
+          "max_length": 116,
           "reverse_text": false
         },
         "swa_current_fmt": {
@@ -9699,20 +9723,6 @@
           "translation": "Nyní: %s",
           "needs_translation": false,
           "max_length": 8,
-          "reverse_text": false
-        },
-        "swa_show_text": {
-          "english": "The servos sit here, seen from above with the nose at the top. Servo numbers are the FC outputs.",
-          "translation": "Serva jsou zde, při pohledu shora s nosem nahoře. Čísla serv jsou výstupy FC.",
-          "needs_translation": false,
-          "max_length": 96,
-          "reverse_text": false
-        },
-        "swa_from_above": {
-          "english": "Seen from above, nose at the top",
-          "translation": "Pohled shora, nos nahoře",
-          "needs_translation": false,
-          "max_length": 32,
           "reverse_text": false
         },
         "swa_dir_title": {
@@ -9723,10 +9733,10 @@
           "reverse_text": false
         },
         "swa_dir_text": {
-          "english": "Seen from above, which way do the main blades turn?",
-          "translation": "Při pohledu shora, kterým směrem se točí hlavní listy?",
+          "english": "Seen from above. Most helicopters turn clockwise.",
+          "translation": "Pohled shora. Většina vrtulníků se točí po směru hodinových ručiček.",
           "needs_translation": false,
-          "max_length": 54,
+          "max_length": 68,
           "reverse_text": false
         },
         "swa_cw": {
@@ -9751,10 +9761,10 @@
           "reverse_text": false
         },
         "swa_tail_text": {
-          "english": "A pitch tail uses a servo. A motor tail spins its own motor, one way or both ways.",
-          "translation": "Ocas s řízením úhlu používá servo. Motorový ocas točí vlastní motor, jedním či oběma směry.",
+          "english": "How the tail is driven. Leave the servos unplugged until the restart.",
+          "translation": "Jak je ocas poháněn. Servy nechte odpojené až do restartu.",
           "needs_translation": false,
-          "max_length": 91,
+          "max_length": 69,
           "reverse_text": false
         },
         "swa_tail_variable": {
@@ -9833,6 +9843,18 @@
           "needs_translation": false,
           "max_length": 9,
           "reverse_text": false
+        },
+        "swa_row_servo": {
+          "english": "Tail servo",
+          "translation": "Servo ocasu",
+          "needs_translation": false,
+          "max_length": 11
+        },
+        "swa_servo_none": {
+          "english": "None",
+          "translation": "Žádné",
+          "needs_translation": false,
+          "max_length": 5
         },
         "swa_pin_servo": {
           "english": "Servo 4",

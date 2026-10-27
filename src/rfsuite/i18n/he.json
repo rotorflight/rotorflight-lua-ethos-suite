@@ -10175,11 +10175,11 @@
           "translation": "עם השעון"
         },
         "swa_dir_text": {
-          "english": "Seen from above, which way do the main blades turn?",
-          "max_length": 51,
+          "english": "Seen from above. Most helicopters turn clockwise.",
+          "max_length": 49,
           "needs_translation": false,
           "reverse_text": true,
-          "translation": "במבט מלמעלה, לאיזה כיוון מסתובבים הלהבים הראשיים?"
+          "translation": "מלמעלה. רוב המסוקים מסתובבים בכיוון השעון."
         },
         "swa_dir_title": {
           "english": "Main rotor direction",
@@ -10202,12 +10202,11 @@
           "reverse_text": true,
           "translation": "הסוואש הוגדר"
         },
-        "swa_from_above": {
-          "english": "Seen from above, nose at the top",
-          "max_length": 32,
+        "swa_front": {
+          "english": "Front",
+          "max_length": 5,
           "needs_translation": false,
-          "reverse_text": true,
-          "translation": "מבט מלמעלה, האף למעלה"
+          "translation": "קדמי"
         },
         "swa_pin_both": {
           "english": "Own pin",
@@ -10251,6 +10250,18 @@
           "reverse_text": true,
           "translation": "הגדר במיקסר"
         },
+        "swa_prepare_text": {
+          "english": "Unplug the servos and remove the blades before the swashplate and the tail are set.",
+          "max_length": 83,
+          "needs_translation": false,
+          "translation": "לפני הגדרת הסווש והזנב, נתקו את הסרוווים והסירו את הלהבים."
+        },
+        "swa_rear": {
+          "english": "Rear",
+          "max_length": 5,
+          "needs_translation": false,
+          "translation": "אחורי"
+        },
         "swa_restart": {
           "english": "Applies after the restart at the Connect step.",
           "max_length": 46,
@@ -10272,6 +10283,12 @@
           "reverse_text": true,
           "translation": "פין זנב"
         },
+        "swa_row_servo": {
+          "english": "Tail servo",
+          "max_length": 10,
+          "needs_translation": false,
+          "translation": "סרוו זנב"
+        },
         "swa_row_tail": {
           "english": "Tail",
           "max_length": 4,
@@ -10286,12 +10303,17 @@
           "reverse_text": true,
           "translation": "סוג סוואש"
         },
-        "swa_show_text": {
-          "english": "The servos sit here, seen from above with the nose at the top. Servo numbers are the FC outputs.",
-          "max_length": 96,
+        "swa_servo1": {
+          "english": "Servo 1",
+          "max_length": 7,
           "needs_translation": false,
-          "reverse_text": true,
-          "translation": "הסרווים ממוקמים כאן, במבט מלמעלה עם האף למעלה. מספרי הסרווים הם יציאות ה-FC."
+          "translation": "סרוו 1"
+        },
+        "swa_servo_none": {
+          "english": "None",
+          "max_length": 4,
+          "needs_translation": false,
+          "translation": "אין"
         },
         "swa_tail_bidir": {
           "english": "Motor, 2-way",
@@ -10308,11 +10330,11 @@
           "translation": "מנוע"
         },
         "swa_tail_text": {
-          "english": "A pitch tail uses a servo. A motor tail spins its own motor, one way or both ways.",
-          "max_length": 82,
+          "english": "How the tail is driven. Leave the servos unplugged until the restart.",
+          "max_length": 69,
           "needs_translation": false,
           "reverse_text": true,
-          "translation": "זנב פיץ' משתמש בסרוו. זנב מנוע מסובב מנוע משלו, לכיוון אחד או לשני הכיוונים."
+          "translation": "איך הזנב מונע. השאירו את הסרוווים מנותקים עד לאתחול."
         },
         "swa_tail_title": {
           "english": "Tail type",
@@ -10329,11 +10351,11 @@
           "translation": "פיץ' (סרוו)"
         },
         "swa_type_text": {
-          "english": "How are the swash servos laid out? 120 degrees is the most common.",
-          "max_length": 66,
+          "english": "The servo numbers are the flight controller's servo outputs. Servo 1 can be in front of the main shaft or behind it.",
+          "max_length": 116,
           "needs_translation": false,
           "reverse_text": true,
-          "translation": "איך מסודרים סרווי הסוואש? 120 מעלות הוא הנפוץ ביותר."
+          "translation": "מספרי הסרוו הם יציאות הסרוו של בקר הטיסה. סרוו 1 יכול להיות לפני ציר הרוטור הראשי או אחריו."
         },
         "swa_type_title": {
           "english": "Swashplate type",

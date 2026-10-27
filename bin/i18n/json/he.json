@@ -9687,11 +9687,35 @@
           "max_length": 15,
           "reverse_text": true
         },
-        "swa_type_text": {
-          "english": "How are the swash servos laid out? 120 degrees is the most common.",
-          "translation": "איך מסודרים סרווי הסוואש? 120 מעלות הוא הנפוץ ביותר.",
+        "swa_servo1": {
+          "english": "Servo 1",
+          "translation": "סרוו 1",
           "needs_translation": false,
-          "max_length": 66,
+          "max_length": 7
+        },
+        "swa_prepare_text": {
+          "english": "Unplug the servos and remove the blades before the swashplate and the tail are set.",
+          "translation": "לפני הגדרת הסווש והזנב, נתקו את הסרוווים והסירו את הלהבים.",
+          "needs_translation": false,
+          "max_length": 83
+        },
+        "swa_front": {
+          "english": "Front",
+          "translation": "קדמי",
+          "needs_translation": false,
+          "max_length": 5
+        },
+        "swa_rear": {
+          "english": "Rear",
+          "translation": "אחורי",
+          "needs_translation": false,
+          "max_length": 5
+        },
+        "swa_type_text": {
+          "english": "The servo numbers are the flight controller's servo outputs. Servo 1 can be in front of the main shaft or behind it.",
+          "translation": "מספרי הסרוו הם יציאות הסרוו של בקר הטיסה. סרוו 1 יכול להיות לפני ציר הרוטור הראשי או אחריו.",
+          "needs_translation": false,
+          "max_length": 116,
           "reverse_text": true
         },
         "swa_current_fmt": {
@@ -9699,20 +9723,6 @@
           "translation": "כעת: %s",
           "needs_translation": false,
           "max_length": 7,
-          "reverse_text": true
-        },
-        "swa_show_text": {
-          "english": "The servos sit here, seen from above with the nose at the top. Servo numbers are the FC outputs.",
-          "translation": "הסרווים ממוקמים כאן, במבט מלמעלה עם האף למעלה. מספרי הסרווים הם יציאות ה-FC.",
-          "needs_translation": false,
-          "max_length": 96,
-          "reverse_text": true
-        },
-        "swa_from_above": {
-          "english": "Seen from above, nose at the top",
-          "translation": "מבט מלמעלה, האף למעלה",
-          "needs_translation": false,
-          "max_length": 32,
           "reverse_text": true
         },
         "swa_dir_title": {
@@ -9723,10 +9733,10 @@
           "reverse_text": true
         },
         "swa_dir_text": {
-          "english": "Seen from above, which way do the main blades turn?",
-          "translation": "במבט מלמעלה, לאיזה כיוון מסתובבים הלהבים הראשיים?",
+          "english": "Seen from above. Most helicopters turn clockwise.",
+          "translation": "מלמעלה. רוב המסוקים מסתובבים בכיוון השעון.",
           "needs_translation": false,
-          "max_length": 51,
+          "max_length": 49,
           "reverse_text": true
         },
         "swa_cw": {
@@ -9751,10 +9761,10 @@
           "reverse_text": true
         },
         "swa_tail_text": {
-          "english": "A pitch tail uses a servo. A motor tail spins its own motor, one way or both ways.",
-          "translation": "זנב פיץ' משתמש בסרוו. זנב מנוע מסובב מנוע משלו, לכיוון אחד או לשני הכיוונים.",
+          "english": "How the tail is driven. Leave the servos unplugged until the restart.",
+          "translation": "איך הזנב מונע. השאירו את הסרוווים מנותקים עד לאתחול.",
           "needs_translation": false,
-          "max_length": 82,
+          "max_length": 69,
           "reverse_text": true
         },
         "swa_tail_variable": {
@@ -9833,6 +9843,18 @@
           "needs_translation": false,
           "max_length": 8,
           "reverse_text": true
+        },
+        "swa_row_servo": {
+          "english": "Tail servo",
+          "translation": "סרוו זנב",
+          "needs_translation": false,
+          "max_length": 10
+        },
+        "swa_servo_none": {
+          "english": "None",
+          "translation": "אין",
+          "needs_translation": false,
+          "max_length": 4
         },
         "swa_pin_servo": {
           "english": "Servo 4",

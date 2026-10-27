@@ -10175,11 +10175,11 @@
           "translation": "Horario"
         },
         "swa_dir_text": {
-          "english": "Seen from above, which way do the main blades turn?",
-          "max_length": 61,
+          "english": "Seen from above. Most helicopters turn clockwise.",
+          "max_length": 95,
           "needs_translation": false,
           "reverse_text": false,
-          "translation": "Visto desde arriba, ¿hacia dónde giran las palas principales?"
+          "translation": "Visto desde arriba. La mayoría de los helicópteros giran en el sentido de las agujas del reloj."
         },
         "swa_dir_title": {
           "english": "Main rotor direction",
@@ -10202,12 +10202,11 @@
           "reverse_text": false,
           "translation": "Plato ajustado"
         },
-        "swa_from_above": {
-          "english": "Seen from above, nose at the top",
-          "max_length": 32,
+        "swa_front": {
+          "english": "Front",
+          "max_length": 7,
           "needs_translation": false,
-          "reverse_text": false,
-          "translation": "Visto desde arriba, morro arriba"
+          "translation": "Delante"
         },
         "swa_pin_both": {
           "english": "Own pin",
@@ -10251,6 +10250,18 @@
           "reverse_text": false,
           "translation": "En Mezclador"
         },
+        "swa_prepare_text": {
+          "english": "Unplug the servos and remove the blades before the swashplate and the tail are set.",
+          "max_length": 85,
+          "needs_translation": false,
+          "translation": "Desconecte los servos y retire las palas antes de ajustar el plato cíclico y la cola."
+        },
+        "swa_rear": {
+          "english": "Rear",
+          "max_length": 6,
+          "needs_translation": false,
+          "translation": "Detrás"
+        },
         "swa_restart": {
           "english": "Applies after the restart at the Connect step.",
           "max_length": 47,
@@ -10272,6 +10283,12 @@
           "reverse_text": false,
           "translation": "Salida cola"
         },
+        "swa_row_servo": {
+          "english": "Tail servo",
+          "max_length": 13,
+          "needs_translation": false,
+          "translation": "Servo de cola"
+        },
         "swa_row_tail": {
           "english": "Tail",
           "max_length": 4,
@@ -10286,12 +10303,17 @@
           "reverse_text": false,
           "translation": "Tipo plato"
         },
-        "swa_show_text": {
-          "english": "The servos sit here, seen from above with the nose at the top. Servo numbers are the FC outputs.",
-          "max_length": 97,
+        "swa_servo1": {
+          "english": "Servo 1",
+          "max_length": 7,
           "needs_translation": false,
-          "reverse_text": false,
-          "translation": "Los servos van aquí, vistos desde arriba con el morro arriba. Los números son las salidas del FC."
+          "translation": "Servo 1"
+        },
+        "swa_servo_none": {
+          "english": "None",
+          "max_length": 7,
+          "needs_translation": false,
+          "translation": "Ninguno"
         },
         "swa_tail_bidir": {
           "english": "Motor, 2-way",
@@ -10308,11 +10330,11 @@
           "translation": "Motor"
         },
         "swa_tail_text": {
-          "english": "A pitch tail uses a servo. A motor tail spins its own motor, one way or both ways.",
-          "max_length": 97,
+          "english": "How the tail is driven. Leave the servos unplugged until the restart.",
+          "max_length": 71,
           "needs_translation": false,
           "reverse_text": false,
-          "translation": "Una cola de paso usa un servo. Una cola de motor tiene su propio motor, en un sentido o en ambos."
+          "translation": "Cómo se mueve la cola. Deje los servos desconectados hasta el reinicio."
         },
         "swa_tail_title": {
           "english": "Tail type",
@@ -10329,11 +10351,11 @@
           "translation": "Paso (servo)"
         },
         "swa_type_text": {
-          "english": "How are the swash servos laid out? 120 degrees is the most common.",
-          "max_length": 72,
+          "english": "The servo numbers are the flight controller's servo outputs. Servo 1 can be in front of the main shaft or behind it.",
+          "max_length": 121,
           "needs_translation": false,
           "reverse_text": false,
-          "translation": "¿Cómo están dispuestos los servos del plato? 120 grados es lo más común."
+          "translation": "Los números de servo son las salidas de servo de la controladora. El servo 1 puede ir delante o detrás del eje principal."
         },
         "swa_type_title": {
           "english": "Swashplate type",

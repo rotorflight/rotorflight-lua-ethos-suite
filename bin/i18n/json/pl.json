@@ -9687,11 +9687,35 @@
           "max_length": 15,
           "reverse_text": false
         },
-        "swa_type_text": {
-          "english": "How are the swash servos laid out? 120 degrees is the most common.",
-          "translation": "Jak rozmieszczone są serwa tarczy? Najczęściej 120 stopni.",
+        "swa_servo1": {
+          "english": "Servo 1",
+          "translation": "Serwo 1",
           "needs_translation": false,
-          "max_length": 66,
+          "max_length": 7
+        },
+        "swa_prepare_text": {
+          "english": "Unplug the servos and remove the blades before the swashplate and the tail are set.",
+          "translation": "Odłącz serwa i zdejmij łopaty, zanim ustawisz talerz sterujący i ogon.",
+          "needs_translation": false,
+          "max_length": 83
+        },
+        "swa_front": {
+          "english": "Front",
+          "translation": "Przód",
+          "needs_translation": false,
+          "max_length": 5
+        },
+        "swa_rear": {
+          "english": "Rear",
+          "translation": "Tył",
+          "needs_translation": false,
+          "max_length": 4
+        },
+        "swa_type_text": {
+          "english": "The servo numbers are the flight controller's servo outputs. Servo 1 can be in front of the main shaft or behind it.",
+          "translation": "Numery serw to wyjścia serw kontrolera lotu. Serwo 1 może być przed lub za wałem głównym.",
+          "needs_translation": false,
+          "max_length": 116,
           "reverse_text": false
         },
         "swa_current_fmt": {
@@ -9699,20 +9723,6 @@
           "translation": "Teraz: %s",
           "needs_translation": false,
           "max_length": 9,
-          "reverse_text": false
-        },
-        "swa_show_text": {
-          "english": "The servos sit here, seen from above with the nose at the top. Servo numbers are the FC outputs.",
-          "translation": "Tu są serwa, widok z góry, nos na górze. Numery serw to wyjścia FC.",
-          "needs_translation": false,
-          "max_length": 96,
-          "reverse_text": false
-        },
-        "swa_from_above": {
-          "english": "Seen from above, nose at the top",
-          "translation": "Widok z góry, nos na górze",
-          "needs_translation": false,
-          "max_length": 32,
           "reverse_text": false
         },
         "swa_dir_title": {
@@ -9723,10 +9733,10 @@
           "reverse_text": false
         },
         "swa_dir_text": {
-          "english": "Seen from above, which way do the main blades turn?",
-          "translation": "Patrząc z góry, w którą stronę kręcą się łopaty główne?",
+          "english": "Seen from above. Most helicopters turn clockwise.",
+          "translation": "Widziane z góry. Większość helikopterów obraca się zgodnie z ruchem wskazówek zegara.",
           "needs_translation": false,
-          "max_length": 55,
+          "max_length": 85,
           "reverse_text": false
         },
         "swa_cw": {
@@ -9751,10 +9761,10 @@
           "reverse_text": false
         },
         "swa_tail_text": {
-          "english": "A pitch tail uses a servo. A motor tail spins its own motor, one way or both ways.",
-          "translation": "Ogon ze zmiennym skokiem używa serwa. Ogon z silnikiem kręci własnym silnikiem, w jedną lub obie strony.",
+          "english": "How the tail is driven. Leave the servos unplugged until the restart.",
+          "translation": "Jak napędzany jest ogon. Serwa zostaw odłączone do ponownego uruchomienia.",
           "needs_translation": false,
-          "max_length": 104,
+          "max_length": 74,
           "reverse_text": false
         },
         "swa_tail_variable": {
@@ -9833,6 +9843,18 @@
           "needs_translation": false,
           "max_length": 9,
           "reverse_text": false
+        },
+        "swa_row_servo": {
+          "english": "Tail servo",
+          "translation": "Serwo ogona",
+          "needs_translation": false,
+          "max_length": 11
+        },
+        "swa_servo_none": {
+          "english": "None",
+          "translation": "Brak",
+          "needs_translation": false,
+          "max_length": 4
         },
         "swa_pin_servo": {
           "english": "Servo 4",

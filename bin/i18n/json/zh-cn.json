@@ -9687,11 +9687,35 @@
           "max_length": 15,
           "reverse_text": false
         },
-        "swa_type_text": {
-          "english": "How are the swash servos laid out? 120 degrees is the most common.",
-          "translation": "斜盘舵机如何布置？最常见的是120度。",
+        "swa_servo1": {
+          "english": "Servo 1",
+          "translation": "舵机 1",
           "needs_translation": false,
-          "max_length": 66,
+          "max_length": 7
+        },
+        "swa_prepare_text": {
+          "english": "Unplug the servos and remove the blades before the swashplate and the tail are set.",
+          "translation": "设置旋转盘和尾桨前，请拔掉舵机并取下桨叶。",
+          "needs_translation": false,
+          "max_length": 83
+        },
+        "swa_front": {
+          "english": "Front",
+          "translation": "前",
+          "needs_translation": false,
+          "max_length": 5
+        },
+        "swa_rear": {
+          "english": "Rear",
+          "translation": "后",
+          "needs_translation": false,
+          "max_length": 4
+        },
+        "swa_type_text": {
+          "english": "The servo numbers are the flight controller's servo outputs. Servo 1 can be in front of the main shaft or behind it.",
+          "translation": "舵机编号即飞控的舵机输出口。1 号舵机可以位于主轴前方或后方。",
+          "needs_translation": false,
+          "max_length": 116,
           "reverse_text": false
         },
         "swa_current_fmt": {
@@ -9699,20 +9723,6 @@
           "translation": "当前：%s",
           "needs_translation": false,
           "max_length": 7,
-          "reverse_text": false
-        },
-        "swa_show_text": {
-          "english": "The servos sit here, seen from above with the nose at the top. Servo numbers are the FC outputs.",
-          "translation": "舵机位置如图，俯视且机头朝上。舵机编号即飞控输出。",
-          "needs_translation": false,
-          "max_length": 96,
-          "reverse_text": false
-        },
-        "swa_from_above": {
-          "english": "Seen from above, nose at the top",
-          "translation": "俯视，机头朝上",
-          "needs_translation": false,
-          "max_length": 32,
           "reverse_text": false
         },
         "swa_dir_title": {
@@ -9723,10 +9733,10 @@
           "reverse_text": false
         },
         "swa_dir_text": {
-          "english": "Seen from above, which way do the main blades turn?",
-          "translation": "俯视时，主桨朝哪个方向旋转？",
+          "english": "Seen from above. Most helicopters turn clockwise.",
+          "translation": "从上方看。大多数直升机顺时针旋转。",
           "needs_translation": false,
-          "max_length": 51,
+          "max_length": 49,
           "reverse_text": false
         },
         "swa_cw": {
@@ -9751,10 +9761,10 @@
           "reverse_text": false
         },
         "swa_tail_text": {
-          "english": "A pitch tail uses a servo. A motor tail spins its own motor, one way or both ways.",
-          "translation": "螺距尾使用舵机。电机尾由独立电机驱动，单向或双向。",
+          "english": "How the tail is driven. Leave the servos unplugged until the restart.",
+          "translation": "尾桨的驱动方式。重启前保持舵机断开。",
           "needs_translation": false,
-          "max_length": 82,
+          "max_length": 69,
           "reverse_text": false
         },
         "swa_tail_variable": {
@@ -9833,6 +9843,18 @@
           "needs_translation": false,
           "max_length": 8,
           "reverse_text": false
+        },
+        "swa_row_servo": {
+          "english": "Tail servo",
+          "translation": "尾桨舵机",
+          "needs_translation": false,
+          "max_length": 10
+        },
+        "swa_servo_none": {
+          "english": "None",
+          "translation": "无",
+          "needs_translation": false,
+          "max_length": 4
         },
         "swa_pin_servo": {
           "english": "Servo 4",

@@ -8859,10 +8859,10 @@
           "translation": "Clockwise"
         },
         "swa_dir_text": {
-          "english": "Seen from above, which way do the main blades turn?",
-          "max_length": 51,
+          "english": "Seen from above. Most helicopters turn clockwise.",
+          "max_length": 49,
           "needs_translation": false,
-          "translation": "Seen from above, which way do the main blades turn?"
+          "translation": "Seen from above. Most helicopters turn clockwise."
         },
         "swa_dir_title": {
           "english": "Main rotor direction",
@@ -8882,11 +8882,11 @@
           "needs_translation": false,
           "translation": "Swashplate set"
         },
-        "swa_from_above": {
-          "english": "Seen from above, nose at the top",
-          "max_length": 32,
+        "swa_front": {
+          "english": "Front",
+          "max_length": 5,
           "needs_translation": false,
-          "translation": "Seen from above, nose at the top"
+          "translation": "Front"
         },
         "swa_pin_both": {
           "english": "Own pin",
@@ -8924,6 +8924,18 @@
           "needs_translation": false,
           "translation": "Set in Mixer"
         },
+        "swa_prepare_text": {
+          "english": "Unplug the servos and remove the blades before the swashplate and the tail are set.",
+          "max_length": 83,
+          "needs_translation": false,
+          "translation": "Unplug the servos and remove the blades before the swashplate and the tail are set."
+        },
+        "swa_rear": {
+          "english": "Rear",
+          "max_length": 4,
+          "needs_translation": false,
+          "translation": "Rear"
+        },
         "swa_restart": {
           "english": "Applies after the restart at the Connect step.",
           "max_length": 46,
@@ -8942,6 +8954,12 @@
           "needs_translation": false,
           "translation": "Tail pin"
         },
+        "swa_row_servo": {
+          "english": "Tail servo",
+          "max_length": 10,
+          "needs_translation": false,
+          "translation": "Tail servo"
+        },
         "swa_row_tail": {
           "english": "Tail",
           "max_length": 4,
@@ -8954,11 +8972,17 @@
           "needs_translation": false,
           "translation": "Swash type"
         },
-        "swa_show_text": {
-          "english": "The servos sit here, seen from above with the nose at the top. Servo numbers are the FC outputs.",
-          "max_length": 96,
+        "swa_servo1": {
+          "english": "Servo 1",
+          "max_length": 7,
           "needs_translation": false,
-          "translation": "The servos sit here, seen from above with the nose at the top. Servo numbers are the FC outputs."
+          "translation": "Servo 1"
+        },
+        "swa_servo_none": {
+          "english": "None",
+          "max_length": 4,
+          "needs_translation": false,
+          "translation": "None"
         },
         "swa_tail_bidir": {
           "english": "Motor, 2-way",
@@ -8973,10 +8997,10 @@
           "translation": "Motor"
         },
         "swa_tail_text": {
-          "english": "A pitch tail uses a servo. A motor tail spins its own motor, one way or both ways.",
-          "max_length": 82,
+          "english": "How the tail is driven. Leave the servos unplugged until the restart.",
+          "max_length": 69,
           "needs_translation": false,
-          "translation": "A pitch tail uses a servo. A motor tail spins its own motor, one way or both ways."
+          "translation": "How the tail is driven. Leave the servos unplugged until the restart."
         },
         "swa_tail_title": {
           "english": "Tail type",
@@ -8991,10 +9015,10 @@
           "translation": "Pitch (servo)"
         },
         "swa_type_text": {
-          "english": "How are the swash servos laid out? 120 degrees is the most common.",
-          "max_length": 66,
+          "english": "The servo numbers are the flight controller's servo outputs. Servo 1 can be in front of the main shaft or behind it.",
+          "max_length": 116,
           "needs_translation": false,
-          "translation": "How are the swash servos laid out? 120 degrees is the most common."
+          "translation": "The servo numbers are the flight controller's servo outputs. Servo 1 can be in front of the main shaft or behind it."
         },
         "swa_type_title": {
           "english": "Swashplate type",

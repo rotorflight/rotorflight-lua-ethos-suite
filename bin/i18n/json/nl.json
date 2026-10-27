@@ -9687,11 +9687,35 @@
           "max_length": 15,
           "reverse_text": false
         },
-        "swa_type_text": {
-          "english": "How are the swash servos laid out? 120 degrees is the most common.",
-          "translation": "Hoe zijn de swash-servo's geplaatst? 120 graden komt het meest voor.",
+        "swa_servo1": {
+          "english": "Servo 1",
+          "translation": "Servo 1",
           "needs_translation": false,
-          "max_length": 68,
+          "max_length": 7
+        },
+        "swa_prepare_text": {
+          "english": "Unplug the servos and remove the blades before the swashplate and the tail are set.",
+          "translation": "Maak de servo's los en verwijder de bladen voordat swashplate en staart worden ingesteld.",
+          "needs_translation": false,
+          "max_length": 89
+        },
+        "swa_front": {
+          "english": "Front",
+          "translation": "Voor",
+          "needs_translation": false,
+          "max_length": 5
+        },
+        "swa_rear": {
+          "english": "Rear",
+          "translation": "Achter",
+          "needs_translation": false,
+          "max_length": 6
+        },
+        "swa_type_text": {
+          "english": "The servo numbers are the flight controller's servo outputs. Servo 1 can be in front of the main shaft or behind it.",
+          "translation": "De servonummers zijn de servo-uitgangen van de FC. Servo 1 kan voor of achter de hoofdas zitten.",
+          "needs_translation": false,
+          "max_length": 116,
           "reverse_text": false
         },
         "swa_current_fmt": {
@@ -9699,20 +9723,6 @@
           "translation": "Nu: %s",
           "needs_translation": false,
           "max_length": 7,
-          "reverse_text": false
-        },
-        "swa_show_text": {
-          "english": "The servos sit here, seen from above with the nose at the top. Servo numbers are the FC outputs.",
-          "translation": "Hier zitten de servo's, van boven gezien met de neus boven. Servonummers zijn de FC-uitgangen.",
-          "needs_translation": false,
-          "max_length": 96,
-          "reverse_text": false
-        },
-        "swa_from_above": {
-          "english": "Seen from above, nose at the top",
-          "translation": "Van boven, neus boven",
-          "needs_translation": false,
-          "max_length": 32,
           "reverse_text": false
         },
         "swa_dir_title": {
@@ -9723,10 +9733,10 @@
           "reverse_text": false
         },
         "swa_dir_text": {
-          "english": "Seen from above, which way do the main blades turn?",
-          "translation": "Van boven gezien, welke kant draaien de hoofdbladen op?",
+          "english": "Seen from above. Most helicopters turn clockwise.",
+          "translation": "Gezien van bovenaf. De meeste helikopters draaien rechtsom.",
           "needs_translation": false,
-          "max_length": 55,
+          "max_length": 59,
           "reverse_text": false
         },
         "swa_cw": {
@@ -9751,10 +9761,10 @@
           "reverse_text": false
         },
         "swa_tail_text": {
-          "english": "A pitch tail uses a servo. A motor tail spins its own motor, one way or both ways.",
-          "translation": "Een pitchstaart gebruikt een servo. Een motorstaart heeft een eigen motor, één of twee richtingen.",
+          "english": "How the tail is driven. Leave the servos unplugged until the restart.",
+          "translation": "Hoe de staart wordt aangedreven. Laat de servo's losgekoppeld tot de herstart.",
           "needs_translation": false,
-          "max_length": 98,
+          "max_length": 78,
           "reverse_text": false
         },
         "swa_tail_variable": {
@@ -9833,6 +9843,18 @@
           "needs_translation": false,
           "max_length": 9,
           "reverse_text": false
+        },
+        "swa_row_servo": {
+          "english": "Tail servo",
+          "translation": "Staartservo",
+          "needs_translation": false,
+          "max_length": 11
+        },
+        "swa_servo_none": {
+          "english": "None",
+          "translation": "Geen",
+          "needs_translation": false,
+          "max_length": 4
         },
         "swa_pin_servo": {
           "english": "Servo 4",

@@ -10175,11 +10175,11 @@
           "translation": "顺时针"
         },
         "swa_dir_text": {
-          "english": "Seen from above, which way do the main blades turn?",
-          "max_length": 51,
+          "english": "Seen from above. Most helicopters turn clockwise.",
+          "max_length": 49,
           "needs_translation": false,
           "reverse_text": false,
-          "translation": "俯视时，主桨朝哪个方向旋转？"
+          "translation": "从上方看。大多数直升机顺时针旋转。"
         },
         "swa_dir_title": {
           "english": "Main rotor direction",
@@ -10202,12 +10202,11 @@
           "reverse_text": false,
           "translation": "斜盘已设置"
         },
-        "swa_from_above": {
-          "english": "Seen from above, nose at the top",
-          "max_length": 32,
+        "swa_front": {
+          "english": "Front",
+          "max_length": 5,
           "needs_translation": false,
-          "reverse_text": false,
-          "translation": "俯视，机头朝上"
+          "translation": "前"
         },
         "swa_pin_both": {
           "english": "Own pin",
@@ -10251,6 +10250,18 @@
           "reverse_text": false,
           "translation": "在混控中设置"
         },
+        "swa_prepare_text": {
+          "english": "Unplug the servos and remove the blades before the swashplate and the tail are set.",
+          "max_length": 83,
+          "needs_translation": false,
+          "translation": "设置旋转盘和尾桨前，请拔掉舵机并取下桨叶。"
+        },
+        "swa_rear": {
+          "english": "Rear",
+          "max_length": 4,
+          "needs_translation": false,
+          "translation": "后"
+        },
         "swa_restart": {
           "english": "Applies after the restart at the Connect step.",
           "max_length": 46,
@@ -10272,6 +10283,12 @@
           "reverse_text": false,
           "translation": "尾桨引脚"
         },
+        "swa_row_servo": {
+          "english": "Tail servo",
+          "max_length": 10,
+          "needs_translation": false,
+          "translation": "尾桨舵机"
+        },
         "swa_row_tail": {
           "english": "Tail",
           "max_length": 4,
@@ -10286,12 +10303,17 @@
           "reverse_text": false,
           "translation": "斜盘类型"
         },
-        "swa_show_text": {
-          "english": "The servos sit here, seen from above with the nose at the top. Servo numbers are the FC outputs.",
-          "max_length": 96,
+        "swa_servo1": {
+          "english": "Servo 1",
+          "max_length": 7,
           "needs_translation": false,
-          "reverse_text": false,
-          "translation": "舵机位置如图，俯视且机头朝上。舵机编号即飞控输出。"
+          "translation": "舵机 1"
+        },
+        "swa_servo_none": {
+          "english": "None",
+          "max_length": 4,
+          "needs_translation": false,
+          "translation": "无"
         },
         "swa_tail_bidir": {
           "english": "Motor, 2-way",
@@ -10308,11 +10330,11 @@
           "translation": "电机"
         },
         "swa_tail_text": {
-          "english": "A pitch tail uses a servo. A motor tail spins its own motor, one way or both ways.",
-          "max_length": 82,
+          "english": "How the tail is driven. Leave the servos unplugged until the restart.",
+          "max_length": 69,
           "needs_translation": false,
           "reverse_text": false,
-          "translation": "螺距尾使用舵机。电机尾由独立电机驱动，单向或双向。"
+          "translation": "尾桨的驱动方式。重启前保持舵机断开。"
         },
         "swa_tail_title": {
           "english": "Tail type",
@@ -10329,11 +10351,11 @@
           "translation": "螺距(舵机)"
         },
         "swa_type_text": {
-          "english": "How are the swash servos laid out? 120 degrees is the most common.",
-          "max_length": 66,
+          "english": "The servo numbers are the flight controller's servo outputs. Servo 1 can be in front of the main shaft or behind it.",
+          "max_length": 116,
           "needs_translation": false,
           "reverse_text": false,
-          "translation": "斜盘舵机如何布置？最常见的是120度。"
+          "translation": "舵机编号即飞控的舵机输出口。1 号舵机可以位于主轴前方或后方。"
         },
         "swa_type_title": {
           "english": "Swashplate type",

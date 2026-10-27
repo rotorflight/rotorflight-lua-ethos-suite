@@ -10175,11 +10175,11 @@
           "translation": "Po směru"
         },
         "swa_dir_text": {
-          "english": "Seen from above, which way do the main blades turn?",
-          "max_length": 54,
+          "english": "Seen from above. Most helicopters turn clockwise.",
+          "max_length": 68,
           "needs_translation": false,
           "reverse_text": false,
-          "translation": "Při pohledu shora, kterým směrem se točí hlavní listy?"
+          "translation": "Pohled shora. Většina vrtulníků se točí po směru hodinových ručiček."
         },
         "swa_dir_title": {
           "english": "Main rotor direction",
@@ -10202,12 +10202,11 @@
           "reverse_text": false,
           "translation": "Deska nastavena"
         },
-        "swa_from_above": {
-          "english": "Seen from above, nose at the top",
-          "max_length": 32,
+        "swa_front": {
+          "english": "Front",
+          "max_length": 6,
           "needs_translation": false,
-          "reverse_text": false,
-          "translation": "Pohled shora, nos nahoře"
+          "translation": "Vpředu"
         },
         "swa_pin_both": {
           "english": "Own pin",
@@ -10251,6 +10250,18 @@
           "reverse_text": false,
           "translation": "Nastavit v Mixéru"
         },
+        "swa_prepare_text": {
+          "english": "Unplug the servos and remove the blades before the swashplate and the tail are set.",
+          "max_length": 83,
+          "needs_translation": false,
+          "translation": "Před nastavením talíře a ocasu odpojte serva a sejměte listy."
+        },
+        "swa_rear": {
+          "english": "Rear",
+          "max_length": 5,
+          "needs_translation": false,
+          "translation": "Vzadu"
+        },
         "swa_restart": {
           "english": "Applies after the restart at the Connect step.",
           "max_length": 46,
@@ -10272,6 +10283,12 @@
           "reverse_text": false,
           "translation": "Pin ocasu"
         },
+        "swa_row_servo": {
+          "english": "Tail servo",
+          "max_length": 11,
+          "needs_translation": false,
+          "translation": "Servo ocasu"
+        },
         "swa_row_tail": {
           "english": "Tail",
           "max_length": 4,
@@ -10286,12 +10303,17 @@
           "reverse_text": false,
           "translation": "Typ desky"
         },
-        "swa_show_text": {
-          "english": "The servos sit here, seen from above with the nose at the top. Servo numbers are the FC outputs.",
-          "max_length": 96,
+        "swa_servo1": {
+          "english": "Servo 1",
+          "max_length": 7,
           "needs_translation": false,
-          "reverse_text": false,
-          "translation": "Serva jsou zde, při pohledu shora s nosem nahoře. Čísla serv jsou výstupy FC."
+          "translation": "Servo 1"
+        },
+        "swa_servo_none": {
+          "english": "None",
+          "max_length": 5,
+          "needs_translation": false,
+          "translation": "Žádné"
         },
         "swa_tail_bidir": {
           "english": "Motor, 2-way",
@@ -10308,11 +10330,11 @@
           "translation": "Motor"
         },
         "swa_tail_text": {
-          "english": "A pitch tail uses a servo. A motor tail spins its own motor, one way or both ways.",
-          "max_length": 91,
+          "english": "How the tail is driven. Leave the servos unplugged until the restart.",
+          "max_length": 69,
           "needs_translation": false,
           "reverse_text": false,
-          "translation": "Ocas s řízením úhlu používá servo. Motorový ocas točí vlastní motor, jedním či oběma směry."
+          "translation": "Jak je ocas poháněn. Servy nechte odpojené až do restartu."
         },
         "swa_tail_title": {
           "english": "Tail type",
@@ -10329,11 +10351,11 @@
           "translation": "Úhel (servo)"
         },
         "swa_type_text": {
-          "english": "How are the swash servos laid out? 120 degrees is the most common.",
-          "max_length": 66,
+          "english": "The servo numbers are the flight controller's servo outputs. Servo 1 can be in front of the main shaft or behind it.",
+          "max_length": 116,
           "needs_translation": false,
           "reverse_text": false,
-          "translation": "Jak jsou rozmístěna serva desky? Nejběžnější je 120 stupňů."
+          "translation": "Čísla serv jsou výstupy serv na FC. Servo 1 může být před hřídelí nebo za ní."
         },
         "swa_type_title": {
           "english": "Swashplate type",

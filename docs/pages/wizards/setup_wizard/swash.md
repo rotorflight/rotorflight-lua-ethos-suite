@@ -22,12 +22,15 @@ model is armed.
 | Setting | What it does |
 | --- | --- |
 | Swashplate type | 120°, 135°, 140°, 90° L, 90° V or Direct. 120° is the most common. The picture shows where the servos sit, seen from above with the nose at the top. |
+| Servo 1 front or rear | For 120°, 135° and 140°: whether servo 1 sits in front of the main shaft or behind it. It only changes the picture; nothing is written to the flight controller. |
 | Main rotor direction | Clockwise or Counter-CW, seen from above. |
 | Tail type | Pitch (servo), Motor, or Motor, 2-way (bidirectional). |
 | Tail pin | Where the tail is driven: Servo 4, Motor 2, Own pin, or None. It moves on save where the firmware supports it. |
 
 ## Notes
 
+- The first screen asks you to unplug the servos and remove the blades. Start follows once both
+  are confirmed, as on the other steps that move the servos.
 - Swashplate type and tail type apply after the restart at step 9, Connect servos.
 - A new tail type resets the yaw mixer rate: 250 for a pitch tail, 1000 for a motor tail,
   keeping its sign.

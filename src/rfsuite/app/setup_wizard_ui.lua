@@ -92,6 +92,14 @@ function ui.value(key, get, set)
   return slot.get, slot.set
 end
 
+-- A drop-down's list in Ethos's form: {"text", value} pairs. {text =, value =}
+-- pairs are accepted too and turned into those.
+local function choiceList(list)
+  local out = {}
+  for i, v in ipairs(list) do out[i] = {v[1] or v.text, v[2] or v.value} end
+  return out
+end
+
 function ui.releaseActions()
   for _, slot in pairs(actions) do slot.target = nil end
   for _, slot in pairs(values) do slot.getTarget, slot.setTarget = nil, nil end
@@ -235,6 +243,9 @@ end
 --   {label =, value =}             a fact: the label, its value where the
 --                                  answers sit ("Accelerometer  Available")
 --   {label =, toggle = {get, set}}  a yes/no toggle button: the label, its answer a 1-click button ("No" / "Yes")
+--   {label =, choice = {values, get, set}, disabled =}
+--                                  a drop-down where the answers sit, as EdgeTX's
+--                                  choice fields (values as {{text, value}, ...})
 --   {label =, number = {min, max, get, set, suffix}, disabled =}
 --                                  a value to edit: the label, a number field
 --                                  where the answers sit
@@ -266,6 +277,9 @@ function Screen:checks(list, focus)
   local h = math.max(30, floor(height * 0.09))
   local bw = math.max(CHECK_BUTTON_MIN, floor(room * CHECK_BUTTON_SHARE))
   local labelW = room - bw - x - 8
+  -- A drop-down has more room than an answer button: its names are longer.
+  local cw = math.max(bw, floor(room * 0.3))
+  local choiceLabelW = room - cw - x - 8
   v.checks, v.checksX = {}, x
   local field
   for i = 1, #list do
@@ -277,7 +291,8 @@ function Screen:checks(list, focus)
       -- anything beyond the second line is cut short.
       lcd.font(FONT_S)
       -- A label with nothing beside it (no button, field or value) has the width.
-      local w = (c.press or c.number or c.toggle or c.value) and labelW or (room - x)
+      local w = (c.press or c.number or c.toggle or c.value or c.choice) and labelW or (room - x)
+      if c.choice then w = choiceLabelW end
       local lines = self.wiz.wrapLines(c.label, w, FONT_S)
       if #lines > 2 then lines = {lines[1], ui.fit(table.concat(lines, " ", 2), w)} end
       row.labelLines = lines
@@ -323,6 +338,15 @@ function Screen:checks(list, focus)
       if i == focus then field = f end
       row.y = y + floor((h - lineH) / 2)
       y = y + h + CHECK_ROW_GAP
+    elseif c.choice then
+      -- A drop-down in the answers' place: {values = {{text, value}, ...}, get, set}.
+      local ch = c.choice
+      local get, set = ui.value("check_" .. i, ch.get, ch.set)
+      local f = form.addChoiceField(nil, {x = room - cw, y = y, w = cw, h = h}, choiceList(ch.values), get, set)
+      self.buttonList[#self.buttonList + 1] = {field = f, needsMotion = c.needsMotion, disabled = c.disabled}
+      if i == focus then field = f end
+      row.y = y + floor((h - lineH) / 2)
+      y = y + h + CHECK_ROW_GAP
     elseif c.note then
       local noteX = hasMark and (x + MARK_SIZE + MARK_GAP) or x
       row.lines = self.wiz.wrapLines(c.note, room - noteX, FONT_S)
@@ -336,7 +360,7 @@ function Screen:checks(list, focus)
     end
     if row.labelLines then
       -- Beside a button the label is centred on it; a plain fact sits on its line.
-      local centred = c.press or c.number or c.toggle
+      local centred = c.press or c.number or c.toggle or c.choice
       row.labelY = centred and (rowTop + floor((h - #row.labelLines * lineH) / 2)) or rowTop
     end
     v.checks[i] = row
@@ -453,7 +477,7 @@ function Screen:grid(specs, cols)
     local field
     if s.values then
       local get, set = ui.value("grid_" .. i, s.get, s.set)
-      field = form.addChoiceField(nil, rect, s.values, get, set)
+      field = form.addChoiceField(nil, rect, choiceList(s.values), get, set)
       self.buttonList[#self.buttonList + 1] = {field = field, needsMotion = s.needsMotion, disabled = s.disabled}
     else
       field = addButton(self, rect, "grid_" .. i, s, FONT_S)

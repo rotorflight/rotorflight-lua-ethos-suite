@@ -10175,11 +10175,11 @@
           "translation": "Rechtsom"
         },
         "swa_dir_text": {
-          "english": "Seen from above, which way do the main blades turn?",
-          "max_length": 55,
+          "english": "Seen from above. Most helicopters turn clockwise.",
+          "max_length": 59,
           "needs_translation": false,
           "reverse_text": false,
-          "translation": "Van boven gezien, welke kant draaien de hoofdbladen op?"
+          "translation": "Gezien van bovenaf. De meeste helikopters draaien rechtsom."
         },
         "swa_dir_title": {
           "english": "Main rotor direction",
@@ -10202,12 +10202,11 @@
           "reverse_text": false,
           "translation": "Swashplate ingesteld"
         },
-        "swa_from_above": {
-          "english": "Seen from above, nose at the top",
-          "max_length": 32,
+        "swa_front": {
+          "english": "Front",
+          "max_length": 5,
           "needs_translation": false,
-          "reverse_text": false,
-          "translation": "Van boven, neus boven"
+          "translation": "Voor"
         },
         "swa_pin_both": {
           "english": "Own pin",
@@ -10251,6 +10250,18 @@
           "reverse_text": false,
           "translation": "In Mixer instellen"
         },
+        "swa_prepare_text": {
+          "english": "Unplug the servos and remove the blades before the swashplate and the tail are set.",
+          "max_length": 89,
+          "needs_translation": false,
+          "translation": "Maak de servo's los en verwijder de bladen voordat swashplate en staart worden ingesteld."
+        },
+        "swa_rear": {
+          "english": "Rear",
+          "max_length": 6,
+          "needs_translation": false,
+          "translation": "Achter"
+        },
         "swa_restart": {
           "english": "Applies after the restart at the Connect step.",
           "max_length": 46,
@@ -10272,6 +10283,12 @@
           "reverse_text": false,
           "translation": "Staartpin"
         },
+        "swa_row_servo": {
+          "english": "Tail servo",
+          "max_length": 11,
+          "needs_translation": false,
+          "translation": "Staartservo"
+        },
         "swa_row_tail": {
           "english": "Tail",
           "max_length": 6,
@@ -10286,12 +10303,17 @@
           "reverse_text": false,
           "translation": "Swashtype"
         },
-        "swa_show_text": {
-          "english": "The servos sit here, seen from above with the nose at the top. Servo numbers are the FC outputs.",
-          "max_length": 96,
+        "swa_servo1": {
+          "english": "Servo 1",
+          "max_length": 7,
           "needs_translation": false,
-          "reverse_text": false,
-          "translation": "Hier zitten de servo's, van boven gezien met de neus boven. Servonummers zijn de FC-uitgangen."
+          "translation": "Servo 1"
+        },
+        "swa_servo_none": {
+          "english": "None",
+          "max_length": 4,
+          "needs_translation": false,
+          "translation": "Geen"
         },
         "swa_tail_bidir": {
           "english": "Motor, 2-way",
@@ -10308,11 +10330,11 @@
           "translation": "Motor"
         },
         "swa_tail_text": {
-          "english": "A pitch tail uses a servo. A motor tail spins its own motor, one way or both ways.",
-          "max_length": 98,
+          "english": "How the tail is driven. Leave the servos unplugged until the restart.",
+          "max_length": 78,
           "needs_translation": false,
           "reverse_text": false,
-          "translation": "Een pitchstaart gebruikt een servo. Een motorstaart heeft een eigen motor, één of twee richtingen."
+          "translation": "Hoe de staart wordt aangedreven. Laat de servo's losgekoppeld tot de herstart."
         },
         "swa_tail_title": {
           "english": "Tail type",
@@ -10329,11 +10351,11 @@
           "translation": "Pitch (servo)"
         },
         "swa_type_text": {
-          "english": "How are the swash servos laid out? 120 degrees is the most common.",
-          "max_length": 68,
+          "english": "The servo numbers are the flight controller's servo outputs. Servo 1 can be in front of the main shaft or behind it.",
+          "max_length": 116,
           "needs_translation": false,
           "reverse_text": false,
-          "translation": "Hoe zijn de swash-servo's geplaatst? 120 graden komt het meest voor."
+          "translation": "De servonummers zijn de servo-uitgangen van de FC. Servo 1 kan voor of achter de hoofdas zitten."
         },
         "swa_type_title": {
           "english": "Swashplate type",
