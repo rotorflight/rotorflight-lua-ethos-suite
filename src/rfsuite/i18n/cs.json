@@ -8780,6 +8780,246 @@
           "reverse_text": false,
           "translation": "Úhel listů"
         },
+        "prof_beyond8": {
+          "english": "Needs more than 8 channels.",
+          "max_length": 28,
+          "needs_translation": false,
+          "translation": "Potřebuje více než 8 kanálů."
+        },
+        "prof_both": {
+          "english": "Profiles and rates",
+          "max_length": 19,
+          "needs_translation": false,
+          "translation": "Profily a rychlosti"
+        },
+        "prof_btn_cyclic_down": {
+          "english": "Cyclic gain down",
+          "max_length": 22,
+          "needs_translation": false,
+          "translation": "Cyklické zesílení dolů"
+        },
+        "prof_btn_cyclic_up": {
+          "english": "Cyclic gain up",
+          "max_length": 24,
+          "needs_translation": false,
+          "translation": "Cyklické zesílení nahoru"
+        },
+        "prof_btn_yaw_down": {
+          "english": "Yaw gain down",
+          "max_length": 19,
+          "needs_translation": false,
+          "translation": "Zesílení ocasu dolů"
+        },
+        "prof_btn_yaw_up": {
+          "english": "Yaw gain up",
+          "max_length": 21,
+          "needs_translation": false,
+          "translation": "Zesílení ocasu nahoru"
+        },
+        "prof_channel_fmt": {
+          "english": "CH %d",
+          "max_length": 5,
+          "needs_translation": false,
+          "translation": "CH %d"
+        },
+        "prof_channels_title": {
+          "english": "Channels in use",
+          "max_length": 16,
+          "needs_translation": false,
+          "translation": "Kanály v použití"
+        },
+        "prof_chosen": {
+          "english": "Selected",
+          "max_length": 8,
+          "needs_translation": false,
+          "translation": "Vybráno"
+        },
+        "prof_count_fmt": {
+          "english": "CH %d · %d profiles",
+          "max_length": 19,
+          "needs_translation": false,
+          "translation": "CH %d · %d profilů"
+        },
+        "prof_done_keep": {
+          "english": "Nothing has changed: the flight controller keeps its profile and gain settings. Next goes on to the swashplate.",
+          "max_length": 111,
+          "needs_translation": false,
+          "translation": "Nic se nezměnilo: FC si ponechá nastavení profilů a zesílení. Další pokračuje na cyklickou desku."
+        },
+        "prof_done_save": {
+          "english": "The changes already work on the flight controller, but are not stored yet. Save and continue writes them to its memory (EEPROM).",
+          "max_length": 128,
+          "needs_translation": false,
+          "translation": "Změny už ve FC platí, ale ještě nejsou uložené. Uložit a pokračovat je zapíše do jeho paměti (EEPROM)."
+        },
+        "prof_found_fmt": {
+          "english": "%d positions found. Move through every position, then press Use.",
+          "max_length": 64,
+          "needs_translation": false,
+          "translation": "Nalezeno %d poloh. Projděte všechny, pak stiskněte Použít."
+        },
+        "prof_full": {
+          "english": "Every adjustment slot is in use. Free one under Adjustments.",
+          "max_length": 66,
+          "needs_translation": false,
+          "translation": "Všechna místa pro úpravy jsou obsazena. Uvolněte jedno v Úpravách."
+        },
+        "prof_gain_buttons": {
+          "english": "Trim buttons",
+          "max_length": 13,
+          "needs_translation": false,
+          "translation": "Trim tlačítka"
+        },
+        "prof_gain_buttons_note": {
+          "english": "Set up the GAIN mix first (see the docs).",
+          "max_length": 44,
+          "needs_translation": false,
+          "translation": "Nejprve nastavte mix GAIN (viz dokumentace)."
+        },
+        "prof_gain_help_buttons": {
+          "english": "The trim buttons step the master gain up and down, on one spare channel.",
+          "max_length": 72,
+          "needs_translation": false,
+          "translation": "Trim tlačítka mění hlavní zesílení po krocích, na jednom volném kanálu."
+        },
+        "prof_gain_help_knob": {
+          "english": "A knob or slider sets the master gain, on a spare channel.",
+          "max_length": 72,
+          "needs_translation": false,
+          "translation": "Otočný ovladač nebo posuvník nastavuje hlavní zesílení na volném kanálu."
+        },
+        "prof_gain_help_none": {
+          "english": "Master gain stays as it is. Find it later in flight, or on the Profiles page.",
+          "max_length": 88,
+          "needs_translation": false,
+          "translation": "Hlavní zesílení zůstane beze změny. Najděte jej později za letu nebo na stránce Profily."
+        },
+        "prof_gain_knob": {
+          "english": "Knob",
+          "max_length": 14,
+          "needs_translation": false,
+          "translation": "Otočný ovladač"
+        },
+        "prof_gain_knob_note": {
+          "english": "Set a knob or slider on a spare channel, then move it.",
+          "max_length": 69,
+          "needs_translation": false,
+          "translation": "Nastavte otočný ovladač nebo posuvník na volném kanálu a pohněte jím."
+        },
+        "prof_gain_none": {
+          "english": "Not used",
+          "max_length": 9,
+          "needs_translation": false,
+          "translation": "Nepoužito"
+        },
+        "prof_gain_now": {
+          "english": "Now",
+          "max_length": 4,
+          "needs_translation": false,
+          "translation": "Nyní"
+        },
+        "prof_gain_text": {
+          "english": "Changes all gains together. Raise it in flight until the wobble starts, then come back a few steps.",
+          "max_length": 99,
+          "needs_translation": false,
+          "translation": "Mění všechna zesílení najednou. Za letu zvyšujte, dokud nezačne kmitání, pak o několik kroků zpět."
+        },
+        "prof_gain_title": {
+          "english": "Master gain in flight",
+          "max_length": 23,
+          "needs_translation": false,
+          "translation": "Hlavní zesílení za letu"
+        },
+        "prof_help_both": {
+          "english": "The switch picks the PID profile and the rate profile 1, 2 or 3 together.",
+          "max_length": 73,
+          "needs_translation": false,
+          "translation": "Přepínač volí PID profil a profil rychlostí 1, 2 nebo 3 společně."
+        },
+        "prof_help_none": {
+          "english": "The helicopter flies on one profile.",
+          "max_length": 36,
+          "needs_translation": false,
+          "translation": "Vrtulník létá na jednom profilu."
+        },
+        "prof_help_pid": {
+          "english": "The switch picks the PID profile; the rates stay as they are.",
+          "max_length": 61,
+          "needs_translation": false,
+          "translation": "Přepínač volí PID profil; rychlosti zůstanou beze změny."
+        },
+        "prof_intro": {
+          "english": "One switch picks the flight profile, master gain fine-tunes the gains in flight. Both are optional.",
+          "max_length": 99,
+          "needs_translation": false,
+          "translation": "Jeden přepínač volí letový profil, hlavní zesílení jemně ladí zesílení za letu. Obojí je volitelné."
+        },
+        "prof_listen": {
+          "english": "Move the switch…",
+          "max_length": 18,
+          "needs_translation": false,
+          "translation": "Přepněte přepínač…"
+        },
+        "prof_listen_buttons": {
+          "english": "Press a trim button…",
+          "max_length": 24,
+          "needs_translation": false,
+          "translation": "Stiskněte trim tlačítko…"
+        },
+        "prof_listen_knob": {
+          "english": "Turn the knob…",
+          "max_length": 17,
+          "needs_translation": false,
+          "translation": "Otočte ovladačem…"
+        },
+        "prof_none": {
+          "english": "Not used",
+          "max_length": 9,
+          "needs_translation": false,
+          "translation": "Nepoužito"
+        },
+        "prof_now_fmt": {
+          "english": "Now: profile %d",
+          "max_length": 15,
+          "needs_translation": false,
+          "translation": "Nyní: profil %d"
+        },
+        "prof_pid": {
+          "english": "PID profiles only",
+          "max_length": 17,
+          "needs_translation": false,
+          "translation": "Jen PID profily"
+        },
+        "prof_switch_text": {
+          "english": "A 2- or 3-position switch. Press Assign, then move it through every position: each one lands on its own profile.",
+          "max_length": 119,
+          "needs_translation": false,
+          "translation": "Přepínač se 2 nebo 3 polohami. Stiskněte Přiřadit a přepněte jej přes všechny polohy: každá připadne na vlastní profil."
+        },
+        "prof_switch_title": {
+          "english": "Profile switch",
+          "max_length": 16,
+          "needs_translation": false,
+          "translation": "Přepínač profilů"
+        },
+        "prof_use": {
+          "english": "Use",
+          "max_length": 6,
+          "needs_translation": false,
+          "translation": "Použít"
+        },
+        "prof_use_gain": {
+          "english": "Master gain",
+          "max_length": 15,
+          "needs_translation": false,
+          "translation": "Hlavní zesílení"
+        },
+        "prof_use_profile": {
+          "english": "Profile switch",
+          "max_length": 16,
+          "needs_translation": false,
+          "translation": "Přepínač profilů"
+        },
         "progress_fmt": {
           "english": "%d of %d",
           "max_length": 8,
@@ -9599,6 +9839,12 @@
           "needs_translation": false,
           "reverse_text": false,
           "translation": "Úhel listů"
+        },
+        "step_profiles": {
+          "english": "Profiles & gain",
+          "max_length": 18,
+          "needs_translation": false,
+          "translation": "Profily a zesílení"
         },
         "step_progress_fmt": {
           "english": "Step %d of %d",

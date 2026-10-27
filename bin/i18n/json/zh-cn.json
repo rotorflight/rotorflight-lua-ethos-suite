@@ -9134,6 +9134,252 @@
           "needs_translation": false,
           "max_length": 155
         },
+        "step_profiles": {
+          "english": "Profiles & gain",
+          "translation": "配置与增益",
+          "needs_translation": false,
+          "max_length": 15
+        },
+        "prof_intro": {
+          "english": "One switch picks the flight profile, master gain fine-tunes the gains in flight. Both are optional.",
+          "translation": "一个开关选择飞行配置；总增益在飞行中微调各增益。两者均为可选。",
+          "needs_translation": false,
+          "max_length": 99
+        },
+        "prof_switch_title": {
+          "english": "Profile switch",
+          "translation": "配置开关",
+          "needs_translation": false,
+          "max_length": 14
+        },
+        "prof_switch_text": {
+          "english": "A 2- or 3-position switch. Press Assign, then move it through every position: each one lands on its own profile.",
+          "translation": "2 或 3 位开关。按“分配”，然后把开关拨过每个位置：每个位置对应各自的配置。",
+          "needs_translation": false,
+          "max_length": 112
+        },
+        "prof_both": {
+          "english": "Profiles and rates",
+          "translation": "配置与速率",
+          "needs_translation": false,
+          "max_length": 18
+        },
+        "prof_pid": {
+          "english": "PID profiles only",
+          "translation": "仅 PID 配置",
+          "needs_translation": false,
+          "max_length": 17
+        },
+        "prof_none": {
+          "english": "Not used",
+          "translation": "未使用",
+          "needs_translation": false,
+          "max_length": 8
+        },
+        "prof_chosen": {
+          "english": "Selected",
+          "translation": "已选择",
+          "needs_translation": false,
+          "max_length": 8
+        },
+        "prof_count_fmt": {
+          "english": "CH %d · %d profiles",
+          "translation": "CH %d · %d 个配置",
+          "needs_translation": false,
+          "max_length": 19
+        },
+        "prof_now_fmt": {
+          "english": "Now: profile %d",
+          "translation": "当前：配置 %d",
+          "needs_translation": false,
+          "max_length": 15
+        },
+        "prof_listen": {
+          "english": "Move the switch…",
+          "translation": "拨动开关…",
+          "needs_translation": false,
+          "max_length": 16
+        },
+        "prof_found_fmt": {
+          "english": "%d positions found. Move through every position, then press Use.",
+          "translation": "找到 %d 个位置。依次拨过所有位置，然后按“使用”。",
+          "needs_translation": false,
+          "max_length": 64
+        },
+        "prof_use": {
+          "english": "Use",
+          "translation": "使用",
+          "needs_translation": false,
+          "max_length": 3
+        },
+        "prof_gain_title": {
+          "english": "Master gain in flight",
+          "translation": "飞行中的总增益",
+          "needs_translation": false,
+          "max_length": 21
+        },
+        "prof_gain_text": {
+          "english": "Changes all gains together. Raise it in flight until the wobble starts, then come back a few steps.",
+          "translation": "同时改变所有增益。飞行中逐步增大直到开始抖动，然后回退几步。",
+          "needs_translation": false,
+          "max_length": 99
+        },
+        "prof_gain_buttons": {
+          "english": "Trim buttons",
+          "translation": "微调按钮",
+          "needs_translation": false,
+          "max_length": 12
+        },
+        "prof_gain_knob": {
+          "english": "Knob",
+          "translation": "旋钮",
+          "needs_translation": false,
+          "max_length": 4
+        },
+        "prof_gain_none": {
+          "english": "Not used",
+          "translation": "未使用",
+          "needs_translation": false,
+          "max_length": 8
+        },
+        "prof_gain_buttons_note": {
+          "english": "Set up the GAIN mix first (see the docs).",
+          "translation": "请先设置 GAIN 混控（见文档）。",
+          "needs_translation": false,
+          "max_length": 41
+        },
+        "prof_gain_knob_note": {
+          "english": "Set a knob or slider on a spare channel, then move it.",
+          "translation": "在一个空闲通道上设置旋钮或滑杆，然后移动它。",
+          "needs_translation": false,
+          "max_length": 54
+        },
+        "prof_gain_now": {
+          "english": "Now",
+          "translation": "当前",
+          "needs_translation": false,
+          "max_length": 3
+        },
+        "prof_listen_buttons": {
+          "english": "Press a trim button…",
+          "translation": "按下一个微调按钮…",
+          "needs_translation": false,
+          "max_length": 20
+        },
+        "prof_listen_knob": {
+          "english": "Turn the knob…",
+          "translation": "转动旋钮…",
+          "needs_translation": false,
+          "max_length": 14
+        },
+        "prof_channels_title": {
+          "english": "Channels in use",
+          "translation": "使用中的通道",
+          "needs_translation": false,
+          "max_length": 15
+        },
+        "prof_channel_fmt": {
+          "english": "CH %d",
+          "translation": "CH %d",
+          "needs_translation": false,
+          "max_length": 5
+        },
+        "prof_use_profile": {
+          "english": "Profile switch",
+          "translation": "配置开关",
+          "needs_translation": false,
+          "max_length": 14
+        },
+        "prof_use_gain": {
+          "english": "Master gain",
+          "translation": "总增益",
+          "needs_translation": false,
+          "max_length": 11
+        },
+        "prof_beyond8": {
+          "english": "Needs more than 8 channels.",
+          "translation": "需要 8 个以上通道。",
+          "needs_translation": false,
+          "max_length": 27
+        },
+        "prof_full": {
+          "english": "Every adjustment slot is in use. Free one under Adjustments.",
+          "translation": "所有调整位已用完。请在“调整”中释放一个。",
+          "needs_translation": false,
+          "max_length": 60
+        },
+        "prof_done_keep": {
+          "english": "Nothing has changed: the flight controller keeps its profile and gain settings. Next goes on to the swashplate.",
+          "translation": "未做任何更改：飞控保留其配置与增益设置。下一步进入斜盘设置。",
+          "needs_translation": false,
+          "max_length": 111
+        },
+        "prof_done_save": {
+          "english": "The changes already work on the flight controller, but are not stored yet. Save and continue writes them to its memory (EEPROM).",
+          "translation": "更改已在飞控中生效，但尚未保存。保存并继续会将其写入飞控存储（EEPROM）。",
+          "needs_translation": false,
+          "max_length": 128
+        },
+        "prof_btn_cyclic_down": {
+          "english": "Cyclic gain down",
+          "translation": "周期增益减小",
+          "needs_translation": false,
+          "max_length": 16
+        },
+        "prof_btn_cyclic_up": {
+          "english": "Cyclic gain up",
+          "translation": "周期增益增大",
+          "needs_translation": false,
+          "max_length": 14
+        },
+        "prof_btn_yaw_down": {
+          "english": "Yaw gain down",
+          "translation": "尾桨增益减小",
+          "needs_translation": false,
+          "max_length": 13
+        },
+        "prof_btn_yaw_up": {
+          "english": "Yaw gain up",
+          "translation": "尾桨增益增大",
+          "needs_translation": false,
+          "max_length": 11
+        },
+        "prof_help_both": {
+          "english": "The switch picks the PID profile and the rate profile 1, 2 or 3 together.",
+          "translation": "开关同时选择 PID 配置和速率配置 1、2 或 3。",
+          "needs_translation": false,
+          "max_length": 73
+        },
+        "prof_help_pid": {
+          "english": "The switch picks the PID profile; the rates stay as they are.",
+          "translation": "开关只选择 PID 配置；速率保持不变。",
+          "needs_translation": false,
+          "max_length": 61
+        },
+        "prof_help_none": {
+          "english": "The helicopter flies on one profile.",
+          "translation": "直升机只使用一个配置飞行。",
+          "needs_translation": false,
+          "max_length": 36
+        },
+        "prof_gain_help_buttons": {
+          "english": "The trim buttons step the master gain up and down, on one spare channel.",
+          "translation": "微调按钮在一个空闲通道上逐步调整总增益。",
+          "needs_translation": false,
+          "max_length": 72
+        },
+        "prof_gain_help_knob": {
+          "english": "A knob or slider sets the master gain, on a spare channel.",
+          "translation": "旋钮或滑杆在一个空闲通道上设置总增益。",
+          "needs_translation": false,
+          "max_length": 58
+        },
+        "prof_gain_help_none": {
+          "english": "Master gain stays as it is. Find it later in flight, or on the Profiles page.",
+          "translation": "总增益保持不变。之后可在飞行中或“配置”页面调整。",
+          "needs_translation": false,
+          "max_length": 77
+        },
         "mod_intro": {
           "english": "Put modes on switches on your radio: press Assign, then flick the switch to the position that should turn the mode on. Only ARM is required; the others can be added later under Modes.",
           "translation": "将模式分配到遥控器开关：按“分配”，然后把开关拨到应开启该模式的位置。只有 ARM 是必需的；其他可稍后在“模式”中添加。",

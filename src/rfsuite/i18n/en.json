@@ -7586,6 +7586,246 @@
           "needs_translation": false,
           "translation": "Blade pitch"
         },
+        "prof_beyond8": {
+          "english": "Needs more than 8 channels.",
+          "max_length": 27,
+          "needs_translation": false,
+          "translation": "Needs more than 8 channels."
+        },
+        "prof_both": {
+          "english": "Profiles and rates",
+          "max_length": 18,
+          "needs_translation": false,
+          "translation": "Profiles and rates"
+        },
+        "prof_btn_cyclic_down": {
+          "english": "Cyclic gain down",
+          "max_length": 16,
+          "needs_translation": false,
+          "translation": "Cyclic gain down"
+        },
+        "prof_btn_cyclic_up": {
+          "english": "Cyclic gain up",
+          "max_length": 14,
+          "needs_translation": false,
+          "translation": "Cyclic gain up"
+        },
+        "prof_btn_yaw_down": {
+          "english": "Yaw gain down",
+          "max_length": 13,
+          "needs_translation": false,
+          "translation": "Yaw gain down"
+        },
+        "prof_btn_yaw_up": {
+          "english": "Yaw gain up",
+          "max_length": 11,
+          "needs_translation": false,
+          "translation": "Yaw gain up"
+        },
+        "prof_channel_fmt": {
+          "english": "CH %d",
+          "max_length": 5,
+          "needs_translation": false,
+          "translation": "CH %d"
+        },
+        "prof_channels_title": {
+          "english": "Channels in use",
+          "max_length": 15,
+          "needs_translation": false,
+          "translation": "Channels in use"
+        },
+        "prof_chosen": {
+          "english": "Selected",
+          "max_length": 8,
+          "needs_translation": false,
+          "translation": "Selected"
+        },
+        "prof_count_fmt": {
+          "english": "CH %d · %d profiles",
+          "max_length": 19,
+          "needs_translation": false,
+          "translation": "CH %d · %d profiles"
+        },
+        "prof_done_keep": {
+          "english": "Nothing has changed: the flight controller keeps its profile and gain settings. Next goes on to the swashplate.",
+          "max_length": 111,
+          "needs_translation": false,
+          "translation": "Nothing has changed: the flight controller keeps its profile and gain settings. Next goes on to the swashplate."
+        },
+        "prof_done_save": {
+          "english": "The changes already work on the flight controller, but are not stored yet. Save and continue writes them to its memory (EEPROM).",
+          "max_length": 128,
+          "needs_translation": false,
+          "translation": "The changes already work on the flight controller, but are not stored yet. Save and continue writes them to its memory (EEPROM)."
+        },
+        "prof_found_fmt": {
+          "english": "%d positions found. Move through every position, then press Use.",
+          "max_length": 64,
+          "needs_translation": false,
+          "translation": "%d positions found. Move through every position, then press Use."
+        },
+        "prof_full": {
+          "english": "Every adjustment slot is in use. Free one under Adjustments.",
+          "max_length": 60,
+          "needs_translation": false,
+          "translation": "Every adjustment slot is in use. Free one under Adjustments."
+        },
+        "prof_gain_buttons": {
+          "english": "Trim buttons",
+          "max_length": 12,
+          "needs_translation": false,
+          "translation": "Trim buttons"
+        },
+        "prof_gain_buttons_note": {
+          "english": "Set up the GAIN mix first (see the docs).",
+          "max_length": 41,
+          "needs_translation": false,
+          "translation": "Set up the GAIN mix first (see the docs)."
+        },
+        "prof_gain_help_buttons": {
+          "english": "The trim buttons step the master gain up and down, on one spare channel.",
+          "max_length": 72,
+          "needs_translation": false,
+          "translation": "The trim buttons step the master gain up and down, on one spare channel."
+        },
+        "prof_gain_help_knob": {
+          "english": "A knob or slider sets the master gain, on a spare channel.",
+          "max_length": 58,
+          "needs_translation": false,
+          "translation": "A knob or slider sets the master gain, on a spare channel."
+        },
+        "prof_gain_help_none": {
+          "english": "Master gain stays as it is. Find it later in flight, or on the Profiles page.",
+          "max_length": 77,
+          "needs_translation": false,
+          "translation": "Master gain stays as it is. Find it later in flight, or on the Profiles page."
+        },
+        "prof_gain_knob": {
+          "english": "Knob",
+          "max_length": 4,
+          "needs_translation": false,
+          "translation": "Knob"
+        },
+        "prof_gain_knob_note": {
+          "english": "Set a knob or slider on a spare channel, then move it.",
+          "max_length": 54,
+          "needs_translation": false,
+          "translation": "Set a knob or slider on a spare channel, then move it."
+        },
+        "prof_gain_none": {
+          "english": "Not used",
+          "max_length": 8,
+          "needs_translation": false,
+          "translation": "Not used"
+        },
+        "prof_gain_now": {
+          "english": "Now",
+          "max_length": 3,
+          "needs_translation": false,
+          "translation": "Now"
+        },
+        "prof_gain_text": {
+          "english": "Changes all gains together. Raise it in flight until the wobble starts, then come back a few steps.",
+          "max_length": 99,
+          "needs_translation": false,
+          "translation": "Changes all gains together. Raise it in flight until the wobble starts, then come back a few steps."
+        },
+        "prof_gain_title": {
+          "english": "Master gain in flight",
+          "max_length": 21,
+          "needs_translation": false,
+          "translation": "Master gain in flight"
+        },
+        "prof_help_both": {
+          "english": "The switch picks the PID profile and the rate profile 1, 2 or 3 together.",
+          "max_length": 73,
+          "needs_translation": false,
+          "translation": "The switch picks the PID profile and the rate profile 1, 2 or 3 together."
+        },
+        "prof_help_none": {
+          "english": "The helicopter flies on one profile.",
+          "max_length": 36,
+          "needs_translation": false,
+          "translation": "The helicopter flies on one profile."
+        },
+        "prof_help_pid": {
+          "english": "The switch picks the PID profile; the rates stay as they are.",
+          "max_length": 61,
+          "needs_translation": false,
+          "translation": "The switch picks the PID profile; the rates stay as they are."
+        },
+        "prof_intro": {
+          "english": "One switch picks the flight profile, master gain fine-tunes the gains in flight. Both are optional.",
+          "max_length": 99,
+          "needs_translation": false,
+          "translation": "One switch picks the flight profile, master gain fine-tunes the gains in flight. Both are optional."
+        },
+        "prof_listen": {
+          "english": "Move the switch…",
+          "max_length": 16,
+          "needs_translation": false,
+          "translation": "Move the switch…"
+        },
+        "prof_listen_buttons": {
+          "english": "Press a trim button…",
+          "max_length": 20,
+          "needs_translation": false,
+          "translation": "Press a trim button…"
+        },
+        "prof_listen_knob": {
+          "english": "Turn the knob…",
+          "max_length": 14,
+          "needs_translation": false,
+          "translation": "Turn the knob…"
+        },
+        "prof_none": {
+          "english": "Not used",
+          "max_length": 8,
+          "needs_translation": false,
+          "translation": "Not used"
+        },
+        "prof_now_fmt": {
+          "english": "Now: profile %d",
+          "max_length": 15,
+          "needs_translation": false,
+          "translation": "Now: profile %d"
+        },
+        "prof_pid": {
+          "english": "PID profiles only",
+          "max_length": 17,
+          "needs_translation": false,
+          "translation": "PID profiles only"
+        },
+        "prof_switch_text": {
+          "english": "A 2- or 3-position switch. Press Assign, then move it through every position: each one lands on its own profile.",
+          "max_length": 112,
+          "needs_translation": false,
+          "translation": "A 2- or 3-position switch. Press Assign, then move it through every position: each one lands on its own profile."
+        },
+        "prof_switch_title": {
+          "english": "Profile switch",
+          "max_length": 14,
+          "needs_translation": false,
+          "translation": "Profile switch"
+        },
+        "prof_use": {
+          "english": "Use",
+          "max_length": 3,
+          "needs_translation": false,
+          "translation": "Use"
+        },
+        "prof_use_gain": {
+          "english": "Master gain",
+          "max_length": 11,
+          "needs_translation": false,
+          "translation": "Master gain"
+        },
+        "prof_use_profile": {
+          "english": "Profile switch",
+          "max_length": 14,
+          "needs_translation": false,
+          "translation": "Profile switch"
+        },
         "progress_fmt": {
           "english": "%d of %d",
           "max_length": 8,
@@ -8305,6 +8545,12 @@
           "max_length": 11,
           "needs_translation": false,
           "translation": "Blade pitch"
+        },
+        "step_profiles": {
+          "english": "Profiles & gain",
+          "max_length": 15,
+          "needs_translation": false,
+          "translation": "Profiles & gain"
         },
         "step_progress_fmt": {
           "english": "Step %d of %d",

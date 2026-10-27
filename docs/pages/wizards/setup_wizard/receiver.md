@@ -36,8 +36,7 @@ model is armed.
 - Bars and throttle measurement use the radio's own channel outputs through the receiver
   map. On S.Port, F.Port and FBUS every MSP reply pauses the flight controller's telemetry
   sensors, so the values come from the radio instead.
-- Every few seconds the step compares the radio's channels with what the flight controller
-  receives. If a stick differs (an inverted or limited channel output), the step names it.
+- After each stick movement, once the stick has settled, the step compares the radio's channels with what the flight controller receives, and names a stick that differs.
 - The last screen says whether the way forward is Next (nothing changed) or Save and
   continue (the changes already work on the flight controller but are not yet stored in
   its EEPROM).

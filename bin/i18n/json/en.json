@@ -7878,6 +7878,252 @@
           "needs_translation": false,
           "max_length": 155
         },
+        "step_profiles": {
+          "english": "Profiles & gain",
+          "translation": "Profiles & gain",
+          "needs_translation": false,
+          "max_length": 15
+        },
+        "prof_intro": {
+          "english": "One switch picks the flight profile, master gain fine-tunes the gains in flight. Both are optional.",
+          "translation": "One switch picks the flight profile, master gain fine-tunes the gains in flight. Both are optional.",
+          "needs_translation": false,
+          "max_length": 99
+        },
+        "prof_switch_title": {
+          "english": "Profile switch",
+          "translation": "Profile switch",
+          "needs_translation": false,
+          "max_length": 14
+        },
+        "prof_switch_text": {
+          "english": "A 2- or 3-position switch. Press Assign, then move it through every position: each one lands on its own profile.",
+          "translation": "A 2- or 3-position switch. Press Assign, then move it through every position: each one lands on its own profile.",
+          "needs_translation": false,
+          "max_length": 112
+        },
+        "prof_both": {
+          "english": "Profiles and rates",
+          "translation": "Profiles and rates",
+          "needs_translation": false,
+          "max_length": 18
+        },
+        "prof_pid": {
+          "english": "PID profiles only",
+          "translation": "PID profiles only",
+          "needs_translation": false,
+          "max_length": 17
+        },
+        "prof_none": {
+          "english": "Not used",
+          "translation": "Not used",
+          "needs_translation": false,
+          "max_length": 8
+        },
+        "prof_chosen": {
+          "english": "Selected",
+          "translation": "Selected",
+          "needs_translation": false,
+          "max_length": 8
+        },
+        "prof_count_fmt": {
+          "english": "CH %d · %d profiles",
+          "translation": "CH %d · %d profiles",
+          "needs_translation": false,
+          "max_length": 19
+        },
+        "prof_now_fmt": {
+          "english": "Now: profile %d",
+          "translation": "Now: profile %d",
+          "needs_translation": false,
+          "max_length": 15
+        },
+        "prof_listen": {
+          "english": "Move the switch…",
+          "translation": "Move the switch…",
+          "needs_translation": false,
+          "max_length": 16
+        },
+        "prof_found_fmt": {
+          "english": "%d positions found. Move through every position, then press Use.",
+          "translation": "%d positions found. Move through every position, then press Use.",
+          "needs_translation": false,
+          "max_length": 64
+        },
+        "prof_use": {
+          "english": "Use",
+          "translation": "Use",
+          "needs_translation": false,
+          "max_length": 3
+        },
+        "prof_gain_title": {
+          "english": "Master gain in flight",
+          "translation": "Master gain in flight",
+          "needs_translation": false,
+          "max_length": 21
+        },
+        "prof_gain_text": {
+          "english": "Changes all gains together. Raise it in flight until the wobble starts, then come back a few steps.",
+          "translation": "Changes all gains together. Raise it in flight until the wobble starts, then come back a few steps.",
+          "needs_translation": false,
+          "max_length": 99
+        },
+        "prof_gain_buttons": {
+          "english": "Trim buttons",
+          "translation": "Trim buttons",
+          "needs_translation": false,
+          "max_length": 12
+        },
+        "prof_gain_knob": {
+          "english": "Knob",
+          "translation": "Knob",
+          "needs_translation": false,
+          "max_length": 4
+        },
+        "prof_gain_none": {
+          "english": "Not used",
+          "translation": "Not used",
+          "needs_translation": false,
+          "max_length": 8
+        },
+        "prof_gain_buttons_note": {
+          "english": "Set up the GAIN mix first (see the docs).",
+          "translation": "Set up the GAIN mix first (see the docs).",
+          "needs_translation": false,
+          "max_length": 41
+        },
+        "prof_gain_knob_note": {
+          "english": "Set a knob or slider on a spare channel, then move it.",
+          "translation": "Set a knob or slider on a spare channel, then move it.",
+          "needs_translation": false,
+          "max_length": 54
+        },
+        "prof_gain_now": {
+          "english": "Now",
+          "translation": "Now",
+          "needs_translation": false,
+          "max_length": 3
+        },
+        "prof_listen_buttons": {
+          "english": "Press a trim button…",
+          "translation": "Press a trim button…",
+          "needs_translation": false,
+          "max_length": 20
+        },
+        "prof_listen_knob": {
+          "english": "Turn the knob…",
+          "translation": "Turn the knob…",
+          "needs_translation": false,
+          "max_length": 14
+        },
+        "prof_channels_title": {
+          "english": "Channels in use",
+          "translation": "Channels in use",
+          "needs_translation": false,
+          "max_length": 15
+        },
+        "prof_channel_fmt": {
+          "english": "CH %d",
+          "translation": "CH %d",
+          "needs_translation": false,
+          "max_length": 5
+        },
+        "prof_use_profile": {
+          "english": "Profile switch",
+          "translation": "Profile switch",
+          "needs_translation": false,
+          "max_length": 14
+        },
+        "prof_use_gain": {
+          "english": "Master gain",
+          "translation": "Master gain",
+          "needs_translation": false,
+          "max_length": 11
+        },
+        "prof_beyond8": {
+          "english": "Needs more than 8 channels.",
+          "translation": "Needs more than 8 channels.",
+          "needs_translation": false,
+          "max_length": 27
+        },
+        "prof_full": {
+          "english": "Every adjustment slot is in use. Free one under Adjustments.",
+          "translation": "Every adjustment slot is in use. Free one under Adjustments.",
+          "needs_translation": false,
+          "max_length": 60
+        },
+        "prof_done_keep": {
+          "english": "Nothing has changed: the flight controller keeps its profile and gain settings. Next goes on to the swashplate.",
+          "translation": "Nothing has changed: the flight controller keeps its profile and gain settings. Next goes on to the swashplate.",
+          "needs_translation": false,
+          "max_length": 111
+        },
+        "prof_done_save": {
+          "english": "The changes already work on the flight controller, but are not stored yet. Save and continue writes them to its memory (EEPROM).",
+          "translation": "The changes already work on the flight controller, but are not stored yet. Save and continue writes them to its memory (EEPROM).",
+          "needs_translation": false,
+          "max_length": 128
+        },
+        "prof_btn_cyclic_down": {
+          "english": "Cyclic gain down",
+          "translation": "Cyclic gain down",
+          "needs_translation": false,
+          "max_length": 16
+        },
+        "prof_btn_cyclic_up": {
+          "english": "Cyclic gain up",
+          "translation": "Cyclic gain up",
+          "needs_translation": false,
+          "max_length": 14
+        },
+        "prof_btn_yaw_down": {
+          "english": "Yaw gain down",
+          "translation": "Yaw gain down",
+          "needs_translation": false,
+          "max_length": 13
+        },
+        "prof_btn_yaw_up": {
+          "english": "Yaw gain up",
+          "translation": "Yaw gain up",
+          "needs_translation": false,
+          "max_length": 11
+        },
+        "prof_help_both": {
+          "english": "The switch picks the PID profile and the rate profile 1, 2 or 3 together.",
+          "translation": "The switch picks the PID profile and the rate profile 1, 2 or 3 together.",
+          "needs_translation": false,
+          "max_length": 73
+        },
+        "prof_help_pid": {
+          "english": "The switch picks the PID profile; the rates stay as they are.",
+          "translation": "The switch picks the PID profile; the rates stay as they are.",
+          "needs_translation": false,
+          "max_length": 61
+        },
+        "prof_help_none": {
+          "english": "The helicopter flies on one profile.",
+          "translation": "The helicopter flies on one profile.",
+          "needs_translation": false,
+          "max_length": 36
+        },
+        "prof_gain_help_buttons": {
+          "english": "The trim buttons step the master gain up and down, on one spare channel.",
+          "translation": "The trim buttons step the master gain up and down, on one spare channel.",
+          "needs_translation": false,
+          "max_length": 72
+        },
+        "prof_gain_help_knob": {
+          "english": "A knob or slider sets the master gain, on a spare channel.",
+          "translation": "A knob or slider sets the master gain, on a spare channel.",
+          "needs_translation": false,
+          "max_length": 58
+        },
+        "prof_gain_help_none": {
+          "english": "Master gain stays as it is. Find it later in flight, or on the Profiles page.",
+          "translation": "Master gain stays as it is. Find it later in flight, or on the Profiles page.",
+          "needs_translation": false,
+          "max_length": 77
+        },
         "mod_intro": {
           "english": "Put modes on switches on your radio: press Assign, then flick the switch to the position that should turn the mode on. Only ARM is required; the others can be added later under Modes.",
           "translation": "Put modes on switches on your radio: press Assign, then flick the switch to the position that should turn the mode on. Only ARM is required; the others can be added later under Modes.",

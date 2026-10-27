@@ -8780,6 +8780,246 @@
           "reverse_text": false,
           "translation": "Bladpitch"
         },
+        "prof_beyond8": {
+          "english": "Needs more than 8 channels.",
+          "max_length": 27,
+          "needs_translation": false,
+          "translation": "Krever mer enn 8 kanaler."
+        },
+        "prof_both": {
+          "english": "Profiles and rates",
+          "max_length": 18,
+          "needs_translation": false,
+          "translation": "Profiler og rates"
+        },
+        "prof_btn_cyclic_down": {
+          "english": "Cyclic gain down",
+          "max_length": 16,
+          "needs_translation": false,
+          "translation": "Syklisk gain ned"
+        },
+        "prof_btn_cyclic_up": {
+          "english": "Cyclic gain up",
+          "max_length": 16,
+          "needs_translation": false,
+          "translation": "Syklisk gain opp"
+        },
+        "prof_btn_yaw_down": {
+          "english": "Yaw gain down",
+          "max_length": 13,
+          "needs_translation": false,
+          "translation": "Hale-gain ned"
+        },
+        "prof_btn_yaw_up": {
+          "english": "Yaw gain up",
+          "max_length": 13,
+          "needs_translation": false,
+          "translation": "Hale-gain opp"
+        },
+        "prof_channel_fmt": {
+          "english": "CH %d",
+          "max_length": 5,
+          "needs_translation": false,
+          "translation": "CH %d"
+        },
+        "prof_channels_title": {
+          "english": "Channels in use",
+          "max_length": 15,
+          "needs_translation": false,
+          "translation": "Kanaler i bruk"
+        },
+        "prof_chosen": {
+          "english": "Selected",
+          "max_length": 8,
+          "needs_translation": false,
+          "translation": "Valgt"
+        },
+        "prof_count_fmt": {
+          "english": "CH %d · %d profiles",
+          "max_length": 19,
+          "needs_translation": false,
+          "translation": "CH %d · %d profiler"
+        },
+        "prof_done_keep": {
+          "english": "Nothing has changed: the flight controller keeps its profile and gain settings. Next goes on to the swashplate.",
+          "max_length": 111,
+          "needs_translation": false,
+          "translation": "Ingenting er endret: FC beholder profil- og gain-innstillingene. Neste går videre til swashplate."
+        },
+        "prof_done_save": {
+          "english": "The changes already work on the flight controller, but are not stored yet. Save and continue writes them to its memory (EEPROM).",
+          "max_length": 128,
+          "needs_translation": false,
+          "translation": "Endringene virker allerede i FC, men er ikke lagret ennå. Lagre og fortsett skriver dem til minnet (EEPROM)."
+        },
+        "prof_found_fmt": {
+          "english": "%d positions found. Move through every position, then press Use.",
+          "max_length": 64,
+          "needs_translation": false,
+          "translation": "%d stillinger funnet. Gå gjennom alle og trykk Bruk."
+        },
+        "prof_full": {
+          "english": "Every adjustment slot is in use. Free one under Adjustments.",
+          "max_length": 64,
+          "needs_translation": false,
+          "translation": "Alle justeringsplassene er i bruk. Frigjør en under Justeringer."
+        },
+        "prof_gain_buttons": {
+          "english": "Trim buttons",
+          "max_length": 12,
+          "needs_translation": false,
+          "translation": "Trimknapper"
+        },
+        "prof_gain_buttons_note": {
+          "english": "Set up the GAIN mix first (see the docs).",
+          "max_length": 48,
+          "needs_translation": false,
+          "translation": "Sett først opp GAIN-miksen (se dokumentasjonen)."
+        },
+        "prof_gain_help_buttons": {
+          "english": "The trim buttons step the master gain up and down, on one spare channel.",
+          "max_length": 72,
+          "needs_translation": false,
+          "translation": "Trimknappene endrer hovedgainen i steg, på én ledig kanal."
+        },
+        "prof_gain_help_knob": {
+          "english": "A knob or slider sets the master gain, on a spare channel.",
+          "max_length": 65,
+          "needs_translation": false,
+          "translation": "En dreieknapp eller skyver setter hovedgainen, på en ledig kanal."
+        },
+        "prof_gain_help_none": {
+          "english": "Master gain stays as it is. Find it later in flight, or on the Profiles page.",
+          "max_length": 77,
+          "needs_translation": false,
+          "translation": "Hovedgainen blir som den er. Finn den senere i lufta eller på Profiler-siden."
+        },
+        "prof_gain_knob": {
+          "english": "Knob",
+          "max_length": 10,
+          "needs_translation": false,
+          "translation": "Dreieknapp"
+        },
+        "prof_gain_knob_note": {
+          "english": "Set a knob or slider on a spare channel, then move it.",
+          "max_length": 64,
+          "needs_translation": false,
+          "translation": "Sett en dreieknapp eller skyver på en ledig kanal, og beveg den."
+        },
+        "prof_gain_none": {
+          "english": "Not used",
+          "max_length": 10,
+          "needs_translation": false,
+          "translation": "Ikke brukt"
+        },
+        "prof_gain_now": {
+          "english": "Now",
+          "max_length": 3,
+          "needs_translation": false,
+          "translation": "Nå"
+        },
+        "prof_gain_text": {
+          "english": "Changes all gains together. Raise it in flight until the wobble starts, then come back a few steps.",
+          "max_length": 99,
+          "needs_translation": false,
+          "translation": "Endrer alle gainene samtidig. Øk den i lufta til det begynner å vingle, og gå så ned noen steg."
+        },
+        "prof_gain_title": {
+          "english": "Master gain in flight",
+          "max_length": 21,
+          "needs_translation": false,
+          "translation": "Hovedgain i lufta"
+        },
+        "prof_help_both": {
+          "english": "The switch picks the PID profile and the rate profile 1, 2 or 3 together.",
+          "max_length": 73,
+          "needs_translation": false,
+          "translation": "Bryteren velger PID-profilen og rate-profil 1, 2 eller 3 sammen."
+        },
+        "prof_help_none": {
+          "english": "The helicopter flies on one profile.",
+          "max_length": 36,
+          "needs_translation": false,
+          "translation": "Helikopteret flyr på én profil."
+        },
+        "prof_help_pid": {
+          "english": "The switch picks the PID profile; the rates stay as they are.",
+          "max_length": 61,
+          "needs_translation": false,
+          "translation": "Bryteren velger PID-profilen; ratene blir som de er."
+        },
+        "prof_intro": {
+          "english": "One switch picks the flight profile, master gain fine-tunes the gains in flight. Both are optional.",
+          "max_length": 99,
+          "needs_translation": false,
+          "translation": "En bryter velger flyprofilen; hovedgainen finjusterer gainene i lufta. Begge er valgfrie."
+        },
+        "prof_listen": {
+          "english": "Move the switch…",
+          "max_length": 16,
+          "needs_translation": false,
+          "translation": "Flytt bryteren…"
+        },
+        "prof_listen_buttons": {
+          "english": "Press a trim button…",
+          "max_length": 22,
+          "needs_translation": false,
+          "translation": "Trykk på en trimknapp…"
+        },
+        "prof_listen_knob": {
+          "english": "Turn the knob…",
+          "max_length": 15,
+          "needs_translation": false,
+          "translation": "Vri på knappen…"
+        },
+        "prof_none": {
+          "english": "Not used",
+          "max_length": 10,
+          "needs_translation": false,
+          "translation": "Ikke brukt"
+        },
+        "prof_now_fmt": {
+          "english": "Now: profile %d",
+          "max_length": 15,
+          "needs_translation": false,
+          "translation": "Nå: profil %d"
+        },
+        "prof_pid": {
+          "english": "PID profiles only",
+          "max_length": 17,
+          "needs_translation": false,
+          "translation": "Bare PID-profiler"
+        },
+        "prof_switch_text": {
+          "english": "A 2- or 3-position switch. Press Assign, then move it through every position: each one lands on its own profile.",
+          "max_length": 119,
+          "needs_translation": false,
+          "translation": "En bryter med 2 eller 3 stillinger. Trykk Tildel og flytt den gjennom alle stillingene: hver havner på sin egen profil."
+        },
+        "prof_switch_title": {
+          "english": "Profile switch",
+          "max_length": 14,
+          "needs_translation": false,
+          "translation": "Profilbryter"
+        },
+        "prof_use": {
+          "english": "Use",
+          "max_length": 4,
+          "needs_translation": false,
+          "translation": "Bruk"
+        },
+        "prof_use_gain": {
+          "english": "Master gain",
+          "max_length": 11,
+          "needs_translation": false,
+          "translation": "Hovedgain"
+        },
+        "prof_use_profile": {
+          "english": "Profile switch",
+          "max_length": 14,
+          "needs_translation": false,
+          "translation": "Profilbryter"
+        },
         "progress_fmt": {
           "english": "%d of %d",
           "max_length": 8,
@@ -9599,6 +9839,12 @@
           "needs_translation": false,
           "reverse_text": false,
           "translation": "Bladpitch"
+        },
+        "step_profiles": {
+          "english": "Profiles & gain",
+          "max_length": 16,
+          "needs_translation": false,
+          "translation": "Profiler og gain"
         },
         "step_progress_fmt": {
           "english": "Step %d of %d",

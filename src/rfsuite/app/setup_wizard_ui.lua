@@ -246,9 +246,15 @@ end
 local CHECK_ROW_GAP = 8
 local CHECK_BUTTON_SHARE = 0.2
 local CHECK_BUTTON_MIN = 64
+-- A marked row (checks(): marked = true or false) keeps room for its tick.
+local MARK_SIZE = 22
+local MARK_GAP = 10
 
 function Screen:checks(list, focus)
   local v = self.view
+  -- Rows with a mark keep the button column clear of it: notes line up with it.
+  local hasMark = false
+  for i = 1, #list do if list[i].marked ~= nil then hasMark = true end end
   local width, height = lcd.getWindowSize()
   local room = width - self.wiz.FORM_RIGHT_PADDING
   local x = floor(width / 2)
@@ -278,6 +284,10 @@ function Screen:checks(list, focus)
     end
     if c.press then
       local bx = c.label and (room - bw) or x
+      if c.marked ~= nil then
+        row.mark = {x = x, y = y + floor((h - MARK_SIZE) / 2), s = MARK_SIZE, on = c.marked == true}
+        bx = x + MARK_SIZE + MARK_GAP
+      end
       local w = room - bx
       -- A long action drops to the small font rather than lose its end.
       lcd.font(FONT_STD)
@@ -314,7 +324,9 @@ function Screen:checks(list, focus)
       row.y = y + floor((h - lineH) / 2)
       y = y + h + CHECK_ROW_GAP
     elseif c.note then
-      row.lines = self.wiz.wrapLines(c.note, room - x, FONT_S)
+      local noteX = hasMark and (x + MARK_SIZE + MARK_GAP) or x
+      row.lines = self.wiz.wrapLines(c.note, room - noteX, FONT_S)
+      row.noteX, row.muted = noteX, c.muted
       row.y = y
       y = y + #row.lines * lineH + CHECK_ROW_GAP
     else
@@ -481,8 +493,12 @@ function Screen:paint()
       art.modeIcon(v.titleIcon, MARGIN + floor(th / 2), y + floor(th / 2), th, colors.text)
       tx = MARGIN + th + 8
     end
+    -- A table progress {text, accent}: the title stays plain, the text beside it
+    -- takes the accent colour. A string: the title in the accent colour, the text muted.
+    local progText = (type(v.progress) == "table" and v.progress.text) or (type(v.progress) == "string" and v.progress) or nil
+    local progAccent = type(v.progress) == "table" and v.progress.accent == true
     lcd.font(FONT_STD)
-    lcd.color(v.progress and colors.active or colors.text)
+    lcd.color((v.progress and type(v.progress) ~= "table") and colors.active or colors.text)
     lcd.drawText(tx, y, v.title, LEFT)
     if v.badge then
       -- A pill in the accent colour, dark text on it.
@@ -501,9 +517,14 @@ function Screen:paint()
       lcd.font(FONT_STD)
     end
     tw = tw + (tx - MARGIN)
-    if type(v.progress) == "string" then
-      lcd.color(colors.muted)
-      lcd.drawText(MARGIN + tw + 12, y, v.progress, LEFT)
+    if progText then
+      -- Beside the title in the title's font; the small font when it does not fit.
+      local pw = lcd.getTextSize(progText)
+      if MARGIN + tw + 12 + pw > width - MARGIN then lcd.font(FONT_S) end
+      lcd.color(progAccent and colors.active or colors.muted)
+      local _, ph = lcd.getTextSize("Ag")
+      lcd.drawText(MARGIN + tw + 12, y + floor((th - ph) / 2), progText, LEFT)
+      lcd.font(FONT_STD)
     end
     y = y + th + 2
   end
@@ -577,14 +598,32 @@ function Screen:paint()
     local _, labelH = lcd.getTextSize("Ag")
     for i = 1, #v.checks do
       local c = v.checks[i]
+      if c.mark and c.mark.on then
+        -- The chosen row: a green disc with a dark tick in it.
+        local m = c.mark
+        local r = floor(m.s / 2)
+        local cx, cy = m.x + r, m.y + r
+        lcd.color(colors.good)
+        lcd.drawFilledCircle(cx, cy, r)
+        lcd.color(lcd.RGB(16, 16, 16))
+        local function p(fx, fy) return m.x + floor(m.s * fx), m.y + floor(m.s * fy) end
+        local x1, y1 = p(0.27, 0.52)
+        local x2, y2 = p(0.44, 0.68)
+        local x3, y3 = p(0.74, 0.34)
+        for k = -1, 1 do
+          lcd.drawLine(x1, y1 + k, x2, y2 + k)
+          lcd.drawLine(x2, y2 + k, x3, y3 + k)
+        end
+        lcd.color(colors.text)
+      end
       if c.labelLines then
         for j = 1, #c.labelLines do lcd.drawText(v.checksX, c.labelY + (j - 1) * labelH, c.labelLines[j], LEFT) end
       end
       if c.value then lcd.drawText(c.valueX, c.y, c.value, LEFT) end
       if c.lines then
-        lcd.color(colors.active)
+        lcd.color(c.muted and colors.muted or colors.active)
         local _, lineH = lcd.getTextSize("Ag")
-        for j = 1, #c.lines do lcd.drawText(v.checksX, c.y + (j - 1) * lineH, c.lines[j], LEFT) end
+        for j = 1, #c.lines do lcd.drawText(c.noteX or v.checksX, c.y + (j - 1) * lineH, c.lines[j], LEFT) end
         lcd.color(colors.text)
       end
     end

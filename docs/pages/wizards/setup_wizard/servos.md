@@ -6,11 +6,11 @@ sidebar_position: 80
 
 # Servo centre
 
-Step 8 of the Model setup wizard. It checks the direction of each swash servo and centres it.
+Step 9 of the Model setup wizard. It checks the direction of each swash servo and centres it.
 
 ## Where to find it
 
-*Configuration* → *Wizards* → *Model setup*, step 8 *Servo centre*. One screen per servo;
+*Configuration* → *Wizards* → *Model setup*, step 9 *Servo centre*. One screen per servo;
 where the step works through a list, the item's count stands beside the title.
 
 Only inside the wizard. Greyed out until the flight controller answers. Read-only while the

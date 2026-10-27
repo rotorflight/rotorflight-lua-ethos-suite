@@ -9134,6 +9134,252 @@
           "needs_translation": false,
           "max_length": 155
         },
+        "step_profiles": {
+          "english": "Profiles & gain",
+          "translation": "פרופילים והגבר",
+          "needs_translation": false,
+          "max_length": 15
+        },
+        "prof_intro": {
+          "english": "One switch picks the flight profile, master gain fine-tunes the gains in flight. Both are optional.",
+          "translation": "מתג אחד בוחר את פרופיל הטיסה; הגבר הכללי מכייל את ההגברים בטיסה. שניהם אופציונליים.",
+          "needs_translation": false,
+          "max_length": 99
+        },
+        "prof_switch_title": {
+          "english": "Profile switch",
+          "translation": "מתג פרופיל",
+          "needs_translation": false,
+          "max_length": 14
+        },
+        "prof_switch_text": {
+          "english": "A 2- or 3-position switch. Press Assign, then move it through every position: each one lands on its own profile.",
+          "translation": "מתג של 2 או 3 מצבים. לחצו הקצה, ואז העבירו אותו בכל המצבים: כל מצב נופל על פרופיל משלו.",
+          "needs_translation": false,
+          "max_length": 112
+        },
+        "prof_both": {
+          "english": "Profiles and rates",
+          "translation": "פרופילים וקצבים",
+          "needs_translation": false,
+          "max_length": 18
+        },
+        "prof_pid": {
+          "english": "PID profiles only",
+          "translation": "רק פרופילי PID",
+          "needs_translation": false,
+          "max_length": 17
+        },
+        "prof_none": {
+          "english": "Not used",
+          "translation": "לא בשימוש",
+          "needs_translation": false,
+          "max_length": 9
+        },
+        "prof_chosen": {
+          "english": "Selected",
+          "translation": "נבחר",
+          "needs_translation": false,
+          "max_length": 8
+        },
+        "prof_count_fmt": {
+          "english": "CH %d · %d profiles",
+          "translation": "CH %d · %d פרופילים",
+          "needs_translation": false,
+          "max_length": 19
+        },
+        "prof_now_fmt": {
+          "english": "Now: profile %d",
+          "translation": "עכשיו: פרופיל %d",
+          "needs_translation": false,
+          "max_length": 16
+        },
+        "prof_listen": {
+          "english": "Move the switch…",
+          "translation": "העבירו את המתג…",
+          "needs_translation": false,
+          "max_length": 16
+        },
+        "prof_found_fmt": {
+          "english": "%d positions found. Move through every position, then press Use.",
+          "translation": "נמצאו %d מצבים. עברו על כולם ואז לחצו השתמש.",
+          "needs_translation": false,
+          "max_length": 64
+        },
+        "prof_use": {
+          "english": "Use",
+          "translation": "השתמש",
+          "needs_translation": false,
+          "max_length": 5
+        },
+        "prof_gain_title": {
+          "english": "Master gain in flight",
+          "translation": "הגבר כללי בטיסה",
+          "needs_translation": false,
+          "max_length": 21
+        },
+        "prof_gain_text": {
+          "english": "Changes all gains together. Raise it in flight until the wobble starts, then come back a few steps.",
+          "translation": "משנה את כל ההגברים יחד. מעלים בטיסה עד שמתחיל רעידה, ואז מורידים כמה צעדים.",
+          "needs_translation": false,
+          "max_length": 99
+        },
+        "prof_gain_buttons": {
+          "english": "Trim buttons",
+          "translation": "כפתורי טרים",
+          "needs_translation": false,
+          "max_length": 12
+        },
+        "prof_gain_knob": {
+          "english": "Knob",
+          "translation": "סיבוב",
+          "needs_translation": false,
+          "max_length": 5
+        },
+        "prof_gain_none": {
+          "english": "Not used",
+          "translation": "לא בשימוש",
+          "needs_translation": false,
+          "max_length": 9
+        },
+        "prof_gain_buttons_note": {
+          "english": "Set up the GAIN mix first (see the docs).",
+          "translation": "הגדירו קודם את מיקס GAIN (ראו התיעוד).",
+          "needs_translation": false,
+          "max_length": 41
+        },
+        "prof_gain_knob_note": {
+          "english": "Set a knob or slider on a spare channel, then move it.",
+          "translation": "הגדירו כפתור סיבוב או מחוון בערוץ פנוי והזיזו אותו.",
+          "needs_translation": false,
+          "max_length": 54
+        },
+        "prof_gain_now": {
+          "english": "Now",
+          "translation": "עכשיו",
+          "needs_translation": false,
+          "max_length": 5
+        },
+        "prof_listen_buttons": {
+          "english": "Press a trim button…",
+          "translation": "לחצו על כפתור טרים…",
+          "needs_translation": false,
+          "max_length": 20
+        },
+        "prof_listen_knob": {
+          "english": "Turn the knob…",
+          "translation": "סובבו את הכפתור…",
+          "needs_translation": false,
+          "max_length": 16
+        },
+        "prof_channels_title": {
+          "english": "Channels in use",
+          "translation": "ערוצים בשימוש",
+          "needs_translation": false,
+          "max_length": 15
+        },
+        "prof_channel_fmt": {
+          "english": "CH %d",
+          "translation": "CH %d",
+          "needs_translation": false,
+          "max_length": 5
+        },
+        "prof_use_profile": {
+          "english": "Profile switch",
+          "translation": "מתג פרופיל",
+          "needs_translation": false,
+          "max_length": 14
+        },
+        "prof_use_gain": {
+          "english": "Master gain",
+          "translation": "הגבר כללי",
+          "needs_translation": false,
+          "max_length": 11
+        },
+        "prof_beyond8": {
+          "english": "Needs more than 8 channels.",
+          "translation": "דורש יותר מ-8 ערוצים.",
+          "needs_translation": false,
+          "max_length": 27
+        },
+        "prof_full": {
+          "english": "Every adjustment slot is in use. Free one under Adjustments.",
+          "translation": "כל מקומות ההתאמה תפוסים. שחררו אחד בהתאמות.",
+          "needs_translation": false,
+          "max_length": 60
+        },
+        "prof_done_keep": {
+          "english": "Nothing has changed: the flight controller keeps its profile and gain settings. Next goes on to the swashplate.",
+          "translation": "לא השתנה דבר: ה-FC שומר את הגדרות הפרופיל וההגבר. הבא ממשיך לסוואש.",
+          "needs_translation": false,
+          "max_length": 111
+        },
+        "prof_done_save": {
+          "english": "The changes already work on the flight controller, but are not stored yet. Save and continue writes them to its memory (EEPROM).",
+          "translation": "השינויים כבר פעילים ב-FC אך עוד לא נשמרו. שמור והמשך כותב אותם לזיכרון שלו (EEPROM).",
+          "needs_translation": false,
+          "max_length": 128
+        },
+        "prof_btn_cyclic_down": {
+          "english": "Cyclic gain down",
+          "translation": "הגבר ציקלי למטה",
+          "needs_translation": false,
+          "max_length": 16
+        },
+        "prof_btn_cyclic_up": {
+          "english": "Cyclic gain up",
+          "translation": "הגבר ציקלי למעלה",
+          "needs_translation": false,
+          "max_length": 16
+        },
+        "prof_btn_yaw_down": {
+          "english": "Yaw gain down",
+          "translation": "הגבר זנב למטה",
+          "needs_translation": false,
+          "max_length": 13
+        },
+        "prof_btn_yaw_up": {
+          "english": "Yaw gain up",
+          "translation": "הגבר זנב למעלה",
+          "needs_translation": false,
+          "max_length": 14
+        },
+        "prof_help_both": {
+          "english": "The switch picks the PID profile and the rate profile 1, 2 or 3 together.",
+          "translation": "המתג בוחר את פרופיל ה-PID ואת פרופיל הקצב 1, 2 או 3 יחד.",
+          "needs_translation": false,
+          "max_length": 73
+        },
+        "prof_help_pid": {
+          "english": "The switch picks the PID profile; the rates stay as they are.",
+          "translation": "המתג בוחר את פרופיל ה-PID; הקצבים נשארים כמו שהם.",
+          "needs_translation": false,
+          "max_length": 61
+        },
+        "prof_help_none": {
+          "english": "The helicopter flies on one profile.",
+          "translation": "המסוק טס על פרופיל אחד.",
+          "needs_translation": false,
+          "max_length": 36
+        },
+        "prof_gain_help_buttons": {
+          "english": "The trim buttons step the master gain up and down, on one spare channel.",
+          "translation": "כפתורי הטרים משנים את ההגבר הכללי בצעדים, בערוץ פנוי אחד.",
+          "needs_translation": false,
+          "max_length": 72
+        },
+        "prof_gain_help_knob": {
+          "english": "A knob or slider sets the master gain, on a spare channel.",
+          "translation": "כפתור סיבוב או מחוון קובעים את ההגבר הכללי, בערוץ פנוי.",
+          "needs_translation": false,
+          "max_length": 58
+        },
+        "prof_gain_help_none": {
+          "english": "Master gain stays as it is. Find it later in flight, or on the Profiles page.",
+          "translation": "ההגבר הכללי נשאר כמו שהוא. מצאו אותו מאוחר יותר בטיסה או בדף הפרופילים.",
+          "needs_translation": false,
+          "max_length": 77
+        },
         "mod_intro": {
           "english": "Put modes on switches on your radio: press Assign, then flick the switch to the position that should turn the mode on. Only ARM is required; the others can be added later under Modes.",
           "translation": "הקצו מצבים למתגים: לחצו הקצה, ואז העבירו את המתג למצב שאמור להפעיל את המצב. רק ARM חובה; את השאר אפשר להוסיף אחר כך במצבים.",

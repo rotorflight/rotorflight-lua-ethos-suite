@@ -6,12 +6,12 @@ sidebar_position: 110
 
 # Blade pitch
 
-Step 11 of the Model setup wizard. It calibrates the blade pitch with a pitch gauge and sets
+Step 12 of the Model setup wizard. It calibrates the blade pitch with a pitch gauge and sets
 the pitch limits.
 
 ## Where to find it
 
-*Configuration* → *Wizards* → *Model setup*, step 11 *Blade pitch*. Screens: the intro, the
+*Configuration* → *Wizards* → *Model setup*, step 12 *Blade pitch*. Screens: the intro, the
 collective, the cyclic, and the three limits.
 
 Only inside the wizard. Greyed out until the flight controller answers. Read-only while the

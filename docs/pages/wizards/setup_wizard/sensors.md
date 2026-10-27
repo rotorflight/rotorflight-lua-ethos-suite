@@ -30,12 +30,12 @@ The step tells you to set the orientation on the Alignment page instead when:
 | Calibrate accelerometer | Stand the helicopter level on its skids and keep it still. The step reports calibrated or failed. Detection is refused until the accelerometer is calibrated. |
 | Detect board orientation | With the helicopter level, press Detect, then lift the tail about 20 degrees and hold it still. The result shows roll, pitch and yaw in degrees. "No orientation matched" and "Timed out" mean: lift the tail straight up, or a little further, and try again. |
 | Direction is correct | The live picture follows every tilt, left and right, nose down and up. Confirm that it moves the right way. |
-| Save and restart | Shown when the orientation has changed. Saves it and restarts the flight controller so it applies now. Next leaves the restart to step 7, Connect servos. |
+| Save and restart | Shown when the orientation has changed. Saves it and restarts the flight controller so it applies now. Next leaves the restart to step 8, Connect servos. |
 
 ## Notes
 
 - The orientation applies after a restart. Save and restart here checks it at once. Next
-  postpones the restart to step 7, and the servos stay unplugged until then.
+  postpones the restart to step 8, and the servos stay unplugged until then.
 - Remove the main and tail blades and unplug the servos before you start.
 
 ## Related

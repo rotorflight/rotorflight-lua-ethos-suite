@@ -721,8 +721,8 @@ end
 -- A picture of its own size, such as the Configurator's: w x h is the size of
 -- the 1x file (name.png), and name-200.png is the 2x one for a larger screen.
 -- Drawn centred, as the 1x or 2x file that fits, or smaller when the space is.
-function art.image(name, w, h)
-  return {kind = "image", name = name, w = w, h = h}
+function art.image(name, w, h, native)
+  return {kind = "image", name = name, w = w, h = h, native = native}
 end
 
 local function imageBitmap(l, k)
@@ -735,6 +735,13 @@ local function imageBitmap(l, k)
 end
 
 local function drawImage(l, x, y, w, h, colors)
+  if l.native then
+    -- Its own size, centred: the bitmap of the first scale.
+    local bitmap = imageBitmap(l, 1)
+    if not bitmap then return end
+    lcd.drawBitmap(x + floor((w - l.w) / 2), y + floor((h - l.h) / 2), bitmap)
+    return
+  end
   local fit = min(w / l.w, h / l.h)
   local k = (fit >= 2) and 2 or 1
   local bitmap = imageBitmap(l, k)
@@ -1080,6 +1087,7 @@ local function ring(cx, cy, ri, ro, a0, a1)
   end
 end
 
+
 local function modeIcon(name, cx, cy, s, color, colors)
   lcd.color(color)
   local t = math.max(2, floor(s * 0.14))
@@ -1143,6 +1151,24 @@ local function toggle(x, y, w, h, angle, tipColor, colors)
 end
 
 local function drawModeSwitch(l, x, y, w, h, colors)
+  -- The band under the switch, centred: the status lines (accent), then the
+  -- help lines (text). l.helpSlots lines are kept, so the switch keeps its size.
+  local helpH = 0
+  local lines = {}
+  for _, t in ipairs(l.status or {}) do lines[#lines + 1] = {t, true} end
+  for _, t in ipairs(l.help or {}) do lines[#lines + 1] = {t, false} end
+  local slots = math.max(#lines, l.helpSlots or 0)
+  if slots > 0 then
+    lcd.font(FONT_S)
+    local _, lh = lcd.getTextSize("Ag")
+    helpH = slots * lh + 10
+    for i, ln in ipairs(lines) do
+      local tw = lcd.getTextSize(ln[1])
+      lcd.color(ln[2] and colors.active or colors.text)
+      lcd.drawText(x + floor((w - tw) / 2), y + h - helpH + 6 + (i - 1) * lh, ln[1], LEFT)
+    end
+    h = h - helpH
+  end
   local iconH = 0
   if l.icons then
     local n = #l.icons

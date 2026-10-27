@@ -9134,6 +9134,252 @@
           "needs_translation": false,
           "max_length": 155
         },
+        "step_profiles": {
+          "english": "Profiles & gain",
+          "translation": "Perfiles y ganancia",
+          "needs_translation": false,
+          "max_length": 19
+        },
+        "prof_intro": {
+          "english": "One switch picks the flight profile, master gain fine-tunes the gains in flight. Both are optional.",
+          "translation": "Un interruptor elige el perfil de vuelo; la ganancia general afina las ganancias en vuelo. Ambas son opcionales.",
+          "needs_translation": false,
+          "max_length": 112
+        },
+        "prof_switch_title": {
+          "english": "Profile switch",
+          "translation": "Interruptor de perfil",
+          "needs_translation": false,
+          "max_length": 21
+        },
+        "prof_switch_text": {
+          "english": "A 2- or 3-position switch. Press Assign, then move it through every position: each one lands on its own profile.",
+          "translation": "Un interruptor de 2 o 3 posiciones. Pulse Asignar y muévalo por todas las posiciones: cada una cae en su propio perfil.",
+          "needs_translation": false,
+          "max_length": 119
+        },
+        "prof_both": {
+          "english": "Profiles and rates",
+          "translation": "Perfiles y tasas",
+          "needs_translation": false,
+          "max_length": 18
+        },
+        "prof_pid": {
+          "english": "PID profiles only",
+          "translation": "Solo perfiles PID",
+          "needs_translation": false,
+          "max_length": 17
+        },
+        "prof_none": {
+          "english": "Not used",
+          "translation": "No usado",
+          "needs_translation": false,
+          "max_length": 8
+        },
+        "prof_chosen": {
+          "english": "Selected",
+          "translation": "Elegido",
+          "needs_translation": false,
+          "max_length": 8
+        },
+        "prof_count_fmt": {
+          "english": "CH %d · %d profiles",
+          "translation": "CH %d · %d perfiles",
+          "needs_translation": false,
+          "max_length": 19
+        },
+        "prof_now_fmt": {
+          "english": "Now: profile %d",
+          "translation": "Ahora: perfil %d",
+          "needs_translation": false,
+          "max_length": 16
+        },
+        "prof_listen": {
+          "english": "Move the switch…",
+          "translation": "Mueva el interruptor…",
+          "needs_translation": false,
+          "max_length": 21
+        },
+        "prof_found_fmt": {
+          "english": "%d positions found. Move through every position, then press Use.",
+          "translation": "%d posiciones encontradas. Recórralas todas y pulse Usar.",
+          "needs_translation": false,
+          "max_length": 64
+        },
+        "prof_use": {
+          "english": "Use",
+          "translation": "Usar",
+          "needs_translation": false,
+          "max_length": 4
+        },
+        "prof_gain_title": {
+          "english": "Master gain in flight",
+          "translation": "Ganancia general en vuelo",
+          "needs_translation": false,
+          "max_length": 25
+        },
+        "prof_gain_text": {
+          "english": "Changes all gains together. Raise it in flight until the wobble starts, then come back a few steps.",
+          "translation": "Cambia todas las ganancias juntas. Súbala en vuelo hasta que empiece el bamboleo, luego baje unos pasos.",
+          "needs_translation": false,
+          "max_length": 104
+        },
+        "prof_gain_buttons": {
+          "english": "Trim buttons",
+          "translation": "Botones de trim",
+          "needs_translation": false,
+          "max_length": 15
+        },
+        "prof_gain_knob": {
+          "english": "Knob",
+          "translation": "Mando giratorio",
+          "needs_translation": false,
+          "max_length": 15
+        },
+        "prof_gain_none": {
+          "english": "Not used",
+          "translation": "No usado",
+          "needs_translation": false,
+          "max_length": 8
+        },
+        "prof_gain_buttons_note": {
+          "english": "Set up the GAIN mix first (see the docs).",
+          "translation": "Configure antes la mezcla GAIN (ver documentación).",
+          "needs_translation": false,
+          "max_length": 51
+        },
+        "prof_gain_knob_note": {
+          "english": "Set a knob or slider on a spare channel, then move it.",
+          "translation": "Configure un mando o deslizador en un canal libre y muévalo.",
+          "needs_translation": false,
+          "max_length": 60
+        },
+        "prof_gain_now": {
+          "english": "Now",
+          "translation": "Ahora",
+          "needs_translation": false,
+          "max_length": 5
+        },
+        "prof_listen_buttons": {
+          "english": "Press a trim button…",
+          "translation": "Pulse un botón de trim…",
+          "needs_translation": false,
+          "max_length": 23
+        },
+        "prof_listen_knob": {
+          "english": "Turn the knob…",
+          "translation": "Gire el mando…",
+          "needs_translation": false,
+          "max_length": 14
+        },
+        "prof_channels_title": {
+          "english": "Channels in use",
+          "translation": "Canales en uso",
+          "needs_translation": false,
+          "max_length": 15
+        },
+        "prof_channel_fmt": {
+          "english": "CH %d",
+          "translation": "CH %d",
+          "needs_translation": false,
+          "max_length": 5
+        },
+        "prof_use_profile": {
+          "english": "Profile switch",
+          "translation": "Interruptor de perfil",
+          "needs_translation": false,
+          "max_length": 21
+        },
+        "prof_use_gain": {
+          "english": "Master gain",
+          "translation": "Ganancia general",
+          "needs_translation": false,
+          "max_length": 16
+        },
+        "prof_beyond8": {
+          "english": "Needs more than 8 channels.",
+          "translation": "Necesita más de 8 canales.",
+          "needs_translation": false,
+          "max_length": 27
+        },
+        "prof_full": {
+          "english": "Every adjustment slot is in use. Free one under Adjustments.",
+          "translation": "Todas las ranuras de ajuste están en uso. Libere una en Ajustes.",
+          "needs_translation": false,
+          "max_length": 64
+        },
+        "prof_done_keep": {
+          "english": "Nothing has changed: the flight controller keeps its profile and gain settings. Next goes on to the swashplate.",
+          "translation": "No ha cambiado nada: el FC conserva sus ajustes de perfil y ganancia. Siguiente pasa al plato.",
+          "needs_translation": false,
+          "max_length": 111
+        },
+        "prof_done_save": {
+          "english": "The changes already work on the flight controller, but are not stored yet. Save and continue writes them to its memory (EEPROM).",
+          "translation": "Los cambios ya funcionan en el FC, pero aún no están guardados. Guardar y seguir los escribe en su memoria (EEPROM).",
+          "needs_translation": false,
+          "max_length": 128
+        },
+        "prof_btn_cyclic_down": {
+          "english": "Cyclic gain down",
+          "translation": "Ganancia cíclica abajo",
+          "needs_translation": false,
+          "max_length": 22
+        },
+        "prof_btn_cyclic_up": {
+          "english": "Cyclic gain up",
+          "translation": "Ganancia cíclica arriba",
+          "needs_translation": false,
+          "max_length": 23
+        },
+        "prof_btn_yaw_down": {
+          "english": "Yaw gain down",
+          "translation": "Ganancia de cola abajo",
+          "needs_translation": false,
+          "max_length": 22
+        },
+        "prof_btn_yaw_up": {
+          "english": "Yaw gain up",
+          "translation": "Ganancia de cola arriba",
+          "needs_translation": false,
+          "max_length": 23
+        },
+        "prof_help_both": {
+          "english": "The switch picks the PID profile and the rate profile 1, 2 or 3 together.",
+          "translation": "El interruptor elige el perfil PID y el perfil de tasas 1, 2 o 3 juntos.",
+          "needs_translation": false,
+          "max_length": 73
+        },
+        "prof_help_pid": {
+          "english": "The switch picks the PID profile; the rates stay as they are.",
+          "translation": "El interruptor elige el perfil PID; las tasas se quedan como están.",
+          "needs_translation": false,
+          "max_length": 67
+        },
+        "prof_help_none": {
+          "english": "The helicopter flies on one profile.",
+          "translation": "El helicóptero vuela con un solo perfil.",
+          "needs_translation": false,
+          "max_length": 40
+        },
+        "prof_gain_help_buttons": {
+          "english": "The trim buttons step the master gain up and down, on one spare channel.",
+          "translation": "Los botones de trim cambian la ganancia general por pasos, en un canal libre.",
+          "needs_translation": false,
+          "max_length": 77
+        },
+        "prof_gain_help_knob": {
+          "english": "A knob or slider sets the master gain, on a spare channel.",
+          "translation": "Un mando o deslizador ajusta la ganancia general, en un canal libre.",
+          "needs_translation": false,
+          "max_length": 68
+        },
+        "prof_gain_help_none": {
+          "english": "Master gain stays as it is. Find it later in flight, or on the Profiles page.",
+          "translation": "La ganancia general se queda como está. Búsquela luego en vuelo o en la página de Perfiles.",
+          "needs_translation": false,
+          "max_length": 91
+        },
         "mod_intro": {
           "english": "Put modes on switches on your radio: press Assign, then flick the switch to the position that should turn the mode on. Only ARM is required; the others can be added later under Modes.",
           "translation": "Asigna modos a interruptores: pulsa Asignar y mueve el interruptor a la posición que debe activar el modo. Solo ARM es obligatorio; los demás se pueden añadir luego en Modos.",

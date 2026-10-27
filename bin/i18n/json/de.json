@@ -9134,6 +9134,252 @@
           "needs_translation": false,
           "max_length": 166
         },
+        "step_profiles": {
+          "english": "Profiles & gain",
+          "translation": "Profile und Verstärkung",
+          "needs_translation": false,
+          "max_length": 23
+        },
+        "prof_intro": {
+          "english": "One switch picks the flight profile, master gain fine-tunes the gains in flight. Both are optional.",
+          "translation": "Ein Schalter wählt das Flugprofil, die Hauptverstärkung feintunt die Gains im Flug. Beides ist optional.",
+          "needs_translation": false,
+          "max_length": 104
+        },
+        "prof_switch_title": {
+          "english": "Profile switch",
+          "translation": "Profilschalter",
+          "needs_translation": false,
+          "max_length": 14
+        },
+        "prof_switch_text": {
+          "english": "A 2- or 3-position switch. Press Assign, then move it through every position: each one lands on its own profile.",
+          "translation": "Ein Schalter mit 2 oder 3 Stellungen. Zuweisen drücken, dann den Schalter durch alle Stellungen bewegen: jede landet auf einem eigenen Profil.",
+          "needs_translation": false,
+          "max_length": 142
+        },
+        "prof_both": {
+          "english": "Profiles and rates",
+          "translation": "Profile und Raten",
+          "needs_translation": false,
+          "max_length": 18
+        },
+        "prof_pid": {
+          "english": "PID profiles only",
+          "translation": "Nur PID-Profile",
+          "needs_translation": false,
+          "max_length": 17
+        },
+        "prof_none": {
+          "english": "Not used",
+          "translation": "Nicht verwendet",
+          "needs_translation": false,
+          "max_length": 15
+        },
+        "prof_chosen": {
+          "english": "Selected",
+          "translation": "Gewählt",
+          "needs_translation": false,
+          "max_length": 8
+        },
+        "prof_count_fmt": {
+          "english": "CH %d · %d profiles",
+          "translation": "CH %d · %d Profile",
+          "needs_translation": false,
+          "max_length": 19
+        },
+        "prof_now_fmt": {
+          "english": "Now: profile %d",
+          "translation": "Jetzt: Profil %d",
+          "needs_translation": false,
+          "max_length": 16
+        },
+        "prof_listen": {
+          "english": "Move the switch…",
+          "translation": "Schalter bewegen…",
+          "needs_translation": false,
+          "max_length": 17
+        },
+        "prof_found_fmt": {
+          "english": "%d positions found. Move through every position, then press Use.",
+          "translation": "%d Stellungen gefunden. Alle durchgehen, dann übernehmen.",
+          "needs_translation": false,
+          "max_length": 64
+        },
+        "prof_use": {
+          "english": "Use",
+          "translation": "Übernehmen",
+          "needs_translation": false,
+          "max_length": 10
+        },
+        "prof_gain_title": {
+          "english": "Master gain in flight",
+          "translation": "Verstärkung im Flug",
+          "needs_translation": false,
+          "max_length": 21
+        },
+        "prof_gain_text": {
+          "english": "Changes all gains together. Raise it in flight until the wobble starts, then come back a few steps.",
+          "translation": "Verändert alle Gains gemeinsam. Im Flug erhöhen, bis das Wackeln beginnt, dann einige Schritte zurück.",
+          "needs_translation": false,
+          "max_length": 102
+        },
+        "prof_gain_buttons": {
+          "english": "Trim buttons",
+          "translation": "Trimm-Tasten",
+          "needs_translation": false,
+          "max_length": 12
+        },
+        "prof_gain_knob": {
+          "english": "Knob",
+          "translation": "Drehregler",
+          "needs_translation": false,
+          "max_length": 10
+        },
+        "prof_gain_none": {
+          "english": "Not used",
+          "translation": "Nicht verwendet",
+          "needs_translation": false,
+          "max_length": 15
+        },
+        "prof_gain_buttons_note": {
+          "english": "Set up the GAIN mix first (see the docs).",
+          "translation": "Vorher den Mix GAIN anlegen (siehe Doku).",
+          "needs_translation": false,
+          "max_length": 41
+        },
+        "prof_gain_knob_note": {
+          "english": "Set a knob or slider on a spare channel, then move it.",
+          "translation": "Einen Drehregler oder Schieber auf einem freien Kanal einrichten und bewegen.",
+          "needs_translation": false,
+          "max_length": 77
+        },
+        "prof_gain_now": {
+          "english": "Now",
+          "translation": "Jetzt",
+          "needs_translation": false,
+          "max_length": 5
+        },
+        "prof_listen_buttons": {
+          "english": "Press a trim button…",
+          "translation": "Trimm-Taste drücken…",
+          "needs_translation": false,
+          "max_length": 20
+        },
+        "prof_listen_knob": {
+          "english": "Turn the knob…",
+          "translation": "Drehregler bewegen…",
+          "needs_translation": false,
+          "max_length": 19
+        },
+        "prof_channels_title": {
+          "english": "Channels in use",
+          "translation": "Kanäle in Verwendung",
+          "needs_translation": false,
+          "max_length": 20
+        },
+        "prof_channel_fmt": {
+          "english": "CH %d",
+          "translation": "CH %d",
+          "needs_translation": false,
+          "max_length": 5
+        },
+        "prof_use_profile": {
+          "english": "Profile switch",
+          "translation": "Profilschalter",
+          "needs_translation": false,
+          "max_length": 14
+        },
+        "prof_use_gain": {
+          "english": "Master gain",
+          "translation": "Hauptverstärkung",
+          "needs_translation": false,
+          "max_length": 16
+        },
+        "prof_beyond8": {
+          "english": "Needs more than 8 channels.",
+          "translation": "Braucht mehr als 8 Kanäle.",
+          "needs_translation": false,
+          "max_length": 27
+        },
+        "prof_full": {
+          "english": "Every adjustment slot is in use. Free one under Adjustments.",
+          "translation": "Alle Anpassungsplätze sind belegt. Einen unter Anpassungen freigeben.",
+          "needs_translation": false,
+          "max_length": 69
+        },
+        "prof_done_keep": {
+          "english": "Nothing has changed: the flight controller keeps its profile and gain settings. Next goes on to the swashplate.",
+          "translation": "Nichts geändert: Der FC behält seine Profil- und Verstärkungs-Einstellungen. Weiter geht es zur Taumelscheibe.",
+          "needs_translation": false,
+          "max_length": 111
+        },
+        "prof_done_save": {
+          "english": "The changes already work on the flight controller, but are not stored yet. Save and continue writes them to its memory (EEPROM).",
+          "translation": "Die Änderungen wirken schon im FC, sind aber noch nicht gespeichert. Speichern & weiter schreibt sie in seinen Speicher (EEPROM).",
+          "needs_translation": false,
+          "max_length": 129
+        },
+        "prof_btn_cyclic_down": {
+          "english": "Cyclic gain down",
+          "translation": "Zyklisch-Gain runter",
+          "needs_translation": false,
+          "max_length": 20
+        },
+        "prof_btn_cyclic_up": {
+          "english": "Cyclic gain up",
+          "translation": "Zyklisch-Gain hoch",
+          "needs_translation": false,
+          "max_length": 18
+        },
+        "prof_btn_yaw_down": {
+          "english": "Yaw gain down",
+          "translation": "Heck-Gain runter",
+          "needs_translation": false,
+          "max_length": 16
+        },
+        "prof_btn_yaw_up": {
+          "english": "Yaw gain up",
+          "translation": "Heck-Gain hoch",
+          "needs_translation": false,
+          "max_length": 14
+        },
+        "prof_help_both": {
+          "english": "The switch picks the PID profile and the rate profile 1, 2 or 3 together.",
+          "translation": "Der Schalter wählt das PID-Profil und das Raten-Profil 1, 2 oder 3 gemeinsam.",
+          "needs_translation": false,
+          "max_length": 77
+        },
+        "prof_help_pid": {
+          "english": "The switch picks the PID profile; the rates stay as they are.",
+          "translation": "Der Schalter wählt das PID-Profil; die Raten bleiben wie sie sind.",
+          "needs_translation": false,
+          "max_length": 66
+        },
+        "prof_help_none": {
+          "english": "The helicopter flies on one profile.",
+          "translation": "Der Heli fliegt auf einem Profil.",
+          "needs_translation": false,
+          "max_length": 36
+        },
+        "prof_gain_help_buttons": {
+          "english": "The trim buttons step the master gain up and down, on one spare channel.",
+          "translation": "Die Trimm-Tasten verändern die Hauptverstärkung schrittweise, auf einem freien Kanal.",
+          "needs_translation": false,
+          "max_length": 85
+        },
+        "prof_gain_help_knob": {
+          "english": "A knob or slider sets the master gain, on a spare channel.",
+          "translation": "Ein Drehregler oder Schieber setzt die Hauptverstärkung, auf einem freien Kanal.",
+          "needs_translation": false,
+          "max_length": 80
+        },
+        "prof_gain_help_none": {
+          "english": "Master gain stays as it is. Find it later in flight, or on the Profiles page.",
+          "translation": "Die Hauptverstärkung bleibt wie sie ist. Später im Flug oder auf der Profile-Seite einstellen.",
+          "needs_translation": false,
+          "max_length": 94
+        },
         "mod_intro": {
           "english": "Put modes on switches on your radio: press Assign, then flick the switch to the position that should turn the mode on. Only ARM is required; the others can be added later under Modes.",
           "translation": "Modi auf Schalter legen: Zuweisen drücken, dann den Schalter in die Stellung bringen, die den Modus einschalten soll. Nur ARM ist Pflicht; die anderen lassen sich später unter Modi ergänzen.",

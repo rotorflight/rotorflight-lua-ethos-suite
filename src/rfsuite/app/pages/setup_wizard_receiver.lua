@@ -132,15 +132,19 @@ local RX_FAILSAFE_BIT = 2
 -- Ethos reports the sensors lost. So the bars of this step read the radio's own
 -- channel outputs, which the receiver passes on one to one (the FC maps them, it
 -- does not reverse them: firmware rx/rx.c readRxChannels). MSP is left to the
--- signal check and a cross-check of the radio against the FC, both seldom.
+-- signal check, and the cross-check of the radio against the FC after each stick
+-- movement (one read, once the stick has settled).
 local STATUS_POLL = 3.0
 local LOCAL_CHANNELS = 16
 -- Ethos -1024..1024 is -100..+100 %: 1500 +- 512 us on F.Port, FBUS and CRSF.
 local US_PER_UNIT = 512 / 1024
--- The cross-check: one MSP_RX_CHANNELS read this often, compared with the radio
--- for each stick that held still (CHECK_STILL) while the read was out.
-local CHECK_POLL = 5.0
-local CHECK_FIRST = 1.5
+-- The cross-check: one MSP_RX_CHANNELS read after each stick movement, once the
+-- moved channel has been still for CHECK_SETTLE, compared with the radio for each
+-- stick that held still (CHECK_STILL) while the read was out. Reads never overlap
+-- (CHECK_GIVE_UP for a lost reply), and not closer than CHECK_MIN_GAP.
+local CHECK_MOVE = 20
+local CHECK_SETTLE = 0.3
+local CHECK_MIN_GAP = 0.05
 local CHECK_GIVE_UP = 3.0
 local CHECK_STILL = 8
 local CHECK_TOLERANCE = 30
@@ -235,9 +239,10 @@ local function new(wiz)
   local low, high = nil, nil
   local applied = false      -- the measured range has been written to the FC
   local thrNow = nil
-  -- The cross-check (see CHECK_POLL); mismatch is the function slot that differs.
-  local checkRaw, checkSnap = {}, {}
-  local checkInFlight, checkAt = false, 0
+  -- The cross-check (see CHECK_MOVE); mismatch is the function slot that differs.
+  local checkRaw, checkSnap, checkSeen = {}, {}, {}
+  local checkInFlight, checkAt = false, -1000
+  local checkWanted, movedAt = true, -1000
   local mismatch = nil
 
   -- The radio's channel outputs, in us: raw by receiver channel, rc by function
@@ -390,7 +395,8 @@ local function new(wiz)
     -- No shell polling: the bars and the throttle measurement read the radio
     -- (readLocal); the FC is asked only for the status and the cross-check.
     self.liveRc, self.liveRcInterval = nil, nil
-    checkAt = os.clock() - CHECK_POLL + CHECK_FIRST
+    -- A check when the screen opens, once the sticks have settled.
+    checkWanted, movedAt = true, -1000
   end
 
   local function go(name)
@@ -776,8 +782,22 @@ local function new(wiz)
   local function checkWakeup(now)
     -- The simulator's MSP replies are made up (a sweep): nothing to compare with.
     if rcChannels.SIMULATED or not rxMap or not wiz.canMove() then return end
+    -- Any of the four sticks or the throttle moving marks a check wanted.
+    for slot = 1, FUNCTION_ROWS do
+      local ch = rxMap[rxMapCodec.FIELDS[slot]]
+      local v = ch and localRaw[ch + 1]
+      if v then
+        local seen = checkSeen[slot]
+        if seen and math.abs(v - seen) > CHECK_MOVE then
+          checkWanted, movedAt = true, now
+        end
+        checkSeen[slot] = v
+      end
+    end
+    if not checkWanted then return end
     if checkInFlight and now - checkAt <= CHECK_GIVE_UP then return end
-    if now - checkAt < CHECK_POLL then return end
+    if now - movedAt < CHECK_SETTLE or now - checkAt < CHECK_MIN_GAP then return end
+    checkWanted = false
     checkInFlight, checkAt = true, now
     for slot = 1, FUNCTION_ROWS do
       local ch = rxMap[rxMapCodec.FIELDS[slot]]
@@ -996,8 +1016,6 @@ local function new(wiz)
       throttleWakeup()
     end
     if fresh and barCount > 0 and readBars() then wiz.invalidate() end
-    -- The order screen asks the FC for its status already; the check waits there
-    -- for the other half of the status interval.
     if screen == "sticks" or screen == "throttle" or screen == "order" then checkWakeup(now) end
   end
 

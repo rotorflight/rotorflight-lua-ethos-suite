@@ -8780,6 +8780,246 @@
           "reverse_text": false,
           "translation": "Bladpitch"
         },
+        "prof_beyond8": {
+          "english": "Needs more than 8 channels.",
+          "max_length": 31,
+          "needs_translation": false,
+          "translation": "Heeft meer dan 8 kanalen nodig."
+        },
+        "prof_both": {
+          "english": "Profiles and rates",
+          "max_length": 18,
+          "needs_translation": false,
+          "translation": "Profielen en rates"
+        },
+        "prof_btn_cyclic_down": {
+          "english": "Cyclic gain down",
+          "max_length": 21,
+          "needs_translation": false,
+          "translation": "Cyclische gain omlaag"
+        },
+        "prof_btn_cyclic_up": {
+          "english": "Cyclic gain up",
+          "max_length": 21,
+          "needs_translation": false,
+          "translation": "Cyclische gain omhoog"
+        },
+        "prof_btn_yaw_down": {
+          "english": "Yaw gain down",
+          "max_length": 18,
+          "needs_translation": false,
+          "translation": "Staart-gain omlaag"
+        },
+        "prof_btn_yaw_up": {
+          "english": "Yaw gain up",
+          "max_length": 18,
+          "needs_translation": false,
+          "translation": "Staart-gain omhoog"
+        },
+        "prof_channel_fmt": {
+          "english": "CH %d",
+          "max_length": 5,
+          "needs_translation": false,
+          "translation": "CH %d"
+        },
+        "prof_channels_title": {
+          "english": "Channels in use",
+          "max_length": 18,
+          "needs_translation": false,
+          "translation": "Kanalen in gebruik"
+        },
+        "prof_chosen": {
+          "english": "Selected",
+          "max_length": 8,
+          "needs_translation": false,
+          "translation": "Gekozen"
+        },
+        "prof_count_fmt": {
+          "english": "CH %d · %d profiles",
+          "max_length": 20,
+          "needs_translation": false,
+          "translation": "CH %d · %d profielen"
+        },
+        "prof_done_keep": {
+          "english": "Nothing has changed: the flight controller keeps its profile and gain settings. Next goes on to the swashplate.",
+          "max_length": 111,
+          "needs_translation": false,
+          "translation": "Er is niets gewijzigd: de FC houdt zijn profiel- en gain-instellingen. Volgende gaat verder naar de swashplate."
+        },
+        "prof_done_save": {
+          "english": "The changes already work on the flight controller, but are not stored yet. Save and continue writes them to its memory (EEPROM).",
+          "max_length": 128,
+          "needs_translation": false,
+          "translation": "De wijzigingen werken al in de FC, maar zijn nog niet opgeslagen. Opslaan & verder schrijft ze in zijn geheugen (EEPROM)."
+        },
+        "prof_found_fmt": {
+          "english": "%d positions found. Move through every position, then press Use.",
+          "max_length": 64,
+          "needs_translation": false,
+          "translation": "%d standen gevonden. Doorloop ze allemaal en druk op Gebruiken."
+        },
+        "prof_full": {
+          "english": "Every adjustment slot is in use. Free one under Adjustments.",
+          "max_length": 73,
+          "needs_translation": false,
+          "translation": "Alle instelplaatsen zijn in gebruik. Maak er één vrij onder Instellingen."
+        },
+        "prof_gain_buttons": {
+          "english": "Trim buttons",
+          "max_length": 12,
+          "needs_translation": false,
+          "translation": "Trimknoppen"
+        },
+        "prof_gain_buttons_note": {
+          "english": "Set up the GAIN mix first (see the docs).",
+          "max_length": 45,
+          "needs_translation": false,
+          "translation": "Stel eerst de GAIN-mix in (zie documentatie)."
+        },
+        "prof_gain_help_buttons": {
+          "english": "The trim buttons step the master gain up and down, on one spare channel.",
+          "max_length": 72,
+          "needs_translation": false,
+          "translation": "De trimknoppen veranderen de hoofdgain stapsgewijs, op één vrij kanaal."
+        },
+        "prof_gain_help_knob": {
+          "english": "A knob or slider sets the master gain, on a spare channel.",
+          "max_length": 74,
+          "needs_translation": false,
+          "translation": "Een draaiknop of schuifregelaar stelt de hoofdgain in, op een vrij kanaal."
+        },
+        "prof_gain_help_none": {
+          "english": "Master gain stays as it is. Find it later in flight, or on the Profiles page.",
+          "max_length": 91,
+          "needs_translation": false,
+          "translation": "De hoofdgain blijft zoals hij is. Stel hem later in de vlucht of op de Profielen-pagina in."
+        },
+        "prof_gain_knob": {
+          "english": "Knob",
+          "max_length": 9,
+          "needs_translation": false,
+          "translation": "Draaiknop"
+        },
+        "prof_gain_knob_note": {
+          "english": "Set a knob or slider on a spare channel, then move it.",
+          "max_length": 73,
+          "needs_translation": false,
+          "translation": "Stel een draaiknop of schuifregelaar op een vrij kanaal in en beweeg hem."
+        },
+        "prof_gain_none": {
+          "english": "Not used",
+          "max_length": 13,
+          "needs_translation": false,
+          "translation": "Niet gebruikt"
+        },
+        "prof_gain_now": {
+          "english": "Now",
+          "max_length": 3,
+          "needs_translation": false,
+          "translation": "Nu"
+        },
+        "prof_gain_text": {
+          "english": "Changes all gains together. Raise it in flight until the wobble starts, then come back a few steps.",
+          "max_length": 108,
+          "needs_translation": false,
+          "translation": "Verandert alle gains tegelijk. Verhoog hem in de vlucht tot het wiebelen begint, dan een paar stappen terug."
+        },
+        "prof_gain_title": {
+          "english": "Master gain in flight",
+          "max_length": 22,
+          "needs_translation": false,
+          "translation": "Hoofdgain in de vlucht"
+        },
+        "prof_help_both": {
+          "english": "The switch picks the PID profile and the rate profile 1, 2 or 3 together.",
+          "max_length": 73,
+          "needs_translation": false,
+          "translation": "De schakelaar kiest het PID-profiel en het rate-profiel 1, 2 of 3 samen."
+        },
+        "prof_help_none": {
+          "english": "The helicopter flies on one profile.",
+          "max_length": 36,
+          "needs_translation": false,
+          "translation": "De helikopter vliegt op één profiel."
+        },
+        "prof_help_pid": {
+          "english": "The switch picks the PID profile; the rates stay as they are.",
+          "max_length": 68,
+          "needs_translation": false,
+          "translation": "De schakelaar kiest het PID-profiel; de rates blijven zoals ze zijn."
+        },
+        "prof_intro": {
+          "english": "One switch picks the flight profile, master gain fine-tunes the gains in flight. Both are optional.",
+          "max_length": 105,
+          "needs_translation": false,
+          "translation": "Eén schakelaar kiest het vliegprofiel; de hoofdgain stemt de gains in de vlucht af. Beide zijn optioneel."
+        },
+        "prof_listen": {
+          "english": "Move the switch…",
+          "max_length": 21,
+          "needs_translation": false,
+          "translation": "Zet de schakelaar om…"
+        },
+        "prof_listen_buttons": {
+          "english": "Press a trim button…",
+          "max_length": 21,
+          "needs_translation": false,
+          "translation": "Druk op een trimknop…"
+        },
+        "prof_listen_knob": {
+          "english": "Turn the knob…",
+          "max_length": 18,
+          "needs_translation": false,
+          "translation": "Draai aan de knop…"
+        },
+        "prof_none": {
+          "english": "Not used",
+          "max_length": 13,
+          "needs_translation": false,
+          "translation": "Niet gebruikt"
+        },
+        "prof_now_fmt": {
+          "english": "Now: profile %d",
+          "max_length": 15,
+          "needs_translation": false,
+          "translation": "Nu: profiel %d"
+        },
+        "prof_pid": {
+          "english": "PID profiles only",
+          "max_length": 20,
+          "needs_translation": false,
+          "translation": "Alleen PID-profielen"
+        },
+        "prof_switch_text": {
+          "english": "A 2- or 3-position switch. Press Assign, then move it through every position: each one lands on its own profile.",
+          "max_length": 119,
+          "needs_translation": false,
+          "translation": "Een schakelaar met 2 of 3 standen. Druk op Toewijzen en zet hem door alle standen: elke stand krijgt een eigen profiel."
+        },
+        "prof_switch_title": {
+          "english": "Profile switch",
+          "max_length": 17,
+          "needs_translation": false,
+          "translation": "Profielschakelaar"
+        },
+        "prof_use": {
+          "english": "Use",
+          "max_length": 9,
+          "needs_translation": false,
+          "translation": "Gebruiken"
+        },
+        "prof_use_gain": {
+          "english": "Master gain",
+          "max_length": 11,
+          "needs_translation": false,
+          "translation": "Hoofdgain"
+        },
+        "prof_use_profile": {
+          "english": "Profile switch",
+          "max_length": 17,
+          "needs_translation": false,
+          "translation": "Profielschakelaar"
+        },
         "progress_fmt": {
           "english": "%d of %d",
           "max_length": 9,
@@ -9599,6 +9839,12 @@
           "needs_translation": false,
           "reverse_text": false,
           "translation": "Bladpitch"
+        },
+        "step_profiles": {
+          "english": "Profiles & gain",
+          "max_length": 17,
+          "needs_translation": false,
+          "translation": "Profielen en gain"
         },
         "step_progress_fmt": {
           "english": "Step %d of %d",

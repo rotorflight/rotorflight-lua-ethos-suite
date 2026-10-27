@@ -8780,6 +8780,246 @@
           "reverse_text": false,
           "translation": "Pas des pales"
         },
+        "prof_beyond8": {
+          "english": "Needs more than 8 channels.",
+          "max_length": 27,
+          "needs_translation": false,
+          "translation": "Nécessite plus de 8 voies."
+        },
+        "prof_both": {
+          "english": "Profiles and rates",
+          "max_length": 18,
+          "needs_translation": false,
+          "translation": "Profils et taux"
+        },
+        "prof_btn_cyclic_down": {
+          "english": "Cyclic gain down",
+          "max_length": 17,
+          "needs_translation": false,
+          "translation": "Gain cyclique bas"
+        },
+        "prof_btn_cyclic_up": {
+          "english": "Cyclic gain up",
+          "max_length": 18,
+          "needs_translation": false,
+          "translation": "Gain cyclique haut"
+        },
+        "prof_btn_yaw_down": {
+          "english": "Yaw gain down",
+          "max_length": 17,
+          "needs_translation": false,
+          "translation": "Gain de queue bas"
+        },
+        "prof_btn_yaw_up": {
+          "english": "Yaw gain up",
+          "max_length": 18,
+          "needs_translation": false,
+          "translation": "Gain de queue haut"
+        },
+        "prof_channel_fmt": {
+          "english": "CH %d",
+          "max_length": 5,
+          "needs_translation": false,
+          "translation": "CH %d"
+        },
+        "prof_channels_title": {
+          "english": "Channels in use",
+          "max_length": 15,
+          "needs_translation": false,
+          "translation": "Voies utilisées"
+        },
+        "prof_chosen": {
+          "english": "Selected",
+          "max_length": 8,
+          "needs_translation": false,
+          "translation": "Choisi"
+        },
+        "prof_count_fmt": {
+          "english": "CH %d · %d profiles",
+          "max_length": 19,
+          "needs_translation": false,
+          "translation": "CH %d · %d profils"
+        },
+        "prof_done_keep": {
+          "english": "Nothing has changed: the flight controller keeps its profile and gain settings. Next goes on to the swashplate.",
+          "max_length": 111,
+          "needs_translation": false,
+          "translation": "Rien n'a changé : le FC garde ses réglages de profil et de gain. Suivant passe au plateau."
+        },
+        "prof_done_save": {
+          "english": "The changes already work on the flight controller, but are not stored yet. Save and continue writes them to its memory (EEPROM).",
+          "max_length": 132,
+          "needs_translation": false,
+          "translation": "Les changements agissent déjà dans le FC, mais ne sont pas encore enregistrés. Enreg. et suivant les écrit dans sa mémoire (EEPROM)."
+        },
+        "prof_found_fmt": {
+          "english": "%d positions found. Move through every position, then press Use.",
+          "max_length": 71,
+          "needs_translation": false,
+          "translation": "%d positions trouvées. Parcourez-les toutes, puis appuyez sur Utiliser."
+        },
+        "prof_full": {
+          "english": "Every adjustment slot is in use. Free one under Adjustments.",
+          "max_length": 76,
+          "needs_translation": false,
+          "translation": "Tous les emplacements de réglage sont utilisés. Libérez-en un dans Réglages."
+        },
+        "prof_gain_buttons": {
+          "english": "Trim buttons",
+          "max_length": 15,
+          "needs_translation": false,
+          "translation": "Boutons de trim"
+        },
+        "prof_gain_buttons_note": {
+          "english": "Set up the GAIN mix first (see the docs).",
+          "max_length": 45,
+          "needs_translation": false,
+          "translation": "Configurez d'abord le mix GAIN (voir la doc)."
+        },
+        "prof_gain_help_buttons": {
+          "english": "The trim buttons step the master gain up and down, on one spare channel.",
+          "max_length": 76,
+          "needs_translation": false,
+          "translation": "Les boutons de trim font varier le gain général par pas, sur une voie libre."
+        },
+        "prof_gain_help_knob": {
+          "english": "A knob or slider sets the master gain, on a spare channel.",
+          "max_length": 68,
+          "needs_translation": false,
+          "translation": "Une molette ou un curseur règle le gain général, sur une voie libre."
+        },
+        "prof_gain_help_none": {
+          "english": "Master gain stays as it is. Find it later in flight, or on the Profiles page.",
+          "max_length": 82,
+          "needs_translation": false,
+          "translation": "Le gain général reste tel quel. Réglez-le plus tard en vol ou sur la page Profils."
+        },
+        "prof_gain_knob": {
+          "english": "Knob",
+          "max_length": 7,
+          "needs_translation": false,
+          "translation": "Molette"
+        },
+        "prof_gain_knob_note": {
+          "english": "Set a knob or slider on a spare channel, then move it.",
+          "max_length": 68,
+          "needs_translation": false,
+          "translation": "Réglez une molette ou un curseur sur une voie libre, puis bougez-le."
+        },
+        "prof_gain_none": {
+          "english": "Not used",
+          "max_length": 11,
+          "needs_translation": false,
+          "translation": "Non utilisé"
+        },
+        "prof_gain_now": {
+          "english": "Now",
+          "max_length": 10,
+          "needs_translation": false,
+          "translation": "Maintenant"
+        },
+        "prof_gain_text": {
+          "english": "Changes all gains together. Raise it in flight until the wobble starts, then come back a few steps.",
+          "max_length": 118,
+          "needs_translation": false,
+          "translation": "Modifie tous les gains ensemble. Montez-le en vol jusqu'au début des oscillations, puis redescendez de quelques crans."
+        },
+        "prof_gain_title": {
+          "english": "Master gain in flight",
+          "max_length": 21,
+          "needs_translation": false,
+          "translation": "Gain général en vol"
+        },
+        "prof_help_both": {
+          "english": "The switch picks the PID profile and the rate profile 1, 2 or 3 together.",
+          "max_length": 77,
+          "needs_translation": false,
+          "translation": "L'interrupteur choisit le profil PID et le profil de taux 1, 2 ou 3 ensemble."
+        },
+        "prof_help_none": {
+          "english": "The helicopter flies on one profile.",
+          "max_length": 38,
+          "needs_translation": false,
+          "translation": "L'hélicoptère vole sur un seul profil."
+        },
+        "prof_help_pid": {
+          "english": "The switch picks the PID profile; the rates stay as they are.",
+          "max_length": 67,
+          "needs_translation": false,
+          "translation": "L'interrupteur choisit le profil PID ; les taux restent tels quels."
+        },
+        "prof_intro": {
+          "english": "One switch picks the flight profile, master gain fine-tunes the gains in flight. Both are optional.",
+          "max_length": 110,
+          "needs_translation": false,
+          "translation": "Un interrupteur choisit le profil de vol ; le gain général affine les gains en vol. Les deux sont facultatifs."
+        },
+        "prof_listen": {
+          "english": "Move the switch…",
+          "max_length": 22,
+          "needs_translation": false,
+          "translation": "Bougez l'interrupteur…"
+        },
+        "prof_listen_buttons": {
+          "english": "Press a trim button…",
+          "max_length": 30,
+          "needs_translation": false,
+          "translation": "Appuyez sur un bouton de trim…"
+        },
+        "prof_listen_knob": {
+          "english": "Turn the knob…",
+          "max_length": 19,
+          "needs_translation": false,
+          "translation": "Tournez la molette…"
+        },
+        "prof_none": {
+          "english": "Not used",
+          "max_length": 11,
+          "needs_translation": false,
+          "translation": "Non utilisé"
+        },
+        "prof_now_fmt": {
+          "english": "Now: profile %d",
+          "max_length": 22,
+          "needs_translation": false,
+          "translation": "Maintenant : profil %d"
+        },
+        "prof_pid": {
+          "english": "PID profiles only",
+          "max_length": 17,
+          "needs_translation": false,
+          "translation": "Profils PID seuls"
+        },
+        "prof_switch_text": {
+          "english": "A 2- or 3-position switch. Press Assign, then move it through every position: each one lands on its own profile.",
+          "max_length": 135,
+          "needs_translation": false,
+          "translation": "Un interrupteur à 2 ou 3 positions. Appuyez sur Affecter, puis parcourez toutes les positions : chacune correspond à son propre profil."
+        },
+        "prof_switch_title": {
+          "english": "Profile switch",
+          "max_length": 22,
+          "needs_translation": false,
+          "translation": "Interrupteur de profil"
+        },
+        "prof_use": {
+          "english": "Use",
+          "max_length": 8,
+          "needs_translation": false,
+          "translation": "Utiliser"
+        },
+        "prof_use_gain": {
+          "english": "Master gain",
+          "max_length": 12,
+          "needs_translation": false,
+          "translation": "Gain général"
+        },
+        "prof_use_profile": {
+          "english": "Profile switch",
+          "max_length": 22,
+          "needs_translation": false,
+          "translation": "Interrupteur de profil"
+        },
         "progress_fmt": {
           "english": "%d of %d",
           "max_length": 9,
@@ -9599,6 +9839,12 @@
           "needs_translation": false,
           "reverse_text": false,
           "translation": "Pas des pales"
+        },
+        "step_profiles": {
+          "english": "Profiles & gain",
+          "max_length": 15,
+          "needs_translation": false,
+          "translation": "Profils et gain"
         },
         "step_progress_fmt": {
           "english": "Step %d of %d",
