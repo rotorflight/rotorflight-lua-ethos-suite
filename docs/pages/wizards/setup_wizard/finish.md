@@ -6,11 +6,11 @@ sidebar_position: 140
 
 # Finish
 
-Step 15 of the Model setup wizard. It sums up what the wizard set and saves it.
+Step 16 of the Model setup wizard. It sums up what the wizard set and saves it.
 
 ## Where to find it
 
-*Configuration* → *Wizards* → *Model setup*, step 15 *Finish*.
+*Configuration* → *Wizards* → *Model setup*, step 16 *Finish*.
 
 Only inside the wizard. Greyed out until the flight controller answers. Read-only while the
 model is armed.

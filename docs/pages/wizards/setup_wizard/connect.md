@@ -6,12 +6,12 @@ sidebar_position: 70
 
 # Connect servos
 
-Step 8 of the Model setup wizard. It saves and restarts the flight controller if a restart is
+Step 9 of the Model setup wizard. It saves and restarts the flight controller if a restart is
 owed, then checks the motor and servo outputs before you plug the servos in.
 
 ## Where to find it
 
-*Configuration* → *Wizards* → *Model setup*, step 8 *Connect servos*. This is the gate of the
+*Configuration* → *Wizards* → *Model setup*, step 9 *Connect servos*. This is the gate of the
 wizard: a restart that a step owes happens here.
 
 Only inside the wizard. Greyed out until the flight controller answers. Read-only while the

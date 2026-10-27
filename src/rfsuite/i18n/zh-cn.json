@@ -9027,6 +9027,174 @@
           "reverse_text": false,
           "translation": "%d / %d"
         },
+        "rates_3d": {
+          "english": "3D",
+          "max_length": 2,
+          "needs_translation": false,
+          "translation": "3D"
+        },
+        "rates_actual_note": {
+          "english": "This firmware uses the Actual rates type: set the rates on the Rates page.",
+          "max_length": 74,
+          "needs_translation": false,
+          "translation": "此固件使用 Actual 速率类型：请在“速率”页面设置速率。"
+        },
+        "rates_axis_collective": {
+          "english": "Collective",
+          "max_length": 10,
+          "needs_translation": false,
+          "translation": "总距"
+        },
+        "rates_axis_cyclic": {
+          "english": "Cyclic",
+          "max_length": 6,
+          "needs_translation": false,
+          "translation": "周期"
+        },
+        "rates_axis_yaw": {
+          "english": "Yaw",
+          "max_length": 3,
+          "needs_translation": false,
+          "translation": "偏航"
+        },
+        "rates_busy": {
+          "english": "Writing the rates…",
+          "max_length": 18,
+          "needs_translation": false,
+          "translation": "正在写入速率…"
+        },
+        "rates_collective_fmt": {
+          "english": "Collective %.1f °",
+          "max_length": 17,
+          "needs_translation": false,
+          "translation": "总距 %.1f °"
+        },
+        "rates_custom": {
+          "english": "Custom",
+          "max_length": 6,
+          "needs_translation": false,
+          "translation": "自定义"
+        },
+        "rates_cyclic_fmt": {
+          "english": "Cyclic %d °/s · expo %d %%",
+          "max_length": 26,
+          "needs_translation": false,
+          "translation": "周期 %d °/s · 指数 %d %%"
+        },
+        "rates_done_keep": {
+          "english": "Nothing has changed: the flight controller keeps its rates. Next goes on to the swashplate.",
+          "max_length": 91,
+          "needs_translation": false,
+          "translation": "未做任何更改：飞控保留其速率。下一步进入斜盘设置。"
+        },
+        "rates_done_save": {
+          "english": "The rates already work on the flight controller, but are not stored yet. Save and continue writes them to its memory (EEPROM).",
+          "max_length": 126,
+          "needs_translation": false,
+          "translation": "速率已在飞控中生效，但尚未保存。保存并继续会将其写入飞控存储（EEPROM）。"
+        },
+        "rates_done_title": {
+          "english": "Rates set",
+          "max_length": 9,
+          "needs_translation": false,
+          "translation": "速率已设置"
+        },
+        "rates_intro": {
+          "english": "Sets the flying style of each rate profile. Each one is a starting point you can refine later on the Rates page.",
+          "max_length": 112,
+          "needs_translation": false,
+          "translation": "设定每个速率配置的飞行风格。每一项都是起点，之后可在“速率”页面细调。"
+        },
+        "rates_legend_collective": {
+          "english": "Collective: value in °",
+          "max_length": 22,
+          "needs_translation": false,
+          "translation": "总距：数值 °"
+        },
+        "rates_legend_shape": {
+          "english": "Form: shape · Expo: expo in %",
+          "max_length": 29,
+          "needs_translation": false,
+          "translation": "形状：shape · 指数：expo %"
+        },
+        "rates_legend_value": {
+          "english": "Value: °/s at full stick",
+          "max_length": 24,
+          "needs_translation": false,
+          "translation": "数值：满杆 °/s"
+        },
+        "rates_none_matches": {
+          "english": "None of the styles matches the rates this profile has now. Picking one replaces them.",
+          "max_length": 85,
+          "needs_translation": false,
+          "translation": "没有风格与此配置当前的速率匹配。选择一个将替换它们。"
+        },
+        "rates_page_fmt": {
+          "english": "Rate profile %d",
+          "max_length": 15,
+          "needs_translation": false,
+          "translation": "速率配置 %d"
+        },
+        "rates_page_text": {
+          "english": "Pick a flying style for this profile. Unchanged keeps its rates.",
+          "max_length": 64,
+          "needs_translation": false,
+          "translation": "为此配置选择飞行风格。“未更改”保持原有速率。"
+        },
+        "rates_position_fmt": {
+          "english": "Switch position %d.",
+          "max_length": 19,
+          "needs_translation": false,
+          "translation": "开关位置 %d。"
+        },
+        "rates_row_fmt": {
+          "english": "Rate profile %d",
+          "max_length": 15,
+          "needs_translation": false,
+          "translation": "速率配置 %d"
+        },
+        "rates_sport": {
+          "english": "Sport",
+          "max_length": 5,
+          "needs_translation": false,
+          "translation": "运动"
+        },
+        "rates_trainer": {
+          "english": "Trainer",
+          "max_length": 7,
+          "needs_translation": false,
+          "translation": "教练"
+        },
+        "rates_type_actual": {
+          "english": "Actual",
+          "max_length": 6,
+          "needs_translation": false,
+          "translation": "Actual"
+        },
+        "rates_type_fmt": {
+          "english": "%s · shape %d",
+          "max_length": 13,
+          "needs_translation": false,
+          "translation": "%s · 形状 %d"
+        },
+        "rates_type_rotorflight": {
+          "english": "Rotorflight",
+          "max_length": 11,
+          "needs_translation": false,
+          "translation": "Rotorflight"
+        },
+        "rates_values_fmt": {
+          "english": "Cyclic %d °/s · yaw %d °/s · expo %d %%",
+          "max_length": 39,
+          "needs_translation": false,
+          "translation": "周期 %d °/s · 偏航 %d °/s · 指数 %d %%"
+        },
+        "rates_yaw_fmt": {
+          "english": "Yaw %d °/s · expo %d %%",
+          "max_length": 23,
+          "needs_translation": false,
+          "translation": "偏航 %d °/s · 指数 %d %%"
+        },
         "rcv_blades_off": {
           "english": "Keep the blades off: the motor may start.",
           "max_length": 41,
@@ -9852,6 +10020,12 @@
           "needs_translation": false,
           "reverse_text": false,
           "translation": "第 %d 步，共 %d 步"
+        },
+        "step_rates": {
+          "english": "Rates",
+          "max_length": 5,
+          "needs_translation": false,
+          "translation": "速率"
         },
         "step_receiver": {
           "english": "Receiver",

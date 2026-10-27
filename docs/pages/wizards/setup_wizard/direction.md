@@ -6,12 +6,12 @@ sidebar_position: 90
 
 # Directions
 
-Step 10 of the Model setup wizard. It checks that roll, pitch and collective move the swash
+Step 11 of the Model setup wizard. It checks that roll, pitch and collective move the swash
 the right way.
 
 ## Where to find it
 
-*Configuration* → *Wizards* → *Model setup*, step 10 *Directions*. One screen each for Roll,
+*Configuration* → *Wizards* → *Model setup*, step 11 *Directions*. One screen each for Roll,
 Pitch and Collective, after an intro.
 
 Only inside the wizard. Greyed out until the flight controller answers. Read-only while the

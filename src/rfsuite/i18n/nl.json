@@ -9027,6 +9027,174 @@
           "reverse_text": false,
           "translation": "%d van %d"
         },
+        "rates_3d": {
+          "english": "3D",
+          "max_length": 2,
+          "needs_translation": false,
+          "translation": "3D"
+        },
+        "rates_actual_note": {
+          "english": "This firmware uses the Actual rates type: set the rates on the Rates page.",
+          "max_length": 93,
+          "needs_translation": false,
+          "translation": "Deze firmware gebruikt het snelheidstype Actual: stel de snelheden in op de Snelheden-pagina."
+        },
+        "rates_axis_collective": {
+          "english": "Collective",
+          "max_length": 10,
+          "needs_translation": false,
+          "translation": "Collectief"
+        },
+        "rates_axis_cyclic": {
+          "english": "Cyclic",
+          "max_length": 8,
+          "needs_translation": false,
+          "translation": "Cyclisch"
+        },
+        "rates_axis_yaw": {
+          "english": "Yaw",
+          "max_length": 4,
+          "needs_translation": false,
+          "translation": "Gier"
+        },
+        "rates_busy": {
+          "english": "Writing the rates…",
+          "max_length": 28,
+          "needs_translation": false,
+          "translation": "Snelheden worden geschreven…"
+        },
+        "rates_collective_fmt": {
+          "english": "Collective %.1f °",
+          "max_length": 17,
+          "needs_translation": false,
+          "translation": "Collectief %.1f °"
+        },
+        "rates_custom": {
+          "english": "Custom",
+          "max_length": 6,
+          "needs_translation": false,
+          "translation": "Eigen"
+        },
+        "rates_cyclic_fmt": {
+          "english": "Cyclic %d °/s · expo %d %%",
+          "max_length": 28,
+          "needs_translation": false,
+          "translation": "Cyclisch %d °/s · expo %d %%"
+        },
+        "rates_done_keep": {
+          "english": "Nothing has changed: the flight controller keeps its rates. Next goes on to the swashplate.",
+          "max_length": 91,
+          "needs_translation": false,
+          "translation": "Er is niets gewijzigd: de FC houdt zijn snelheden. Volgende gaat verder naar de swashplate."
+        },
+        "rates_done_save": {
+          "english": "The rates already work on the flight controller, but are not stored yet. Save and continue writes them to its memory (EEPROM).",
+          "max_length": 126,
+          "needs_translation": false,
+          "translation": "De snelheden werken al in de FC, maar zijn nog niet opgeslagen. Opslaan & verder schrijft ze in zijn geheugen (EEPROM)."
+        },
+        "rates_done_title": {
+          "english": "Rates set",
+          "max_length": 19,
+          "needs_translation": false,
+          "translation": "Snelheden ingesteld"
+        },
+        "rates_intro": {
+          "english": "Sets the flying style of each rate profile. Each one is a starting point you can refine later on the Rates page.",
+          "max_length": 121,
+          "needs_translation": false,
+          "translation": "Stelt de vliegstijl van elk snelheidsprofiel in. Elk is een startpunt dat je later op de Snelheden-pagina kunt verfijnen."
+        },
+        "rates_legend_collective": {
+          "english": "Collective: value in °",
+          "max_length": 23,
+          "needs_translation": false,
+          "translation": "Collectief: waarde in °"
+        },
+        "rates_legend_shape": {
+          "english": "Form: shape · Expo: expo in %",
+          "max_length": 29,
+          "needs_translation": false,
+          "translation": "Vorm: shape · Expo: expo in %"
+        },
+        "rates_legend_value": {
+          "english": "Value: °/s at full stick",
+          "max_length": 29,
+          "needs_translation": false,
+          "translation": "Waarde: °/s bij volle uitslag"
+        },
+        "rates_none_matches": {
+          "english": "None of the styles matches the rates this profile has now. Picking one replaces them.",
+          "max_length": 85,
+          "needs_translation": false,
+          "translation": "Geen stijl past bij de snelheden van dit profiel. Een keuze vervangt ze."
+        },
+        "rates_page_fmt": {
+          "english": "Rate profile %d",
+          "max_length": 19,
+          "needs_translation": false,
+          "translation": "Snelheidsprofiel %d"
+        },
+        "rates_page_text": {
+          "english": "Pick a flying style for this profile. Unchanged keeps its rates.",
+          "max_length": 69,
+          "needs_translation": false,
+          "translation": "Kies een vliegstijl voor dit profiel. Ongewijzigd houdt de snelheden."
+        },
+        "rates_position_fmt": {
+          "english": "Switch position %d.",
+          "max_length": 19,
+          "needs_translation": false,
+          "translation": "Schakelaarstand %d."
+        },
+        "rates_row_fmt": {
+          "english": "Rate profile %d",
+          "max_length": 19,
+          "needs_translation": false,
+          "translation": "Snelheidsprofiel %d"
+        },
+        "rates_sport": {
+          "english": "Sport",
+          "max_length": 5,
+          "needs_translation": false,
+          "translation": "Sport"
+        },
+        "rates_trainer": {
+          "english": "Trainer",
+          "max_length": 7,
+          "needs_translation": false,
+          "translation": "Trainer"
+        },
+        "rates_type_actual": {
+          "english": "Actual",
+          "max_length": 6,
+          "needs_translation": false,
+          "translation": "Actual"
+        },
+        "rates_type_fmt": {
+          "english": "%s · shape %d",
+          "max_length": 13,
+          "needs_translation": false,
+          "translation": "%s · vorm %d"
+        },
+        "rates_type_rotorflight": {
+          "english": "Rotorflight",
+          "max_length": 11,
+          "needs_translation": false,
+          "translation": "Rotorflight"
+        },
+        "rates_values_fmt": {
+          "english": "Cyclic %d °/s · yaw %d °/s · expo %d %%",
+          "max_length": 42,
+          "needs_translation": false,
+          "translation": "Cyclisch %d °/s · gier %d °/s · expo %d %%"
+        },
+        "rates_yaw_fmt": {
+          "english": "Yaw %d °/s · expo %d %%",
+          "max_length": 24,
+          "needs_translation": false,
+          "translation": "Gier %d °/s · expo %d %%"
+        },
         "rcv_blades_off": {
           "english": "Keep the blades off: the motor may start.",
           "max_length": 41,
@@ -9852,6 +10020,12 @@
           "needs_translation": false,
           "reverse_text": false,
           "translation": "Stap %d van %d"
+        },
+        "step_rates": {
+          "english": "Rates",
+          "max_length": 9,
+          "needs_translation": false,
+          "translation": "Snelheden"
         },
         "step_receiver": {
           "english": "Receiver",

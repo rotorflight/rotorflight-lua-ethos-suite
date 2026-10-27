@@ -9362,6 +9362,180 @@
           "needs_translation": false,
           "max_length": 36
         },
+        "step_rates": {
+          "english": "Rates",
+          "translation": "Drehraten",
+          "needs_translation": false,
+          "max_length": 9
+        },
+        "rates_intro": {
+          "english": "Sets the flying style of each rate profile. Each one is a starting point you can refine later on the Rates page.",
+          "translation": "Stellt den Flugstil jedes Ratenprofils ein. Jedes ist ein Ausgangspunkt, den du später auf der Drehraten-Seite verfeinern kannst.",
+          "needs_translation": false,
+          "max_length": 129
+        },
+        "rates_page_fmt": {
+          "english": "Rate profile %d",
+          "translation": "Ratenprofil %d",
+          "needs_translation": false,
+          "max_length": 15
+        },
+        "rates_position_fmt": {
+          "english": "Switch position %d.",
+          "translation": "Schalterstellung %d.",
+          "needs_translation": false,
+          "max_length": 20
+        },
+        "rates_page_text": {
+          "english": "Pick a flying style for this profile. Unchanged keeps its rates.",
+          "translation": "Flugstil für dieses Profil wählen. Unverändert behält die Raten.",
+          "needs_translation": false,
+          "max_length": 64
+        },
+        "rates_custom": {
+          "english": "Custom",
+          "translation": "Custom",
+          "needs_translation": false,
+          "max_length": 6
+        },
+        "rates_none_matches": {
+          "english": "None of the styles matches the rates this profile has now. Picking one replaces them.",
+          "translation": "Kein Stil passt zu den Raten dieses Profils. Eine Auswahl ersetzt sie.",
+          "needs_translation": false,
+          "max_length": 85
+        },
+        "rates_actual_note": {
+          "english": "This firmware uses the Actual rates type: set the rates on the Rates page.",
+          "translation": "Diese Firmware nutzt den Raten-Typ Actual: Raten auf der Drehraten-Seite einstellen.",
+          "needs_translation": false,
+          "max_length": 84
+        },
+        "rates_values_fmt": {
+          "english": "Cyclic %d °/s · yaw %d °/s · expo %d %%",
+          "translation": "Zyklisch %d °/s · Gier %d °/s · Expo %d %%",
+          "needs_translation": false,
+          "max_length": 42
+        },
+        "rates_busy": {
+          "english": "Writing the rates…",
+          "translation": "Raten werden geschrieben…",
+          "needs_translation": false,
+          "max_length": 25
+        },
+        "rates_done_title": {
+          "english": "Rates set",
+          "translation": "Drehraten gesetzt",
+          "needs_translation": false,
+          "max_length": 17
+        },
+        "rates_done_keep": {
+          "english": "Nothing has changed: the flight controller keeps its rates. Next goes on to the swashplate.",
+          "translation": "Nichts geändert: Der FC behält seine Raten. Weiter geht es zur Taumelscheibe.",
+          "needs_translation": false,
+          "max_length": 91
+        },
+        "rates_done_save": {
+          "english": "The rates already work on the flight controller, but are not stored yet. Save and continue writes them to its memory (EEPROM).",
+          "translation": "Die Raten wirken schon im FC, sind aber noch nicht gespeichert. Speichern & weiter schreibt sie in seinen Speicher (EEPROM).",
+          "needs_translation": false,
+          "max_length": 126
+        },
+        "rates_row_fmt": {
+          "english": "Rate profile %d",
+          "translation": "Ratenprofil %d",
+          "needs_translation": false,
+          "max_length": 15
+        },
+        "rates_trainer": {
+          "english": "Trainer",
+          "translation": "Trainer",
+          "needs_translation": false,
+          "max_length": 7
+        },
+        "rates_sport": {
+          "english": "Sport",
+          "translation": "Sport",
+          "needs_translation": false,
+          "max_length": 5
+        },
+        "rates_3d": {
+          "english": "3D",
+          "translation": "3D",
+          "needs_translation": false,
+          "max_length": 2
+        },
+        "rates_collective_fmt": {
+          "english": "Collective %.1f °",
+          "translation": "Kollektiv %.1f °",
+          "needs_translation": false,
+          "max_length": 17
+        },
+        "rates_cyclic_fmt": {
+          "english": "Cyclic %d °/s · expo %d %%",
+          "translation": "Zyklisch %d °/s · Expo %d %%",
+          "needs_translation": false,
+          "max_length": 28
+        },
+        "rates_yaw_fmt": {
+          "english": "Yaw %d °/s · expo %d %%",
+          "translation": "Gier %d °/s · Expo %d %%",
+          "needs_translation": false,
+          "max_length": 24
+        },
+        "rates_axis_cyclic": {
+          "english": "Cyclic",
+          "translation": "Zyklisch",
+          "needs_translation": false,
+          "max_length": 8
+        },
+        "rates_axis_yaw": {
+          "english": "Yaw",
+          "translation": "Gier",
+          "needs_translation": false,
+          "max_length": 4
+        },
+        "rates_axis_collective": {
+          "english": "Collective",
+          "translation": "Kollektiv",
+          "needs_translation": false,
+          "max_length": 10
+        },
+        "rates_legend_value": {
+          "english": "Value: °/s at full stick",
+          "translation": "Wert: °/s bei Vollausschlag",
+          "needs_translation": false,
+          "max_length": 27
+        },
+        "rates_legend_shape": {
+          "english": "Form: shape · Expo: expo in %",
+          "translation": "Form: Shape · Expo: Expo in %",
+          "needs_translation": false,
+          "max_length": 29
+        },
+        "rates_legend_collective": {
+          "english": "Collective: value in °",
+          "translation": "Kollektiv: Wert in °",
+          "needs_translation": false,
+          "max_length": 22
+        },
+        "rates_type_fmt": {
+          "english": "%s · shape %d",
+          "translation": "%s · Shape %d",
+          "needs_translation": false,
+          "max_length": 13
+        },
+        "rates_type_rotorflight": {
+          "english": "Rotorflight",
+          "translation": "Rotorflight",
+          "needs_translation": false,
+          "max_length": 11
+        },
+        "rates_type_actual": {
+          "english": "Actual",
+          "translation": "Actual",
+          "needs_translation": false,
+          "max_length": 6
+        },
         "prof_gain_help_buttons": {
           "english": "The trim buttons step the master gain up and down, on one spare channel.",
           "translation": "Die Trimm-Tasten verändern die Hauptverstärkung schrittweise, auf einem freien Kanal.",

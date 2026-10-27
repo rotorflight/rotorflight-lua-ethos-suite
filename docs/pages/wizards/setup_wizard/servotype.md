@@ -6,12 +6,12 @@ sidebar_position: 50
 
 # Servo type
 
-Step 6 of the Model setup wizard. It sets the servo type for the swash servos and the tail
+Step 7 of the Model setup wizard. It sets the servo type for the swash servos and the tail
 servo. The type sets the update rate and the centre pulse.
 
 ## Where to find it
 
-*Configuration* → *Wizards* → *Model setup*, step 6 *Servo type*. Two groups: *Cyclic
+*Configuration* → *Wizards* → *Model setup*, step 7 *Servo type*. Two groups: *Cyclic
 servos* and *Tail servo*.
 
 Only inside the wizard. Greyed out until the flight controller answers. Read-only while the
@@ -30,7 +30,7 @@ shows a message instead.
 
 ## Notes
 
-- A new update rate applies after the restart at step 8, Connect servos.
+- A new update rate applies after the restart at step 9, Connect servos.
 - Keep the servos unplugged until the Connect servos step.
 
 ## Related

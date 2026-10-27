@@ -9362,6 +9362,180 @@
           "needs_translation": false,
           "max_length": 36
         },
+        "step_rates": {
+          "english": "Rates",
+          "translation": "קצבים",
+          "needs_translation": false,
+          "max_length": 5
+        },
+        "rates_intro": {
+          "english": "Sets the flying style of each rate profile. Each one is a starting point you can refine later on the Rates page.",
+          "translation": "קובע את סגנון הטיסה של כל פרופיל קצב. כל אחד הוא נקודת התחלה שאפשר לדייק אחר כך בדף הקצבים.",
+          "needs_translation": false,
+          "max_length": 112
+        },
+        "rates_page_fmt": {
+          "english": "Rate profile %d",
+          "translation": "פרופיל קצב %d",
+          "needs_translation": false,
+          "max_length": 15
+        },
+        "rates_position_fmt": {
+          "english": "Switch position %d.",
+          "translation": "מיקום מתג %d.",
+          "needs_translation": false,
+          "max_length": 19
+        },
+        "rates_page_text": {
+          "english": "Pick a flying style for this profile. Unchanged keeps its rates.",
+          "translation": "בחרו סגנון טיסה לפרופיל הזה. ללא שינוי משאיר את הקצבים.",
+          "needs_translation": false,
+          "max_length": 64
+        },
+        "rates_custom": {
+          "english": "Custom",
+          "translation": "מותאם",
+          "needs_translation": false,
+          "max_length": 6
+        },
+        "rates_none_matches": {
+          "english": "None of the styles matches the rates this profile has now. Picking one replaces them.",
+          "translation": "אף סגנון לא מתאים לקצבים הנוכחיים של הפרופיל הזה. בחירה מחליפה אותם.",
+          "needs_translation": false,
+          "max_length": 85
+        },
+        "rates_actual_note": {
+          "english": "This firmware uses the Actual rates type: set the rates on the Rates page.",
+          "translation": "הקושחה הזו משתמשת בסוג הקצבים Actual: הגדירו את הקצבים בדף הקצבים.",
+          "needs_translation": false,
+          "max_length": 74
+        },
+        "rates_values_fmt": {
+          "english": "Cyclic %d °/s · yaw %d °/s · expo %d %%",
+          "translation": "ציקלי %d °/s · סטייה %d °/s · אקספו %d %%",
+          "needs_translation": false,
+          "max_length": 41
+        },
+        "rates_busy": {
+          "english": "Writing the rates…",
+          "translation": "הקצבים נכתבים…",
+          "needs_translation": false,
+          "max_length": 18
+        },
+        "rates_done_title": {
+          "english": "Rates set",
+          "translation": "הקצבים הוגדרו",
+          "needs_translation": false,
+          "max_length": 13
+        },
+        "rates_done_keep": {
+          "english": "Nothing has changed: the flight controller keeps its rates. Next goes on to the swashplate.",
+          "translation": "לא השתנה דבר: ה-FC שומר את הקצבים. הבא ממשיך לסוואש.",
+          "needs_translation": false,
+          "max_length": 91
+        },
+        "rates_done_save": {
+          "english": "The rates already work on the flight controller, but are not stored yet. Save and continue writes them to its memory (EEPROM).",
+          "translation": "הקצבים כבר פעילים ב-FC אך עוד לא נשמרו. שמור והמשך כותב אותם לזיכרון שלו (EEPROM).",
+          "needs_translation": false,
+          "max_length": 126
+        },
+        "rates_row_fmt": {
+          "english": "Rate profile %d",
+          "translation": "פרופיל קצב %d",
+          "needs_translation": false,
+          "max_length": 15
+        },
+        "rates_trainer": {
+          "english": "Trainer",
+          "translation": "אימון",
+          "needs_translation": false,
+          "max_length": 7
+        },
+        "rates_sport": {
+          "english": "Sport",
+          "translation": "ספורט",
+          "needs_translation": false,
+          "max_length": 5
+        },
+        "rates_3d": {
+          "english": "3D",
+          "translation": "3D",
+          "needs_translation": false,
+          "max_length": 2
+        },
+        "rates_collective_fmt": {
+          "english": "Collective %.1f °",
+          "translation": "קולקטיב %.1f °",
+          "needs_translation": false,
+          "max_length": 17
+        },
+        "rates_cyclic_fmt": {
+          "english": "Cyclic %d °/s · expo %d %%",
+          "translation": "ציקלי %d °/s · אקספו %d %%",
+          "needs_translation": false,
+          "max_length": 26
+        },
+        "rates_yaw_fmt": {
+          "english": "Yaw %d °/s · expo %d %%",
+          "translation": "סטייה %d °/s · אקספו %d %%",
+          "needs_translation": false,
+          "max_length": 26
+        },
+        "rates_axis_cyclic": {
+          "english": "Cyclic",
+          "translation": "ציקלי",
+          "needs_translation": false,
+          "max_length": 6
+        },
+        "rates_axis_yaw": {
+          "english": "Yaw",
+          "translation": "סטייה",
+          "needs_translation": false,
+          "max_length": 5
+        },
+        "rates_axis_collective": {
+          "english": "Collective",
+          "translation": "קולקטיב",
+          "needs_translation": false,
+          "max_length": 10
+        },
+        "rates_legend_value": {
+          "english": "Value: °/s at full stick",
+          "translation": "ערך: מעלות/שנייה במלוא הזזה",
+          "needs_translation": false,
+          "max_length": 27
+        },
+        "rates_legend_shape": {
+          "english": "Form: shape · Expo: expo in %",
+          "translation": "צורה: shape · אקספו: באחוזים",
+          "needs_translation": false,
+          "max_length": 29
+        },
+        "rates_legend_collective": {
+          "english": "Collective: value in °",
+          "translation": "קולקטיב: ערך במעלות",
+          "needs_translation": false,
+          "max_length": 22
+        },
+        "rates_type_fmt": {
+          "english": "%s · shape %d",
+          "translation": "%s · צורה %d",
+          "needs_translation": false,
+          "max_length": 13
+        },
+        "rates_type_rotorflight": {
+          "english": "Rotorflight",
+          "translation": "Rotorflight",
+          "needs_translation": false,
+          "max_length": 11
+        },
+        "rates_type_actual": {
+          "english": "Actual",
+          "translation": "Actual",
+          "needs_translation": false,
+          "max_length": 6
+        },
         "prof_gain_help_buttons": {
           "english": "The trim buttons step the master gain up and down, on one spare channel.",
           "translation": "כפתורי הטרים משנים את ההגבר הכללי בצעדים, בערוץ פנוי אחד.",

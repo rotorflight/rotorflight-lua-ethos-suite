@@ -6,12 +6,12 @@ sidebar_position: 60
 
 # Motor & ESC
 
-Step 7 of the Model setup wizard. It sets the ESC protocol, the motor poles and the gear
+Step 8 of the Model setup wizard. It sets the ESC protocol, the motor poles and the gear
 ratios.
 
 ## Where to find it
 
-*Configuration* → *Wizards* → *Model setup*, step 7 *Motor & ESC*. The protocol screen comes
+*Configuration* → *Wizards* → *Model setup*, step 8 *Motor & ESC*. The protocol screen comes
 first, then the number screens.
 
 Only inside the wizard. Greyed out until the flight controller answers. Read-only while the
@@ -37,7 +37,7 @@ gears to the main rotor.
   sensor. Choosing DShot150 also turns bidirectional DShot off in the same write. An ESC that
   does not answer bidirectional requests may not arm.
 - Leaving Castle turns the ESC sensor off, unless a serial ESC telemetry protocol is set.
-- The protocol and the gear ratios apply after the restart at step 8, Connect servos.
+- The protocol and the gear ratios apply after the restart at step 9, Connect servos.
 
 ## Related
 

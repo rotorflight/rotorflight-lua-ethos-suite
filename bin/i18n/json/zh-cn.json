@@ -9362,6 +9362,180 @@
           "needs_translation": false,
           "max_length": 36
         },
+        "step_rates": {
+          "english": "Rates",
+          "translation": "速率",
+          "needs_translation": false,
+          "max_length": 5
+        },
+        "rates_intro": {
+          "english": "Sets the flying style of each rate profile. Each one is a starting point you can refine later on the Rates page.",
+          "translation": "设定每个速率配置的飞行风格。每一项都是起点，之后可在“速率”页面细调。",
+          "needs_translation": false,
+          "max_length": 112
+        },
+        "rates_page_fmt": {
+          "english": "Rate profile %d",
+          "translation": "速率配置 %d",
+          "needs_translation": false,
+          "max_length": 15
+        },
+        "rates_position_fmt": {
+          "english": "Switch position %d.",
+          "translation": "开关位置 %d。",
+          "needs_translation": false,
+          "max_length": 19
+        },
+        "rates_page_text": {
+          "english": "Pick a flying style for this profile. Unchanged keeps its rates.",
+          "translation": "为此配置选择飞行风格。“未更改”保持原有速率。",
+          "needs_translation": false,
+          "max_length": 64
+        },
+        "rates_custom": {
+          "english": "Custom",
+          "translation": "自定义",
+          "needs_translation": false,
+          "max_length": 6
+        },
+        "rates_none_matches": {
+          "english": "None of the styles matches the rates this profile has now. Picking one replaces them.",
+          "translation": "没有风格与此配置当前的速率匹配。选择一个将替换它们。",
+          "needs_translation": false,
+          "max_length": 85
+        },
+        "rates_actual_note": {
+          "english": "This firmware uses the Actual rates type: set the rates on the Rates page.",
+          "translation": "此固件使用 Actual 速率类型：请在“速率”页面设置速率。",
+          "needs_translation": false,
+          "max_length": 74
+        },
+        "rates_values_fmt": {
+          "english": "Cyclic %d °/s · yaw %d °/s · expo %d %%",
+          "translation": "周期 %d °/s · 偏航 %d °/s · 指数 %d %%",
+          "needs_translation": false,
+          "max_length": 39
+        },
+        "rates_busy": {
+          "english": "Writing the rates…",
+          "translation": "正在写入速率…",
+          "needs_translation": false,
+          "max_length": 18
+        },
+        "rates_done_title": {
+          "english": "Rates set",
+          "translation": "速率已设置",
+          "needs_translation": false,
+          "max_length": 9
+        },
+        "rates_done_keep": {
+          "english": "Nothing has changed: the flight controller keeps its rates. Next goes on to the swashplate.",
+          "translation": "未做任何更改：飞控保留其速率。下一步进入斜盘设置。",
+          "needs_translation": false,
+          "max_length": 91
+        },
+        "rates_done_save": {
+          "english": "The rates already work on the flight controller, but are not stored yet. Save and continue writes them to its memory (EEPROM).",
+          "translation": "速率已在飞控中生效，但尚未保存。保存并继续会将其写入飞控存储（EEPROM）。",
+          "needs_translation": false,
+          "max_length": 126
+        },
+        "rates_row_fmt": {
+          "english": "Rate profile %d",
+          "translation": "速率配置 %d",
+          "needs_translation": false,
+          "max_length": 15
+        },
+        "rates_trainer": {
+          "english": "Trainer",
+          "translation": "教练",
+          "needs_translation": false,
+          "max_length": 7
+        },
+        "rates_sport": {
+          "english": "Sport",
+          "translation": "运动",
+          "needs_translation": false,
+          "max_length": 5
+        },
+        "rates_3d": {
+          "english": "3D",
+          "translation": "3D",
+          "needs_translation": false,
+          "max_length": 2
+        },
+        "rates_collective_fmt": {
+          "english": "Collective %.1f °",
+          "translation": "总距 %.1f °",
+          "needs_translation": false,
+          "max_length": 17
+        },
+        "rates_cyclic_fmt": {
+          "english": "Cyclic %d °/s · expo %d %%",
+          "translation": "周期 %d °/s · 指数 %d %%",
+          "needs_translation": false,
+          "max_length": 26
+        },
+        "rates_yaw_fmt": {
+          "english": "Yaw %d °/s · expo %d %%",
+          "translation": "偏航 %d °/s · 指数 %d %%",
+          "needs_translation": false,
+          "max_length": 23
+        },
+        "rates_axis_cyclic": {
+          "english": "Cyclic",
+          "translation": "周期",
+          "needs_translation": false,
+          "max_length": 6
+        },
+        "rates_axis_yaw": {
+          "english": "Yaw",
+          "translation": "偏航",
+          "needs_translation": false,
+          "max_length": 3
+        },
+        "rates_axis_collective": {
+          "english": "Collective",
+          "translation": "总距",
+          "needs_translation": false,
+          "max_length": 10
+        },
+        "rates_legend_value": {
+          "english": "Value: °/s at full stick",
+          "translation": "数值：满杆 °/s",
+          "needs_translation": false,
+          "max_length": 24
+        },
+        "rates_legend_shape": {
+          "english": "Form: shape · Expo: expo in %",
+          "translation": "形状：shape · 指数：expo %",
+          "needs_translation": false,
+          "max_length": 29
+        },
+        "rates_legend_collective": {
+          "english": "Collective: value in °",
+          "translation": "总距：数值 °",
+          "needs_translation": false,
+          "max_length": 22
+        },
+        "rates_type_fmt": {
+          "english": "%s · shape %d",
+          "translation": "%s · 形状 %d",
+          "needs_translation": false,
+          "max_length": 13
+        },
+        "rates_type_rotorflight": {
+          "english": "Rotorflight",
+          "translation": "Rotorflight",
+          "needs_translation": false,
+          "max_length": 11
+        },
+        "rates_type_actual": {
+          "english": "Actual",
+          "translation": "Actual",
+          "needs_translation": false,
+          "max_length": 6
+        },
         "prof_gain_help_buttons": {
           "english": "The trim buttons step the master gain up and down, on one spare channel.",
           "translation": "微调按钮在一个空闲通道上逐步调整总增益。",

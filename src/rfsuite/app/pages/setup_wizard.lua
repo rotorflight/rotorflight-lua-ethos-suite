@@ -112,6 +112,7 @@ local STEPS = {
   -- Assigned while the radio is in hand, as the Configurator; arming stays blocked.
   {key = "modes", title = "@i18n(app.modules.setup_wizard.step_modes)@"},
   {key = "profiles", title = "@i18n(app.modules.setup_wizard.step_profiles)@"},
+  {key = "rates", title = "@i18n(app.modules.setup_wizard.step_rates)@"},
   {key = "swash", title = "@i18n(app.modules.setup_wizard.step_swash)@"},
   {key = "servotype", title = "@i18n(app.modules.setup_wizard.step_servotype)@", needsServos = true},
   {key = "motor", title = "@i18n(app.modules.setup_wizard.step_motor)@"},
