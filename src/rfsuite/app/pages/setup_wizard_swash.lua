@@ -142,7 +142,8 @@ local function new(wiz)
     base = {}
     bases[wiz] = base
   end
-  if base.rear == nil then base.rear = false end
+  -- Servo 1 behind the shaft is the usual layout: the default until the user picks the other side.
+  if base.rear == nil then base.rear = true end
   local mix = wiz.mixConfig()
   if base.motorised == nil and mix then base.motorised = heli.motorised(mix.tail_rotor_mode) end
 
