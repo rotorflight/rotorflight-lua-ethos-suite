@@ -240,7 +240,7 @@ do
   check("new settings clamped", clamped.esc_temp_limit == 300 and clamped.governor_status_seconds == 5 and clamped.governor_lost_seconds == 3)
 end
 
--- Integrate the actual widget and actual flight-phase tracker against fake glasses.
+-- Integrate the actual widget with session flight statistics against fake glasses.
 local oldClock = os.clock
 local now, draws, bitmaps = 0, 0, 0
 local frame
@@ -256,7 +256,7 @@ local modules = {
   ["lib/settings_store.lua"] = store, ["lib/activelook_config.lua"] = config,
   ["lib/activelook_alerts.lua"] = alerts,
   ["lib/engine_type.lua"] = assert(loadfile(root .. "lib/engine_type.lua"))(),
-  ["widgets/dashboard/flightmode.lua"] = assert(loadfile(root .. "widgets/dashboard/flightmode.lua"))(),
+  ["lib/flight_stats.lua"] = assert(loadfile(root .. "lib/flight_stats.lua"))(),
 }
 package.loaded["rfsuite.lib.require"] = function(path) return assert(modules[path], path) end
 local definition
@@ -282,8 +282,13 @@ local widget = definition.create()
 local data = {connected = true, isArmed = true, governorState = 4, fuelPercent = 70,
   voltage = 24.8, current = 18, consumption = 1500, tempEsc = 30, rpm = 1800,
   batteryConfig = {cellCount = 6}, smartfuelModelType = 1}
+local flight = modules["lib/flight_stats.lua"].new()
+local readSensor = assert(loadfile(root .. "lib/live_sensors.lua"))().read
 local function render(time)
-  now = time; handlers["session.update"](data); definition.wakeup(widget)
+  now = time
+  data.flightState = flight:update(data, readSensor, now)
+  handlers["session.update"](data)
+  definition.wakeup(widget)
 end
 local function title() return frame.commands[1].text.text end
 render(1); render(2)
@@ -371,6 +376,16 @@ settings.activelook.rf_link_icon = true; handlers["settings.update"](settings); 
 check("RF symbol can be enabled again", frame.commands[3].bitmap and frame.commands[3].bitmap.id == 16)
 handlers["activelook.control"]({previewMode = nil}); render(50)
 check("RF preview closes normally", title() ~= "RF LINK LOW")
+
+data.isArmed = true; data.governorState = 4
+for _, phase in ipairs({"postflight", "armed", "offline"}) do
+  now = now + 0.1
+  data.flightState = phase
+  handlers["session.update"](data)
+  definition.wakeup(widget)
+  check("widget follows session phase " .. phase, widget.flightState == phase
+    and widget.lastMode == modules["lib/flight_stats.lua"].layoutPhase(phase))
+end
 
 definition.close(widget)
 check("close unsubscribes and releases caches", next(handlers) == nil and widget.overlayCache == nil and widget.layout == nil)

@@ -92,6 +92,7 @@ class WidgetTests(unittest.TestCase):
 
     def test_low_fuel_blink_and_stable_position(self):
         data = request("low_fuel")
+        self.renderer.render({**data, "preview": None}, 0.5)  # Seed the session armed edge before testing stable frames.
         first = self.renderer.render(data, 1)
         steady = self.renderer.render(data, 1.4)
         off = self.renderer.render(data, 2)

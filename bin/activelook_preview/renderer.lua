@@ -8,7 +8,7 @@ return function(root, widgetSource)
     ["lib/activelook_config.lua"] = config,
     ["lib/activelook_alerts.lua"] = assert(loadfile(root .. "lib/activelook_alerts.lua"))(),
     ["lib/engine_type.lua"] = assert(loadfile(root .. "lib/engine_type.lua"))(),
-    ["widgets/dashboard/flightmode.lua"] = assert(loadfile(root .. "widgets/dashboard/flightmode.lua"))(),
+    ["lib/flight_stats.lua"] = assert(loadfile(root .. "lib/flight_stats.lua"))(),
     ["lib/bus.lua"] = {
       subscribe = function(topic, handler) handlers[topic] = handler; return handler end,
       unsubscribe = function(topic) handlers[topic] = nil end,
@@ -33,6 +33,8 @@ return function(root, widgetSource)
   }
   assert(load(widgetSource, "@" .. root .. "widgets/activelook.lua"))().init()
   widget = definition.create()
+  local flight = modules["lib/flight_stats.lua"].new()
+  local readSensor = assert(loadfile(root .. "lib/live_sensors.lua"))().read
   return function(nextSettings, snapshot, preview, now, changed)
     clock = now
     if changed then settings = nextSettings; handlers["settings.update"](settings) end
@@ -40,10 +42,11 @@ return function(root, widgetSource)
       selected = preview
       handlers["activelook.control"]({previewMode = preview})
     end
+    snapshot.flightState = flight:update(snapshot, readSensor, now)
     handlers["session.update"](snapshot)
     definition.wakeup(widget)
     return {commands = frame.commands, bitmap = bitmap, generation = generation,
-      phase = widget.flightmode.current, overlay = widget.alertState.previewMode or (widget.alertState.active and widget.alertState.active.kind),
+      phase = widget.flightState, overlay = widget.alertState.previewMode or (widget.alertState.active and widget.alertState.active.kind),
       enabled = widget.settings.enabled, fonts = {[1] = 24, [2] = 38, [3] = 64, [4] = 75, [5] = 82}}
   end
 end

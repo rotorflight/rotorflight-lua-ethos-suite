@@ -2847,6 +2847,7 @@
           "translation": "Smart Fuel max.",
           "needs_translation": false,
           "max_length": 14,
+          "reverse_text": false
         },
         "armed_warning": {
           "english": "Dashboard armed warning",

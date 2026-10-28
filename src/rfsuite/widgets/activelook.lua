@@ -6,7 +6,6 @@ local settingsStore = requireModule("lib/settings_store.lua")
 local activeConfig = requireModule("lib/activelook_config.lua")
 local alerts = requireModule("lib/activelook_alerts.lua")
 local engineType = requireModule("lib/engine_type.lua")
-local flightmode = requireModule("widgets/dashboard/flightmode.lua")
 local flightStats = requireModule("lib/flight_stats.lua")
 
 local os_clock = os.clock
@@ -559,7 +558,6 @@ local function create()
     temperatureUnit = temperatureUnit(settingsSnapshot),
     overlayValues = {},
     overlayCache = {{}, {}, {}, {}},
-    flightmode = flightmode.new(),
     flightState = "preflight",
     stats = {},
     lastDraw = 0,

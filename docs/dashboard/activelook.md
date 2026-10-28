@@ -145,3 +145,5 @@ Smart Fuel covers both power types, matching the voice announcements: Nitro uses
 The Inflight Smart Fuel indicator is sent as a bitmap command in the same clearAndDisplayExtended call as the telemetry text. There is no separate glasses.bitmap call after clearing the layout. Its position remains unchanged. This removes the separate redraw step; reduced flicker still needs confirmation on the glasses.
 
 Alert display text is localized through the deployment i18n step, including the battery/fuel headline, ESC and RF warnings, lost-headspeed message, Governor states and limit label. Deploy with the desired language (for example --lang de) and restart the radio scripts. German displays AKKU LEER for Electric and KRAFTSTOFF NIEDRIG for Nitro. The browser preview offers a Display language selector and defaults to the supported browser language. Font glyph coverage still depends on the glasses configuration.
+
+The widget reads its flight phase from the session snapshot and uses `lib/flight_stats.lua` for layout-phase mapping. The browser preview and widget tests feed phases through the same session flight-statistics implementation.

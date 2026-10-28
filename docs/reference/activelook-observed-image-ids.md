@@ -90,17 +90,17 @@ The supplied inventory identifies these 26 additional IDs relative to the
 older published asset catalogue; their motifs have not been identified.
 This is not the complete 105-entry ALooK inventory.
 
-| IDs | Width ? height (pixels) |
+| IDs | Width × height (pixels) |
 | --- | --- |
-| 81 | 28 ? 28 |
-| 82 | 40 ? 40 |
-| 83 | 29 ? 28 |
-| 84 | 40 ? 40 |
-| 85 | 29 ? 28 |
-| 86 | 40 ? 40 |
-| 87?88 | 244 ? 122 |
-| 89?95 | 46 ? 46 |
-| 100?110 | 28 ? 28 |
+| 81 | 28 × 28 |
+| 82 | 40 × 40 |
+| 83 | 29 × 28 |
+| 84 | 40 × 40 |
+| 85 | 29 × 28 |
+| 86 | 40 × 40 |
+| 87–88 | 244 × 122 |
+| 89–95 | 46 × 46 |
+| 100–110 | 28 × 28 |
 
 **Unresolved discrepancy:** `cfgRead("ALooK")` reports 109 images, but `imgList`
 returned 105 entries. The difference of four is unexplained; neither count
