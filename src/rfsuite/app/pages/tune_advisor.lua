@@ -75,6 +75,8 @@ local T = {
   dataFlightsFmt = "@i18n(app.modules.tune_advisor.data_flights_fmt)@",
   noAircraft = "@i18n(app.modules.tune_advisor.no_aircraft)@",
   unsupported = "@i18n(app.modules.tune_advisor.unsupported)@",
+  reading = "@i18n(app.modules.tune_advisor.reading)@",
+  notRead = "@i18n(app.modules.tune_advisor.not_read)@",
   clearPrompt = "@i18n(app.modules.tune_advisor.clear_prompt)@",
   response = "@i18n(app.modules.tune_advisor.response)@",
   stops = "@i18n(app.modules.tune_advisor.stops)@",
@@ -453,6 +455,10 @@ local function open(opts)
   local headerHandle = nil
   local probing = false
   local unsupported = false       -- the FC refused the command: until Reload
+  -- tasks/tune_history.lua's capture: "reading" (a flight since the disarm
+  -- not saved yet), "failed" (it gave up until the next disarm) or "idle"
+  local capture = "idle"
+  local toolEnabled = nil
   local mcuId = nil               -- the session's aircraft
   local flights = nil             -- lib/tune_history.lua read(), nil until loaded
   local selected = 1              -- index into AXES
@@ -498,6 +504,8 @@ local function open(opts)
     if disposed then return end
     if unsupported then showOnly(T.unsupported) return end
     if not mcuId then showOnly(T.noAircraft) return end
+    -- The advice would change in a few seconds: show none until it does
+    if capture == "reading" then showOnly(T.reading) return end
     if not flights then return end
 
     local axis = AXES[selected][2]
@@ -523,6 +531,7 @@ local function open(opts)
       -- After the changes, so the compact Changes view never cuts it
       if #view.changes > 0 then view.actions[#view.actions + 1] = T.applyHint end
     end
+    if capture == "failed" then table.insert(view.actions, 1, T.notRead) end
     changed()
   end
 
@@ -595,9 +604,16 @@ local function open(opts)
     load()
   end
 
+  local function onCaptureState(nextState)
+    if disposed or nextState == capture then return end
+    capture = nextState
+    render()
+  end
+
   local function unsubscribe()
     bus.unsubscribe("session.update", onSession)
     bus.unsubscribe("tune_history.saved", onSaved)
+    bus.unsubscribe("tune_history.state", onCaptureState)
   end
 
   local function clear()
@@ -614,7 +630,7 @@ local function open(opts)
   -- any failure ends it through finish(), and the wakeup handler reports.
   local function canApply()
     return not applying and not unsupported and mcuId ~= nil and link.connected
-      and not link.armed and #view.changes > 0
+      and not link.armed and capture ~= "reading" and #view.changes > 0
   end
 
   local function finish(result)
@@ -899,6 +915,12 @@ local function open(opts)
         saveEnabled = canSave
         headerHandle.setSaveEnabled(canSave)
       end
+      -- Erasing mid-capture would race the flight being saved
+      local canClear = capture ~= "reading"
+      if toolEnabled ~= canClear then
+        toolEnabled = canClear
+        headerHandle.setToolEnabled(canClear)
+      end
       if needsPaint then
         needsPaint = false
         if lcd.invalidate then lcd.invalidate() end
@@ -938,6 +960,8 @@ local function open(opts)
   -- session.update is retained: this delivers the current aircraft now
   bus.subscribe("session.update", onSession)
   bus.subscribe("tune_history.saved", onSaved)
+  -- Retained: this delivers the capture's current state now
+  bus.subscribe("tune_history.state", onCaptureState)
   if not mcuId then render() end
 end
 

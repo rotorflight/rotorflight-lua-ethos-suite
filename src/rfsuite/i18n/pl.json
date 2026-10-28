@@ -8333,12 +8333,26 @@
           "reverse_text": false,
           "translation": "Connect to a model first"
         },
+        "not_read": {
+          "english": "Last flight not read. It is read at the next disarm.",
+          "max_length": 52,
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "Last flight not read. It is read at the next disarm."
+        },
         "pitch": {
           "english": "Pitch",
           "max_length": 5,
           "needs_translation": true,
           "reverse_text": false,
           "translation": "Pitch"
+        },
+        "reading": {
+          "english": "Reading the last flight...",
+          "max_length": 26,
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "Reading the last flight..."
         },
         "resp_fast_fmt": {
           "english": "%d%% faster than asked",

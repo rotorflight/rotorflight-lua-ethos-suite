@@ -20,7 +20,9 @@ which one flight may or may not give.
 
 Each time you disarm, the background task reads all three axes from the flight controller, saves them as one
 flight, then clears the flight controller so the next flight is measured on its own. This happens whether or not
-this page is open. The flights are kept in `LOGS:/rfsuite/tune/<model>/history.csv` on the radio's SD card, one
+this page is open. It starts 5 seconds after the disarm and takes about 10 seconds, with pauses between the reads
+so telemetry sensors keep updating meanwhile. If the link drops the reading three times, the radio tries again at
+the next disarm; the flight controller keeps the measurements until then. The flights are kept in `LOGS:/rfsuite/tune/<model>/history.csv` on the radio's SD card, one
 row per axis, newest last; only the last 5 flights are kept. `<model>` is the same flight controller ID that
 names the flight log folders, and a `logs.ini` beside the history holds the model name. A flight without rate
 flight is not saved. A disarm while the link is down is saved once the radio reconnects, provided the flight
@@ -34,7 +36,9 @@ exactly.
 *Configuration* → *Flight Tuning* → *Tune Advisor*
 
 Greyed out until the flight controller answers. The page works from the flights saved for the connected model,
-and updates when you disarm while it is open; through a link loss it keeps showing them. The page reads the
+and updates when a flight is saved while it is open, about 10 seconds after you disarm; through a link loss it keeps showing them. Until a flight is saved it shows "Reading the last flight..." in
+place of the advice, with *Save* and the erase button greyed out. If the radio could not read the flight, the
+advice from the saved flights comes back with "Last flight not read" above it until you arm again. The page reads the
 firmware version the flight controller reports. Firmware older than 4.7.0 has no Tune Advisor: the page shows
 "Needs newer firmware" and sends no request, and the same applies to the capture after each flight. Until the
 version is known, nothing is sent.

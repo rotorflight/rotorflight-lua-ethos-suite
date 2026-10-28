@@ -54,7 +54,7 @@ form = {
 }
 
 local queue, subs = {}, {}
-local saveEnabled, onSave = nil, nil
+local saveEnabled, toolEnabled, onSave = nil, nil, nil
 local logged = {}
 local cache = {
   ["lib/bus.lua"] = {
@@ -64,7 +64,8 @@ local cache = {
   },
   ["app/header.lua"] = {build = function(_, o)
     onSave = o.onSave
-    return {setSaveEnabled = function(e) saveEnabled = e end, focusMenu = function() end,
+    return {setSaveEnabled = function(e) saveEnabled = e end,
+      setToolEnabled = function(e) toolEnabled = e end, focusMenu = function() end,
       focusReload = function() end}
   end},
 }
@@ -319,6 +320,25 @@ do
   pump()
   check("disabled while the link is down", saveEnabled == false)
   session.connected = true
+end
+
+-- tasks/tune_history.lua reads the last flight for about 10 s after a disarm.
+-- Advice and the erase button wait for it.
+print("While the last flight is being read, Save and erase wait")
+do
+  resetFc()
+  openPage()
+  subs["tune_history.state"]("reading")
+  pump()
+  check("Save is disabled while reading", saveEnabled == false)
+  check("erase is disabled while reading", toolEnabled == false)
+  subs["tune_history.state"]("idle")
+  pump()
+  check("Save comes back once the flight is in", saveEnabled == true)
+  check("erase comes back once the flight is in", toolEnabled == true)
+  subs["tune_history.state"]("failed")
+  pump()
+  check("a failed read leaves Save available on the saved flights", saveEnabled == true)
 end
 
 print("F is never applied without its rates")

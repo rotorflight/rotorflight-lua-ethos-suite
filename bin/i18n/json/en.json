@@ -7275,6 +7275,18 @@
           "translation": "Saved, but reading back did not confirm it. Check the settings on PIDs, Rates and PID Controller.",
           "needs_translation": false,
           "max_length": 97
+        },
+        "reading": {
+          "english": "Reading the last flight...",
+          "translation": "Reading the last flight...",
+          "needs_translation": true,
+          "max_length": 26
+        },
+        "not_read": {
+          "english": "Last flight not read. It is read at the next disarm.",
+          "translation": "Last flight not read. It is read at the next disarm.",
+          "needs_translation": true,
+          "max_length": 52
         }
       }
     },

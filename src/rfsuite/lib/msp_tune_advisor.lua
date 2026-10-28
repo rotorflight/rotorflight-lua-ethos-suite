@@ -185,6 +185,10 @@ function msp_tune_advisor.buildReadMessage(axis, onData, onError)
       onData(data)
     end,
     errorHandler = onError,
+    -- Three sends, not the queue's six: the queue holds every other request
+    -- while this one is out, and a 65-byte reply over S.Port or FBUS is the
+    -- one most often lost. tasks/tune_history.lua asks again later anyway.
+    maxRetries = 2,
     simulatorResponse = simulatorResponses[axis],
   }
 end
