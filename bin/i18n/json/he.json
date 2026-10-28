@@ -2006,7 +2006,7 @@
           "english": "Use audio limits & repeats",
           "translation": "סף וחזרות שמע",
           "needs_translation": false,
-          "reverse_text": false,
+          "reverse_text": true,
           "max_length": 26
         },
         "activelook_esc_temp_limit": {
@@ -2076,7 +2076,7 @@
           "english": "Smart Fuel icon",
           "translation": "סמל Smart Fuel",
           "needs_translation": false,
-          "reverse_text": false,
+          "reverse_text": true,
           "max_length": 15
         },
         "activelook_inflight": {
@@ -2847,6 +2847,7 @@
           "translation": "Smart Fuel מקסימום",
           "needs_translation": false,
           "max_length": 14,
+          "reverse_text": true
         },
           "armed_warning": {
           "english": "Dashboard armed warning",

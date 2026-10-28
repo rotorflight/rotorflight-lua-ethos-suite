@@ -7013,7 +7013,7 @@
           "english": "Smart Fuel icon",
           "max_length": 15,
           "needs_translation": false,
-          "reverse_text": false,
+          "reverse_text": true,
           "translation": "סמל Smart Fuel"
         },
         "activelook_low_fuel": {
@@ -7118,7 +7118,7 @@
           "english": "Use audio limits & repeats",
           "max_length": 26,
           "needs_translation": false,
-          "reverse_text": false,
+          "reverse_text": true,
           "translation": "סף וחזרות שמע"
         },
         "activelook_use_audio_repeats": {
