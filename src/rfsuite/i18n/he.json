@@ -7098,14 +7098,14 @@
           "max_length": 14,
           "needs_translation": false,
           "reverse_text": true,
-          "translation": "Smart Fuel מקסימום"
+          "translation": "Smart Fuel מקס"
         },
         "activelook_smartfuel_min": {
           "english": "Min Smart Fuel",
           "max_length": 14,
           "needs_translation": false,
           "reverse_text": true,
-          "translation": "Smart Fuel מינימום"
+          "translation": "Smart Fuel מינ"
         },
         "activelook_status_duration": {
           "english": "Status duration",
@@ -9569,7 +9569,7 @@
         "max_length": 11,
         "needs_translation": false,
         "reverse_text": true,
-        "translation": "קישור RF חלש"
+        "translation": "RF חלש"
       },
       "alert_warning": {
         "english": "WARNING!",

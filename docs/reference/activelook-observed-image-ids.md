@@ -21,7 +21,7 @@ commands: `vers` (0x06), `cfgList` (0xD3), `cfgRead` (0xD1), `cfgSet` (0xD2)
 and `imgList` (0x47). Configuration selection was temporary. Inventory data
 comes from the device, rather than the public visual asset table.
 
-### Installed configurations ? device-reported facts
+### Installed configurations — device-reported facts
 
 | Property | ALooK | frsky |
 | --- | ---: | ---: |
@@ -39,7 +39,7 @@ FrSky-specific graphics library exists alongside the system library on this
 unit. How FrSky/Ethos installs it and the exact activation mechanism remain
 unknown. The reconnection test below confirms reactivation in the tested sequence.
 
-### Hardware verification ? 2026-10-20
+### Hardware verification — 2026-10-20
 
 After explicitly selecting the `ALooK` configuration through the Windows BLE
 diagnostic tool, the ENGO 2 was reconnected to ETHOS. Bitmap ID 2 immediately
@@ -54,7 +54,7 @@ setup, not a captured Bluetooth command trace or a guarantee for other versions.
 ### Complete frsky bitmap inventory
 
 After explicit `cfgSet("frsky")`, `imgList` returned exactly these 21 entries.
-Dimensions are width ? height, in pixels.
+Dimensions are width × height, in pixels.
 
 | Bitmap ID | Width | Height |
 | --- | ---: | ---: |
@@ -106,10 +106,10 @@ This is not the complete 105-entry ALooK inventory.
 returned 105 entries. The difference of four is unexplained; neither count
 has been adjusted to match the other.
 
-### Comparison with Ethos observations ? strongly supported inference
+### Comparison with Ethos observations — strongly supported inference
 
-The earlier Ethos scan found no image at ID 0, battery states at 2?6, and no
-visible images at 22?40. This closely matches the separately measured `frsky`
+The earlier Ethos scan found no image at ID 0, battery states at 2–6, and no
+visible images at 22–40. This closely matches the separately measured `frsky`
 inventory. It strongly supports the hypothesis that the images seen through
 Ethos came from `frsky` rather than the public ALooK library.
 
@@ -240,7 +240,7 @@ Still open:
   for the tested sequence above.
 - Why ALooK cfgRead and imgList counts differ by four.
 - Motifs of additional ALooK version-17 images and official semantics of ambiguous frsky images.
-- Exact numeric thresholds represented by frsky battery IDs 3?5; the extracted shapes show one, two and three fill bars.
+- Exact numeric thresholds represented by frsky battery IDs 3–5; the extracted shapes show one, two and three fill bars.
 - Applicability to other glasses, graphics versions and Ethos versions.
 
 ## 2026-10-20: X20PROAW-EU firmware.bin reverse engineering

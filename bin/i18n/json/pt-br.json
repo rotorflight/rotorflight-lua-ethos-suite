@@ -1983,7 +1983,7 @@
         },
         "activelook_hide_display": {
           "english": "Hide Display",
-          "translation": "Ocultar exibição D",
+          "translation": "Ocultar tela",
           "needs_translation": false,
           "reverse_text": false,
           "max_length": 12
@@ -2053,14 +2053,14 @@
         },
         "activelook_low_fuel_repeats": {
           "english": "Repeats",
-          "translation": "Repetições",
+          "translation": "Repet.",
           "needs_translation": false,
           "reverse_text": false,
           "max_length": 7
         },
         "activelook_low_fuel_icon": {
           "english": "Icon",
-          "translation": "Ícone",
+          "translation": "Íc.",
           "needs_translation": false,
           "reverse_text": false,
           "max_length": 4
@@ -2074,7 +2074,7 @@
         },
         "activelook_inflight_fuel_icon": {
           "english": "Smart Fuel icon",
-          "translation": "Ícone Smart Fuel",
+          "translation": "Íc. Smart Fuel",
           "needs_translation": false,
           "reverse_text": false,
           "max_length": 15
@@ -2102,7 +2102,7 @@
         },
         "activelook_settings": {
           "english": "Settings",
-          "translation": "Configurações",
+          "translation": "Ajustes",
           "needs_translation": false,
           "reverse_text": false,
           "max_length": 8
@@ -2830,21 +2830,21 @@
         },
         "activelook_use_audio_repeats": {
           "english": "Use audio repeats",
-          "translation": "Usar repetições áudio",
+          "translation": "Repetições áudio",
           "needs_translation": false,
           "max_length": 17,
           "reverse_text": false
         },
         "activelook_smartfuel_min": {
           "english": "Min Smart Fuel",
-          "translation": "Mín. Smart Fuel",
+          "translation": "Mín.Smart Fuel",
           "needs_translation": false,
           "max_length": 14,
           "reverse_text": false
         },
         "activelook_smartfuel_max": {
           "english": "Max Smart Fuel",
-          "translation": "Máx. Smart Fuel",
+          "translation": "Máx.Smart Fuel",
           "needs_translation": false,
           "max_length": 14,
           "reverse_text": false
@@ -10451,7 +10451,7 @@
       },
       "alert_fuel_low": {
         "english": "LOW FUEL",
-        "translation": "POUCO COMBUSTÍVEL",
+        "translation": "RESERVA",
         "needs_translation": false,
         "max_length": 8,
         "reverse_text": false
@@ -10465,7 +10465,7 @@
       },
       "alert_rf_link_low": {
         "english": "RF LINK LOW",
-        "translation": "LINK RF FRACO",
+        "translation": "RF FRACO",
         "needs_translation": false,
         "max_length": 11,
         "reverse_text": false
@@ -10507,7 +10507,7 @@
       },
       "alert_limit": {
         "english": "LIMIT",
-        "translation": "LIMITE",
+        "translation": "LIM.",
         "needs_translation": false,
         "max_length": 5,
         "reverse_text": false

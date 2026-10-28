@@ -2837,14 +2837,14 @@
         },
         "activelook_smartfuel_min": {
           "english": "Min Smart Fuel",
-          "translation": "Smart Fuel מינימום",
+          "translation": "Smart Fuel מינ",
           "needs_translation": false,
           "max_length": 14,
           "reverse_text": true
         },
         "activelook_smartfuel_max": {
           "english": "Max Smart Fuel",
-          "translation": "Smart Fuel מקסימום",
+          "translation": "Smart Fuel מקס",
           "needs_translation": false,
           "max_length": 14,
           "reverse_text": true
@@ -10465,7 +10465,7 @@
       },
       "alert_rf_link_low": {
         "english": "RF LINK LOW",
-        "translation": "קישור RF חלש",
+        "translation": "RF חלש",
         "needs_translation": false,
         "max_length": 11,
         "reverse_text": true

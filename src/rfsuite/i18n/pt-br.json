@@ -7000,7 +7000,7 @@
           "max_length": 12,
           "needs_translation": false,
           "reverse_text": false,
-          "translation": "Ocultar exibição D"
+          "translation": "Ocultar tela"
         },
         "activelook_inflight": {
           "english": "Inflight",
@@ -7014,7 +7014,7 @@
           "max_length": 15,
           "needs_translation": false,
           "reverse_text": false,
-          "translation": "Ícone Smart Fuel"
+          "translation": "Íc. Smart Fuel"
         },
         "activelook_low_fuel": {
           "english": "Smart Fuel",
@@ -7028,14 +7028,14 @@
           "max_length": 4,
           "needs_translation": false,
           "reverse_text": false,
-          "translation": "Ícone"
+          "translation": "Íc."
         },
         "activelook_low_fuel_repeats": {
           "english": "Repeats",
           "max_length": 7,
           "needs_translation": false,
           "reverse_text": false,
-          "translation": "Repetições"
+          "translation": "Repet."
         },
         "activelook_low_fuel_seconds": {
           "english": "Warning Duration",
@@ -7091,21 +7091,21 @@
           "max_length": 8,
           "needs_translation": false,
           "reverse_text": false,
-          "translation": "Configurações"
+          "translation": "Ajustes"
         },
         "activelook_smartfuel_max": {
           "english": "Max Smart Fuel",
           "max_length": 14,
           "needs_translation": false,
           "reverse_text": false,
-          "translation": "Máx. Smart Fuel"
+          "translation": "Máx.Smart Fuel"
         },
         "activelook_smartfuel_min": {
           "english": "Min Smart Fuel",
           "max_length": 14,
           "needs_translation": false,
           "reverse_text": false,
-          "translation": "Mín. Smart Fuel"
+          "translation": "Mín.Smart Fuel"
         },
         "activelook_status_duration": {
           "english": "Status duration",
@@ -7126,7 +7126,7 @@
           "max_length": 17,
           "needs_translation": false,
           "reverse_text": false,
-          "translation": "Usar repetições áudio"
+          "translation": "Repetições áudio"
         },
         "adj_callouts": {
           "english": "Adjustment callouts",
@@ -9541,7 +9541,7 @@
         "max_length": 8,
         "needs_translation": false,
         "reverse_text": false,
-        "translation": "POUCO COMBUSTÍVEL"
+        "translation": "RESERVA"
       },
       "alert_governor": {
         "english": "GOVERNOR",
@@ -9562,14 +9562,14 @@
         "max_length": 5,
         "needs_translation": false,
         "reverse_text": false,
-        "translation": "LIMITE"
+        "translation": "LIM."
       },
       "alert_rf_link_low": {
         "english": "RF LINK LOW",
         "max_length": 11,
         "needs_translation": false,
         "reverse_text": false,
-        "translation": "LINK RF FRACO"
+        "translation": "RF FRACO"
       },
       "alert_warning": {
         "english": "WARNING!",
