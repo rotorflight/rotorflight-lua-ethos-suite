@@ -9,7 +9,7 @@
 -- Event-driven from "session.update", no scheduler job: a capture is armed
 -- by a disarm and runs once the link and aircraft identity are there, so a
 -- flight that ends during a link loss is still captured on reconnect (the
--- FC kept the numbers). Nothing is saved for a flight with no rate flight
+-- FC kept the numbers). Nothing is saved for a flight with no acro flight
 -- (flight_seconds 0). If the clear never gets through before the next arm,
 -- that next flight's row also holds this one's data: the FC cannot tell.
 --
@@ -187,7 +187,7 @@ local function finishCapture()
       return
     end
   end
-  -- 0: no rate flight. Same as last time: the clear after that flight never
+  -- 0: no acro flight. Same as last time: the clear after that flight never
   -- got through and nothing new was flown.
   if seconds > 0 and lastSeconds[mcuId] ~= seconds then
     if not tuneHistory.save(mcuId, capture.modelName, replies) then

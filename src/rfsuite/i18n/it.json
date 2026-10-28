@@ -8012,25 +8012,25 @@
           "translation": "PIDs > %s > F:  %d -> %d"
         },
         "act_fly_pitch": {
-          "english": "Fly flips in rate mode, centre the stick after each",
+          "english": "Fly flips in acro mode, centre the stick after each",
           "max_length": 51,
           "needs_translation": true,
           "reverse_text": false,
-          "translation": "Fly flips in rate mode, centre the stick after each"
+          "translation": "Fly flips in acro mode, centre the stick after each"
         },
         "act_fly_roll": {
-          "english": "Fly rolls in rate mode, centre the stick after each",
+          "english": "Fly rolls in acro mode, centre the stick after each",
           "max_length": 51,
           "needs_translation": true,
           "reverse_text": false,
-          "translation": "Fly rolls in rate mode, centre the stick after each"
+          "translation": "Fly rolls in acro mode, centre the stick after each"
         },
         "act_fly_yaw": {
-          "english": "Fly pirouettes in rate mode, centre the stick after each",
+          "english": "Fly pirouettes in acro mode, centre the stick after each",
           "max_length": 56,
           "needs_translation": true,
           "reverse_text": false,
-          "translation": "Fly pirouettes in rate mode, centre the stick after each"
+          "translation": "Fly pirouettes in acro mode, centre the stick after each"
         },
         "act_none": {
           "english": "No change suggested",
@@ -8383,11 +8383,11 @@
           "translation": "Changing F and the rates together keeps the stick feel."
         },
         "why_more": {
-          "english": "Each flight in rate mode is saved when you disarm.",
+          "english": "Each flight in acro mode is saved when you disarm.",
           "max_length": 50,
           "needs_translation": true,
           "reverse_text": false,
-          "translation": "Data builds up while you fly in rate mode."
+          "translation": "Data builds up while you fly in acro mode."
         },
         "why_no_f": {
           "english": "This axis has no F, so its PID gains set the response.",

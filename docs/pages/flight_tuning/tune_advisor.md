@@ -6,12 +6,12 @@ sidebar_position: 30
 
 # Tune Advisor
 
-While you fly in rate mode, the flight controller measures how the heli answers the sticks. Each time you
+While you fly in acro mode, the flight controller measures how the heli answers the sticks. Each time you
 disarm, the radio saves that flight's measurements. This page combines your last flights and suggests one change
 at a time for each axis. Press *Save* to write the suggested changes for the shown axis to the flight controller,
 or make them yourself on *PIDs*, *Rates* or *PID Controller*. Then fly again and come back.
 
-The flight controller counts only rate flight while spooled up and airborne, with the heli moving on some axis.
+The flight controller counts only acro flight while spooled up and airborne, with the heli moving on some axis.
 Time in Angle, Horizon, Trainer, Altitude hold, Rescue, GPS rescue or failsafe is left out. The page combines up
 to the last 5 flights flown with the same tune as the newest one: a flight before a change to P, F, B, Iterm
 Relax Cutoff or the rates on that axis is left out, because the advice is worked out against the tune you fly
@@ -49,7 +49,7 @@ version is known, nothing is sent.
 | --- | --- |
 | Axis | Roll, Pitch or Yaw. Everything below is for the chosen axis. |
 | Changes / Why | Only on 480-pixel-wide radios (X18, X18R, X10 and similar), beside Axis. *Changes* shows the suggested changes and as many reasons as fit, ending in "More under Why" when some are left out; *Why* shows all the reasons. Larger radios show everything. |
-| Flight data | Minutes and seconds of rate flight in the flights combined, and how many of the last 5 that is, for example "2m 12s, 3/5 flights". |
+| Flight data | Minutes and seconds of acro flight in the flights combined, and how many of the last 5 that is, for example "2m 12s, 3/5 flights". |
 | Response | How fast the heli turns compared with the rate the stick asks for, for example "53% faster than asked". "Needs more flying" shows how much data is still needed; "Too uneven to judge" means the response varies too much. |
 | Stops | How much the heli bounces back after you centre the stick, as a share of the turn rate. Needs 10 stops. |
 | Suggested changes | Up to three changes, each named by the page and setting to change and in the units that page shows, for example *PIDs > Roll > F: 100 -> 80* and *Rates > Roll > Rate: 720 -> 900*. When there is something *Save* can write, a last line says so. After they are written, this shows "Changes saved to the flight controller" until the next flight is saved. |
