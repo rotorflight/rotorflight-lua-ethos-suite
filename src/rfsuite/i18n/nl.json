@@ -7465,11 +7465,11 @@
           "translation": "Rotorflight Actieve look"
         },
         "fuel": {
-          "english": "Smart Fuel",
-          "max_length": 10,
+          "english": "Fuel",
+          "max_length": 4,
           "needs_translation": false,
           "reverse_text": false,
-          "translation": "Smart Fuel"
+          "translation": "Brandstof"
         },
         "fuel_callout_10": {
           "english": "Every 10%",

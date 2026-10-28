@@ -2450,10 +2450,10 @@
           "max_length": 12
         },
         "fuel": {
-          "english": "Smart Fuel",
-          "translation": "Smart Fuel",
+          "english": "Fuel",
+          "translation": "Palivo",
           "needs_translation": false,
-          "max_length": 10,
+          "max_length": 4,
           "reverse_text": false
         },
         "fuel_callout_percent": {

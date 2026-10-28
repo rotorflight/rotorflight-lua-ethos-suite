@@ -6415,10 +6415,10 @@
           "translation": "Rotorflight ActiveLook"
         },
         "fuel": {
-          "english": "Smart Fuel",
-          "max_length": 10,
+          "english": "Fuel",
+          "max_length": 4,
           "needs_translation": false,
-          "translation": "Smart Fuel"
+          "translation": "Fuel"
         },
         "fuel_callout_10": {
           "english": "Every 10%",
