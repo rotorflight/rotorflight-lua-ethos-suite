@@ -24,6 +24,63 @@ local function fixture(options)
   return engine, data, sample, settings
 end
 
+-- Normalization keeps valid values and copy isolation while coercing persisted input.
+do
+  local defaults = config.withDefaults()
+  local copy = config.withDefaults(defaults)
+  check("normalization returns an independent table", copy ~= defaults)
+  for key, value in pairs(config.DEFAULTS) do
+    check("default preserved: " .. key, defaults[key] == value and copy[key] == value)
+    if type(value) == "boolean" then
+      for _, input in ipairs({true, false, "true", "false", 1, 0, "1", "0", "invalid"}) do
+        local expected = value
+        if input == true or input == "true" or input == 1 or input == "1" then expected = true end
+        if input == false or input == "false" or input == 0 or input == "0" then expected = false end
+        check("boolean coercion: " .. key, config.withDefaults({[key] = input})[key] == expected)
+      end
+    end
+  end
+  local owned = {low_fuel_seconds = "99", layout_inflight = "invalid", inflight_1 = "invalid", legacy = 42}
+  local separate = config.withDefaults(owned)
+  check("public normalization leaves input untouched", owned.low_fuel_seconds == "99" and owned.enabled == nil)
+  check("owned normalization returns the same table", config.normalize(owned) == owned)
+  for key, value in pairs(separate) do
+    check("owned normalization matches copied normalization: " .. key, owned[key] == value)
+  end
+  for key, default in pairs(config.DEFAULTS) do
+    if config.layoutKeyToChoice(default) ~= 1 or default == config.LAYOUT_KEYS[1] then
+      for _, value in ipairs(config.LAYOUT_KEYS) do
+        check("layout choices survive: " .. key, config.withDefaults({[key] = value})[key] == value)
+      end
+    elseif type(default) == "string" and default ~= "" then
+      for _, value in ipairs(config.SENSOR_KEYS) do
+        check("sensor choices survive: " .. key, config.withDefaults({[key] = value})[key] == value)
+      end
+    end
+  end
+  local numbers = {
+    low_fuel_seconds = {3, 30}, low_fuel_repeats = {1, 10},
+    esc_temp_limit = {60, 300}, esc_temp_seconds = {3, 30}, esc_temp_repeats = {0, 10},
+    rf_link_limit = {1, 100}, rf_link_percent_limit = {1, 100},
+    rf_link_seconds = {3, 30}, rf_link_repeats = {1, 10},
+    governor_lost_seconds = {3, 30}, governor_status_seconds = {1, 5},
+    offset_x = {-20, 20}, offset_y = {-20, 20},
+  }
+  for key, bounds in pairs(numbers) do
+    local lo, hi = bounds[1], bounds[2]
+    for _, value in ipairs({lo, hi, lo + 0.6, lo - 1, hi + 1, math.huge, -math.huge, 0/0}) do
+      local expected = value
+      if value ~= value or value == math.huge or value == -math.huge then expected = lo end
+      expected = math.floor(math.max(lo, math.min(hi, expected)) + 0.5)
+      check("numeric bounds and rounding: " .. key, config.withDefaults({[key] = value})[key] == expected)
+    end
+    check("numeric string: " .. key, config.withDefaults({[key] = tostring(hi)})[key] == hi)
+  end
+  local invalid = config.withDefaults({layout_inflight = "invalid", inflight_1 = "invalid", display_switch = false, legacy = 42})
+  check("invalid layout and sensor fall back", invalid.layout_inflight == config.DEFAULTS.layout_inflight and invalid.inflight_1 == config.DEFAULTS.inflight_1)
+  check("switch coercion and unknown keys preserved", invalid.display_switch == "" and invalid.legacy == 42)
+end
+
 -- Low Fuel: same zero threshold, first-reading seed, duration, repeat gap and cap.
 do
   local e, data, sample = fixture({low_fuel_warning = true, low_fuel_repeats = 2})

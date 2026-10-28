@@ -142,6 +142,7 @@ local SENSOR_KEY_SET = buildSet(config.SENSOR_KEYS)
 local LAYOUT_KEY_SET = buildSet(config.LAYOUT_KEYS)
 
 local function clamp(value, min, max)
+  if type(value) == "number" and value >= min and value <= max and value % 1 == 0 then return value end
   value = tonumber(value) or 0
   if value ~= value or value == math.huge or value == -math.huge then value = min end
   if value < min then return min end
@@ -150,19 +151,11 @@ local function clamp(value, min, max)
 end
 
 local function coerceBool(value, default)
+  if value == true or value == false then return value end
   if value == nil then return default end
   if value == true or value == "true" or value == 1 or value == "1" then return true end
   if value == false or value == "false" or value == 0 or value == "0" then return false end
   return default
-end
-
-local function keyExists(list, key)
-  if list == config.SENSOR_KEYS then
-    return SENSOR_KEY_SET[key] == true
-  elseif list == config.LAYOUT_KEYS then
-    return LAYOUT_KEY_SET[key] == true
-  end
-  return false
 end
 
 function config.keyToChoice(key)
@@ -260,51 +253,52 @@ function config.alertRepeats(values, events, kind)
   return config.clampEscTempRepeats(values.esc_temp_repeats)
 end
 
-function config.withDefaults(values)
-  local out = {}
-  values = values or {}
-  for key, value in pairs(config.DEFAULTS) do out[key] = value end
-  for key, value in pairs(values) do out[key] = value end
-
-  out.enabled = coerceBool(out.enabled, config.DEFAULTS.enabled)
-  out.inflight_fuel_icon = coerceBool(out.inflight_fuel_icon, config.DEFAULTS.inflight_fuel_icon)
-  out.low_fuel_warning = coerceBool(out.low_fuel_warning, config.DEFAULTS.low_fuel_warning)
-  out.low_fuel_use_audio_limit = coerceBool(out.low_fuel_use_audio_limit, false)
-  out.low_fuel_seconds = config.clampLowFuelSeconds(out.low_fuel_seconds)
-  out.low_fuel_repeats = config.clampLowFuelRepeats(out.low_fuel_repeats)
-  out.low_fuel_icon = coerceBool(out.low_fuel_icon, config.DEFAULTS.low_fuel_icon)
-  out.esc_temp_warning = coerceBool(out.esc_temp_warning, false)
-  out.esc_temp_icon = coerceBool(out.esc_temp_icon, config.DEFAULTS.esc_temp_icon)
-  out.esc_temp_use_audio_limit = coerceBool(out.esc_temp_use_audio_limit, true)
-  out.esc_temp_limit = config.clampEscTempLimit(out.esc_temp_limit)
-  out.esc_temp_seconds = config.clampAlertSeconds(out.esc_temp_seconds)
-  out.esc_temp_repeats = config.clampEscTempRepeats(out.esc_temp_repeats)
-  out.rf_link_warning = coerceBool(out.rf_link_warning, false)
-  out.rf_link_icon = coerceBool(out.rf_link_icon, config.DEFAULTS.rf_link_icon)
-  out.rf_link_limit = config.clampRfLinkLimit(out.rf_link_limit)
-  out.rf_link_percent_limit = config.clampRfLinkPercentLimit(out.rf_link_percent_limit)
-  out.rf_link_seconds = config.clampAlertSeconds(out.rf_link_seconds)
-  out.rf_link_repeats = config.clampLowFuelRepeats(out.rf_link_repeats)
-  out.governor_lost_warning = coerceBool(out.governor_lost_warning, false)
-  out.governor_lost_seconds = config.clampAlertSeconds(out.governor_lost_seconds)
-  out.governor_status_overlays = coerceBool(out.governor_status_overlays, false)
-  out.governor_status_seconds = config.clampGovernorStatusSeconds(out.governor_status_seconds)
-  out.offset_x = config.clampOffset(out.offset_x)
-  out.offset_y = config.clampOffset(out.offset_y)
-  out.display_switch = tostring(out.display_switch or "")
-
-  for _, mode in ipairs({"preflight", "inflight", "postflight"}) do
-    local layoutKey = "layout_" .. mode
-    if not keyExists(config.LAYOUT_KEYS, out[layoutKey]) then
-      out[layoutKey] = config.DEFAULTS[layoutKey]
-    end
-    for i = 1, 4 do
-      local key = mode .. "_" .. i
-      if not keyExists(config.SENSOR_KEYS, out[key]) then out[key] = config.DEFAULTS[key] end
+-- Mutates only a section already owned by the caller (for example a settings clone).
+function config.normalize(out)
+  for key, value in pairs(config.DEFAULTS) do
+    local current = out[key]
+    if current == nil then
+      out[key] = value
+    elseif current ~= value and type(value) == "string" then
+      local keys = SENSOR_KEY_SET[value] and SENSOR_KEY_SET or LAYOUT_KEY_SET[value] and LAYOUT_KEY_SET
+      if keys and not keys[current] then out[key] = value end
     end
   end
 
+  if out.enabled ~= config.DEFAULTS.enabled then out.enabled = coerceBool(out.enabled, config.DEFAULTS.enabled) end
+  if out.inflight_fuel_icon ~= config.DEFAULTS.inflight_fuel_icon then out.inflight_fuel_icon = coerceBool(out.inflight_fuel_icon, config.DEFAULTS.inflight_fuel_icon) end
+  if out.low_fuel_warning ~= config.DEFAULTS.low_fuel_warning then out.low_fuel_warning = coerceBool(out.low_fuel_warning, config.DEFAULTS.low_fuel_warning) end
+  if out.low_fuel_use_audio_limit ~= config.DEFAULTS.low_fuel_use_audio_limit then out.low_fuel_use_audio_limit = coerceBool(out.low_fuel_use_audio_limit, false) end
+  if out.low_fuel_seconds ~= config.DEFAULTS.low_fuel_seconds then out.low_fuel_seconds = config.clampLowFuelSeconds(out.low_fuel_seconds) end
+  if out.low_fuel_repeats ~= config.DEFAULTS.low_fuel_repeats then out.low_fuel_repeats = config.clampLowFuelRepeats(out.low_fuel_repeats) end
+  if out.low_fuel_icon ~= config.DEFAULTS.low_fuel_icon then out.low_fuel_icon = coerceBool(out.low_fuel_icon, config.DEFAULTS.low_fuel_icon) end
+  if out.esc_temp_warning ~= config.DEFAULTS.esc_temp_warning then out.esc_temp_warning = coerceBool(out.esc_temp_warning, false) end
+  if out.esc_temp_icon ~= config.DEFAULTS.esc_temp_icon then out.esc_temp_icon = coerceBool(out.esc_temp_icon, config.DEFAULTS.esc_temp_icon) end
+  if out.esc_temp_use_audio_limit ~= config.DEFAULTS.esc_temp_use_audio_limit then out.esc_temp_use_audio_limit = coerceBool(out.esc_temp_use_audio_limit, true) end
+  if out.esc_temp_limit ~= config.DEFAULTS.esc_temp_limit then out.esc_temp_limit = config.clampEscTempLimit(out.esc_temp_limit) end
+  if out.esc_temp_seconds ~= config.DEFAULTS.esc_temp_seconds then out.esc_temp_seconds = config.clampAlertSeconds(out.esc_temp_seconds) end
+  if out.esc_temp_repeats ~= config.DEFAULTS.esc_temp_repeats then out.esc_temp_repeats = config.clampEscTempRepeats(out.esc_temp_repeats) end
+  if out.rf_link_warning ~= config.DEFAULTS.rf_link_warning then out.rf_link_warning = coerceBool(out.rf_link_warning, false) end
+  if out.rf_link_icon ~= config.DEFAULTS.rf_link_icon then out.rf_link_icon = coerceBool(out.rf_link_icon, config.DEFAULTS.rf_link_icon) end
+  if out.rf_link_limit ~= config.DEFAULTS.rf_link_limit then out.rf_link_limit = config.clampRfLinkLimit(out.rf_link_limit) end
+  if out.rf_link_percent_limit ~= config.DEFAULTS.rf_link_percent_limit then out.rf_link_percent_limit = config.clampRfLinkPercentLimit(out.rf_link_percent_limit) end
+  if out.rf_link_seconds ~= config.DEFAULTS.rf_link_seconds then out.rf_link_seconds = config.clampAlertSeconds(out.rf_link_seconds) end
+  if out.rf_link_repeats ~= config.DEFAULTS.rf_link_repeats then out.rf_link_repeats = config.clampLowFuelRepeats(out.rf_link_repeats) end
+  if out.governor_lost_warning ~= config.DEFAULTS.governor_lost_warning then out.governor_lost_warning = coerceBool(out.governor_lost_warning, false) end
+  if out.governor_lost_seconds ~= config.DEFAULTS.governor_lost_seconds then out.governor_lost_seconds = config.clampAlertSeconds(out.governor_lost_seconds) end
+  if out.governor_status_overlays ~= config.DEFAULTS.governor_status_overlays then out.governor_status_overlays = coerceBool(out.governor_status_overlays, false) end
+  if out.governor_status_seconds ~= config.DEFAULTS.governor_status_seconds then out.governor_status_seconds = config.clampGovernorStatusSeconds(out.governor_status_seconds) end
+  if out.offset_x ~= config.DEFAULTS.offset_x then out.offset_x = config.clampOffset(out.offset_x) end
+  if out.offset_y ~= config.DEFAULTS.offset_y then out.offset_y = config.clampOffset(out.offset_y) end
+  if out.display_switch ~= config.DEFAULTS.display_switch then out.display_switch = tostring(out.display_switch or "") end
+
   return out
+end
+
+function config.withDefaults(values)
+  local out = {}
+  for key, value in pairs(values or {}) do out[key] = value end
+  return config.normalize(out)
 end
 
 function config.layoutPreview(layoutKey)
