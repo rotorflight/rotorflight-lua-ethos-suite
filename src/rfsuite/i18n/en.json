@@ -364,7 +364,7 @@
         },
         "msg_calibration_timeout": {
           "english": "The calibration did not finish. Try again.",
-          "max_length": 42,
+          "max_length": 46,
           "needs_translation": false,
           "translation": "The calibration did not finish. Try again."
         },
@@ -1202,7 +1202,7 @@
         },
         "no_dataflash": {
           "english": "No dataflash",
-          "max_length": 12,
+          "max_length": 16,
           "needs_translation": false,
           "translation": "No dataflash"
         },
@@ -4274,7 +4274,7 @@
         },
         "msg_no_columns": {
           "english": "No plottable columns in this file",
-          "max_length": 33,
+          "max_length": 40,
           "needs_translation": false,
           "translation": "No plottable columns in this file"
         },
@@ -5272,7 +5272,7 @@
         },
         "edit_battery": {
           "english": "Edit Battery",
-          "max_length": 12,
+          "max_length": 16,
           "needs_translation": false,
           "translation": "Edit Battery"
         },
@@ -7394,7 +7394,7 @@
     },
     "msg_main_power_lost_banner": {
       "english": "MAIN POWER LOST",
-      "max_length": 15,
+      "max_length": 27,
       "needs_translation": false,
       "translation": "MAIN POWER LOST"
     },
@@ -7436,7 +7436,7 @@
     },
     "msg_save_failed_local_body": {
       "english": "Settings were not saved to the radio. Please try again.",
-      "max_length": 55,
+      "max_length": 67,
       "needs_translation": false,
       "translation": "Settings were not saved to the radio. Please try again."
     },

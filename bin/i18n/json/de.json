@@ -11,78 +11,67 @@
       "english": "Connection",
       "translation": "Verbindung",
       "needs_translation": false,
-      "max_length": 10,
-      "reverse_text": false
+      "max_length": 10
     },
     "connection_body_fmt": {
       "english": "Link: %s\nHandshake: %s\nCraft: %s\nFirmware: %s\nAPI: %s",
       "translation": "Verbindung: %s\nHandshake: %s\nModell: %s\nFirmware: %s\nAPI: %s",
       "needs_translation": false,
-      "max_length": 53,
-      "reverse_text": false
+      "max_length": 53
     },
     "connection_link_up": {
       "english": "connected",
       "translation": "verbunden",
       "needs_translation": false,
-      "max_length": 9,
-      "reverse_text": false
+      "max_length": 9
     },
     "connection_link_down": {
       "english": "not connected",
       "translation": "nicht verbunden",
       "needs_translation": false,
-      "max_length": 13,
-      "reverse_text": false
+      "max_length": 13
     },
     "connection_handshake_fmt": {
       "english": "%d of %d steps",
       "translation": "%d von %d Schritten",
       "needs_translation": false,
-      "max_length": 14,
-      "reverse_text": false
+      "max_length": 14
     },
     "msg_unsaved_title": {
       "english": "Unsaved changes",
       "translation": "Ungespeichert",
       "needs_translation": false,
-      "max_length": 15,
-      "reverse_text": false
+      "max_length": 15
     },
     "msg_unsaved_body": {
       "english": "Save the changes before leaving?",
       "translation": "Vor dem Verlassen speichern?",
       "needs_translation": false,
-      "max_length": 32,
-      "reverse_text": false
+      "max_length": 32
     },
     "msg_unsaved_armed_body": {
       "english": "Saving is locked while armed. Discard the changes?",
       "translation": "Im Armed-Zustand gesperrt. Verwerfen?",
       "needs_translation": false,
-      "max_length": 50,
-      "reverse_text": false
+      "max_length": 50
     },
     "btn_save": {
       "english": "SAVE",
       "translation": "SICH",
       "needs_translation": false,
-      "max_length": 4,
-      "reverse_text": false
+      "max_length": 4
     },
     "btn_discard": {
       "english": "DISCARD",
       "translation": "VERWERF",
       "needs_translation": false,
-      "max_length": 7,
-      "reverse_text": false
+      "max_length": 7
     },
     "btn_stay": {
       "english": "STAY",
       "translation": "HALT",
       "needs_translation": false,
-      "max_length": 4,
-      "reverse_text": false
+      "max_length": 4
     },
     "navigation_menu": {
       "english": "BACK",
@@ -1903,7 +1892,7 @@
         },
         "msg_no_columns": {
           "english": "No plottable columns in this file",
-          "max_length": 33,
+          "max_length": 40,
           "needs_translation": false,
           "translation": "Keine auswertbaren Spalten in dieser Datei",
           "reverse_text": false
@@ -1914,15 +1903,13 @@
           "english": "Max repeats (0 = all)",
           "translation": "Max. Wiederh. (0=alle)",
           "needs_translation": false,
-          "max_length": 21,
-          "reverse_text": false
+          "max_length": 22
         },
         "alert_vibrate": {
           "english": "Vibrate",
           "translation": "Vibration",
           "needs_translation": false,
-          "max_length": 7,
-          "reverse_text": false
+          "max_length": 7
         },
         "name": {
           "english": "Settings",
@@ -2896,7 +2883,7 @@
         },
         "msg_calibration_timeout": {
           "english": "The calibration did not finish. Try again.",
-          "max_length": 42,
+          "max_length": 46,
           "needs_translation": false,
           "translation": "Kalibrierung nicht beendet. Erneut versuchen.",
           "reverse_text": false
@@ -3499,99 +3486,85 @@
           "english": "Tail pin",
           "translation": "Tail pin",
           "needs_translation": true,
-          "reverse_text": false,
-          "max_length": 8
+          "reverse_text": false
         },
         "tail_pin_servo": {
           "english": "Servo 4",
           "translation": "Servo 4",
           "needs_translation": true,
-          "reverse_text": false,
-          "max_length": 7
+          "reverse_text": false
         },
         "tail_pin_motor": {
           "english": "Motor 2",
           "translation": "Motor 2",
           "needs_translation": true,
-          "reverse_text": false,
-          "max_length": 7
+          "reverse_text": false
         },
         "tail_pin_both": {
           "english": "Own motor pin",
           "translation": "Own motor pin",
           "needs_translation": true,
-          "reverse_text": false,
-          "max_length": 13
+          "reverse_text": false
         },
         "tail_pin_none": {
           "english": "No pin",
           "translation": "No pin",
           "needs_translation": true,
-          "reverse_text": false,
-          "max_length": 6
+          "reverse_text": false
         },
         "tail_pin_to_motor": {
           "english": "Save: to motor 2",
           "translation": "Save: to motor 2",
           "needs_translation": true,
-          "reverse_text": false,
-          "max_length": 16
+          "reverse_text": false
         },
         "tail_pin_to_servo": {
           "english": "Save: to servo 4",
           "translation": "Save: to servo 4",
           "needs_translation": true,
-          "reverse_text": false,
-          "max_length": 16
+          "reverse_text": false
         },
         "tail_pin_refused_custom": {
           "english": "Kept: custom pins",
           "translation": "Kept: custom pins",
           "needs_translation": true,
-          "reverse_text": false,
-          "max_length": 17
+          "reverse_text": false
         },
         "tail_pin_refused_no_motor": {
           "english": "Kept: no motor 1",
           "translation": "Kept: no motor 1",
           "needs_translation": true,
-          "reverse_text": false,
-          "max_length": 16
+          "reverse_text": false
         },
         "tail_pin_refused_no_timer": {
           "english": "Kept: no timer",
           "translation": "Kept: no timer",
           "needs_translation": true,
-          "reverse_text": false,
-          "max_length": 14
+          "reverse_text": false
         },
         "tail_pin_refused_timer": {
           "english": "Kept: timer shared",
           "translation": "Kept: timer shared",
           "needs_translation": true,
-          "reverse_text": false,
-          "max_length": 18
+          "reverse_text": false
         },
         "tail_pin_refused_no_dma": {
           "english": "Kept: no DMA",
           "translation": "Kept: no DMA",
           "needs_translation": true,
-          "reverse_text": false,
-          "max_length": 12
+          "reverse_text": false
         },
         "tail_tta_on": {
           "english": "Also sets Tail Torque Assist to 100 in every profile.",
           "translation": "Also sets Tail Torque Assist to 100 in every profile.",
           "needs_translation": true,
-          "reverse_text": false,
-          "max_length": 53
+          "reverse_text": false
         },
         "tail_tta_off": {
           "english": "Also sets Tail Torque Assist to 0 in every profile.",
           "translation": "Also sets Tail Torque Assist to 0 in every profile.",
           "needs_translation": true,
-          "reverse_text": false,
-          "max_length": 51
+          "reverse_text": false
         }
       },
       "trim": {
@@ -4720,7 +4693,7 @@
         },
         "no_dataflash": {
           "english": "No dataflash",
-          "max_length": 12,
+          "max_length": 16,
           "needs_translation": false,
           "translation": "Kein Dataflash",
           "reverse_text": false
@@ -4775,22 +4748,19 @@
           "english": "Preferences",
           "translation": "Optionen",
           "needs_translation": false,
-          "max_length": 11,
-          "reverse_text": false
+          "max_length": 11
         },
         "esc_current_limit": {
           "english": "ESC Current Limit",
           "translation": "ESC-Stromlimit",
           "needs_translation": false,
-          "max_length": 17,
-          "reverse_text": false
+          "max_length": 17
         },
         "save_preferences_prompt": {
           "english": "Save power preferences?",
           "translation": "Optionen speichern?",
           "needs_translation": false,
-          "max_length": 23,
-          "reverse_text": false
+          "max_length": 23
         },
         "alert_name": {
           "english": "Alerts",
@@ -4969,7 +4939,7 @@
         },
         "edit_battery": {
           "english": "Edit Battery",
-          "max_length": 12,
+          "max_length": 16,
           "needs_translation": false,
           "translation": "Batterie bearbeiten",
           "reverse_text": false
@@ -5257,15 +5227,13 @@
           "english": "Copy profile?",
           "translation": "Profil kopieren?",
           "needs_translation": false,
-          "max_length": 13,
-          "reverse_text": false
+          "max_length": 13
         },
         "msgbox_copy_fmt": {
           "english": "Copy %s Profile %d to Profile %d? This permanently overwrites Profile %d in the flight controller.",
           "translation": "%s-Profil %d auf Profil %d kopieren? Profil %d im Flugcontroller wird dauerhaft überschrieben.",
           "needs_translation": false,
-          "max_length": 98,
-          "reverse_text": false
+          "max_length": 98
         },
         "dest_profile": {
           "english": "Dest. Profile",
@@ -5797,8 +5765,7 @@
           "english": "Override",
           "translation": "Override",
           "needs_translation": true,
-          "reverse_text": false,
-          "max_length": 8
+          "reverse_text": false
         }
       },
       "elrs_telemetry": {
@@ -8489,14 +8456,14 @@
     },
     "msg_main_power_lost_banner": {
       "english": "MAIN POWER LOST",
-      "max_length": 15,
+      "max_length": 27,
       "needs_translation": false,
       "reverse_text": false,
       "translation": "HAUPTAKKU-AUSFALL"
     },
     "msg_save_failed_local_body": {
       "english": "Settings were not saved to the radio. Please try again.",
-      "max_length": 55,
+      "max_length": 67,
       "needs_translation": false,
       "reverse_text": false,
       "translation": "Einstellungen wurden nicht auf dem Radio gespeichert. Bitte erneut versuchen."
@@ -9510,281 +9477,241 @@
         "english": "OK",
         "translation": "OK",
         "needs_translation": false,
-        "max_length": 2,
-        "reverse_text": false
+        "max_length": 2
       },
       "restart": {
         "english": "RESTART ESC",
         "translation": "NEU STARTEN",
         "needs_translation": false,
-        "max_length": 11,
-        "reverse_text": false
+        "max_length": 11
       },
       "no_status": {
         "english": "NO STATUS",
         "translation": "KEIN INFO",
         "needs_translation": false,
-        "max_length": 9,
-        "reverse_text": false
+        "max_length": 9
       },
       "unknown": {
         "english": "UNKNOWN ESC",
         "translation": "UNBEKANNT",
         "needs_translation": false,
-        "max_length": 11,
-        "reverse_text": false
+        "max_length": 11
       },
       "fault": {
         "english": "FAULT",
         "translation": "STÖR.",
         "needs_translation": false,
-        "max_length": 5,
-        "reverse_text": false
+        "max_length": 5
       },
       "undervoltage": {
         "english": "UNDERVOLTAGE",
         "translation": "UNTERSPANN.",
         "needs_translation": false,
-        "max_length": 12,
-        "reverse_text": false
+        "max_length": 12
       },
       "overvoltage": {
         "english": "OVERVOLTAGE",
         "translation": "ÜBERSPANN.",
         "needs_translation": false,
-        "max_length": 11,
-        "reverse_text": false
+        "max_length": 11
       },
       "overcurrent": {
         "english": "OVERCURRENT",
         "translation": "ÜBERSTROM",
         "needs_translation": false,
-        "max_length": 11,
-        "reverse_text": false
+        "max_length": 11
       },
       "current_warning": {
         "english": "CURRENT WARNING",
         "translation": "STROM WARNUNG",
         "needs_translation": false,
-        "max_length": 15,
-        "reverse_text": false
+        "max_length": 15
       },
       "overheat": {
         "english": "OVERHEAT",
         "translation": "ZU HEISS",
         "needs_translation": false,
-        "max_length": 8,
-        "reverse_text": false
+        "max_length": 8
       },
       "temp_warning": {
         "english": "TEMP WARNING",
         "translation": "TEMP WARNUNG",
         "needs_translation": false,
-        "max_length": 12,
-        "reverse_text": false
+        "max_length": 12
       },
       "bec_undervoltage": {
         "english": "BEC UNDERVOLTAGE",
         "translation": "BEC UNTERSPANN.",
         "needs_translation": false,
-        "max_length": 16,
-        "reverse_text": false
+        "max_length": 16
       },
       "bec_overvoltage": {
         "english": "BEC OVERVOLTAGE",
         "translation": "BEC ÜBERSPANN.",
         "needs_translation": false,
-        "max_length": 15,
-        "reverse_text": false
+        "max_length": 15
       },
       "bec_overcurrent": {
         "english": "BEC OVERCURRENT",
         "translation": "BEC ÜBERSTROM",
         "needs_translation": false,
-        "max_length": 15,
-        "reverse_text": false
+        "max_length": 15
       },
       "bec_overheat": {
         "english": "BEC OVERHEAT",
         "translation": "BEC ZU HEISS",
         "needs_translation": false,
-        "max_length": 12,
-        "reverse_text": false
+        "max_length": 12
       },
       "bec_voltage": {
         "english": "BEC VOLTAGE",
         "translation": "BEC SPANN.",
         "needs_translation": false,
-        "max_length": 11,
-        "reverse_text": false
+        "max_length": 11
       },
       "motor_hot": {
         "english": "MOTOR HOT",
         "translation": "MOT HEISS",
         "needs_translation": false,
-        "max_length": 9,
-        "reverse_text": false
+        "max_length": 9
       },
       "input_voltage": {
         "english": "INPUT VOLTAGE",
         "translation": "EING.SPANNUNG",
         "needs_translation": false,
-        "max_length": 13,
-        "reverse_text": false
+        "max_length": 13
       },
       "motor_locked": {
         "english": "MOTOR LOCKED",
         "translation": "MOTOR BLOCK.",
         "needs_translation": false,
-        "max_length": 12,
-        "reverse_text": false
+        "max_length": 12
       },
       "throttle_at_start": {
         "english": "THROTTLE AT START",
         "translation": "GAS BEIM START",
         "needs_translation": false,
-        "max_length": 17,
-        "reverse_text": false
+        "max_length": 17
       },
       "throttle_lost": {
         "english": "THROTTLE LOST",
         "translation": "GAS VERLOREN",
         "needs_translation": false,
-        "max_length": 13,
-        "reverse_text": false
+        "max_length": 13
       },
       "throttle": {
         "english": "THROTTLE",
         "translation": "GASSIGN.",
         "needs_translation": false,
-        "max_length": 8,
-        "reverse_text": false
+        "max_length": 8
       },
       "motor_wiring": {
         "english": "MOTOR WIRING",
         "translation": "MOTORANSCHL.",
         "needs_translation": false,
-        "max_length": 12,
-        "reverse_text": false
+        "max_length": 12
       },
       "startup": {
         "english": "STARTUP FAILED",
         "translation": "START FEHLER",
         "needs_translation": false,
-        "max_length": 14,
-        "reverse_text": false
+        "max_length": 14
       },
       "motor_saturated": {
         "english": "MOTOR SATURATED",
         "translation": "MOTOR ANSCHLAG",
         "needs_translation": false,
-        "max_length": 15,
-        "reverse_text": false
+        "max_length": 15
       },
       "consumption": {
         "english": "CONSUMPTION",
         "translation": "VERBRAUCH",
         "needs_translation": false,
-        "max_length": 11,
-        "reverse_text": false
+        "max_length": 11
       },
       "capacity_limit": {
         "english": "CAPACITY LIMIT",
         "translation": "KAPAZ.GRENZE",
         "needs_translation": false,
-        "max_length": 14,
-        "reverse_text": false
+        "max_length": 14
       },
       "current_limit": {
         "english": "CURRENT LIMIT",
         "translation": "STROMGRENZE",
         "needs_translation": false,
-        "max_length": 13,
-        "reverse_text": false
+        "max_length": 13
       },
       "battery_limit": {
         "english": "BATTERY LIMIT",
         "translation": "AKKUGRENZE",
         "needs_translation": false,
-        "max_length": 13,
-        "reverse_text": false
+        "max_length": 13
       },
       "esc_temp_limit": {
         "english": "ESC TEMP LIMIT",
         "translation": "ESC TEMPGRENZE",
         "needs_translation": false,
-        "max_length": 14,
-        "reverse_text": false
+        "max_length": 14
       },
       "bec_temp_limit": {
         "english": "BEC TEMP LIMIT",
         "translation": "BEC TEMPGRENZE",
         "needs_translation": false,
-        "max_length": 14,
-        "reverse_text": false
+        "max_length": 14
       },
       "rudder_cutoff": {
         "english": "RUDDER CUTOFF",
         "translation": "HECK-STOPP",
         "needs_translation": false,
-        "max_length": 13,
-        "reverse_text": false
+        "max_length": 13
       },
       "operation": {
         "english": "OPERATION FAULT",
         "translation": "BETRIEBSFEHLER",
         "needs_translation": false,
-        "max_length": 15,
-        "reverse_text": false
+        "max_length": 15
       },
       "operation_warning": {
         "english": "OPERATION WARNING",
         "translation": "BETRIEBSWARNUNG",
         "needs_translation": false,
-        "max_length": 17,
-        "reverse_text": false
+        "max_length": 17
       },
       "self_test": {
         "english": "SELF TEST",
         "translation": "TESTLAUF",
         "needs_translation": false,
-        "max_length": 9,
-        "reverse_text": false
+        "max_length": 9
       },
       "eeprom": {
         "english": "EEPROM",
         "translation": "EEPROM",
         "needs_translation": false,
-        "max_length": 6,
-        "reverse_text": false
+        "max_length": 6
       },
       "watchdog": {
         "english": "WATCHDOG",
         "translation": "WATCHDOG",
         "needs_translation": false,
-        "max_length": 8,
-        "reverse_text": false
+        "max_length": 8
       },
       "programming_open": {
         "english": "PROGRAMMING OPEN",
         "translation": "PROGRAMM. OFFEN",
         "needs_translation": false,
-        "max_length": 16,
-        "reverse_text": false
+        "max_length": 16
       },
       "rpm_low": {
         "english": "RPM BELOW LIMIT",
         "translation": "DREHZAHL NIEDR.",
         "needs_translation": false,
-        "max_length": 15,
-        "reverse_text": false
+        "max_length": 15
       },
       "setpoint_noise": {
         "english": "SETPOINT NOISE",
         "translation": "SOLLW. STÖRUNG",
         "needs_translation": false,
-        "max_length": 14,
-        "reverse_text": false
+        "max_length": 14
       }
     },
     "battery": {
