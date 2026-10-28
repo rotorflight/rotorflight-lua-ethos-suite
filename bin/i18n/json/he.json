@@ -2506,17 +2506,17 @@
           "reverse_text": true
         },
         "fuel_repeats_below": {
-          "english": "Repeats at 0%",
-          "max_length": 13,
+          "english": "Low fuel repeats",
+          "max_length": 16,
           "needs_translation": false,
-          "translation": "חזרות ב־0%",
+          "translation": "חזרות מתחת ל-0%",
           "reverse_text": true
         },
         "fuel_haptic_below": {
-          "english": "Haptic at 0%",
-          "max_length": 12,
+          "english": "Low fuel haptic",
+          "max_length": 15,
           "needs_translation": false,
-          "translation": "רטט ב־0%",
+          "translation": "רטט מתחת ל-0%",
           "reverse_text": true
         },
         "model_announcement": {

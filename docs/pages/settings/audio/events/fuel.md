@@ -20,8 +20,8 @@ Always available offline without an active flight controller connection. Read-on
 | --- | --- |
 | *Fuel* | Turns the SmartFuel callouts on. Everything below is greyed out while it is off. |
 | *Callout percent* | The step at which a percentage callout is made. *Default* leaves the choice to the flight controller; the others speak every 5, 10, 20, 25 or 50 percent. Defaults to 10. |
-| *Repeats at 0%* | How often a standing low-fuel warning repeats. Range 1 to 10, default 1. |
-| *Haptic at 0%* | Vibrates as well as speaks on a low-fuel warning. Off by default. |
+| *Low fuel repeats* | How often a standing low-fuel warning repeats. Range 1 to 10, default 1. |
+| *Low fuel haptic* | Vibrates as well as speaks on a low-fuel warning. Off by default. |
 
 ## Notes
 

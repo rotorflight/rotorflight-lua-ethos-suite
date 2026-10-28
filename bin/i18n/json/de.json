@@ -2506,18 +2506,18 @@
           "max_length": 9
         },
         "fuel_repeats_below": {
-          "english": "Repeats at 0%",
-          "translation": "Wiederholungen bei 0%",
+          "english": "Low fuel repeats",
+          "translation": "Wiederholungen unter 0%",
           "needs_translation": false,
           "reverse_text": false,
-          "max_length": 13
+          "max_length": 16
         },
         "fuel_haptic_below": {
-          "english": "Haptic at 0%",
-          "translation": "Haptisch bei 0%",
+          "english": "Low fuel haptic",
+          "translation": "Haptisch unter 0%",
           "needs_translation": false,
           "reverse_text": false,
-          "max_length": 12
+          "max_length": 15
         },
         "model_announcement": {
           "english": "Model callout",

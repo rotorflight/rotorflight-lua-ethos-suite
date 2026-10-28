@@ -7506,18 +7506,18 @@
           "translation": "播报百分比"
         },
         "fuel_haptic_below": {
-          "english": "Haptic at 0%",
-          "max_length": 12,
+          "english": "Low fuel haptic",
+          "max_length": 15,
           "needs_translation": false,
           "reverse_text": false,
-          "translation": "0% 时振动"
+          "translation": "低于0%时震动"
         },
         "fuel_repeats_below": {
-          "english": "Repeats at 0%",
-          "max_length": 13,
+          "english": "Low fuel repeats",
+          "max_length": 16,
           "needs_translation": false,
           "reverse_text": false,
-          "translation": "0% 时重复"
+          "translation": "低于0%时重复"
         },
         "governor_state": {
           "english": "Governor state",

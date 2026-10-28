@@ -2506,17 +2506,17 @@
           "reverse_text": false
         },
         "fuel_repeats_below": {
-          "english": "Repeats at 0%",
-          "translation": "Gjentakelser ved 0%",
+          "english": "Low fuel repeats",
+          "translation": "Repeter under 0%",
           "needs_translation": false,
-          "max_length": 13,
+          "max_length": 16,
           "reverse_text": false
         },
         "fuel_haptic_below": {
-          "english": "Haptic at 0%",
-          "translation": "Vibrasjon ved 0%",
+          "english": "Low fuel haptic",
+          "translation": "Haptisk under 0%",
           "needs_translation": false,
-          "max_length": 12,
+          "max_length": 15,
           "reverse_text": false
         },
         "model_announcement": {
