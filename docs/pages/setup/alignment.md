@@ -24,6 +24,10 @@ Greyed out until the flight controller answers. Read-only while the model is arm
 ## Notes
 
 - Changes are written to the flight controller EEPROM upon Save.
+- The preview draws the Rotorflight Configurator's helicopter: grey body with blue
+  trim, skids, and see-through main and tail rotor discs. It follows the live
+  attitude plus any unsaved offsets, seen from behind after a view reset. The
+  tail rotor is on the right of the boom (clockwise main rotor).
 
 ## Related
 

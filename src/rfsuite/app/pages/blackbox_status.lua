@@ -213,6 +213,7 @@ local function open(opts)
       poll()
       if headerHandle then headerHandle.focusReload() end
     end,
+    toolIcon = "app/gfx/nav/erase.png",
     onTool = function() confirmErase(headerHandle and headerHandle.focusTool) end,
   })
 

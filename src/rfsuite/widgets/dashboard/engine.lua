@@ -607,9 +607,6 @@ end
 
 function engine.paint(widget, themeDef, stateDef, state, screenW, screenH)
   context.setWidget(widget)
-  if context.tasks and context.tasks.telemetry and context.tasks.telemetry.collectPresentationStats then
-    context.tasks.telemetry.collectPresentationStats()
-  end
   prepareLayout(stateDef, screenW, screenH, false, FIRST_TYPE_LOAD_MAX)
   -- Not loaded yet (this call's cap didn't cover the whole queue): defer
   -- the rest of this frame to the next tick outright, same "false means

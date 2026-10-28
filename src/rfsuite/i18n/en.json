@@ -3656,6 +3656,18 @@
           "needs_translation": false,
           "translation": "Arm Switch"
         },
+        "arming_disable_flag_26": {
+          "english": "No Filter",
+          "max_length": 10,
+          "needs_translation": false,
+          "translation": "No Filter"
+        },
+        "arming_disable_flag_27": {
+          "english": "Backup RX",
+          "max_length": 10,
+          "needs_translation": false,
+          "translation": "Backup RX"
+        },
         "arming_disable_flag_3": {
           "english": "Bad RX Recovery",
           "max_length": 15,
@@ -6173,6 +6185,12 @@
           "max_length": 7,
           "needs_translation": false,
           "translation": "Vibrate"
+        },
+        "armed_warning": {
+          "english": "Dashboard armed warning",
+          "max_length": 28,
+          "needs_translation": false,
+          "translation": "Dashboard armed warning"
         },
         "arming_flags": {
           "english": "Arming flags",

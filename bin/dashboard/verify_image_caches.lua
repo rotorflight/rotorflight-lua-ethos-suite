@@ -36,6 +36,12 @@
 --     drives the real dashboard widget over its real bus event, so it is the
 --     case that goes red on the pre-fix tree, where clearThemeCache() passed
 --     {theme = true} and the images branch had no caller anywhere.
+--   * Two cases cover drawImageInRect()'s per-draw memo, there because it
+--     runs on paint:
+--     (10) a draw that hits that memo still re-stamps the LRU record, so an
+--     image drawn every frame is never the one evicted;
+--     (11) a repeated draw of the same path allocates nothing, which is why
+--     the memo is there at all.
 --
 -- Not established here, and deliberately so: how many kilobytes any of this
 -- is worth on a radio. That needs a `live` vs `churn` split around
@@ -138,7 +144,10 @@ lcd = setmetatable({
     outstanding[path] = bitmap
     return bitmap
   end,
-}, {__index = function() return function() end end})
+-- Unknown members resolve to one shared no-op, not a fresh closure per access:
+-- case 11 measures allocation on the draw path, and a stub that mints a
+-- function every time lcd.drawBitmap is read would be what it measured.
+}, {__index = function(t, k) local fn = function() end; rawset(t, k, fn); return fn end})
 
 os.stat = function(path)
   if existingFiles[path] then return {size = existingFiles[path]} end
@@ -367,6 +376,57 @@ modelImage.wakeup(neverClearedBox)
 check("case 8: a retained memo does block re-probing (the check can go red)",
   loadBitmapCalls == callsBeforeStale,
   "the memo was re-probed anyway, so case 8's first check proves nothing")
+
+-- ---------------------------------------------------------------------------
+-- Case 10 -- a memoised draw still counts as a use for the LRU
+-- ---------------------------------------------------------------------------
+
+-- drawImageInRect() answers a repeat draw from its own memo without going back
+-- through loadImage(). If that hit did not re-stamp the record, the one image
+-- drawn every frame would look like the oldest entry and be the first evicted.
+resetStubFilesystem()
+clearCaches({images = true})
+local drawn = photoPath("drawn")
+existingFiles[drawn] = 64
+dashboardUtils.drawImageInRect(0, 0, 100, 100, drawn) -- decode, fill the memo
+local drawnIssued = issued[drawn]
+loadDistinct(31, "fill")                               -- the map is now full
+dashboardUtils.drawImageInRect(0, 0, 100, 100, drawn) -- memo hit
+local overflowPath = photoPath("fill-overflow")
+existingFiles[overflowPath] = 64
+dashboardUtils.loadImage(overflowPath)                 -- one over: evict the oldest
+local callsBeforeReload = loadBitmapCalls
+local drawnAgain = dashboardUtils.loadImage(drawn)
+check("case 10: an image drawn from the memo is not the one evicted",
+  drawnAgain == drawnIssued and loadBitmapCalls == callsBeforeReload,
+  "the drawn image was re-decoded, so its memo hit did not count as a use")
+local fill1Again = dashboardUtils.loadImage(photoPath("fill1"))
+check("case 10: the least-recently-used loadImage() entry went instead",
+  fill1Again ~= nil and loadBitmapCalls == callsBeforeReload + 1,
+  "fill1 was still cached, so nothing -- or the wrong entry -- was evicted")
+
+-- ---------------------------------------------------------------------------
+-- Case 11 -- a repeated draw allocates nothing
+-- ---------------------------------------------------------------------------
+
+-- drawImageInRect() runs on paint. Going through loadImage() on every draw
+-- instead would cost a table and several path gsub passes per image per frame;
+-- the memo keeps a hit to one string-keyed lookup. Measured with the collector
+-- stopped, so any per-draw allocation shows up in the count.
+resetStubFilesystem()
+clearCaches({images = true})
+local steady = photoPath("steady")
+existingFiles[steady] = 64
+dashboardUtils.drawImageInRect(0, 0, 100, 100, steady)
+collectgarbage("collect")
+collectgarbage("stop")
+local kbBefore = collectgarbage("count")
+for _ = 1, 1000 do dashboardUtils.drawImageInRect(0, 0, 100, 100, steady) end
+local kbAfter = collectgarbage("count")
+collectgarbage("restart")
+check("case 11: 1000 repeat draws of one path allocate (almost) nothing",
+  kbAfter - kbBefore < 1,
+  string.format("%.1f KB allocated over 1000 draws", kbAfter - kbBefore))
 
 -- ---------------------------------------------------------------------------
 -- Case 9 -- a theme reload actually reaches the images branch

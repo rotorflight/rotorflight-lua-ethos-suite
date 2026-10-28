@@ -30,6 +30,16 @@ first arm flags arrive, so for a moment the flight controller is connected and i
 armed state is missing while the rotor may still be turning. A flight controller that has
 never reported arm flags at all is not affected: these two tiles stay usable for it.
 
+## Armed warning
+
+While the model is armed, the dashboard shows a red bar across the top edge with an
+"Armed" label hanging from its centre, on every theme. It is drawn over the theme and
+moves nothing. It appears only once the FC reports the armed state, and it goes away
+when the model is disarmed.
+
+The warning can be switched off in *Settings* → *General* → *Display* with
+**Dashboard armed warning**. It is on by default.
+
 ## Battery picker
 
 The picker shows the battery profiles as a grid, one cell per pack, with the
@@ -77,7 +87,7 @@ has focus, the same as the toolbar's keys.
 | Link | Telemetry link type (S.Port or CRSF), plus link quality when the link reports it. |
 | Flight mode | Failsafe, GPS Rescue, Rescue, Horizon, Angle, or Normal, from the FC's Flight Mode sensor. The first that applies, in the order the firmware's own CRSF flight-mode text uses. |
 | Governor | Governor state (OFF, IDLE, SPOOLUP, ACTIVE, …), when the governor sensor or the System Status sensor reports. With the FC's governor mode set to None or Limit (an external ESC governs), the state never leaves OFF in the firmware, so the tile shows **PASSTHRU** instead of OFF. |
-| Arming | **Ready** (green), **Blocked** (amber), or **Armed** (red). When blocked, each reason is listed at the bottom of the column. `-` until the FC reports its arming flags (or System Status). |
+| Arming | **Ready** (green), **Blocked** (amber), or **Armed** (red). When blocked, each reason is listed at the bottom of the column, with the same names as [FBL Status](../pages/tools/diagnostics/fblstatus.md) (the dashboard only knows the MSP API version, so it assumes 26 flags before API 12.9, 27 on 12.9 and 12.10, and 29 after that). *Arm Switch* is left out because it only ever accompanies another reason. `-` until the FC reports its arming flags (or System Status). |
 | Profile | Active PID, rate and battery profile numbers. |
 | BEC Voltage | BEC voltage, when the sensor reports it. |
 | Blackbox | How full the blackbox dataflash is. On a board without dataflash it shows *No dataflash* instead of a capacity. |

@@ -70,6 +70,7 @@ function connectionDetails.open()
     buttons = {{label = BTN_OK, action = function() return true end}},
     wakeup = function() end,
     paint = function() end,
+    options = TEXT_LEFT,
   })
 end
 

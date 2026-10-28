@@ -342,6 +342,7 @@ local function open(opts)
         telemetry.crsf_telemetry_mode = CRSF_TELEMETRY_MODE_CUSTOM
       end
     end,
+    toolIcon = "app/gfx/nav/defaults.png",
     onTool = function(focusFn)
       if not runtime.loaded then return end
       -- Captured here, not closed over directly in the dialog button's

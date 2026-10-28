@@ -111,6 +111,7 @@ local function fieldStub(slot)
     focus = function() end,
     setText = function() end,
     setEnabled = function() end,
+    enable = function() end,
     setValue = function() end,
     getValue = function() return nil end,
     show = function() end,

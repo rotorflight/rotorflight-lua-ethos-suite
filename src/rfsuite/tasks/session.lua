@@ -41,6 +41,11 @@ local SmartFuel = requireModule("lib/smartfuel_calc.lua")
 local DiySensor = requireModule("lib/diy_sensor.lua")
 local telemetryConfig = requireModule("lib/msp_telemetry_config.lua")
 local flightTimer = requireModule("tasks/flight_timer.lua")
+-- Flight phase and extremes, driven here every tick so they are kept with the
+-- dashboard closed (#2344). The dashboard only reads the result.
+local flightRecord = requireModule("lib/flight_stats.lua").new()
+-- The sensor values the dashboard shows, read here for the extremes (#2344).
+local liveSensors = requireModule("lib/live_sensors.lua")
 local debugLog = requireModule("lib/debug_log.lua")
 local rxMapApi = requireModule("lib/msp_rx_map.lua")
 
@@ -155,10 +160,10 @@ local session = {
   armDisableFlags = nil,
   -- Physical RX channel index for each logical control (MSP_RX_MAP, cmd
   -- 64), read once per connect same as the rest of runHandshake(). Lets
-  -- widgets/dashboard/flightmode.lua resolve the radio's own throttle
-  -- channel via system.getSource({category = CATEGORY_CHANNEL, member =
+  -- lib/flight_stats.lua resolve the radio's own throttle channel via
+  -- system.getSource({category = CATEGORY_CHANNEL, member =
   -- rxMap.throttle}) -- a local, instant signal, not FC telemetry -- see
-  -- that file's own header for why this matters.
+  -- lib/msp_rx_map.lua's header for why this matters.
   rxMap = nil,
   handshake = {
     apiVersion = false,
@@ -453,6 +458,8 @@ local function flush()
     armedUnconfirmed = session.armedUnconfirmed,
     armDisableFlags = session.armDisableFlags,
     rxMap = session.rxMap,
+    flight = flightRecord,
+    flightState = session.flightState,
     handshake = copyHandshake(session.handshake),
   })
 end
@@ -1731,6 +1738,11 @@ local function wakeup(mspQueue, protocol, transport, simSensors)
   end
 
   updateFlightTimer(now)
+  local flightPhase = flightRecord:update(session, liveSensors.read, now)
+  if flightPhase ~= session.flightState then
+    session.flightState = flightPhase
+    publish()
+  end
 
   if pendingStatsSync and pendingStatsSyncAt and now >= pendingStatsSyncAt then
     pendingStatsSync = false

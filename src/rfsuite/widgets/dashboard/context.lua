@@ -8,8 +8,11 @@ if cached then return cached end
 
 local requireModule = package.loaded["rfsuite.lib.require"] or assert(loadfile("lib/require.lua"))()
 local buildInfo = requireModule("lib/build_info.lua")
+local flightStats = requireModule("lib/flight_stats.lua")
+local liveSensors = requireModule("lib/live_sensors.lua")
 local engineType = requireModule("lib/engine_type.lua")
 local ethosVersion = requireModule("lib/ethos_version.lua")
+local armingFlags = requireModule("lib/arming_flags.lua")
 
 local context = {
   config = {
@@ -57,6 +60,19 @@ local paletteCache = {}
 local themeStateCache = {}
 local themePaletteCache = {}
 local systemThemeSupport = nil
+-- drawImageInRect()'s per-draw memo: imageCache[fallback][path]. It runs on
+-- paint, so a hit has to allocate nothing -- going through loadImage() every
+-- frame re-normalised the path (several gsub passes) and built a table per
+-- call. Two lookups instead, and no string or table is built.
+--
+-- It must not pin bitmaps either: each inner table holds the imageBitmapCache
+-- *record*, not the bitmap, and its values are weak, so once the LRU below
+-- evicts a record nothing here keeps it (or its bitmap) alive. `false` marks
+-- a path that resolved to nothing; that is a boolean, never collected, and
+-- goes on clearCaches({images = true}) with the rest. The outer table has one
+-- key per distinct fallback logo (a handful), so it stays strong.
+local imageCache = {}
+local WEAK_VALUES = {__mode = "v"}
 local imagePathCache = {}
 -- imageBitmapCache holds decoded bitmaps, so unlike imagePathCache above it
 -- is bounded rather than merely cleared. Its key space is open-ended: every
@@ -78,35 +94,12 @@ local imagePathCache = {}
 local IMAGE_BITMAP_CACHE_MAX = 32
 local imageBitmapCache = {}
 local imageBitmapClock = 0
-local liveSourceCache = {}
-local liveMissRetryAt = {}
-local liveMissCount = {}
-local liveRevalidateAt = {}
+-- Assigned next to context.utils.loadImage() below; declared here because
+-- drawImageInRect() sits earlier in the file.
+local loadImageEntry
 local electricEngineCacheConfig = nil
 local electricEngineCacheModelType = nil
 local electricEngineCacheResult = false
--- Same fix as lib/telemetry_sensors.lua's own MISS_RETRY_INITIAL/_MAX: a flat
--- 5s lockout from the first miss meant a box whose sensor simply hadn't
--- broadcast yet (common right after connect) stayed blank for up to 5s
--- rather than the fraction of a second it actually took to start
--- broadcasting. Exponential backoff keeps the same eventual 5s cap for a
--- sensor that's genuinely absent on this build, while resolving a merely-late
--- one much sooner.
-local LIVE_MISS_RETRY_INITIAL = 0.5
-local LIVE_MISS_RETRY_MAX = 5.0
-local LIVE_MISS_RETRY_MULTIPLIER = 2
--- Same fix as lib/telemetry_sensors.lua's own REVALIDATE_INTERVAL, ported
--- here after noticing this cache never got it: liveSensorSource() picks the
--- *first* candidate that resolves and, unlike the miss path above, kept it
--- forever with no way back through the candidate list. If that first hit is
--- a stale/unwired duplicate sensor slot -- or one Ethos discovered before it
--- ever carried a real reading -- the box using it (e.g. the header's rssi
--- step-gauge) gets stuck showing that slot's value (often 0/nil) for the
--- rest of the session, exactly the "populates once, then stops updating"
--- symptom lib/telemetry_sensors.lua's own comment describes. Re-running the
--- scan every LIVE_REVALIDATE_INTERVAL seconds gives a better candidate that
--- shows up later a chance to take over, without rescanning every wakeup.
-local LIVE_REVALIDATE_INTERVAL = 8.0
 local DASHBOARD_RESOLUTION_TOLERANCE = 12
 local DASHBOARD_SUPPORTED_RESOLUTIONS = {
   {784, 294}, {784, 316}, {800, 458}, {800, 480},
@@ -117,6 +110,11 @@ local DASHBOARD_THEME_WIDTHS = {800, 784, 640, 630, 480, 472}
 local ETHOS_THEME_MIN_VERSION = {26, 1, 0}
 local LOGO_DARK_FALLBACK = "widgets/dashboard/gfx/logo-dark.png"
 local LOGO_LIGHT_FALLBACK = "widgets/dashboard/gfx/logo-light.png"
+-- The logo's pre-rendered sizes, filled in by drawImageInRect() on the first
+-- logo draw (see there). Not built here: this file loads on the dashboard's
+-- first wakeup, which some themes run within a few dozen instructions of the
+-- Ethos limit.
+local logoW, logoH, logoVariants
 local FONT_LISTS_BY_RESOLUTION = {
   ["800x480"] = {value_default = {FONT_XXS, FONT_XS, FONT_S, FONT_STD, FONT_L, FONT_XL, FONT_XXL, FONT_XXXXL}, value_reduced = {FONT_XXS, FONT_XS, FONT_S, FONT_STD, FONT_L}, value_title = {FONT_XXS, FONT_XS, FONT_S, FONT_STD}},
   ["480x320"] = {value_default = {FONT_XXS, FONT_XS, FONT_S, FONT_STD, FONT_L, FONT_XL}, value_reduced = {FONT_XXS, FONT_XS, FONT_S, FONT_STD, FONT_L}, value_title = {FONT_XXS, FONT_XS, FONT_S}},
@@ -145,134 +143,6 @@ local THEME_STATE_KEYS = {
   {"safeColor", "THEME_SAFE_COLOR"},
   {"safeContrastingColor", "THEME_SAFE_CONTRASTING_COLOR"},
   {"pageBgColor", "THEME_PAGE_BGCOLOR"},
-}
-local LIVE_SENSOR_CANDIDATES = {
-  sport = {
-    rssi = {
-      {appId = 0xF010, subId = 0},
-    },
-    voltage = {
-      {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x0210},
-      {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x0211},
-      {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x0218},
-      {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x021A},
-    },
-    consumption = {
-      {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5250},
-    },
-    current = {
-      {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x0200},
-      {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x0208},
-      {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x0201},
-    },
-    throttle_percent = {
-      {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5440},
-      {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x51A4},
-      {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5269},
-    },
-    rpm = {
-      {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x0500},
-    },
-    tailspeed = {
-      {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x0501},
-    },
-    link = {
-      {appId = 0xF101, subId = 0},
-      "RSSI",
-    },
-    vfr = {
-      {appId = 0xF010, subId = 0},
-    },
-    smartfuel = {
-      {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x0600},
-      {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5FE1},
-    },
-    temp_esc = {
-      {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x0401},
-      {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x0418},
-    },
-    temp_mcu = {
-      {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x0400},
-      {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x0401},
-    },
-    bec_voltage = {
-      {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x0901},
-      {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x0219},
-    },
-    altitude = {
-      {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x0100},
-    },
-  },
-  crsf = {
-    -- subId=2 is the dedicated Link Quality field on firmware that broadcasts
-    -- Rotorflight's newer CRSF telemetry frame (probed pre-rewrite via a
-    -- 0xEE01 marker sensor -- see tasks/scheduler/telemetry/telemetry.lua's
-    -- detectSourceMode() in the pre-rewrite tree). Older firmware without
-    -- that marker never exposed subId=2 at all and instead used this
-    -- subIdStart/subIdEnd range (see that same tree's
-    -- sources/crsf_legacy.lua), which is what "link" below also uses as its
-    -- structured candidate. Kept as a plain fallback here rather than fully
-    -- reviving the old two-table firmware-format split: it stops rssi being
-    -- permanently stuck on nil for old-firmware users, though the range's
-    -- value is raw antenna RSSI rather than a true 0-100 LQ%, so it may not
-    -- land on this box's step gauge as cleanly as subId=2 does.
-    rssi = {
-      {crsfId = 0x14, subId = 2},
-      {crsfId = 0x14, subIdStart = 0, subIdEnd = 1},
-    },
-    voltage = {
-      {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1011},
-      {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1041},
-      {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1051},
-      {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1080},
-    },
-    consumption = {
-      {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1013},
-    },
-    current = {
-      {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1012},
-      {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1042},
-      {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x104A},
-    },
-    throttle_percent = {
-      {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1035},
-    },
-    rpm = {
-      {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x10C0},
-    },
-    tailspeed = {
-      {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x10C1},
-    },
-    link = {
-      {crsfId = 0x14, subIdStart = 0, subIdEnd = 1},
-      "Rx RSSI1",
-    },
-    -- Same rssi/subId=2 fallback reasoning as above -- vfr mirrors rssi
-    -- one-for-one in this table (see sensorValue()'s `name == "rssi" or
-    -- name == "vfr"` branch, which already treats them identically).
-    vfr = {
-      {crsfId = 0x14, subId = 2},
-      {crsfId = 0x14, subIdStart = 0, subIdEnd = 1},
-    },
-    smartfuel = {
-      {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1014},
-      {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x5FE1},
-    },
-    temp_esc = {
-      {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x10A0},
-      {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1047},
-    },
-    temp_mcu = {
-      {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x10A3},
-    },
-    bec_voltage = {
-      {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1081},
-      {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x1049},
-    },
-    altitude = {
-      {category = CATEGORY_TELEMETRY_SENSOR, appId = 0x10B2},
-    },
-  },
 }
 
 local NAMED_COLORS = {
@@ -631,11 +501,8 @@ local GOVERNOR_LABELS = {
   [101] = "DISARMED",
 }
 
-local function normalizeLiveSensorName(name)
-  if name == "headspeed" then return "rpm" end
-  return name
-end
-
+-- The live source lookups and the sensor values are in lib/live_sensors.lua, shared
+-- with the session's flight recording (#2344). These keep the dashboard's own names.
 local function liveProtocol()
   local protocol = currentWidget and currentWidget.mspTransport
   if protocol == "sport" or protocol == "crsf" then return protocol end
@@ -643,72 +510,11 @@ local function liveProtocol()
 end
 
 local function liveSensorSource(protocol, name)
-  protocol = protocol or liveProtocol()
-  name = normalizeLiveSensorName(name)
-  if not protocol or not name then return nil end
-
-  local byProtocol = liveSourceCache[protocol]
-  if not byProtocol then
-    byProtocol = {}
-    liveSourceCache[protocol] = byProtocol
-  end
-
-  local now = os.clock()
-  local source = byProtocol[name]
-  if source then
-    local revalidate = liveRevalidateAt[protocol]
-    local dueAt = revalidate and revalidate[name]
-    if not dueAt or now < dueAt then return source end
-    -- Due for a recheck: fall through and re-scan candidates instead of
-    -- trusting this cached source forever (see LIVE_REVALIDATE_INTERVAL's
-    -- comment above).
-    byProtocol[name] = nil
-    source = nil
-  end
-
-  local misses = liveMissRetryAt[protocol]
-  if misses and misses[name] and now < misses[name] then return nil end
-
-  local candidates = LIVE_SENSOR_CANDIDATES[protocol] and LIVE_SENSOR_CANDIDATES[protocol][name]
-  if not candidates then return nil end
-  for i = 1, #candidates do
-    source = system.getSource(candidates[i])
-    if source then
-      byProtocol[name] = source
-      if misses then misses[name] = nil end
-      local missCounts = liveMissCount[protocol]
-      if missCounts then missCounts[name] = nil end
-      local revalidate = liveRevalidateAt[protocol]
-      if not revalidate then
-        revalidate = {}
-        liveRevalidateAt[protocol] = revalidate
-      end
-      revalidate[name] = now + LIVE_REVALIDATE_INTERVAL
-      return source
-    end
-  end
-
-  if not misses then
-    misses = {}
-    liveMissRetryAt[protocol] = misses
-  end
-  local missCounts = liveMissCount[protocol]
-  if not missCounts then
-    missCounts = {}
-    liveMissCount[protocol] = missCounts
-  end
-  local count = (missCounts[name] or 0) + 1
-  missCounts[name] = count
-  local interval = math.min(LIVE_MISS_RETRY_INITIAL * (LIVE_MISS_RETRY_MULTIPLIER ^ (count - 1)), LIVE_MISS_RETRY_MAX)
-  misses[name] = now + interval
-  return nil
+  return liveSensors.source(protocol or liveProtocol(), name)
 end
 
 local function liveSensorValue(name)
-  local source = liveSensorSource(nil, name)
-  if not source then return nil end
-  if source.state and source:state() == false then return nil end
-  return source:value()
+  return liveSensors.value(liveProtocol(), name)
 end
 
 local function temperatureUnit()
@@ -764,45 +570,9 @@ local function localizeTemperature(value, minValue, maxValue, thresholds)
   return convertedValue, nil, unit, convertedMin, convertedMax, convertedThresholds
 end
 
-local function roundSigned(value)
-  if value >= 0 then return math.floor(value + 0.5) end
-  return -math.floor(-value + 0.5)
-end
-
-local function updateMinMax(stats, minKey, maxKey, value)
-  value = tonumber(value)
-  if value == nil then return end
-  if stats[minKey] == nil or value < stats[minKey] then stats[minKey] = value end
-  if stats[maxKey] == nil or value > stats[maxKey] then stats[maxKey] = value end
-end
-
-local STAT_SUFFIXES = {
-  rssi = "Rssi",
-  link = "Link",
-  vfr = "Vfr",
-  voltage = "Voltage",
-  cell_voltage = "CellVoltage",
-  consumption = "Consumption",
-  smartconsumption = "Consumption",
-  current = "Current",
-  throttle_percent = "ThrottlePercent",
-  rpm = "Rpm",
-  headspeed = "Rpm",
-  tailspeed = "Tailspeed",
-  smartfuel = "FuelPercent",
-  fuel = "FuelPercent",
-  temp_mcu = "TempMcu",
-  temp_esc = "TempEsc",
-  bec_voltage = "BecVoltage",
-  altitude = "Altitude",
-  watts = "Watts",
-}
-
-local STAT_ALIASES = {
-  headspeed = "rpm",
-  smartconsumption = "consumption",
-  fuel = "smartfuel",
-}
+-- Stat keys and min/max suffixes are the session's (lib/flight_stats.lua, #2344).
+local STAT_SUFFIXES = flightStats.STAT_SUFFIXES
+local statKey = flightStats.statKey
 
 -- getSensorStats() returns one table per sensor, overwritten on each call, for
 -- every sensor whose min/max live in the flat "min<Suffix>"/"max<Suffix>" keys.
@@ -812,120 +582,8 @@ local STAT_ALIASES = {
 -- as the temperature cache just above.
 local sensorStatsResults = {}
 
-local PRESENTATION_STAT_SOURCES = {
-  "voltage",
-  "cell_voltage",
-  "current",
-  "consumption",
-  "smartconsumption",
-  "throttle_percent",
-  "rpm",
-  "headspeed",
-  "tailspeed",
-  "link",
-  "rssi",
-  "vfr",
-  "smartfuel",
-  "fuel",
-  "temp_mcu",
-  "temp_esc",
-  "bec_voltage",
-  "altitude",
-  "watts",
-  "esc_load",
-}
-
-local function statKey(name)
-  return STAT_ALIASES[name or ""] or name
-end
-
-local function recordSensorStat(name, value)
-  local widget = currentWidget
-  if not widget or widget.flightmodeState ~= "inflight" or type(widget.dashboardStats) ~= "table" then return end
-  value = tonumber(value)
-  if value == nil then return end
-
-  local key = statKey(name)
-  local stats = widget.dashboardStats
-  local entry = stats[key]
-  if not entry then
-    entry = {min = value, max = value, sum = 0, count = 0, avg = value}
-    stats[key] = entry
-  end
-  if value < entry.min then entry.min = value end
-  if value > entry.max then entry.max = value end
-  entry.sum = (entry.sum or 0) + value
-  entry.count = (entry.count or 0) + 1
-  entry.avg = entry.sum / entry.count
-
-  if key == "rpm" then
-    if entry.avg and entry.avg > 0 then
-      widget.headspeedVariancePct = roundSigned((math.abs(value - entry.avg) / entry.avg) * 100)
-    else
-      widget.headspeedVariancePct = nil
-    end
-  end
-
-  local suffix = STAT_SUFFIXES[name or ""]
-  if suffix then updateMinMax(stats, "min" .. suffix, "max" .. suffix, value) end
-end
-
 local function sensorValue(name)
-  local widget = currentWidget
-  if not widget then return nil end
-  if widget.connected ~= true then return nil end
-  if name == "voltage" then return widget.voltage or liveSensorValue(name), "V" end
-  if name == "cell_voltage" then
-    local cells = widget.batteryConfig and tonumber(widget.batteryConfig.cellCount)
-    local voltage = tonumber(widget.voltage) or tonumber(liveSensorValue("voltage"))
-    if cells and cells > 0 and voltage then return voltage / cells, "V" end
-    return nil, "V"
-  end
-  if name == "consumption" or name == "smartconsumption" then return widget.consumption or liveSensorValue("consumption"), "mAh" end
-  if name == "current" then return widget.current or liveSensorValue(name), "A" end
-  if name == "throttle_percent" then return widget.throttlePercent or liveSensorValue(name), "%" end
-  if name == "rpm" or name == "headspeed" then return widget.rpm or liveSensorValue(name), "rpm" end
-  if name == "tailspeed" then return liveSensorValue(name), "rpm" end
-  if name == "link" then return widget.linkQuality or liveSensorValue(name), "dB" end
-  if name == "rssi" or name == "vfr" then return liveSensorValue(name), "%" end
-  if name == "smartfuel" or name == "fuel" then return widget.fuelPercent or liveSensorValue("smartfuel"), "%" end
-  if name == "watts" then
-    local voltage = tonumber(widget.voltage) or tonumber(liveSensorValue("voltage"))
-    local current = tonumber(widget.current) or tonumber(liveSensorValue("current"))
-    if voltage and current then return voltage * current, "W" end
-    return nil, "W"
-  end
-  -- Derived, not measured: the current as a percentage of the speed controller's own limit (#2355).
-  -- Nil where no limit is on file for the model, which a box draws as `--`.
-  if name == "esc_load" then
-    local limit = tonumber(widget.escCurrentLimit)
-    local current = tonumber(widget.current) or tonumber(liveSensorValue("current"))
-    if limit and limit > 0 and current then return current / limit * 100, "%" end
-    return nil, "%"
-  end
-  if name == "governor" then return widget.governorState end
-  if name == "pid_profile" then return widget.pidProfile end
-  if name == "rate_profile" then return widget.rateProfile end
-  if name == "battery_profile" then return widget.batteryProfile end
-  if name == "temp_mcu" then return widget.tempMcu or liveSensorValue(name), "°C" end
-  if name == "temp_esc" then return widget.tempEsc or liveSensorValue(name), "°C" end
-  if name == "bec_voltage" then return widget.becVoltage or liveSensorValue(name), "V" end
-  if name == "altitude" then return liveSensorValue(name), "m" end
-  if name == "armflags" then
-    if widget.isArmed == true then return 1 end
-    if widget.isArmed == false then return 0 end
-  end
-  if name == "armdisableflags" then return widget.armDisableFlags end
-  return nil
-end
-
-function context.tasks.telemetry.collectPresentationStats()
-  if not currentWidget or currentWidget.flightmodeState ~= "inflight" then return end
-  for i = 1, #PRESENTATION_STAT_SOURCES do
-    local name = PRESENTATION_STAT_SOURCES[i]
-    local value = sensorValue(name)
-    recordSensorStat(name, value)
-  end
+  return liveSensors.read(currentWidget, name)
 end
 
 context.tasks.telemetry.sensorTable = {
@@ -953,7 +611,6 @@ context.tasks.telemetry.sensorTable = {
 
 function context.tasks.telemetry.getSensor(name, minValue, maxValue, thresholds)
   local value, unit = sensorValue(name)
-  recordSensorStat(name, value)
   local sensorDef = context.tasks.telemetry.sensorTable[name]
   local localize = sensorDef and sensorDef.localizations
   if type(localize) == "function" then
@@ -995,9 +652,9 @@ function context.tasks.telemetry.getSensorStats(name)
     return cache
   end
   if entry then return entry end
-  -- recordSensorStat() writes stats[statKey(name)] and the flat
-  -- min<Suffix>/max<Suffix> keys from the same value, and clearDashboardStats()
-  -- empties the table as a whole (dashboard.lua). A flat key therefore only
+  -- The session's sample() (lib/flight_stats.lua) writes stats[statKey(name)] and
+  -- the flat min<Suffix>/max<Suffix> keys from the same value, and its clear()
+  -- empties the table as a whole. A flat key therefore only
   -- exists while the record above does, which the two returns above already
   -- cover -- so the temperature branch this path used to carry was unreachable.
   local suffix = STAT_SUFFIXES[name or ""]
@@ -1587,6 +1244,7 @@ function context.widgets.dashboard.clearCaches(options)
     systemThemeSupport = nil
   end
   if options.images then
+    clearTable(imageCache)
     clearTable(imagePathCache)
     clearTable(imageBitmapCache)
     -- rfsuite.session IS context.session here: object modules get this very
@@ -1600,9 +1258,7 @@ function context.widgets.dashboard.clearCaches(options)
     end
   end
   if options.liveSources then
-    clearTable(liveSourceCache)
-    clearTable(liveMissRetryAt)
-    clearTable(liveMissCount)
+    liveSensors.reset()
   end
 end
 
@@ -1840,17 +1496,69 @@ function utils.boxContentRect(x, y, w, h, bgcolor)
   return boxContentRect(x, y, w, h, bgcolor)
 end
 
--- Draws `image` (a path string, resolved+cached through loadImage(), or an
+-- Draws `image` (a path string, resolved+cached through imageCache, or an
 -- already-loaded bitmap handle) fitted/aligned inside the given rect.
 -- Extracted from utils.box()'s own image branch so title-only callers
 -- (objects/image/{image,model}.lua) can draw their image against
 -- utils.prepareTextLayout()'s cached content region without going through
 -- utils.box()'s (uncached) title-measurement path a second time.
+--
+-- imageCache holds the imageBitmapCache record weakly (see its declaration),
+-- so the bitmap stays bounded by the LRU. A hit re-stamps the record: an image
+-- drawn every frame is the most recently used one, not a candidate for
+-- eviction just because the draw path never went back through loadImage().
 local function drawImageInRect(regionX, regionY, regionW, regionH, image, imagewidth, imageheight, imagealign, bgcolor)
   local bitmap = nil
+  -- The logo comes pre-rendered at several sizes (widest first) and is drawn
+  -- at the largest that fits, unscaled: Ethos scales bitmaps by dropping or
+  -- repeating whole pixel columns, which makes the lettering wobble.
+  if (image == LOGO_DARK_FALLBACK or image == LOGO_LIGHT_FALLBACK) and not imagewidth and not imageheight then
+    if not logoVariants then
+      logoW = {400, 370, 340, 310, 280, 250, 220, 190, 160, 130, 100}
+      logoH = {69, 64, 59, 54, 49, 44, 39, 34, 29, 24, 19}
+      logoVariants = {
+        [LOGO_DARK_FALLBACK] = {
+          LOGO_DARK_FALLBACK,
+          "widgets/dashboard/gfx/logo/dark-370.png", "widgets/dashboard/gfx/logo/dark-340.png",
+          "widgets/dashboard/gfx/logo/dark-310.png", "widgets/dashboard/gfx/logo/dark-280.png",
+          "widgets/dashboard/gfx/logo/dark-250.png", "widgets/dashboard/gfx/logo/dark-220.png",
+          "widgets/dashboard/gfx/logo/dark-190.png", "widgets/dashboard/gfx/logo/dark-160.png",
+          "widgets/dashboard/gfx/logo/dark-130.png", "widgets/dashboard/gfx/logo/dark-100.png",
+        },
+        [LOGO_LIGHT_FALLBACK] = {
+          LOGO_LIGHT_FALLBACK,
+          "widgets/dashboard/gfx/logo/light-370.png", "widgets/dashboard/gfx/logo/light-340.png",
+          "widgets/dashboard/gfx/logo/light-310.png", "widgets/dashboard/gfx/logo/light-280.png",
+          "widgets/dashboard/gfx/logo/light-250.png", "widgets/dashboard/gfx/logo/light-220.png",
+          "widgets/dashboard/gfx/logo/light-190.png", "widgets/dashboard/gfx/logo/light-160.png",
+          "widgets/dashboard/gfx/logo/light-130.png", "widgets/dashboard/gfx/logo/light-100.png",
+        },
+      }
+    end
+    local logoPaths = logoVariants[image]
+    for i = 1, #logoW do
+      if logoW[i] <= regionW and logoH[i] <= regionH then
+        image, imagewidth, imageheight = logoPaths[i], logoW[i], logoH[i]
+        break
+      end
+    end
+  end
   if type(image) == "string" then
     local fallbackLogo = utils.getLogoFallbackForBackground and utils.getLogoFallbackForBackground(bgcolor)
-    bitmap = context.utils.loadImage(image, nil, fallbackLogo)
+    local byFallback = imageCache[fallbackLogo or ""]
+    if not byFallback then
+      byFallback = setmetatable({}, WEAK_VALUES)
+      imageCache[fallbackLogo or ""] = byFallback
+    end
+    local entry = byFallback[image]
+    if entry == nil then
+      entry = loadImageEntry(image, nil, fallbackLogo) or false
+      byFallback[image] = entry
+    elseif entry then
+      imageBitmapClock = imageBitmapClock + 1
+      entry.used = imageBitmapClock
+    end
+    if entry then bitmap = entry.bitmap end
   else
     bitmap = image
   end
@@ -2210,7 +1918,10 @@ function utils.drawArc(cx, cy, radius, thickness, startAngle, endAngle, arcColor
     else
       local mid = startAngle + sweep / 2
       lcd.drawAnnulusSector(cx, cy, inner, outer, startAngle, mid)
-      lcd.drawAnnulusSector(cx, cy, inner, outer, mid, endAngle)
+      -- Overlap the split edges to hide the antialiasing seam. Keep each
+      -- sector at most 180 degrees, including for full-circle callers.
+      local overlap = math.min(1, 180 - sweep / 2)
+      lcd.drawAnnulusSector(cx, cy, inner, outer, mid - overlap, endAngle)
     end
   else
     lcd.drawCircle(cx, cy, outer)
@@ -2409,45 +2120,53 @@ end
 
 local function cacheImageBitmap(key, bitmap)
   imageBitmapClock = imageBitmapClock + 1
-  imageBitmapCache[key] = {bitmap = bitmap, used = imageBitmapClock}
+  local entry = {bitmap = bitmap, used = imageBitmapClock}
+  imageBitmapCache[key] = entry
   trimImageBitmapCache()
+  return entry
+end
+
+-- One candidate path -> its imageBitmapCache record, decoding on a miss.
+local function loadImageEntryFor(rawImage)
+  local image = normalizeImagePath(rawImage)
+  if not image then return nil end
+
+  local entry = imageBitmapCache[image]
+  if entry then
+    imageBitmapClock = imageBitmapClock + 1
+    entry.used = imageBitmapClock
+    return entry
+  end
+
+  local path = imagePathCache[image]
+  if path == nil then
+    for _, candidate in ipairs(imageCandidates(image)) do
+      if fileExists(candidate) then
+        path = normalizeImagePath(candidate)
+        break
+      end
+    end
+    imagePathCache[image] = path or false
+  elseif path == false then
+    path = nil
+  end
+
+  if path then
+    local bitmap = loadBitmap(path)
+    if bitmap then return cacheImageBitmap(image, bitmap) end
+  end
+  return nil
+end
+
+-- First of up to three candidates that resolves. An `or` chain rather than a
+-- loop over {image1, image2, image3}: that table was one allocation per call.
+loadImageEntry = function(image1, image2, image3)
+  return loadImageEntryFor(image1) or loadImageEntryFor(image2) or loadImageEntryFor(image3)
 end
 
 function context.utils.loadImage(image1, image2, image3)
-  local images = {image1, image2, image3}
-  for i = 1, 3 do
-    local image = normalizeImagePath(images[i])
-    if image then
-      local entry = imageBitmapCache[image]
-      if entry then
-        imageBitmapClock = imageBitmapClock + 1
-        entry.used = imageBitmapClock
-        return entry.bitmap
-      end
-
-      local path = imagePathCache[image]
-      if path == nil then
-        for _, candidate in ipairs(imageCandidates(image)) do
-          if fileExists(candidate) then
-            path = normalizeImagePath(candidate)
-            break
-          end
-        end
-        imagePathCache[image] = path or false
-      elseif path == false then
-        path = nil
-      end
-
-      if path then
-        local bitmap = loadBitmap(path)
-        if bitmap then
-          cacheImageBitmap(image, bitmap)
-          return bitmap
-        end
-      end
-    end
-  end
-
+  local entry = loadImageEntry(image1, image2, image3)
+  if entry then return entry.bitmap end
   return nil
 end
 
@@ -2476,35 +2195,6 @@ function context.utils.isImageTooLarge(path, maxBytes)
   return size > (tonumber(maxBytes) or DEFAULT_MAX_IMAGE_BYTES)
 end
 
-local ARMING_DISABLE_FLAG_TAG = {
-  [0] = "@i18n(app.modules.fblstatus.arming_disable_flag_0)@",
-  [1] = "@i18n(app.modules.fblstatus.arming_disable_flag_1)@",
-  [2] = "@i18n(app.modules.fblstatus.arming_disable_flag_2)@",
-  [3] = "@i18n(app.modules.fblstatus.arming_disable_flag_3)@",
-  [4] = "@i18n(app.modules.fblstatus.arming_disable_flag_4)@",
-  [5] = "@i18n(app.modules.fblstatus.arming_disable_flag_5)@",
-  [6] = "@i18n(app.modules.fblstatus.arming_disable_flag_6)@",
-  [7] = "@i18n(app.modules.fblstatus.arming_disable_flag_7)@",
-  [8] = "@i18n(app.modules.fblstatus.arming_disable_flag_8)@",
-  [9] = "@i18n(app.modules.fblstatus.arming_disable_flag_9)@",
-  [10] = "@i18n(app.modules.fblstatus.arming_disable_flag_10)@",
-  [11] = "@i18n(app.modules.fblstatus.arming_disable_flag_11)@",
-  [12] = "@i18n(app.modules.fblstatus.arming_disable_flag_12)@",
-  [13] = "@i18n(app.modules.fblstatus.arming_disable_flag_13)@",
-  [14] = "@i18n(app.modules.fblstatus.arming_disable_flag_14)@",
-  [15] = "@i18n(app.modules.fblstatus.arming_disable_flag_15)@",
-  [16] = "@i18n(app.modules.fblstatus.arming_disable_flag_16)@",
-  [17] = "@i18n(app.modules.fblstatus.arming_disable_flag_17)@",
-  [18] = "@i18n(app.modules.fblstatus.arming_disable_flag_18)@",
-  [19] = "@i18n(app.modules.fblstatus.arming_disable_flag_19)@",
-  [20] = "@i18n(app.modules.fblstatus.arming_disable_flag_20)@",
-  [21] = "@i18n(app.modules.fblstatus.arming_disable_flag_21)@",
-  [22] = "@i18n(app.modules.fblstatus.arming_disable_flag_22)@",
-  [23] = "@i18n(app.modules.fblstatus.arming_disable_flag_23)@",
-  [24] = "@i18n(app.modules.fblstatus.arming_disable_flag_24)@",
-  [25] = "@i18n(app.modules.fblstatus.arming_disable_flag_25)@",
-}
-
 -- Bit 0 (ARMED) is the only bit that reflects current arm state -- bits 1
 -- (WAS_EVER_ARMED) and 2 (WAS_ARMED_WITH_PREARM, firmware
 -- src/main/fc/runtime_config.h) are historical/informational and get set
@@ -2518,15 +2208,22 @@ function context.utils.armFlagsToIsArmed(value)
   return (math.floor(value) & 1) == 1
 end
 
+-- ARM_SWITCH (always the firmware's last flag) is left out: it only ever
+-- accompanies another, real reason -- it is set when the arm switch is on
+-- while something else is blocking arming -- so listing it would just repeat
+-- "and the arm switch is on". Its bit depends on the firmware, which the
+-- dashboard only knows by API version; see lib/arming_flags.lua.
 function context.utils.armingDisableFlagsToString(flags)
   flags = tonumber(flags)
   if flags == nil or flags == 0 then return "OK" end
 
+  local count = armingFlags.countForApi(context.session.apiVersionMajor, context.session.apiVersionMinor)
+  local armSwitchBit = count and count - 1
   local names = {}
-  for i = 0, 25 do
-    if (flags & (1 << i)) ~= 0 then
-      local name = ARMING_DISABLE_FLAG_TAG[i]
-      if name and name ~= "" then names[#names + 1] = name end
+  for i = 0, 31 do
+    if (flags & (1 << i)) ~= 0 and i ~= armSwitchBit then
+      local name = armingFlags.tagFor(i, count)
+      if name then names[#names + 1] = name end
     end
   end
 
@@ -2571,11 +2268,13 @@ function context.setWidget(widget)
   context.session.escStatusWord = widget and widget.escStatusWord
   context.session.escSignature = widget and widget.escSignature
   context.session.apiVersion = widget and widget.rfVersion
+  context.session.apiVersionMajor = widget and widget.apiVersionMajor
+  context.session.apiVersionMinor = widget and widget.apiVersionMinor
   context.session.timer.live = widget and widget.timerLive or 0
   context.session.bblFlags = widget and widget.bblFlags
   context.session.bblSize = widget and widget.bblSize
   context.session.bblUsed = widget and widget.bblUsed
-  context.session.headspeedVariancePct = widget and widget.headspeedVariancePct
+  context.session.headspeedVariancePct = widget and widget.flight and widget.flight.headspeedVariancePct or nil
   context.session.governorMode = widget and widget.governorMode
   context.session.governorModeKnown = widget and widget.governorModeKnown
   local modelPrefs = context.session.modelPreferences

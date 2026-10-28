@@ -3,5 +3,5 @@
   "name": "Dashboard image cache eviction and theme reload",
   "step": "Check dashboard image cache behaviour",
   "script": "bin/dashboard/verify_image_caches.lua",
-  "rationale": "Widgets and objects load bitmaps on demand, and clearCaches()'s images\nbranch previously had no caller anywhere -- so every decoded dashboard\nbitmap survived theme reloads, model changes and widget close. The fix\nwires clearThemeCache() to pass images = true, adds an LRU bound to the\ndecoded-bitmap map, and provides a clearer registry for modules like\nobjects/image/model.lua."
+  "rationale": "Widgets and objects load bitmaps on demand, and clearCaches()'s images\nbranch previously had no caller anywhere -- so every decoded dashboard\nbitmap survived theme reloads, model changes and widget close. The fix\nwires clearThemeCache() to pass images = true, adds an LRU bound to the\ndecoded-bitmap map, and provides a clearer registry for modules like\nobjects/image/model.lua.\nThe paint-path draw memo must neither pin a bitmap nor allocate per draw."
 }

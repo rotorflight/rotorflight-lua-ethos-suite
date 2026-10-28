@@ -505,9 +505,9 @@ function render.wakeup(box)
     -- way the last reading is HELD, in flight as well as in postflight: a
     -- momentary telemetry gap -- one missed appId, one dropped frame behind an
     -- obstacle -- must not blank a fuel gauge the pilot is flying on, and must
-    -- not discard the reading it had. flightmode itself turns a disconnect
-    -- during a flight into "postflight" (flightmode.lua:103), so holding from
-    -- "inflight" onwards also covers the link going away mid-flight.
+    -- not discard the reading it had. The session's flight phase
+    -- (lib/flight_stats.lua) turns a disconnect after take-off into "offline",
+    -- so holding from "inflight" onwards also covers the link going away mid-flight.
     local mode = rfsuite.flightmode and rfsuite.flightmode.current or "preflight"
     local holdLastValue = mode ~= "preflight" and mode ~= "armed"
     if value ~= nil then

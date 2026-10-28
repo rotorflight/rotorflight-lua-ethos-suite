@@ -185,6 +185,16 @@ Outputs static or telemetry-based text. Subtypes located in `objects/text/`:
 | `pidrates`   | PID/Rates profile display (auto).      | –                 |
 | `watts`      | Voltage/Current => Power (auto).       | –                 |
 
+The min, max and average values these objects show are recorded by the background task while the
+model is in flight, once per tick, whether a dashboard is on screen or not (`lib/flight_stats.lua`).
+Drawing a dashboard does not add samples.
+
+The minimum headspeed and the minimum current are taken only while the rotor is under power, so
+the spool-up and the spool-down do not set them: with the flight controller's governor state, after
+2 s in ACTIVE or BYPASS; without it, after the head has turned at 100 rpm or more and been driven
+(throttle at 25 % or more, or current at 1.5 A or more) for 2 s, from the readings of 2 s earlier.
+Until then these two minima read `--`. The maxima and all other values cover the whole flight.
+
 **Common Parameters:**
 
 * `value` (for `text` subtype)
@@ -210,7 +220,7 @@ Bar, ring, and arc gauges under `objects/gauge/`:
 
 A `bar` whose `source` drops out **before the flight** shows the loading dots (`.`, `..`, `...`), not its last value: on the bench a bar frozen at 85% is a wrong number, and the pilot has to see that the source is gone (#2534).
 
-Once a flight is under way the last reading is **held**, in flight as well as in postflight. A momentary telemetry gap -- one missed appId, one dropped frame behind an obstacle -- must not blank a gauge the pilot is flying on, and must not discard the reading it had. A disconnect during a flight counts as postflight (`flightmode.lua`), so the reading is held across the link going away and coming back.
+Once a flight is under way the last reading is **held**, in flight as well as in postflight. A momentary telemetry gap -- one missed appId, one dropped frame behind an obstacle -- must not blank a gauge the pilot is flying on, and must not discard the reading it had. A disconnect after take-off counts as offline (`lib/flight_stats.lua`), so the reading is held while the link is away. When the link returns, the phase starts over at preflight.
 
 **Shared Gauge Parameters:**
 

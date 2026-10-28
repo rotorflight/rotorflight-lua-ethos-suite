@@ -83,6 +83,7 @@ local function openEditor(opts, initialMode)
         data.tail_center_trim = formData.tail_center_trim or 0
       end
     end,
+    toolIcon = "app/gfx/nav/override.png",
     onTool = function(focusFn)
       form.openDialog({
         title = inOverride and "@i18n(app.modules.trim.disable_mixer_override)@"

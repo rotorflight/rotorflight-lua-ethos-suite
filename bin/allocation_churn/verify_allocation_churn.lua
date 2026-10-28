@@ -342,6 +342,12 @@ package.loaded["rfsuite.lib.require"] = function(name)
   if name == "lib/build_info.lua" then return { version = "harness" } end
   if name == "lib/engine_type.lua" then return {} end
   if name == "lib/ethos_version.lua" then return "1.0" end
+  -- The shared min/max/average sampler the dashboard records with (#2344).
+  if name == "lib/flight_stats.lua" then return assert(loadfile(ROOT .. "/src/rfsuite/lib/flight_stats.lua"))() end
+  -- The live sensor values, shared with the session's flight recording (#2344).
+  if name == "lib/live_sensors.lua" then return assert(loadfile(ROOT .. "/src/rfsuite/lib/live_sensors.lua"))() end
+  -- The arming-disable flag names the dashboard shares with the FBL Status page.
+  if name == "lib/arming_flags.lua" then return assert(loadfile(ROOT .. "/src/rfsuite/lib/arming_flags.lua"))() end
   error("unexpected dependency: " .. tostring(name))
 end
 lcd = { RGB = function(r, g, b, a) return r end }
@@ -522,7 +528,8 @@ do
 end
 
 do
-  -- End-to-end against the recording side: whatever recordSensorStat() wrote,
+  -- End-to-end against the recording side: whatever the session's flight record
+  -- (lib/flight_stats.lua with lib/live_sensors.lua's read, #2344) wrote,
   -- getSensorStats() has to find. Dropping only the record entry is what leaves
   -- a caller on the flat-key path, exactly as a cleared dashboard does.
   local widget, stats = newWidget()
@@ -542,10 +549,18 @@ do
     "headspeed", "link", "fuel", "smartfuel", "throttle_percent", "temp_mcu", "temp_esc",
     "bec_voltage" }
 
+  -- Record through the real path: the session's flight record on this state, the armed
+  -- edge and then 2.5 s in flight with the governor active, so the powered gate has
+  -- opened and the rpm and current minima are taken too.
+  local liveSensors = package.loaded["rfsuite.lib.live_sensors"]
+  local record = package.loaded["rfsuite.lib.flight_stats"].new()
+  record.stats = stats
+  widget.isArmed, widget.governorState, widget.mcuId = true, 4, "churn"
+  for tick = 1, 6 do record:update(widget, liveSensors.read, tick * 0.5) end
+
   local problems = {}
   for _, name in ipairs(flatOnly) do
-    -- Record once through the real path.
-    local recorded = context.tasks.telemetry.getSensor(name)
+    local recorded = liveSensors.read(widget, name)
     if recorded == nil then
       problems[#problems + 1] = name .. ": der Sensor liefert keinen Wert, Test waere blind"
     else
@@ -608,7 +623,12 @@ do
   local widget, stats = newWidget()
   widget.tempMcu = 20
   context.preferences.general.temperature_unit = 0
-  context.tasks.telemetry.getSensor("temp_mcu")
+  -- Recorded by the session's flight record, as on the radio (#2344).
+  local record = package.loaded["rfsuite.lib.flight_stats"].new()
+  record.stats = stats
+  widget.isArmed, widget.governorState, widget.mcuId = true, 4, "temp"
+  record:update(widget, package.loaded["rfsuite.lib.live_sensors"].read)
+  record:update(widget, package.loaded["rfsuite.lib.live_sensors"].read)
   local a = context.tasks.telemetry.getSensorStats("temp_mcu")
   local b = context.tasks.telemetry.getSensorStats("temp_mcu")
   check("der Temperatur-Cache liefert dasselbe Objekt zweimal hintereinander",

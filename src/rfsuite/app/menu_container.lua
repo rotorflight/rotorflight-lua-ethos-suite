@@ -285,29 +285,9 @@ local function openScreen(nav, menus, rootEntries, screen, setEventHandler, setW
   -- before navigating here.
   setWakeupHandler(nil)
   if setPaintHandler then
-    -- Armed frame and badge, drawn over the menu while armed. The form draws its
-    -- headings and separator lines over the frame's left edge (see the PR body).
-    setPaintHandler(function()
-      local ok, armed = pcall(armedState)
-      if ok and armed == true then
-        local w, h = lcd.getWindowSize()
-        lcd.color(lcd.RGB(214, 40, 40))
-        lcd.drawFilledRectangle(0, 0, w, 4)
-        lcd.drawFilledRectangle(0, h - 4, w, 4)
-        lcd.drawFilledRectangle(0, 0, 4, h)
-        lcd.drawFilledRectangle(w - 4, 0, 4, h)
-        -- Armed badge, top-left, as on the dashboard widget
-        local label = "@i18n(widgets.dashboard.info_armed)@"
-        lcd.font(FONT_S)
-        local tw, th = lcd.getTextSize(label)
-        -- centred on the top edge of the frame
-        local bx = math.floor((w - tw - 12) / 2)
-        lcd.color(lcd.RGB(214, 40, 40))
-        lcd.drawFilledRectangle(bx, 0, tw + 12, th + 6)
-        lcd.color(lcd.RGB(255, 255, 255))
-        lcd.drawText(bx + 6, 3, label)
-      end
-    end)
+    -- No paint of its own: the armed state is shown on the locked tiles (the
+    -- forbidden sign below), not by a frame over the whole menu.
+    setPaintHandler(nil)
   end
   if setCleanupHandler then
     setCleanupHandler(nil)
@@ -355,6 +335,20 @@ local function openScreen(nav, menus, rootEntries, screen, setEventHandler, setW
   -- Tiles start at a fixed left gap, so they sit clear of the frame.
   local TILE_LEFT_GAP = 4
 
+  -- Spread the columns so the last one ends where the header's button row
+  -- ends; the fixed tile gap alone leaves the grid a few pixels short (X20:
+  -- 4 + 6 x 120 + 5 x 10 = 774 of 780). Rows keep the fixed vertical gap.
+  local colX = {}
+  local spread = 0
+  local rightEdge = headerHandle.rightEdge
+  if numPerRow > 1 and type(rightEdge) == "number" then
+    spread = rightEdge - (TILE_LEFT_GAP + numPerRow * tileW + (numPerRow - 1) * tilePadding)
+    if spread < 0 or spread >= tileW then spread = 0 end
+  end
+  for c = 0, numPerRow - 1 do
+    colX[c] = TILE_LEFT_GAP + c * (tileW + tilePadding) + (numPerRow > 1 and math.floor(c * spread / (numPerRow - 1) + 0.5) or 0)
+  end
+
   local x, y = 0, form.height() + tilePadding
   local lastGroup = firstGroup
   local col = 0
@@ -391,8 +385,8 @@ local function openScreen(nav, menus, rootEntries, screen, setEventHandler, setW
           -- locked tile is disabled while armed (below), so this branch is
           -- normally unreachable: it is the guard for the tick in which the
           -- arm state changed and the grid has not been rebuilt yet. It is
-          -- deliberately silent -- the forbidden sign and the red frame carry
-          -- the state, and a refused press answers with nothing (#2302).
+          -- deliberately silent -- the forbidden sign carries the state, and
+          -- a refused press answers with nothing (#2302).
           if entryIsLockedNow(entry) then return end
           if not canOpenEntry(entry, taskGuard) then
             if taskGuard and (not taskGuard.isRunning()) and taskGuard.requestAlert then
@@ -429,7 +423,7 @@ local function openScreen(nav, menus, rootEntries, screen, setEventHandler, setW
         x = 0
         y = y + tileH + tilePadding
       else
-        x = x + tileW + tilePadding
+        x = colX[col]
       end
     end
   end

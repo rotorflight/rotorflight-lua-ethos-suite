@@ -107,6 +107,8 @@ print("the top bits, by arming_disable_flags_count")
 
 local OVERRIDE = "@i18n(app.modules.fblstatus.arming_disable_flag_override)@"
 local ARM_SWITCH = tagFor(25)
+local NO_FILTER = "@i18n(app.modules.fblstatus.arming_disable_flag_26)@"
+local BACKUP_RX = "@i18n(app.modules.fblstatus.arming_disable_flag_27)@"
 
 local function names(mask, count)
   return table.concat(arming.active(mask, count), ",")
@@ -116,13 +118,25 @@ check("26 flags: bit 25 is the arm switch, as without a count",
   names(2 ^ 25, 26) == ARM_SWITCH and names(2 ^ 25) == ARM_SWITCH, names(2 ^ 25, 26))
 check("27 flags: bit 25 is OVERRIDE and bit 26 the arm switch",
   names(2 ^ 25 + 2 ^ 26, 27) == OVERRIDE .. "," .. ARM_SWITCH, names(2 ^ 25 + 2 ^ 26, 27))
-check("28 flags: the arm switch is the last bit, and a bit without a name shows its number",
-  names(2 ^ 25 + 2 ^ 26 + 2 ^ 27, 28) == OVERRIDE .. ",0x4000000," .. ARM_SWITCH,
-  names(2 ^ 25 + 2 ^ 26 + 2 ^ 27, 28))
+check("27 flags: bit 26 is the arm switch, not No Filter",
+  names(2 ^ 1 + 2 ^ 26, 27) == tagFor(1) .. "," .. ARM_SWITCH, names(2 ^ 1 + 2 ^ 26, 27))
+check("29 flags: bits 26..28 are No Filter, Backup RX and the arm switch",
+  names(2 ^ 26 + 2 ^ 27 + 2 ^ 28, 29) == NO_FILTER .. "," .. BACKUP_RX .. "," .. ARM_SWITCH,
+  names(2 ^ 26 + 2 ^ 27 + 2 ^ 28, 29))
+check("30 flags: the arm switch is the last bit, and a bit without a name shows its number",
+  names(2 ^ 25 + 2 ^ 28 + 2 ^ 29, 30) == OVERRIDE .. ",0x10000000," .. ARM_SWITCH,
+  names(2 ^ 25 + 2 ^ 28 + 2 ^ 29, 30))
 check("a count does not rename bits 0..24", names(2 ^ 7 + 2 ^ 24, 28) == tagFor(7) .. "," .. tagFor(24),
   names(2 ^ 7 + 2 ^ 24, 28))
 check("a bit at or above the count is still reported by number", names(2 ^ 28, 28) == "0x10000000",
   names(2 ^ 28, 28))
+
+-- The dashboard gets the mask from telemetry, without MSP_STATUS's count, so
+-- it has to assume a count from the API version.
+check("API 12.8 assumes 26 flags", arming.countForApi(12, 8) == 26)
+check("API 12.9 and 12.10 assume 27 flags", arming.countForApi(12, 9) == 27 and arming.countForApi(12, 10) == 27)
+check("API 12.11 assumes 29 flags", arming.countForApi(12, 11) == 29)
+check("an unknown API version assumes nothing", arming.countForApi(nil, nil) == nil)
 
 -- ---------------------------------------------------------------------------
 -- What the page is allowed to put where

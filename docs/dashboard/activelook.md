@@ -121,8 +121,8 @@ browser approximations; these do not prove hardware brightness, firmware
 bitmap placement or clearing behaviour. Start and test instructions are in
 [`bin/activelook_preview/README.md`](../../bin/activelook_preview/README.md).
 
-Source: `src/rfsuite/widgets/activelook.lua` and
-`src/rfsuite/widgets/dashboard/flightmode.lua`.
+Source: `src/rfsuite/widgets/activelook.lua`. The flight phase comes from the
+session (`src/rfsuite/lib/flight_stats.lua`), the same one the dashboard shows.
 
 Review: [PR #2598](https://github.com/rotorflight/rotorflight-lua-ethos-suite/pull/2598).
 
