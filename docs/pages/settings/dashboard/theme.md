@@ -74,3 +74,5 @@ A per-model appearance does not create separate per-model thresholds.
 Install the complete matching Suite build containing this theme's registrations,
 then restart scripts or the radio. This explicitly registered package does not
 assume the automatic discovery available separately in `radio-all-themes`.
+
+Postflight Smart Fuel statistics use Battery Remaining for Electric models and Fuel Remaining for Nitro models, matching the model distinction used by the voice announcements.

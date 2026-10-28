@@ -23,12 +23,18 @@ The 28x28 inventory dimensions are recorded in [the frsky manifest](activelook-f
 
 For a 304x256 window, the original model placed the standalone call at (0,200). The pilot reports that only approximately the top pixel row was erased at a phase change. This indicates that most of the image was still below the effective clearing area; it does not establish the exact physical boundary or its cause.
 
-The current diagnostic placement adds 28 pixels of bottom clearance: `maxY = windowHeight - 16 - 40 - 28`, giving Y=172 for a 256px-high window. Positive display offsets cannot move the icon below this bound. This is an adjustment based on the device observation and still needs confirmation; it is not a fully verified map of the maximum erasable rectangle.
+The current placement adds 56 pixels of bottom clearance: `maxY = windowHeight - 16 - 40 - 56`, giving Y=144 for a 256px-high window. Positive display offsets cannot move the icon below this bound. This is an adjustment based on the device observation and still needs confirmation; it is not a fully verified map of the maximum erasable rectangle.
 
 ## Hardware observations and limits
 
-The pilot reports: ID 0 did not erase icon 6; padded-layout clearing left a horizontal residue; full-display clearing removed it; and the suite cleared a standalone fuel icon requested at (80,120). Those observations are consistent with a position-dependent clipping issue. The first derived bottom-left bound failed on the connected glasses, clearing only approximately the top icon row. The revised 28px-clearance position still requires confirmation. They do not establish a protected status border or the source of the glasses' battery overlay.
+The pilot reports: ID 0 did not erase icon 6; padded-layout clearing left a horizontal residue; full-display clearing removed it; and the suite cleared a standalone fuel icon requested at (80,120). Those observations are consistent with a position-dependent clipping issue. The first derived bottom-left bound failed on the connected glasses, clearing only approximately the top icon row. The current 56px-clearance position still requires confirmation. They do not establish a protected status border or the source of the glasses' battery overlay.
 
 ## Public protocol reference
 
 [ActiveLook API, layout commands](https://github.com/ActiveLook/Activelook-API-Documentation/blob/main/ActiveLook_API.md#49-layout-commands) documents temporary positioning for the Extended commands. [Image coordinates](https://github.com/ActiveLook/Activelook-API-Documentation/blob/main/ActiveLook_API.md#558-coordinates) and the optical orientation explain why the native and visual rectangles need to be compared after the conversion.
+
+## Combined Inflight rendering (2026-10-28)
+
+The indicator now uses a dynamic bitmap command in the same layout update as the telemetry, using local coordinates (0,144 at 304x256 with zero offsets), after the additional 10px upward adjustment. The local X20PRO_EU QA build has SHA-256 c9f6c09a000013e3d4c0ff4fcf3717d753f889b3193d13d197ed60a24d6cc70b. Its standalone bitmap parser (function 4458) and dynamic bitmap-command parser (4835) both use width/height 40. The dynamic command serializer (4778) subtracts the local bitmap coordinate and its 40px frame from the layout dimensions. Combining this with the layout's native position yields the same native coordinate as standalone bitmap output: displayDimension - windowOrigin - localCoordinate - 40. No compensating coordinate offset is needed for the current call at layout (0,0).
+
+This change groups text and bitmap into the layout update; it does not establish that clearing and drawing are visually atomic on the glasses. Compare flicker and positioning on hardware.

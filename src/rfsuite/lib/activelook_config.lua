@@ -11,9 +11,26 @@ config.DEFAULTS = {
   inflight_fuel_icon = false,
   display_switch = "",
   low_fuel_warning = false,
-  low_fuel_seconds = 8,
+  low_fuel_use_audio_limit = false,
+  low_fuel_seconds = 5,
   low_fuel_repeats = 1,
   low_fuel_icon = true,
+  esc_temp_warning = false,
+  esc_temp_icon = true,
+  esc_temp_use_audio_limit = true,
+  esc_temp_limit = 90,
+  esc_temp_seconds = 5,
+  esc_temp_repeats = 2,
+  rf_link_warning = false,
+  rf_link_icon = true,
+  rf_link_limit = 42,
+  rf_link_percent_limit = 80,
+  rf_link_seconds = 5,
+  rf_link_repeats = 2,
+  governor_lost_warning = false,
+  governor_lost_seconds = 5,
+  governor_status_overlays = false,
+  governor_status_seconds = 2,
   offset_x = 0,
   offset_y = 0,
   layout_preflight = "stacked_three",
@@ -71,7 +88,7 @@ config.SENSOR_CHOICES = {
   {"@i18n(telemetry.sensor_esc_temp)@", 6},
   {"@i18n(telemetry.sensor_mcu_temp)@", 7},
   {"Link", 8},
-  {"Fuel", 9},
+  {"@i18n(sensors.smartfuel)@", 9},
   {"@i18n(telemetry.sensor_current)@", 10},
   {"@i18n(telemetry.sensor_voltage)@", 11},
   {"Cell Voltage", 12},
@@ -81,8 +98,8 @@ config.SENSOR_CHOICES = {
   {"Max MCU Temp", 16},
   {"Min Link", 17},
   {"Max Link", 18},
-  {"Min Fuel", 19},
-  {"Max Fuel", 20},
+  {"@i18n(app.modules.settings.activelook_smartfuel_min)@", 19},
+  {"@i18n(app.modules.settings.activelook_smartfuel_max)@", 20},
   {"Min Current", 21},
   {"Max Current", 22},
   {"Min Voltage", 23},
@@ -126,6 +143,7 @@ local LAYOUT_KEY_SET = buildSet(config.LAYOUT_KEYS)
 
 local function clamp(value, min, max)
   value = tonumber(value) or 0
+  if value ~= value or value == math.huge or value == -math.huge then value = min end
   if value < min then return min end
   if value > max then return max end
   return math.floor(value + 0.5)
@@ -198,6 +216,50 @@ function config.clampLowFuelRepeats(value)
   return clamp(value, config.LOW_FUEL_REPEATS_MIN, config.LOW_FUEL_REPEATS_MAX)
 end
 
+function config.clampEscTempRepeats(value)
+  return clamp(tonumber(value) or config.DEFAULTS.esc_temp_repeats, 0, 10)
+end
+
+function config.clampRfLinkLimit(value)
+  return clamp(tonumber(value) or 42, 1, 100)
+end
+
+function config.clampRfLinkPercentLimit(value)
+  return clamp(tonumber(value) or 80, 1, 100)
+end
+
+function config.clampAlertSeconds(value)
+  return clamp(tonumber(value) or 5, 3, 30)
+end
+
+function config.clampEscTempLimit(value)
+  return clamp(tonumber(value) or 90, 60, 300)
+end
+
+function config.clampGovernorStatusSeconds(value)
+  return clamp(tonumber(value) or 2, 1, 5)
+end
+
+function config.escTempLimit(values, events)
+  if values.esc_temp_use_audio_limit then
+    return config.clampEscTempLimit(events and events.escalertvalue)
+  end
+  return config.clampEscTempLimit(values.esc_temp_limit)
+end
+
+function config.alertRepeats(values, events, kind)
+  if kind == "low_fuel" then
+    if values.low_fuel_use_audio_limit then
+      return config.clampLowFuelRepeats(events and events.smartfuelrepeats)
+    end
+    return config.clampLowFuelRepeats(values.low_fuel_repeats)
+  end
+  if values.esc_temp_use_audio_limit then
+    return clamp(tonumber(events and events.temp_esc_repeats) or 0, 0, 10)
+  end
+  return config.clampEscTempRepeats(values.esc_temp_repeats)
+end
+
 function config.withDefaults(values)
   local out = {}
   values = values or {}
@@ -207,9 +269,26 @@ function config.withDefaults(values)
   out.enabled = coerceBool(out.enabled, config.DEFAULTS.enabled)
   out.inflight_fuel_icon = coerceBool(out.inflight_fuel_icon, config.DEFAULTS.inflight_fuel_icon)
   out.low_fuel_warning = coerceBool(out.low_fuel_warning, config.DEFAULTS.low_fuel_warning)
+  out.low_fuel_use_audio_limit = coerceBool(out.low_fuel_use_audio_limit, false)
   out.low_fuel_seconds = config.clampLowFuelSeconds(out.low_fuel_seconds)
   out.low_fuel_repeats = config.clampLowFuelRepeats(out.low_fuel_repeats)
   out.low_fuel_icon = coerceBool(out.low_fuel_icon, config.DEFAULTS.low_fuel_icon)
+  out.esc_temp_warning = coerceBool(out.esc_temp_warning, false)
+  out.esc_temp_icon = coerceBool(out.esc_temp_icon, config.DEFAULTS.esc_temp_icon)
+  out.esc_temp_use_audio_limit = coerceBool(out.esc_temp_use_audio_limit, true)
+  out.esc_temp_limit = config.clampEscTempLimit(out.esc_temp_limit)
+  out.esc_temp_seconds = config.clampAlertSeconds(out.esc_temp_seconds)
+  out.esc_temp_repeats = config.clampEscTempRepeats(out.esc_temp_repeats)
+  out.rf_link_warning = coerceBool(out.rf_link_warning, false)
+  out.rf_link_icon = coerceBool(out.rf_link_icon, config.DEFAULTS.rf_link_icon)
+  out.rf_link_limit = config.clampRfLinkLimit(out.rf_link_limit)
+  out.rf_link_percent_limit = config.clampRfLinkPercentLimit(out.rf_link_percent_limit)
+  out.rf_link_seconds = config.clampAlertSeconds(out.rf_link_seconds)
+  out.rf_link_repeats = config.clampLowFuelRepeats(out.rf_link_repeats)
+  out.governor_lost_warning = coerceBool(out.governor_lost_warning, false)
+  out.governor_lost_seconds = config.clampAlertSeconds(out.governor_lost_seconds)
+  out.governor_status_overlays = coerceBool(out.governor_status_overlays, false)
+  out.governor_status_seconds = config.clampGovernorStatusSeconds(out.governor_status_seconds)
   out.offset_x = config.clampOffset(out.offset_x)
   out.offset_y = config.clampOffset(out.offset_y)
   out.display_switch = tostring(out.display_switch or "")

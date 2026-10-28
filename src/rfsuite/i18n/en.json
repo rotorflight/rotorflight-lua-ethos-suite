@@ -364,7 +364,7 @@
         },
         "msg_calibration_timeout": {
           "english": "The calibration did not finish. Try again.",
-          "max_length": 46,
+          "max_length": 42,
           "needs_translation": false,
           "translation": "The calibration did not finish. Try again."
         },
@@ -1202,7 +1202,7 @@
         },
         "no_dataflash": {
           "english": "No dataflash",
-          "max_length": 16,
+          "max_length": 12,
           "needs_translation": false,
           "translation": "No dataflash"
         },
@@ -4274,7 +4274,7 @@
         },
         "msg_no_columns": {
           "english": "No plottable columns in this file",
-          "max_length": 40,
+          "max_length": 33,
           "needs_translation": false,
           "translation": "No plottable columns in this file"
         },
@@ -5272,7 +5272,7 @@
         },
         "edit_battery": {
           "english": "Edit Battery",
-          "max_length": 16,
+          "max_length": 12,
           "needs_translation": false,
           "translation": "Edit Battery"
         },
@@ -5994,6 +5994,36 @@
         }
       },
       "settings": {
+        "activelook_alerts": {
+          "english": "Alerts",
+          "max_length": 6,
+          "needs_translation": false,
+          "translation": "Alerts"
+        },
+        "activelook_esc_temp_limit": {
+          "english": "ESC temp limit",
+          "max_length": 14,
+          "needs_translation": false,
+          "translation": "ESC temp limit"
+        },
+        "activelook_esc_temp_warning": {
+          "english": "ESC temp warning",
+          "max_length": 16,
+          "needs_translation": false,
+          "translation": "ESC temp warning"
+        },
+        "activelook_governor_lost": {
+          "english": "Lost headspeed",
+          "max_length": 14,
+          "needs_translation": false,
+          "translation": "Lost headspeed"
+        },
+        "activelook_governor_status": {
+          "english": "Governor status",
+          "max_length": 15,
+          "needs_translation": false,
+          "translation": "Governor status"
+        },
         "activelook_hide_display": {
           "english": "Hide Display",
           "max_length": 12,
@@ -6005,6 +6035,42 @@
           "max_length": 8,
           "needs_translation": false,
           "translation": "Inflight"
+        },
+        "activelook_inflight_fuel_icon": {
+          "english": "Smart Fuel icon",
+          "max_length": 15,
+          "needs_translation": false,
+          "translation": "Smart Fuel icon"
+        },
+        "activelook_low_fuel": {
+          "english": "Smart Fuel",
+          "max_length": 10,
+          "needs_translation": false,
+          "translation": "Smart Fuel"
+        },
+        "activelook_low_fuel_icon": {
+          "english": "Icon",
+          "max_length": 4,
+          "needs_translation": false,
+          "translation": "Icon"
+        },
+        "activelook_low_fuel_repeats": {
+          "english": "Repeats",
+          "max_length": 7,
+          "needs_translation": false,
+          "translation": "Repeats"
+        },
+        "activelook_low_fuel_seconds": {
+          "english": "Warning Duration",
+          "max_length": 16,
+          "needs_translation": false,
+          "translation": "Warning Duration"
+        },
+        "activelook_low_fuel_warning": {
+          "english": "Smart Fuel warning",
+          "max_length": 18,
+          "needs_translation": false,
+          "translation": "Smart Fuel warning"
         },
         "activelook_postflight": {
           "english": "Postflight",
@@ -6018,11 +6084,59 @@
           "needs_translation": false,
           "translation": "Preflight"
         },
+        "activelook_rf_link_limit": {
+          "english": "RSSI limit",
+          "max_length": 10,
+          "needs_translation": false,
+          "translation": "RSSI limit"
+        },
+        "activelook_rf_link_percent_limit": {
+          "english": "VFR/LQ limit",
+          "max_length": 12,
+          "needs_translation": false,
+          "translation": "VFR/LQ limit"
+        },
+        "activelook_rf_link_warning": {
+          "english": "RF link warning",
+          "max_length": 15,
+          "needs_translation": false,
+          "translation": "RF link warning"
+        },
         "activelook_settings": {
           "english": "Settings",
           "max_length": 8,
           "needs_translation": false,
           "translation": "Settings"
+        },
+        "activelook_smartfuel_max": {
+          "english": "Max Smart Fuel",
+          "max_length": 14,
+          "needs_translation": false,
+          "translation": "Max Smart Fuel"
+        },
+        "activelook_smartfuel_min": {
+          "english": "Min Smart Fuel",
+          "max_length": 14,
+          "needs_translation": false,
+          "translation": "Min Smart Fuel"
+        },
+        "activelook_status_duration": {
+          "english": "Status duration",
+          "max_length": 15,
+          "needs_translation": false,
+          "translation": "Status duration"
+        },
+        "activelook_use_audio_limit": {
+          "english": "Use audio limits & repeats",
+          "max_length": 26,
+          "needs_translation": false,
+          "translation": "Use audio limits & repeats"
+        },
+        "activelook_use_audio_repeats": {
+          "english": "Use audio repeats",
+          "max_length": 17,
+          "needs_translation": false,
+          "translation": "Use audio repeats"
         },
         "adj_callouts": {
           "english": "Adjustment callouts",
@@ -6301,10 +6415,10 @@
           "translation": "Rotorflight ActiveLook"
         },
         "fuel": {
-          "english": "Fuel",
-          "max_length": 4,
+          "english": "Smart Fuel",
+          "max_length": 10,
           "needs_translation": false,
-          "translation": "Fuel"
+          "translation": "Smart Fuel"
         },
         "fuel_callout_10": {
           "english": "Every 10%",
@@ -6349,16 +6463,16 @@
           "translation": "Callout percent"
         },
         "fuel_haptic_below": {
-          "english": "Low fuel haptic",
-          "max_length": 15,
+          "english": "Haptic at 0%",
+          "max_length": 12,
           "needs_translation": false,
-          "translation": "Low fuel haptic"
+          "translation": "Haptic at 0%"
         },
         "fuel_repeats_below": {
-          "english": "Low fuel repeats",
-          "max_length": 16,
+          "english": "Repeats at 0%",
+          "max_length": 13,
           "needs_translation": false,
-          "translation": "Low fuel repeats"
+          "translation": "Repeats at 0%"
         },
         "governor_state": {
           "english": "Governor state",
@@ -7280,7 +7394,7 @@
     },
     "msg_main_power_lost_banner": {
       "english": "MAIN POWER LOST",
-      "max_length": 27,
+      "max_length": 15,
       "needs_translation": false,
       "translation": "MAIN POWER LOST"
     },
@@ -7322,7 +7436,7 @@
     },
     "msg_save_failed_local_body": {
       "english": "Settings were not saved to the radio. Please try again.",
-      "max_length": 67,
+      "max_length": 55,
       "needs_translation": false,
       "translation": "Settings were not saved to the radio. Please try again."
     },
@@ -8052,6 +8166,68 @@
     }
   },
   "widgets": {
+    "activelook": {
+      "alert_autorotation": {
+        "english": "AUTOROTATION",
+        "max_length": 12,
+        "needs_translation": false,
+        "translation": "AUTOROTATION"
+      },
+      "alert_bailout": {
+        "english": "BAILOUT",
+        "max_length": 7,
+        "needs_translation": false,
+        "translation": "BAILOUT"
+      },
+      "alert_battery_empty": {
+        "english": "BATTERY EMPTY",
+        "max_length": 13,
+        "needs_translation": false,
+        "translation": "BATTERY EMPTY"
+      },
+      "alert_esc_temp_high": {
+        "english": "ESC TEMP HIGH",
+        "max_length": 13,
+        "needs_translation": false,
+        "translation": "ESC TEMP HIGH"
+      },
+      "alert_fuel_low": {
+        "english": "LOW FUEL",
+        "max_length": 8,
+        "needs_translation": false,
+        "translation": "LOW FUEL"
+      },
+      "alert_governor": {
+        "english": "GOVERNOR",
+        "max_length": 8,
+        "needs_translation": false,
+        "translation": "GOVERNOR"
+      },
+      "alert_headspeed_lost": {
+        "english": "HEADSPEED LOST",
+        "max_length": 14,
+        "needs_translation": false,
+        "translation": "HEADSPEED LOST"
+      },
+      "alert_limit": {
+        "english": "LIMIT",
+        "max_length": 5,
+        "needs_translation": false,
+        "translation": "LIMIT"
+      },
+      "alert_rf_link_low": {
+        "english": "RF LINK LOW",
+        "max_length": 11,
+        "needs_translation": false,
+        "translation": "RF LINK LOW"
+      },
+      "alert_warning": {
+        "english": "WARNING!",
+        "max_length": 8,
+        "needs_translation": false,
+        "translation": "WARNING!"
+      }
+    },
     "battery": {
       "msg_battery_selected": {
         "english": "Selected battery:",
@@ -8156,6 +8332,12 @@
         "max_length": 7,
         "needs_translation": false,
         "translation": "Battery"
+      },
+      "battery_remaining": {
+        "english": "Battery Remaining",
+        "max_length": 17,
+        "needs_translation": false,
+        "translation": "Battery Remaining"
       },
       "bec_voltage": {
         "english": "BEC Voltage",
