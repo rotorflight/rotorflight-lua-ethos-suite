@@ -188,7 +188,7 @@ do
     table.concat(states, ",") == "idle,reading,idle", table.concat(states, ","))
 
   local asked0 = fly(0)
-  check("a flight with no rate flight saves nothing and clears nothing", asked0 == "roll,pitch,yaw"
+  check("a flight with no acro flight saves nothing and clears nothing", asked0 == "roll,pitch,yaw"
     and #lines() == 4, asked0 .. " / " .. #lines() .. " lines")
 
   for n = 1, 6 do fly(100 + n) end
