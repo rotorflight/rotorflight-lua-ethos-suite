@@ -118,7 +118,6 @@ local function new(wiz)
   -- (servos unplugged, blades off) that let Start run.
   local bladesPicture = art.photo("heli-remove-blades", T.sideView, T.front)
   local answers = {unplugged = false, blades = false}
-  local answered = nil                -- the answer just pressed keeps the focus
   -- Calibration: the helicopter standing level.
   local levelPicture = art.photo("heli-level", T.sideView, T.front)
   -- Orientation: the tail lifted 20 degrees (the arrow is labelled with it).
@@ -267,23 +266,7 @@ local function new(wiz)
     if screen == "intro" then
       scr:text(T.title, T.intro, (not hasAcc) and T.noAcc or nil)
       scr:picture(bladesPicture)
-      -- Safety confirmation toggles: 1-click toggle buttons (No/Yes). Start follows once both are Yes.
-      local function toggle(key, index)
-        return {function() return answers[key] == true end, function(v)
-          answers[key], answered = v and true or false, index
-          wiz.rebuild()
-        end}
-      end
-      local ready = answers.unplugged and answers.blades
-      -- Focus: Start once both are Yes, else the toggle just set, else the first No.
-      local answerField = scr:checks({
-        {label = T.unplugged, toggle = toggle("unplugged", 1)},
-        {label = T.bladesOff, toggle = toggle("blades", 2)},
-      }, (not ready) and (answered or (not answers.unplugged and 1) or 2) or nil)
-      answered = nil
-      local rowField = scr:row(nil, hasAcc and {{text = T.start, primary = ready, disabled = not ready,
-        press = function() go("acc") end}} or nil)
-      return answerField or rowField
+      return scr:safety(answers, {{key = "unplugged", label = T.unplugged}, {key = "blades", label = T.bladesOff}}, hasAcc and T.start or nil, function() go("acc") end)
 
     elseif screen == "acc" then
       -- As the EdgeTX card: the level helicopter on the left, the calibrate

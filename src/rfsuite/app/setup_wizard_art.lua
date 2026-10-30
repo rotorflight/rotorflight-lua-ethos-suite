@@ -446,8 +446,9 @@ for i = 1, #PULSE_TICKS do PULSE_TICK_LABELS[i] = tostring(PULSE_TICKS[i]) end
 
 -- mid: the servo's centre pulse, us; other: the other band's centre;
 -- midLabel ("1520 us"), hzLabel ("333 Hz").
-function art.pulse(mid, other, midLabel, hzLabel)
-  return {kind = "pulse", mid = mid or 1520, other = other, midLabel = midLabel, hzLabel = hzLabel}
+-- color (optional) is the trace's colour; the theme's accent when nil.
+function art.pulse(mid, other, midLabel, hzLabel, color)
+  return {kind = "pulse", mid = mid or 1520, other = other, midLabel = midLabel, hzLabel = hzLabel, color = color}
 end
 
 local function pulseX(x, w, t)
@@ -461,14 +462,14 @@ local function drawPulse(l, x, y, w, h, colors)
   local loY = y + floor(h * 0.68)
   if loY - hiY < 20 then loY = hiY + 20 end
   local x0, xm = pulseX(x, w, 0), pulseX(x, w, l.mid)
-  if l.other then
+  if l.other and not l.plain then
     local xo = pulseX(x, w, l.other)
     lcd.color(colors.muted)
     lcd.drawLine(x0, loY, x0, hiY + 6)
     lcd.drawLine(x0, hiY + 6, xo, hiY + 6)
     lcd.drawLine(xo, hiY + 6, xo, loY)
   end
-  lcd.color(colors.active)
+  lcd.color(l.color or colors.active)
   local t = 3
   thickLine(x, loY, x0, loY, t)
   lcd.drawFilledRectangle(x0 - 1, hiY, t, loY - hiY)
@@ -483,7 +484,7 @@ local function drawPulse(l, x, y, w, h, colors)
   -- Time axis.
   lcd.color(colors.muted)
   local axisY = loY + 8
-  if axisY + th <= y + h then
+  if not l.plain and axisY + th <= y + h then
     for i = 1, #PULSE_TICKS do
       local tx = pulseX(x, w, PULSE_TICKS[i])
       lcd.drawLine(tx, axisY - 4, tx, axisY)

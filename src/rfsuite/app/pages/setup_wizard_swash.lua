@@ -72,6 +72,19 @@ local T = {
   pinNone = "@i18n(app.modules.setup_wizard.swa_pin_none)@",
   direct = "@i18n(app.modules.setup_wizard.swa_direct)@",
   next = "@i18n(app.modules.setup_wizard.btn_next)@",
+  helpDirect = "@i18n(app.modules.setup_wizard.swa_type_help_direct)@",
+  help120 = "@i18n(app.modules.setup_wizard.swa_type_help_120)@",
+  help135 = "@i18n(app.modules.setup_wizard.swa_type_help_135)@",
+  help140 = "@i18n(app.modules.setup_wizard.swa_type_help_140)@",
+  help90l = "@i18n(app.modules.setup_wizard.swa_type_help_90l)@",
+  help90v = "@i18n(app.modules.setup_wizard.swa_type_help_90v)@",
+}
+
+-- The description of each swash type, as the Configurator gives it (the general
+-- text stays for a swash type that is not set).
+local SWASH_HELP = {
+  [1] = T.helpDirect, [2] = T.help120, [3] = T.help135,
+  [4] = T.help140, [5] = T.help90l, [6] = T.help90v,
 }
 
 local TAIL_NAMES = {
@@ -134,7 +147,6 @@ local function new(wiz)
   local scr = ui.new(wiz)
   local screen = "prepare"
   local answers = {blades = false, unplugged = false}
-  local answered = nil
   local pin = nil          -- {supported =, output =} from the FC, or nil until read
 
   local base = bases[wiz]
@@ -247,22 +259,7 @@ local function new(wiz)
       scr:text(T.prepareTitle, T.prepareText)
       scr:picture(bladesPicture)
       scr:step(1, STEP_COUNT)
-      -- Safety confirmation toggles: 1-click toggle buttons (No/Yes). Start follows once both are Yes.
-      local function toggle(key, index)
-        return {function() return answers[key] == true end, function(v)
-          answers[key], answered = v and true or false, index
-          wiz.rebuild()
-        end}
-      end
-      local ready = answers.unplugged and answers.blades
-      local answerField = scr:checks({
-        {label = T.unplugged, toggle = toggle("unplugged", 1)},
-        {label = T.blades, toggle = toggle("blades", 2)},
-      }, (not ready) and (answered or (not answers.unplugged and 1) or 2) or nil)
-      answered = nil
-      local rowField = scr:row(nil, {{text = T.start, primary = ready, disabled = not ready,
-        press = function() go("type") end}})
-      return answerField or rowField
+      return scr:safety(answers, {{key = "unplugged", label = T.unplugged}, {key = "blades", label = T.blades}}, T.start, function() go("type") end)
     end
 
     local m = wiz.mixConfig()
@@ -273,7 +270,7 @@ local function new(wiz)
 
     if screen == "type" then
       local rear = base.rear == true
-      scr:text(T.typeTitle, T.typeText)
+      scr:text(T.typeTitle, SWASH_HELP[m.swash_type] or T.typeText)
       scr:step(2, STEP_COUNT)
       local name = swashPicture(m.swash_type, rear, not heli.motorised(m.tail_rotor_mode))
       if name then scr:picture(pictureOf(name)) end

@@ -179,7 +179,6 @@ local function new(wiz)
   -- live then); otherwise the safety card comes first.
   local screen = wiz.takeResume() or "prepare"
   local answers = {blades = false, unplugged = false}
-  local answered = nil     -- the answer just pressed keeps the focus
   local receiverPicture = art.image("receiver", 140, 70)
   local rxMap = nil        -- decoded MSP_RX_MAP (named fields)
   local rcConfig = nil     -- decoded MSP_RC_CONFIG
@@ -832,24 +831,7 @@ local function new(wiz)
       scr:text(T.prepareTitle, T.prepareText)
       scr:picture(receiverPicture)
       scr:step(1, RECEIVER_SCREENS)
-      -- Safety confirmation toggles: 1-click toggle buttons (No/Yes). Start follows once both are Yes.
-      local function toggle(key, index)
-        return {function() return answers[key] == true end, function(v)
-          answers[key], answered = v and true or false, index
-          wiz.rebuild()
-        end}
-      end
-      local ready = answers.unplugged and answers.blades
-      -- Focus: Start once both are Yes, else the toggle just set, else the first No.
-      local answerField = scr:checks({
-        {label = T.unplugged, toggle = toggle("unplugged", 1)},
-        {label = T.blades, toggle = toggle("blades", 2)},
-      }, (not ready) and (answered or (not answers.unplugged and 1) or 2) or nil)
-      answered = nil
-      -- As the other steps: Start goes into the step, Next leaves it.
-      local rowField = scr:row(nil, {{text = T.start, primary = ready, disabled = not ready,
-        press = function() go("link") end}})
-      return answerField or rowField
+      return scr:safety(answers, {{key = "unplugged", label = T.unplugged}, {key = "blades", label = T.blades}}, T.start, function() go("link") end)
 
     elseif screen == "link" then
       -- The EdgeTX suite's receiver card, without its unlock: the protocol and the

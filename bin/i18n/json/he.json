@@ -9687,6 +9687,42 @@
           "max_length": 15,
           "reverse_text": true
         },
+        "swa_type_help_direct": {
+          "english": "Pitch, roll and collective on servos 1-3, for a mechanical mixer.",
+          "translation": "ציקלי, רול וקולקטיב על הסרוווים 1-3, למיקסר מכני.",
+          "needs_translation": false,
+          "max_length": 65
+        },
+        "swa_type_help_120": {
+          "english": "Three servos, 120° apart. The most common.",
+          "translation": "שלושה סרוווים, במרחק של 120°. הנפוץ ביותר.",
+          "needs_translation": false,
+          "max_length": 42
+        },
+        "swa_type_help_135": {
+          "english": "Three servos, 135° apart.",
+          "translation": "שלושה סרוווים, במרחק של 135°.",
+          "needs_translation": false,
+          "max_length": 29
+        },
+        "swa_type_help_140": {
+          "english": "Three servos, 140° apart.",
+          "translation": "שלושה סרוווים, במרחק של 140°.",
+          "needs_translation": false,
+          "max_length": 29
+        },
+        "swa_type_help_90l": {
+          "english": "Two servos, front and left, 90° apart.",
+          "translation": "שני סרוווים, קדמי ושמאלי, במרחק של 90°.",
+          "needs_translation": false,
+          "max_length": 39
+        },
+        "swa_type_help_90v": {
+          "english": "Two servos, front left and front right.",
+          "translation": "שני סרוווים, קדמי-שמאלי וקדמי-ימני.",
+          "needs_translation": false,
+          "max_length": 39
+        },
         "swa_servo1": {
           "english": "Servo 1",
           "translation": "סרוו 1",
@@ -9933,33 +9969,72 @@
           "max_length": 5,
           "reverse_text": true
         },
-        "sty_analog": {
-          "english": "Analog",
-          "translation": "אנלוגי",
-          "needs_translation": false,
-          "max_length": 6,
-          "reverse_text": true
-        },
-        "sty_digital": {
-          "english": "Digital",
-          "translation": "דיגיטלי",
-          "needs_translation": false,
-          "max_length": 7,
-          "reverse_text": true
-        },
-        "sty_narrow": {
-          "english": "Narrow",
-          "translation": "צר",
-          "needs_translation": false,
-          "max_length": 6,
-          "reverse_text": true
-        },
         "sty_row_type": {
           "english": "Type",
           "translation": "סוג",
           "needs_translation": false,
           "max_length": 4,
           "reverse_text": true
+        },
+        "sty_hiend_digital": {
+          "english": "Hi-End digital",
+          "translation": "דיגיטלי הי-אנד",
+          "needs_translation": false,
+          "max_length": 14
+        },
+        "sty_specific_digital": {
+          "english": "Specific digital",
+          "translation": "דיגיטלי ייעודי",
+          "needs_translation": false,
+          "max_length": 16
+        },
+        "sty_hiend_specific_digital": {
+          "english": "Hi-End specific digital",
+          "translation": "דיגיטלי ייעודי הי-אנד",
+          "needs_translation": false,
+          "max_length": 23
+        },
+        "sty_analog": {
+          "english": "Analog",
+          "translation": "אנלוגי",
+          "needs_translation": false,
+          "max_length": 6
+        },
+        "sty_digital": {
+          "english": "Digital",
+          "translation": "דיגיטלי",
+          "needs_translation": false,
+          "max_length": 7
+        },
+        "sty_narrow": {
+          "english": "Narrow band",
+          "translation": "פס צר",
+          "needs_translation": false,
+          "max_length": 11
+        },
+        "sty_row_freq": {
+          "english": "Frequency",
+          "translation": "תדר",
+          "needs_translation": false,
+          "max_length": 9
+        },
+        "sty_row_rate": {
+          "english": "Frame rate",
+          "translation": "קצב מסגרת",
+          "needs_translation": false,
+          "max_length": 10
+        },
+        "sty_geo_title": {
+          "english": "Geometry correction",
+          "translation": "תיקון גיאומטריה",
+          "needs_translation": false,
+          "max_length": 19
+        },
+        "sty_geo_hint": {
+          "english": "Corrects the arc of a rotary servo arm at its ends. Not for linear servos. Set the servo centre and travel first, then check pitch and limits.",
+          "translation": "מתקן את הקשת של זרוע סרוו סיבובי בקצוות. לא לסרוווים לינאריים. קודם מכוונים את מרכז הסרוו והמהלך, ואז בודקים פיץ' וגבולות.",
+          "needs_translation": false,
+          "max_length": 142
         },
         "sty_hz_fmt": {
           "english": "%d Hz",

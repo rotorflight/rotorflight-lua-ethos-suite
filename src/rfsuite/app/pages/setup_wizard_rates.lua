@@ -103,7 +103,6 @@ local function new(wiz)
 
   local screen = "prepare"
   local answers = {blades = false, unplugged = false}
-  local answered = nil
   local loadFailed = false
   local busy = false
   local failedWrite = false
@@ -253,7 +252,7 @@ local function new(wiz)
   end
 
   local function go(name)
-    screen, answered = name, nil
+    screen = name
     wiz.rebuild()
   end
 
@@ -440,22 +439,7 @@ local function new(wiz)
       scr:text(T.prepareTitle, T.intro)
       scr:picture(picture)
       scr:step(1, #screens)
-      -- Safety confirmation toggles: 1-click toggle buttons (No/Yes). Start follows once both are Yes.
-      local function toggle(key, index)
-        return {function() return answers[key] == true end, function(v)
-          answers[key], answered = v and true or false, index
-          wiz.rebuild()
-        end}
-      end
-      local ready = answers.unplugged and answers.blades
-      local answerField = scr:checks({
-        {label = T.unplugged, toggle = toggle("unplugged", 1)},
-        {label = T.blades, toggle = toggle("blades", 2)},
-      }, (not ready) and (answered or (not answers.unplugged and 1) or 2) or nil)
-      answered = nil
-      local rowField = scr:row(nil, {{text = T.start, primary = ready, disabled = not ready,
-        press = function() go(screens[2]) end}})
-      return answerField or rowField
+      return scr:safety(answers, {{key = "unplugged", label = T.unplugged}, {key = "blades", label = T.blades}}, T.start, function() go(screens[2]) end)
     elseif screen == "done" then
       return doneScreen()
     end

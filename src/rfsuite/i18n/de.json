@@ -10073,7 +10073,6 @@
           "english": "Analog",
           "max_length": 6,
           "needs_translation": false,
-          "reverse_text": false,
           "translation": "Analog"
         },
         "sty_custom": {
@@ -10087,8 +10086,31 @@
           "english": "Digital",
           "max_length": 7,
           "needs_translation": false,
-          "reverse_text": false,
           "translation": "Digital"
+        },
+        "sty_geo_hint": {
+          "english": "Corrects the arc of a rotary servo arm at its ends. Not for linear servos. Set the servo centre and travel first, then check pitch and limits.",
+          "max_length": 143,
+          "needs_translation": false,
+          "translation": "Korrigiert den Bogen des Drehservo-Arms an den Enden. Nicht für Linearservos. Erst Servomitte und Weg einstellen, dann Pitch und Limits prüfen."
+        },
+        "sty_geo_title": {
+          "english": "Geometry correction",
+          "max_length": 19,
+          "needs_translation": false,
+          "translation": "Geometrie-Korrektur"
+        },
+        "sty_hiend_digital": {
+          "english": "Hi-End digital",
+          "max_length": 14,
+          "needs_translation": false,
+          "translation": "Hi-End digital"
+        },
+        "sty_hiend_specific_digital": {
+          "english": "Hi-End specific digital",
+          "max_length": 23,
+          "needs_translation": false,
+          "translation": "Hi-End specific digital"
         },
         "sty_hz_fmt": {
           "english": "%d Hz",
@@ -10112,11 +10134,22 @@
           "translation": "Gemischt"
         },
         "sty_narrow": {
-          "english": "Narrow",
-          "max_length": 6,
+          "english": "Narrow band",
+          "max_length": 11,
           "needs_translation": false,
-          "reverse_text": false,
-          "translation": "Narrow"
+          "translation": "Schmalband"
+        },
+        "sty_row_freq": {
+          "english": "Frequency",
+          "max_length": 9,
+          "needs_translation": false,
+          "translation": "Frequenz"
+        },
+        "sty_row_rate": {
+          "english": "Frame rate",
+          "max_length": 10,
+          "needs_translation": false,
+          "translation": "Frame-Rate"
         },
         "sty_row_type": {
           "english": "Type",
@@ -10124,6 +10157,12 @@
           "needs_translation": false,
           "reverse_text": false,
           "translation": "Typ"
+        },
+        "sty_specific_digital": {
+          "english": "Specific digital",
+          "max_length": 16,
+          "needs_translation": false,
+          "translation": "Specific digital"
         },
         "sty_swash_title": {
           "english": "Cyclic servos",
@@ -10349,6 +10388,42 @@
           "needs_translation": false,
           "reverse_text": false,
           "translation": "Pitch (Servo)"
+        },
+        "swa_type_help_120": {
+          "english": "Three servos, 120° apart. The most common.",
+          "max_length": 57,
+          "needs_translation": false,
+          "translation": "Drei Servos, 120° versetzt. Die gebräuchlichste Variante."
+        },
+        "swa_type_help_135": {
+          "english": "Three servos, 135° apart.",
+          "max_length": 27,
+          "needs_translation": false,
+          "translation": "Drei Servos, 135° versetzt."
+        },
+        "swa_type_help_140": {
+          "english": "Three servos, 140° apart.",
+          "max_length": 27,
+          "needs_translation": false,
+          "translation": "Drei Servos, 140° versetzt."
+        },
+        "swa_type_help_90l": {
+          "english": "Two servos, front and left, 90° apart.",
+          "max_length": 43,
+          "needs_translation": false,
+          "translation": "Zwei Servos, vorne und links, 90° versetzt."
+        },
+        "swa_type_help_90v": {
+          "english": "Two servos, front left and front right.",
+          "max_length": 42,
+          "needs_translation": false,
+          "translation": "Zwei Servos, vorne links und vorne rechts."
+        },
+        "swa_type_help_direct": {
+          "english": "Pitch, roll and collective on servos 1-3, for a mechanical mixer.",
+          "max_length": 75,
+          "needs_translation": false,
+          "translation": "Nick, Roll und Kollektiv an den Servos 1-3, für einen mechanischen Mischer."
         },
         "swa_type_text": {
           "english": "The servo numbers are the flight controller's servo outputs. Servo 1 can be in front of the main shaft or behind it.",

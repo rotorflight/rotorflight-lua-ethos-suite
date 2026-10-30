@@ -9687,6 +9687,42 @@
           "max_length": 15,
           "reverse_text": false
         },
+        "swa_type_help_direct": {
+          "english": "Pitch, roll and collective on servos 1-3, for a mechanical mixer.",
+          "translation": "Cykliczne, przechył i kolektyw na serwach 1-3, dla mechanicznego miksera.",
+          "needs_translation": false,
+          "max_length": 73
+        },
+        "swa_type_help_120": {
+          "english": "Three servos, 120° apart. The most common.",
+          "translation": "Trzy serwa, co 120°. Najczęstszy układ.",
+          "needs_translation": false,
+          "max_length": 42
+        },
+        "swa_type_help_135": {
+          "english": "Three servos, 135° apart.",
+          "translation": "Trzy serwa, co 135°.",
+          "needs_translation": false,
+          "max_length": 25
+        },
+        "swa_type_help_140": {
+          "english": "Three servos, 140° apart.",
+          "translation": "Trzy serwa, co 140°.",
+          "needs_translation": false,
+          "max_length": 25
+        },
+        "swa_type_help_90l": {
+          "english": "Two servos, front and left, 90° apart.",
+          "translation": "Dwa serwa, z przodu i z lewej, co 90°.",
+          "needs_translation": false,
+          "max_length": 38
+        },
+        "swa_type_help_90v": {
+          "english": "Two servos, front left and front right.",
+          "translation": "Dwa serwa, z przodu lewo i z przodu prawo.",
+          "needs_translation": false,
+          "max_length": 42
+        },
         "swa_servo1": {
           "english": "Servo 1",
           "translation": "Serwo 1",
@@ -9933,33 +9969,72 @@
           "max_length": 8,
           "reverse_text": false
         },
-        "sty_analog": {
-          "english": "Analog",
-          "translation": "Analogowe",
-          "needs_translation": false,
-          "max_length": 9,
-          "reverse_text": false
-        },
-        "sty_digital": {
-          "english": "Digital",
-          "translation": "Cyfrowe",
-          "needs_translation": false,
-          "max_length": 7,
-          "reverse_text": false
-        },
-        "sty_narrow": {
-          "english": "Narrow",
-          "translation": "Narrow",
-          "needs_translation": false,
-          "max_length": 6,
-          "reverse_text": false
-        },
         "sty_row_type": {
           "english": "Type",
           "translation": "Typ",
           "needs_translation": false,
           "max_length": 4,
           "reverse_text": false
+        },
+        "sty_hiend_digital": {
+          "english": "Hi-End digital",
+          "translation": "Cyfrowe high-end",
+          "needs_translation": false,
+          "max_length": 16
+        },
+        "sty_specific_digital": {
+          "english": "Specific digital",
+          "translation": "Dedykowane cyfrowe",
+          "needs_translation": false,
+          "max_length": 18
+        },
+        "sty_hiend_specific_digital": {
+          "english": "Hi-End specific digital",
+          "translation": "Dedykowane cyfrowe high-end",
+          "needs_translation": false,
+          "max_length": 27
+        },
+        "sty_analog": {
+          "english": "Analog",
+          "translation": "Analogowe",
+          "needs_translation": false,
+          "max_length": 9
+        },
+        "sty_digital": {
+          "english": "Digital",
+          "translation": "Cyfrowe",
+          "needs_translation": false,
+          "max_length": 7
+        },
+        "sty_narrow": {
+          "english": "Narrow band",
+          "translation": "Wąskie pasmo",
+          "needs_translation": false,
+          "max_length": 12
+        },
+        "sty_row_freq": {
+          "english": "Frequency",
+          "translation": "Częstotliwość",
+          "needs_translation": false,
+          "max_length": 13
+        },
+        "sty_row_rate": {
+          "english": "Frame rate",
+          "translation": "Częstotliwość ramek",
+          "needs_translation": false,
+          "max_length": 19
+        },
+        "sty_geo_title": {
+          "english": "Geometry correction",
+          "translation": "Korekcja geometrii",
+          "needs_translation": false,
+          "max_length": 19
+        },
+        "sty_geo_hint": {
+          "english": "Corrects the arc of a rotary servo arm at its ends. Not for linear servos. Set the servo centre and travel first, then check pitch and limits.",
+          "translation": "Koryguje łuk ramienia serwa obrotowego na końcach. Nie dla serw liniowych. Najpierw ustaw środek i skok serwa, potem sprawdź pitch i limity.",
+          "needs_translation": false,
+          "max_length": 142
         },
         "sty_hz_fmt": {
           "english": "%d Hz",

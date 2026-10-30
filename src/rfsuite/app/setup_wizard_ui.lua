@@ -243,6 +243,9 @@ end
 --   {label =, value =}             a fact: the label, its value where the
 --                                  answers sit ("Accelerometer  Available")
 --   {label =, toggle = {get, set}}  a yes/no toggle button: the label, its answer a 1-click button ("No" / "Yes")
+--   {label =, switch = {get, set}, disabled =}
+--                                  an on/off switch where the answers sit: the native
+--                                  switch the telemetry sensors use
 --   {label =, choice = {values, get, set}, disabled =}
 --                                  a drop-down where the answers sit, as EdgeTX's
 --                                  choice fields (values as {{text, value}, ...})
@@ -291,8 +294,8 @@ function Screen:checks(list, focus)
       -- anything beyond the second line is cut short.
       lcd.font(FONT_S)
       -- A label with nothing beside it (no button, field or value) has the width.
-      local w = (c.press or c.number or c.toggle or c.value or c.choice) and labelW or (room - x)
-      if c.choice then w = choiceLabelW end
+      local w = (c.press or c.number or c.toggle or c.value or c.choice or c.switch) and labelW or (room - x)
+      if c.choice or c.number or c.switch then w = choiceLabelW end
       local lines = self.wiz.wrapLines(c.label, w, FONT_S)
       if #lines > 2 then lines = {lines[1], ui.fit(table.concat(lines, " ", 2), w)} end
       row.labelLines = lines
@@ -316,7 +319,8 @@ function Screen:checks(list, focus)
       -- A number to edit: {min, max, get, set, suffix}.
       local n = c.number
       local get, set = ui.value("check_" .. i, n[3], n[4])
-      local f = form.addNumberField(nil, {x = room - bw, y = y, w = bw, h = h}, n[1], n[2], get, set)
+      -- As wide as a drop-down beside it: the same column.
+      local f = form.addNumberField(nil, {x = room - cw, y = y, w = cw, h = h}, n[1], n[2], get, set)
       if n[5] and f.suffix then f:suffix(n[5]) end
       self.buttonList[#self.buttonList + 1] = {field = f, needsMotion = c.needsMotion, disabled = c.disabled}
       if i == focus then field = f end
@@ -335,6 +339,14 @@ function Screen:checks(list, focus)
           if set then set(not current) end
         end,
       }, font)
+      if i == focus then field = f end
+      row.y = y + floor((h - lineH) / 2)
+      y = y + h + CHECK_ROW_GAP
+    elseif c.switch then
+      -- An on/off switch in the answers' place: {get, set}, the native field.
+      local get, set = ui.value("check_" .. i, c.switch[1], c.switch[2])
+      local f = form.addBooleanField(nil, {x = room - cw, y = y, w = cw, h = h}, get, set)
+      self.buttonList[#self.buttonList + 1] = {field = f, needsMotion = c.needsMotion, disabled = c.disabled}
       if i == focus then field = f end
       row.y = y + floor((h - lineH) / 2)
       y = y + h + CHECK_ROW_GAP
@@ -360,12 +372,42 @@ function Screen:checks(list, focus)
     end
     if row.labelLines then
       -- Beside a button the label is centred on it; a plain fact sits on its line.
-      local centred = c.press or c.number or c.toggle or c.choice
+      local centred = c.press or c.number or c.toggle or c.choice or c.switch
       row.labelY = centred and (rowTop + floor((h - #row.labelLines * lineH) / 2)) or rowTop
     end
     v.checks[i] = row
   end
   return field
+end
+
+-- The safety card a step starts with: one Yes/No question per item, the answers on
+-- the right, and Start once every item is Yes. `state` is the step's own table,
+-- kept across rebuilds: state[item.key] holds the answer. Returns the field to focus.
+--   items      {{key =, label =}, ...}
+--   startText  the button on the right, and onStart when it is pressed; nil for
+--              no Start button (the way forward is the default Next)
+function Screen:safety(state, items, startText, onStart)
+  local answered = state.answered
+  state.answered = nil
+  local rows, ready, firstOpen = {}, true, nil
+  for i, item in ipairs(items) do
+    local key = item.key
+    if state[key] ~= true then
+      ready = false
+      firstOpen = firstOpen or i
+    end
+    rows[i] = {label = item.label, toggle = {
+      function() return state[key] == true end,
+      function(v)
+        state[key] = v and true or false
+        state.answered = i
+        self.wiz.rebuild()
+      end}}
+  end
+  local focus = (not ready) and (answered or firstOpen) or nil
+  local field = self:checks(rows, focus)
+  local rowField = self:row(nil, startText and {{text = startText, primary = ready, disabled = not ready, press = onStart}} or nil)
+  return field or rowField
 end
 
 -- One row of buttons along the bottom, always in the same order: Back on the
@@ -603,10 +645,21 @@ function Screen:paint()
   if v.pictureStop and v.pictureStop < bottom then bottom = v.pictureStop end
   if v.caption then
     lcd.font(FONT_XS)
-    local _, ch = lcd.getTextSize(v.caption)
     lcd.color(colors.muted)
-    lcd.drawText(MARGIN, bottom - ch, v.caption, LEFT)
-    bottom = bottom - ch
+    -- Centred under the picture, one line per "\n": the left part when checks sit beside it.
+    local captionW = v.checks and (v.checksX - MARGIN) or width
+    local lines, total = {}, 0
+    for line in (v.caption .. "\n"):gmatch("(.-)\n") do
+      local _, lh = lcd.getTextSize(line)
+      lines[#lines + 1] = {text = line, h = lh}
+      total = total + lh
+    end
+    local y0 = bottom - total
+    for _, l in ipairs(lines) do
+      lcd.drawText(floor(captionW / 2), y0, l.text, CENTERED)
+      y0 = y0 + l.h
+    end
+    bottom = bottom - total
   end
   if v.status and v.statusX then
     lcd.font(FONT_S)
