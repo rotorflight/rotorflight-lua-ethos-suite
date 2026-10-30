@@ -13,9 +13,13 @@
 --
 -- A type sets every servo in the group: its update rate, and when the band
 -- changes its centre, limits and scale. A servo that matches none of them
--- (custom) is left alone until a type is picked. A new update rate only
--- applies after a restart; the servos stay unplugged until the Connect step,
--- so a wrong rate cannot reach them.
+-- (custom) opens on the group's first type, once. A new update rate only applies
+-- after a restart; the servos stay unplugged until the Connect step, so a wrong
+-- rate cannot reach them.
+--
+-- A frame rate typed in changes the servos without a rebuild of the screen: a
+-- rebuild would close the number field being edited. Its picture and caption are
+-- replaced in place instead.
 
 local requireModule = package.loaded["rfsuite.lib.require"] or assert(loadfile("lib/require.lua"))()
 local ui = requireModule("app/setup_wizard_ui.lua")
@@ -50,7 +54,6 @@ local T = {
   specificDigital = "@i18n(app.modules.setup_wizard.sty_specific_digital)@",
   hiendSpecificDigital = "@i18n(app.modules.setup_wizard.sty_hiend_specific_digital)@",
   geoTitle = "@i18n(app.modules.setup_wizard.sty_geo_title)@",
-  geoHint = "@i18n(app.modules.setup_wizard.sty_geo_hint)@",
   restart = "@i18n(app.modules.setup_wizard.swa_restart)@",
   next = "@i18n(app.modules.setup_wizard.btn_next)@",
 }
@@ -71,14 +74,23 @@ local GROUP_TYPES = {
   },
 }
 
--- The drop-down's values for the states a group can be in but not pick.
+-- The drop-down's values for the states a group can be in: custom is always listed
+-- (it is what a hand-set frame rate shows); picking it changes nothing.
 local CUSTOM_ID, MIXED_ID = 100, 101
 local GEO_OFF, GEO_ON = 1, 2
 
--- The type of a group's preset in its list, or nil.
+-- The index of a group's type with this preset key, or nil.
 local function typeIndex(g, key)
   for i, t in ipairs(GROUP_TYPES[g.tail and "tail" or "cyclic"]) do
     if t.key == key then return i, t end
+  end
+  return nil
+end
+
+-- The heli preset with this key.
+local function presetOf(key)
+  for _, p in ipairs(heli.SERVO_TYPES) do
+    if p.key == key then return p end
   end
   return nil
 end
@@ -140,6 +152,15 @@ local function new(wiz)
     return found
   end
 
+  -- The drop-down's value for the group's state, read live.
+  local function typeIdOf(g)
+    local state = groupState(g)
+    local i = typeIndex(g, state)
+    if i then return i end
+    if state == "mixed" then return MIXED_ID end
+    return CUSTOM_ID
+  end
+
   local function apply(g, key)
     local rateChanged = false
     for _, servo in ipairs(g.servos) do
@@ -151,7 +172,52 @@ local function new(wiz)
     wiz.rebuild()
   end
 
-  -- The frame rate, within the band the group is on.
+  -- A group whose servos match no type gets the group's first type once, when the
+  -- step first shows it. It is an ordinary change, so Discard puts the servos back.
+  local function defaultType(g)
+    local key = GROUP_TYPES[g.tail and "tail" or "cyclic"][1].key
+    local rateChanged = false
+    for _, servo in ipairs(g.servos) do
+      wiz.editServo(servo, function(config)
+        if heli.applyServoType(config, key) then rateChanged = true end
+      end)
+    end
+    if rateChanged then wiz.requestReboot() end
+  end
+
+  -- The picture and its caption for the group as the servos are now: the type's
+  -- own picture, the nearest type of the band for a hand-set rate, or the plain
+  -- pulse when the group has no type to show.
+  local function pictureFor(g)
+    local state = groupState(g)
+    local first = wiz.configs[g.servos[1]]
+    local _, t = typeIndex(g, state)
+    if not t then
+      local band = heli.bandOf(first)
+      local rate = first.rate or 0
+      local bestDiff = nil
+      for _, candidate in ipairs(GROUP_TYPES[g.tail and "tail" or "cyclic"]) do
+        local p = presetOf(candidate.key)
+        if p and p.band == band then
+          local diff = math.abs(p.rate - rate)
+          if bestDiff == nil or diff < bestDiff then
+            t, bestDiff = candidate, diff
+          end
+        end
+      end
+    end
+    local name = t and t.name or (state == "mixed" and T.mixed or T.custom)
+    local caption = name .. "\n" .. string.format(T.us, first.mid or 1520) .. " / " .. string.format(T.hz, first.rate or 0)
+    if t then
+      return pictureOf("servo-" .. (g.tail and "tail" or "cyclic") .. "-" .. t.picture), caption
+    end
+    local trace = art.pulse(first.mid or 1520, nil, nil, nil, PULSE_BLUE)
+    trace.plain = true
+    return trace, caption
+  end
+
+  -- The frame rate, within the band the group is on. Changes the servos and replaces
+  -- the picture in place; no rebuild, so the number field stays open.
   local function setRate(g, v)
     local range = heli.BAND_HZ[heli.bandOf(wiz.configs[g.servos[1]])]
     if type(v) ~= "number" or v % 1 ~= 0 or v < range.min or v > range.max then return end
@@ -165,7 +231,9 @@ local function new(wiz)
       end)
     end
     if changed then wiz.requestReboot() end
-    wiz.rebuild()
+    local layout, caption = pictureFor(g)
+    scr:picture(layout, caption)
+    wiz.invalidate()
   end
 
   -- Geometry correction: on for all of the group's servos; a mixed group shows off
@@ -186,94 +254,33 @@ local function new(wiz)
     wiz.rebuild()
   end
 
-  -- The drop-down: the group's types, then custom or mixed while the group is in one.
-  local function typeValues(g, state)
+  -- The drop-down: the group's types, custom always, and mixed while the group is in it.
+  local function typeValues(g)
     local values = {}
     for i, t in ipairs(GROUP_TYPES[g.tail and "tail" or "cyclic"]) do
       values[#values + 1] = {text = t.name, value = i}
     end
-    -- Custom also when the servos sit on a type the group does not offer.
-    if state ~= "mixed" and not typeIndex(g, state) then values[#values + 1] = {text = T.custom, value = CUSTOM_ID} end
-    if state == "mixed" then values[#values + 1] = {text = T.mixed, value = MIXED_ID} end
+    values[#values + 1] = {text = T.custom, value = CUSTOM_ID}
+    if groupState(g) == "mixed" then values[#values + 1] = {text = T.mixed, value = MIXED_ID} end
     return values
   end
 
-  local function presetOf(key)
-    for _, p in ipairs(heli.SERVO_TYPES) do
-      if p.key == key then return p end
-    end
-    return nil
-  end
-
-  -- The picture: the type's own. A custom or mixed group shows the group's type of the
-  -- same band that is nearest its frame rate, so a hand-set rate shows its band.
-  local function groupPicture(g, state, first)
-    local _, t = typeIndex(g, state)
-    if not t then
-      local band = heli.bandOf(first)
-      local rate = first.rate or 0
-      local bestDiff = nil
-      for _, candidate in ipairs(GROUP_TYPES[g.tail and "tail" or "cyclic"]) do
-        local p = presetOf(candidate.key)
-        if p and p.band == band then
-          local diff = math.abs(p.rate - rate)
-          if bestDiff == nil or diff < bestDiff then
-            t, bestDiff = candidate, diff
-          end
-        end
-      end
-    end
-    if t then return pictureOf("servo-" .. (g.tail and "tail" or "cyclic") .. "-" .. t.picture) end
-    return nil
-  end
-
-  -- The caption under the picture: the type's name, then the servos' centre and frame rate.
-  local function groupCaption(g, state, first)
-    local _, t = typeIndex(g, state)
-    local name = t and t.name or (state == "mixed" and T.mixed or T.custom)
-    return name .. "\n" .. string.format(T.us, first.mid or 1520) .. " / " .. string.format(T.hz, first.rate or 0)
-  end
-
-  -- A group whose servos match no type gets the group's first type (Analog for the
-  -- cyclic servos) once, when the step opens; it is an ordinary change, so Discard
-  -- puts the servos back. A group that already matches a type is left alone.
-  local function defaultType(g)
-    local key = GROUP_TYPES[g.tail and "tail" or "cyclic"][1].key
-    local rateChanged = false
-    for _, servo in ipairs(g.servos) do
-      wiz.editServo(servo, function(config)
-        if heli.applyServoType(config, key) then rateChanged = true end
-      end)
-    end
-    if rateChanged then wiz.requestReboot() end
-  end
-
   local function groupScreen(g)
-    local state = groupState(g)
-    -- Decided once, when the step first shows the group: later states are the user's.
+    -- The first time the step shows a group, a group that matches no type opens on its first type.
     if not g.opened then
       g.opened = true
-      if state == "custom" then
+      if groupState(g) == "custom" then
         defaultType(g)
-        state = groupState(g)
       end
     end
-    local first = wiz.configs[g.servos[1]]
-    local index_, _ = typeIndex(g, state)
-    local typeId = index_ or (state == "mixed" and MIXED_ID) or CUSTOM_ID
-    scr:text(g.title, T.intro, nil)
-    local name = groupPicture(g, state, first)
-    if name then
-      scr:picture(name, groupCaption(g, state, first))
-    else
-      local band = heli.bandOf(first)
-      local trace = art.pulse(first.mid or 1520, nil, nil, nil, PULSE_BLUE)
-      trace.plain = true
-      scr:picture(trace, groupCaption(g, state, first))
-    end
+    local first_ = wiz.configs[g.servos[1]]
+    -- The restart note is a line under the title, not below the buttons (small screens).
+    scr:text(g.title, nil, wiz.rebootPending() and T.restart or nil)
+    local layout, caption = pictureFor(g)
+    scr:picture(layout, caption)
     local rows = {
-      {label = T.rowType, choice = {values = typeValues(g, state),
-        get = function() return typeId end,
+      {label = T.rowType, choice = {values = typeValues(g),
+        get = function() return typeIdOf(g) end,
         set = function(v)
           if v == CUSTOM_ID or v == MIXED_ID then return end
           local t = GROUP_TYPES[g.tail and "tail" or "cyclic"][v]
@@ -281,18 +288,16 @@ local function new(wiz)
         end}},
     }
     -- The custom frame rate, within the band.
-    local range = heli.BAND_HZ[heli.bandOf(first)]
+    local range = heli.BAND_HZ[heli.bandOf(first_)]
     rows[#rows + 1] = {label = T.rowRate, number = {range.min, range.max,
-      function() return first.rate or 0 end,
+      function() return wiz.configs[g.servos[1]].rate or 0 end,
       function(v) setRate(g, v) end, T.hzUnit}}
     -- The geometry correction is for the cyclic servos only: the tail's linkage needs none.
     if not g.tail then
       rows[#rows + 1] = {label = T.geoTitle, switch = {
         function() return groupGeometryOn(g) end,
         function(on) setGeometry(g, on) end}}
-      rows[#rows + 1] = {note = T.geoHint, muted = true}
     end
-    if wiz.rebootPending() then rows[#rows + 1] = {note = T.restart} end
     return rows
   end
 

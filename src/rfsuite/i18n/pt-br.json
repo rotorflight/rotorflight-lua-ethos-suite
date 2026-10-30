@@ -10221,12 +10221,6 @@
           "needs_translation": false,
           "translation": "Digital"
         },
-        "sty_geo_hint": {
-          "english": "Corrects the arc of a rotary servo arm at its ends. Not for linear servos. Set the servo centre and travel first, then check pitch and limits.",
-          "max_length": 165,
-          "needs_translation": false,
-          "translation": "Corrige o arco do braço de um servo rotativo nas extremidades. Não para servos lineares. Ajuste antes o centro e o curso do servo e depois verifique pitch e limites."
-        },
         "sty_geo_title": {
           "english": "Geometry correction",
           "max_length": 21,

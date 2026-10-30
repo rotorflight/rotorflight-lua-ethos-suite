@@ -10221,12 +10221,6 @@
           "needs_translation": false,
           "translation": "Digitální"
         },
-        "sty_geo_hint": {
-          "english": "Corrects the arc of a rotary servo arm at its ends. Not for linear servos. Set the servo centre and travel first, then check pitch and limits.",
-          "max_length": 144,
-          "needs_translation": false,
-          "translation": "Koriguje oblouk ramene rotačního serva na koncích. Ne pro lineární serva. Nejprve nastavte střed a dráhu serva, pak zkontrolujte pitch a limity."
-        },
         "sty_geo_title": {
           "english": "Geometry correction",
           "max_length": 19,

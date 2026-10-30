@@ -10221,12 +10221,6 @@
           "needs_translation": false,
           "translation": "数字"
         },
-        "sty_geo_hint": {
-          "english": "Corrects the arc of a rotary servo arm at its ends. Not for linear servos. Set the servo centre and travel first, then check pitch and limits.",
-          "max_length": 142,
-          "needs_translation": false,
-          "translation": "修正旋转舵机摇臂在两端的弧线运动。不适用于线性舵机。请先设置舵机中点和行程，然后检查螺距与限位。"
-        },
         "sty_geo_title": {
           "english": "Geometry correction",
           "max_length": 19,

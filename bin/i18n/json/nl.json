@@ -10191,12 +10191,6 @@
           "needs_translation": false,
           "max_length": 19
         },
-        "sty_geo_hint": {
-          "english": "Corrects the arc of a rotary servo arm at its ends. Not for linear servos. Set the servo centre and travel first, then check pitch and limits.",
-          "translation": "Corrigeert de boog van de arm van een draaiservo aan de uiteinden. Niet voor lineaire servo's. Stel eerst het midden en de slag van de servo in, controleer daarna pitch en limieten.",
-          "needs_translation": false,
-          "max_length": 181
-        },
         "sty_hz_fmt": {
           "english": "%d Hz",
           "translation": "%d Hz",
