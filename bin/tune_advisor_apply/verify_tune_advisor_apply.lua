@@ -417,6 +417,17 @@ do
   flightRoll = nil
 end
 
+print("F is not offered when its rates round back to the same values")
+do
+  -- Centre sensitivity 1 and max rate 0: x1.25 rounds to 1 and 0 again
+  resetFc()
+  flightRoll = {rcRate = 1, sRate = 0}
+  openPage()
+  pump()
+  check("no F change without a rate change", saveEnabled == false)
+  flightRoll = nil
+end
+
 print("P is raised at most 50% above the pilot's own P")
 do
   -- The response matches and stops bounce back 20% with no I-term push: more P

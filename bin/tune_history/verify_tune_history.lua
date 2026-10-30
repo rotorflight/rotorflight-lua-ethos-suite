@@ -429,7 +429,10 @@ do
   files[CHANGES] = nil
   check("no file reads as no changes", #tuneHistory.readChanges(MCU) == 0)
   files[CHANGES] = "other,header\n1,2\n"
-  check("a file with another header reads as no changes", #tuneHistory.readChanges(MCU) == 0)
+  check("a foreign file reads as no changes", #tuneHistory.readChanges(MCU) == 0)
+  -- logChanges() appends whatever the header says: those rows must still read
+  files[CHANGES] = "date;axis;setting\n2026-10-01 10:00:00,roll,P,50,60\n"
+  check("rows under another header are still read", #tuneHistory.readChanges(MCU) == 1)
   files[CHANGES] = nil
 end
 

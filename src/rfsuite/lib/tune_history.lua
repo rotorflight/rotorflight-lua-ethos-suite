@@ -166,15 +166,16 @@ function tuneHistory.logChanges(mcuId, axis, changes)
   return true
 end
 
--- The Apply record, oldest first: {axis, key, from, to} per row. A missing
--- or foreign file reads as no changes.
+-- The Apply record, oldest first: {axis, key, from, to} per row. Every row
+-- that parses is read, whatever the header says: logChanges() appends to the
+-- file as it is, so a header check would lose every later record. A missing
+-- file, or one with no such rows, reads as no changes.
 function tuneHistory.readChanges(mcuId)
   local changes = {}
   local text = ini.load_file_as_string(BASE_DIR .. "/" .. mcuId .. "/changes.csv")
   if not text then return changes end
   local lines = splitLines(text)
-  if lines[1] ~= CHANGES_HEADER then return changes end
-  for i = 2, #lines do
+  for i = 1, #lines do
     local axisName, key, from, to = lines[i]:match("^[^,]*,([^,]*),([^,]*),(%-?%d+),(%-?%d+)$")
     local axis = nil
     for n = 1, AXIS_COUNT do

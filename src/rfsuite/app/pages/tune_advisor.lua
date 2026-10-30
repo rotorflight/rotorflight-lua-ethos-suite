@@ -293,6 +293,19 @@ local function ratesFit(a, axis, k)
   return true
 end
 
+-- Whether scaling the rate curve by k changes at least one rate byte once
+-- rounded: at very low rates it can round back to the same values, and F
+-- must not change without them. A percentage-only rates_type has none.
+local function ratesMove(a, k)
+  local roles = LINEAR_ROLES[a.ratesType]
+  if not roles then return true end
+  for _, role in ipairs(roles) do
+    local key = rateKey(role)
+    if round(a[key] * k) ~= a[key] then return true end
+  end
+  return false
+end
+
 -- Suggests scaling the rate curve by k (e.g. 1.25 = 25% faster everywhere);
 -- callers check ratesFit() first. change(text, key, from, to) adds a line
 -- Apply can write; a percentage (no linear column for this rates_type) is
@@ -373,6 +386,9 @@ local function advise(a, axis, name, pilotP, actions, whys, changes)
       if newF < 1 or not inRange("F", axis, newF) or not ratesFit(a, axis, a.F / newF) then
         why(hot and T.whyFast or T.whySlow)
         atLimit()
+      elseif not ratesMove(a, a.F / newF) then
+        -- The rates round back to the same values: F alone would change the feel
+        why(hot and T.whyFast or T.whySlow)
       else
         local text = string.format(T.actFFmt, name, a.F, newF)
         if LINEAR_ROLES[a.ratesType] then change(text, "F", a.F, newF) else act(text) end
