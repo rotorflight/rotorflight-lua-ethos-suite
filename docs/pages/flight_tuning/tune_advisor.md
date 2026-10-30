@@ -68,9 +68,15 @@ The suggestions follow these rules:
   changes F by at most 20%. With Actual, Quick and Rotorflight rates the page gives the exact rate values;
   with the other rate types it gives a percentage. An axis with F set to 0 (often the tail) gets no F advice.
 - **Full stick asks for more rate than the heli reaches** (roll and pitch), with the cyclic at its limit: lower
-  the rates to what the heli reaches.
+  the rates toward what the heli reaches, by at most 20% per step.
 - **Stops bounce back 12% or more**: if the I-term pushes back, lower *Advanced > PID Controller > Iterm Relax
   Cutoff* by 20%. If F does not match yet, fix F first. Otherwise raise P by 20% (or add B).
+  The page raises P to at most 50% above your own P, which allows two steps. Your own P is the last one you
+  set by hand: the page works it out from `changes.csv` (see below), and setting P by hand starts the count again. If stops still bounce back after that, the reasons say "P is already ...% above your
+  setting. Check the mechanics." More P will not fix it.
+- **A change would go past a setting's limit**: the page does not suggest it, or any change that goes with it
+  (F is never suggested without its rates). Instead, the reasons say "The change needed goes past a setting's
+  limit." Look for the cause outside the tune, for example the mechanics or the head speed.
 
 ## Applying the changes
 

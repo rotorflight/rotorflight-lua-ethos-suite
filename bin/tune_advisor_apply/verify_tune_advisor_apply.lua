@@ -5,8 +5,10 @@
 -- change, and nothing is written unless every read is complete, the FC still
 -- holds the tune the flights were flown on, and the model is disarmed; a
 -- failed write never reaches EEPROM; F is never applied without its rates
--- (a percentage-only rates_type applies neither). Also pins that each stage
--- is shown.
+-- (a percentage-only rates_type applies neither); advice that would leave a
+-- setting's range is not offered; a full-stick rate cut is one 20% step;
+-- P is raised at most 50% above the pilot's own P (from changes.csv).
+-- Also pins that each stage is shown.
 -- i18n tags are left unresolved: messages are matched by their key.
 
 local ROOT = "src/rfsuite/"
@@ -93,6 +95,7 @@ local EEPROM = 250
 -- center sensitivity 18 -> 23 and max rate 24 -> 30.
 local flightRatesType = nil       -- overrides the fixture's rates_type when set
 local flightRollShake = nil       -- overrides roll's shake (deg/s) when set
+local flightRoll = nil            -- fields overriding the fixture's roll axis when set
 local function fixtureFlights()
   local axes = {}
   for axis = 1, 3 do
@@ -101,12 +104,17 @@ local function fixtureFlights()
     for i, b in ipairs(m.simulatorResponse) do buf[i] = b end
     m.processReply(nil, buf)
     if flightRatesType then axes[axis].ratesType = flightRatesType end
+    if flightRoll and axis == 1 then
+      for k, v in pairs(flightRoll) do axes[axis][k] = v end
+    end
   end
   if flightRollShake then axes[1].shakeRms = flightRollShake end
   return {{date = "d", seconds = 147, axes = axes}}
 end
 tuneHistory.read = function() return fixtureFlights() end
 tuneHistory.logChanges = function(_, axis, changes) logged[#logged + 1] = {axis = axis, changes = changes} end
+local changeLog = {}              -- what changes.csv holds: {axis, key, from, to} rows
+tuneHistory.readChanges = function() return changeLog end
 
 -- The FC: each codec's simulator fixture, decoded
 local fc
@@ -380,6 +388,76 @@ do
   for _ in confirm.message:gmatch("[^\n]+") do lines = lines + 1 end
   check("a calm axis gets its usual advice", lines == 4, confirm.message)
   flightRollShake = nil
+end
+
+print("Advice past a setting's limit is not given")
+do
+  -- Max rate 220: F 120 -> 96 would need it at 275, past the FC's 255
+  resetFc()
+  fc[111].rates_1 = 220
+  flightRoll = {sRate = 220}
+  openPage()
+  pump()
+  check("neither F nor the rates are offered", saveEnabled == false)
+  flightRoll = nil
+end
+
+print("A full-stick rate cut is limited to one step")
+do
+  -- The response matches, but full stick reaches 100 of the 240 deg/s asked:
+  -- the rates come down 20%, not to 100
+  resetFc()
+  flightRoll = {ffGain = 1.0, fullCount = 200, fullSatCount = 200, fullMaxRate = 100}
+  openPage()
+  pump()
+  applyNow()
+  check("the rates drop by 20%", fc[111].rcRates_1 == 14 and fc[111].rates_1 == 19,
+    tostring(fc[111].rcRates_1) .. "/" .. tostring(fc[111].rates_1))
+  check("F is left alone", fc[112].roll_f == 120, tostring(fc[112].roll_f))
+  flightRoll = nil
+end
+
+print("P is raised at most 50% above the pilot's own P")
+do
+  -- The response matches and stops bounce back 20% with no I-term push: more P
+  local bouncy = {ffGain = 1.0, fullCount = 0, releases = 20, meanRebound = 0.2, meanIterm = 0}
+
+  resetFc()
+  flightRoll = bouncy
+  changeLog = {}
+  openPage()
+  pump()
+  local before = snapshot()
+  applyNow()
+  check("with no Apply record, P 70 -> 84", fc[112].roll_p == 84 and changedFields(before) == "roll_p",
+    tostring(fc[112].roll_p) .. " " .. changedFields(before))
+
+  -- The page raised the pilot's 50 twice already: 84 would be past 75
+  resetFc()
+  changeLog = {{axis = 1, key = "P", from = 50, to = 60}, {axis = 2, key = "P", from = 50, to = 60},
+    {axis = 1, key = "P", from = 60, to = 70}}
+  openPage()
+  pump()
+  check("no more P past 1.5x the pilot's own", saveEnabled == false)
+
+  -- The pilot set 70 by hand after the page's 50 -> 60: 70 is the pilot's own
+  resetFc()
+  changeLog = {{axis = 1, key = "P", from = 50, to = 60}}
+  openPage()
+  pump()
+  check("a P set by hand starts again from that P", saveEnabled == true)
+  changeLog = {}
+  flightRoll = nil
+end
+
+print("pilotValue follows only an unbroken chain of Apply changes")
+do
+  local log = {{axis = 1, key = "P", from = 40, to = 48}, {axis = 1, key = "F", from = 100, to = 80},
+    {axis = 1, key = "P", from = 48, to = 58}}
+  check("follows the chain back", tuneHistory.pilotValue(log, 1, "P", 58) == 40)
+  check("a different current value is the pilot's", tuneHistory.pilotValue(log, 1, "P", 65) == 65)
+  check("another axis is not followed", tuneHistory.pilotValue(log, 2, "P", 58) == 58)
+  check("no record: the current value", tuneHistory.pilotValue({}, 1, "P", 58) == 58)
 end
 
 print()

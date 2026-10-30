@@ -3,5 +3,5 @@
   "name": "Tune Advisor Apply",
   "step": "Check the Tune Advisor Apply",
   "script": "bin/tune_advisor_apply/verify_tune_advisor_apply.lua",
-  "rationale": "The Tune Advisor's Save writes its suggested changes to the FC. Pins\nwhat reaches the FC: only the advised fields change, and nothing is\nwritten unless every read is complete (a short reply would decode as a\ntune of zeros), the FC still holds the tune the flights were flown on\n(same values and profiles) and the model is disarmed; a failed write is\nnever committed to EEPROM; F is never applied without its rates (a\npercentage-only rates_type applies neither); each stage is shown."
+  "rationale": "The Tune Advisor's Save writes its suggested changes to the FC. Pins\nwhat reaches the FC: only the advised fields change, and nothing is\nwritten unless every read is complete (a short reply would decode as a\ntune of zeros), the FC still holds the tune the flights were flown on\n(same values and profiles) and the model is disarmed; a failed write is\nnever committed to EEPROM; F is never applied without its rates (a\npercentage-only rates_type applies neither); advice that would leave a\nsetting's range is not offered; a full-stick rate cut is one 20% step;\nP is raised at most 50% above the pilot's own P (from changes.csv);\neach stage is shown."
 }

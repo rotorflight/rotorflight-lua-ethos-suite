@@ -8522,6 +8522,13 @@
           "reverse_text": false,
           "translation": "Changing F and the rates together keeps the stick feel."
         },
+        "why_limit": {
+          "english": "The change needed goes past a setting's limit.",
+          "max_length": 46,
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "The change needed goes past a setting's limit."
+        },
         "why_more": {
           "english": "Each flight in acro mode is saved when you disarm.",
           "max_length": 50,
@@ -8542,6 +8549,13 @@
           "needs_translation": true,
           "reverse_text": false,
           "translation": "The heli answers the stick as asked."
+        },
+        "why_p_max_fmt": {
+          "english": "P is already %d%% above your setting. Check the mechanics.",
+          "max_length": 58,
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "P is already %d%% above your setting. Check the mechanics."
         },
         "why_relax": {
           "english": "After a stop, the I-term pushes the heli back.",

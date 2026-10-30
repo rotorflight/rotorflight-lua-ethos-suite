@@ -24,7 +24,8 @@
 --   rates; for the others the page gives a percentage. An axis with F = 0
 --   (often the tail) gets no F advice: its PID gains set the response.
 -- - Full stick (roll and pitch): cyclic saturated and the rate reached well
---   below the rate asked, so the rate is suggested at what the heli reaches.
+--   below the rate asked, so the rate is lowered toward what the heli
+--   reaches, again at most FF_STEP_MAX per step.
 -- - |Collective| spread is shown as a fact, last, when there is room.
 -- - Shake: the heli oscillates with the stick centred, usually P too high.
 --   Less P, and nothing else on that axis: an oscillation also reads as
@@ -33,6 +34,13 @@
 -- - Stick releases: the rebound after a stop. I-term pushing back points at
 --   a lower Iterm Relax Cutoff; with F still off, F comes first; otherwise
 --   more P (or B).
+-- - P is never raised past P_RAISE_MAX times the pilot's own P (the value
+--   before this page's own P changes, from changes.csv): when stops still
+--   bounce back after that, more P is not the answer.
+-- - A change whose new value is outside the range the FC accepts is not
+--   given at all, nor any change that goes with it (F with its rates):
+--   clamping would give a different change from the one the data asks for.
+--   The reasons then say a setting is at its limit.
 --
 -- Clear (header Tool button) erases the saved flights and resets the FC's
 -- statistics.
@@ -125,6 +133,8 @@ local T = {
   whyBrakeFmt = "@i18n(app.modules.tune_advisor.why_brake_fmt)@",
   whyShakeFmt = "@i18n(app.modules.tune_advisor.why_shake_fmt)@",
   whyOk = "@i18n(app.modules.tune_advisor.why_ok)@",
+  whyLimit = "@i18n(app.modules.tune_advisor.why_limit)@",
+  whyPMaxFmt = "@i18n(app.modules.tune_advisor.why_p_max_fmt)@",
 
   applyHint = "@i18n(app.modules.tune_advisor.apply_hint)@",
   applyPrompt = "@i18n(app.modules.tune_advisor.apply_prompt)@",
@@ -154,9 +164,9 @@ local FF_MIN_COUNT = 1000       -- 10 s of usable 40-200 deg/s stick
 local FF_MIN_CORR = 0.85
 local FF_HOT = 1.15
 local FF_LOW = 0.85
-local FF_STEP_MAX = 0.2         -- change F by at most 20% per step
-local GAIN_MAX = 1000           -- firmware PID_GAIN_MAX, the limit for P and F alike
-local RATE_RAW_MAX = 255
+local FF_STEP_MAX = 0.2         -- change F (and rates) by at most 20% per step
+-- Rate bytes the FC accepts (firmware fc/rc_rates.h, cli/settings.c)
+local RATE_RANGE = {rcRate = {1, 255}, sRate = {0, 255}}
 
 -- Which rate columns scale the whole curve linearly, per rates_type. The
 -- others (Betaflight, Raceflight, KISS) get a percentage instead.
@@ -190,6 +200,7 @@ local STOPS_MIN = 10
 local REBOUND_BAD = 0.12
 local ITERM_PUSH = 0.03         -- I at release, output units
 local P_STEP = 1.2
+local P_RAISE_MAX = 1.5         -- P at most 50% above the pilot's own: two steps
 local CUTOFF_STEP = 0.8         -- lower Iterm Relax Cutoff = more relax, less bounce-back
 local CUTOFF_MIN = 1
 
@@ -233,7 +244,8 @@ end
 
 -- Whether value is one the FC accepts for that setting
 local function inRange(key, axis, value)
-  if key == "rcRate" or key == "sRate" then return value >= 1 and value <= RATE_RAW_MAX end
+  local range = RATE_RANGE[key]
+  if range then return value >= range[1] and value <= range[2] end
   local src, field = fcField(key, axis)
   local meta = SOURCE_BY_KEY[src].codec.FIELD_META[field]
   return meta ~= nil and value >= meta.min and value <= meta.max
@@ -264,9 +276,27 @@ local function rateText(raw, rateType, role)
   return string.format("%." .. decimals .. "f", raw * scale / 100)
 end
 
--- Suggests scaling the rate curve by k (e.g. 1.25 = 25% faster everywhere).
--- change(text, key, from, to) adds a line Apply can write; a percentage
--- (no linear column for this rates_type) is only shown.
+-- The tune_history key of a LINEAR_ROLES role
+local function rateKey(role)
+  return (role == "rcRate") and "rcRate" or "sRate"
+end
+
+-- Whether scaling the rate curve by k keeps every scaled byte in the range
+-- the FC accepts. A percentage-only rates_type has nothing to check.
+local function ratesFit(a, axis, k)
+  local roles = LINEAR_ROLES[a.ratesType]
+  if not roles then return true end
+  for _, role in ipairs(roles) do
+    local key = rateKey(role)
+    if not inRange(key, axis, round(a[key] * k)) then return false end
+  end
+  return true
+end
+
+-- Suggests scaling the rate curve by k (e.g. 1.25 = 25% faster everywhere);
+-- callers check ratesFit() first. change(text, key, from, to) adds a line
+-- Apply can write; a percentage (no linear column for this rates_type) is
+-- only shown.
 local function rateActions(a, name, k, act, change)
   local roles = LINEAR_ROLES[a.ratesType]
   if not roles then
@@ -275,11 +305,11 @@ local function rateActions(a, name, k, act, change)
     return
   end
   for _, role in ipairs(roles) do
-    local raw = (role == "rcRate") and a.rcRate or a.sRate
-    local newRaw = clamp(round(raw * k), 1, RATE_RAW_MAX)
+    local key = rateKey(role)
+    local raw = a[key]
+    local newRaw = round(raw * k)
     change(string.format(T.actRateFmt, name, (role == "rcRate") and T.rcRate or T.rate,
-      rateText(raw, a.ratesType, role), rateText(newRaw, a.ratesType, role)),
-      (role == "rcRate") and "rcRate" or "sRate", raw, newRaw)
+      rateText(raw, a.ratesType, role), rateText(newRaw, a.ratesType, role)), key, raw, newRaw)
   end
 end
 
@@ -299,7 +329,12 @@ end
 -- The first change (fly more, F with its rates, or full-stick rates) always
 -- fits. The reasons for changes stay within MAX_WHYS; only the closing
 -- |collective| fact can be cut.
-local function advise(a, axis, name, actions, whys, changes)
+--
+-- pilotP is the pilot's own P for this axis (tune_history.pilotValue()).
+--
+-- A change that would leave the range the FC accepts is dropped with
+-- anything tied to it, and the reasons say so once (atLimit).
+local function advise(a, axis, name, pilotP, actions, whys, changes)
   local function room(n) return #actions + n <= MAX_ACTIONS end
   local function act(s) if #actions < MAX_ACTIONS then actions[#actions + 1] = s end end
   local function why(s) if #whys < MAX_WHYS then whys[#whys + 1] = s end end
@@ -307,6 +342,10 @@ local function advise(a, axis, name, actions, whys, changes)
   local function change(text, key, from, to)
     act(text)
     if from ~= to then changes[#changes + 1] = {key = key, from = from, to = to, text = text} end
+  end
+  local limited = false
+  local function atLimit()
+    if not limited then limited = true; why(T.whyLimit) end
   end
 
   local shaking = a.shakeCount >= SHAKE_MIN_COUNT and a.shakeRms >= SHAKE_RMS
@@ -327,14 +366,20 @@ local function advise(a, axis, name, actions, whys, changes)
     if shaking then
       -- The shake comes first: see Stops
     elseif a.F > 0 then
-      local newF = clamp(round(a.F * clamp(1 / g, 1 - FF_STEP_MAX, 1 + FF_STEP_MAX)), 1, GAIN_MAX)
+      local newF = round(a.F * clamp(1 / g, 1 - FF_STEP_MAX, 1 + FF_STEP_MAX))
       -- Keep the stick feel: F x rate is what the pilot feels. F is applied
-      -- only with its rates, so a percentage-only rates_type applies neither.
-      local text = string.format(T.actFFmt, name, a.F, newF)
-      if LINEAR_ROLES[a.ratesType] then change(text, "F", a.F, newF) else act(text) end
-      rateActions(a, name, a.F / newF, act, change)
-      why(hot and T.whyFast or T.whySlow)
-      why(T.whyKeepFeel)
+      -- only with its rates, so a percentage-only rates_type applies neither,
+      -- and F is not given at all when F or a rate would leave its range.
+      if newF < 1 or not inRange("F", axis, newF) or not ratesFit(a, axis, a.F / newF) then
+        why(hot and T.whyFast or T.whySlow)
+        atLimit()
+      else
+        local text = string.format(T.actFFmt, name, a.F, newF)
+        if LINEAR_ROLES[a.ratesType] then change(text, "F", a.F, newF) else act(text) end
+        rateActions(a, name, a.F / newF, act, change)
+        why(hot and T.whyFast or T.whySlow)
+        why(T.whyKeepFeel)
+      end
     else
       why(T.whyNoF)
     end
@@ -344,8 +389,11 @@ local function advise(a, axis, name, actions, whys, changes)
     if not shaking and axis ~= AXIS_YAW and asked and a.fullCount >= FULL_MIN_COUNT
         and a.fullSatCount >= FULL_SAT_SHARE * a.fullCount
         and a.fullMaxRate < FULL_REACH * asked and room(rateActionCount(a)) then
-      rateActions(a, name, a.fullMaxRate / asked, act, change)
+      local k = math.max(a.fullMaxRate / asked, 1 - FF_STEP_MAX)
+      local fits = ratesFit(a, axis, k)
+      if fits then rateActions(a, name, k, act, change) end
       why(string.format(T.whyFullFmt, asked, a.fullMaxRate))
+      if not fits then atLimit() end
     end
   end
 
@@ -368,15 +416,31 @@ local function advise(a, axis, name, actions, whys, changes)
       -- No room for the cutoff only after F and two rate lines; F is off
       -- then, so the next branch says to fix F first.
       if a.meanIterm >= ITERM_PUSH and a.relaxCutoff > CUTOFF_MIN and room(1) then
-        local newCutoff = clamp(round(a.relaxCutoff * CUTOFF_STEP), CUTOFF_MIN, a.relaxCutoff - 1)
-        change(string.format(T.actRelaxFmt, name, a.relaxCutoff, newCutoff), "relaxCutoff", a.relaxCutoff, newCutoff)
-        why(T.whyRelax)
+        local newCutoff = math.min(round(a.relaxCutoff * CUTOFF_STEP), a.relaxCutoff - 1)
+        if inRange("relaxCutoff", axis, newCutoff) then
+          change(string.format(T.actRelaxFmt, name, a.relaxCutoff, newCutoff), "relaxCutoff", a.relaxCutoff, newCutoff)
+          why(T.whyRelax)
+        else
+          atLimit()
+        end
       elseif ffOff(a) and a.F > 0 then
-        why(string.format(T.whyFixFFmt, rebound))
+        -- F first, unless F was at its limit: then nothing is advised here
+        if not limited then why(string.format(T.whyFixFFmt, rebound)) end
       elseif room(1) then
-        local newP = clamp(round(a.P * P_STEP), a.P + 1, GAIN_MAX)
-        change(string.format(T.actPFmt, name, a.P, newP), "P", a.P, newP)
-        why(string.format(T.whyBrakeFmt, rebound))
+        local newP = math.max(round(a.P * P_STEP), a.P + 1)
+        if not inRange("P", axis, newP) then
+          atLimit()
+        elseif newP > math.floor(pilotP * P_RAISE_MAX) then
+          -- Already raised as far as this page goes; a P of 0 or 1 gets no raise
+          if a.P > pilotP and pilotP > 0 then
+            why(string.format(T.whyPMaxFmt, round((a.P / pilotP - 1) * 100)))
+          else
+            atLimit()
+          end
+        else
+          change(string.format(T.actPFmt, name, a.P, newP), "P", a.P, newP)
+          why(string.format(T.whyBrakeFmt, rebound))
+        end
       end
     end
   end
@@ -485,6 +549,7 @@ local function open(opts)
   local toolEnabled = nil
   local mcuId = nil               -- the session's aircraft
   local flights = nil             -- lib/tune_history.lua read(), nil until loaded
+  local changeLog = nil           -- lib/tune_history.lua readChanges(), loaded with flights
   local selected = 1              -- index into AXES
   local section = SECTION_CHANGES -- compact screens only
   local actions, whys = {}, {}
@@ -540,7 +605,8 @@ local function open(opts)
     clearList(actions)
     clearList(whys)
     clearList(view.changes)
-    view.response, view.stops = advise(a, axis, AXES[selected][1], actions, whys, view.changes)
+    local pilotP = tuneHistory.pilotValue(changeLog, axis, "P", a.P)
+    view.response, view.stops = advise(a, axis, AXES[selected][1], pilotP, actions, whys, view.changes)
     view.axis = axis
     for _, k in ipairs(tuneHistory.TUNE_KEYS) do view.tune[k] = a[k] end
     clearList(view.actions)
@@ -561,6 +627,7 @@ local function open(opts)
 
   local function load()
     flights = mcuId and tuneHistory.read(mcuId) or nil
+    changeLog = mcuId and tuneHistory.readChanges(mcuId) or nil
     for k in pairs(applied) do applied[k] = nil end
     render()
   end
@@ -783,6 +850,7 @@ local function open(opts)
     closeApplyDialog()
     if result == true then
       tuneHistory.logChanges(mcuId, done.axis, done.changes)
+      changeLog = tuneHistory.readChanges(mcuId)
       applied[done.axis] = true
       render()
     end
@@ -928,6 +996,7 @@ local function open(opts)
       closeApplyDialog()
       applying = nil
       flights = nil
+      changeLog = nil
       view.layout = nil
     end)
   end

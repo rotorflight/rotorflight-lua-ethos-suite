@@ -145,7 +145,9 @@ function tuneHistory.save(mcuId, modelName, replies)
 end
 
 -- The Tune Advisor's Apply record, beside the history: one row per setting
--- changed, with the value it replaced, so a change can be undone by hand.
+-- changed, with the value it replaced, so a change can be undone by hand,
+-- and so the page can tell how far its own changes have moved a setting
+-- (pilotValue()).
 -- Appended, never trimmed, and kept by erase(): it is the pilot's record.
 local CHANGES_HEADER = "date,axis,setting,from,to"
 
@@ -162,6 +164,42 @@ function tuneHistory.logChanges(mcuId, axis, changes)
   end
   file:close()
   return true
+end
+
+-- The Apply record, oldest first: {axis, key, from, to} per row. A missing
+-- or foreign file reads as no changes.
+function tuneHistory.readChanges(mcuId)
+  local changes = {}
+  local text = ini.load_file_as_string(BASE_DIR .. "/" .. mcuId .. "/changes.csv")
+  if not text then return changes end
+  local lines = splitLines(text)
+  if lines[1] ~= CHANGES_HEADER then return changes end
+  for i = 2, #lines do
+    local axisName, key, from, to = lines[i]:match("^[^,]*,([^,]*),([^,]*),(%-?%d+),(%-?%d+)$")
+    local axis = nil
+    for n = 1, AXIS_COUNT do
+      if AXIS_NAMES[n] == axisName then axis = n end
+    end
+    if axis then
+      changes[#changes + 1] = {axis = axis, key = key, from = tonumber(from), to = tonumber(to)}
+    end
+  end
+  return changes
+end
+
+-- The value the pilot last set by hand for one setting (a TUNE_KEYS name):
+-- from the current value, follows the Apply record back while each change
+-- ended at the value the next one started from. A change made by hand breaks
+-- that chain, so the value it set counts as the pilot's.
+function tuneHistory.pilotValue(changes, axis, key, value)
+  for i = #changes, 1, -1 do
+    local c = changes[i]
+    if c.axis == axis and c.key == key then
+      if c.to ~= value then break end
+      value = c.from
+    end
+  end
+  return value
 end
 
 function tuneHistory.erase(mcuId)

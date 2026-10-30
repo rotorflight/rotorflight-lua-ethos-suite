@@ -416,6 +416,23 @@ do
   check("a file with other columns reads as no flights", #tuneHistory.read(MCU) == 0)
 end
 
+print("The Apply record reads back")
+do
+  local CHANGES = "LOGS:/rfsuite/tune/" .. MCU .. "/changes.csv"
+  files[CHANGES] = "date,axis,setting,from,to\n"
+    .. "2026-10-01 10:00:00,roll,P,50,60\n"
+    .. "2026-10-01 10:00:00,pitch,relaxCutoff,10,8\n"
+    .. "not,a,row\n"
+  local rows = tuneHistory.readChanges(MCU)
+  check("each row reads as axis, setting, from, to", #rows == 2 and rows[1].axis == 1 and rows[1].key == "P"
+    and rows[1].from == 50 and rows[1].to == 60 and rows[2].axis == 2 and rows[2].to == 8, #rows)
+  files[CHANGES] = nil
+  check("no file reads as no changes", #tuneHistory.readChanges(MCU) == 0)
+  files[CHANGES] = "other,header\n1,2\n"
+  check("a file with another header reads as no changes", #tuneHistory.readChanges(MCU) == 0)
+  files[CHANGES] = nil
+end
+
 print()
 print(string.format("%d checks, %d failed", checks, failures))
 os.exit(failures == 0 and 0 or 1)
