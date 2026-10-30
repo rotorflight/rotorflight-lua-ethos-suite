@@ -84,6 +84,20 @@ check("5.0.0 has the Tune Advisor", tuneAdvisor.supportFor("5.0.0") == true)
 check("unknown version is nil", tuneAdvisor.supportFor(nil) == nil)
 check("unparseable version is nil", tuneAdvisor.supportFor("garbage") == nil)
 
+-- The simulator's FC_VERSION fixture reports older firmware, but its fixtures
+-- answer the Tune Advisor commands: the page must open there. A fresh copy
+-- of the module, loaded as the simulator would.
+do
+  local savedSystem, savedModule = system, package.loaded["rfsuite.lib.msp_tune_advisor"]
+  system = {getVersion = function() return {simulation = true} end}
+  package.loaded["rfsuite.lib.msp_tune_advisor"] = nil
+  local simAdvisor = assert(loadfile("lib/msp_tune_advisor.lua"))()
+  check("the simulator has the Tune Advisor whatever its FC_VERSION fixture says",
+    simAdvisor.supportFor("4.5.1") == true and simAdvisor.supportFor(nil) == true)
+  system = savedSystem
+  package.loaded["rfsuite.lib.msp_tune_advisor"] = savedModule
+end
+
 -- ---------------------------------------------------------------------------
 -- 2. The background capture sends nothing without the command
 -- ---------------------------------------------------------------------------

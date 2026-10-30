@@ -222,9 +222,16 @@ end
 -- once the release that ships the commands is known.
 local FIRST_FIRMWARE = {4, 7, 0}
 
+-- The Ethos simulator answers every command from the simulatorResponse
+-- fixtures, these included, while its FC_VERSION fixture (lib/msp_handshake.lua)
+-- reports an older firmware: there the version says nothing.
+local IS_SIM = system ~= nil and system.getVersion ~= nil and system.getVersion().simulation == true
+
 -- true when the FC firmware version (session.fcVersion, "M.m.p") is at least
 -- FIRST_FIRMWARE, false when it is older, nil while the version is not known.
+-- Always true in the simulator.
 function msp_tune_advisor.supportFor(fcVersion)
+  if IS_SIM then return true end
   if type(fcVersion) ~= "string" then return nil end
   local major, minor, patch = fcVersion:match("^(%d+)%.(%d+)%.(%d+)")
   if not major then return nil end
