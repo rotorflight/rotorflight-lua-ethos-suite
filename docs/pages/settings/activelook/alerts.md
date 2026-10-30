@@ -27,7 +27,7 @@ Each alert has its own expandable panel, like Settings -> General. Smart Fuel is
 | Use audio repeats (Smart Fuel) | Inherits the audio Smart Fuel repeat count (`events.smartfuelrepeats`), even when audio announcements are off. Off by default. Repeats becomes read-only and displays the inherited count. The warning point remains Smart Fuel 0%, as in audio. |
 | Warning Duration | How long the LOW FUEL message stays on the display, from 3 to 30 seconds (default 5). It is greyed out, so it cannot be changed, while Smart Fuel Warning is off. |
 | Icon | Shows the fuel-pump icon for Nitro (image 11) or the battery icon for Electric (image 21) beside the remaining percentage (default on). Turn it off if the active glasses configuration shows no icon or a different image. Greyed out while the warning is off. |
-| ESC temp warning | Enables the ESC-temperature warning. Off by default. Requires connected, armed Inflight telemetry. |
+| ESC temp warning | Enables the ESC-temperature warning. Off by default. Requires a connected flight controller and armed Inflight telemetry. |
 | Use audio limits & repeats (ESC) | Inherits both the audio temperature threshold (`events.escalertvalue`, normally 90 C) and repeat count (`events.temp_esc_repeats`). Both fields become read-only and display the inherited values. Audio announcements need not be enabled. On by default; disabled while the ESC warning is off. Turning inheritance off restores both saved independent values. |
 | ESC temp limit | An independent 60-300 C threshold when Use audio limits & repeats is off. Displayed and edited in the selected temperature unit; stored and compared in C. Disabled when using the audio limit or when the warning is off. |
 | Repeats (ESC) | Total temperature warning displays per hot episode, 0-10; default 2. A value of 0 means unlimited warning displays while the hot condition remains active; it does not suppress the alert. The pause between displays equals Warning Duration. Disabled when the ESC warning is off or Use audio limits & repeats is on. |
@@ -64,9 +64,9 @@ The preview stays visible without a duration limit and pauses automatic display 
 
 A higher-priority warning interrupts a lower one. Interrupted warnings keep their remaining visible time; Smart Fuel repetition gaps begin only after a display completes. Governor information is never queued behind an alarm and is discarded when preempted. First governor telemetry seeds the state without inventing a transition. Disarm, flight end and link loss clear automatic warnings. SPOOLUP does not trigger a status overlay.
 
-The overlay displays localized warning labels and live telemetry; missing values are shown as a dash. A completed overlay returns to the appropriate normal phase layout. The permanent Inflight fuel indicator is hidden during overlays and returns afterwards.
+The overlay displays localized warning labels and live telemetry; missing values are shown as a dash. A completed overlay returns to the appropriate normal phase layout. The permanent Inflight fuel indicator is hidden during overlays and returns afterward.
 
-Changes are saved to `[activelook]` in `SCRIPTS:/rfsuite.user/settings.ini`; they do not change flight controller settings. All new automatic functions are disabled by default. Engine code lives in `src/rfsuite/lib/activelook_alerts.lua`; graphics remain in `src/rfsuite/widgets/activelook.lua`.
+Changes are saved to `[activelook]` in `SCRIPTS:/rfsuite.user/settings.ini`; they do not change flight controller settings. All new automatic functions are disabled by default. Engine code lives in `src/rfsuite/lib/activelook_alerts.lua`; graphics remain in `src/rfsuite/widgets/activelook.lua`. See [PR #2630](https://github.com/rotorflight/rotorflight-lua-ethos-suite/pull/2630) for the implementation.
 
 *Documented against RFSuite Ethos 2.3.1, implementation checked 2026-10-21. Hardware verification on ENGO 2 remains required for the new overlays.*
 
