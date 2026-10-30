@@ -26,9 +26,13 @@
 -- - Full stick (roll and pitch): cyclic saturated and the rate reached well
 --   below the rate asked, so the rate is suggested at what the heli reaches.
 -- - |Collective| spread is shown as a fact, last, when there is room.
+-- - Shake: the heli oscillates with the stick centred, usually P too high.
+--   Less P, and nothing else on that axis: an oscillation also reads as
+--   bounce-back after every stop and spoils the F match, so the rules below
+--   would otherwise ask for more P and make it worse.
 -- - Stick releases: the rebound after a stop. I-term pushing back points at
 --   a lower Iterm Relax Cutoff; with F still off, F comes first; otherwise
---   the controller is barely braking, so more P (or B).
+--   more P (or B).
 --
 -- Clear (header Tool button) erases the saved flights and resets the FC's
 -- statistics.
@@ -75,6 +79,8 @@ local T = {
   dataFlightsFmt = "@i18n(app.modules.tune_advisor.data_flights_fmt)@",
   noAircraft = "@i18n(app.modules.tune_advisor.no_aircraft)@",
   unsupported = "@i18n(app.modules.tune_advisor.unsupported)@",
+  reading = "@i18n(app.modules.tune_advisor.reading)@",
+  notRead = "@i18n(app.modules.tune_advisor.not_read)@",
   clearPrompt = "@i18n(app.modules.tune_advisor.clear_prompt)@",
   response = "@i18n(app.modules.tune_advisor.response)@",
   stops = "@i18n(app.modules.tune_advisor.stops)@",
@@ -90,6 +96,7 @@ local T = {
   respOk = "@i18n(app.modules.tune_advisor.resp_ok)@",
   stopsMoreFmt = "@i18n(app.modules.tune_advisor.stops_more_fmt)@",
   stopsValueFmt = "@i18n(app.modules.tune_advisor.stops_value_fmt)@",
+  stopsShakeFmt = "@i18n(app.modules.tune_advisor.stops_shake_fmt)@",
 
   actFlyRoll = "@i18n(app.modules.tune_advisor.act_fly_roll)@",
   actFlyPitch = "@i18n(app.modules.tune_advisor.act_fly_pitch)@",
@@ -116,6 +123,7 @@ local T = {
   whyRelax = "@i18n(app.modules.tune_advisor.why_relax)@",
   whyFixFFmt = "@i18n(app.modules.tune_advisor.why_fix_f_fmt)@",
   whyBrakeFmt = "@i18n(app.modules.tune_advisor.why_brake_fmt)@",
+  whyShakeFmt = "@i18n(app.modules.tune_advisor.why_shake_fmt)@",
   whyOk = "@i18n(app.modules.tune_advisor.why_ok)@",
 
   applyHint = "@i18n(app.modules.tune_advisor.apply_hint)@",
@@ -184,6 +192,12 @@ local ITERM_PUSH = 0.03         -- I at release, output units
 local P_STEP = 1.2
 local CUTOFF_STEP = 0.8         -- lower Iterm Relax Cutoff = more relax, less bounce-back
 local CUTOFF_MIN = 1
+
+-- Shake with the stick centred (firmware payload version 2). A tuned heli
+-- holds a few deg/s there; an oscillating loop tens, and its swings also read
+-- as bounce-back after every stop.
+local SHAKE_MIN_COUNT = 500     -- 5 s of centred stick
+local SHAKE_RMS = 15            -- deg/s
 
 local MAX_ACTIONS = 3
 local MAX_WHYS = 3
@@ -295,6 +309,8 @@ local function advise(a, axis, name, actions, whys, changes)
     if from ~= to then changes[#changes + 1] = {key = key, from = from, to = to, text = text} end
   end
 
+  local shaking = a.shakeCount >= SHAKE_MIN_COUNT and a.shakeRms >= SHAKE_RMS
+
   -- Response: feed-forward match
   local response
   if a.ffCount < FF_MIN_COUNT then
@@ -308,7 +324,9 @@ local function advise(a, axis, name, actions, whys, changes)
     local g = a.ffGain
     local hot = g > FF_HOT
     response = string.format(hot and T.respFastFmt or T.respSlowFmt, round(math.abs(g - 1) * 100))
-    if a.F > 0 then
+    if shaking then
+      -- The shake comes first: see Stops
+    elseif a.F > 0 then
       local newF = clamp(round(a.F * clamp(1 / g, 1 - FF_STEP_MAX, 1 + FF_STEP_MAX)), 1, GAIN_MAX)
       -- Keep the stick feel: F x rate is what the pilot feels. F is applied
       -- only with its rates, so a percentage-only rates_type applies neither.
@@ -323,7 +341,7 @@ local function advise(a, axis, name, actions, whys, changes)
   else
     response = T.respOk
     local asked = maxRateAsked(a)
-    if axis ~= AXIS_YAW and asked and a.fullCount >= FULL_MIN_COUNT
+    if not shaking and axis ~= AXIS_YAW and asked and a.fullCount >= FULL_MIN_COUNT
         and a.fullSatCount >= FULL_SAT_SHARE * a.fullCount
         and a.fullMaxRate < FULL_REACH * asked and room(rateActionCount(a)) then
       rateActions(a, name, a.fullMaxRate / asked, act, change)
@@ -333,7 +351,15 @@ local function advise(a, axis, name, actions, whys, changes)
 
   -- Stops: rebound after a release
   local stops
-  if a.releases < STOPS_MIN then
+  if shaking then
+    local rms = round(a.shakeRms)
+    stops = string.format(T.stopsShakeFmt, rms)
+    if a.P > 1 and room(1) then
+      local newP = clamp(round(a.P / P_STEP), 1, a.P - 1)
+      change(string.format(T.actPFmt, name, a.P, newP), "P", a.P, newP)
+      why(string.format(T.whyShakeFmt, rms))
+    end
+  elseif a.releases < STOPS_MIN then
     stops = string.format(T.stopsMoreFmt, a.releases, STOPS_MIN)
   else
     local rebound = round(a.meanRebound * 100)
@@ -453,6 +479,10 @@ local function open(opts)
   local headerHandle = nil
   local probing = false
   local unsupported = false       -- the FC refused the command: until Reload
+  -- tasks/tune_history.lua's capture: "reading" (a flight since the disarm
+  -- not saved yet), "failed" (it gave up until the next disarm) or "idle"
+  local capture = "idle"
+  local toolEnabled = nil
   local mcuId = nil               -- the session's aircraft
   local flights = nil             -- lib/tune_history.lua read(), nil until loaded
   local selected = 1              -- index into AXES
@@ -498,6 +528,8 @@ local function open(opts)
     if disposed then return end
     if unsupported then showOnly(T.unsupported) return end
     if not mcuId then showOnly(T.noAircraft) return end
+    -- The advice would change in a few seconds: show none until it does
+    if capture == "reading" then showOnly(T.reading) return end
     if not flights then return end
 
     local axis = AXES[selected][2]
@@ -523,6 +555,7 @@ local function open(opts)
       -- After the changes, so the compact Changes view never cuts it
       if #view.changes > 0 then view.actions[#view.actions + 1] = T.applyHint end
     end
+    if capture == "failed" then table.insert(view.actions, 1, T.notRead) end
     changed()
   end
 
@@ -595,9 +628,16 @@ local function open(opts)
     load()
   end
 
+  local function onCaptureState(nextState)
+    if disposed or nextState == capture then return end
+    capture = nextState
+    render()
+  end
+
   local function unsubscribe()
     bus.unsubscribe("session.update", onSession)
     bus.unsubscribe("tune_history.saved", onSaved)
+    bus.unsubscribe("tune_history.state", onCaptureState)
   end
 
   local function clear()
@@ -614,7 +654,7 @@ local function open(opts)
   -- any failure ends it through finish(), and the wakeup handler reports.
   local function canApply()
     return not applying and not unsupported and mcuId ~= nil and link.connected
-      and not link.armed and #view.changes > 0
+      and not link.armed and capture ~= "reading" and #view.changes > 0
   end
 
   local function finish(result)
@@ -899,6 +939,12 @@ local function open(opts)
         saveEnabled = canSave
         headerHandle.setSaveEnabled(canSave)
       end
+      -- Erasing mid-capture would race the flight being saved
+      local canClear = capture ~= "reading"
+      if toolEnabled ~= canClear then
+        toolEnabled = canClear
+        headerHandle.setToolEnabled(canClear)
+      end
       if needsPaint then
         needsPaint = false
         if lcd.invalidate then lcd.invalidate() end
@@ -938,6 +984,8 @@ local function open(opts)
   -- session.update is retained: this delivers the current aircraft now
   bus.subscribe("session.update", onSession)
   bus.subscribe("tune_history.saved", onSaved)
+  -- Retained: this delivers the capture's current state now
+  bus.subscribe("tune_history.state", onCaptureState)
   if not mcuId then render() end
 end
 

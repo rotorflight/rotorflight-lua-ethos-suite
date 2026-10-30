@@ -53,6 +53,7 @@ for _, f in ipairs({
   {"releases", "releases", "%d"}, {"big_rebounds", "bigRebounds", "%d"},
   {"mean_rebound", "meanRebound", "%.3f"}, {"mean_overshoot", "meanOvershoot", "%.3f"},
   {"mean_counter", "meanCounter", "%.3f"}, {"mean_iterm", "meanIterm", "%.3f"},
+  {"shake_count", "shakeCount", "%d"}, {"shake_rms", "shakeRms", "%.1f"},
 }) do FIELDS[#FIELDS + 1] = f end
 
 -- The tune a flight was measured with: flights are only combined when these match
@@ -229,7 +230,7 @@ function tuneHistory.aggregate(flights, axis)
   if not newest then return out, 0, 0 end
   for _, k in ipairs(TUNE_KEYS) do out[k] = newest[k] end
 
-  local used, seconds = 0, 0
+  local used, seconds, shakeSq = 0, 0, 0
   for i = #flights, math.max(1, #flights - MAX_FLIGHTS + 1), -1 do
     local a = flights[i].axes[axis]
     if not a or not sameTune(a, newest) then break end
@@ -254,7 +255,12 @@ function tuneHistory.aggregate(flights, axis)
     addMean(out, "meanOvershoot", a.meanOvershoot, a.releases, out.releases)
     addMean(out, "meanCounter", a.meanCounter, a.releases, out.releases)
     addMean(out, "meanIterm", a.meanIterm, a.releases, out.releases)
+
+    -- RMS combines exactly: the mean of the squares, weighted by count
+    out.shakeCount = out.shakeCount + a.shakeCount
+    shakeSq = shakeSq + (a.shakeRms * a.shakeRms - shakeSq) * (out.shakeCount > 0 and a.shakeCount / out.shakeCount or 0)
   end
+  out.shakeRms = math.sqrt(shakeSq)
   out.ffLagMs = math.floor(out.ffLagMs + 0.5)
   return out, used, seconds
 end
