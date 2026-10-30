@@ -140,6 +140,7 @@ are documented one file per step, in the order the wizard runs them.
 | Preflight | [settings/activelook/preflight.md](settings/activelook/preflight.md) | Always available offline without an active flight controller connection. Read-only while the model is armed. | written |
 | Inflight | [settings/activelook/inflight.md](settings/activelook/inflight.md) | Always available offline without an active flight controller connection. Read-only while the model is armed. | written |
 | Postflight | [settings/activelook/postflight.md](settings/activelook/postflight.md) | Always available offline without an active flight controller connection. Read-only while the model is armed. | written |
+| Alerts | [settings/activelook/alerts.md](settings/activelook/alerts.md) | Always available offline without an active flight controller connection. Read-only while the model is armed. | written |
 | Voltage | [settings/audio/events/voltage.md](settings/audio/events/voltage.md) | Always available offline without an active flight controller connection. Read-only while the model is armed. | written |
 | ESC temp | [settings/audio/events/esc.md](settings/audio/events/esc.md) | Always available offline without an active flight controller connection. Read-only while the model is armed. | written |
 | Fuel | [settings/audio/events/fuel.md](settings/audio/events/fuel.md) | Always available offline without an active flight controller connection. Read-only while the model is armed. | written |

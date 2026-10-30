@@ -6,12 +6,12 @@ sidebar_position: 30
 
 # Tune Advisor
 
-While you fly in rate mode, the flight controller measures how the heli answers the sticks. Each time you
+While you fly in acro mode, the flight controller measures how the heli answers the sticks. Each time you
 disarm, the radio saves that flight's measurements. This page combines your last flights and suggests one change
 at a time for each axis. Press *Save* to write the suggested changes for the shown axis to the flight controller,
 or make them yourself on *PIDs*, *Rates* or *PID Controller*. Then fly again and come back.
 
-The flight controller counts only rate flight while spooled up and airborne, with the heli moving on some axis.
+The flight controller counts only acro flight while spooled up and airborne, with the heli moving on some axis.
 Time in Angle, Horizon, Trainer, Altitude hold, Rescue, GPS rescue or failsafe is left out. The page combines up
 to the last 5 flights flown with the same tune as the newest one: a flight before a change to P, F, B, Iterm
 Relax Cutoff or the rates on that axis is left out, because the advice is worked out against the tune you fly
@@ -20,7 +20,9 @@ which one flight may or may not give.
 
 Each time you disarm, the background task reads all three axes from the flight controller, saves them as one
 flight, then clears the flight controller so the next flight is measured on its own. This happens whether or not
-this page is open. The flights are kept in `LOGS:/rfsuite/tune/<model>/history.csv` on the radio's SD card, one
+this page is open. It starts 5 seconds after the disarm and takes about 10 seconds, with pauses between the reads
+so telemetry sensors keep updating meanwhile. If the link drops the reading three times, the radio tries again at
+the next disarm; the flight controller keeps the measurements until then. The flights are kept in `LOGS:/rfsuite/tune/<model>/history.csv` on the radio's SD card, one
 row per axis, newest last; only the last 5 flights are kept. `<model>` is the same flight controller ID that
 names the flight log folders, and a `logs.ini` beside the history holds the model name. A flight without rate
 flight is not saved. A disarm while the link is down is saved once the radio reconnects, provided the flight
@@ -34,7 +36,9 @@ exactly.
 *Configuration* → *Flight Tuning* → *Tune Advisor*
 
 Greyed out until the flight controller answers. The page works from the flights saved for the connected model,
-and updates when you disarm while it is open; through a link loss it keeps showing them. The page reads the
+and updates when a flight is saved while it is open, about 10 seconds after you disarm; through a link loss it keeps showing them. Until a flight is saved it shows "Reading the last flight..." in
+place of the advice, with *Save* and the erase button greyed out. If the radio could not read the flight, the
+advice from the saved flights comes back with "Last flight not read" above it until you arm again. The page reads the
 firmware version the flight controller reports. Firmware older than 4.7.0 has no Tune Advisor: the page shows
 "Needs newer firmware" and sends no request, and the same applies to the capture after each flight. Until the
 version is known, nothing is sent.
@@ -45,9 +49,9 @@ version is known, nothing is sent.
 | --- | --- |
 | Axis | Roll, Pitch or Yaw. Everything below is for the chosen axis. |
 | Changes / Why | Only on 480-pixel-wide radios (X18, X18R, X10 and similar), beside Axis. *Changes* shows the suggested changes and as many reasons as fit, ending in "More under Why" when some are left out; *Why* shows all the reasons. Larger radios show everything. |
-| Flight data | Minutes and seconds of rate flight in the flights combined, and how many of the last 5 that is, for example "2m 12s, 3/5 flights". |
+| Flight data | Minutes and seconds of acro flight in the flights combined, and how many of the last 5 that is, for example "2m 12s, 3/5 flights". |
 | Response | How fast the heli turns compared with the rate the stick asks for, for example "53% faster than asked". "Needs more flying" shows how much data is still needed; "Too uneven to judge" means the response varies too much. |
-| Stops | How much the heli bounces back after you centre the stick, as a share of the turn rate. Needs 10 stops. |
+| Stops | How much the heli bounces back after you centre the stick, as a share of the turn rate. Needs 10 stops. "Shaking 49 deg/s" instead means the heli oscillates with the stick centred (see the rules below). |
 | Suggested changes | Up to three changes, each named by the page and setting to change and in the units that page shows, for example *PIDs > Roll > F: 100 -> 80* and *Rates > Roll > Rate: 720 -> 900*. When there is something *Save* can write, a last line says so. After they are written, this shows "Changes saved to the flight controller" until the next flight is saved. |
 | Why | The reason for each change, and a fact worth knowing when there is room (for example how much faster the heli turns at high collective). |
 | Save button | Writes the suggested changes for the shown axis to the flight controller. Enabled only while connected, disarmed and with a change it can write. See *Applying the changes* below. |
@@ -55,6 +59,10 @@ version is known, nothing is sent.
 
 The suggestions follow these rules:
 
+- **Shakes with the stick centred** (15 deg/s or more, measured over at least 5 s of centred stick): lower P by
+  one step (P / 1.2), and nothing else for that axis until it is calm. An oscillation also reads as bounce-back
+  after every stop and spoils the response figure, so the other rules would be misled. If lowering P does not
+  calm it, check D and the linkages. Needs firmware that reports shake; older firmware never shows it.
 - **Turns faster or slower than asked** (more than 15% off): change F and the rates by the same amount in
   opposite directions, so the stick feel stays the same but the heli flies the rate you ask for. One step
   changes F by at most 20%. With Actual, Quick and Rotorflight rates the page gives the exact rate values;
@@ -62,8 +70,7 @@ The suggestions follow these rules:
 - **Full stick asks for more rate than the heli reaches** (roll and pitch), with the cyclic at its limit: lower
   the rates to what the heli reaches.
 - **Stops bounce back 12% or more**: if the I-term pushes back, lower *Advanced > PID Controller > Iterm Relax
-  Cutoff* by 20%. If F does not match yet, fix F first. Otherwise the controller is barely braking the stop:
-  raise P by 20% (or add B).
+  Cutoff* by 20%. If F does not match yet, fix F first. Otherwise raise P by 20% (or add B).
 
 ## Applying the changes
 
