@@ -86,7 +86,29 @@ and structure follow [_template.md](../_template.md).
 
 | Page | File | Conditions | Status |
 | --- | --- | --- | --- |
-| Model setup | [tools/setup_wizard.md](tools/setup_wizard.md) | Greyed out until the flight controller answers. Read-only while the model is armed. | written |
+| Model setup | [wizards/setup_wizard.md](wizards/setup_wizard.md) | Greyed out until the flight controller answers. Read-only while the model is armed. | written |
+
+### Model setup → steps
+
+The wizard's steps are not menu entries, so `generate_menu_docs.py` does not list them. They
+are documented one file per step, in the order the wizard runs them.
+
+| Step | File | Conditions | Status |
+| --- | --- | --- | --- |
+| 1. Board orientation | [wizards/setup_wizard/sensors.md](wizards/setup_wizard/sensors.md) | Only inside the wizard. Alignment page instead when the board has no accelerometer or the firmware cannot detect the orientation. | written |
+| 2. Receiver | [wizards/setup_wizard/receiver.md](wizards/setup_wizard/receiver.md) | Only inside the wizard. F.Port2 only on API 12.7 to 12.9. | written |
+| 3. Mode switches | [wizards/setup_wizard/modes.md](wizards/setup_wizard/modes.md) | Rescue and Trainer only when the flight controller offers them (accelerometer needed). | written |
+| 4. Swashplate | [wizards/setup_wizard/swash.md](wizards/setup_wizard/swash.md) | Tail type applies after the restart at step 7. | written |
+| 5. Servo type | [wizards/setup_wizard/servotype.md](wizards/setup_wizard/servotype.md) | Needs servos configured. Applies after the restart at step 7. | written |
+| 6. Motor & ESC | [wizards/setup_wizard/motor.md](wizards/setup_wizard/motor.md) | Tail gear screens only for a pitch tail. Applies after the restart at step 7. | written |
+| 7. Connect servos | [wizards/setup_wizard/connect.md](wizards/setup_wizard/connect.md) | Restart step only when a restart is owed. Tail motor check only for a motor tail. | written |
+| 8. Servo centre | [wizards/setup_wizard/servos.md](wizards/setup_wizard/servos.md) | Needs servos configured. | written |
+| 9. Directions | [wizards/setup_wizard/direction.md](wizards/setup_wizard/direction.md) | Needs a swashplate type. | written |
+| 10. Level swash | [wizards/setup_wizard/level.md](wizards/setup_wizard/level.md) | Needs a swashplate type. | written |
+| 11. Blade pitch | [wizards/setup_wizard/pitch.md](wizards/setup_wizard/pitch.md) | Needs a swashplate type and a pitch gauge. | written |
+| 12. Tail rotor | [wizards/setup_wizard/tail.md](wizards/setup_wizard/tail.md) | Motor screens for a motor tail, servo screens for a pitch tail. | written |
+| 13. Gyro check | [wizards/setup_wizard/gyro.md](wizards/setup_wizard/gyro.md) | Needs a swashplate type. | written |
+| 14. Finish | [wizards/setup_wizard/finish.md](wizards/setup_wizard/finish.md) | Summary only. | written |
 
 ## System → Tools
 
@@ -118,6 +140,7 @@ and structure follow [_template.md](../_template.md).
 | Preflight | [settings/activelook/preflight.md](settings/activelook/preflight.md) | Always available offline without an active flight controller connection. Read-only while the model is armed. | written |
 | Inflight | [settings/activelook/inflight.md](settings/activelook/inflight.md) | Always available offline without an active flight controller connection. Read-only while the model is armed. | written |
 | Postflight | [settings/activelook/postflight.md](settings/activelook/postflight.md) | Always available offline without an active flight controller connection. Read-only while the model is armed. | written |
+| Alerts | [settings/activelook/alerts.md](settings/activelook/alerts.md) | Always available offline without an active flight controller connection. Read-only while the model is armed. | written |
 | Voltage | [settings/audio/events/voltage.md](settings/audio/events/voltage.md) | Always available offline without an active flight controller connection. Read-only while the model is armed. | written |
 | ESC temp | [settings/audio/events/esc.md](settings/audio/events/esc.md) | Always available offline without an active flight controller connection. Read-only while the model is armed. | written |
 | Fuel | [settings/audio/events/fuel.md](settings/audio/events/fuel.md) | Always available offline without an active flight controller connection. Read-only while the model is armed. | written |
