@@ -293,8 +293,7 @@ local function normalize(settings)
   end
   settings.dashboard.theme = dashboardThemeKey(settings.dashboard.theme_preflight)
 
-  -- withDefaults already owns a separate copy of every section.
-  activelookConfig.normalize(settings.activelook)
+  settings.activelook = activelookConfig.withDefaults(settings.activelook)
   return settings
 end
 

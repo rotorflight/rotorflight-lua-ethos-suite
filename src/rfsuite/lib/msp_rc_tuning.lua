@@ -66,8 +66,18 @@ local FIELDS = {
   {"cyclic_polarity", "U8"},
 }
 
--- The rest of the reply, in wire order (the same for both fixtures below).
-local REPLY_TAIL = {
+-- Fixture reply used automatically when running in the Ethos simulator
+-- (see tasks/msp/queue.lua) -- rates_type=4 (Actual, matching firmware's
+-- own default per rotorflight-lua-ethos-suite's RC_TUNING.lua), plausible
+-- values for the rest, in wire order.
+local SIMULATOR_RESPONSE = {
+  4,                  -- rates_type (Actual)
+
+  18, 0, 24, 30, 0, 0,   -- axis 1 (roll): rcRates,rcExpo,rates,response_time,accel_limit(U16)
+  18, 0, 24, 30, 0, 0,   -- axis 2 (pitch)
+  18, 0, 40, 30, 0, 0,   -- axis 3 (yaw)
+  50, 0, 50, 30, 0, 0,   -- axis 4 (collective)
+
   0, 15,   -- setpoint_boost_gain_1, cutoff_1
   0, 90,   -- setpoint_boost_gain_2, cutoff_2
   0, 15,   -- setpoint_boost_gain_3, cutoff_3
@@ -77,39 +87,6 @@ local REPLY_TAIL = {
 
   150, 0,   -- cyclic_ring, cyclic_polarity
 }
-
-local function withTail(head)
-  for _, v in ipairs(REPLY_TAIL) do head[#head + 1] = v end
-  return head
-end
-
--- Fixture reply for the tests and the Tune Advisor: rates_type=4 (Actual, the
--- firmware default per rotorflight-lua-ethos-suite's RC_TUNING.lua). The Tune
--- Advisor's own fixture (msp_tune_advisor.lua) must describe the same tune.
-local SIMULATOR_RESPONSE = withTail({
-  4,                                          -- rates_type (Actual)
-  18, 0, 24, 30, 0, 0,                        -- axis 1 (roll): rcRates,rcExpo,rates,response_time,accel_limit(U16)
-  18, 0, 24, 30, 0, 0,                        -- axis 2 (pitch)
-  18, 0, 40, 30, 0, 0,                        -- axis 3 (yaw)
-  50, 0, 50, 30, 0, 0,                        -- axis 4 (collective)
-})
-
--- The Ethos simulator's reply (system.getVersion().simulation): Rotorflight rates
--- with the Sport style on roll and pitch, so the rates step has a curve to show.
-local SIMULATOR_RESPONSE_ROTORFLIGHT = withTail({
-  6,                                          -- rates_type (Rotorflight)
-  50, 40, 12, 30, 0, 0,                       -- axis 1 (roll)
-  50, 40, 12, 30, 0, 0,                       -- axis 2 (pitch)
-  80, 50, 12, 30, 0, 0,                       -- axis 3 (yaw)
-  50, 0, 50, 30, 0, 0,                        -- axis 4 (collective)
-})
-
--- The reply the read uses: the simulator's own in the Ethos simulator, the fixture elsewhere.
-local function simulatedReply()
-  local system_sim = system and system.getVersion and system.getVersion().simulation == true
-  if system_sim then return SIMULATOR_RESPONSE_ROTORFLIGHT end
-  return SIMULATOR_RESPONSE
-end
 
 -- Per-field {min, max, default, suffix}, for the fields whose meaning
 -- and scale is FIXED regardless of rates_type (i.e. everything except
@@ -201,7 +178,7 @@ function msp_rc_tuning.buildReadMessage(onData, onError)
       onData(msp_rc_tuning.decode(buf))
     end,
     errorHandler = onError,
-    simulatorResponse = simulatedReply(),
+    simulatorResponse = SIMULATOR_RESPONSE,
   }
 end
 

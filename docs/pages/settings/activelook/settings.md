@@ -32,5 +32,3 @@ Always available offline without an active flight controller connection. Read-on
 - [Rotorflight documentation](https://doc.rotorflight.org/)
 
 *Documented against RFSuite Ethos 2.3.1.*
-
-Turning ActiveLook off clears its current glasses display. Geometry or settings changes also clear the old layout before rebuilding it.

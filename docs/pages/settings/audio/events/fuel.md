@@ -25,8 +25,6 @@ Always available offline without an active flight controller connection. Read-on
 
 ## Notes
 
-The callouts distinguish Nitro (Fuel / Low Fuel) from Electric (Battery / Battery Empty). The same model detection controls the ActiveLook warning text and symbols.
-
 - **The fuel events wait for one reading before they speak.** Every event on this page looks
   at the value it watches, and the first value it sees after connecting is only recorded — no
   announcement is made from it. So a flight controller whose telemetry has not arrived yet cannot
@@ -35,7 +33,7 @@ The callouts distinguish Nitro (Fuel / Low Fuel) from Electric (Battery / Batter
 - **A genuinely empty pack is still announced**, from the second reading onwards — one step later
   than before, not silenced. The same applies after a reconnect or a battery change: the first
   reading is recorded again, and the warning follows if the value is still `0`.
-- A **threshold** announcement (*fuel.wav* for Nitro or *battery.wav* for Electric, plus the percentage) is unchanged: it is made when the
+- A **threshold** announcement (*fuel.wav* plus the percentage) is unchanged: it is made when the
   reading crosses a step of the callout range, once per step, and a standing value does not
   repeat it.
 - Changes are saved to the radio's settings store, not to the flight controller.

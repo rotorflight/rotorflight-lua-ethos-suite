@@ -55,16 +55,6 @@ local function openMode(modeKey, label, opts)
         end)
     end
 
-    if modeKey == "inflight" then
-      local line = form.addLine("@i18n(app.modules.settings.activelook_inflight_fuel_icon)@")
-      form.addBooleanField(line, nil,
-        function() return settings.activelook.inflight_fuel_icon == true end,
-        function(value)
-          settings.activelook.inflight_fuel_icon = value == true
-          updateSaveEnabled()
-        end)
-    end
-
     updatePreview()
   end)
 end

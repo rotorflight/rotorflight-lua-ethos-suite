@@ -24,14 +24,7 @@ function common.openPage(title, opts, build)
   settings.activelook = settings.activelook or {}
 
   local function isDirty()
-    local current, saved = settings.activelook, original.activelook or {}
-    for key, value in pairs(current) do
-      if saved[key] ~= value then return true end
-    end
-    for key in pairs(saved) do
-      if current[key] == nil then return true end
-    end
-    return false
+    return not settingsStore.same(settings, original)
   end
 
   local function updateSaveEnabled()

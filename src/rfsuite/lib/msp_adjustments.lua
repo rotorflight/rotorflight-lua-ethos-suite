@@ -26,26 +26,6 @@ local SIMULATOR_RESPONSE = {
   0, -- step
 }
 
--- The simulator's profile switch: the PID profile (slot 1) and the rate profile
--- (slot 2) on CH7, profiles 1 to 3, 1000 to 2000 us. Other slots are empty.
-local function simulatedRange(index)
-  local system_sim = system and system.getVersion and system.getVersion().simulation == true
-  if system_sim and (index == 1 or index == 2) then
-    local function_id = index == 1 and 2 or 1
-    return {
-      function_id, 255,        -- function (PID profile, rate profile), always on
-      0, 0,                    -- enable range 1500..1500
-      1,                       -- adjustment channel: CH7
-      156, 100,                -- adjustment range 1: 1000..2000 us
-      0, 0,                    -- adjustment range 2
-      1, 0,                    -- min 1
-      3, 0,                    -- max 3
-      0,                       -- step
-    }
-  end
-  return SIMULATOR_RESPONSE
-end
-
 local function clamp(value, minValue, maxValue)
   value = tonumber(value) or minValue
   if value < minValue then return minValue end
@@ -164,7 +144,7 @@ function msp_adjustments.buildReadSlotMessage(index, onData, onError)
       onData(msp_adjustments.decodeRange(buf))
     end,
     errorHandler = onError,
-    simulatorResponse = simulatedRange(index),
+    simulatorResponse = SIMULATOR_RESPONSE,
   }
 end
 

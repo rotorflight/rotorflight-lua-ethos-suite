@@ -81,8 +81,8 @@ local SIMULATOR_RESPONSE = {
   0,          -- configuration_state
   5,          -- current_pid_profile_index
   6,          -- pid_profile_count
-  0,          -- current_control_rate_profile_index
-  3,          -- control_rate_profile_count
+  1,          -- current_control_rate_profile_index
+  4,          -- control_rate_profile_count
   1,          -- motor_count
   4,          -- servo_count
   1,          -- gyro_detection_flags

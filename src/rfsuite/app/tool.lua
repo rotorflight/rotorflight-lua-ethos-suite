@@ -330,7 +330,6 @@ local MENUS = {
       {title = "@i18n(app.modules.settings.activelook_preflight)@", icon = lcd.loadMask("app/gfx/settings_activelook_preflight.png"), script = "app/pages/settings_activelook_preflight.lua", offline = true},
       {title = "@i18n(app.modules.settings.activelook_inflight)@", icon = lcd.loadMask("app/gfx/settings_activelook_inflight.png"), script = "app/pages/settings_activelook_inflight.lua", offline = true},
       {title = "@i18n(app.modules.settings.activelook_postflight)@", icon = lcd.loadMask("app/gfx/settings_activelook_postflight.png"), script = "app/pages/settings_activelook_postflight.lua", offline = true},
-      {title = "@i18n(app.modules.settings.activelook_alerts)@", icon = lcd.loadMask("app/gfx/settings_audio_events.png"), script = "app/pages/settings_activelook_alerts.lua", offline = true},
     },
   },
   settings_audio_menu = {

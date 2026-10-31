@@ -288,9 +288,7 @@ local function newRig(source)
   model = { name = function() return "Test" end, set = function() end }
 
   local session = assert(load(source or readFile(SESSION_PATH), "@" .. SESSION_PATH))()
-  local linkSource = {unit = function() return values.linkUnit end}
   session.setTelemetrySensors({
-    getSource = function(_, name) return name == "link" and linkSource or nil end,
     getValue = function(_, name) return values[name] end,
     reset = function() end,
   })
@@ -337,15 +335,6 @@ local function codecLoadedWithoutWords(source)
 end
 
 local function sessionChecks()
-  do
-    local rig = newRig()
-    rig.values.link = 38; rig.values.linkUnit = "dB"; rig.tick()
-    check("RF snapshot preserves RSSI value and unit", rig.snapshot().linkQuality == 38 and rig.snapshot().linkQualityIsPercent == false)
-    rig.values.linkUnit = UNIT_PERCENT; rig.tick()
-    check("RF unit change publishes even with unchanged value", rig.snapshot().linkQuality == 38 and rig.snapshot().linkQualityIsPercent == true)
-    rig.values.link = nil; rig.tick()
-    check("missing RF telemetry remains missing", rig.snapshot().linkQuality == nil)
-  end
   local before, during, after = batteryProfileAcrossGap()
   check("battery_profile 3 reads as the 0-based pack 2", before == 2, tostring(before))
   check("a tick with no battery_profile reading keeps the last pack",

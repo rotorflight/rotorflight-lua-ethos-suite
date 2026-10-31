@@ -23,9 +23,8 @@
 -- retained so a dashboard widget instantiated (or reloaded) while the
 -- full-screen app/tool already happens to be open still learns that
 -- immediately, instead of defaulting to "not running" until the next
--- open/close toggle. "tune_history.state" is retained so a Tune Advisor page
--- opened while a flight is still being read knows to wait for it. Transient
--- command topics such as "msp.request" must NOT be retained: those payloads carry
+-- open/close toggle. Transient command topics such as "msp.request" must
+-- NOT be retained: those payloads carry
 -- per-page callback closures, and retaining the last one would keep a closed
 -- page alive after navigation.
 
@@ -42,7 +41,6 @@ local retainedTopics = {
   ["session.update"] = true,
   ["task.status"] = true,
   ["app.state"] = true,
-  ["tune_history.state"] = true,
 }
 
 -- Re-entrancy accounting for publish(). See docs/memory-and-module-lifecycle.md

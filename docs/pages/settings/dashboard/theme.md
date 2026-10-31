@@ -74,5 +74,3 @@ A per-model appearance does not create separate per-model thresholds.
 Install the complete matching Suite build containing this theme's registrations,
 then restart scripts or the radio. This explicitly registered package does not
 assume the automatic discovery available separately in `radio-all-themes`.
-
-In KSE4 and KSE5, the Postflight Smart Fuel statistic uses the Fuel Remaining title for both Electric and Nitro models.

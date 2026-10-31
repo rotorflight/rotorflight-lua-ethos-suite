@@ -136,22 +136,10 @@ M.BANDS = {
   wide = {mid = 1520, travel = 700, scale = 500},
   narrow = {mid = 760, travel = 250, scale = 250},
 }
--- The servo presets: a centre band and a frame rate together, as the servo makers
--- list them (1520 us for cyclic and most tail servos; 760 us for the fast tail
--- servos). A servo's frame rate is set within its band's range, BAND_HZ.
 M.SERVO_TYPES = {
-  {key = "wide50", rate = 50, band = "wide"},
-  {key = "wide165", rate = 165, band = "wide"},
-  {key = "wide200", rate = 200, band = "wide"},
-  {key = "wide333", rate = 333, band = "wide"},
-  {key = "narrow333", rate = 333, band = "narrow"},
-  {key = "narrow560", rate = 560, band = "narrow"},
-}
-
--- The frame rates a band accepts (Hz).
-M.BAND_HZ = {
-  wide = {min = 50, max = 333},
-  narrow = {min = 200, max = 560},
+  {key = "analog", rate = 50, band = "wide"},
+  {key = "digital", rate = 333, band = "wide"},
+  {key = "narrow", rate = 560, band = "narrow"},
 }
 
 function M.bandOf(config)
@@ -194,9 +182,6 @@ function M.applyServoType(config, key)
 end
 
 M.SERVO_FLAG_REVERSE = 1
--- Geometry correction (flags bit 1): the servo's linkage is straight; the firmware
--- reads it on every servo update, so it needs no restart.
-M.SERVO_FLAG_GEOMETRY = 2
 
 ---------------------------------------------------------------------------
 -- Receiver (StepReceiver.svelte)

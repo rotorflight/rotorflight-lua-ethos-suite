@@ -6,11 +6,10 @@
 --
 -- What it drives: the real src/rfsuite/lib/msp_tune_advisor.lua, through the message
 -- its read builder returns, so the reply goes through processReply exactly as the
--- transport hands it over. The replies are the simulator's own 71-byte reply (the
--- layout the firmware writes, payload version 2), the 67-byte version 1 it still
--- reads (no shake fields), and variants of them.
+-- transport hands it over. The replies are the simulator's own 67-byte reply (the
+-- layout the firmware writes, payload version 1), and variants of it.
 --
--- Against unpatched master the version-3, short and long replies reach onData as
+-- Against unpatched master the version-2, short and long replies reach onData as
 -- decoded numbers; the checks for those go red.
 
 local function scriptDir()
@@ -84,41 +83,12 @@ local function deliver(buf)
   return got
 end
 
--- The simulator reply for axis 1 is the firmware's own 71-byte layout, version 2.
+-- The simulator reply for axis 1 is the firmware's own 67-byte layout, version 1.
 local sim = tuneAdvisor.buildReadMessage(1, function() end, function() end).simulatorResponse
 
-print("the firmware's 71-byte reply, payload version 2")
+print("the firmware's 67-byte reply, payload version 1")
 do
-  check("the reply is 71 bytes", #sim == 71, "length " .. #sim)
-  local got = deliver(copy(sim))
-  check("the shake fields are the reply's (count, deg/s x10)", got.data ~= nil
-    and got.data.a.shakeCount == sim[68] + sim[69] * 256
-    and math.abs(got.data.a.shakeRms - (sim[70] + sim[71] * 256) / 10) < 1e-9,
-    "shake " .. tostring(got.data and got.data.a.shakeCount) .. ", " .. tostring(got.data and got.data.a.shakeRms))
-end
-
--- Version 1: the same layout without the four shake bytes
-local function v1()
-  local buf = copy(sim)
-  buf[1] = 1
-  for _ = 1, 4 do buf[#buf] = nil end
-  return buf
-end
-
-print("a 67-byte reply, payload version 1 (firmware before the shake fields)")
-do
-  local got = deliver(v1())
-  check("it decodes and reaches onData", got.data ~= nil and got.errors == 0,
-    "errors " .. got.errors .. ", reason " .. tostring(got.reason))
-  check("its shake reads as no data", got.data ~= nil and got.data.a.shakeCount == 0
-    and got.data.a.shakeRms == 0)
-  check("the stop figures are still read", got.data ~= nil
-    and got.data.a.releases == sim[56] + sim[57] * 256,
-    "releases " .. tostring(got.data and got.data.a.releases))
-end
-
-print("the version 2 reply, decoded in full")
-do
+  check("the reply is 67 bytes", #sim == 67, "length " .. #sim)
   local got = deliver(copy(sim))
   check("it decodes and reaches onData", got.data ~= nil and got.errors == 0,
     "errors " .. got.errors .. ", reason " .. tostring(got.reason))
@@ -136,29 +106,20 @@ local function checkRefused(label, got)
     "refused " .. tostring(got.refused))
 end
 
-print("payload version 3 (a layout this suite does not know)")
+print("payload version 2 (a layout this suite does not know)")
 do
-  local v3 = copy(sim)
-  v3[1] = 3
-  local got = deliver(v3)
+  local v2 = copy(sim)
+  v2[1] = 2
+  local got = deliver(v2)
   check("onData is not called with a decoded record", got.data == nil,
     "decoded version " .. tostring(got.data and got.data.version))
   check("onError is called with the reason", got.errors == 1 and type(got.reason) == "string"
-    and got.reason:find("version 3", 1, true) ~= nil,
+    and got.reason:find("version 2", 1, true) ~= nil,
     "errors " .. got.errors .. ", reason " .. tostring(got.reason))
-  checkRefused("version 3", got)
+  checkRefused("version 2", got)
 end
 
-print("version 1 with the version 2 length (71 bytes)")
-do
-  local mixed = copy(sim)
-  mixed[1] = 1
-  local got = deliver(mixed)
-  check("onData is not called", got.data == nil)
-  checkRefused("version 1, 71 bytes", got)
-end
-
-print("a truncated reply (70 bytes)")
+print("a truncated reply (66 bytes)")
 do
   local short = copy(sim)
   short[#short] = nil
@@ -170,7 +131,7 @@ do
   checkRefused("truncated", got)
 end
 
-print("a longer reply (72 bytes)")
+print("a longer reply (68 bytes)")
 do
   local long = copy(sim)
   long[#long + 1] = 0
