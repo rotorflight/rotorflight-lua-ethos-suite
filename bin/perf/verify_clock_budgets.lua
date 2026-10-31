@@ -184,16 +184,34 @@ local function newMspTransport(backlog)
 end
 
 -- Reply frames in the layout common.lua's receivedReply() parses: a start frame
--- carrying status, flags, command and length, then continuations numbered from
--- 1, five payload bytes each over S.Port.
+-- carrying status, command and length and the first two payload bytes (the
+-- compact header leaves room for them), then continuations numbered from 1,
+-- five payload bytes each over S.Port. The chunks' bytes are re-cut to that
+-- layout; a start frame is left short rather than padded, since padding would
+-- be taken for payload.
 local function replyFrames(cmd, declaredLen, chunks)
+  local bytes = {}
+  for _, chunk in ipairs(chunks) do
+    for j = 1, #chunk do bytes[#bytes + 1] = chunk[j] end
+  end
   local frames = {}
-  frames[1] = { 0x40 | 0x10, 0, cmd % 256, math.floor(cmd / 256) % 256,
-    declaredLen % 256, math.floor(declaredLen / 256) % 256 }
-  for i, chunk in ipairs(chunks) do
-    local frame = { i & 0x0F }
-    for j = 1, #chunk do frame[j + 1] = chunk[j] end
+  local start = { 0x60 | 0x10, cmd % 256, math.floor(cmd / 256) % 256, declaredLen }
+  local pos = 1
+  while pos <= #bytes and #start < 6 do
+    start[#start + 1] = bytes[pos]
+    pos = pos + 1
+  end
+  frames[1] = start
+  local seq = 1
+  while pos <= #bytes do
+    local frame = { seq & 0x0F }
+    for _ = 1, 5 do
+      if pos > #bytes then break end
+      frame[#frame + 1] = bytes[pos]
+      pos = pos + 1
+    end
     frames[#frames + 1] = frame
+    seq = seq + 1
   end
   return frames
 end

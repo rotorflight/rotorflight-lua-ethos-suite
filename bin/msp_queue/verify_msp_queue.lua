@@ -116,24 +116,37 @@ end
 
 -- Builds the reply frames a flight controller would put on the wire, in the
 -- layout tasks/msp/common.lua's receivedReply() parses: a start frame carrying
--- status, flags, command and length, then continuation frames carrying payload
--- bytes, numbered from 1.
+-- status, command and length plus the first two payload bytes (the compact
+-- header leaves room for them in a 6-byte S.Port frame), then continuation
+-- frames carrying five payload bytes each, numbered from 1.
 --
--- `chunks` is a list of byte lists; one continuation frame is emitted per entry.
+-- `chunks` is a list of byte lists; their bytes are concatenated and re-cut to
+-- that layout, so a caller only decides what the payload is. A start frame is
+-- left short rather than padded: receivedReply() counts payload bytes up to the
+-- declared length, so padding would be taken for data.
 local function replyFrames(cmd, declaredLen, chunks)
+  local bytes = {}
+  for _, chunk in ipairs(chunks) do
+    for j = 1, #chunk do bytes[#bytes + 1] = chunk[j] end
+  end
   local frames = {}
-  local start = {}
-  start[1] = 0x40 | 0x10 -- version bits (2 << 5) + start flag, sequence 0
-  start[2] = 0            -- flags, skipped by receivedReply()
-  start[3] = cmd % 256
-  start[4] = math.floor(cmd / 256) % 256
-  start[5] = declaredLen % 256
-  start[6] = math.floor(declaredLen / 256) % 256
+  local start = { 0x60 | 0x10, cmd % 256, math.floor(cmd / 256) % 256, declaredLen } -- version 3 + start, sequence 0
+  local pos = 1
+  while pos <= #bytes and #start < 6 do
+    start[#start + 1] = bytes[pos]
+    pos = pos + 1
+  end
   frames[1] = start
-  for i, chunk in ipairs(chunks) do
-    local frame = { i & 0x0F } -- sequence continues from 1
-    for j = 1, #chunk do frame[j + 1] = chunk[j] end
+  local seq = 1
+  while pos <= #bytes do
+    local frame = { seq & 0x0F }
+    for _ = 1, 5 do
+      if pos > #bytes then break end
+      frame[#frame + 1] = bytes[pos]
+      pos = pos + 1
+    end
     frames[#frames + 1] = frame
+    seq = seq + 1
   end
   return frames
 end
@@ -191,9 +204,8 @@ end
 -- How many of the frames handed to the transport were addressed to `cmd`.
 --
 -- A request frame laid out by mspProcessTxQ() is
---   status, <reserved>, cmd1, cmd2, len1, len2, data...
--- -- the reserved byte mirrors the flags byte that receivedReply() skips on the
--- reply side, so the command sits at bytes 3 and 4, not 2 and 3.
+--   status, cmd1, cmd2, len, data...
+-- so the command sits at bytes 2 and 3 of the start frame.
 --
 -- Counting "frames on the wire" instead would not do: a poisoned buffer still
 -- leaks its leftovers onto the wire, it just leaks the *previous* request's
@@ -202,7 +214,7 @@ local function framesForCommand(sent, cmd)
   local count = 0
   for _, frame in ipairs(sent) do
     local b = frame.bytes
-    if b[3] == cmd % 256 and b[4] == math.floor(cmd / 256) % 256 then
+    if b[2] == cmd % 256 and b[3] == math.floor(cmd / 256) % 256 then
       count = count + 1
     end
   end
@@ -263,14 +275,14 @@ end
 -- ---------------------------------------------------------------------------
 
 -- MSP_TELEMETRY_CONFIG's size, the worst case the issue names: 52 payload bytes
--- plus the 5-byte MSPv2 header, at 5 payload bytes per S.Port frame.
+-- plus the 3-byte compact header, at 5 payload bytes per S.Port frame.
 local BIG_WRITE_CMD = 0x8A
 local BIG_WRITE_BYTES = 52
 -- Derived from the framing rather than measured, so that the checks below can
 -- be anchored on what the message owes the wire instead of on whatever the
 -- first attempt happened to produce -- anchoring on the first attempt is what
 -- let the old one-frame-per-tick code satisfy this arithmetic by accident.
-local BIG_WRITE_FRAMES = math.ceil((5 + BIG_WRITE_BYTES) / 5)
+local BIG_WRITE_FRAMES = math.ceil((3 + BIG_WRITE_BYTES) / 5)
 
 -- One frame per tick: Ethos's pushFrame() queue is shallow, and a burst of a
 -- whole multi-frame write overflowed it on hardware.
@@ -392,7 +404,7 @@ do
   rig.tick() -- max_retries: the message is abandoned with a half-built reply
 
   -- The rest of the abandoned reply arrives late, and completes it.
-  rig.transport.replies[#rig.transport.replies + 1] = { 2, 0xBB }
+  rig.transport.replies[#rig.transport.replies + 1] = { 1, 0xBB }
 
   local fresh = newMessage(0x09, { maxRetries = 2 })
   rig.queue:add(fresh)
@@ -428,7 +440,7 @@ do
   rig.queue:clear() -- drops in-flight work and resets buffers via mspClearBufs()
 
   -- Deliver the late orphaned frame
-  rig.transport.replies[#rig.transport.replies + 1] = { 2, 0xBB }
+  rig.transport.replies[#rig.transport.replies + 1] = { 1, 0xBB }
 
   local fresh = newMessage(0x09, { maxRetries = 1 })
   rig.queue:add(fresh)
@@ -459,6 +471,141 @@ do
   check("mspClearBufs directly clears assembly state so orphaned continuation is rejected",
     cmd == nil and buf == nil,
     "cmd=" .. tostring(cmd) .. " buf=" .. tostring(buf))
+end
+
+-- ---------------------------------------------------------------------------
+-- A broken reply is resent at once, and still spends an attempt
+-- ---------------------------------------------------------------------------
+
+-- The FC's answer loses its second continuation frame on the link: start (two
+-- payload bytes), sequence 1, then sequence 3. The queue sees the break on the
+-- tick that reads the out-of-sequence frame and resends on the next tick,
+-- without waiting for the retry window -- the firmware answers a replacement
+-- request with its own start frame, so there is nothing to wait for.
+local function brokenReply(cmd)
+  local bytes = {}
+  for i = 1, 17 do bytes[i] = i end -- 2 in the start frame, then 5 + 5 + 5
+  local frames = replyFrames(cmd, 17, { bytes })
+  table.remove(frames, 3) -- sequence 2 lost: the sequence jumps from 1 to 3
+  return frames
+end
+
+-- Reads every reply frame queued on the transport, however many ticks the
+-- bounded poll loop needs for them.
+local function drainReplies(rig)
+  while #rig.transport.replies > 0 do rig.tick() end
+end
+
+do
+  local rig = newRig()
+  local msg = newMessage(0x1E, { maxRetries = 2 })
+  rig.queue:add(msg)
+  rig.tick() -- attempt 1
+  for _, frame in ipairs(brokenReply(msg.command)) do
+    rig.transport.replies[#rig.transport.replies + 1] = frame
+  end
+  drainReplies(rig)
+  check("precondition: the broken reply was not delivered", #msg.replies == 0,
+    "replies=" .. #msg.replies)
+  rig.tick() -- no clock jump: the retry window is nowhere near elapsed
+  check("a sequence break resends on the next tick, not after the retry window",
+    framesForCommand(rig.transport.sent, msg.command) == 2,
+    "frames=" .. framesForCommand(rig.transport.sent, msg.command) ..
+    " (1 means the queue waited for the 0.8s window)")
+  check("the resend spends an attempt", rig.queue.retryCount == 2,
+    "retryCount=" .. tostring(rig.queue.retryCount))
+
+  -- The FC answers the resend in full, from its own start frame.
+  for _, frame in ipairs(replyFrames(msg.command, 2, { {7, 8} })) do
+    rig.transport.replies[#rig.transport.replies + 1] = frame
+  end
+  drainReplies(rig)
+  check("the resend's reply is delivered",
+    #msg.replies == 1 and msg.replies[1][1] == 7 and msg.replies[1][2] == 8,
+    "replies=" .. #msg.replies .. " errors=" .. #msg.errors)
+end
+
+-- A link that breaks every reply must still end in max_retries, not resend
+-- for ever: maxRetries=1 buys two attempts, both broken.
+do
+  local rig = newRig()
+  local msg = newMessage(0x1E, { maxRetries = 1 })
+  rig.queue:add(msg)
+  rig.tick() -- attempt 1
+  for _ = 1, 2 do
+    for _, frame in ipairs(brokenReply(msg.command)) do
+      rig.transport.replies[#rig.transport.replies + 1] = frame
+    end
+    drainReplies(rig)
+    rig.tick() -- attempt 2 after the first break; after the second, give up
+  end
+  check("a link that breaks every reply gives the message up after maxRetries",
+    #msg.errors == 1 and msg.errors[1] == "max_retries",
+    "errors=" .. #msg.errors .. " first=" .. tostring(msg.errors[1]))
+  check("no attempt beyond maxRetries went out",
+    framesForCommand(rig.transport.sent, msg.command) == 2,
+    "frames=" .. framesForCommand(rig.transport.sent, msg.command))
+end
+
+-- ---------------------------------------------------------------------------
+-- A frame the transport refuses is offered again, unchanged
+-- ---------------------------------------------------------------------------
+
+-- Ethos's pushFrame() returns false when its queue has no room. Such a frame
+-- used to be dropped on the floor, which the FC saw as a lost request chunk
+-- and the queue paid for with a whole retry window.
+do
+  local rig = newRig()
+  local refused = {}
+  local sendFrame = rig.transport.mspSend
+  rig.transport.mspSend = function(payload, isWrite)
+    if #refused < 2 then
+      local copy = {}
+      for i = 1, #payload do copy[i] = payload[i] end
+      refused[#refused + 1] = copy
+      return false
+    end
+    return sendFrame(payload, isWrite)
+  end
+  local write = newMessage(BIG_WRITE_CMD, { isWrite = true, payloadBytes = 8 }) -- 3-byte header + 8 bytes: 3 frames
+  rig.queue:add(write)
+  for _ = 1, 2 + 3 do rig.tick() end -- two refusals, then the three frames
+  check("a refused frame is not counted as sent",
+    #refused == 2 and #rig.transport.sent == 3,
+    "refused=" .. #refused .. " sent=" .. #rig.transport.sent)
+  local same = #rig.transport.sent >= 1
+  for i = 1, 6 do
+    if same and rig.transport.sent[1].bytes[i] ~= refused[1][i] then same = false end
+  end
+  check("the refused frame goes out later byte for byte, same sequence number", same,
+    "first sent status=" .. tostring(rig.transport.sent[1] and rig.transport.sent[1].bytes[1]) ..
+    " refused status=" .. tostring(refused[1][1]))
+  local seq0 = refused[1][1] & 0x0F
+  check("the frames after it continue the sequence",
+    #rig.transport.sent == 3 and
+    rig.transport.sent[2].bytes[1] == 0x60 + ((seq0 + 1) & 0x0F) and
+    rig.transport.sent[3].bytes[1] == 0x60 + ((seq0 + 2) & 0x0F),
+    "status bytes=" .. (#rig.transport.sent == 3 and string.format("%02X %02X %02X",
+      rig.transport.sent[1].bytes[1], rig.transport.sent[2].bytes[1],
+      rig.transport.sent[3].bytes[1]) or ("sent=" .. #rig.transport.sent)))
+end
+
+-- A transport that refuses everything (module off) must not wedge the TX
+-- buffer: past the refusal cap the frame is dropped as before, so each retry
+-- window still spends an attempt and the message ends in max_retries.
+do
+  local rig = newRig()
+  rig.transport.mspSend = function() return false end
+  local msg = newMessage(0x1E, { maxRetries = 1 })
+  rig.queue:add(msg)
+  for _ = 1, 2 do
+    for _ = 1, 20 do rig.tick() end -- well past the refusal cap
+    rig.jump(1.0)
+    rig.tick() -- attempt 2, then give up
+  end
+  check("a transport that refuses every frame still lets the message run out of attempts",
+    #msg.errors == 1 and msg.errors[1] == "max_retries",
+    "errors=" .. #msg.errors .. " first=" .. tostring(msg.errors[1]))
 end
 
 -- ---------------------------------------------------------------------------
@@ -573,33 +720,40 @@ do
 end
 
 -- One frame of a long reply is lost on the link. The rest of that reply keeps
--- arriving and is discarded, and the firmware answers a request sent into
--- that stream with no start frame (sendMspReply()'s headerSent is only
--- cleared when a reply finishes). So the resend has to wait until the broken
--- reply has finished arriving, and then gets a whole reply.
+-- arriving and is discarded. The queue resends on the tick after it sees the
+-- break, while that tail is still arriving: the firmware answers a request
+-- that replaces a reply in progress with its own start frame (msp_shared.c's
+-- processMspPacket() clears headerSent), so there is nothing to wait for. It
+-- used to wait for the whole broken reply to finish and then the retry window
+-- on top -- here, 7s of stale frames plus 0.8s of silence for one lost frame.
+-- The stale frames must not trigger any further resend.
 do
   local rig = newRig()
   local msg = newMessage(POOL_CMD)
   rig.queue:add(msg)
   rig.tick() -- sends
   local frames = replyFrames(POOL_CMD, POOL_BYTES, poolChunks())
+  local resentAt
   for i = 1, #frames do
     if i ~= 23 then -- lost on the link, 110 bytes in
       rig.transport.replies[#rig.transport.replies + 1] = frames[i]
     end
     rig.jump(0.1)
     rig.tick()
+    if not resentAt and framesForCommand(rig.transport.sent, POOL_CMD) == 2 then
+      resentAt = i
+    end
   end
-  check("no resend while a broken reply is still arriving",
-    framesForCommand(rig.transport.sent, POOL_CMD) == 1 and #msg.errors == 0,
+  -- Frame 24 is the first out of sequence; the tick that reads it sees the
+  -- break and the next tick resends.
+  check("a broken reply is resent on the tick after the break, not after it has finished",
+    resentAt ~= nil and resentAt <= 25,
+    "resent at frame " .. tostring(resentAt) .. " of " .. #frames ..
+    " (nil means the queue waited for silence)")
+  check("the stale tail of the broken reply triggers no further resend",
+    framesForCommand(rig.transport.sent, POOL_CMD) == 2 and #msg.errors == 0,
     "requests sent=" .. framesForCommand(rig.transport.sent, POOL_CMD) ..
     " errors=" .. #msg.errors)
-
-  rig.jump(1.0) -- the broken reply has finished: silence
-  rig.tick()
-  check("the resend follows once the broken reply has finished",
-    framesForCommand(rig.transport.sent, POOL_CMD) == 2,
-    "requests sent=" .. framesForCommand(rig.transport.sent, POOL_CMD))
 
   for i = 1, #frames do
     rig.transport.replies[#rig.transport.replies + 1] = frames[i]
