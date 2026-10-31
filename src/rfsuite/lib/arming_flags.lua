@@ -66,16 +66,12 @@ local FLAG_TAGS = {
 -- src/main/fc/runtime_config.h):
 --   26 flags: bit 25 ARMSWITCH                 (before API 12.9)
 --   27 flags: bit 25 OVERRIDE, bit 26 ARMSWITCH (API 12.9 and 12.10)
---   29 flags: bit 25 OVERRIDE, bit 26 NO_NOTCH_FILTER, bit 27
---             RX_INPUT_BACKUP, bit 28 ARMSWITCH
 -- With more, the last bit is still ARMSWITCH and a bit this table has no
 -- name for is shown by number. Without a count the 26-flag table is used,
 -- as before.
 local ARM_SWITCH_TAG = FLAG_TAGS[25]
 local LATER_TAGS = {
   [25] = "@i18n(app.modules.fblstatus.arming_disable_flag_override)@",
-  [26] = "@i18n(app.modules.fblstatus.arming_disable_flag_26)@",
-  [27] = "@i18n(app.modules.fblstatus.arming_disable_flag_27)@",
 }
 
 local function tagFor(bit, count)
@@ -89,20 +85,6 @@ local function tagFor(bit, count)
 end
 
 arming_flags.tagFor = tagFor
-
--- The flag count to assume when only the API version is known (the
--- dashboard, which gets the mask from telemetry rather than MSP_STATUS), or
--- nil when the version is unknown. The 29-flag layout is assumed for
--- anything newer than 12.10, where NO_NOTCH_FILTER and RX_INPUT_BACKUP are
--- expected to land.
-function arming_flags.countForApi(major, minor)
-  major, minor = tonumber(major), tonumber(minor)
-  if not major or not minor then return nil end
-  local version = major * 100 + minor
-  if version > 1210 then return 29 end
-  if version >= 1209 then return 27 end
-  return FLAG_COUNT
-end
 
 -- The summary line's text. Bounded by construction: a count and a fixed word,
 -- never the flag names. "#2346: the value column cannot hold the names."

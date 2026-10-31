@@ -1988,97 +1988,6 @@
           "reverse_text": false,
           "max_length": 12
         },
-        "activelook_alerts": {
-          "english": "Alerts",
-          "translation": "Alerts",
-          "needs_translation": true,
-          "reverse_text": false,
-          "max_length": 6
-        },
-        "activelook_esc_temp_warning": {
-          "english": "ESC temp warning",
-          "translation": "ESC temp warning",
-          "needs_translation": true,
-          "reverse_text": false,
-          "max_length": 16
-        },
-        "activelook_use_audio_limit": {
-          "english": "Use audio limits & repeats",
-          "translation": "使用语音阈值和重复次数",
-          "needs_translation": false,
-          "reverse_text": false,
-          "max_length": 26
-        },
-        "activelook_esc_temp_limit": {
-          "english": "ESC temp limit",
-          "translation": "ESC temp limit",
-          "needs_translation": true,
-          "reverse_text": false,
-          "max_length": 14
-        },
-        "activelook_governor_lost": {
-          "english": "Lost headspeed",
-          "translation": "Lost headspeed",
-          "needs_translation": true,
-          "reverse_text": false,
-          "max_length": 14
-        },
-        "activelook_governor_status": {
-          "english": "Governor status",
-          "translation": "Governor status",
-          "needs_translation": true,
-          "reverse_text": false,
-          "max_length": 15
-        },
-        "activelook_status_duration": {
-          "english": "Status duration",
-          "translation": "Status duration",
-          "needs_translation": true,
-          "reverse_text": false,
-          "max_length": 15
-        },
-        "activelook_low_fuel": {
-          "english": "Smart Fuel",
-          "translation": "Smart Fuel",
-          "needs_translation": false,
-          "reverse_text": false,
-          "max_length": 10
-        },
-        "activelook_low_fuel_warning": {
-          "english": "Smart Fuel warning",
-          "translation": "Smart Fuel 警告",
-          "needs_translation": false,
-          "reverse_text": false,
-          "max_length": 18
-        },
-        "activelook_low_fuel_repeats": {
-          "english": "Repeats",
-          "translation": "重复次数",
-          "needs_translation": false,
-          "reverse_text": false,
-          "max_length": 7
-        },
-        "activelook_low_fuel_icon": {
-          "english": "Icon",
-          "translation": "图标",
-          "needs_translation": false,
-          "reverse_text": false,
-          "max_length": 4
-        },
-        "activelook_low_fuel_seconds": {
-          "english": "Warning Duration",
-          "translation": "警告时长",
-          "needs_translation": false,
-          "reverse_text": false,
-          "max_length": 16
-        },
-        "activelook_inflight_fuel_icon": {
-          "english": "Smart Fuel icon",
-          "translation": "Smart Fuel 图标",
-          "needs_translation": false,
-          "reverse_text": false,
-          "max_length": 15
-        },
         "activelook_inflight": {
           "english": "Inflight",
           "translation": "Inflight",
@@ -2806,55 +2715,6 @@
           "needs_translation": false,
           "reverse_text": false,
           "max_length": 16
-        },
-        "activelook_rf_link_warning": {
-          "english": "RF link warning",
-          "translation": "RF link warning",
-          "needs_translation": true,
-          "reverse_text": false,
-          "max_length": 15
-        },
-        "activelook_rf_link_limit": {
-          "english": "RSSI limit",
-          "translation": "Link limit",
-          "needs_translation": true,
-          "reverse_text": false,
-          "max_length": 10
-        },
-        "activelook_rf_link_percent_limit": {
-          "english": "VFR/LQ limit",
-          "translation": "VFR/LQ limit",
-          "needs_translation": true,
-          "reverse_text": false,
-          "max_length": 12
-        },
-        "activelook_use_audio_repeats": {
-          "english": "Use audio repeats",
-          "translation": "使用语音重复次数",
-          "needs_translation": false,
-          "max_length": 17,
-          "reverse_text": false
-        },
-        "activelook_smartfuel_min": {
-          "english": "Min Smart Fuel",
-          "translation": "最低 Smart Fuel",
-          "needs_translation": false,
-          "max_length": 14,
-          "reverse_text": false
-        },
-        "activelook_smartfuel_max": {
-          "english": "Max Smart Fuel",
-          "translation": "最高 Smart Fuel",
-          "needs_translation": false,
-          "max_length": 14,
-          "reverse_text": false
-        },
-        "armed_warning": {
-          "english": "Dashboard armed warning",
-          "max_length": 28,
-          "needs_translation": false,
-          "translation": "仪表盘 Armed 警告",
-          "reverse_text": false
         }
       },
       "telemetry": {
@@ -5773,20 +5633,6 @@
           "translation": "Override",
           "needs_translation": true,
           "reverse_text": false
-        },
-        "arming_disable_flag_26": {
-          "english": "No Filter",
-          "max_length": 10,
-          "needs_translation": true,
-          "reverse_text": false,
-          "translation": "No Filter"
-        },
-        "arming_disable_flag_27": {
-          "english": "Backup RX",
-          "max_length": 10,
-          "needs_translation": true,
-          "reverse_text": false,
-          "translation": "Backup RX"
         }
       },
       "elrs_telemetry": {
@@ -8172,30 +8018,23 @@
           "reverse_text": false,
           "max_length": 16
         },
-        "stops_shake_fmt": {
-          "english": "Shaking %d deg/s",
-          "translation": "Shaking %d deg/s",
-          "needs_translation": true,
-          "reverse_text": false,
-          "max_length": 16
-        },
         "act_fly_roll": {
-          "english": "Fly rolls in acro mode, centre the stick after each",
-          "translation": "Fly rolls in acro mode, centre the stick after each",
+          "english": "Fly rolls in rate mode, centre the stick after each",
+          "translation": "Fly rolls in rate mode, centre the stick after each",
           "needs_translation": true,
           "reverse_text": false,
           "max_length": 51
         },
         "act_fly_pitch": {
-          "english": "Fly flips in acro mode, centre the stick after each",
-          "translation": "Fly flips in acro mode, centre the stick after each",
+          "english": "Fly flips in rate mode, centre the stick after each",
+          "translation": "Fly flips in rate mode, centre the stick after each",
           "needs_translation": true,
           "reverse_text": false,
           "max_length": 51
         },
         "act_fly_yaw": {
-          "english": "Fly pirouettes in acro mode, centre the stick after each",
-          "translation": "Fly pirouettes in acro mode, centre the stick after each",
+          "english": "Fly pirouettes in rate mode, centre the stick after each",
+          "translation": "Fly pirouettes in rate mode, centre the stick after each",
           "needs_translation": true,
           "reverse_text": false,
           "max_length": 56
@@ -8250,8 +8089,8 @@
           "max_length": 19
         },
         "why_more": {
-          "english": "Each flight in acro mode is saved when you disarm.",
-          "translation": "Data builds up while you fly in acro mode.",
+          "english": "Each flight in rate mode is saved when you disarm.",
+          "translation": "Data builds up while you fly in rate mode.",
           "needs_translation": true,
           "reverse_text": false,
           "max_length": 50
@@ -8332,13 +8171,6 @@
           "needs_translation": true,
           "reverse_text": false,
           "max_length": 54
-        },
-        "why_shake_fmt": {
-          "english": "Shakes %d deg/s at centre stick. Less P calms it.",
-          "translation": "Shakes %d deg/s at centre stick. Less P calms it.",
-          "needs_translation": true,
-          "reverse_text": false,
-          "max_length": 49
         },
         "why_ok": {
           "english": "The heli answers the stick as asked.",
@@ -8465,20 +8297,2270 @@
           "needs_translation": true,
           "reverse_text": false,
           "max_length": 97
+        }
+      },
+      "setup_wizard": {
+        "name": {
+          "english": "Setup Wizard",
+          "translation": "设置向导",
+          "needs_translation": false,
+          "max_length": 12,
+          "reverse_text": false
         },
-        "reading": {
-          "english": "Reading the last flight...",
-          "translation": "Reading the last flight...",
-          "needs_translation": true,
-          "reverse_text": false,
-          "max_length": 26
+        "btn_next": {
+          "english": "Next",
+          "translation": "下一步",
+          "needs_translation": false,
+          "max_length": 4,
+          "reverse_text": false
         },
-        "not_read": {
-          "english": "Last flight not read. It is read at the next disarm.",
-          "translation": "Last flight not read. It is read at the next disarm.",
-          "needs_translation": true,
-          "reverse_text": false,
-          "max_length": 52
+        "btn_start": {
+          "english": "Start",
+          "translation": "开始",
+          "needs_translation": false,
+          "max_length": 5,
+          "reverse_text": false
+        },
+        "btn_yes": {
+          "english": "Yes",
+          "translation": "是",
+          "needs_translation": false,
+          "max_length": 3,
+          "reverse_text": false
+        },
+        "btn_no": {
+          "english": "No",
+          "translation": "否",
+          "needs_translation": false,
+          "max_length": 2,
+          "reverse_text": false
+        },
+        "btn_again": {
+          "english": "Again",
+          "translation": "重试",
+          "needs_translation": false,
+          "max_length": 5,
+          "reverse_text": false
+        },
+        "btn_save_restart": {
+          "english": "Save and restart",
+          "translation": "保存并重启",
+          "needs_translation": false,
+          "max_length": 16,
+          "reverse_text": false
+        },
+        "dir_save_next": {
+          "english": "Save and continue",
+          "translation": "保存并继续",
+          "needs_translation": false,
+          "max_length": 17,
+          "reverse_text": false
+        },
+        "fin_button": {
+          "english": "Save and finish",
+          "translation": "保存并完成",
+          "needs_translation": false,
+          "max_length": 15,
+          "reverse_text": false
+        },
+        "reboot_wait_fmt": {
+          "english": "Reconnecting, up to %d s",
+          "translation": "正在重连，最多 %d 秒",
+          "needs_translation": false,
+          "max_length": 24,
+          "reverse_text": false
+        },
+        "disconnected": {
+          "english": "No link to the flight controller.",
+          "translation": "未连接飞控。",
+          "needs_translation": false,
+          "max_length": 33,
+          "reverse_text": false
+        },
+        "leave_title": {
+          "english": "Unsaved changes",
+          "translation": "未保存的更改",
+          "needs_translation": false,
+          "max_length": 15,
+          "reverse_text": false
+        },
+        "leave_body": {
+          "english": "Save the wizard's changes to the flight controller, or discard them?",
+          "translation": "将向导的更改保存到飞控，还是放弃？",
+          "needs_translation": false,
+          "max_length": 68,
+          "reverse_text": false
+        },
+        "leave_save": {
+          "english": "Save",
+          "translation": "保存",
+          "needs_translation": false,
+          "max_length": 4,
+          "reverse_text": false
+        },
+        "leave_discard": {
+          "english": "Discard",
+          "translation": "放弃",
+          "needs_translation": false,
+          "max_length": 7,
+          "reverse_text": false
+        },
+        "progress_fmt": {
+          "english": "%d of %d",
+          "translation": "%d / %d",
+          "needs_translation": false,
+          "max_length": 8,
+          "reverse_text": false
+        },
+        "step_progress_fmt": {
+          "english": "Step %d of %d",
+          "translation": "第 %d 步，共 %d 步",
+          "needs_translation": false,
+          "max_length": 13,
+          "reverse_text": false
+        },
+        "step_receiver": {
+          "english": "Receiver",
+          "translation": "接收机",
+          "needs_translation": false,
+          "max_length": 8,
+          "reverse_text": false
+        },
+        "step_finish": {
+          "english": "Finish",
+          "translation": "完成",
+          "needs_translation": false,
+          "max_length": 6,
+          "reverse_text": false
+        },
+        "servo_role_fmt": {
+          "english": "Servo %d (%s)",
+          "translation": "舵机 %d (%s)",
+          "needs_translation": false,
+          "max_length": 13,
+          "reverse_text": false
+        },
+        "armed": {
+          "english": "Armed: servos can't be moved.",
+          "translation": "已解锁：舵机无法移动。",
+          "needs_translation": false,
+          "max_length": 29,
+          "reverse_text": false
+        },
+        "missing_servos_fmt": {
+          "english": "Servo %s is needed for this setup, but the board has no output for it.",
+          "translation": "此设置需要舵机 %s，但飞控没有对应输出。",
+          "needs_translation": false,
+          "max_length": 70,
+          "reverse_text": false
+        },
+        "reboot_skipped": {
+          "english": "A restart is still owed: go back to Connect the servos.",
+          "translation": "仍需重启：请返回连接舵机步骤。",
+          "needs_translation": false,
+          "max_length": 55,
+          "reverse_text": false
+        },
+        "no_swash": {
+          "english": "This step works on the swashplate servos. Pick a swashplate type first.",
+          "translation": "此步骤用于斜盘舵机。请先选择斜盘类型。",
+          "needs_translation": false,
+          "max_length": 71,
+          "reverse_text": false
+        },
+        "go_swash": {
+          "english": "Swashplate",
+          "translation": "斜盘",
+          "needs_translation": false,
+          "max_length": 10,
+          "reverse_text": false
+        },
+        "step_sensors": {
+          "english": "Board orientation",
+          "translation": "飞控方向",
+          "needs_translation": false,
+          "max_length": 17,
+          "reverse_text": false
+        },
+        "step_swash": {
+          "english": "Swashplate",
+          "translation": "斜盘",
+          "needs_translation": false,
+          "max_length": 10,
+          "reverse_text": false
+        },
+        "step_servotype": {
+          "english": "Servo type",
+          "translation": "舵机类型",
+          "needs_translation": false,
+          "max_length": 10,
+          "reverse_text": false
+        },
+        "step_motor": {
+          "english": "Motor & ESC",
+          "translation": "电机与ESC",
+          "needs_translation": false,
+          "max_length": 11,
+          "reverse_text": false
+        },
+        "step_connect": {
+          "english": "Connect servos",
+          "translation": "连接舵机",
+          "needs_translation": false,
+          "max_length": 14,
+          "reverse_text": false
+        },
+        "step_servos": {
+          "english": "Servo centre",
+          "translation": "舵机中位",
+          "needs_translation": false,
+          "max_length": 12,
+          "reverse_text": false
+        },
+        "step_direction": {
+          "english": "Directions",
+          "translation": "方向",
+          "needs_translation": false,
+          "max_length": 10,
+          "reverse_text": false
+        },
+        "step_level": {
+          "english": "Level swash",
+          "translation": "斜盘调平",
+          "needs_translation": false,
+          "max_length": 11,
+          "reverse_text": false
+        },
+        "step_pitch": {
+          "english": "Blade pitch",
+          "translation": "桨叶螺距",
+          "needs_translation": false,
+          "max_length": 11,
+          "reverse_text": false
+        },
+        "step_tail": {
+          "english": "Tail rotor",
+          "translation": "尾桨",
+          "needs_translation": false,
+          "max_length": 10,
+          "reverse_text": false
+        },
+        "step_gyro": {
+          "english": "Gyro check",
+          "translation": "陀螺仪检查",
+          "needs_translation": false,
+          "max_length": 10,
+          "reverse_text": false
+        },
+        "role_pitch": {
+          "english": "Pitch",
+          "translation": "俯仰",
+          "needs_translation": false,
+          "max_length": 5,
+          "reverse_text": false
+        },
+        "role_roll": {
+          "english": "Roll",
+          "translation": "横滚",
+          "needs_translation": false,
+          "max_length": 4,
+          "reverse_text": false
+        },
+        "role_collective": {
+          "english": "Collective",
+          "translation": "总距",
+          "needs_translation": false,
+          "max_length": 10,
+          "reverse_text": false
+        },
+        "role_centre": {
+          "english": "Centre",
+          "translation": "中",
+          "needs_translation": false,
+          "max_length": 6,
+          "reverse_text": false
+        },
+        "role_left": {
+          "english": "Left",
+          "translation": "左",
+          "needs_translation": false,
+          "max_length": 4,
+          "reverse_text": false
+        },
+        "role_right": {
+          "english": "Right",
+          "translation": "右",
+          "needs_translation": false,
+          "max_length": 5,
+          "reverse_text": false
+        },
+        "role_front": {
+          "english": "Front",
+          "translation": "前",
+          "needs_translation": false,
+          "max_length": 5,
+          "reverse_text": false
+        },
+        "role_front_left": {
+          "english": "Front left",
+          "translation": "左前",
+          "needs_translation": false,
+          "max_length": 10,
+          "reverse_text": false
+        },
+        "role_front_right": {
+          "english": "Front right",
+          "translation": "右前",
+          "needs_translation": false,
+          "max_length": 11,
+          "reverse_text": false
+        },
+        "role_tail": {
+          "english": "Tail",
+          "translation": "尾",
+          "needs_translation": false,
+          "max_length": 4,
+          "reverse_text": false
+        },
+        "sen_title": {
+          "english": "Board orientation",
+          "translation": "飞控方向",
+          "needs_translation": false,
+          "max_length": 17,
+          "reverse_text": false
+        },
+        "sen_intro": {
+          "english": "Remove main and tail blades. Unplug all servos before starting.",
+          "translation": "拆下主旋翼和尾旋翼桨叶。开始前拔掉所有舵机。",
+          "needs_translation": false,
+          "max_length": 63,
+          "reverse_text": false
+        },
+        "sen_servos_unplugged": {
+          "english": "Servos unplugged",
+          "translation": "舵机已拔掉",
+          "needs_translation": false,
+          "max_length": 16,
+          "reverse_text": false
+        },
+        "sen_blades_removed": {
+          "english": "All blades removed",
+          "translation": "所有桨叶已拆下",
+          "needs_translation": false,
+          "max_length": 18,
+          "reverse_text": false
+        },
+        "art_side": {
+          "english": "Side view",
+          "translation": "侧视图",
+          "needs_translation": false,
+          "max_length": 9,
+          "reverse_text": false
+        },
+        "art_front": {
+          "english": "Front",
+          "translation": "前方",
+          "needs_translation": false,
+          "max_length": 5,
+          "reverse_text": false
+        },
+        "sen_no_acc": {
+          "english": "This board has no accelerometer: set the orientation on the Alignment page.",
+          "translation": "此飞控没有加速度计：请在对准页面设置方向。",
+          "needs_translation": false,
+          "max_length": 75,
+          "reverse_text": false
+        },
+        "sen_acc_title": {
+          "english": "Calibrate the accelerometer",
+          "translation": "校准加速度计",
+          "needs_translation": false,
+          "max_length": 27,
+          "reverse_text": false
+        },
+        "sen_acc_text": {
+          "english": "Stand the helicopter on its skids on a level surface and keep it still.",
+          "translation": "将直升机的起落架放在水平面上，并保持静止。",
+          "needs_translation": false,
+          "max_length": 71,
+          "reverse_text": false
+        },
+        "sen_accelerometer": {
+          "english": "Accelerometer",
+          "translation": "加速度计",
+          "needs_translation": false,
+          "max_length": 13,
+          "reverse_text": false
+        },
+        "sen_available": {
+          "english": "Available",
+          "translation": "可用",
+          "needs_translation": false,
+          "max_length": 9,
+          "reverse_text": false
+        },
+        "sen_acc_busy": {
+          "english": "Calibrating... keep it still.",
+          "translation": "正在校准...保持静止。",
+          "needs_translation": false,
+          "max_length": 29,
+          "reverse_text": false
+        },
+        "sen_acc_done": {
+          "english": "Accelerometer calibrated.",
+          "translation": "加速度计已校准。",
+          "needs_translation": false,
+          "max_length": 25,
+          "reverse_text": false
+        },
+        "sen_acc_failed": {
+          "english": "Calibration failed. Keep the model still and try again.",
+          "translation": "校准失败。保持模型静止后重试。",
+          "needs_translation": false,
+          "max_length": 55,
+          "reverse_text": false
+        },
+        "sen_calibrate": {
+          "english": "Calibrate accelerometer",
+          "translation": "校准加速度计",
+          "needs_translation": false,
+          "max_length": 23,
+          "reverse_text": false
+        },
+        "sen_align_title": {
+          "english": "Board orientation",
+          "translation": "飞控安装方向",
+          "needs_translation": false,
+          "max_length": 17,
+          "reverse_text": false
+        },
+        "sen_align_text": {
+          "english": "Keep level, start detection, then lift the tail about 20 degrees.",
+          "translation": "保持水平，开始检测，然后将尾部抬起约 20 度。",
+          "needs_translation": false,
+          "max_length": 65,
+          "reverse_text": false
+        },
+        "sen_auto_align": {
+          "english": "Detect board orientation",
+          "translation": "检测安装方向",
+          "needs_translation": false,
+          "max_length": 24,
+          "reverse_text": false
+        },
+        "sen_roll": {
+          "english": "Roll",
+          "translation": "横滚",
+          "needs_translation": false,
+          "max_length": 4,
+          "reverse_text": false
+        },
+        "sen_pitch": {
+          "english": "Pitch",
+          "translation": "俯仰",
+          "needs_translation": false,
+          "max_length": 5,
+          "reverse_text": false
+        },
+        "sen_yaw": {
+          "english": "Yaw",
+          "translation": "偏航",
+          "needs_translation": false,
+          "max_length": 3,
+          "reverse_text": false
+        },
+        "sen_align_lift": {
+          "english": "Lift the tail 20 degrees and hold it still...",
+          "translation": "将尾部抬起20度并保持静止...",
+          "needs_translation": false,
+          "max_length": 45,
+          "reverse_text": false
+        },
+        "sen_align_done_fmt": {
+          "english": "Found: roll %d, pitch %d, yaw %d degrees.",
+          "translation": "找到：横滚 %d，俯仰 %d，偏航 %d 度。",
+          "needs_translation": false,
+          "max_length": 41,
+          "reverse_text": false
+        },
+        "sen_rejected_armed": {
+          "english": "Refused: the model is armed.",
+          "translation": "拒绝：模型已解锁。",
+          "needs_translation": false,
+          "max_length": 28,
+          "reverse_text": false
+        },
+        "sen_rejected_uncal": {
+          "english": "Calibrate the accelerometer first.",
+          "translation": "请先校准加速度计。",
+          "needs_translation": false,
+          "max_length": 34,
+          "reverse_text": false
+        },
+        "sen_timeout": {
+          "english": "Timed out. Lift the tail a little further and try again.",
+          "translation": "超时。将尾部再抬高一些后重试。",
+          "needs_translation": false,
+          "max_length": 56,
+          "reverse_text": false
+        },
+        "sen_no_match": {
+          "english": "No orientation matched. Lift the tail straight up and try again.",
+          "translation": "没有匹配的方向。将尾部垂直抬起后重试。",
+          "needs_translation": false,
+          "max_length": 64,
+          "reverse_text": false
+        },
+        "sen_unsupported": {
+          "english": "This firmware cannot find the orientation: set it on the Alignment page.",
+          "translation": "此固件无法查找方向：请在对准页面设置。",
+          "needs_translation": false,
+          "max_length": 72,
+          "reverse_text": false
+        },
+        "sen_check_title": {
+          "english": "Check orientation",
+          "translation": "检查安装方向",
+          "needs_translation": false,
+          "max_length": 17,
+          "reverse_text": false
+        },
+        "sen_check_text": {
+          "english": "Tilt the helicopter left/right and nose down/up: the picture must follow every movement.",
+          "translation": "将直升机左右倾斜、机头上下倾斜：画面必须跟随每个动作。",
+          "needs_translation": false,
+          "max_length": 88,
+          "reverse_text": false
+        },
+        "sen_direction_ok": {
+          "english": "Direction is correct",
+          "translation": "方向正确",
+          "needs_translation": false,
+          "max_length": 20,
+          "reverse_text": false
+        },
+        "sen_attitude_waiting": {
+          "english": "Waiting for live attitude...",
+          "translation": "正在等待实时姿态...",
+          "needs_translation": false,
+          "max_length": 28,
+          "reverse_text": false
+        },
+        "sen_done_restart": {
+          "english": "The new orientation applies after a restart. Restart now to check it, or Next: the restart then follows at the Connect the servos step.",
+          "translation": "新的安装方向需重启后生效。立即重启进行检查，或点下一步：将在“连接舵机”步骤重启。",
+          "needs_translation": false,
+          "max_length": 135,
+          "reverse_text": false
+        },
+        "rcv_title": {
+          "english": "Receiver",
+          "translation": "接收机",
+          "needs_translation": false,
+          "max_length": 8,
+          "reverse_text": false
+        },
+        "rcv_intro": {
+          "english": "The radio talks to the flight controller through this receiver. Here you set the channel order, check the sticks and set the throttle range.",
+          "translation": "遥控器通过此接收机与飞控通信。此处设置通道顺序、检查摇杆并设置油门范围。",
+          "needs_translation": false,
+          "max_length": 140
+        },
+        "rcv_signal_ok": {
+          "english": "Receiver signal: OK",
+          "translation": "接收机信号：正常",
+          "needs_translation": false,
+          "max_length": 19,
+          "reverse_text": false
+        },
+        "rcv_signal_none": {
+          "english": "No valid receiver signal.",
+          "translation": "无有效接收机信号。",
+          "needs_translation": false,
+          "max_length": 25,
+          "reverse_text": false
+        },
+        "rcv_order_title": {
+          "english": "Channel order",
+          "translation": "通道顺序",
+          "needs_translation": false,
+          "max_length": 13,
+          "reverse_text": false
+        },
+        "rcv_order_text": {
+          "english": "Each bar should follow its own stick. If not, pick a preset or detect the order.",
+          "translation": "每个条应跟随自己的摇杆。否则请选择预设或检测通道顺序。",
+          "needs_translation": false,
+          "max_length": 80,
+          "reverse_text": false
+        },
+        "rcv_order_now_fmt": {
+          "english": "Now: %s.",
+          "translation": "当前：%s。",
+          "needs_translation": false,
+          "max_length": 8,
+          "reverse_text": false
+        },
+        "rcv_custom": {
+          "english": "Custom",
+          "translation": "自定义",
+          "needs_translation": false,
+          "max_length": 6,
+          "reverse_text": false
+        },
+        "rcv_preset_elrs": {
+          "english": "ELRS",
+          "translation": "ELRS",
+          "needs_translation": false,
+          "max_length": 4,
+          "reverse_text": false
+        },
+        "rcv_preset_frsky": {
+          "english": "FrSky",
+          "translation": "FrSky",
+          "needs_translation": false,
+          "max_length": 5,
+          "reverse_text": false
+        },
+        "rcv_preset_futaba": {
+          "english": "Futaba/Hitec",
+          "translation": "Futaba/Hitec",
+          "needs_translation": false,
+          "max_length": 12,
+          "reverse_text": false
+        },
+        "rcv_preset_spektrum": {
+          "english": "Spektrum/JR",
+          "translation": "Spektrum/JR",
+          "needs_translation": false,
+          "max_length": 11,
+          "reverse_text": false
+        },
+        "rcv_detect": {
+          "english": "Detect",
+          "translation": "检测",
+          "needs_translation": false,
+          "max_length": 6,
+          "reverse_text": false
+        },
+        "rcv_detect_text_fmt": {
+          "english": "%s Leave the other sticks still.",
+          "translation": "%s 其他摇杆保持不动。",
+          "needs_translation": false,
+          "max_length": 32,
+          "reverse_text": false
+        },
+        "rcv_detect_done": {
+          "english": "Channel order set from the sticks.",
+          "translation": "已根据摇杆设置通道顺序。",
+          "needs_translation": false,
+          "max_length": 34,
+          "reverse_text": false
+        },
+        "rcv_skip": {
+          "english": "Skip",
+          "translation": "跳过",
+          "needs_translation": false,
+          "max_length": 4,
+          "reverse_text": false
+        },
+        "rcv_move_roll": {
+          "english": "Move the roll stick fully left and right.",
+          "translation": "将横滚摇杆推到最左和最右。",
+          "needs_translation": false,
+          "max_length": 41,
+          "reverse_text": false
+        },
+        "rcv_move_pitch": {
+          "english": "Move the pitch stick fully forward and back.",
+          "translation": "将俯仰摇杆推到最前和最后。",
+          "needs_translation": false,
+          "max_length": 44,
+          "reverse_text": false
+        },
+        "rcv_move_yaw": {
+          "english": "Move the yaw stick fully left and right.",
+          "translation": "将偏航摇杆推到最左和最右。",
+          "needs_translation": false,
+          "max_length": 40,
+          "reverse_text": false
+        },
+        "rcv_move_collective": {
+          "english": "Move the collective stick fully up and down.",
+          "translation": "将总距摇杆推到最上和最下。",
+          "needs_translation": false,
+          "max_length": 44,
+          "reverse_text": false
+        },
+        "rcv_move_throttle": {
+          "english": "Flip the throttle switch, or move the throttle, end to end.",
+          "translation": "拨动油门开关，或将油门从一端推到另一端。",
+          "needs_translation": false,
+          "max_length": 59,
+          "reverse_text": false
+        },
+        "rcv_ch_roll": {
+          "english": "Roll",
+          "translation": "横滚",
+          "needs_translation": false,
+          "max_length": 4,
+          "reverse_text": false
+        },
+        "rcv_ch_pitch": {
+          "english": "Pitch",
+          "translation": "俯仰",
+          "needs_translation": false,
+          "max_length": 5,
+          "reverse_text": false
+        },
+        "rcv_ch_yaw": {
+          "english": "Yaw",
+          "translation": "偏航",
+          "needs_translation": false,
+          "max_length": 3,
+          "reverse_text": false
+        },
+        "rcv_ch_collective": {
+          "english": "Collective",
+          "translation": "总距",
+          "needs_translation": false,
+          "max_length": 10,
+          "reverse_text": false
+        },
+        "rcv_ch_throttle": {
+          "english": "Throttle",
+          "translation": "油门",
+          "needs_translation": false,
+          "max_length": 8,
+          "reverse_text": false
+        },
+        "rcv_sticks_title": {
+          "english": "Check the sticks",
+          "translation": "检查摇杆",
+          "needs_translation": false,
+          "max_length": 16,
+          "reverse_text": false
+        },
+        "rcv_sticks_text": {
+          "english": "Each stick must reach ±100 %; if it does not, adjust the travel on the transmitter.",
+          "translation": "每根摇杆都必须达到 ±100%；不够的话，请在遥控器上调整行程。",
+          "needs_translation": false,
+          "max_length": 83
+        },
+        "rcv_throttle_title": {
+          "english": "Throttle range",
+          "translation": "油门范围",
+          "needs_translation": false,
+          "max_length": 14,
+          "reverse_text": false
+        },
+        "rcv_throttle_text": {
+          "english": "Press Measure, move the throttle switch through every position, then Stop and Use.",
+          "translation": "按测量，将油门开关拨过每个位置，然后按停止和使用。",
+          "needs_translation": false,
+          "max_length": 82,
+          "reverse_text": false
+        },
+        "rcv_blades_off": {
+          "english": "Keep the blades off: the motor may start.",
+          "translation": "保持桨叶拆下：电机可能会启动。",
+          "needs_translation": false,
+          "max_length": 41,
+          "reverse_text": false
+        },
+        "rcv_measure": {
+          "english": "Measure",
+          "translation": "测量",
+          "needs_translation": false,
+          "max_length": 7,
+          "reverse_text": false
+        },
+        "rcv_stop": {
+          "english": "Stop",
+          "translation": "停止",
+          "needs_translation": false,
+          "max_length": 4,
+          "reverse_text": false
+        },
+        "rcv_use": {
+          "english": "Use",
+          "translation": "使用",
+          "needs_translation": false,
+          "max_length": 3,
+          "reverse_text": false
+        },
+        "rcv_defaults": {
+          "english": "Defaults",
+          "translation": "默认",
+          "needs_translation": false,
+          "max_length": 8,
+          "reverse_text": false
+        },
+        "rcv_too_short": {
+          "english": "Under 300 us of travel: move it end to end.",
+          "translation": "行程不足 300 us：请从一端推到另一端。",
+          "needs_translation": false,
+          "max_length": 43,
+          "reverse_text": false
+        },
+        "rcv_done_title": {
+          "english": "Receiver done",
+          "translation": "接收机已完成",
+          "needs_translation": false,
+          "max_length": 13,
+          "reverse_text": false
+        },
+        "rcv_done": {
+          "english": "The channel order and throttle range are set.",
+          "translation": "通道顺序和油门范围已设置。",
+          "needs_translation": false,
+          "max_length": 45,
+          "reverse_text": false
+        },
+        "swa_type_title": {
+          "english": "Swashplate type",
+          "translation": "斜盘类型",
+          "needs_translation": false,
+          "max_length": 15,
+          "reverse_text": false
+        },
+        "swa_type_text": {
+          "english": "How are the swash servos laid out? 120 degrees is the most common.",
+          "translation": "斜盘舵机如何布置？最常见的是120度。",
+          "needs_translation": false,
+          "max_length": 66,
+          "reverse_text": false
+        },
+        "swa_current_fmt": {
+          "english": "Now: %s",
+          "translation": "当前：%s",
+          "needs_translation": false,
+          "max_length": 7,
+          "reverse_text": false
+        },
+        "swa_show_text": {
+          "english": "The servos sit here, seen from above with the nose at the top. Servo numbers are the FC outputs.",
+          "translation": "舵机位置如图，俯视且机头朝上。舵机编号即飞控输出。",
+          "needs_translation": false,
+          "max_length": 96,
+          "reverse_text": false
+        },
+        "swa_from_above": {
+          "english": "Seen from above, nose at the top",
+          "translation": "俯视，机头朝上",
+          "needs_translation": false,
+          "max_length": 32,
+          "reverse_text": false
+        },
+        "swa_dir_title": {
+          "english": "Main rotor direction",
+          "translation": "主旋翼方向",
+          "needs_translation": false,
+          "max_length": 20,
+          "reverse_text": false
+        },
+        "swa_dir_text": {
+          "english": "Seen from above, which way do the main blades turn?",
+          "translation": "俯视时，主桨朝哪个方向旋转？",
+          "needs_translation": false,
+          "max_length": 51,
+          "reverse_text": false
+        },
+        "swa_cw": {
+          "english": "Clockwise",
+          "translation": "顺时针",
+          "needs_translation": false,
+          "max_length": 9,
+          "reverse_text": false
+        },
+        "swa_ccw": {
+          "english": "Counter-CW",
+          "translation": "逆时针",
+          "needs_translation": false,
+          "max_length": 10,
+          "reverse_text": false
+        },
+        "swa_tail_title": {
+          "english": "Tail type",
+          "translation": "尾桨类型",
+          "needs_translation": false,
+          "max_length": 9,
+          "reverse_text": false
+        },
+        "swa_tail_text": {
+          "english": "A pitch tail uses a servo. A motor tail spins its own motor, one way or both ways.",
+          "translation": "螺距尾使用舵机。电机尾由独立电机驱动，单向或双向。",
+          "needs_translation": false,
+          "max_length": 82,
+          "reverse_text": false
+        },
+        "swa_tail_variable": {
+          "english": "Pitch (servo)",
+          "translation": "螺距(舵机)",
+          "needs_translation": false,
+          "max_length": 13,
+          "reverse_text": false
+        },
+        "swa_tail_motor": {
+          "english": "Motor",
+          "translation": "电机",
+          "needs_translation": false,
+          "max_length": 5,
+          "reverse_text": false
+        },
+        "swa_tail_bidir": {
+          "english": "Motor, 2-way",
+          "translation": "电机，双向",
+          "needs_translation": false,
+          "max_length": 12,
+          "reverse_text": false
+        },
+        "swa_pin_move": {
+          "english": "Moves on save",
+          "translation": "保存时移动",
+          "needs_translation": false,
+          "max_length": 13,
+          "reverse_text": false
+        },
+        "swa_pin_stuck": {
+          "english": "Set in Mixer",
+          "translation": "在混控中设置",
+          "needs_translation": false,
+          "max_length": 12,
+          "reverse_text": false
+        },
+        "swa_restart": {
+          "english": "Applies after the restart at the Connect step.",
+          "translation": "在连接步骤重启后生效。",
+          "needs_translation": false,
+          "max_length": 46,
+          "reverse_text": false
+        },
+        "swa_done_title": {
+          "english": "Swashplate set",
+          "translation": "斜盘已设置",
+          "needs_translation": false,
+          "max_length": 14,
+          "reverse_text": false
+        },
+        "swa_row_type": {
+          "english": "Swash type",
+          "translation": "斜盘类型",
+          "needs_translation": false,
+          "max_length": 10,
+          "reverse_text": false
+        },
+        "swa_row_dir": {
+          "english": "Rotor",
+          "translation": "旋翼",
+          "needs_translation": false,
+          "max_length": 5,
+          "reverse_text": false
+        },
+        "swa_row_tail": {
+          "english": "Tail",
+          "translation": "尾桨",
+          "needs_translation": false,
+          "max_length": 4,
+          "reverse_text": false
+        },
+        "swa_row_pin": {
+          "english": "Tail pin",
+          "translation": "尾桨引脚",
+          "needs_translation": false,
+          "max_length": 8,
+          "reverse_text": false
+        },
+        "swa_pin_servo": {
+          "english": "Servo 4",
+          "translation": "舵机 4",
+          "needs_translation": false,
+          "max_length": 7,
+          "reverse_text": false
+        },
+        "swa_pin_motor": {
+          "english": "Motor 2",
+          "translation": "电机 2",
+          "needs_translation": false,
+          "max_length": 7,
+          "reverse_text": false
+        },
+        "swa_pin_both": {
+          "english": "Own pin",
+          "translation": "独立引脚",
+          "needs_translation": false,
+          "max_length": 7,
+          "reverse_text": false
+        },
+        "swa_pin_none": {
+          "english": "None",
+          "translation": "无",
+          "needs_translation": false,
+          "max_length": 4,
+          "reverse_text": false
+        },
+        "swa_direct": {
+          "english": "Direct",
+          "translation": "直接",
+          "needs_translation": false,
+          "max_length": 6,
+          "reverse_text": false
+        },
+        "sty_intro": {
+          "english": "Pick the servo type. It sets the update rate and the centre pulse.",
+          "translation": "选择舵机类型。它决定刷新率和中位脉宽。",
+          "needs_translation": false,
+          "max_length": 66,
+          "reverse_text": false
+        },
+        "sty_unplugged": {
+          "english": "Keep the servos unplugged until the Connect step.",
+          "translation": "在连接步骤之前不要插上舵机。",
+          "needs_translation": false,
+          "max_length": 49,
+          "reverse_text": false
+        },
+        "sty_swash_title": {
+          "english": "Cyclic servos",
+          "translation": "斜盘舵机",
+          "needs_translation": false,
+          "max_length": 13,
+          "reverse_text": false
+        },
+        "sty_tail_title": {
+          "english": "Tail servo",
+          "translation": "尾舵机",
+          "needs_translation": false,
+          "max_length": 10,
+          "reverse_text": false
+        },
+        "sty_custom": {
+          "english": "Custom",
+          "translation": "自定义",
+          "needs_translation": false,
+          "max_length": 6,
+          "reverse_text": false
+        },
+        "sty_mixed": {
+          "english": "Mixed",
+          "translation": "混合",
+          "needs_translation": false,
+          "max_length": 5,
+          "reverse_text": false
+        },
+        "sty_analog": {
+          "english": "Analog",
+          "translation": "模拟",
+          "needs_translation": false,
+          "max_length": 6,
+          "reverse_text": false
+        },
+        "sty_digital": {
+          "english": "Digital",
+          "translation": "数字",
+          "needs_translation": false,
+          "max_length": 7,
+          "reverse_text": false
+        },
+        "sty_narrow": {
+          "english": "Narrow",
+          "translation": "窄脉宽",
+          "needs_translation": false,
+          "max_length": 6,
+          "reverse_text": false
+        },
+        "sty_row_type": {
+          "english": "Type",
+          "translation": "类型",
+          "needs_translation": false,
+          "max_length": 4,
+          "reverse_text": false
+        },
+        "sty_hz_fmt": {
+          "english": "%d Hz",
+          "translation": "%d Hz",
+          "needs_translation": false,
+          "max_length": 5,
+          "reverse_text": false
+        },
+        "sty_us_fmt": {
+          "english": "%d us",
+          "translation": "%d us",
+          "needs_translation": false,
+          "max_length": 5,
+          "reverse_text": false
+        },
+        "mot_title": {
+          "english": "ESC protocol",
+          "translation": "ESC协议",
+          "needs_translation": false,
+          "max_length": 12,
+          "reverse_text": false
+        },
+        "mot_intro": {
+          "english": "How does the FC talk to the ESC? Use PWM if unsure. Blades off.",
+          "translation": "飞控如何与ESC通信？不确定时用PWM。拆下桨叶。",
+          "needs_translation": false,
+          "max_length": 63,
+          "reverse_text": false
+        },
+        "mot_other": {
+          "english": "Other",
+          "translation": "其他",
+          "needs_translation": false,
+          "max_length": 5,
+          "reverse_text": false
+        },
+        "mot_dshot150_note": {
+          "english": "DShot150 sends no RPM. Governor and RPM filter need DShot300 or an RPM sensor.",
+          "translation": "DShot150 不发送转速。 调速器和 RPM 滤波 需要 DShot300 或 转速传感器。",
+          "needs_translation": false,
+          "max_length": 78,
+          "reverse_text": false
+        },
+        "mot_poles": {
+          "english": "Motor poles",
+          "translation": "电机极数",
+          "needs_translation": false,
+          "max_length": 11,
+          "reverse_text": false
+        },
+        "mot_poles_text": {
+          "english": "Magnet poles of the main motor, from its data sheet (often 10 or 12).",
+          "translation": "主电机的磁极数，见其规格书（通常为10或12）。",
+          "needs_translation": false,
+          "max_length": 69,
+          "reverse_text": false
+        },
+        "mot_pinion": {
+          "english": "Pinion teeth",
+          "translation": "小齿轮齿数",
+          "needs_translation": false,
+          "max_length": 12,
+          "reverse_text": false
+        },
+        "mot_pinion_text": {
+          "english": "Teeth on the motor pinion.",
+          "translation": "电机小齿轮的齿数。",
+          "needs_translation": false,
+          "max_length": 26,
+          "reverse_text": false
+        },
+        "mot_main_gear": {
+          "english": "Main gear teeth",
+          "translation": "主齿轮齿数",
+          "needs_translation": false,
+          "max_length": 15,
+          "reverse_text": false
+        },
+        "mot_main_gear_text": {
+          "english": "Teeth on the main gear.",
+          "translation": "主齿轮的齿数。",
+          "needs_translation": false,
+          "max_length": 23,
+          "reverse_text": false
+        },
+        "mot_tail_in": {
+          "english": "Tail gear in",
+          "translation": "尾传动输入齿",
+          "needs_translation": false,
+          "max_length": 12,
+          "reverse_text": false
+        },
+        "mot_tail_in_text": {
+          "english": "Teeth on the tail drive gear at the main shaft (or its pulley).",
+          "translation": "主轴上尾传动齿轮（或皮带轮）的齿数。",
+          "needs_translation": false,
+          "max_length": 63,
+          "reverse_text": false
+        },
+        "mot_tail_out": {
+          "english": "Tail gear out",
+          "translation": "尾传动输出齿",
+          "needs_translation": false,
+          "max_length": 13,
+          "reverse_text": false
+        },
+        "mot_tail_out_text": {
+          "english": "Teeth on the tail rotor shaft gear (or its pulley).",
+          "translation": "尾桨轴齿轮（或皮带轮）的齿数。",
+          "needs_translation": false,
+          "max_length": 51,
+          "reverse_text": false
+        },
+        "mot_ratio_fmt": {
+          "english": "%.2f:1",
+          "translation": "%.2f:1",
+          "needs_translation": false,
+          "max_length": 6,
+          "reverse_text": false
+        },
+        "mot_main_ratio": {
+          "english": "Main ratio",
+          "translation": "主齿比",
+          "needs_translation": false,
+          "max_length": 10,
+          "reverse_text": false
+        },
+        "mot_tail_ratio": {
+          "english": "Tail ratio",
+          "translation": "尾齿比",
+          "needs_translation": false,
+          "max_length": 10,
+          "reverse_text": false
+        },
+        "mot_protocol": {
+          "english": "Protocol",
+          "translation": "协议",
+          "needs_translation": false,
+          "max_length": 8,
+          "reverse_text": false
+        },
+        "mot_done_title": {
+          "english": "Motor & ESC set",
+          "translation": "电机与ESC已设置",
+          "needs_translation": false,
+          "max_length": 15,
+          "reverse_text": false
+        },
+        "con_title": {
+          "english": "Connect the servos",
+          "translation": "连接舵机",
+          "needs_translation": false,
+          "max_length": 18,
+          "reverse_text": false
+        },
+        "con_reboot": {
+          "english": "Keep the servos unplugged. Save and restart now, so the new outputs take effect before anything moves.",
+          "translation": "保持舵机未插上。现在保存并重启，使新输出在任何部件移动前生效。",
+          "needs_translation": false,
+          "max_length": 102,
+          "reverse_text": false
+        },
+        "con_plug": {
+          "english": "Plug the servos in now and power them.",
+          "translation": "现在插上舵机并通电。",
+          "needs_translation": false,
+          "max_length": 38,
+          "reverse_text": false
+        },
+        "con_blades": {
+          "english": "Blades stay off, and keep clear of the motor.",
+          "translation": "桨叶保持拆下，远离电机。",
+          "needs_translation": false,
+          "max_length": 45,
+          "reverse_text": false
+        },
+        "con_main_motor": {
+          "english": "Main motor",
+          "translation": "主电机",
+          "needs_translation": false,
+          "max_length": 10,
+          "reverse_text": false
+        },
+        "con_tail_motor": {
+          "english": "Tail motor",
+          "translation": "尾电机",
+          "needs_translation": false,
+          "max_length": 10,
+          "reverse_text": false
+        },
+        "con_ok": {
+          "english": "OK",
+          "translation": "正常",
+          "needs_translation": false,
+          "max_length": 2,
+          "reverse_text": false
+        },
+        "con_missing": {
+          "english": "Missing",
+          "translation": "缺失",
+          "needs_translation": false,
+          "max_length": 7,
+          "reverse_text": false
+        },
+        "con_checking": {
+          "english": "Checking",
+          "translation": "检查中",
+          "needs_translation": false,
+          "max_length": 8,
+          "reverse_text": false
+        },
+        "con_servo_missing": {
+          "english": "Some servos are missing: check the outputs and the swash type.",
+          "translation": "部分舵机缺失：请检查输出和斜盘类型。",
+          "needs_translation": false,
+          "max_length": 62,
+          "reverse_text": false
+        },
+        "srv_test_text": {
+          "english": "The servo is held 20 degrees up.",
+          "translation": "舵机保持在向上20度。",
+          "needs_translation": false,
+          "max_length": 32,
+          "reverse_text": false
+        },
+        "srv_test_q": {
+          "english": "Did the arm move up, towards the swash?",
+          "translation": "舵臂是否向上、朝斜盘方向移动？",
+          "needs_translation": false,
+          "max_length": 39,
+          "reverse_text": false
+        },
+        "srv_reversed": {
+          "english": "Reversed. Check the arm moved up now.",
+          "translation": "已反向。检查舵臂现在是否向上。",
+          "needs_translation": false,
+          "max_length": 37,
+          "reverse_text": false
+        },
+        "srv_up": {
+          "english": "Yes, up",
+          "translation": "是，向上",
+          "needs_translation": false,
+          "max_length": 7,
+          "reverse_text": false
+        },
+        "srv_down": {
+          "english": "No, down",
+          "translation": "否，向下",
+          "needs_translation": false,
+          "max_length": 8,
+          "reverse_text": false
+        },
+        "srv_centre_text": {
+          "english": "Nudge the centre until the servo arm is level.",
+          "translation": "微调中位直到舵臂水平。",
+          "needs_translation": false,
+          "max_length": 46,
+          "reverse_text": false
+        },
+        "srv_tail_text": {
+          "english": "Nudge the centre until the tail servo arm is at 90 degrees to the pushrod.",
+          "translation": "微调中位直到尾舵臂与拉杆成90度。",
+          "needs_translation": false,
+          "max_length": 74,
+          "reverse_text": false
+        },
+        "srv_value_fmt": {
+          "english": "Centre %d us (%s).",
+          "translation": "中位 %d us (%s)。",
+          "needs_translation": false,
+          "max_length": 18,
+          "reverse_text": false
+        },
+        "srv_far": {
+          "english": "Far from centre: move the arm a spline instead.",
+          "translation": "偏离中位过多：请将舵臂移动一个齿。",
+          "needs_translation": false,
+          "max_length": 47,
+          "reverse_text": false
+        },
+        "srv_done_title": {
+          "english": "Servos set",
+          "translation": "舵机已设置",
+          "needs_translation": false,
+          "max_length": 10,
+          "reverse_text": false
+        },
+        "srv_done": {
+          "english": "Every servo moves the right way and is centred.",
+          "translation": "每个舵机方向正确且已居中。",
+          "needs_translation": false,
+          "max_length": 47,
+          "reverse_text": false
+        },
+        "dir_title": {
+          "english": "Control directions",
+          "translation": "控制方向",
+          "needs_translation": false,
+          "max_length": 18,
+          "reverse_text": false
+        },
+        "dir_intro": {
+          "english": "The sticks now drive the swash directly, without the gyro. Move each stick as asked and watch the swash.",
+          "translation": "摇杆现在直接驱动斜盘，不经陀螺仪。按提示移动每个摇杆并观察斜盘。",
+          "needs_translation": false,
+          "max_length": 104,
+          "reverse_text": false
+        },
+        "dir_q": {
+          "english": "Does the swash move as shown?",
+          "translation": "斜盘是否按图示移动？",
+          "needs_translation": false,
+          "max_length": 29,
+          "reverse_text": false
+        },
+        "dir_reversed": {
+          "english": "Reversed. Check it again.",
+          "translation": "已反向。请再检查一次。",
+          "needs_translation": false,
+          "max_length": 25,
+          "reverse_text": false
+        },
+        "dir_correct": {
+          "english": "Correct",
+          "translation": "正确",
+          "needs_translation": false,
+          "max_length": 7,
+          "reverse_text": false
+        },
+        "dir_wrong": {
+          "english": "Wrong",
+          "translation": "错误",
+          "needs_translation": false,
+          "max_length": 5,
+          "reverse_text": false
+        },
+        "dir_roll_title": {
+          "english": "Roll",
+          "translation": "横滚",
+          "needs_translation": false,
+          "max_length": 4,
+          "reverse_text": false
+        },
+        "dir_roll": {
+          "english": "Push the roll stick right. The swash should tilt right.",
+          "translation": "向右推横滚摇杆。斜盘应向右倾斜。",
+          "needs_translation": false,
+          "max_length": 55,
+          "reverse_text": false
+        },
+        "dir_pitch_title": {
+          "english": "Pitch",
+          "translation": "俯仰",
+          "needs_translation": false,
+          "max_length": 5,
+          "reverse_text": false
+        },
+        "dir_pitch": {
+          "english": "Push the pitch stick forward. The swash should tilt forward.",
+          "translation": "向前推俯仰摇杆。斜盘应向前倾斜。",
+          "needs_translation": false,
+          "max_length": 60,
+          "reverse_text": false
+        },
+        "dir_coll_title": {
+          "english": "Collective",
+          "translation": "总距",
+          "needs_translation": false,
+          "max_length": 10,
+          "reverse_text": false
+        },
+        "dir_coll": {
+          "english": "Raise the collective stick. The whole swash should move up.",
+          "translation": "推高总距摇杆。整个斜盘应向上移动。",
+          "needs_translation": false,
+          "max_length": 59,
+          "reverse_text": false
+        },
+        "dir_done_title": {
+          "english": "Directions set",
+          "translation": "方向已设置",
+          "needs_translation": false,
+          "max_length": 14,
+          "reverse_text": false
+        },
+        "dir_done": {
+          "english": "Roll, pitch and collective move the right way.",
+          "translation": "横滚、俯仰和总距方向正确。",
+          "needs_translation": false,
+          "max_length": 46,
+          "reverse_text": false
+        },
+        "lvl_title": {
+          "english": "Level the swash",
+          "translation": "斜盘调平",
+          "needs_translation": false,
+          "max_length": 15,
+          "reverse_text": false
+        },
+        "lvl_intro": {
+          "english": "The swash is held at its centre. Trim it until it is level and the blades sit at zero pitch.",
+          "translation": "斜盘保持在中位。微调至水平且桨叶为零螺距。",
+          "needs_translation": false,
+          "max_length": 92,
+          "reverse_text": false
+        },
+        "lvl_trim": {
+          "english": "Trim",
+          "translation": "微调",
+          "needs_translation": false,
+          "max_length": 4,
+          "reverse_text": false
+        },
+        "lvl_value_fmt": {
+          "english": "%s",
+          "translation": "%s",
+          "needs_translation": false,
+          "max_length": 2,
+          "reverse_text": false
+        },
+        "lvl_reset": {
+          "english": "Reset",
+          "translation": "重置",
+          "needs_translation": false,
+          "max_length": 5,
+          "reverse_text": false
+        },
+        "lvl_roll_title": {
+          "english": "Roll trim",
+          "translation": "横滚微调",
+          "needs_translation": false,
+          "max_length": 9,
+          "reverse_text": false
+        },
+        "lvl_roll": {
+          "english": "Seen from behind, trim until the swash is level left to right.",
+          "translation": "从后方看，微调至斜盘左右水平。",
+          "needs_translation": false,
+          "max_length": 62,
+          "reverse_text": false
+        },
+        "lvl_pitch_title": {
+          "english": "Pitch trim",
+          "translation": "俯仰微调",
+          "needs_translation": false,
+          "max_length": 10,
+          "reverse_text": false
+        },
+        "lvl_pitch": {
+          "english": "Seen from the side, trim until the swash is level front to back.",
+          "translation": "从侧面看，微调至斜盘前后水平。",
+          "needs_translation": false,
+          "max_length": 64,
+          "reverse_text": false
+        },
+        "lvl_coll_title": {
+          "english": "Collective trim",
+          "translation": "总距微调",
+          "needs_translation": false,
+          "max_length": 15,
+          "reverse_text": false
+        },
+        "lvl_coll": {
+          "english": "Trim until the main blades are at zero pitch.",
+          "translation": "微调至主桨为零螺距。",
+          "needs_translation": false,
+          "max_length": 45,
+          "reverse_text": false
+        },
+        "lvl_done_title": {
+          "english": "Swash level",
+          "translation": "斜盘已水平",
+          "needs_translation": false,
+          "max_length": 11,
+          "reverse_text": false
+        },
+        "lvl_done": {
+          "english": "The swash is level at zero pitch.",
+          "translation": "斜盘水平且为零螺距。",
+          "needs_translation": false,
+          "max_length": 33,
+          "reverse_text": false
+        },
+        "pit_title": {
+          "english": "Blade pitch",
+          "translation": "桨叶螺距",
+          "needs_translation": false,
+          "max_length": 11,
+          "reverse_text": false
+        },
+        "pit_intro": {
+          "english": "You need a pitch gauge. The wizard holds the blades at a set pitch; you measure it and enter what you read.",
+          "translation": "需要螺距尺。向导将桨叶保持在设定螺距；测量后输入读数。",
+          "needs_translation": false,
+          "max_length": 107,
+          "reverse_text": false
+        },
+        "pit_coll_title": {
+          "english": "Collective",
+          "translation": "总距",
+          "needs_translation": false,
+          "max_length": 10,
+          "reverse_text": false
+        },
+        "pit_coll_text": {
+          "english": "The collective is held at 9 degrees. Measure the blade pitch, enter it, then Calibrate.",
+          "translation": "总距保持在9度。测量桨叶螺距并输入，然后校准。",
+          "needs_translation": false,
+          "max_length": 87,
+          "reverse_text": false
+        },
+        "pit_cyc_title": {
+          "english": "Cyclic",
+          "translation": "周期距",
+          "needs_translation": false,
+          "max_length": 6,
+          "reverse_text": false
+        },
+        "pit_cyc_text": {
+          "english": "Turn the blades to point left and right. Pitch is held at 9 degrees. Measure, enter it, then Calibrate.",
+          "translation": "将桨叶转到指向左右。螺距保持在9度。测量并输入，然后校准。",
+          "needs_translation": false,
+          "max_length": 103,
+          "reverse_text": false
+        },
+        "pit_fine_text": {
+          "english": "Fine adjust the rate until the gauge reads 9 degrees.",
+          "translation": "微调比率直到螺距尺读数为9度。",
+          "needs_translation": false,
+          "max_length": 53,
+          "reverse_text": false
+        },
+        "pit_measured": {
+          "english": "Measured",
+          "translation": "测量值",
+          "needs_translation": false,
+          "max_length": 8,
+          "reverse_text": false
+        },
+        "pit_rate": {
+          "english": "Rate",
+          "translation": "比率",
+          "needs_translation": false,
+          "max_length": 4,
+          "reverse_text": false
+        },
+        "pit_calibrate": {
+          "english": "Calibrate",
+          "translation": "校准",
+          "needs_translation": false,
+          "max_length": 9,
+          "reverse_text": false
+        },
+        "pit_calibrated": {
+          "english": "Calibrated. Measure again to check.",
+          "translation": "已校准。再次测量以确认。",
+          "needs_translation": false,
+          "max_length": 35,
+          "reverse_text": false
+        },
+        "pit_lim_cyc_title": {
+          "english": "Cyclic limit",
+          "translation": "周期距限制",
+          "needs_translation": false,
+          "max_length": 12,
+          "reverse_text": false
+        },
+        "pit_lim_coll_title": {
+          "english": "Collective limit",
+          "translation": "总距限制",
+          "needs_translation": false,
+          "max_length": 16,
+          "reverse_text": false
+        },
+        "pit_lim_total_title": {
+          "english": "Total limit",
+          "translation": "总限制",
+          "needs_translation": false,
+          "max_length": 11,
+          "reverse_text": false
+        },
+        "pit_lim_text": {
+          "english": "The most blade pitch the sticks can command.",
+          "translation": "摇杆可指令的最大桨叶螺距。",
+          "needs_translation": false,
+          "max_length": 44,
+          "reverse_text": false
+        },
+        "pit_lim_total_text": {
+          "english": "The most blade pitch cyclic and collective together may reach.",
+          "translation": "周期距与总距合计可达到的最大桨叶螺距。",
+          "needs_translation": false,
+          "max_length": 62,
+          "reverse_text": false
+        },
+        "pit_limit": {
+          "english": "Limit",
+          "translation": "限制",
+          "needs_translation": false,
+          "max_length": 5,
+          "reverse_text": false
+        },
+        "pit_suggest_fmt": {
+          "english": "Use %.0f",
+          "translation": "使用 %.0f",
+          "needs_translation": false,
+          "max_length": 8,
+          "reverse_text": false
+        },
+        "pit_done_title": {
+          "english": "Pitch set",
+          "translation": "螺距已设置",
+          "needs_translation": false,
+          "max_length": 9,
+          "reverse_text": false
+        },
+        "pit_done": {
+          "english": "Blade pitch is calibrated and limited.",
+          "translation": "桨叶螺距已校准并限制。",
+          "needs_translation": false,
+          "max_length": 38,
+          "reverse_text": false
+        },
+        "tal_title": {
+          "english": "Tail rotor",
+          "translation": "尾桨",
+          "needs_translation": false,
+          "max_length": 10,
+          "reverse_text": false
+        },
+        "tal_intro": {
+          "english": "Check the tail servo with the tail blades off: centre, direction, travel and end stops.",
+          "translation": "拆下尾桨叶后检查尾舵机：中位、方向、行程和末端限位。",
+          "needs_translation": false,
+          "max_length": 87,
+          "reverse_text": false
+        },
+        "tal_centre_title": {
+          "english": "Tail centre",
+          "translation": "尾桨中位",
+          "needs_translation": false,
+          "max_length": 11,
+          "reverse_text": false
+        },
+        "tal_centre": {
+          "english": "The tail is held at zero. Adjust until the tail blades have zero pitch.",
+          "translation": "尾桨保持在零位。调整至尾桨叶为零螺距。",
+          "needs_translation": false,
+          "max_length": 71,
+          "reverse_text": false
+        },
+        "tal_dir_title": {
+          "english": "Tail direction",
+          "translation": "尾桨方向",
+          "needs_translation": false,
+          "max_length": 14,
+          "reverse_text": false
+        },
+        "tal_dir": {
+          "english": "Push the yaw stick right. The tail blades should push the tail left, turning the nose right.",
+          "translation": "向右推偏航摇杆。尾桨叶应将尾部推向左，使机头向右转。",
+          "needs_translation": false,
+          "max_length": 92,
+          "reverse_text": false
+        },
+        "tal_cal_title": {
+          "english": "Tail calibration",
+          "translation": "尾桨校准",
+          "needs_translation": false,
+          "max_length": 16,
+          "reverse_text": false
+        },
+        "tal_cal": {
+          "english": "The tail is held at 22.5° each way. Measure the tail blade pitch and adjust until it reads 22.5°. No pitch gauge? Fold a square of paper corner to corner (45°): seen from the tail tip, the fold fits flush between the blades.",
+          "translation": "尾桨两侧各保持在 22.5°。 测量尾桨叶螺距 并调整至 22.5°。 没有螺距尺？ 将正方形纸 沿对角线对折（45°）： 从桨尖看去， 折痕应正好 贴合两片桨叶之间。",
+          "needs_translation": false,
+          "max_length": 224,
+          "reverse_text": false
+        },
+        "tal_lim_title": {
+          "english": "Tail end stops",
+          "translation": "尾桨末端限位",
+          "needs_translation": false,
+          "max_length": 14,
+          "reverse_text": false
+        },
+        "tal_lim_cw": {
+          "english": "The tail is held at full travel one way. Lower the limit until the slider stops short of binding.",
+          "translation": "尾桨保持在一侧满行程。降低限制，直到滑套在卡死前停止。",
+          "needs_translation": false,
+          "max_length": 97,
+          "reverse_text": false
+        },
+        "tal_lim_ccw": {
+          "english": "Now the other way. Lower the limit until the slider stops short of binding.",
+          "translation": "现在换另一侧。降低限制，直到滑套在卡死前停止。",
+          "needs_translation": false,
+          "max_length": 75,
+          "reverse_text": false
+        },
+        "tal_done_title": {
+          "english": "Tail done",
+          "translation": "尾桨已完成",
+          "needs_translation": false,
+          "max_length": 9,
+          "reverse_text": false
+        },
+        "tal_done": {
+          "english": "The tail rotor is set up.",
+          "translation": "尾桨已设置。",
+          "needs_translation": false,
+          "max_length": 25,
+          "reverse_text": false
+        },
+        "tal_trim": {
+          "english": "Centre trim",
+          "translation": "中位微调",
+          "needs_translation": false,
+          "max_length": 11,
+          "reverse_text": false
+        },
+        "tal_rate": {
+          "english": "Tail rate",
+          "translation": "尾桨比率",
+          "needs_translation": false,
+          "max_length": 9,
+          "reverse_text": false
+        },
+        "tal_side": {
+          "english": "Held side",
+          "translation": "保持侧",
+          "needs_translation": false,
+          "max_length": 9,
+          "reverse_text": false
+        },
+        "tal_cw": {
+          "english": "CW limit",
+          "translation": "CW限制",
+          "needs_translation": false,
+          "max_length": 8,
+          "reverse_text": false
+        },
+        "tal_ccw": {
+          "english": "CCW limit",
+          "translation": "CCW限制",
+          "needs_translation": false,
+          "max_length": 9,
+          "reverse_text": false
+        },
+        "tal_reverse": {
+          "english": "Wrong way",
+          "translation": "方向错误",
+          "needs_translation": false,
+          "max_length": 9,
+          "reverse_text": false
+        },
+        "tal_ok": {
+          "english": "Correct",
+          "translation": "正确",
+          "needs_translation": false,
+          "max_length": 7,
+          "reverse_text": false
+        },
+        "tal_other_side": {
+          "english": "Swap",
+          "translation": "切换",
+          "needs_translation": false,
+          "max_length": 4,
+          "reverse_text": false
+        },
+        "tal_motor_title": {
+          "english": "Tail motor",
+          "translation": "尾电机",
+          "needs_translation": false,
+          "max_length": 10,
+          "reverse_text": false
+        },
+        "tal_motor": {
+          "english": "Take the tail blades off. Spin the tail motor at low power to check it runs.",
+          "translation": "拆下尾桨叶。以低功率转动尾电机，检查其运转。",
+          "needs_translation": false,
+          "max_length": 76,
+          "reverse_text": false
+        },
+        "tal_no_motor": {
+          "english": "No tail motor output (motor 2) on this flight controller.",
+          "translation": "此飞控无尾电机输出（电机 2）。",
+          "needs_translation": false,
+          "max_length": 57,
+          "reverse_text": false
+        },
+        "tal_power": {
+          "english": "Test power",
+          "translation": "测试功率",
+          "needs_translation": false,
+          "max_length": 10,
+          "reverse_text": false
+        },
+        "tal_output": {
+          "english": "Tail motor",
+          "translation": "尾电机",
+          "needs_translation": false,
+          "max_length": 10,
+          "reverse_text": false
+        },
+        "tal_spin": {
+          "english": "Spin",
+          "translation": "转动",
+          "needs_translation": false,
+          "max_length": 4,
+          "reverse_text": false
+        },
+        "tal_spin_rev": {
+          "english": "Reverse",
+          "translation": "反转",
+          "needs_translation": false,
+          "max_length": 7,
+          "reverse_text": false
+        },
+        "tal_stop": {
+          "english": "Stop",
+          "translation": "停止",
+          "needs_translation": false,
+          "max_length": 4,
+          "reverse_text": false
+        },
+        "tal_running": {
+          "english": "Running",
+          "translation": "运行中",
+          "needs_translation": false,
+          "max_length": 7,
+          "reverse_text": false
+        },
+        "tal_stopped": {
+          "english": "Stopped",
+          "translation": "已停止",
+          "needs_translation": false,
+          "max_length": 7,
+          "reverse_text": false
+        },
+        "tal_idle_title": {
+          "english": "Tail idle",
+          "translation": "尾桨怠速",
+          "needs_translation": false,
+          "max_length": 9,
+          "reverse_text": false
+        },
+        "tal_idle": {
+          "english": "The power the tail motor keeps at zero yaw. Blades still off.",
+          "translation": "偏航为零时尾电机保持的功率。桨叶仍需拆下。",
+          "needs_translation": false,
+          "max_length": 61,
+          "reverse_text": false
+        },
+        "tal_idle_value": {
+          "english": "Tail idle",
+          "translation": "尾桨怠速",
+          "needs_translation": false,
+          "max_length": 9,
+          "reverse_text": false
+        },
+        "tal_use_idle": {
+          "english": "Use test",
+          "translation": "用测试值",
+          "needs_translation": false,
+          "max_length": 8,
+          "reverse_text": false
+        },
+        "tal_run_idle": {
+          "english": "Run idle",
+          "translation": "运行怠速",
+          "needs_translation": false,
+          "max_length": 8,
+          "reverse_text": false
+        },
+        "gyr_title": {
+          "english": "Gyro check",
+          "translation": "陀螺仪检查",
+          "needs_translation": false,
+          "max_length": 10,
+          "reverse_text": false
+        },
+        "gyr_intro": {
+          "english": "Blades off, disarmed. Move the helicopter by hand: the swash should push back against each movement.",
+          "translation": "拆下桨叶，未解锁。用手移动直升机：斜盘应对抗每次移动。",
+          "needs_translation": false,
+          "max_length": 100,
+          "reverse_text": false
+        },
+        "gyr_roll_title": {
+          "english": "Roll",
+          "translation": "横滚",
+          "needs_translation": false,
+          "max_length": 4,
+          "reverse_text": false
+        },
+        "gyr_roll": {
+          "english": "Roll the helicopter quickly to the right. The swash should tilt left, against the movement.",
+          "translation": "将直升机快速向右滚转。斜盘应向左倾斜，与移动相反。",
+          "needs_translation": false,
+          "max_length": 91,
+          "reverse_text": false
+        },
+        "gyr_pitch_title": {
+          "english": "Pitch",
+          "translation": "俯仰",
+          "needs_translation": false,
+          "max_length": 5,
+          "reverse_text": false
+        },
+        "gyr_pitch": {
+          "english": "Tip the nose down quickly. The swash should tilt back, against the movement.",
+          "translation": "将机头快速向下压。斜盘应向后倾斜，与移动相反。",
+          "needs_translation": false,
+          "max_length": 76,
+          "reverse_text": false
+        },
+        "gyr_yaw_title": {
+          "english": "Yaw",
+          "translation": "偏航",
+          "needs_translation": false,
+          "max_length": 3,
+          "reverse_text": false
+        },
+        "gyr_yaw": {
+          "english": "Turn the nose quickly to the right. The tail blades should push the nose back to the left.",
+          "translation": "将机头快速向右转。尾桨叶应将机头推回左边。",
+          "needs_translation": false,
+          "max_length": 90,
+          "reverse_text": false
+        },
+        "gyr_against": {
+          "english": "Against",
+          "translation": "相反",
+          "needs_translation": false,
+          "max_length": 7,
+          "reverse_text": false
+        },
+        "gyr_with": {
+          "english": "With",
+          "translation": "相同",
+          "needs_translation": false,
+          "max_length": 4,
+          "reverse_text": false
+        },
+        "gyr_wrong": {
+          "english": "The gyro corrects the wrong way: the board orientation is wrong. Fix it in Board orientation; do not reverse servos for it.",
+          "translation": "陀螺仪修正方向错误：飞控方向不对。请在飞控方向中修正；不要为此反向舵机。",
+          "needs_translation": false,
+          "max_length": 123,
+          "reverse_text": false
+        },
+        "gyr_go_sensors": {
+          "english": "Orientation",
+          "translation": "方向",
+          "needs_translation": false,
+          "max_length": 11,
+          "reverse_text": false
+        },
+        "gyr_done_title": {
+          "english": "Gyro checked",
+          "translation": "陀螺仪已检查",
+          "needs_translation": false,
+          "max_length": 12,
+          "reverse_text": false
+        },
+        "gyr_done": {
+          "english": "The gyro corrects every axis against the movement.",
+          "translation": "陀螺仪在每个轴上都与移动方向相反修正。",
+          "needs_translation": false,
+          "max_length": 50,
+          "reverse_text": false
+        },
+        "fin_title": {
+          "english": "Finish",
+          "translation": "完成",
+          "needs_translation": false,
+          "max_length": 6,
+          "reverse_text": false
+        },
+        "fin_intro": {
+          "english": "What the wizard set:",
+          "translation": "向导设置的内容：",
+          "needs_translation": false,
+          "max_length": 20,
+          "reverse_text": false
+        },
+        "fin_before": {
+          "english": "Fit the blades and do a careful first hover. Modes, rates and governor are on their own pages.",
+          "translation": "装上桨叶，谨慎进行首次悬停。模式、速率和调速器在各自页面中设置。",
+          "needs_translation": false,
+          "max_length": 94,
+          "reverse_text": false
+        },
+        "fin_swash": {
+          "english": "Swash",
+          "translation": "斜盘",
+          "needs_translation": false,
+          "max_length": 5,
+          "reverse_text": false
+        },
+        "fin_tail": {
+          "english": "Tail",
+          "translation": "尾桨",
+          "needs_translation": false,
+          "max_length": 4,
+          "reverse_text": false
+        },
+        "fin_pitch": {
+          "english": "Pitch limits",
+          "translation": "螺距限制",
+          "needs_translation": false,
+          "max_length": 12,
+          "reverse_text": false
+        },
+        "fin_pitch_fmt": {
+          "english": "Coll. %s°, cyc. %s°",
+          "translation": "总距 %s°，周期距 %s°",
+          "needs_translation": false,
+          "max_length": 19,
+          "reverse_text": false
+        },
+        "fin_esc": {
+          "english": "ESC protocol",
+          "translation": "ESC协议",
+          "needs_translation": false,
+          "max_length": 12,
+          "reverse_text": false
+        },
+        "fin_cw": {
+          "english": "CW",
+          "translation": "CW",
+          "needs_translation": false,
+          "max_length": 2,
+          "reverse_text": false
+        },
+        "fin_ccw": {
+          "english": "CCW",
+          "translation": "CCW",
+          "needs_translation": false,
+          "max_length": 3,
+          "reverse_text": false
+        },
+        "fin_none": {
+          "english": "None",
+          "translation": "无",
+          "needs_translation": false,
+          "max_length": 4,
+          "reverse_text": false
+        },
+        "fin_tail_variable": {
+          "english": "Servo",
+          "translation": "舵机",
+          "needs_translation": false,
+          "max_length": 5,
+          "reverse_text": false
+        },
+        "fin_tail_motor": {
+          "english": "Motor",
+          "translation": "电机",
+          "needs_translation": false,
+          "max_length": 5,
+          "reverse_text": false
+        },
+        "fin_tail_bidir": {
+          "english": "Motor, bidirectional",
+          "translation": "电机，双向",
+          "needs_translation": false,
+          "max_length": 20,
+          "reverse_text": false
+        },
+        "rcv_presets": {
+          "english": "Presets",
+          "translation": "预设",
+          "needs_translation": false,
+          "max_length": 7,
+          "reverse_text": false
+        },
+        "rcv_presets_text": {
+          "english": "Pick your radio's channel order.",
+          "translation": "选择遥控器的通道顺序。",
+          "needs_translation": false,
+          "max_length": 32,
+          "reverse_text": false
+        },
+        "rcv_ch_fmt": {
+          "english": "CH%d",
+          "translation": "CH%d",
+          "needs_translation": false,
+          "max_length": 4,
+          "reverse_text": false
+        },
+        "rcv_prepare_title": {
+          "english": "Before this step",
+          "translation": "开始此步骤前",
+          "needs_translation": false,
+          "max_length": 16
+        },
+        "rcv_prepare_text": {
+          "english": "This step uses the settings already in the FC. Confirm the physical prerequisites before continuing.",
+          "translation": "此步骤使用飞控中已有的设置。继续前请确认模型上的实际准备工作。",
+          "needs_translation": false,
+          "max_length": 100
+        },
+        "rcv_protocol": {
+          "english": "Protocol",
+          "translation": "协议",
+          "needs_translation": false,
+          "max_length": 8
+        },
+        "rcv_protocol_title": {
+          "english": "Choose the protocol",
+          "translation": "选择协议",
+          "needs_translation": false,
+          "max_length": 19
+        },
+        "rcv_link_warning": {
+          "english": "Experienced pilots only: a setting that cuts the receiver link ends this setup.",
+          "translation": "仅限有经验的飞手：会断开接收机连接的设置将结束本次设置。",
+          "needs_translation": false,
+          "max_length": 79
+        },
+        "rcv_link_text": {
+          "english": "The protocol must match your receiver, or the radio link breaks.",
+          "translation": "协议必须与接收机匹配，否则无线连接会中断。",
+          "needs_translation": false,
+          "max_length": 64
+        },
+        "rcv_standard_order": {
+          "english": "Standard channel order",
+          "translation": "标准通道顺序",
+          "needs_translation": false,
+          "max_length": 22
+        },
+        "rcv_dir_forward": {
+          "english": "Forward",
+          "translation": "向前",
+          "needs_translation": false,
+          "max_length": 7
+        },
+        "rcv_dir_up": {
+          "english": "Up",
+          "translation": "向上",
+          "needs_translation": false,
+          "max_length": 2
+        },
+        "rcv_dir_back": {
+          "english": "Back",
+          "translation": "向后",
+          "needs_translation": false,
+          "max_length": 4
+        },
+        "rcv_dir_down": {
+          "english": "Down",
+          "translation": "向下",
+          "needs_translation": false,
+          "max_length": 4
+        },
+        "rcv_fc_range": {
+          "english": "FC range",
+          "translation": "FC 范围",
+          "needs_translation": false,
+          "max_length": 8
+        },
+        "rcv_measured": {
+          "english": "Measured",
+          "translation": "已测量",
+          "needs_translation": false,
+          "max_length": 8
+        }
+      },
+      "wizards": {
+        "name": {
+          "english": "Wizards",
+          "translation": "向导",
+          "needs_translation": false,
+          "max_length": 7,
+          "reverse_text": false
+        },
+        "model_setup": {
+          "english": "Model setup",
+          "translation": "模型设置",
+          "needs_translation": false,
+          "max_length": 11,
+          "reverse_text": false
         }
       }
     },
@@ -10402,13 +12484,6 @@
         "needs_translation": false,
         "reverse_text": false,
         "max_length": 9
-      },
-      "battery_remaining": {
-        "english": "Battery Remaining",
-        "translation": "剩余电量",
-        "needs_translation": false,
-        "max_length": 17,
-        "reverse_text": false
       }
     },
     "governor": {
@@ -10467,78 +12542,6 @@
         "needs_translation": false,
         "reverse_text": false,
         "max_length": 7
-      }
-    },
-    "activelook": {
-      "alert_battery_empty": {
-        "english": "BATTERY EMPTY",
-        "translation": "电池电量耗尽",
-        "needs_translation": false,
-        "max_length": 13,
-        "reverse_text": false
-      },
-      "alert_fuel_low": {
-        "english": "LOW FUEL",
-        "translation": "燃油不足",
-        "needs_translation": false,
-        "max_length": 8,
-        "reverse_text": false
-      },
-      "alert_esc_temp_high": {
-        "english": "ESC TEMP HIGH",
-        "translation": "电调温度过高",
-        "needs_translation": false,
-        "max_length": 13,
-        "reverse_text": false
-      },
-      "alert_rf_link_low": {
-        "english": "RF LINK LOW",
-        "translation": "射频链路弱",
-        "needs_translation": false,
-        "max_length": 11,
-        "reverse_text": false
-      },
-      "alert_warning": {
-        "english": "WARNING!",
-        "translation": "警告！",
-        "needs_translation": false,
-        "max_length": 8,
-        "reverse_text": false
-      },
-      "alert_headspeed_lost": {
-        "english": "HEADSPEED LOST",
-        "translation": "旋翼转速丢失",
-        "needs_translation": false,
-        "max_length": 14,
-        "reverse_text": false
-      },
-      "alert_governor": {
-        "english": "GOVERNOR",
-        "translation": "调速器",
-        "needs_translation": false,
-        "max_length": 8,
-        "reverse_text": false
-      },
-      "alert_autorotation": {
-        "english": "AUTOROTATION",
-        "translation": "自旋降落",
-        "needs_translation": false,
-        "max_length": 12,
-        "reverse_text": false
-      },
-      "alert_bailout": {
-        "english": "BAILOUT",
-        "translation": "快速恢复",
-        "needs_translation": false,
-        "max_length": 7,
-        "reverse_text": false
-      },
-      "alert_limit": {
-        "english": "LIMIT",
-        "translation": "阈值",
-        "needs_translation": false,
-        "max_length": 5,
-        "reverse_text": false
       }
     }
   }

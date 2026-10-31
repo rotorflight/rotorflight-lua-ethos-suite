@@ -581,33 +581,6 @@ end
 -- (battery_picker.lua DIM_ALPHA).
 local OVERLAY_DIM = lcd.RGB(0, 0, 0, 0.6)
 
--- Armed warning (#2352): a red bar across the top edge with an "Armed" label hanging
--- from its centre, over whatever theme is on screen, so a live model is obvious on
--- every page and theme. Drawn only for a confirmed armed state (widget.isArmed == true),
--- the same test as the write guards, and only while Settings > General > "Armed
--- warning" is on (default on). It is an overlay: it does not move any theme layout.
-local ARMED_RED = lcd.RGB(214, 40, 40)
-local ARMED_WHITE = lcd.RGB(255, 255, 255)
-local ARMED_BAR = 4
-
-local function drawArmedWarning(widget, w, h)
-  if widget.isArmed ~= true then return end
-  if not settingsStore.armedWarningEnabled(widget.settingsSnapshot) then return end
-  lcd.color(ARMED_RED)
-  lcd.drawFilledRectangle(0, 0, w, ARMED_BAR)
-
-  local label = "@i18n(widgets.dashboard.info_armed)@"
-  lcd.font(FONT_S)
-  local tw, th = lcd.getTextSize(label)
-  -- Hangs from the centre of the bar.
-  local badgeW, badgeH = tw + 12, th + 6
-  local bx = math.floor((w - badgeW) / 2)
-  lcd.color(ARMED_RED)
-  lcd.drawFilledRectangle(bx, ARMED_BAR, badgeW, badgeH)
-  lcd.color(ARMED_WHITE)
-  lcd.drawText(bx + 6, ARMED_BAR + 3, label)
-end
-
 local function dimDashboard(w, h)
   lcd.color(OVERLAY_DIM)
   lcd.drawFilledRectangle(0, 0, w, h)
@@ -1969,8 +1942,7 @@ local function paint(widget)
   if widget.batteryPicker then
     -- The picker is modal: nothing is drawn over it. The footer banner would
     -- cover the bottom row of pack cells (CodeRabbit on #2519), so it waits
-    -- until the picker closes. The armed bar stays under the picker, as before.
-    drawArmedWarning(widget, w, h)
+    -- until the picker closes.
     drawBatteryPicker(widget, w, h)
     return
   end
@@ -1990,8 +1962,6 @@ local function paint(widget)
       setInfoPanelVisible(widget, false)
     end
   end
-  -- Last, so the armed bar stays on top of the info panel and the toolbar dim.
-  drawArmedWarning(widget, w, h)
   drawFooterAlert(widget, w, h)
 end
 
@@ -2330,7 +2300,6 @@ local function wakeup(widget)
   end
 end
 
--- No widget properties: the armed warning is set in Settings > General.
 local function configure(widget)
 end
 

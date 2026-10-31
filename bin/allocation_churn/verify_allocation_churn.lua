@@ -346,8 +346,6 @@ package.loaded["rfsuite.lib.require"] = function(name)
   if name == "lib/flight_stats.lua" then return assert(loadfile(ROOT .. "/src/rfsuite/lib/flight_stats.lua"))() end
   -- The live sensor values, shared with the session's flight recording (#2344).
   if name == "lib/live_sensors.lua" then return assert(loadfile(ROOT .. "/src/rfsuite/lib/live_sensors.lua"))() end
-  -- The arming-disable flag names the dashboard shares with the FBL Status page.
-  if name == "lib/arming_flags.lua" then return assert(loadfile(ROOT .. "/src/rfsuite/lib/arming_flags.lua"))() end
   error("unexpected dependency: " .. tostring(name))
 end
 lcd = { RGB = function(r, g, b, a) return r end }

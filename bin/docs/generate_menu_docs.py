@@ -174,6 +174,8 @@ SCRIPT_TO_DOC_PATH = {
     "app/pages/setup_governor_filters.lua": "setup/governor/filters.md",
     "app/pages/setup_governor_curves.lua": "setup/governor/curves.md",
 
+    # Configuration -> Wizards
+    "app/pages/setup_wizard.lua": "wizards/setup_wizard.md",
     # System -> Tools
     "app/pages/copy_profiles.lua": "tools/copy_profiles.md",
     "app/pages/profile_select.lua": "tools/profile_select.md",

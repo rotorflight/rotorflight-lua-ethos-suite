@@ -22,8 +22,6 @@ local DEFAULTS = {
     log_sample_interval = 1,
     txbatt_type = 0,
     temperature_unit = 0,
-    -- Red "Armed" bar across the top of the dashboard while armed (#2352).
-    armed_warning = true,
     -- Default true (always confirm) to match this rewrite's own prior
     -- unconditional behavior in app/page_runtime.lua's confirmSave()/
     -- confirmReload() -- adding these as real toggles must not silently
@@ -268,7 +266,6 @@ local function normalize(settings)
   settings.general.log_sample_interval = clampNumber(settings.general.log_sample_interval, DEFAULTS.general.log_sample_interval, 1, 10)
   settings.general.txbatt_type = clampNumber(settings.general.txbatt_type, DEFAULTS.general.txbatt_type, 0, 2)
   settings.general.temperature_unit = clampNumber(settings.general.temperature_unit, DEFAULTS.general.temperature_unit, 0, 1)
-  settings.general.armed_warning = coerceBool(settings.general.armed_warning, DEFAULTS.general.armed_warning)
   settings.general.save_confirm = coerceBool(settings.general.save_confirm, DEFAULTS.general.save_confirm)
   settings.general.reload_confirm = coerceBool(settings.general.reload_confirm, DEFAULTS.general.reload_confirm)
   settings.general.battery_profile_startup = coerceBool(settings.general.battery_profile_startup, DEFAULTS.general.battery_profile_startup)
@@ -421,11 +418,6 @@ end
 function settings_store.reloadConfirmEnabled(settings)
   local general = type(settings) == "table" and settings.general or nil
   return coerceBool(fieldValue(general, "reload_confirm"), DEFAULTS.general.reload_confirm) == true
-end
-
-function settings_store.armedWarningEnabled(settings)
-  local general = type(settings) == "table" and settings.general or nil
-  return coerceBool(fieldValue(general, "armed_warning"), DEFAULTS.general.armed_warning) == true
 end
 
 function settings_store.batteryProfileStartupEnabled(settings)

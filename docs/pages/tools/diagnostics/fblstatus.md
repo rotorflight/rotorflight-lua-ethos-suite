@@ -40,13 +40,7 @@ The firmware adds new reasons just before *Arm Switch*, which is always the last
 flag, so the top flags mean different things on different firmware. The page
 places them from the number of flags the flight controller reports: *Override*
 (a servo or mixer override is on) on MSP API 12.9 and later, and *Arm Switch*
-on the last flag whatever its number. Firmware that reports 29 flags adds two
-more before *Arm Switch*:
-
-- *No Filter* (bit 26): neither the RPM filter nor the dynamic notch is
-  filtering the gyro (rotorflight-firmware#510).
-- *Backup RX* (bit 27): a backup RX input is configured and has not linked yet
-  (rotorflight-firmware#490).
+on the last flag whatever its number.
 
 *Motor Protocol* also shows when the motor outputs could not start, or when the
 tail is motorised but motor 2 has no pin (see

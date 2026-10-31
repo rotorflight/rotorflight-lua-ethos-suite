@@ -330,36 +330,6 @@ do
 end
 
 --------------------------------------------------------------------
--- 8. No frame over the menu while armed
---------------------------------------------------------------------
-
--- The armed state is carried by the locked tiles alone. A menu screen clears
--- the tool's paint handler instead of installing one, so nothing (no red frame,
--- no badge) is drawn over the menu, armed or not. The sentinel tells "cleared"
--- apart from "never called".
-do
-  local UNSET = {}
-  local paintHandler, paintCalls = UNSET, 0
-  local function setPaintHandler(h) paintHandler = h; paintCalls = paintCalls + 1 end
-
-  armed = true
-  reset()
-  menuContainer.openRoot(nav, twoTiles(),
-    function() end, function(h) wakeupHandler = h end,
-    setPaintHandler, function() end, {}, taskGuard, armedState)
-  check("armed: the menu sets the paint handler", paintCalls >= 1)
-  eq("armed: the menu installs no paint handler (no frame)", paintHandler, nil)
-
-  armed = false
-  paintHandler, paintCalls = UNSET, 0
-  reset()
-  menuContainer.openRoot(nav, twoTiles(),
-    function() end, function(h) wakeupHandler = h end,
-    setPaintHandler, function() end, {}, taskGuard, armedState)
-  eq("disarmed: the menu installs no paint handler", paintHandler, nil)
-end
-
---------------------------------------------------------------------
 -- Result
 --------------------------------------------------------------------
 

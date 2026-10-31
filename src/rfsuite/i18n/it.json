@@ -4244,20 +4244,6 @@
           "reverse_text": false,
           "translation": "Int. Armo"
         },
-        "arming_disable_flag_26": {
-          "english": "No Filter",
-          "max_length": 10,
-          "needs_translation": true,
-          "reverse_text": false,
-          "translation": "No Filter"
-        },
-        "arming_disable_flag_27": {
-          "english": "Backup RX",
-          "max_length": 10,
-          "needs_translation": true,
-          "reverse_text": false,
-          "translation": "Backup RX"
-        },
         "arming_disable_flag_3": {
           "english": "Bad RX Recovery",
           "max_length": 15,
@@ -7168,13 +7154,6 @@
           "needs_translation": true,
           "translation": "Vibrate"
         },
-        "armed_warning": {
-          "english": "Dashboard armed warning",
-          "max_length": 28,
-          "needs_translation": false,
-          "reverse_text": false,
-          "translation": "Avviso Armed pannello"
-        },
         "arming_flags": {
           "english": "Arming flags",
           "max_length": 12,
@@ -7918,6 +7897,2995 @@
           "translation": "Hold time"
         }
       },
+      "setup_wizard": {
+        "armed": {
+          "english": "Armed: servos can't be moved.",
+          "max_length": 37,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Armato: i servi non possono muoversi."
+        },
+        "art_front": {
+          "english": "Front",
+          "max_length": 7,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Davanti"
+        },
+        "art_side": {
+          "english": "Side view",
+          "max_length": 14,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Vista laterale"
+        },
+        "btn_again": {
+          "english": "Again",
+          "max_length": 6,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Ripeti"
+        },
+        "btn_next": {
+          "english": "Next",
+          "max_length": 6,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Avanti"
+        },
+        "btn_no": {
+          "english": "No",
+          "max_length": 2,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "No"
+        },
+        "btn_save_restart": {
+          "english": "Save and restart",
+          "max_length": 16,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Salva e riavvia"
+        },
+        "btn_start": {
+          "english": "Start",
+          "max_length": 5,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Avvia"
+        },
+        "btn_yes": {
+          "english": "Yes",
+          "max_length": 3,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Sì"
+        },
+        "con_blades": {
+          "english": "Blades stay off, and keep clear of the motor.",
+          "max_length": 45,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Pale ancora tolte, stai lontano dal motore."
+        },
+        "con_checking": {
+          "english": "Checking",
+          "max_length": 8,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Verifica"
+        },
+        "con_main_motor": {
+          "english": "Main motor",
+          "max_length": 17,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Motore principale"
+        },
+        "con_missing": {
+          "english": "Missing",
+          "max_length": 8,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Mancante"
+        },
+        "con_ok": {
+          "english": "OK",
+          "max_length": 2,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "OK"
+        },
+        "con_plug": {
+          "english": "Plug the servos in now and power them.",
+          "max_length": 38,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Collega ora i servi e alimentali."
+        },
+        "con_reboot": {
+          "english": "Keep the servos unplugged. Save and restart now, so the new outputs take effect before anything moves.",
+          "max_length": 104,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Tieni i servi scollegati. Salva e riavvia ora, così le nuove uscite valgono prima che qualcosa si muova."
+        },
+        "con_servo_missing": {
+          "english": "Some servos are missing: check the outputs and the swash type.",
+          "max_length": 62,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Mancano alcuni servi: controlla le uscite e il tipo di piatto."
+        },
+        "con_tail_motor": {
+          "english": "Tail motor",
+          "max_length": 11,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Motore coda"
+        },
+        "con_title": {
+          "english": "Connect the servos",
+          "max_length": 18,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Collega i servi"
+        },
+        "dir_coll": {
+          "english": "Raise the collective stick. The whole swash should move up.",
+          "max_length": 59,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Alza lo stick del collettivo. Tutto il piatto deve salire."
+        },
+        "dir_coll_title": {
+          "english": "Collective",
+          "max_length": 10,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Collettivo"
+        },
+        "dir_correct": {
+          "english": "Correct",
+          "max_length": 7,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Giusto"
+        },
+        "dir_done": {
+          "english": "Roll, pitch and collective move the right way.",
+          "max_length": 53,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Roll, pitch e collettivo si muovono nel verso giusto."
+        },
+        "dir_done_title": {
+          "english": "Directions set",
+          "max_length": 15,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Direzioni fatte"
+        },
+        "dir_intro": {
+          "english": "The sticks now drive the swash directly, without the gyro. Move each stick as asked and watch the swash.",
+          "max_length": 115,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Ora gli stick muovono il piatto direttamente, senza giroscopio. Muovi ogni stick come indicato e osserva il piatto."
+        },
+        "dir_pitch": {
+          "english": "Push the pitch stick forward. The swash should tilt forward.",
+          "max_length": 73,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Spingi lo stick del pitch in avanti. Il piatto deve inclinarsi in avanti."
+        },
+        "dir_pitch_title": {
+          "english": "Pitch",
+          "max_length": 5,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Pitch"
+        },
+        "dir_q": {
+          "english": "Does the swash move as shown?",
+          "max_length": 33,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Il piatto si muove come mostrato?"
+        },
+        "dir_reversed": {
+          "english": "Reversed. Check it again.",
+          "max_length": 29,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Invertito. Verifica di nuovo."
+        },
+        "dir_roll": {
+          "english": "Push the roll stick right. The swash should tilt right.",
+          "max_length": 70,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Spingi lo stick del roll a destra. Il piatto deve inclinarsi a destra."
+        },
+        "dir_roll_title": {
+          "english": "Roll",
+          "max_length": 4,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Roll"
+        },
+        "dir_save_next": {
+          "english": "Save and continue",
+          "max_length": 17,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Salva e continua"
+        },
+        "dir_title": {
+          "english": "Control directions",
+          "max_length": 18,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Direzione comandi"
+        },
+        "dir_wrong": {
+          "english": "Wrong",
+          "max_length": 9,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Sbagliato"
+        },
+        "disconnected": {
+          "english": "No link to the flight controller.",
+          "max_length": 42,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Nessun collegamento col flight controller."
+        },
+        "fin_before": {
+          "english": "Fit the blades and do a careful first hover. Modes, rates and governor are on their own pages.",
+          "max_length": 98,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Monta le pale e fai un primo hovering con prudenza. Modi, rate e governatore hanno le loro pagine."
+        },
+        "fin_button": {
+          "english": "Save and finish",
+          "max_length": 15,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Salva e termina"
+        },
+        "fin_ccw": {
+          "english": "CCW",
+          "max_length": 10,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Antiorario"
+        },
+        "fin_cw": {
+          "english": "CW",
+          "max_length": 6,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Orario"
+        },
+        "fin_esc": {
+          "english": "ESC protocol",
+          "max_length": 14,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Protocollo ESC"
+        },
+        "fin_intro": {
+          "english": "What the wizard set:",
+          "max_length": 31,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Cosa ha impostato la procedura:"
+        },
+        "fin_none": {
+          "english": "None",
+          "max_length": 7,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Nessuno"
+        },
+        "fin_pitch": {
+          "english": "Pitch limits",
+          "max_length": 12,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Limiti passo"
+        },
+        "fin_pitch_fmt": {
+          "english": "Coll. %s°, cyc. %s°",
+          "max_length": 19,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Coll. %s°, cic. %s°"
+        },
+        "fin_swash": {
+          "english": "Swash",
+          "max_length": 6,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Piatto"
+        },
+        "fin_tail": {
+          "english": "Tail",
+          "max_length": 4,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Coda"
+        },
+        "fin_tail_bidir": {
+          "english": "Motor, bidirectional",
+          "max_length": 21,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Motore, bidirezionale"
+        },
+        "fin_tail_motor": {
+          "english": "Motor",
+          "max_length": 6,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Motore"
+        },
+        "fin_tail_variable": {
+          "english": "Servo",
+          "max_length": 5,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Servo"
+        },
+        "fin_title": {
+          "english": "Finish",
+          "max_length": 6,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Fine"
+        },
+        "go_swash": {
+          "english": "Swashplate",
+          "max_length": 10,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Piatto"
+        },
+        "gov_intro": {
+          "english": "How the flight controller drives the motor. Pick the governor mode; the throttle type is for electric and nitro.",
+          "max_length": 112,
+          "needs_translation": false,
+          "translation": "Come il flight controller pilota il motore. Scegli la modalità del governor; il tipo di gas vale per elettrico e nitro."
+        },
+        "gov_prepare_text": {
+          "english": "Keep the servos unplugged and the blades off. The governor is set here; it runs once the model is connected.",
+          "max_length": 108,
+          "needs_translation": false,
+          "translation": "Lascia i servi scollegati e rimuovi le pale. Il governor si imposta qui; funziona dopo il collegamento del modello."
+        },
+        "gov_profile_fmt": {
+          "english": "Profile %d",
+          "max_length": 10,
+          "needs_translation": false,
+          "translation": "Profilo %d"
+        },
+        "gov_row_mode": {
+          "english": "Governor mode",
+          "max_length": 13,
+          "needs_translation": false,
+          "translation": "Modalità governor"
+        },
+        "gov_row_throttle": {
+          "english": "Throttle type",
+          "max_length": 13,
+          "needs_translation": false,
+          "translation": "Tipo di gas"
+        },
+        "gov_rpm_next": {
+          "english": "A governor needs an RPM signal: the next step sets it.",
+          "max_length": 54,
+          "needs_translation": false,
+          "translation": "Un governor richiede un segnale RPM: il passo successivo lo imposta."
+        },
+        "gov_rpm_unit": {
+          "english": "rpm",
+          "max_length": 3,
+          "needs_translation": false,
+          "translation": "giri/min"
+        },
+        "gov_speed_text": {
+          "english": "The headspeed of each PID profile, as the flight controller holds it. Set it for the profiles the profile switch uses.",
+          "max_length": 118,
+          "needs_translation": false,
+          "translation": "Il regime di ogni profilo PID, come lo mantiene il flight controller. Impostalo per i profili usati dall'interruttore dei profili."
+        },
+        "gov_speed_title": {
+          "english": "Headspeed",
+          "max_length": 9,
+          "needs_translation": false,
+          "translation": "Regime"
+        },
+        "gyr_against": {
+          "english": "Against",
+          "max_length": 7,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Contro"
+        },
+        "gyr_done": {
+          "english": "The gyro corrects every axis against the movement.",
+          "max_length": 53,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Il giroscopio corregge ogni asse contro il movimento."
+        },
+        "gyr_done_title": {
+          "english": "Gyro checked",
+          "max_length": 15,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Gyro verificato"
+        },
+        "gyr_go_sensors": {
+          "english": "Orientation",
+          "max_length": 12,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Orientamento"
+        },
+        "gyr_intro": {
+          "english": "Blades off, disarmed. Move the helicopter by hand: the swash should push back against each movement.",
+          "max_length": 100,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Pale tolte, disarmato. Muovi l'elicottero a mano: il piatto deve opporsi a ogni movimento."
+        },
+        "gyr_pitch": {
+          "english": "Tip the nose down quickly. The swash should tilt back, against the movement.",
+          "max_length": 85,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Abbassa rapidamente il muso. Il piatto deve inclinarsi indietro, contro il movimento."
+        },
+        "gyr_pitch_title": {
+          "english": "Pitch",
+          "max_length": 5,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Pitch"
+        },
+        "gyr_roll": {
+          "english": "Roll the helicopter quickly to the right. The swash should tilt left, against the movement.",
+          "max_length": 101,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Inclina rapidamente l'elicottero a destra. Il piatto deve inclinarsi a sinistra, contro il movimento."
+        },
+        "gyr_roll_title": {
+          "english": "Roll",
+          "max_length": 4,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Roll"
+        },
+        "gyr_title": {
+          "english": "Gyro check",
+          "max_length": 13,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Verifica gyro"
+        },
+        "gyr_with": {
+          "english": "With",
+          "max_length": 4,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Con"
+        },
+        "gyr_wrong": {
+          "english": "The gyro corrects the wrong way: the board orientation is wrong. Fix it in Board orientation; do not reverse servos for it.",
+          "max_length": 143,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Il giroscopio corregge al contrario: l'orientamento della scheda è errato. Correggilo in Orientamento scheda; non invertire i servi per questo."
+        },
+        "gyr_yaw": {
+          "english": "Turn the nose quickly to the right. The tail blades should push the nose back to the left.",
+          "max_length": 90,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Gira rapidamente il muso a destra. Le pale di coda devono riportare il muso a sinistra."
+        },
+        "gyr_yaw_title": {
+          "english": "Yaw",
+          "max_length": 9,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Imbardata"
+        },
+        "leave_body": {
+          "english": "Save the wizard's changes to the flight controller, or discard them?",
+          "max_length": 72,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Salvare le modifiche della procedura nel flight controller, o scartarle?"
+        },
+        "leave_discard": {
+          "english": "Discard",
+          "max_length": 7,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Scarta"
+        },
+        "leave_save": {
+          "english": "Save",
+          "max_length": 5,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Salva"
+        },
+        "leave_title": {
+          "english": "Unsaved changes",
+          "max_length": 21,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Modifiche non salvate"
+        },
+        "lvl_coll": {
+          "english": "Trim until the main blades are at zero pitch.",
+          "max_length": 51,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Regola finché le pale principali sono a passo zero."
+        },
+        "lvl_coll_title": {
+          "english": "Collective trim",
+          "max_length": 15,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Trim collettivo"
+        },
+        "lvl_done": {
+          "english": "The swash is level at zero pitch.",
+          "max_length": 34,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Il piatto è in piano a passo zero."
+        },
+        "lvl_done_title": {
+          "english": "Swash level",
+          "max_length": 15,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Piatto in piano"
+        },
+        "lvl_intro": {
+          "english": "The swash is held at its centre. Trim it until it is level and the blades sit at zero pitch.",
+          "max_length": 92,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Il piatto è tenuto al centro. Regola il trim finché è in piano e le pale sono a passo zero."
+        },
+        "lvl_pitch": {
+          "english": "Seen from the side, trim until the swash is level front to back.",
+          "max_length": 70,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Visto di lato, regola finché il piatto è in piano da davanti a dietro."
+        },
+        "lvl_pitch_title": {
+          "english": "Pitch trim",
+          "max_length": 10,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Trim pitch"
+        },
+        "lvl_reset": {
+          "english": "Reset",
+          "max_length": 6,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Azzera"
+        },
+        "lvl_roll": {
+          "english": "Seen from behind, trim until the swash is level left to right.",
+          "max_length": 73,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Visto da dietro, regola finché il piatto è in piano da sinistra a destra."
+        },
+        "lvl_roll_title": {
+          "english": "Roll trim",
+          "max_length": 9,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Trim roll"
+        },
+        "lvl_title": {
+          "english": "Level the swash",
+          "max_length": 17,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Livella il piatto"
+        },
+        "lvl_trim": {
+          "english": "Trim",
+          "max_length": 4,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Trim"
+        },
+        "lvl_value_fmt": {
+          "english": "%s",
+          "max_length": 2,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "%s"
+        },
+        "missing_servos_fmt": {
+          "english": "Servo %s is needed for this setup, but the board has no output for it.",
+          "max_length": 84,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Il servo %s serve per questa configurazione, ma la scheda non ha un'uscita per esso."
+        },
+        "mot_done_title": {
+          "english": "Motor & ESC set",
+          "max_length": 19,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Motore ed ESC fatti"
+        },
+        "mot_dshot150_note": {
+          "english": "DShot150 sends no RPM. Governor and RPM filter need DShot300 or an RPM sensor.",
+          "max_length": 83,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "DShot150 non invia RPM. Governor e filtro RPM richiedono DShot300 o un sensore RPM."
+        },
+        "mot_inter_main": {
+          "english": "Intermediate, main gear side",
+          "max_length": 28,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Intermedio, lato ruota principale"
+        },
+        "mot_inter_pinion": {
+          "english": "Intermediate, pinion side",
+          "max_length": 25,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Intermedio, lato pignone"
+        },
+        "mot_intro": {
+          "english": "How does the FC talk to the ESC? Use PWM if unsure. Blades off.",
+          "max_length": 63,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Come parla il FC con l'ESC? Nel dubbio usa PWM. Pale tolte."
+        },
+        "mot_main_gear": {
+          "english": "Main gear teeth",
+          "max_length": 15,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Denti corona"
+        },
+        "mot_main_ratio": {
+          "english": "Main ratio",
+          "max_length": 15,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Rapporto princ."
+        },
+        "mot_main_text": {
+          "english": "Count the teeth on the pinion and the main gear.",
+          "max_length": 48,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Contate i denti del pignone e della ruota principale."
+        },
+        "mot_main_title": {
+          "english": "Main gear ratio",
+          "max_length": 15,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Rapporto del rotore principale"
+        },
+        "mot_other": {
+          "english": "Other",
+          "max_length": 5,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Altro"
+        },
+        "mot_pair_main_mesh": {
+          "english": "Intermediate : main gear",
+          "max_length": 24,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Intermedio : ruota principale"
+        },
+        "mot_pair_single": {
+          "english": "Pinion : main gear",
+          "max_length": 18,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Pignone : ruota principale"
+        },
+        "mot_pair_stage1": {
+          "english": "Pinion : intermediate",
+          "max_length": 21,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Pignone : intermedio"
+        },
+        "mot_pair_stage2": {
+          "english": "Intermediate : main gear",
+          "max_length": 24,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Intermedio : ruota principale"
+        },
+        "mot_pair_tail": {
+          "english": "Drive : tail rotor gear",
+          "max_length": 23,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Trasmissione : ingranaggio di coda"
+        },
+        "mot_pair_tail_shaft": {
+          "english": "Pulley : tail rotor pulley",
+          "max_length": 26,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Puleggia : puleggia di coda"
+        },
+        "mot_pinion": {
+          "english": "Pinion teeth",
+          "max_length": 13,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Denti pignone"
+        },
+        "mot_poles": {
+          "english": "Motor poles",
+          "max_length": 11,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Poli motore"
+        },
+        "mot_poles_text": {
+          "english": "Magnet poles of the main motor, from its data sheet (often 10 or 12).",
+          "max_length": 76,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Poli magnetici del motore principale, dalla scheda tecnica (spesso 10 o 12)."
+        },
+        "mot_prepare_text": {
+          "english": "Keep the servos unplugged and the blades off. The ESC runs as soon as the helicopter is armed.",
+          "max_length": 94,
+          "needs_translation": true,
+          "translation": "Lascia i servi scollegati e rimuovi le pale. L'ESC gira appena l'elicottero è armato."
+        },
+        "mot_protocol": {
+          "english": "Protocol",
+          "max_length": 10,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Protocollo"
+        },
+        "mot_ratio_direct": {
+          "english": "Gear ratio",
+          "max_length": 10,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Rapporto"
+        },
+        "mot_ratio_fmt": {
+          "english": "%.2f:1",
+          "max_length": 6,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "%.2f:1"
+        },
+        "mot_restart_note": {
+          "english": "Applies after restart",
+          "max_length": 21,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Attivo dopo il riavvio"
+        },
+        "mot_stage": {
+          "english": "Gear train",
+          "max_length": 10,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Treno di ingranaggi"
+        },
+        "mot_stage_direct": {
+          "english": "Ratio only",
+          "max_length": 10,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Solo rapporto"
+        },
+        "mot_stage_one": {
+          "english": "One stage",
+          "max_length": 9,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Una fase"
+        },
+        "mot_stage_two": {
+          "english": "Two stages",
+          "max_length": 10,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Due fasi"
+        },
+        "mot_tail_drive_pulley": {
+          "english": "Pulley on the intermediate shaft",
+          "max_length": 32,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Puleggia sull'albero intermedio"
+        },
+        "mot_tail_from": {
+          "english": "Tail drive from",
+          "max_length": 15,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Trasmissione coda da"
+        },
+        "mot_tail_from_inter": {
+          "english": "Intermediate shaft",
+          "max_length": 18,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Albero intermedio"
+        },
+        "mot_tail_from_main": {
+          "english": "Main shaft",
+          "max_length": 10,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Albero principale"
+        },
+        "mot_tail_in": {
+          "english": "Tail gear in",
+          "max_length": 16,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Ingr. coda entr."
+        },
+        "mot_tail_needs_two": {
+          "english": "Needs a two-stage main gear.",
+          "max_length": 28,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Solo con riduzione principale a due fasi."
+        },
+        "mot_tail_out": {
+          "english": "Tail gear out",
+          "max_length": 15,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Ingr. coda usc."
+        },
+        "mot_tail_ratio": {
+          "english": "Tail ratio",
+          "max_length": 13,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Rapporto coda"
+        },
+        "mot_tail_rotor_pulley": {
+          "english": "Tail rotor pulley",
+          "max_length": 17,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Puleggia rotore di coda"
+        },
+        "mot_tail_text": {
+          "english": "Ratio from the main rotor to the tail, always counted from the main rotor shaft. Count the teeth or pulleys of the tail drive.",
+          "max_length": 126,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Rapporto dal rotore principale alla coda, sempre dall'albero del rotore principale. Contate i denti o le pulegge della trasmissione."
+        },
+        "mot_tail_title": {
+          "english": "Tail gear ratio",
+          "max_length": 15,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Rapporto del rotore di coda"
+        },
+        "mot_title": {
+          "english": "ESC protocol",
+          "max_length": 14,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Protocollo ESC"
+        },
+        "name": {
+          "english": "Setup Wizard",
+          "max_length": 15,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Config. guidata"
+        },
+        "no_swash": {
+          "english": "This step works on the swashplate servos. Pick a swashplate type first.",
+          "max_length": 71,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Questo passo usa i servi del piatto. Scegli prima un tipo di piatto."
+        },
+        "pit_calibrate": {
+          "english": "Calibrate",
+          "max_length": 9,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Calibra"
+        },
+        "pit_calibrated": {
+          "english": "Calibrated. Measure again to check.",
+          "max_length": 42,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Calibrato. Misura di nuovo per verificare."
+        },
+        "pit_coll_text": {
+          "english": "The collective is held at 9 degrees. Measure the blade pitch, enter it, then Calibrate.",
+          "max_length": 87,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Il collettivo è tenuto a 9 gradi. Misura il passo delle pale, inseriscilo, poi Calibra."
+        },
+        "pit_coll_title": {
+          "english": "Collective",
+          "max_length": 10,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Collettivo"
+        },
+        "pit_cyc_text": {
+          "english": "Turn the blades to point left and right. Pitch is held at 9 degrees. Measure, enter it, then Calibrate.",
+          "max_length": 103,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Ruota le pale verso sinistra e destra. Il passo è tenuto a 9 gradi. Misura, inserisci, poi Calibra."
+        },
+        "pit_cyc_title": {
+          "english": "Cyclic",
+          "max_length": 7,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Ciclico"
+        },
+        "pit_done": {
+          "english": "Blade pitch is calibrated and limited.",
+          "max_length": 38,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Il passo pale è calibrato e limitato."
+        },
+        "pit_done_title": {
+          "english": "Pitch set",
+          "max_length": 15,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Passo impostato"
+        },
+        "pit_fine_text": {
+          "english": "Fine adjust the rate until the gauge reads 9 degrees.",
+          "max_length": 55,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Regola fine il rate finché il misuratore legge 9 gradi."
+        },
+        "pit_intro": {
+          "english": "You need a pitch gauge. The wizard holds the blades at a set pitch; you measure it and enter what you read.",
+          "max_length": 112,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Serve un misuratore di passo. La procedura tiene le pale a un passo fisso; misuralo e inserisci il valore letto."
+        },
+        "pit_lim_coll_title": {
+          "english": "Collective limit",
+          "max_length": 17,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Limite collettivo"
+        },
+        "pit_lim_cyc_title": {
+          "english": "Cyclic limit",
+          "max_length": 14,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Limite ciclico"
+        },
+        "pit_lim_text": {
+          "english": "The most blade pitch the sticks can command.",
+          "max_length": 49,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Il passo massimo che gli stick possono comandare."
+        },
+        "pit_lim_total_text": {
+          "english": "The most blade pitch cyclic and collective together may reach.",
+          "max_length": 70,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Il passo massimo che ciclico e collettivo insieme possono raggiungere."
+        },
+        "pit_lim_total_title": {
+          "english": "Total limit",
+          "max_length": 13,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Limite totale"
+        },
+        "pit_limit": {
+          "english": "Limit",
+          "max_length": 6,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Limite"
+        },
+        "pit_measured": {
+          "english": "Measured",
+          "max_length": 8,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Misurato"
+        },
+        "pit_rate": {
+          "english": "Rate",
+          "max_length": 4,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Rate"
+        },
+        "pit_suggest_fmt": {
+          "english": "Use %.0f",
+          "max_length": 8,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Usa %.0f"
+        },
+        "pit_title": {
+          "english": "Blade pitch",
+          "max_length": 11,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Passo pale"
+        },
+        "prof_beyond8": {
+          "english": "Needs more than 8 channels.",
+          "max_length": 27,
+          "needs_translation": false,
+          "translation": "Richiede più di 8 canali."
+        },
+        "prof_both": {
+          "english": "Profiles and rates",
+          "max_length": 18,
+          "needs_translation": false,
+          "translation": "Profili e rate"
+        },
+        "prof_btn_cyclic_down": {
+          "english": "Cyclic gain down",
+          "max_length": 20,
+          "needs_translation": false,
+          "translation": "Guadagno ciclico giù"
+        },
+        "prof_btn_cyclic_up": {
+          "english": "Cyclic gain up",
+          "max_length": 19,
+          "needs_translation": false,
+          "translation": "Guadagno ciclico su"
+        },
+        "prof_btn_yaw_down": {
+          "english": "Yaw gain down",
+          "max_length": 17,
+          "needs_translation": false,
+          "translation": "Guadagno coda giù"
+        },
+        "prof_btn_yaw_up": {
+          "english": "Yaw gain up",
+          "max_length": 16,
+          "needs_translation": false,
+          "translation": "Guadagno coda su"
+        },
+        "prof_channel_fmt": {
+          "english": "CH %d",
+          "max_length": 5,
+          "needs_translation": false,
+          "translation": "CH %d"
+        },
+        "prof_channels_title": {
+          "english": "Channels in use",
+          "max_length": 15,
+          "needs_translation": false,
+          "translation": "Canali in uso"
+        },
+        "prof_chosen": {
+          "english": "Selected",
+          "max_length": 8,
+          "needs_translation": false,
+          "translation": "Scelto"
+        },
+        "prof_count_fmt": {
+          "english": "CH %d · %d profiles",
+          "max_length": 19,
+          "needs_translation": false,
+          "translation": "CH %d · %d profili"
+        },
+        "prof_done_keep": {
+          "english": "Nothing has changed: the flight controller keeps its profile and gain settings. Next goes on to the swashplate.",
+          "max_length": 111,
+          "needs_translation": false,
+          "translation": "Nessuna modifica: l'FC mantiene le sue impostazioni di profilo e guadagno. Avanti passa al piatto."
+        },
+        "prof_done_save": {
+          "english": "The changes already work on the flight controller, but are not stored yet. Save and continue writes them to its memory (EEPROM).",
+          "max_length": 128,
+          "needs_translation": false,
+          "translation": "Le modifiche sono già attive nell'FC, ma non ancora salvate. Salva e continua le scrive nella sua memoria (EEPROM)."
+        },
+        "prof_found_fmt": {
+          "english": "%d positions found. Move through every position, then press Use.",
+          "max_length": 64,
+          "needs_translation": false,
+          "translation": "Trovate %d posizioni. Passale tutte, poi premi Usa."
+        },
+        "prof_full": {
+          "english": "Every adjustment slot is in use. Free one under Adjustments.",
+          "max_length": 71,
+          "needs_translation": false,
+          "translation": "Tutti gli slot di regolazione sono in uso. Liberane uno in Regolazioni."
+        },
+        "prof_gain_buttons": {
+          "english": "Trim buttons",
+          "max_length": 16,
+          "needs_translation": false,
+          "translation": "Pulsanti di trim"
+        },
+        "prof_gain_buttons_note": {
+          "english": "Set up the GAIN mix first (see the docs).",
+          "max_length": 48,
+          "needs_translation": false,
+          "translation": "Prima imposta il mix GAIN (vedi documentazione)."
+        },
+        "prof_gain_help_buttons": {
+          "english": "The trim buttons step the master gain up and down, on one spare channel.",
+          "max_length": 78,
+          "needs_translation": false,
+          "translation": "I pulsanti di trim cambiano il guadagno generale a passi, su un canale libero."
+        },
+        "prof_gain_help_knob": {
+          "english": "A knob or slider sets the master gain, on a spare channel.",
+          "max_length": 76,
+          "needs_translation": false,
+          "translation": "Una manopola o un cursore imposta il guadagno generale, su un canale libero."
+        },
+        "prof_gain_help_none": {
+          "english": "Master gain stays as it is. Find it later in flight, or on the Profiles page.",
+          "max_length": 83,
+          "needs_translation": false,
+          "translation": "Il guadagno generale resta com'è. Trovalo più tardi in volo o nella pagina Profili."
+        },
+        "prof_gain_knob": {
+          "english": "Knob",
+          "max_length": 8,
+          "needs_translation": false,
+          "translation": "Manopola"
+        },
+        "prof_gain_knob_note": {
+          "english": "Set a knob or slider on a spare channel, then move it.",
+          "max_length": 64,
+          "needs_translation": false,
+          "translation": "Imposta una manopola o un cursore su un canale libero e muovilo."
+        },
+        "prof_gain_none": {
+          "english": "Not used",
+          "max_length": 9,
+          "needs_translation": false,
+          "translation": "Non usato"
+        },
+        "prof_gain_now": {
+          "english": "Now",
+          "max_length": 3,
+          "needs_translation": false,
+          "translation": "Ora"
+        },
+        "prof_gain_text": {
+          "english": "Changes all gains together. Raise it in flight until the wobble starts, then come back a few steps.",
+          "max_length": 106,
+          "needs_translation": false,
+          "translation": "Cambia tutti i guadagni insieme. Alzalo in volo finché inizia l'oscillazione, poi scendi di qualche passo."
+        },
+        "prof_gain_title": {
+          "english": "Master gain in flight",
+          "max_length": 25,
+          "needs_translation": false,
+          "translation": "Guadagno generale in volo"
+        },
+        "prof_help_both": {
+          "english": "The switch picks the PID profile and the rate profile 1, 2 or 3 together.",
+          "max_length": 73,
+          "needs_translation": false,
+          "translation": "L'interruttore sceglie il profilo PID e il profilo rate 1, 2 o 3 insieme."
+        },
+        "prof_help_none": {
+          "english": "The helicopter flies on one profile.",
+          "max_length": 37,
+          "needs_translation": false,
+          "translation": "L'elicottero vola su un solo profilo."
+        },
+        "prof_help_pid": {
+          "english": "The switch picks the PID profile; the rates stay as they are.",
+          "max_length": 64,
+          "needs_translation": false,
+          "translation": "L'interruttore sceglie il profilo PID; i rate restano come sono."
+        },
+        "prof_intro": {
+          "english": "One switch picks the flight profile, master gain fine-tunes the gains in flight. Both are optional.",
+          "max_length": 118,
+          "needs_translation": false,
+          "translation": "Un interruttore sceglie il profilo di volo; il guadagno generale regola i guadagni in volo. Entrambi sono facoltativi."
+        },
+        "prof_listen": {
+          "english": "Move the switch…",
+          "max_length": 22,
+          "needs_translation": false,
+          "translation": "Sposta l'interruttore…"
+        },
+        "prof_listen_buttons": {
+          "english": "Press a trim button…",
+          "max_length": 26,
+          "needs_translation": false,
+          "translation": "Premi un pulsante di trim…"
+        },
+        "prof_listen_knob": {
+          "english": "Turn the knob…",
+          "max_length": 17,
+          "needs_translation": false,
+          "translation": "Gira la manopola…"
+        },
+        "prof_none": {
+          "english": "Not used",
+          "max_length": 9,
+          "needs_translation": false,
+          "translation": "Non usato"
+        },
+        "prof_now_fmt": {
+          "english": "Now: profile %d",
+          "max_length": 15,
+          "needs_translation": false,
+          "translation": "Ora: profilo %d"
+        },
+        "prof_pid": {
+          "english": "PID profiles only",
+          "max_length": 17,
+          "needs_translation": false,
+          "translation": "Solo profili PID"
+        },
+        "prof_switch_text": {
+          "english": "A 2- or 3-position switch. Press Assign, then move it through every position: each one lands on its own profile.",
+          "max_length": 118,
+          "needs_translation": false,
+          "translation": "Un interruttore a 2 o 3 posizioni. Premi Assegna, poi spostalo in tutte le posizioni: ognuna va su un proprio profilo."
+        },
+        "prof_switch_title": {
+          "english": "Profile switch",
+          "max_length": 20,
+          "needs_translation": false,
+          "translation": "Interruttore profilo"
+        },
+        "prof_use": {
+          "english": "Use",
+          "max_length": 3,
+          "needs_translation": false,
+          "translation": "Usa"
+        },
+        "prof_use_gain": {
+          "english": "Master gain",
+          "max_length": 17,
+          "needs_translation": false,
+          "translation": "Guadagno generale"
+        },
+        "prof_use_profile": {
+          "english": "Profile switch",
+          "max_length": 20,
+          "needs_translation": false,
+          "translation": "Interruttore profilo"
+        },
+        "progress_fmt": {
+          "english": "%d of %d",
+          "max_length": 8,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "%d di %d"
+        },
+        "rates_3d": {
+          "english": "3D",
+          "max_length": 2,
+          "needs_translation": false,
+          "translation": "3D"
+        },
+        "rates_actual_note": {
+          "english": "This firmware uses the Actual rates type: set the rates on the Rates page.",
+          "max_length": 77,
+          "needs_translation": false,
+          "translation": "Questo firmware usa il tipo di rate Actual: imposta i rate nella pagina Rate."
+        },
+        "rates_axis_collective": {
+          "english": "Collective",
+          "max_length": 10,
+          "needs_translation": false,
+          "translation": "Collettivo"
+        },
+        "rates_axis_cyclic": {
+          "english": "Cyclic",
+          "max_length": 7,
+          "needs_translation": false,
+          "translation": "Ciclico"
+        },
+        "rates_axis_yaw": {
+          "english": "Yaw",
+          "max_length": 9,
+          "needs_translation": false,
+          "translation": "Imbardata"
+        },
+        "rates_busy": {
+          "english": "Writing the rates…",
+          "max_length": 19,
+          "needs_translation": false,
+          "translation": "Scrittura dei rate…"
+        },
+        "rates_collective_fmt": {
+          "english": "Collective %.1f °",
+          "max_length": 17,
+          "needs_translation": false,
+          "translation": "Collettivo %.1f °"
+        },
+        "rates_custom": {
+          "english": "Custom",
+          "max_length": 9,
+          "needs_translation": false,
+          "translation": "Personale"
+        },
+        "rates_cyclic_fmt": {
+          "english": "Cyclic %d °/s · expo %d %%",
+          "max_length": 27,
+          "needs_translation": false,
+          "translation": "Ciclico %d °/s · expo %d %%"
+        },
+        "rates_done_keep": {
+          "english": "Nothing has changed: the flight controller keeps its rates. Next goes on to the swashplate.",
+          "max_length": 91,
+          "needs_translation": false,
+          "translation": "Nessuna modifica: l'FC mantiene i suoi rate. Avanti passa al piatto."
+        },
+        "rates_done_save": {
+          "english": "The rates already work on the flight controller, but are not stored yet. Save and continue writes them to its memory (EEPROM).",
+          "max_length": 126,
+          "needs_translation": false,
+          "translation": "I rate funzionano già nell'FC, ma non sono ancora salvati. Salva e continua li scrive nella sua memoria (EEPROM)."
+        },
+        "rates_done_title": {
+          "english": "Rates set",
+          "max_length": 14,
+          "needs_translation": false,
+          "translation": "Rate impostati"
+        },
+        "rates_intro": {
+          "english": "Sets the flying style of each rate profile. Each one is a starting point you can refine later on the Rates page.",
+          "max_length": 114,
+          "needs_translation": false,
+          "translation": "Imposta lo stile di volo di ogni profilo di rate. Ognuno è un punto di partenza da affinare poi nella pagina Rate."
+        },
+        "rates_legend_collective": {
+          "english": "Collective: value in °",
+          "max_length": 23,
+          "needs_translation": false,
+          "translation": "Collettivo: valore in °"
+        },
+        "rates_legend_shape": {
+          "english": "Form: shape · Expo: expo in %",
+          "max_length": 30,
+          "needs_translation": false,
+          "translation": "Forma: shape · Expo: expo in %"
+        },
+        "rates_legend_value": {
+          "english": "Value: °/s at full stick",
+          "max_length": 25,
+          "needs_translation": false,
+          "translation": "Valore: °/s a fondo corsa"
+        },
+        "rates_none_matches": {
+          "english": "None of the styles matches the rates this profile has now. Picking one replaces them.",
+          "max_length": 91,
+          "needs_translation": false,
+          "translation": "Nessuno stile corrisponde ai rate attuali di questo profilo. Sceglierne uno li sostituisce."
+        },
+        "rates_page_fmt": {
+          "english": "Rate profile %d",
+          "max_length": 15,
+          "needs_translation": false,
+          "translation": "Profilo rate %d"
+        },
+        "rates_page_text": {
+          "english": "Pick a flying style for this profile. Unchanged keeps its rates.",
+          "max_length": 76,
+          "needs_translation": false,
+          "translation": "Scegli uno stile di volo per questo profilo. Invariato mantiene i suoi rate."
+        },
+        "rates_position_fmt": {
+          "english": "Switch position %d.",
+          "max_length": 26,
+          "needs_translation": false,
+          "translation": "Posizione interruttore %d."
+        },
+        "rates_row_fmt": {
+          "english": "Rate profile %d",
+          "max_length": 15,
+          "needs_translation": false,
+          "translation": "Profilo rate %d"
+        },
+        "rates_sport": {
+          "english": "Sport",
+          "max_length": 5,
+          "needs_translation": false,
+          "translation": "Sport"
+        },
+        "rates_trainer": {
+          "english": "Trainer",
+          "max_length": 7,
+          "needs_translation": false,
+          "translation": "Trainer"
+        },
+        "rates_type_actual": {
+          "english": "Actual",
+          "max_length": 6,
+          "needs_translation": false,
+          "translation": "Actual"
+        },
+        "rates_type_fmt": {
+          "english": "%s · shape %d",
+          "max_length": 13,
+          "needs_translation": false,
+          "translation": "%s · forma %d"
+        },
+        "rates_type_rotorflight": {
+          "english": "Rotorflight",
+          "max_length": 11,
+          "needs_translation": false,
+          "translation": "Rotorflight"
+        },
+        "rates_values_fmt": {
+          "english": "Cyclic %d °/s · yaw %d °/s · expo %d %%",
+          "max_length": 46,
+          "needs_translation": false,
+          "translation": "Ciclico %d °/s · imbardata %d °/s · expo %d %%"
+        },
+        "rates_yaw_fmt": {
+          "english": "Yaw %d °/s · expo %d %%",
+          "max_length": 29,
+          "needs_translation": false,
+          "translation": "Imbardata %d °/s · expo %d %%"
+        },
+        "rcv_blades_off": {
+          "english": "Keep the blades off: the motor may start.",
+          "max_length": 41,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Pale tolte: il motore può avviarsi."
+        },
+        "rcv_ch_collective": {
+          "english": "Collective",
+          "max_length": 10,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Collettivo"
+        },
+        "rcv_ch_fmt": {
+          "english": "CH%d",
+          "max_length": 4,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "CH%d"
+        },
+        "rcv_ch_pitch": {
+          "english": "Pitch",
+          "max_length": 5,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Pitch"
+        },
+        "rcv_ch_roll": {
+          "english": "Roll",
+          "max_length": 4,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Roll"
+        },
+        "rcv_ch_throttle": {
+          "english": "Throttle",
+          "max_length": 8,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Gas"
+        },
+        "rcv_ch_yaw": {
+          "english": "Yaw",
+          "max_length": 9,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Imbardata"
+        },
+        "rcv_custom": {
+          "english": "Custom",
+          "max_length": 9,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Personal."
+        },
+        "rcv_defaults": {
+          "english": "Defaults",
+          "max_length": 11,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Predefiniti"
+        },
+        "rcv_detect": {
+          "english": "Detect",
+          "max_length": 6,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Rileva"
+        },
+        "rcv_detect_done": {
+          "english": "Channel order set from the sticks.",
+          "max_length": 35,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Ordine canali rilevato dagli stick."
+        },
+        "rcv_detect_text_fmt": {
+          "english": "%s Leave the other sticks still.",
+          "max_length": 32,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "%s Lascia fermi gli altri stick."
+        },
+        "rcv_dir_back": {
+          "english": "Back",
+          "max_length": 8,
+          "needs_translation": false,
+          "translation": "Indietro"
+        },
+        "rcv_dir_down": {
+          "english": "Down",
+          "max_length": 4,
+          "needs_translation": false,
+          "translation": "Giù"
+        },
+        "rcv_dir_forward": {
+          "english": "Forward",
+          "max_length": 7,
+          "needs_translation": false,
+          "translation": "Avanti"
+        },
+        "rcv_dir_up": {
+          "english": "Up",
+          "max_length": 2,
+          "needs_translation": false,
+          "translation": "Su"
+        },
+        "rcv_done": {
+          "english": "The channel order and throttle range are set.",
+          "max_length": 45,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Ordine canali e range del gas sono impostati."
+        },
+        "rcv_done_title": {
+          "english": "Receiver done",
+          "max_length": 15,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Ricevente fatta"
+        },
+        "rcv_fc_range": {
+          "english": "FC range",
+          "max_length": 13,
+          "needs_translation": false,
+          "translation": "Intervallo FC"
+        },
+        "rcv_intro": {
+          "english": "The radio talks to the flight controller through this receiver. Here you set the channel order, check the sticks and set the throttle range.",
+          "max_length": 150,
+          "needs_translation": false,
+          "translation": "La radio comunica con il flight controller tramite questo ricevitore. Qui imposti l'ordine dei canali, controlli gli stick e imposti il range del gas."
+        },
+        "rcv_link_text": {
+          "english": "The protocol must match your receiver, or the radio link breaks.",
+          "max_length": 95,
+          "needs_translation": false,
+          "translation": "Il protocollo deve corrispondere al ricevitore, altrimenti il collegamento radio si interrompe."
+        },
+        "rcv_link_warning": {
+          "english": "Experienced pilots only: a setting that cuts the receiver link ends this setup.",
+          "max_length": 120,
+          "needs_translation": false,
+          "translation": "Solo per piloti esperti: un'impostazione che interrompe il collegamento con il ricevitore termina questa configurazione."
+        },
+        "rcv_measure": {
+          "english": "Measure",
+          "max_length": 7,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Misura"
+        },
+        "rcv_measured": {
+          "english": "Measured",
+          "max_length": 8,
+          "needs_translation": false,
+          "translation": "Misurato"
+        },
+        "rcv_move_collective": {
+          "english": "Move the collective stick fully up and down.",
+          "max_length": 45,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Muovi lo stick del collettivo tutto su e giù."
+        },
+        "rcv_move_pitch": {
+          "english": "Move the pitch stick fully forward and back.",
+          "max_length": 49,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Muovi lo stick del pitch tutto avanti e indietro."
+        },
+        "rcv_move_roll": {
+          "english": "Move the roll stick fully left and right.",
+          "max_length": 52,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Muovi lo stick del roll tutto a sinistra e a destra."
+        },
+        "rcv_move_throttle": {
+          "english": "Flip the throttle switch, or move the throttle, end to end.",
+          "max_length": 65,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Sposta l'interruttore o lo stick del gas da un estremo all'altro."
+        },
+        "rcv_move_yaw": {
+          "english": "Move the yaw stick fully left and right.",
+          "max_length": 58,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Muovi lo stick dell'imbardata tutto a sinistra e a destra."
+        },
+        "rcv_order_now_fmt": {
+          "english": "Now: %s.",
+          "max_length": 12,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Attuale: %s."
+        },
+        "rcv_order_text": {
+          "english": "Each bar should follow its own stick. If not, pick a preset or detect the order.",
+          "max_length": 88,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Ogni barra deve seguire il proprio stick. Altrimenti scegli un preset o rileva l'ordine."
+        },
+        "rcv_order_title": {
+          "english": "Channel order",
+          "max_length": 13,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Ordine canali"
+        },
+        "rcv_prepare_text": {
+          "english": "This step uses the settings already in the FC. Confirm the physical prerequisites before continuing.",
+          "max_length": 105,
+          "needs_translation": false,
+          "translation": "Questo passo usa le impostazioni già presenti nel FC. Conferma i prerequisiti fisici prima di continuare."
+        },
+        "rcv_prepare_title": {
+          "english": "Before this step",
+          "max_length": 21,
+          "needs_translation": false,
+          "translation": "Prima di questo passo"
+        },
+        "rcv_preset_elrs": {
+          "english": "ELRS",
+          "max_length": 4,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "ELRS"
+        },
+        "rcv_preset_frsky": {
+          "english": "FrSky",
+          "max_length": 5,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "FrSky"
+        },
+        "rcv_preset_futaba": {
+          "english": "Futaba/Hitec",
+          "max_length": 12,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Futaba/Hitec"
+        },
+        "rcv_preset_spektrum": {
+          "english": "Spektrum/JR",
+          "max_length": 11,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Spektrum/JR"
+        },
+        "rcv_presets": {
+          "english": "Presets",
+          "max_length": 7,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Preset"
+        },
+        "rcv_presets_text": {
+          "english": "Pick your radio's channel order.",
+          "max_length": 43,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Scegli l'ordine dei canali della tua radio."
+        },
+        "rcv_protocol": {
+          "english": "Protocol",
+          "max_length": 10,
+          "needs_translation": false,
+          "translation": "Protocollo"
+        },
+        "rcv_protocol_title": {
+          "english": "Choose the protocol",
+          "max_length": 20,
+          "needs_translation": false,
+          "translation": "Scegli il protocollo"
+        },
+        "rcv_signal_none": {
+          "english": "No valid receiver signal.",
+          "max_length": 32,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Nessun segnale ricevente valido."
+        },
+        "rcv_signal_ok": {
+          "english": "Receiver signal: OK",
+          "max_length": 21,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Segnale ricevente: OK"
+        },
+        "rcv_skip": {
+          "english": "Skip",
+          "max_length": 5,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Salta"
+        },
+        "rcv_standard_order": {
+          "english": "Standard channel order",
+          "max_length": 22,
+          "needs_translation": false,
+          "translation": "Ordine canali standard"
+        },
+        "rcv_sticks_text": {
+          "english": "Each stick must reach ±100 %; if it does not, adjust the travel on the transmitter.",
+          "max_length": 83,
+          "needs_translation": false,
+          "translation": "Ogni stick deve raggiungere ±100 %; se non ci riesce, regola la corsa sulla radio."
+        },
+        "rcv_sticks_title": {
+          "english": "Check the sticks",
+          "max_length": 16,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Verifica stick"
+        },
+        "rcv_stop": {
+          "english": "Stop",
+          "max_length": 4,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Stop"
+        },
+        "rcv_throttle_text": {
+          "english": "Press Measure, move the throttle switch through every position, then Stop and Use.",
+          "max_length": 82,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Premi Misura, porta l'interruttore del gas in ogni posizione, poi Stop e Usa."
+        },
+        "rcv_throttle_title": {
+          "english": "Throttle range",
+          "max_length": 14,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Range gas"
+        },
+        "rcv_title": {
+          "english": "Receiver",
+          "max_length": 9,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Ricevente"
+        },
+        "rcv_too_short": {
+          "english": "Under 300 us of travel: move it end to end.",
+          "max_length": 52,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Corsa sotto 300 us: muovilo da un estremo all'altro."
+        },
+        "rcv_use": {
+          "english": "Use",
+          "max_length": 3,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Usa"
+        },
+        "reboot_skipped": {
+          "english": "A restart is still owed: go back to Connect the servos.",
+          "max_length": 55,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Manca un riavvio: torna a Collega i servi."
+        },
+        "reboot_wait_fmt": {
+          "english": "Reconnecting, up to %d s",
+          "max_length": 26,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Riconnessione, fino a %d s"
+        },
+        "role_centre": {
+          "english": "Centre",
+          "max_length": 6,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Centro"
+        },
+        "role_collective": {
+          "english": "Collective",
+          "max_length": 10,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Collettivo"
+        },
+        "role_front": {
+          "english": "Front",
+          "max_length": 9,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Anteriore"
+        },
+        "role_front_left": {
+          "english": "Front left",
+          "max_length": 13,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Ant. sinistra"
+        },
+        "role_front_right": {
+          "english": "Front right",
+          "max_length": 11,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Ant. destra"
+        },
+        "role_left": {
+          "english": "Left",
+          "max_length": 8,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Sinistra"
+        },
+        "role_pitch": {
+          "english": "Pitch",
+          "max_length": 5,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Pitch"
+        },
+        "role_right": {
+          "english": "Right",
+          "max_length": 6,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Destra"
+        },
+        "role_roll": {
+          "english": "Roll",
+          "max_length": 4,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Roll"
+        },
+        "role_tail": {
+          "english": "Tail",
+          "max_length": 4,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Coda"
+        },
+        "rpm_dshot": {
+          "english": "Bidirectional DShot",
+          "max_length": 19,
+          "needs_translation": false,
+          "translation": "DShot bidirezionale"
+        },
+        "rpm_intro": {
+          "english": "Where the headspeed comes from: a wire from an RPM sensor or the ESC, or bidirectional DShot telemetry.",
+          "max_length": 103,
+          "needs_translation": false,
+          "translation": "Da dove arriva il regime: un cavo da un sensore RPM o dal regolatore, oppure telemetria DShot bidirezionale."
+        },
+        "rpm_row_source": {
+          "english": "RPM source",
+          "max_length": 10,
+          "needs_translation": false,
+          "translation": "Sorgente RPM"
+        },
+        "rpm_wire": {
+          "english": "Wire",
+          "max_length": 4,
+          "needs_translation": false,
+          "translation": "Cavo"
+        },
+        "sen_acc_busy": {
+          "english": "Calibrating... keep it still.",
+          "max_length": 30,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Calibrazione... tienilo fermo."
+        },
+        "sen_acc_done": {
+          "english": "Accelerometer calibrated.",
+          "max_length": 25,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Accelerometro calibrato."
+        },
+        "sen_acc_failed": {
+          "english": "Calibration failed. Keep the model still and try again.",
+          "max_length": 55,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Calibrazione fallita. Tieni fermo il modello e riprova."
+        },
+        "sen_acc_text": {
+          "english": "Stand the helicopter on its skids on a level surface and keep it still.",
+          "max_length": 74,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Appoggia l'elicottero sui pattini su una superficie piana e tienilo fermo."
+        },
+        "sen_acc_title": {
+          "english": "Calibrate the accelerometer",
+          "max_length": 27,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Calibra l'accelerometro"
+        },
+        "sen_accelerometer": {
+          "english": "Accelerometer",
+          "max_length": 13,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Accelerometro"
+        },
+        "sen_align_done_fmt": {
+          "english": "Found: roll %d, pitch %d, yaw %d degrees.",
+          "max_length": 47,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Trovato: roll %d, pitch %d, imbardata %d gradi."
+        },
+        "sen_align_lift": {
+          "english": "Lift the tail 20 degrees and hold it still...",
+          "max_length": 45,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Alza la coda di 20 gradi e tienila ferma..."
+        },
+        "sen_align_text": {
+          "english": "Keep level, start detection, then lift the tail about 20 degrees.",
+          "max_length": 76,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Tieni in piano, avvia il rilevamento, poi solleva la coda di circa 20 gradi."
+        },
+        "sen_align_title": {
+          "english": "Board orientation",
+          "max_length": 25,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Orientamento della scheda"
+        },
+        "sen_attitude_waiting": {
+          "english": "Waiting for live attitude...",
+          "max_length": 28,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "In attesa dell'assetto..."
+        },
+        "sen_auto_align": {
+          "english": "Detect board orientation",
+          "max_length": 24,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Rileva orientamento"
+        },
+        "sen_available": {
+          "english": "Available",
+          "max_length": 11,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Disponibile"
+        },
+        "sen_blades_removed": {
+          "english": "All blades removed",
+          "max_length": 21,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Tutte le pale rimosse"
+        },
+        "sen_calibrate": {
+          "english": "Calibrate accelerometer",
+          "max_length": 23,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Calibra accelerometro"
+        },
+        "sen_check_text": {
+          "english": "Tilt the helicopter left/right and nose down/up: the picture must follow every movement.",
+          "max_length": 96,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Inclina l'elicottero a sinistra/destra e il muso giù/su: l'immagine deve seguire ogni movimento."
+        },
+        "sen_check_title": {
+          "english": "Check orientation",
+          "max_length": 21,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Verifica orientamento"
+        },
+        "sen_direction_ok": {
+          "english": "Direction is correct",
+          "max_length": 23,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "La direzione è corretta"
+        },
+        "sen_done_restart": {
+          "english": "The new orientation applies after a restart. Restart now to check it, or Next: the restart then follows at the Connect the servos step.",
+          "max_length": 135,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Il nuovo orientamento vale dopo un riavvio. Riavvia ora per verificarlo, oppure Avanti: il riavvio avverrà al passo Collega i servi."
+        },
+        "sen_intro": {
+          "english": "Remove main and tail blades. Unplug all servos before starting.",
+          "max_length": 79,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Rimuovi le pale principali e di coda. Scollega tutti i servi prima di iniziare."
+        },
+        "sen_no_acc": {
+          "english": "This board has no accelerometer: set the orientation on the Alignment page.",
+          "max_length": 85,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Questa scheda non ha accelerometro: imposta l'orientamento nella pagina Allineamento."
+        },
+        "sen_no_match": {
+          "english": "No orientation matched. Lift the tail straight up and try again.",
+          "max_length": 64,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Nessun orientamento trovato. Alza la coda dritta e riprova."
+        },
+        "sen_pitch": {
+          "english": "Pitch",
+          "max_length": 10,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Beccheggio"
+        },
+        "sen_rejected_armed": {
+          "english": "Refused: the model is armed.",
+          "max_length": 31,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Rifiutato: il modello è armato."
+        },
+        "sen_rejected_uncal": {
+          "english": "Calibrate the accelerometer first.",
+          "max_length": 34,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Calibra prima l'accelerometro."
+        },
+        "sen_roll": {
+          "english": "Roll",
+          "max_length": 6,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Rollio"
+        },
+        "sen_servos_unplugged": {
+          "english": "Servos unplugged",
+          "max_length": 16,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Servi scollegati"
+        },
+        "sen_timeout": {
+          "english": "Timed out. Lift the tail a little further and try again.",
+          "max_length": 56,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Tempo scaduto. Alza la coda un po' di più e riprova."
+        },
+        "sen_title": {
+          "english": "Board orientation",
+          "max_length": 19,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Orientamento scheda"
+        },
+        "sen_unsupported": {
+          "english": "This firmware cannot find the orientation: set it on the Alignment page.",
+          "max_length": 78,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Questo firmware non trova l'orientamento: impostalo nella pagina Allineamento."
+        },
+        "sen_yaw": {
+          "english": "Yaw",
+          "max_length": 9,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Imbardata"
+        },
+        "servo_role_fmt": {
+          "english": "Servo %d (%s)",
+          "max_length": 13,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Servo %d (%s)"
+        },
+        "srv_centre_text": {
+          "english": "Nudge the centre until the servo arm is level.",
+          "max_length": 49,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Regola il centro finché la squadretta è in piano."
+        },
+        "srv_done": {
+          "english": "Every servo moves the right way and is centred.",
+          "max_length": 51,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Ogni servo si muove nel verso giusto ed è centrato."
+        },
+        "srv_done_title": {
+          "english": "Servos set",
+          "max_length": 15,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Servi impostati"
+        },
+        "srv_down": {
+          "english": "No, down",
+          "max_length": 8,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "No, giù"
+        },
+        "srv_far": {
+          "english": "Far from centre: move the arm a spline instead.",
+          "max_length": 53,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Lontano dal centro: sposta la squadretta di un dente."
+        },
+        "srv_reversed": {
+          "english": "Reversed. Check the arm moved up now.",
+          "max_length": 48,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Invertito. Verifica che ora la squadretta salga."
+        },
+        "srv_tail_text": {
+          "english": "Nudge the centre until the tail servo arm is at 90 degrees to the pushrod.",
+          "max_length": 77,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Regola il centro finché la squadretta del servo coda è a 90 gradi dal rinvio."
+        },
+        "srv_test_q": {
+          "english": "Did the arm move up, towards the swash?",
+          "max_length": 40,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "La squadretta è salita, verso il piatto?"
+        },
+        "srv_test_text": {
+          "english": "The servo is held 20 degrees up.",
+          "max_length": 33,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Il servo è tenuto 20 gradi in su."
+        },
+        "srv_up": {
+          "english": "Yes, up",
+          "max_length": 7,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Sì, su"
+        },
+        "srv_value_fmt": {
+          "english": "Centre %d us (%s).",
+          "max_length": 18,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Centro %d us (%s)."
+        },
+        "step_connect": {
+          "english": "Connect servos",
+          "max_length": 14,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Collega servi"
+        },
+        "step_direction": {
+          "english": "Directions",
+          "max_length": 10,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Direzioni"
+        },
+        "step_finish": {
+          "english": "Finish",
+          "max_length": 6,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Fine"
+        },
+        "step_governor": {
+          "english": "Governor",
+          "max_length": 8,
+          "needs_translation": false,
+          "translation": "Governor"
+        },
+        "step_gyro": {
+          "english": "Gyro check",
+          "max_length": 13,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Verifica gyro"
+        },
+        "step_level": {
+          "english": "Level swash",
+          "max_length": 14,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Livella piatto"
+        },
+        "step_motor": {
+          "english": "Motor & ESC",
+          "max_length": 13,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Motore ed ESC"
+        },
+        "step_pitch": {
+          "english": "Blade pitch",
+          "max_length": 11,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Passo pale"
+        },
+        "step_profiles": {
+          "english": "Profiles & gain",
+          "max_length": 18,
+          "needs_translation": false,
+          "translation": "Profili e guadagno"
+        },
+        "step_progress_fmt": {
+          "english": "Step %d of %d",
+          "max_length": 14,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Passo %d di %d"
+        },
+        "step_rates": {
+          "english": "Rates",
+          "max_length": 5,
+          "needs_translation": false,
+          "translation": "Rate"
+        },
+        "step_receiver": {
+          "english": "Receiver",
+          "max_length": 9,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Ricevente"
+        },
+        "step_sensors": {
+          "english": "Board orientation",
+          "max_length": 17,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Orient. scheda"
+        },
+        "step_servos": {
+          "english": "Servo centre",
+          "max_length": 12,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Centro servi"
+        },
+        "step_servotype": {
+          "english": "Servo type",
+          "max_length": 10,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Tipo servo"
+        },
+        "step_swash": {
+          "english": "Swashplate",
+          "max_length": 10,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Piatto"
+        },
+        "step_tail": {
+          "english": "Tail rotor",
+          "max_length": 11,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Rotore coda"
+        },
+        "sty_analog": {
+          "english": "Analog",
+          "max_length": 9,
+          "needs_translation": false,
+          "translation": "Analogico"
+        },
+        "sty_custom": {
+          "english": "Custom",
+          "max_length": 9,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Personal."
+        },
+        "sty_digital": {
+          "english": "Digital",
+          "max_length": 8,
+          "needs_translation": false,
+          "translation": "Digitale"
+        },
+        "sty_geo_title": {
+          "english": "Geometry correction",
+          "max_length": 20,
+          "needs_translation": false,
+          "translation": "Correzione geometria"
+        },
+        "sty_hiend_digital": {
+          "english": "Hi-End digital",
+          "max_length": 15,
+          "needs_translation": false,
+          "translation": "Digitale hi-end"
+        },
+        "sty_hiend_specific_digital": {
+          "english": "Hi-End specific digital",
+          "max_length": 25,
+          "needs_translation": false,
+          "translation": "Digitale specifico hi-end"
+        },
+        "sty_hz_fmt": {
+          "english": "%d Hz",
+          "max_length": 5,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "%d Hz"
+        },
+        "sty_intro": {
+          "english": "Pick the servo type. It sets the update rate and the centre pulse.",
+          "max_length": 66,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Scegli il tipo di servo. Imposta frequenza e impulso centrale."
+        },
+        "sty_mixed": {
+          "english": "Mixed",
+          "max_length": 5,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Misto"
+        },
+        "sty_narrow": {
+          "english": "Narrow band",
+          "max_length": 13,
+          "needs_translation": false,
+          "translation": "Banda stretta"
+        },
+        "sty_row_freq": {
+          "english": "Frequency",
+          "max_length": 9,
+          "needs_translation": false,
+          "translation": "Frequenza"
+        },
+        "sty_row_rate": {
+          "english": "Frame rate",
+          "max_length": 15,
+          "needs_translation": false,
+          "translation": "Frequenza frame"
+        },
+        "sty_row_type": {
+          "english": "Type",
+          "max_length": 4,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Tipo"
+        },
+        "sty_specific_digital": {
+          "english": "Specific digital",
+          "max_length": 18,
+          "needs_translation": false,
+          "translation": "Digitale specifico"
+        },
+        "sty_swash_title": {
+          "english": "Cyclic servos",
+          "max_length": 13,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Servi ciclico"
+        },
+        "sty_tail_title": {
+          "english": "Tail servo",
+          "max_length": 10,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Servo coda"
+        },
+        "sty_unplugged": {
+          "english": "Keep the servos unplugged until the Connect step.",
+          "max_length": 49,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Tieni i servi scollegati fino al passo Collega."
+        },
+        "sty_us_fmt": {
+          "english": "%d us",
+          "max_length": 5,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "%d us"
+        },
+        "swa_ccw": {
+          "english": "Counter-CW",
+          "max_length": 10,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Antiorario"
+        },
+        "swa_current_fmt": {
+          "english": "Now: %s",
+          "max_length": 11,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Attuale: %s"
+        },
+        "swa_cw": {
+          "english": "Clockwise",
+          "max_length": 9,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Orario"
+        },
+        "swa_dir_text": {
+          "english": "Seen from above. Most helicopters turn clockwise.",
+          "max_length": 72,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Visto dall'alto. La maggior parte degli elicotteri gira in senso orario."
+        },
+        "swa_dir_title": {
+          "english": "Main rotor direction",
+          "max_length": 20,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Senso rotore princ."
+        },
+        "swa_direct": {
+          "english": "Direct",
+          "max_length": 7,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Diretto"
+        },
+        "swa_done_title": {
+          "english": "Swashplate set",
+          "max_length": 16,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Piatto impostato"
+        },
+        "swa_front": {
+          "english": "Front",
+          "max_length": 7,
+          "needs_translation": false,
+          "translation": "Davanti"
+        },
+        "swa_pin_both": {
+          "english": "Own pin",
+          "max_length": 14,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Uscita propria"
+        },
+        "swa_pin_motor": {
+          "english": "Motor 2",
+          "max_length": 8,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Motore 2"
+        },
+        "swa_pin_move": {
+          "english": "Moves on save",
+          "max_length": 17,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Cambia al salvat."
+        },
+        "swa_pin_none": {
+          "english": "None",
+          "max_length": 7,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Nessuna"
+        },
+        "swa_pin_servo": {
+          "english": "Servo 4",
+          "max_length": 7,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Servo 4"
+        },
+        "swa_pin_stuck": {
+          "english": "Set in Mixer",
+          "max_length": 15,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Nel Miscelatore"
+        },
+        "swa_prepare_text": {
+          "english": "Unplug the servos and remove the blades before the swashplate and the tail are set.",
+          "max_length": 83,
+          "needs_translation": false,
+          "translation": "Scollega i servi e rimuovi le pale prima di impostare il piatto ciclico e la coda."
+        },
+        "swa_rear": {
+          "english": "Rear",
+          "max_length": 6,
+          "needs_translation": false,
+          "translation": "Dietro"
+        },
+        "swa_restart": {
+          "english": "Applies after the restart at the Connect step.",
+          "max_length": 46,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Vale dopo il riavvio al passo Collega."
+        },
+        "swa_row_dir": {
+          "english": "Rotor",
+          "max_length": 6,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Rotore"
+        },
+        "swa_row_pin": {
+          "english": "Tail pin",
+          "max_length": 11,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Uscita coda"
+        },
+        "swa_row_servo": {
+          "english": "Tail servo",
+          "max_length": 10,
+          "needs_translation": false,
+          "translation": "Servo coda"
+        },
+        "swa_row_tail": {
+          "english": "Tail",
+          "max_length": 4,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Coda"
+        },
+        "swa_row_type": {
+          "english": "Swash type",
+          "max_length": 11,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Tipo piatto"
+        },
+        "swa_servo1": {
+          "english": "Servo 1",
+          "max_length": 7,
+          "needs_translation": false,
+          "translation": "Servo 1"
+        },
+        "swa_servo_none": {
+          "english": "None",
+          "max_length": 7,
+          "needs_translation": false,
+          "translation": "Nessuno"
+        },
+        "swa_tail_bidir": {
+          "english": "Motor, 2-way",
+          "max_length": 15,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Motore, 2 sensi"
+        },
+        "swa_tail_motor": {
+          "english": "Motor",
+          "max_length": 6,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Motore"
+        },
+        "swa_tail_text": {
+          "english": "How the tail is driven. Leave the servos unplugged until the restart.",
+          "max_length": 69,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Come è azionata la coda. Lascia i servi scollegati fino al riavvio."
+        },
+        "swa_tail_title": {
+          "english": "Tail type",
+          "max_length": 12,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Tipo di coda"
+        },
+        "swa_tail_variable": {
+          "english": "Pitch (servo)",
+          "max_length": 13,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Passo (servo)"
+        },
+        "swa_type_help_120": {
+          "english": "Three servos, 120° apart. The most common.",
+          "max_length": 46,
+          "needs_translation": false,
+          "translation": "Tre servi, distanziati di 120°. Il più comune."
+        },
+        "swa_type_help_135": {
+          "english": "Three servos, 135° apart.",
+          "max_length": 31,
+          "needs_translation": false,
+          "translation": "Tre servi, distanziati di 135°."
+        },
+        "swa_type_help_140": {
+          "english": "Three servos, 140° apart.",
+          "max_length": 31,
+          "needs_translation": false,
+          "translation": "Tre servi, distanziati di 140°."
+        },
+        "swa_type_help_90l": {
+          "english": "Two servos, front and left, 90° apart.",
+          "max_length": 52,
+          "needs_translation": false,
+          "translation": "Due servi, davanti e a sinistra, distanziati di 90°."
+        },
+        "swa_type_help_90v": {
+          "english": "Two servos, front left and front right.",
+          "max_length": 49,
+          "needs_translation": false,
+          "translation": "Due servi, davanti a sinistra e davanti a destra."
+        },
+        "swa_type_help_direct": {
+          "english": "Pitch, roll and collective on servos 1-3, for a mechanical mixer.",
+          "max_length": 73,
+          "needs_translation": false,
+          "translation": "Ciclico, rollio e collettivo sui servi 1-3, per un miscelatore meccanico."
+        },
+        "swa_type_text": {
+          "english": "The servo numbers are the flight controller's servo outputs. Servo 1 can be in front of the main shaft or behind it.",
+          "max_length": 124,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "I numeri dei servo sono le uscite servo del flight controller. Il servo 1 può trovarsi davanti o dietro l'albero principale."
+        },
+        "swa_type_title": {
+          "english": "Swashplate type",
+          "max_length": 15,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Tipo di piatto"
+        },
+        "tal_cal": {
+          "english": "The tail is held at 22.5° each way. Measure the tail blade pitch and adjust until it reads 22.5°. No pitch gauge? Fold a square of paper corner to corner (45°): seen from the tail tip, the fold fits flush between the blades.",
+          "max_length": 225,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "La coda è tenuta a 22,5° per lato. Misura il passo delle pale di coda e regola finché legge 22,5°. Niente misuratore? Piega un quadrato di carta da angolo ad angolo (45°): visto dalla punta, la piega entra esatta tra le pale."
+        },
+        "tal_cal_title": {
+          "english": "Tail calibration",
+          "max_length": 16,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Calibra coda"
+        },
+        "tal_ccw": {
+          "english": "CCW limit",
+          "max_length": 14,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Limite antior."
+        },
+        "tal_centre": {
+          "english": "The tail is held at zero. Adjust until the tail blades have zero pitch.",
+          "max_length": 72,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "La coda è tenuta a zero. Regola finché le pale di coda hanno passo zero."
+        },
+        "tal_centre_title": {
+          "english": "Tail centre",
+          "max_length": 11,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Centro coda"
+        },
+        "tal_cw": {
+          "english": "CW limit",
+          "max_length": 13,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Limite orario"
+        },
+        "tal_dir": {
+          "english": "Push the yaw stick right. The tail blades should push the tail left, turning the nose right.",
+          "max_length": 118,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Spingi lo stick dell'imbardata a destra. Le pale di coda devono spingere la coda a sinistra, girando il muso a destra."
+        },
+        "tal_dir_title": {
+          "english": "Tail direction",
+          "max_length": 14,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Verso coda"
+        },
+        "tal_done": {
+          "english": "The tail rotor is set up.",
+          "max_length": 30,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Il rotore di coda è impostato."
+        },
+        "tal_done_title": {
+          "english": "Tail done",
+          "max_length": 10,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Coda fatta"
+        },
+        "tal_idle": {
+          "english": "The power the tail motor keeps at zero yaw. Blades still off.",
+          "max_length": 75,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "La potenza che il motore di coda tiene a imbardata zero. Pale ancora tolte."
+        },
+        "tal_idle_title": {
+          "english": "Tail idle",
+          "max_length": 11,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Minimo coda"
+        },
+        "tal_idle_value": {
+          "english": "Tail idle",
+          "max_length": 11,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Minimo coda"
+        },
+        "tal_intro": {
+          "english": "Check the tail servo with the tail blades off: centre, direction, travel and end stops.",
+          "max_length": 87,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Verifica il servo coda con le pale di coda tolte: centro, verso, corsa e fine corsa."
+        },
+        "tal_lim_ccw": {
+          "english": "Now the other way. Lower the limit until the slider stops short of binding.",
+          "max_length": 80,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Ora l'altro lato. Abbassa il limite finché il cursore si ferma prima di forzare."
+        },
+        "tal_lim_cw": {
+          "english": "The tail is held at full travel one way. Lower the limit until the slider stops short of binding.",
+          "max_length": 105,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "La coda è tenuta a fondo corsa da un lato. Abbassa il limite finché il cursore si ferma prima di forzare."
+        },
+        "tal_lim_title": {
+          "english": "Tail end stops",
+          "max_length": 15,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Fine corsa coda"
+        },
+        "tal_motor": {
+          "english": "Take the tail blades off. Spin the tail motor at low power to check it runs.",
+          "max_length": 84,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Togli le pale di coda. Fai girare il motore di coda a bassa potenza per verificarlo."
+        },
+        "tal_motor_title": {
+          "english": "Tail motor",
+          "max_length": 11,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Motore coda"
+        },
+        "tal_no_motor": {
+          "english": "No tail motor output (motor 2) on this flight controller.",
+          "max_length": 66,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Nessuna uscita motore coda (motore 2) su questo flight controller."
+        },
+        "tal_ok": {
+          "english": "Correct",
+          "max_length": 7,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Giusto"
+        },
+        "tal_other_side": {
+          "english": "Swap",
+          "max_length": 7,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Inverti"
+        },
+        "tal_output": {
+          "english": "Tail motor",
+          "max_length": 11,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Motore coda"
+        },
+        "tal_power": {
+          "english": "Test power",
+          "max_length": 12,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Potenza test"
+        },
+        "tal_rate": {
+          "english": "Tail rate",
+          "max_length": 9,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Rate coda"
+        },
+        "tal_reverse": {
+          "english": "Wrong way",
+          "max_length": 12,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Verso errato"
+        },
+        "tal_run_idle": {
+          "english": "Run idle",
+          "max_length": 12,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Avvia minimo"
+        },
+        "tal_running": {
+          "english": "Running",
+          "max_length": 7,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "In moto"
+        },
+        "tal_side": {
+          "english": "Held side",
+          "max_length": 11,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Lato tenuto"
+        },
+        "tal_spin": {
+          "english": "Spin",
+          "max_length": 4,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Gira"
+        },
+        "tal_spin_rev": {
+          "english": "Reverse",
+          "max_length": 7,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Inverso"
+        },
+        "tal_stop": {
+          "english": "Stop",
+          "max_length": 4,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Stop"
+        },
+        "tal_stopped": {
+          "english": "Stopped",
+          "max_length": 7,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Fermo"
+        },
+        "tal_title": {
+          "english": "Tail rotor",
+          "max_length": 11,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Rotore coda"
+        },
+        "tal_trim": {
+          "english": "Centre trim",
+          "max_length": 11,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Trim centro"
+        },
+        "tal_use_idle": {
+          "english": "Use test",
+          "max_length": 8,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Usa test"
+        }
+      },
       "stats": {
         "flightcount": {
           "english": "Flight Count",
@@ -8591,6 +11559,22 @@
           "needs_translation": true,
           "reverse_text": false,
           "translation": "Yaw"
+        }
+      },
+      "wizards": {
+        "model_setup": {
+          "english": "Model setup",
+          "max_length": 15,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Config. modello"
+        },
+        "name": {
+          "english": "Wizards",
+          "max_length": 10,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Assistenti"
         }
       }
     },

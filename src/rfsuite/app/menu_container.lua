@@ -285,9 +285,29 @@ local function openScreen(nav, menus, rootEntries, screen, setEventHandler, setW
   -- before navigating here.
   setWakeupHandler(nil)
   if setPaintHandler then
-    -- No paint of its own: the armed state is shown on the locked tiles (the
-    -- forbidden sign below), not by a frame over the whole menu.
-    setPaintHandler(nil)
+    -- Armed frame and badge, drawn over the menu while armed. The form draws its
+    -- headings and separator lines over the frame's left edge (see the PR body).
+    setPaintHandler(function()
+      local ok, armed = pcall(armedState)
+      if ok and armed == true then
+        local w, h = lcd.getWindowSize()
+        lcd.color(lcd.RGB(214, 40, 40))
+        lcd.drawFilledRectangle(0, 0, w, 4)
+        lcd.drawFilledRectangle(0, h - 4, w, 4)
+        lcd.drawFilledRectangle(0, 0, 4, h)
+        lcd.drawFilledRectangle(w - 4, 0, 4, h)
+        -- Armed badge, top-left, as on the dashboard widget
+        local label = "@i18n(widgets.dashboard.info_armed)@"
+        lcd.font(FONT_S)
+        local tw, th = lcd.getTextSize(label)
+        -- centred on the top edge of the frame
+        local bx = math.floor((w - tw - 12) / 2)
+        lcd.color(lcd.RGB(214, 40, 40))
+        lcd.drawFilledRectangle(bx, 0, tw + 12, th + 6)
+        lcd.color(lcd.RGB(255, 255, 255))
+        lcd.drawText(bx + 6, 3, label)
+      end
+    end)
   end
   if setCleanupHandler then
     setCleanupHandler(nil)
@@ -385,8 +405,8 @@ local function openScreen(nav, menus, rootEntries, screen, setEventHandler, setW
           -- locked tile is disabled while armed (below), so this branch is
           -- normally unreachable: it is the guard for the tick in which the
           -- arm state changed and the grid has not been rebuilt yet. It is
-          -- deliberately silent -- the forbidden sign carries the state, and
-          -- a refused press answers with nothing (#2302).
+          -- deliberately silent -- the forbidden sign and the red frame carry
+          -- the state, and a refused press answers with nothing (#2302).
           if entryIsLockedNow(entry) then return end
           if not canOpenEntry(entry, taskGuard) then
             if taskGuard and (not taskGuard.isRunning()) and taskGuard.requestAlert then

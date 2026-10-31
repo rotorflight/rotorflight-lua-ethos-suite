@@ -134,18 +134,6 @@ local function open(opts)
       updateSaveEnabled()
     end)
 
-  -- Red "Armed" bar on the dashboard while armed (#2352). Default on.
-  form.addBooleanField(displayPanel:addLine("@i18n(app.modules.settings.armed_warning)@"), nil,
-    function()
-      return settings and settings.general and settings.general.armed_warning ~= false
-    end,
-    function(value)
-      if not settings then return end
-      settings.general = settings.general or {}
-      settings.general.armed_warning = value == true
-      updateSaveEnabled()
-    end)
-
   local developmentPanel = form.addExpansionPanel("@i18n(app.modules.settings.txt_developer)@")
   developmentPanel:open(false)
 
