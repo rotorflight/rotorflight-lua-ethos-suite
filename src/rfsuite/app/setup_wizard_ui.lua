@@ -249,6 +249,8 @@ end
 --   {label =, choice = {values, get, set}, disabled =}
 --                                  a drop-down where the answers sit, as EdgeTX's
 --                                  choice fields (values as {{text, value}, ...})
+--   {label =, pair = {{min, max, get, set}, {min, max, get, set}}, disabled =}
+--                                  two numbers side by side, "a : b", where the answers sit
 --   {label =, number = {min, max, get, set, suffix}, disabled =}
 --                                  a value to edit: the label, a number field
 --                                  where the answers sit
@@ -260,6 +262,8 @@ end
 local CHECK_ROW_GAP = 8
 local CHECK_BUTTON_SHARE = 0.2
 local CHECK_BUTTON_MIN = 64
+-- The width of the ":" between the two numbers of a pair row.
+local PAIR_SEP = 18
 -- A marked row (checks(): marked = true or false) keeps room for its tick.
 local MARK_SIZE = 22
 local MARK_GAP = 10
@@ -295,7 +299,7 @@ function Screen:checks(list, focus)
       lcd.font(FONT_S)
       -- A label with nothing beside it (no button, field or value) has the width.
       local w = (c.press or c.number or c.toggle or c.value or c.choice or c.switch) and labelW or (room - x)
-      if c.choice or c.number or c.switch then w = choiceLabelW end
+      if c.choice or c.number or c.switch or c.pair then w = choiceLabelW end
       local lines = self.wiz.wrapLines(c.label, w, FONT_S)
       if #lines > 2 then lines = {lines[1], ui.fit(table.concat(lines, " ", 2), w)} end
       row.labelLines = lines
@@ -322,6 +326,7 @@ function Screen:checks(list, focus)
       -- As wide as a drop-down beside it: the same column.
       local f = form.addNumberField(nil, {x = room - cw, y = y, w = cw, h = h}, n[1], n[2], get, set)
       if n[5] and f.suffix then f:suffix(n[5]) end
+      if n[6] and f.decimals then f:decimals(n[6]) end
       self.buttonList[#self.buttonList + 1] = {field = f, needsMotion = c.needsMotion, disabled = c.disabled}
       if i == focus then field = f end
       row.y = y + floor((h - lineH) / 2)
@@ -359,6 +364,22 @@ function Screen:checks(list, focus)
       if i == focus then field = f end
       row.y = y + floor((h - lineH) / 2)
       y = y + h + CHECK_ROW_GAP
+    elseif c.pair then
+      -- Two numbers side by side with a colon between them, in the answers' place.
+      local half = floor((cw - PAIR_SEP) / 2)
+      local x1 = room - cw
+      local x2 = x1 + half + PAIR_SEP
+      local first
+      for k, n in ipairs(c.pair) do
+        local get, set = ui.value("check_" .. i .. "_" .. k, n[3], n[4])
+        local f = form.addNumberField(nil, {x = k == 1 and x1 or x2, y = y, w = half, h = h}, n[1], n[2], get, set)
+        self.buttonList[#self.buttonList + 1] = {field = f, needsMotion = c.needsMotion, disabled = c.disabled}
+        if k == 1 then first = f end
+      end
+      if i == focus then field = first end
+      row.y = y + floor((h - lineH) / 2)
+      row.sep = {x = x1 + half + floor(PAIR_SEP / 2), y = row.y}
+      y = y + h + CHECK_ROW_GAP
     elseif c.note then
       local noteX = hasMark and (x + MARK_SIZE + MARK_GAP) or x
       row.lines = self.wiz.wrapLines(c.note, room - noteX, FONT_S)
@@ -372,7 +393,7 @@ function Screen:checks(list, focus)
     end
     if row.labelLines then
       -- Beside a button the label is centred on it; a plain fact sits on its line.
-      local centred = c.press or c.number or c.toggle or c.choice or c.switch
+      local centred = c.press or c.number or c.toggle or c.choice or c.switch or c.pair
       row.labelY = centred and (rowTop + floor((h - #row.labelLines * lineH) / 2)) or rowTop
     end
     v.checks[i] = row
@@ -697,6 +718,10 @@ function Screen:paint()
         for j = 1, #c.labelLines do lcd.drawText(v.checksX, c.labelY + (j - 1) * labelH, c.labelLines[j], LEFT) end
       end
       if c.value then lcd.drawText(c.valueX, c.y, c.value, LEFT) end
+      if c.sep then
+        lcd.color(colors.text)
+        lcd.drawText(c.sep.x, c.sep.y, ":", CENTERED)
+      end
       if c.lines then
         lcd.color(c.muted and colors.muted or colors.active)
         local _, lineH = lcd.getTextSize("Ag")

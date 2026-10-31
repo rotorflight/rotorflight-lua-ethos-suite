@@ -8276,6 +8276,60 @@
           "reverse_text": false,
           "translation": "Swashplate"
         },
+        "gov_intro": {
+          "english": "How the flight controller drives the motor. Pick the governor mode; the throttle type is for electric and nitro.",
+          "max_length": 112,
+          "needs_translation": false,
+          "translation": "Hvordan flykontrolleren driver motoren. Velg governormodus; gasstypen gjelder for elektrisk og nitro."
+        },
+        "gov_prepare_text": {
+          "english": "Keep the servos unplugged and the blades off. The governor is set here; it runs once the model is connected.",
+          "max_length": 108,
+          "needs_translation": false,
+          "translation": "La servoene være frakoblet og ta av bladene. Governoren stilles inn her; den kjører etter at modellen er tilkoblet."
+        },
+        "gov_profile_fmt": {
+          "english": "Profile %d",
+          "max_length": 10,
+          "needs_translation": false,
+          "translation": "Profil %d"
+        },
+        "gov_row_mode": {
+          "english": "Governor mode",
+          "max_length": 13,
+          "needs_translation": false,
+          "translation": "Governormodus"
+        },
+        "gov_row_throttle": {
+          "english": "Throttle type",
+          "max_length": 13,
+          "needs_translation": false,
+          "translation": "Gasstype"
+        },
+        "gov_rpm_next": {
+          "english": "A governor needs an RPM signal: the next step sets it.",
+          "max_length": 54,
+          "needs_translation": false,
+          "translation": "En governor trenger et RPM-signal: neste steg setter det."
+        },
+        "gov_rpm_unit": {
+          "english": "rpm",
+          "max_length": 3,
+          "needs_translation": false,
+          "translation": "o/min"
+        },
+        "gov_speed_text": {
+          "english": "The headspeed of each PID profile, as the flight controller holds it. Set it for the profiles the profile switch uses.",
+          "max_length": 118,
+          "needs_translation": false,
+          "translation": "Turtallet for hver PID-profil, slik flykontrolleren holder det. Still det inn for profilene profilbryteren bruker."
+        },
+        "gov_speed_title": {
+          "english": "Headspeed",
+          "max_length": 9,
+          "needs_translation": false,
+          "translation": "Turtall"
+        },
         "gyr_against": {
           "english": "Against",
           "max_length": 7,
@@ -8640,6 +8694,20 @@
           "reverse_text": false,
           "translation": "DShot150 sender ikke turtall. Governor og RPM-filter krever DShot300 eller en turtallsensor."
         },
+        "mot_inter_main": {
+          "english": "Intermediate, main gear side",
+          "max_length": 28,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Mellomhjul, hovedtannhjulsiden"
+        },
+        "mot_inter_pinion": {
+          "english": "Intermediate, pinion side",
+          "max_length": 25,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Mellomhjul, pinjongsiden"
+        },
         "mot_intro": {
           "english": "How does the FC talk to the ESC? Use PWM if unsure. Blades off.",
           "max_length": 65,
@@ -8654,19 +8722,26 @@
           "reverse_text": false,
           "translation": "Tenner hovedhjul"
         },
-        "mot_main_gear_text": {
-          "english": "Teeth on the main gear.",
-          "max_length": 26,
-          "needs_translation": false,
-          "reverse_text": false,
-          "translation": "Tenner på hovedtannhjulet."
-        },
         "mot_main_ratio": {
           "english": "Main ratio",
           "max_length": 10,
           "needs_translation": false,
           "reverse_text": false,
           "translation": "Hovedutv."
+        },
+        "mot_main_text": {
+          "english": "Count the teeth on the pinion and the main gear.",
+          "max_length": 48,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Tell tennene på pinjongen og hovedtannhjulet."
+        },
+        "mot_main_title": {
+          "english": "Main gear ratio",
+          "max_length": 15,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Hovedutveksling"
         },
         "mot_other": {
           "english": "Other",
@@ -8675,19 +8750,54 @@
           "reverse_text": false,
           "translation": "Annet"
         },
+        "mot_pair_main_mesh": {
+          "english": "Intermediate : main gear",
+          "max_length": 24,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Mellomhjul : hovedtannhjul"
+        },
+        "mot_pair_single": {
+          "english": "Pinion : main gear",
+          "max_length": 18,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Pinjong : hovedtannhjul"
+        },
+        "mot_pair_stage1": {
+          "english": "Pinion : intermediate",
+          "max_length": 21,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Pinjong : mellomhjul"
+        },
+        "mot_pair_stage2": {
+          "english": "Intermediate : main gear",
+          "max_length": 24,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Mellomhjul : hovedtannhjul"
+        },
+        "mot_pair_tail": {
+          "english": "Drive : tail rotor gear",
+          "max_length": 23,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Drev : halerotortannhjul"
+        },
+        "mot_pair_tail_shaft": {
+          "english": "Pulley : tail rotor pulley",
+          "max_length": 26,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Reimskive : halereimskive"
+        },
         "mot_pinion": {
           "english": "Pinion teeth",
           "max_length": 14,
           "needs_translation": false,
           "reverse_text": false,
           "translation": "Tenner pinjong"
-        },
-        "mot_pinion_text": {
-          "english": "Teeth on the motor pinion.",
-          "max_length": 26,
-          "needs_translation": false,
-          "reverse_text": false,
-          "translation": "Tenner på motorpinjongen."
         },
         "mot_poles": {
           "english": "Motor poles",
@@ -8703,12 +8813,25 @@
           "reverse_text": false,
           "translation": "Magnetpoler i hovedmotoren, fra databladet (ofte 10 eller 12)."
         },
+        "mot_prepare_text": {
+          "english": "Keep the servos unplugged and the blades off. The ESC runs as soon as the helicopter is armed.",
+          "max_length": 96,
+          "needs_translation": true,
+          "translation": "La servoene være frakoblet og ta av bladene. Regulatoren kjører så snart helikopteret er armert."
+        },
         "mot_protocol": {
           "english": "Protocol",
           "max_length": 9,
           "needs_translation": false,
           "reverse_text": false,
           "translation": "Protokoll"
+        },
+        "mot_ratio_direct": {
+          "english": "Gear ratio",
+          "max_length": 10,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Utveksling"
         },
         "mot_ratio_fmt": {
           "english": "%.2f:1",
@@ -8717,6 +8840,69 @@
           "reverse_text": false,
           "translation": "%.2f:1"
         },
+        "mot_restart_note": {
+          "english": "Applies after restart",
+          "max_length": 21,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Gjelder etter omstart"
+        },
+        "mot_stage": {
+          "english": "Gear train",
+          "max_length": 10,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Girkasse"
+        },
+        "mot_stage_direct": {
+          "english": "Ratio only",
+          "max_length": 10,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Bare utveksling"
+        },
+        "mot_stage_one": {
+          "english": "One stage",
+          "max_length": 9,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Ett trinn"
+        },
+        "mot_stage_two": {
+          "english": "Two stages",
+          "max_length": 10,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "To trinn"
+        },
+        "mot_tail_drive_pulley": {
+          "english": "Pulley on the intermediate shaft",
+          "max_length": 32,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Reimskive på mellomakselen"
+        },
+        "mot_tail_from": {
+          "english": "Tail drive from",
+          "max_length": 15,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Halerotordrift fra"
+        },
+        "mot_tail_from_inter": {
+          "english": "Intermediate shaft",
+          "max_length": 18,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Mellomaksel"
+        },
+        "mot_tail_from_main": {
+          "english": "Main shaft",
+          "max_length": 10,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Hovedaksel"
+        },
         "mot_tail_in": {
           "english": "Tail gear in",
           "max_length": 12,
@@ -8724,12 +8910,12 @@
           "reverse_text": false,
           "translation": "Halehjul inn"
         },
-        "mot_tail_in_text": {
-          "english": "Teeth on the tail drive gear at the main shaft (or its pulley).",
-          "max_length": 63,
+        "mot_tail_needs_two": {
+          "english": "Needs a two-stage main gear.",
+          "max_length": 28,
           "needs_translation": false,
           "reverse_text": false,
-          "translation": "Tenner på haledrivhjulet ved hovedakselen (eller remskiven)."
+          "translation": "Bare med to-trinns hovedutveksling."
         },
         "mot_tail_out": {
           "english": "Tail gear out",
@@ -8738,19 +8924,33 @@
           "reverse_text": false,
           "translation": "Halehjul ut"
         },
-        "mot_tail_out_text": {
-          "english": "Teeth on the tail rotor shaft gear (or its pulley).",
-          "max_length": 55,
-          "needs_translation": false,
-          "reverse_text": false,
-          "translation": "Tenner på hjulet på halerotorakselen (eller remskiven)."
-        },
         "mot_tail_ratio": {
           "english": "Tail ratio",
           "max_length": 10,
           "needs_translation": false,
           "reverse_text": false,
           "translation": "Haleutv."
+        },
+        "mot_tail_rotor_pulley": {
+          "english": "Tail rotor pulley",
+          "max_length": 17,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Reimskive halerotor"
+        },
+        "mot_tail_text": {
+          "english": "Ratio from the main rotor to the tail, always counted from the main rotor shaft. Count the teeth or pulleys of the tail drive.",
+          "max_length": 126,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Utveksling fra hovedrotoren til halen, alltid fra hovedrotoraksen. Tell tennene eller reimskivene i drevet."
+        },
+        "mot_tail_title": {
+          "english": "Tail gear ratio",
+          "max_length": 15,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Halerotorutveksling"
         },
         "mot_title": {
           "english": "ESC protocol",
@@ -9785,6 +9985,30 @@
           "reverse_text": false,
           "translation": "Hale"
         },
+        "rpm_dshot": {
+          "english": "Bidirectional DShot",
+          "max_length": 19,
+          "needs_translation": false,
+          "translation": "Toveis DShot"
+        },
+        "rpm_intro": {
+          "english": "Where the headspeed comes from: a wire from an RPM sensor or the ESC, or bidirectional DShot telemetry.",
+          "max_length": 103,
+          "needs_translation": false,
+          "translation": "Hvor turtallet kommer fra: en ledning fra en RPM-sensor eller regulatoren, eller toveis DShot-telemetri."
+        },
+        "rpm_row_source": {
+          "english": "RPM source",
+          "max_length": 10,
+          "needs_translation": false,
+          "translation": "RPM-kilde"
+        },
+        "rpm_wire": {
+          "english": "Wire",
+          "max_length": 4,
+          "needs_translation": false,
+          "translation": "Ledning"
+        },
         "sen_acc_busy": {
           "english": "Calibrating... keep it still.",
           "max_length": 29,
@@ -10106,6 +10330,12 @@
           "needs_translation": false,
           "reverse_text": false,
           "translation": "Fullfør"
+        },
+        "step_governor": {
+          "english": "Governor",
+          "max_length": 8,
+          "needs_translation": false,
+          "translation": "Governor"
         },
         "step_gyro": {
           "english": "Gyro check",

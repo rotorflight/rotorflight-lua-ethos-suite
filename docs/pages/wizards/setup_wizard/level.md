@@ -6,12 +6,12 @@ sidebar_position: 100
 
 # Level swash
 
-Step 12 of the Model setup wizard. It trims the swash until it is level and the blades are at
+Step 13 of the Model setup wizard. It trims the swash until it is level and the blades are at
 zero pitch.
 
 ## Where to find it
 
-*Configuration* → *Wizards* → *Model setup*, step 12 *Level swash*. Three trim screens, one
+*Configuration* → *Wizards* → *Model setup*, step 13 *Level swash*. Three trim screens, one
 each for Roll, Pitch and Collective.
 
 Only inside the wizard. Greyed out until the flight controller answers. Read-only while the

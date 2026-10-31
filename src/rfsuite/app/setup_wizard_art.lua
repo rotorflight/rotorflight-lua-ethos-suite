@@ -504,19 +504,30 @@ function art.gears(a, b, focus, aLabel, bLabel, ratioLabel)
     ratioLabel = ratioLabel}
 end
 
-local function gear(cx, cy, r, teeth, on, colors)
-  lcd.color(on and colors.active or colors.surface)
-  lcd.drawFilledCircle(cx, cy, floor(r * 0.86))
+-- A gear in the line style of the PNG pictures: its rim, its teeth and its hub as
+-- outlines; the one being set in blue.
+-- A gear with its ring hidden behind it: `solid` fills the disc with the background
+-- first, so a gear drawn after hides the outline of one drawn before.
+local function gear(cx, cy, r, teeth, on, colors, solid)
+  local rim = floor(r * 0.82)
+  if solid then
+    lcd.color(colors.bg)
+    lcd.drawFilledCircle(cx, cy, rim)
+  end
+  lcd.color(on and colors.blue or colors.line)
+  lcd.drawCircle(cx, cy, rim)
+  lcd.drawCircle(cx, cy, rim - 1)
   local n = math.min(math.max(teeth, 6), 60)
   for i = 0, n - 1 do
     local deg = i * 360 / n
-    local x1, y1 = onCircle(cx, cy, r * 0.8, deg)
+    local x1, y1 = onCircle(cx, cy, rim, deg)
     local x2, y2 = onCircle(cx, cy, r, deg)
     lcd.drawLine(x1, y1, x2, y2)
     lcd.drawLine(x1 + 1, y1, x2 + 1, y2)
   end
-  lcd.color(colors.body)
-  lcd.drawFilledCircle(cx, cy, math.max(2, floor(r * 0.18)))
+  local hub = math.max(2, floor(r * 0.2))
+  lcd.drawCircle(cx, cy, hub)
+  if on then lcd.drawFilledCircle(cx, cy, math.max(1, hub - 2)) end
 end
 
 local function drawGears(l, x, y, w, h, colors)
@@ -538,10 +549,93 @@ local function drawGears(l, x, y, w, h, colors)
     lcd.drawText(x + floor(w / 2), y, l.ratioLabel, CENTERED)
   end
   local ly = cy + rmax + 4
-  lcd.color(l.focus == 1 and colors.active or colors.text)
+  lcd.color(l.focus == 1 and colors.blue or colors.text)
   if l.aLabel then lcd.drawText(ca, ly, l.aLabel, CENTERED) end
-  lcd.color(l.focus == 2 and colors.active or colors.text)
+  lcd.color(l.focus == 2 and colors.blue or colors.text)
   if l.bLabel then lcd.drawText(cb, ly, l.bLabel, CENTERED) end
+end
+
+-- A two-stage gear train with an intermediate shaft (a SAB Goblin's): the pinion
+-- meshes the intermediate gear on the pinion side, and the intermediate gear on the
+-- main side, on the same shaft, meshes the main gear. teeth = {pinion, intermediate small, intermediate
+-- large, main}; focus: 1 to 4, the one being set; ratioLabel: e.g. "11.56:1".
+function art.gearTrain(teeth, focus, ratioLabel, noCounts)
+  return {kind = "gearTrain", teeth = teeth or {}, focus = focus, ratioLabel = ratioLabel, noCounts = noCounts}
+end
+
+-- Side view, as the gearbox drawings: the shafts stand upright, each gear is a bar on
+-- its shaft (its length the pitch diameter, so the meshes touch end to end), and the two
+-- stages sit one above the other. Tooth tips stand out on the top edge, and the count
+-- sits under each gear. The gear last set is blue.
+local function drawGearTrain(l, x, y, w, h, colors)
+  local t = l.teeth
+  local t1, ts, tl, t4 = t[1] or 1, t[2] or 1, t[3] or 1, t[4] or 1
+  lcd.font(FONT_S)
+  local _, th = lcd.getTextSize("Ag")
+  if l.ratioLabel then
+    lcd.color(colors.text)
+    lcd.drawText(x + floor(w / 2), y, l.ratioLabel, CENTERED)
+  end
+  -- The width reaches the farther end: the pinion-side gear hangs off its shaft to both sides.
+  local units = math.max(t1 + ts, t1 + t4 + (ts + tl) / 2)
+  local k = (w - 8) / units
+  if k <= 0 then return end
+  local r1, rA, rB, r4 = k * t1 / 2, k * ts / 2, k * tl / 2, k * t4 / 2
+  local left = x + 4
+  local xm = left + r1          -- motor shaft: the pinion
+  local xi = xm + r1 + rA       -- intermediate shaft: pinion-side and main-side gears
+  local xr = xi + rB + r4       -- main rotor shaft: the main gear
+  -- The gears' height: the text line plus a little, less when the picture is short.
+  local barH = math.max(8, math.min(th + 6, floor((h - 3 * th - 20) / 2)))
+  local top2 = floor(y + th + 6)                  -- upper stage: main side
+  local top1 = floor(top2 + barH + th + 12)       -- lower stage: pinion side
+  local SHAFT = 4
+  -- Shafts first, short: each from just above its top gear to just below its bottom one.
+  lcd.color(colors.surface)
+  local function shaft(sx, y0, y1)
+    lcd.drawFilledRectangle(floor(sx) - 2, y0, SHAFT, y1 - y0)
+  end
+  shaft(xm, top1 - 6, top1 + barH + 6)
+  shaft(xi, top2 - 6, top1 + barH + 6)
+  shaft(xr, top2 - 6, top2 + barH + 6)
+  -- A gear: a bar with tooth tips on its top edge. Shrunk by a pixel at each end, so
+  -- meshing gears show a seam.
+  local function gear(cx, top, r, teeth, on)
+    local x0 = floor(cx - r) + 1
+    local len = math.max(2, floor(2 * r) - 2)
+    lcd.color(on and colors.blue or colors.body)
+    lcd.drawFilledRectangle(x0, top, len, barH)
+    lcd.color(colors.line)
+    lcd.drawRectangle(x0, top, len, barH)
+    -- The tooth flanks: grooves across the face, at equal angles round a half-turn, so
+    -- they are wide in the middle and close at the edges.
+    local n = math.max(3, math.min(teeth, 14))
+    lcd.color(colors.bg)
+    for i = 1, n - 1 do
+      local theta = -math.pi / 2 + i * math.pi / n
+      local gx = floor(x0 + len / 2 * (1 + math.sin(theta)))
+      lcd.drawLine(gx, top + 2, gx, top + barH - 3)
+    end
+  end
+  -- Each count sits under its gear on a plate, which hides the shaft behind the text.
+  local function count(cx, top, text, on)
+    local tw = lcd.getTextSize(text)
+    local ly = top + barH + 2
+    lcd.color(colors.bg)
+    lcd.drawFilledRectangle(floor(cx) - floor(tw / 2) - 2, ly, tw + 4, th)
+    lcd.color(on and colors.blue or colors.text)
+    lcd.drawText(floor(cx), ly, text, CENTERED)
+  end
+  gear(xi, top2, rB, tl, l.focus == 3)
+  gear(xr, top2, r4, t4, l.focus == 4)
+  gear(xm, top1, r1, t1, l.focus == 1)
+  gear(xi, top1, rA, ts, l.focus == 2)
+  if not l.noCounts then
+    count(xi, top2, tostring(tl), l.focus == 3)
+    count(xr, top2, tostring(t4), l.focus == 4)
+    count(xm, top1, tostring(t1), l.focus == 1)
+    count(xi, top1, tostring(ts), l.focus == 2)
+  end
 end
 
 ---------------------------------------------------------------------------
@@ -552,19 +646,30 @@ function art.poles(poles, label)
   return {kind = "poles", poles = poles or 0, label = label}
 end
 
+-- The motor bell from the front, in the line style of the PNG pictures: the bell's
+-- rim and its stator ring as outlines, the magnets round the rim, north filled blue
+-- and south as an outline, in turn.
 local function drawPoles(l, x, y, w, h, colors)
   local cx, cy = x + floor(w / 2), y + floor(h / 2)
   local r = floor(min(w, h) * 0.4)
   local n = math.min(math.max(l.poles, 2), 40)
-  local dot = math.max(3, floor(r * math.pi / n * 0.4))
-  lcd.color(colors.body)
-  lcd.drawFilledCircle(cx, cy, r)
-  lcd.color(colors.muted)
-  lcd.drawFilledCircle(cx, cy, floor(r * 0.65))
+  -- A magnet is at most a sixth of the bell's radius and no wider than the gap to its
+  -- neighbours: with few poles the dots stay small, and every dot stays inside the ring.
+  local ring = r * 0.81
+  local dot = math.max(3, floor(math.min(r * 0.16, ring * math.sin(math.pi / n) * 0.6)))
+  lcd.color(colors.line)
+  lcd.drawCircle(cx, cy, r)
+  lcd.drawCircle(cx, cy, r - 1)
+  lcd.drawCircle(cx, cy, floor(r * 0.62))
   for i = 0, n - 1 do
-    local px, py = onCircle(cx, cy, r * 0.83, 90 + i * 360 / n)
-    lcd.color(i % 2 == 0 and colors.active or colors.surface)
-    lcd.drawFilledCircle(px, py, dot)
+    local px, py = onCircle(cx, cy, ring, 90 + i * 360 / n)
+    if i % 2 == 0 then
+      lcd.color(colors.blue)
+      lcd.drawFilledCircle(px, py, dot)
+    else
+      lcd.color(colors.line)
+      lcd.drawCircle(px, py, dot)
+    end
   end
   if l.label then
     lcd.font(FONT_STD)
@@ -1212,6 +1317,8 @@ function art.draw(l, x, y, w, h, colors)
     drawPulse(l, x, y, w, h, colors)
   elseif k == "gears" then
     drawGears(l, x, y, w, h, colors)
+  elseif k == "gearTrain" then
+    drawGearTrain(l, x, y, w, h, colors)
   elseif k == "poles" then
     drawPoles(l, x, y, w, h, colors)
   elseif k == "map" then
@@ -1251,6 +1358,10 @@ function art.colors()
       muted = dark and lcd.GREY(170) or lcd.GREY(90),
       good = lcd.RGB(70, 190, 100),
       bad = lcd.RGB(230, 70, 60),
+      -- The line style of the wizard's PNG pictures: the light outline and the blue accent.
+      line = dark and lcd.RGB(168, 206, 230) or lcd.RGB(70, 110, 140),
+      bg = dark and lcd.GREY(25) or lcd.GREY(245),
+      blue = lcd.RGB(60, 168, 236),
     }
   end
   return cachedColors

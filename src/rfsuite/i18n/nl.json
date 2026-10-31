@@ -8276,6 +8276,60 @@
           "reverse_text": false,
           "translation": "Swashplate"
         },
+        "gov_intro": {
+          "english": "How the flight controller drives the motor. Pick the governor mode; the throttle type is for electric and nitro.",
+          "max_length": 112,
+          "needs_translation": false,
+          "translation": "Hoe de flight controller de motor aanstuurt. Kies de governormodus; het gastype geldt voor elektro en nitro."
+        },
+        "gov_prepare_text": {
+          "english": "Keep the servos unplugged and the blades off. The governor is set here; it runs once the model is connected.",
+          "max_length": 108,
+          "needs_translation": false,
+          "translation": "Laat de servo's losgekoppeld en verwijder de bladen. De governor wordt hier ingesteld; hij werkt na het verbinden van het model."
+        },
+        "gov_profile_fmt": {
+          "english": "Profile %d",
+          "max_length": 10,
+          "needs_translation": false,
+          "translation": "Profiel %d"
+        },
+        "gov_row_mode": {
+          "english": "Governor mode",
+          "max_length": 13,
+          "needs_translation": false,
+          "translation": "Governormodus"
+        },
+        "gov_row_throttle": {
+          "english": "Throttle type",
+          "max_length": 13,
+          "needs_translation": false,
+          "translation": "Gastype"
+        },
+        "gov_rpm_next": {
+          "english": "A governor needs an RPM signal: the next step sets it.",
+          "max_length": 54,
+          "needs_translation": false,
+          "translation": "Een governor heeft een RPM-signaal nodig: de volgende stap stelt het in."
+        },
+        "gov_rpm_unit": {
+          "english": "rpm",
+          "max_length": 3,
+          "needs_translation": false,
+          "translation": "tpm"
+        },
+        "gov_speed_text": {
+          "english": "The headspeed of each PID profile, as the flight controller holds it. Set it for the profiles the profile switch uses.",
+          "max_length": 118,
+          "needs_translation": false,
+          "translation": "Het toerental van elk PID-profiel, zoals de flight controller het aanhoudt. Stel het in voor de profielen die de profielschakelaar gebruikt."
+        },
+        "gov_speed_title": {
+          "english": "Headspeed",
+          "max_length": 9,
+          "needs_translation": false,
+          "translation": "Toerental"
+        },
         "gyr_against": {
           "english": "Against",
           "max_length": 8,
@@ -8640,6 +8694,20 @@
           "reverse_text": false,
           "translation": "DShot150 geeft geen toerental. Governor en RPM-filter vereisen DShot300 of een toerentalsensor."
         },
+        "mot_inter_main": {
+          "english": "Intermediate, main gear side",
+          "max_length": 28,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Tussentandwiel, hoofdtandwielzijde"
+        },
+        "mot_inter_pinion": {
+          "english": "Intermediate, pinion side",
+          "max_length": 25,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Tussentandwiel, rittelzijde"
+        },
         "mot_intro": {
           "english": "How does the FC talk to the ESC? Use PWM if unsure. Blades off.",
           "max_length": 65,
@@ -8654,19 +8722,26 @@
           "reverse_text": false,
           "translation": "Tanden hoofdtandwiel"
         },
-        "mot_main_gear_text": {
-          "english": "Teeth on the main gear.",
-          "max_length": 28,
-          "needs_translation": false,
-          "reverse_text": false,
-          "translation": "Tanden op het hoofdtandwiel."
-        },
         "mot_main_ratio": {
           "english": "Main ratio",
           "max_length": 10,
           "needs_translation": false,
           "reverse_text": false,
           "translation": "Hoofdverh."
+        },
+        "mot_main_text": {
+          "english": "Count the teeth on the pinion and the main gear.",
+          "max_length": 48,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Tel de tanden van het rittel en het hoofdtandwiel."
+        },
+        "mot_main_title": {
+          "english": "Main gear ratio",
+          "max_length": 15,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Hoofdoverbrenging"
         },
         "mot_other": {
           "english": "Other",
@@ -8675,19 +8750,54 @@
           "reverse_text": false,
           "translation": "Anders"
         },
+        "mot_pair_main_mesh": {
+          "english": "Intermediate : main gear",
+          "max_length": 24,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Tussentandwiel : hoofdtandwiel"
+        },
+        "mot_pair_single": {
+          "english": "Pinion : main gear",
+          "max_length": 18,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Rittel : hoofdtandwiel"
+        },
+        "mot_pair_stage1": {
+          "english": "Pinion : intermediate",
+          "max_length": 21,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Rittel : tussentandwiel"
+        },
+        "mot_pair_stage2": {
+          "english": "Intermediate : main gear",
+          "max_length": 24,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Tussentandwiel : hoofdtandwiel"
+        },
+        "mot_pair_tail": {
+          "english": "Drive : tail rotor gear",
+          "max_length": 23,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Aandrijving : staartandwiel"
+        },
+        "mot_pair_tail_shaft": {
+          "english": "Pulley : tail rotor pulley",
+          "max_length": 26,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Riemschijf : staartriemschijf"
+        },
         "mot_pinion": {
           "english": "Pinion teeth",
           "max_length": 14,
           "needs_translation": false,
           "reverse_text": false,
           "translation": "Tanden rondsel"
-        },
-        "mot_pinion_text": {
-          "english": "Teeth on the motor pinion.",
-          "max_length": 27,
-          "needs_translation": false,
-          "reverse_text": false,
-          "translation": "Tanden op het motorrondsel."
         },
         "mot_poles": {
           "english": "Motor poles",
@@ -8703,12 +8813,25 @@
           "reverse_text": false,
           "translation": "Magneetpolen van de hoofdmotor, uit de datasheet (vaak 10 of 12)."
         },
+        "mot_prepare_text": {
+          "english": "Keep the servos unplugged and the blades off. The ESC runs as soon as the helicopter is armed.",
+          "max_length": 105,
+          "needs_translation": true,
+          "translation": "Laat de servo's losgekoppeld en verwijder de bladen. De regelaar draait zodra de helikopter scherp staat."
+        },
         "mot_protocol": {
           "english": "Protocol",
           "max_length": 8,
           "needs_translation": false,
           "reverse_text": false,
           "translation": "Protocol"
+        },
+        "mot_ratio_direct": {
+          "english": "Gear ratio",
+          "max_length": 10,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Overbrenging"
         },
         "mot_ratio_fmt": {
           "english": "%.2f:1",
@@ -8717,6 +8840,69 @@
           "reverse_text": false,
           "translation": "%.2f:1"
         },
+        "mot_restart_note": {
+          "english": "Applies after restart",
+          "max_length": 21,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Werkt na herstart"
+        },
+        "mot_stage": {
+          "english": "Gear train",
+          "max_length": 10,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Tandwielovergang"
+        },
+        "mot_stage_direct": {
+          "english": "Ratio only",
+          "max_length": 10,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Alleen verhouding"
+        },
+        "mot_stage_one": {
+          "english": "One stage",
+          "max_length": 9,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Enkele trap"
+        },
+        "mot_stage_two": {
+          "english": "Two stages",
+          "max_length": 10,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Dubbele trap"
+        },
+        "mot_tail_drive_pulley": {
+          "english": "Pulley on the intermediate shaft",
+          "max_length": 32,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Riemschijf op de tussenas"
+        },
+        "mot_tail_from": {
+          "english": "Tail drive from",
+          "max_length": 15,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Staartaandrijving vanaf"
+        },
+        "mot_tail_from_inter": {
+          "english": "Intermediate shaft",
+          "max_length": 18,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Tussenas"
+        },
+        "mot_tail_from_main": {
+          "english": "Main shaft",
+          "max_length": 10,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Hoofdas"
+        },
         "mot_tail_in": {
           "english": "Tail gear in",
           "max_length": 13,
@@ -8724,12 +8910,12 @@
           "reverse_text": false,
           "translation": "Staartwiel in"
         },
-        "mot_tail_in_text": {
-          "english": "Teeth on the tail drive gear at the main shaft (or its pulley).",
-          "max_length": 63,
+        "mot_tail_needs_two": {
+          "english": "Needs a two-stage main gear.",
+          "max_length": 28,
           "needs_translation": false,
           "reverse_text": false,
-          "translation": "Tanden op het staartaandrijfwiel aan de hoofdas (of de poelie)."
+          "translation": "Alleen met een dubbele hoofdoverbrenging."
         },
         "mot_tail_out": {
           "english": "Tail gear out",
@@ -8738,19 +8924,33 @@
           "reverse_text": false,
           "translation": "Staartwiel uit"
         },
-        "mot_tail_out_text": {
-          "english": "Teeth on the tail rotor shaft gear (or its pulley).",
-          "max_length": 55,
-          "needs_translation": false,
-          "reverse_text": false,
-          "translation": "Tanden op het wiel van de staartrotoras (of de poelie)."
-        },
         "mot_tail_ratio": {
           "english": "Tail ratio",
           "max_length": 11,
           "needs_translation": false,
           "reverse_text": false,
           "translation": "Staartverh."
+        },
+        "mot_tail_rotor_pulley": {
+          "english": "Tail rotor pulley",
+          "max_length": 17,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Riemschijf staartrotor"
+        },
+        "mot_tail_text": {
+          "english": "Ratio from the main rotor to the tail, always counted from the main rotor shaft. Count the teeth or pulleys of the tail drive.",
+          "max_length": 126,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Overbrenging van de hoofdrotor naar de staart, altijd vanaf de hoofdrotoras. Tel de tanden of riemschijven van de aandrijving."
+        },
+        "mot_tail_title": {
+          "english": "Tail gear ratio",
+          "max_length": 15,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Staartoverbrenging"
         },
         "mot_title": {
           "english": "ESC protocol",
@@ -9785,6 +9985,30 @@
           "reverse_text": false,
           "translation": "Staart"
         },
+        "rpm_dshot": {
+          "english": "Bidirectional DShot",
+          "max_length": 19,
+          "needs_translation": false,
+          "translation": "Bidirectioneel DShot"
+        },
+        "rpm_intro": {
+          "english": "Where the headspeed comes from: a wire from an RPM sensor or the ESC, or bidirectional DShot telemetry.",
+          "max_length": 103,
+          "needs_translation": false,
+          "translation": "Waar het toerental vandaan komt: een draad van een RPM-sensor of de regelaar, of bidirectionele DShot-telemetrie."
+        },
+        "rpm_row_source": {
+          "english": "RPM source",
+          "max_length": 10,
+          "needs_translation": false,
+          "translation": "RPM-bron"
+        },
+        "rpm_wire": {
+          "english": "Wire",
+          "max_length": 4,
+          "needs_translation": false,
+          "translation": "Draad"
+        },
         "sen_acc_busy": {
           "english": "Calibrating... keep it still.",
           "max_length": 29,
@@ -10106,6 +10330,12 @@
           "needs_translation": false,
           "reverse_text": false,
           "translation": "Afronden"
+        },
+        "step_governor": {
+          "english": "Governor",
+          "max_length": 8,
+          "needs_translation": false,
+          "translation": "Governor"
         },
         "step_gyro": {
           "english": "Gyro check",

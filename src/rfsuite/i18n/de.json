@@ -8276,6 +8276,60 @@
           "reverse_text": false,
           "translation": "Taumelscheibe"
         },
+        "gov_intro": {
+          "english": "How the flight controller drives the motor. Pick the governor mode; the throttle type is for electric and nitro.",
+          "max_length": 112,
+          "needs_translation": false,
+          "translation": "Wie der Flugcontroller den Motor ansteuert. Governor-Modus wählen; die Betriebsart gilt für Elektro und Nitro."
+        },
+        "gov_prepare_text": {
+          "english": "Keep the servos unplugged and the blades off. The governor is set here; it runs once the model is connected.",
+          "max_length": 115,
+          "needs_translation": false,
+          "translation": "Servos abgesteckt lassen und die Blätter abnehmen. Der Governor wird hier eingestellt und läuft nach dem Anschluss."
+        },
+        "gov_profile_fmt": {
+          "english": "Profile %d",
+          "max_length": 10,
+          "needs_translation": false,
+          "translation": "Profil %d"
+        },
+        "gov_row_mode": {
+          "english": "Governor mode",
+          "max_length": 14,
+          "needs_translation": false,
+          "translation": "Governor-Modus"
+        },
+        "gov_row_throttle": {
+          "english": "Throttle type",
+          "max_length": 13,
+          "needs_translation": false,
+          "translation": "Betriebsart"
+        },
+        "gov_rpm_next": {
+          "english": "A governor needs an RPM signal: the next step sets it.",
+          "max_length": 71,
+          "needs_translation": false,
+          "translation": "Ein Governor braucht ein RPM-Signal: der nächste Schritt stellt es ein."
+        },
+        "gov_rpm_unit": {
+          "english": "rpm",
+          "max_length": 5,
+          "needs_translation": false,
+          "translation": "U/min"
+        },
+        "gov_speed_text": {
+          "english": "The headspeed of each PID profile, as the flight controller holds it. Set it for the profiles the profile switch uses.",
+          "max_length": 118,
+          "needs_translation": false,
+          "translation": "Die Drehzahl jedes PID-Profils, wie der Flugcontroller sie hält. Für die Profile setzen, die der Profilschalter nutzt."
+        },
+        "gov_speed_title": {
+          "english": "Headspeed",
+          "max_length": 9,
+          "needs_translation": false,
+          "translation": "Drehzahl"
+        },
         "gyr_against": {
           "english": "Against",
           "max_length": 7,
@@ -8640,6 +8694,20 @@
           "reverse_text": false,
           "translation": "DShot150 liefert keine Drehzahl. Governor und RPM-Filter brauchen DShot300 oder einen Drehzahlsensor."
         },
+        "mot_inter_main": {
+          "english": "Intermediate, main gear side",
+          "max_length": 28,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Zwischenrad, Hauptzahnradseite"
+        },
+        "mot_inter_pinion": {
+          "english": "Intermediate, pinion side",
+          "max_length": 25,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Zwischenrad, Ritzelseite"
+        },
         "mot_intro": {
           "english": "How does the FC talk to the ESC? Use PWM if unsure. Blades off.",
           "max_length": 63,
@@ -8654,19 +8722,26 @@
           "reverse_text": false,
           "translation": "Hauptzahnrad"
         },
-        "mot_main_gear_text": {
-          "english": "Teeth on the main gear.",
-          "max_length": 23,
-          "needs_translation": false,
-          "reverse_text": false,
-          "translation": "Zähne am Hauptzahnrad."
-        },
         "mot_main_ratio": {
           "english": "Main ratio",
           "max_length": 12,
           "needs_translation": false,
           "reverse_text": false,
           "translation": "Haupt-Übers."
+        },
+        "mot_main_text": {
+          "english": "Count the teeth on the pinion and the main gear.",
+          "max_length": 48,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Zähne am Ritzel und am Hauptzahnrad zählen."
+        },
+        "mot_main_title": {
+          "english": "Main gear ratio",
+          "max_length": 15,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Hauptübersetzung"
         },
         "mot_other": {
           "english": "Other",
@@ -8675,19 +8750,54 @@
           "reverse_text": false,
           "translation": "Andere"
         },
+        "mot_pair_main_mesh": {
+          "english": "Intermediate : main gear",
+          "max_length": 24,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Zwischenrad : Hauptzahnrad"
+        },
+        "mot_pair_single": {
+          "english": "Pinion : main gear",
+          "max_length": 18,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Ritzel : Hauptzahnrad"
+        },
+        "mot_pair_stage1": {
+          "english": "Pinion : intermediate",
+          "max_length": 21,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Ritzel : Zwischenrad"
+        },
+        "mot_pair_stage2": {
+          "english": "Intermediate : main gear",
+          "max_length": 24,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Zwischenrad : Hauptzahnrad"
+        },
+        "mot_pair_tail": {
+          "english": "Drive : tail rotor gear",
+          "max_length": 23,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Antrieb : Heckzahnrad"
+        },
+        "mot_pair_tail_shaft": {
+          "english": "Pulley : tail rotor pulley",
+          "max_length": 26,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Riemenscheibe : Heck-Riemenscheibe"
+        },
         "mot_pinion": {
           "english": "Pinion teeth",
           "max_length": 12,
           "needs_translation": false,
           "reverse_text": false,
           "translation": "Ritzel-Zähne"
-        },
-        "mot_pinion_text": {
-          "english": "Teeth on the motor pinion.",
-          "max_length": 26,
-          "needs_translation": false,
-          "reverse_text": false,
-          "translation": "Zähne am Motorritzel."
         },
         "mot_poles": {
           "english": "Motor poles",
@@ -8703,12 +8813,25 @@
           "reverse_text": false,
           "translation": "Magnetpole des Hauptmotors laut Datenblatt (oft 10 oder 12)."
         },
+        "mot_prepare_text": {
+          "english": "Keep the servos unplugged and the blades off. The ESC runs as soon as the helicopter is armed.",
+          "max_length": 96,
+          "needs_translation": false,
+          "translation": "Servos abgesteckt lassen und die Blätter abnehmen. Der Regler läuft, sobald der Heli scharf ist."
+        },
         "mot_protocol": {
           "english": "Protocol",
           "max_length": 9,
           "needs_translation": false,
           "reverse_text": false,
           "translation": "Protokoll"
+        },
+        "mot_ratio_direct": {
+          "english": "Gear ratio",
+          "max_length": 10,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Übersetzung"
         },
         "mot_ratio_fmt": {
           "english": "%.2f:1",
@@ -8717,6 +8840,69 @@
           "reverse_text": false,
           "translation": "%.2f:1"
         },
+        "mot_restart_note": {
+          "english": "Applies after restart",
+          "max_length": 21,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Wirkt nach dem Neustart"
+        },
+        "mot_stage": {
+          "english": "Gear train",
+          "max_length": 10,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Getriebe"
+        },
+        "mot_stage_direct": {
+          "english": "Ratio only",
+          "max_length": 10,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Nur Übersetzung"
+        },
+        "mot_stage_one": {
+          "english": "One stage",
+          "max_length": 9,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Einstufig"
+        },
+        "mot_stage_two": {
+          "english": "Two stages",
+          "max_length": 10,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Zweistufig"
+        },
+        "mot_tail_drive_pulley": {
+          "english": "Pulley on the intermediate shaft",
+          "max_length": 32,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Riemenscheibe Zwischenwelle"
+        },
+        "mot_tail_from": {
+          "english": "Tail drive from",
+          "max_length": 15,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Heckantrieb ab"
+        },
+        "mot_tail_from_inter": {
+          "english": "Intermediate shaft",
+          "max_length": 18,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Zwischenwelle"
+        },
+        "mot_tail_from_main": {
+          "english": "Main shaft",
+          "max_length": 10,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Hauptwelle"
+        },
         "mot_tail_in": {
           "english": "Tail gear in",
           "max_length": 12,
@@ -8724,12 +8910,12 @@
           "reverse_text": false,
           "translation": "Heckrad an"
         },
-        "mot_tail_in_text": {
-          "english": "Teeth on the tail drive gear at the main shaft (or its pulley).",
-          "max_length": 64,
+        "mot_tail_needs_two": {
+          "english": "Needs a two-stage main gear.",
+          "max_length": 28,
           "needs_translation": false,
           "reverse_text": false,
-          "translation": "Zähne am Heckantriebsrad an der Hauptwelle (oder Riemenscheibe)."
+          "translation": "Nur mit zweistufiger Hauptübersetzung."
         },
         "mot_tail_out": {
           "english": "Tail gear out",
@@ -8738,19 +8924,33 @@
           "reverse_text": false,
           "translation": "Heckrad ab"
         },
-        "mot_tail_out_text": {
-          "english": "Teeth on the tail rotor shaft gear (or its pulley).",
-          "max_length": 53,
-          "needs_translation": false,
-          "reverse_text": false,
-          "translation": "Zähne am Rad der Heckrotorwelle (oder Riemenscheibe)."
-        },
         "mot_tail_ratio": {
           "english": "Tail ratio",
           "max_length": 11,
           "needs_translation": false,
           "reverse_text": false,
           "translation": "Heck-Übers."
+        },
+        "mot_tail_rotor_pulley": {
+          "english": "Tail rotor pulley",
+          "max_length": 17,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Heck-Riemenscheibe"
+        },
+        "mot_tail_text": {
+          "english": "Ratio from the main rotor to the tail, always counted from the main rotor shaft. Count the teeth or pulleys of the tail drive.",
+          "max_length": 126,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Übersetzung vom Hauptrotor zum Heck, immer von der Hauptrotorwelle aus. Zähne bzw. Riemenscheiben des Heckantriebs zählen."
+        },
+        "mot_tail_title": {
+          "english": "Tail gear ratio",
+          "max_length": 15,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Heckübersetzung"
         },
         "mot_title": {
           "english": "ESC protocol",
@@ -9785,6 +9985,30 @@
           "reverse_text": false,
           "translation": "Heck"
         },
+        "rpm_dshot": {
+          "english": "Bidirectional DShot",
+          "max_length": 21,
+          "needs_translation": false,
+          "translation": "Bidirektionales DShot"
+        },
+        "rpm_intro": {
+          "english": "Where the headspeed comes from: a wire from an RPM sensor or the ESC, or bidirectional DShot telemetry.",
+          "max_length": 103,
+          "needs_translation": false,
+          "translation": "Woher die Drehzahl kommt: Kabel von einem RPM-Sensor oder Regler, oder bidirektionales DShot."
+        },
+        "rpm_row_source": {
+          "english": "RPM source",
+          "max_length": 10,
+          "needs_translation": false,
+          "translation": "RPM-Quelle"
+        },
+        "rpm_wire": {
+          "english": "Wire",
+          "max_length": 5,
+          "needs_translation": false,
+          "translation": "Kabel"
+        },
         "sen_acc_busy": {
           "english": "Calibrating... keep it still.",
           "max_length": 29,
@@ -10106,6 +10330,12 @@
           "needs_translation": false,
           "reverse_text": false,
           "translation": "Abschluss"
+        },
+        "step_governor": {
+          "english": "Governor",
+          "max_length": 8,
+          "needs_translation": false,
+          "translation": "Governor"
         },
         "step_gyro": {
           "english": "Gyro check",

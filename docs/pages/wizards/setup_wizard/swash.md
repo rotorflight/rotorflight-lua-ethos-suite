@@ -31,7 +31,7 @@ model is armed.
 
 - The first screen asks you to unplug the servos and remove the blades. Start follows once both
   are confirmed, as on the other steps that move the servos.
-- Swashplate type and tail type apply after the restart at step 9, Connect servos.
+- Swashplate type and tail type apply after the restart at step 10, Connect servos.
 - A new tail type resets the yaw mixer rate: 250 for a pitch tail, 1000 for a motor tail,
   keeping its sign.
 - When the tail changes between servo and motor, Tail Torque Assist is set to match on every

@@ -8276,6 +8276,60 @@
           "reverse_text": false,
           "translation": "Plato"
         },
+        "gov_intro": {
+          "english": "How the flight controller drives the motor. Pick the governor mode; the throttle type is for electric and nitro.",
+          "max_length": 112,
+          "needs_translation": false,
+          "translation": "Cómo la controladora acciona el motor. Elija el modo del governor; el tipo de gas es para eléctrico y nitro."
+        },
+        "gov_prepare_text": {
+          "english": "Keep the servos unplugged and the blades off. The governor is set here; it runs once the model is connected.",
+          "max_length": 108,
+          "needs_translation": false,
+          "translation": "Deje los servos desconectados y retire las palas. El governor se configura aquí; funciona una vez conectado el modelo."
+        },
+        "gov_profile_fmt": {
+          "english": "Profile %d",
+          "max_length": 10,
+          "needs_translation": false,
+          "translation": "Perfil %d"
+        },
+        "gov_row_mode": {
+          "english": "Governor mode",
+          "max_length": 13,
+          "needs_translation": false,
+          "translation": "Modo del governor"
+        },
+        "gov_row_throttle": {
+          "english": "Throttle type",
+          "max_length": 13,
+          "needs_translation": false,
+          "translation": "Tipo de gas"
+        },
+        "gov_rpm_next": {
+          "english": "A governor needs an RPM signal: the next step sets it.",
+          "max_length": 54,
+          "needs_translation": false,
+          "translation": "Un governor necesita una señal de RPM: el siguiente paso la configura."
+        },
+        "gov_rpm_unit": {
+          "english": "rpm",
+          "max_length": 3,
+          "needs_translation": false,
+          "translation": "rpm"
+        },
+        "gov_speed_text": {
+          "english": "The headspeed of each PID profile, as the flight controller holds it. Set it for the profiles the profile switch uses.",
+          "max_length": 118,
+          "needs_translation": false,
+          "translation": "El régimen de cada perfil PID, tal como lo mantiene la controladora. Configúrelo para los perfiles que usa el interruptor de perfiles."
+        },
+        "gov_speed_title": {
+          "english": "Headspeed",
+          "max_length": 9,
+          "needs_translation": false,
+          "translation": "Régimen"
+        },
         "gyr_against": {
           "english": "Against",
           "max_length": 9,
@@ -8640,6 +8694,20 @@
           "reverse_text": false,
           "translation": "DShot150 no envía RPM. El governor y el filtro RPM necesitan DShot300 o un sensor de RPM."
         },
+        "mot_inter_main": {
+          "english": "Intermediate, main gear side",
+          "max_length": 28,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Intermedio, lado de la rueda principal"
+        },
+        "mot_inter_pinion": {
+          "english": "Intermediate, pinion side",
+          "max_length": 25,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Intermedio, lado del piñón"
+        },
         "mot_intro": {
           "english": "How does the FC talk to the ESC? Use PWM if unsure. Blades off.",
           "max_length": 63,
@@ -8654,19 +8722,26 @@
           "reverse_text": false,
           "translation": "Dientes corona"
         },
-        "mot_main_gear_text": {
-          "english": "Teeth on the main gear.",
-          "max_length": 31,
-          "needs_translation": false,
-          "reverse_text": false,
-          "translation": "Dientes de la corona principal."
-        },
         "mot_main_ratio": {
           "english": "Main ratio",
           "max_length": 15,
           "needs_translation": false,
           "reverse_text": false,
           "translation": "Relación princ."
+        },
+        "mot_main_text": {
+          "english": "Count the teeth on the pinion and the main gear.",
+          "max_length": 48,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Cuente los dientes del piñón y de la rueda principal."
+        },
+        "mot_main_title": {
+          "english": "Main gear ratio",
+          "max_length": 15,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Relación del rotor principal"
         },
         "mot_other": {
           "english": "Other",
@@ -8675,19 +8750,54 @@
           "reverse_text": false,
           "translation": "Otro"
         },
+        "mot_pair_main_mesh": {
+          "english": "Intermediate : main gear",
+          "max_length": 24,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Intermedio : rueda principal"
+        },
+        "mot_pair_single": {
+          "english": "Pinion : main gear",
+          "max_length": 18,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Piñón : rueda principal"
+        },
+        "mot_pair_stage1": {
+          "english": "Pinion : intermediate",
+          "max_length": 21,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Piñón : intermedio"
+        },
+        "mot_pair_stage2": {
+          "english": "Intermediate : main gear",
+          "max_length": 24,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Intermedio : rueda principal"
+        },
+        "mot_pair_tail": {
+          "english": "Drive : tail rotor gear",
+          "max_length": 23,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Accionamiento : engranaje de cola"
+        },
+        "mot_pair_tail_shaft": {
+          "english": "Pulley : tail rotor pulley",
+          "max_length": 26,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Polea : polea de cola"
+        },
         "mot_pinion": {
           "english": "Pinion teeth",
           "max_length": 13,
           "needs_translation": false,
           "reverse_text": false,
           "translation": "Dientes piñón"
-        },
-        "mot_pinion_text": {
-          "english": "Teeth on the motor pinion.",
-          "max_length": 28,
-          "needs_translation": false,
-          "reverse_text": false,
-          "translation": "Dientes del piñón del motor."
         },
         "mot_poles": {
           "english": "Motor poles",
@@ -8703,12 +8813,25 @@
           "reverse_text": false,
           "translation": "Polos magnéticos del motor principal, según su ficha (a menudo 10 o 12)."
         },
+        "mot_prepare_text": {
+          "english": "Keep the servos unplugged and the blades off. The ESC runs as soon as the helicopter is armed.",
+          "max_length": 109,
+          "needs_translation": true,
+          "translation": "Deje los servos desconectados y retire las palas. El regulador funciona en cuanto el helicóptero está armado."
+        },
         "mot_protocol": {
           "english": "Protocol",
           "max_length": 9,
           "needs_translation": false,
           "reverse_text": false,
           "translation": "Protocolo"
+        },
+        "mot_ratio_direct": {
+          "english": "Gear ratio",
+          "max_length": 10,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Relación"
         },
         "mot_ratio_fmt": {
           "english": "%.2f:1",
@@ -8717,6 +8840,69 @@
           "reverse_text": false,
           "translation": "%.2f:1"
         },
+        "mot_restart_note": {
+          "english": "Applies after restart",
+          "max_length": 21,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Válido tras reiniciar"
+        },
+        "mot_stage": {
+          "english": "Gear train",
+          "max_length": 10,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Tren de engranajes"
+        },
+        "mot_stage_direct": {
+          "english": "Ratio only",
+          "max_length": 10,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Solo relación"
+        },
+        "mot_stage_one": {
+          "english": "One stage",
+          "max_length": 9,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Una etapa"
+        },
+        "mot_stage_two": {
+          "english": "Two stages",
+          "max_length": 10,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Dos etapas"
+        },
+        "mot_tail_drive_pulley": {
+          "english": "Pulley on the intermediate shaft",
+          "max_length": 32,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Polea en el eje intermedio"
+        },
+        "mot_tail_from": {
+          "english": "Tail drive from",
+          "max_length": 15,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Accionamiento de cola desde"
+        },
+        "mot_tail_from_inter": {
+          "english": "Intermediate shaft",
+          "max_length": 18,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Eje intermedio"
+        },
+        "mot_tail_from_main": {
+          "english": "Main shaft",
+          "max_length": 10,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Eje principal"
+        },
         "mot_tail_in": {
           "english": "Tail gear in",
           "max_length": 16,
@@ -8724,12 +8910,12 @@
           "reverse_text": false,
           "translation": "Engr. cola entr."
         },
-        "mot_tail_in_text": {
-          "english": "Teeth on the tail drive gear at the main shaft (or its pulley).",
-          "max_length": 63,
+        "mot_tail_needs_two": {
+          "english": "Needs a two-stage main gear.",
+          "max_length": 28,
           "needs_translation": false,
           "reverse_text": false,
-          "translation": "Dientes del engranaje de cola en el eje principal (o su polea)."
+          "translation": "Solo con una transmisión principal de dos etapas."
         },
         "mot_tail_out": {
           "english": "Tail gear out",
@@ -8738,19 +8924,33 @@
           "reverse_text": false,
           "translation": "Engr. cola sal."
         },
-        "mot_tail_out_text": {
-          "english": "Teeth on the tail rotor shaft gear (or its pulley).",
-          "max_length": 61,
-          "needs_translation": false,
-          "reverse_text": false,
-          "translation": "Dientes del engranaje del eje del rotor de cola (o su polea)."
-        },
         "mot_tail_ratio": {
           "english": "Tail ratio",
           "max_length": 13,
           "needs_translation": false,
           "reverse_text": false,
           "translation": "Relación cola"
+        },
+        "mot_tail_rotor_pulley": {
+          "english": "Tail rotor pulley",
+          "max_length": 17,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Polea del rotor de cola"
+        },
+        "mot_tail_text": {
+          "english": "Ratio from the main rotor to the tail, always counted from the main rotor shaft. Count the teeth or pulleys of the tail drive.",
+          "max_length": 126,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Relación del rotor principal a la cola, siempre desde el eje del rotor principal. Cuente los dientes o poleas del accionamiento."
+        },
+        "mot_tail_title": {
+          "english": "Tail gear ratio",
+          "max_length": 15,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Relación del rotor de cola"
         },
         "mot_title": {
           "english": "ESC protocol",
@@ -9785,6 +9985,30 @@
           "reverse_text": false,
           "translation": "Cola"
         },
+        "rpm_dshot": {
+          "english": "Bidirectional DShot",
+          "max_length": 19,
+          "needs_translation": false,
+          "translation": "DShot bidireccional"
+        },
+        "rpm_intro": {
+          "english": "Where the headspeed comes from: a wire from an RPM sensor or the ESC, or bidirectional DShot telemetry.",
+          "max_length": 103,
+          "needs_translation": false,
+          "translation": "De dónde viene el régimen: un cable desde un sensor de RPM o el regulador, o telemetría DShot bidireccional."
+        },
+        "rpm_row_source": {
+          "english": "RPM source",
+          "max_length": 10,
+          "needs_translation": false,
+          "translation": "Fuente de RPM"
+        },
+        "rpm_wire": {
+          "english": "Wire",
+          "max_length": 4,
+          "needs_translation": false,
+          "translation": "Cable"
+        },
         "sen_acc_busy": {
           "english": "Calibrating... keep it still.",
           "max_length": 29,
@@ -10106,6 +10330,12 @@
           "needs_translation": false,
           "reverse_text": false,
           "translation": "Fin"
+        },
+        "step_governor": {
+          "english": "Governor",
+          "max_length": 8,
+          "needs_translation": false,
+          "translation": "Governor"
         },
         "step_gyro": {
           "english": "Gyro check",

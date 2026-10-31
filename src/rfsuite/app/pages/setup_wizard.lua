@@ -69,6 +69,8 @@ local reboot = requireModule("lib/msp_reboot.lua")
 local mixerInput = requireModule("lib/msp_mixer_input.lua")
 local mixerConfig = requireModule("lib/msp_mixer_config.lua")
 local servoConfig = requireModule("lib/msp_servo_config.lua")
+local governorConfig = requireModule("lib/msp_governor_config.lua")
+local featureConfig = requireModule("lib/msp_feature_config.lua")
 local servoRead = requireModule("lib/msp_servo.lua")
 local servoOverride = requireModule("lib/msp_servo_override.lua")
 local mixerOverride = requireModule("lib/msp_mixer_override.lua")
@@ -115,6 +117,7 @@ local STEPS = {
   {key = "rates", title = "@i18n(app.modules.setup_wizard.step_rates)@"},
   {key = "swash", title = "@i18n(app.modules.setup_wizard.step_swash)@"},
   {key = "servotype", title = "@i18n(app.modules.setup_wizard.step_servotype)@", needsServos = true},
+  {key = "governor", title = "@i18n(app.modules.setup_wizard.step_governor)@"},
   {key = "motor", title = "@i18n(app.modules.setup_wizard.step_motor)@"},
   {key = "connect", title = "@i18n(app.modules.setup_wizard.step_connect)@", gate = true},
   {key = "servos", title = "@i18n(app.modules.setup_wizard.step_servos)@", needsServos = true},
@@ -239,6 +242,8 @@ local function open(opts)
   for i = 1, #INPUT_AXES do inputCodecs[INPUT_AXES[i]] = mixerInput[INPUT_AXES[i]]() end
   local inputs = {}        -- axis -> {rate =, min =, max =}, signed
   local configs = {}       -- servo (0-based) -> decoded servo config
+  local governor = nil     -- decoded MSP_GOVERNOR_CONFIG
+  local features = nil     -- MSP_FEATURE_CONFIG enabledFeatures (a bitmask, as a number)
   local mixConfig = nil    -- decoded MSP_MIXER_CONFIG
 
   local servos = {}        -- lib/setup_wizard_heli.lua's wizardServos()
@@ -353,8 +358,10 @@ local function open(opts)
   -------------------------------------------------------------------------
 
   local function markChanged()
-    -- The footer's Next becomes Save and continue (wiz.forward()).
-    if not pending then rebuildWanted = true end
+    -- The footer's Next becomes Save and continue (wiz.forward()). A step with
+    -- liveEdits sets its own footer and redraws what changed, so a rebuild would
+    -- only drop the field being edited (the rotary focus).
+    if not pending and not (step and step.liveEdits) then rebuildWanted = true end
     pending = true
     if headerHandle and headerHandle.setSaveEnabled then headerHandle.setSaveEnabled(true) end
   end
@@ -525,6 +532,44 @@ local function open(opts)
     return mixConfig
   end
 
+  -- The governor's mode as the FC runs it: off unless the governor feature is on
+  -- (feature bit 26, as the EdgeTX card). Read from the loaded config.
+  local FEATURE_GOVERNOR = 2 ^ 26
+  local FEATURE_RPM = 2 ^ 28
+  local function featureOn(bit)
+    return features ~= nil and math.floor(features / bit) % 2 == 1
+  end
+  function wiz.governorMode()
+    if not governor or not featureOn(FEATURE_GOVERNOR) then return 0 end
+    return governor.gov_mode or 0
+  end
+  function wiz.rpmFeatureOn() return featureOn(FEATURE_RPM) end
+  function wiz.governorConfig() return governor end
+
+  -- Changes the governor config with fn(config), kept for Discard. Written at once,
+  -- as the other steps' changes.
+  function wiz.editGovernor(fn)
+    if not governor then return end
+    change("governor", governor, function(o)
+      governor = copyDeep(o)
+      send(governorConfig.buildWriteMessage(governor))
+    end)
+    fn(governor)
+    send(governorConfig.buildWriteMessage(governor))
+  end
+
+  -- Sets or clears a feature bit (FEATURE_GOVERNOR, FEATURE_RPM), kept for Discard.
+  function wiz.setFeature(bit, on)
+    if features == nil or featureOn(bit) == on then return end
+    local original = features
+    change("features", original, function(o)
+      features = o
+      send(featureConfig.buildWriteMessage({enabledFeatures = features}))
+    end)
+    features = on and (features + bit) or (features - bit)
+    send(featureConfig.buildWriteMessage({enabledFeatures = features}))
+  end
+
   -- Work that goes to the FC on the next save, before the EEPROM write (the
   -- tail pin, TTA on every profile). run(onDone, onFail) sends it; a later
   -- call with the same key replaces it. Discard drops it unsent.
@@ -659,9 +704,24 @@ local function open(opts)
     if not keepHolds then releaseAll() end
   end
 
+  -- Steps that do not apply now are passed over: the RPM signal with no governor.
+  local function skipped(s)
+    return s.skipWhen == "governor-off" and wiz.governorMode() == 0
+  end
+  -- The step from `from` in direction dir (1 or -1), past the skipped ones.
+  local function nextIndex(from, dir)
+    local i = from + dir
+    while STEPS[i] and skipped(STEPS[i]) do i = i + dir end
+    return i
+  end
+
   openStep = function(index)
     closeStep()
     picking = false
+    if skipped(STEPS[index]) then
+      local nx = nextIndex(index, 1)
+      if nx <= #STEPS then index = nx end
+    end
     stepIndex = index
     memory.stepKey = STEPS[index].key
     local s = STEPS[index]
@@ -685,11 +745,13 @@ local function open(opts)
   function wiz.finishStep()
     if STEPS[stepIndex].gate and memory.rebootPending then
       wiz.saveAndReboot()
-    elseif stepIndex < #STEPS then
-      local target = stepIndex + 1
-      requestSave(function() openStep(target) end)
     else
-      requestSave(function() leaveWizard() end)
+      local target = nextIndex(stepIndex, 1)
+      if target <= #STEPS then
+        requestSave(function() openStep(target) end)
+      else
+        requestSave(function() leaveWizard() end)
+      end
     end
   end
 
@@ -697,7 +759,8 @@ local function open(opts)
   -- pending, as with Next on an untouched step).
   function wiz.isFirstStep() return stepIndex <= 1 end
   function wiz.previousStep()
-    if stepIndex > 1 then changeStep(stepIndex - 1) end
+    local target = nextIndex(stepIndex, -1)
+    if target >= 1 then changeStep(target) end
   end
 
   -- The footer's default way forward (app/setup_wizard_ui.lua's row()):
@@ -1105,7 +1168,17 @@ local function open(opts)
   end
 
   local function requestRest()
-    outstanding = 1 + #INPUT_AXES + servoCount
+    outstanding = 1 + #INPUT_AXES + servoCount + 2
+    send(governorConfig.buildReadMessage(function(data)
+      if disposed then return end
+      governor = data
+      answered()
+    end, failed))
+    send(featureConfig.buildReadMessage(function(data)
+      if disposed then return end
+      features = data and data.enabledFeatures or 0
+      answered()
+    end, failed))
     send(mixerConfig.buildReadMessage(function(data)
       if disposed then return end
       mixConfig = data

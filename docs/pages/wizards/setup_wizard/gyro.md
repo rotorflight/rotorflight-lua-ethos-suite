@@ -6,12 +6,12 @@ sidebar_position: 130
 
 # Gyro check
 
-Step 15 of the Model setup wizard. With no overrides, you move the helicopter by hand and check
+Step 16 of the Model setup wizard. With no overrides, you move the helicopter by hand and check
 that the swash pushes back against each movement.
 
 ## Where to find it
 
-*Configuration* → *Wizards* → *Model setup*, step 15 *Gyro check*. Three movements: Roll,
+*Configuration* → *Wizards* → *Model setup*, step 16 *Gyro check*. Three movements: Roll,
 Pitch and Yaw.
 
 Only inside the wizard. Greyed out until the flight controller answers. Read-only while the

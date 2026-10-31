@@ -6,13 +6,13 @@ sidebar_position: 120
 
 # Tail rotor
 
-Step 14 of the Model setup wizard. For a variable-pitch tail it sets the centre, the direction,
+Step 15 of the Model setup wizard. For a variable-pitch tail it sets the centre, the direction,
 the calibration and the end stops. For a motor tail it runs a short spin test and sets the
 idle.
 
 ## Where to find it
 
-*Configuration* → *Wizards* → *Model setup*, step 14 *Tail rotor*. The screens depend on the
+*Configuration* → *Wizards* → *Model setup*, step 15 *Tail rotor*. The screens depend on the
 tail type chosen in the Swashplate step.
 
 Only inside the wizard. Greyed out until the flight controller answers. Read-only while the
