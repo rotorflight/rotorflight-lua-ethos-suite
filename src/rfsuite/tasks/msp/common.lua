@@ -1,10 +1,14 @@
--- MSPv2 byte-framing engine (sequencing, chunking).
+-- MSP byte-framing engine (sequencing, chunking).
 --
--- MSPv2-only: this rebuild's floor is Rotorflight 2.3 / MSP API >= 12.09,
--- which always speaks MSPv2, so there is no v1 wire format, no version
--- negotiation, and no CRC (MSPv2 frames over these transports don't carry
--- one at this layer -- unlike v1). Older-firmware compatibility code has
--- been deliberately left out rather than kept dormant.
+-- Compact framing only (version 3 in the status byte, telemetry/msp_shared.c
+-- in rotorflight-firmware): an MSPv2 command with a 3-byte header
+--   CMD_LOW CMD_HIGH LEN
+-- and, when LEN is 0xFF, LEN_LOW LEN_HIGH after it. No flags byte, no CRC
+-- (the telemetry frame has its own). The 5-byte MSPv2 header filled the whole
+-- first S.Port frame on its own; this one leaves 2 payload bytes in it, which
+-- is one frame fewer on most messages over a link that moves a frame every
+-- 30 ms or so. There is no version negotiation and no older wire format:
+-- the firmware answers in the framing it was asked in.
 --
 -- Protocol-agnostic: talks to whatever transport was registered via
 -- setTransport() (see transport_sport.lua / transport_crsf.lua). Private to
@@ -28,7 +32,7 @@ local DRAIN_INSTRUCTION_LIMIT = 60
 
 local math_floor = math.floor
 
-local MSP_VERSION_BITS = 2 << 5 -- MSPv2 version bits
+local MSP_VERSION_BITS = 3 << 5 -- compact MSPv2 framing
 local MSP_STARTFLAG = 1 << 4
 
 -- Bounds on the two drain loops below. They are different bounds on purpose,
@@ -136,9 +140,11 @@ local function mspSendRequest(cmd, payload, isWrite)
   local len = #payload
   local cmd1 = cmd % 256
   local cmd2 = math_floor(cmd / 256) % 256
-  local len1 = len % 256
-  local len2 = math_floor(len / 256) % 256
-  mspTxBuf = {0, cmd1, cmd2, len1, len2}
+  if len < 255 then
+    mspTxBuf = {cmd1, cmd2, len}
+  else
+    mspTxBuf = {cmd1, cmd2, 0xFF, len % 256, math_floor(len / 256) % 256}
+  end
   for i = 1, len do mspTxBuf[#mspTxBuf + 1] = payload[i] % 256 end
 
   mspLastReq = cmd
@@ -175,13 +181,16 @@ local function receivedReply(payload)
     mspRxBuf = {}
     mspRxError = (status & 0x80) ~= 0
 
-    idx = idx + 1 -- skip flags byte
     local cmd1 = payload[idx] or 0; idx = idx + 1
     local cmd2 = payload[idx] or 0; idx = idx + 1
-    local len1 = payload[idx] or 0; idx = idx + 1
-    local len2 = payload[idx] or 0; idx = idx + 1
+    local len = payload[idx] or 0; idx = idx + 1
+    if len == 0xFF then
+      local len1 = payload[idx] or 0; idx = idx + 1
+      local len2 = payload[idx] or 0; idx = idx + 1
+      len = ((len2 & 0xFF) << 8) | (len1 & 0xFF)
+    end
     mspRxReq = ((cmd2 & 0xFF) << 8) | (cmd1 & 0xFF)
-    mspRxSize = ((len2 & 0xFF) << 8) | (len1 & 0xFF)
+    mspRxSize = len
     mspStarted = (mspRxReq == mspLastReq)
   else
     if (not mspStarted) or (((mspRemoteSeq + 1) & 0x0F) ~= seq) then
