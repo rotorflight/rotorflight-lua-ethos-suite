@@ -178,6 +178,7 @@ local function new(wiz)
   local screen = "prepare"
   local answers = {unplugged = false, blades = false}   -- the safety answers, kept across rebuilds
   local picture = art.image("motor-esc", 220, 160)
+  local rpmPicture = art.image("rpm", 220, 160)
   local cfg = nil
   local loadFailed = false
   local base = bases[wiz]
@@ -709,7 +710,7 @@ local function new(wiz)
     elseif screen == "rpm" then
       scr:text(T.rpmRow, T.rpmIntro)
       scr:step(stepOf("rpm"), total())
-      scr:picture(picture)
+      scr:picture(rpmPicture or picture)
       local dshotOk = cfg.motor_pwm_protocol ~= DSHOT150
       local field = scr:checks({
         {label = T.rpmRow, choice = {

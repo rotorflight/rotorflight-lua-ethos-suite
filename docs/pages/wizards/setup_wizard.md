@@ -74,8 +74,8 @@ stays beside the title. A step with one screen shows no count.
 - Changes that only apply after a restart (board orientation, swash or tail type, servo
   update rate, ESC protocol) are saved as you go, and the one restart happens at step 10.
   A step after it shows a reminder while a restart is still owed.
-- Not covered here: modes and switches beyond Arm, Rescue and Trainer, rates,
-  governor, the ESC throttle calibration and spin test, and ESC telemetry. Use their own pages.
+- Not covered here: modes and switches beyond Arm, Rescue and Trainer,
+  the ESC throttle calibration and spin test, and ESC telemetry. Use their own pages.
 
 ## Related
 
