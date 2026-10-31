@@ -83,6 +83,16 @@ local function mspClearTxBuf()
   mspTxBuf, mspTxIdx = {}, 1
 end
 
+-- A transport answers false when it did not queue the frame (Ethos's
+-- pushFrame() does so when its outgoing queue has no room). The frame is then
+-- kept, sequence number and all, and offered again on the next call: a request
+-- frame that is simply dropped costs a whole retry window, since the FC never
+-- sees the request. Capped, so a transport that refuses everything (module
+-- off) still lets the queue's retry accounting run out instead of pumping the
+-- same frame for ever: past the cap the frame is dropped as it always was.
+local TX_REFUSAL_CAP = 10
+local mspTxRefusals = 0
+
 -- Process TX buffer into protocol-sized packets; returns true while more
 -- frames remain to be sent.
 local function mspProcessTxQ()
@@ -90,6 +100,7 @@ local function mspProcessTxQ()
 
   local payload = {}
   payload[1] = mkStatusByte(mspTxIdx == 1)
+  local seq, idx = mspSeq, mspTxIdx -- restored when the transport refuses the frame
   mspSeq = (mspSeq + 1) & 0x0F
 
   local limit = maxTx()
@@ -101,7 +112,12 @@ local function mspProcessTxQ()
   end
   for j = i, limit do payload[j] = payload[j] or 0 end
 
-  transport.mspSend(payload, mspLastReqIsWrite)
+  if transport.mspSend(payload, mspLastReqIsWrite) == false and mspTxRefusals < TX_REFUSAL_CAP then
+    mspTxRefusals = mspTxRefusals + 1
+    mspSeq, mspTxIdx = seq, idx
+    return true
+  end
+  mspTxRefusals = 0
 
   if mspTxIdx > #mspTxBuf then
     mspClearTxBuf()
