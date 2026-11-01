@@ -7982,6 +7982,13 @@
           "reverse_text": false,
           "translation": "是"
         },
+        "con_battery": {
+          "english": "Battery stays unplugged until the next step.",
+          "max_length": 44,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "电池保持断开，直到下一步。"
+        },
         "con_blades": {
           "english": "Blades stay off, and keep clear of the motor.",
           "max_length": 45,
@@ -8163,6 +8170,139 @@
           "needs_translation": false,
           "reverse_text": false,
           "translation": "未连接飞控。"
+        },
+        "esc_batt_text": {
+          "english": "Plug the battery in. The ESC beeps to show it has taken full throttle; your ESC's manual lists the tones. Then press Low throttle.",
+          "max_length": 130,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "接入电池。电调会鸣响以确认已接收满油门；鸣叫含义见电调说明书。然后按下怠速。"
+        },
+        "esc_blades": {
+          "english": "Main blades off, pinion out of mesh.",
+          "max_length": 36,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "主桨叶已拆下，小齿轮已脱离啮合。"
+        },
+        "esc_cal_status": {
+          "english": "ESC calibration",
+          "max_length": 15,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "电调校准"
+        },
+        "esc_confirmed": {
+          "english": "The ESC confirmed",
+          "max_length": 17,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "电调已确认"
+        },
+        "esc_full_btn": {
+          "english": "Full throttle",
+          "max_length": 13,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "满油门"
+        },
+        "esc_full_text": {
+          "english": "With the battery still unplugged and the flight controller on USB, press Full throttle. The output rises to 100 % in a few seconds.",
+          "max_length": 131,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "电池仍未接入、飞控通过 USB 连接时，按下满油门。输出会在几秒内升至 100 %。"
+        },
+        "esc_low_btn": {
+          "english": "Low throttle",
+          "max_length": 12,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "怠速"
+        },
+        "esc_need_calib": {
+          "english": "Calibrate the ESC first.",
+          "max_length": 24,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "请先校准电调。"
+        },
+        "esc_pending": {
+          "english": "Waiting",
+          "max_length": 7,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "等待中"
+        },
+        "esc_prepare_text": {
+          "english": "A PWM ESC has to learn its throttle range: the pulse for full throttle and the pulse for low throttle. It learns them when it powers up with full throttle.",
+          "max_length": 155,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "PWM 电调需要学习油门范围：满油门脉冲和怠速脉冲。它在以满油门上电时学习。"
+        },
+        "esc_prepare_warn": {
+          "english": "Blades off. Take the pinion out of mesh too, or hold the helicopter down: an ESC that does not go into calibration may run the motor at full throttle.",
+          "max_length": 150,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "桨叶已拆下。同时把小齿轮脱离啮合，或按住直升机：若电调未进入校准，电机可能以满油门运转。"
+        },
+        "esc_running": {
+          "english": "Motor running",
+          "max_length": 13,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "电机运转中"
+        },
+        "esc_speed": {
+          "english": "Test speed",
+          "max_length": 10,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "测试转速"
+        },
+        "esc_spin_btn": {
+          "english": "Spin 3 s",
+          "max_length": 8,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "转动 3 秒"
+        },
+        "esc_spin_text": {
+          "english": "The motor runs at the test speed for 3 seconds. Check that it starts smoothly and turns the way the rotor direction in the Swashplate step says. If it turns the wrong way, swap two motor wires or reverse it on the ESC.",
+          "max_length": 218,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "电机以测试转速运转 3 秒。检查它是否平稳启动，并按照“旋翼方向”步骤的方向转动。若方向相反，对调两根电机线或在电调上反向。"
+        },
+        "esc_spin_title": {
+          "english": "Spin test",
+          "max_length": 9,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "转动测试"
+        },
+        "esc_stop_btn": {
+          "english": "Stop",
+          "max_length": 4,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "停止"
+        },
+        "esc_stopped": {
+          "english": "Motor stopped",
+          "max_length": 13,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "电机已停止"
+        },
+        "esc_title": {
+          "english": "ESC & spin test",
+          "max_length": 15,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "电调与转动测试"
         },
         "fin_before": {
           "english": "Fit the blades and do a careful first hover. Modes, rates and governor are on their own pages.",

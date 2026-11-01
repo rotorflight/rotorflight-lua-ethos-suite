@@ -121,6 +121,7 @@ local STEPS = {
   {key = "governor", title = "@i18n(app.modules.setup_wizard.step_governor)@"},
   {key = "motor", title = "@i18n(app.modules.setup_wizard.step_motor)@"},
   {key = "connect", title = "@i18n(app.modules.setup_wizard.step_connect)@", gate = true},
+  {key = "esc", title = "@i18n(app.modules.setup_wizard.esc_title)@"},
   {key = "servos", title = "@i18n(app.modules.setup_wizard.step_servos)@", needsServos = true},
   {key = "direction", title = "@i18n(app.modules.setup_wizard.step_direction)@", needsSwash = true},
   {key = "level", title = "@i18n(app.modules.setup_wizard.step_level)@", needsSwash = true},
@@ -272,6 +273,10 @@ local function open(opts)
   local step = nil         -- instance of STEPS[stepIndex]
   local stepOwned = nil    -- modules the step loaded for itself, freed when it closes
   local picking = false    -- the step list is showing
+  local PICKER_PAGE = math.ceil(#STEPS / 2)   -- two pages of steps
+  local PICKER_BACK_ICON = lcd.loadMask("app/gfx/nav/back.png")
+  local PICKER_NEXT_ICON = lcd.loadMask("app/gfx/nav/next.png")
+  local pickerPage = nil   -- the page the step list shows; nil: the page of the current step
   local rebuildWanted = false
 
   local polls = {servo = {inFlight = false, at = 0}, rc = {inFlight = false, at = 0},
@@ -678,6 +683,7 @@ local function open(opts)
       -- the default wrench.
       onTool = loaded and not rebootWait and ui.action("tool", function()
         picking = true
+        pickerPage = nil
         rebuildWanted = true
       end) or nil,
       toolIcon = STEPS_ICON,
@@ -801,26 +807,56 @@ local function open(opts)
   -- The step list: one button per step.
   local function buildPicker()
     clearForm()
-    buildHeader(PAGE_TITLE)
+    local pages = math.ceil(#STEPS / PICKER_PAGE)
+    pickerPage = pickerPage or math.ceil(stepIndex / PICKER_PAGE)
+    pickerPage = math.max(1, math.min(pages, pickerPage))
+    -- The page in the title: "Setup Wizard 1/2" (a form's text is one size only).
+    buildHeader(pages > 1 and (PAGE_TITLE .. " " .. pickerPage .. "/" .. pages) or PAGE_TITLE)
     local width, height = lcd.getWindowSize()
     local gap = 6
     local top = form.height() + gap
-    -- Two columns when every row still gets a usable height, else three.
-    local cols = 2
-    if width >= 700 or math.ceil(#STEPS / 2) * (30 + gap) > height - top then cols = 3 end
-    local rows = math.ceil(#STEPS / cols)
-    local h = math.max(28, math.floor((height - top - gap * rows) / rows))
-    if h > 48 then h = 48 end
+    local first = (pickerPage - 1) * PICKER_PAGE + 1
+    local last = math.min(#STEPS, first + PICKER_PAGE - 1)
+    -- Three steps to a row, three rows; with more than one page a row for Back and Next.
+    local cols = 3
+    local gridRows = math.ceil(PICKER_PAGE / cols)
+    local rows = gridRows + (pages > 1 and 1 or 0)
+    local h = math.max(28, math.min(48, math.floor((height - top - gap * rows) / rows)))
     local w = math.floor((width - FORM_RIGHT_PADDING - gap * (cols - 1)) / cols)
     local focus
-    for i, s in ipairs(STEPS) do
-      local col, row = (i - 1) % cols, math.floor((i - 1) / cols)
+    for i = first, last do
+      local k = i - first
+      local col, row = k % cols, math.floor(k / cols)
       local button = form.addButton(nil, {x = col * (w + gap), y = top + row * (h + gap), w = w, h = h}, {
-        text = string.format("%d. %s", i, s.title),
+        text = string.format("%d. %s", i, STEPS[i].title),
         options = FONT_S + CENTERED,
         press = ui.action(i, function() changeStep(i) end),
       })
       if i == stepIndex then focus = button end
+    end
+    if pages > 1 then
+      -- Back arrow on the left, Next arrow on the right; the page is in the title.
+      local y = top + gridRows * (h + gap)
+      local third = math.floor((width - FORM_RIGHT_PADDING - 2 * gap) / 3)
+      local function slot(k) return k * (third + gap) end
+      if pickerPage > 1 then
+        form.addButton(nil, {x = slot(0), y = y, w = third, h = h}, {
+          icon = PICKER_BACK_ICON,
+          press = ui.action("picker_back", function()
+            pickerPage = pickerPage - 1
+            rebuildWanted = true
+          end),
+        })
+      end
+      if pickerPage < pages then
+        form.addButton(nil, {x = slot(2), y = y, w = third, h = h}, {
+          icon = PICKER_NEXT_ICON,
+          press = ui.action("picker_next", function()
+            pickerPage = pickerPage + 1
+            rebuildWanted = true
+          end),
+        })
+      end
     end
     if focus and focus.focus then focus:focus() end
   end

@@ -10519,6 +10519,146 @@
           "max_length": 77,
           "reverse_text": false
         },
+        "con_battery": {
+          "english": "Battery stays unplugged until the next step.",
+          "translation": "Batterie débranchée jusqu'à l'étape suivante.",
+          "needs_translation": false,
+          "max_length": 44,
+          "reverse_text": false
+        },
+        "esc_title": {
+          "english": "ESC & spin test",
+          "translation": "Test ESC et rotation",
+          "needs_translation": false,
+          "max_length": 15,
+          "reverse_text": false
+        },
+        "esc_prepare_text": {
+          "english": "A PWM ESC has to learn its throttle range: the pulse for full throttle and the pulse for low throttle. It learns them when it powers up with full throttle.",
+          "translation": "Un variateur PWM doit apprendre sa plage de gaz : l'impulsion pleins gaz et l'impulsion ralenti. Il les apprend à la mise sous tension, plein gaz.",
+          "needs_translation": false,
+          "max_length": 155,
+          "reverse_text": false
+        },
+        "esc_prepare_warn": {
+          "english": "Blades off. Take the pinion out of mesh too, or hold the helicopter down: an ESC that does not go into calibration may run the motor at full throttle.",
+          "translation": "Pales retirées. Sortez aussi le pignon de l'engrènement ou maintenez l'hélicoptère : un variateur qui n'entre pas en calibration peut faire tourner le moteur à plein gaz.",
+          "needs_translation": false,
+          "max_length": 150,
+          "reverse_text": false
+        },
+        "esc_blades": {
+          "english": "Main blades off, pinion out of mesh.",
+          "translation": "Pales principales retirées, pignon désengrené.",
+          "needs_translation": false,
+          "max_length": 36,
+          "reverse_text": false
+        },
+        "esc_full_btn": {
+          "english": "Full throttle",
+          "translation": "Plein gaz",
+          "needs_translation": false,
+          "max_length": 13,
+          "reverse_text": false
+        },
+        "esc_full_text": {
+          "english": "With the battery still unplugged and the flight controller on USB, press Full throttle. The output rises to 100 % in a few seconds.",
+          "translation": "Batterie encore débranchée et contrôleur de vol sur USB, appuyez sur Plein gaz. La sortie monte à 100 % en quelques secondes.",
+          "needs_translation": false,
+          "max_length": 131,
+          "reverse_text": false
+        },
+        "esc_batt_text": {
+          "english": "Plug the battery in. The ESC beeps to show it has taken full throttle; your ESC's manual lists the tones. Then press Low throttle.",
+          "translation": "Branchez la batterie. Le variateur bipe pour confirmer le plein gaz ; sa notice donne les signaux. Puis appuyez sur Ralenti.",
+          "needs_translation": false,
+          "max_length": 130,
+          "reverse_text": false
+        },
+        "esc_low_btn": {
+          "english": "Low throttle",
+          "translation": "Ralenti",
+          "needs_translation": false,
+          "max_length": 12,
+          "reverse_text": false
+        },
+        "esc_confirmed": {
+          "english": "The ESC confirmed",
+          "translation": "Variateur confirmé",
+          "needs_translation": false,
+          "max_length": 17,
+          "reverse_text": false
+        },
+        "esc_pending": {
+          "english": "Waiting",
+          "translation": "En attente",
+          "needs_translation": false,
+          "max_length": 7,
+          "reverse_text": false
+        },
+        "esc_cal_status": {
+          "english": "ESC calibration",
+          "translation": "Calibration du variateur",
+          "needs_translation": false,
+          "max_length": 15,
+          "reverse_text": false
+        },
+        "esc_spin_title": {
+          "english": "Spin test",
+          "translation": "Test de rotation",
+          "needs_translation": false,
+          "max_length": 9,
+          "reverse_text": false
+        },
+        "esc_spin_text": {
+          "english": "The motor runs at the test speed for 3 seconds. Check that it starts smoothly and turns the way the rotor direction in the Swashplate step says. If it turns the wrong way, swap two motor wires or reverse it on the ESC.",
+          "translation": "Le moteur tourne à la vitesse d'essai pendant 3 secondes. Vérifiez qu'il démarre en douceur et tourne dans le sens indiqué à l'étape Plateau cyclique. Sinon, inversez deux fils moteur ou inversez-le sur le variateur.",
+          "needs_translation": false,
+          "max_length": 218,
+          "reverse_text": false
+        },
+        "esc_speed": {
+          "english": "Test speed",
+          "translation": "Vitesse d'essai",
+          "needs_translation": false,
+          "max_length": 10,
+          "reverse_text": false
+        },
+        "esc_spin_btn": {
+          "english": "Spin 3 s",
+          "translation": "Tourner 3 s",
+          "needs_translation": false,
+          "max_length": 8,
+          "reverse_text": false
+        },
+        "esc_stop_btn": {
+          "english": "Stop",
+          "translation": "Arrêt",
+          "needs_translation": false,
+          "max_length": 4,
+          "reverse_text": false
+        },
+        "esc_need_calib": {
+          "english": "Calibrate the ESC first.",
+          "translation": "Calibrez d'abord le variateur.",
+          "needs_translation": false,
+          "max_length": 24,
+          "reverse_text": false
+        },
+        "esc_running": {
+          "english": "Motor running",
+          "translation": "Moteur en marche",
+          "needs_translation": false,
+          "max_length": 13,
+          "reverse_text": false
+        },
+        "esc_stopped": {
+          "english": "Motor stopped",
+          "translation": "Moteur arrêté",
+          "needs_translation": false,
+          "max_length": 13,
+          "reverse_text": false
+        },
         "mot_pinion": {
           "english": "Pinion teeth",
           "translation": "Dents pignon",

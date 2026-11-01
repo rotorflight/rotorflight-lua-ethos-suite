@@ -10519,6 +10519,146 @@
           "max_length": 77,
           "reverse_text": false
         },
+        "con_battery": {
+          "english": "Battery stays unplugged until the next step.",
+          "translation": "Batería desconectada hasta el siguiente paso.",
+          "needs_translation": false,
+          "max_length": 44,
+          "reverse_text": false
+        },
+        "esc_title": {
+          "english": "ESC & spin test",
+          "translation": "Prueba de ESC y giro",
+          "needs_translation": false,
+          "max_length": 15,
+          "reverse_text": false
+        },
+        "esc_prepare_text": {
+          "english": "A PWM ESC has to learn its throttle range: the pulse for full throttle and the pulse for low throttle. It learns them when it powers up with full throttle.",
+          "translation": "Un ESC PWM tiene que aprender su rango de gas: el pulso de gas máximo y el de ralentí. Lo aprende al encenderse con gas máximo.",
+          "needs_translation": false,
+          "max_length": 155,
+          "reverse_text": false
+        },
+        "esc_prepare_warn": {
+          "english": "Blades off. Take the pinion out of mesh too, or hold the helicopter down: an ESC that does not go into calibration may run the motor at full throttle.",
+          "translation": "Palas quitadas. Saque también el piñón del engrane o sujete el helicóptero: un ESC que no entra en calibración puede hacer girar el motor a gas máximo.",
+          "needs_translation": false,
+          "max_length": 150,
+          "reverse_text": false
+        },
+        "esc_blades": {
+          "english": "Main blades off, pinion out of mesh.",
+          "translation": "Palas principales quitadas, piñón fuera del engrane.",
+          "needs_translation": false,
+          "max_length": 36,
+          "reverse_text": false
+        },
+        "esc_full_btn": {
+          "english": "Full throttle",
+          "translation": "Gas máximo",
+          "needs_translation": false,
+          "max_length": 13,
+          "reverse_text": false
+        },
+        "esc_full_text": {
+          "english": "With the battery still unplugged and the flight controller on USB, press Full throttle. The output rises to 100 % in a few seconds.",
+          "translation": "Con la batería aún desconectada y la controladora por USB, pulse Gas máximo. La salida sube al 100 % en unos segundos.",
+          "needs_translation": false,
+          "max_length": 131,
+          "reverse_text": false
+        },
+        "esc_batt_text": {
+          "english": "Plug the battery in. The ESC beeps to show it has taken full throttle; your ESC's manual lists the tones. Then press Low throttle.",
+          "translation": "Conecte la batería. El ESC pita para confirmar el gas máximo; el manual del ESC indica los tonos. Después pulse Ralentí.",
+          "needs_translation": false,
+          "max_length": 130,
+          "reverse_text": false
+        },
+        "esc_low_btn": {
+          "english": "Low throttle",
+          "translation": "Ralentí",
+          "needs_translation": false,
+          "max_length": 12,
+          "reverse_text": false
+        },
+        "esc_confirmed": {
+          "english": "The ESC confirmed",
+          "translation": "ESC confirmado",
+          "needs_translation": false,
+          "max_length": 17,
+          "reverse_text": false
+        },
+        "esc_pending": {
+          "english": "Waiting",
+          "translation": "Esperando",
+          "needs_translation": false,
+          "max_length": 7,
+          "reverse_text": false
+        },
+        "esc_cal_status": {
+          "english": "ESC calibration",
+          "translation": "Calibración del ESC",
+          "needs_translation": false,
+          "max_length": 15,
+          "reverse_text": false
+        },
+        "esc_spin_title": {
+          "english": "Spin test",
+          "translation": "Prueba de giro",
+          "needs_translation": false,
+          "max_length": 9,
+          "reverse_text": false
+        },
+        "esc_spin_text": {
+          "english": "The motor runs at the test speed for 3 seconds. Check that it starts smoothly and turns the way the rotor direction in the Swashplate step says. If it turns the wrong way, swap two motor wires or reverse it on the ESC.",
+          "translation": "El motor gira a la velocidad de prueba durante 3 segundos. Compruebe que arranca suavemente y gira en el sentido del paso Plato cíclico. Si gira al revés, intercambie dos cables del motor o invíertalo en el ESC.",
+          "needs_translation": false,
+          "max_length": 218,
+          "reverse_text": false
+        },
+        "esc_speed": {
+          "english": "Test speed",
+          "translation": "Velocidad de prueba",
+          "needs_translation": false,
+          "max_length": 10,
+          "reverse_text": false
+        },
+        "esc_spin_btn": {
+          "english": "Spin 3 s",
+          "translation": "Girar 3 s",
+          "needs_translation": false,
+          "max_length": 8,
+          "reverse_text": false
+        },
+        "esc_stop_btn": {
+          "english": "Stop",
+          "translation": "Parar",
+          "needs_translation": false,
+          "max_length": 4,
+          "reverse_text": false
+        },
+        "esc_need_calib": {
+          "english": "Calibrate the ESC first.",
+          "translation": "Calibre primero el ESC.",
+          "needs_translation": false,
+          "max_length": 24,
+          "reverse_text": false
+        },
+        "esc_running": {
+          "english": "Motor running",
+          "translation": "Motor en marcha",
+          "needs_translation": false,
+          "max_length": 13,
+          "reverse_text": false
+        },
+        "esc_stopped": {
+          "english": "Motor stopped",
+          "translation": "Motor parado",
+          "needs_translation": false,
+          "max_length": 13,
+          "reverse_text": false
+        },
         "mot_pinion": {
           "english": "Pinion teeth",
           "translation": "Dientes piñón",

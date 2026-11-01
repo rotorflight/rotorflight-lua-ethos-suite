@@ -7982,6 +7982,13 @@
           "reverse_text": false,
           "translation": "Sí"
         },
+        "con_battery": {
+          "english": "Battery stays unplugged until the next step.",
+          "max_length": 44,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Batería desconectada hasta el siguiente paso."
+        },
         "con_blades": {
           "english": "Blades stay off, and keep clear of the motor.",
           "max_length": 45,
@@ -8163,6 +8170,139 @@
           "needs_translation": false,
           "reverse_text": false,
           "translation": "Sin enlace con el controlador de vuelo."
+        },
+        "esc_batt_text": {
+          "english": "Plug the battery in. The ESC beeps to show it has taken full throttle; your ESC's manual lists the tones. Then press Low throttle.",
+          "max_length": 130,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Conecte la batería. El ESC pita para confirmar el gas máximo; el manual del ESC indica los tonos. Después pulse Ralentí."
+        },
+        "esc_blades": {
+          "english": "Main blades off, pinion out of mesh.",
+          "max_length": 36,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Palas principales quitadas, piñón fuera del engrane."
+        },
+        "esc_cal_status": {
+          "english": "ESC calibration",
+          "max_length": 15,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Calibración del ESC"
+        },
+        "esc_confirmed": {
+          "english": "The ESC confirmed",
+          "max_length": 17,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "ESC confirmado"
+        },
+        "esc_full_btn": {
+          "english": "Full throttle",
+          "max_length": 13,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Gas máximo"
+        },
+        "esc_full_text": {
+          "english": "With the battery still unplugged and the flight controller on USB, press Full throttle. The output rises to 100 % in a few seconds.",
+          "max_length": 131,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Con la batería aún desconectada y la controladora por USB, pulse Gas máximo. La salida sube al 100 % en unos segundos."
+        },
+        "esc_low_btn": {
+          "english": "Low throttle",
+          "max_length": 12,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Ralentí"
+        },
+        "esc_need_calib": {
+          "english": "Calibrate the ESC first.",
+          "max_length": 24,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Calibre primero el ESC."
+        },
+        "esc_pending": {
+          "english": "Waiting",
+          "max_length": 7,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Esperando"
+        },
+        "esc_prepare_text": {
+          "english": "A PWM ESC has to learn its throttle range: the pulse for full throttle and the pulse for low throttle. It learns them when it powers up with full throttle.",
+          "max_length": 155,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Un ESC PWM tiene que aprender su rango de gas: el pulso de gas máximo y el de ralentí. Lo aprende al encenderse con gas máximo."
+        },
+        "esc_prepare_warn": {
+          "english": "Blades off. Take the pinion out of mesh too, or hold the helicopter down: an ESC that does not go into calibration may run the motor at full throttle.",
+          "max_length": 150,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Palas quitadas. Saque también el piñón del engrane o sujete el helicóptero: un ESC que no entra en calibración puede hacer girar el motor a gas máximo."
+        },
+        "esc_running": {
+          "english": "Motor running",
+          "max_length": 13,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Motor en marcha"
+        },
+        "esc_speed": {
+          "english": "Test speed",
+          "max_length": 10,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Velocidad de prueba"
+        },
+        "esc_spin_btn": {
+          "english": "Spin 3 s",
+          "max_length": 8,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Girar 3 s"
+        },
+        "esc_spin_text": {
+          "english": "The motor runs at the test speed for 3 seconds. Check that it starts smoothly and turns the way the rotor direction in the Swashplate step says. If it turns the wrong way, swap two motor wires or reverse it on the ESC.",
+          "max_length": 218,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "El motor gira a la velocidad de prueba durante 3 segundos. Compruebe que arranca suavemente y gira en el sentido del paso Plato cíclico. Si gira al revés, intercambie dos cables del motor o invíertalo en el ESC."
+        },
+        "esc_spin_title": {
+          "english": "Spin test",
+          "max_length": 9,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Prueba de giro"
+        },
+        "esc_stop_btn": {
+          "english": "Stop",
+          "max_length": 4,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Parar"
+        },
+        "esc_stopped": {
+          "english": "Motor stopped",
+          "max_length": 13,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Motor parado"
+        },
+        "esc_title": {
+          "english": "ESC & spin test",
+          "max_length": 15,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Prueba de ESC y giro"
         },
         "fin_before": {
           "english": "Fit the blades and do a careful first hover. Modes, rates and governor are on their own pages.",

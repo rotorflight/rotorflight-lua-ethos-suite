@@ -10519,6 +10519,146 @@
           "max_length": 77,
           "reverse_text": true
         },
+        "con_battery": {
+          "english": "Battery stays unplugged until the next step.",
+          "translation": "הסוללה נשארת מנותקת עד השלב הבא.",
+          "needs_translation": false,
+          "max_length": 44,
+          "reverse_text": true
+        },
+        "esc_title": {
+          "english": "ESC & spin test",
+          "translation": "בדיקת ESC וסיבוב",
+          "needs_translation": false,
+          "max_length": 15,
+          "reverse_text": true
+        },
+        "esc_prepare_text": {
+          "english": "A PWM ESC has to learn its throttle range: the pulse for full throttle and the pulse for low throttle. It learns them when it powers up with full throttle.",
+          "translation": "בקר PWM צריך ללמוד את טווח הגז שלו: הפולס לגז מלא והפולס לסרק. הוא לומד אותם בהפעלה עם גז מלא.",
+          "needs_translation": false,
+          "max_length": 155,
+          "reverse_text": true
+        },
+        "esc_prepare_warn": {
+          "english": "Blades off. Take the pinion out of mesh too, or hold the helicopter down: an ESC that does not go into calibration may run the motor at full throttle.",
+          "translation": "הלהבים הוסרו. הוציאו גם את הפיניון מההילוך, או החזיקו את המסוק: בקר שלא נכנס לכיול עלול להפעיל את המנוע בגז מלא.",
+          "needs_translation": false,
+          "max_length": 150,
+          "reverse_text": true
+        },
+        "esc_blades": {
+          "english": "Main blades off, pinion out of mesh.",
+          "translation": "להבים ראשיים הוסרו, הפיניון הוצא מההילוך.",
+          "needs_translation": false,
+          "max_length": 36,
+          "reverse_text": true
+        },
+        "esc_full_btn": {
+          "english": "Full throttle",
+          "translation": "גז מלא",
+          "needs_translation": false,
+          "max_length": 13,
+          "reverse_text": true
+        },
+        "esc_full_text": {
+          "english": "With the battery still unplugged and the flight controller on USB, press Full throttle. The output rises to 100 % in a few seconds.",
+          "translation": "כשהסוללה עדיין מנותקת והבקר מחובר ב-USB, לחצו על גז מלא. היציאה עולה ל-100 % תוך שניות.",
+          "needs_translation": false,
+          "max_length": 131,
+          "reverse_text": true
+        },
+        "esc_batt_text": {
+          "english": "Plug the battery in. The ESC beeps to show it has taken full throttle; your ESC's manual lists the tones. Then press Low throttle.",
+          "translation": "חברו את הסוללה. הבקר מצפצף כדי לאשר גז מלא; צלילי הבקר מופיעים בהוראות שלו. לאחר מכן לחצו על סרק.",
+          "needs_translation": false,
+          "max_length": 130,
+          "reverse_text": true
+        },
+        "esc_low_btn": {
+          "english": "Low throttle",
+          "translation": "סרק",
+          "needs_translation": false,
+          "max_length": 12,
+          "reverse_text": true
+        },
+        "esc_confirmed": {
+          "english": "The ESC confirmed",
+          "translation": "הבקר אושר",
+          "needs_translation": false,
+          "max_length": 17,
+          "reverse_text": true
+        },
+        "esc_pending": {
+          "english": "Waiting",
+          "translation": "ממתין",
+          "needs_translation": false,
+          "max_length": 7,
+          "reverse_text": true
+        },
+        "esc_cal_status": {
+          "english": "ESC calibration",
+          "translation": "כיול הבקר",
+          "needs_translation": false,
+          "max_length": 15,
+          "reverse_text": true
+        },
+        "esc_spin_title": {
+          "english": "Spin test",
+          "translation": "בדיקת סיבוב",
+          "needs_translation": false,
+          "max_length": 9,
+          "reverse_text": true
+        },
+        "esc_spin_text": {
+          "english": "The motor runs at the test speed for 3 seconds. Check that it starts smoothly and turns the way the rotor direction in the Swashplate step says. If it turns the wrong way, swap two motor wires or reverse it on the ESC.",
+          "translation": "המנוע מסתובב במהירות הבדיקה 3 שניות. בדקו שהוא מתחיל בחלקות ומסתובב בכיוון משלב הצלחת הנשיאה. אם הוא מסתובב לכיוון הלא נכון, החליפו שני חוטי מנוע או הפכו אותו בבקר.",
+          "needs_translation": false,
+          "max_length": 218,
+          "reverse_text": true
+        },
+        "esc_speed": {
+          "english": "Test speed",
+          "translation": "מהירות בדיקה",
+          "needs_translation": false,
+          "max_length": 10,
+          "reverse_text": true
+        },
+        "esc_spin_btn": {
+          "english": "Spin 3 s",
+          "translation": "סיבוב 3 שנ׳",
+          "needs_translation": false,
+          "max_length": 8,
+          "reverse_text": true
+        },
+        "esc_stop_btn": {
+          "english": "Stop",
+          "translation": "עצור",
+          "needs_translation": false,
+          "max_length": 4,
+          "reverse_text": true
+        },
+        "esc_need_calib": {
+          "english": "Calibrate the ESC first.",
+          "translation": "כיילו קודם את הבקר.",
+          "needs_translation": false,
+          "max_length": 24,
+          "reverse_text": true
+        },
+        "esc_running": {
+          "english": "Motor running",
+          "translation": "המנוע מסתובב",
+          "needs_translation": false,
+          "max_length": 13,
+          "reverse_text": true
+        },
+        "esc_stopped": {
+          "english": "Motor stopped",
+          "translation": "המנוע נעצר",
+          "needs_translation": false,
+          "max_length": 13,
+          "reverse_text": true
+        },
         "mot_pinion": {
           "english": "Pinion teeth",
           "translation": "שיני פיניון",

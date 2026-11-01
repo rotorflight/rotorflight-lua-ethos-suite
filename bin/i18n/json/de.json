@@ -10519,6 +10519,146 @@
           "max_length": 77,
           "reverse_text": false
         },
+        "con_battery": {
+          "english": "Battery stays unplugged until the next step.",
+          "translation": "Akku bleibt bis zum nächsten Schritt abgesteckt.",
+          "needs_translation": false,
+          "max_length": 44,
+          "reverse_text": false
+        },
+        "esc_title": {
+          "english": "ESC & spin test",
+          "translation": "ESC- & Drehtest",
+          "needs_translation": false,
+          "max_length": 15,
+          "reverse_text": false
+        },
+        "esc_prepare_text": {
+          "english": "A PWM ESC has to learn its throttle range: the pulse for full throttle and the pulse for low throttle. It learns them when it powers up with full throttle.",
+          "translation": "Ein PWM-Regler muss seinen Gasbereich lernen: den Impuls für Vollgas und den für Leerlauf. Er lernt sie beim Einschalten mit Vollgas.",
+          "needs_translation": false,
+          "max_length": 155,
+          "reverse_text": false
+        },
+        "esc_prepare_warn": {
+          "english": "Blades off. Take the pinion out of mesh too, or hold the helicopter down: an ESC that does not go into calibration may run the motor at full throttle.",
+          "translation": "Blätter ab. Das Ritzel auch aus dem Eingriff nehmen oder den Heli festhalten: Ein Regler, der nicht in die Kalibrierung geht, kann den Motor auf Vollgas laufen lassen.",
+          "needs_translation": false,
+          "max_length": 150,
+          "reverse_text": false
+        },
+        "esc_blades": {
+          "english": "Main blades off, pinion out of mesh.",
+          "translation": "Hauptblätter ab, Ritzel aus dem Eingriff.",
+          "needs_translation": false,
+          "max_length": 36,
+          "reverse_text": false
+        },
+        "esc_full_btn": {
+          "english": "Full throttle",
+          "translation": "Vollgas",
+          "needs_translation": false,
+          "max_length": 13,
+          "reverse_text": false
+        },
+        "esc_full_text": {
+          "english": "With the battery still unplugged and the flight controller on USB, press Full throttle. The output rises to 100 % in a few seconds.",
+          "translation": "Bei noch abgestecktem Akku und Flugcontroller am USB drückst du Vollgas. Der Ausgang steigt in wenigen Sekunden auf 100 %.",
+          "needs_translation": false,
+          "max_length": 131,
+          "reverse_text": false
+        },
+        "esc_batt_text": {
+          "english": "Plug the battery in. The ESC beeps to show it has taken full throttle; your ESC's manual lists the tones. Then press Low throttle.",
+          "translation": "Akku anstecken. Der Regler piept, um zu zeigen, dass er Vollgas übernommen hat. Die Töne stehen in der Anleitung des Reglers. Dann Leerlauf drücken.",
+          "needs_translation": false,
+          "max_length": 130,
+          "reverse_text": false
+        },
+        "esc_low_btn": {
+          "english": "Low throttle",
+          "translation": "Leerlauf",
+          "needs_translation": false,
+          "max_length": 12,
+          "reverse_text": false
+        },
+        "esc_confirmed": {
+          "english": "The ESC confirmed",
+          "translation": "Regler bestätigt",
+          "needs_translation": false,
+          "max_length": 17,
+          "reverse_text": false
+        },
+        "esc_pending": {
+          "english": "Waiting",
+          "translation": "Wartet",
+          "needs_translation": false,
+          "max_length": 7,
+          "reverse_text": false
+        },
+        "esc_cal_status": {
+          "english": "ESC calibration",
+          "translation": "Reglerkalibrierung",
+          "needs_translation": false,
+          "max_length": 15,
+          "reverse_text": false
+        },
+        "esc_spin_title": {
+          "english": "Spin test",
+          "translation": "Drehtest",
+          "needs_translation": false,
+          "max_length": 9,
+          "reverse_text": false
+        },
+        "esc_spin_text": {
+          "english": "The motor runs at the test speed for 3 seconds. Check that it starts smoothly and turns the way the rotor direction in the Swashplate step says. If it turns the wrong way, swap two motor wires or reverse it on the ESC.",
+          "translation": "Der Motor läuft 3 Sekunden mit der Testdrehzahl. Prüfe, ob er sanft anläuft und in die Richtung dreht, die der Schritt Taumelscheibe angibt. Dreht er falsch, zwei Motorkabel tauschen oder am Regler umkehren.",
+          "needs_translation": false,
+          "max_length": 218,
+          "reverse_text": false
+        },
+        "esc_speed": {
+          "english": "Test speed",
+          "translation": "Testdrehzahl",
+          "needs_translation": false,
+          "max_length": 10,
+          "reverse_text": false
+        },
+        "esc_spin_btn": {
+          "english": "Spin 3 s",
+          "translation": "Drehen 3 s",
+          "needs_translation": false,
+          "max_length": 8,
+          "reverse_text": false
+        },
+        "esc_stop_btn": {
+          "english": "Stop",
+          "translation": "Stopp",
+          "needs_translation": false,
+          "max_length": 4,
+          "reverse_text": false
+        },
+        "esc_need_calib": {
+          "english": "Calibrate the ESC first.",
+          "translation": "Zuerst den Regler kalibrieren.",
+          "needs_translation": false,
+          "max_length": 24,
+          "reverse_text": false
+        },
+        "esc_running": {
+          "english": "Motor running",
+          "translation": "Motor läuft",
+          "needs_translation": false,
+          "max_length": 13,
+          "reverse_text": false
+        },
+        "esc_stopped": {
+          "english": "Motor stopped",
+          "translation": "Motor angehalten",
+          "needs_translation": false,
+          "max_length": 13,
+          "reverse_text": false
+        },
         "mot_pinion": {
           "english": "Pinion teeth",
           "translation": "Ritzel-Zähne",

@@ -7982,6 +7982,13 @@
           "reverse_text": false,
           "translation": "Ja"
         },
+        "con_battery": {
+          "english": "Battery stays unplugged until the next step.",
+          "max_length": 44,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Accu blijft losgekoppeld tot de volgende stap."
+        },
         "con_blades": {
           "english": "Blades stay off, and keep clear of the motor.",
           "max_length": 53,
@@ -8163,6 +8170,139 @@
           "needs_translation": false,
           "reverse_text": false,
           "translation": "Geen verbinding met de vliegcontroller."
+        },
+        "esc_batt_text": {
+          "english": "Plug the battery in. The ESC beeps to show it has taken full throttle; your ESC's manual lists the tones. Then press Low throttle.",
+          "max_length": 130,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Sluit de accu aan. De regelaar piept om te bevestigen dat hij vol gas heeft; de handleiding van de regelaar geeft de tonen. Druk daarna op Laag gas."
+        },
+        "esc_blades": {
+          "english": "Main blades off, pinion out of mesh.",
+          "max_length": 36,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Hoofdbladen eraf, rittel uit de vertanding."
+        },
+        "esc_cal_status": {
+          "english": "ESC calibration",
+          "max_length": 15,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Regelaarkalibratie"
+        },
+        "esc_confirmed": {
+          "english": "The ESC confirmed",
+          "max_length": 17,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Regelaar bevestigd"
+        },
+        "esc_full_btn": {
+          "english": "Full throttle",
+          "max_length": 13,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Vol gas"
+        },
+        "esc_full_text": {
+          "english": "With the battery still unplugged and the flight controller on USB, press Full throttle. The output rises to 100 % in a few seconds.",
+          "max_length": 131,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Met de accu nog losgekoppeld en de vluchtcontroller via USB, druk je op Vol gas. De uitgang loopt in een paar seconden op tot 100 %."
+        },
+        "esc_low_btn": {
+          "english": "Low throttle",
+          "max_length": 12,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Laag gas"
+        },
+        "esc_need_calib": {
+          "english": "Calibrate the ESC first.",
+          "max_length": 24,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Kalibreer eerst de regelaar."
+        },
+        "esc_pending": {
+          "english": "Waiting",
+          "max_length": 7,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Wachten"
+        },
+        "esc_prepare_text": {
+          "english": "A PWM ESC has to learn its throttle range: the pulse for full throttle and the pulse for low throttle. It learns them when it powers up with full throttle.",
+          "max_length": 155,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Een PWM-regelaar moet zijn gasbereik leren: de puls voor vol gas en die voor laag gas. Hij leert ze bij het inschakelen op vol gas."
+        },
+        "esc_prepare_warn": {
+          "english": "Blades off. Take the pinion out of mesh too, or hold the helicopter down: an ESC that does not go into calibration may run the motor at full throttle.",
+          "max_length": 150,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Bladen eraf. Haal het rittel ook uit de vertanding, of houd de heli vast: een regelaar die niet in kalibratie gaat, kan de motor op vol gas laten draaien."
+        },
+        "esc_running": {
+          "english": "Motor running",
+          "max_length": 13,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Motor draait"
+        },
+        "esc_speed": {
+          "english": "Test speed",
+          "max_length": 10,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Testsnelheid"
+        },
+        "esc_spin_btn": {
+          "english": "Spin 3 s",
+          "max_length": 8,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Draaien 3 s"
+        },
+        "esc_spin_text": {
+          "english": "The motor runs at the test speed for 3 seconds. Check that it starts smoothly and turns the way the rotor direction in the Swashplate step says. If it turns the wrong way, swap two motor wires or reverse it on the ESC.",
+          "max_length": 218,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "De motor draait 3 seconden op de testsnelheid. Controleer of hij soepel start en draait in de richting uit de stap Swashplate. Draait hij verkeerd, verwissel dan twee motordraden of keer hem om op de regelaar."
+        },
+        "esc_spin_title": {
+          "english": "Spin test",
+          "max_length": 9,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Draaitest"
+        },
+        "esc_stop_btn": {
+          "english": "Stop",
+          "max_length": 4,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Stop"
+        },
+        "esc_stopped": {
+          "english": "Motor stopped",
+          "max_length": 13,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Motor gestopt"
+        },
+        "esc_title": {
+          "english": "ESC & spin test",
+          "max_length": 15,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "ESC- en draaitest"
         },
         "fin_before": {
           "english": "Fit the blades and do a careful first hover. Modes, rates and governor are on their own pages.",

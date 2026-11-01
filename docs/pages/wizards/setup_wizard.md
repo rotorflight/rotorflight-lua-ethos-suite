@@ -51,13 +51,14 @@ stays beside the title. A step with one screen shows no count.
 | 9. [Governor](setup_wizard/governor.md) | Sets the governor mode and the throttle type, and the headspeed of each PID profile when a governor runs. |
 | 10. [Motor & ESC](setup_wizard/motor.md) | Sets the ESC protocol, where the headspeed comes from (a wire, or bidirectional DShot) when a governor runs, the motor poles and the gear ratios. |
 | 11. [Connect servos](setup_wizard/connect.md) | Applies a pending restart and checks the outputs before the servos are plugged in. |
-| 12. [Servo centre](setup_wizard/servos.md) | Checks the direction of each swash servo and centres it. |
-| 13. [Directions](setup_wizard/direction.md) | Checks that roll, pitch and collective move the swash the right way. |
-| 14. [Level swash](setup_wizard/level.md) | Trims the swash until it is level at zero blade pitch. |
-| 15. [Blade pitch](setup_wizard/pitch.md) | Calibrates the blade pitch with a pitch gauge and sets the limits. |
-| 16. [Tail rotor](setup_wizard/tail.md) | Sets the tail centre, direction, calibration and end stops, or tests and idles a motor tail. |
-| 17. [Gyro check](setup_wizard/gyro.md) | Checks by hand that the gyro corrects against each movement. |
-| 18. [Finish](setup_wizard/finish.md) | Summarises what was set and saves it. |
+| 12. [ESC & spin test](setup_wizard/esc.md) | Calibrates a PWM ESC's throttle range (full and low throttle), and spins the main motor at a test speed up to 50 %, for 3 seconds at a time. |
+| 13. [Servo centre](setup_wizard/servos.md) | Checks the direction of each swash servo and centres it. |
+| 14. [Directions](setup_wizard/direction.md) | Checks that roll, pitch and collective move the swash the right way. |
+| 15. [Level swash](setup_wizard/level.md) | Trims the swash until it is level at zero blade pitch. |
+| 16. [Blade pitch](setup_wizard/pitch.md) | Calibrates the blade pitch with a pitch gauge and sets the limits. |
+| 17. [Tail rotor](setup_wizard/tail.md) | Sets the tail centre, direction, calibration and end stops, or tests and idles a motor tail. |
+| 18. [Gyro check](setup_wizard/gyro.md) | Checks by hand that the gyro corrects against each movement. |
+| 19. [Finish](setup_wizard/finish.md) | Summarises what was set and saves it. |
 
 ## Notes
 

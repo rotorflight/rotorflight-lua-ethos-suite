@@ -840,6 +840,20 @@ local function imageBitmap(l, k)
   return bitmap
 end
 
+-- The spin ring of a motor picture: dots round the centre (image pixels), alternately
+-- blue and light, turned by phase (degrees). Drawn at the bitmap's scale s.
+local SPIN_DOTS = 8
+local function drawSpin(sp, ox, oy, s, colors)
+  local cx, cy = ox + sp.cx * s, oy + sp.cy * s
+  local r = sp.r * s
+  local dot = math.max(2, floor(r * 0.16))
+  for i = 0, SPIN_DOTS - 1 do
+    local ang = math.rad((sp.phase or 0) + i * 360 / SPIN_DOTS)
+    lcd.color((i % 2 == 0) and colors.blue or colors.line)
+    lcd.drawFilledCircle(floor(cx + r * math.cos(ang)), floor(cy + r * math.sin(ang)), dot)
+  end
+end
+
 local function drawImage(l, x, y, w, h, colors)
   if l.native then
     -- Its own size, centred: the bitmap of the first scale.
@@ -860,6 +874,7 @@ local function drawImage(l, x, y, w, h, colors)
   else
     lcd.drawBitmap(ox, oy, bitmap, fw, fh)
   end
+  if l.spin and l.spin.visible then drawSpin(l.spin, ox, oy, s, colors) end
 end
 
 -- The bitmap for scale k, loaded the first time a screen of that size draws

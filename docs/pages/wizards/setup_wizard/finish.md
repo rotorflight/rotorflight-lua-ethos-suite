@@ -6,11 +6,11 @@ sidebar_position: 140
 
 # Finish
 
-Step 18 of the Model setup wizard. It sums up what the wizard set and saves it.
+Step 19 of the Model setup wizard. It sums up what the wizard set and saves it.
 
 ## Where to find it
 
-*Configuration* → *Wizards* → *Model setup*, step 18 *Finish*.
+*Configuration* → *Wizards* → *Model setup*, step 19 *Finish*.
 
 Only inside the wizard. Greyed out until the flight controller answers. Read-only while the
 model is armed.
