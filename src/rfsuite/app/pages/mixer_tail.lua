@@ -5,8 +5,8 @@
 -- center trim in degrees, while motorized/bidirectional tails expose tail
 -- idle and use raw percent-like yaw limits.
 --
--- Tool toggles mixer override on the yaw input, which holds the tail at
--- center. While it is on, the other fields are locked and a settled trim
+-- On a servo (variable pitch) tail, Tool toggles mixer override on the yaw
+-- input, which holds the tail at center. While it is on, the other fields are locked and a settled trim
 -- edit is sent live with MSP_SET_MIXER_CONFIG (the FC applies it at once,
 -- without EEPROM). Save keeps it; leaving without saving puts the old trim
 -- back.
@@ -220,6 +220,7 @@ local function open(opts)
         runtime:markDirty()
       end
       applyMode()
+      runtime:updateToolEnabled()
       refresh()
       if form.invalidate then form.invalidate() end
     end,
@@ -266,6 +267,11 @@ local function open(opts)
       end
     end,
     toolIcon = "app/gfx/nav/override.png",
+    -- Servo tails only: a disarmed FC drives the motors from motor override
+    -- alone (motors.c motorUpdate()), so a tail motor never shows the trim.
+    toolAvailable = function()
+      return not isMotorizedMode(formData.tail_rotor_mode)
+    end,
     onTool = function(focusFn)
       form.openDialog({
         title = inOverride and "@i18n(app.modules.trim.disable_mixer_override)@"
@@ -278,7 +284,7 @@ local function open(opts)
             -- dialog closes (app/page_runtime.lua's note on closeDialog).
             if inOverride then
               setOverride(false)
-            elseif runtime.loaded then
+            elseif runtime.loaded and not isMotorizedMode(formData.tail_rotor_mode) then
               setOverride(true)
               lastChangeAt = os.clock()
             end
@@ -476,6 +482,7 @@ local function open(opts)
       runtime.extraSaveMessage = nil
     end
     applyMode()
+    runtime:updateToolEnabled()
     refresh()
   end
 
