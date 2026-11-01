@@ -40,6 +40,7 @@ local rxMapCodec = requireModule("lib/msp_rx_map.lua")
 local rcConfigCodec = requireModule("lib/msp_rc_config.lua")
 local rxConfigCodec = requireModule("lib/msp_rx_config.lua")
 local featureCodec = requireModule("lib/msp_feature_config.lua")
+local rcChannels = requireModule("lib/msp_rc_channels.lua")
 
 local floor = math.floor
 
@@ -80,6 +81,7 @@ local T = {
   throttleText = "@i18n(app.modules.setup_wizard.rcv_throttle_text)@",
   throttleName = "@i18n(app.modules.setup_wizard.rcv_ch_throttle)@",
   fcRange = "@i18n(app.modules.setup_wizard.rcv_fc_range)@",
+  mismatchFmt = "@i18n(app.modules.setup_wizard.rcv_link_mismatch_fmt)@",
   measured = "@i18n(app.modules.setup_wizard.rcv_measured)@",
   bladesOff = "@i18n(app.modules.setup_wizard.rcv_blades_off)@",
   measure = "@i18n(app.modules.setup_wizard.rcv_measure)@",
@@ -88,7 +90,8 @@ local T = {
   defaults = "@i18n(app.modules.setup_wizard.rcv_defaults)@",
   tooShort = "@i18n(app.modules.setup_wizard.rcv_too_short)@",
   doneTitle = "@i18n(app.modules.setup_wizard.rcv_done_title)@",
-  done = "@i18n(app.modules.setup_wizard.rcv_done)@",
+  doneSave = "@i18n(app.modules.setup_wizard.rcv_done_save)@",
+  doneKeep = "@i18n(app.modules.setup_wizard.rcv_done_keep)@",
   progress = "@i18n(app.modules.setup_wizard.progress_fmt)@",
   next = "@i18n(app.modules.setup_wizard.btn_next)@",
   start = "@i18n(app.modules.setup_wizard.btn_start)@",
@@ -96,7 +99,7 @@ local T = {
 
 -- The screens of the step, in order: prepare, link (and its protocol), order
 -- (and its presets, with the signal check), detect, sticks, throttle, done.
-local RECEIVER_SCREENS = 7
+local RECEIVER_SCREENS = 6
 
 local PRESET_NAMES = {
   elrs = "@i18n(app.modules.setup_wizard.rcv_preset_elrs)@",
@@ -124,7 +127,29 @@ local DETECT_HINTS = {
 }
 
 local RX_FAILSAFE_BIT = 2
-local STATUS_POLL = 1.0
+-- On S.Port, F.Port and FBUS each MSP reply blanks the FC's sensor telemetry for
+-- 250 ms (firmware telemetry/smartport.c, SMARTPORT_MSP_SILENCE_US): read often,
+-- Ethos reports the sensors lost. So the bars of this step read the radio's own
+-- channel outputs, which the receiver passes on one to one (the FC maps them, it
+-- does not reverse them: firmware rx/rx.c readRxChannels). MSP is left to the
+-- signal check, and the cross-check of the radio against the FC after each stick
+-- movement (one read, once the stick has settled).
+local STATUS_POLL = 3.0
+local LOCAL_CHANNELS = 16
+-- Ethos -1024..1024 is -100..+100 %: 1500 +- 512 us on F.Port, FBUS and CRSF.
+local US_PER_UNIT = 512 / 1024
+-- The cross-check: one MSP_RX_CHANNELS read after each stick movement, once the
+-- moved channel has been still for CHECK_SETTLE, compared with the radio for each
+-- stick that held still (CHECK_STILL) while the read was out. Reads never overlap
+-- (CHECK_GIVE_UP for a lost reply), and not closer than CHECK_MIN_GAP.
+local CHECK_MOVE = 20
+local CHECK_SETTLE = 0.3
+local CHECK_MIN_GAP = 0.05
+local CHECK_GIVE_UP = 3.0
+local CHECK_STILL = 8
+local CHECK_TOLERANCE = 30
+-- The radio is read (and the bars redrawn) at most this often.
+local LOCAL_READ = 0.1
 local DETECT_MIN_US = 300
 -- A channel moving at least this far while detecting is highlighted.
 local DETECT_SHOW_US = 60
@@ -154,7 +179,6 @@ local function new(wiz)
   -- live then); otherwise the safety card comes first.
   local screen = wiz.takeResume() or "prepare"
   local answers = {blades = false, unplugged = false}
-  local answered = nil     -- the answer just pressed keeps the focus
   local receiverPicture = art.image("receiver", 140, 70)
   local rxMap = nil        -- decoded MSP_RX_MAP (named fields)
   local rcConfig = nil     -- decoded MSP_RC_CONFIG
@@ -212,7 +236,53 @@ local function new(wiz)
   -- Throttle range.
   local measuring = false
   local low, high = nil, nil
+  local applied = false      -- the measured range has been written to the FC
   local thrNow = nil
+  -- The cross-check (see CHECK_MOVE); mismatch is the function slot that differs.
+  local checkRaw, checkSnap, checkSeen = {}, {}, {}
+  local checkInFlight, checkAt = false, -1000
+  local checkWanted, movedAt = true, -1000
+  local mismatch = nil
+
+  -- The radio's channel outputs, in us: raw by receiver channel, rc by function
+  -- through the receiver map (as MSP_RX_CHANNELS and MSP_RC would answer).
+  local chanSources = {}
+  local localAt = 0
+  local localRaw, localRc = {}, {}
+  local simSweep = {}
+  local function readLocal()
+    local n = 0
+    if CATEGORY_CHANNEL ~= nil then
+      for i = 1, LOCAL_CHANNELS do
+        local src = chanSources[i]
+        if src == nil then
+          src = system.getSource({category = CATEGORY_CHANNEL, member = i - 1, options = 0}) or false
+          chanSources[i] = src
+        end
+        local v = src and src:value()
+        if type(v) ~= "number" then break end
+        localRaw[i] = floor(1500 + v * US_PER_UNIT + 0.5)
+        n = i
+      end
+    end
+    for i = n + 1, #localRaw do localRaw[i] = nil end
+    -- The simulator's sticks stay centred: the four stick channels sweep as the
+    -- simulator's MSP replies do. The throttle and the switches stay the radio's.
+    if rcChannels.SIMULATED and rxMap then
+      rcChannels.sweepChannelsUs(os.clock(), simSweep)
+      for slot = 1, 4 do
+        local ch = rxMap[rxMapCodec.FIELDS[slot]]
+        if ch then
+          for i = #localRaw + 1, ch do localRaw[i] = 1500 end
+          localRaw[ch + 1] = simSweep[slot]
+        end
+      end
+    end
+    for slot = 1, #rxMapCodec.FIELDS do
+      local ch = rxMap and rxMap[rxMapCodec.FIELDS[slot]]
+      localRc[slot] = ch and localRaw[ch + 1] or nil
+    end
+  end
 
   wiz.fetch({
     map = function(ok, err) return rxMapCodec.buildReadMessage(ok, err) end,
@@ -257,17 +327,24 @@ local function new(wiz)
     bus.publish("rx.map.saved", rxMap)
   end
 
-  -- The protocol, as the EdgeTX suite lists it: the firmware's provider numbers.
-  -- The later ones need the newer API.
+  -- The protocols: the firmware's provider numbers, in alphabetical order. The
+  -- later ones need the newer API. F.Port2 (16) as the Configurator's
+  -- receiver/protocols.js: offered on API 12.7-12.9 only; from 12.10 the FBUS
+  -- driver detects F.Port2 itself (firmware rx/rx.c), and a stored 16 reads as FBUS.
   local FEATURE_SERIAL_RX = 3
   local FEATURE_CLASH = {0, 3, 13, 14, 25}
   local function protocolList()
     local e = {{9, "CRSF / ELRS"}, {2, "S.BUS"}, {0, "DSM/1024"}, {1, "DSM/2048"}, {10, "SRXL"},
       {13, "SRXL2"}, {14, "GHOST"}, {3, "SUMD"}, {4, "SUMH"}, {7, "IBUS"}, {5, "XBUS B"},
       {6, "XBUS RJ01"}, {8, "Jeti EXBUS"}, {12, "F.PORT"}}
-    if wiz.apiAtLeast(7) then e[#e + 1] = {15, "S.BUS2"}; e[#e + 1] = {16, "F.PORT2"}; e[#e + 1] = {17, "FBUS"} end
+    if wiz.apiAtLeast(7) then
+      e[#e + 1] = {15, "S.BUS2"}
+      if not wiz.apiAtLeast(10) then e[#e + 1] = {16, "F.PORT2"} end
+      e[#e + 1] = {17, "FBUS"}
+    end
     if wiz.apiAtLeast(8) then e[#e + 1] = {18, "XBUS A"} end
     if wiz.apiAtLeast(9) then e[#e + 1] = {19, "IBUS2"} end
+    table.sort(e, function(a, b) return a[2]:lower() < b[2]:lower() end)
     return e
   end
 
@@ -282,6 +359,7 @@ local function new(wiz)
     for _, p in ipairs(protocolList()) do
       if p[1] == id then return p[2] end
     end
+    if id == 16 then return "FBUS" end
     return "-"
   end
 
@@ -313,13 +391,11 @@ local function new(wiz)
   end
 
   local function setLive()
-    if screen == "order" or screen == "presets" or screen == "detect" then
-      self.liveRc = "raw"
-    elseif screen == "sticks" or screen == "throttle" then
-      self.liveRc = "rc"
-    else
-      self.liveRc = nil
-    end
+    -- No shell polling: the bars and the throttle measurement read the radio
+    -- (readLocal); the FC is asked only for the status and the cross-check.
+    self.liveRc, self.liveRcInterval = nil, nil
+    -- A check when the screen opens, once the sticks have settled.
+    checkWanted, movedAt = true, -1000
   end
 
   local function go(name)
@@ -357,7 +433,7 @@ local function new(wiz)
 
   local function mappedRaw(slot)
     local ch = rxMap and rxMap[rxMapCodec.FIELDS[slot]]
-    return ch and wiz.rcRaw[ch + 1] or nil
+    return ch and localRaw[ch + 1] or nil
   end
 
   -- Fills fracs[] for the screen; true when a bar moved enough to redraw.
@@ -366,9 +442,9 @@ local function new(wiz)
     for i = 1, barCount do
       local us
       if screen == "sticks" then
-        us = wiz.rc[i]
+        us = localRc[i]
       elseif screen == "detect" then
-        us = wiz.rcRaw[i]
+        us = localRaw[i]
       else
         us = mappedRaw(i)
       end
@@ -423,7 +499,9 @@ local function new(wiz)
     local gap = 16
     local colW = floor((w - gap * (cols - 1)) / cols)
     -- Beside the order's checks the bars are narrow: their names get more room.
-    local labelW = floor(colW * ((cols == 1 and w >= 320) and 0.26 or 0.42))
+    local longest = 0
+    for i = 1, barCount do longest = math.max(longest, (lcd.getTextSize(labels[i] or ""))) end
+    local labelW = math.min(floor(colW * 0.5), longest + 10)
     for i = 1, barCount do
       local c = floor((i - 1) / rows)
       local r = (i - 1) % rows
@@ -509,8 +587,13 @@ local function new(wiz)
     local _, th = lcd.getTextSize("Ag")
     local rowH = math.min(floor(h / barCount), th + 12)
     local leftW = floor(w * 2 / 3)
-    local nameW = floor(leftW * 0.27)
-    local oppW = floor(leftW * 0.2)
+    local longestName, longestOpp = 0, 0
+    for i = 1, barCount do
+      longestName = math.max(longestName, (lcd.getTextSize(labels[i] or "")))
+      longestOpp = math.max(longestOpp, (lcd.getTextSize(oppWords[i] or "")))
+    end
+    local nameW = math.min(floor(leftW * 0.5), longestName + 10)
+    local oppW = math.min(floor(leftW * 0.35), longestOpp + 10)
     local barX = x + nameW + oppW
     local barW = leftW - nameW - oppW - 8
     local colX = x + leftW + 8
@@ -568,7 +651,8 @@ local function new(wiz)
   -- says which, in grey; the others are plain.
   local function channelBars()
     clearBars()
-    local n = math.min(RAW_ROWS, math.max(#wiz.rcRaw, FUNCTION_ROWS))
+    readLocal()
+    local n = math.min(RAW_ROWS, math.max(#localRaw, FUNCTION_ROWS))
     barCount = n
     for ch = 1, n do
       local label = string.format(T.channel, ch)
@@ -625,7 +709,7 @@ local function new(wiz)
   end
 
   local function detectWakeup()
-    local raw = wiz.rcRaw
+    local raw = localRaw
     local n = #raw
     if n == 0 then return end
     if not haveBaseline then
@@ -652,8 +736,10 @@ local function new(wiz)
 
   -- Throttle ------------------------------------------------------------------
 
+  -- The throttle from the radio, as the bar: the measured band follows at once.
+  -- The cross-check confirms that the FC receives the same.
   local function throttleWakeup()
-    local us = wiz.rc[5]
+    local us = localRc[5]
     if not us then return end
     local changed = false
     if us ~= thrNow then
@@ -665,6 +751,65 @@ local function new(wiz)
       if not high or us > high then high, changed = us, true end
     end
     if changed then wiz.invalidate() end
+  end
+
+  -- Cross-check: the FC's raw channels against the radio's, for the five
+  -- functions. A stick that moved while the read was out is not judged, nor is
+  -- a channel the FC reads as 0 (no signal: the signal line says so).
+  local function onCheck()
+    checkInFlight = false
+    -- A warning stays until its own stick has been judged again.
+    local compared, found, judgedMismatch = false, nil, false
+    for slot = 1, FUNCTION_ROWS do
+      local ch = rxMap and rxMap[rxMapCodec.FIELDS[slot]]
+      local snap = checkSnap[slot]
+      local now = ch and localRaw[ch + 1]
+      local fc = ch and checkRaw[ch + 1]
+      if snap and now and fc and fc > 0 and math.abs(snap - now) <= CHECK_STILL then
+        compared = true
+        if slot == mismatch then judgedMismatch = true end
+        if not found and math.abs(fc - now) > CHECK_TOLERANCE then found = slot end
+      end
+    end
+    if not compared or found == mismatch then return end
+    if not found and mismatch and not judgedMismatch then return end
+    mismatch = found
+    wiz.rebuild()
+  end
+  local function onCheckError() checkInFlight = false end
+
+  local function checkWakeup(now)
+    -- The simulator's MSP replies are made up (a sweep): nothing to compare with.
+    if rcChannels.SIMULATED or not rxMap or not wiz.canMove() then return end
+    -- Any of the four sticks or the throttle moving marks a check wanted.
+    for slot = 1, FUNCTION_ROWS do
+      local ch = rxMap[rxMapCodec.FIELDS[slot]]
+      local v = ch and localRaw[ch + 1]
+      if v then
+        local seen = checkSeen[slot]
+        if seen and math.abs(v - seen) > CHECK_MOVE then
+          checkWanted, movedAt = true, now
+        end
+        checkSeen[slot] = v
+      end
+    end
+    if not checkWanted then return end
+    if checkInFlight and now - checkAt <= CHECK_GIVE_UP then return end
+    if now - movedAt < CHECK_SETTLE or now - checkAt < CHECK_MIN_GAP then return end
+    checkWanted = false
+    checkInFlight, checkAt = true, now
+    for slot = 1, FUNCTION_ROWS do
+      local ch = rxMap[rxMapCodec.FIELDS[slot]]
+      checkSnap[slot] = ch and localRaw[ch + 1] or false
+    end
+    local m = rcChannels.buildReadMessage(rcChannels.RX_CHANNELS_COMMAND, checkRaw, onCheck, onCheckError)
+    m.maxRetries = 0
+    bus.publish("msp.request", m)
+  end
+
+  -- The mismatch, as a line: "The FC reads Roll (CH1) differently ...".
+  local function mismatchLine()
+    return mismatch and string.format(T.mismatchFmt, channelLabel(mismatch)) or nil
   end
 
 
@@ -686,23 +831,7 @@ local function new(wiz)
       scr:text(T.prepareTitle, T.prepareText)
       scr:picture(receiverPicture)
       scr:step(1, RECEIVER_SCREENS)
-      local function answer(key, index)
-        return function()
-          answers[key], answered = not answers[key], index
-          wiz.rebuild()
-        end
-      end
-      local ready = answers.unplugged and answers.blades
-      -- Focus: Next once both are Yes, else the answer just pressed, else the first No.
-      local answerField = scr:checks({
-        {label = T.unplugged, answer = answers.unplugged and T.yes or T.no, press = answer("unplugged", 1)},
-        {label = T.blades, answer = answers.blades and T.yes or T.no, press = answer("blades", 2)},
-      }, (not ready) and (answered or (not answers.unplugged and 1) or 2) or nil)
-      answered = nil
-      -- As the other steps: Start goes into the step, Next leaves it.
-      local rowField = scr:row(nil, {{text = T.start, primary = ready, disabled = not ready,
-        press = function() go("link") end}})
-      return answerField or rowField
+      return scr:safety(answers, {{key = "unplugged", label = T.unplugged}, {key = "blades", label = T.blades}}, T.start, function() go("link") end)
 
     elseif screen == "link" then
       -- The EdgeTX suite's receiver card, without its unlock: the protocol and the
@@ -739,16 +868,21 @@ local function new(wiz)
       -- The signal check is on this card too (it was the intro screen): the
       -- status line, and the live bars that show the sticks reaching the FC.
       local signalLine = (signal == true and T.signalOk) or (signal == false and T.signalNone) or nil
-      scr:text(T.orderTitle, T.orderText,
-        noteAccent or note or signalLine)
+      scr:text(T.orderTitle, T.orderText, noteAccent)
       scr:step(3, RECEIVER_SCREENS)
       -- The bars on the left, as the other screens' pictures; the detection and
       -- the standard order on the right, as the EdgeTX card.
       functionBars(nil)
-      local field = scr:checks({
+      -- The signal line and the result of a detection sit under the buttons: the
+      -- bars keep their place.
+      local rows = {
         {answer = T.detect, needsMotion = true, press = startDetect},
         {label = T.standardOrder, answer = presetName(mapArray(rxMap)), press = function() go("presets") end},
-      })
+      }
+      if signalLine then rows[#rows + 1] = {note = signalLine} end
+      if mismatch then rows[#rows + 1] = {note = mismatchLine()} end
+      if note then rows[#rows + 1] = {note = note} end
+      local field = scr:checks(rows)
       -- The navigation row is always drawn; the focus is the checks' field, if any.
       local rowField = scr:row(function() go("link") end, nil, {text = T.next, press = function() go("sticks") end})
       return field or rowField
@@ -772,38 +906,40 @@ local function new(wiz)
       local slot = heli.DETECT_ORDER[detectIndex]
       scr:text(FUNCTION_NAMES[slot], string.format(T.detectText, DETECT_HINTS[slot]), nil,
         string.format(T.progress, detectIndex, #heli.DETECT_ORDER))
-      scr:step(4, RECEIVER_SCREENS)
+      -- The detection is part of the channel order step, not a step of its own.
+      scr:step(3, RECEIVER_SCREENS)
       channelBars()
       return scr:row(function() go("order") end, {
         {text = T.skip, press = function() nextStick(nil) end},
       }, false)
 
     elseif screen == "sticks" then
-      scr:text(T.sticksTitle, T.sticksText)
-      scr:step(5, RECEIVER_SCREENS)
+      scr:text(T.sticksTitle, T.sticksText, mismatchLine())
+      scr:step(4, RECEIVER_SCREENS)
       stickBars()
       return scr:row(function() go("order") end, nil,
         {text = T.next, disabled = not travelOk(), press = function() go("throttle") end})
 
     elseif screen == "throttle" then
-      local accent = noteAccent or T.bladesOff
+      local accent = noteAccent or mismatchLine() or T.bladesOff
       scr:text(T.throttleTitle, T.throttleText, accent)
-      scr:step(6, RECEIVER_SCREENS)
+      scr:step(5, RECEIVER_SCREENS)
       scr:draw(drawThrottle)
-      local canUse = heli.throttleFromMeasured(low, high) ~= nil and not measuring
+      local canUse = heli.throttleFromMeasured(low, high) ~= nil and not measuring and not applied
       local field = scr:checks({
         {answer = measuring and T.stop or T.measure, press = function()
           if measuring then
             measuring = false
             if not heli.throttleFromMeasured(low, high) then noteAccent = T.tooShort end
           else
-            measuring, low, high, noteAccent = true, nil, nil, nil
+            measuring, low, high, noteAccent, applied = true, nil, nil, nil, false
           end
           wiz.rebuild()
         end},
         {answer = T.use, disabled = not canUse, press = function()
           local minUs, maxUs = heli.throttleFromMeasured(low, high)
           if minUs then writeThrottle(minUs, maxUs) end
+          applied = true
           wiz.rebuild()
         end},
         {answer = T.defaults, press = function()
@@ -816,8 +952,16 @@ local function new(wiz)
       return field or rowField
 
     else -- done
-      scr:text(T.doneTitle, T.done)
-      scr:step(7, RECEIVER_SCREENS)
+      -- What is set now, beside the receiver; the text says what the way forward
+      -- does: Next when nothing changed, Save and continue when the EEPROM is owed.
+      scr:text(T.doneTitle, wiz.hasPending() and T.doneSave or T.doneKeep)
+      scr:picture(receiverPicture)
+      scr:step(6, RECEIVER_SCREENS)
+      scr:checks({
+        {label = T.protocol, value = protocolName(currentProtocol())},
+        {label = T.orderTitle, value = presetName(mapArray(rxMap))},
+        {label = T.throttleTitle, value = fcRangeText()},
+      })
       return scr:row(function() go("throttle") end)
     end
   end
@@ -825,10 +969,18 @@ local function new(wiz)
   function self.paint() scr:paint() end
 
   function self.wakeup(now)
+    local fresh = false
+    if (screen == "order" or screen == "detect" or screen == "sticks" or screen == "throttle")
+        and now - localAt >= LOCAL_READ then
+      localAt = now
+      readLocal()
+      fresh = true
+    end
     if screen == "order" then
       if now >= statusAt then
         statusAt = now + STATUS_POLL
-        bus.publish("msp.request", status.buildReadMessage(function(data)
+        -- Sent once, as the live reads: the next check is the retry.
+        local m = status.buildReadMessage(function(data)
           local fs = rxFailsafe(data and data.arming_disable_flags)
           if fs == nil then return end
           local ok = not fs
@@ -836,14 +988,17 @@ local function new(wiz)
             signal = ok
             wiz.rebuild()
           end
-        end))
+        end)
+        m.maxRetries = 0
+        bus.publish("msp.request", m)
       end
     elseif screen == "detect" then
-      detectWakeup()
+      if fresh then detectWakeup() end
     elseif screen == "throttle" then
       throttleWakeup()
     end
-    if barCount > 0 and readBars() then wiz.invalidate() end
+    if fresh and barCount > 0 and readBars() then wiz.invalidate() end
+    if screen == "sticks" or screen == "throttle" or screen == "order" then checkWakeup(now) end
   end
 
   function self.released() scr:refresh() end

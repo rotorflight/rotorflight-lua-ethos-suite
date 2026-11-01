@@ -1988,6 +1988,97 @@
           "reverse_text": true,
           "max_length": 12
         },
+        "activelook_alerts": {
+          "english": "Alerts",
+          "translation": "Alerts",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 6
+        },
+        "activelook_esc_temp_warning": {
+          "english": "ESC temp warning",
+          "translation": "ESC temp warning",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 16
+        },
+        "activelook_use_audio_limit": {
+          "english": "Use audio limits & repeats",
+          "translation": "סף וחזרות שמע",
+          "needs_translation": false,
+          "reverse_text": true,
+          "max_length": 26
+        },
+        "activelook_esc_temp_limit": {
+          "english": "ESC temp limit",
+          "translation": "ESC temp limit",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 14
+        },
+        "activelook_governor_lost": {
+          "english": "Lost headspeed",
+          "translation": "Lost headspeed",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 14
+        },
+        "activelook_governor_status": {
+          "english": "Governor status",
+          "translation": "Governor status",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 15
+        },
+        "activelook_status_duration": {
+          "english": "Status duration",
+          "translation": "Status duration",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 15
+        },
+        "activelook_low_fuel": {
+          "english": "Smart Fuel",
+          "translation": "Smart Fuel",
+          "needs_translation": false,
+          "reverse_text": true,
+          "max_length": 10
+        },
+        "activelook_low_fuel_warning": {
+          "english": "Smart Fuel warning",
+          "translation": "אזהרת Smart Fuel",
+          "needs_translation": false,
+          "reverse_text": true,
+          "max_length": 18
+        },
+        "activelook_low_fuel_repeats": {
+          "english": "Repeats",
+          "translation": "חזרות",
+          "needs_translation": false,
+          "reverse_text": true,
+          "max_length": 7
+        },
+        "activelook_low_fuel_icon": {
+          "english": "Icon",
+          "translation": "סמל",
+          "needs_translation": false,
+          "reverse_text": true,
+          "max_length": 4
+        },
+        "activelook_low_fuel_seconds": {
+          "english": "Warning Duration",
+          "translation": "משך האזהרה",
+          "needs_translation": false,
+          "reverse_text": true,
+          "max_length": 16
+        },
+        "activelook_inflight_fuel_icon": {
+          "english": "Smart Fuel icon",
+          "translation": "סמל Smart Fuel",
+          "needs_translation": false,
+          "reverse_text": true,
+          "max_length": 15
+        },
         "activelook_inflight": {
           "english": "Inflight",
           "translation": "Inflight",
@@ -2715,6 +2806,55 @@
           "needs_translation": false,
           "reverse_text": true,
           "max_length": 16
+        },
+        "activelook_rf_link_warning": {
+          "english": "RF link warning",
+          "translation": "RF link warning",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 15
+        },
+        "activelook_rf_link_limit": {
+          "english": "RSSI limit",
+          "translation": "Link limit",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 10
+        },
+        "activelook_rf_link_percent_limit": {
+          "english": "VFR/LQ limit",
+          "translation": "VFR/LQ limit",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 12
+        },
+        "activelook_use_audio_repeats": {
+          "english": "Use audio repeats",
+          "translation": "השתמש בחזרות שמע",
+          "needs_translation": false,
+          "max_length": 17,
+          "reverse_text": true
+        },
+        "activelook_smartfuel_min": {
+          "english": "Min Smart Fuel",
+          "translation": "Smart Fuel מינ",
+          "needs_translation": false,
+          "max_length": 14,
+          "reverse_text": true
+        },
+        "activelook_smartfuel_max": {
+          "english": "Max Smart Fuel",
+          "translation": "Smart Fuel מקס",
+          "needs_translation": false,
+          "max_length": 14,
+          "reverse_text": true
+        },
+          "armed_warning": {
+          "english": "Dashboard armed warning",
+          "max_length": 28,
+          "needs_translation": false,
+          "translation": "אזהרת Armed בלוח מחוונים",
+          "reverse_text": true
         }
       },
       "telemetry": {
@@ -5633,6 +5773,20 @@
           "translation": "Override",
           "needs_translation": true,
           "reverse_text": false
+        },
+        "arming_disable_flag_26": {
+          "english": "No Filter",
+          "max_length": 10,
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "No Filter"
+        },
+        "arming_disable_flag_27": {
+          "english": "Backup RX",
+          "max_length": 10,
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "Backup RX"
         }
       },
       "elrs_telemetry": {
@@ -8018,23 +8172,30 @@
           "reverse_text": false,
           "max_length": 16
         },
+        "stops_shake_fmt": {
+          "english": "Shaking %d deg/s",
+          "translation": "Shaking %d deg/s",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 16
+        },
         "act_fly_roll": {
-          "english": "Fly rolls in rate mode, centre the stick after each",
-          "translation": "Fly rolls in rate mode, centre the stick after each",
+          "english": "Fly rolls in acro mode, centre the stick after each",
+          "translation": "Fly rolls in acro mode, centre the stick after each",
           "needs_translation": true,
           "reverse_text": false,
           "max_length": 51
         },
         "act_fly_pitch": {
-          "english": "Fly flips in rate mode, centre the stick after each",
-          "translation": "Fly flips in rate mode, centre the stick after each",
+          "english": "Fly flips in acro mode, centre the stick after each",
+          "translation": "Fly flips in acro mode, centre the stick after each",
           "needs_translation": true,
           "reverse_text": false,
           "max_length": 51
         },
         "act_fly_yaw": {
-          "english": "Fly pirouettes in rate mode, centre the stick after each",
-          "translation": "Fly pirouettes in rate mode, centre the stick after each",
+          "english": "Fly pirouettes in acro mode, centre the stick after each",
+          "translation": "Fly pirouettes in acro mode, centre the stick after each",
           "needs_translation": true,
           "reverse_text": false,
           "max_length": 56
@@ -8089,8 +8250,8 @@
           "max_length": 19
         },
         "why_more": {
-          "english": "Each flight in rate mode is saved when you disarm.",
-          "translation": "Data builds up while you fly in rate mode.",
+          "english": "Each flight in acro mode is saved when you disarm.",
+          "translation": "Data builds up while you fly in acro mode.",
           "needs_translation": true,
           "reverse_text": false,
           "max_length": 50
@@ -8171,6 +8332,13 @@
           "needs_translation": true,
           "reverse_text": false,
           "max_length": 54
+        },
+        "why_shake_fmt": {
+          "english": "Shakes %d deg/s at centre stick. Less P calms it.",
+          "translation": "Shakes %d deg/s at centre stick. Less P calms it.",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 49
         },
         "why_ok": {
           "english": "The heli answers the stick as asked.",
@@ -8283,6 +8451,20 @@
           "needs_translation": true,
           "reverse_text": false,
           "max_length": 97
+        },
+        "reading": {
+          "english": "Reading the last flight...",
+          "translation": "Reading the last flight...",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 26
+        },
+        "not_read": {
+          "english": "Last flight not read. It is read at the next disarm.",
+          "translation": "Last flight not read. It is read at the next disarm.",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 52
         }
       },
       "setup_wizard": {
@@ -8411,6 +8593,12 @@
           "needs_translation": false,
           "max_length": 8,
           "reverse_text": true
+        },
+        "step_modes": {
+          "english": "Mode switches",
+          "translation": "מתגי מצבים",
+          "needs_translation": false,
+          "max_length": 13
         },
         "step_finish": {
           "english": "Finish",
@@ -9007,11 +9195,10 @@
           "reverse_text": true
         },
         "rcv_ch_collective": {
-          "english": "Collective",
-          "translation": "קולקטיב",
+          "english": "Coll.",
+          "translation": "קול׳",
           "needs_translation": false,
-          "max_length": 10,
-          "reverse_text": true
+          "max_length": 5
         },
         "rcv_ch_throttle": {
           "english": "Throttle",
@@ -9096,12 +9283,563 @@
           "max_length": 13,
           "reverse_text": true
         },
-        "rcv_done": {
-          "english": "The channel order and throttle range are set.",
-          "translation": "סדר הערוצים וטווח המצערת הוגדרו.",
+        "rcv_done_keep": {
+          "english": "Nothing has changed: the flight controller keeps its receiver settings. Next goes on to the swashplate.",
+          "translation": "לא השתנה דבר: ה-FC שומר את הגדרות המקלט. הבא ממשיך לסוואש.",
           "needs_translation": false,
-          "max_length": 45,
-          "reverse_text": true
+          "max_length": 103
+        },
+        "rcv_done_save": {
+          "english": "The changes already work on the flight controller, but are not stored yet. Save and continue writes them to its memory (EEPROM), so they survive a restart.",
+          "translation": "השינויים כבר פעילים ב-FC אך עוד לא נשמרו. שמור והמשך כותב אותם לזיכרון שלו (EEPROM), כדי שיישמרו גם אחרי הפעלה מחדש.",
+          "needs_translation": false,
+          "max_length": 155
+        },
+        "step_profiles": {
+          "english": "Profiles & gain",
+          "translation": "פרופילים והגבר",
+          "needs_translation": false,
+          "max_length": 15
+        },
+        "prof_intro": {
+          "english": "One switch picks the flight profile, master gain fine-tunes the gains in flight. Both are optional.",
+          "translation": "מתג אחד בוחר את פרופיל הטיסה; הגבר הכללי מכייל את ההגברים בטיסה. שניהם אופציונליים.",
+          "needs_translation": false,
+          "max_length": 99
+        },
+        "prof_switch_title": {
+          "english": "Profile switch",
+          "translation": "מתג פרופיל",
+          "needs_translation": false,
+          "max_length": 14
+        },
+        "prof_switch_text": {
+          "english": "A 2- or 3-position switch. Press Assign, then move it through every position: each one lands on its own profile.",
+          "translation": "מתג של 2 או 3 מצבים. לחצו הקצה, ואז העבירו אותו בכל המצבים: כל מצב נופל על פרופיל משלו.",
+          "needs_translation": false,
+          "max_length": 112
+        },
+        "prof_both": {
+          "english": "Profiles and rates",
+          "translation": "פרופילים וקצבים",
+          "needs_translation": false,
+          "max_length": 18
+        },
+        "prof_pid": {
+          "english": "PID profiles only",
+          "translation": "רק פרופילי PID",
+          "needs_translation": false,
+          "max_length": 17
+        },
+        "prof_none": {
+          "english": "Not used",
+          "translation": "לא בשימוש",
+          "needs_translation": false,
+          "max_length": 9
+        },
+        "prof_chosen": {
+          "english": "Selected",
+          "translation": "נבחר",
+          "needs_translation": false,
+          "max_length": 8
+        },
+        "prof_count_fmt": {
+          "english": "CH %d · %d profiles",
+          "translation": "CH %d · %d פרופילים",
+          "needs_translation": false,
+          "max_length": 19
+        },
+        "prof_now_fmt": {
+          "english": "Now: profile %d",
+          "translation": "עכשיו: פרופיל %d",
+          "needs_translation": false,
+          "max_length": 16
+        },
+        "prof_listen": {
+          "english": "Move the switch…",
+          "translation": "העבירו את המתג…",
+          "needs_translation": false,
+          "max_length": 16
+        },
+        "prof_found_fmt": {
+          "english": "%d positions found. Move through every position, then press Use.",
+          "translation": "נמצאו %d מצבים. עברו על כולם ואז לחצו השתמש.",
+          "needs_translation": false,
+          "max_length": 64
+        },
+        "prof_use": {
+          "english": "Use",
+          "translation": "השתמש",
+          "needs_translation": false,
+          "max_length": 5
+        },
+        "prof_gain_title": {
+          "english": "Master gain in flight",
+          "translation": "הגבר כללי בטיסה",
+          "needs_translation": false,
+          "max_length": 21
+        },
+        "prof_gain_text": {
+          "english": "Changes all gains together. Raise it in flight until the wobble starts, then come back a few steps.",
+          "translation": "משנה את כל ההגברים יחד. מעלים בטיסה עד שמתחיל רעידה, ואז מורידים כמה צעדים.",
+          "needs_translation": false,
+          "max_length": 99
+        },
+        "prof_gain_buttons": {
+          "english": "Trim buttons",
+          "translation": "כפתורי טרים",
+          "needs_translation": false,
+          "max_length": 12
+        },
+        "prof_gain_knob": {
+          "english": "Knob",
+          "translation": "סיבוב",
+          "needs_translation": false,
+          "max_length": 5
+        },
+        "prof_gain_none": {
+          "english": "Not used",
+          "translation": "לא בשימוש",
+          "needs_translation": false,
+          "max_length": 9
+        },
+        "prof_gain_buttons_note": {
+          "english": "Set up the GAIN mix first (see the docs).",
+          "translation": "הגדירו קודם את מיקס GAIN (ראו התיעוד).",
+          "needs_translation": false,
+          "max_length": 41
+        },
+        "prof_gain_knob_note": {
+          "english": "Set a knob or slider on a spare channel, then move it.",
+          "translation": "הגדירו כפתור סיבוב או מחוון בערוץ פנוי והזיזו אותו.",
+          "needs_translation": false,
+          "max_length": 54
+        },
+        "prof_gain_now": {
+          "english": "Now",
+          "translation": "עכשיו",
+          "needs_translation": false,
+          "max_length": 5
+        },
+        "prof_listen_buttons": {
+          "english": "Press a trim button…",
+          "translation": "לחצו על כפתור טרים…",
+          "needs_translation": false,
+          "max_length": 20
+        },
+        "prof_listen_knob": {
+          "english": "Turn the knob…",
+          "translation": "סובבו את הכפתור…",
+          "needs_translation": false,
+          "max_length": 16
+        },
+        "prof_channels_title": {
+          "english": "Channels in use",
+          "translation": "ערוצים בשימוש",
+          "needs_translation": false,
+          "max_length": 15
+        },
+        "prof_channel_fmt": {
+          "english": "CH %d",
+          "translation": "CH %d",
+          "needs_translation": false,
+          "max_length": 5
+        },
+        "prof_use_profile": {
+          "english": "Profile switch",
+          "translation": "מתג פרופיל",
+          "needs_translation": false,
+          "max_length": 14
+        },
+        "prof_use_gain": {
+          "english": "Master gain",
+          "translation": "הגבר כללי",
+          "needs_translation": false,
+          "max_length": 11
+        },
+        "prof_beyond8": {
+          "english": "Needs more than 8 channels.",
+          "translation": "דורש יותר מ-8 ערוצים.",
+          "needs_translation": false,
+          "max_length": 27
+        },
+        "prof_full": {
+          "english": "Every adjustment slot is in use. Free one under Adjustments.",
+          "translation": "כל מקומות ההתאמה תפוסים. שחררו אחד בהתאמות.",
+          "needs_translation": false,
+          "max_length": 60
+        },
+        "prof_done_keep": {
+          "english": "Nothing has changed: the flight controller keeps its profile and gain settings. Next goes on to the swashplate.",
+          "translation": "לא השתנה דבר: ה-FC שומר את הגדרות הפרופיל וההגבר. הבא ממשיך לסוואש.",
+          "needs_translation": false,
+          "max_length": 111
+        },
+        "prof_done_save": {
+          "english": "The changes already work on the flight controller, but are not stored yet. Save and continue writes them to its memory (EEPROM).",
+          "translation": "השינויים כבר פעילים ב-FC אך עוד לא נשמרו. שמור והמשך כותב אותם לזיכרון שלו (EEPROM).",
+          "needs_translation": false,
+          "max_length": 128
+        },
+        "prof_btn_cyclic_down": {
+          "english": "Cyclic gain down",
+          "translation": "הגבר ציקלי למטה",
+          "needs_translation": false,
+          "max_length": 16
+        },
+        "prof_btn_cyclic_up": {
+          "english": "Cyclic gain up",
+          "translation": "הגבר ציקלי למעלה",
+          "needs_translation": false,
+          "max_length": 16
+        },
+        "prof_btn_yaw_down": {
+          "english": "Yaw gain down",
+          "translation": "הגבר זנב למטה",
+          "needs_translation": false,
+          "max_length": 13
+        },
+        "prof_btn_yaw_up": {
+          "english": "Yaw gain up",
+          "translation": "הגבר זנב למעלה",
+          "needs_translation": false,
+          "max_length": 14
+        },
+        "prof_help_both": {
+          "english": "The switch picks the PID profile and the rate profile 1, 2 or 3 together.",
+          "translation": "המתג בוחר את פרופיל ה-PID ואת פרופיל הקצב 1, 2 או 3 יחד.",
+          "needs_translation": false,
+          "max_length": 73
+        },
+        "prof_help_pid": {
+          "english": "The switch picks the PID profile; the rates stay as they are.",
+          "translation": "המתג בוחר את פרופיל ה-PID; הקצבים נשארים כמו שהם.",
+          "needs_translation": false,
+          "max_length": 61
+        },
+        "prof_help_none": {
+          "english": "The helicopter flies on one profile.",
+          "translation": "המסוק טס על פרופיל אחד.",
+          "needs_translation": false,
+          "max_length": 36
+        },
+        "step_rates": {
+          "english": "Rates",
+          "translation": "קצבים",
+          "needs_translation": false,
+          "max_length": 5
+        },
+        "rates_intro": {
+          "english": "Sets the flying style of each rate profile. Each one is a starting point you can refine later on the Rates page.",
+          "translation": "קובע את סגנון הטיסה של כל פרופיל קצב. כל אחד הוא נקודת התחלה שאפשר לדייק אחר כך בדף הקצבים.",
+          "needs_translation": false,
+          "max_length": 112
+        },
+        "rates_page_fmt": {
+          "english": "Rate profile %d",
+          "translation": "פרופיל קצב %d",
+          "needs_translation": false,
+          "max_length": 15
+        },
+        "rates_position_fmt": {
+          "english": "Switch position %d.",
+          "translation": "מיקום מתג %d.",
+          "needs_translation": false,
+          "max_length": 19
+        },
+        "rates_page_text": {
+          "english": "Pick a flying style for this profile. Unchanged keeps its rates.",
+          "translation": "בחרו סגנון טיסה לפרופיל הזה. ללא שינוי משאיר את הקצבים.",
+          "needs_translation": false,
+          "max_length": 64
+        },
+        "rates_custom": {
+          "english": "Custom",
+          "translation": "מותאם",
+          "needs_translation": false,
+          "max_length": 6
+        },
+        "rates_none_matches": {
+          "english": "None of the styles matches the rates this profile has now. Picking one replaces them.",
+          "translation": "אף סגנון לא מתאים לקצבים הנוכחיים של הפרופיל הזה. בחירה מחליפה אותם.",
+          "needs_translation": false,
+          "max_length": 85
+        },
+        "rates_actual_note": {
+          "english": "This firmware uses the Actual rates type: set the rates on the Rates page.",
+          "translation": "הקושחה הזו משתמשת בסוג הקצבים Actual: הגדירו את הקצבים בדף הקצבים.",
+          "needs_translation": false,
+          "max_length": 74
+        },
+        "rates_values_fmt": {
+          "english": "Cyclic %d °/s · yaw %d °/s · expo %d %%",
+          "translation": "ציקלי %d °/s · סטייה %d °/s · אקספו %d %%",
+          "needs_translation": false,
+          "max_length": 41
+        },
+        "rates_busy": {
+          "english": "Writing the rates…",
+          "translation": "הקצבים נכתבים…",
+          "needs_translation": false,
+          "max_length": 18
+        },
+        "rates_done_title": {
+          "english": "Rates set",
+          "translation": "הקצבים הוגדרו",
+          "needs_translation": false,
+          "max_length": 13
+        },
+        "rates_done_keep": {
+          "english": "Nothing has changed: the flight controller keeps its rates. Next goes on to the swashplate.",
+          "translation": "לא השתנה דבר: ה-FC שומר את הקצבים. הבא ממשיך לסוואש.",
+          "needs_translation": false,
+          "max_length": 91
+        },
+        "rates_done_save": {
+          "english": "The rates already work on the flight controller, but are not stored yet. Save and continue writes them to its memory (EEPROM).",
+          "translation": "הקצבים כבר פעילים ב-FC אך עוד לא נשמרו. שמור והמשך כותב אותם לזיכרון שלו (EEPROM).",
+          "needs_translation": false,
+          "max_length": 126
+        },
+        "rates_row_fmt": {
+          "english": "Rate profile %d",
+          "translation": "פרופיל קצב %d",
+          "needs_translation": false,
+          "max_length": 15
+        },
+        "rates_trainer": {
+          "english": "Trainer",
+          "translation": "אימון",
+          "needs_translation": false,
+          "max_length": 7
+        },
+        "rates_sport": {
+          "english": "Sport",
+          "translation": "ספורט",
+          "needs_translation": false,
+          "max_length": 5
+        },
+        "rates_3d": {
+          "english": "3D",
+          "translation": "3D",
+          "needs_translation": false,
+          "max_length": 2
+        },
+        "rates_collective_fmt": {
+          "english": "Collective %.1f °",
+          "translation": "קולקטיב %.1f °",
+          "needs_translation": false,
+          "max_length": 17
+        },
+        "rates_cyclic_fmt": {
+          "english": "Cyclic %d °/s · expo %d %%",
+          "translation": "ציקלי %d °/s · אקספו %d %%",
+          "needs_translation": false,
+          "max_length": 26
+        },
+        "rates_yaw_fmt": {
+          "english": "Yaw %d °/s · expo %d %%",
+          "translation": "סטייה %d °/s · אקספו %d %%",
+          "needs_translation": false,
+          "max_length": 26
+        },
+        "rates_axis_cyclic": {
+          "english": "Cyclic",
+          "translation": "ציקלי",
+          "needs_translation": false,
+          "max_length": 6
+        },
+        "rates_axis_yaw": {
+          "english": "Yaw",
+          "translation": "סטייה",
+          "needs_translation": false,
+          "max_length": 5
+        },
+        "rates_axis_collective": {
+          "english": "Collective",
+          "translation": "קולקטיב",
+          "needs_translation": false,
+          "max_length": 10
+        },
+        "rates_legend_value": {
+          "english": "Value: °/s at full stick",
+          "translation": "ערך: מעלות/שנייה במלוא הזזה",
+          "needs_translation": false,
+          "max_length": 27
+        },
+        "rates_legend_shape": {
+          "english": "Form: shape · Expo: expo in %",
+          "translation": "צורה: shape · אקספו: באחוזים",
+          "needs_translation": false,
+          "max_length": 29
+        },
+        "rates_legend_collective": {
+          "english": "Collective: value in °",
+          "translation": "קולקטיב: ערך במעלות",
+          "needs_translation": false,
+          "max_length": 22
+        },
+        "rates_type_fmt": {
+          "english": "%s · shape %d",
+          "translation": "%s · צורה %d",
+          "needs_translation": false,
+          "max_length": 13
+        },
+        "rates_type_rotorflight": {
+          "english": "Rotorflight",
+          "translation": "Rotorflight",
+          "needs_translation": false,
+          "max_length": 11
+        },
+        "rates_type_actual": {
+          "english": "Actual",
+          "translation": "Actual",
+          "needs_translation": false,
+          "max_length": 6
+        },
+        "prof_gain_help_buttons": {
+          "english": "The trim buttons step the master gain up and down, on one spare channel.",
+          "translation": "כפתורי הטרים משנים את ההגבר הכללי בצעדים, בערוץ פנוי אחד.",
+          "needs_translation": false,
+          "max_length": 72
+        },
+        "prof_gain_help_knob": {
+          "english": "A knob or slider sets the master gain, on a spare channel.",
+          "translation": "כפתור סיבוב או מחוון קובעים את ההגבר הכללי, בערוץ פנוי.",
+          "needs_translation": false,
+          "max_length": 58
+        },
+        "prof_gain_help_none": {
+          "english": "Master gain stays as it is. Find it later in flight, or on the Profiles page.",
+          "translation": "ההגבר הכללי נשאר כמו שהוא. מצאו אותו מאוחר יותר בטיסה או בדף הפרופילים.",
+          "needs_translation": false,
+          "max_length": 77
+        },
+        "mod_intro": {
+          "english": "Put modes on switches on your radio: press Assign, then flick the switch to the position that should turn the mode on. Only ARM is required; the others can be added later under Modes.",
+          "translation": "הקצו מצבים למתגים: לחצו הקצה, ואז העבירו את המתג למצב שאמור להפעיל את המצב. רק ARM חובה; את השאר אפשר להוסיף אחר כך במצבים.",
+          "needs_translation": false,
+          "max_length": 183
+        },
+        "mod_required": {
+          "english": "Required",
+          "translation": "חובה",
+          "needs_translation": false,
+          "max_length": 8
+        },
+        "mod_assign": {
+          "english": "Assign",
+          "translation": "הקצה",
+          "needs_translation": false,
+          "max_length": 6
+        },
+        "mod_reassign": {
+          "english": "Assign again",
+          "translation": "הקצה מחדש",
+          "needs_translation": false,
+          "max_length": 12
+        },
+        "mod_remove": {
+          "english": "Remove",
+          "translation": "הסר",
+          "needs_translation": false,
+          "max_length": 6
+        },
+        "mod_cancel": {
+          "english": "Cancel",
+          "translation": "ביטול",
+          "needs_translation": false,
+          "max_length": 6
+        },
+        "mod_listening": {
+          "english": "Flick the switch now…",
+          "translation": "העבירו את המתג עכשיו…",
+          "needs_translation": false,
+          "max_length": 21
+        },
+        "mod_no_switch": {
+          "english": "No switch moved. Press Assign and flick it within 15 s.",
+          "translation": "אף מתג לא זז. לחצו הקצה והעבירו אותו תוך 15 שניות.",
+          "needs_translation": false,
+          "max_length": 55
+        },
+        "mod_no_slot": {
+          "english": "No free mode slot on the FC: remove one under Modes.",
+          "translation": "אין מקום פנוי למצב ב-FC: הסירו אחד במצבים.",
+          "needs_translation": false,
+          "max_length": 52
+        },
+        "mod_not_set": {
+          "english": "Not assigned",
+          "translation": "לא הוקצה",
+          "needs_translation": false,
+          "max_length": 12
+        },
+        "mod_range_fmt": {
+          "english": "CH%d (%d - %d us)",
+          "translation": "CH%d (%d - %d us)",
+          "needs_translation": false,
+          "max_length": 17
+        },
+        "mod_on": {
+          "english": "On",
+          "translation": "פעיל",
+          "needs_translation": false,
+          "max_length": 4
+        },
+        "mod_off": {
+          "english": "Off",
+          "translation": "כבוי",
+          "needs_translation": false,
+          "max_length": 4
+        },
+        "mod_done_title": {
+          "english": "Switches done",
+          "translation": "המתגים מוכנים",
+          "needs_translation": false,
+          "max_length": 13
+        },
+        "mod_done_keep": {
+          "english": "Nothing has changed: the flight controller keeps its mode switches. Next goes on to the swashplate.",
+          "translation": "לא השתנה דבר: ה-FC שומר את מתגי המצבים שלו. הבא ממשיך לסוואש.",
+          "needs_translation": false,
+          "max_length": 99
+        },
+        "mod_arm": {
+          "english": "Arm",
+          "translation": "חימוש",
+          "needs_translation": false,
+          "max_length": 5
+        },
+        "mod_rescue": {
+          "english": "Rescue",
+          "translation": "חילוץ",
+          "needs_translation": false,
+          "max_length": 6
+        },
+        "mod_trainer": {
+          "english": "Trainer",
+          "translation": "אימון",
+          "needs_translation": false,
+          "max_length": 7
+        },
+        "mod_help_arm": {
+          "english": "Arms the motor. Use a switch you won't knock by accident.",
+          "translation": "מחמש את המנוע. בחרו מתג שלא תזיזו בטעות.",
+          "needs_translation": false,
+          "max_length": 57
+        },
+        "mod_help_rescue": {
+          "english": "Turns the helicopter upright and holds it level.",
+          "translation": "מיישר את המסוק ומחזיק אותו מאוזן.",
+          "needs_translation": false,
+          "max_length": 48
+        },
+        "mod_help_trainer": {
+          "english": "Limits how far the helicopter can tilt, to help while learning.",
+          "translation": "מגביל את הטיית המסוק, כעזרה בזמן הלמידה.",
+          "needs_translation": false,
+          "max_length": 63
         },
         "swa_type_title": {
           "english": "Swashplate type",
@@ -9110,11 +9848,71 @@
           "max_length": 15,
           "reverse_text": true
         },
-        "swa_type_text": {
-          "english": "How are the swash servos laid out? 120 degrees is the most common.",
-          "translation": "איך מסודרים סרווי הסוואש? 120 מעלות הוא הנפוץ ביותר.",
+        "swa_type_help_direct": {
+          "english": "Pitch, roll and collective on servos 1-3, for a mechanical mixer.",
+          "translation": "ציקלי, רול וקולקטיב על הסרוווים 1-3, למיקסר מכני.",
           "needs_translation": false,
-          "max_length": 66,
+          "max_length": 65
+        },
+        "swa_type_help_120": {
+          "english": "Three servos, 120° apart. The most common.",
+          "translation": "שלושה סרוווים, במרחק של 120°. הנפוץ ביותר.",
+          "needs_translation": false,
+          "max_length": 42
+        },
+        "swa_type_help_135": {
+          "english": "Three servos, 135° apart.",
+          "translation": "שלושה סרוווים, במרחק של 135°.",
+          "needs_translation": false,
+          "max_length": 29
+        },
+        "swa_type_help_140": {
+          "english": "Three servos, 140° apart.",
+          "translation": "שלושה סרוווים, במרחק של 140°.",
+          "needs_translation": false,
+          "max_length": 29
+        },
+        "swa_type_help_90l": {
+          "english": "Two servos, front and left, 90° apart.",
+          "translation": "שני סרוווים, קדמי ושמאלי, במרחק של 90°.",
+          "needs_translation": false,
+          "max_length": 39
+        },
+        "swa_type_help_90v": {
+          "english": "Two servos, front left and front right.",
+          "translation": "שני סרוווים, קדמי-שמאלי וקדמי-ימני.",
+          "needs_translation": false,
+          "max_length": 39
+        },
+        "swa_servo1": {
+          "english": "Servo 1",
+          "translation": "סרוו 1",
+          "needs_translation": false,
+          "max_length": 7
+        },
+        "swa_prepare_text": {
+          "english": "Unplug the servos and remove the blades before the swashplate and the tail are set.",
+          "translation": "לפני הגדרת הסווש והזנב, נתקו את הסרוווים והסירו את הלהבים.",
+          "needs_translation": false,
+          "max_length": 83
+        },
+        "swa_front": {
+          "english": "Front",
+          "translation": "קדמי",
+          "needs_translation": false,
+          "max_length": 5
+        },
+        "swa_rear": {
+          "english": "Rear",
+          "translation": "אחורי",
+          "needs_translation": false,
+          "max_length": 5
+        },
+        "swa_type_text": {
+          "english": "The servo numbers are the flight controller's servo outputs. Servo 1 can be in front of the main shaft or behind it.",
+          "translation": "מספרי הסרוו הם יציאות הסרוו של בקר הטיסה. סרוו 1 יכול להיות לפני ציר הרוטור הראשי או אחריו.",
+          "needs_translation": false,
+          "max_length": 116,
           "reverse_text": true
         },
         "swa_current_fmt": {
@@ -9122,20 +9920,6 @@
           "translation": "כעת: %s",
           "needs_translation": false,
           "max_length": 7,
-          "reverse_text": true
-        },
-        "swa_show_text": {
-          "english": "The servos sit here, seen from above with the nose at the top. Servo numbers are the FC outputs.",
-          "translation": "הסרווים ממוקמים כאן, במבט מלמעלה עם האף למעלה. מספרי הסרווים הם יציאות ה-FC.",
-          "needs_translation": false,
-          "max_length": 96,
-          "reverse_text": true
-        },
-        "swa_from_above": {
-          "english": "Seen from above, nose at the top",
-          "translation": "מבט מלמעלה, האף למעלה",
-          "needs_translation": false,
-          "max_length": 32,
           "reverse_text": true
         },
         "swa_dir_title": {
@@ -9146,10 +9930,10 @@
           "reverse_text": true
         },
         "swa_dir_text": {
-          "english": "Seen from above, which way do the main blades turn?",
-          "translation": "במבט מלמעלה, לאיזה כיוון מסתובבים הלהבים הראשיים?",
+          "english": "Seen from above. Most helicopters turn clockwise.",
+          "translation": "מלמעלה. רוב המסוקים מסתובבים בכיוון השעון.",
           "needs_translation": false,
-          "max_length": 51,
+          "max_length": 49,
           "reverse_text": true
         },
         "swa_cw": {
@@ -9174,10 +9958,10 @@
           "reverse_text": true
         },
         "swa_tail_text": {
-          "english": "A pitch tail uses a servo. A motor tail spins its own motor, one way or both ways.",
-          "translation": "זנב פיץ' משתמש בסרוו. זנב מנוע מסובב מנוע משלו, לכיוון אחד או לשני הכיוונים.",
+          "english": "How the tail is driven. Leave the servos unplugged until the restart.",
+          "translation": "איך הזנב מונע. השאירו את הסרוווים מנותקים עד לאתחול.",
           "needs_translation": false,
-          "max_length": 82,
+          "max_length": 69,
           "reverse_text": true
         },
         "swa_tail_variable": {
@@ -9257,6 +10041,18 @@
           "max_length": 8,
           "reverse_text": true
         },
+        "swa_row_servo": {
+          "english": "Tail servo",
+          "translation": "סרוו זנב",
+          "needs_translation": false,
+          "max_length": 10
+        },
+        "swa_servo_none": {
+          "english": "None",
+          "translation": "אין",
+          "needs_translation": false,
+          "max_length": 4
+        },
         "swa_pin_servo": {
           "english": "Servo 4",
           "translation": "סרוו 4",
@@ -9334,33 +10130,156 @@
           "max_length": 5,
           "reverse_text": true
         },
-        "sty_analog": {
-          "english": "Analog",
-          "translation": "אנלוגי",
-          "needs_translation": false,
-          "max_length": 6,
-          "reverse_text": true
-        },
-        "sty_digital": {
-          "english": "Digital",
-          "translation": "דיגיטלי",
-          "needs_translation": false,
-          "max_length": 7,
-          "reverse_text": true
-        },
-        "sty_narrow": {
-          "english": "Narrow",
-          "translation": "צר",
-          "needs_translation": false,
-          "max_length": 6,
-          "reverse_text": true
-        },
         "sty_row_type": {
           "english": "Type",
           "translation": "סוג",
           "needs_translation": false,
           "max_length": 4,
           "reverse_text": true
+        },
+        "mot_prepare_text": {
+          "english": "Keep the servos unplugged and the blades off. The ESC runs as soon as the helicopter is armed.",
+          "translation": "השאירו את הסרוואים מנותקים והסירו את הלהבים. הבקר פועל ברגע שהמסוק מזוין.",
+          "needs_translation": true,
+          "max_length": 94
+        },
+        "gov_speed_title": {
+          "english": "Headspeed",
+          "translation": "מהירות סיבוב",
+          "needs_translation": false,
+          "max_length": 9
+        },
+        "gov_speed_text": {
+          "english": "The headspeed of each PID profile, as the flight controller holds it. Set it for the profiles the profile switch uses.",
+          "translation": "מהירות הסיבוב של כל פרופיל PID, כפי שבקר הטיסה שומר עליה. הגדירו עבור הפרופילים שמתג הפרופילים משתמש בהם.",
+          "needs_translation": false,
+          "max_length": 118
+        },
+        "gov_profile_fmt": {
+          "english": "Profile %d",
+          "translation": "פרופיל %d",
+          "needs_translation": false,
+          "max_length": 10
+        },
+        "gov_rpm_unit": {
+          "english": "rpm",
+          "translation": "סל״ד",
+          "needs_translation": false,
+          "max_length": 3
+        },
+        "step_governor": {
+          "english": "Governor",
+          "translation": "גוברנר",
+          "needs_translation": false,
+          "max_length": 8
+        },
+        "gov_prepare_text": {
+          "english": "Keep the servos unplugged and the blades off. The governor is set here; it runs once the model is connected.",
+          "translation": "השאירו את הסרוואים מנותקים והסירו את הלהבים. הגוברנר מוגדר כאן; הוא פועל לאחר חיבור הדגם.",
+          "needs_translation": false,
+          "max_length": 108
+        },
+        "gov_intro": {
+          "english": "How the flight controller drives the motor. Pick the governor mode; the throttle type is for electric and nitro.",
+          "translation": "כיצד בקר הטיסה מניע את המנוע. בחרו את מצב הגוברנר; סוג הגז מיועד לחשמלי ולניטרו.",
+          "needs_translation": false,
+          "max_length": 112
+        },
+        "gov_row_mode": {
+          "english": "Governor mode",
+          "translation": "מצב גוברנר",
+          "needs_translation": false,
+          "max_length": 13
+        },
+        "gov_row_throttle": {
+          "english": "Throttle type",
+          "translation": "סוג גז",
+          "needs_translation": false,
+          "max_length": 13
+        },
+        "gov_rpm_next": {
+          "english": "A governor needs an RPM signal: the next step sets it.",
+          "translation": "גוברנר צריך אות RPM: השלב הבא מגדיר אותו.",
+          "needs_translation": false,
+          "max_length": 54
+        },
+        "rpm_intro": {
+          "english": "Where the headspeed comes from: a wire from an RPM sensor or the ESC, or bidirectional DShot telemetry.",
+          "translation": "מהיכן מגיעה מהירות הסיבוב: חיווט מחיישן RPM או מהבקר, או טלמטריית DShot דו-כיוונית.",
+          "needs_translation": false,
+          "max_length": 103
+        },
+        "rpm_row_source": {
+          "english": "RPM source",
+          "translation": "מקור RPM",
+          "needs_translation": false,
+          "max_length": 10
+        },
+        "rpm_wire": {
+          "english": "Wire",
+          "translation": "חיווט",
+          "needs_translation": false,
+          "max_length": 4
+        },
+        "rpm_dshot": {
+          "english": "Bidirectional DShot",
+          "translation": "DShot דו-כיווני",
+          "needs_translation": false,
+          "max_length": 19
+        },
+        "sty_hiend_digital": {
+          "english": "Hi-End digital",
+          "translation": "דיגיטלי הי-אנד",
+          "needs_translation": false,
+          "max_length": 14
+        },
+        "sty_specific_digital": {
+          "english": "Specific digital",
+          "translation": "דיגיטלי ייעודי",
+          "needs_translation": false,
+          "max_length": 16
+        },
+        "sty_hiend_specific_digital": {
+          "english": "Hi-End specific digital",
+          "translation": "דיגיטלי ייעודי הי-אנד",
+          "needs_translation": false,
+          "max_length": 23
+        },
+        "sty_analog": {
+          "english": "Analog",
+          "translation": "אנלוגי",
+          "needs_translation": false,
+          "max_length": 6
+        },
+        "sty_digital": {
+          "english": "Digital",
+          "translation": "דיגיטלי",
+          "needs_translation": false,
+          "max_length": 7
+        },
+        "sty_narrow": {
+          "english": "Narrow band",
+          "translation": "פס צר",
+          "needs_translation": false,
+          "max_length": 11
+        },
+        "sty_row_freq": {
+          "english": "Frequency",
+          "translation": "תדר",
+          "needs_translation": false,
+          "max_length": 9
+        },
+        "sty_row_rate": {
+          "english": "Frame rate",
+          "translation": "קצב מסגרת",
+          "needs_translation": false,
+          "max_length": 10
+        },
+        "sty_geo_title": {
+          "english": "Geometry correction",
+          "translation": "תיקון גיאומטריה",
+          "needs_translation": false,
+          "max_length": 19
         },
         "sty_hz_fmt": {
           "english": "%d Hz",
@@ -9418,18 +10337,179 @@
           "max_length": 69,
           "reverse_text": true
         },
+        "mot_main_title": {
+          "english": "Main gear ratio",
+          "translation": "יחס תמסורת ראשי",
+          "needs_translation": false,
+          "max_length": 15,
+          "reverse_text": true
+        },
+        "mot_main_text": {
+          "english": "Count the teeth on the pinion and the main gear.",
+          "translation": "ספרו את השיניים של הפיניון ושל גלגל השיניים הראשי.",
+          "needs_translation": false,
+          "max_length": 48,
+          "reverse_text": true
+        },
+        "mot_tail_title": {
+          "english": "Tail gear ratio",
+          "translation": "יחס תמסורת זנב",
+          "needs_translation": false,
+          "max_length": 15,
+          "reverse_text": true
+        },
+        "mot_tail_text": {
+          "english": "Ratio from the main rotor to the tail, always counted from the main rotor shaft. Count the teeth or pulleys of the tail drive.",
+          "translation": "יחס מהרוטור הראשי לזנב, תמיד מציר הרוטור הראשי. ספרו את השיניים או גלגלי הרצועה של הנעת הזנב.",
+          "needs_translation": false,
+          "max_length": 126,
+          "reverse_text": true
+        },
+        "mot_stage": {
+          "english": "Gear train",
+          "translation": "רכבת תמסורת",
+          "needs_translation": false,
+          "max_length": 10,
+          "reverse_text": true
+        },
+        "mot_stage_one": {
+          "english": "One stage",
+          "translation": "שלב אחד",
+          "needs_translation": false,
+          "max_length": 9,
+          "reverse_text": true
+        },
+        "mot_stage_two": {
+          "english": "Two stages",
+          "translation": "שני שלבים",
+          "needs_translation": false,
+          "max_length": 10,
+          "reverse_text": true
+        },
+        "mot_restart_note": {
+          "english": "Applies after restart",
+          "translation": "חל לאחר אתחול מחדש",
+          "needs_translation": false,
+          "max_length": 21,
+          "reverse_text": true
+        },
+        "mot_inter_pinion": {
+          "english": "Intermediate, pinion side",
+          "translation": "גלגל ביניים, צד הפיניון",
+          "needs_translation": false,
+          "max_length": 25,
+          "reverse_text": true
+        },
+        "mot_inter_main": {
+          "english": "Intermediate, main gear side",
+          "translation": "גלגל ביניים, צד גלגל השיניים הראשי",
+          "needs_translation": false,
+          "max_length": 28,
+          "reverse_text": true
+        },
+        "mot_tail_from": {
+          "english": "Tail drive from",
+          "translation": "הנעת זנב מ",
+          "needs_translation": false,
+          "max_length": 15,
+          "reverse_text": true
+        },
+        "mot_tail_from_main": {
+          "english": "Main shaft",
+          "translation": "ציר ראשי",
+          "needs_translation": false,
+          "max_length": 10,
+          "reverse_text": true
+        },
+        "mot_tail_from_inter": {
+          "english": "Intermediate shaft",
+          "translation": "ציר ביניים",
+          "needs_translation": false,
+          "max_length": 18,
+          "reverse_text": true
+        },
+        "mot_tail_drive_pulley": {
+          "english": "Pulley on the intermediate shaft",
+          "translation": "גלגל רצועה על ציר הביניים",
+          "needs_translation": false,
+          "max_length": 32,
+          "reverse_text": true
+        },
+        "mot_tail_rotor_pulley": {
+          "english": "Tail rotor pulley",
+          "translation": "גלגל רצועה של רוטור הזנב",
+          "needs_translation": false,
+          "max_length": 17,
+          "reverse_text": true
+        },
+        "mot_tail_needs_two": {
+          "english": "Needs a two-stage main gear.",
+          "translation": "רק עם תמסורת ראשית של שני שלבים.",
+          "needs_translation": false,
+          "max_length": 28,
+          "reverse_text": true
+        },
+        "mot_pair_single": {
+          "english": "Pinion : main gear",
+          "translation": "פיניון : גלגל ראשי",
+          "needs_translation": false,
+          "max_length": 18,
+          "reverse_text": true
+        },
+        "mot_pair_stage1": {
+          "english": "Pinion : intermediate",
+          "translation": "פיניון : גלגל ביניים",
+          "needs_translation": false,
+          "max_length": 21,
+          "reverse_text": true
+        },
+        "mot_pair_stage2": {
+          "english": "Intermediate : main gear",
+          "translation": "גלגל ביניים : גלגל ראשי",
+          "needs_translation": false,
+          "max_length": 24,
+          "reverse_text": true
+        },
+        "mot_pair_tail": {
+          "english": "Drive : tail rotor gear",
+          "translation": "הנעה : גלגל זנב",
+          "needs_translation": false,
+          "max_length": 23,
+          "reverse_text": true
+        },
+        "mot_pair_tail_shaft": {
+          "english": "Pulley : tail rotor pulley",
+          "translation": "גלגל רצועה : גלגל רצועה זנב",
+          "needs_translation": false,
+          "max_length": 26,
+          "reverse_text": true
+        },
+        "mot_pair_main_mesh": {
+          "english": "Intermediate : main gear",
+          "translation": "גלגל ביניים : גלגל ראשי",
+          "needs_translation": false,
+          "max_length": 24,
+          "reverse_text": true
+        },
+        "mot_stage_direct": {
+          "english": "Ratio only",
+          "translation": "יחס בלבד",
+          "needs_translation": false,
+          "max_length": 10,
+          "reverse_text": true
+        },
+        "mot_ratio_direct": {
+          "english": "Gear ratio",
+          "translation": "יחס תמסורת",
+          "needs_translation": false,
+          "max_length": 10,
+          "reverse_text": true
+        },
         "mot_pinion": {
           "english": "Pinion teeth",
           "translation": "שיני פיניון",
           "needs_translation": false,
           "max_length": 12,
-          "reverse_text": true
-        },
-        "mot_pinion_text": {
-          "english": "Teeth on the motor pinion.",
-          "translation": "שיניים בפיניון המנוע.",
-          "needs_translation": false,
-          "max_length": 26,
           "reverse_text": true
         },
         "mot_main_gear": {
@@ -9439,13 +10519,6 @@
           "max_length": 15,
           "reverse_text": true
         },
-        "mot_main_gear_text": {
-          "english": "Teeth on the main gear.",
-          "translation": "שיניים בגלגל השיניים הראשי.",
-          "needs_translation": false,
-          "max_length": 27,
-          "reverse_text": true
-        },
         "mot_tail_in": {
           "english": "Tail gear in",
           "translation": "גלגל זנב כניסה",
@@ -9453,25 +10526,11 @@
           "max_length": 14,
           "reverse_text": true
         },
-        "mot_tail_in_text": {
-          "english": "Teeth on the tail drive gear at the main shaft (or its pulley).",
-          "translation": "שיניים בגלגל הנעת הזנב שעל הציר הראשי (או בגלגלת שלו).",
-          "needs_translation": false,
-          "max_length": 63,
-          "reverse_text": true
-        },
         "mot_tail_out": {
           "english": "Tail gear out",
           "translation": "גלגל זנב יציאה",
           "needs_translation": false,
           "max_length": 14,
-          "reverse_text": true
-        },
-        "mot_tail_out_text": {
-          "english": "Teeth on the tail rotor shaft gear (or its pulley).",
-          "translation": "שיניים בגלגל שעל ציר רוטור הזנב (או בגלגלת שלו).",
-          "needs_translation": false,
-          "max_length": 51,
           "reverse_text": true
         },
         "mot_ratio_fmt": {
@@ -10491,10 +11550,10 @@
           "max_length": 64
         },
         "rcv_standard_order": {
-          "english": "Standard channel order",
-          "translation": "סדר ערוצים סטנדרטי",
+          "english": "Std. order",
+          "translation": "סדר סטנד׳",
           "needs_translation": false,
-          "max_length": 22
+          "max_length": 10
         },
         "rcv_dir_forward": {
           "english": "Forward",
@@ -10531,6 +11590,12 @@
           "translation": "נמדד",
           "needs_translation": false,
           "max_length": 8
+        },
+        "rcv_link_mismatch_fmt": {
+          "english": "The FC reads %s differently: check the radio's channel outputs.",
+          "translation": "ה-FC קורא את %s אחרת: בדקו את יציאות הערוצים במשדר.",
+          "needs_translation": false,
+          "max_length": 63
         }
       },
       "wizards": {
@@ -12470,6 +13535,13 @@
         "needs_translation": false,
         "translation": "ואטים מקס",
         "reverse_text": true
+      },
+      "battery_remaining": {
+        "english": "Battery Remaining",
+        "translation": "סוללה שנותרה",
+        "needs_translation": false,
+        "max_length": 17,
+        "reverse_text": false
       }
     },
     "governor": {
@@ -12527,6 +13599,78 @@
         "max_length": 7,
         "needs_translation": false,
         "translation": "מצערת כבויה",
+        "reverse_text": true
+      }
+    },
+    "activelook": {
+      "alert_battery_empty": {
+        "english": "BATTERY EMPTY",
+        "translation": "סוללה ריקה",
+        "needs_translation": false,
+        "max_length": 13,
+        "reverse_text": true
+      },
+      "alert_fuel_low": {
+        "english": "LOW FUEL",
+        "translation": "מעט דלק",
+        "needs_translation": false,
+        "max_length": 8,
+        "reverse_text": true
+      },
+      "alert_esc_temp_high": {
+        "english": "ESC TEMP HIGH",
+        "translation": "חום ESC גבוה",
+        "needs_translation": false,
+        "max_length": 13,
+        "reverse_text": true
+      },
+      "alert_rf_link_low": {
+        "english": "RF LINK LOW",
+        "translation": "RF חלש",
+        "needs_translation": false,
+        "max_length": 11,
+        "reverse_text": true
+      },
+      "alert_warning": {
+        "english": "WARNING!",
+        "translation": "אזהרה!",
+        "needs_translation": false,
+        "max_length": 8,
+        "reverse_text": true
+      },
+      "alert_headspeed_lost": {
+        "english": "HEADSPEED LOST",
+        "translation": "אובדן סל״ד",
+        "needs_translation": false,
+        "max_length": 14,
+        "reverse_text": true
+      },
+      "alert_governor": {
+        "english": "GOVERNOR",
+        "translation": "GOVERNOR",
+        "needs_translation": false,
+        "max_length": 8,
+        "reverse_text": false
+      },
+      "alert_autorotation": {
+        "english": "AUTOROTATION",
+        "translation": "אוטורוטציה",
+        "needs_translation": false,
+        "max_length": 12,
+        "reverse_text": true
+      },
+      "alert_bailout": {
+        "english": "BAILOUT",
+        "translation": "BAILOUT",
+        "needs_translation": false,
+        "max_length": 7,
+        "reverse_text": false
+      },
+      "alert_limit": {
+        "english": "LIMIT",
+        "translation": "סף",
+        "needs_translation": false,
+        "max_length": 5,
         "reverse_text": true
       }
     }

@@ -69,6 +69,8 @@ local reboot = requireModule("lib/msp_reboot.lua")
 local mixerInput = requireModule("lib/msp_mixer_input.lua")
 local mixerConfig = requireModule("lib/msp_mixer_config.lua")
 local servoConfig = requireModule("lib/msp_servo_config.lua")
+local governorConfig = requireModule("lib/msp_governor_config.lua")
+local featureConfig = requireModule("lib/msp_feature_config.lua")
 local servoRead = requireModule("lib/msp_servo.lua")
 local servoOverride = requireModule("lib/msp_servo_override.lua")
 local mixerOverride = requireModule("lib/msp_mixer_override.lua")
@@ -109,8 +111,13 @@ local BTN_CANCEL = "@i18n(app.btn_cancel)@"
 local STEPS = {
   {key = "sensors", title = "@i18n(app.modules.setup_wizard.step_sensors)@"},
   {key = "receiver", title = "@i18n(app.modules.setup_wizard.step_receiver)@"},
+  -- Assigned while the radio is in hand, as the Configurator; arming stays blocked.
+  {key = "modes", title = "@i18n(app.modules.setup_wizard.step_modes)@"},
+  {key = "profiles", title = "@i18n(app.modules.setup_wizard.step_profiles)@"},
+  {key = "rates", title = "@i18n(app.modules.setup_wizard.step_rates)@"},
   {key = "swash", title = "@i18n(app.modules.setup_wizard.step_swash)@"},
   {key = "servotype", title = "@i18n(app.modules.setup_wizard.step_servotype)@", needsServos = true},
+  {key = "governor", title = "@i18n(app.modules.setup_wizard.step_governor)@"},
   {key = "motor", title = "@i18n(app.modules.setup_wizard.step_motor)@"},
   {key = "connect", title = "@i18n(app.modules.setup_wizard.step_connect)@", gate = true},
   {key = "servos", title = "@i18n(app.modules.setup_wizard.step_servos)@", needsServos = true},
@@ -133,8 +140,18 @@ local INPUT_AXES = {"roll", "pitch", "yaw", "collective"}
 
 -- Live values, while a step shows them: one read at a time, and a read that
 -- has not answered within a second is given up.
-local POLL_INTERVAL = {servo = 0.25, rc = 0.2, motor = 0.5}
-local POLL_GIVE_UP = 1.0
+-- rc at 0.4 s: a faster poll crowds the telemetry on the same link (FBUS), and
+-- the radio announces the telemetry as lost.
+-- On S.Port, F.Port and FBUS each MSP reply blanks the FC's sensor telemetry for
+-- 250 ms (firmware telemetry/smartport.c, SMARTPORT_MSP_SILENCE_US): a step
+-- that reads often can make Ethos report the sensors lost. A step may set its own
+-- interval (step.liveRcInterval).
+local POLL_INTERVAL = {servo = 0.25, rc = 0.4, raw = 0.6, motor = 0.5}
+-- A live read is sent once (maxRetries = 0): a lost reply is not resent, the
+-- next poll is the retry. The queue then answers within its 0.8 s window, so
+-- this is only a safety net; shorter than the queue's own retries (6 x 0.8 s
+-- by default) it stacked new reads behind the unanswered ones.
+local POLL_GIVE_UP = 3.0
 
 -- A motor override lapses on the FC after 1 s: re-sent this often.
 local MOTOR_RESEND = 0.25
@@ -225,6 +242,8 @@ local function open(opts)
   for i = 1, #INPUT_AXES do inputCodecs[INPUT_AXES[i]] = mixerInput[INPUT_AXES[i]]() end
   local inputs = {}        -- axis -> {rate =, min =, max =}, signed
   local configs = {}       -- servo (0-based) -> decoded servo config
+  local governor = nil     -- decoded MSP_GOVERNOR_CONFIG
+  local features = nil     -- MSP_FEATURE_CONFIG enabledFeatures (a bitmask, as a number)
   local mixConfig = nil    -- decoded MSP_MIXER_CONFIG
 
   local servos = {}        -- lib/setup_wizard_heli.lua's wizardServos()
@@ -255,7 +274,7 @@ local function open(opts)
   local rebuildWanted = false
 
   local polls = {servo = {inFlight = false, at = 0}, rc = {inFlight = false, at = 0},
-    motor = {inFlight = false, at = 0}}
+    raw = {inFlight = false, at = 0}, motor = {inFlight = false, at = 0}}
   local fetches = {}       -- {left =, failed =, onDone =} waiting for replies
 
   local headerHandle = nil
@@ -263,6 +282,7 @@ local function open(opts)
   local dialog = nil       -- progress dialog
   local messageHandle = nil
   local pendingLeave = false
+  local pendingSwitch = nil -- a step chosen with unsaved changes: asked from wakeup
   local saving = false
   local saveRequest = nil  -- {onSaved =} waiting for the next wakeup
   local saveResult = nil   -- "ok" | "failed", set by the EEPROM reply
@@ -338,8 +358,10 @@ local function open(opts)
   -------------------------------------------------------------------------
 
   local function markChanged()
-    -- The footer's Next becomes Save and continue (wiz.forward()).
-    if not pending then rebuildWanted = true end
+    -- The footer's Next becomes Save and continue (wiz.forward()). A step with
+    -- liveEdits sets its own footer and redraws what changed, so a rebuild would
+    -- only drop the field being edited (the rotary focus).
+    if not pending and not (step and step.liveEdits) then rebuildWanted = true end
     pending = true
     if headerHandle and headerHandle.setSaveEnabled then headerHandle.setSaveEnabled(true) end
   end
@@ -510,6 +532,44 @@ local function open(opts)
     return mixConfig
   end
 
+  -- The governor's mode as the FC runs it: off unless the governor feature is on
+  -- (feature bit 26, as the EdgeTX card). Read from the loaded config.
+  local FEATURE_GOVERNOR = 2 ^ 26
+  local FEATURE_RPM = 2 ^ 28
+  local function featureOn(bit)
+    return features ~= nil and math.floor(features / bit) % 2 == 1
+  end
+  function wiz.governorMode()
+    if not governor or not featureOn(FEATURE_GOVERNOR) then return 0 end
+    return governor.gov_mode or 0
+  end
+  function wiz.rpmFeatureOn() return featureOn(FEATURE_RPM) end
+  function wiz.governorConfig() return governor end
+
+  -- Changes the governor config with fn(config), kept for Discard. Written at once,
+  -- as the other steps' changes.
+  function wiz.editGovernor(fn)
+    if not governor then return end
+    change("governor", governor, function(o)
+      governor = copyDeep(o)
+      send(governorConfig.buildWriteMessage(governor))
+    end)
+    fn(governor)
+    send(governorConfig.buildWriteMessage(governor))
+  end
+
+  -- Sets or clears a feature bit (FEATURE_GOVERNOR, FEATURE_RPM), kept for Discard.
+  function wiz.setFeature(bit, on)
+    if features == nil or featureOn(bit) == on then return end
+    local original = features
+    change("features", original, function(o)
+      features = o
+      send(featureConfig.buildWriteMessage({enabledFeatures = features}))
+    end)
+    features = on and (features + bit) or (features - bit)
+    send(featureConfig.buildWriteMessage({enabledFeatures = features}))
+  end
+
   -- Work that goes to the FC on the next save, before the EEPROM write (the
   -- tail pin, TTA on every profile). run(onDone, onFail) sends it; a later
   -- call with the same key replaces it. Discard drops it unsent.
@@ -527,6 +587,8 @@ local function open(opts)
   -- the Connect the servos step (or straight away from a step after it).
   function wiz.requestReboot() memory.rebootPending = true end
   function wiz.rebootPending() return memory.rebootPending == true end
+  -- Changes not yet saved to EEPROM: the forward button reads Save and continue.
+  function wiz.hasPending() return pending == true end
   -- The screen a step reopens on after wiz.saveAndReboot() (the board
   -- orientation check, which needs the new orientation live). Set before the
   -- restart; taken once, by the same step.
@@ -594,6 +656,7 @@ local function open(opts)
   local requestSave
   local leaveWizard
   local openStep
+  local changeStep
   local startReboot
 
   local function noticeText()
@@ -641,9 +704,24 @@ local function open(opts)
     if not keepHolds then releaseAll() end
   end
 
+  -- Steps that do not apply now are passed over: the RPM signal with no governor.
+  local function skipped(s)
+    return s.skipWhen == "governor-off" and wiz.governorMode() == 0
+  end
+  -- The step from `from` in direction dir (1 or -1), past the skipped ones.
+  local function nextIndex(from, dir)
+    local i = from + dir
+    while STEPS[i] and skipped(STEPS[i]) do i = i + dir end
+    return i
+  end
+
   openStep = function(index)
     closeStep()
     picking = false
+    if skipped(STEPS[index]) then
+      local nx = nextIndex(index, 1)
+      if nx <= #STEPS then index = nx end
+    end
     stepIndex = index
     memory.stepKey = STEPS[index].key
     local s = STEPS[index]
@@ -667,11 +745,13 @@ local function open(opts)
   function wiz.finishStep()
     if STEPS[stepIndex].gate and memory.rebootPending then
       wiz.saveAndReboot()
-    elseif stepIndex < #STEPS then
-      local target = stepIndex + 1
-      requestSave(function() openStep(target) end)
     else
-      requestSave(function() leaveWizard() end)
+      local target = nextIndex(stepIndex, 1)
+      if target <= #STEPS then
+        requestSave(function() openStep(target) end)
+      else
+        requestSave(function() leaveWizard() end)
+      end
     end
   end
 
@@ -679,7 +759,8 @@ local function open(opts)
   -- pending, as with Next on an untouched step).
   function wiz.isFirstStep() return stepIndex <= 1 end
   function wiz.previousStep()
-    if stepIndex > 1 then openStep(stepIndex - 1) end
+    local target = nextIndex(stepIndex, -1)
+    if target >= 1 then changeStep(target) end
   end
 
   -- The footer's default way forward (app/setup_wizard_ui.lua's row()):
@@ -700,7 +781,7 @@ local function open(opts)
 
   function wiz.goToStep(key)
     local index = stepIndexOf(key)
-    if index then openStep(index) end
+    if index then changeStep(index) end
   end
 
   local function clearForm()
@@ -736,7 +817,7 @@ local function open(opts)
       local button = form.addButton(nil, {x = col * (w + gap), y = top + row * (h + gap), w = w, h = h}, {
         text = string.format("%d. %s", i, s.title),
         options = FONT_S + CENTERED,
-        press = ui.action(i, function() openStep(i) end),
+        press = ui.action(i, function() changeStep(i) end),
       })
       if i == stepIndex then focus = button end
     end
@@ -982,6 +1063,7 @@ local function open(opts)
     headerHandle = nil
     noticeField, rebootWait = nil, nil
     afterSave, saveRequest = nil, nil
+    pendingSwitch = nil
     for i = #changes, 1, -1 do changes[i] = nil end
     for key in pairs(changeIndex) do changeIndex[key] = nil end
     if opts.setWakeupHandler then opts.setWakeupHandler(nil) end
@@ -1015,6 +1097,46 @@ local function open(opts)
     })
   end
 
+  -- Another step, from the step list, Back on a step's first screen or a
+  -- step's own link: with unsaved changes, first save or discard them, as when
+  -- leaving the wizard. Otherwise they would stay pending into the next step and
+  -- be saved by its Save and continue.
+  local function askSwitch(index)
+    openMessage("@i18n(app.modules.setup_wizard.leave_title)@", "@i18n(app.modules.setup_wizard.leave_body)@", {
+      {label = "@i18n(app.modules.setup_wizard.leave_save)@", action = function()
+        messageHandle = nil
+        requestSave(function() openStep(index) end)
+        return true
+      end},
+      {label = "@i18n(app.modules.setup_wizard.leave_discard)@", action = function()
+        messageHandle = nil
+        revert()
+        openStep(index)
+        return true
+      end},
+      {label = BTN_CANCEL, action = function()
+        messageHandle = nil
+        return true
+      end},
+    })
+  end
+
+  changeStep = function(index)
+    if disposed then return end
+    if index == stepIndex and step then
+      -- The step already open: back to it, nothing to ask.
+      picking = false
+      rebuildWanted = true
+      return
+    end
+    if pending and loaded then
+      -- Opened from wakeup, as askLeave(): not from inside a button callback.
+      pendingSwitch = index
+      return
+    end
+    openStep(index)
+  end
+
   goBack = function()
     if disposed then return end
     if picking and step then
@@ -1046,7 +1168,17 @@ local function open(opts)
   end
 
   local function requestRest()
-    outstanding = 1 + #INPUT_AXES + servoCount
+    outstanding = 1 + #INPUT_AXES + servoCount + 2
+    send(governorConfig.buildReadMessage(function(data)
+      if disposed then return end
+      governor = data
+      answered()
+    end, failed))
+    send(featureConfig.buildReadMessage(function(data)
+      if disposed then return end
+      features = data and data.enabledFeatures or 0
+      answered()
+    end, failed))
     send(mixerConfig.buildReadMessage(function(data)
       if disposed then return end
       mixConfig = data
@@ -1101,12 +1233,14 @@ local function open(opts)
   -------------------------------------------------------------------------
 
   local function pollDone(p) return function() p.inFlight = false end end
-  local pollDoneFns = {servo = pollDone(polls.servo), rc = pollDone(polls.rc), motor = pollDone(polls.motor)}
+  local pollDoneFns = {servo = pollDone(polls.servo), rc = pollDone(polls.rc), raw = pollDone(polls.raw),
+    motor = pollDone(polls.motor)}
 
-  local function poll(kind, now)
+  -- interval: the step's own, slower one (step.liveRcInterval), or nil for the kind's.
+  local function poll(kind, now, interval)
     local p = polls[kind]
     if p.inFlight and (now - p.at) < POLL_GIVE_UP then return end
-    if (now - p.at) < POLL_INTERVAL[kind] then return end
+    if (now - p.at) < (interval or POLL_INTERVAL[kind]) then return end
     p.inFlight = true
     p.at = now
     local done = pollDoneFns[kind]
@@ -1125,6 +1259,7 @@ local function open(opts)
         msg = rcChannels.buildReadMessage(rcChannels.RC_COMMAND, rc, done, done)
       end
     end
+    msg.maxRetries = 0
     send(msg)
   end
 
@@ -1168,6 +1303,13 @@ local function open(opts)
       return
     end
 
+    if pendingSwitch then
+      local index = pendingSwitch
+      pendingSwitch = nil
+      askSwitch(index)
+      return
+    end
+
     if saveRequest then
       local request = saveRequest
       saveRequest = nil
@@ -1202,7 +1344,8 @@ local function open(opts)
 
     if step and not picking and canMove() then
       if step.livePositions then poll("servo", now) end
-      if step.liveRc then poll("rc", now) end
+      -- Raw channels (the order and detect screens) poll slower than the mapped ones.
+      if step.liveRc then poll(step.liveRc == "raw" and "raw" or "rc", now, step.liveRcInterval) end
       if step.liveMotors then poll("motor", now) end
     end
     if step and not picking and step.wakeup then step.wakeup(now) end

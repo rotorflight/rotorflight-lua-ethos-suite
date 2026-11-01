@@ -26,6 +26,12 @@
 --   art.rotor(dir)             the rotor disc from above, turning CW or CCW
 --   art.tailType(mode)         pitch tail with its servo, or a tail motor
 --   art.tailMotor(reverse)     the tail motor from above (live field running)
+--   art.modeSwitch(icons)      the Configurator's toggle switch (live fields
+--                              angle, -28..28 degrees, and state "listen" /
+--                              "on" / "off" for its tip), under a row of mode
+--                              icons if given ("arm", "rescue", "trainer"; the
+--                              live list set lights the assigned ones)
+--   art.modeIcon(name, cx, cy, s, color)  one of those icons, for a title line
 --   art.attitude(state, style) the live helicopter of the orientation check:
 --                              solid (default, lib/heli3d.lua: the
 --                              Configurator's helicopter) or "wire";
@@ -440,8 +446,9 @@ for i = 1, #PULSE_TICKS do PULSE_TICK_LABELS[i] = tostring(PULSE_TICKS[i]) end
 
 -- mid: the servo's centre pulse, us; other: the other band's centre;
 -- midLabel ("1520 us"), hzLabel ("333 Hz").
-function art.pulse(mid, other, midLabel, hzLabel)
-  return {kind = "pulse", mid = mid or 1520, other = other, midLabel = midLabel, hzLabel = hzLabel}
+-- color (optional) is the trace's colour; the theme's accent when nil.
+function art.pulse(mid, other, midLabel, hzLabel, color)
+  return {kind = "pulse", mid = mid or 1520, other = other, midLabel = midLabel, hzLabel = hzLabel, color = color}
 end
 
 local function pulseX(x, w, t)
@@ -455,14 +462,14 @@ local function drawPulse(l, x, y, w, h, colors)
   local loY = y + floor(h * 0.68)
   if loY - hiY < 20 then loY = hiY + 20 end
   local x0, xm = pulseX(x, w, 0), pulseX(x, w, l.mid)
-  if l.other then
+  if l.other and not l.plain then
     local xo = pulseX(x, w, l.other)
     lcd.color(colors.muted)
     lcd.drawLine(x0, loY, x0, hiY + 6)
     lcd.drawLine(x0, hiY + 6, xo, hiY + 6)
     lcd.drawLine(xo, hiY + 6, xo, loY)
   end
-  lcd.color(colors.active)
+  lcd.color(l.color or colors.active)
   local t = 3
   thickLine(x, loY, x0, loY, t)
   lcd.drawFilledRectangle(x0 - 1, hiY, t, loY - hiY)
@@ -477,7 +484,7 @@ local function drawPulse(l, x, y, w, h, colors)
   -- Time axis.
   lcd.color(colors.muted)
   local axisY = loY + 8
-  if axisY + th <= y + h then
+  if not l.plain and axisY + th <= y + h then
     for i = 1, #PULSE_TICKS do
       local tx = pulseX(x, w, PULSE_TICKS[i])
       lcd.drawLine(tx, axisY - 4, tx, axisY)
@@ -497,19 +504,30 @@ function art.gears(a, b, focus, aLabel, bLabel, ratioLabel)
     ratioLabel = ratioLabel}
 end
 
-local function gear(cx, cy, r, teeth, on, colors)
-  lcd.color(on and colors.active or colors.surface)
-  lcd.drawFilledCircle(cx, cy, floor(r * 0.86))
+-- A gear in the line style of the PNG pictures: its rim, its teeth and its hub as
+-- outlines; the one being set in blue.
+-- A gear with its ring hidden behind it: `solid` fills the disc with the background
+-- first, so a gear drawn after hides the outline of one drawn before.
+local function gear(cx, cy, r, teeth, on, colors, solid)
+  local rim = floor(r * 0.82)
+  if solid then
+    lcd.color(colors.bg)
+    lcd.drawFilledCircle(cx, cy, rim)
+  end
+  lcd.color(on and colors.blue or colors.line)
+  lcd.drawCircle(cx, cy, rim)
+  lcd.drawCircle(cx, cy, rim - 1)
   local n = math.min(math.max(teeth, 6), 60)
   for i = 0, n - 1 do
     local deg = i * 360 / n
-    local x1, y1 = onCircle(cx, cy, r * 0.8, deg)
+    local x1, y1 = onCircle(cx, cy, rim, deg)
     local x2, y2 = onCircle(cx, cy, r, deg)
     lcd.drawLine(x1, y1, x2, y2)
     lcd.drawLine(x1 + 1, y1, x2 + 1, y2)
   end
-  lcd.color(colors.body)
-  lcd.drawFilledCircle(cx, cy, math.max(2, floor(r * 0.18)))
+  local hub = math.max(2, floor(r * 0.2))
+  lcd.drawCircle(cx, cy, hub)
+  if on then lcd.drawFilledCircle(cx, cy, math.max(1, hub - 2)) end
 end
 
 local function drawGears(l, x, y, w, h, colors)
@@ -531,10 +549,93 @@ local function drawGears(l, x, y, w, h, colors)
     lcd.drawText(x + floor(w / 2), y, l.ratioLabel, CENTERED)
   end
   local ly = cy + rmax + 4
-  lcd.color(l.focus == 1 and colors.active or colors.text)
+  lcd.color(l.focus == 1 and colors.blue or colors.text)
   if l.aLabel then lcd.drawText(ca, ly, l.aLabel, CENTERED) end
-  lcd.color(l.focus == 2 and colors.active or colors.text)
+  lcd.color(l.focus == 2 and colors.blue or colors.text)
   if l.bLabel then lcd.drawText(cb, ly, l.bLabel, CENTERED) end
+end
+
+-- A two-stage gear train with an intermediate shaft (a SAB Goblin's): the pinion
+-- meshes the intermediate gear on the pinion side, and the intermediate gear on the
+-- main side, on the same shaft, meshes the main gear. teeth = {pinion, intermediate small, intermediate
+-- large, main}; focus: 1 to 4, the one being set; ratioLabel: e.g. "11.56:1".
+function art.gearTrain(teeth, focus, ratioLabel, noCounts)
+  return {kind = "gearTrain", teeth = teeth or {}, focus = focus, ratioLabel = ratioLabel, noCounts = noCounts}
+end
+
+-- Side view, as the gearbox drawings: the shafts stand upright, each gear is a bar on
+-- its shaft (its length the pitch diameter, so the meshes touch end to end), and the two
+-- stages sit one above the other. Tooth tips stand out on the top edge, and the count
+-- sits under each gear. The gear last set is blue.
+local function drawGearTrain(l, x, y, w, h, colors)
+  local t = l.teeth
+  local t1, ts, tl, t4 = t[1] or 1, t[2] or 1, t[3] or 1, t[4] or 1
+  lcd.font(FONT_S)
+  local _, th = lcd.getTextSize("Ag")
+  if l.ratioLabel then
+    lcd.color(colors.text)
+    lcd.drawText(x + floor(w / 2), y, l.ratioLabel, CENTERED)
+  end
+  -- The width reaches the farther end: the pinion-side gear hangs off its shaft to both sides.
+  local units = math.max(t1 + ts, t1 + t4 + (ts + tl) / 2)
+  local k = (w - 8) / units
+  if k <= 0 then return end
+  local r1, rA, rB, r4 = k * t1 / 2, k * ts / 2, k * tl / 2, k * t4 / 2
+  local left = x + 4
+  local xm = left + r1          -- motor shaft: the pinion
+  local xi = xm + r1 + rA       -- intermediate shaft: pinion-side and main-side gears
+  local xr = xi + rB + r4       -- main rotor shaft: the main gear
+  -- The gears' height: the text line plus a little, less when the picture is short.
+  local barH = math.max(8, math.min(th + 6, floor((h - 3 * th - 20) / 2)))
+  local top2 = floor(y + th + 6)                  -- upper stage: main side
+  local top1 = floor(top2 + barH + th + 12)       -- lower stage: pinion side
+  local SHAFT = 4
+  -- Shafts first, short: each from just above its top gear to just below its bottom one.
+  lcd.color(colors.surface)
+  local function shaft(sx, y0, y1)
+    lcd.drawFilledRectangle(floor(sx) - 2, y0, SHAFT, y1 - y0)
+  end
+  shaft(xm, top1 - 6, top1 + barH + 6)
+  shaft(xi, top2 - 6, top1 + barH + 6)
+  shaft(xr, top2 - 6, top2 + barH + 6)
+  -- A gear: a bar with tooth tips on its top edge. Shrunk by a pixel at each end, so
+  -- meshing gears show a seam.
+  local function gear(cx, top, r, teeth, on)
+    local x0 = floor(cx - r) + 1
+    local len = math.max(2, floor(2 * r) - 2)
+    lcd.color(on and colors.blue or colors.body)
+    lcd.drawFilledRectangle(x0, top, len, barH)
+    lcd.color(colors.line)
+    lcd.drawRectangle(x0, top, len, barH)
+    -- The tooth flanks: grooves across the face, at equal angles round a half-turn, so
+    -- they are wide in the middle and close at the edges.
+    local n = math.max(3, math.min(teeth, 14))
+    lcd.color(colors.bg)
+    for i = 1, n - 1 do
+      local theta = -math.pi / 2 + i * math.pi / n
+      local gx = floor(x0 + len / 2 * (1 + math.sin(theta)))
+      lcd.drawLine(gx, top + 2, gx, top + barH - 3)
+    end
+  end
+  -- Each count sits under its gear on a plate, which hides the shaft behind the text.
+  local function count(cx, top, text, on)
+    local tw = lcd.getTextSize(text)
+    local ly = top + barH + 2
+    lcd.color(colors.bg)
+    lcd.drawFilledRectangle(floor(cx) - floor(tw / 2) - 2, ly, tw + 4, th)
+    lcd.color(on and colors.blue or colors.text)
+    lcd.drawText(floor(cx), ly, text, CENTERED)
+  end
+  gear(xi, top2, rB, tl, l.focus == 3)
+  gear(xr, top2, r4, t4, l.focus == 4)
+  gear(xm, top1, r1, t1, l.focus == 1)
+  gear(xi, top1, rA, ts, l.focus == 2)
+  if not l.noCounts then
+    count(xi, top2, tostring(tl), l.focus == 3)
+    count(xr, top2, tostring(t4), l.focus == 4)
+    count(xm, top1, tostring(t1), l.focus == 1)
+    count(xi, top1, tostring(ts), l.focus == 2)
+  end
 end
 
 ---------------------------------------------------------------------------
@@ -545,19 +646,30 @@ function art.poles(poles, label)
   return {kind = "poles", poles = poles or 0, label = label}
 end
 
+-- The motor bell from the front, in the line style of the PNG pictures: the bell's
+-- rim and its stator ring as outlines, the magnets round the rim, north filled blue
+-- and south as an outline, in turn.
 local function drawPoles(l, x, y, w, h, colors)
   local cx, cy = x + floor(w / 2), y + floor(h / 2)
   local r = floor(min(w, h) * 0.4)
   local n = math.min(math.max(l.poles, 2), 40)
-  local dot = math.max(3, floor(r * math.pi / n * 0.4))
-  lcd.color(colors.body)
-  lcd.drawFilledCircle(cx, cy, r)
-  lcd.color(colors.muted)
-  lcd.drawFilledCircle(cx, cy, floor(r * 0.65))
+  -- A magnet is at most a sixth of the bell's radius and no wider than the gap to its
+  -- neighbours: with few poles the dots stay small, and every dot stays inside the ring.
+  local ring = r * 0.81
+  local dot = math.max(3, floor(math.min(r * 0.16, ring * math.sin(math.pi / n) * 0.6)))
+  lcd.color(colors.line)
+  lcd.drawCircle(cx, cy, r)
+  lcd.drawCircle(cx, cy, r - 1)
+  lcd.drawCircle(cx, cy, floor(r * 0.62))
   for i = 0, n - 1 do
-    local px, py = onCircle(cx, cy, r * 0.83, 90 + i * 360 / n)
-    lcd.color(i % 2 == 0 and colors.active or colors.surface)
-    lcd.drawFilledCircle(px, py, dot)
+    local px, py = onCircle(cx, cy, ring, 90 + i * 360 / n)
+    if i % 2 == 0 then
+      lcd.color(colors.blue)
+      lcd.drawFilledCircle(px, py, dot)
+    else
+      lcd.color(colors.line)
+      lcd.drawCircle(px, py, dot)
+    end
   end
   if l.label then
     lcd.font(FONT_STD)
@@ -715,8 +827,8 @@ end
 -- A picture of its own size, such as the Configurator's: w x h is the size of
 -- the 1x file (name.png), and name-200.png is the 2x one for a larger screen.
 -- Drawn centred, as the 1x or 2x file that fits, or smaller when the space is.
-function art.image(name, w, h)
-  return {kind = "image", name = name, w = w, h = h}
+function art.image(name, w, h, native)
+  return {kind = "image", name = name, w = w, h = h, native = native}
 end
 
 local function imageBitmap(l, k)
@@ -729,6 +841,13 @@ local function imageBitmap(l, k)
 end
 
 local function drawImage(l, x, y, w, h, colors)
+  if l.native then
+    -- Its own size, centred: the bitmap of the first scale.
+    local bitmap = imageBitmap(l, 1)
+    if not bitmap then return end
+    lcd.drawBitmap(x + floor((w - l.w) / 2), y + floor((h - l.h) / 2), bitmap)
+    return
+  end
   local fit = min(w / l.w, h / l.h)
   local k = (fit >= 2) and 2 or 1
   local bitmap = imageBitmap(l, k)
@@ -900,7 +1019,7 @@ local function drawAttitudeSolid(l, x, y, w, h, colors)
   if not s.valid then return end
   heli3d.setup(s.rotorDir == 1 and ROTOR_CCW or ROTOR_CW)
   heli3d.pose(nil)
-  heli3d.draw(x, y, w, h - th - 4, s.roll or 0, s.pitch or 0, ATT_VIEW_YAW)
+  heli3d.draw(x, y, w, h - th - 4, s.roll or 0, s.pitch or 0, ATT_VIEW_YAW + (s.yaw or 0))
 end
 
 -- From wakeup: the solid model's next step (lib/heli3d.lua). It builds the
@@ -1039,6 +1158,146 @@ local function drawTailMotor(l, x, y, w, h, colors)
   end
 end
 
+---------------------------------------------------------------------------
+-- Mode switches: rotorflight-configurator's SwitchFlick.svelte (a 40 x 48
+-- toggle: plate, lever, tip, pivot) and Font Awesome's power-off, life-ring and
+-- graduation-cap, as the Configurator's cards show them.
+---------------------------------------------------------------------------
+
+function art.modeSwitch(icons)
+  return {kind = "modeSwitch", icons = icons, set = {}, angle = -28, state = "off"}
+end
+
+-- A thick segment at any slope: the fan runs across the line, not along it.
+local function thickSeg(x1, y1, x2, y2, t)
+  local half = floor(t / 2)
+  local steep = math.abs(y2 - y1) > math.abs(x2 - x1)
+  for k = -half, half do
+    if steep then lcd.drawLine(x1 + k, y1, x2 + k, y2) else lcd.drawLine(x1, y1 + k, x2, y2 + k) end
+  end
+end
+
+-- A filled ring from a0 to a1 degrees (onCircle()'s angles: from 3 o'clock,
+-- counter-clockwise), as triangles: the same on every firmware, where
+-- drawAnnulusSector's angles are not pinned down.
+local function ring(cx, cy, ri, ro, a0, a1)
+  local steps = math.max(4, floor(math.abs(a1 - a0) / 10))
+  local ox, oy = onCircle(cx, cy, ro, a0)
+  local ix, iy = onCircle(cx, cy, ri, a0)
+  for i = 1, steps do
+    local a = a0 + (a1 - a0) * i / steps
+    local nox, noy = onCircle(cx, cy, ro, a)
+    local nix, niy = onCircle(cx, cy, ri, a)
+    quad(ox, oy, nox, noy, nix, niy, ix, iy)
+    ox, oy, ix, iy = nox, noy, nix, niy
+  end
+end
+
+
+local function modeIcon(name, cx, cy, s, color, colors)
+  lcd.color(color)
+  local t = math.max(2, floor(s * 0.14))
+  if name == "arm" then
+    -- Power (Font Awesome power-off): a ring open 40 degrees either side of the
+    -- top, and the stroke from just above it down to the middle.
+    local ro = floor(s * 0.44)
+    local ccy = cy + floor(s * 0.06)
+    ring(cx, ccy, ro - t, ro, 130, 410)
+    local top = ccy - ro - floor(t / 2)
+    lcd.drawFilledRectangle(cx - floor(t / 2), top, t, ccy - top)
+    lcd.drawFilledCircle(cx, top, floor(t / 2))
+    lcd.drawFilledCircle(cx, ccy, floor(t / 2))
+  elseif name == "rescue" then
+    -- Life ring: eight bands, the colour and a grey in turn.
+    local ro, ri = floor(s * 0.46), floor(s * 0.24)
+    for k = 0, 7 do
+      lcd.color(k % 2 == 0 and color or colors.surface)
+      ring(cx, cy, ri, ro, k * 45 + 22, k * 45 + 67)
+    end
+  elseif name == "trainer" then
+    -- Mortarboard: the board, the cap under it, the tassel at the right.
+    local by = cy - floor(s * 0.12)
+    local bw, bh = floor(s * 0.5), floor(s * 0.2)
+    quad(cx - bw, by, cx, by - bh, cx + bw, by, cx, by + bh)
+    local cw = floor(s * 0.28)
+    quad(cx - cw, by + floor(bh * 0.4), cx + cw, by + floor(bh * 0.4), cx + cw, by + floor(s * 0.36),
+      cx - cw, by + floor(s * 0.36))
+    local tx = cx + bw - floor(s * 0.1)
+    lcd.drawFilledRectangle(tx, by, math.max(2, floor(s * 0.05)), floor(s * 0.34))
+    lcd.drawFilledCircle(tx + 1, by + floor(s * 0.36), math.max(2, floor(s * 0.06)))
+  end
+end
+
+-- The toggle in a box w wide (h tall): SwitchFlick's 40 x 48 view, scaled.
+local function toggle(x, y, w, h, angle, tipColor, colors)
+  local u = min(w / 40, h / 48)
+  local ox = x + floor((w - 40 * u) / 2)
+  local oy = y + floor((h - 48 * u) / 2)
+  local function X(v) return ox + floor(v * u + 0.5) end
+  local function Y(v) return oy + floor(v * u + 0.5) end
+  -- The plate (6, 30, 28 x 14, corners 4).
+  lcd.color(colors.body)
+  local r = math.max(2, floor(4 * u))
+  lcd.drawFilledRectangle(X(6) + r, Y(30), X(34) - X(6) - 2 * r, Y(44) - Y(30))
+  lcd.drawFilledRectangle(X(6), Y(30) + r, X(34) - X(6), Y(44) - Y(30) - 2 * r)
+  lcd.drawFilledCircle(X(6) + r, Y(30) + r, r)
+  lcd.drawFilledCircle(X(34) - r, Y(30) + r, r)
+  lcd.drawFilledCircle(X(6) + r, Y(44) - r, r)
+  lcd.drawFilledCircle(X(34) - r, Y(44) - r, r)
+  -- The lever: 28 long from the pivot (20, 36), turned by angle.
+  local a = rad(angle)
+  local px, py = X(20), Y(36)
+  local tx, ty = px + floor(sin(a) * 28 * u + 0.5), py - floor(cos(a) * 28 * u + 0.5)
+  lcd.color(colors.text)
+  thickSeg(px, py, tx, ty, math.max(2, floor(3.5 * u)))
+  lcd.color(tipColor)
+  lcd.drawFilledCircle(tx, ty, math.max(3, floor(4 * u)))
+  lcd.color(colors.text)
+  lcd.drawFilledCircle(px, py, math.max(2, floor(3.5 * u)))
+end
+
+local function drawModeSwitch(l, x, y, w, h, colors)
+  -- The band under the switch, centred: the status lines (accent), then the
+  -- help lines (text). l.helpSlots lines are kept, so the switch keeps its size.
+  local helpH = 0
+  local lines = {}
+  for _, t in ipairs(l.status or {}) do lines[#lines + 1] = {t, true} end
+  for _, t in ipairs(l.help or {}) do lines[#lines + 1] = {t, false} end
+  local slots = math.max(#lines, l.helpSlots or 0)
+  if slots > 0 then
+    lcd.font(FONT_S)
+    local _, lh = lcd.getTextSize("Ag")
+    helpH = slots * lh + 10
+    for i, ln in ipairs(lines) do
+      local tw = lcd.getTextSize(ln[1])
+      lcd.color(ln[2] and colors.active or colors.text)
+      lcd.drawText(x + floor((w - tw) / 2), y + h - helpH + 6 + (i - 1) * lh, ln[1], LEFT)
+    end
+    h = h - helpH
+  end
+  local iconH = 0
+  if l.icons then
+    local n = #l.icons
+    local s = floor(min(w / (n * 1.5), h * 0.28))
+    local gap = floor((w - n * s) / (n + 1))
+    for i = 1, n do
+      local cx = x + gap * i + s * (i - 1) + floor(s / 2)
+      modeIcon(l.icons[i], cx, y + floor(s / 2) + 4, s, l.set[i] and colors.good or colors.muted, colors)
+    end
+    iconH = s + 12
+  end
+  local tip = (l.state == "listen" and colors.active) or (l.state == "on" and colors.good) or colors.muted
+  -- About the size of the other steps' pictures: a third of the width, 60 % of the height.
+  local sw = floor(min(w * 0.33, (h - iconH) * 0.6 * 40 / 48))
+  local sh = floor(sw * 48 / 40)
+  toggle(x + floor((w - sw) / 2), y + iconH + floor((h - iconH - sh) / 2), sw, sh, l.angle or -28, tip, colors)
+end
+
+-- A mode's icon, s px, for a title line (app/setup_wizard_ui.lua).
+function art.modeIcon(name, cx, cy, s, color)
+  modeIcon(name, cx, cy, s, color, art.colors())
+end
+
 function art.draw(l, x, y, w, h, colors)
   if not l or w <= 0 or h <= 20 then return end
   local k = l.kind
@@ -1058,6 +1317,8 @@ function art.draw(l, x, y, w, h, colors)
     drawPulse(l, x, y, w, h, colors)
   elseif k == "gears" then
     drawGears(l, x, y, w, h, colors)
+  elseif k == "gearTrain" then
+    drawGearTrain(l, x, y, w, h, colors)
   elseif k == "poles" then
     drawPoles(l, x, y, w, h, colors)
   elseif k == "map" then
@@ -1078,6 +1339,8 @@ function art.draw(l, x, y, w, h, colors)
     drawTailType(l, x, y, w, h, colors)
   elseif k == "tailMotor" then
     drawTailMotor(l, x, y, w, h, colors)
+  elseif k == "modeSwitch" then
+    drawModeSwitch(l, x, y, w, h, colors)
   end
 end
 
@@ -1095,6 +1358,10 @@ function art.colors()
       muted = dark and lcd.GREY(170) or lcd.GREY(90),
       good = lcd.RGB(70, 190, 100),
       bad = lcd.RGB(230, 70, 60),
+      -- The line style of the wizard's PNG pictures: the light outline and the blue accent.
+      line = dark and lcd.RGB(168, 206, 230) or lcd.RGB(70, 110, 140),
+      bg = dark and lcd.GREY(25) or lcd.GREY(245),
+      blue = lcd.RGB(60, 168, 236),
     }
   end
   return cachedColors
