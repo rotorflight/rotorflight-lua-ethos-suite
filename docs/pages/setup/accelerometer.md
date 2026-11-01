@@ -23,6 +23,7 @@ Greyed out until the flight controller answers. Read-only while the model is arm
 
 ## Notes
 
+- Trim units are handled by `src/rfsuite/lib/msp_acc_trim.lua` (issue #2650).
 - Changes are written to the flight controller EEPROM upon Save.
 - Calibrate waits until the flight controller reports that the calibration has
   finished, then saves to the EEPROM and plays the confirmation beep. If it does
