@@ -80,13 +80,13 @@ local function run(M)
 
   -- Servo types.
   local cfg = {mid = 1520, min = -700, max = 700, rneg = 500, rpos = 500, rate = 50}
-  check("type analog", M.servoTypeOf(cfg), "analog")
-  check("narrow rate change", M.applyServoType(cfg, "narrow"), true)
+  check("type wide50", M.servoTypeOf(cfg), "wide50")
+  check("narrow rate change", M.applyServoType(cfg, "narrow560"), true)
   check("narrow mid", cfg.mid, 760)
   check("narrow max", cfg.max, 250)
   check("narrow scale", cfg.rpos, 250)
-  check("type narrow", M.servoTypeOf(cfg), "narrow")
-  check("same rate", M.applyServoType(cfg, "narrow"), false)
+  check("type narrow560", M.servoTypeOf(cfg), "narrow560")
+  check("same rate", M.applyServoType(cfg, "narrow560"), false)
 
   -- Receiver detection.
   check("moved clear", M.moved({10, 420, 30, 5}, nil, 300), 2)

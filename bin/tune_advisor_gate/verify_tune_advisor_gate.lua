@@ -89,6 +89,8 @@ check("unparseable version is nil", tuneAdvisor.supportFor("garbage") == nil)
 -- ---------------------------------------------------------------------------
 local bus = requireModule("lib/bus.lua")
 local sent = 0
+local clock = 0
+os.clock = function() return clock end
 bus.subscribe("msp.request", function() sent = sent + 1 end)
 requireModule("tasks/tune_history.lua")
 
@@ -98,10 +100,14 @@ local function session(fields)
   bus.publish("session.update", snapshot)
 end
 
--- One flight: arm, then disarm. The disarm is what starts a capture.
+-- One flight: arm, then disarm. The disarm is what starts a capture; the
+-- first read goes out once the start wait has passed.
 local function flightWith(fcVersion)
   sent = 0
+  clock = clock + 60
   session({isArmed = true, fcVersion = fcVersion})
+  session({isArmed = false, fcVersion = fcVersion})
+  clock = clock + 5
   session({isArmed = false, fcVersion = fcVersion})
   return sent
 end

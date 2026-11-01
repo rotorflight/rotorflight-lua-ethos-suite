@@ -4,11 +4,11 @@
 -- commands with no MSP API version change: an FC without them answers with
 -- an error, which the page reports as "needs newer firmware".
 --
--- One axis per request so the reply (67 bytes) fits MSP over telemetry:
+-- One axis per request so the reply (71 bytes) fits MSP over telemetry:
 -- the request payload is U8 axis (0 roll, 1 pitch, 2 yaw).
 --
 -- Wire layout verified against rotorflight-firmware's own serializer
--- (src/main/msp/msp.c, MSP2_GET_TUNE_ADVISOR case), payload version 1:
+-- (src/main/msp/msp.c, MSP2_GET_TUNE_ADVISOR case), payload version 2:
 --   U8 version, U8 collecting, U16 seconds of usable flight, U8 axis, then:
 --     U16 P, U16 F, U16 B, U8 iterm_relax_cutoff, U8 rates_type,
 --     U8 rc_rate, U8 s_rate                                (the tune measured)
@@ -18,6 +18,9 @@
 --     U16 fullCount, U16 fullSatCount, S16 fullRatio, U16 fullMaxRate
 --     U16 releases, U16 bigRebounds, S16 meanRebound, S16 meanOvershoot,
 --     S16 meanCounter, S16 meanIterm
+--     U16 shakeCount, U16 shakeRms (deg/s x10)          (version 2 only)
+-- Version 1 (67 bytes, no shake fields) is still read; its shake reads as
+-- no data.
 -- Ratios are x1000 on the wire and decoded to plain numbers here. Counts
 -- saturate at 65535. See src/main/flight/tune_advisor.c for what each one
 -- measures.
@@ -50,13 +53,13 @@ local msp_tune_advisor = {
 local SIM_AXES = {
   {p = 70, f = 120, b = 0, cutoff = 10, rcRate = 18, sRate = 24, ffCount = 1491, ff = 1.53, corr = 0.97, lag = 90,
    sp = {{1.52, 1341}, {1.54, 163}, {1.03, 50}}, coll = {{1.24, 385}, {1.54, 763}, {1.73, 356}},
-   full = {87, 25, 0.38, 395}, rel = {35, 18, 0.15, 1.47, 0.020, 0.003}},
+   full = {87, 25, 0.38, 395}, rel = {35, 18, 0.15, 1.47, 0.020, 0.003}, shake = {2410, 3.1}},
   {p = 100, f = 120, b = 0, cutoff = 10, rcRate = 18, sRate = 24, ffCount = 1172, ff = 0.79, corr = 0.78, lag = 70,
    sp = {{1.06, 999}, {0.45, 194}, {0, 54}}, coll = {{0.28, 446}, {1.27, 629}, {1.59, 118}},
-   full = {105, 72, 0, 23}, rel = {10, 2, 0.09, 1.33, 0.019, 0.011}},
+   full = {105, 72, 0, 23}, rel = {10, 2, 0.09, 1.33, 0.019, 0.011}, shake = {1980, 2.4}},
   {p = 100, f = 0, b = 0, cutoff = 10, rcRate = 18, sRate = 40, ffCount = 404, ff = 0.27, corr = 0.84, lag = 250,
    sp = {{0.26, 300}, {0.30, 109}, {0, 0}}, coll = {{0.29, 409}, {0, 0}, {0, 0}},
-   full = {29, 29, 0.09, 42}, rel = {0, 0, 0, 0, 0, 0}},
+   full = {29, 29, 0.09, 42}, rel = {0, 0, 0, 0, 0, 0}, shake = {3120, 1.2}},
 }
 local RATES_TYPE_ACTUAL = 4
 
@@ -64,7 +67,7 @@ local function buildSimulatorResponse(axis)
   local buf = {}
   local function ratio(v) mspcodec.writeS16(buf, math.floor(v * 1000 + 0.5)) end
   local a = SIM_AXES[axis]
-  mspcodec.writeU8(buf, 1)
+  mspcodec.writeU8(buf, 2)
   mspcodec.writeU8(buf, 0)
   mspcodec.writeU16(buf, 147)
   mspcodec.writeU8(buf, axis - 1)
@@ -91,6 +94,8 @@ local function buildSimulatorResponse(axis)
   ratio(a.rel[4])
   ratio(a.rel[5])
   ratio(a.rel[6])
+  mspcodec.writeU16(buf, a.shake[1])
+  mspcodec.writeU16(buf, math.floor(a.shake[2] * 10 + 0.5))
   return buf
 end
 
@@ -106,11 +111,10 @@ local function readBands(buf)
   return bands
 end
 
--- The layout above is payload version 1 and a 67-byte reply. A reply of another
+-- The layouts above, by payload version: reply length. A reply of another
 -- version or length is refused, not decoded: a reworded record would otherwise
 -- come out as plausible numbers, and tune_history saves them.
-local PAYLOAD_VERSION = 1
-local REPLY_LENGTH = 67
+local REPLY_LENGTHS = {[1] = 67, [2] = 71}
 
 -- Returns {version, collecting, seconds, axis (1-3), a = {per-axis fields}},
 -- or nil, a reason, and true when the reply was REFUSED rather than lost.
@@ -122,11 +126,12 @@ local REPLY_LENGTH = 67
 -- line and a pilot-facing message can name what came back.
 function msp_tune_advisor.decode(buf)
   local length = #buf
-  if length ~= REPLY_LENGTH then
-    return nil, "tune advisor reply is " .. length .. " bytes, expected " .. REPLY_LENGTH, true
+  local expected = REPLY_LENGTHS[buf[1]]
+  if not expected then
+    return nil, "tune advisor payload version " .. tostring(buf[1]) .. ", expected 1 or 2", true
   end
-  if buf[1] ~= PAYLOAD_VERSION then
-    return nil, "tune advisor payload version " .. tostring(buf[1]) .. ", expected " .. PAYLOAD_VERSION, true
+  if length ~= expected then
+    return nil, "tune advisor reply is " .. length .. " bytes, expected " .. expected, true
   end
 
   buf.offset = 1
@@ -161,7 +166,13 @@ function msp_tune_advisor.decode(buf)
     meanOvershoot = readRatio(buf),
     meanCounter = readRatio(buf),
     meanIterm = readRatio(buf),
+    shakeCount = 0,
+    shakeRms = 0,
   }
+  if data.version >= 2 then
+    data.a.shakeCount = mspcodec.readU16(buf) or 0
+    data.a.shakeRms = (mspcodec.readU16(buf) or 0) / 10
+  end
 
   return data
 end
@@ -185,6 +196,10 @@ function msp_tune_advisor.buildReadMessage(axis, onData, onError)
       onData(data)
     end,
     errorHandler = onError,
+    -- Three sends, not the queue's six: the queue holds every other request
+    -- while this one is out, and a 65-byte reply over S.Port or FBUS is the
+    -- one most often lost. tasks/tune_history.lua asks again later anyway.
+    maxRetries = 2,
     simulatorResponse = simulatorResponses[axis],
   }
 end

@@ -7,6 +7,7 @@ import json
 import os
 import random
 import re
+import socket
 import tempfile
 import webbrowser
 from datetime import datetime, timezone
@@ -14,9 +15,14 @@ from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import urlparse
 
+from renderer import RenderSessions, WidgetRenderer
+
+RENDER_SESSIONS = RenderSessions()
+
 
 ROOT = Path(__file__).resolve().parents[2]
 PREVIEW_DIR = Path(__file__).resolve().parent
+PREVIEW_PORT = 8765
 NUMBER = r"[+-]?(?:\d+(?:\.\d*)?|\.\d+)"
 RANDOM_RETURN = re.compile(rf"return\s+math\.random\(\s*({NUMBER})\s*,\s*({NUMBER})\s*\)", re.S)
 NUMBER_RETURN = re.compile(rf"return\s+({NUMBER})\b", re.S)
@@ -249,6 +255,7 @@ def activelook_config_payload() -> dict:
 
     section = None
     values = {}
+    general, events = {}, {}
     for line in contents.splitlines():
         line = line.strip()
         if not line or line.startswith((";", "#")):
@@ -256,16 +263,23 @@ def activelook_config_payload() -> dict:
         if line.startswith("[") and line.endswith("]"):
             section = line[1:-1].strip()
             continue
-        if section != "activelook" or "=" not in line:
+        if "=" not in line:
             continue
-        key, value = line.split("=", 1)
-        values[key.strip()] = value.strip()
+        key, value = (part.strip() for part in line.split("=", 1))
+        if section == "activelook":
+            values[key] = value
+        elif section == "general" and key == "temperature_unit":
+            general[key] = value
+        elif section == "events" and key in ("escalertvalue", "smartfuelrepeats", "temp_esc_repeats"):
+            events[key] = value
 
     return {
         "ok": bool(values),
         "target": simulator_dir.name,
         "revision": str(file_stat.st_mtime_ns),
         "settings": values,
+        "general": general,
+        "events": events,
     }
 
 
@@ -353,6 +367,16 @@ def update_activelook_config(request: dict) -> tuple[int, dict]:
     return 200, activelook_config_payload()
 
 
+class PreviewServer(ThreadingHTTPServer):
+    # Windows SO_REUSEADDR can otherwise bind a second preview to an occupied port.
+    allow_reuse_address = os.name != "nt"
+
+    def server_bind(self):
+        if os.name == "nt":
+            self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_EXCLUSIVEADDRUSE, 1)
+        super().server_bind()
+
+
 class PreviewHandler(SimpleHTTPRequestHandler):
     extensions_map = {**SimpleHTTPRequestHandler.extensions_map, ".otf": "font/otf"}
 
@@ -373,6 +397,27 @@ class PreviewHandler(SimpleHTTPRequestHandler):
 
     def do_GET(self):
         endpoint = urlparse(self.path).path
+        if endpoint == "/api/render-defaults":
+            if not self.loopback_host_allowed():
+                self.send_json(403, {"ok": False, "error": "invalid Host header"})
+                return
+            try:
+                self.send_json(200, {"ok": True, "settings": WidgetRenderer().defaults})
+            except RuntimeError as error:
+                self.send_json(503, {"ok": False, "error": str(error)})
+            return
+        if endpoint == "/api/bitmap-atlas":
+            if not self.loopback_host_allowed():
+                self.send_json(403, {"ok": False, "error": "invalid Host header"})
+                return
+            path = ROOT / "docs/reference/activelook-frsky-v8/frsky-21-symbols-original-grayscale.png"
+            body = path.read_bytes()
+            self.send_response(200)
+            self.send_header("Content-Type", "image/png")
+            self.send_header("Content-Length", str(len(body)))
+            self.end_headers()
+            self.wfile.write(body)
+            return
         if endpoint in ("/api/telemetry", "/api/activelook-config"):
             if not self.loopback_host_allowed():
                 self.send_json(403, {"ok": False, "error": "invalid Host header"})
@@ -387,7 +432,8 @@ class PreviewHandler(SimpleHTTPRequestHandler):
         super().do_GET()
 
     def do_POST(self):
-        if urlparse(self.path).path != "/api/activelook-config":
+        endpoint = urlparse(self.path).path
+        if endpoint not in ("/api/activelook-config", "/api/render"):
             self.send_error(404)
             return
         if not self.loopback_host_allowed():
@@ -408,30 +454,35 @@ class PreviewHandler(SimpleHTTPRequestHandler):
             self.send_json(400, {"ok": False, "error": "request body must be a JSON object"})
             return
         try:
-            status, payload = update_activelook_config(request)
-        except SimulatorConfigError as error:
+            if endpoint == "/api/render":
+                status, payload = 200, RENDER_SESSIONS.render(request)
+            else:
+                status, payload = update_activelook_config(request)
+        except (ValueError, TypeError) as error:
+            self.send_json(400, {"ok": False, "error": str(error)})
+            return
+        except (RuntimeError, SimulatorConfigError) as error:
             self.send_json(503, {"ok": False, "error": str(error)})
             return
         self.send_json(status, payload)
 
     def log_message(self, format, *args):
+        if self.path.startswith("/api/") and len(args) > 1 and str(args[1]) in ("200", "304"):
+            return  # The display polls frequently; retain error logging without flooding the terminal.
         print(f"[{self.log_date_time_string()}] {format % args}")
 
 
-if __name__ == "__main__":
+def main(argv=None) -> None:
     parser = argparse.ArgumentParser(description="Run the ActiveLook simulator preview.")
     parser.add_argument("--open", action="store_true", help="Open the preview URL in the default browser")
-    args = parser.parse_args()
+    args = parser.parse_args(argv)
 
-    server = None
-    for port in range(8765, 8776):
-        try:
-            server = ThreadingHTTPServer(("127.0.0.1", port), PreviewHandler)
-            break
-        except OSError:
-            continue
-    if server is None:
-        raise OSError("No available preview port in range 8765-8775")
+    try:
+        server = PreviewServer(("127.0.0.1", PREVIEW_PORT), PreviewHandler)
+    except OSError as error:
+        print(f"ActiveLook preview could not start on http://127.0.0.1:{PREVIEW_PORT}: {error}")
+        print("The preview may already be running, or the port is occupied. No second instance was started.")
+        return
     url = f"http://127.0.0.1:{server.server_port}"
     print(f"ActiveLook preview: {url}")
     print("Reads sensor profiles from the Ethos simulator folder in .vscode/settings.json.")
@@ -443,3 +494,6 @@ if __name__ == "__main__":
         print("Stopping ActiveLook preview server.")
     finally:
         server.server_close()
+
+if __name__ == "__main__":
+    main()

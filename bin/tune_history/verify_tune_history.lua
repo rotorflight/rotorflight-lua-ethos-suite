@@ -3,8 +3,10 @@
 -- lib/msp_tune_advisor.lua with a mocked bus and an in-memory LOGS: drive.
 -- Pins the capture (each disarm saved as one flight, then the FC cleared;
 -- only the last 5 flights kept; a disarm during a link loss captured on
--- reconnect; firmware without the tune advisor left alone) and the page's
--- aggregate (only flights on the newest tune, counts added, ratios weighted).
+-- reconnect; firmware without the tune advisor left alone), its pacing (a
+-- wait after the disarm and between requests, a failed axis asked again on
+-- its own, at most three link errors per disarm) and the page's aggregate
+-- (only flights on the newest tune, counts added, ratios weighted).
 
 local ROOT = "src/rfsuite/"
 
@@ -73,9 +75,9 @@ os.clock = function() return clock end
 local MCU = "abc123"
 local HISTORY = "LOGS:/rfsuite/tune/" .. MCU .. "/history.csv"
 
-local handlers, requests, saved
+local handlers, requests, saved, states, task
 local function load()
-  handlers, requests, saved = {}, {}, {}
+  handlers, requests, saved, states = {}, {}, {}, {}
   for k in pairs(files) do files[k] = nil end
   for i = #iniWrites, 1, -1 do iniWrites[i] = nil end
   local bus = {
@@ -83,11 +85,12 @@ local function load()
     publish = function(topic, message)
       if topic == "msp.request" then requests[#requests + 1] = message end
       if topic == "tune_history.saved" then saved[#saved + 1] = message end
+      if topic == "tune_history.state" then states[#states + 1] = message end
     end,
   }
   -- The module takes lib/bus.lua from the require cache
   cache["lib/bus.lua"] = bus
-  assert(loadfile(ROOT .. "tasks/tune_history.lua"))()
+  task = assert(loadfile(ROOT .. "tasks/tune_history.lua"))()
 end
 
 local function update(fields)
@@ -97,24 +100,33 @@ local function update(fields)
   handlers["session.update"](snapshot)
 end
 
--- Answers every outstanding request in order, including the ones each
--- answer queues; returns what was asked, e.g. {"roll", "pitch", "yaw", "clear"}.
+-- Runs the clock forward in half-second session updates for `seconds`
+-- (default 30), answering each request as it goes out. `fail` maps a request
+-- name to {n = times, reason = errorHandler reason}: that many of its sends
+-- fail instead. `limit` stops after that many requests. Returns what was asked,
+-- e.g. "roll,pitch,yaw,clear", and the clock at each request.
 local NAMES = {"roll", "pitch", "yaw"}
-local function answerAll()
-  local asked = {}
-  local i = 1
-  while requests[i] do
-    local msg = requests[i]
-    if msg.command == tuneAdvisor.CLEAR_COMMAND then
-      asked[#asked + 1] = "clear"
-    else
-      asked[#asked + 1] = NAMES[msg.payload[1] + 1]
+local function pump(fail, limit, seconds)
+  local asked, times = {}, {}
+  local stopAt = clock + (seconds or 30)
+  while clock < stopAt and not (limit and #asked >= limit) do
+    clock = clock + 0.5
+    update({isArmed = false})
+    while requests[1] and not (limit and #asked >= limit) do
+      local msg = table.remove(requests, 1)
+      local name = msg.command == tuneAdvisor.CLEAR_COMMAND and "clear" or NAMES[msg.payload[1] + 1]
+      asked[#asked + 1] = name
+      times[#times + 1] = clock
+      local f = fail and fail[name]
+      if f and f.n > 0 then
+        f.n = f.n - 1
+        msg.errorHandler(f.reason)
+      else
+        msg.processReply(msg, msg.simulatorResponse)
+      end
     end
-    msg.processReply(msg, msg.simulatorResponse)
-    i = i + 1
   end
-  for j = #requests, 1, -1 do requests[j] = nil end
-  return table.concat(asked, ",")
+  return table.concat(asked, ","), times
 end
 
 local function lines()
@@ -128,7 +140,19 @@ local function fly(seconds, f)
   clock = clock + 60
   update({isArmed = true})
   update({isArmed = false})
-  return answerAll()
+  return pump()
+end
+
+-- Disarms, then lets the start wait pass: that update sends the first read
+local function disarmAndWait()
+  update({isArmed = true})
+  update({isArmed = false})
+  clock = clock + 5
+  update({isArmed = false})
+end
+
+local function drop()
+  for j = #requests, 1, -1 do requests[j] = nil end
 end
 
 do
@@ -136,9 +160,15 @@ do
   update({isArmed = false})
   update({isArmed = true})
   check("nothing is asked while armed", #requests == 0, #requests .. " requests")
+  local disarmedAt = clock
   update({isArmed = false})
-  local asked = answerAll()
+  check("nothing is asked straight after the disarm", #requests == 0, #requests .. " requests")
+  local asked, times = pump()
   check("a disarm reads roll, pitch and yaw, then clears the FC", asked == "roll,pitch,yaw,clear", asked)
+  local spaced = times[1] ~= nil and times[1] - disarmedAt >= 5
+  for i = 2, #times do spaced = spaced and times[i] - times[i - 1] >= 2 end
+  check("the first read waits 5 s, and each request 2 s after the last", spaced,
+    table.concat(times, " "))
   local r = lines()
   check("a header and one row per axis are written", #r == 4
     and r[1]:match("^date,flight_seconds,axis,")
@@ -152,11 +182,13 @@ do
     and iniWrites[1][2].model.name == "Wing")
   check("the page is told", #saved == 1 and saved[1] == MCU)
 
-  update({isArmed = false})
-  check("a disarm is captured once", #requests == 0, #requests .. " requests")
+  asked = pump()
+  check("a disarm is captured once", asked == "", asked)
+  check("the page is told reading from the disarm until the clear, then idle",
+    table.concat(states, ",") == "idle,reading,idle", table.concat(states, ","))
 
   local asked0 = fly(0)
-  check("a flight with no rate flight saves nothing and clears nothing", asked0 == "roll,pitch,yaw"
+  check("a flight with no acro flight saves nothing and clears nothing", asked0 == "roll,pitch,yaw"
     and #lines() == 4, asked0 .. " / " .. #lines() .. " lines")
 
   for n = 1, 6 do fly(100 + n) end
@@ -169,22 +201,20 @@ do
   load()
   update({isArmed = true})
   update({isArmed = nil, connected = false, mcuId = false})
+  clock = clock + 10
   update({isArmed = false, connected = true, mcuId = false})
   check("waits for the aircraft identity", #requests == 0, #requests .. " requests")
-  update({isArmed = false})
-  answerAll()
+  pump()
   check("a disarm during a link loss is captured on reconnect", #lines() == 4, #lines() .. " lines")
 end
 
 do
   load()
-  update({isArmed = true})
-  update({isArmed = false})
+  disarmAndWait()
   requests[1].errorHandler(true)
-  for j = #requests, 1, -1 do requests[j] = nil end
-  update({isArmed = false})
-  check("firmware without the tune advisor is asked once", #requests == 0 and files[HISTORY] == nil,
-    #requests .. " requests")
+  drop()
+  local asked = pump()
+  check("firmware without the tune advisor is asked once", asked == "" and files[HISTORY] == nil, asked)
 end
 
 -- The third answer, and the one that has to differ from a link error: a reply this suite
@@ -194,50 +224,166 @@ end
 do
   load()
   clock = 200
-  update({isArmed = true})
-  update({isArmed = false})
+  disarmAndWait()
   requests[1].errorHandler("tune advisor payload version 2, expected 1", true)
-  for j = #requests, 1, -1 do requests[j] = nil end
+  drop()
   update({isArmed = false})
   check("a refused reply is not asked again straight away", #requests == 0, #requests .. " requests")
-  clock = 206 -- past RETRY_SECONDS
+  clock = 211 -- past RETRY_SECONDS
   update({isArmed = false})
   check("a refused reply is never retried", #requests == 0, #requests .. " requests")
-  clock = 212
+  clock = 217
   update({isArmed = false})
   check("a refused reply stays refused, flight by flight", #requests == 0, #requests .. " requests")
   check("a refused flight is not saved", files[HISTORY] == nil, tostring(files[HISTORY]))
   -- The next DISARM asks again, once: the suite may learn the layout, and a pilot who
   -- reconnects expects the capture to run.
-  update({isArmed = true})
-  update({isArmed = false})
+  disarmAndWait()
   check("the next disarm asks once", #requests == 1, #requests .. " requests")
 end
 
 do
   load()
   clock = 100
-  update({isArmed = true})
-  update({isArmed = false})
+  disarmAndWait()
   requests[1].errorHandler("max_retries")
-  for j = #requests, 1, -1 do requests[j] = nil end
+  drop()
   update({isArmed = false})
   check("a link error waits before asking again", #requests == 0, #requests .. " requests")
-  clock = 106
+  local asked = pump({clear = {n = 1, reason = "timeout"}})
+  check("a clear that did not get through is sent again", asked == "roll,pitch,yaw,clear,clear"
+    and #lines() == 4, asked .. " / " .. #lines() .. " lines")
+end
+
+do
+  load()
+  update({isArmed = true})
   update({isArmed = false})
-  -- the clear fails too: it is sent again, without reading again
-  local i = 1
-  while requests[i] and requests[i].command ~= tuneAdvisor.CLEAR_COMMAND do
-    requests[i].processReply(requests[i], requests[i].simulatorResponse)
-    i = i + 1
-  end
-  requests[i].errorHandler("timeout")
-  for j = #requests, 1, -1 do requests[j] = nil end
-  clock = 112
-  update({isArmed = false})
-  local asked = answerAll()
-  check("a clear that did not get through is sent again", asked == "clear" and #lines() == 4,
+  local asked = pump({pitch = {n = 1, reason = "max_retries"}})
+  check("a lost axis is asked again on its own", asked == "roll,pitch,pitch,yaw,clear" and #lines() == 4,
     asked .. " / " .. #lines() .. " lines")
+end
+
+-- What this pacing fixes: a reply lost on every try kept the MSP queue and the
+-- telemetry link busy for as long as the model sat disarmed.
+do
+  load()
+  local asked = fly(147)
+  check("(setup) one flight saved", asked == "roll,pitch,yaw,clear", asked)
+  clock = clock + 60
+  update({isArmed = true})
+  update({isArmed = false})
+  asked = pump({roll = {n = 99, reason = "max_retries"}}, nil, 120)
+  check("three link errors, then nothing until the next disarm", asked == "roll,roll,roll", asked)
+  check("the page is told the flight was not read", states[#states] == "failed", table.concat(states, ","))
+  update({isArmed = true})
+  check("arming ends the failed note", states[#states] == "idle", table.concat(states, ","))
+  asked = fly(200)
+  check("the next disarm reads again", asked == "roll,pitch,yaw,clear" and #lines() == 7,
+    asked .. " / " .. #lines() .. " lines")
+end
+
+do
+  load()
+  update({isArmed = true})
+  update({isArmed = false})
+  local asked = pump({roll = {n = 5, reason = "cleared"}}, nil, 60)
+  check("a cleared queue is not counted as a link error",
+    asked == "roll,roll,roll,roll,roll,roll,pitch,yaw,clear", asked)
+end
+
+-- The session publishes only when its snapshot changes. The capture's waits
+-- must run out on the background task's own clock.
+do
+  load()
+  update({isArmed = true})
+  update({isArmed = false})
+  local asked = {}
+  for _ = 1, 60 do
+    clock = clock + 0.5
+    task.wakeup()
+    while requests[1] do
+      local msg = table.remove(requests, 1)
+      asked[#asked + 1] = msg.command == tuneAdvisor.CLEAR_COMMAND and "clear" or NAMES[msg.payload[1] + 1]
+      msg.processReply(msg, msg.simulatorResponse)
+    end
+  end
+  asked = table.concat(asked, ",")
+  check("a quiet session still captures, on the task's clock", asked == "roll,pitch,yaw,clear"
+    and #lines() == 4, asked .. " / " .. #lines() .. " lines")
+end
+
+-- An FC that restarted between two reads answers with another flight
+do
+  load()
+  reply.seconds = 147
+  disarmAndWait()
+  local roll = table.remove(requests, 1)
+  roll.processReply(roll, roll.simulatorResponse)
+  reply.seconds = 0
+  local asked = pump()
+  check("axes from two flights are not saved as one", asked == "pitch,yaw,roll,pitch,yaw"
+    and files[HISTORY] == nil, asked .. " / " .. tostring(files[HISTORY]))
+  reply.seconds = 147
+end
+
+do
+  load()
+  disarmAndWait()
+  local roll = table.remove(requests, 1)
+  roll.processReply(roll, roll.simulatorResponse)
+  local asked = pump({pitch = {n = 1, reason = "cleared"}})
+  check("a cleared queue drops the axes already read", asked == "pitch,roll,pitch,yaw,clear"
+    and #lines() == 4, asked .. " / " .. #lines() .. " lines")
+end
+
+do
+  load()
+  local realSave, saves = tuneHistory.save, 0
+  tuneHistory.save = function(...)
+    saves = saves + 1
+    if saves <= 4 then return false end
+    return realSave(...)
+  end
+  update({isArmed = true})
+  update({isArmed = false})
+  local asked = pump(nil, nil, 60)
+  tuneHistory.save = realSave
+  check("a failed write is tried again without reading again, past the link-error limit",
+    asked == "roll,pitch,yaw,clear" and saves == 5 and #lines() == 4,
+    asked .. " / " .. saves .. " saves / " .. #lines() .. " lines")
+end
+
+do
+  local msg = tuneAdvisor.buildReadMessage(1, function() end)
+  check("a tune read gives up after three sends", msg.maxRetries == 2, tostring(msg.maxRetries))
+end
+
+do
+  load()
+  disarmAndWait()
+  requests[1].errorHandler(true)
+  drop()
+  check("firmware without the tune advisor leaves the page idle", states[#states] == "idle",
+    table.concat(states, ","))
+end
+
+-- A flight is saved and its clear fails, so a clear stays outstanding. The next flight is
+-- refused. The clear must not go out now: it would erase the refused flight on the FC.
+do
+  load()
+  clock = 300
+  update({isArmed = true})
+  update({isArmed = false})
+  local asked = pump({clear = {n = 1, reason = "timeout"}}, 4)
+  check("flight one is saved before its clear fails", asked == "roll,pitch,yaw,clear" and #lines() == 4,
+    asked .. " / " .. #lines() .. " lines")
+  disarmAndWait()
+  requests[1].errorHandler("tune advisor payload version 2, expected 1", true)
+  drop()
+  asked = pump()
+  check("a clear is not sent over a refused flight on the FC", asked == "", asked)
+  check("the refused flight is not saved", #lines() == 4, #lines() .. " lines")
 end
 
 -- The page's aggregate

@@ -1,0 +1,7 @@
+{
+  "id": "activelook-alerts",
+  "name": "ActiveLook alerts preserve telemetry and preempt by priority",
+  "step": "Check ActiveLook alert engine and glasses widget",
+  "script": "bin/activelook_alerts/verify_activelook_alerts.lua",
+  "rationale": "Drives the real alert engine and widget using session phases from lib/flight_stats.lua through Smart Fuel warnings, temperature debounce/hysteresis, Governor transitions, priority interruption/resume, previews, display suppression, settings compatibility and cleanup. Audio inheritance checks verify inherited repeat counts, read-only threshold/repeat fields and restoration of independent values. Guards against lost Low Fuel budgets, stale status queues, repeated LOST HS events and wakeup allocations. RF link checks cover sensor-unit-dependent RSSI/VFR thresholds, debounce, hysteresis, invalid data and highest-priority interruption/resume. Independent ESC repeats preserve zero through editing and normalization. Widget tests resolve alert i18n from the English source, matching deployment. The inflight indicator shares the text layout update without a standalone bitmap call and retains its position."
+}
