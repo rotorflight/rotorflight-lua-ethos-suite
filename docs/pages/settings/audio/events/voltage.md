@@ -50,9 +50,9 @@ Always available offline without an active flight controller connection. Read-on
   to 1.0 V or below while the BEC stays up, so a model whose pack is not measured at all --
   or one with no BEC sensor -- stays quiet. It repeats every 10 seconds while the pack is
   gone, speaks the remaining BEC voltage to one decimal (e.g. "4.6 volts"), and announces once
-  more when the pack comes back. The alert uses the dedicated *Main power lost* sound and, when it
-  is missing from a pack, the pack's *Battery empty* word; if no loss sound resolves at all the BEC
-  voltage and the haptic still sound.
+  more when the pack comes back. The alert plays the dedicated *Main power lost* sound: the pack's own copy, else the English
+  one. Without either it falls back to the *Battery empty* word, and if no loss sound resolves at all
+  the BEC voltage and the haptic still sound.
 - Each threshold belongs to the toggle above it and is greyed out while that toggle is off, so
   the stored value is never mistaken for an active one.
 

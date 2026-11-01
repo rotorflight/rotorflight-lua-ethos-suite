@@ -909,7 +909,7 @@ local function mainPowerChecks()
       (rig.lastPlayed() or ""):find("status/alerts/lowbat.wav", 1, true) ~= nil,
       tostring(rig.lastPlayed()))
     local n = rig.spoken[#rig.spoken]
-    check("the alert speaks the BEC voltage (4.6 volts, one decimal)",
+    check("the alert speaks the BEC voltage (5.0 volts, one decimal)",
       n ~= nil and n.value == 5.0 and n.unit == "V" and n.decimals == 1,
       n and string.format("%s %s %s", n.value, tostring(n.unit), tostring(n.decimals)))
     check("the alert buzzes", #rig.haptics == 1, #rig.haptics .. " haptic(s)")
