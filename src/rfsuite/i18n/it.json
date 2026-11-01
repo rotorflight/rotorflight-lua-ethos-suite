@@ -9500,6 +9500,48 @@
           "reverse_text": false,
           "translation": "%d di %d"
         },
+        "pwr_bat_body": {
+          "english": "Cell count: 0 detects it automatically. The active battery is shown only.",
+          "max_length": 73,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Numero di celle: 0 le rileva automaticamente. La batteria attiva è solo visualizzata."
+        },
+        "pwr_cap_body": {
+          "english": "Capacity in mAh. Editing a battery does not activate it.",
+          "max_length": 56,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Capacità in mAh. Modificare una batteria non la attiva."
+        },
+        "pwr_sf_body": {
+          "english": "How the flight controller works out the remaining capacity.",
+          "max_length": 59,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Come il controllore calcola la capacità residua."
+        },
+        "pwr_sf_missing": {
+          "english": "SmartFuel is not available on this firmware.",
+          "max_length": 44,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "SmartFuel non è disponibile su questo firmware."
+        },
+        "pwr_sf_voltage": {
+          "english": "SmartFuel needs a voltage source.",
+          "max_length": 33,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "SmartFuel richiede una sorgente di tensione."
+        },
+        "pwr_src_body": {
+          "english": "Choose the source and check the live reading.",
+          "max_length": 45,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Scegliere la sorgente e controllare la lettura in tempo reale."
+        },
         "rates_3d": {
           "english": "3D",
           "max_length": 2,
@@ -10041,12 +10083,12 @@
           "reverse_text": false,
           "translation": "Usa"
         },
-        "reboot_skipped": {
-          "english": "A restart is still owed: go back to Connect the servos.",
-          "max_length": 55,
+        "reboot_owed_fmt": {
+          "english": "A restart is still owed: go back to %s.",
+          "max_length": 39,
           "needs_translation": false,
           "reverse_text": false,
-          "translation": "Manca un riavvio: torna a Collega i servi."
+          "translation": "Riavvio ancora dovuto: tornare a %s."
         },
         "reboot_wait_fmt": {
           "english": "Reconnecting, up to %d s",
@@ -10813,11 +10855,11 @@
           "translation": "Dietro"
         },
         "swa_restart": {
-          "english": "Applies after the restart at the Connect step.",
-          "max_length": 46,
+          "english": "Applies after the restart at ESC telemetry.",
+          "max_length": 43,
           "needs_translation": false,
           "reverse_text": false,
-          "translation": "Vale dopo il riavvio al passo Collega."
+          "translation": "Si applica dopo il riavvio nella telemetria ESC."
         },
         "swa_row_dir": {
           "english": "Rotor",
@@ -11201,6 +11243,195 @@
           "needs_translation": false,
           "reverse_text": false,
           "translation": "Usa test"
+        },
+        "tel_no_port": {
+          "english": "No free port",
+          "max_length": 12,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Nessuna porta libera"
+        },
+        "tel_not_used": {
+          "english": "Not used",
+          "max_length": 8,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Non usata"
+        },
+        "tel_port": {
+          "english": "Port",
+          "max_length": 4,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Porta"
+        },
+        "tel_protocol": {
+          "english": "Protocol",
+          "max_length": 8,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Protocollo"
+        },
+        "tel_row_used": {
+          "english": "ESC telemetry",
+          "max_length": 13,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Telemetria ESC"
+        },
+        "tel_temperature": {
+          "english": "ESC temperature",
+          "max_length": 15,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Temperatura ESC"
+        },
+        "tel_title": {
+          "english": "ESC telemetry",
+          "max_length": 13,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Telemetria ESC"
+        },
+        "tel_used": {
+          "english": "Used",
+          "max_length": 4,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Usata"
+        },
+        "tel_voltage": {
+          "english": "Battery voltage",
+          "max_length": 15,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Tensione batteria"
+        },
+        "wir_castle": {
+          "english": "Castle Link has no wiring to detect.",
+          "max_length": 36,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Castle Link non ha cablaggio da rilevare."
+        },
+        "wir_detect": {
+          "english": "Detect",
+          "max_length": 6,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Rileva"
+        },
+        "wir_found": {
+          "english": "Found",
+          "max_length": 5,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Trovato"
+        },
+        "wir_idle": {
+          "english": "Not run",
+          "max_length": 7,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Non avviato"
+        },
+        "wir_need_port": {
+          "english": "Turn on ESC telemetry first.",
+          "max_length": 28,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Attivare prima la telemetria ESC."
+        },
+        "wir_need_protocol": {
+          "english": "Choose a protocol at ESC telemetry first.",
+          "max_length": 41,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Scegliere prima un protocollo nella telemetria ESC."
+        },
+        "wir_need_restart": {
+          "english": "Restart first: the telemetry port applies after the restart.",
+          "max_length": 60,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Riavviare prima: la porta di telemetria si applica dopo il riavvio."
+        },
+        "wir_not_found": {
+          "english": "Not found",
+          "max_length": 9,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Non trovato"
+        },
+        "wir_rejected": {
+          "english": "Rejected",
+          "max_length": 8,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Rifiutato"
+        },
+        "wir_restart": {
+          "english": "Restart to apply the wiring.",
+          "max_length": 28,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Riavviare per applicare il cablaggio."
+        },
+        "wir_row_wiring": {
+          "english": "Wiring",
+          "max_length": 6,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Cablaggio"
+        },
+        "wir_status": {
+          "english": "Status",
+          "max_length": 6,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Stato"
+        },
+        "wir_stop": {
+          "english": "Stop",
+          "max_length": 4,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Ferma"
+        },
+        "wir_stopped": {
+          "english": "Stopped",
+          "max_length": 7,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Fermato"
+        },
+        "wir_timeout": {
+          "english": "Timed out",
+          "max_length": 9,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Tempo scaduto"
+        },
+        "wir_title": {
+          "english": "Telemetry wiring",
+          "max_length": 16,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Cablaggio telemetria"
+        },
+        "wir_trying_fmt": {
+          "english": "Trying %d of %d",
+          "max_length": 15,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Prova %d di %d"
+        },
+        "wir_unsupported": {
+          "english": "Not supported",
+          "max_length": 13,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Non supportato"
         }
       },
       "stats": {

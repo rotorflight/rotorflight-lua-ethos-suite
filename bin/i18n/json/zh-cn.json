@@ -8628,13 +8628,6 @@
           "max_length": 70,
           "reverse_text": false
         },
-        "reboot_skipped": {
-          "english": "A restart is still owed: go back to Connect the servos.",
-          "translation": "仍需重启：请返回连接舵机步骤。",
-          "needs_translation": false,
-          "max_length": 55,
-          "reverse_text": false
-        },
         "no_swash": {
           "english": "This step works on the swashplate servos. Pick a swashplate type first.",
           "translation": "此步骤用于斜盘舵机。请先选择斜盘类型。",
@@ -10000,10 +9993,10 @@
           "reverse_text": false
         },
         "swa_restart": {
-          "english": "Applies after the restart at the Connect step.",
-          "translation": "在连接步骤重启后生效。",
+          "english": "Applies after the restart at ESC telemetry.",
+          "translation": "在电调遥测重启后生效。",
           "needs_translation": false,
-          "max_length": 46,
+          "max_length": 43,
           "reverse_text": false
         },
         "swa_done_title": {
@@ -10657,6 +10650,244 @@
           "translation": "电机已停止",
           "needs_translation": false,
           "max_length": 13,
+          "reverse_text": false
+        },
+        "tel_title": {
+          "english": "ESC telemetry",
+          "translation": "电调遥测",
+          "needs_translation": false,
+          "max_length": 13,
+          "reverse_text": false
+        },
+        "tel_row_used": {
+          "english": "ESC telemetry",
+          "translation": "电调遥测",
+          "needs_translation": false,
+          "max_length": 13,
+          "reverse_text": false
+        },
+        "tel_used": {
+          "english": "Used",
+          "translation": "已使用",
+          "needs_translation": false,
+          "max_length": 4,
+          "reverse_text": false
+        },
+        "tel_not_used": {
+          "english": "Not used",
+          "translation": "未使用",
+          "needs_translation": false,
+          "max_length": 8,
+          "reverse_text": false
+        },
+        "tel_protocol": {
+          "english": "Protocol",
+          "translation": "协议",
+          "needs_translation": false,
+          "max_length": 8,
+          "reverse_text": false
+        },
+        "tel_port": {
+          "english": "Port",
+          "translation": "端口",
+          "needs_translation": false,
+          "max_length": 4,
+          "reverse_text": false
+        },
+        "tel_no_port": {
+          "english": "No free port",
+          "translation": "没有空闲端口",
+          "needs_translation": false,
+          "max_length": 12,
+          "reverse_text": false
+        },
+        "tel_voltage": {
+          "english": "Battery voltage",
+          "translation": "电池电压",
+          "needs_translation": false,
+          "max_length": 15,
+          "reverse_text": false
+        },
+        "tel_temperature": {
+          "english": "ESC temperature",
+          "translation": "电调温度",
+          "needs_translation": false,
+          "max_length": 15,
+          "reverse_text": false
+        },
+        "wir_title": {
+          "english": "Telemetry wiring",
+          "translation": "电调遥测接线",
+          "needs_translation": false,
+          "max_length": 16,
+          "reverse_text": false
+        },
+        "wir_row_wiring": {
+          "english": "Wiring",
+          "translation": "接线",
+          "needs_translation": false,
+          "max_length": 6,
+          "reverse_text": false
+        },
+        "wir_detect": {
+          "english": "Detect",
+          "translation": "检测",
+          "needs_translation": false,
+          "max_length": 6,
+          "reverse_text": false
+        },
+        "wir_stop": {
+          "english": "Stop",
+          "translation": "停止",
+          "needs_translation": false,
+          "max_length": 4,
+          "reverse_text": false
+        },
+        "wir_status": {
+          "english": "Status",
+          "translation": "状态",
+          "needs_translation": false,
+          "max_length": 6,
+          "reverse_text": false
+        },
+        "wir_trying_fmt": {
+          "english": "Trying %d of %d",
+          "translation": "尝试 %d / %d",
+          "needs_translation": false,
+          "max_length": 15,
+          "reverse_text": false
+        },
+        "wir_idle": {
+          "english": "Not run",
+          "translation": "未运行",
+          "needs_translation": false,
+          "max_length": 7,
+          "reverse_text": false
+        },
+        "wir_found": {
+          "english": "Found",
+          "translation": "已找到",
+          "needs_translation": false,
+          "max_length": 5,
+          "reverse_text": false
+        },
+        "wir_not_found": {
+          "english": "Not found",
+          "translation": "未找到",
+          "needs_translation": false,
+          "max_length": 9,
+          "reverse_text": false
+        },
+        "wir_rejected": {
+          "english": "Rejected",
+          "translation": "已拒绝",
+          "needs_translation": false,
+          "max_length": 8,
+          "reverse_text": false
+        },
+        "wir_timeout": {
+          "english": "Timed out",
+          "translation": "超时",
+          "needs_translation": false,
+          "max_length": 9,
+          "reverse_text": false
+        },
+        "wir_unsupported": {
+          "english": "Not supported",
+          "translation": "不支持",
+          "needs_translation": false,
+          "max_length": 13,
+          "reverse_text": false
+        },
+        "wir_stopped": {
+          "english": "Stopped",
+          "translation": "已停止",
+          "needs_translation": false,
+          "max_length": 7,
+          "reverse_text": false
+        },
+        "wir_restart": {
+          "english": "Restart to apply the wiring.",
+          "translation": "重启以应用接线。",
+          "needs_translation": false,
+          "max_length": 28,
+          "reverse_text": false
+        },
+        "wir_need_restart": {
+          "english": "Restart first: the telemetry port applies after the restart.",
+          "translation": "请先重启：遥测端口在重启后生效。",
+          "needs_translation": false,
+          "max_length": 60,
+          "reverse_text": false
+        },
+        "wir_need_protocol": {
+          "english": "Choose a protocol at ESC telemetry first.",
+          "translation": "请先在电调遥测中选择协议。",
+          "needs_translation": false,
+          "max_length": 41,
+          "reverse_text": false
+        },
+        "wir_need_port": {
+          "english": "Turn on ESC telemetry first.",
+          "translation": "请先开启电调遥测。",
+          "needs_translation": false,
+          "max_length": 28,
+          "reverse_text": false
+        },
+        "wir_castle": {
+          "english": "Castle Link has no wiring to detect.",
+          "translation": "Castle Link 没有需要检测的接线。",
+          "needs_translation": false,
+          "max_length": 36,
+          "reverse_text": false
+        },
+        "reboot_owed_fmt": {
+          "english": "A restart is still owed: go back to %s.",
+          "translation": "仍需重启：请返回 %s。",
+          "needs_translation": false,
+          "max_length": 39,
+          "reverse_text": false
+        },
+        "pwr_src_body": {
+          "english": "Choose the source and check the live reading.",
+          "translation": "选择来源并检查实时读数。",
+          "needs_translation": false,
+          "max_length": 45,
+          "reverse_text": false
+        },
+        "pwr_bat_body": {
+          "english": "Cell count: 0 detects it automatically. The active battery is shown only.",
+          "translation": "电芯数：0 为自动检测。当前电池仅作显示。",
+          "needs_translation": false,
+          "max_length": 73,
+          "reverse_text": false
+        },
+        "pwr_cap_body": {
+          "english": "Capacity in mAh. Editing a battery does not activate it.",
+          "translation": "容量，单位 mAh。编辑电池不会将其激活。",
+          "needs_translation": false,
+          "max_length": 56,
+          "reverse_text": false
+        },
+        "pwr_sf_body": {
+          "english": "How the flight controller works out the remaining capacity.",
+          "translation": "飞控如何计算剩余容量。",
+          "needs_translation": false,
+          "max_length": 59,
+          "reverse_text": false
+        },
+        "pwr_sf_voltage": {
+          "english": "SmartFuel needs a voltage source.",
+          "translation": "SmartFuel 需要电压来源。",
+          "needs_translation": false,
+          "max_length": 33,
+          "reverse_text": false
+        },
+        "pwr_sf_missing": {
+          "english": "SmartFuel is not available on this firmware.",
+          "translation": "此固件不支持 SmartFuel。",
+          "needs_translation": false,
+          "max_length": 44,
           "reverse_text": false
         },
         "mot_pinion": {

@@ -1313,6 +1313,74 @@ function art.modeIcon(name, cx, cy, s, color)
   modeIcon(name, cx, cy, s, color, art.colors())
 end
 
+-- Power pictures (the ESC telemetry step's source, battery and SmartFuel screens).
+-- A battery in line style: the outline and the terminal in the line colour.
+local function drawPowerBattery(x, y, bw, bh, colors)
+  lcd.color(colors.line)
+  lcd.drawRectangle(x, y, bw, bh)
+  lcd.drawFilledRectangle(x + bw, y + floor(bh / 3), 5, floor(bh / 3))
+end
+
+-- The cells in the blue accent.
+local function drawPowerCells(x, y, bw, bh, cells, colors)
+  drawPowerBattery(x, y, bw, bh, colors)
+  local pad = floor(bh / 8) + 2
+  local gap = 4
+  local cellW = floor((bw - 2 * pad - (cells - 1) * gap) / cells)
+  lcd.color(colors.blue)
+  for i = 1, cells do
+    lcd.drawFilledRectangle(x + pad + (i - 1) * (cellW + gap), y + pad, cellW, bh - 2 * pad)
+  end
+end
+
+-- The level in the blue accent, from the bottom.
+local function drawPowerLevel(x, y, bw, bh, frac, colors)
+  drawPowerBattery(x, y, bw, bh, colors)
+  local pad = 4
+  local inner = bh - 2 * pad
+  local fh = floor(inner * frac)
+  lcd.color(colors.blue)
+  lcd.drawFilledRectangle(x + pad, y + pad + inner - fh, bw - 2 * pad, fh)
+end
+
+local function drawPower(l, x, y, w, h, colors)
+  local variant = l.variant
+  if variant == "battery" then
+    local bw, bh = floor(w * 0.5), floor(h * 0.55)
+    drawPowerCells(x + floor((w - bw) / 2), y + floor((h - bh) / 2), bw, bh, 6, colors)
+  elseif variant == "smartfuel" then
+    local bw, bh = floor(w * 0.42), floor(h * 0.6)
+    drawPowerLevel(x + floor((w - bw) / 2), y + floor((h - bh) / 2), bw, bh, 0.7, colors)
+  else
+    -- "voltage" or "current": a battery, a wire, then a meter (voltage) or an arrow (current).
+    local bw, bh = floor(w * 0.34), floor(h * 0.5)
+    local bx, by = x + floor(w * 0.04), y + floor((h - bh) / 2)
+    drawPowerCells(bx, by, bw, bh, 3, colors)
+    local midY = by + floor(bh / 2)
+    local r = floor(math.min(w * 0.14, h * 0.3))
+    local cx = x + floor(w * 0.76)
+    local wireEnd = cx - r
+    if variant == "current" then wireEnd = cx - floor(r * 0.2) end
+    lcd.color(colors.line)
+    lcd.drawLine(bx + bw + 5, midY, wireEnd, midY)
+    lcd.color(colors.blue)
+    if variant == "current" then
+      local half = floor(r * 0.6)
+      lcd.drawFilledTriangle(cx + r, midY, wireEnd, midY - half, wireEnd, midY + half)
+    else
+      lcd.color(colors.line)
+      lcd.drawCircle(cx, midY, r)
+      lcd.color(colors.blue)
+      lcd.drawLine(cx, midY, cx + floor(r * 0.6), midY - floor(r * 0.6))
+    end
+  end
+end
+
+-- A power picture: "voltage", "current", "battery" or "smartfuel".
+function art.power(variant)
+  return {kind = "power", variant = variant}
+end
+
 function art.draw(l, x, y, w, h, colors)
   if not l or w <= 0 or h <= 20 then return end
   local k = l.kind
@@ -1354,6 +1422,8 @@ function art.draw(l, x, y, w, h, colors)
     drawTailType(l, x, y, w, h, colors)
   elseif k == "tailMotor" then
     drawTailMotor(l, x, y, w, h, colors)
+  elseif k == "power" then
+    drawPower(l, x, y, w, h, colors)
   elseif k == "modeSwitch" then
     drawModeSwitch(l, x, y, w, h, colors)
   end

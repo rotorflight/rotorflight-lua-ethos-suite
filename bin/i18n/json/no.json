@@ -8628,13 +8628,6 @@
           "max_length": 73,
           "reverse_text": false
         },
-        "reboot_skipped": {
-          "english": "A restart is still owed: go back to Connect the servos.",
-          "translation": "Omstart gjenstår: gå tilbake til Koble til servoer.",
-          "needs_translation": false,
-          "max_length": 55,
-          "reverse_text": false
-        },
         "no_swash": {
           "english": "This step works on the swashplate servos. Pick a swashplate type first.",
           "translation": "Dette steget gjelder swash-servoene. Velg en swashtype først.",
@@ -10000,10 +9993,10 @@
           "reverse_text": false
         },
         "swa_restart": {
-          "english": "Applies after the restart at the Connect step.",
-          "translation": "Gjelder etter omstarten i steget Koble til.",
+          "english": "Applies after the restart at ESC telemetry.",
+          "translation": "Gjelder etter omstarten ved ESC-telemetrien.",
           "needs_translation": false,
-          "max_length": 46,
+          "max_length": 43,
           "reverse_text": false
         },
         "swa_done_title": {
@@ -10657,6 +10650,244 @@
           "translation": "Motoren stoppet",
           "needs_translation": false,
           "max_length": 13,
+          "reverse_text": false
+        },
+        "tel_title": {
+          "english": "ESC telemetry",
+          "translation": "ESC-telemetri",
+          "needs_translation": false,
+          "max_length": 13,
+          "reverse_text": false
+        },
+        "tel_row_used": {
+          "english": "ESC telemetry",
+          "translation": "ESC-telemetri",
+          "needs_translation": false,
+          "max_length": 13,
+          "reverse_text": false
+        },
+        "tel_used": {
+          "english": "Used",
+          "translation": "Brukt",
+          "needs_translation": false,
+          "max_length": 4,
+          "reverse_text": false
+        },
+        "tel_not_used": {
+          "english": "Not used",
+          "translation": "Ikke brukt",
+          "needs_translation": false,
+          "max_length": 8,
+          "reverse_text": false
+        },
+        "tel_protocol": {
+          "english": "Protocol",
+          "translation": "Protokoll",
+          "needs_translation": false,
+          "max_length": 8,
+          "reverse_text": false
+        },
+        "tel_port": {
+          "english": "Port",
+          "translation": "Port",
+          "needs_translation": false,
+          "max_length": 4,
+          "reverse_text": false
+        },
+        "tel_no_port": {
+          "english": "No free port",
+          "translation": "Ingen ledig port",
+          "needs_translation": false,
+          "max_length": 12,
+          "reverse_text": false
+        },
+        "tel_voltage": {
+          "english": "Battery voltage",
+          "translation": "Batterispenning",
+          "needs_translation": false,
+          "max_length": 15,
+          "reverse_text": false
+        },
+        "tel_temperature": {
+          "english": "ESC temperature",
+          "translation": "Regulatortemperatur",
+          "needs_translation": false,
+          "max_length": 15,
+          "reverse_text": false
+        },
+        "wir_title": {
+          "english": "Telemetry wiring",
+          "translation": "Telemetrikabling",
+          "needs_translation": false,
+          "max_length": 16,
+          "reverse_text": false
+        },
+        "wir_row_wiring": {
+          "english": "Wiring",
+          "translation": "Kabling",
+          "needs_translation": false,
+          "max_length": 6,
+          "reverse_text": false
+        },
+        "wir_detect": {
+          "english": "Detect",
+          "translation": "Finn",
+          "needs_translation": false,
+          "max_length": 6,
+          "reverse_text": false
+        },
+        "wir_stop": {
+          "english": "Stop",
+          "translation": "Stopp",
+          "needs_translation": false,
+          "max_length": 4,
+          "reverse_text": false
+        },
+        "wir_status": {
+          "english": "Status",
+          "translation": "Status",
+          "needs_translation": false,
+          "max_length": 6,
+          "reverse_text": false
+        },
+        "wir_trying_fmt": {
+          "english": "Trying %d of %d",
+          "translation": "Forsøk %d av %d",
+          "needs_translation": false,
+          "max_length": 15,
+          "reverse_text": false
+        },
+        "wir_idle": {
+          "english": "Not run",
+          "translation": "Ikke kjørt",
+          "needs_translation": false,
+          "max_length": 7,
+          "reverse_text": false
+        },
+        "wir_found": {
+          "english": "Found",
+          "translation": "Funnet",
+          "needs_translation": false,
+          "max_length": 5,
+          "reverse_text": false
+        },
+        "wir_not_found": {
+          "english": "Not found",
+          "translation": "Ikke funnet",
+          "needs_translation": false,
+          "max_length": 9,
+          "reverse_text": false
+        },
+        "wir_rejected": {
+          "english": "Rejected",
+          "translation": "Avvist",
+          "needs_translation": false,
+          "max_length": 8,
+          "reverse_text": false
+        },
+        "wir_timeout": {
+          "english": "Timed out",
+          "translation": "Tidsavbrudd",
+          "needs_translation": false,
+          "max_length": 9,
+          "reverse_text": false
+        },
+        "wir_unsupported": {
+          "english": "Not supported",
+          "translation": "Ikke støttet",
+          "needs_translation": false,
+          "max_length": 13,
+          "reverse_text": false
+        },
+        "wir_stopped": {
+          "english": "Stopped",
+          "translation": "Stoppet",
+          "needs_translation": false,
+          "max_length": 7,
+          "reverse_text": false
+        },
+        "wir_restart": {
+          "english": "Restart to apply the wiring.",
+          "translation": "Start på nytt for å bruke kablingen.",
+          "needs_translation": false,
+          "max_length": 28,
+          "reverse_text": false
+        },
+        "wir_need_restart": {
+          "english": "Restart first: the telemetry port applies after the restart.",
+          "translation": "Start på nytt først: telemetriporten gjelder etter omstart.",
+          "needs_translation": false,
+          "max_length": 60,
+          "reverse_text": false
+        },
+        "wir_need_protocol": {
+          "english": "Choose a protocol at ESC telemetry first.",
+          "translation": "Velg først en protokoll under ESC-telemetri.",
+          "needs_translation": false,
+          "max_length": 41,
+          "reverse_text": false
+        },
+        "wir_need_port": {
+          "english": "Turn on ESC telemetry first.",
+          "translation": "Slå på ESC-telemetri først.",
+          "needs_translation": false,
+          "max_length": 28,
+          "reverse_text": false
+        },
+        "wir_castle": {
+          "english": "Castle Link has no wiring to detect.",
+          "translation": "Castle Link har ingen kabling å finne.",
+          "needs_translation": false,
+          "max_length": 36,
+          "reverse_text": false
+        },
+        "reboot_owed_fmt": {
+          "english": "A restart is still owed: go back to %s.",
+          "translation": "En omstart gjenstår: gå tilbake til %s.",
+          "needs_translation": false,
+          "max_length": 39,
+          "reverse_text": false
+        },
+        "pwr_src_body": {
+          "english": "Choose the source and check the live reading.",
+          "translation": "Velg kilde og kontroller den målte verdien.",
+          "needs_translation": false,
+          "max_length": 45,
+          "reverse_text": false
+        },
+        "pwr_bat_body": {
+          "english": "Cell count: 0 detects it automatically. The active battery is shown only.",
+          "translation": "Antall celler: 0 finner dem automatisk. Det aktive batteriet vises bare.",
+          "needs_translation": false,
+          "max_length": 73,
+          "reverse_text": false
+        },
+        "pwr_cap_body": {
+          "english": "Capacity in mAh. Editing a battery does not activate it.",
+          "translation": "Kapasitet i mAh. Å redigere et batteri aktiverer det ikke.",
+          "needs_translation": false,
+          "max_length": 56,
+          "reverse_text": false
+        },
+        "pwr_sf_body": {
+          "english": "How the flight controller works out the remaining capacity.",
+          "translation": "Hvordan flykontrolleren beregner gjenstående kapasitet.",
+          "needs_translation": false,
+          "max_length": 59,
+          "reverse_text": false
+        },
+        "pwr_sf_voltage": {
+          "english": "SmartFuel needs a voltage source.",
+          "translation": "SmartFuel trenger en spenningskilde.",
+          "needs_translation": false,
+          "max_length": 33,
+          "reverse_text": false
+        },
+        "pwr_sf_missing": {
+          "english": "SmartFuel is not available on this firmware.",
+          "translation": "SmartFuel er ikke tilgjengelig på denne firmwaren.",
+          "needs_translation": false,
+          "max_length": 44,
           "reverse_text": false
         },
         "mot_pinion": {

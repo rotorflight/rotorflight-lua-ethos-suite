@@ -141,6 +141,7 @@ function Screen:begin()
   v.textStop = nil
   v.pictureStop = nil
   v.checks, v.checksX = nil, nil
+  v.wide = nil
   v.status, v.statusX, v.statusY, v.statusH = nil, nil, nil, nil
   self.buttonList = {}
 end
@@ -250,6 +251,9 @@ end
 --                                  a drop-down where the answers sit, as EdgeTX's
 --                                  choice fields (values as {{text, value}, ...})
 --   {label =, pair = {{min, max, get, set}, {min, max, get, set}}, disabled =}
+--   {cells = {{label =, number = {min, max, get, set, suffix}}, {label =, number = {...}}}}
+--                                  two cells across the width (screen:wide()), each a label
+--                                  before its number field
 --                                  two numbers side by side, "a : b", where the answers sit
 --   {label =, number = {min, max, get, set, suffix}, disabled =}
 --                                  a value to edit: the label, a number field
@@ -264,9 +268,20 @@ local CHECK_BUTTON_SHARE = 0.2
 local CHECK_BUTTON_MIN = 64
 -- The width of the ":" between the two numbers of a pair row.
 local PAIR_SEP = 18
+-- Two cells side by side across the full width (checks with wide()): the gap between them,
+-- the label's gap to its field, and the field's share of its cell.
+local CELL_GAP = 16
+local CELL_LABEL_GAP = 8
+local CELL_FIELD_SHARE = 0.5
 -- A marked row (checks(): marked = true or false) keeps room for its tick.
 local MARK_SIZE = 22
 local MARK_GAP = 10
+
+-- The rows of checks() take the whole width, not the half beside a picture. For a screen that
+-- has no picture (its checks then start at the margin).
+function Screen:wide()
+  self.view.wide = true
+end
 
 function Screen:checks(list, focus)
   local v = self.view
@@ -275,7 +290,8 @@ function Screen:checks(list, focus)
   for i = 1, #list do if list[i].marked ~= nil then hasMark = true end end
   local width, height = lcd.getWindowSize()
   local room = width - self.wiz.FORM_RIGHT_PADDING
-  local x = floor(width / 2)
+  -- Beside the picture, or across the whole width when the screen asks for it (wide()).
+  local x = v.wide and MARGIN or floor(width / 2)
   lcd.font(FONT_STD)
   local _, titleH = lcd.getTextSize("Ag")
   lcd.font(FONT_S)
@@ -363,6 +379,29 @@ function Screen:checks(list, focus)
       self.buttonList[#self.buttonList + 1] = {field = f, needsMotion = c.needsMotion, disabled = c.disabled}
       if i == focus then field = f end
       row.y = y + floor((h - lineH) / 2)
+      y = y + h + CHECK_ROW_GAP
+    elseif c.cells then
+      -- Cells side by side across the width, each a label to the left of its number field.
+      local colW = floor((room - x - CELL_GAP) / 2)
+      local fieldW = floor(colW * CELL_FIELD_SHARE)
+      row.cells = {}
+      local first
+      for k, cell in ipairs(c.cells) do
+        local cx = x + (k - 1) * (colW + CELL_GAP)
+        local lblW = colW - fieldW - CELL_LABEL_GAP
+        lcd.font(FONT_S)
+        local lines = self.wiz.wrapLines(cell.label, lblW, FONT_S)
+        if #lines > 2 then lines = {lines[1], ui.fit(table.concat(lines, " ", 2), lblW)} end
+        local n = cell.number
+        local get, set = ui.value("check_" .. i .. "_" .. k, n[3], n[4])
+        local f = form.addNumberField(nil, {x = cx + colW - fieldW, y = y, w = fieldW, h = h}, n[1], n[2], get, set)
+        if n[5] and f.suffix then f:suffix(n[5]) end
+        self.buttonList[#self.buttonList + 1] = {field = f, needsMotion = c.needsMotion, disabled = c.disabled}
+        if k == 1 then first = f end
+        row.cells[k] = {x = cx, lines = lines, labelY = rowTop + floor((h - #lines * lineH) / 2)}
+      end
+      if i == focus then field = first end
+      row.y = y
       y = y + h + CHECK_ROW_GAP
     elseif c.pair then
       -- Two numbers side by side with a colon between them, in the answers' place.
@@ -716,6 +755,12 @@ function Screen:paint()
       end
       if c.labelLines then
         for j = 1, #c.labelLines do lcd.drawText(v.checksX, c.labelY + (j - 1) * labelH, c.labelLines[j], LEFT) end
+      end
+      if c.cells then
+        lcd.color(colors.text)
+        for _, cell in ipairs(c.cells) do
+          for j = 1, #cell.lines do lcd.drawText(cell.x, cell.labelY + (j - 1) * labelH, cell.lines[j], LEFT) end
+        end
       end
       if c.value then lcd.drawText(c.valueX, c.y, c.value, LEFT) end
       if c.sep then

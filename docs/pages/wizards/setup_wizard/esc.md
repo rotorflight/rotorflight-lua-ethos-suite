@@ -6,12 +6,12 @@ sidebar_position: 37
 
 # ESC & spin test
 
-Step 12 of the Model setup wizard. It teaches a PWM ESC its throttle range, and runs the main motor
+Step 13 of the Model setup wizard. It teaches a PWM ESC its throttle range, and runs the main motor
 at a test speed to check the direction and the start.
 
 ## Where to find it
 
-*Configuration* → *Wizards* → *Model setup*, step 12 *ESC & spin test*. The step starts with a safety
+*Configuration* → *Wizards* → *Model setup*, step 13 *ESC & spin test*. The step starts with a safety
 card: the main blades come off, and the pinion comes out of mesh or the helicopter is held down.
 Start follows once it is confirmed. Then the calibration (PWM ESCs only), then the spin test.
 

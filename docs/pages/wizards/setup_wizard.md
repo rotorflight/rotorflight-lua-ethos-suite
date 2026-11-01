@@ -7,7 +7,7 @@ sidebar_position: 5
 # Setup Wizard
 
 A guided bench setup of a helicopter, one question per screen. It is the radio's version of
-the Rotorflight Configurator's Setup Wizard and applies the same rules. Each of its 17 steps
+the Rotorflight Configurator's Setup Wizard and applies the same rules. Each of its 20 steps
 has its own page, linked below.
 
 ## Where to find it
@@ -50,20 +50,21 @@ stays beside the title. A step with one screen shows no count.
 | 8. [Servo type](setup_wizard/servotype.md) | Sets the servo type, and with it the update rate and centre pulse. |
 | 9. [Governor](setup_wizard/governor.md) | Sets the governor mode and the throttle type, and the headspeed of each PID profile when a governor runs. |
 | 10. [Motor & ESC](setup_wizard/motor.md) | Sets the ESC protocol, where the headspeed comes from (a wire, or bidirectional DShot) when a governor runs, the motor poles and the gear ratios. |
-| 11. [Connect servos](setup_wizard/connect.md) | Applies a pending restart and checks the outputs before the servos are plugged in. |
-| 12. [ESC & spin test](setup_wizard/esc.md) | Calibrates a PWM ESC's throttle range (full and low throttle), and spins the main motor at a test speed up to 50 %, for 3 seconds at a time. |
-| 13. [Servo centre](setup_wizard/servos.md) | Checks the direction of each swash servo and centres it. |
-| 14. [Directions](setup_wizard/direction.md) | Checks that roll, pitch and collective move the swash the right way. |
-| 15. [Level swash](setup_wizard/level.md) | Trims the swash until it is level at zero blade pitch. |
-| 16. [Blade pitch](setup_wizard/pitch.md) | Calibrates the blade pitch with a pitch gauge and sets the limits. |
-| 17. [Tail rotor](setup_wizard/tail.md) | Sets the tail centre, direction, calibration and end stops, or tests and idles a motor tail. |
-| 18. [Gyro check](setup_wizard/gyro.md) | Checks by hand that the gyro corrects against each movement. |
-| 19. [Finish](setup_wizard/finish.md) | Summarises what was set and saves it. |
+| 11. [ESC telemetry](setup_wizard/esctelemetry.md) | Sets whether the ESC sends telemetry, its protocol and the port it uses. Restart point: the port applies after it. Then finds the wiring (half duplex, and whether TX and RX are swapped), shows the battery voltage and the ESC temperature, and sets the voltage and current sources, the battery capacities and SmartFuel. |
+| 12. [Connect servos](setup_wizard/connect.md) | Applies a pending restart and checks the outputs before the servos are plugged in. |
+| 13. [ESC & spin test](setup_wizard/esc.md) | Calibrates a PWM ESC's throttle range (full and low throttle), and spins the main motor at a test speed up to 50 %, for 3 seconds at a time. |
+| 14. [Servo centre](setup_wizard/servos.md) | Checks the direction of each swash servo and centres it. |
+| 15. [Directions](setup_wizard/direction.md) | Checks that roll, pitch and collective move the swash the right way. |
+| 16. [Level swash](setup_wizard/level.md) | Trims the swash until it is level at zero blade pitch. |
+| 17. [Blade pitch](setup_wizard/pitch.md) | Calibrates the blade pitch with a pitch gauge and sets the limits. |
+| 18. [Tail rotor](setup_wizard/tail.md) | Sets the tail centre, direction, calibration and end stops, or tests and idles a motor tail. |
+| 19. [Gyro check](setup_wizard/gyro.md) | Checks by hand that the gyro corrects against each movement. |
+| 20. [Finish](setup_wizard/finish.md) | Summarises what was set and saves it. |
 
 ## Notes
 
 - Take the main and tail blades off before you start, and leave the servos unplugged
-  until step 11. The wizard moves servos and, on a motorised tail, the tail motor.
+  until step 12. The wizard moves servos and, on a motorised tail, the tail motor.
 - Arming is blocked while the wizard is open. If the model arms anyway, or the link
   drops, every servo, mixer and motor override is released and the wizard says why.
   Leaving the wizard by any route releases them too.
@@ -74,8 +75,9 @@ stays beside the title. A step with one screen shows no count.
   a step's first screen) asks the same, so one step's changes are never saved by
   another step's Save and continue.
 - Changes that only apply after a restart (board orientation, swash or tail type, servo
-  update rate, ESC protocol) are saved as you go, and the one restart happens at step 11.
-  A step after it shows a reminder while a restart is still owed.
+  update rate, ESC protocol, the telemetry port) are saved as you go. The first restart
+  happens at step 11, ESC telemetry, on its first screen, and the step reopens on the second
+  screen. Connect servos (step 12) is the second restart point, for anything still owed by then.
 - Not covered here: modes and switches beyond Arm, Rescue and Trainer,
   the ESC throttle calibration and spin test, and ESC telemetry. Use their own pages.
 

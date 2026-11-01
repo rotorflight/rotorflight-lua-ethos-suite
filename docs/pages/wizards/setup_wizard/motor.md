@@ -32,7 +32,7 @@ side, as "22 : 60" (pinion : intermediate gear), to save room.
 | Setting | What it does |
 | --- | --- |
 | ESC protocol | A drop-down with PWM, DShot150 and DShot300 first, then every other protocol: DShot600, Castle, OneShot, ProShot, DISABLED and the rest. SRXL2 is added from API 12.10. Use PWM if you are not sure. DShot600 picks up noise on long ESC leads. |
-| Headspeed source | Only when a governor runs. Wire: an RPM sensor or the ESC's own RPM output. Bidirectional DShot: the ESC sends the RPM back on the DShot signal. Set by the protocol: DShot300 and DShot600 choose bidirectional DShot, the others a wire. You can change it. |
+| Headspeed source | Only when a governor runs. Wire: an RPM sensor or the ESC's own RPM output. Bidirectional DShot: the ESC sends the RPM back on the DShot signal. Set by the protocol: DShot300 and DShot600 choose bidirectional DShot, the others a wire. You can change it. Only one source is on: the wire RPM sensor or DShot RPM telemetry, never both. |
 | Motor poles | Magnet poles of the main motor, from its data sheet (often 10 or 12). The picture shows the bell with that many magnets. |
 | Gear train | One stage, or two stages with an intermediate shaft (for example a SAB Goblin). Two stages show four counts: the pinion, the intermediate gear that meshes with the pinion, the intermediate gear that meshes with the main gear, and the main gear. |
 | Pinion teeth, Main gear teeth | Teeth on the motor pinion and the main gear. In one stage they give the main ratio, shown as n:1. |
@@ -86,7 +86,7 @@ while the wizard stays open.
 - A governor needs a fast RPM signal: an RPM sensor, or bidirectional DShot telemetry. Serial
   ESC telemetry is too slow for it.
 - Leaving Castle turns the ESC sensor off, unless a serial ESC telemetry protocol is set.
-- The protocol and the gear ratios apply after the restart at step 11, Connect servos.
+- The protocol and the gear ratios apply after the restart at step 11, ESC telemetry.
 
 ## Related
 

@@ -9500,6 +9500,48 @@
           "reverse_text": false,
           "translation": "%d z %d"
         },
+        "pwr_bat_body": {
+          "english": "Cell count: 0 detects it automatically. The active battery is shown only.",
+          "max_length": 73,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Počet článků: 0 je zjistí automaticky. Aktivní akumulátor se jen zobrazuje."
+        },
+        "pwr_cap_body": {
+          "english": "Capacity in mAh. Editing a battery does not activate it.",
+          "max_length": 56,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Kapacita v mAh. Úprava akumulátoru ho neaktivuje."
+        },
+        "pwr_sf_body": {
+          "english": "How the flight controller works out the remaining capacity.",
+          "max_length": 59,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Jak řídicí jednotka počítá zbývající kapacitu."
+        },
+        "pwr_sf_missing": {
+          "english": "SmartFuel is not available on this firmware.",
+          "max_length": 44,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "SmartFuel není v tomto firmwaru dostupný."
+        },
+        "pwr_sf_voltage": {
+          "english": "SmartFuel needs a voltage source.",
+          "max_length": 33,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "SmartFuel potřebuje zdroj napětí."
+        },
+        "pwr_src_body": {
+          "english": "Choose the source and check the live reading.",
+          "max_length": 45,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Zvolte zdroj a zkontrolujte živé měření."
+        },
         "rates_3d": {
           "english": "3D",
           "max_length": 2,
@@ -10041,12 +10083,12 @@
           "reverse_text": false,
           "translation": "Použít"
         },
-        "reboot_skipped": {
-          "english": "A restart is still owed: go back to Connect the servos.",
-          "max_length": 55,
+        "reboot_owed_fmt": {
+          "english": "A restart is still owed: go back to %s.",
+          "max_length": 39,
           "needs_translation": false,
           "reverse_text": false,
-          "translation": "Chybí restart: vraťte se na Připojení serv."
+          "translation": "Restart ještě čeká: vraťte se na %s."
         },
         "reboot_wait_fmt": {
           "english": "Reconnecting, up to %d s",
@@ -10813,11 +10855,11 @@
           "translation": "Vzadu"
         },
         "swa_restart": {
-          "english": "Applies after the restart at the Connect step.",
-          "max_length": 46,
+          "english": "Applies after the restart at ESC telemetry.",
+          "max_length": 43,
           "needs_translation": false,
           "reverse_text": false,
-          "translation": "Platí po restartu v kroku Připojení."
+          "translation": "Platí po restartu u telemetrie regulátoru."
         },
         "swa_row_dir": {
           "english": "Rotor",
@@ -11201,6 +11243,195 @@
           "needs_translation": false,
           "reverse_text": false,
           "translation": "Použít test"
+        },
+        "tel_no_port": {
+          "english": "No free port",
+          "max_length": 12,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Žádný volný port"
+        },
+        "tel_not_used": {
+          "english": "Not used",
+          "max_length": 8,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Nepoužito"
+        },
+        "tel_port": {
+          "english": "Port",
+          "max_length": 4,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Port"
+        },
+        "tel_protocol": {
+          "english": "Protocol",
+          "max_length": 8,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Protokol"
+        },
+        "tel_row_used": {
+          "english": "ESC telemetry",
+          "max_length": 13,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Telemetrie regulátoru"
+        },
+        "tel_temperature": {
+          "english": "ESC temperature",
+          "max_length": 15,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Teplota regulátoru"
+        },
+        "tel_title": {
+          "english": "ESC telemetry",
+          "max_length": 13,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Telemetrie regulátoru"
+        },
+        "tel_used": {
+          "english": "Used",
+          "max_length": 4,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Použito"
+        },
+        "tel_voltage": {
+          "english": "Battery voltage",
+          "max_length": 15,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Napětí akumulátoru"
+        },
+        "wir_castle": {
+          "english": "Castle Link has no wiring to detect.",
+          "max_length": 36,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Castle Link nemá zapojení k zjištění."
+        },
+        "wir_detect": {
+          "english": "Detect",
+          "max_length": 6,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Zjistit"
+        },
+        "wir_found": {
+          "english": "Found",
+          "max_length": 5,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Nalezeno"
+        },
+        "wir_idle": {
+          "english": "Not run",
+          "max_length": 7,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Nespuštěno"
+        },
+        "wir_need_port": {
+          "english": "Turn on ESC telemetry first.",
+          "max_length": 28,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Nejdřív zapněte telemetrii regulátoru."
+        },
+        "wir_need_protocol": {
+          "english": "Choose a protocol at ESC telemetry first.",
+          "max_length": 41,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Nejdřív zvolte protokol u telemetrie regulátoru."
+        },
+        "wir_need_restart": {
+          "english": "Restart first: the telemetry port applies after the restart.",
+          "max_length": 60,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Nejdřív restartujte: port telemetrie platí po restartu."
+        },
+        "wir_not_found": {
+          "english": "Not found",
+          "max_length": 9,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Nenalezeno"
+        },
+        "wir_rejected": {
+          "english": "Rejected",
+          "max_length": 8,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Odmítnuto"
+        },
+        "wir_restart": {
+          "english": "Restart to apply the wiring.",
+          "max_length": 28,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Restartujte pro použití zapojení."
+        },
+        "wir_row_wiring": {
+          "english": "Wiring",
+          "max_length": 6,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Zapojení"
+        },
+        "wir_status": {
+          "english": "Status",
+          "max_length": 6,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Stav"
+        },
+        "wir_stop": {
+          "english": "Stop",
+          "max_length": 4,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Zastavit"
+        },
+        "wir_stopped": {
+          "english": "Stopped",
+          "max_length": 7,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Zastaveno"
+        },
+        "wir_timeout": {
+          "english": "Timed out",
+          "max_length": 9,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Vypršel čas"
+        },
+        "wir_title": {
+          "english": "Telemetry wiring",
+          "max_length": 16,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Zapojení telemetrie"
+        },
+        "wir_trying_fmt": {
+          "english": "Trying %d of %d",
+          "max_length": 15,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Pokus %d z %d"
+        },
+        "wir_unsupported": {
+          "english": "Not supported",
+          "max_length": 13,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Nepodporováno"
         }
       },
       "stats": {

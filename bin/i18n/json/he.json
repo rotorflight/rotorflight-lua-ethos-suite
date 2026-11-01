@@ -8628,13 +8628,6 @@
           "max_length": 70,
           "reverse_text": true
         },
-        "reboot_skipped": {
-          "english": "A restart is still owed: go back to Connect the servos.",
-          "translation": "עדיין נדרש אתחול: חזור לשלב חיבור הסרווים.",
-          "needs_translation": false,
-          "max_length": 55,
-          "reverse_text": true
-        },
         "no_swash": {
           "english": "This step works on the swashplate servos. Pick a swashplate type first.",
           "translation": "שלב זה עובד על סרווי הסוואש. בחר קודם סוג סוואש.",
@@ -10000,10 +9993,10 @@
           "reverse_text": true
         },
         "swa_restart": {
-          "english": "Applies after the restart at the Connect step.",
-          "translation": "ייכנס לתוקף אחרי האתחול בשלב החיבור.",
+          "english": "Applies after the restart at ESC telemetry.",
+          "translation": "חל אחרי ההפעלה מחדש בטלמטריית ESC.",
           "needs_translation": false,
-          "max_length": 46,
+          "max_length": 43,
           "reverse_text": true
         },
         "swa_done_title": {
@@ -10657,6 +10650,244 @@
           "translation": "המנוע נעצר",
           "needs_translation": false,
           "max_length": 13,
+          "reverse_text": true
+        },
+        "tel_title": {
+          "english": "ESC telemetry",
+          "translation": "טלמטריית ESC",
+          "needs_translation": false,
+          "max_length": 13,
+          "reverse_text": true
+        },
+        "tel_row_used": {
+          "english": "ESC telemetry",
+          "translation": "טלמטריית ESC",
+          "needs_translation": false,
+          "max_length": 13,
+          "reverse_text": true
+        },
+        "tel_used": {
+          "english": "Used",
+          "translation": "בשימוש",
+          "needs_translation": false,
+          "max_length": 4,
+          "reverse_text": true
+        },
+        "tel_not_used": {
+          "english": "Not used",
+          "translation": "לא בשימוש",
+          "needs_translation": false,
+          "max_length": 8,
+          "reverse_text": true
+        },
+        "tel_protocol": {
+          "english": "Protocol",
+          "translation": "פרוטוקול",
+          "needs_translation": false,
+          "max_length": 8,
+          "reverse_text": true
+        },
+        "tel_port": {
+          "english": "Port",
+          "translation": "יציאה",
+          "needs_translation": false,
+          "max_length": 4,
+          "reverse_text": true
+        },
+        "tel_no_port": {
+          "english": "No free port",
+          "translation": "אין יציאה פנויה",
+          "needs_translation": false,
+          "max_length": 12,
+          "reverse_text": true
+        },
+        "tel_voltage": {
+          "english": "Battery voltage",
+          "translation": "מתח סוללה",
+          "needs_translation": false,
+          "max_length": 15,
+          "reverse_text": true
+        },
+        "tel_temperature": {
+          "english": "ESC temperature",
+          "translation": "טמפרטורת ESC",
+          "needs_translation": false,
+          "max_length": 15,
+          "reverse_text": true
+        },
+        "wir_title": {
+          "english": "Telemetry wiring",
+          "translation": "חיווט טלמטריה",
+          "needs_translation": false,
+          "max_length": 16,
+          "reverse_text": true
+        },
+        "wir_row_wiring": {
+          "english": "Wiring",
+          "translation": "חיווט",
+          "needs_translation": false,
+          "max_length": 6,
+          "reverse_text": true
+        },
+        "wir_detect": {
+          "english": "Detect",
+          "translation": "זיהוי",
+          "needs_translation": false,
+          "max_length": 6,
+          "reverse_text": true
+        },
+        "wir_stop": {
+          "english": "Stop",
+          "translation": "עצור",
+          "needs_translation": false,
+          "max_length": 4,
+          "reverse_text": true
+        },
+        "wir_status": {
+          "english": "Status",
+          "translation": "מצב",
+          "needs_translation": false,
+          "max_length": 6,
+          "reverse_text": true
+        },
+        "wir_trying_fmt": {
+          "english": "Trying %d of %d",
+          "translation": "ניסיון %d מתוך %d",
+          "needs_translation": false,
+          "max_length": 15,
+          "reverse_text": true
+        },
+        "wir_idle": {
+          "english": "Not run",
+          "translation": "לא הופעל",
+          "needs_translation": false,
+          "max_length": 7,
+          "reverse_text": true
+        },
+        "wir_found": {
+          "english": "Found",
+          "translation": "נמצא",
+          "needs_translation": false,
+          "max_length": 5,
+          "reverse_text": true
+        },
+        "wir_not_found": {
+          "english": "Not found",
+          "translation": "לא נמצא",
+          "needs_translation": false,
+          "max_length": 9,
+          "reverse_text": true
+        },
+        "wir_rejected": {
+          "english": "Rejected",
+          "translation": "נדחה",
+          "needs_translation": false,
+          "max_length": 8,
+          "reverse_text": true
+        },
+        "wir_timeout": {
+          "english": "Timed out",
+          "translation": "הזמן עבר",
+          "needs_translation": false,
+          "max_length": 9,
+          "reverse_text": true
+        },
+        "wir_unsupported": {
+          "english": "Not supported",
+          "translation": "לא נתמך",
+          "needs_translation": false,
+          "max_length": 13,
+          "reverse_text": true
+        },
+        "wir_stopped": {
+          "english": "Stopped",
+          "translation": "הופסק",
+          "needs_translation": false,
+          "max_length": 7,
+          "reverse_text": true
+        },
+        "wir_restart": {
+          "english": "Restart to apply the wiring.",
+          "translation": "הפעילו מחדש כדי להחיל את החיווט.",
+          "needs_translation": false,
+          "max_length": 28,
+          "reverse_text": true
+        },
+        "wir_need_restart": {
+          "english": "Restart first: the telemetry port applies after the restart.",
+          "translation": "קודם הפעילו מחדש: יציאת הטלמטריה תקפה אחרי ההפעלה מחדש.",
+          "needs_translation": false,
+          "max_length": 60,
+          "reverse_text": true
+        },
+        "wir_need_protocol": {
+          "english": "Choose a protocol at ESC telemetry first.",
+          "translation": "קודם בחרו פרוטוקול בטלמטריית ESC.",
+          "needs_translation": false,
+          "max_length": 41,
+          "reverse_text": true
+        },
+        "wir_need_port": {
+          "english": "Turn on ESC telemetry first.",
+          "translation": "קודם הפעילו טלמטריית ESC.",
+          "needs_translation": false,
+          "max_length": 28,
+          "reverse_text": true
+        },
+        "wir_castle": {
+          "english": "Castle Link has no wiring to detect.",
+          "translation": "ל-Castle Link אין חיווט לזיהוי.",
+          "needs_translation": false,
+          "max_length": 36,
+          "reverse_text": true
+        },
+        "reboot_owed_fmt": {
+          "english": "A restart is still owed: go back to %s.",
+          "translation": "נדרשת עדיין הפעלה מחדש: חזרו ל-%s.",
+          "needs_translation": false,
+          "max_length": 39,
+          "reverse_text": true
+        },
+        "pwr_src_body": {
+          "english": "Choose the source and check the live reading.",
+          "translation": "בחרו מקור ובדקו את המדידה החיה.",
+          "needs_translation": false,
+          "max_length": 45,
+          "reverse_text": true
+        },
+        "pwr_bat_body": {
+          "english": "Cell count: 0 detects it automatically. The active battery is shown only.",
+          "translation": "מספר תאים: 0 מזהה אוטומטית. הסוללה הפעילה מוצגת בלבד.",
+          "needs_translation": false,
+          "max_length": 73,
+          "reverse_text": true
+        },
+        "pwr_cap_body": {
+          "english": "Capacity in mAh. Editing a battery does not activate it.",
+          "translation": "קיבולת ב-mAh. עריכת סוללה אינה מפעילה אותה.",
+          "needs_translation": false,
+          "max_length": 56,
+          "reverse_text": true
+        },
+        "pwr_sf_body": {
+          "english": "How the flight controller works out the remaining capacity.",
+          "translation": "איך בקר הטיסה מחשב את הקיבולת הנותרת.",
+          "needs_translation": false,
+          "max_length": 59,
+          "reverse_text": true
+        },
+        "pwr_sf_voltage": {
+          "english": "SmartFuel needs a voltage source.",
+          "translation": "SmartFuel דורש מקור מתח.",
+          "needs_translation": false,
+          "max_length": 33,
+          "reverse_text": true
+        },
+        "pwr_sf_missing": {
+          "english": "SmartFuel is not available on this firmware.",
+          "translation": "SmartFuel אינו זמין בקושחה הזו.",
+          "needs_translation": false,
+          "max_length": 44,
           "reverse_text": true
         },
         "mot_pinion": {

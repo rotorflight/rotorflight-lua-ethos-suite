@@ -933,6 +933,9 @@ local gpsSeenHealthy = false
 local function setConnected(value, mspQueue, protocol)
   if session.connected == value then return end
   session.connected = value
+  -- Published like every other state change: a page that waits for the link (the setup wizard's
+  -- reboot wait) sees the drop and the return through session.update.
+  publish()
   resetScheduler()
 
   if value then

@@ -66,6 +66,7 @@ local progressDialog = requireModule("app/progress_dialog.lua")
 local status = requireModule("lib/msp_status.lua")
 local eeprom = requireModule("lib/msp_eeprom.lua")
 local reboot = requireModule("lib/msp_reboot.lua")
+local boardInfo = requireModule("lib/msp_board_info.lua")
 local mixerInput = requireModule("lib/msp_mixer_input.lua")
 local mixerConfig = requireModule("lib/msp_mixer_config.lua")
 local servoConfig = requireModule("lib/msp_servo_config.lua")
@@ -95,6 +96,7 @@ local MSG_LOAD_FAILED_BODY = "@i18n(app.msg_load_failed_body)@"
 local MSG_RESTARTING_TITLE = "@i18n(app.msg_restarting)@"
 local MSG_RESTARTING = "@i18n(app.msg_restarting_fc)@"
 local MSG_REBOOT_WAIT = "@i18n(app.modules.setup_wizard.reboot_wait_fmt)@"
+local MSG_REBOOT_OWED = "@i18n(app.modules.setup_wizard.reboot_owed_fmt)@"
 local STEPS_ICON = "app/gfx/nav/steps.png"
 local NEXT = "@i18n(app.modules.setup_wizard.btn_next)@"
 local SAVE_NEXT = "@i18n(app.modules.setup_wizard.dir_save_next)@"
@@ -106,8 +108,10 @@ local BTN_CANCEL = "@i18n(app.btn_cancel)@"
 -- Order is the procedure, as in the configurator's STEPS: each step relies
 -- on the ones before it. needsServos: the step works on the swash or tail
 -- servos; needsSwash: on the swash servos alone. Either waits for the
--- Swashplate step. gate: the step where a
--- pending restart happens (the servos are still unplugged before it).
+-- Swashplate step. gate: a restart point, where a restart owed from the steps before
+-- it happens (Save and restart). The ESC telemetry step is the first: the port it sets is
+-- live on its second screen, the wiring. The connect gate follows (the servos are still
+-- unplugged before it).
 local STEPS = {
   {key = "sensors", title = "@i18n(app.modules.setup_wizard.step_sensors)@"},
   {key = "receiver", title = "@i18n(app.modules.setup_wizard.step_receiver)@"},
@@ -120,6 +124,7 @@ local STEPS = {
   {key = "servotype", title = "@i18n(app.modules.setup_wizard.step_servotype)@", needsServos = true},
   {key = "governor", title = "@i18n(app.modules.setup_wizard.step_governor)@"},
   {key = "motor", title = "@i18n(app.modules.setup_wizard.step_motor)@"},
+  {key = "esctelemetry", title = "@i18n(app.modules.setup_wizard.tel_title)@", gate = true},
   {key = "connect", title = "@i18n(app.modules.setup_wizard.step_connect)@", gate = true},
   {key = "esc", title = "@i18n(app.modules.setup_wizard.esc_title)@"},
   {key = "servos", title = "@i18n(app.modules.setup_wizard.step_servos)@", needsServos = true},
@@ -160,6 +165,12 @@ local MOTOR_RESEND = 0.25
 
 -- Give-up bound for a restart, as app/page_runtime.lua's.
 local REBOOT_TIMEOUT_SECONDS = 20
+-- While the flight controller restarts, the board is read every REBOOT_PROBE_SECONDS, one read at a
+-- time. A read that fails, or has no answer after REBOOT_PROBE_STALE_SECONDS, is the flight
+-- controller gone; the answer after that is the flight controller back. The receiver link stays up
+-- through a restart, so the session's connected state alone does not show it.
+local REBOOT_PROBE_SECONDS = 0.5
+local REBOOT_PROBE_STALE_SECONDS = 2
 
 local FORM_RIGHT_PADDING = 8
 
@@ -177,7 +188,13 @@ local function stepIndexOf(key)
   return nil
 end
 
-local GATE_INDEX = stepIndexOf("connect")
+-- The restart point at or before a step: the nearest gate, going back from it.
+local function restartPointAt(index)
+  for i = index, 1, -1 do
+    if STEPS[i].gate then return i end
+  end
+  return nil
+end
 
 ---------------------------------------------------------------------------
 -- Text helpers shared with the steps. Ethos static text does not wrap, so
@@ -273,7 +290,7 @@ local function open(opts)
   local step = nil         -- instance of STEPS[stepIndex]
   local stepOwned = nil    -- modules the step loaded for itself, freed when it closes
   local picking = false    -- the step list is showing
-  local PICKER_PAGE = math.ceil(#STEPS / 2)   -- two pages of steps
+  local PICKER_PAGE = 12   -- two pages of steps: the first ends with ESC telemetry and Connect servos
   local PICKER_BACK_ICON = lcd.loadMask("app/gfx/nav/back.png")
   local PICKER_NEXT_ICON = lcd.loadMask("app/gfx/nav/next.png")
   local pickerPage = nil   -- the page the step list shows; nil: the page of the current step
@@ -665,12 +682,19 @@ local function open(opts)
   local changeStep
   local startReboot
 
+  -- Saves the pending changes, then runs onSaved (at once when there is nothing to save).
+  -- A step with screens of its own uses it to save before its next screen, as Save and continue says.
+  function wiz.saveThen(onSaved) requestSave(onSaved) end
+
   local function noticeText()
     if rebootWait then return MSG_RESTARTING end
     if connected == false then return "@i18n(app.modules.setup_wizard.disconnected)@" end
     if armed == true then return "@i18n(app.modules.setup_wizard.armed)@" end
-    if memory.rebootPending and GATE_INDEX and stepIndex > GATE_INDEX then
-      return "@i18n(app.modules.setup_wizard.reboot_skipped)@"
+    if memory.rebootPending then
+      local point = restartPointAt(stepIndex)
+      if point and point < stepIndex then
+        return string.format(MSG_REBOOT_OWED, STEPS[point].title)
+      end
     end
     return ""
   end
@@ -747,8 +771,8 @@ local function open(opts)
   function wiz.isLastStep() return stepIndex >= #STEPS end
 
   -- A step's last screen: save, then the next step, or leave the wizard after
-  -- the last one (as the configurator's Save and continue). At the gate
-  -- with a restart owed, Save and restart (the wizard reopens on the gate).
+  -- the last one (as the configurator's Save and continue). At a restart point
+  -- with a restart owed, Save and restart (the wizard reopens on that step).
   function wiz.finishStep()
     if STEPS[stepIndex].gate and memory.rebootPending then
       wiz.saveAndReboot()
@@ -1038,7 +1062,8 @@ local function open(opts)
     -- The FC forgets the arming block when it restarts; finishLoad() sends
     -- it again.
     armingBlocked = false
-    rebootWait = {startedAt = os.clock(), sawDisconnect = false, remaining = REBOOT_TIMEOUT_SECONDS, percent = 0}
+    rebootWait = {startedAt = os.clock(), sawDisconnect = false, remaining = REBOOT_TIMEOUT_SECONDS, percent = 0,
+      probeAt = 0, probeSent = nil, answeredAfterDrop = false}
     send(reboot.buildWriteMessage())
     closeProgress()
     dialog = progressDialog.open({
@@ -1063,6 +1088,28 @@ local function open(opts)
     if not wait.sawDisconnect and (connected == false or handshakeDone == false) then
       wait.sawDisconnect = true
     end
+    -- The link probe, one read at a time. The radio's link to the receiver stays up while the
+    -- flight controller restarts, so the session still reads connected; only MSP shows the restart.
+    -- A read the transport cannot send waits in the queue with neither an answer nor an error
+    -- (tasks/msp/queue.lua counts only real sends), so a read unanswered for
+    -- REBOOT_PROBE_STALE_SECONDS is the flight controller gone, and its answer after that is the
+    -- flight controller back. A failed read counts as gone too.
+    if wait.probeSent and now - wait.probeSent > REBOOT_PROBE_STALE_SECONDS then
+      wait.sawDisconnect = true
+    end
+    if connected == true and not wait.probeSent and now >= wait.probeAt then
+      wait.probeSent = now
+      wait.probeAt = now + REBOOT_PROBE_SECONDS
+      send(boardInfo.buildReadMessage(
+        function()
+          wait.probeSent = nil
+          if wait.sawDisconnect then wait.answeredAfterDrop = true end
+        end,
+        function()
+          wait.probeSent = nil
+          wait.sawDisconnect = true
+        end))
+    end
     local elapsed = now - wait.startedAt
     local remaining = math.max(0, math.ceil(REBOOT_TIMEOUT_SECONDS - elapsed))
     if wait.remaining ~= remaining then
@@ -1074,7 +1121,7 @@ local function open(opts)
       wait.percent = percent
       if dialog then dialog:value(percent) end
     end
-    local back = wait.sawDisconnect and connected == true and handshakeDone == true
+    local back = wait.answeredAfterDrop or (wait.sawDisconnect and connected == true and handshakeDone == true)
     if back or elapsed >= REBOOT_TIMEOUT_SECONDS then
       rebootWait = nil
       -- beginLoad() opens its own Loading dialog.

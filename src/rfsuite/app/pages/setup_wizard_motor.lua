@@ -119,7 +119,9 @@ local NAMES = {
 local OTHER_NONE = -1
 
 local ESC_SENSOR_BIT = 27
--- The RPM source: bidirectional DShot telemetry (feature bit 28), as the governor needs it.
+-- The RPM feature bit: the wire RPM sensor (FREQ_SENSOR, the input the Configurator calls RPM
+-- Sensor). It is on only for the wire source; bidirectional DShot is the other source, set in
+-- the motor config (use_dshot_telemetry), and the two are never on together.
 local RPM_BIT = 28
 -- DShot300 and DShot600: the protocols that carry the RPM back on the signal.
 local DSHOT_RPM = {[6] = true, [7] = true}
@@ -267,18 +269,22 @@ local function new(wiz)
     wiz.rebuild()
   end
 
-  -- The RPM source: bidirectional DShot telemetry (the motor config) and the RPM
-  -- feature bit beside the ESC telemetry bit, read fresh so neither is overwritten.
-  -- Not with DShot150, which sends no RPM back.
+  -- The RPM source is one of two: bidirectional DShot telemetry (the motor config) or the wire
+  -- RPM sensor (the RPM feature bit). Choosing one turns the other off, so only the chosen one is
+  -- on. The feature bits are read fresh, so the other bits are kept. Not with DShot150, which
+  -- sends no RPM back.
   local function rpmDshot() return cfg.use_dshot_telemetry == 1 end
   local function setRpmSource(dshot)
     if dshot and cfg.motor_pwm_protocol == DSHOT150 then return end
-    if rpmDshot() == dshot then return end
     wiz.send(featureConfig.buildReadMessage(function(f)
-      local want = withBit(f.enabledFeatures, RPM_BIT, dshot)
-      wiz.send(featureConfig.buildWriteMessage({enabledFeatures = want}))
+      local want = withBit(f.enabledFeatures, RPM_BIT, not dshot)
+      if want ~= f.enabledFeatures then
+        wiz.send(featureConfig.buildWriteMessage({enabledFeatures = want}))
+      end
     end))
-    edit(function(c) c.use_dshot_telemetry = dshot and 1 or 0 end)
+    if rpmDshot() ~= dshot then
+      edit(function(c) c.use_dshot_telemetry = dshot and 1 or 0 end)
+    end
   end
 
   local function setProtocol(value)
