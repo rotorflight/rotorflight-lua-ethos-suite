@@ -10505,6 +10505,20 @@
           "max_length": 10,
           "reverse_text": false
         },
+        "resc_intro": {
+          "english": "Rescue brings the helicopter back to level after a failed manoeuvre. It needs a rescue switch, which the Modes step assigns, and an accelerometer. The setting applies to all profiles.",
+          "translation": "Ratowanie przywraca śmigłowiec do poziomu po nieudanym manewrze. Potrzebny jest przełącznik ratowania (krok Tryby) i akcelerometr. Ustawienie dotyczy wszystkich profili.",
+          "needs_translation": false,
+          "max_length": 183,
+          "reverse_text": false
+        },
+        "resc_no_switch": {
+          "english": "No rescue switch is assigned. Assign one in the Modes step to turn rescue on.",
+          "translation": "Nie przypisano przełącznika ratowania. Przypisz go w kroku Tryby, aby włączyć ratowanie.",
+          "needs_translation": false,
+          "max_length": 77,
+          "reverse_text": false
+        },
         "mot_pinion": {
           "english": "Pinion teeth",
           "translation": "Zęby zębnika",

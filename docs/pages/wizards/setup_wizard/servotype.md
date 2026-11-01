@@ -6,12 +6,12 @@ sidebar_position: 50
 
 # Servo type
 
-Step 7 of the Model setup wizard. It sets the type the servos are made for, which gives
+Step 8 of the Model setup wizard. It sets the type the servos are made for, which gives
 the update rate and the centre pulse, and the geometry correction of the cyclic servos.
 
 ## Where to find it
 
-*Configuration* → *Wizards* → *Model setup*, step 7 *Servo type*. Two groups: *Cyclic
+*Configuration* → *Wizards* → *Model setup*, step 8 *Servo type*. Two groups: *Cyclic
 servos* and *Tail servo* (a pitch tail only). Each group has its own screen, with the
 servo picture on the left, showing the type's name and the servos' centre and frame rate
 under it, and the settings on the right.
@@ -35,7 +35,7 @@ shows a message instead.
   Digital for the tail), written once when the step opens. Discard puts the servos back.
 - The servos must be centred and their travel set before the geometry correction is checked
   (the *Servo centre* step comes later), then check pitch and limits.
-- A new update rate applies after the restart at step 10, Connect servos.
+- A new update rate applies after the restart at step 11, Connect servos.
 - Keep the servos unplugged until the Connect servos step.
 
 ## Related

@@ -9915,6 +9915,20 @@
           "reverse_text": false,
           "translation": "Připojuji, až %d s"
         },
+        "resc_intro": {
+          "english": "Rescue brings the helicopter back to level after a failed manoeuvre. It needs a rescue switch, which the Modes step assigns, and an accelerometer. The setting applies to all profiles.",
+          "max_length": 183,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Záchrana vrátí vrtulník do vodorovné polohy po neúspěšném manévru. Potřebuje záchranný spínač (krok Režimy) a akcelerometr. Nastavení platí pro všechny profily."
+        },
+        "resc_no_switch": {
+          "english": "No rescue switch is assigned. Assign one in the Modes step to turn rescue on.",
+          "max_length": 77,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Není přiřazen záchranný spínač. Přiřaďte jej v kroku Režimy, aby šla záchrana zapnout."
+        },
         "role_centre": {
           "english": "Centre",
           "max_length": 6,

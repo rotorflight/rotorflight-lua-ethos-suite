@@ -6,12 +6,12 @@ sidebar_position: 40
 
 # Swashplate
 
-Step 6 of the Model setup wizard. It sets the swashplate type, the main rotor direction and
+Step 7 of the Model setup wizard. It sets the swashplate type, the main rotor direction and
 the tail type.
 
 ## Where to find it
 
-*Configuration* → *Wizards* → *Model setup*, step 6 *Swashplate*. The step shows the
+*Configuration* → *Wizards* → *Model setup*, step 7 *Swashplate*. The step shows the
 servo layout for the chosen type.
 
 Only inside the wizard. Greyed out until the flight controller answers. Read-only while the
@@ -31,7 +31,7 @@ model is armed.
 
 - The first screen asks you to unplug the servos and remove the blades. Start follows once both
   are confirmed, as on the other steps that move the servos.
-- Swashplate type and tail type apply after the restart at step 10, Connect servos.
+- Swashplate type and tail type apply after the restart at step 11, Connect servos.
 - A new tail type resets the yaw mixer rate: 250 for a pitch tail, 1000 for a motor tail,
   keeping its sign.
 - When the tail changes between servo and motor, Tail Torque Assist is set to match on every

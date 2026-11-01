@@ -10505,6 +10505,20 @@
           "max_length": 10,
           "reverse_text": true
         },
+        "resc_intro": {
+          "english": "Rescue brings the helicopter back to level after a failed manoeuvre. It needs a rescue switch, which the Modes step assigns, and an accelerometer. The setting applies to all profiles.",
+          "translation": "הצלה מחזירה את המסוק לישור אחרי תמרון שנכשל. נדרש מתג הצלה (שלב המצבים) ומד תאוצה. ההגדרה חלה על כל הפרופילים.",
+          "needs_translation": false,
+          "max_length": 183,
+          "reverse_text": true
+        },
+        "resc_no_switch": {
+          "english": "No rescue switch is assigned. Assign one in the Modes step to turn rescue on.",
+          "translation": "לא הוקצה מתג הצלה. הקצו מתג בשלב המצבים כדי להפעיל הצלה.",
+          "needs_translation": false,
+          "max_length": 77,
+          "reverse_text": true
+        },
         "mot_pinion": {
           "english": "Pinion teeth",
           "translation": "שיני פיניון",

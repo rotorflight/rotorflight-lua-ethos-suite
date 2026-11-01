@@ -10505,6 +10505,20 @@
           "max_length": 10,
           "reverse_text": false
         },
+        "resc_intro": {
+          "english": "Rescue brings the helicopter back to level after a failed manoeuvre. It needs a rescue switch, which the Modes step assigns, and an accelerometer. The setting applies to all profiles.",
+          "translation": "救援在动作失败后把直升机恢复水平。需要救援开关（在模式步骤中设置）和加速度计。该设置适用于所有配置文件。",
+          "needs_translation": false,
+          "max_length": 183,
+          "reverse_text": false
+        },
+        "resc_no_switch": {
+          "english": "No rescue switch is assigned. Assign one in the Modes step to turn rescue on.",
+          "translation": "未分配救援开关。请在模式步骤中分配一个以启用救援。",
+          "needs_translation": false,
+          "max_length": 77,
+          "reverse_text": false
+        },
         "mot_pinion": {
           "english": "Pinion teeth",
           "translation": "小齿轮齿数",

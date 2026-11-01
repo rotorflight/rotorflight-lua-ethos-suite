@@ -9915,6 +9915,20 @@
           "reverse_text": false,
           "translation": "Riconnessione, fino a %d s"
         },
+        "resc_intro": {
+          "english": "Rescue brings the helicopter back to level after a failed manoeuvre. It needs a rescue switch, which the Modes step assigns, and an accelerometer. The setting applies to all profiles.",
+          "max_length": 183,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Il recupero riporta l'elicottero in assetto dopo una manovra fallita. Serve un interruttore di recupero (passo Modalità) e un accelerometro. L'impostazione vale per tutti i profili."
+        },
+        "resc_no_switch": {
+          "english": "No rescue switch is assigned. Assign one in the Modes step to turn rescue on.",
+          "max_length": 77,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Nessun interruttore di recupero assegnato. Assegnarne uno nel passo Modalità per attivare il recupero."
+        },
         "role_centre": {
           "english": "Centre",
           "max_length": 6,

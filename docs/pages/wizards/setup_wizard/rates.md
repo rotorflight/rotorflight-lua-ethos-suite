@@ -6,12 +6,12 @@ sidebar_position: 45
 
 # Rates
 
-Step 5 of the Model setup wizard. It gives each rate profile on the profile switch a flying
+Step 6 of the Model setup wizard. It gives each rate profile on the profile switch a flying
 style: Trainer, Sport or 3D, or leaves it as it is.
 
 ## Where to find it
 
-*Configuration* → *Wizards* → *Model setup*, step 5 *Rates*. One page per rate profile the
+*Configuration* → *Wizards* → *Model setup*, step 6 *Rates*. One page per rate profile the
 profile switch picks (only those; without a profile switch, the active one).
 
 Only inside the wizard. Greyed out until the flight controller answers. Read-only while the

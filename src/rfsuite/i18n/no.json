@@ -9915,6 +9915,20 @@
           "reverse_text": false,
           "translation": "Kobler til igjen, opptil %d s"
         },
+        "resc_intro": {
+          "english": "Rescue brings the helicopter back to level after a failed manoeuvre. It needs a rescue switch, which the Modes step assigns, and an accelerometer. The setting applies to all profiles.",
+          "max_length": 183,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Redning bringer helikopteret tilbake i vater etter et mislykket manøver. Den trenger en redningsbryter (trinn Moduser) og et akselerometer. Innstillingen gjelder alle profiler."
+        },
+        "resc_no_switch": {
+          "english": "No rescue switch is assigned. Assign one in the Modes step to turn rescue on.",
+          "max_length": 77,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Ingen redningsbryter er tildelt. Tildel en i trinnet Moduser for å slå på redning."
+        },
         "role_centre": {
           "english": "Centre",
           "max_length": 6,

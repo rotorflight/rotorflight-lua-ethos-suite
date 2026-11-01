@@ -6,12 +6,12 @@ sidebar_position: 55
 
 # Governor
 
-Step 8 of the Model setup wizard. It sets the governor mode and, for electric and nitro, the
+Step 9 of the Model setup wizard. It sets the governor mode and, for electric and nitro, the
 throttle type. When a governor runs, it also sets the headspeed of each PID profile.
 
 ## Where to find it
 
-*Configuration* → *Wizards* → *Model setup*, step 8 *Governor*. The step starts with a safety
+*Configuration* → *Wizards* → *Model setup*, step 9 *Governor*. The step starts with a safety
 card: the servos stay unplugged and the blades come off, and Start follows once both are
 confirmed.
 
@@ -30,7 +30,7 @@ model is armed.
 
 - The profiles are read when the headspeed screen opens, with no button. Each change is
   written at once; Discard puts the profile back.
-- With a governor running, the headspeed source is set in the Motor & ESC step (step 9). It needs a fast RPM signal:
+- With a governor running, the headspeed source is set in the Motor & ESC step (step 10). It needs a fast RPM signal:
   an RPM sensor, or bidirectional DShot telemetry.
 - The ramp times (spoolup, spooldown, recovery) are not part of the wizard. They are set on the
   governor page.
