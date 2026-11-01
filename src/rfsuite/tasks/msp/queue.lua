@@ -117,6 +117,9 @@ local function notifyError(message, reason)
 end
 
 function Queue.new(common)
+  -- A new queue is a new link (tasks/background.lua makes one on a transport
+  -- swap): version 2 until setFirmwareApi() says otherwise.
+  common.setFraming(2)
   return setmetatable({
     common = common,
     pending = {},
@@ -132,6 +135,7 @@ function Queue.new(common)
     -- makes a new queue on a transport swap), so start from its count or the
     -- first message would see every break it ever recorded as a new one.
     rxBreaks = (common.mspRxBreakInfo()),
+    framingFallbacks = common.mspFramingFallbackCount(),
     lastTickAt = nil,
   }, Queue)
 end
@@ -143,9 +147,16 @@ end
 -- release. On 4.6 the resend's answer comes without a START frame and is
 -- discarded, so an early resend would only spend an attempt; the queue keeps
 -- waiting for retryDelay of silence there, as it always did.
+--
+-- The same API version selects the framing (tasks/msp/common.lua). Version 3
+-- is offered from 12.10, the version of Rotorflight 4.7, which is to carry
+-- rotorflight-firmware #583. A 12.10 build without it refuses version 3 once,
+-- and the link falls back to version 2 for its lifetime.
 function Queue:setFirmwareApi(major, minor)
-  self.resendOnBreak = major ~= nil and minor ~= nil
+  local apiWith12_10 = major ~= nil and minor ~= nil
     and (major > 12 or (major == 12 and minor >= 10))
+  self.resendOnBreak = apiWith12_10
+  self.common.setFraming(apiWith12_10 and 3 or 2)
 end
 
 function Queue:isProcessed()
@@ -359,6 +370,20 @@ function Queue:processQueue()
   -- link that keeps losing frames ends in max_retries as before. No resend
   -- while a newer reply is already being assembled: it would throw that reply
   -- away.
+  -- The firmware refused version 3 and the link is back on version 2 (see
+  -- tasks/msp/common.lua's receivedReply()). The request was answered at once
+  -- with a refusal, so there is nothing to wait for: send it again now. The
+  -- refused attempt is not counted -- the request never reached the command.
+  local fallbacks = common.mspFramingFallbackCount()
+  if fallbacks ~= self.framingFallbacks then
+    self.framingFallbacks = fallbacks
+    if self.lastSent then
+      self.resendNow = true
+      if self.retryCount > 0 then self.retryCount = self.retryCount - 1 end
+    end
+    debugLog.msp("V2", msg.command, EMPTY_PAYLOAD, "firmware refused framing 3")
+  end
+
   local breaks, expected, got, bytes, size = common.mspRxBreakInfo()
   if breaks ~= self.rxBreaks then
     self.rxBreaks = breaks
