@@ -699,6 +699,9 @@ local function runHandshake(mspQueue, protocol)
       session.apiVersionMajor = data.major
       session.apiVersionMinor = data.minor
       session.apiVersionSupported = mspApiVersion.isSupported(data.major, data.minor)
+      -- Link behaviour that depends on the firmware (tasks/msp/queue.lua's
+      -- setFirmwareApi()). Harness doubles of the queue need not have it.
+      if mspQueue.setFirmwareApi then mspQueue:setFirmwareApi(data.major, data.minor) end
       if session.apiVersionSupported == true then
         playConnectBeep()
       end
@@ -958,6 +961,9 @@ local function setConnected(value, mspQueue, protocol)
     -- last known values, and only then does the reset below wipe them.
     if mspQueue then
       mspQueue:clear()
+      -- The next board may be older: nothing firmware-dependent until its API
+      -- version has been read again.
+      if mspQueue.setFirmwareApi then mspQueue:setFirmwareApi(nil, nil) end
     end
     local holdingFlight = flightTimer.inProgress and flightTimer.inProgress()
     if not holdingFlight then

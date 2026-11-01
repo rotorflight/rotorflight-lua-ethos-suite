@@ -147,6 +147,9 @@ local function newRig(opts)
   local transport = newTransport(opts)
   common.setTransport(transport)
   local queue = Queue.new(common)
+  -- opts.api = {major, minor}: what the session would pass once MSP_API_VERSION
+  -- has answered. Left out, the queue behaves as before the version is known.
+  if opts and opts.api then queue:setFirmwareApi(opts.api[1], opts.api[2]) end
   clock.now = 0.0
   return {
     common = common,
@@ -462,6 +465,264 @@ do
 end
 
 -- ---------------------------------------------------------------------------
+-- A broken reply is resent at once, and still spends an attempt
+-- ---------------------------------------------------------------------------
+
+-- The FC's answer loses its second continuation frame on the link: start,
+-- sequence 1, then sequence 3. The queue sees the break on the tick that reads
+-- the out-of-sequence frame and resends on the next tick, without waiting for
+-- the retry window -- on firmware at MSP API 12.10 or later, which answers a
+-- replacement request with its own start frame (rotorflight-firmware #521).
+local API_WITH_REPLACEMENT_START = {12, 10}
+local API_4_6 = {12, 9}
+
+local function brokenReply(cmd)
+  local frames = replyFrames(cmd, 12, { {1, 2, 3, 4, 5}, {6, 7, 8, 9, 10}, {11, 12} })
+  table.remove(frames, 3) -- sequence 2 lost: the sequence jumps from 1 to 3
+  return frames
+end
+
+-- Reads every reply frame queued on the transport, however many ticks the
+-- bounded poll loop needs for them.
+local function drainReplies(rig)
+  while #rig.transport.replies > 0 do rig.tick() end
+end
+
+do
+  local rig = newRig({ api = API_WITH_REPLACEMENT_START })
+  local msg = newMessage(0x1E, { maxRetries = 2 })
+  rig.queue:add(msg)
+  rig.tick() -- attempt 1
+  for _, frame in ipairs(brokenReply(msg.command)) do
+    rig.transport.replies[#rig.transport.replies + 1] = frame
+  end
+  drainReplies(rig)
+  check("precondition: the broken reply was not delivered", #msg.replies == 0,
+    "replies=" .. #msg.replies)
+  rig.tick() -- no clock jump: the retry window is nowhere near elapsed
+  check("a sequence break resends on the next tick, not after the retry window",
+    framesForCommand(rig.transport.sent, msg.command) == 2,
+    "frames=" .. framesForCommand(rig.transport.sent, msg.command) ..
+    " (1 means the queue waited for the 0.8s window)")
+  check("the resend spends an attempt", rig.queue.retryCount == 2,
+    "retryCount=" .. tostring(rig.queue.retryCount))
+
+  -- The FC answers the resend in full, from its own start frame.
+  for _, frame in ipairs(replyFrames(msg.command, 2, { {7, 8} })) do
+    rig.transport.replies[#rig.transport.replies + 1] = frame
+  end
+  drainReplies(rig)
+  check("the resend's reply is delivered",
+    #msg.replies == 1 and msg.replies[1][1] == 7 and msg.replies[1][2] == 8,
+    "replies=" .. #msg.replies .. " errors=" .. #msg.errors)
+end
+
+-- A link that breaks every reply must still end in max_retries, not resend
+-- for ever: maxRetries=1 buys two attempts, both broken.
+do
+  local rig = newRig({ api = API_WITH_REPLACEMENT_START })
+  local msg = newMessage(0x1E, { maxRetries = 1 })
+  rig.queue:add(msg)
+  rig.tick() -- attempt 1
+  for _ = 1, 2 do
+    for _, frame in ipairs(brokenReply(msg.command)) do
+      rig.transport.replies[#rig.transport.replies + 1] = frame
+    end
+    drainReplies(rig)
+    rig.tick() -- attempt 2 after the first break; after the second, give up
+  end
+  check("a link that breaks every reply gives the message up after maxRetries",
+    #msg.errors == 1 and msg.errors[1] == "max_retries",
+    "errors=" .. #msg.errors .. " first=" .. tostring(msg.errors[1]))
+  check("no attempt beyond maxRetries went out",
+    framesForCommand(rig.transport.sent, msg.command) == 2,
+    "frames=" .. framesForCommand(rig.transport.sent, msg.command))
+end
+
+-- Firmware 4.6 (API 12.09) answers a replacement request without a start
+-- frame, so an early resend there only spends an attempt. The queue waits for
+-- the retry window, as it did before; so does a queue that has not been told
+-- the API version yet, and one told nil on a disconnect.
+for _, case in ipairs({
+  { label = "API 12.09", api = API_4_6 },
+  { label = "an unknown API version", api = nil },
+  { label = "a disconnect", api = API_WITH_REPLACEMENT_START, disconnect = true },
+}) do
+  local rig = newRig({ api = case.api })
+  if case.disconnect then rig.queue:setFirmwareApi(nil, nil) end
+  local msg = newMessage(0x1E, { maxRetries = 2 })
+  rig.queue:add(msg)
+  rig.tick() -- attempt 1
+  for _, frame in ipairs(brokenReply(msg.command)) do
+    rig.transport.replies[#rig.transport.replies + 1] = frame
+  end
+  drainReplies(rig)
+  rig.tick()
+  check("after " .. case.label .. ", a sequence break waits for the retry window",
+    framesForCommand(rig.transport.sent, msg.command) == 1,
+    "frames=" .. framesForCommand(rig.transport.sent, msg.command))
+  rig.jump(1.0)
+  rig.tick()
+  check("after " .. case.label .. ", the resend follows the retry window",
+    framesForCommand(rig.transport.sent, msg.command) == 2,
+    "frames=" .. framesForCommand(rig.transport.sent, msg.command))
+end
+
+-- A break and, in the same poll, the start of a newer reply to the same
+-- command (an earlier resend answered). Resending then would throw the newer
+-- reply away; the queue lets it finish instead.
+do
+  local rig = newRig({ api = API_WITH_REPLACEMENT_START })
+  local msg = newMessage(0x1E, { maxRetries = 2 })
+  rig.queue:add(msg)
+  rig.tick() -- attempt 1
+  for _, frame in ipairs(brokenReply(msg.command)) do
+    rig.transport.replies[#rig.transport.replies + 1] = frame
+  end
+  local newer = replyFrames(msg.command, 7, { {21, 22, 23, 24, 25}, {26, 27} })
+  rig.transport.replies[#rig.transport.replies + 1] = newer[1]
+  clock.step = 0.0001 -- one poll slice takes every frame queued
+  rig.tick()
+  clock.step = 0.001
+  rig.tick()
+  check("no resend while a newer reply is being assembled",
+    framesForCommand(rig.transport.sent, msg.command) == 1,
+    "frames=" .. framesForCommand(rig.transport.sent, msg.command))
+  for i = 2, #newer do rig.transport.replies[#rig.transport.replies + 1] = newer[i] end
+  drainReplies(rig)
+  check("the newer reply is delivered",
+    #msg.replies == 1 and msg.replies[1][1] == 21 and msg.replies[1][7] == 27,
+    "replies=" .. #msg.replies .. " errors=" .. #msg.errors)
+end
+
+-- ---------------------------------------------------------------------------
+-- A late reply to an earlier command does not break the message in flight
+-- ---------------------------------------------------------------------------
+
+-- Issue #2653: a single-frame reply to an earlier command, then the current
+-- message's multi-frame reply. The parser used to take the late frame as a
+-- complete reply, which cleared the request it was waiting for, so the real
+-- reply was discarded frame by frame and the message waited out its window.
+do
+  local rig = newRig()
+  local msg = newMessage(0x1E, { maxRetries = 2 })
+  rig.queue:add(msg)
+  rig.tick()
+  rig.transport.replies[#rig.transport.replies + 1] = replyFrames(0x0A, 0, {})[1]
+  for _, frame in ipairs(replyFrames(msg.command, 7, { {1, 2, 3, 4, 5}, {6, 7} })) do
+    rig.transport.replies[#rig.transport.replies + 1] = frame
+  end
+  drainReplies(rig)
+  check("a late reply to another command leaves the current one deliverable",
+    #msg.replies == 1 and msg.replies[1][7] == 7 and #msg.errors == 0,
+    "replies=" .. #msg.replies .. " errors=" .. #msg.errors)
+  check("and costs no resend",
+    framesForCommand(rig.transport.sent, msg.command) == 1,
+    "frames=" .. framesForCommand(rig.transport.sent, msg.command))
+end
+
+-- A late error reply to another command does not abort the message in flight.
+do
+  local rig = newRig()
+  local msg = newMessage(0x1E, { maxRetries = 2 })
+  rig.queue:add(msg)
+  rig.tick()
+  local late = replyFrames(0x0A, 1, { {2} })
+  late[1][1] = late[1][1] | 0x80 -- error bit
+  for _, frame in ipairs(late) do rig.transport.replies[#rig.transport.replies + 1] = frame end
+  drainReplies(rig)
+  check("a late error reply to another command does not abort the message",
+    #msg.errors == 0, "errors=" .. #msg.errors .. " first=" .. tostring(msg.errors[1]))
+end
+
+-- ---------------------------------------------------------------------------
+-- A frame the transport refuses is offered again, unchanged
+-- ---------------------------------------------------------------------------
+
+-- Ethos's pushFrame() returns false when its queue has no room. Such a frame
+-- used to be dropped on the floor, which the FC saw as a lost request chunk
+-- and the queue paid for with a whole retry window.
+do
+  local rig = newRig()
+  local refused = {}
+  local sendFrame = rig.transport.mspSend
+  rig.transport.mspSend = function(payload, isWrite)
+    if #refused < 2 then
+      local copy = {}
+      for i = 1, #payload do copy[i] = payload[i] end
+      refused[#refused + 1] = copy
+      return false
+    end
+    return sendFrame(payload, isWrite)
+  end
+  local write = newMessage(BIG_WRITE_CMD, { isWrite = true, payloadBytes = 7 }) -- header + 7 bytes: 3 frames
+  rig.queue:add(write)
+  for _ = 1, 2 + 3 do rig.tick() end -- two refusals, then the three frames
+  check("a refused frame is not counted as sent",
+    #refused == 2 and #rig.transport.sent == 3,
+    "refused=" .. #refused .. " sent=" .. #rig.transport.sent)
+  local same = #rig.transport.sent >= 1
+  for i = 1, 6 do
+    if same and rig.transport.sent[1].bytes[i] ~= refused[1][i] then same = false end
+  end
+  check("the refused frame goes out later byte for byte, same sequence number", same,
+    "first sent status=" .. tostring(rig.transport.sent[1] and rig.transport.sent[1].bytes[1]) ..
+    " refused status=" .. tostring(refused[1][1]))
+  local seq0 = refused[1][1] & 0x0F
+  check("the frames after it continue the sequence",
+    #rig.transport.sent == 3 and
+    rig.transport.sent[2].bytes[1] == 0x40 + ((seq0 + 1) & 0x0F) and
+    rig.transport.sent[3].bytes[1] == 0x40 + ((seq0 + 2) & 0x0F),
+    "status bytes=" .. (#rig.transport.sent == 3 and string.format("%02X %02X %02X",
+      rig.transport.sent[1].bytes[1], rig.transport.sent[2].bytes[1],
+      rig.transport.sent[3].bytes[1]) or ("sent=" .. #rig.transport.sent)))
+end
+
+-- A transport that refuses everything (module off) must not wedge the TX
+-- buffer: past the refusal cap the frame is dropped as before, so each retry
+-- window still spends an attempt and the message ends in max_retries.
+do
+  local rig = newRig()
+  rig.transport.mspSend = function() return false end
+  local msg = newMessage(0x1E, { maxRetries = 1 })
+  rig.queue:add(msg)
+  for _ = 1, 2 do
+    for _ = 1, 20 do rig.tick() end -- well past the refusal cap
+    rig.jump(1.0)
+    rig.tick() -- attempt 2, then give up
+  end
+  check("a transport that refuses every frame still lets the message run out of attempts",
+    #msg.errors == 1 and msg.errors[1] == "max_retries",
+    "errors=" .. #msg.errors .. " first=" .. tostring(msg.errors[1]))
+end
+
+-- The refusal count belongs to the message. One abandoned after seven
+-- refusals must not leave the next with three: its frame would then be
+-- dropped on the fourth refusal instead of kept.
+do
+  local rig = newRig()
+  local refusals = 0
+  local sendFrame = rig.transport.mspSend
+  rig.transport.mspSend = function(payload, isWrite)
+    if refusals > 0 then refusals = refusals - 1; return false end
+    return sendFrame(payload, isWrite)
+  end
+  local first = newMessage(0x1E, { maxRetries = 0 })
+  rig.queue:add(first)
+  refusals = 7
+  for _ = 1, 7 do rig.tick() end
+  rig.queue:abortCurrent("aborted")
+  local second = newMessage(0x1F, { maxRetries = 0 })
+  rig.queue:add(second)
+  refusals = 7
+  for _ = 1, 8 do rig.tick() end
+  check("a new message starts with a fresh refusal count",
+    framesForCommand(rig.transport.sent, second.command) == 1,
+    "frames for the second message=" .. framesForCommand(rig.transport.sent, second.command) ..
+    " (0 means its frame was dropped at a cap left over from the first)")
+end
+
+-- ---------------------------------------------------------------------------
 -- Defect 6: invalid requests must abort immediately without deadlocking the queue
 -- ---------------------------------------------------------------------------
 
@@ -573,33 +834,40 @@ do
 end
 
 -- One frame of a long reply is lost on the link. The rest of that reply keeps
--- arriving and is discarded, and the firmware answers a request sent into
--- that stream with no start frame (sendMspReply()'s headerSent is only
--- cleared when a reply finishes). So the resend has to wait until the broken
--- reply has finished arriving, and then gets a whole reply.
+-- arriving and is discarded. On API 12.10 the queue resends on the tick after
+-- it sees the break, while that tail is still arriving: the firmware answers a
+-- request that replaces a reply in progress with its own start frame
+-- (rotorflight-firmware #521), so there is nothing to wait for. It used to
+-- wait for the whole broken reply to finish and then the retry window on top
+-- -- here, 7s of stale frames plus 0.8s of silence for one lost frame. The
+-- stale frames must not trigger any further resend.
 do
-  local rig = newRig()
+  local rig = newRig({ api = API_WITH_REPLACEMENT_START })
   local msg = newMessage(POOL_CMD)
   rig.queue:add(msg)
   rig.tick() -- sends
   local frames = replyFrames(POOL_CMD, POOL_BYTES, poolChunks())
+  local resentAt
   for i = 1, #frames do
     if i ~= 23 then -- lost on the link, 110 bytes in
       rig.transport.replies[#rig.transport.replies + 1] = frames[i]
     end
     rig.jump(0.1)
     rig.tick()
+    if not resentAt and framesForCommand(rig.transport.sent, POOL_CMD) == 2 then
+      resentAt = i
+    end
   end
-  check("no resend while a broken reply is still arriving",
-    framesForCommand(rig.transport.sent, POOL_CMD) == 1 and #msg.errors == 0,
+  -- Frame 24 is the first out of sequence; the tick that reads it sees the
+  -- break and the next tick resends.
+  check("a broken reply is resent on the tick after the break, not after it has finished",
+    resentAt ~= nil and resentAt <= 25,
+    "resent at frame " .. tostring(resentAt) .. " of " .. #frames ..
+    " (nil means the queue waited for silence)")
+  check("the stale tail of the broken reply triggers no further resend",
+    framesForCommand(rig.transport.sent, POOL_CMD) == 2 and #msg.errors == 0,
     "requests sent=" .. framesForCommand(rig.transport.sent, POOL_CMD) ..
     " errors=" .. #msg.errors)
-
-  rig.jump(1.0) -- the broken reply has finished: silence
-  rig.tick()
-  check("the resend follows once the broken reply has finished",
-    framesForCommand(rig.transport.sent, POOL_CMD) == 2,
-    "requests sent=" .. framesForCommand(rig.transport.sent, POOL_CMD))
 
   for i = 1, #frames do
     rig.transport.replies[#rig.transport.replies + 1] = frames[i]
