@@ -4,26 +4,30 @@
 -- commands with no MSP API version change: an FC without them answers with
 -- an error, which the page reports as "needs newer firmware".
 --
--- One axis per request so the reply (71 bytes) fits MSP over telemetry:
--- the request payload is U8 axis (0 roll, 1 pitch, 2 yaw).
+-- One axis per request: the request payload is U8 axis (0 roll, 1 pitch,
+-- 2 yaw). The reply is 51 bytes, the most one CRSF frame carries (the
+-- firmware sends a reply that exactly fills a frame as two), and 12
+-- S.Port/FBUS frames.
 --
 -- Wire layout verified against rotorflight-firmware's own serializer
--- (src/main/msp/msp.c, MSP2_GET_TUNE_ADVISOR case), payload version 2:
---   U8 version, U8 collecting, U16 seconds of usable flight, U8 axis, then:
---     U16 P, U16 F, U16 B, U8 iterm_relax_cutoff, U8 rates_type,
---     U8 rc_rate, U8 s_rate                                (the tune measured)
---     U16 ffCount, S16 ffGain, S16 ffCorr, U16 ffLagMs
---     3 x {S16 gain, U16 count}  by request 40-100, 100-200, 200+ deg/s
---     3 x {S16 gain, U16 count}  by |collective| <25%, 25-50%, 50%+
---     U16 fullCount, U16 fullSatCount, S16 fullRatio, U16 fullMaxRate
---     U16 releases, U16 bigRebounds, S16 meanRebound, S16 meanOvershoot,
---     S16 meanCounter, S16 meanIterm
---     U16 shakeCount, U16 shakeRms (deg/s x10)          (version 2 only)
--- Version 1 (67 bytes, no shake fields) is still read; its shake reads as
--- no data.
--- Ratios are x1000 on the wire and decoded to plain numbers here. Counts
--- saturate at 65535. See src/main/flight/tune_advisor.c for what each one
--- measures.
+-- (src/main/msp/msp.c, MSP2_GET_TUNE_ADVISOR case), payload version 3:
+--   U8 version, U8 flags (bits 0-1 axis, bit 2 collecting, bits 3-5
+--   rates_type), U16 seconds of usable flight, then:
+--     U32 P | F << 10 | B << 20, U8 iterm_relax_cutoff, U8 rc_rate,
+--     U8 s_rate                                            (the tune measured)
+--     U16 ffCount, U8 ffGain x64, S8 ffCorr x100, U8 ffLagMs
+--     3 x {U8 gain x64, U16 count}  by request 40-100, 100-200, 200+ deg/s
+--     3 x {U8 gain x64, U16 count}  by |collective| <25%, 25-50%, 50%+
+--     U16 fullCount, U16 fullSatCount, U8 fullRatio x100,
+--     U8 fullMaxRate in 10 deg/s
+--     U16 releases, U8 bigRebounds, U8 meanRebound x100,
+--     U8 meanOvershoot x64, U8 meanCounter x100, S16 meanIterm x1000
+--     U16 shakeCount, U8 shakeRms x4 (deg/s)
+-- Scaled values are decoded to plain numbers here; the firmware saturates
+-- each, and bigRebounds, at its byte's range. Counts saturate at 65535. Versions 1 and 2 (67
+-- and 71 bytes, every ratio 16-bit) were never in a firmware release and are
+-- refused like any other. See src/main/flight/tune_advisor.c for what each
+-- value measures.
 --
 -- Self-caches via package.loaded (same mechanism lib/bus.lua uses).
 if package.loaded["rfsuite.lib.msp_tune_advisor"] then
@@ -63,61 +67,74 @@ local SIM_AXES = {
 }
 local RATES_TYPE_ACTUAL = 4
 
+-- Payload version 3 (firmware msp.c, MSP2_GET_TUNE_ADVISOR): its length,
+-- and its one-byte values as value x scale
+local PAYLOAD_VERSION = 3
+local REPLY_LENGTH = 51
+local GAIN_SCALE = 64        -- ffGain, band gains, meanOvershoot: U8, 0..3.98
+local CORR_SCALE = 100       -- ffCorr: S8, -1.27..1.27
+local FRACTION_SCALE = 100   -- fullRatio, meanRebound, meanCounter: U8, 0..2.55
+local RATE_STEP = 10         -- fullMaxRate: U8 in steps of 10 deg/s
+local SHAKE_SCALE = 4        -- shakeRms: U8, 0..63.75 deg/s
+local ITERM_SCALE = 1000     -- meanIterm: S16
+local GAIN_BITS = 1024       -- P, F and B: 10 bits each of one U32
+
+local function scaled(v, scale, lo, hi)
+  local n = math.floor(v * scale + 0.5)
+  if n < lo then return lo end
+  if n > hi then return hi end
+  return n
+end
+
 local function buildSimulatorResponse(axis)
   local buf = {}
-  local function ratio(v) mspcodec.writeS16(buf, math.floor(v * 1000 + 0.5)) end
   local a = SIM_AXES[axis]
-  mspcodec.writeU8(buf, 2)
-  mspcodec.writeU8(buf, 0)
+  local function u8(v, scale) mspcodec.writeU8(buf, scaled(v, scale, 0, 255)) end
+  mspcodec.writeU8(buf, PAYLOAD_VERSION)
+  mspcodec.writeU8(buf, (axis - 1) + RATES_TYPE_ACTUAL * 8)    -- not collecting
   mspcodec.writeU16(buf, 147)
-  mspcodec.writeU8(buf, axis - 1)
-  mspcodec.writeU16(buf, a.p)
-  mspcodec.writeU16(buf, a.f)
-  mspcodec.writeU16(buf, a.b)
+  mspcodec.writeU32(buf, a.p + a.f * GAIN_BITS + a.b * GAIN_BITS * GAIN_BITS)
   mspcodec.writeU8(buf, a.cutoff)
-  mspcodec.writeU8(buf, RATES_TYPE_ACTUAL)
   mspcodec.writeU8(buf, a.rcRate)
   mspcodec.writeU8(buf, a.sRate)
   mspcodec.writeU16(buf, a.ffCount)
-  ratio(a.ff)
-  ratio(a.corr)
-  mspcodec.writeU16(buf, a.lag)
-  for i = 1, BAND_COUNT do ratio(a.sp[i][1]); mspcodec.writeU16(buf, a.sp[i][2]) end
-  for i = 1, BAND_COUNT do ratio(a.coll[i][1]); mspcodec.writeU16(buf, a.coll[i][2]) end
+  u8(a.ff, GAIN_SCALE)
+  mspcodec.writeS8(buf, scaled(a.corr, CORR_SCALE, -128, 127))
+  mspcodec.writeU8(buf, a.lag)
+  for i = 1, BAND_COUNT do u8(a.sp[i][1], GAIN_SCALE); mspcodec.writeU16(buf, a.sp[i][2]) end
+  for i = 1, BAND_COUNT do u8(a.coll[i][1], GAIN_SCALE); mspcodec.writeU16(buf, a.coll[i][2]) end
   mspcodec.writeU16(buf, a.full[1])
   mspcodec.writeU16(buf, a.full[2])
-  ratio(a.full[3])
-  mspcodec.writeU16(buf, a.full[4])
+  u8(a.full[3], FRACTION_SCALE)
+  u8(a.full[4], 1 / RATE_STEP)
   mspcodec.writeU16(buf, a.rel[1])
-  mspcodec.writeU16(buf, a.rel[2])
-  ratio(a.rel[3])
-  ratio(a.rel[4])
-  ratio(a.rel[5])
-  ratio(a.rel[6])
+  mspcodec.writeU8(buf, math.min(a.rel[2], 255))
+  u8(a.rel[3], FRACTION_SCALE)
+  u8(a.rel[4], GAIN_SCALE)
+  u8(a.rel[5], FRACTION_SCALE)
+  mspcodec.writeS16(buf, scaled(a.rel[6], ITERM_SCALE, -32768, 32767))
   mspcodec.writeU16(buf, a.shake[1])
-  mspcodec.writeU16(buf, math.floor(a.shake[2] * 10 + 0.5))
+  u8(a.shake[2], SHAKE_SCALE)
   return buf
 end
 
-local function readRatio(buf)
-  return (mspcodec.readS16(buf) or 0) / 1000
+local function readScaled(buf, scale)
+  return (mspcodec.readU8(buf) or 0) / scale
 end
 
 local function readBands(buf)
   local bands = {}
   for i = 1, BAND_COUNT do
-    bands[i] = {gain = readRatio(buf), count = mspcodec.readU16(buf) or 0}
+    bands[i] = {gain = readScaled(buf, GAIN_SCALE), count = mspcodec.readU16(buf) or 0}
   end
   return bands
 end
 
--- The layouts above, by payload version: reply length. A reply of another
--- version or length is refused, not decoded: a reworded record would otherwise
--- come out as plausible numbers, and tune_history saves them.
-local REPLY_LENGTHS = {[1] = 67, [2] = 71}
-
 -- Returns {version, collecting, seconds, axis (1-3), a = {per-axis fields}},
 -- or nil, a reason, and true when the reply was REFUSED rather than lost.
+-- A reply of another version or length is refused, not decoded: a reworded
+-- record would otherwise come out as plausible numbers, and tune_history
+-- saves them.
 --
 -- The third value is what separates the two reasons a caller can do nothing about differently.
 -- `true` from the transport means the firmware has no tune advisor at all; a refusal means it has
@@ -126,53 +143,52 @@ local REPLY_LENGTHS = {[1] = 67, [2] = 71}
 -- line and a pilot-facing message can name what came back.
 function msp_tune_advisor.decode(buf)
   local length = #buf
-  local expected = REPLY_LENGTHS[buf[1]]
-  if not expected then
-    return nil, "tune advisor payload version " .. tostring(buf[1]) .. ", expected 1 or 2", true
+  if buf[1] ~= PAYLOAD_VERSION then
+    return nil, "tune advisor payload version " .. tostring(buf[1]) .. ", expected " .. PAYLOAD_VERSION, true
   end
-  if length ~= expected then
-    return nil, "tune advisor reply is " .. length .. " bytes, expected " .. expected, true
+  if length ~= REPLY_LENGTH then
+    return nil, "tune advisor reply is " .. length .. " bytes, expected " .. REPLY_LENGTH, true
   end
 
   buf.offset = 1
+  local version = mspcodec.readU8(buf)
+  local flags = mspcodec.readU8(buf) or 0
   local data = {
-    version = mspcodec.readU8(buf),
-    collecting = mspcodec.readU8(buf) ~= 0,
+    version = version,
+    collecting = (flags // 4) % 2 == 1,
     seconds = mspcodec.readU16(buf) or 0,
-    axis = (mspcodec.readU8(buf) or 0) + 1,
+    axis = flags % 4 + 1,
   }
 
-  data.a = {
-    P = mspcodec.readU16(buf) or 0,
-    F = mspcodec.readU16(buf) or 0,
-    B = mspcodec.readU16(buf) or 0,
-    relaxCutoff = mspcodec.readU8(buf) or 0,
-    ratesType = mspcodec.readU8(buf) or 0,
-    rcRate = mspcodec.readU8(buf) or 0,
-    sRate = mspcodec.readU8(buf) or 0,
-    ffCount = mspcodec.readU16(buf) or 0,
-    ffGain = readRatio(buf),
-    ffCorr = readRatio(buf),
-    ffLagMs = mspcodec.readU16(buf) or 0,
-    spBands = readBands(buf),
-    collBands = readBands(buf),
-    fullCount = mspcodec.readU16(buf) or 0,
-    fullSatCount = mspcodec.readU16(buf) or 0,
-    fullRatio = readRatio(buf),
-    fullMaxRate = mspcodec.readU16(buf) or 0,
-    releases = mspcodec.readU16(buf) or 0,
-    bigRebounds = mspcodec.readU16(buf) or 0,
-    meanRebound = readRatio(buf),
-    meanOvershoot = readRatio(buf),
-    meanCounter = readRatio(buf),
-    meanIterm = readRatio(buf),
-    shakeCount = 0,
-    shakeRms = 0,
+  local gains = mspcodec.readU32(buf) or 0
+  local a = {
+    P = gains % GAIN_BITS,
+    F = (gains // GAIN_BITS) % GAIN_BITS,
+    B = (gains // (GAIN_BITS * GAIN_BITS)) % GAIN_BITS,
+    ratesType = (flags // 8) % 8,
   }
-  if data.version >= 2 then
-    data.a.shakeCount = mspcodec.readU16(buf) or 0
-    data.a.shakeRms = (mspcodec.readU16(buf) or 0) / 10
-  end
+  a.relaxCutoff = mspcodec.readU8(buf) or 0
+  a.rcRate = mspcodec.readU8(buf) or 0
+  a.sRate = mspcodec.readU8(buf) or 0
+  a.ffCount = mspcodec.readU16(buf) or 0
+  a.ffGain = readScaled(buf, GAIN_SCALE)
+  a.ffCorr = (mspcodec.readS8(buf) or 0) / CORR_SCALE
+  a.ffLagMs = mspcodec.readU8(buf) or 0
+  a.spBands = readBands(buf)
+  a.collBands = readBands(buf)
+  a.fullCount = mspcodec.readU16(buf) or 0
+  a.fullSatCount = mspcodec.readU16(buf) or 0
+  a.fullRatio = readScaled(buf, FRACTION_SCALE)
+  a.fullMaxRate = (mspcodec.readU8(buf) or 0) * RATE_STEP
+  a.releases = mspcodec.readU16(buf) or 0
+  a.bigRebounds = mspcodec.readU8(buf) or 0
+  a.meanRebound = readScaled(buf, FRACTION_SCALE)
+  a.meanOvershoot = readScaled(buf, GAIN_SCALE)
+  a.meanCounter = readScaled(buf, FRACTION_SCALE)
+  a.meanIterm = (mspcodec.readS16(buf) or 0) / ITERM_SCALE
+  a.shakeCount = mspcodec.readU16(buf) or 0
+  a.shakeRms = readScaled(buf, SHAKE_SCALE)
+  data.a = a
 
   return data
 end
@@ -197,7 +213,7 @@ function msp_tune_advisor.buildReadMessage(axis, onData, onError)
     end,
     errorHandler = onError,
     -- Three sends, not the queue's six: the queue holds every other request
-    -- while this one is out, and a 65-byte reply over S.Port or FBUS is the
+    -- while this one is out, and a 12-frame reply over S.Port or FBUS is the
     -- one most often lost. tasks/tune_history.lua asks again later anyway.
     maxRetries = 2,
     simulatorResponse = simulatorResponses[axis],
@@ -222,9 +238,16 @@ end
 -- once the release that ships the commands is known.
 local FIRST_FIRMWARE = {4, 7, 0}
 
+-- The Ethos simulator answers every command from the simulatorResponse
+-- fixtures, these included, while its FC_VERSION fixture (lib/msp_handshake.lua)
+-- reports an older firmware: there the version says nothing.
+local IS_SIM = system ~= nil and system.getVersion ~= nil and system.getVersion().simulation == true
+
 -- true when the FC firmware version (session.fcVersion, "M.m.p") is at least
 -- FIRST_FIRMWARE, false when it is older, nil while the version is not known.
+-- Always true in the simulator.
 function msp_tune_advisor.supportFor(fcVersion)
+  if IS_SIM then return true end
   if type(fcVersion) ~= "string" then return nil end
   local major, minor, patch = fcVersion:match("^(%d+)%.(%d+)%.(%d+)")
   if not major then return nil end

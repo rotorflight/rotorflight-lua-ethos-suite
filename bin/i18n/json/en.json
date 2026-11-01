@@ -7198,6 +7198,18 @@
           "needs_translation": false,
           "max_length": 36
         },
+        "why_limit": {
+          "english": "The change needed goes past a setting's limit.",
+          "translation": "The change needed goes past a setting's limit.",
+          "needs_translation": false,
+          "max_length": 46
+        },
+        "why_p_max_fmt": {
+          "english": "P is already %d%% above your setting. Check the mechanics.",
+          "translation": "P is already %d%% above your setting. Check the mechanics.",
+          "needs_translation": false,
+          "max_length": 58
+        },
         "data_flights_fmt": {
           "english": "%dm %02ds, %d/%d flights",
           "translation": "%dm %02ds, %d/%d flights",

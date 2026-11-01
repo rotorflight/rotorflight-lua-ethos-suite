@@ -25,8 +25,8 @@ local SIMULATOR_RESPONSE = {
 }
 
 local FIELD_META = {
-  pitch = {min = -300, max = 300, default = 0, suffix = "°"},
-  roll = {min = -300, max = 300, default = 0, suffix = "°"},
+  pitch = {min = -300, max = 300, default = 0},
+  roll = {min = -300, max = 300, default = 0},
 }
 
 local msp_acc_trim = {

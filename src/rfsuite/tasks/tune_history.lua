@@ -13,8 +13,8 @@
 -- (flight_seconds 0). If the clear never gets through before the next arm,
 -- that next flight's row also holds this one's data: the FC cannot tell.
 --
--- Paced so telemetry keeps flowing. Over S.Port and FBUS each 65-byte reply
--- takes about 15 telemetry frames, every one a sensor frame the FC does not
+-- Paced so telemetry keeps flowing. Over S.Port and FBUS each 51-byte reply
+-- takes 12 telemetry frames, every one a sensor frame the FC does not
 -- send, and the FC then holds sensors back for another 250 ms after the last
 -- one. Read back to back, and retried every few seconds when a reply is lost,
 -- that kept current, ESC and other sensors off the radio for as long as the

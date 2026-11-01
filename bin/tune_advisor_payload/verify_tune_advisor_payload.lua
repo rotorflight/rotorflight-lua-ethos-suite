@@ -6,11 +6,12 @@
 --
 -- What it drives: the real src/rfsuite/lib/msp_tune_advisor.lua, through the message
 -- its read builder returns, so the reply goes through processReply exactly as the
--- transport hands it over. The replies are the simulator's own 71-byte reply (the
--- layout the firmware writes, payload version 2), the 67-byte version 1 it still
--- reads (no shake fields), and variants of them.
+-- transport hands it over. The replies are the simulator's own 51-byte reply (payload
+-- version 3), one packed here with string.pack from the firmware's layout (msp.c,
+-- MSP2_GET_TUNE_ADVISOR) so the codec is checked against the firmware's byte order and
+-- not against itself, and variants of them.
 --
--- Against unpatched master the version-3, short and long replies reach onData as
+-- Against unpatched master the version-4, short and long replies reach onData as
 -- decoded numbers; the checks for those go red.
 
 local function scriptDir()
@@ -84,49 +85,73 @@ local function deliver(buf)
   return got
 end
 
--- The simulator reply for axis 1 is the firmware's own 71-byte layout, version 2.
+-- The simulator reply for axis 1: the firmware's 51-byte layout, version 3.
 local sim = tuneAdvisor.buildReadMessage(1, function() end, function() end).simulatorResponse
 
-print("the firmware's 71-byte reply, payload version 2")
-do
-  check("the reply is 71 bytes", #sim == 71, "length " .. #sim)
-  local got = deliver(copy(sim))
-  check("the shake fields are the reply's (count, deg/s x10)", got.data ~= nil
-    and got.data.a.shakeCount == sim[68] + sim[69] * 256
-    and math.abs(got.data.a.shakeRms - (sim[70] + sim[71] * 256) / 10) < 1e-9,
-    "shake " .. tostring(got.data and got.data.a.shakeCount) .. ", " .. tostring(got.data and got.data.a.shakeRms))
+local function bytes(packed)
+  local out = {}
+  for i = 1, #packed do out[i] = packed:byte(i) end
+  return out
 end
 
--- Version 1: the same layout without the four shake bytes
-local function v1()
-  local buf = copy(sim)
-  buf[1] = 1
-  for _ = 1, 4 do buf[#buf] = nil end
-  return buf
-end
+-- The firmware's layout, field by field (msp.c, MSP2_GET_TUNE_ADVISOR, payload version 3)
+local LAYOUT = "<" ..
+  "B B H" ..          -- version, flags (bits 0-1 axis, bit 2 collecting, bits 3-5 rates type), seconds
+  "I4 B B B" ..       -- P | F << 10 | B << 20, iterm relax cutoff, rc rate, s rate
+  "H B b B" ..        -- ffCount, ffGain x64, ffCorr x100, ffLagMs
+  "BH BH BH" ..       -- setpoint bands: gain x64, count
+  "BH BH BH" ..       -- collective bands
+  "H H B B" ..        -- fullCount, fullSatCount, fullRatio x100, fullMaxRate / 10
+  "H B B B B h" ..    -- releases, bigRebounds, meanRebound x100, meanOvershoot x64, meanCounter x100, meanIterm x1000
+  "H B"               -- shakeCount, shakeRms x4
 
-print("a 67-byte reply, payload version 1 (firmware before the shake fields)")
+print("the firmware's 51-byte reply, payload version 3")
 do
-  local got = deliver(v1())
-  check("it decodes and reaches onData", got.data ~= nil and got.errors == 0,
-    "errors " .. got.errors .. ", reason " .. tostring(got.reason))
-  check("its shake reads as no data", got.data ~= nil and got.data.a.shakeCount == 0
-    and got.data.a.shakeRms == 0)
-  check("the stop figures are still read", got.data ~= nil
-    and got.data.a.releases == sim[56] + sim[57] * 256,
-    "releases " .. tostring(got.data and got.data.a.releases))
-end
-
-print("the version 2 reply, decoded in full")
-do
+  check("the layout is 51 bytes, one CRSF frame", string.packsize(LAYOUT) == 51,
+    "packsize " .. string.packsize(LAYOUT))
+  check("the simulator reply is 51 bytes", #sim == 51, "length " .. #sim)
   local got = deliver(copy(sim))
   check("it decodes and reaches onData", got.data ~= nil and got.errors == 0,
     "errors " .. got.errors .. ", reason " .. tostring(got.reason))
-  check("the decoded axis and P gain are the reply's", got.data ~= nil and got.data.axis == 1
-    and got.data.a ~= nil and got.data.a.P == sim[6] + sim[7] * 256,
-    "axis " .. tostring(got.data and got.data.axis))
   check("a reply that decodes is not a refusal", got.refused == nil,
     "refused " .. tostring(got.refused))
+  check("the simulator's tune comes back", got.data ~= nil and got.data.axis == 1 and got.data.a.P == 70
+    and got.data.a.F == 120 and got.data.a.ratesType == 4 and got.data.a.rcRate == 18 and got.data.a.sRate == 24,
+    got.data and ("P " .. got.data.a.P .. " F " .. got.data.a.F .. " type " .. got.data.a.ratesType))
+end
+
+print("a reply packed from the firmware's layout decodes field by field")
+do
+  local packed = string.pack(LAYOUT,
+    3, 1 + 4 + 6 * 8, 300,                      -- version 3; pitch (axis 1), collecting, Rotorflight rates
+    196 + 150 * 1024 + 25 * 1024 * 1024, 35, 50, 120,
+    1500, 98, -50, 90,                         -- ffGain 98/64, ffCorr -0.50
+    97, 1341, 99, 163, 66, 50,
+    79, 385, 99, 763, 111, 356,
+    87, 25, 38, 40,                            -- fullRatio 0.38, fullMaxRate 400
+    35, 18, 15, 94, 2, -42,                    -- meanIterm -0.042
+    2410, 196)                                 -- shakeRms 49
+  local got = deliver(bytes(packed))
+  local d = got.data
+  local a = d and d.a or {}
+  local function near(x, y) return x ~= nil and math.abs(x - y) < 1e-9 end
+  check("it decodes", d ~= nil, tostring(got.reason))
+  check("flags: axis, collecting, rates type", d ~= nil and d.axis == 2 and d.collecting == true
+    and a.ratesType == 6, d and ("axis " .. d.axis .. " type " .. tostring(a.ratesType)))
+  check("the packed gains: P, F, B", a.P == 196 and a.F == 150 and a.B == 25,
+    tostring(a.P) .. "/" .. tostring(a.F) .. "/" .. tostring(a.B))
+  check("the rest of the tune", a.relaxCutoff == 35 and a.rcRate == 50 and a.sRate == 120)
+  check("feed-forward: count, gain, correlation, lag", a.ffCount == 1500 and near(a.ffGain, 98 / 64)
+    and near(a.ffCorr, -0.5) and a.ffLagMs == 90, tostring(a.ffGain) .. " " .. tostring(a.ffCorr))
+  check("bands: gain x64 and count", a.spBands and near(a.spBands[1].gain, 97 / 64)
+    and a.spBands[3].count == 50 and near(a.collBands[3].gain, 111 / 64) and a.collBands[2].count == 763)
+  check("full stick", a.fullCount == 87 and a.fullSatCount == 25 and near(a.fullRatio, 0.38)
+    and a.fullMaxRate == 400, tostring(a.fullMaxRate))
+  check("stops", a.releases == 35 and a.bigRebounds == 18 and near(a.meanRebound, 0.15)
+    and near(a.meanOvershoot, 94 / 64) and near(a.meanCounter, 0.02) and near(a.meanIterm, -0.042),
+    tostring(a.meanIterm))
+  check("shake", a.shakeCount == 2410 and near(a.shakeRms, 49), tostring(a.shakeRms))
+  check("seconds", d ~= nil and d.seconds == 300)
 end
 
 -- Every refusal below must be marked as one. The history task reads that flag to tell a
@@ -136,41 +161,44 @@ local function checkRefused(label, got)
     "refused " .. tostring(got.refused))
 end
 
-print("payload version 3 (a layout this suite does not know)")
+print("payload version 2 (71 bytes, before the reply was packed)")
 do
-  local v3 = copy(sim)
-  v3[1] = 3
-  local got = deliver(v3)
+  local v2 = {}
+  for i = 1, 71 do v2[i] = 0 end
+  v2[1] = 2
+  local got = deliver(v2)
+  check("onData is not called", got.data == nil)
+  check("onError names the version", got.errors == 1 and type(got.reason) == "string"
+    and got.reason:find("version 2", 1, true) ~= nil, tostring(got.reason))
+  checkRefused("version 2", got)
+end
+
+print("payload version 4 (a layout this suite does not know)")
+do
+  local v4 = copy(sim)
+  v4[1] = 4
+  local got = deliver(v4)
   check("onData is not called with a decoded record", got.data == nil,
     "decoded version " .. tostring(got.data and got.data.version))
   check("onError is called with the reason", got.errors == 1 and type(got.reason) == "string"
-    and got.reason:find("version 3", 1, true) ~= nil,
+    and got.reason:find("version 4", 1, true) ~= nil,
     "errors " .. got.errors .. ", reason " .. tostring(got.reason))
-  checkRefused("version 3", got)
+  checkRefused("version 4", got)
 end
 
-print("version 1 with the version 2 length (71 bytes)")
-do
-  local mixed = copy(sim)
-  mixed[1] = 1
-  local got = deliver(mixed)
-  check("onData is not called", got.data == nil)
-  checkRefused("version 1, 71 bytes", got)
-end
-
-print("a truncated reply (70 bytes)")
+print("a truncated reply (50 bytes)")
 do
   local short = copy(sim)
   short[#short] = nil
   local got = deliver(short)
   check("onData is not called", got.data == nil,
-    "decoded, with the missing bytes as zeros: P = " .. tostring(got.data and got.data.a and got.data.a.relaxCutoff))
+    "decoded, with the missing bytes as zeros")
   check("onError is called with the reason", got.errors == 1 and type(got.reason) == "string",
     "errors " .. got.errors)
   checkRefused("truncated", got)
 end
 
-print("a longer reply (72 bytes)")
+print("a longer reply (52 bytes, the layout before bigRebounds was one byte)")
 do
   local long = copy(sim)
   long[#long + 1] = 0
