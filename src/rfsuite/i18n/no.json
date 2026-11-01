@@ -5209,6 +5209,13 @@
           "reverse_text": false,
           "translation": "Hale Idle Thr%"
         },
+        "tail_override_msg": {
+          "english": "Hold the tail at center so trim changes move it live. Press Save to keep them.",
+          "max_length": 92,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Holder halen i midten så trim flytter den direkte. Trykk Lagre for å beholde endringene."
+        },
         "tail_pin": {
           "english": "Tail pin",
           "needs_translation": true,

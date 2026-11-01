@@ -3086,6 +3086,12 @@
           "needs_translation": false,
           "translation": "Also sets Tail Torque Assist to 100 in every profile."
         },
+        "tail_override_msg": {
+          "english": "Hold the tail at center so trim changes move it live. Press Save to keep them.",
+          "translation": "Hold the tail at center so trim changes move it live. Press Save to keep them.",
+          "needs_translation": false,
+          "max_length": 92
+        },
         "tail_tta_off": {
           "english": "Also sets Tail Torque Assist to 0 in every profile.",
           "max_length": 51,

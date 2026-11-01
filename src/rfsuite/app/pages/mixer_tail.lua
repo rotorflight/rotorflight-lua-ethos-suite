@@ -4,14 +4,29 @@
 -- chosen from the current tail rotor mode: fixed-pitch tails expose yaw
 -- center trim in degrees, while motorized/bidirectional tails expose tail
 -- idle and use raw percent-like yaw limits.
+--
+-- Tool toggles mixer override on the yaw input, which holds the tail at
+-- center. While it is on, the other fields are locked and a settled trim
+-- edit is sent live with MSP_SET_MIXER_CONFIG (the FC applies it at once,
+-- without EEPROM). Save keeps it; leaving without saving puts the old trim
+-- back.
 
 local requireModule = package.loaded["rfsuite.lib.require"] or assert(loadfile("lib/require.lua"))()
+local bus = requireModule("lib/bus.lua")
 local pageRuntime = requireModule("app/page_runtime.lua")
 local mixerConfig = requireModule("lib/msp_mixer_config.lua")
 local mixerInputFactory = requireModule("lib/msp_mixer_input.lua")
 local tailOutput = requireModule("lib/msp_tail_motor_output.lua")
+local mixerOverride = requireModule("lib/msp_mixer_override.lua")
 
 local PAGE_TITLE = "@i18n(app.modules.mixer.tail)@"
+local BTN_OK = "@i18n(app.btn_ok)@"
+local BTN_CANCEL = "@i18n(app.btn_cancel)@"
+
+-- MIXER_IN_STABILIZED_YAW in the firmware's mixer input list.
+local OVERRIDE_YAW = 3
+-- Seconds a trim value has to stay unchanged before it is sent live.
+local LIVE_SETTLE = 0.5
 
 -- The Tail pin line: where the pin is now (OUTPUT), what Save will do, or
 -- why the FC kept it where it was (RESULT). Short values: they share the
@@ -85,12 +100,42 @@ local function open(opts)
   -- the save's reboot, which replaces runtime.data.tail.
   local lastRefused = nil
   local tailPinText = nil
+  local inOverride = false
+  -- Raw tail_center_trim that EEPROM holds, and the one last sent live.
+  local savedTrim = nil
+  local liveTrim = nil
+  local lastChangeAt = 0
+  -- Reused for every live write: the loaded mixer config with the trim swapped in.
+  local liveMixer = {}
 
   -- Whether the kind of tail (servo or motor) differs from what was loaded:
   -- the pin and Tail Torque Assist follow it on save.
   local function kindChanged()
     return originalMode ~= nil
       and isMotorizedMode(formData.tail_rotor_mode) ~= isMotorizedMode(originalMode)
+  end
+
+  -- Raw tail_center_trim from the trim field of the current tail mode.
+  local function trimFromForm()
+    if isMotorizedMode(formData.tail_rotor_mode) then
+      return formData.tail_center_offset or 0
+    end
+    return round((formData.yaw_center_trim or 0) * 100 / 24)
+  end
+
+  local function sendTrim(rt, trim)
+    local mixer = rt.data and rt.data.mixer
+    if not mixer then return end
+    for key, value in pairs(mixer) do liveMixer[key] = value end
+    liveMixer.tail_center_trim = trim
+    bus.publish("msp.request", mixerConfig.buildWriteMessage(liveMixer))
+    liveTrim = trim
+  end
+
+  local function setOverride(on)
+    bus.publish("msp.request", mixerOverride.buildWriteMessage(OVERRIDE_YAW,
+      on and 0 or mixerOverride.OVERRIDE_OFF))
+    inOverride = on
   end
 
   local runtime
@@ -113,11 +158,16 @@ local function open(opts)
     onSaved = function(rt)
       local tail = rt.data.tail
       lastRefused = tail and tail.refused or nil
+      savedTrim = trimFromForm()
+      liveTrim = savedTrim
+      -- Moving the pin restarts the FC, which drops the override.
+      if tail and tail.moved then inOverride = false end
     end,
     unloadPackageKeys = {
       "rfsuite.lib.msp_mixer_config",
       "rfsuite.lib.msp_mixer_input",
       "rfsuite.lib.msp_tail_motor_output",
+      "rfsuite.lib.msp_mixer_override",
     },
     onLoaded = function()
       local mixer = runtime.data.mixer or {}
@@ -133,6 +183,10 @@ local function open(opts)
       formData.yaw_ccw_limit_motor = math.abs(u16ToS16(yaw.max_stabilized_yaw))
       formData.yaw_cw_limit_fixed = round(math.abs(u16ToS16(yaw.min_stabilized_yaw)) * 24 / 100)
       formData.yaw_ccw_limit_fixed = round(math.abs(u16ToS16(yaw.max_stabilized_yaw)) * 24 / 100)
+      -- Only the first read is what EEPROM holds: a later re-read returns
+      -- whatever was last sent live. onSaved moves it on.
+      liveTrim = u16ToS16(mixer.tail_center_trim)
+      if savedTrim == nil then savedTrim = liveTrim end
 
       originalMode = mode
       runtime.extraSaveMessage = nil
@@ -187,8 +241,50 @@ local function open(opts)
         yaw.max_stabilized_yaw = s16ToU16(math.abs(ccw))
       end
     end,
-    onWakeup = function()
+    toolIcon = "app/gfx/nav/override.png",
+    onTool = function(focusFn)
+      form.openDialog({
+        title = inOverride and "@i18n(app.modules.trim.disable_mixer_override)@"
+          or "@i18n(app.modules.trim.enable_mixer_override)@",
+        message = inOverride and "@i18n(app.modules.trim.disable_mixer_message)@"
+          or "@i18n(app.modules.mixer.tail_override_msg)@",
+        buttons = {
+          {label = BTN_OK, action = function()
+            -- focusFn() on every outcome: the form loses its focus when a
+            -- dialog closes (app/page_runtime.lua's note on closeDialog).
+            if inOverride then
+              setOverride(false)
+            elseif runtime.loaded then
+              setOverride(true)
+              lastChangeAt = os.clock()
+            end
+            if fields.refresh then fields.refresh() end
+            if focusFn then focusFn() end
+            return true
+          end},
+          {label = BTN_CANCEL, action = function()
+            if focusFn then focusFn() end
+            return true
+          end},
+        },
+        wakeup = function() end,
+        paint = function() end,
+        options = TEXT_LEFT,
+      })
+    end,
+    onWakeup = function(rt)
       if fields.refresh then fields.refresh() end
+      -- Not while armed: the FC ignores the override then, but would take the trim.
+      if not inOverride or not rt.loaded or rt.busy or rt.activeDialog or rt.isArmed then return end
+      local trim = trimFromForm()
+      if trim ~= liveTrim and (os.clock() - lastChangeAt) >= LIVE_SETTLE then
+        sendTrim(rt, trim)
+      end
+    end,
+    onDispose = function(rt)
+      -- Left without saving: put back the trim EEPROM holds.
+      if savedTrim ~= nil and liveTrim ~= savedTrim then sendTrim(rt, savedTrim) end
+      if inOverride then setOverride(false) end
     end,
   })
 
@@ -218,17 +314,19 @@ local function open(opts)
     fields[key] = field
   end
 
-  local function addNumber(label, key, min, max, suffix, decimals, default)
+  local function addNumber(label, key, min, max, suffix, decimals, default, live)
     local line = form.addLine(label)
     local field = form.addNumberField(line, nil, min, max,
       function() return formData[key] or 0 end,
       function(value)
         markDirty()
         formData[key] = value
+        lastChangeAt = os.clock()
       end)
     if suffix then field:suffix(suffix) end
     if decimals then field:decimals(decimals) end
     if default then field:default(default) end
+    if live and field.enableInstantChange then field:enableInstantChange(true) end
     runtime:registerField(key, field)
     fields[key] = field
   end
@@ -256,13 +354,19 @@ local function open(opts)
     end
 
     local motorized = isMotorizedMode(formData.tail_rotor_mode)
-    if fields.tail_motor_idle then fields.tail_motor_idle:enable(runtime.loaded and motorized) end
-    if fields.tail_center_offset then fields.tail_center_offset:enable(runtime.loaded and motorized) end
-    if fields.yaw_cw_limit_motor then fields.yaw_cw_limit_motor:enable(runtime.loaded and motorized) end
-    if fields.yaw_ccw_limit_motor then fields.yaw_ccw_limit_motor:enable(runtime.loaded and motorized) end
-    if fields.yaw_center_trim then fields.yaw_center_trim:enable(runtime.loaded and not motorized) end
-    if fields.yaw_cw_limit_fixed then fields.yaw_cw_limit_fixed:enable(runtime.loaded and not motorized) end
-    if fields.yaw_ccw_limit_fixed then fields.yaw_ccw_limit_fixed:enable(runtime.loaded and not motorized) end
+    local loaded = runtime.loaded
+    -- Override on: only the trim field of this mode stays editable.
+    local free = loaded and not inOverride
+    if fields.tail_rotor_mode then fields.tail_rotor_mode:enable(free) end
+    if fields.yaw_direction then fields.yaw_direction:enable(free) end
+    if fields.yaw_calibration then fields.yaw_calibration:enable(free) end
+    if fields.tail_motor_idle then fields.tail_motor_idle:enable(free and motorized) end
+    if fields.tail_center_offset then fields.tail_center_offset:enable(loaded and motorized) end
+    if fields.yaw_cw_limit_motor then fields.yaw_cw_limit_motor:enable(free and motorized) end
+    if fields.yaw_ccw_limit_motor then fields.yaw_ccw_limit_motor:enable(free and motorized) end
+    if fields.yaw_center_trim then fields.yaw_center_trim:enable(loaded and not motorized) end
+    if fields.yaw_cw_limit_fixed then fields.yaw_cw_limit_fixed:enable(free and not motorized) end
+    if fields.yaw_ccw_limit_fixed then fields.yaw_ccw_limit_fixed:enable(free and not motorized) end
   end
 
   local function onTailModeChange()
@@ -280,8 +384,8 @@ local function open(opts)
   tailPinText = TXT_PIN_UNKNOWN
   addChoice("@i18n(app.modules.mixer.yaw_direction)@", "yaw_direction", CHOICES_DIRECTION)
   addNumber("@i18n(app.modules.mixer.tail_motor_idle)@", "tail_motor_idle", 0, 250, "%", 1, 0)
-  addNumber("@i18n(app.modules.mixer.tail_center_offset)@", "tail_center_offset", -500, 500, "%", 1, 0)
-  addNumber("@i18n(app.modules.mixer.yaw_center_trim)@", "yaw_center_trim", -250, 250, "%", 1, 0)
+  addNumber("@i18n(app.modules.mixer.tail_center_offset)@", "tail_center_offset", -500, 500, "%", 1, 0, true)
+  addNumber("@i18n(app.modules.mixer.yaw_center_trim)@", "yaw_center_trim", -250, 250, "%", 1, 0, true)
   addNumber("@i18n(app.modules.mixer.yaw_calibration)@", "yaw_calibration", 200, 2000, "%", 1, 400)
   addNumber("@i18n(app.modules.mixer.yaw_cw_limit)@", "yaw_cw_limit_motor", 0, 2000, "%", 1, 125)
   addNumber("@i18n(app.modules.mixer.yaw_ccw_limit)@", "yaw_ccw_limit_motor", 0, 2000, "%", 1, 125)

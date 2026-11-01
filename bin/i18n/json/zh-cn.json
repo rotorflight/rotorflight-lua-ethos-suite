@@ -3567,6 +3567,13 @@
           "needs_translation": true,
           "reverse_text": false
         },
+        "tail_override_msg": {
+          "english": "Hold the tail at center so trim changes move it live. Press Save to keep them.",
+          "translation": "将尾舵保持在中位，调整微调时实时移动。按保存以保留更改。",
+          "needs_translation": false,
+          "reverse_text": false,
+          "max_length": 92
+        },
         "tail_tta_off": {
           "english": "Also sets Tail Torque Assist to 0 in every profile.",
           "translation": "Also sets Tail Torque Assist to 0 in every profile.",

@@ -5209,6 +5209,13 @@
           "reverse_text": false,
           "translation": "% Acel Ralentí Cola"
         },
+        "tail_override_msg": {
+          "english": "Hold the tail at center so trim changes move it live. Press Save to keep them.",
+          "max_length": 92,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Mantiene la cola centrada para que el trim la mueva en vivo. Pulse Guardar para conservarlo."
+        },
         "tail_pin": {
           "english": "Tail pin",
           "needs_translation": true,

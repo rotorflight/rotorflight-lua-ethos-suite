@@ -5209,6 +5209,13 @@
           "reverse_text": false,
           "translation": "Heckleerlauf-Gas%"
         },
+        "tail_override_msg": {
+          "english": "Hold the tail at center so trim changes move it live. Press Save to keep them.",
+          "max_length": 92,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Hält das Heck in der Mitte, Trimmänderungen bewegen es sofort. Mit Speichern übernehmen."
+        },
         "tail_pin": {
           "english": "Tail pin",
           "needs_translation": true,

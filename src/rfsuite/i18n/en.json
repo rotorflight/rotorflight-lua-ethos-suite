@@ -4486,6 +4486,12 @@
           "needs_translation": false,
           "translation": "Tail Idle Thr%"
         },
+        "tail_override_msg": {
+          "english": "Hold the tail at center so trim changes move it live. Press Save to keep them.",
+          "max_length": 92,
+          "needs_translation": false,
+          "translation": "Hold the tail at center so trim changes move it live. Press Save to keep them."
+        },
         "tail_pin": {
           "english": "Tail pin",
           "max_length": 8,
