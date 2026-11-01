@@ -79,10 +79,6 @@ local function mkStatusByte(isStart)
   return status & 0x7F
 end
 
-local function mspClearTxBuf()
-  mspTxBuf, mspTxIdx = {}, 1
-end
-
 -- A transport answers false when it did not queue the frame (Ethos's
 -- pushFrame() does so when its outgoing queue has no room). The frame is then
 -- kept, sequence number and all, and offered again on the next call: a request
@@ -90,8 +86,14 @@ end
 -- sees the request. Capped, so a transport that refuses everything (module
 -- off) still lets the queue's retry accounting run out instead of pumping the
 -- same frame for ever: past the cap the frame is dropped as it always was.
+-- The count belongs to the message, so clearing the buffer clears it too.
 local TX_REFUSAL_CAP = 10
 local mspTxRefusals = 0
+
+local function mspClearTxBuf()
+  mspTxBuf, mspTxIdx = {}, 1
+  mspTxRefusals = 0
+end
 
 -- Process TX buffer into protocol-sized packets; returns true while more
 -- frames remain to be sent.
@@ -183,6 +185,15 @@ local function receivedReply(payload)
     mspRxReq = ((cmd2 & 0xFF) << 8) | (cmd1 & 0xFF)
     mspRxSize = ((len2 & 0xFF) << 8) | (len1 & 0xFF)
     mspStarted = (mspRxReq == mspLastReq)
+    -- A late reply to an earlier command is not ours. It used to fall through
+    -- to the copy loop below, and one that fits in this frame came back as a
+    -- complete reply: mspPollReply() then cleared mspLastReq, so the real
+    -- reply's start frame no longer matched and the message waited out its
+    -- retry window (issue #2653).
+    if not mspStarted then
+      mspRxBuf, mspRxSize, mspRemoteSeq = {}, 0, 0
+      return nil
+    end
   else
     if (not mspStarted) or (((mspRemoteSeq + 1) & 0x0F) ~= seq) then
       if mspStarted then
@@ -310,6 +321,10 @@ return {
   mspRxBreakInfo = function()
     return mspRxBreaks, mspRxBreakExpected, mspRxBreakGot, mspRxBreakBytes, mspRxBreakSize
   end,
+  -- True while a reply to the request in flight is part-way assembled. The
+  -- queue does not resend into it: a break followed, in the same poll, by the
+  -- start of a newer reply would otherwise throw that reply away.
+  mspRxInProgress = function() return mspStarted end,
   -- The drain bounds, exported only so bin/perf/verify_clock_budgets.lua can
   -- pin the numbers themselves. Hard-coding them in the harness instead would
   -- let a loosened budget pass, because "never spends more than N" stays green
