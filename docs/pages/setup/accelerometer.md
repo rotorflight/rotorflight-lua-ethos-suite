@@ -18,8 +18,8 @@ Greyed out until the flight controller answers. Read-only while the model is arm
 
 | Setting | What it does |
 | --- | --- |
-| Roll | Configures Roll. Range: -300 to 300 °. Default: 0 °. |
-| Pitch | Configures Pitch. Range: -300 to 300 °. Default: 0 °. |
+| Roll | Configures Roll trim in tenths of a degree. Range: -300 to 300. Default: 0. |
+| Pitch | Configures Pitch trim in tenths of a degree. Range: -300 to 300. Default: 0. |
 
 ## Notes
 
