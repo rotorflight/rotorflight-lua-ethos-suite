@@ -128,7 +128,7 @@ local function open(opts)
       formData.yaw_calibration = math.abs(u16ToS16(yaw.rate_stabilized_yaw))
       formData.tail_motor_idle = mixer.tail_motor_idle or 0
       formData.tail_center_offset = mixer.tail_center_trim or 0
-      formData.yaw_center_trim = round(math.abs(u16ToS16(mixer.tail_center_trim)) * 24 / 100)
+      formData.yaw_center_trim = round(u16ToS16(mixer.tail_center_trim) * 24 / 100)
       formData.yaw_cw_limit_motor = math.abs(u16ToS16(yaw.min_stabilized_yaw))
       formData.yaw_ccw_limit_motor = math.abs(u16ToS16(yaw.max_stabilized_yaw))
       formData.yaw_cw_limit_fixed = round(math.abs(u16ToS16(yaw.min_stabilized_yaw)) * 24 / 100)

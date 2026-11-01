@@ -1,0 +1,7 @@
+{
+  "id": "acc-trim-units",
+  "name": "Accelerometer trim units are tenths of a degree and not labelled in degrees",
+  "step": "Check accelerometer trim units and documentation",
+  "script": "bin/acc_trim_units/verify_acc_trim_units.lua",
+  "rationale": "The accelerometer trim payload stores signed values in tenths of a degree, but the user-facing page and documentation must describe them consistently. This standalone harness loads the real trim codec and checks that Roll and Pitch each retain the -300 to 300 range, zero default, and tenths-of-a-degree documentation without a degree suffix."
+}
