@@ -6,7 +6,7 @@ sidebar_position: 30
 
 # Tail
 
-How the tail is driven and how far it may move. The fields shown follow the tail mode: a variable pitch tail works in degrees, a motorised or bidirectional tail in percent.
+How the tail is driven and how far it may move. The page shows only the fields for the tail mode, and changing between a servo tail and a motor tail swaps them straight away: a variable pitch tail works in degrees, a motorised or bidirectional tail in percent.
 
 ## Where to find it
 

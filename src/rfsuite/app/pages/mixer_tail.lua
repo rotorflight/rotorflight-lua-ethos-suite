@@ -27,6 +27,8 @@ local BTN_CANCEL = "@i18n(app.btn_cancel)@"
 local OVERRIDE_YAW = 3
 -- Seconds a trim value has to stay unchanged before it is sent live.
 local LIVE_SETTLE = 0.5
+-- The trim fields, which stay editable while the override is on.
+local LIVE_KEYS = {yaw_center_trim = true, tail_center_offset = true}
 
 -- The Tail pin line: where the pin is now (OUTPUT), what Save will do, or
 -- why the FC kept it where it was (RESULT). Short values: they share the
@@ -96,6 +98,12 @@ local function open(opts)
   local formData = {}
   local originalMode = nil
   local fields = {}
+  -- Set further down, once the field helpers exist.
+  local refresh, buildFields, onTailModeChange
+  local builtMotorized = false
+  local pendingRebuild = false
+  -- Last loaded/override state the fields were enabled for.
+  local enableState = nil
   -- RESULT of the last move the FC refused. Kept across the re-read after
   -- the save's reboot, which replaces runtime.data.tail.
   local lastRefused = nil
@@ -196,7 +204,12 @@ local function open(opts)
       if not lastRefused and tailOutput.movable(runtime.data.tail, isMotorizedMode(mode)) then
         runtime:markDirty()
       end
-      if fields.refresh then fields.refresh() end
+      -- Fields are built before the read, as for a servo tail.
+      pendingRebuild = false
+      if isMotorizedMode(mode) ~= builtMotorized then
+        runtime:rebuildForm(buildFields)
+      end
+      refresh()
       if form.invalidate then form.invalidate() end
     end,
     beforeSave = function(rt)
@@ -258,7 +271,7 @@ local function open(opts)
               setOverride(true)
               lastChangeAt = os.clock()
             end
-            if fields.refresh then fields.refresh() end
+            if refresh then refresh() end
             if focusFn then focusFn() end
             return true
           end},
@@ -273,7 +286,12 @@ local function open(opts)
       })
     end,
     onWakeup = function(rt)
-      if fields.refresh then fields.refresh() end
+      if pendingRebuild and not rt.busy and not rt.activeDialog then
+        pendingRebuild = false
+        rt:rebuildForm(buildFields)
+        if fields.tail_rotor_mode then fields.tail_rotor_mode:focus() end
+      end
+      refresh()
       -- Not while armed: the FC ignores the override then, but would take the trim.
       if not inOverride or not rt.loaded or rt.busy or rt.activeDialog or rt.isArmed then return end
       local trim = trimFromForm()
@@ -301,28 +319,32 @@ local function open(opts)
     if rt then rt:markDirty() end
   end
 
-  local function addChoice(label, key, choices, onChange)
-    local line = form.addLine(label)
-    local field = form.addChoiceField(line, nil, choices,
-      function() return formData[key] or 0 end,
-      function(value)
+  -- One getter/setter pair per key, reused when the form is rebuilt.
+  local getters = {}
+  local setters = {}
+  local function accessors(key, onChange)
+    if not getters[key] then
+      getters[key] = function() return formData[key] or 0 end
+      setters[key] = function(value)
         markDirty()
         formData[key] = value
+        lastChangeAt = os.clock()
         if onChange then onChange(value) end
-      end)
+      end
+    end
+    return getters[key], setters[key]
+  end
+
+  local function addChoice(label, key, choices, onChange)
+    local getter, setter = accessors(key, onChange)
+    local field = form.addChoiceField(form.addLine(label), nil, choices, getter, setter)
     runtime:registerField(key, field)
     fields[key] = field
   end
 
   local function addNumber(label, key, min, max, suffix, decimals, default, live)
-    local line = form.addLine(label)
-    local field = form.addNumberField(line, nil, min, max,
-      function() return formData[key] or 0 end,
-      function(value)
-        markDirty()
-        formData[key] = value
-        lastChangeAt = os.clock()
-      end)
+    local getter, setter = accessors(key)
+    local field = form.addNumberField(form.addLine(label), nil, min, max, getter, setter)
     if suffix then field:suffix(suffix) end
     if decimals then field:decimals(decimals) end
     if default then field:default(default) end
@@ -345,54 +367,69 @@ local function open(opts)
     return TXT_PIN[tail.output] or TXT_PIN_UNKNOWN
   end
 
-  fields.refresh = function()
-    -- Only touch the static text when its value changes (wakeup path).
+  refresh = function()
+    -- Wakeup path: only touch the fields when what they show changes.
     local text = currentTailPinText()
     if fields.tail_pin and text ~= tailPinText then
       tailPinText = text
       fields.tail_pin:value(text)
     end
 
-    local motorized = isMotorizedMode(formData.tail_rotor_mode)
-    local loaded = runtime.loaded
-    -- Override on: only the trim field of this mode stays editable.
+    -- Override on: only the trim field stays editable.
+    local loaded = runtime.loaded == true
+    local state = loaded and (inOverride and 2 or 1) or 0
+    if state == enableState then return end
+    enableState = state
     local free = loaded and not inOverride
-    if fields.tail_rotor_mode then fields.tail_rotor_mode:enable(free) end
-    if fields.yaw_direction then fields.yaw_direction:enable(free) end
-    if fields.yaw_calibration then fields.yaw_calibration:enable(free) end
-    if fields.tail_motor_idle then fields.tail_motor_idle:enable(free and motorized) end
-    if fields.tail_center_offset then fields.tail_center_offset:enable(loaded and motorized) end
-    if fields.yaw_cw_limit_motor then fields.yaw_cw_limit_motor:enable(free and motorized) end
-    if fields.yaw_ccw_limit_motor then fields.yaw_ccw_limit_motor:enable(free and motorized) end
-    if fields.yaw_center_trim then fields.yaw_center_trim:enable(loaded and not motorized) end
-    if fields.yaw_cw_limit_fixed then fields.yaw_cw_limit_fixed:enable(free and not motorized) end
-    if fields.yaw_ccw_limit_fixed then fields.yaw_ccw_limit_fixed:enable(free and not motorized) end
+    for key, field in pairs(fields) do
+      if key ~= "tail_pin" then
+        field:enable((LIVE_KEYS[key] and loaded) or free)
+      end
+    end
   end
 
-  local function onTailModeChange()
+  -- A change between a servo and a motor tail swaps the fields: rebuilt
+  -- from the next wakeup, since this runs inside the choice's own setter.
+  onTailModeChange = function()
     lastRefused = nil
     if kindChanged() then
       runtime.extraSaveMessage = isMotorizedMode(formData.tail_rotor_mode) and MSG_TTA_ON or MSG_TTA_OFF
     else
       runtime.extraSaveMessage = nil
     end
-    fields.refresh()
+    if isMotorizedMode(formData.tail_rotor_mode) ~= builtMotorized then
+      pendingRebuild = true
+    end
   end
 
-  addChoice("@i18n(app.modules.mixer.tail_rotor_mode)@", "tail_rotor_mode", CHOICES_TAIL_MODE, onTailModeChange)
-  fields.tail_pin = form.addStaticText(form.addLine("@i18n(app.modules.mixer.tail_pin)@"), nil, TXT_PIN_UNKNOWN)
-  tailPinText = TXT_PIN_UNKNOWN
-  addChoice("@i18n(app.modules.mixer.yaw_direction)@", "yaw_direction", CHOICES_DIRECTION)
-  addNumber("@i18n(app.modules.mixer.tail_motor_idle)@", "tail_motor_idle", 0, 250, "%", 1, 0)
-  addNumber("@i18n(app.modules.mixer.tail_center_offset)@", "tail_center_offset", -500, 500, "%", 1, 0, true)
-  addNumber("@i18n(app.modules.mixer.yaw_center_trim)@", "yaw_center_trim", -250, 250, "%", 1, 0, true)
-  addNumber("@i18n(app.modules.mixer.yaw_calibration)@", "yaw_calibration", 200, 2000, "%", 1, 400)
-  addNumber("@i18n(app.modules.mixer.yaw_cw_limit)@", "yaw_cw_limit_motor", 0, 2000, "%", 1, 125)
-  addNumber("@i18n(app.modules.mixer.yaw_ccw_limit)@", "yaw_ccw_limit_motor", 0, 2000, "%", 1, 125)
-  addNumber("@i18n(app.modules.mixer.yaw_cw_limit)@", "yaw_cw_limit_fixed", 0, 600, "°", 1, 20)
-  addNumber("@i18n(app.modules.mixer.yaw_ccw_limit)@", "yaw_ccw_limit_fixed", 0, 600, "°", 1, 20)
-  fields.refresh()
+  -- Only the fields of the current kind of tail (servo or motor), so
+  -- there are no greyed-out duplicates.
+  buildFields = function()
+    for key in pairs(fields) do fields[key] = nil end
+    enableState = nil
+    builtMotorized = isMotorizedMode(formData.tail_rotor_mode)
+    addChoice("@i18n(app.modules.mixer.tail_rotor_mode)@", "tail_rotor_mode", CHOICES_TAIL_MODE, onTailModeChange)
+    fields.tail_pin = form.addStaticText(form.addLine("@i18n(app.modules.mixer.tail_pin)@"), nil, TXT_PIN_UNKNOWN)
+    tailPinText = TXT_PIN_UNKNOWN
+    addChoice("@i18n(app.modules.mixer.yaw_direction)@", "yaw_direction", CHOICES_DIRECTION)
+    if builtMotorized then
+      addNumber("@i18n(app.modules.mixer.tail_motor_idle)@", "tail_motor_idle", 0, 250, "%", 1, 0)
+      addNumber("@i18n(app.modules.mixer.tail_center_offset)@", "tail_center_offset", -500, 500, "%", 1, 0, true)
+    else
+      addNumber("@i18n(app.modules.mixer.yaw_center_trim)@", "yaw_center_trim", -250, 250, "°", 1, 0, true)
+    end
+    addNumber("@i18n(app.modules.mixer.yaw_calibration)@", "yaw_calibration", 200, 2000, "%", 1, 400)
+    if builtMotorized then
+      addNumber("@i18n(app.modules.mixer.yaw_cw_limit)@", "yaw_cw_limit_motor", 0, 2000, "%", 1, 125)
+      addNumber("@i18n(app.modules.mixer.yaw_ccw_limit)@", "yaw_ccw_limit_motor", 0, 2000, "%", 1, 125)
+    else
+      addNumber("@i18n(app.modules.mixer.yaw_cw_limit)@", "yaw_cw_limit_fixed", 0, 600, "°", 1, 20)
+      addNumber("@i18n(app.modules.mixer.yaw_ccw_limit)@", "yaw_ccw_limit_fixed", 0, 600, "°", 1, 20)
+    end
+  end
 
+  buildFields()
+  refresh()
   runtime:loadInitial()
 end
 

@@ -615,6 +615,25 @@ function PageRuntime:setDirty(dirty)
   self:updateSaveEnabled()
 end
 
+-- Builds the header and the page's fields again, keeping the data, the
+-- unsaved edits and the subscriptions. For a page whose fields follow one
+-- of its own choices (app/pages/mixer_tail.lua: the tail mode). Ethos keeps
+-- some memory on every form.clear(), so call it only when the set of fields
+-- changes. Not from a field's own setter: form.clear() frees that field.
+function PageRuntime:rebuildForm(buildFields)
+  if self.disposed or not self.headerOptions then return end
+  clearTable(self.fields)
+  form.clear()
+  self.headerHandle = header.build(self.pageTitle, self.headerOptions)
+  self:updateTitle()
+  buildFields()
+  local enabled = self.loaded == true and not self.busy
+  for _, field in pairs(self.fields) do
+    field:enable(enabled)
+  end
+  self:setBusy(self.busy)
+end
+
 -- Call once per field the page builds, right after creating it. Starts
 -- disabled -- loadInitial()'s first read enables it once real data exists.
 function PageRuntime:registerField(key, field)
@@ -1283,6 +1302,7 @@ function PageRuntime:dispose()
   self.sources = nil
   self.opts = nil
   self.headerHandle = nil
+  self.headerOptions = nil
   self.sessionHandler = nil
   self.activeDialog = nil
   self.messageDialogs = nil
@@ -1379,7 +1399,8 @@ function PageRuntime:buildChrome()
     end)
   end
 
-  self.headerHandle = header.build(self.pageTitle, {
+  -- Kept for rebuildForm(), which builds the header again after form.clear().
+  self.headerOptions = {
     onBack = function()
       local runtime = controlRef.runtime
       if runtime then runtime:goBack() end
@@ -1406,7 +1427,8 @@ function PageRuntime:buildChrome()
       end
     end or nil,
     toolIcon = self.toolIcon,
-  })
+  }
+  self.headerHandle = header.build(self.pageTitle, self.headerOptions)
   self:setBusy(true)
 
   -- Placed after headerHandle exists: bus.subscribe() replays the last
