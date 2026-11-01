@@ -193,10 +193,12 @@ end
 
 -- How many of the frames handed to the transport were addressed to `cmd`.
 --
--- A request frame laid out by mspProcessTxQ() is
---   status, <reserved>, cmd1, cmd2, len1, len2, data...
--- -- the reserved byte mirrors the flags byte that receivedReply() skips on the
--- reply side, so the command sits at bytes 3 and 4, not 2 and 3.
+-- A version-2 request frame laid out by mspProcessTxQ() is
+--   status, <flags>, cmd1, cmd2, len1, len2, data...
+-- so the command sits at bytes 3 and 4; in version 3 (status bits 0x60) it is
+--   status, cmd1, cmd2, len, data...
+-- at bytes 2 and 3. Only start frames are counted: a continuation carries
+-- payload, which could look like any command.
 --
 -- Counting "frames on the wire" instead would not do: a poisoned buffer still
 -- leaks its leftovers onto the wire, it just leaks the *previous* request's
@@ -205,7 +207,8 @@ local function framesForCommand(sent, cmd)
   local count = 0
   for _, frame in ipairs(sent) do
     local b = frame.bytes
-    if b[3] == cmd % 256 and b[4] == math.floor(cmd / 256) % 256 then
+    local at = ((b[1] or 0) & 0x60) == 0x60 and 2 or 3
+    if (b[1] or 0) & 0x10 ~= 0 and b[at] == cmd % 256 and b[at + 1] == math.floor(cmd / 256) % 256 then
       count = count + 1
     end
   end
@@ -483,9 +486,12 @@ local function brokenReply(cmd)
 end
 
 -- Reads every reply frame queued on the transport, however many ticks the
--- bounded poll loop needs for them.
+-- bounded poll loop needs for them. An idle queue does not poll, so frames
+-- left after the message completed (a status-only trailer) are read directly.
 local function drainReplies(rig)
-  while #rig.transport.replies > 0 do rig.tick() end
+  while #rig.transport.replies > 0 do
+    if rig.queue:isProcessed() then rig.common.mspPollReply() else rig.tick() end
+  end
 end
 
 do
@@ -879,6 +885,164 @@ do
     #msg.replies == 1 and #msg.errors == 0 and got and #got == POOL_BYTES,
     "replies=" .. #msg.replies .. " errors=" .. #msg.errors ..
     " bytes=" .. (got and #got or 0))
+end
+
+-- ---------------------------------------------------------------------------
+-- Framing: version 2 to start, version 3 from API 12.10, back on a refusal
+-- ---------------------------------------------------------------------------
+
+-- Reply frames as telemetry/msp_shared.c's sendMspReply() writes version 3: a
+-- start frame of status, command and an 8-bit length (0xFF then a 16-bit
+-- length from 255 bytes), payload in whatever room is left, then continuations
+-- of five bytes. A chunk is sent as partial while the rest fills it exactly,
+-- so a reply that ends on a frame boundary is followed by a status-only frame.
+local function replyFramesV3(cmd, bytes, opts)
+  opts = opts or {}
+  local seq = opts.seq or 0
+  local status = 0x60 | 0x10 | (seq & 0x0F)
+  if opts.error then status = status | 0x80 end
+  local frame = { status, cmd % 256, math.floor(cmd / 256) % 256 }
+  if #bytes >= 0xFF then
+    frame[4], frame[5], frame[6] = 0xFF, #bytes % 256, math.floor(#bytes / 256) % 256
+  else
+    frame[4] = #bytes
+  end
+  local frames, pos = { frame }, 1
+  while true do
+    while #frame < 6 and pos <= #bytes do
+      frame[#frame + 1] = bytes[pos]
+      pos = pos + 1
+    end
+    if pos > #bytes and #frame < 6 then break end
+    seq = seq + 1
+    frame = { 0x60 | (seq & 0x0F) }
+    frames[#frames + 1] = frame
+    if pos > #bytes then break end
+  end
+  return frames
+end
+
+local function bytesOf(n, base)
+  local t = {}
+  for i = 1, n do t[i] = (base + i) % 256 end
+  return t
+end
+
+local function queueReplies(rig, frames)
+  for _, f in ipairs(frames) do rig.transport.replies[#rig.transport.replies + 1] = f end
+end
+
+-- Before the API version is known, and on 4.6 (12.09), requests go out as
+-- MSPv2: version bits 2 and a flags byte.
+for _, case in ipairs({ { label = "an unknown API version", api = nil }, { label = "API 12.09", api = API_4_6 } }) do
+  local rig = newRig({ api = case.api })
+  rig.queue:add(newMessage(0x1E))
+  rig.tick()
+  local b = rig.transport.sent[1] and rig.transport.sent[1].bytes or {}
+  check("with " .. case.label .. ", a request goes out in version 2",
+    (b[1] or 0) & 0x60 == 0x40 and b[2] == 0 and b[3] == 0x1E and b[4] == 0 and b[5] == 0 and b[6] == 0,
+    string.format("bytes=%02X %02X %02X %02X %02X %02X", b[1] or 0, b[2] or 0, b[3] or 0, b[4] or 0, b[5] or 0, b[6] or 0))
+end
+
+-- From API 12.10 a request goes out in version 3: command and an 8-bit length
+-- right after the status byte, so the first frame has room for payload.
+do
+  local rig = newRig({ api = API_WITH_REPLACEMENT_START })
+  rig.queue:add(newMessage(0x1E, { payload = { 0xAA, 0xBB, 0xCC } }))
+  rig.tick()
+  local b = rig.transport.sent[1].bytes
+  check("from API 12.10, a request goes out in version 3 with payload in its start frame",
+    b[1] & 0x70 == 0x70 and b[2] == 0x1E and b[3] == 0 and b[4] == 3 and b[5] == 0xAA and b[6] == 0xBB,
+    string.format("bytes=%02X %02X %02X %02X %02X %02X", b[1], b[2], b[3], b[4], b[5], b[6]))
+end
+
+-- A version-3 request of 300 bytes announces its length as 0xFF and 16 bits.
+do
+  local rig = newRig({ api = API_WITH_REPLACEMENT_START })
+  rig.queue:add(newMessage(0x1E, { isWrite = true, payload = bytesOf(300, 0) }))
+  rig.tick()
+  local b = rig.transport.sent[1].bytes
+  check("a version-3 request of 300 bytes carries 0xFF and a 16-bit length",
+    b[2] == 0x1E and b[3] == 0 and b[4] == 0xFF and b[5] == 0x2C and b[6] == 0x01,
+    string.format("bytes=%02X %02X %02X %02X %02X", b[2], b[3], b[4], b[5], b[6]))
+end
+
+-- Version-3 replies: a short one, one that ends exactly on a frame boundary,
+-- and the 16-bit length form of a long one.
+for _, n in ipairs({ 11, 12, 300 }) do
+  local rig = newRig({ api = API_WITH_REPLACEMENT_START })
+  local msg = newMessage(0x1E)
+  rig.queue:add(msg)
+  rig.tick()
+  queueReplies(rig, replyFramesV3(0x1E, bytesOf(n, 7)))
+  drainReplies(rig)
+  local got = msg.replies[1]
+  check("a version-3 reply of " .. n .. " bytes is delivered whole",
+    got and #got == n and got[1] == 8 and got[n] == (n + 7) % 256 and #msg.errors == 0,
+    "replies=" .. #msg.replies .. " bytes=" .. (got and #got or 0) .. " errors=" .. #msg.errors)
+end
+
+-- A firmware without version 3 refuses it: start and error bits, the version
+-- bits of the request, and an MSPv2 body for command 0 (flags, command 0,
+-- length 1, the error code). The link falls back to version 2, the request
+-- goes again at once in version 2, the refusal is not counted as an attempt
+-- and not reported as an error, and the link stays on version 2.
+do
+  local rig = newRig({ api = API_WITH_REPLACEMENT_START })
+  local msg = newMessage(0x1E, { maxRetries = 0 })
+  rig.queue:add(msg)
+  rig.tick()
+  queueReplies(rig, { { 0x60 | 0x10 | 0x80, 0, 0, 0, 1, 0 }, { 0x61, 0 } })
+  drainReplies(rig)
+  rig.tick()
+  local last = rig.transport.sent[#rig.transport.sent].bytes
+  check("a refusal of version 3 resends the request at once, in version 2",
+    #rig.transport.sent == 2 and last[1] & 0x70 == 0x50 and last[3] == 0x1E,
+    "sent=" .. #rig.transport.sent .. string.format(" status=%02X", last[1]))
+  check("the refusal is neither an attempt nor an error",
+    rig.queue.retryCount == 1 and #msg.errors == 0,
+    "retryCount=" .. rig.queue.retryCount .. " errors=" .. #msg.errors .. " first=" .. tostring(msg.errors[1]))
+  queueReplies(rig, replyFrames(0x1E, 2, { { 7, 8 } }))
+  drainReplies(rig)
+  check("the version-2 resend is answered and delivered",
+    #msg.replies == 1 and msg.replies[1][1] == 7, "replies=" .. #msg.replies)
+  check("the link stays on version 2", rig.common.framing() == 2,
+    "framing=" .. tostring(rig.common.framing()))
+end
+
+-- An error reply in version 3 that names its command is a real answer, not a
+-- refusal of the framing.
+do
+  local rig = newRig({ api = API_WITH_REPLACEMENT_START })
+  local msg = newMessage(0x1E, { maxRetries = 0 })
+  rig.queue:add(msg)
+  rig.tick()
+  queueReplies(rig, replyFramesV3(0x1E, { 2 }, { error = true }))
+  drainReplies(rig)
+  check("a version-3 error reply for the command stays an error, framing 3 kept",
+    #msg.errors == 1 and rig.common.framing() == 3,
+    "errors=" .. #msg.errors .. " framing=" .. tostring(rig.common.framing()))
+end
+
+-- A start frame in version 0 or 1 answers nothing this suite asked for.
+do
+  local rig = newRig()
+  local msg = newMessage(0x1E)
+  rig.queue:add(msg)
+  rig.tick()
+  queueReplies(rig, { { 0x30, 1, 0x1E, 9, 0, 0 } }) -- version 1: length 1, command 0x1E
+  drainReplies(rig)
+  check("a version-1 start frame is not taken as a reply", #msg.replies == 0,
+    "replies=" .. #msg.replies)
+end
+
+-- A new queue (a transport swap) starts the link in version 2 again.
+do
+  local rig = newRig({ api = API_WITH_REPLACEMENT_START })
+  local Queue = dofile(MSP .. "/queue.lua")
+  Queue.new(rig.common)
+  check("a new queue starts the link in version 2", rig.common.framing() == 2,
+    "framing=" .. tostring(rig.common.framing()))
 end
 
 -- ---------------------------------------------------------------------------
