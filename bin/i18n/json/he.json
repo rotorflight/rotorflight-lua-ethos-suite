@@ -11003,6 +11003,48 @@
           "max_length": 8,
           "reverse_text": true
         },
+        "lvl_safety": {
+          "english": "Unplug the motor for safety: the blades are fitted in this step.",
+          "translation": "לבטיחות, נתקו את המנוע: בשלב זה מורכבים הלהבים.",
+          "needs_translation": false,
+          "max_length": 64,
+          "reverse_text": true
+        },
+        "lvl_motor_off": {
+          "english": "Motor unplugged",
+          "translation": "המנוע מנותק",
+          "needs_translation": false,
+          "max_length": 15,
+          "reverse_text": true
+        },
+        "lvl_view_rear": {
+          "english": "From behind",
+          "translation": "מאחור",
+          "needs_translation": false,
+          "max_length": 11,
+          "reverse_text": true
+        },
+        "lvl_view_side": {
+          "english": "From the side",
+          "translation": "מהצד",
+          "needs_translation": false,
+          "max_length": 13,
+          "reverse_text": true
+        },
+        "lvl_rear_text": {
+          "english": "Roll and collective: trim until the swash is level and the blades sit at zero pitch.",
+          "translation": "כוונו roll וקולקטיב עד שהצלחת ישרה והלהבים על אפס.",
+          "needs_translation": false,
+          "max_length": 84,
+          "reverse_text": true
+        },
+        "lvl_side_text": {
+          "english": "Pitch: trim until the swash is level front to back.",
+          "translation": "כוונו pitch עד שהצלחת ישרה מקדימה לאחור.",
+          "needs_translation": false,
+          "max_length": 51,
+          "reverse_text": true
+        },
         "mot_pinion": {
           "english": "Pinion teeth",
           "translation": "שיני פיניון",
@@ -11248,81 +11290,11 @@
           "max_length": 92,
           "reverse_text": true
         },
-        "lvl_trim": {
-          "english": "Trim",
-          "translation": "טרים",
-          "needs_translation": false,
-          "max_length": 4,
-          "reverse_text": true
-        },
-        "lvl_value_fmt": {
-          "english": "%s",
-          "translation": "%s",
-          "needs_translation": false,
-          "max_length": 2,
-          "reverse_text": false
-        },
         "lvl_reset": {
           "english": "Reset",
           "translation": "איפוס",
           "needs_translation": false,
           "max_length": 5,
-          "reverse_text": true
-        },
-        "lvl_roll_title": {
-          "english": "Roll trim",
-          "translation": "טרים רול",
-          "needs_translation": false,
-          "max_length": 9,
-          "reverse_text": true
-        },
-        "lvl_roll": {
-          "english": "Seen from behind, trim until the swash is level left to right.",
-          "translation": "במבט מאחור, כוונן עד שהסוואש ישר משמאל לימין.",
-          "needs_translation": false,
-          "max_length": 62,
-          "reverse_text": true
-        },
-        "lvl_pitch_title": {
-          "english": "Pitch trim",
-          "translation": "טרים פיץ'",
-          "needs_translation": false,
-          "max_length": 10,
-          "reverse_text": true
-        },
-        "lvl_pitch": {
-          "english": "Seen from the side, trim until the swash is level front to back.",
-          "translation": "במבט מהצד, כוונן עד שהסוואש ישר מקדימה לאחור.",
-          "needs_translation": false,
-          "max_length": 64,
-          "reverse_text": true
-        },
-        "lvl_coll_title": {
-          "english": "Collective trim",
-          "translation": "טרים קולקטיב",
-          "needs_translation": false,
-          "max_length": 15,
-          "reverse_text": true
-        },
-        "lvl_coll": {
-          "english": "Trim until the main blades are at zero pitch.",
-          "translation": "כוונן עד שהלהבים הראשיים בפיץ' אפס.",
-          "needs_translation": false,
-          "max_length": 45,
-          "reverse_text": true
-        },
-        "lvl_done_title": {
-          "english": "Swash level",
-          "translation": "הסוואש ישר",
-          "needs_translation": false,
-          "max_length": 11,
-          "reverse_text": true
-        },
-        "lvl_done": {
-          "english": "The swash is level at zero pitch.",
-          "translation": "הסוואש ישר בפיץ' אפס.",
-          "needs_translation": false,
-          "max_length": 33,
           "reverse_text": true
         },
         "pit_title": {

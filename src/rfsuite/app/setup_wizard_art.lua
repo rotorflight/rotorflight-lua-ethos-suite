@@ -11,8 +11,6 @@
 --   art.tail(motion, label)
 --       The tail from above: "left"/"right" arrows for the tail blades' push,
 --       and an optional value beside it.
---   art.level(roll, pitch, coll, focus, rearLabel, sideLabel)
---       The swash from behind and from the left, tilted by its trims.
 --   art.blade(deg, label, mirror, mirrorLabel)
 --       A blade section at its pitch angle, with the angle as an arc.
 --   art.bars(items)            values as bars against their maximum
@@ -293,67 +291,6 @@ local function drawTail(l, x, y, w, h, colors)
       lcd.drawText(cx + floor(s * 0.25), tailY - 12, l.label, LEFT)
     end
   end
-end
-
----------------------------------------------------------------------------
--- Level the swash: the swash from behind (roll, collective) and from the
--- left (pitch), each tilted by its trim, exaggerated so a small trim shows.
----------------------------------------------------------------------------
-
--- roll/pitch/coll: swash_trim_0/1/2 (0.1 %); focus: "roll" | "pitch" |
--- "collective" | nil; rearLabel/sideLabel: text under each view.
-function art.level(roll, pitch, coll, focus, rearLabel, sideLabel)
-  return {kind = "level", roll = roll or 0, pitch = pitch or 0, coll = coll or 0, focus = focus,
-    rearLabel = rearLabel, sideLabel = sideLabel}
-end
-
-local function trimAngle(raw)
-  local f = raw / 50
-  if f > 1 then f = 1 elseif f < -1 then f = -1 end
-  return f * 0.35
-end
-
-local function swashPanel(cx, cy, s, tiltRad, lift, on, side, label, colors)
-  local t = math.max(4, floor(s * 0.06))
-  local half = floor(s * 0.42)
-  -- Level reference, dashed.
-  lcd.color(colors.muted)
-  local dash = math.max(4, floor(s * 0.05))
-  local xx = cx - half - dash
-  while xx < cx + half + dash do
-    lcd.drawLine(xx, cy, math.min(xx + dash, cx + half + dash), cy)
-    xx = xx + dash * 2
-  end
-  -- Mast and frame.
-  lcd.color(colors.body)
-  lcd.drawFilledRectangle(cx - floor(t / 2), cy - floor(s * 0.3), t, floor(s * 0.7))
-  if side then
-    lcd.drawFilledRectangle(cx - floor(s * 0.35), cy + floor(s * 0.38), floor(s * 0.5), floor(s * 0.22))
-    lcd.drawFilledRectangle(cx + floor(s * 0.15), cy + floor(s * 0.44), floor(s * 0.35), floor(t * 0.8))
-  else
-    lcd.drawFilledRectangle(cx - floor(s * 0.16), cy + floor(s * 0.38), floor(s * 0.32), floor(s * 0.28))
-  end
-  -- The swash: right end down for a positive tilt.
-  local dx, dy = floor(cos(tiltRad) * half), floor(sin(tiltRad) * half)
-  local yy = cy - lift
-  lcd.color(on and colors.active or colors.surface)
-  thickLine(cx - dx, yy - dy, cx + dx, yy + dy, t)
-  if label then
-    lcd.font(FONT_S)
-    lcd.color(on and colors.active or colors.text)
-    lcd.drawText(cx, cy + floor(s * 0.68), label, CENTERED)
-  end
-end
-
-local function drawLevel(l, x, y, w, h, colors)
-  local pw = floor(w / 2)
-  local s = floor(min(pw * 0.7, h * 0.7))
-  local cy = y + floor(h * 0.38)
-  local lift = floor(trimAngle(l.coll) * s * 0.4)
-  swashPanel(x + floor(pw / 2), cy, s, trimAngle(l.roll), lift,
-    l.focus == "roll" or l.focus == "collective", false, l.rearLabel, colors)
-  -- Side view, nose to the left: a positive pitch trim puts the front down.
-  swashPanel(x + pw + floor(pw / 2), cy, s, -trimAngle(l.pitch), lift, l.focus == "pitch", true, l.sideLabel, colors)
 end
 
 ---------------------------------------------------------------------------
@@ -1438,8 +1375,6 @@ function art.draw(l, x, y, w, h, colors)
     drawTilt(l, x, y, w, h, colors)
   elseif k == "tail" then
     drawTail(l, x, y, w, h, colors)
-  elseif k == "level" then
-    drawLevel(l, x, y, w, h, colors)
   elseif k == "blade" then
     drawBlade(l, x, y, w, h, colors)
   elseif k == "bars" then

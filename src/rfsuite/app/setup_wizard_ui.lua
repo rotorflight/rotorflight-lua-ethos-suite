@@ -142,6 +142,7 @@ function Screen:begin()
   v.pictureStop = nil
   v.checks, v.checksX = nil, nil
   v.wide = nil
+  v.split = nil
   v.status, v.statusX, v.statusY, v.statusH = nil, nil, nil, nil
   self.buttonList = {}
 end
@@ -251,9 +252,9 @@ end
 --                                  a drop-down where the answers sit, as EdgeTX's
 --                                  choice fields (values as {{text, value}, ...})
 --   {label =, pair = {{min, max, get, set}, {min, max, get, set}}, disabled =}
---   {cells = {{label =, number = {min, max, get, set, suffix}}, {label =, number = {...}}}}
---                                  two cells across the width (screen:wide()), each a label
---                                  before its number field
+--   {cells = {{label =, number = {min, max, get, set, suffix, decimals}}, {label =, number = {...}}}}
+--                                  cells side by side across the row (two across the width with
+--                                  screen:wide()), each a label before its number field
 --                                  two numbers side by side, "a : b", where the answers sit
 --   {label =, number = {min, max, get, set, suffix}, disabled =}
 --                                  a value to edit: the label, a number field
@@ -261,7 +262,7 @@ end
 --   {note =, plain =}              a result in the accent colour (plain: the text colour), wrapped to
 --                                  the half (last, so it moves nothing else)
 --   focus  index of the button to return (the one just pressed), or nil
--- The picture moves to the left half. Call after text() (the rows start below
+-- The picture moves to the left part (half the width, or what split() says). Call after text() (the rows start below
 -- it). Returns the field at `focus`.
 local CHECK_ROW_GAP = 8
 local CHECK_BUTTON_SHARE = 0.2
@@ -283,6 +284,12 @@ function Screen:wide()
   self.view.wide = true
 end
 
+-- Where the rows start, as a fraction of the width (the picture takes the part before it): 0.5 by
+-- default. Two pictures and the controls in three equal parts: split(2 / 3).
+function Screen:split(fraction)
+  self.view.split = fraction
+end
+
 function Screen:checks(list, focus)
   local v = self.view
   -- Rows with a mark keep the button column clear of it: notes line up with it.
@@ -291,7 +298,7 @@ function Screen:checks(list, focus)
   local width, height = lcd.getWindowSize()
   local room = width - self.wiz.FORM_RIGHT_PADDING
   -- Beside the picture, or across the whole width when the screen asks for it (wide()).
-  local x = v.wide and MARGIN or floor(width / 2)
+  local x = v.wide and MARGIN or floor(width * (v.split or 0.5))
   lcd.font(FONT_STD)
   local _, titleH = lcd.getTextSize("Ag")
   lcd.font(FONT_S)
@@ -381,8 +388,9 @@ function Screen:checks(list, focus)
       row.y = y + floor((h - lineH) / 2)
       y = y + h + CHECK_ROW_GAP
     elseif c.cells then
-      -- Cells side by side across the width, each a label to the left of its number field.
-      local colW = floor((room - x - CELL_GAP) / 2)
+      -- Cells side by side across the row, each a label to the left of its number field.
+      local n = #c.cells
+      local colW = floor((room - x - CELL_GAP * (n - 1)) / n)
       local fieldW = floor(colW * CELL_FIELD_SHARE)
       row.cells = {}
       local first
@@ -392,10 +400,11 @@ function Screen:checks(list, focus)
         lcd.font(FONT_S)
         local lines = self.wiz.wrapLines(cell.label, lblW, FONT_S)
         if #lines > 2 then lines = {lines[1], ui.fit(table.concat(lines, " ", 2), lblW)} end
-        local n = cell.number
-        local get, set = ui.value("check_" .. i .. "_" .. k, n[3], n[4])
-        local f = form.addNumberField(nil, {x = cx + colW - fieldW, y = y, w = fieldW, h = h}, n[1], n[2], get, set)
-        if n[5] and f.suffix then f:suffix(n[5]) end
+        local n_ = cell.number
+        local get, set = ui.value("check_" .. i .. "_" .. k, n_[3], n_[4])
+        local f = form.addNumberField(nil, {x = cx + colW - fieldW, y = y, w = fieldW, h = h}, n_[1], n_[2], get, set)
+        if n_[5] and f.suffix then f:suffix(n_[5]) end
+        if n_[6] and f.decimals then f:decimals(n_[6]) end
         self.buttonList[#self.buttonList + 1] = {field = f, needsMotion = c.needsMotion, disabled = c.disabled}
         if k == 1 then first = f end
         row.cells[k] = {x = cx, lines = lines, labelY = rowTop + floor((h - #lines * lineH) / 2)}
@@ -446,7 +455,8 @@ end
 --   items      {{key =, label =}, ...}
 --   startText  the button on the right, and onStart when it is pressed; nil for
 --              no Start button (the way forward is the default Next)
-function Screen:safety(state, items, startText, onStart)
+--   notes      rows after the questions, such as {{note =, plain = true}}, or nil
+function Screen:safety(state, items, startText, onStart, notes)
   local answered = state.answered
   state.answered = nil
   local rows, ready, firstOpen = {}, true, nil
@@ -464,6 +474,7 @@ function Screen:safety(state, items, startText, onStart)
         self.wiz.rebuild()
       end}}
   end
+  for _, n in ipairs(notes or {}) do rows[#rows + 1] = n end
   local focus = (not ready) and (answered or firstOpen) or nil
   local field = self:checks(rows, focus)
   local rowField = self:row(nil, startText and {{text = startText, primary = ready, disabled = not ready, press = onStart}} or nil)
