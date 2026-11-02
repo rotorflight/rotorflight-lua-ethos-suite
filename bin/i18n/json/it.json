@@ -10961,6 +10961,48 @@
           "max_length": 6,
           "reverse_text": false
         },
+        "dir_stick": {
+          "english": "Stick",
+          "translation": "Stick",
+          "needs_translation": false,
+          "max_length": 5,
+          "reverse_text": false
+        },
+        "dir_expect": {
+          "english": "Expected",
+          "translation": "Atteso",
+          "needs_translation": false,
+          "max_length": 8,
+          "reverse_text": false
+        },
+        "dir_exp_roll": {
+          "english": "Tilts right",
+          "translation": "Inclina a destra",
+          "needs_translation": false,
+          "max_length": 11,
+          "reverse_text": false
+        },
+        "dir_exp_pitch": {
+          "english": "Tilts forward",
+          "translation": "Inclina in avanti",
+          "needs_translation": false,
+          "max_length": 13,
+          "reverse_text": false
+        },
+        "dir_exp_coll": {
+          "english": "Rises",
+          "translation": "Sale",
+          "needs_translation": false,
+          "max_length": 5,
+          "reverse_text": false
+        },
+        "dir_reversed_btn": {
+          "english": "Reversed",
+          "translation": "Invertito",
+          "needs_translation": false,
+          "max_length": 8,
+          "reverse_text": false
+        },
         "mot_pinion": {
           "english": "Pinion teeth",
           "translation": "Denti pignone",
@@ -11150,20 +11192,6 @@
           "max_length": 29,
           "reverse_text": false
         },
-        "dir_correct": {
-          "english": "Correct",
-          "translation": "Giusto",
-          "needs_translation": false,
-          "max_length": 7,
-          "reverse_text": false
-        },
-        "dir_wrong": {
-          "english": "Wrong",
-          "translation": "Sbagliato",
-          "needs_translation": false,
-          "max_length": 9,
-          "reverse_text": false
-        },
         "dir_roll_title": {
           "english": "Roll",
           "translation": "Roll",
@@ -11204,20 +11232,6 @@
           "translation": "Alza lo stick del collettivo. Tutto il piatto deve salire.",
           "needs_translation": false,
           "max_length": 59,
-          "reverse_text": false
-        },
-        "dir_done_title": {
-          "english": "Directions set",
-          "translation": "Direzioni fatte",
-          "needs_translation": false,
-          "max_length": 15,
-          "reverse_text": false
-        },
-        "dir_done": {
-          "english": "Roll, pitch and collective move the right way.",
-          "translation": "Roll, pitch e collettivo si muovono nel verso giusto.",
-          "needs_translation": false,
-          "max_length": 53,
           "reverse_text": false
         },
         "lvl_title": {

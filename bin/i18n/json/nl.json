@@ -10961,6 +10961,48 @@
           "max_length": 6,
           "reverse_text": false
         },
+        "dir_stick": {
+          "english": "Stick",
+          "translation": "Stick",
+          "needs_translation": false,
+          "max_length": 5,
+          "reverse_text": false
+        },
+        "dir_expect": {
+          "english": "Expected",
+          "translation": "Verwacht",
+          "needs_translation": false,
+          "max_length": 8,
+          "reverse_text": false
+        },
+        "dir_exp_roll": {
+          "english": "Tilts right",
+          "translation": "Kantelt rechts",
+          "needs_translation": false,
+          "max_length": 11,
+          "reverse_text": false
+        },
+        "dir_exp_pitch": {
+          "english": "Tilts forward",
+          "translation": "Kantelt naar voren",
+          "needs_translation": false,
+          "max_length": 13,
+          "reverse_text": false
+        },
+        "dir_exp_coll": {
+          "english": "Rises",
+          "translation": "Stijgt",
+          "needs_translation": false,
+          "max_length": 5,
+          "reverse_text": false
+        },
+        "dir_reversed_btn": {
+          "english": "Reversed",
+          "translation": "Omgekeerd",
+          "needs_translation": false,
+          "max_length": 8,
+          "reverse_text": false
+        },
         "mot_pinion": {
           "english": "Pinion teeth",
           "translation": "Tanden rondsel",
@@ -11150,20 +11192,6 @@
           "max_length": 30,
           "reverse_text": false
         },
-        "dir_correct": {
-          "english": "Correct",
-          "translation": "Goed",
-          "needs_translation": false,
-          "max_length": 7,
-          "reverse_text": false
-        },
-        "dir_wrong": {
-          "english": "Wrong",
-          "translation": "Fout",
-          "needs_translation": false,
-          "max_length": 5,
-          "reverse_text": false
-        },
         "dir_roll_title": {
           "english": "Roll",
           "translation": "Rol",
@@ -11204,20 +11232,6 @@
           "translation": "Zet de collectiefstick omhoog. De hele swash moet omhoog gaan.",
           "needs_translation": false,
           "max_length": 62,
-          "reverse_text": false
-        },
-        "dir_done_title": {
-          "english": "Directions set",
-          "translation": "Richtingen ingesteld",
-          "needs_translation": false,
-          "max_length": 20,
-          "reverse_text": false
-        },
-        "dir_done": {
-          "english": "Roll, pitch and collective move the right way.",
-          "translation": "Rol, pitch en collectief bewegen de goede kant op.",
-          "needs_translation": false,
-          "max_length": 50,
           "reverse_text": false
         },
         "lvl_title": {

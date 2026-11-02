@@ -8066,26 +8066,33 @@
           "reverse_text": false,
           "translation": "Kolektiv"
         },
-        "dir_correct": {
-          "english": "Correct",
-          "max_length": 7,
+        "dir_exp_coll": {
+          "english": "Rises",
+          "max_length": 5,
           "needs_translation": false,
           "reverse_text": false,
-          "translation": "Správně"
+          "translation": "Stoupá"
         },
-        "dir_done": {
-          "english": "Roll, pitch and collective move the right way.",
-          "max_length": 49,
+        "dir_exp_pitch": {
+          "english": "Tilts forward",
+          "max_length": 13,
           "needs_translation": false,
           "reverse_text": false,
-          "translation": "Klonění, klopení a kolektiv jdou správným směrem."
+          "translation": "Naklání dopředu"
         },
-        "dir_done_title": {
-          "english": "Directions set",
-          "max_length": 14,
+        "dir_exp_roll": {
+          "english": "Tilts right",
+          "max_length": 11,
           "needs_translation": false,
           "reverse_text": false,
-          "translation": "Směry hotovy"
+          "translation": "Naklání doprava"
+        },
+        "dir_expect": {
+          "english": "Expected",
+          "max_length": 8,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Očekáváno"
         },
         "dir_intro": {
           "english": "The sticks now drive the swash directly, without the gyro. Move each stick as asked and watch the swash.",
@@ -8122,6 +8129,13 @@
           "reverse_text": false,
           "translation": "Obráceno. Zkontrolujte znovu."
         },
+        "dir_reversed_btn": {
+          "english": "Reversed",
+          "max_length": 8,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Obráceně"
+        },
         "dir_roll": {
           "english": "Push the roll stick right. The swash should tilt right.",
           "max_length": 55,
@@ -8143,19 +8157,19 @@
           "reverse_text": false,
           "translation": "Uložit a pokračovat"
         },
+        "dir_stick": {
+          "english": "Stick",
+          "max_length": 5,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Páka"
+        },
         "dir_title": {
           "english": "Control directions",
           "max_length": 18,
           "needs_translation": false,
           "reverse_text": false,
           "translation": "Směry řízení"
-        },
-        "dir_wrong": {
-          "english": "Wrong",
-          "max_length": 6,
-          "needs_translation": false,
-          "reverse_text": false,
-          "translation": "Špatně"
         },
         "disconnected": {
           "english": "No link to the flight controller.",

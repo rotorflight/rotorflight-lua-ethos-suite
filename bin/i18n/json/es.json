@@ -10961,6 +10961,48 @@
           "max_length": 6,
           "reverse_text": false
         },
+        "dir_stick": {
+          "english": "Stick",
+          "translation": "Palanca",
+          "needs_translation": false,
+          "max_length": 5,
+          "reverse_text": false
+        },
+        "dir_expect": {
+          "english": "Expected",
+          "translation": "Esperado",
+          "needs_translation": false,
+          "max_length": 8,
+          "reverse_text": false
+        },
+        "dir_exp_roll": {
+          "english": "Tilts right",
+          "translation": "Inclina a la derecha",
+          "needs_translation": false,
+          "max_length": 11,
+          "reverse_text": false
+        },
+        "dir_exp_pitch": {
+          "english": "Tilts forward",
+          "translation": "Inclina hacia delante",
+          "needs_translation": false,
+          "max_length": 13,
+          "reverse_text": false
+        },
+        "dir_exp_coll": {
+          "english": "Rises",
+          "translation": "Sube",
+          "needs_translation": false,
+          "max_length": 5,
+          "reverse_text": false
+        },
+        "dir_reversed_btn": {
+          "english": "Reversed",
+          "translation": "Invertido",
+          "needs_translation": false,
+          "max_length": 8,
+          "reverse_text": false
+        },
         "mot_pinion": {
           "english": "Pinion teeth",
           "translation": "Dientes piñón",
@@ -11150,20 +11192,6 @@
           "max_length": 32,
           "reverse_text": false
         },
-        "dir_correct": {
-          "english": "Correct",
-          "translation": "Correcto",
-          "needs_translation": false,
-          "max_length": 8,
-          "reverse_text": false
-        },
-        "dir_wrong": {
-          "english": "Wrong",
-          "translation": "Incorrecto",
-          "needs_translation": false,
-          "max_length": 10,
-          "reverse_text": false
-        },
         "dir_roll_title": {
           "english": "Roll",
           "translation": "Alabeo",
@@ -11204,20 +11232,6 @@
           "translation": "Suba el stick de colectivo. Todo el plato debe subir.",
           "needs_translation": false,
           "max_length": 59,
-          "reverse_text": false
-        },
-        "dir_done_title": {
-          "english": "Directions set",
-          "translation": "Sentidos listos",
-          "needs_translation": false,
-          "max_length": 15,
-          "reverse_text": false
-        },
-        "dir_done": {
-          "english": "Roll, pitch and collective move the right way.",
-          "translation": "Alabeo, cabeceo y colectivo se mueven bien.",
-          "needs_translation": false,
-          "max_length": 46,
           "reverse_text": false
         },
         "lvl_title": {

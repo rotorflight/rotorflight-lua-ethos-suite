@@ -8066,26 +8066,33 @@
           "reverse_text": true,
           "translation": "קולקטיב"
         },
-        "dir_correct": {
-          "english": "Correct",
-          "max_length": 7,
+        "dir_exp_coll": {
+          "english": "Rises",
+          "max_length": 5,
           "needs_translation": false,
           "reverse_text": true,
-          "translation": "נכון"
+          "translation": "עולה"
         },
-        "dir_done": {
-          "english": "Roll, pitch and collective move the right way.",
-          "max_length": 46,
+        "dir_exp_pitch": {
+          "english": "Tilts forward",
+          "max_length": 13,
           "needs_translation": false,
           "reverse_text": true,
-          "translation": "רול, פיץ' וקולקטיב זזים בכיוון הנכון."
+          "translation": "נוטה קדימה"
         },
-        "dir_done_title": {
-          "english": "Directions set",
-          "max_length": 15,
+        "dir_exp_roll": {
+          "english": "Tilts right",
+          "max_length": 11,
           "needs_translation": false,
           "reverse_text": true,
-          "translation": "הכיוונים הוגדרו"
+          "translation": "נוטה ימינה"
+        },
+        "dir_expect": {
+          "english": "Expected",
+          "max_length": 8,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "צפוי"
         },
         "dir_intro": {
           "english": "The sticks now drive the swash directly, without the gyro. Move each stick as asked and watch the swash.",
@@ -8122,6 +8129,13 @@
           "reverse_text": true,
           "translation": "הופך. בדוק שוב."
         },
+        "dir_reversed_btn": {
+          "english": "Reversed",
+          "max_length": 8,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "הפוך"
+        },
         "dir_roll": {
           "english": "Push the roll stick right. The swash should tilt right.",
           "max_length": 55,
@@ -8143,19 +8157,19 @@
           "reverse_text": true,
           "translation": "שמור והמשך"
         },
+        "dir_stick": {
+          "english": "Stick",
+          "max_length": 5,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "מקל"
+        },
         "dir_title": {
           "english": "Control directions",
           "max_length": 18,
           "needs_translation": false,
           "reverse_text": true,
           "translation": "כיווני שליטה"
-        },
-        "dir_wrong": {
-          "english": "Wrong",
-          "max_length": 5,
-          "needs_translation": false,
-          "reverse_text": true,
-          "translation": "שגוי"
         },
         "disconnected": {
           "english": "No link to the flight controller.",

@@ -10961,6 +10961,48 @@
           "max_length": 6,
           "reverse_text": false
         },
+        "dir_stick": {
+          "english": "Stick",
+          "translation": "Knüppel",
+          "needs_translation": false,
+          "max_length": 5,
+          "reverse_text": false
+        },
+        "dir_expect": {
+          "english": "Expected",
+          "translation": "Erwartet",
+          "needs_translation": false,
+          "max_length": 8,
+          "reverse_text": false
+        },
+        "dir_exp_roll": {
+          "english": "Tilts right",
+          "translation": "Rechts ab",
+          "needs_translation": false,
+          "max_length": 11,
+          "reverse_text": false
+        },
+        "dir_exp_pitch": {
+          "english": "Tilts forward",
+          "translation": "Vorn ab",
+          "needs_translation": false,
+          "max_length": 13,
+          "reverse_text": false
+        },
+        "dir_exp_coll": {
+          "english": "Rises",
+          "translation": "Hoch",
+          "needs_translation": false,
+          "max_length": 5,
+          "reverse_text": false
+        },
+        "dir_reversed_btn": {
+          "english": "Reversed",
+          "translation": "Umgekehrt",
+          "needs_translation": false,
+          "max_length": 8,
+          "reverse_text": false
+        },
         "mot_pinion": {
           "english": "Pinion teeth",
           "translation": "Ritzel-Zähne",
@@ -11150,20 +11192,6 @@
           "max_length": 26,
           "reverse_text": false
         },
-        "dir_correct": {
-          "english": "Correct",
-          "translation": "Richtig",
-          "needs_translation": false,
-          "max_length": 7,
-          "reverse_text": false
-        },
-        "dir_wrong": {
-          "english": "Wrong",
-          "translation": "Falsch",
-          "needs_translation": false,
-          "max_length": 6,
-          "reverse_text": false
-        },
         "dir_roll_title": {
           "english": "Roll",
           "translation": "Roll",
@@ -11204,20 +11232,6 @@
           "translation": "Pitch-Knüppel hoch. Die ganze TS soll nach oben gehen.",
           "needs_translation": false,
           "max_length": 59,
-          "reverse_text": false
-        },
-        "dir_done_title": {
-          "english": "Directions set",
-          "translation": "Richtungen fertig",
-          "needs_translation": false,
-          "max_length": 17,
-          "reverse_text": false
-        },
-        "dir_done": {
-          "english": "Roll, pitch and collective move the right way.",
-          "translation": "Roll, Nick und Kollektiv laufen richtig herum.",
-          "needs_translation": false,
-          "max_length": 46,
           "reverse_text": false
         },
         "lvl_title": {

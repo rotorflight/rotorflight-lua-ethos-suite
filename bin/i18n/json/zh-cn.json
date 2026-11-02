@@ -10961,6 +10961,48 @@
           "max_length": 6,
           "reverse_text": false
         },
+        "dir_stick": {
+          "english": "Stick",
+          "translation": "摇杆",
+          "needs_translation": false,
+          "max_length": 5,
+          "reverse_text": false
+        },
+        "dir_expect": {
+          "english": "Expected",
+          "translation": "预期",
+          "needs_translation": false,
+          "max_length": 8,
+          "reverse_text": false
+        },
+        "dir_exp_roll": {
+          "english": "Tilts right",
+          "translation": "向右倾斜",
+          "needs_translation": false,
+          "max_length": 11,
+          "reverse_text": false
+        },
+        "dir_exp_pitch": {
+          "english": "Tilts forward",
+          "translation": "向前倾斜",
+          "needs_translation": false,
+          "max_length": 13,
+          "reverse_text": false
+        },
+        "dir_exp_coll": {
+          "english": "Rises",
+          "translation": "上升",
+          "needs_translation": false,
+          "max_length": 5,
+          "reverse_text": false
+        },
+        "dir_reversed_btn": {
+          "english": "Reversed",
+          "translation": "已反转",
+          "needs_translation": false,
+          "max_length": 8,
+          "reverse_text": false
+        },
         "mot_pinion": {
           "english": "Pinion teeth",
           "translation": "小齿轮齿数",
@@ -11150,20 +11192,6 @@
           "max_length": 25,
           "reverse_text": false
         },
-        "dir_correct": {
-          "english": "Correct",
-          "translation": "正确",
-          "needs_translation": false,
-          "max_length": 7,
-          "reverse_text": false
-        },
-        "dir_wrong": {
-          "english": "Wrong",
-          "translation": "错误",
-          "needs_translation": false,
-          "max_length": 5,
-          "reverse_text": false
-        },
         "dir_roll_title": {
           "english": "Roll",
           "translation": "横滚",
@@ -11204,20 +11232,6 @@
           "translation": "推高总距摇杆。整个斜盘应向上移动。",
           "needs_translation": false,
           "max_length": 59,
-          "reverse_text": false
-        },
-        "dir_done_title": {
-          "english": "Directions set",
-          "translation": "方向已设置",
-          "needs_translation": false,
-          "max_length": 14,
-          "reverse_text": false
-        },
-        "dir_done": {
-          "english": "Roll, pitch and collective move the right way.",
-          "translation": "横滚、俯仰和总距方向正确。",
-          "needs_translation": false,
-          "max_length": 46,
           "reverse_text": false
         },
         "lvl_title": {

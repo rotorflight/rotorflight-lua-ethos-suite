@@ -10961,6 +10961,48 @@
           "max_length": 6,
           "reverse_text": false
         },
+        "dir_stick": {
+          "english": "Stick",
+          "translation": "Spak",
+          "needs_translation": false,
+          "max_length": 5,
+          "reverse_text": false
+        },
+        "dir_expect": {
+          "english": "Expected",
+          "translation": "Forventet",
+          "needs_translation": false,
+          "max_length": 8,
+          "reverse_text": false
+        },
+        "dir_exp_roll": {
+          "english": "Tilts right",
+          "translation": "Helles til høyre",
+          "needs_translation": false,
+          "max_length": 11,
+          "reverse_text": false
+        },
+        "dir_exp_pitch": {
+          "english": "Tilts forward",
+          "translation": "Helles forover",
+          "needs_translation": false,
+          "max_length": 13,
+          "reverse_text": false
+        },
+        "dir_exp_coll": {
+          "english": "Rises",
+          "translation": "Stiger",
+          "needs_translation": false,
+          "max_length": 5,
+          "reverse_text": false
+        },
+        "dir_reversed_btn": {
+          "english": "Reversed",
+          "translation": "Snudd",
+          "needs_translation": false,
+          "max_length": 8,
+          "reverse_text": false
+        },
         "mot_pinion": {
           "english": "Pinion teeth",
           "translation": "Tenner pinjong",
@@ -11150,20 +11192,6 @@
           "max_length": 25,
           "reverse_text": false
         },
-        "dir_correct": {
-          "english": "Correct",
-          "translation": "Riktig",
-          "needs_translation": false,
-          "max_length": 7,
-          "reverse_text": false
-        },
-        "dir_wrong": {
-          "english": "Wrong",
-          "translation": "Feil",
-          "needs_translation": false,
-          "max_length": 5,
-          "reverse_text": false
-        },
         "dir_roll_title": {
           "english": "Roll",
           "translation": "Roll",
@@ -11204,20 +11232,6 @@
           "translation": "Løft kollektivstikken. Hele swashen skal gå opp.",
           "needs_translation": false,
           "max_length": 59,
-          "reverse_text": false
-        },
-        "dir_done_title": {
-          "english": "Directions set",
-          "translation": "Retninger satt",
-          "needs_translation": false,
-          "max_length": 14,
-          "reverse_text": false
-        },
-        "dir_done": {
-          "english": "Roll, pitch and collective move the right way.",
-          "translation": "Roll, pitch og kollektiv går riktig vei.",
-          "needs_translation": false,
-          "max_length": 46,
           "reverse_text": false
         },
         "lvl_title": {

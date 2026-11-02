@@ -9643,6 +9643,48 @@
           "max_length": 6,
           "reverse_text": false
         },
+        "dir_stick": {
+          "english": "Stick",
+          "translation": "Stick",
+          "needs_translation": false,
+          "max_length": 5,
+          "reverse_text": false
+        },
+        "dir_expect": {
+          "english": "Expected",
+          "translation": "Expected",
+          "needs_translation": false,
+          "max_length": 8,
+          "reverse_text": false
+        },
+        "dir_exp_roll": {
+          "english": "Tilts right",
+          "translation": "Tilts right",
+          "needs_translation": false,
+          "max_length": 11,
+          "reverse_text": false
+        },
+        "dir_exp_pitch": {
+          "english": "Tilts forward",
+          "translation": "Tilts forward",
+          "needs_translation": false,
+          "max_length": 13,
+          "reverse_text": false
+        },
+        "dir_exp_coll": {
+          "english": "Rises",
+          "translation": "Rises",
+          "needs_translation": false,
+          "max_length": 5,
+          "reverse_text": false
+        },
+        "dir_reversed_btn": {
+          "english": "Reversed",
+          "translation": "Reversed",
+          "needs_translation": false,
+          "max_length": 8,
+          "reverse_text": false
+        },
         "mot_pinion": {
           "english": "Pinion teeth",
           "translation": "Pinion teeth",
@@ -9805,18 +9847,6 @@
           "needs_translation": false,
           "max_length": 25
         },
-        "dir_correct": {
-          "english": "Correct",
-          "translation": "Correct",
-          "needs_translation": false,
-          "max_length": 7
-        },
-        "dir_wrong": {
-          "english": "Wrong",
-          "translation": "Wrong",
-          "needs_translation": false,
-          "max_length": 5
-        },
         "dir_roll_title": {
           "english": "Roll",
           "translation": "Roll",
@@ -9852,18 +9882,6 @@
           "translation": "Raise the collective stick. The whole swash should move up.",
           "needs_translation": false,
           "max_length": 59
-        },
-        "dir_done_title": {
-          "english": "Directions set",
-          "translation": "Directions set",
-          "needs_translation": false,
-          "max_length": 14
-        },
-        "dir_done": {
-          "english": "Roll, pitch and collective move the right way.",
-          "translation": "Roll, pitch and collective move the right way.",
-          "needs_translation": false,
-          "max_length": 46
         },
         "lvl_title": {
           "english": "Level the swash",

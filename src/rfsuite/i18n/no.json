@@ -8066,26 +8066,33 @@
           "reverse_text": false,
           "translation": "Kollektiv"
         },
-        "dir_correct": {
-          "english": "Correct",
-          "max_length": 7,
+        "dir_exp_coll": {
+          "english": "Rises",
+          "max_length": 5,
           "needs_translation": false,
           "reverse_text": false,
-          "translation": "Riktig"
+          "translation": "Stiger"
         },
-        "dir_done": {
-          "english": "Roll, pitch and collective move the right way.",
-          "max_length": 46,
+        "dir_exp_pitch": {
+          "english": "Tilts forward",
+          "max_length": 13,
           "needs_translation": false,
           "reverse_text": false,
-          "translation": "Roll, pitch og kollektiv går riktig vei."
+          "translation": "Helles forover"
         },
-        "dir_done_title": {
-          "english": "Directions set",
-          "max_length": 14,
+        "dir_exp_roll": {
+          "english": "Tilts right",
+          "max_length": 11,
           "needs_translation": false,
           "reverse_text": false,
-          "translation": "Retninger satt"
+          "translation": "Helles til høyre"
+        },
+        "dir_expect": {
+          "english": "Expected",
+          "max_length": 8,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Forventet"
         },
         "dir_intro": {
           "english": "The sticks now drive the swash directly, without the gyro. Move each stick as asked and watch the swash.",
@@ -8122,6 +8129,13 @@
           "reverse_text": false,
           "translation": "Reversert. Sjekk igjen."
         },
+        "dir_reversed_btn": {
+          "english": "Reversed",
+          "max_length": 8,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Snudd"
+        },
         "dir_roll": {
           "english": "Push the roll stick right. The swash should tilt right.",
           "max_length": 57,
@@ -8143,19 +8157,19 @@
           "reverse_text": false,
           "translation": "Lagre og fortsett"
         },
+        "dir_stick": {
+          "english": "Stick",
+          "max_length": 5,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Spak"
+        },
         "dir_title": {
           "english": "Control directions",
           "max_length": 18,
           "needs_translation": false,
           "reverse_text": false,
           "translation": "Styreretninger"
-        },
-        "dir_wrong": {
-          "english": "Wrong",
-          "max_length": 5,
-          "needs_translation": false,
-          "reverse_text": false,
-          "translation": "Feil"
         },
         "disconnected": {
           "english": "No link to the flight controller.",

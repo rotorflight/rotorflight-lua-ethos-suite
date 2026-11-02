@@ -8066,26 +8066,33 @@
           "reverse_text": false,
           "translation": "Coletivo"
         },
-        "dir_correct": {
-          "english": "Correct",
-          "max_length": 7,
+        "dir_exp_coll": {
+          "english": "Rises",
+          "max_length": 5,
           "needs_translation": false,
           "reverse_text": false,
-          "translation": "Correto"
+          "translation": "Sobe"
         },
-        "dir_done": {
-          "english": "Roll, pitch and collective move the right way.",
-          "max_length": 51,
+        "dir_exp_pitch": {
+          "english": "Tilts forward",
+          "max_length": 13,
           "needs_translation": false,
           "reverse_text": false,
-          "translation": "Rolagem, arfagem e coletivo movem no sentido certo."
+          "translation": "Inclina para frente"
         },
-        "dir_done_title": {
-          "english": "Directions set",
-          "max_length": 16,
+        "dir_exp_roll": {
+          "english": "Tilts right",
+          "max_length": 11,
           "needs_translation": false,
           "reverse_text": false,
-          "translation": "Direções prontas"
+          "translation": "Inclina para a direita"
+        },
+        "dir_expect": {
+          "english": "Expected",
+          "max_length": 8,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Esperado"
         },
         "dir_intro": {
           "english": "The sticks now drive the swash directly, without the gyro. Move each stick as asked and watch the swash.",
@@ -8122,6 +8129,13 @@
           "reverse_text": false,
           "translation": "Invertido. Verifique de novo."
         },
+        "dir_reversed_btn": {
+          "english": "Reversed",
+          "max_length": 8,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Invertido"
+        },
         "dir_roll": {
           "english": "Push the roll stick right. The swash should tilt right.",
           "max_length": 70,
@@ -8143,19 +8157,19 @@
           "reverse_text": false,
           "translation": "Salvar e continuar"
         },
+        "dir_stick": {
+          "english": "Stick",
+          "max_length": 5,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Stick"
+        },
         "dir_title": {
           "english": "Control directions",
           "max_length": 19,
           "needs_translation": false,
           "reverse_text": false,
           "translation": "Direções de comando"
-        },
-        "dir_wrong": {
-          "english": "Wrong",
-          "max_length": 6,
-          "needs_translation": false,
-          "reverse_text": false,
-          "translation": "Errado"
         },
         "disconnected": {
           "english": "No link to the flight controller.",

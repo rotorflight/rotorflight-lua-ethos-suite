@@ -8066,26 +8066,33 @@
           "reverse_text": false,
           "translation": "Colectivo"
         },
-        "dir_correct": {
-          "english": "Correct",
+        "dir_exp_coll": {
+          "english": "Rises",
+          "max_length": 5,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Sube"
+        },
+        "dir_exp_pitch": {
+          "english": "Tilts forward",
+          "max_length": 13,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Inclina hacia delante"
+        },
+        "dir_exp_roll": {
+          "english": "Tilts right",
+          "max_length": 11,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Inclina a la derecha"
+        },
+        "dir_expect": {
+          "english": "Expected",
           "max_length": 8,
           "needs_translation": false,
           "reverse_text": false,
-          "translation": "Correcto"
-        },
-        "dir_done": {
-          "english": "Roll, pitch and collective move the right way.",
-          "max_length": 46,
-          "needs_translation": false,
-          "reverse_text": false,
-          "translation": "Alabeo, cabeceo y colectivo se mueven bien."
-        },
-        "dir_done_title": {
-          "english": "Directions set",
-          "max_length": 15,
-          "needs_translation": false,
-          "reverse_text": false,
-          "translation": "Sentidos listos"
+          "translation": "Esperado"
         },
         "dir_intro": {
           "english": "The sticks now drive the swash directly, without the gyro. Move each stick as asked and watch the swash.",
@@ -8122,6 +8129,13 @@
           "reverse_text": false,
           "translation": "Invertido. Compruébelo de nuevo."
         },
+        "dir_reversed_btn": {
+          "english": "Reversed",
+          "max_length": 8,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Invertido"
+        },
         "dir_roll": {
           "english": "Push the roll stick right. The swash should tilt right.",
           "max_length": 78,
@@ -8143,19 +8157,19 @@
           "reverse_text": false,
           "translation": "Guardar y seguir"
         },
+        "dir_stick": {
+          "english": "Stick",
+          "max_length": 5,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Palanca"
+        },
         "dir_title": {
           "english": "Control directions",
           "max_length": 18,
           "needs_translation": false,
           "reverse_text": false,
           "translation": "Sentido de mandos"
-        },
-        "dir_wrong": {
-          "english": "Wrong",
-          "max_length": 10,
-          "needs_translation": false,
-          "reverse_text": false,
-          "translation": "Incorrecto"
         },
         "disconnected": {
           "english": "No link to the flight controller.",

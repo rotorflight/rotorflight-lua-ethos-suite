@@ -810,5 +810,22 @@ function ui.gauge(x, y, w, h, fraction, colors, zoneFrom, zoneTo)
   end
 end
 
+-- The same stick gauge standing up, at the left of a picture: fraction 0 at the bottom, 1 at the top.
+function ui.vgauge(x, y, w, h, fraction, colors, zoneFrom, zoneTo)
+  lcd.color(colors.body)
+  lcd.drawFilledRectangle(x + floor(w / 2) - 2, y, 4, h)
+  if zoneFrom and zoneTo then
+    lcd.color(colors.surface)
+    local zh = math.max(2, floor(h * (zoneTo - zoneFrom)))
+    lcd.drawFilledRectangle(x + floor(w / 2) - 3, y + h - floor(h * zoneTo), 6, zh)
+  end
+  if fraction then
+    if fraction < 0 then fraction = 0 elseif fraction > 1 then fraction = 1 end
+    lcd.color(colors.active)
+    local my = y + h - floor(h * fraction)
+    lcd.drawFilledRectangle(x, my - 3, w, 6)
+  end
+end
+
 package.loaded["rfsuite.app.setup_wizard_ui"] = ui
 return ui
