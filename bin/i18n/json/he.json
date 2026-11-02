@@ -9241,13 +9241,6 @@
           "max_length": 82,
           "reverse_text": true
         },
-        "rcv_blades_off": {
-          "english": "Keep the blades off: the motor may start.",
-          "translation": "השאר את הלהבים מורדים: המנוע עלול להתניע.",
-          "needs_translation": false,
-          "max_length": 41,
-          "reverse_text": true
-        },
         "rcv_measure": {
           "english": "Measure",
           "translation": "מדוד",
@@ -10144,12 +10137,6 @@
           "max_length": 4,
           "reverse_text": true
         },
-        "mot_prepare_text": {
-          "english": "Keep the servos unplugged and the blades off. The ESC runs as soon as the helicopter is armed.",
-          "translation": "השאירו את הסרוואים מנותקים והסירו את הלהבים. הבקר פועל ברגע שהמסוק מזוין.",
-          "needs_translation": true,
-          "max_length": 94
-        },
         "gov_speed_title": {
           "english": "Headspeed",
           "translation": "מהירות סיבוב",
@@ -10554,13 +10541,6 @@
           "max_length": 150,
           "reverse_text": true
         },
-        "esc_blades": {
-          "english": "Main blades off, pinion out of mesh.",
-          "translation": "להבים ראשיים הוסרו, הפיניון הוצא מההילוך.",
-          "needs_translation": false,
-          "max_length": 36,
-          "reverse_text": true
-        },
         "esc_full_btn": {
           "english": "Full throttle",
           "translation": "גז מלא",
@@ -10904,6 +10884,83 @@
           "max_length": 44,
           "reverse_text": true
         },
+        "mot_prepare_blades": {
+          "english": "Keep the blades off. The ESC runs as soon as the helicopter is armed.",
+          "translation": "הלהבים נשארים מוסרים. הבקר פועל ברגע שהמסוק מזוין.",
+          "needs_translation": false,
+          "max_length": 69,
+          "reverse_text": true
+        },
+        "srv_move_up": {
+          "english": "Move up 20°",
+          "translation": "למעלה 20°",
+          "needs_translation": false,
+          "max_length": 11,
+          "reverse_text": true
+        },
+        "srv_reverse": {
+          "english": "Reverse",
+          "translation": "הפוך",
+          "needs_translation": false,
+          "max_length": 7,
+          "reverse_text": true
+        },
+        "srv_centre_label": {
+          "english": "Centre",
+          "translation": "מרכז",
+          "needs_translation": false,
+          "max_length": 6,
+          "reverse_text": true
+        },
+        "srv_offset": {
+          "english": "Offset",
+          "translation": "סטייה",
+          "needs_translation": false,
+          "max_length": 6,
+          "reverse_text": true
+        },
+        "srv_from": {
+          "english": "%d us from %d us",
+          "translation": "%d us מתוך %d us",
+          "needs_translation": false,
+          "max_length": 16,
+          "reverse_text": true
+        },
+        "srv_arms_title": {
+          "english": "Servo arms",
+          "translation": "זרועות הסרוו",
+          "needs_translation": false,
+          "max_length": 10,
+          "reverse_text": true
+        },
+        "srv_arms_sub": {
+          "english": "Each servo is held at its center. Check that it moves the right way, then set the center so the arm is square.",
+          "translation": "כל סרוו מוחזק במרכזו. בדקו שהוא זז לכיוון הנכון, ואז כוונו את המרכז כך שהזרוע תהיה ישרה.",
+          "needs_translation": false,
+          "max_length": 110,
+          "reverse_text": true
+        },
+        "srv_arms_text": {
+          "english": "Fit the servo arms as close to 90° to the pushrods as the splines allow. Press Move up: the arm should move up, towards the swashplate. Adjust the center until the arm is exactly square.",
+          "translation": "הרכיבו את זרועות הסרוו קרוב ככל האפשר ל-90° ביחס למוטות, כפי שהשיניים מאפשרות. למעלה: הזרוע צריכה לזוז לכיוון הצלחת. כוונו את המרכז עד שהזרוע ישרה בדיוק.",
+          "needs_translation": false,
+          "max_length": 186,
+          "reverse_text": true
+        },
+        "srv_back_centre": {
+          "english": "Back to centre",
+          "translation": "חזרה למרכז",
+          "needs_translation": false,
+          "max_length": 14,
+          "reverse_text": true
+        },
+        "srv_normal": {
+          "english": "Normal",
+          "translation": "רגיל",
+          "needs_translation": false,
+          "max_length": 6,
+          "reverse_text": true
+        },
         "mot_pinion": {
           "english": "Pinion teeth",
           "translation": "שיני פיניון",
@@ -10988,13 +11045,6 @@
           "max_length": 38,
           "reverse_text": true
         },
-        "con_blades": {
-          "english": "Blades stay off, and keep clear of the motor.",
-          "translation": "הלהבים נשארים מורדים, והתרחק מהמנוע.",
-          "needs_translation": false,
-          "max_length": 45,
-          "reverse_text": true
-        },
         "con_main_motor": {
           "english": "Main motor",
           "translation": "מנוע ראשי",
@@ -11037,41 +11087,6 @@
           "max_length": 62,
           "reverse_text": true
         },
-        "srv_test_text": {
-          "english": "The servo is held 20 degrees up.",
-          "translation": "הסרוו מוחזק 20 מעלות למעלה.",
-          "needs_translation": false,
-          "max_length": 32,
-          "reverse_text": true
-        },
-        "srv_test_q": {
-          "english": "Did the arm move up, towards the swash?",
-          "translation": "האם הזרוע זזה למעלה, לכיוון הסוואש?",
-          "needs_translation": false,
-          "max_length": 39,
-          "reverse_text": true
-        },
-        "srv_reversed": {
-          "english": "Reversed. Check the arm moved up now.",
-          "translation": "הופך. בדוק שהזרוע זזה כעת למעלה.",
-          "needs_translation": false,
-          "max_length": 37,
-          "reverse_text": true
-        },
-        "srv_up": {
-          "english": "Yes, up",
-          "translation": "כן, למעלה",
-          "needs_translation": false,
-          "max_length": 9,
-          "reverse_text": true
-        },
-        "srv_down": {
-          "english": "No, down",
-          "translation": "לא, למטה",
-          "needs_translation": false,
-          "max_length": 8,
-          "reverse_text": true
-        },
         "srv_centre_text": {
           "english": "Nudge the centre until the servo arm is level.",
           "translation": "כוונן את המרכז עד שזרוע הסרוו ישרה.",
@@ -11084,13 +11099,6 @@
           "translation": "כוונן את המרכז עד שזרוע סרוו הזנב בזווית 90 מעלות למוט הדחיפה.",
           "needs_translation": false,
           "max_length": 74,
-          "reverse_text": true
-        },
-        "srv_value_fmt": {
-          "english": "Centre %d us (%s).",
-          "translation": "מרכז %d us (%s).",
-          "needs_translation": false,
-          "max_length": 18,
           "reverse_text": true
         },
         "srv_far": {

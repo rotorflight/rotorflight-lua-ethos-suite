@@ -7989,13 +7989,6 @@
           "reverse_text": false,
           "translation": "Batteriet holdes frakoblet til neste trinn."
         },
-        "con_blades": {
-          "english": "Blades stay off, and keep clear of the motor.",
-          "max_length": 45,
-          "needs_translation": false,
-          "reverse_text": false,
-          "translation": "Bladene forblir av; hold avstand til motoren."
-        },
         "con_checking": {
           "english": "Checking",
           "max_length": 8,
@@ -8177,13 +8170,6 @@
           "needs_translation": false,
           "reverse_text": false,
           "translation": "Koble til batteriet. Regulatoren piper for å vise at den har tatt fullgass; tonene står i manualen. Trykk så Tomgang."
-        },
-        "esc_blades": {
-          "english": "Main blades off, pinion out of mesh.",
-          "max_length": 36,
-          "needs_translation": false,
-          "reverse_text": false,
-          "translation": "Hovedbladene av, pinjongen ut av inngrep."
         },
         "esc_cal_status": {
           "english": "ESC calibration",
@@ -8953,11 +8939,12 @@
           "reverse_text": false,
           "translation": "Magnetpoler i hovedmotoren, fra databladet (ofte 10 eller 12)."
         },
-        "mot_prepare_text": {
-          "english": "Keep the servos unplugged and the blades off. The ESC runs as soon as the helicopter is armed.",
-          "max_length": 96,
-          "needs_translation": true,
-          "translation": "La servoene være frakoblet og ta av bladene. Regulatoren kjører så snart helikopteret er armert."
+        "mot_prepare_blades": {
+          "english": "Keep the blades off. The ESC runs as soon as the helicopter is armed.",
+          "max_length": 69,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Hold rotorbladene av. Regulatoren går så snart helikopteren er armert."
         },
         "mot_protocol": {
           "english": "Protocol",
@@ -9710,13 +9697,6 @@
           "needs_translation": false,
           "translation": "Gir %d °/s · expo %d %%"
         },
-        "rcv_blades_off": {
-          "english": "Keep the blades off: the motor may start.",
-          "max_length": 41,
-          "needs_translation": false,
-          "reverse_text": false,
-          "translation": "Hold bladene av: motoren kan starte."
-        },
         "rcv_ch_collective": {
           "english": "Coll.",
           "max_length": 5,
@@ -10429,6 +10409,41 @@
           "reverse_text": false,
           "translation": "Servo %d (%s)"
         },
+        "srv_arms_sub": {
+          "english": "Each servo is held at its center. Check that it moves the right way, then set the center so the arm is square.",
+          "max_length": 110,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Hvert servo holdes i midtposisjon. Kontroller at det beveger seg riktig vei, og still deretter midten slik at armen står rettvinklet."
+        },
+        "srv_arms_text": {
+          "english": "Fit the servo arms as close to 90° to the pushrods as the splines allow. Press Move up: the arm should move up, towards the swashplate. Adjust the center until the arm is exactly square.",
+          "max_length": 186,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Sett servoarmene så nær 90° til stengene som tannhjulet tillater. Opp: armen må bevege seg mot svingplaten. Still inn midten til armen står helt rettvinklet."
+        },
+        "srv_arms_title": {
+          "english": "Servo arms",
+          "max_length": 10,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Servoarmer"
+        },
+        "srv_back_centre": {
+          "english": "Back to centre",
+          "max_length": 14,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Tilbake til midt"
+        },
+        "srv_centre_label": {
+          "english": "Centre",
+          "max_length": 6,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Midt"
+        },
         "srv_centre_text": {
           "english": "Nudge the centre until the servo arm is level.",
           "max_length": 46,
@@ -10450,13 +10465,6 @@
           "reverse_text": false,
           "translation": "Servoer satt"
         },
-        "srv_down": {
-          "english": "No, down",
-          "max_length": 8,
-          "needs_translation": false,
-          "reverse_text": false,
-          "translation": "Nei, ned"
-        },
         "srv_far": {
           "english": "Far from centre: move the arm a spline instead.",
           "max_length": 47,
@@ -10464,12 +10472,40 @@
           "reverse_text": false,
           "translation": "Langt fra senter: flytt heller armen én tann."
         },
-        "srv_reversed": {
-          "english": "Reversed. Check the arm moved up now.",
-          "max_length": 37,
+        "srv_from": {
+          "english": "%d us from %d us",
+          "max_length": 16,
           "needs_translation": false,
           "reverse_text": false,
-          "translation": "Reversert. Sjekk at armen går opp nå."
+          "translation": "%d us fra %d us"
+        },
+        "srv_move_up": {
+          "english": "Move up 20°",
+          "max_length": 11,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Opp 20°"
+        },
+        "srv_normal": {
+          "english": "Normal",
+          "max_length": 6,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Normal"
+        },
+        "srv_offset": {
+          "english": "Offset",
+          "max_length": 6,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Avvik"
+        },
+        "srv_reverse": {
+          "english": "Reverse",
+          "max_length": 7,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Snu"
         },
         "srv_tail_text": {
           "english": "Nudge the centre until the tail servo arm is at 90 degrees to the pushrod.",
@@ -10477,34 +10513,6 @@
           "needs_translation": false,
           "reverse_text": false,
           "translation": "Juster senteret til haleservoarmen står 90 grader på staget."
-        },
-        "srv_test_q": {
-          "english": "Did the arm move up, towards the swash?",
-          "max_length": 39,
-          "needs_translation": false,
-          "reverse_text": false,
-          "translation": "Gikk armen opp, mot swashen?"
-        },
-        "srv_test_text": {
-          "english": "The servo is held 20 degrees up.",
-          "max_length": 32,
-          "needs_translation": false,
-          "reverse_text": false,
-          "translation": "Servoen holdes 20 grader opp."
-        },
-        "srv_up": {
-          "english": "Yes, up",
-          "max_length": 7,
-          "needs_translation": false,
-          "reverse_text": false,
-          "translation": "Ja, opp"
-        },
-        "srv_value_fmt": {
-          "english": "Centre %d us (%s).",
-          "max_length": 18,
-          "needs_translation": false,
-          "reverse_text": false,
-          "translation": "Senter %d us (%s)."
         },
         "step_connect": {
           "english": "Connect servos",

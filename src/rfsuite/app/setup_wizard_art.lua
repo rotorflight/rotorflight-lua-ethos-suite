@@ -46,6 +46,9 @@
 --                              suite's helicopter_setup artwork), with the view
 --                              named at the top and an arrow to the front
 --
+--   art.swashImage(wiz, w, h)  the Swashplate step's picture, as the Connect step shows it
+--   art.pair(a, b)            two layouts side by side, each in its half of the width
+--
 -- Each returns a small layout table, built when a screen is built.
 -- art.draw() runs from paint and only draws what the layout says, without
 -- allocating.
@@ -838,6 +841,31 @@ function art.image(name, w, h, native)
   return {kind = "image", name = name, w = w, h = h, native = native}
 end
 
+-- The Swashplate step's pictures (app/gfx/setup_wizard/swash-*.png) by swash type.
+local SWASH_PICTURE = {[1] = "direct", [2] = "120", [3] = "135", [4] = "140", [5] = "90l", [6] = "90v"}
+
+-- The picture name: the type, servo 1 in front of the shaft or behind it (120, 135 and 140 only),
+-- and the tail servo when the tail has one.
+local function swashName(swashType, rear, tailServo)
+  local base = SWASH_PICTURE[swashType]
+  if not base then return nil end
+  local name = "swash-" .. base
+  if swashType >= 2 and swashType <= 4 then name = name .. (rear and "-rear" or "-front") end
+  if tailServo then name = name .. "-tail" end
+  return name
+end
+
+-- The swashplate picture of the Swashplate step, as the Connect step shows it: by the swash type
+-- of the wizard session, servo 1's side (kept for the session, rear by default) and the tail servo.
+function art.swashImage(wiz, w, h)
+  local mix = wiz.mixConfig() or {}
+  local swashBases = package.loaded["rfsuite.setup_wizard.swash"]
+  local base = swashBases and swashBases[wiz]
+  local rear = not (base and base.rear == false)
+  local name = swashName(mix.swash_type or 0, rear, not wiz.motorised()) or "swash-direct"
+  return art.image(name, w, h)
+end
+
 local function imageBitmap(l, k)
   local bitmap = l[k]
   if bitmap == nil then
@@ -1389,6 +1417,18 @@ function art.power(variant)
   return {kind = "power", variant = variant}
 end
 
+-- Two pictures side by side, each in its half of the width (a: the left, b: the right).
+function art.pair(a, b)
+  return {kind = "pair", a = a, b = b}
+end
+
+local PAIR_GAP = 6
+local function drawPair(l, x, y, w, h, colors)
+  local half = floor((w - PAIR_GAP) / 2)
+  art.draw(l.a, x, y, half, h, colors)
+  art.draw(l.b, x + half + PAIR_GAP, y, w - half - PAIR_GAP, h, colors)
+end
+
 function art.draw(l, x, y, w, h, colors)
   if not l or w <= 0 or h <= 20 then return end
   local k = l.kind
@@ -1420,6 +1460,8 @@ function art.draw(l, x, y, w, h, colors)
     drawPhoto(l, x, y, w, h, colors)
   elseif k == "image" then
     drawImage(l, x, y, w, h, colors)
+  elseif k == "pair" then
+    drawPair(l, x, y, w, h, colors)
   elseif k == "attitude" then
     if l.wire then drawAttitude(l, x, y, w, h, colors) else drawAttitudeSolid(l, x, y, w, h, colors) end
   elseif k == "bubble" then

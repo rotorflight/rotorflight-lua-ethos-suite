@@ -6891,12 +6891,6 @@
           "reverse_text": false,
           "translation": "Battery stays unplugged until the next step."
         },
-        "con_blades": {
-          "english": "Blades stay off, and keep clear of the motor.",
-          "max_length": 45,
-          "needs_translation": false,
-          "translation": "Blades stay off, and keep clear of the motor."
-        },
         "con_checking": {
           "english": "Checking",
           "max_length": 8,
@@ -7053,13 +7047,6 @@
           "needs_translation": false,
           "reverse_text": false,
           "translation": "Plug the battery in. The ESC beeps to show it has taken full throttle; your ESC's manual lists the tones. Then press Low throttle."
-        },
-        "esc_blades": {
-          "english": "Main blades off, pinion out of mesh.",
-          "max_length": 36,
-          "needs_translation": false,
-          "reverse_text": false,
-          "translation": "Main blades off, pinion out of mesh."
         },
         "esc_cal_status": {
           "english": "ESC calibration",
@@ -7772,11 +7759,12 @@
           "needs_translation": false,
           "translation": "Magnet poles of the main motor, from its data sheet (often 10 or 12)."
         },
-        "mot_prepare_text": {
-          "english": "Keep the servos unplugged and the blades off. The ESC runs as soon as the helicopter is armed.",
-          "max_length": 94,
+        "mot_prepare_blades": {
+          "english": "Keep the blades off. The ESC runs as soon as the helicopter is armed.",
+          "max_length": 69,
           "needs_translation": false,
-          "translation": "Keep the servos unplugged and the blades off. The ESC runs as soon as the helicopter is armed."
+          "reverse_text": false,
+          "translation": "Keep the blades off. The ESC runs as soon as the helicopter is armed."
         },
         "mot_protocol": {
           "english": "Protocol",
@@ -8500,12 +8488,6 @@
           "needs_translation": false,
           "translation": "Yaw %d °/s · expo %d %%"
         },
-        "rcv_blades_off": {
-          "english": "Keep the blades off: the motor may start.",
-          "max_length": 41,
-          "needs_translation": false,
-          "translation": "Keep the blades off: the motor may start."
-        },
         "rcv_ch_collective": {
           "english": "Coll.",
           "max_length": 5,
@@ -9139,6 +9121,41 @@
           "needs_translation": false,
           "translation": "Servo %d (%s)"
         },
+        "srv_arms_sub": {
+          "english": "Each servo is held at its center. Check that it moves the right way, then set the center so the arm is square.",
+          "max_length": 110,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Each servo is held at its center. Check that it moves the right way, then set the center so the arm is square."
+        },
+        "srv_arms_text": {
+          "english": "Fit the servo arms as close to 90° to the pushrods as the splines allow. Press Move up: the arm should move up, towards the swashplate. Adjust the center until the arm is exactly square.",
+          "max_length": 186,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Fit the servo arms as close to 90° to the pushrods as the splines allow. Press Move up: the arm should move up, towards the swashplate. Adjust the center until the arm is exactly square."
+        },
+        "srv_arms_title": {
+          "english": "Servo arms",
+          "max_length": 10,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Servo arms"
+        },
+        "srv_back_centre": {
+          "english": "Back to centre",
+          "max_length": 14,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Back to centre"
+        },
+        "srv_centre_label": {
+          "english": "Centre",
+          "max_length": 6,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Centre"
+        },
         "srv_centre_text": {
           "english": "Nudge the centre until the servo arm is level.",
           "max_length": 46,
@@ -9157,53 +9174,52 @@
           "needs_translation": false,
           "translation": "Servos set"
         },
-        "srv_down": {
-          "english": "No, down",
-          "max_length": 8,
-          "needs_translation": false,
-          "translation": "No, down"
-        },
         "srv_far": {
           "english": "Far from centre: move the arm a spline instead.",
           "max_length": 47,
           "needs_translation": false,
           "translation": "Far from centre: move the arm a spline instead."
         },
-        "srv_reversed": {
-          "english": "Reversed. Check the arm moved up now.",
-          "max_length": 37,
+        "srv_from": {
+          "english": "%d us from %d us",
+          "max_length": 16,
           "needs_translation": false,
-          "translation": "Reversed. Check the arm moved up now."
+          "reverse_text": false,
+          "translation": "%d us from %d us"
+        },
+        "srv_move_up": {
+          "english": "Move up 20°",
+          "max_length": 11,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Move up 20°"
+        },
+        "srv_normal": {
+          "english": "Normal",
+          "max_length": 6,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Normal"
+        },
+        "srv_offset": {
+          "english": "Offset",
+          "max_length": 6,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Offset"
+        },
+        "srv_reverse": {
+          "english": "Reverse",
+          "max_length": 7,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Reverse"
         },
         "srv_tail_text": {
           "english": "Nudge the centre until the tail servo arm is at 90 degrees to the pushrod.",
           "max_length": 74,
           "needs_translation": false,
           "translation": "Nudge the centre until the tail servo arm is at 90 degrees to the pushrod."
-        },
-        "srv_test_q": {
-          "english": "Did the arm move up, towards the swash?",
-          "max_length": 39,
-          "needs_translation": false,
-          "translation": "Did the arm move up, towards the swash?"
-        },
-        "srv_test_text": {
-          "english": "The servo is held 20 degrees up.",
-          "max_length": 32,
-          "needs_translation": false,
-          "translation": "The servo is held 20 degrees up."
-        },
-        "srv_up": {
-          "english": "Yes, up",
-          "max_length": 7,
-          "needs_translation": false,
-          "translation": "Yes, up"
-        },
-        "srv_value_fmt": {
-          "english": "Centre %d us (%s).",
-          "max_length": 18,
-          "needs_translation": false,
-          "translation": "Centre %d us (%s)."
         },
         "step_connect": {
           "english": "Connect servos",

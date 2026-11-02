@@ -9241,13 +9241,6 @@
           "max_length": 82,
           "reverse_text": false
         },
-        "rcv_blades_off": {
-          "english": "Keep the blades off: the motor may start.",
-          "translation": "保持桨叶拆下：电机可能会启动。",
-          "needs_translation": false,
-          "max_length": 41,
-          "reverse_text": false
-        },
         "rcv_measure": {
           "english": "Measure",
           "translation": "测量",
@@ -10144,12 +10137,6 @@
           "max_length": 4,
           "reverse_text": false
         },
-        "mot_prepare_text": {
-          "english": "Keep the servos unplugged and the blades off. The ESC runs as soon as the helicopter is armed.",
-          "translation": "保持舵机断开，并取下桨叶。直升机解锁后电调即会运转。",
-          "needs_translation": true,
-          "max_length": 94
-        },
         "gov_speed_title": {
           "english": "Headspeed",
           "translation": "转速",
@@ -10554,13 +10541,6 @@
           "max_length": 150,
           "reverse_text": false
         },
-        "esc_blades": {
-          "english": "Main blades off, pinion out of mesh.",
-          "translation": "主桨叶已拆下，小齿轮已脱离啮合。",
-          "needs_translation": false,
-          "max_length": 36,
-          "reverse_text": false
-        },
         "esc_full_btn": {
           "english": "Full throttle",
           "translation": "满油门",
@@ -10904,6 +10884,83 @@
           "max_length": 44,
           "reverse_text": false
         },
+        "mot_prepare_blades": {
+          "english": "Keep the blades off. The ESC runs as soon as the helicopter is armed.",
+          "translation": "保持桨叶拆下。飞机解锁后电调即开始运行。",
+          "needs_translation": false,
+          "max_length": 69,
+          "reverse_text": false
+        },
+        "srv_move_up": {
+          "english": "Move up 20°",
+          "translation": "向上 20°",
+          "needs_translation": false,
+          "max_length": 11,
+          "reverse_text": false
+        },
+        "srv_reverse": {
+          "english": "Reverse",
+          "translation": "反向",
+          "needs_translation": false,
+          "max_length": 7,
+          "reverse_text": false
+        },
+        "srv_centre_label": {
+          "english": "Centre",
+          "translation": "中心",
+          "needs_translation": false,
+          "max_length": 6,
+          "reverse_text": false
+        },
+        "srv_offset": {
+          "english": "Offset",
+          "translation": "偏差",
+          "needs_translation": false,
+          "max_length": 6,
+          "reverse_text": false
+        },
+        "srv_from": {
+          "english": "%d us from %d us",
+          "translation": "%d us（距 %d us）",
+          "needs_translation": false,
+          "max_length": 16,
+          "reverse_text": false
+        },
+        "srv_arms_title": {
+          "english": "Servo arms",
+          "translation": "舵机摇臂",
+          "needs_translation": false,
+          "max_length": 10,
+          "reverse_text": false
+        },
+        "srv_arms_sub": {
+          "english": "Each servo is held at its center. Check that it moves the right way, then set the center so the arm is square.",
+          "translation": "每个舵机都保持在中心位置。检查其运动方向是否正确，然后调整中心，使摇臂呈直角。",
+          "needs_translation": false,
+          "max_length": 110,
+          "reverse_text": false
+        },
+        "srv_arms_text": {
+          "english": "Fit the servo arms as close to 90° to the pushrods as the splines allow. Press Move up: the arm should move up, towards the swashplate. Adjust the center until the arm is exactly square.",
+          "translation": "尽量将舵机摇臂装到接近拉杆 90° 的位置，具体取决于花键。向上：摇臂应朝斜盘方向移动。调整中心，直到摇臂恰好为直角。",
+          "needs_translation": false,
+          "max_length": 186,
+          "reverse_text": false
+        },
+        "srv_back_centre": {
+          "english": "Back to centre",
+          "translation": "回到中心",
+          "needs_translation": false,
+          "max_length": 14,
+          "reverse_text": false
+        },
+        "srv_normal": {
+          "english": "Normal",
+          "translation": "正常",
+          "needs_translation": false,
+          "max_length": 6,
+          "reverse_text": false
+        },
         "mot_pinion": {
           "english": "Pinion teeth",
           "translation": "小齿轮齿数",
@@ -10988,13 +11045,6 @@
           "max_length": 38,
           "reverse_text": false
         },
-        "con_blades": {
-          "english": "Blades stay off, and keep clear of the motor.",
-          "translation": "桨叶保持拆下，远离电机。",
-          "needs_translation": false,
-          "max_length": 45,
-          "reverse_text": false
-        },
         "con_main_motor": {
           "english": "Main motor",
           "translation": "主电机",
@@ -11037,41 +11087,6 @@
           "max_length": 62,
           "reverse_text": false
         },
-        "srv_test_text": {
-          "english": "The servo is held 20 degrees up.",
-          "translation": "舵机保持在向上20度。",
-          "needs_translation": false,
-          "max_length": 32,
-          "reverse_text": false
-        },
-        "srv_test_q": {
-          "english": "Did the arm move up, towards the swash?",
-          "translation": "舵臂是否向上、朝斜盘方向移动？",
-          "needs_translation": false,
-          "max_length": 39,
-          "reverse_text": false
-        },
-        "srv_reversed": {
-          "english": "Reversed. Check the arm moved up now.",
-          "translation": "已反向。检查舵臂现在是否向上。",
-          "needs_translation": false,
-          "max_length": 37,
-          "reverse_text": false
-        },
-        "srv_up": {
-          "english": "Yes, up",
-          "translation": "是，向上",
-          "needs_translation": false,
-          "max_length": 7,
-          "reverse_text": false
-        },
-        "srv_down": {
-          "english": "No, down",
-          "translation": "否，向下",
-          "needs_translation": false,
-          "max_length": 8,
-          "reverse_text": false
-        },
         "srv_centre_text": {
           "english": "Nudge the centre until the servo arm is level.",
           "translation": "微调中位直到舵臂水平。",
@@ -11084,13 +11099,6 @@
           "translation": "微调中位直到尾舵臂与拉杆成90度。",
           "needs_translation": false,
           "max_length": 74,
-          "reverse_text": false
-        },
-        "srv_value_fmt": {
-          "english": "Centre %d us (%s).",
-          "translation": "中位 %d us (%s)。",
-          "needs_translation": false,
-          "max_length": 18,
           "reverse_text": false
         },
         "srv_far": {

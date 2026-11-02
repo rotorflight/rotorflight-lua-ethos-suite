@@ -1,7 +1,7 @@
--- Setup Wizard step: ESC telemetry, in eight screens. Opened by app/pages/setup_wizard.lua before
--- the Connect servos gate. The step is a restart point: a restart owed from the steps before it,
--- or the port change made on screen 1, is done with Save and restart, and the step reopens on
--- screen 2, where the port is live.
+-- Setup Wizard step: ESC telemetry, in eight screens. Opened by app/pages/setup_wizard.lua after the
+-- Connect servos gate, so the servos are plugged in. The first screen is the blades card. The step is
+-- a restart point: a restart owed from the steps before it, or the port change made on screen 1, is
+-- done with Save and restart, and the step reopens on the wiring screen, where the port is live.
 --
 -- Screen 1, as the Configurator's ESC telemetry step on the radio:
 --   * Used or Not used: the ESC sensor feature (bit 27) on or off.
@@ -57,8 +57,8 @@ local TRIAL_TIMEOUT = 6       -- seconds, as the Configurator's detection gives 
 local ANALOG_INTERVAL = 0.5   -- seconds between MSP_ANALOG reads on a flight controller source
 local ANALOG_MAX_AGE = 1.0    -- a reading older than this is shown as "--"
 
-local SETUP, WIRING, VOLTAGE, CURRENT, BATTERY, CAPS, SMARTFUEL = 1, 2, 3, 4, 5, 6, 7
-local SCREEN_COUNT = 7
+local BLADES, SETUP, WIRING, VOLTAGE, CURRENT, BATTERY, CAPS, SMARTFUEL = 1, 2, 3, 4, 5, 6, 7, 8
+local SCREEN_COUNT = 8
 -- Rows of the wiring screen: status, detect, then the readings. Rows of a source screen: the
 -- source, then its reading.
 local STATUS_ROW, VOLTAGE_ROW, TEMP_ROW = 1, 3, 4
@@ -66,6 +66,9 @@ local READING_ROW = 2
 
 local T = {
   title = "@i18n(app.modules.setup_wizard.tel_title)@",
+  blades = "@i18n(app.modules.setup_wizard.sen_blades_removed)@",
+  bladesText = "@i18n(app.modules.setup_wizard.mot_prepare_blades)@",
+  start = "@i18n(app.modules.setup_wizard.btn_start)@",
   wiringTitle = "@i18n(app.modules.setup_wizard.wir_title)@",
   telemetry = "@i18n(app.modules.setup_wizard.tel_row_used)@",
   used = "@i18n(app.modules.setup_wizard.tel_used)@",
@@ -179,8 +182,10 @@ local function new(wiz)
   local self = {}
   local scr = ui.new(wiz)
   local picture = art.image("motor-esc", 220, 160)
-  local screen = wiz.takeResume() == WIRING and WIRING or SETUP
+  -- The blades card comes first on a fresh visit; a restart reopens on the wiring screen.
+  local screen = wiz.takeResume() == WIRING and WIRING or BLADES
   local left = false       -- set when the step is left
+  local answers = {blades = false}   -- the safety answer, kept across rebuilds
   local pw = power.new(wiz)
 
   if not transports[wiz] then
@@ -454,8 +459,8 @@ local function new(wiz)
     end)
   end
 
-  -- The way forward from a screen. A restart owed (the port change on screen 1, a wiring
-  -- found on screen 2, or one from before) is done first, and the step reopens on the wiring
+  -- The way forward from a screen. A restart owed (the port change on screen 2, a wiring
+  -- found on screen 3, or one from before) is done first, and the step reopens on the wiring
   -- screen. Otherwise the next screen follows; after the last one the step is finished.
   local function forwardFrom(from)
     if wiz.rebootPending() then
@@ -501,6 +506,14 @@ local function new(wiz)
   end
 
   -- Screens ------------------------------------------------------------------------------
+
+  -- The safety card first: the blades are off before the port and the power settings are touched.
+  local function buildBlades()
+    scr:text(T.title, T.bladesText)
+    scr:picture(picture)
+    scr:step(BLADES, SCREEN_COUNT)
+    return scr:safety(answers, {{key = "blades", label = T.blades}}, T.start, function() go(SETUP) end)
+  end
 
   local function buildSetup()
     local isUsed = used()
@@ -653,6 +666,7 @@ local function new(wiz)
       scr:text(T.title, T.loading)
       return scr:row()
     end
+    if screen == BLADES then return buildBlades() end
     if screen == WIRING then return buildWiring() end
     if screen == SETUP then return buildSetup() end
     if not pw.loaded then

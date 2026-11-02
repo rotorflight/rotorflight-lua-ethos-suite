@@ -7989,13 +7989,6 @@
           "reverse_text": false,
           "translation": "Akumulator odłączony do następnego kroku."
         },
-        "con_blades": {
-          "english": "Blades stay off, and keep clear of the motor.",
-          "max_length": 51,
-          "needs_translation": false,
-          "reverse_text": false,
-          "translation": "Łopaty nadal zdjęte; trzymaj się z dala od silnika."
-        },
         "con_checking": {
           "english": "Checking",
           "max_length": 9,
@@ -8177,13 +8170,6 @@
           "needs_translation": false,
           "reverse_text": false,
           "translation": "Podłącz akumulator. Regulator pika, potwierdzając pełny gaz; tony podaje instrukcja regulatora. Następnie naciśnij Minimum."
-        },
-        "esc_blades": {
-          "english": "Main blades off, pinion out of mesh.",
-          "max_length": 36,
-          "needs_translation": false,
-          "reverse_text": false,
-          "translation": "Główne łopaty zdjęte, zębnik wyjęty z zazębienia."
         },
         "esc_cal_status": {
           "english": "ESC calibration",
@@ -8953,11 +8939,12 @@
           "reverse_text": false,
           "translation": "Liczba biegunów magnetycznych silnika głównego, z karty katalogowej (zwykle 10 lub 12)."
         },
-        "mot_prepare_text": {
-          "english": "Keep the servos unplugged and the blades off. The ESC runs as soon as the helicopter is armed.",
-          "max_length": 94,
-          "needs_translation": true,
-          "translation": "Odłącz serwa i zdejmij łopaty. Regulator pracuje, gdy tylko śmigłowiec zostanie uzbrojony."
+        "mot_prepare_blades": {
+          "english": "Keep the blades off. The ESC runs as soon as the helicopter is armed.",
+          "max_length": 69,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Śmigła muszą być zdjęte. Regulator działa, gdy helikopter jest uzbrojony."
         },
         "mot_protocol": {
           "english": "Protocol",
@@ -9710,13 +9697,6 @@
           "needs_translation": false,
           "translation": "Odchylanie %d °/s · expo %d %%"
         },
-        "rcv_blades_off": {
-          "english": "Keep the blades off: the motor may start.",
-          "max_length": 41,
-          "needs_translation": false,
-          "reverse_text": false,
-          "translation": "Bez łopat: silnik może ruszyć."
-        },
         "rcv_ch_collective": {
           "english": "Coll.",
           "max_length": 5,
@@ -10429,6 +10409,41 @@
           "reverse_text": false,
           "translation": "Serwo %d (%s)"
         },
+        "srv_arms_sub": {
+          "english": "Each servo is held at its center. Check that it moves the right way, then set the center so the arm is square.",
+          "max_length": 110,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Każdy serwo jest trzymany w środku. Sprawdź, czy porusza się w dobrą stronę, potem ustaw środek tak, by ramię było pod kątem prostym."
+        },
+        "srv_arms_text": {
+          "english": "Fit the servo arms as close to 90° to the pushrods as the splines allow. Press Move up: the arm should move up, towards the swashplate. Adjust the center until the arm is exactly square.",
+          "max_length": 186,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Nasadź ramiona serw możliwie blisko 90° do drążków, na ile pozwalają wypusty. W górę: ramię ma się przesunąć w stronę talerza. Ustaw środek, aż ramię będzie dokładnie pod kątem prostym."
+        },
+        "srv_arms_title": {
+          "english": "Servo arms",
+          "max_length": 10,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Ramiona serw"
+        },
+        "srv_back_centre": {
+          "english": "Back to centre",
+          "max_length": 14,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Do środka"
+        },
+        "srv_centre_label": {
+          "english": "Centre",
+          "max_length": 6,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Środek"
+        },
         "srv_centre_text": {
           "english": "Nudge the centre until the servo arm is level.",
           "max_length": 47,
@@ -10450,13 +10465,6 @@
           "reverse_text": false,
           "translation": "Serwa gotowe"
         },
-        "srv_down": {
-          "english": "No, down",
-          "max_length": 10,
-          "needs_translation": false,
-          "reverse_text": false,
-          "translation": "Nie, w dół"
-        },
         "srv_far": {
           "english": "Far from centre: move the arm a spline instead.",
           "max_length": 58,
@@ -10464,12 +10472,40 @@
           "reverse_text": false,
           "translation": "Daleko od środka: przełóż orczyk o jeden ząb wielowypustu."
         },
-        "srv_reversed": {
-          "english": "Reversed. Check the arm moved up now.",
-          "max_length": 50,
+        "srv_from": {
+          "english": "%d us from %d us",
+          "max_length": 16,
           "needs_translation": false,
           "reverse_text": false,
-          "translation": "Odwrócono. Sprawdź, czy orczyk idzie teraz w górę."
+          "translation": "%d us od %d us"
+        },
+        "srv_move_up": {
+          "english": "Move up 20°",
+          "max_length": 11,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "W górę 20°"
+        },
+        "srv_normal": {
+          "english": "Normal",
+          "max_length": 6,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Normalnie"
+        },
+        "srv_offset": {
+          "english": "Offset",
+          "max_length": 6,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Odchylenie"
+        },
+        "srv_reverse": {
+          "english": "Reverse",
+          "max_length": 7,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Odwróć"
         },
         "srv_tail_text": {
           "english": "Nudge the centre until the tail servo arm is at 90 degrees to the pushrod.",
@@ -10477,34 +10513,6 @@
           "needs_translation": false,
           "reverse_text": false,
           "translation": "Koryguj środek, aż orczyk serwa ogona będzie pod kątem 90 stopni do popychacza."
-        },
-        "srv_test_q": {
-          "english": "Did the arm move up, towards the swash?",
-          "max_length": 42,
-          "needs_translation": false,
-          "reverse_text": false,
-          "translation": "Czy orczyk ruszył w górę, w stronę tarczy?"
-        },
-        "srv_test_text": {
-          "english": "The servo is held 20 degrees up.",
-          "max_length": 37,
-          "needs_translation": false,
-          "reverse_text": false,
-          "translation": "Serwo jest trzymane 20 stopni w górę."
-        },
-        "srv_up": {
-          "english": "Yes, up",
-          "max_length": 11,
-          "needs_translation": false,
-          "reverse_text": false,
-          "translation": "Tak, w górę"
-        },
-        "srv_value_fmt": {
-          "english": "Centre %d us (%s).",
-          "max_length": 18,
-          "needs_translation": false,
-          "reverse_text": false,
-          "translation": "Środek %d us (%s)."
         },
         "step_connect": {
           "english": "Connect servos",

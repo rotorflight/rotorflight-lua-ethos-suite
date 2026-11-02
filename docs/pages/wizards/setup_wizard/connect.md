@@ -6,14 +6,13 @@ sidebar_position: 70
 
 # Connect servos
 
-Step 12 of the Model setup wizard. It saves and restarts the flight controller if a restart is
+Step 10 of the Model setup wizard. It saves and restarts the flight controller if a restart is
 owed, then checks the motor and servo outputs before you plug the servos in.
 
 ## Where to find it
 
-*Configuration* → *Wizards* → *Model setup*, step 12 *Connect servos*. This is the gate of the
-wizard, before the servos are plugged in. The restarts the earlier steps owe happen at ESC telemetry
-(step 11), so a restart is only still owed here if a step after it asked for one.
+*Configuration* → *Wizards* → *Model setup*, step 10 *Connect servos*. This is the gate of the
+wizard, before the servos are plugged in. The restarts the earlier steps owe are done here.
 
 Only inside the wizard. Greyed out until the flight controller answers. Read-only while the
 model is armed.
@@ -22,7 +21,7 @@ model is armed.
 
 | Setting | What it does |
 | --- | --- |
-| Save and restart | Shown when a restart is still owed on reaching this step, which is rare: the ESC telemetry step restarts first. It saves and restarts the flight controller with the servos still unplugged, so the new outputs take effect before anything moves. The wizard waits up to 20 s for the link to come back. |
+| Save and restart | Shown when a restart is still owed on reaching this step, from the steps before it. It saves and restarts the flight controller with the servos still unplugged, so the new outputs take effect before anything moves. The wizard waits up to 20 s for the link to come back. |
 | Main motor | Checks the main motor output. |
 | Tail motor | Checks the tail motor output. Shown only for a motor tail. |
 | Servo list | Lists every servo the wizard will use, with its role and an OK or Missing status. |

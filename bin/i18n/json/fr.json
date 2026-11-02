@@ -9241,13 +9241,6 @@
           "max_length": 91,
           "reverse_text": false
         },
-        "rcv_blades_off": {
-          "english": "Keep the blades off: the motor may start.",
-          "translation": "Pales retirées : le moteur peut démarrer.",
-          "needs_translation": false,
-          "max_length": 41,
-          "reverse_text": false
-        },
         "rcv_measure": {
           "english": "Measure",
           "translation": "Mesurer",
@@ -10144,12 +10137,6 @@
           "max_length": 4,
           "reverse_text": false
         },
-        "mot_prepare_text": {
-          "english": "Keep the servos unplugged and the blades off. The ESC runs as soon as the helicopter is armed.",
-          "translation": "Laissez les servos débranchés et les pales retirées. Le variateur tourne dès que l'hélicoptère est armé.",
-          "needs_translation": true,
-          "max_length": 104
-        },
         "gov_speed_title": {
           "english": "Headspeed",
           "translation": "Régime",
@@ -10554,13 +10541,6 @@
           "max_length": 150,
           "reverse_text": false
         },
-        "esc_blades": {
-          "english": "Main blades off, pinion out of mesh.",
-          "translation": "Pales principales retirées, pignon désengrené.",
-          "needs_translation": false,
-          "max_length": 36,
-          "reverse_text": false
-        },
         "esc_full_btn": {
           "english": "Full throttle",
           "translation": "Plein gaz",
@@ -10904,6 +10884,83 @@
           "max_length": 44,
           "reverse_text": false
         },
+        "mot_prepare_blades": {
+          "english": "Keep the blades off. The ESC runs as soon as the helicopter is armed.",
+          "translation": "Laisser les pales démontées. Le variateur tourne dès que l'hélicoptère est armé.",
+          "needs_translation": false,
+          "max_length": 69,
+          "reverse_text": false
+        },
+        "srv_move_up": {
+          "english": "Move up 20°",
+          "translation": "Monter de 20°",
+          "needs_translation": false,
+          "max_length": 11,
+          "reverse_text": false
+        },
+        "srv_reverse": {
+          "english": "Reverse",
+          "translation": "Inverser",
+          "needs_translation": false,
+          "max_length": 7,
+          "reverse_text": false
+        },
+        "srv_centre_label": {
+          "english": "Centre",
+          "translation": "Centre",
+          "needs_translation": false,
+          "max_length": 6,
+          "reverse_text": false
+        },
+        "srv_offset": {
+          "english": "Offset",
+          "translation": "Écart",
+          "needs_translation": false,
+          "max_length": 6,
+          "reverse_text": false
+        },
+        "srv_from": {
+          "english": "%d us from %d us",
+          "translation": "%d us par rapport à %d us",
+          "needs_translation": false,
+          "max_length": 16,
+          "reverse_text": false
+        },
+        "srv_arms_title": {
+          "english": "Servo arms",
+          "translation": "Bras de servo",
+          "needs_translation": false,
+          "max_length": 10,
+          "reverse_text": false
+        },
+        "srv_arms_sub": {
+          "english": "Each servo is held at its center. Check that it moves the right way, then set the center so the arm is square.",
+          "translation": "Chaque servo est maintenu à son centre. Vérifier qu'il bouge dans le bon sens, puis régler le centre pour que le bras soit à angle droit.",
+          "needs_translation": false,
+          "max_length": 110,
+          "reverse_text": false
+        },
+        "srv_arms_text": {
+          "english": "Fit the servo arms as close to 90° to the pushrods as the splines allow. Press Move up: the arm should move up, towards the swashplate. Adjust the center until the arm is exactly square.",
+          "translation": "Monter les bras de servo aussi proche de 90° des tiges que les cannelures le permettent. Monter : le bras doit aller vers le plateau cyclique. Régler le centre jusqu'à ce que le bras soit exactement à angle droit.",
+          "needs_translation": false,
+          "max_length": 186,
+          "reverse_text": false
+        },
+        "srv_back_centre": {
+          "english": "Back to centre",
+          "translation": "Revenir au centre",
+          "needs_translation": false,
+          "max_length": 14,
+          "reverse_text": false
+        },
+        "srv_normal": {
+          "english": "Normal",
+          "translation": "Normal",
+          "needs_translation": false,
+          "max_length": 6,
+          "reverse_text": false
+        },
         "mot_pinion": {
           "english": "Pinion teeth",
           "translation": "Dents pignon",
@@ -10988,13 +11045,6 @@
           "max_length": 44,
           "reverse_text": false
         },
-        "con_blades": {
-          "english": "Blades stay off, and keep clear of the motor.",
-          "translation": "Pales toujours retirées, restez à l'écart du moteur.",
-          "needs_translation": false,
-          "max_length": 52,
-          "reverse_text": false
-        },
         "con_main_motor": {
           "english": "Main motor",
           "translation": "Moteur principal",
@@ -11037,41 +11087,6 @@
           "max_length": 65,
           "reverse_text": false
         },
-        "srv_test_text": {
-          "english": "The servo is held 20 degrees up.",
-          "translation": "Le servo est maintenu 20 degrés vers le haut.",
-          "needs_translation": false,
-          "max_length": 45,
-          "reverse_text": false
-        },
-        "srv_test_q": {
-          "english": "Did the arm move up, towards the swash?",
-          "translation": "Le palonnier est-il monté, vers le plateau ?",
-          "needs_translation": false,
-          "max_length": 44,
-          "reverse_text": false
-        },
-        "srv_reversed": {
-          "english": "Reversed. Check the arm moved up now.",
-          "translation": "Inversé. Vérifiez qu'il monte maintenant.",
-          "needs_translation": false,
-          "max_length": 41,
-          "reverse_text": false
-        },
-        "srv_up": {
-          "english": "Yes, up",
-          "translation": "Oui, haut",
-          "needs_translation": false,
-          "max_length": 9,
-          "reverse_text": false
-        },
-        "srv_down": {
-          "english": "No, down",
-          "translation": "Non, bas",
-          "needs_translation": false,
-          "max_length": 8,
-          "reverse_text": false
-        },
         "srv_centre_text": {
           "english": "Nudge the centre until the servo arm is level.",
           "translation": "Ajustez le centre jusqu'à ce que le palonnier soit à plat.",
@@ -11084,13 +11099,6 @@
           "translation": "Ajustez le centre jusqu'à ce que le palonnier de queue soit à 90 degrés de la tringle.",
           "needs_translation": false,
           "max_length": 86,
-          "reverse_text": false
-        },
-        "srv_value_fmt": {
-          "english": "Centre %d us (%s).",
-          "translation": "Centre %d us (%s).",
-          "needs_translation": false,
-          "max_length": 18,
           "reverse_text": false
         },
         "srv_far": {

@@ -24,25 +24,11 @@ local OWNED = {}
 
 local PICTURE_W, PICTURE_H = 220, 160
 
--- The Swashplate step's pictures (app/gfx/setup_wizard/swash-*.png) by swash type.
-local SWASH_PICTURE = {[1] = "direct", [2] = "120", [3] = "135", [4] = "140", [5] = "90l", [6] = "90v"}
-
--- The Swashplate step's picture name: the type, servo 1 in front of the shaft or
--- behind it (120, 135 and 140 only), and the tail servo when the tail has one.
-local function swashPicture(swashType, rear, tailServo)
-  local base = SWASH_PICTURE[swashType]
-  if not base then return nil end
-  local name = "swash-" .. base
-  if swashType >= 2 and swashType <= 4 then name = name .. (rear and "-rear" or "-front") end
-  if tailServo then name = name .. "-tail" end
-  return name
-end
-
 local T = {
   title = "@i18n(app.modules.setup_wizard.con_title)@",
   reboot = "@i18n(app.modules.setup_wizard.con_reboot)@",
   plug = "@i18n(app.modules.setup_wizard.con_plug)@",
-  blades = "@i18n(app.modules.setup_wizard.con_blades)@",
+  blades = "@i18n(app.modules.setup_wizard.sen_blades_removed)@",
   battery = "@i18n(app.modules.setup_wizard.con_battery)@",
   start = "@i18n(app.modules.setup_wizard.btn_start)@",
   mainMotor = "@i18n(app.modules.setup_wizard.con_main_motor)@",
@@ -64,20 +50,8 @@ local function new(wiz)
   local motorRows = {}
   local shown = {}
 
-  -- The Swashplate step's picture: servo 1's side is kept there for the session, and
-  -- rear is the default.
-  local function servoRear()
-    local swashBases = package.loaded["rfsuite.setup_wizard.swash"]
-    local base = swashBases and swashBases[wiz]
-    return not (base and base.rear == false)
-  end
-
   local function picture()
-    local mix = wiz.mixConfig() or {}
-    local tailServo = not wiz.motorised()
-    local name = swashPicture(mix.swash_type or 0, servoRear(), tailServo)
-    if name then return art.image(name, PICTURE_W, PICTURE_H) end
-    return art.image("swash-direct", PICTURE_W, PICTURE_H)
+    return art.swashImage(wiz, PICTURE_W, PICTURE_H)
   end
 
   local function motorState(i)

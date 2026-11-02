@@ -30,7 +30,7 @@ model is armed.
 
 - The profiles are read when the headspeed screen opens, with no button. Each change is
   written at once; Discard puts the profile back.
-- With a governor running, the headspeed source is set in the Motor & ESC step (step 10). It needs a fast RPM signal:
+- With a governor running, the headspeed source is set in the Motor & ESC step (step 11). It needs a fast RPM signal:
   an RPM sensor, or bidirectional DShot telemetry.
 - The ramp times (spoolup, spooldown, recovery) are not part of the wizard. They are set on the
   governor page.

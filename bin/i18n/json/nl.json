@@ -9241,13 +9241,6 @@
           "max_length": 82,
           "reverse_text": false
         },
-        "rcv_blades_off": {
-          "english": "Keep the blades off: the motor may start.",
-          "translation": "Bladen eraf laten: de motor kan starten.",
-          "needs_translation": false,
-          "max_length": 41,
-          "reverse_text": false
-        },
         "rcv_measure": {
           "english": "Measure",
           "translation": "Meten",
@@ -10144,12 +10137,6 @@
           "max_length": 4,
           "reverse_text": false
         },
-        "mot_prepare_text": {
-          "english": "Keep the servos unplugged and the blades off. The ESC runs as soon as the helicopter is armed.",
-          "translation": "Laat de servo's losgekoppeld en verwijder de bladen. De regelaar draait zodra de helikopter scherp staat.",
-          "needs_translation": true,
-          "max_length": 105
-        },
         "gov_speed_title": {
           "english": "Headspeed",
           "translation": "Toerental",
@@ -10554,13 +10541,6 @@
           "max_length": 150,
           "reverse_text": false
         },
-        "esc_blades": {
-          "english": "Main blades off, pinion out of mesh.",
-          "translation": "Hoofdbladen eraf, rittel uit de vertanding.",
-          "needs_translation": false,
-          "max_length": 36,
-          "reverse_text": false
-        },
         "esc_full_btn": {
           "english": "Full throttle",
           "translation": "Vol gas",
@@ -10904,6 +10884,83 @@
           "max_length": 44,
           "reverse_text": false
         },
+        "mot_prepare_blades": {
+          "english": "Keep the blades off. The ESC runs as soon as the helicopter is armed.",
+          "translation": "Houd de rotorbladen eraf. De regelaar draait zodra de helikopter scherp staat.",
+          "needs_translation": false,
+          "max_length": 69,
+          "reverse_text": false
+        },
+        "srv_move_up": {
+          "english": "Move up 20°",
+          "translation": "Omhoog 20°",
+          "needs_translation": false,
+          "max_length": 11,
+          "reverse_text": false
+        },
+        "srv_reverse": {
+          "english": "Reverse",
+          "translation": "Omkeren",
+          "needs_translation": false,
+          "max_length": 7,
+          "reverse_text": false
+        },
+        "srv_centre_label": {
+          "english": "Centre",
+          "translation": "Midden",
+          "needs_translation": false,
+          "max_length": 6,
+          "reverse_text": false
+        },
+        "srv_offset": {
+          "english": "Offset",
+          "translation": "Afwijking",
+          "needs_translation": false,
+          "max_length": 6,
+          "reverse_text": false
+        },
+        "srv_from": {
+          "english": "%d us from %d us",
+          "translation": "%d us van %d us",
+          "needs_translation": false,
+          "max_length": 16,
+          "reverse_text": false
+        },
+        "srv_arms_title": {
+          "english": "Servo arms",
+          "translation": "Servoarmen",
+          "needs_translation": false,
+          "max_length": 10,
+          "reverse_text": false
+        },
+        "srv_arms_sub": {
+          "english": "Each servo is held at its center. Check that it moves the right way, then set the center so the arm is square.",
+          "translation": "Elke servo wordt in zijn midden gehouden. Controleer of hij de juiste kant op beweegt en stel dan het midden zo in dat de arm haaks staat.",
+          "needs_translation": false,
+          "max_length": 110,
+          "reverse_text": false
+        },
+        "srv_arms_text": {
+          "english": "Fit the servo arms as close to 90° to the pushrods as the splines allow. Press Move up: the arm should move up, towards the swashplate. Adjust the center until the arm is exactly square.",
+          "translation": "Zet de servoarmen zo dicht mogelijk op 90° ten opzichte van de stangen, zoals de tanden toelaten. Omhoog: de arm moet naar de zwenkplaat bewegen. Stel het midden af tot de arm precies haaks staat.",
+          "needs_translation": false,
+          "max_length": 186,
+          "reverse_text": false
+        },
+        "srv_back_centre": {
+          "english": "Back to centre",
+          "translation": "Terug naar midden",
+          "needs_translation": false,
+          "max_length": 14,
+          "reverse_text": false
+        },
+        "srv_normal": {
+          "english": "Normal",
+          "translation": "Normaal",
+          "needs_translation": false,
+          "max_length": 6,
+          "reverse_text": false
+        },
         "mot_pinion": {
           "english": "Pinion teeth",
           "translation": "Tanden rondsel",
@@ -10988,13 +11045,6 @@
           "max_length": 46,
           "reverse_text": false
         },
-        "con_blades": {
-          "english": "Blades stay off, and keep clear of the motor.",
-          "translation": "Bladen blijven eraf; blijf uit de buurt van de motor.",
-          "needs_translation": false,
-          "max_length": 53,
-          "reverse_text": false
-        },
         "con_main_motor": {
           "english": "Main motor",
           "translation": "Hoofdmotor",
@@ -11037,41 +11087,6 @@
           "max_length": 63,
           "reverse_text": false
         },
-        "srv_test_text": {
-          "english": "The servo is held 20 degrees up.",
-          "translation": "De servo wordt 20 graden omhoog gehouden.",
-          "needs_translation": false,
-          "max_length": 41,
-          "reverse_text": false
-        },
-        "srv_test_q": {
-          "english": "Did the arm move up, towards the swash?",
-          "translation": "Ging de arm omhoog, richting swash?",
-          "needs_translation": false,
-          "max_length": 39,
-          "reverse_text": false
-        },
-        "srv_reversed": {
-          "english": "Reversed. Check the arm moved up now.",
-          "translation": "Omgekeerd. Controleer of de arm nu omhoog gaat.",
-          "needs_translation": false,
-          "max_length": 47,
-          "reverse_text": false
-        },
-        "srv_up": {
-          "english": "Yes, up",
-          "translation": "Ja, omhoog",
-          "needs_translation": false,
-          "max_length": 10,
-          "reverse_text": false
-        },
-        "srv_down": {
-          "english": "No, down",
-          "translation": "Nee, omlaag",
-          "needs_translation": false,
-          "max_length": 11,
-          "reverse_text": false
-        },
         "srv_centre_text": {
           "english": "Nudge the centre until the servo arm is level.",
           "translation": "Verstel het midden tot de servoarm waterpas staat.",
@@ -11084,13 +11099,6 @@
           "translation": "Verstel het midden tot de staartservoarm 90 graden op de stuurstang staat.",
           "needs_translation": false,
           "max_length": 74,
-          "reverse_text": false
-        },
-        "srv_value_fmt": {
-          "english": "Centre %d us (%s).",
-          "translation": "Midden %d us (%s).",
-          "needs_translation": false,
-          "max_length": 18,
           "reverse_text": false
         },
         "srv_far": {

@@ -2,7 +2,7 @@
 --
 -- The radio's copy of rotorflight-configurator's StepMotor.svelte:
 --
---   prepare   the safety card: servos unplugged, blades off
+--   prepare   the safety card: blades off (the servos are plugged in since Connect servos)
 --   protocol  the ESC protocol (MSP_MOTOR_CONFIG motor_pwm_protocol) in one
 --             drop-down: PWM, DShot150 and DShot300 first, then every other
 --             protocol (DShot600, Castle, OneShot, ProShot, DISABLED, ...).
@@ -90,8 +90,7 @@ local T = {
   restart = "@i18n(app.modules.setup_wizard.swa_restart)@",
   next = "@i18n(app.modules.setup_wizard.btn_next)@",
   prepareTitle = "@i18n(app.modules.setup_wizard.rcv_prepare_title)@",
-  prepareText = "@i18n(app.modules.setup_wizard.mot_prepare_text)@",
-  unplugged = "@i18n(app.modules.setup_wizard.sen_servos_unplugged)@",
+  prepareText = "@i18n(app.modules.setup_wizard.mot_prepare_blades)@",
   blades = "@i18n(app.modules.setup_wizard.sen_blades_removed)@",
   start = "@i18n(app.modules.setup_wizard.btn_start)@",
   rpmRow = "@i18n(app.modules.setup_wizard.rpm_row_source)@",
@@ -178,7 +177,7 @@ local function new(wiz)
   end
 
   local screen = "prepare"
-  local answers = {unplugged = false, blades = false}   -- the safety answers, kept across rebuilds
+  local answers = {blades = false}   -- the safety answer, kept across rebuilds
   local picture = art.image("motor-esc", 220, 160)
   local rpmPicture = art.image("rpm", 220, 160)
   local cfg = nil
@@ -673,7 +672,6 @@ local function new(wiz)
       scr:picture(picture)
       scr:step(1, total())
       return scr:safety(answers, {
-        {key = "unplugged", label = T.unplugged},
         {key = "blades", label = T.blades},
       }, T.start, function()
         goTo("protocol")

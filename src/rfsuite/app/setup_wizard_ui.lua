@@ -258,7 +258,7 @@ end
 --   {label =, number = {min, max, get, set, suffix}, disabled =}
 --                                  a value to edit: the label, a number field
 --                                  where the answers sit
---   {note =}                       a result in the accent colour, wrapped to
+--   {note =, plain =}              a result in the accent colour (plain: the text colour), wrapped to
 --                                  the half (last, so it moves nothing else)
 --   focus  index of the button to return (the one just pressed), or nil
 -- The picture moves to the left half. Call after text() (the rows start below
@@ -422,7 +422,7 @@ function Screen:checks(list, focus)
     elseif c.note then
       local noteX = hasMark and (x + MARK_SIZE + MARK_GAP) or x
       row.lines = self.wiz.wrapLines(c.note, room - noteX, FONT_S)
-      row.noteX, row.muted = noteX, c.muted
+      row.noteX, row.muted, row.plain = noteX, c.muted, c.plain
       row.y = y
       y = y + #row.lines * lineH + CHECK_ROW_GAP
     else
@@ -768,7 +768,7 @@ function Screen:paint()
         lcd.drawText(c.sep.x, c.sep.y, ":", CENTERED)
       end
       if c.lines then
-        lcd.color(c.muted and colors.muted or colors.active)
+        lcd.color(c.muted and colors.muted or (c.plain and colors.text or colors.active))
         local _, lineH = lcd.getTextSize("Ag")
         for j = 1, #c.lines do lcd.drawText(c.noteX or v.checksX, c.y + (j - 1) * lineH, c.lines[j], LEFT) end
         lcd.color(colors.text)
