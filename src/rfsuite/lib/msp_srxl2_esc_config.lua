@@ -2,6 +2,12 @@
 -- bus settings, firmware pg/srxl2_esc.h. The read reply starts with a payload
 -- version byte; the write takes the same fields without it. A changed setting
 -- takes effect at the next boot, so the page reboots after saving.
+--
+-- Read reply (firmware msp.c, MSP2_GET_SRXL2_ESC_CONFIG), payload version 1:
+--   U8 version, U16 throttle_rate_hz, U8 telem_interval_frames,
+--   U8 motor2_channel                                         = 5 bytes
+-- The write is the same four field bytes without the version; the firmware
+-- rejects any other length.
 
 if package.loaded["rfsuite.lib.msp_srxl2_esc_config"] then
   return package.loaded["rfsuite.lib.msp_srxl2_esc_config"]
@@ -12,6 +18,8 @@ local mspcodec = requireModule("lib/mspcodec.lua")
 
 local READ_COMMAND = 0x5F16
 local WRITE_COMMAND = 0x5F17
+local PAYLOAD_VERSION = 1
+local REPLY_LENGTH = 5
 
 -- 0 = single motor; 1..31 = the SRXL2 channel carrying motor 2 (channel 0 is
 -- always motor 1). For dual-motor Smart ESCs such as the Spektrum SPMXAE1020.
@@ -33,11 +41,24 @@ local SIMULATOR_RESPONSE = {1, 250, 0, 7, 0}
 local msp_srxl2_esc_config = {
   READ_COMMAND = READ_COMMAND,
   WRITE_COMMAND = WRITE_COMMAND,
+  PAYLOAD_VERSION = PAYLOAD_VERSION,
+  REPLY_LENGTH = REPLY_LENGTH,
   FIELD_META = FIELD_META,
   MOTOR2_CHANNEL_CHOICES = MOTOR2_CHANNEL_CHOICES,
 }
 
+-- Returns the fields, or nil, a reason, and true when the reply was REFUSED.
+-- A reply of another version or length is refused rather than decoded: a
+-- reworded record would otherwise come out as plausible numbers, and the page
+-- writes them back on save.
 function msp_srxl2_esc_config.decode(buf)
+  local length = #buf
+  if buf[1] ~= PAYLOAD_VERSION then
+    return nil, "SRXL2 ESC config payload version " .. tostring(buf[1]) .. ", expected " .. PAYLOAD_VERSION, true
+  end
+  if length ~= REPLY_LENGTH then
+    return nil, "SRXL2 ESC config reply is " .. length .. " bytes, expected " .. REPLY_LENGTH, true
+  end
   buf.offset = 1
   local data = {}
   data.version = mspcodec.readU8(buf)
@@ -60,7 +81,13 @@ function msp_srxl2_esc_config.buildReadMessage(onData, onError)
   return {
     command = READ_COMMAND,
     processReply = function(_, buf)
-      onData(msp_srxl2_esc_config.decode(buf))
+      local data, reason, refused = msp_srxl2_esc_config.decode(buf)
+      if not data then
+        -- page_runtime treats onError on a read as a failed load.
+        if onError then onError(reason, refused) end
+        return
+      end
+      onData(data)
     end,
     errorHandler = onError,
     simulatorResponse = SIMULATOR_RESPONSE,

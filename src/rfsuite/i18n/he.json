@@ -258,9 +258,9 @@
       "tbl_off": {
         "english": "Off",
         "max_length": 3,
-        "needs_translation": true,
+        "needs_translation": false,
         "reverse_text": false,
-        "translation": "Off"
+        "translation": "כבוי"
       }
     }
   },
@@ -2152,23 +2152,23 @@
         "srxl2": {
           "english": "SRXL2 ESC",
           "max_length": 9,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
           "translation": "SRXL2 ESC"
         },
         "srxl2_motor2_channel": {
           "english": "Motor 2 Channel",
           "max_length": 15,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
-          "translation": "Motor 2 Channel"
+          "translation": "ערוץ מנוע 2"
         },
         "srxl2_telem_interval": {
           "english": "Telemetry Interval",
           "max_length": 18,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
-          "translation": "Telemetry Interval"
+          "translation": "מרווח טלמטריה"
         },
         "tail_motor_ratio": {
           "english": "Tail Motor Ratio",

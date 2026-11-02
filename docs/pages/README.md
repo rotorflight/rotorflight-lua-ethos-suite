@@ -8,7 +8,7 @@ sidebar_label: Pages
 Reference documentation for each configuration and settings page reachable
 within the RFSuite Ethos system tool.
 
-**Status:** 86 reachable pages in navigation hierarchy.
+**Status:** 87 reachable pages in navigation hierarchy.
 
 The *Conditions* column names what hides, greys out or locks a page; the sentences
 and structure follow [_template.md](../_template.md).
@@ -66,6 +66,7 @@ and structure follow [_template.md](../_template.md).
 | Motor Override | [setup/esc_motors/motor_override.md](setup/esc_motors/motor_override.md) | Greyed out until the flight controller answers. Read-only while the model is armed. | written |
 | Throttle | [setup/esc_motors/throttle.md](setup/esc_motors/throttle.md) | Greyed out until the flight controller answers. Read-only while the model is armed. | written |
 | Telemetry | [setup/esc_motors/telemetry.md](setup/esc_motors/telemetry.md) | Greyed out until the flight controller answers. Read-only while the model is armed. | written |
+| SRXL2 ESC | [setup/esc_motors/srxl2.md](setup/esc_motors/srxl2.md) | Greyed out until the flight controller answers. Read-only while the model is armed. Lit only while the flight controller reports this ESC telemetry protocol (Protocol ID: 14). | written |
 | RPM | [setup/esc_motors/rpm.md](setup/esc_motors/rpm.md) | Greyed out until the flight controller answers. Read-only while the model is armed. | written |
 | Hobbywing V5 | [setup/esc_motors/esc_tools/hw5.md](setup/esc_motors/esc_tools/hw5.md) | Greyed out until the flight controller answers. Read-only while the model is armed. Lit only while the flight controller reports this ESC telemetry protocol (Protocol ID: 3). | written |
 | AM32 | [setup/esc_motors/esc_tools/am32.md](setup/esc_motors/esc_tools/am32.md) | Greyed out until the flight controller answers. Read-only while the model is armed. Lit only while the flight controller reports this ESC telemetry protocol (Protocol ID: 1). | written |

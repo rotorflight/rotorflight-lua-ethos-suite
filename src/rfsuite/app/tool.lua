@@ -241,7 +241,10 @@ local MENUS = {
       {title = "@i18n(app.modules.esc_motors.motor_override)@", icon = lcd.loadMask("app/gfx/esc_motors_motor_override.png"), script = "app/pages/motor_override.lua", lockedWhileArmed = true},
       {title = "@i18n(app.modules.esc_motors.throttle)@", icon = lcd.loadMask("app/gfx/esc_motors_throttle.png"), script = "app/pages/esc_motors_throttle.lua", lockedWhileArmed = true},
       {title = "@i18n(app.modules.esc_motors.telemetry)@", icon = lcd.loadMask("app/gfx/esc_motors_telemetry.png"), script = "app/pages/esc_motors_telemetry.lua", lockedWhileArmed = true},
-      {title = "@i18n(app.modules.esc_motors.srxl2)@", icon = lcd.loadMask("app/gfx/esc_motors_srxl2.png"), script = "app/pages/esc_motors_srxl2.lua", lockedWhileArmed = true},
+      -- Lit only on SRXL2 ESC telemetry (14): the firmware forces that protocol
+      -- whenever a serial port carries the SRXL2 ESC function, which is when
+      -- these settings mean anything.
+      {title = "@i18n(app.modules.esc_motors.srxl2)@", icon = lcd.loadMask("app/gfx/esc_motors_telemetry.png"), script = "app/pages/esc_motors_srxl2.lua", escProtocolId = 14, lockedWhileArmed = true},
       {title = "@i18n(app.modules.esc_motors.rpm)@", icon = lcd.loadMask("app/gfx/esc_motors_rpm.png"), script = "app/pages/esc_motors_rpm.lua", lockedWhileArmed = true},
       {title = "@i18n(app.modules.esc_tools.name)@", icon = lcd.loadMask("app/gfx/esc_tools.png"), menuId = "esc_forward_menu"},
     },
@@ -542,6 +545,13 @@ local taskGuard = {
 -- floor; see the file header for the measured figure.
 local function installMenuGuards()
   MENUS.esc_forward_menu.guard = ensureEscProtocolGuard().new({
+    canRequest = function()
+      return isBackgroundTaskRunning() and sessionConnected == true
+    end,
+  })
+
+  -- Gates only the SRXL2 ESC entry; the others carry no escProtocolId.
+  MENUS.esc_motors_menu.guard = ensureEscProtocolGuard().new({
     canRequest = function()
       return isBackgroundTaskRunning() and sessionConnected == true
     end,
