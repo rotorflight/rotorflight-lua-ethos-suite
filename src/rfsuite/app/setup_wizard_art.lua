@@ -62,9 +62,16 @@ local sin, cos = math.sin, math.cos
 local art = {}
 
 -- The solid helicopter (lib/heli3d.lua, shared with the Alignment page),
--- made and drawn by it.
+-- made and drawn by it. Loaded on first use, not with this module: only the
+-- orientation check of the Sensors step draws it, and the wizard opens on a
+-- screen that does not. Loading it here put ~35 kB of source on the heap at
+-- every open, enough to stop Lua with "used too much RAM" on the simulator.
 local requireModule = package.loaded["rfsuite.lib.require"] or assert(loadfile("lib/require.lua"))()
-local heli3d = requireModule("lib/heli3d.lua")
+local heli3d
+local function solid()
+  if not heli3d then heli3d = requireModule("lib/heli3d.lua") end
+  return heli3d
+end
 
 -- opts (optional): status = true colours a missing servo (s.missing) as a
 -- fault; dir = 0 (CW) / 1 (CCW) draws the main rotor direction round the
@@ -1032,16 +1039,17 @@ local function drawAttitudeSolid(l, x, y, w, h, colors)
   lcd.color(s.valid and colors.text or colors.muted)
   lcd.drawText(x + 8, y + h - th, s.readout or "", LEFT)
   if not s.valid then return end
-  heli3d.setup(s.rotorDir == 1 and ROTOR_CCW or ROTOR_CW)
-  heli3d.pose(nil)
-  heli3d.draw(x, y, w, h - th - 4, s.roll or 0, s.pitch or 0, ATT_VIEW_YAW + (s.yaw or 0))
+  local model = solid()
+  model.setup(s.rotorDir == 1 and ROTOR_CCW or ROTOR_CW)
+  model.pose(nil)
+  model.draw(x, y, w, h - th - 4, s.roll or 0, s.pitch or 0, ATT_VIEW_YAW + (s.yaw or 0))
 end
 
 -- From wakeup: the solid model's next step (lib/heli3d.lua). It builds the
 -- model ahead of the first attitude, and redraws the screen itself when a
 -- frame is ready, so this never asks the page for one.
 function art.service(l)
-  if l and not l.wire then heli3d.service() end
+  if l and not l.wire then solid().service() end
   return false
 end
 
