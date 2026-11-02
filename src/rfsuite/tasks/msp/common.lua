@@ -1,10 +1,20 @@
--- MSPv2 byte-framing engine (sequencing, chunking).
+-- MSP byte-framing engine (sequencing, chunking).
 --
--- MSPv2-only: this rebuild's floor is Rotorflight 2.3 / MSP API >= 12.09,
--- which always speaks MSPv2, so there is no v1 wire format, no version
--- negotiation, and no CRC (MSPv2 frames over these transports don't carry
--- one at this layer -- unlike v1). Older-firmware compatibility code has
--- been deliberately left out rather than kept dormant.
+-- Two framings of an MSPv2 command, chosen per link (setFraming()):
+--   version 2  FLAGS CMD_LOW CMD_HIGH LEN_LOW LEN_HIGH
+--   version 3  CMD_LOW CMD_HIGH LEN, and when LEN is 0xFF, LEN_LOW LEN_HIGH
+--              after it (rotorflight-firmware telemetry/msp_shared.c)
+-- No CRC at this layer: the telemetry frame carries its own. Version 3 leaves
+-- two payload bytes in a 6-byte S.Port start frame that version 2 fills with
+-- header alone, one frame fewer on most messages. Over CRSF it saves a frame
+-- only at a few reply sizes.
+--
+-- Every link starts in version 2, so MSP_API_VERSION reads on any firmware.
+-- tasks/msp/queue.lua's setFirmwareApi() offers version 3 from the API version
+-- that has it. A firmware without it answers a version-3 request with a start
+-- frame that has the error bit set and command 0; that drops the link back to
+-- version 2 (see receivedReply()). A reply is parsed by the version bits of its
+-- own start frame. Versions 0 and 1 are never asked for, so never accepted.
 --
 -- Protocol-agnostic: talks to whatever transport was registered via
 -- setTransport() (see transport_sport.lua / transport_crsf.lua). Private to
@@ -28,7 +38,6 @@ local DRAIN_INSTRUCTION_LIMIT = 60
 
 local math_floor = math.floor
 
-local MSP_VERSION_BITS = 2 << 5 -- MSPv2 version bits
 local MSP_STARTFLAG = 1 << 4
 
 -- Bounds on the two drain loops below. They are different bounds on purpose,
@@ -54,6 +63,13 @@ local mspLastReq = 0
 local mspLastReqIsWrite = false
 local mspTxBuf = {}
 local mspTxIdx = 1
+-- The framing new requests are built in, and the one the request in flight
+-- was built in: a fallback mid-request must not relabel its remaining frames.
+local mspFraming = 2
+local mspTxFraming = 2
+-- Times the link fell back from version 3 to 2, ever: see
+-- mspFramingFallbackCount().
+local mspFramingFallbacks = 0
 -- MSP reply frames received, ever -- accepted or discarded. Only its change
 -- matters: see mspRxFrameCount().
 local mspRxFrames = 0
@@ -73,14 +89,30 @@ end
 local function maxTx() return transport.maxTxBufferSize end
 local function maxRx() return transport.maxRxBufferSize end
 
+local function setFraming(version)
+  mspFraming = (version == 3) and 3 or 2
+end
+
 local function mkStatusByte(isStart)
-  local status = mspSeq + MSP_VERSION_BITS
+  local status = mspSeq + (mspTxFraming << 5)
   if isStart then status = status + MSP_STARTFLAG end
   return status & 0x7F
 end
 
+-- A transport answers false when it did not queue the frame (Ethos's
+-- pushFrame() does so when its outgoing queue has no room). The frame is then
+-- kept, sequence number and all, and offered again on the next call: a request
+-- frame that is simply dropped costs a whole retry window, since the FC never
+-- sees the request. Capped, so a transport that refuses everything (module
+-- off) still lets the queue's retry accounting run out instead of pumping the
+-- same frame for ever: past the cap the frame is dropped as it always was.
+-- The count belongs to the message, so clearing the buffer clears it too.
+local TX_REFUSAL_CAP = 10
+local mspTxRefusals = 0
+
 local function mspClearTxBuf()
   mspTxBuf, mspTxIdx = {}, 1
+  mspTxRefusals = 0
 end
 
 -- Process TX buffer into protocol-sized packets; returns true while more
@@ -90,6 +122,7 @@ local function mspProcessTxQ()
 
   local payload = {}
   payload[1] = mkStatusByte(mspTxIdx == 1)
+  local seq, idx = mspSeq, mspTxIdx -- restored when the transport refuses the frame
   mspSeq = (mspSeq + 1) & 0x0F
 
   local limit = maxTx()
@@ -101,7 +134,12 @@ local function mspProcessTxQ()
   end
   for j = i, limit do payload[j] = payload[j] or 0 end
 
-  transport.mspSend(payload, mspLastReqIsWrite)
+  if transport.mspSend(payload, mspLastReqIsWrite) == false and mspTxRefusals < TX_REFUSAL_CAP then
+    mspTxRefusals = mspTxRefusals + 1
+    mspSeq, mspTxIdx = seq, idx
+    return true
+  end
+  mspTxRefusals = 0
 
   if mspTxIdx > #mspTxBuf then
     mspClearTxBuf()
@@ -122,7 +160,16 @@ local function mspSendRequest(cmd, payload, isWrite)
   local cmd2 = math_floor(cmd / 256) % 256
   local len1 = len % 256
   local len2 = math_floor(len / 256) % 256
-  mspTxBuf = {0, cmd1, cmd2, len1, len2}
+  if mspFraming == 3 then
+    if len < 0xFF then
+      mspTxBuf = {cmd1, cmd2, len}
+    else
+      mspTxBuf = {cmd1, cmd2, 0xFF, len1, len2}
+    end
+  else
+    mspTxBuf = {0, cmd1, cmd2, len1, len2}
+  end
+  mspTxFraming = mspFraming
   for i = 1, len do mspTxBuf[#mspTxBuf + 1] = payload[i] % 256 end
 
   mspLastReq = cmd
@@ -159,14 +206,58 @@ local function receivedReply(payload)
     mspRxBuf = {}
     mspRxError = (status & 0x80) ~= 0
 
-    idx = idx + 1 -- skip flags byte
-    local cmd1 = payload[idx] or 0; idx = idx + 1
-    local cmd2 = payload[idx] or 0; idx = idx + 1
-    local len1 = payload[idx] or 0; idx = idx + 1
-    local len2 = payload[idx] or 0; idx = idx + 1
-    mspRxReq = ((cmd2 & 0xFF) << 8) | (cmd1 & 0xFF)
-    mspRxSize = ((len2 & 0xFF) << 8) | (len1 & 0xFF)
+    local version = (status >> 5) & 0x03
+    if version == 3 then
+      local cmd1 = payload[idx] or 0; idx = idx + 1
+      local cmd2 = payload[idx] or 0; idx = idx + 1
+      local len = payload[idx] or 0; idx = idx + 1
+      if len == 0xFF then
+        local len1 = payload[idx] or 0; idx = idx + 1
+        local len2 = payload[idx] or 0; idx = idx + 1
+        len = ((len2 & 0xFF) << 8) | (len1 & 0xFF)
+      end
+      mspRxReq = ((cmd2 & 0xFF) << 8) | (cmd1 & 0xFF)
+      mspRxSize = len
+    elseif version == 2 then
+      idx = idx + 1 -- skip flags byte
+      local cmd1 = payload[idx] or 0; idx = idx + 1
+      local cmd2 = payload[idx] or 0; idx = idx + 1
+      local len1 = payload[idx] or 0; idx = idx + 1
+      local len2 = payload[idx] or 0; idx = idx + 1
+      mspRxReq = ((cmd2 & 0xFF) << 8) | (cmd1 & 0xFF)
+      mspRxSize = ((len2 & 0xFF) << 8) | (len1 & 0xFF)
+    else
+      mspStarted = false
+      mspRxBuf, mspRxSize, mspRemoteSeq = {}, 0, 0
+      return nil
+    end
+
+    -- A firmware without version 3 refuses it: it answers in the request's
+    -- version bits, with the error bit, and lays out command 0 as MSPv2, which
+    -- reads here as command 0 (its flags byte) and length 0. No firmware that
+    -- has version 3 sends command 0. Fall back to version 2 for this link and
+    -- hand the request back, so the queue resends it at once
+    -- (mspFramingFallbackCount()). Only once: the refusals of the request's
+    -- other frames find the link already on version 2.
+    if mspRxError and mspRxReq == 0 and mspTxFraming == 3 and mspFraming == 3 then
+      mspFraming = 2
+      mspFramingFallbacks = mspFramingFallbacks + 1
+      mspClearTxBuf()
+      mspStarted = false
+      mspRxBuf, mspRxSize, mspRemoteSeq = {}, 0, 0
+      return nil
+    end
+
     mspStarted = (mspRxReq == mspLastReq)
+    -- A late reply to an earlier command is not ours. It used to fall through
+    -- to the copy loop below, and one that fits in this frame came back as a
+    -- complete reply: mspPollReply() then cleared mspLastReq, so the real
+    -- reply's start frame no longer matched and the message waited out its
+    -- retry window (issue #2653).
+    if not mspStarted then
+      mspRxBuf, mspRxSize, mspRemoteSeq = {}, 0, 0
+      return nil
+    end
   else
     if (not mspStarted) or (((mspRemoteSeq + 1) & 0x0F) ~= seq) then
       if mspStarted then
@@ -271,6 +362,12 @@ end
 
 return {
   setTransport = setTransport,
+  -- 2 or 3: the framing new requests are built in. Set by tasks/msp/queue.lua.
+  setFraming = setFraming,
+  framing = function() return mspFraming end,
+  -- Grows by one each time a firmware refused version 3 and the link fell
+  -- back to version 2. The queue resends the message in flight when it moves.
+  mspFramingFallbackCount = function() return mspFramingFallbacks end,
   mspSendRequest = mspSendRequest,
   mspProcessTxQ = mspProcessTxQ,
   mspPollReply = mspPollReply,
@@ -294,6 +391,10 @@ return {
   mspRxBreakInfo = function()
     return mspRxBreaks, mspRxBreakExpected, mspRxBreakGot, mspRxBreakBytes, mspRxBreakSize
   end,
+  -- True while a reply to the request in flight is part-way assembled. The
+  -- queue does not resend into it: a break followed, in the same poll, by the
+  -- start of a newer reply would otherwise throw that reply away.
+  mspRxInProgress = function() return mspStarted end,
   -- The drain bounds, exported only so bin/perf/verify_clock_budgets.lua can
   -- pin the numbers themselves. Hard-coding them in the harness instead would
   -- let a loosened budget pass, because "never spends more than N" stays green
