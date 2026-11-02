@@ -241,6 +241,7 @@ local MENUS = {
       {title = "@i18n(app.modules.esc_motors.motor_override)@", icon = lcd.loadMask("app/gfx/esc_motors_motor_override.png"), script = "app/pages/motor_override.lua", lockedWhileArmed = true},
       {title = "@i18n(app.modules.esc_motors.throttle)@", icon = lcd.loadMask("app/gfx/esc_motors_throttle.png"), script = "app/pages/esc_motors_throttle.lua", lockedWhileArmed = true},
       {title = "@i18n(app.modules.esc_motors.telemetry)@", icon = lcd.loadMask("app/gfx/esc_motors_telemetry.png"), script = "app/pages/esc_motors_telemetry.lua", lockedWhileArmed = true},
+      {title = "@i18n(app.modules.esc_motors.srxl2)@", icon = lcd.loadMask("app/gfx/esc_motors_srxl2.png"), script = "app/pages/esc_motors_srxl2.lua", lockedWhileArmed = true},
       {title = "@i18n(app.modules.esc_motors.rpm)@", icon = lcd.loadMask("app/gfx/esc_motors_rpm.png"), script = "app/pages/esc_motors_rpm.lua", lockedWhileArmed = true},
       {title = "@i18n(app.modules.esc_tools.name)@", icon = lcd.loadMask("app/gfx/esc_tools.png"), menuId = "esc_forward_menu"},
     },
