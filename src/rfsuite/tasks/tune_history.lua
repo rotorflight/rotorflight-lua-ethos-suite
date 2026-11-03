@@ -110,6 +110,7 @@ end
 local function onCleared()
   waitFor(0)
   clearPending = false
+  lastSeconds[capture.mcuId] = nil  -- the FC holds nothing of that flight now
   publishState()
 end
 

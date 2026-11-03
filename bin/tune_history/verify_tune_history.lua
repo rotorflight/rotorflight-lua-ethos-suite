@@ -197,6 +197,16 @@ do
     #r .. " lines; first " .. tostring(r[2]))
 end
 
+-- Two flights of the same whole number of seconds: the clear after the first one went
+-- through, so the FC holds nothing of it, and the second is a flight of its own.
+do
+  load()
+  fly(147)
+  local asked = fly(147)
+  check("a flight with the same seconds as the one before is saved once that one is cleared",
+    asked == "roll,pitch,yaw,clear" and #lines() == 7, asked .. " / " .. #lines() .. " lines")
+end
+
 do
   load()
   update({isArmed = true})
