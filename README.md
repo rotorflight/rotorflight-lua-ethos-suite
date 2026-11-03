@@ -74,7 +74,7 @@ RFSuite can display telemetry and alerts on compatible ActiveLook smart glasses,
 
 ## Documentation
 
-- **[Configuration Pages](docs/pages/README.md):** Reference for all 86 configuration and tuning pages, organized by menu domain (*Flight Tuning*, *Setup*, *Tools*, *Logs*, *Settings*). Generated from the menu hierarchy and the page sources, and filled in as changes reach them — see the index for the current page list.
+- **[Configuration Pages](docs/pages/README.md):** Reference for all 87 configuration and tuning pages, organized by menu domain (*Flight Tuning*, *Setup*, *Tools*, *Logs*, *Settings*). Generated from the menu hierarchy and the page sources, and filled in as changes reach them — see the index for the current page list.
 - **[Documentation Overview](docs/README.md):** Directory map, conventions, dashboard theme overviews, and memory lifecycle guides.
 - **[Page Template](docs/_template.md):** Canonical template and frontmatter standard for all configuration pages.
 - **[Scaffold Generator](bin/docs/generate_menu_docs.py):** CLI tool to scaffold, inspect, and verify that every reachable page has a documentation file (`bin/docs/generate_menu_docs.cmd --check`). It checks that a file exists, not that its contents are right.

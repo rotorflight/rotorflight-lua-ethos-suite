@@ -113,7 +113,7 @@ Each active slot can be assigned one of these values:
 | ESC Temp | `temp_esc` |
 | MCU Temp | `temp_mcu` |
 | Link | `link` |
-| Fuel | `fuel` |
+| Smart Fuel | `fuel` |
 | Current | `current` |
 | Voltage | `voltage` |
 | Cell Voltage | `cell_voltage` |
@@ -123,8 +123,8 @@ Each active slot can be assigned one of these values:
 | Max MCU Temp | `temp_mcu_max` |
 | Min Link | `link_min` |
 | Max Link | `link_max` |
-| Min Fuel | `fuel_min` |
-| Max Fuel | `fuel_max` |
+| Min Smart Fuel | `fuel_min` |
+| Max Smart Fuel | `fuel_max` |
 | Min Current | `current_min` |
 | Max Current | `current_max` |
 | Min Voltage | `voltage_min` |
