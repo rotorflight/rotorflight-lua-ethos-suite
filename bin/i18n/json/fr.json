@@ -6949,6 +6949,15 @@
               "reverse_text": false
             }
           },
+          "goosky": {
+            "name": {
+              "english": "Goosky",
+              "translation": "Goosky",
+              "needs_translation": false,
+              "reverse_text": false,
+              "max_length": 6
+            }
+          },
           "hw5": {
             "active_freewheel": {
               "english": "Active Freewheel",

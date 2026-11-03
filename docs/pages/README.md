@@ -8,7 +8,7 @@ sidebar_label: Pages
 Reference documentation for each configuration and settings page reachable
 within the RFSuite Ethos system tool.
 
-**Status:** 86 reachable pages in navigation hierarchy.
+**Status:** 87 reachable pages in navigation hierarchy.
 
 The *Conditions* column names what hides, greys out or locks a page; the sentences
 and structure follow [_template.md](../_template.md).
@@ -68,7 +68,8 @@ and structure follow [_template.md](../_template.md).
 | Telemetry | [setup/esc_motors/telemetry.md](setup/esc_motors/telemetry.md) | Greyed out until the flight controller answers. Read-only while the model is armed. | written |
 | RPM | [setup/esc_motors/rpm.md](setup/esc_motors/rpm.md) | Greyed out until the flight controller answers. Read-only while the model is armed. | written |
 | Hobbywing V5 | [setup/esc_motors/esc_tools/hw5.md](setup/esc_motors/esc_tools/hw5.md) | Greyed out until the flight controller answers. Read-only while the model is armed. Lit only while the flight controller reports this ESC telemetry protocol (Protocol ID: 3). | written |
-| AM32 | [setup/esc_motors/esc_tools/am32.md](setup/esc_motors/esc_tools/am32.md) | Greyed out until the flight controller answers. Read-only while the model is armed. Lit only while the flight controller reports this ESC telemetry protocol (Protocol ID: 1). | written |
+| AM32 | [setup/esc_motors/esc_tools/am32.md](setup/esc_motors/esc_tools/am32.md) | Greyed out until the flight controller answers. Read-only while the model is armed. Lit only while the flight controller reports this ESC telemetry protocol (Protocol ID: 1 or 16). | written |
+| Goosky | [setup/esc_motors/esc_tools/goosky.md](setup/esc_motors/esc_tools/goosky.md) | Greyed out until the flight controller answers. Read-only while the model is armed. Lit only while the flight controller reports this ESC telemetry protocol (Protocol ID: 16 or 1). | written |
 | BLHeli_S | [setup/esc_motors/esc_tools/blheli_s.md](setup/esc_motors/esc_tools/blheli_s.md) | Greyed out until the flight controller answers. Read-only while the model is armed. Lit only while the flight controller reports this ESC telemetry protocol (Protocol ID: 1). | written |
 | Bluejay | [setup/esc_motors/esc_tools/bluejay.md](setup/esc_motors/esc_tools/bluejay.md) | Greyed out until the flight controller answers. Read-only while the model is armed. Lit only while the flight controller reports this ESC telemetry protocol (Protocol ID: 1). | written |
 | FLYROTOR | [setup/esc_motors/esc_tools/flyrotor.md](setup/esc_motors/esc_tools/flyrotor.md) | Greyed out until the flight controller answers. Read-only while the model is armed. Lit only while the flight controller reports this ESC telemetry protocol (Protocol ID: 10). | written |

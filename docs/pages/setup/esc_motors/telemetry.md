@@ -18,7 +18,7 @@ Greyed out until the flight controller answers. Read-only while the model is arm
 
 | Setting | What it does |
 | --- | --- |
-| Telemetry Protocol | Configures Telemetry Protocol. |
+| Telemetry Protocol | The ESC telemetry protocol on the ESC telemetry UART. The list follows the flight controller's API version: *SRXL2*, *RECORD* and *Goosky* appear from API 12.10. *Goosky* is an alias of *BLHELI32*: Goosky ESCs run AM32 firmware and send BLHeli32 telemetry, so either entry works for them. |
 | Half Duplex | Configures Half Duplex. |
 | Pin Swap | Configures Pin Swap. |
 | Voltage Correction | Configures Voltage Correction. Range: -99 to 125 %. Default: 1 %. |
@@ -27,6 +27,9 @@ Greyed out until the flight controller answers. Read-only while the model is arm
 
 ## Notes
 
+- Until the flight controller has reported its API version, only the protocols common to
+  every version are listed. The page closes itself if the reported version changes while
+  it is open; reopen it to get the list for that version.
 - Changes are written to the flight controller EEPROM upon Save.
 
 ## Related

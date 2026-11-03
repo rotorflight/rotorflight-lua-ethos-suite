@@ -252,7 +252,11 @@ local MENUS = {
     -- its own armed gating to the ESC pages themselves.
     entries = {
       {title = "@i18n(app.modules.esc_tools.mfg.hw5.name)@", icon = lcd.loadMask("app/gfx/esc_mfg_hw5.png"), script = "app/pages/esc_forward_hw5.lua", escProtocolId = 3, lockedWhileArmed = true},
-      {title = "@i18n(app.modules.esc_tools.mfg.am32.name)@", icon = lcd.loadMask("app/gfx/esc_mfg_am32.png"), script = "app/pages/esc_forward_am32.lua", escProtocolId = 1, lockedWhileArmed = true},
+      -- Goosky ESCs run AM32 firmware; protocol 16 (Goosky, API 12.10) is the firmware's
+      -- alias of 1 (BLHeli32), so AM32 answers under either and Goosky is the same editor
+      -- under its own brand.
+      {title = "@i18n(app.modules.esc_tools.mfg.am32.name)@", icon = lcd.loadMask("app/gfx/esc_mfg_am32.png"), script = "app/pages/esc_forward_am32.lua", escProtocolIds = {1, 16}, lockedWhileArmed = true},
+      {title = "@i18n(app.modules.esc_tools.mfg.goosky.name)@", icon = lcd.loadMask("app/gfx/esc_mfg_goosky.png"), script = "app/pages/esc_forward_goosky.lua", escProtocolIds = {16, 1}, lockedWhileArmed = true},
       {title = "@i18n(app.modules.esc_tools.mfg.blheli_s.name)@", icon = lcd.loadMask("app/gfx/esc_mfg_blheli_s.png"), script = "app/pages/esc_forward_blheli_s.lua", escProtocolId = 1, lockedWhileArmed = true},
       {title = "@i18n(app.modules.esc_tools.mfg.bluejay.name)@", icon = lcd.loadMask("app/gfx/esc_mfg_bluejay.png"), script = "app/pages/esc_forward_bluejay.lua", escProtocolId = 1, lockedWhileArmed = true},
       {title = "@i18n(app.modules.esc_tools.mfg.flrtr.name)@", icon = lcd.loadMask("app/gfx/esc_mfg_flyrotor.png"), script = "app/pages/esc_forward_flyrotor.lua", escProtocolId = 10, lockedWhileArmed = true},

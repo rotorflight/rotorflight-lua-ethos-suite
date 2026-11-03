@@ -56,11 +56,30 @@ local function updateDependentFields(runtime)
   end
 end
 
-local function openEditor(opts, selection)
+-- The brand the page runs under. esc_forward_goosky.lua opens this page with its own
+-- title and log tag: a Goosky ESC is an AM32 ESC (same signature, layout and handshake).
+local function brandOf(config)
+  if type(config) ~= "table" then return PAGE_TITLE, "esc_am32", nil end
+  return config.pageTitle or PAGE_TITLE, config.logTag or "esc_am32", config.summaryBrand
+end
+
+-- The ESC reports no brand: its summary line reads "AM32 / EEPROM n / vX.Y" whatever the
+-- label on it. Under another brand the line is prefixed with that brand, as the
+-- configurator does, so the pilot sees "Goosky AM32 / ...". Everything else is the module.
+local function brandedModule(summaryBrand)
+  if not summaryBrand then return msp end
+  return setmetatable({
+    summaryFor = function(data, title)
+      return summaryBrand .. " " .. msp.summaryFor(data, title)
+    end,
+  }, {__index = msp})
+end
+
+local function openEditor(opts, selection, pageTitle, logTag, summaryBrand)
   vendorPage.open(opts, {
-    pageTitle = PAGE_TITLE .. " " .. selection.label,
-    logTag = "esc_am32",
-    mspModule = msp,
+    pageTitle = pageTitle .. " " .. selection.label,
+    logTag = logTag,
+    mspModule = brandedModule(summaryBrand),
     fields = FIELDS,
     onLoaded = function(runtime)
       updateDependentFields(runtime)
@@ -74,11 +93,14 @@ local function openEditor(opts, selection)
   })
 end
 
-local function open(opts)
+local function open(opts, config)
+  local pageTitle, logTag, summaryBrand = brandOf(config)
   fourWayPage.open(opts, {
-    pageTitle = PAGE_TITLE,
+    pageTitle = pageTitle,
     switchReadDelay = SWITCH_READ_DELAY,
-    openEditor = openEditor,
+    openEditor = function(editorOpts, selection)
+      openEditor(editorOpts, selection, pageTitle, logTag, summaryBrand)
+    end,
   })
 end
 
