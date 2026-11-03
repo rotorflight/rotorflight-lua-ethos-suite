@@ -510,6 +510,18 @@
     "needs_translation": false
   },
   {
+    "file": "status/alerts/mainpower.wav",
+    "english": "Main Power Lost",
+    "translation": "Hauptstrom verloren",
+    "needs_translation": false
+  },
+  {
+    "file": "status/alerts/mainpowerok.wav",
+    "english": "Main Power Restored",
+    "translation": "Hauptstrom wieder da",
+    "needs_translation": false
+  },
+  {
     "file": "events/alerts/gyrooverflow.wav",
     "english": "Gyro overflow",
     "translation": null,

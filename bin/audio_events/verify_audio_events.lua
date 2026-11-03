@@ -909,8 +909,8 @@ local function mainPowerChecks()
       (rig.lastPlayed() or ""):find("status/alerts/lowbat.wav", 1, true) ~= nil,
       tostring(rig.lastPlayed()))
     local n = rig.spoken[#rig.spoken]
-    check("the alert speaks the BEC voltage in tenths of a volt",
-      n ~= nil and n.value == 50 and n.unit == "V" and n.decimals == 1,
+    check("the alert speaks the BEC voltage (5.0 volts, one decimal)",
+      n ~= nil and n.value == 5.0 and n.unit == "V" and n.decimals == 1,
       n and string.format("%s %s %s", n.value, tostring(n.unit), tostring(n.decimals)))
     check("the alert buzzes", #rig.haptics == 1, #rig.haptics .. " haptic(s)")
   end
@@ -928,7 +928,7 @@ local function mainPowerChecks()
       rig.count(".wav") == 0, rig.count(".wav") .. " file(s) played")
     local n = rig.spoken[#rig.spoken]
     check("with no loss sound available, the BEC voltage is still spoken",
-      n ~= nil and n.value == 50 and n.decimals == 1,
+      n ~= nil and n.value == 5.0 and n.decimals == 1,
       n and string.format("value=%s decimals=%s", tostring(n.value), tostring(n.decimals)))
     check("with no loss sound available, the alert still buzzes",
       #rig.haptics == 1, #rig.haptics .. " haptic(s)")
@@ -992,8 +992,8 @@ local function mainPowerChecks()
     check("the pack coming back plays one recovery callout",
       rig.count("battery.wav") == 1, "battery.wav played " .. rig.count("battery.wav") .. "x")
     local n = rig.spoken[#rig.spoken]
-    check("the recovery speaks the pack total in tenths of a volt",
-      n ~= nil and n.value == 222 and n.unit == "V" and n.decimals == 1,
+    check("the recovery speaks the pack total (22.2 volts, one decimal)",
+      n ~= nil and n.value == 22.2 and n.unit == "V" and n.decimals == 1,
       n and string.format("%s %s %s", n.value, tostring(n.unit), tostring(n.decimals)))
     rig.setClock(4); rig.step({connected = true, voltage = 22.2, becVoltage = 5.0})
     check("a healthy pack that was never lost speaks no recovery",
@@ -1337,8 +1337,8 @@ local savedUnitVolt = _G.UNIT_VOLT
 --     seconds stays silent, and a recovery restarts the hold;
 --   * once it has held, the alarm fires, and repeats only after the repeat
 --     interval;
---   * voltage_callout speaks the pack total (tenths), the average cell
---     (hundredths) or nothing, per its value.
+--   * voltage_callout speaks the pack total (one decimal), the average cell
+--     (two decimals) or nothing, per its value.
 --
 -- A check that cannot fail proves nothing, so the last check loads a copy of
 -- the task with the hold guard stripped and requires the sag to fire there.
@@ -1512,8 +1512,8 @@ local function voltageChecks()
     rig.setClock(0); rig.step(20.4)
     rig.setClock(1); rig.step(20.4)
     local n = rig.spoken[#rig.spoken]
-    check("callout = 1 speaks the pack total in tenths of a volt",
-      n ~= nil and n.value == 204 and n.unit == "V" and n.decimals == 1,
+    check("callout = 1 speaks the pack total (20.4 volts, one decimal)",
+      n ~= nil and n.value == 20.4 and n.unit == "V" and n.decimals == 1,
       n and string.format("%s %s %s", n.value, tostring(n.unit), tostring(n.decimals)))
   end
   do
@@ -1521,8 +1521,8 @@ local function voltageChecks()
     rig.setClock(0); rig.step(20.4)
     rig.setClock(1); rig.step(20.4)
     local n = rig.spoken[#rig.spoken]
-    check("callout = 2 speaks the average cell in hundredths of a volt",
-      n ~= nil and n.value == 340 and n.unit == "V" and n.decimals == 2,
+    check("callout = 2 speaks the average cell (3.40 volts, two decimals)",
+      n ~= nil and n.value == 3.4 and n.unit == "V" and n.decimals == 2,
       n and string.format("%s %s %s", n.value, tostring(n.unit), tostring(n.decimals)))
   end
   do
