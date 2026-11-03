@@ -607,14 +607,15 @@ local function announceVoltage(now)
 
   -- Speak the reading itself if configured (issue #2309): the pack total at
   -- one decimal (e.g. "22.4 volts") or the average cell at two (e.g. "3.65
-  -- volts"). playNumber() takes the value scaled to the decimals it is asked
-  -- to speak, so the total is sent as tenths and the cell as hundredths.
+  -- volts"). playNumber() takes the real value and the decimals to speak it with
+  -- (system.playNumber(4.6, UNIT_VOLT, 1)); the scaled whole number it was sent before
+  -- came out as "46 volts" on the radio. The value is rounded to the decimals first.
   -- 0 (default) keeps the old alert-only callout.
   local callout = tonumber(events.voltage_callout) or 0
   if callout == 1 then
-    playNumber(math.floor((voltage * 10) + 0.5), UNIT_VOLT, 1)
+    playNumber(math.floor((voltage * 10) + 0.5) / 10, UNIT_VOLT, 1)
   elseif callout == 2 then
-    playNumber(math.floor((cellVoltage * 100) + 0.5), UNIT_VOLT, 2)
+    playNumber(math.floor((cellVoltage * 100) + 0.5) / 100, UNIT_VOLT, 2)
   end
 end
 
@@ -664,7 +665,7 @@ local function announceMainPowerLost(now)
       -- on the way in below.
       local path = firstResolvedSound(MAIN_POWER_OK_SOUNDS)
       if path then system.playFile(path) end
-      playNumber(math.floor((voltage * 10) + 0.5), UNIT_VOLT, 1)
+      playNumber(math.floor((voltage * 10) + 0.5) / 10, UNIT_VOLT, 1)
     end
     return
   end
@@ -678,7 +679,7 @@ local function announceMainPowerLost(now)
   mainPowerLostActive = true
   if path then system.playFile(path) end
   local bec = tonumber(session.becVoltage)
-  if bec then playNumber(math.floor((bec * 10) + 0.5), UNIT_VOLT, 1) end
+  if bec then playNumber(math.floor((bec * 10) + 0.5) / 10, UNIT_VOLT, 1) end
   haptic()
 end
 

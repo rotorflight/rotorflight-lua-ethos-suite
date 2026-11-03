@@ -117,16 +117,46 @@ local function notifyError(message, reason)
 end
 
 function Queue.new(common)
+  -- A new queue is a new link (tasks/background.lua makes one on a transport
+  -- swap): version 2 until setFirmwareApi() says otherwise.
+  common.setFraming(2)
   return setmetatable({
     common = common,
     pending = {},
     current = nil,
     lastSent = nil,
     retryCount = 0,
+    resendNow = false,
+    -- Off until the session has read an API version that has the firmware
+    -- fix this relies on; see Queue:setFirmwareApi().
+    resendOnBreak = false,
     rxFrames = 0,
-    rxBreaks = 0,
+    -- The shared common instance outlives a queue (tasks/background.lua
+    -- makes a new queue on a transport swap), so start from its count or the
+    -- first message would see every break it ever recorded as a new one.
+    rxBreaks = (common.mspRxBreakInfo()),
+    framingFallbacks = common.mspFramingFallbackCount(),
     lastTickAt = nil,
   }, Queue)
+end
+
+-- Called by tasks/session.lua once MSP_API_VERSION has answered, and with nil
+-- on a disconnect. Resending on a broken reply needs the firmware to answer a
+-- request that replaces a reply in progress with a reply of its own, START
+-- frame first. That is rotorflight-firmware #521, MSP API 12.10, in no 4.6
+-- release. On 4.6 the resend's answer comes without a START frame and is
+-- discarded, so an early resend would only spend an attempt; the queue keeps
+-- waiting for retryDelay of silence there, as it always did.
+--
+-- The same API version selects the framing (tasks/msp/common.lua). Version 3
+-- is offered from 12.10, the version of Rotorflight 4.7, which is to carry
+-- rotorflight-firmware #583. A 12.10 build without it refuses version 3 once,
+-- and the link falls back to version 2 for its lifetime.
+function Queue:setFirmwareApi(major, minor)
+  local apiWith12_10 = major ~= nil and minor ~= nil
+    and (major > 12 or (major == 12 and minor >= 10))
+  self.resendOnBreak = apiWith12_10
+  self.common.setFraming(apiWith12_10 and 3 or 2)
 end
 
 function Queue:isProcessed()
@@ -180,6 +210,7 @@ function Queue:clear()
   self.current = nil
   self.lastSent = nil
   self.retryCount = 0
+  self.resendNow = false
   self.common.mspClearBufs()
   if droppedCurrent then notifyError(droppedCurrent, "cleared") end
   for i = 1, #droppedPending do notifyError(droppedPending[i], "cleared") end
@@ -219,6 +250,7 @@ function Queue:_finish()
   self.current = nil
   self.lastSent = nil
   self.retryCount = 0
+  self.resendNow = false
 end
 
 -- Abort the in-flight message: retire it, then report the reason. The message
@@ -277,7 +309,7 @@ function Queue:processQueue()
   local maxRetries = msg.maxRetries or DEFAULT_MAX_RETRIES
   local now = os.clock()
 
-  if not self.lastSent or (now - self.lastSent) >= retryDelay then
+  if not self.lastSent or self.resendNow or (now - self.lastSent) >= retryDelay then
     -- Only give up once a *previous* send's own retryDelay window has
     -- fully elapsed with no reply -- never fail the message in the same
     -- breath as firing a fresh (re)send, which would judge that attempt
@@ -298,6 +330,7 @@ function Queue:processQueue()
       debugLog.msp("TX", msg.command, payload, "try=" .. tostring(self.retryCount + 1))
       self.lastSent = now
       self.retryCount = self.retryCount + 1
+      self.resendNow = false
       self.rxFrames = common.mspRxFrameCount()
     else
       debugLog.msp("TX!", msg.command, payload, "tx_busy")
@@ -305,46 +338,62 @@ function Queue:processQueue()
   end
 
   -- One frame per wakeup, deliberately. Both transports hand the frame to
-  -- Ethos's pushFrame(), and mspProcessTxQ() ignores whether it was
-  -- accepted. Draining a whole multi-frame write in one tick (#2411) broke
-  -- every save on hardware -- the burst outruns what pushFrame() will
-  -- queue, so the FC never sees a complete write. An abandoned mid-send
-  -- write no longer poisons the link either way, since _finish() hands the
-  -- TX buffer back.
+  -- Ethos's pushFrame(). Draining a whole multi-frame write in one tick
+  -- (#2411) broke every save on hardware -- the burst outruns what
+  -- pushFrame() will queue, so the FC never sees a complete write. A frame
+  -- pushFrame() refuses is kept for the next tick rather than lost
+  -- (common.lua's mspProcessTxQ). An abandoned mid-send write no longer
+  -- poisons the link either way, since _finish() hands the TX buffer back.
   common.mspProcessTxQ()
 
   local cmd, buf, err = common.mspPollReply()
 
-  -- Never resend while the FC is still sending. retryDelay used to count
-  -- from the send alone, so a reply longer than the window (a 448-byte
-  -- reply is ~90 S.Port frames) was cut off by a resend
-  -- part-way through, and every attempt died the same way until
-  -- max_retries failed the page load.
-  --
-  -- Frames this side discards count as well. When one reply frame is lost
-  -- on the link, the rest of that reply keeps arriving and is discarded
-  -- (it no longer follows the sequence). A request sent into that stream
-  -- gets an answer with no start frame: the firmware's sendMspReply()
-  -- (telemetry/msp_shared.c) only clears its static headerSent when a
-  -- reply finishes, not when a new request replaces it, so every
-  -- continuation frame of the new answer is discarded too. Waiting for
-  -- retryDelay of silence lets the old reply finish first, so the resend
-  -- gets a proper start frame.
-  --
-  -- A reply dropped part-way (a lost frame) then costs one full resend.
+  -- Never resend while the FC is still sending a reply this side can use.
+  -- retryDelay used to count from the send alone, so a reply longer than the
+  -- window (a 448-byte reply is ~90 S.Port frames) was cut off by a resend
+  -- part-way through, and every attempt died the same way until max_retries
+  -- failed the page load. Every reply frame re-arms the window, including
+  -- ones this side discards.
   local rxFrames = common.mspRxFrameCount()
   if rxFrames ~= self.rxFrames then
     self.rxFrames = rxFrames
     if self.lastSent then self.lastSent = now end
   end
 
-  -- MSP-log only: a reply dropped part-way on a sequence break. got past
-  -- expected means frames were lost; gap is the time since the previous
-  -- tick, long gaps pointing at an overflowed Ethos frame queue.
-  if debugLog.mspEnabled() then
-    local breaks, expected, got, bytes, size = common.mspRxBreakInfo()
-    if breaks ~= self.rxBreaks then
-      self.rxBreaks = breaks
+  -- A reply dropped part-way (a lost frame breaks the sequence) is resent on
+  -- the next tick, not after retryDelay of silence, on firmware that answers
+  -- a replacement request with its own START frame (see setFirmwareApi()).
+  -- The rest of the broken reply keeps arriving and is discarded, so it
+  -- cannot poison the new one. Waiting for silence cost retryDelay plus the
+  -- rest of the old reply on every lost frame -- over a second for a long
+  -- reply; this costs one round trip. The break still spends an attempt, so a
+  -- link that keeps losing frames ends in max_retries as before. No resend
+  -- while a newer reply is already being assembled: it would throw that reply
+  -- away.
+  -- The firmware refused version 3 and the link is back on version 2 (see
+  -- tasks/msp/common.lua's receivedReply()). The request was answered at once
+  -- with a refusal, so there is nothing to wait for: send it again now. The
+  -- refused attempt is not counted -- the request never reached the command.
+  local fallbacks = common.mspFramingFallbackCount()
+  if fallbacks ~= self.framingFallbacks then
+    self.framingFallbacks = fallbacks
+    if self.lastSent then
+      self.resendNow = true
+      if self.retryCount > 0 then self.retryCount = self.retryCount - 1 end
+    end
+    debugLog.msp("V2", msg.command, EMPTY_PAYLOAD, "firmware refused framing 3")
+  end
+
+  local breaks, expected, got, bytes, size = common.mspRxBreakInfo()
+  if breaks ~= self.rxBreaks then
+    self.rxBreaks = breaks
+    if self.lastSent and self.resendOnBreak and not common.mspRxInProgress() then
+      self.resendNow = true
+    end
+    -- MSP-log only: got past expected means frames were lost; gap is the
+    -- time since the previous tick, long gaps pointing at an overflowed Ethos
+    -- frame queue.
+    if debugLog.mspEnabled() then
       debugLog.msp("SEQ", msg.command, EMPTY_PAYLOAD, string.format(
         "expected=%d got=%d bytes=%d/%d gap=%dms", expected, got, bytes, size,
         math.floor(((now - (self.lastTickAt or now)) * 1000) + 0.5)))
@@ -379,6 +428,7 @@ function Queue:wakeup()
   self.current = nil
   self.lastSent = nil
   self.retryCount = 0
+  self.resendNow = false
   local cleared, clearErr = pcall(self.common.mspClearTxBuf)
   if not cleared then report("mspClearTxBuf", clearErr) end
   notifyError(msg, "queue_error")

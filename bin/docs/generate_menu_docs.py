@@ -157,6 +157,7 @@ SCRIPT_TO_DOC_PATH = {
     "app/pages/power_preferences.lua": "setup/power/preferences.md",
     "app/pages/esc_motors_throttle.lua": "setup/esc_motors/throttle.md",
     "app/pages/esc_motors_telemetry.lua": "setup/esc_motors/telemetry.md",
+    "app/pages/esc_motors_srxl2.lua": "setup/esc_motors/srxl2.md",
     "app/pages/esc_motors_rpm.lua": "setup/esc_motors/rpm.md",
     "app/pages/motor_override.lua": "setup/esc_motors/motor_override.md",
     "app/pages/esc_forward_hw5.lua": "setup/esc_motors/esc_tools/hw5.md",
@@ -174,6 +175,8 @@ SCRIPT_TO_DOC_PATH = {
     "app/pages/setup_governor_filters.lua": "setup/governor/filters.md",
     "app/pages/setup_governor_curves.lua": "setup/governor/curves.md",
 
+    # Configuration -> Wizards
+    "app/pages/setup_wizard.lua": "wizards/setup_wizard.md",
     # System -> Tools
     "app/pages/copy_profiles.lua": "tools/copy_profiles.md",
     "app/pages/profile_select.lua": "tools/profile_select.md",

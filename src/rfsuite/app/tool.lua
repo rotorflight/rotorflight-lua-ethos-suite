@@ -133,6 +133,8 @@ local APP_SESSION_PACKAGE_KEYS = {
 local ROOT_ENTRIES = {
   {title = "@i18n(app.menu_section_flight_tuning)@", icon = lcd.loadMask("app/gfx/flight_tuning.png"), menuId = "flight_tuning_menu", group = "@i18n(app.header_configuration)@"},
   {title = "@i18n(app.modules.hardware_setup.name)@", icon = lcd.loadMask("app/gfx/hardware.png"), menuId = "setup_menu", group = "@i18n(app.header_configuration)@"},
+  -- Wizards, beside Setup as in the EdgeTX suite (app/manifest.lua's wizards_menu).
+  {title = "@i18n(app.modules.wizards.name)@", icon = lcd.loadMask("app/gfx/setup_wizard.png"), menuId = "wizards_menu", group = "@i18n(app.header_configuration)@"},
   {title = "@i18n(app.menu_section_tools)@", icon = lcd.loadMask("app/gfx/tools.png"), menuId = "tools_menu", group = "@i18n(app.header_system)@", offline = true},
   {title = "@i18n(app.modules.logs.name)@", icon = lcd.loadMask("app/gfx/logs.png"), script = "app/pages/logs.lua", group = "@i18n(app.header_system)@", offline = true},
   {title = "@i18n(app.modules.settings.name)@", icon = lcd.loadMask("app/gfx/settings.png"), menuId = "settings_menu", group = "@i18n(app.header_system)@", offline = true},
@@ -241,6 +243,10 @@ local MENUS = {
       {title = "@i18n(app.modules.esc_motors.motor_override)@", icon = lcd.loadMask("app/gfx/esc_motors_motor_override.png"), script = "app/pages/motor_override.lua", lockedWhileArmed = true},
       {title = "@i18n(app.modules.esc_motors.throttle)@", icon = lcd.loadMask("app/gfx/esc_motors_throttle.png"), script = "app/pages/esc_motors_throttle.lua", lockedWhileArmed = true},
       {title = "@i18n(app.modules.esc_motors.telemetry)@", icon = lcd.loadMask("app/gfx/esc_motors_telemetry.png"), script = "app/pages/esc_motors_telemetry.lua", lockedWhileArmed = true},
+      -- Lit only on SRXL2 ESC telemetry (14): the firmware forces that protocol
+      -- whenever a serial port carries the SRXL2 ESC function, which is when
+      -- these settings mean anything.
+      {title = "@i18n(app.modules.esc_motors.srxl2)@", icon = lcd.loadMask("app/gfx/esc_motors_telemetry.png"), script = "app/pages/esc_motors_srxl2.lua", escProtocolId = 14, lockedWhileArmed = true},
       {title = "@i18n(app.modules.esc_motors.rpm)@", icon = lcd.loadMask("app/gfx/esc_motors_rpm.png"), script = "app/pages/esc_motors_rpm.lua", lockedWhileArmed = true},
       {title = "@i18n(app.modules.esc_tools.name)@", icon = lcd.loadMask("app/gfx/esc_tools.png"), menuId = "esc_forward_menu"},
     },
@@ -270,6 +276,14 @@ local MENUS = {
       {title = "@i18n(app.modules.governor.menu_time)@", icon = lcd.loadMask("app/gfx/setup_governor_time.png"), script = "app/pages/setup_governor_time.lua", lockedWhileArmed = true},
       {title = "@i18n(app.modules.governor.menu_filters)@", icon = lcd.loadMask("app/gfx/setup_governor_filters.png"), script = "app/pages/setup_governor_filters.lua", lockedWhileArmed = true},
       {title = "@i18n(app.modules.governor.menu_curves)@", icon = lcd.loadMask("app/gfx/setup_governor_curves.png"), script = "app/pages/setup_governor_curves.lua", lockedWhileArmed = true},
+    },
+  },
+  -- The guided setups. Model setup (app/pages/setup_wizard.lua) moves servos
+  -- and writes the whole setup, so it is locked while armed.
+  wizards_menu = {
+    title = "@i18n(app.modules.wizards.name)@",
+    entries = {
+      {title = "@i18n(app.modules.wizards.model_setup)@", icon = lcd.loadMask("app/gfx/setup_wizard.png"), script = "app/pages/setup_wizard.lua", lockedWhileArmed = true},
     },
   },
   tools_menu = {
@@ -541,6 +555,13 @@ local taskGuard = {
 -- floor; see the file header for the measured figure.
 local function installMenuGuards()
   MENUS.esc_forward_menu.guard = ensureEscProtocolGuard().new({
+    canRequest = function()
+      return isBackgroundTaskRunning() and sessionConnected == true
+    end,
+  })
+
+  -- Gates only the SRXL2 ESC entry; the others carry no escProtocolId.
+  MENUS.esc_motors_menu.guard = ensureEscProtocolGuard().new({
     canRequest = function()
       return isBackgroundTaskRunning() and sessionConnected == true
     end,

@@ -699,6 +699,9 @@ local function runHandshake(mspQueue, protocol)
       session.apiVersionMajor = data.major
       session.apiVersionMinor = data.minor
       session.apiVersionSupported = mspApiVersion.isSupported(data.major, data.minor)
+      -- Link behaviour that depends on the firmware (tasks/msp/queue.lua's
+      -- setFirmwareApi()). Harness doubles of the queue need not have it.
+      if mspQueue.setFirmwareApi then mspQueue:setFirmwareApi(data.major, data.minor) end
       if session.apiVersionSupported == true then
         playConnectBeep()
       end
@@ -933,6 +936,9 @@ local gpsSeenHealthy = false
 local function setConnected(value, mspQueue, protocol)
   if session.connected == value then return end
   session.connected = value
+  -- Published like every other state change: a page that waits for the link (the setup wizard's
+  -- reboot wait) sees the drop and the return through session.update.
+  publish()
   resetScheduler()
 
   if value then
@@ -958,6 +964,9 @@ local function setConnected(value, mspQueue, protocol)
     -- last known values, and only then does the reset below wipe them.
     if mspQueue then
       mspQueue:clear()
+      -- The next board may be older: nothing firmware-dependent until its API
+      -- version has been read again.
+      if mspQueue.setFirmwareApi then mspQueue:setFirmwareApi(nil, nil) end
     end
     local holdingFlight = flightTimer.inProgress and flightTimer.inProgress()
     if not holdingFlight then
@@ -1552,6 +1561,19 @@ local function onCraftNameSaved(name)
   publish()
 end
 bus.subscribe("craft.name.saved", onCraftNameSaved)
+
+-- The Setup Wizard's Receiver step changed the RX map (in the FC's RAM; the
+-- wizard saves or reverts it). The FC uses the new map straight away, so the
+-- local copy behind the throttle and switch signals follows it now rather
+-- than at the next connect.
+local function onRxMapSaved(map)
+  if not session.connected or type(map) ~= "table" then return end
+  local copy = {}
+  for k, v in pairs(map) do copy[k] = v end
+  session.rxMap = copy
+  publish()
+end
+bus.subscribe("rx.map.saved", onRxMapSaved)
 
 -- If the FC computes smartfuel itself (smartfuelMode > 0), just mirror its
 -- broadcast sensor. Otherwise run the local sigmoid/slew estimator

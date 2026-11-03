@@ -183,7 +183,9 @@ end
 --   onTool,                     -- optional; enables the header Tool button and runs page-specific
 --                               -- actions from the app tool's own callback context.
 --   toolIcon,                   -- optional mask path for the Tool button (default app/gfx/nav/tool.png).
---   onWakeup,                   -- optional; called from the page_runtime wakeup handler after its own
+--   toolAvailable,              -- optional function(runtime) -> bool; false keeps Tool disabled even when
+--                               -- loaded. Call updateToolEnabled() when its answer changes.
+--   onWakeup,                  -- optional; called from the page_runtime wakeup handler after its own
 --                               -- deferred dialog/reload work.
 --   onPaint,                    -- optional; called from app/tool.lua's paint callback while page is open.
 --   onDispose,                  -- optional; called from dispose() before fields/data are cleared.
@@ -253,6 +255,7 @@ function PageRuntime.new(config)
   self.eepromWrite = config.eepromWrite ~= false
   self.onTool = config.onTool
   self.toolIcon = config.toolIcon
+  self.toolAvailable = config.toolAvailable
   self.onWakeup = config.onWakeup
   self.onPaint = config.onPaint
   self.onDispose = config.onDispose
@@ -548,13 +551,20 @@ local function armedOrUnconfirmed(runtime)
   return runtime.isArmed == nil and runtime.armedUnconfirmed == true
 end
 
+-- For pages that write to the FC outside Save (a live trim, say): the same
+-- gate Save uses.
+function PageRuntime:armedOrUnconfirmed()
+  return armedOrUnconfirmed(self)
+end
+
 -- Tool is only ever enabled once the page has a completed load, the same
 -- gate Save uses, and is not mid-operation (busy). A page's onTool edits
 -- the values it has not read yet otherwise (see issue #2553). Only pages
 -- that pass an onTool have a Tool button to drive.
 function PageRuntime:updateToolEnabled()
   if self.disposed or not self.headerHandle or not self.onTool then return end
-  self.headerHandle.setToolEnabled(self.loaded == true and not self.busy)
+  self.headerHandle.setToolEnabled(self.loaded == true and not self.busy
+    and (not self.toolAvailable or self.toolAvailable(self) == true))
 end
 
 -- Bounded page save predicate: saving is only permitted when data has been
@@ -1290,6 +1300,7 @@ function PageRuntime:dispose()
   self.beforeSave = nil
   self.onTool = nil
   self.toolIcon = nil
+  self.toolAvailable = nil
   self.onWakeup = nil
   self.onPaint = nil
   self.onDispose = nil

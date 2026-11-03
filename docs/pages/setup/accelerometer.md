@@ -18,11 +18,12 @@ Greyed out until the flight controller answers. Read-only while the model is arm
 
 | Setting | What it does |
 | --- | --- |
-| Roll | Configures Roll. Range: -300 to 300 °. Default: 0 °. |
-| Pitch | Configures Pitch. Range: -300 to 300 °. Default: 0 °. |
+| Roll | Configures Roll trim in tenths of a degree. Range: -300 to 300. Default: 0. |
+| Pitch | Configures Pitch trim in tenths of a degree. Range: -300 to 300. Default: 0. |
 
 ## Notes
 
+- Trim units are handled by `src/rfsuite/lib/msp_acc_trim.lua` (issue #2650).
 - Changes are written to the flight controller EEPROM upon Save.
 - Calibrate waits until the flight controller reports that the calibration has
   finished, then saves to the EEPROM and plays the confirmation beep. If it does
