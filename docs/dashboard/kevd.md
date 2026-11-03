@@ -25,6 +25,11 @@ The transmitter battery gauge shares RSSI's top and bottom padding so neither
 indicator reaches the header's lower edge.
 Inflight ESC temperature and throttle arcs reserve space for their titles and
 maximum readings. Throttle sits farther right to separate it from ESC details.
+The ESC temperature rings leave a visible gap. The throttle gauge and its value,
+maximum reading, and title sit five pixels higher.
+Inflight panel backgrounds draw no sensor readout or missing-telemetry dots.
+Throttle arcs are green through 70% and red above 70% through full throttle,
+including the recorded maximum arc.
 ESC temperature and throttle values use the shared adaptive font fitter within
 their arc interiors, centered on the arcs in full-screen and windowed layouts.
 The inflight advanced battery stack extends left into the space beside the
@@ -33,11 +38,12 @@ readings align right, and the shorter governor panel leaves a taller fuel
 gauge. The FLIGHT TIME title uses a larger built-in font while the timer digits
 retain their original size; no additional timer font is loaded.
 The title sits close beneath the timer, with a cap above the battery frame.
-The battery extends eight pixels upward toward the title; its five-pixel cap
+The battery extends fourteen pixels upward toward the title; its five-pixel cap
 has rounded ends and leaves the timer/title positions unchanged.
 The stack's left inset trims its width by 15 pixels while its right edge stays fixed.
 Compact windows use smaller fonts to preserve spacing.
 Postflight keeps the inflight battery-stack width and governor-tile height.
+The six postflight gauge values sit five pixels higher to clear their bottom borders.
 The governor bottom aligns with the six gauges, and the battery extends down
 to it. The six gauges move as one group, with balanced page-side margins and
 the same gap beside the battery stack. Postflight also has a larger FLIGHT TIME
@@ -92,3 +98,6 @@ physical-radio RAM and instruction limits remain hardware-specific.
 Inflight fullscreen battery voltage, cell and mAh details share the largest font
 that fits all three rows, using the full inner battery width. Windowed details use
 the theme's original adaptive detail font; the fuel percentage is unchanged.
+
+Preflight status-card titles and values sit 2 pixels lower in fullscreen and
+4 pixels lower in windowed layouts to clear the upper borders without moving the frames.

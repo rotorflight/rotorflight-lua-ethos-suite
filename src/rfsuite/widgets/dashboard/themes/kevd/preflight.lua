@@ -1,7 +1,7 @@
 --[[
   Copyright (C) 2025 Rotorflight Project
   GPLv3 — https://www.gnu.org/licenses/gpl-3.0.en.html
-]] --
+]]
 
 local requireModule = package.loaded["rfsuite.lib.require"] or assert(loadfile("lib/require.lua"))()
 local rfsuite = requireModule("widgets/dashboard/context.lua")
@@ -72,7 +72,6 @@ local screenBorderStyle = {
     inset = -1
 }
 
-
 local function buildBoxes(W)
     local _, H = lcd.getWindowSize()
     local fullScreen = utils.isFullScreen(W, H)
@@ -83,12 +82,11 @@ local function buildBoxes(W)
     local modelHeight = oldCellH * 9
     local fuelShift = modelHeight - cellH * 9
     local modelWidth = math.floor(W / layout.cols) * 3
-    -- Match the visible Blackbox panel bottom (insetbottom = -3), allowing
-    -- for the fuel gauge's eight-pixel bottom padding. Its top stays put;
-    -- the larger box also moves the percentage and advanced details down.
+
     local fuelHeight = math.min(contentH, cellH * layout.rows + 3) - cellH * 9 + 8
 
     local opts = themeOptions[getThemeOptionKey(W)] or themeOptions.ls_full
+    local cardTextOffset = fullScreen and 2 or 4
     local cardTitleFont = W >= 784 and (fullScreen and "FONT_STD" or "FONT_S") or "FONT_XS"
     local batteryDetailFont = W >= 784 and (fullScreen and "FONT_XL" or "FONT_L") or opts.smartadvfont
 
@@ -173,8 +171,8 @@ local function buildBoxes(W)
             font = opts.tilefont,
             titlefont = cardTitleFont,
             titlespacing = opts.tiletitlespacing,
-            titlepaddingbottom = opts.tiletitlepaddingbottom,
-            valuepaddingtop = opts.tilevaluepaddingtop,
+            titlepaddingbottom = opts.tiletitlepaddingbottom - cardTextOffset,
+            valuepaddingtop = opts.tilevaluepaddingtop + cardTextOffset,
             valuepaddingbottom = opts.tilevaluepaddingbottom,
             bgcolor = statusTileTopRowBg,
             titlecolor = colorMode.titlecolor,
@@ -194,8 +192,8 @@ local function buildBoxes(W)
             font = opts.tilefont,
             titlefont = cardTitleFont,
             titlespacing = opts.tiletitlespacing,
-            titlepaddingbottom = opts.tiletitlepaddingbottom,
-            valuepaddingtop = opts.tilevaluepaddingtop,
+            titlepaddingbottom = opts.tiletitlepaddingbottom - cardTextOffset,
+            valuepaddingtop = opts.tilevaluepaddingtop + cardTextOffset,
             valuepaddingbottom = opts.tilevaluepaddingbottom,
             bgcolor = statusTileTopRowBg,
             titlecolor = colorMode.titlecolor,
@@ -216,8 +214,8 @@ local function buildBoxes(W)
             font = opts.tilefont,
             titlefont = cardTitleFont,
             titlespacing = opts.tiletitlespacing,
-            titlepaddingbottom = opts.tiletitlepaddingbottom,
-            valuepaddingtop = opts.flightvaluepaddingtop,
+            titlepaddingbottom = opts.tiletitlepaddingbottom - cardTextOffset,
+            valuepaddingtop = opts.flightvaluepaddingtop + cardTextOffset,
             valuepaddingbottom = opts.flightvaluepaddingbottom,
             bgcolor = statusTileTopRowRightEdgeBg,
             titlecolor = colorMode.titlecolor,
@@ -303,8 +301,8 @@ local function buildBoxes(W)
             font = opts.tilefont,
             titlefont = cardTitleFont,
             titlespacing = opts.tiletitlespacing,
-            titlepaddingbottom = opts.tiletitlepaddingbottom,
-            valuepaddingtop = opts.tilevaluepaddingtop,
+            titlepaddingbottom = opts.tiletitlepaddingbottom - cardTextOffset,
+            valuepaddingtop = opts.tilevaluepaddingtop + cardTextOffset,
             valuepaddingbottom = opts.tilevaluepaddingbottom,
             decimals = 0,
             bgcolor = statusTileBg,
@@ -358,8 +356,8 @@ local function buildBoxes(W)
             font = opts.govfont,
             titlefont = cardTitleFont,
             titlespacing = opts.tiletitlespacing,
-            titlepaddingbottom = opts.tiletitlepaddingbottom,
-            valuepaddingtop = opts.tilevaluepaddingtop,
+            titlepaddingbottom = opts.tiletitlepaddingbottom - cardTextOffset,
+            valuepaddingtop = opts.tilevaluepaddingtop + cardTextOffset,
             valuepaddingbottom = opts.tilevaluepaddingbottom,
             bgcolor = statusTileRightEdgeBg,
             titlecolor = colorMode.titlecolor,

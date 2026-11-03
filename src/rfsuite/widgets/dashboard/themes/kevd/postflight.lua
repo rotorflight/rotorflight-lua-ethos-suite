@@ -1,7 +1,7 @@
 --[[
   Copyright (C) 2026 Rotorflight Project
   GPLv3 — https://www.gnu.org/licenses/gpl-3.0.en.html
-]] --
+]]
 
 local requireModule = package.loaded["rfsuite.lib.require"] or assert(loadfile("lib/require.lua"))()
 local rfsuite = requireModule("widgets/dashboard/context.lua")
@@ -135,8 +135,7 @@ local function rightStackWakeup(box, telemetry)
         local detailW = w + (box.rs_fullscreen and 2 or -6)
         local resized = c._fontW ~= w or c._fontH ~= h
         if resized or c._fontVoltage ~= c.voltageStr or c._fontCell ~= c.cellStr or c._fontConsumed ~= c.consumedStr then
-            -- Choose one size that fits every row; enum values are not used
-            -- as a size ordering. Cache the result until values/layout change.
+
             local font, _, _, height = utils.resolveAndFitValue(c.voltageStr, nil, detailW, h / 10)
             local cellFont, _, _, cellHeight = utils.resolveAndFitValue(c.cellStr, nil, detailW, h / 10)
             local mahFont, _, _, mahHeight = utils.resolveAndFitValue(c.consumedStr, nil, detailW, h / 10)
@@ -161,12 +160,7 @@ end
 
 local function rightStackPaint(x, y, w, h, box, c)
     c = c or {}
-    -- Use the inset-adjusted rect drawBoxBackground returns (it applies
-    -- rs_bgstyle's insetleft/insetright/etc.) instead of the raw box rect,
-    -- so the panel's content shrinks in lockstep with its border. Without
-    -- this, widening rs_bgstyle's insetright to add right-edge margin would
-    -- pull the border in while every right-aligned text row below stayed
-    -- anchored to the old (un-inset) right edge, overflowing past it.
+
     x, y, w, h = utils.drawBoxBackground(x, y, w, h, box.rs_bgstyle)
     local framePadding = box.rs_framepadding
     local frameX, frameW = x - framePadding, w + framePadding * 2
@@ -284,7 +278,6 @@ local screenBorderStyle = {
 local createHeader = requireModule("widgets/dashboard/themes/kevd/header.lua")
 local header_layout, header_boxes, _, pageBackground = createHeader(colorMode, headeropts)
 
-
 local function buildBoxes(W, H)
     local themeKey = getThemeOptionKey(W)
     local opts = themeOptions[themeKey] or themeOptions.ls_full
@@ -328,14 +321,14 @@ local function buildBoxes(W, H)
         inset = 4,
         insettop = 11,
         insetleft = 15,
-        insetright = 20, -- was -5 (which expanded the tile *past* its own box's right edge, right up against the screen edge with no margin); a positive value pulls the tile's right edge inward for real padding
+        insetright = 20,
         insetbottom = 8,
         contentpadding = 1
     }
 
     local governorDisarmedTileBg = {
         backfillcolor = colorMode.tbbgcolor or colorMode.headerbgcolor or pageBgColor,
-        fillcolor = colorMode.tbbgcolor or colorMode.headerbgcolor or pageBgColor, -- was a hardcoded black, which looked fine in dark themes but ignored the OS theme entirely (stood out as a jarring black box against a light theme); match the panel's own fill instead, same as every other tile
+        fillcolor = colorMode.tbbgcolor or colorMode.headerbgcolor or pageBgColor,
         bordercolor = colorMode.fillcritcolor,
         borderwidth = 4,
         roundradius = 6,
@@ -659,8 +652,6 @@ local function buildBoxes(W, H)
     local groupShift = sideGap - gridX - gaugeTileBg.inset
     local stackShift = W - sideGap - stackW - (gridX + cellW * 9 + rightStackTileBg.insetleft)
 
-    -- Inflight uses ten rows; match its governor frame height exactly.
-    -- Postflight's twelve-row stack ends on the same inset as its six tiles.
     local headerH = utils.isFullScreen(W, H) and header_layout.height or 0
     local flightInnerH = floor((H - headerH) / 10) * 10
         - rightStackTileBg.insettop - rightStackTileBg.insetbottom - 10
@@ -671,9 +662,13 @@ local function buildBoxes(W, H)
                 box.xoffset = stackShift
                 box.rs_governorheight = governorHeight
             else
-                -- Move backgrounds, labels and gauges together, keeping
-                -- the six-tile block's existing column/row spacing intact.
+
                 box.xoffset = groupShift
+                if box.type == "gauge" and box.subtype == "bar" then
+
+                    box.valuepaddingtop = 1
+                    box.valuepaddingbottom = 11
+                end
             end
         end
     end

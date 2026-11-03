@@ -1,8 +1,7 @@
 --[[
   Copyright (C) 2025 Rotorflight Project
   GPLv3 â€” https://www.gnu.org/licenses/gpl-3.0.en.html
-]] --
-
+]]
 
 local requireModule = package.loaded["rfsuite.lib.require"] or assert(loadfile("lib/require.lua"))()
 local rfsuite = requireModule("widgets/dashboard/context.lua")
@@ -19,21 +18,13 @@ local maxVoltageToCellVoltage = utils.maxVoltageToCellVoltage
 local headeropts = utils.getHeaderOptions()
 local colorMode = utils.themeColors()
 
--- Longest stretch this panel's fuel readout is allowed to keep showing a
--- number without a fresh getSensor("smartfuel") read behind it. This panel
--- reads the sensor directly (unlike every other theme's fuel gauge, which
--- goes through the shared, budget-paced gauge/bar.lua object) -- see the
--- wakeup() below. Under normal telemetry that read succeeds every tick, so
--- this never matters; it only kicks in if this box's own wakeup() itself
--- goes a long stretch without being called at all (dense-theme instruction-
--- budget starvation -- see widgets/dashboard/engine.lua's
--- WAKE_CURSOR_MAX_CONSECUTIVE_FAILS for the scheduler-side half of this
--- fix), where the old code would otherwise keep confidently displaying
--- whatever percentage it last managed to read, indefinitely, even after
--- it's badly out of date.
 local FUEL_STALE_TIMEOUT = 5.0
 
 local theme_section = "system/kevd"
+
+local function backgroundPaint(x, y, w, h, box)
+    utils.drawBoxBackground(x, y, w, h, box.bgcolor)
+end
 
 local THEME_DEFAULTS = {throttle_max = 100, rpm_min = 0, rpm_max = 5500, bec_min = 6.0, bec_warn = 8.0, bec_max = 12.0, esctemp_warn = 120, esctemp_max = 300}
 
@@ -78,8 +69,6 @@ local function formatConsumedMah(consumed)
     return format("%d mAh", floor(consumed + 0.5))
 end
 
-
--- Rectangular fuel frame shares the timer/governor column edges.
 local function drawFuelBar(x, y, w, h, percent, fillbgcolor, fillcolor, accentcolor, thickness)
     lcd.color(accentcolor)
     local capW = floor(w * 0.4)
@@ -98,10 +87,6 @@ local function drawFuelBar(x, y, w, h, percent, fillbgcolor, fillcolor, accentco
     end
 end
 
-
--- wakeup for the consolidated right-hand info stack: flight time, smart fuel
--- gauge + battery overlay text, and governor status. Replaces what used to
--- be 8 separately-offset overlapping boxes with one coordinated panel.
 local function rightStackWakeup(box, telemetry)
     local c = box._cache or {}
 
@@ -144,7 +129,7 @@ local function rightStackWakeup(box, telemetry)
     if box.rs_fullscreen and box._dashboardRectW and box._dashboardRectH then
         local _, _, w, h = utils.boxContentRect(0, 0, box._dashboardRectW, box._dashboardRectH, box.rs_bgstyle)
         if c._fontW ~= w or c._fontH ~= h or c._fontVoltage ~= c.voltageStr or c._fontCell ~= c.cellStr or c._fontConsumed ~= c.consumedStr then
-            -- Fit all three rows together and reuse the result until inputs change.
+
             local font, _, _, height = utils.resolveAndFitValue(c.voltageStr, nil, w + 2, h / 10)
             local cellFont, _, _, cellHeight = utils.resolveAndFitValue(c.cellStr, nil, w + 2, h / 10)
             local mahFont, _, _, mahHeight = utils.resolveAndFitValue(c.consumedStr, nil, w + 2, h / 10)
@@ -167,11 +152,6 @@ local function rightStackWakeup(box, telemetry)
     return c
 end
 
-
--- paint for the consolidated right-hand info stack. All sub-elements are
--- positioned relative to the single panel rect (x,y,w,h) using a 10-row
--- grid (matching the dashboard's row count), so tuning happens via the
--- rs_* fields on one box instead of 8 separate offsetx/offsety values.
 local function rightStackPaint(x, y, w, h, box, c)
     c = c or {}
     x, y, w, h = utils.drawBoxBackground(x, y, w, h, box.rs_bgstyle)
@@ -190,11 +170,9 @@ local function rightStackPaint(x, y, w, h, box, c)
         c.flightTime, nil, box.rs_flightfont, "center", box.rs_textcolor,
         0, 0, 0, 12, 0, nil)
 
-    drawFuelBar(frameX, fuelY, frameW, fuelH, c.fuelPercent or 0,
+    drawFuelBar(frameX, fuelY - 6, frameW, fuelH + 6, c.fuelPercent or 0,
         box.rs_fuelfillbgcolor, c.fuelFillColor, box.rs_fuelaccentcolor, box.rs_fuelframethickness)
 
-    -- Three right-aligned rows above a separate percentage region prevent the
-    -- advanced readings from colliding with the large remaining-fuel value.
     local detailX = x - (box.rs_fullscreen and 1 or 0)
     local detailW = w + (box.rs_fullscreen and 2 or -4)
     local detailPadding = box.rs_fullscreen and 0 or nil
@@ -209,7 +187,6 @@ local function rightStackPaint(x, y, w, h, box, c)
         c.fuelDisplay, c.fuelUnit, box.rs_fuelfont, "right", box.rs_textcolor,
         nil, nil, nil, 0, 0, nil)
 
-    -- Use the same outer frame coordinates, including its bottom edge.
     local gx, gy, gw, gh = utils.drawBoxBackground(frameX, govY, frameW, panelBottom - govY, box.rs_govbgstyle)
     utils.box(gx, gy, gw, gh,
         "GOVERNOR", "bottom", "center", box.rs_govtitlefont, box.rs_govtitlespacing, box.rs_titlecolor,
@@ -217,7 +194,6 @@ local function rightStackPaint(x, y, w, h, box, c)
         c.governorText, nil, box.rs_govfont, "center", c.governorColor,
         nil, nil, nil, nil, box.rs_govvaluepaddingbottom, nil)
 end
-
 
 local function getThemeValue(key)
 
@@ -260,7 +236,6 @@ local lastScreenH = nil
 local boxes_cache = nil
 local themeconfig = nil
 
-
 local pageBgColor = colorMode.bgcolor
 local layout = {cols = 12, rows = 10, padding = 0, bgcolor = pageBgColor}
 local screenBorderStyle = {
@@ -273,10 +248,6 @@ local screenBorderStyle = {
 local createHeader = requireModule("widgets/dashboard/themes/kevd/header.lua")
 local header_layout, header_boxes, _, pageBackground = createHeader(colorMode, headeropts)
 
-
--- Match the shared arc renderer's geometry once per layout build. The
--- normal font fitter then works inside the free centre of the inner arc,
--- rather than fitting a fixed font against the entire gauge tile.
 local function fitArcValue(box, cellW, cellH)
     local w = floor(cellW * box.colspan)
     local h = floor(cellH * box.rowspan)
@@ -313,17 +284,15 @@ local function buildBoxes(W, H)
     local governorTitlePaddingBottom = compactWindow and 0 or 3
     local governorValuePaddingBottom = 0
 
-
     local governorDisarmedTileBg = {
         backfillcolor = colorMode.tbbgcolor or colorMode.headerbgcolor or pageBgColor,
-        fillcolor = colorMode.tbbgcolor or colorMode.headerbgcolor or pageBgColor, -- was a hardcoded black, which looked fine in dark themes but ignored the OS theme entirely (stood out as a jarring black box against a light theme); match the panel's own fill instead, same as every other tile
+        fillcolor = colorMode.tbbgcolor or colorMode.headerbgcolor or pageBgColor,
         bordercolor = colorMode.fillcritcolor,
         borderwidth = 4,
         roundradius = 6,
         inset = 0,
         contentpadding = 1
     }
-
 
     local arcGroupTileBg = {
         backfillcolor = pageBgColor,
@@ -339,7 +308,6 @@ local function buildBoxes(W, H)
         contentpadding = 1
     }
 
-
     local rightStackTileBg = {
         fillcolor = colorMode.tbbgcolor or colorMode.headerbgcolor or pageBgColor,
         bordercolor = colorMode.accentcolor or colorMode.rssifillbgcolor,
@@ -348,32 +316,24 @@ local function buildBoxes(W, H)
         inset = 4,
         insettop = 11,
         insetleft = 15,
-        insetright = 20, -- was -5 (which expanded the tile *past* its own box's right edge, right up against the screen edge with no margin); a positive value pulls the tile's right edge inward for real padding
+        insetright = 20,
         insetbottom = 8,
         contentpadding = 1
     }
 
-
     local result = {
         pageBackground,
-
 
         {
             col = 1,
             row = 1,
             colspan = 12,
             rowspan = 10,
-            type = "text",
-            subtype = "telemetry",
-            source = "__background_only__",
-            title = "",
-            unit = "",
-            font = "FONT_XS",
-            textcolor = pageBgColor,
-            titlecolor = pageBgColor,
+            type = "func",
+            subtype = "func",
+            paint = backgroundPaint,
             bgcolor = pageBgColor
         },
-
 
         {
             col = 1,
@@ -381,17 +341,11 @@ local function buildBoxes(W, H)
             colspan = 9,
             rowspan = 10,
             offsetx = 0,
-            type = "text",
-            subtype = "telemetry",
-            source = "__background_only__",
-            title = "",
-            unit = "",
-            font = "FONT_XS",
-            textcolor = pageBgColor,
-            titlecolor = pageBgColor,
+            type = "func",
+            subtype = "func",
+            paint = backgroundPaint,
             bgcolor = arcGroupTileBg
         },
-
 
         {
             col = 10,
@@ -404,32 +358,27 @@ local function buildBoxes(W, H)
             wakeup = rightStackWakeup,
             paint = rightStackPaint,
 
-            -- shared styling
             rs_bgstyle = rightStackTileBg,
             rs_framepadding = 5,
             rs_govbgstyle = governorDisarmedTileBg,
             rs_titlecolor = colorMode.titlecolor,
             rs_textcolor = colorMode.textcolor,
-            fillcolor = colorMode.fillcolor, -- threshold fallback for the fuel gauge fill colour
+            fillcolor = colorMode.fillcolor,
 
-            -- FLIGHT TIME row
             rs_flighttitlefont = compactWindow and "FONT_S" or "FONT_STD",
             rs_flighttitlespacing = opts.tiletitlespacing,
             rs_flighttitlepaddingbottom = 15,
             rs_flightfont = compactWindow and "FONT_L" or "FONT_XXL",
 
-            -- smart fuel gauge
             rs_fuelfillbgcolor = colorMode.fillbgcolor,
             rs_fuelaccentcolor = colorMode.accentcolor or colorMode.rssifillbgcolor,
             rs_fuelframethickness = 4,
             rs_fuelfont = compactWindow and "FONT_XXL" or "FONT_XXXXL",
             rs_fuelthresholds = {{value = 25, fillcolor = colorMode.fillcritcolor}, {value = 50, fillcolor = lcd.RGB(0xE3, 0xA3, 0x00)}},
 
-            -- battery overlay text (voltage / per-cell voltage / consumed mAh)
             rs_fullscreen = utils.isFullScreen(W, H),
             rs_overlayfont = opts.advfont,
 
-            -- governor status
             rs_govfont = governorFont,
             rs_govtitlefont = compactWindow and "FONT_XS" or "FONT_STD",
             rs_govtitlespacing = governorTitleSpacing,
@@ -445,7 +394,6 @@ local function buildBoxes(W, H)
                 {value = "@i18n(widgets.governor.THROFF)@", textcolor = colorMode.fillcritcolor}
             }
         },
-
 
         {
             col = 6,
@@ -485,24 +433,25 @@ local function buildBoxes(W, H)
         },
 
         {
-            col = 3,                         -- throttle tile grid column; lower = left, higher = right
-            row = 6,                         -- throttle tile grid row; lower = up, higher = down
-            colspan = 3,                     -- throttle tile width; larger = wider tile/container
-            rowspan = 5,                     -- throttle tile height; larger = taller tile/container
-            xoffset = math.floor(W / 24),    -- half a grid column to the right
+            col = 3,
+            row = 6,
+            yoffset = -5,
+            colspan = 3,
+            rowspan = 5,
+            xoffset = math.floor(W / 24),
             type = "gauge",
             subtype = "arc",
             source = "throttle_percent",
             arcmax = true,
             title = "THROTTLE",
             titlepos = "bottom",
-            titlefont = arcTitleFont,        -- throttle title font size
+            titlefont = arcTitleFont,
             titlepaddingbottom = 8,
             titlepaddingleft = 0,
             min = 0,
             max = getThemeValue("throttle_max"),
-            thickness = math.max(3, math.floor((opts.thickness - 10) )), -- throttle arc ring thickness
-            font = "FONT_XL",                -- throttle main value font size
+            thickness = math.max(3, math.floor((opts.thickness - 10) )),
+            font = "FONT_XL",
             maxfont = smallGaugeMaxFont,
             maxprefix = "Max: ",
             maxpaddingtop = smallGaugeMaxTop,
@@ -518,9 +467,8 @@ local function buildBoxes(W, H)
             textcolor = colorMode.textcolor,
             maxtextcolor = "orange",
             transform = "floor",
-            thresholds = {{value = 70, fillcolor = "green"}, {value = 85, fillcolor = "red"}}
+            thresholds = {{value = 70, fillcolor = "green"}, {value = 100, fillcolor = "red"}}
         },
-
 
         {
             col = 1,
@@ -538,7 +486,7 @@ local function buildBoxes(W, H)
             titlepaddingbottom = 8,
             min = 0,
             max = getThemeValue("esctemp_max"),
-            thickness = math.max(3, math.floor((opts.thickness - 3) / 2) + 9),
+            thickness = math.max(3, math.floor((opts.thickness - 3) / 2) + 4),
             valuepaddingleft = 0,
             valuepaddingtop = 32,
             valuepaddingbottom = smallGaugeValueBottom,
