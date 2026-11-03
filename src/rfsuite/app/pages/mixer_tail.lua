@@ -124,9 +124,14 @@ local function open(opts)
   local lastRefused = nil
   local tailPinText = nil
   local inOverride = false
-  -- Raw tail_center_trim that EEPROM holds, and the one last sent live.
+  -- Raw tail_center_trim that EEPROM holds, the one the FC last confirmed,
+  -- and the one sent live but not yet confirmed.
   local savedTrim = nil
   local liveTrim = nil
+  local pendingTrim = nil
+  -- Only a trim edit is sent live: the degrees field rounds the raw value,
+  -- so an unedited field can differ from what the FC holds.
+  local trimEdited = false
   local lastChangeAt = 0
   -- Reused for every live write: the loaded mixer config with the trim swapped in.
   local liveMixer = {}
@@ -146,13 +151,24 @@ local function open(opts)
     return round((formData.yaw_center_trim or 0) * 100 / 24)
   end
 
+  local function onTrimWritten()
+    if pendingTrim ~= nil then liveTrim = pendingTrim end
+    pendingTrim = nil
+  end
+
+  -- Keep the confirmed trim; retry after the settle time.
+  local function onTrimError()
+    pendingTrim = nil
+    lastChangeAt = os.clock()
+  end
+
   local function sendTrim(rt, trim)
     local mixer = rt.data and rt.data.mixer
     if not mixer then return end
     for key, value in pairs(mixer) do liveMixer[key] = value end
     liveMixer.tail_center_trim = trim
-    bus.publish("msp.request", mixerConfig.buildWriteMessage(liveMixer))
-    liveTrim = trim
+    pendingTrim = trim
+    bus.publish("msp.request", mixerConfig.buildWriteMessage(liveMixer, onTrimWritten, onTrimError))
   end
 
   local function setOverride(on)
@@ -183,6 +199,7 @@ local function open(opts)
       lastRefused = tail and tail.refused or nil
       savedTrim = trimFromForm()
       liveTrim = savedTrim
+      pendingTrim = nil
       -- Moving the pin restarts the FC, which drops the override.
       if tail and tail.moved then inOverride = false end
     end,
@@ -209,6 +226,8 @@ local function open(opts)
       -- Only the first read is what EEPROM holds: a later re-read returns
       -- whatever was last sent live. onSaved moves it on.
       liveTrim = u16ToS16(mixer.tail_center_trim)
+      pendingTrim = nil
+      trimEdited = false
       if savedTrim == nil then savedTrim = liveTrim end
 
       originalMode = mode
@@ -286,7 +305,6 @@ local function open(opts)
               setOverride(false)
             elseif runtime.loaded and not isMotorizedMode(formData.tail_rotor_mode) then
               setOverride(true)
-              lastChangeAt = os.clock()
             end
             if refresh then refresh() end
             if focusFn then focusFn() end
@@ -304,16 +322,23 @@ local function open(opts)
     end,
     onWakeup = function(rt)
       refresh()
-      -- Not while armed: the FC ignores the override then, but would take the trim.
-      if not inOverride or not rt.loaded or rt.busy or rt.activeDialog or rt.isArmed then return end
+      -- Not while armed (or not known to be disarmed): the FC ignores the
+      -- override then, but would take the trim.
+      if not inOverride or not trimEdited or pendingTrim ~= nil or not rt.loaded
+        or rt.busy or rt.activeDialog or rt:armedOrUnconfirmed() then return end
       local trim = trimFromForm()
       if trim ~= liveTrim and (os.clock() - lastChangeAt) >= LIVE_SETTLE then
         sendTrim(rt, trim)
       end
     end,
     onDispose = function(rt)
-      -- Left without saving: put back the trim EEPROM holds.
-      if savedTrim ~= nil and liveTrim ~= savedTrim then sendTrim(rt, savedTrim) end
+      -- Left without saving: put back the trim EEPROM holds. Not while
+      -- armed (the FC keeps the live trim until it restarts) or mid-save
+      -- (the save writes the trim itself).
+      local changed = liveTrim ~= savedTrim or (pendingTrim ~= nil and pendingTrim ~= savedTrim)
+      if savedTrim ~= nil and changed and not rt.busy and not rt:armedOrUnconfirmed() then
+        sendTrim(rt, savedTrim)
+      end
       if inOverride then setOverride(false) end
     end,
   })
@@ -371,7 +396,10 @@ local function open(opts)
       function(value)
         markDirty()
         formData[slotKey[slot]] = value
-        lastChangeAt = os.clock()
+        if slot == "center" then
+          trimEdited = true
+          lastChangeAt = os.clock()
+        end
       end)
     field:suffix(spec.suffix)
     field:decimals(1)
@@ -408,8 +436,9 @@ local function open(opts)
   local centerLine = form.addLine("")
   local centerField = addSlot(centerLine, "center")
   if centerField.enableInstantChange then centerField:enableInstantChange(true) end
-  local fieldRect = centerField:rect()
-  local labelRect = {x = 0, y = fieldRect.y, w = math.max(0, fieldRect.x - 8), h = fieldRect.h}
+  -- rect() can return nil (the bin/ harness stubs do).
+  local fieldRect = centerField:rect() or HIDDEN_RECT
+  local labelRect = {x = 0, y = fieldRect.y or 0, w = math.max(0, (fieldRect.x or 0) - 8), h = fieldRect.h or 0}
   local centerLabel = form.addStaticText(centerLine, labelRect, TXT_CENTER_PITCH)
 
   addNumber(form.addLine("@i18n(app.modules.mixer.yaw_calibration)@"), "yaw_calibration", 200, 2000, "%", 400)
@@ -418,7 +447,7 @@ local function open(opts)
 
   local idleLine = form.addLine("", nil, false)
   local idleField = addNumber(idleLine, "tail_motor_idle", 0, 250, "%", 0)
-  local idleRect = idleField:rect()
+  local idleRect = idleField:rect() or HIDDEN_RECT
   local idleLabel = form.addStaticText(idleLine, labelRect, "@i18n(app.modules.mixer.tail_motor_idle)@")
   idleField:rect(HIDDEN_RECT)
   idleLabel:rect(HIDDEN_RECT)

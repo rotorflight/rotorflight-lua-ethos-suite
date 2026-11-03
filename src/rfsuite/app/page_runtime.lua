@@ -551,6 +551,12 @@ local function armedOrUnconfirmed(runtime)
   return runtime.isArmed == nil and runtime.armedUnconfirmed == true
 end
 
+-- For pages that write to the FC outside Save (a live trim, say): the same
+-- gate Save uses.
+function PageRuntime:armedOrUnconfirmed()
+  return armedOrUnconfirmed(self)
+end
+
 -- Tool is only ever enabled once the page has a completed load, the same
 -- gate Save uses, and is not mid-operation (busy). A page's onTool edits
 -- the values it has not read yet otherwise (see issue #2553). Only pages
