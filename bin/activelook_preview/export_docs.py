@@ -13,14 +13,9 @@ HERE = Path(__file__).resolve().parent
 OUT = HERE.parents[1] / "docs" / "assets" / "activelook-layouts"
 LAYOUTS = ("one_centered", "one_top_two_bottom", "stacked_three",
            "two_top_one_bottom", "two_top_two_bottom")
-PHASES = {
-    "preflight": (["governor", "armed", "flightmode", "voltage"],
-                  dict(armed=False, governorState=0, voltage=25.2, current=0, fuel=100, timer=0)),
-    "inflight": (["current", "voltage", "fuel", "timer"],
-                 dict(armed=True, governorState=4, voltage=24.8, current=42, fuel=70, timer=154)),
-    "postflight": (["consumption", "voltage", "fuel", "timer"],
-                   dict(armed=False, governorState=0, voltage=22.6, current=0, consumption=3250, fuel=25, timer=312)),
-}
+EXAMPLE_SLOTS = ["current", "voltage", "fuel", "timer"]
+EXAMPLE_SENSORS = dict(armed=True, governorState=4, voltage=24.8,
+                       current=42, fuel=70, timer=154)
 
 
 def display(frame):
@@ -77,20 +72,19 @@ def main():
         result.convert("RGB").save(OUT / filename, quality=94)
 
     for layout in LAYOUTS:
-        for phase, (slots, sensors) in PHASES.items():
-            slots = list(slots)
-            # Long status/capacity strings do not fit the two narrow top cells.
-            if layout in ("two_top_one_bottom", "two_top_two_bottom"):
-                slots = (["governor", "voltage", "flightmode", "fuel"] if phase == "preflight"
-                         else ["fuel", "voltage", "current", "timer"])
-            settings = {"enabled": True, "offset_x": 0, "offset_y": 0,
-                        f"layout_{phase}": layout}
-            settings.update({f"{phase}_{i}": key for i, key in enumerate(slots, 1)})
-            frame = WidgetRenderer().render({"preview": phase,
-                "settings": {"activelook": settings},
-                "sensors": {"connected": True, "cellCount": 6, "modelType": 1, **sensors}}, now=10)
-            assert frame["enabled"] and frame["commands"], (layout, phase)
-            save_frame(frame, f"{layout}_{phase}.jpg")
+        # Use one inflight example per layout; narrow top cells get short values.
+        slots = (["fuel", "voltage", "current", "timer"]
+                 if layout in ("two_top_one_bottom", "two_top_two_bottom")
+                 else EXAMPLE_SLOTS)
+        settings = {"enabled": True, "offset_x": 0, "offset_y": 0,
+                    "layout_inflight": layout}
+        settings.update({f"inflight_{i}": key for i, key in enumerate(slots, 1)})
+        frame = WidgetRenderer().render({"preview": "inflight",
+            "settings": {"activelook": settings},
+            "sensors": {"connected": True, "cellCount": 6, "modelType": 1,
+                        **EXAMPLE_SENSORS}}, now=10)
+        assert frame["enabled"] and frame["commands"], layout
+        save_frame(frame, f"{layout}_inflight.jpg")
     examples = [
         ("battery_empty", "low_fuel", 1, 0),
         ("low_fuel", "low_fuel", 2, 0),
@@ -112,7 +106,7 @@ def main():
             frame = renderer.render(request, now=10 + elapsed)
         assert frame["commands"], name
         save_frame(frame, f"alert_{name}.jpg")
-    print(f"Exported 15 layouts and 7 alert/status examples to {OUT}")
+    print(f"Exported 5 layouts and 7 alert/status examples to {OUT}")
 
 
 if __name__ == "__main__":

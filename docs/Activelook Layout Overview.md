@@ -13,7 +13,8 @@ settings or live telemetry.
 
 ## Layout gallery
 
-Each layout is shown once with illustrative telemetry values. Only its active
+Each layout is shown once with illustrative inflight telemetry values; the same
+layouts are available for all three flight phases. Only its active
 slots appear; **One Top + Two Bottom uses slots 1, 3 and 4**. The values can be
 assigned freely in the settings.
 
