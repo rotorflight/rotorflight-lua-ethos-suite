@@ -3593,6 +3593,13 @@
           "reverse_text": false,
           "max_length": 53
         },
+        "tail_override_msg": {
+          "english": "Hold the tail at center so trim changes move it live. Press Save to keep them.",
+          "translation": "Hält das Heck in der Mitte, Trimmänderungen bewegen es sofort. Mit Speichern übernehmen.",
+          "needs_translation": false,
+          "reverse_text": false,
+          "max_length": 92
+        },
         "tail_tta_off": {
           "english": "Also sets Tail Torque Assist to 0 in every profile.",
           "translation": "Also sets Tail Torque Assist to 0 in every profile.",

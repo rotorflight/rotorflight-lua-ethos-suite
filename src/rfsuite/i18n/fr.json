@@ -5250,6 +5250,13 @@
           "reverse_text": false,
           "translation": "Ralenti Queue %"
         },
+        "tail_override_msg": {
+          "english": "Hold the tail at center so trim changes move it live. Press Save to keep them.",
+          "max_length": 92,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Maintient l'anticouple au centre : le trim le déplace en direct. Enregistrez pour le garder."
+        },
         "tail_pin": {
           "english": "Tail pin",
           "max_length": 8,
