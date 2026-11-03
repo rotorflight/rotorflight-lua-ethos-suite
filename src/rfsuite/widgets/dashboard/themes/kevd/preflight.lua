@@ -84,6 +84,11 @@ local function buildBoxes(W)
     local modelWidth = math.floor(W / layout.cols) * 3
 
     local fuelHeight = math.min(contentH, cellH * layout.rows + 3) - cellH * 9 + 8
+    if fullScreen then
+        -- Match Blackbox's bottom inset (-3), accounting for the gauge's
+        -- yoffset (-1 + fuelShift) and bottom padding (8).
+        fuelHeight = cellH * 3 - fuelShift + 12
+    end
 
     local opts = themeOptions[getThemeOptionKey(W)] or themeOptions.ls_full
     local cardTextOffset = fullScreen and 2 or 4
@@ -226,8 +231,8 @@ local function buildBoxes(W)
             row = 10,
             colspan = 3,
             rowspan = 3,
-            offsetx = 4,
-            offsety = -1 + fuelShift,
+            xoffset = 4,
+            yoffset = -1 + fuelShift,
             w = modelWidth,
             h = fuelHeight,
             type = "gauge",
@@ -248,7 +253,9 @@ local function buildBoxes(W)
             gaugepaddingtop = 6,
             battadvfont = batteryDetailFont,
             battadvpaddingright = opts.smartbattadvpaddingright,
-            battadvpaddingtop = opts.smartbattadvpaddingtop,
+            -- Preserve the centred block height while shifting both lines down.
+            battadvpaddingtop = opts.smartbattadvpaddingtop + (fullScreen and 5 or 0),
+            battadvpaddingbottom = fullScreen and -5 or nil,
             cappaddingright = 4,
             fillcolor = colorMode.fillcolor,
             bgcolor = colorMode.bgcolor,

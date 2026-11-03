@@ -81,7 +81,7 @@ return function(colorMode, headeropts)
             for i = 2, #boxes do
                 local box = boxes[i]
                 box.bgcolor = "transparent"
-                box.offsety = -1
+                box.yoffset = -1
             end
             boxes[3].col = 6
             boxes[3].barpaddingbottom = 7 -- Keep RSSI clear of the lower edge.
