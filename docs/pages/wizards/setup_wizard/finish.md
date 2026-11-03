@@ -19,14 +19,16 @@ model is armed.
 
 | Setting | What it does |
 | --- | --- |
-| Summary | Lists the swashplate, the tail, the pitch limits and the ESC protocol as set. |
+| Summary | The first page: the model picture on the left, and on the right what the wizard set, with the values right-aligned: the swashplate, the tail, the blade pitch, the ESC protocol, the ESC telemetry, the governor and the arm switch. |
 | DShot150 note | Shown with DShot150 only: the governor and the RPM filter need DShot300 or an RPM sensor. |
-| Save and finish | Saves the changes to the flight controller and leaves the wizard. |
+| Before the first flight | The second page: two buttons that leave the wizard and open the Governor and the PIDs pages of the suite (the PID profile settings). Unsaved changes are asked about first, as when leaving the wizard. |
+| Save and finish | On the last page: saves the changes to the flight controller and leaves the wizard. |
 
 ## Notes
 
 - Fit the blades and do a careful first hover before you fly.
-- Modes, rates and the governor are not set by the wizard. Use their own pages.
+- Modes, rates and the governor are not set by the wizard. Use their own pages, from the buttons on
+  the second page. Back on those pages returns to the Wizards menu, not to the wizard.
 
 ## Related
 

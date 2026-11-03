@@ -11045,6 +11045,48 @@
           "max_length": 51,
           "reverse_text": false
         },
+        "pit_full_title": {
+          "english": "Collective at full stick",
+          "translation": "Collectief bij volle uitslag",
+          "needs_translation": false,
+          "max_length": 24,
+          "reverse_text": false
+        },
+        "pit_full_text": {
+          "english": "The blade pitch the collective stick gives at full stick, set for each rate profile on the switch. About 12° is usual for 3D, less for sport flying. Keep it at or below the collective limit.",
+          "translation": "De bladverstelling bij volle uitslag van de collectief-stick, voor elk ratenprofiel op de schakelaar. Rond 12° voor 3D, minder voor sportvliegen. Blijf op of onder de collectieve limiet.",
+          "needs_translation": false,
+          "max_length": 190,
+          "reverse_text": false
+        },
+        "pit_profile_fmt": {
+          "english": "Rate profile %d",
+          "translation": "Ratenprofiel %d",
+          "needs_translation": false,
+          "max_length": 15,
+          "reverse_text": false
+        },
+        "tal_lim_both": {
+          "english": "Hold the tail at 60° each way, then set the limits as high as they go without the slider or links binding.",
+          "translation": "Houd de staart op 60° in elke richting, stel de grenzen dan zo hoog in als kan zonder dat de schuif of stangen blokkeren.",
+          "needs_translation": false,
+          "max_length": 106,
+          "reverse_text": false
+        },
+        "fin_arm_switch": {
+          "english": "On a switch",
+          "translation": "Op een schakelaar",
+          "needs_translation": false,
+          "max_length": 11,
+          "reverse_text": false
+        },
+        "fin_arm_none": {
+          "english": "Not set",
+          "translation": "Niet ingesteld",
+          "needs_translation": false,
+          "max_length": 7,
+          "reverse_text": false
+        },
         "mot_pinion": {
           "english": "Pinion teeth",
           "translation": "Tanden rondsel",
@@ -11423,20 +11465,6 @@
           "max_length": 9,
           "reverse_text": false
         },
-        "pit_done_title": {
-          "english": "Pitch set",
-          "translation": "Pitch ingesteld",
-          "needs_translation": false,
-          "max_length": 15,
-          "reverse_text": false
-        },
-        "pit_done": {
-          "english": "Blade pitch is calibrated and limited.",
-          "translation": "Bladpitch is gekalibreerd en begrensd.",
-          "needs_translation": false,
-          "max_length": 38,
-          "reverse_text": false
-        },
         "tal_title": {
           "english": "Tail rotor",
           "translation": "Staartrotor",
@@ -11500,34 +11528,6 @@
           "max_length": 16,
           "reverse_text": false
         },
-        "tal_lim_cw": {
-          "english": "The tail is held at full travel one way. Lower the limit until the slider stops short of binding.",
-          "translation": "De staart staat op volle uitslag naar één kant. Verlaag de limiet tot de slider net vóór het vastlopen stopt.",
-          "needs_translation": false,
-          "max_length": 109,
-          "reverse_text": false
-        },
-        "tal_lim_ccw": {
-          "english": "Now the other way. Lower the limit until the slider stops short of binding.",
-          "translation": "Nu de andere kant. Verlaag de limiet tot de slider net vóór het vastlopen stopt.",
-          "needs_translation": false,
-          "max_length": 80,
-          "reverse_text": false
-        },
-        "tal_done_title": {
-          "english": "Tail done",
-          "translation": "Staart klaar",
-          "needs_translation": false,
-          "max_length": 12,
-          "reverse_text": false
-        },
-        "tal_done": {
-          "english": "The tail rotor is set up.",
-          "translation": "De staartrotor is ingesteld.",
-          "needs_translation": false,
-          "max_length": 28,
-          "reverse_text": false
-        },
         "tal_trim": {
           "english": "Centre trim",
           "translation": "Middentrim",
@@ -11568,13 +11568,6 @@
           "translation": "Verkeerd",
           "needs_translation": false,
           "max_length": 9,
-          "reverse_text": false
-        },
-        "tal_ok": {
-          "english": "Correct",
-          "translation": "Goed",
-          "needs_translation": false,
-          "max_length": 7,
           "reverse_text": false
         },
         "tal_other_side": {
@@ -11773,20 +11766,6 @@
           "max_length": 11,
           "reverse_text": false
         },
-        "gyr_done_title": {
-          "english": "Gyro checked",
-          "translation": "Gyro gecontroleerd",
-          "needs_translation": false,
-          "max_length": 18,
-          "reverse_text": false
-        },
-        "gyr_done": {
-          "english": "The gyro corrects every axis against the movement.",
-          "translation": "De gyro corrigeert elke as tegen de beweging in.",
-          "needs_translation": false,
-          "max_length": 50,
-          "reverse_text": false
-        },
         "fin_title": {
           "english": "Finish",
           "translation": "Afronden",
@@ -11820,13 +11799,6 @@
           "translation": "Staart",
           "needs_translation": false,
           "max_length": 6,
-          "reverse_text": false
-        },
-        "fin_pitch": {
-          "english": "Pitch limits",
-          "translation": "Pitchlimieten",
-          "needs_translation": false,
-          "max_length": 13,
           "reverse_text": false
         },
         "fin_pitch_fmt": {

@@ -9727,6 +9727,48 @@
           "max_length": 51,
           "reverse_text": false
         },
+        "pit_full_title": {
+          "english": "Collective at full stick",
+          "translation": "Collective at full stick",
+          "needs_translation": false,
+          "max_length": 24,
+          "reverse_text": false
+        },
+        "pit_full_text": {
+          "english": "The blade pitch the collective stick gives at full stick, set for each rate profile on the switch. About 12° is usual for 3D, less for sport flying. Keep it at or below the collective limit.",
+          "translation": "The blade pitch the collective stick gives at full stick, set for each rate profile on the switch. About 12° is usual for 3D, less for sport flying. Keep it at or below the collective limit.",
+          "needs_translation": false,
+          "max_length": 190,
+          "reverse_text": false
+        },
+        "pit_profile_fmt": {
+          "english": "Rate profile %d",
+          "translation": "Rate profile %d",
+          "needs_translation": false,
+          "max_length": 15,
+          "reverse_text": false
+        },
+        "tal_lim_both": {
+          "english": "Hold the tail at 60° each way, then set the limits as high as they go without the slider or links binding.",
+          "translation": "Hold the tail at 60° each way, then set the limits as high as they go without the slider or links binding.",
+          "needs_translation": false,
+          "max_length": 106,
+          "reverse_text": false
+        },
+        "fin_arm_switch": {
+          "english": "On a switch",
+          "translation": "On a switch",
+          "needs_translation": false,
+          "max_length": 11,
+          "reverse_text": false
+        },
+        "fin_arm_none": {
+          "english": "Not set",
+          "translation": "Not set",
+          "needs_translation": false,
+          "max_length": 7,
+          "reverse_text": false
+        },
         "mot_pinion": {
           "english": "Pinion teeth",
           "translation": "Pinion teeth",
@@ -10051,18 +10093,6 @@
           "needs_translation": false,
           "max_length": 8
         },
-        "pit_done_title": {
-          "english": "Pitch set",
-          "translation": "Pitch set",
-          "needs_translation": false,
-          "max_length": 9
-        },
-        "pit_done": {
-          "english": "Blade pitch is calibrated and limited.",
-          "translation": "Blade pitch is calibrated and limited.",
-          "needs_translation": false,
-          "max_length": 38
-        },
         "tal_title": {
           "english": "Tail rotor",
           "translation": "Tail rotor",
@@ -10117,30 +10147,6 @@
           "needs_translation": false,
           "max_length": 14
         },
-        "tal_lim_cw": {
-          "english": "The tail is held at full travel one way. Lower the limit until the slider stops short of binding.",
-          "translation": "The tail is held at full travel one way. Lower the limit until the slider stops short of binding.",
-          "needs_translation": false,
-          "max_length": 97
-        },
-        "tal_lim_ccw": {
-          "english": "Now the other way. Lower the limit until the slider stops short of binding.",
-          "translation": "Now the other way. Lower the limit until the slider stops short of binding.",
-          "needs_translation": false,
-          "max_length": 75
-        },
-        "tal_done_title": {
-          "english": "Tail done",
-          "translation": "Tail done",
-          "needs_translation": false,
-          "max_length": 9
-        },
-        "tal_done": {
-          "english": "The tail rotor is set up.",
-          "translation": "The tail rotor is set up.",
-          "needs_translation": false,
-          "max_length": 25
-        },
         "tal_trim": {
           "english": "Centre trim",
           "translation": "Centre trim",
@@ -10176,12 +10182,6 @@
           "translation": "Wrong way",
           "needs_translation": false,
           "max_length": 9
-        },
-        "tal_ok": {
-          "english": "Correct",
-          "translation": "Correct",
-          "needs_translation": false,
-          "max_length": 7
         },
         "tal_other_side": {
           "english": "Swap",
@@ -10351,18 +10351,6 @@
           "needs_translation": false,
           "max_length": 11
         },
-        "gyr_done_title": {
-          "english": "Gyro checked",
-          "translation": "Gyro checked",
-          "needs_translation": false,
-          "max_length": 12
-        },
-        "gyr_done": {
-          "english": "The gyro corrects every axis against the movement.",
-          "translation": "The gyro corrects every axis against the movement.",
-          "needs_translation": false,
-          "max_length": 50
-        },
         "fin_title": {
           "english": "Finish",
           "translation": "Finish",
@@ -10392,12 +10380,6 @@
           "translation": "Tail",
           "needs_translation": false,
           "max_length": 4
-        },
-        "fin_pitch": {
-          "english": "Pitch limits",
-          "translation": "Pitch limits",
-          "needs_translation": false,
-          "max_length": 12
         },
         "fin_pitch_fmt": {
           "english": "Coll. %s°, cyc. %s°",

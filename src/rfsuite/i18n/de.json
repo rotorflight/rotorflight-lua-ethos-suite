@@ -8304,6 +8304,20 @@
           "reverse_text": false,
           "translation": "ESC- & Drehtest"
         },
+        "fin_arm_none": {
+          "english": "Not set",
+          "max_length": 7,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Nicht belegt"
+        },
+        "fin_arm_switch": {
+          "english": "On a switch",
+          "max_length": 11,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Über Schalter"
+        },
         "fin_before": {
           "english": "Fit the blades and do a careful first hover. Modes, rates and governor are on their own pages.",
           "max_length": 94,
@@ -8352,13 +8366,6 @@
           "needs_translation": false,
           "reverse_text": false,
           "translation": "Keiner"
-        },
-        "fin_pitch": {
-          "english": "Pitch limits",
-          "max_length": 12,
-          "needs_translation": false,
-          "reverse_text": false,
-          "translation": "Pitch-Limits"
         },
         "fin_pitch_fmt": {
           "english": "Coll. %s°, cyc. %s°",
@@ -8476,20 +8483,6 @@
           "needs_translation": false,
           "reverse_text": false,
           "translation": "Dagegen"
-        },
-        "gyr_done": {
-          "english": "The gyro corrects every axis against the movement.",
-          "max_length": 53,
-          "needs_translation": false,
-          "reverse_text": false,
-          "translation": "Der Kreisel korrigiert jede Achse gegen die Bewegung."
-        },
-        "gyr_done_title": {
-          "english": "Gyro checked",
-          "max_length": 15,
-          "needs_translation": false,
-          "reverse_text": false,
-          "translation": "Kreisel geprüft"
         },
         "gyr_go_sensors": {
           "english": "Orientation",
@@ -9128,26 +9121,26 @@
           "reverse_text": false,
           "translation": "Zyklisch"
         },
-        "pit_done": {
-          "english": "Blade pitch is calibrated and limited.",
-          "max_length": 40,
-          "needs_translation": false,
-          "reverse_text": false,
-          "translation": "Blattwinkel ist kalibriert und begrenzt."
-        },
-        "pit_done_title": {
-          "english": "Pitch set",
-          "max_length": 12,
-          "needs_translation": false,
-          "reverse_text": false,
-          "translation": "Pitch fertig"
-        },
         "pit_fine_text": {
           "english": "Fine adjust the rate until the gauge reads 9 degrees.",
           "max_length": 53,
           "needs_translation": false,
           "reverse_text": false,
           "translation": "Rate fein anpassen, bis die Lehre 9 Grad zeigt."
+        },
+        "pit_full_text": {
+          "english": "The blade pitch the collective stick gives at full stick, set for each rate profile on the switch. About 12° is usual for 3D, less for sport flying. Keep it at or below the collective limit.",
+          "max_length": 190,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Die Blattverstellung beim Vollausschlag des Kollektivknüppels, für jedes Ratenprofil am Schalter. Für 3D ist etwa 12° üblich, für Sportflug weniger. Nicht über dem Kollektiv-Limit."
+        },
+        "pit_full_title": {
+          "english": "Collective at full stick",
+          "max_length": 24,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Kollektiv bei Vollausschlag"
         },
         "pit_intro": {
           "english": "You need a pitch gauge. The wizard holds the blades at a set pitch; you measure it and enter what you read.",
@@ -9204,6 +9197,13 @@
           "needs_translation": false,
           "reverse_text": false,
           "translation": "Gemessen"
+        },
+        "pit_profile_fmt": {
+          "english": "Rate profile %d",
+          "max_length": 15,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Ratenprofil %d"
         },
         "pit_rate": {
           "english": "Rate",
@@ -11042,20 +11042,6 @@
           "reverse_text": false,
           "translation": "Heckrichtung"
         },
-        "tal_done": {
-          "english": "The tail rotor is set up.",
-          "max_length": 31,
-          "needs_translation": false,
-          "reverse_text": false,
-          "translation": "Der Heckrotor ist eingerichtet."
-        },
-        "tal_done_title": {
-          "english": "Tail done",
-          "max_length": 11,
-          "needs_translation": false,
-          "reverse_text": false,
-          "translation": "Heck fertig"
-        },
         "tal_idle": {
           "english": "The power the tail motor keeps at zero yaw. Blades still off.",
           "max_length": 66,
@@ -11084,19 +11070,12 @@
           "reverse_text": false,
           "translation": "Heckservo bei abgenommenen Heckblättern prüfen: Mitte, Richtung, Weg und Endanschläge."
         },
-        "tal_lim_ccw": {
-          "english": "Now the other way. Lower the limit until the slider stops short of binding.",
-          "max_length": 91,
+        "tal_lim_both": {
+          "english": "Hold the tail at 60° each way, then set the limits as high as they go without the slider or links binding.",
+          "max_length": 106,
           "needs_translation": false,
           "reverse_text": false,
-          "translation": "Jetzt die andere Richtung. Limit senken, bis die Schiebehülse kurz vor dem Anschlag stoppt."
-        },
-        "tal_lim_cw": {
-          "english": "The tail is held at full travel one way. Lower the limit until the slider stops short of binding.",
-          "max_length": 120,
-          "needs_translation": false,
-          "reverse_text": false,
-          "translation": "Das Heck wird auf vollem Weg in eine Richtung gehalten. Limit senken, bis die Schiebehülse kurz vor dem Anschlag stoppt."
+          "translation": "Heckrotor je Seite auf 60° halten, dann die Grenzen so hoch setzen, wie es ohne Anschlag von Schieber oder Gestänge geht."
         },
         "tal_lim_title": {
           "english": "Tail end stops",
@@ -11125,13 +11104,6 @@
           "needs_translation": false,
           "reverse_text": false,
           "translation": "Kein Heckmotor-Ausgang (Motor 2) an diesem Flugcontroller."
-        },
-        "tal_ok": {
-          "english": "Correct",
-          "max_length": 7,
-          "needs_translation": false,
-          "reverse_text": false,
-          "translation": "Richtig"
         },
         "tal_other_side": {
           "english": "Swap",

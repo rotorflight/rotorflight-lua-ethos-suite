@@ -11045,6 +11045,48 @@
           "max_length": 51,
           "reverse_text": false
         },
+        "pit_full_title": {
+          "english": "Collective at full stick",
+          "translation": "Colectivo a máximo recorrido",
+          "needs_translation": false,
+          "max_length": 24,
+          "reverse_text": false
+        },
+        "pit_full_text": {
+          "english": "The blade pitch the collective stick gives at full stick, set for each rate profile on the switch. About 12° is usual for 3D, less for sport flying. Keep it at or below the collective limit.",
+          "translation": "Paso de pala con la palanca de colectivo a máximo recorrido, para cada perfil de tasas del interruptor. Unos 12° para 3D, menos para vuelo sport. Mantener igual o por debajo del límite colectivo.",
+          "needs_translation": false,
+          "max_length": 190,
+          "reverse_text": false
+        },
+        "pit_profile_fmt": {
+          "english": "Rate profile %d",
+          "translation": "Perfil de tasas %d",
+          "needs_translation": false,
+          "max_length": 15,
+          "reverse_text": false
+        },
+        "tal_lim_both": {
+          "english": "Hold the tail at 60° each way, then set the limits as high as they go without the slider or links binding.",
+          "translation": "Mantenga la cola a 60° en cada sentido y luego ajuste los límites lo más alto posible sin que la corredera ni los varillajes topen.",
+          "needs_translation": false,
+          "max_length": 106,
+          "reverse_text": false
+        },
+        "fin_arm_switch": {
+          "english": "On a switch",
+          "translation": "En un interruptor",
+          "needs_translation": false,
+          "max_length": 11,
+          "reverse_text": false
+        },
+        "fin_arm_none": {
+          "english": "Not set",
+          "translation": "No asignado",
+          "needs_translation": false,
+          "max_length": 7,
+          "reverse_text": false
+        },
         "mot_pinion": {
           "english": "Pinion teeth",
           "translation": "Dientes piñón",
@@ -11423,20 +11465,6 @@
           "max_length": 9,
           "reverse_text": false
         },
-        "pit_done_title": {
-          "english": "Pitch set",
-          "translation": "Paso ajustado",
-          "needs_translation": false,
-          "max_length": 13,
-          "reverse_text": false
-        },
-        "pit_done": {
-          "english": "Blade pitch is calibrated and limited.",
-          "translation": "El paso de palas está calibrado y limitado.",
-          "needs_translation": false,
-          "max_length": 43,
-          "reverse_text": false
-        },
         "tal_title": {
           "english": "Tail rotor",
           "translation": "Rotor de cola",
@@ -11500,34 +11528,6 @@
           "max_length": 14,
           "reverse_text": false
         },
-        "tal_lim_cw": {
-          "english": "The tail is held at full travel one way. Lower the limit until the slider stops short of binding.",
-          "translation": "La cola se fija a recorrido máximo en un sentido. Baje el límite hasta que el deslizador pare antes de forzar.",
-          "needs_translation": false,
-          "max_length": 110,
-          "reverse_text": false
-        },
-        "tal_lim_ccw": {
-          "english": "Now the other way. Lower the limit until the slider stops short of binding.",
-          "translation": "Ahora el otro sentido. Baje el límite hasta que el deslizador pare antes de forzar.",
-          "needs_translation": false,
-          "max_length": 83,
-          "reverse_text": false
-        },
-        "tal_done_title": {
-          "english": "Tail done",
-          "translation": "Cola lista",
-          "needs_translation": false,
-          "max_length": 10,
-          "reverse_text": false
-        },
-        "tal_done": {
-          "english": "The tail rotor is set up.",
-          "translation": "El rotor de cola está ajustado.",
-          "needs_translation": false,
-          "max_length": 31,
-          "reverse_text": false
-        },
         "tal_trim": {
           "english": "Centre trim",
           "translation": "Trim centro",
@@ -11568,13 +11568,6 @@
           "translation": "Al revés",
           "needs_translation": false,
           "max_length": 9,
-          "reverse_text": false
-        },
-        "tal_ok": {
-          "english": "Correct",
-          "translation": "Correcto",
-          "needs_translation": false,
-          "max_length": 8,
           "reverse_text": false
         },
         "tal_other_side": {
@@ -11773,20 +11766,6 @@
           "max_length": 11,
           "reverse_text": false
         },
-        "gyr_done_title": {
-          "english": "Gyro checked",
-          "translation": "Giróscopo OK",
-          "needs_translation": false,
-          "max_length": 12,
-          "reverse_text": false
-        },
-        "gyr_done": {
-          "english": "The gyro corrects every axis against the movement.",
-          "translation": "El giróscopo corrige cada eje contra el movimiento.",
-          "needs_translation": false,
-          "max_length": 51,
-          "reverse_text": false
-        },
         "fin_title": {
           "english": "Finish",
           "translation": "Fin",
@@ -11820,13 +11799,6 @@
           "translation": "Cola",
           "needs_translation": false,
           "max_length": 4,
-          "reverse_text": false
-        },
-        "fin_pitch": {
-          "english": "Pitch limits",
-          "translation": "Límites de paso",
-          "needs_translation": false,
-          "max_length": 15,
           "reverse_text": false
         },
         "fin_pitch_fmt": {

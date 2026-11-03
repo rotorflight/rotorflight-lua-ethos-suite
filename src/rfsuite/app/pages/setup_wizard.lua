@@ -306,6 +306,7 @@ local function open(opts)
   local messageHandle = nil
   local pendingLeave = false
   local pendingSwitch = nil -- a step chosen with unsaved changes: asked from wakeup
+  local jumpTarget = nil    -- a suite page to open once the wizard is left (wiz.openScript)
   local saving = false
   local saveRequest = nil  -- {onSaved =} waiting for the next wakeup
   local saveResult = nil   -- "ok" | "failed", set by the EEPROM reply
@@ -815,6 +816,18 @@ local function open(opts)
     if index then changeStep(index) end
   end
 
+  -- A suite page outside the wizard (a jump from the Finish step): the wizard is left the way Back
+  -- leaves it, with unsaved changes asked about first, and the page opens then.
+  function wiz.openScript(script)
+    if disposed then return end
+    jumpTarget = script
+    if pending and loaded then
+      pendingLeave = true
+      return
+    end
+    leaveWizard()
+  end
+
   local function clearForm()
     ui.releaseActions()
     noticeField, headerHandle = nil, nil
@@ -1155,9 +1168,16 @@ local function open(opts)
     ui.unload(shellOwned)
   end
 
+  -- Leaves the wizard: back to the menu, or on to the suite page a jump asked for.
   local function leave()
+    local target = jumpTarget
+    jumpTarget = nil
     dispose()
-    if opts.onBack then opts.onBack() end
+    if target and opts.openScript then
+      opts.openScript(target)
+    elseif opts.onBack then
+      opts.onBack()
+    end
   end
   leaveWizard = leave
 
@@ -1176,6 +1196,7 @@ local function open(opts)
       end},
       {label = BTN_CANCEL, action = function()
         messageHandle = nil
+        jumpTarget = nil
         return true
       end},
     })

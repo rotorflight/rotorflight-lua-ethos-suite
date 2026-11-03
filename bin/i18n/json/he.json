@@ -11045,6 +11045,48 @@
           "max_length": 51,
           "reverse_text": true
         },
+        "pit_full_title": {
+          "english": "Collective at full stick",
+          "translation": "קולקטיב בהטיה מלאה",
+          "needs_translation": false,
+          "max_length": 24,
+          "reverse_text": true
+        },
+        "pit_full_text": {
+          "english": "The blade pitch the collective stick gives at full stick, set for each rate profile on the switch. About 12° is usual for 3D, less for sport flying. Keep it at or below the collective limit.",
+          "translation": "שיפוע הלהבים בהטיה מלאה של מקל הקולקטיב, לכל פרופיל רייט בבורר. כ-12° נפוץ ל-3D, פחות לטיסה ספורטיבית. לא מעל גבול הקולקטיב.",
+          "needs_translation": false,
+          "max_length": 190,
+          "reverse_text": true
+        },
+        "pit_profile_fmt": {
+          "english": "Rate profile %d",
+          "translation": "פרופיל רייט %d",
+          "needs_translation": false,
+          "max_length": 15,
+          "reverse_text": true
+        },
+        "tal_lim_both": {
+          "english": "Hold the tail at 60° each way, then set the limits as high as they go without the slider or links binding.",
+          "translation": "החזיקו את הזנב ב-60° לכל כיוון, ואז הגדירו את הגבולות גבוה ככל האפשר בלי שהמחוון או המוטות ייתקעו.",
+          "needs_translation": false,
+          "max_length": 106,
+          "reverse_text": true
+        },
+        "fin_arm_switch": {
+          "english": "On a switch",
+          "translation": "במתג",
+          "needs_translation": false,
+          "max_length": 11,
+          "reverse_text": true
+        },
+        "fin_arm_none": {
+          "english": "Not set",
+          "translation": "לא מוגדר",
+          "needs_translation": false,
+          "max_length": 7,
+          "reverse_text": true
+        },
         "mot_pinion": {
           "english": "Pinion teeth",
           "translation": "שיני פיניון",
@@ -11423,20 +11465,6 @@
           "max_length": 10,
           "reverse_text": true
         },
-        "pit_done_title": {
-          "english": "Pitch set",
-          "translation": "הפיץ' הוגדר",
-          "needs_translation": false,
-          "max_length": 11,
-          "reverse_text": true
-        },
-        "pit_done": {
-          "english": "Blade pitch is calibrated and limited.",
-          "translation": "פיץ' הלהבים מכויל ומוגבל.",
-          "needs_translation": false,
-          "max_length": 38,
-          "reverse_text": true
-        },
         "tal_title": {
           "english": "Tail rotor",
           "translation": "רוטור זנב",
@@ -11500,34 +11528,6 @@
           "max_length": 14,
           "reverse_text": true
         },
-        "tal_lim_cw": {
-          "english": "The tail is held at full travel one way. Lower the limit until the slider stops short of binding.",
-          "translation": "הזנב מוחזק במהלך מלא לכיוון אחד. הורד את ההגבלה עד שהסליידר נעצר לפני היתקעות.",
-          "needs_translation": false,
-          "max_length": 97,
-          "reverse_text": true
-        },
-        "tal_lim_ccw": {
-          "english": "Now the other way. Lower the limit until the slider stops short of binding.",
-          "translation": "כעת לכיוון השני. הורד את ההגבלה עד שהסליידר נעצר לפני היתקעות.",
-          "needs_translation": false,
-          "max_length": 75,
-          "reverse_text": true
-        },
-        "tal_done_title": {
-          "english": "Tail done",
-          "translation": "הזנב הוגדר",
-          "needs_translation": false,
-          "max_length": 10,
-          "reverse_text": true
-        },
-        "tal_done": {
-          "english": "The tail rotor is set up.",
-          "translation": "רוטור הזנב מוגדר.",
-          "needs_translation": false,
-          "max_length": 25,
-          "reverse_text": true
-        },
         "tal_trim": {
           "english": "Centre trim",
           "translation": "טרים מרכז",
@@ -11568,13 +11568,6 @@
           "translation": "כיוון שגוי",
           "needs_translation": false,
           "max_length": 10,
-          "reverse_text": true
-        },
-        "tal_ok": {
-          "english": "Correct",
-          "translation": "נכון",
-          "needs_translation": false,
-          "max_length": 7,
           "reverse_text": true
         },
         "tal_other_side": {
@@ -11773,20 +11766,6 @@
           "max_length": 11,
           "reverse_text": true
         },
-        "gyr_done_title": {
-          "english": "Gyro checked",
-          "translation": "הג'ירו נבדק",
-          "needs_translation": false,
-          "max_length": 12,
-          "reverse_text": true
-        },
-        "gyr_done": {
-          "english": "The gyro corrects every axis against the movement.",
-          "translation": "הג'ירו מתקן כל ציר נגד התנועה.",
-          "needs_translation": false,
-          "max_length": 50,
-          "reverse_text": true
-        },
         "fin_title": {
           "english": "Finish",
           "translation": "סיום",
@@ -11820,13 +11799,6 @@
           "translation": "זנב",
           "needs_translation": false,
           "max_length": 4,
-          "reverse_text": true
-        },
-        "fin_pitch": {
-          "english": "Pitch limits",
-          "translation": "הגבלות פיץ'",
-          "needs_translation": false,
-          "max_length": 12,
           "reverse_text": true
         },
         "fin_pitch_fmt": {

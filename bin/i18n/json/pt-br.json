@@ -11045,6 +11045,48 @@
           "max_length": 51,
           "reverse_text": false
         },
+        "pit_full_title": {
+          "english": "Collective at full stick",
+          "translation": "Coletivo em curso total",
+          "needs_translation": false,
+          "max_length": 24,
+          "reverse_text": false
+        },
+        "pit_full_text": {
+          "english": "The blade pitch the collective stick gives at full stick, set for each rate profile on the switch. About 12° is usual for 3D, less for sport flying. Keep it at or below the collective limit.",
+          "translation": "Passo das pás com o manche do coletivo todo para cima ou para baixo, ajustado em cada perfil de taxas do interruptor. Cerca de 12° é comum em 3D, menos em voo sport. Mantenha igual ou abaixo do limite do coletivo.",
+          "needs_translation": false,
+          "max_length": 190,
+          "reverse_text": false
+        },
+        "pit_profile_fmt": {
+          "english": "Rate profile %d",
+          "translation": "Perfil de taxas %d",
+          "needs_translation": false,
+          "max_length": 15,
+          "reverse_text": false
+        },
+        "tal_lim_both": {
+          "english": "Hold the tail at 60° each way, then set the limits as high as they go without the slider or links binding.",
+          "translation": "Mantenha a cauda a 60° para cada lado e depois ajuste os limites o mais alto possível sem que o corrediço ou as hastes travem.",
+          "needs_translation": false,
+          "max_length": 106,
+          "reverse_text": false
+        },
+        "fin_arm_switch": {
+          "english": "On a switch",
+          "translation": "Em uma chave",
+          "needs_translation": false,
+          "max_length": 11,
+          "reverse_text": false
+        },
+        "fin_arm_none": {
+          "english": "Not set",
+          "translation": "Não definido",
+          "needs_translation": false,
+          "max_length": 7,
+          "reverse_text": false
+        },
         "mot_pinion": {
           "english": "Pinion teeth",
           "translation": "Dentes pinhão",
@@ -11423,20 +11465,6 @@
           "max_length": 9,
           "reverse_text": false
         },
-        "pit_done_title": {
-          "english": "Pitch set",
-          "translation": "Passo pronto",
-          "needs_translation": false,
-          "max_length": 12,
-          "reverse_text": false
-        },
-        "pit_done": {
-          "english": "Blade pitch is calibrated and limited.",
-          "translation": "O passo das pás está calibrado e limitado.",
-          "needs_translation": false,
-          "max_length": 42,
-          "reverse_text": false
-        },
         "tal_title": {
           "english": "Tail rotor",
           "translation": "Rotor de cauda",
@@ -11500,34 +11528,6 @@
           "max_length": 17,
           "reverse_text": false
         },
-        "tal_lim_cw": {
-          "english": "The tail is held at full travel one way. Lower the limit until the slider stops short of binding.",
-          "translation": "A cauda está no curso máximo de um lado. Reduza o limite até a luva parar antes de travar.",
-          "needs_translation": false,
-          "max_length": 97,
-          "reverse_text": false
-        },
-        "tal_lim_ccw": {
-          "english": "Now the other way. Lower the limit until the slider stops short of binding.",
-          "translation": "Agora o outro lado. Reduza o limite até a luva parar antes de travar.",
-          "needs_translation": false,
-          "max_length": 75,
-          "reverse_text": false
-        },
-        "tal_done_title": {
-          "english": "Tail done",
-          "translation": "Cauda pronta",
-          "needs_translation": false,
-          "max_length": 12,
-          "reverse_text": false
-        },
-        "tal_done": {
-          "english": "The tail rotor is set up.",
-          "translation": "O rotor de cauda está configurado.",
-          "needs_translation": false,
-          "max_length": 34,
-          "reverse_text": false
-        },
         "tal_trim": {
           "english": "Centre trim",
           "translation": "Trim centro",
@@ -11568,13 +11568,6 @@
           "translation": "Invertido",
           "needs_translation": false,
           "max_length": 9,
-          "reverse_text": false
-        },
-        "tal_ok": {
-          "english": "Correct",
-          "translation": "Correto",
-          "needs_translation": false,
-          "max_length": 7,
           "reverse_text": false
         },
         "tal_other_side": {
@@ -11773,20 +11766,6 @@
           "max_length": 11,
           "reverse_text": false
         },
-        "gyr_done_title": {
-          "english": "Gyro checked",
-          "translation": "Giro verificado",
-          "needs_translation": false,
-          "max_length": 15,
-          "reverse_text": false
-        },
-        "gyr_done": {
-          "english": "The gyro corrects every axis against the movement.",
-          "translation": "O giro corrige cada eixo contra o movimento.",
-          "needs_translation": false,
-          "max_length": 50,
-          "reverse_text": false
-        },
         "fin_title": {
           "english": "Finish",
           "translation": "Concluir",
@@ -11820,13 +11799,6 @@
           "translation": "Cauda",
           "needs_translation": false,
           "max_length": 5,
-          "reverse_text": false
-        },
-        "fin_pitch": {
-          "english": "Pitch limits",
-          "translation": "Limites passo",
-          "needs_translation": false,
-          "max_length": 13,
           "reverse_text": false
         },
         "fin_pitch_fmt": {

@@ -242,7 +242,7 @@ end
 --                                  on the right ("Yes" / "No")
 --   {answer =, press =, disabled =, needsMotion =}
 --                                  an action: a button across the whole half
---   {label =, value =}             a fact: the label, its value where the
+--   {label =, value =, valueRight =}  a fact: the label, its value where the
 --                                  answers sit ("Accelerometer  Available")
 --   {label =, toggle = {get, set}}  a yes/no toggle button: the label, its answer a 1-click button ("No" / "Yes")
 --   {label =, switch = {get, set}, disabled =}
@@ -435,7 +435,7 @@ function Screen:checks(list, focus)
       row.y = y
       y = y + #row.lines * lineH + CHECK_ROW_GAP
     else
-      row.value, row.valueX = c.value, room - bw
+      row.value, row.valueX, row.valueRight = c.value, c.valueRight and (room - 8) or (room - bw), c.valueRight
       row.y = y
       y = y + lineH + CHECK_ROW_GAP
     end
@@ -773,7 +773,7 @@ function Screen:paint()
           for j = 1, #cell.lines do lcd.drawText(cell.x, cell.labelY + (j - 1) * labelH, cell.lines[j], LEFT) end
         end
       end
-      if c.value then lcd.drawText(c.valueX, c.y, c.value, LEFT) end
+      if c.value then lcd.drawText(c.valueX, c.y, c.value, c.valueRight and RIGHT or LEFT) end
       if c.sep then
         lcd.color(colors.text)
         lcd.drawText(c.sep.x, c.sep.y, ":", CENTERED)

@@ -11045,6 +11045,48 @@
           "max_length": 51,
           "reverse_text": false
         },
+        "pit_full_title": {
+          "english": "Collective at full stick",
+          "translation": "Kolektyw przy pełnym wychyleniu",
+          "needs_translation": false,
+          "max_length": 24,
+          "reverse_text": false
+        },
+        "pit_full_text": {
+          "english": "The blade pitch the collective stick gives at full stick, set for each rate profile on the switch. About 12° is usual for 3D, less for sport flying. Keep it at or below the collective limit.",
+          "translation": "Skok łopat przy pełnym wychyleniu drążka kolektywu, ustawiany dla każdego profilu rate na przełączniku. Dla 3D zwykle ok. 12°, w lotach sportowych mniej. Nie przekraczaj limitu kolektywu.",
+          "needs_translation": false,
+          "max_length": 190,
+          "reverse_text": false
+        },
+        "pit_profile_fmt": {
+          "english": "Rate profile %d",
+          "translation": "Profil rate %d",
+          "needs_translation": false,
+          "max_length": 15,
+          "reverse_text": false
+        },
+        "tal_lim_both": {
+          "english": "Hold the tail at 60° each way, then set the limits as high as they go without the slider or links binding.",
+          "translation": "Trzymaj ogon na 60° w każdą stronę, potem ustaw ograniczenia tak wysoko, jak się da, bez blokowania suwaka i drążków.",
+          "needs_translation": false,
+          "max_length": 106,
+          "reverse_text": false
+        },
+        "fin_arm_switch": {
+          "english": "On a switch",
+          "translation": "Na przełączniku",
+          "needs_translation": false,
+          "max_length": 11,
+          "reverse_text": false
+        },
+        "fin_arm_none": {
+          "english": "Not set",
+          "translation": "Nie ustawiono",
+          "needs_translation": false,
+          "max_length": 7,
+          "reverse_text": false
+        },
         "mot_pinion": {
           "english": "Pinion teeth",
           "translation": "Zęby zębnika",
@@ -11423,20 +11465,6 @@
           "max_length": 9,
           "reverse_text": false
         },
-        "pit_done_title": {
-          "english": "Pitch set",
-          "translation": "Skok ustawiony",
-          "needs_translation": false,
-          "max_length": 14,
-          "reverse_text": false
-        },
-        "pit_done": {
-          "english": "Blade pitch is calibrated and limited.",
-          "translation": "Skok łopat jest skalibrowany i ograniczony.",
-          "needs_translation": false,
-          "max_length": 43,
-          "reverse_text": false
-        },
         "tal_title": {
           "english": "Tail rotor",
           "translation": "Wirnik ogona",
@@ -11500,34 +11528,6 @@
           "max_length": 18,
           "reverse_text": false
         },
-        "tal_lim_cw": {
-          "english": "The tail is held at full travel one way. Lower the limit until the slider stops short of binding.",
-          "translation": "Ogon jest na pełnym wychyleniu w jedną stronę. Zmniejsz limit, aż suwak zatrzyma się przed zablokowaniem.",
-          "needs_translation": false,
-          "max_length": 105,
-          "reverse_text": false
-        },
-        "tal_lim_ccw": {
-          "english": "Now the other way. Lower the limit until the slider stops short of binding.",
-          "translation": "Teraz w drugą stronę. Zmniejsz limit, aż suwak zatrzyma się przed zablokowaniem.",
-          "needs_translation": false,
-          "max_length": 80,
-          "reverse_text": false
-        },
-        "tal_done_title": {
-          "english": "Tail done",
-          "translation": "Ogon gotowy",
-          "needs_translation": false,
-          "max_length": 11,
-          "reverse_text": false
-        },
-        "tal_done": {
-          "english": "The tail rotor is set up.",
-          "translation": "Wirnik ogona jest ustawiony.",
-          "needs_translation": false,
-          "max_length": 28,
-          "reverse_text": false
-        },
         "tal_trim": {
           "english": "Centre trim",
           "translation": "Trym środka",
@@ -11568,13 +11568,6 @@
           "translation": "Źle",
           "needs_translation": false,
           "max_length": 9,
-          "reverse_text": false
-        },
-        "tal_ok": {
-          "english": "Correct",
-          "translation": "Dobrze",
-          "needs_translation": false,
-          "max_length": 7,
           "reverse_text": false
         },
         "tal_other_side": {
@@ -11773,20 +11766,6 @@
           "max_length": 11,
           "reverse_text": false
         },
-        "gyr_done_title": {
-          "english": "Gyro checked",
-          "translation": "Żyroskop OK",
-          "needs_translation": false,
-          "max_length": 12,
-          "reverse_text": false
-        },
-        "gyr_done": {
-          "english": "The gyro corrects every axis against the movement.",
-          "translation": "Żyroskop koryguje każdą oś przeciw ruchowi.",
-          "needs_translation": false,
-          "max_length": 50,
-          "reverse_text": false
-        },
         "fin_title": {
           "english": "Finish",
           "translation": "Koniec",
@@ -11820,13 +11799,6 @@
           "translation": "Ogon",
           "needs_translation": false,
           "max_length": 4,
-          "reverse_text": false
-        },
-        "fin_pitch": {
-          "english": "Pitch limits",
-          "translation": "Limity skoku",
-          "needs_translation": false,
-          "max_length": 12,
           "reverse_text": false
         },
         "fin_pitch_fmt": {

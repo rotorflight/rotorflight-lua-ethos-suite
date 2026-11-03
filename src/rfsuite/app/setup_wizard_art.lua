@@ -4,10 +4,6 @@
 --       The swashplate from above, nose at the top: a dot where each servo
 --       sits (lib/setup_wizard_heli.lua's angles), numbered, the one being
 --       worked on highlighted, with an optional "up"/"down" mark beside it.
---   art.tilt(view, motion)
---       The rotor head from behind ("rear") or from the left ("side"), the
---       swash drawn as it should move: "level", "left"/"right" (roll),
---       "forward"/"back" (pitch), "up"/"down" (collective), with arrows.
 --   art.tail(motion, label)
 --       The tail from above: "left"/"right" arrows for the tail blades' push,
 --       and an optional value beside it.
@@ -17,8 +13,6 @@
 --   art.pulse(mid, other, ...) a servo's centre pulse, the other band ghosted
 --   art.gears(a, b, focus, ...) a pinion and main gear to their tooth counts
 --   art.poles(poles, label)    a motor's magnets
---   art.map(servos, opts)      the swash servos, the main motor and the tail,
---                              coloured by state (live fields main / tail)
 --   art.heli(lift, arrow)      the helicopter from the left, tail lifted
 --   art.bubble(state)          a spirit level, coloured by state
 --   art.rotor(dir)             the rotor disc from above, turning CW or CCW
@@ -82,10 +76,6 @@ function art.swash(servos, highlight, arrow, opts)
   for i = 1, #(servos or {}) do labels[i] = tostring(servos[i].servo + 1) end
   return {kind = "swash", servos = servos, labels = labels, highlight = highlight, arrow = arrow,
     status = opts and opts.status, dir = opts and opts.dir}
-end
-
-function art.tilt(view, motion)
-  return {kind = "tilt", view = view, motion = motion or "level"}
 end
 
 -- label (optional): a value drawn beside the tail, e.g. "22.0°".
@@ -211,55 +201,6 @@ local function drawSwash(l, x, y, w, h, colors)
         arrowShape(sx + dot * 3, sy + (l.arrow == "up" and dot or -dot), l.arrow, dot * 2, math.max(3, floor(dot / 2)))
       end
     end
-  end
-end
-
--- Tilt of the swash bar for each motion, as (left end dy, right end dy) in
--- units of the bar's half-length, and the arrows to draw at each end.
-local TILT = {
-  level = {0, 0},
-  left = {0.25, -0.25},    -- roll left: left side down
-  right = {-0.25, 0.25},
-  forward = {0.25, -0.25}, -- side view, nose to the left: front down
-  back = {-0.25, 0.25},
-  up = {-0.25, -0.25},
-  down = {0.25, 0.25},
-}
-
-local function drawTilt(l, x, y, w, h, colors)
-  local cx = x + floor(w / 2)
-  local s = floor(min(w * 0.4, h * 0.45))
-  local t = math.max(4, floor(s * 0.06))
-  local barY = y + floor(h * 0.42)
-  local bodyTop = barY + floor(s * 0.35)
-  -- Frame and mast.
-  lcd.color(colors.body)
-  if l.view == "side" then
-    -- Nose to the left: cabin, boom to the right.
-    lcd.drawFilledRectangle(cx - floor(s * 0.55), bodyTop, floor(s * 0.75), floor(s * 0.35))
-    lcd.drawFilledRectangle(cx + floor(s * 0.2), bodyTop + floor(s * 0.08), floor(s * 0.8), t)
-  else
-    lcd.drawFilledRectangle(cx - floor(s * 0.22), bodyTop, floor(s * 0.44), floor(s * 0.45))
-  end
-  lcd.drawFilledRectangle(cx - floor(t / 2), barY - floor(s * 0.3), t, bodyTop - barY + floor(s * 0.3))
-  -- Swash bar.
-  local d = TILT[l.motion] or TILT.level
-  local half = floor(s * 0.45)
-  local ly = barY + floor(d[1] * half)
-  local ry = barY + floor(d[2] * half)
-  lcd.color(l.motion == "level" and colors.surface or colors.active)
-  thickLine(cx - half, ly, cx + half, ry, t)
-  if l.motion == "level" then return end
-  -- An arrow at each end that moves.
-  local size = math.max(12, floor(s * 0.22))
-  local thick = math.max(3, floor(t * 0.8))
-  lcd.color(colors.active)
-  local gap = floor(s * 0.08)
-  if d[1] ~= 0 then
-    arrowShape(cx - half, ly + (d[1] < 0 and -gap or gap), d[1] < 0 and "up" or "down", size, thick)
-  end
-  if d[2] ~= 0 then
-    arrowShape(cx + half, ry + (d[2] < 0 and -gap or gap), d[2] < 0 and "up" or "down", size, thick)
   end
 end
 
@@ -622,63 +563,6 @@ local function drawPoles(l, x, y, w, h, colors)
     lcd.font(FONT_STD)
     lcd.color(colors.text)
     lcd.drawText(cx, cy - 12, l.label, CENTERED)
-  end
-end
-
----------------------------------------------------------------------------
--- The helicopter's outputs: the swash servos (art.swash) with the main
--- motor and the tail (servo or motor) beside them, each coloured by its
--- state. main / tail are live fields: true OK, false missing, nil unknown.
----------------------------------------------------------------------------
-
--- opts: status, dir (as art.swash), motorised, tailLabel (the tail servo's
--- number), tailMissing.
-function art.map(servos, opts)
-  opts = opts or {}
-  local l = art.swash(servos, nil, nil, opts)
-  l.kind = "map"
-  l.motorised = opts.motorised
-  l.tailLabel = opts.tailLabel
-  l.tailMissing = opts.tailMissing
-  l.main, l.tail = nil, nil
-  return l
-end
-
-local function stateColor(state, colors)
-  if state == true then return colors.good end
-  if state == false then return colors.bad end
-  return colors.muted
-end
-
-local function motorIcon(cx, cy, r, state, colors)
-  lcd.color(stateColor(state, colors))
-  lcd.drawFilledCircle(cx, cy, r)
-  lcd.color(colors.body)
-  lcd.drawFilledCircle(cx, cy, floor(r * 0.6))
-  lcd.color(stateColor(state, colors))
-  lcd.drawFilledCircle(cx, cy, math.max(2, floor(r * 0.2)))
-end
-
-local function drawMap(l, x, y, w, h, colors)
-  local sw = floor(w * 0.62)
-  drawSwash(l, x, y, sw, h, colors)
-  local ix = x + sw + floor((w - sw) / 2)
-  local r = math.max(8, floor(min((w - sw) * 0.18, h * 0.14)))
-  -- Main motor above, tail below.
-  motorIcon(ix, y + floor(h * 0.3), r, l.main, colors)
-  local ty = y + floor(h * 0.7)
-  if l.motorised then
-    motorIcon(ix, ty, floor(r * 0.75), l.tail, colors)
-  else
-    lcd.color(l.tailMissing and colors.bad or colors.good)
-    lcd.drawFilledRectangle(ix - r, ty - floor(r * 0.6), 2 * r, floor(r * 1.2))
-    lcd.color(colors.body)
-    lcd.drawFilledCircle(ix + floor(r * 0.45), ty, math.max(2, floor(r * 0.3)))
-    if l.tailLabel then
-      lcd.font(FONT_S)
-      lcd.color(l.tailMissing and colors.bad or colors.text)
-      lcd.drawText(ix, ty + floor(r * 0.7), l.tailLabel, CENTERED)
-    end
   end
 end
 
@@ -1371,8 +1255,6 @@ function art.draw(l, x, y, w, h, colors)
   local k = l.kind
   if k == "swash" then
     drawSwash(l, x, y, w, h, colors)
-  elseif k == "tilt" then
-    drawTilt(l, x, y, w, h, colors)
   elseif k == "tail" then
     drawTail(l, x, y, w, h, colors)
   elseif k == "blade" then
@@ -1387,8 +1269,6 @@ function art.draw(l, x, y, w, h, colors)
     drawGearTrain(l, x, y, w, h, colors)
   elseif k == "poles" then
     drawPoles(l, x, y, w, h, colors)
-  elseif k == "map" then
-    drawMap(l, x, y, w, h, colors)
   elseif k == "heli" then
     drawHeli(l, x, y, w, h, colors)
   elseif k == "photo" then

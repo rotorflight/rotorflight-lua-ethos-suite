@@ -8304,6 +8304,20 @@
           "reverse_text": false,
           "translation": "电调与转动测试"
         },
+        "fin_arm_none": {
+          "english": "Not set",
+          "max_length": 7,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "未设置"
+        },
+        "fin_arm_switch": {
+          "english": "On a switch",
+          "max_length": 11,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "由开关控制"
+        },
         "fin_before": {
           "english": "Fit the blades and do a careful first hover. Modes, rates and governor are on their own pages.",
           "max_length": 94,
@@ -8352,13 +8366,6 @@
           "needs_translation": false,
           "reverse_text": false,
           "translation": "无"
-        },
-        "fin_pitch": {
-          "english": "Pitch limits",
-          "max_length": 12,
-          "needs_translation": false,
-          "reverse_text": false,
-          "translation": "螺距限制"
         },
         "fin_pitch_fmt": {
           "english": "Coll. %s°, cyc. %s°",
@@ -8476,20 +8483,6 @@
           "needs_translation": false,
           "reverse_text": false,
           "translation": "相反"
-        },
-        "gyr_done": {
-          "english": "The gyro corrects every axis against the movement.",
-          "max_length": 50,
-          "needs_translation": false,
-          "reverse_text": false,
-          "translation": "陀螺仪在每个轴上都与移动方向相反修正。"
-        },
-        "gyr_done_title": {
-          "english": "Gyro checked",
-          "max_length": 12,
-          "needs_translation": false,
-          "reverse_text": false,
-          "translation": "陀螺仪已检查"
         },
         "gyr_go_sensors": {
           "english": "Orientation",
@@ -9128,26 +9121,26 @@
           "reverse_text": false,
           "translation": "周期距"
         },
-        "pit_done": {
-          "english": "Blade pitch is calibrated and limited.",
-          "max_length": 38,
-          "needs_translation": false,
-          "reverse_text": false,
-          "translation": "桨叶螺距已校准并限制。"
-        },
-        "pit_done_title": {
-          "english": "Pitch set",
-          "max_length": 9,
-          "needs_translation": false,
-          "reverse_text": false,
-          "translation": "螺距已设置"
-        },
         "pit_fine_text": {
           "english": "Fine adjust the rate until the gauge reads 9 degrees.",
           "max_length": 53,
           "needs_translation": false,
           "reverse_text": false,
           "translation": "微调比率直到螺距尺读数为9度。"
+        },
+        "pit_full_text": {
+          "english": "The blade pitch the collective stick gives at full stick, set for each rate profile on the switch. About 12° is usual for 3D, less for sport flying. Keep it at or below the collective limit.",
+          "max_length": 190,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "拨杆推满时的桨叶螺距，按开关选中的每个速率配置设置。3D 通常约 12°，竞技飞行更小。不要超过总距限位。"
+        },
+        "pit_full_title": {
+          "english": "Collective at full stick",
+          "max_length": 24,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "满杆时总距"
         },
         "pit_intro": {
           "english": "You need a pitch gauge. The wizard holds the blades at a set pitch; you measure it and enter what you read.",
@@ -9204,6 +9197,13 @@
           "needs_translation": false,
           "reverse_text": false,
           "translation": "测量值"
+        },
+        "pit_profile_fmt": {
+          "english": "Rate profile %d",
+          "max_length": 15,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "速率配置 %d"
         },
         "pit_rate": {
           "english": "Rate",
@@ -11042,20 +11042,6 @@
           "reverse_text": false,
           "translation": "尾桨方向"
         },
-        "tal_done": {
-          "english": "The tail rotor is set up.",
-          "max_length": 25,
-          "needs_translation": false,
-          "reverse_text": false,
-          "translation": "尾桨已设置。"
-        },
-        "tal_done_title": {
-          "english": "Tail done",
-          "max_length": 9,
-          "needs_translation": false,
-          "reverse_text": false,
-          "translation": "尾桨已完成"
-        },
         "tal_idle": {
           "english": "The power the tail motor keeps at zero yaw. Blades still off.",
           "max_length": 61,
@@ -11084,19 +11070,12 @@
           "reverse_text": false,
           "translation": "拆下尾桨叶后检查尾舵机：中位、方向、行程和末端限位。"
         },
-        "tal_lim_ccw": {
-          "english": "Now the other way. Lower the limit until the slider stops short of binding.",
-          "max_length": 75,
+        "tal_lim_both": {
+          "english": "Hold the tail at 60° each way, then set the limits as high as they go without the slider or links binding.",
+          "max_length": 106,
           "needs_translation": false,
           "reverse_text": false,
-          "translation": "现在换另一侧。降低限制，直到滑套在卡死前停止。"
-        },
-        "tal_lim_cw": {
-          "english": "The tail is held at full travel one way. Lower the limit until the slider stops short of binding.",
-          "max_length": 97,
-          "needs_translation": false,
-          "reverse_text": false,
-          "translation": "尾桨保持在一侧满行程。降低限制，直到滑套在卡死前停止。"
+          "translation": "尾桨两侧各保持 60°，然后把限位设得尽量高，但不能让滑块或连杆卡住。"
         },
         "tal_lim_title": {
           "english": "Tail end stops",
@@ -11125,13 +11104,6 @@
           "needs_translation": false,
           "reverse_text": false,
           "translation": "此飞控无尾电机输出（电机 2）。"
-        },
-        "tal_ok": {
-          "english": "Correct",
-          "max_length": 7,
-          "needs_translation": false,
-          "reverse_text": false,
-          "translation": "正确"
         },
         "tal_other_side": {
           "english": "Swap",

@@ -8304,6 +8304,20 @@
           "reverse_text": false,
           "translation": "Test ESC et rotation"
         },
+        "fin_arm_none": {
+          "english": "Not set",
+          "max_length": 7,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Non défini"
+        },
+        "fin_arm_switch": {
+          "english": "On a switch",
+          "max_length": 11,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Sur un interrupteur"
+        },
         "fin_before": {
           "english": "Fit the blades and do a careful first hover. Modes, rates and governor are on their own pages.",
           "max_length": 114,
@@ -8352,13 +8366,6 @@
           "needs_translation": false,
           "reverse_text": false,
           "translation": "Aucun"
-        },
-        "fin_pitch": {
-          "english": "Pitch limits",
-          "max_length": 14,
-          "needs_translation": false,
-          "reverse_text": false,
-          "translation": "Limites de pas"
         },
         "fin_pitch_fmt": {
           "english": "Coll. %s°, cyc. %s°",
@@ -8476,20 +8483,6 @@
           "needs_translation": false,
           "reverse_text": false,
           "translation": "Contre"
-        },
-        "gyr_done": {
-          "english": "The gyro corrects every axis against the movement.",
-          "max_length": 50,
-          "needs_translation": false,
-          "reverse_text": false,
-          "translation": "Le gyro corrige chaque axe contre le mouvement."
-        },
-        "gyr_done_title": {
-          "english": "Gyro checked",
-          "max_length": 12,
-          "needs_translation": false,
-          "reverse_text": false,
-          "translation": "Gyro vérifié"
         },
         "gyr_go_sensors": {
           "english": "Orientation",
@@ -9128,26 +9121,26 @@
           "reverse_text": false,
           "translation": "Cyclique"
         },
-        "pit_done": {
-          "english": "Blade pitch is calibrated and limited.",
-          "max_length": 39,
-          "needs_translation": false,
-          "reverse_text": false,
-          "translation": "Le pas des pales est calibré et limité."
-        },
-        "pit_done_title": {
-          "english": "Pitch set",
-          "max_length": 9,
-          "needs_translation": false,
-          "reverse_text": false,
-          "translation": "Pas réglé"
-        },
         "pit_fine_text": {
           "english": "Fine adjust the rate until the gauge reads 9 degrees.",
           "max_length": 53,
           "needs_translation": false,
           "reverse_text": false,
           "translation": "Affinez le taux jusqu'à lire 9 degrés sur la jauge."
+        },
+        "pit_full_text": {
+          "english": "The blade pitch the collective stick gives at full stick, set for each rate profile on the switch. About 12° is usual for 3D, less for sport flying. Keep it at or below the collective limit.",
+          "max_length": 190,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Pas des pales à pleine course du collectif, réglé pour chaque profil de taux sur l'interrupteur. Environ 12° pour la 3D, moins pour le vol sportif. Rester au niveau de la limite collective ou en dessous."
+        },
+        "pit_full_title": {
+          "english": "Collective at full stick",
+          "max_length": 24,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Collectif à pleine course"
         },
         "pit_intro": {
           "english": "You need a pitch gauge. The wizard holds the blades at a set pitch; you measure it and enter what you read.",
@@ -9204,6 +9197,13 @@
           "needs_translation": false,
           "reverse_text": false,
           "translation": "Mesuré"
+        },
+        "pit_profile_fmt": {
+          "english": "Rate profile %d",
+          "max_length": 15,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Profil de taux %d"
         },
         "pit_rate": {
           "english": "Rate",
@@ -11042,20 +11042,6 @@
           "reverse_text": false,
           "translation": "Sens queue"
         },
-        "tal_done": {
-          "english": "The tail rotor is set up.",
-          "max_length": 28,
-          "needs_translation": false,
-          "reverse_text": false,
-          "translation": "Le rotor de queue est réglé."
-        },
-        "tal_done_title": {
-          "english": "Tail done",
-          "max_length": 11,
-          "needs_translation": false,
-          "reverse_text": false,
-          "translation": "Queue faite"
-        },
         "tal_idle": {
           "english": "The power the tail motor keeps at zero yaw. Blades still off.",
           "max_length": 80,
@@ -11084,19 +11070,12 @@
           "reverse_text": false,
           "translation": "Vérifiez le servo de queue, pales de queue retirées : centre, sens, course et butées."
         },
-        "tal_lim_ccw": {
-          "english": "Now the other way. Lower the limit until the slider stops short of binding.",
-          "max_length": 95,
+        "tal_lim_both": {
+          "english": "Hold the tail at 60° each way, then set the limits as high as they go without the slider or links binding.",
+          "max_length": 106,
           "needs_translation": false,
           "reverse_text": false,
-          "translation": "Maintenant l'autre côté. Baissez la limite jusqu'à ce que la coulisse s'arrête avant de forcer."
-        },
-        "tal_lim_cw": {
-          "english": "The tail is held at full travel one way. Lower the limit until the slider stops short of binding.",
-          "max_length": 114,
-          "needs_translation": false,
-          "reverse_text": false,
-          "translation": "La queue est tenue en course max d'un côté. Baissez la limite jusqu'à ce que la coulisse s'arrête avant de forcer."
+          "translation": "Maintenir la queue à 60° de chaque côté, puis régler les butées aussi haut que possible sans que le curseur ni les biellettes ne butent."
         },
         "tal_lim_title": {
           "english": "Tail end stops",
@@ -11125,13 +11104,6 @@
           "needs_translation": false,
           "reverse_text": false,
           "translation": "Pas de sortie moteur de queue (moteur 2) sur ce contrôleur de vol."
-        },
-        "tal_ok": {
-          "english": "Correct",
-          "max_length": 7,
-          "needs_translation": false,
-          "reverse_text": false,
-          "translation": "Correct"
         },
         "tal_other_side": {
           "english": "Swap",

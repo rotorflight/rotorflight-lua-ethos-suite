@@ -8304,6 +8304,20 @@
           "reverse_text": false,
           "translation": "ESC- og rotasjonstest"
         },
+        "fin_arm_none": {
+          "english": "Not set",
+          "max_length": 7,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Ikke satt"
+        },
+        "fin_arm_switch": {
+          "english": "On a switch",
+          "max_length": 11,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "På en bryter"
+        },
         "fin_before": {
           "english": "Fit the blades and do a careful first hover. Modes, rates and governor are on their own pages.",
           "max_length": 94,
@@ -8352,13 +8366,6 @@
           "needs_translation": false,
           "reverse_text": false,
           "translation": "Ingen"
-        },
-        "fin_pitch": {
-          "english": "Pitch limits",
-          "max_length": 12,
-          "needs_translation": false,
-          "reverse_text": false,
-          "translation": "Pitchgrenser"
         },
         "fin_pitch_fmt": {
           "english": "Coll. %s°, cyc. %s°",
@@ -8476,20 +8483,6 @@
           "needs_translation": false,
           "reverse_text": false,
           "translation": "Mot"
-        },
-        "gyr_done": {
-          "english": "The gyro corrects every axis against the movement.",
-          "max_length": 50,
-          "needs_translation": false,
-          "reverse_text": false,
-          "translation": "Gyroen korrigerer hver akse mot bevegelsen."
-        },
-        "gyr_done_title": {
-          "english": "Gyro checked",
-          "max_length": 12,
-          "needs_translation": false,
-          "reverse_text": false,
-          "translation": "Gyro sjekket"
         },
         "gyr_go_sensors": {
           "english": "Orientation",
@@ -9128,26 +9121,26 @@
           "reverse_text": false,
           "translation": "Syklisk"
         },
-        "pit_done": {
-          "english": "Blade pitch is calibrated and limited.",
-          "max_length": 38,
-          "needs_translation": false,
-          "reverse_text": false,
-          "translation": "Bladpitch er kalibrert og begrenset."
-        },
-        "pit_done_title": {
-          "english": "Pitch set",
-          "max_length": 10,
-          "needs_translation": false,
-          "reverse_text": false,
-          "translation": "Pitch satt"
-        },
         "pit_fine_text": {
           "english": "Fine adjust the rate until the gauge reads 9 degrees.",
           "max_length": 53,
           "needs_translation": false,
           "reverse_text": false,
           "translation": "Finjuster raten til måleren viser 9 grader."
+        },
+        "pit_full_text": {
+          "english": "The blade pitch the collective stick gives at full stick, set for each rate profile on the switch. About 12° is usual for 3D, less for sport flying. Keep it at or below the collective limit.",
+          "max_length": 190,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Bladvinkelen ved fullt utslag på kollektivspaken, for hver ratenprofil på bryteren. Rundt 12° er vanlig for 3D, mindre for sportsflyging. Hold den på eller under kollektivgrensen."
+        },
+        "pit_full_title": {
+          "english": "Collective at full stick",
+          "max_length": 24,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Kollektiv ved fullt utslag"
         },
         "pit_intro": {
           "english": "You need a pitch gauge. The wizard holds the blades at a set pitch; you measure it and enter what you read.",
@@ -9204,6 +9197,13 @@
           "needs_translation": false,
           "reverse_text": false,
           "translation": "Målt"
+        },
+        "pit_profile_fmt": {
+          "english": "Rate profile %d",
+          "max_length": 15,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Ratenprofil %d"
         },
         "pit_rate": {
           "english": "Rate",
@@ -11042,20 +11042,6 @@
           "reverse_text": false,
           "translation": "Haleretning"
         },
-        "tal_done": {
-          "english": "The tail rotor is set up.",
-          "max_length": 25,
-          "needs_translation": false,
-          "reverse_text": false,
-          "translation": "Halerotoren er satt opp."
-        },
-        "tal_done_title": {
-          "english": "Tail done",
-          "max_length": 11,
-          "needs_translation": false,
-          "reverse_text": false,
-          "translation": "Hale ferdig"
-        },
         "tal_idle": {
           "english": "The power the tail motor keeps at zero yaw. Blades still off.",
           "max_length": 62,
@@ -11084,19 +11070,12 @@
           "reverse_text": false,
           "translation": "Sjekk haleservoen med halebladene av: senter, retning, utslag og endestopp."
         },
-        "tal_lim_ccw": {
-          "english": "Now the other way. Lower the limit until the slider stops short of binding.",
-          "max_length": 77,
+        "tal_lim_both": {
+          "english": "Hold the tail at 60° each way, then set the limits as high as they go without the slider or links binding.",
+          "max_length": 106,
           "needs_translation": false,
           "reverse_text": false,
-          "translation": "Nå den andre veien. Senk grensen til slideren stopper like før den går tungt."
-        },
-        "tal_lim_cw": {
-          "english": "The tail is held at full travel one way. Lower the limit until the slider stops short of binding.",
-          "max_length": 97,
-          "needs_translation": false,
-          "reverse_text": false,
-          "translation": "Halen holdes på fullt utslag én vei. Senk grensen til slideren stopper like før den går tungt."
+          "translation": "Hold halen på 60° i hver retning, og sett grensene så høyt det går uten at glideren eller stengene binder."
         },
         "tal_lim_title": {
           "english": "Tail end stops",
@@ -11125,13 +11104,6 @@
           "needs_translation": false,
           "reverse_text": false,
           "translation": "Ingen halemotorutgang (motor 2) på denne flykontrolleren."
-        },
-        "tal_ok": {
-          "english": "Correct",
-          "max_length": 7,
-          "needs_translation": false,
-          "reverse_text": false,
-          "translation": "Riktig"
         },
         "tal_other_side": {
           "english": "Swap",

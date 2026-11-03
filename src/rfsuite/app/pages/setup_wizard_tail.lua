@@ -37,10 +37,8 @@ local T = {
   calTitle = "@i18n(app.modules.setup_wizard.tal_cal_title)@",
   cal = "@i18n(app.modules.setup_wizard.tal_cal)@",
   limTitle = "@i18n(app.modules.setup_wizard.tal_lim_title)@",
-  limCw = "@i18n(app.modules.setup_wizard.tal_lim_cw)@",
-  limCcw = "@i18n(app.modules.setup_wizard.tal_lim_ccw)@",
-  doneTitle = "@i18n(app.modules.setup_wizard.tal_done_title)@",
-  done = "@i18n(app.modules.setup_wizard.tal_done)@",
+  limBoth = "@i18n(app.modules.setup_wizard.tal_lim_both)@",
+  normal = "@i18n(app.modules.setup_wizard.srv_normal)@",
   trim = "@i18n(app.modules.setup_wizard.tal_trim)@",
   rate = "@i18n(app.modules.setup_wizard.tal_rate)@",
   side = "@i18n(app.modules.setup_wizard.tal_side)@",
@@ -49,7 +47,6 @@ local T = {
   sideCw = "@i18n(app.modules.setup_wizard.fin_cw)@",
   sideCcw = "@i18n(app.modules.setup_wizard.fin_ccw)@",
   reverse = "@i18n(app.modules.setup_wizard.tal_reverse)@",
-  ok = "@i18n(app.modules.setup_wizard.tal_ok)@",
   other = "@i18n(app.modules.setup_wizard.tal_other_side)@",
   motorTitle = "@i18n(app.modules.setup_wizard.tal_motor_title)@",
   motor = "@i18n(app.modules.setup_wizard.tal_motor)@",
@@ -68,10 +65,11 @@ local T = {
   runIdle = "@i18n(app.modules.setup_wizard.tal_run_idle)@",
   progress = "@i18n(app.modules.setup_wizard.progress_fmt)@",
   start = "@i18n(app.modules.setup_wizard.btn_start)@",
+  motorOff = "@i18n(app.modules.setup_wizard.lvl_motor_off)@",
   next = "@i18n(app.modules.setup_wizard.btn_next)@",
 }
 
-local SERVO_SCREENS = {"centre", "direction", "calibrate", "limit_cw", "limit_ccw"}
+local SERVO_SCREENS = {"centre", "direction", "calibrate", "limits"}
 local MOTOR_SCREENS = {"motor", "idle"}
 
 local CAL_DEGREES = 22.5
@@ -81,6 +79,8 @@ local SPIN_SECONDS = 3
 local IDLE_RUN_SECONDS = 5
 local POWER_MIN, POWER_MAX = 5, 50
 local IDLE_MAX = 250            -- tail_motor_idle, 0.1 %
+local PICTURE_W, PICTURE_H = 220, 160
+local TRIM_MAX = 25             -- degrees, either way
 
 local function new(wiz)
   local self = {}
@@ -94,6 +94,12 @@ local function new(wiz)
   local calSide = 1               -- +1 / -1: which way the calibrate screen holds
   local heldValue = nil           -- yaw override sent, nil when none
   local power = 10                -- motor test power, %
+  local answers = {motor = false} -- the first page: the motor is unplugged
+  local limitSide = -1            -- the end stops page: -1 holds the clockwise end, +1 the counter-clockwise
+  local yawReversed = false       -- the direction page: the yaw input is reversed
+  -- The EdgeTX suite's tail pictures: the tail at rest, and the tail with its arrow (moves).
+  local tailLayout = art.image("tail-servo", PICTURE_W, PICTURE_H)
+  local moveLayout = art.image("tail-servo-move", PICTURE_W, PICTURE_H)
 
   -- Live values, compared in wakeup so paint and rows change only when they do.
   local lastCanMove, lastRunning, lastYaw, lastOutput = nil, nil, nil, nil
@@ -108,7 +114,7 @@ local function new(wiz)
     if i < 1 then
       go("intro", 0)
     elseif i > #screens then
-      go("done", #screens + 1)
+      go(screens[#screens], #screens)
     else
       go(screens[i], i)
     end
@@ -119,8 +125,7 @@ local function new(wiz)
     if screen == "centre" then return 0 end
     if screen == "direction" then return heli.MIXER_PASSTHROUGH end
     if screen == "calibrate" then return calSide * heli.tailRaw(CAL_DEGREES) end
-    if screen == "limit_cw" then return -heli.tailRaw(LIMIT_DEGREES) end
-    if screen == "limit_ccw" then return heli.tailRaw(LIMIT_DEGREES) end
+    if screen == "limits" then return limitSide * heli.tailRaw(LIMIT_DEGREES) end
     return nil
   end
 
@@ -140,34 +145,46 @@ local function new(wiz)
 
   local function input() return wiz.inputs.yaw end
 
-  local function nudgeTrim(d)
-    wiz.editMix(function(c)
-      local deg = heli.clamp(heli.tailTrimDegrees(c.tail_center_trim or 0) + d, -25, 25)
-      c.tail_center_trim = heli.tailTrimRaw(deg)
-    end)
-    wiz.rebuild()
-  end
-
   local function reverseYaw()
     wiz.editInput("yaw", function(i) i.rate = -i.rate end)
+    yawReversed = not yawReversed
     wiz.rebuild()
   end
 
-  local function nudgeRate(d)
+  -- The calibration rate, in 0.1 %, its sign kept (the way the yaw input runs).
+  local function setYawRate(value)
     wiz.editInput("yaw", function(i)
-      local sign = i.rate < 0 and -1 or 1
-      i.rate = sign * heli.clamp(math.abs(i.rate) + d, 100, 5000)
+      local sign = (i.rate or 0) < 0 and -1 or 1
+      i.rate = sign * heli.clamp(math.floor(value + 0.5), 100, 5000)
     end)
-    wiz.rebuild()
   end
 
-  local function nudgeLimit(field, d)
-    wiz.editInput("yaw", function(i)
-      local deg = heli.clamp(heli.limitDegrees(i[field], true) + d, 0, LIMIT_DEGREES)
-      local raw = heli.limitRaw(deg, true)
-      i[field] = (field == "min") and -raw or raw
+  -- The centre trim, in tenths of a degree.
+  local function setCentreTrim(value)
+    wiz.editMix(function(c)
+      c.tail_center_trim = heli.tailTrimRaw(heli.clamp(value / 10, -TRIM_MAX, TRIM_MAX))
     end)
-    wiz.rebuild()
+  end
+
+  local function centreTenths()
+    local trim = (wiz.mixConfig() or {}).tail_center_trim or 0
+    return heli.round(heli.tailTrimDegrees(trim) * 10)
+  end
+
+  -- An end stop as a number field in degrees, tenths shown; min is the clockwise end, max the other.
+  local function limitRow(label, field)
+    return {label = label, number = {0, LIMIT_DEGREES * 10,
+      function()
+        local i = wiz.inputs.yaw
+        return heli.round(heli.limitDegrees(i and i[field] or 0, true) * 10)
+      end,
+      function(value)
+        wiz.editInput("yaw", function(i)
+          local raw = heli.limitRaw(heli.clamp(value / 10, 0, LIMIT_DEGREES), true)
+          i[field] = (field == "min") and -raw or raw
+        end)
+      end,
+      "°", 1}}
   end
 
   local function nudgeIdle(d)
@@ -207,59 +224,79 @@ local function new(wiz)
   end
 
   -- Yaw stick bar (direction screen) above the tail picture.
-  local dirLayout = art.tail("left")
   local function drawDirection(x, y, w, h, colors)
     local gh = math.min(24, math.floor(h * 0.2))
     local yaw = wiz.rcCommand[3] or 0
     ui.gauge(x, y, w, gh, (yaw + 500) / 1000, colors)
-    art.draw(dirLayout, x, y + gh + 4, w, h - gh - 4, colors)
+    art.draw(moveLayout, x, y + gh + 4, w, h - gh - 4, colors)
+  end
+
+  -- The way forward: Next, and on the last page the footer's Save and continue.
+  local function forwardFor(i)
+    if i >= #screens then
+      return wiz.forward(function()
+        wiz.releaseAxes()
+        heldValue = nil
+        wiz.finishStep()
+      end)
+    end
+    return {text = T.next, press = function() goIndex(i + 1) end}
   end
 
   local function buildServo()
     local i = input()
     local back = function() goIndex(index - 1) end
-    local forward = {text = T.next, press = function() goIndex(index + 1) end}
+    local forward = forwardFor(index)
     if screen == "centre" then
-      local trim = (wiz.mixConfig() or {}).tail_center_trim or 0
       scr:text(T.centreTitle, T.centre)
-      scr:rows({{T.trim, string.format("%.1f°", heli.tailTrimDegrees(trim))}})
-      scr:picture(art.tail(nil, string.format("%+.1f°", heli.tailTrimDegrees(trim))))
-      return scr:row(back, nudgeSpecs({-1, -0.1, 0.1, 1}, nudgeTrim, "%s%.1f"), forward)
+      scr:picture(tailLayout)
+      local field = scr:checks({{label = T.trim, number = {-TRIM_MAX * 10, TRIM_MAX * 10,
+        centreTenths, setCentreTrim, "°", 1}}})
+      local rowField = scr:row(back, nil, forward)
+      return field or rowField
     elseif screen == "direction" then
       scr:text(T.dirTitle, T.dir)
       scr:draw(drawDirection)
-      return scr:row(back, {
-        {text = T.reverse, press = reverseYaw},
-        {text = T.ok, primary = true, press = function() goIndex(index + 1) end},
-      }, false)
+      local field = scr:checks({{answer = yawReversed and T.normal or T.reverse, press = reverseYaw}})
+      local rowField = scr:row(back, nil, forward)
+      return field or rowField
     elseif screen == "calibrate" then
       scr:text(T.calTitle, T.cal)
-      scr:rows({
-        {T.rate, string.format("%.1f%%", math.abs(i and i.rate or 0) / 10)},
-        {T.side, calSide > 0 and T.sideCcw or T.sideCw},
+      scr:picture(moveLayout)
+      local field = scr:checks({
+        {label = T.rate, number = {100, 5000,
+          function() return math.abs(i and i.rate or 0) end, setYawRate, "%", 1}},
+        {label = T.side, value = calSide > 0 and T.sideCcw or T.sideCw},
+        {answer = T.other, needsMotion = true, press = function()
+          calSide = -calSide
+          applyHold()
+          wiz.rebuild()
+        end},
       })
-      scr:picture(art.tail(calSide > 0 and "right" or "left", CAL_LABEL))
-      local specs = nudgeSpecs({-10, -1, 1, 10}, nudgeRate, "%s%d")
-      specs[#specs + 1] = {text = T.other, small = true, needsMotion = true, press = function()
-        calSide = -calSide
+      local rowField = scr:row(back, nil, forward)
+      return field or rowField
+    end
+    -- limits: both ends on one page, the side held with the Swap button.
+    scr:text(T.limTitle, T.limBoth)
+    scr:picture(moveLayout)
+    local field = scr:checks({
+      limitRow(T.cw, "min"),
+      limitRow(T.ccw, "max"),
+      {label = T.side, value = limitSide < 0 and T.sideCw or T.sideCcw},
+      {answer = T.other, needsMotion = true, press = function()
+        limitSide = -limitSide
         applyHold()
         wiz.rebuild()
-      end}
-      return scr:row(back, specs, forward)
-    else -- limit_cw / limit_ccw
-      local cw = screen == "limit_cw"
-      local field = cw and "min" or "max"
-      scr:text(T.limTitle, cw and T.limCw or T.limCcw)
-      scr:rows({{cw and T.cw or T.ccw, string.format("%.1f°", heli.limitDegrees(i and i[field] or 0, true))}})
-      scr:picture(art.tail(cw and "left" or "right",
-        string.format("%.1f°", heli.limitDegrees(i and i[field] or 0, true))))
-      return scr:row(back, nudgeSpecs({-5, -1, 1, 5}, function(d) nudgeLimit(field, d) end, "%s%d"), forward)
-    end
+      end},
+    })
+    local rowField = scr:row(back, nil, forward)
+    return field or rowField
   end
 
   local function buildMotor()
     local back = function() wiz.releaseMotor(); goIndex(index - 1) end
-    local forward = {text = T.next, press = function() wiz.releaseMotor(); goIndex(index + 1) end}
+    local forward = index >= #screens and wiz.forward(function() wiz.releaseMotor(); wiz.finishStep() end)
+      or {text = T.next, press = function() wiz.releaseMotor(); goIndex(index + 1) end}
     local hasMotor = wiz.motorCount() >= 2
     if screen == "motor" then
       scr:text(T.motorTitle, T.motor, (not hasMotor) and T.noMotor or nil)
@@ -309,20 +346,20 @@ local function new(wiz)
 
   function self.build()
     scr:begin()
-    -- The intro is step 1 (index 0), each screen of the tail follows, and the
-    -- done screen is the last one.
-    scr:step(index + 1, #screens + 2)
+    -- The intro is step 1 (index 0), each screen of the tail follows.
+    scr:step(index + 1, #screens + 1)
     applyHold()
     self.liveRc = (screen == "direction") and "command" or nil
     self.liveMotors = motorised and (screen == "motor" or screen == "idle") or nil
     lastRunning = wiz.motorRunning()
     if screen == "intro" then
-      scr:text(T.title, motorised and T.motor or T.intro)
-      scr:picture(motorised and art.tailType((wiz.mixConfig() or {}).tail_rotor_mode) or art.tail(nil))
-      return scr:row(nil, {{text = T.start, primary = true, press = function() goIndex(1) end}})
-    elseif screen == "done" then
-      scr:text(T.doneTitle, T.done)
-      return scr:row(function() goIndex(#screens) end)
+      -- The first page: the motor is unplugged before the tail is set up. The note under the answer
+      -- says what the page is for.
+      scr:text(T.title, nil)
+      scr:picture(motorised and art.tailType((wiz.mixConfig() or {}).tail_rotor_mode) or tailLayout)
+      return scr:safety(answers, {{key = "motor", label = T.motorOff}}, T.start, function()
+        goIndex(1)
+      end, {{note = motorised and T.motor or T.intro, plain = true}})
     end
     if motorised then return buildMotor() end
     return buildServo()

@@ -11045,6 +11045,48 @@
           "max_length": 51,
           "reverse_text": false
         },
+        "pit_full_title": {
+          "english": "Collective at full stick",
+          "translation": "Kollektiv bei Vollausschlag",
+          "needs_translation": false,
+          "max_length": 24,
+          "reverse_text": false
+        },
+        "pit_full_text": {
+          "english": "The blade pitch the collective stick gives at full stick, set for each rate profile on the switch. About 12° is usual for 3D, less for sport flying. Keep it at or below the collective limit.",
+          "translation": "Die Blattverstellung beim Vollausschlag des Kollektivknüppels, für jedes Ratenprofil am Schalter. Für 3D ist etwa 12° üblich, für Sportflug weniger. Nicht über dem Kollektiv-Limit.",
+          "needs_translation": false,
+          "max_length": 190,
+          "reverse_text": false
+        },
+        "pit_profile_fmt": {
+          "english": "Rate profile %d",
+          "translation": "Ratenprofil %d",
+          "needs_translation": false,
+          "max_length": 15,
+          "reverse_text": false
+        },
+        "tal_lim_both": {
+          "english": "Hold the tail at 60° each way, then set the limits as high as they go without the slider or links binding.",
+          "translation": "Heckrotor je Seite auf 60° halten, dann die Grenzen so hoch setzen, wie es ohne Anschlag von Schieber oder Gestänge geht.",
+          "needs_translation": false,
+          "max_length": 106,
+          "reverse_text": false
+        },
+        "fin_arm_switch": {
+          "english": "On a switch",
+          "translation": "Über Schalter",
+          "needs_translation": false,
+          "max_length": 11,
+          "reverse_text": false
+        },
+        "fin_arm_none": {
+          "english": "Not set",
+          "translation": "Nicht belegt",
+          "needs_translation": false,
+          "max_length": 7,
+          "reverse_text": false
+        },
         "mot_pinion": {
           "english": "Pinion teeth",
           "translation": "Ritzel-Zähne",
@@ -11423,20 +11465,6 @@
           "max_length": 11,
           "reverse_text": false
         },
-        "pit_done_title": {
-          "english": "Pitch set",
-          "translation": "Pitch fertig",
-          "needs_translation": false,
-          "max_length": 12,
-          "reverse_text": false
-        },
-        "pit_done": {
-          "english": "Blade pitch is calibrated and limited.",
-          "translation": "Blattwinkel ist kalibriert und begrenzt.",
-          "needs_translation": false,
-          "max_length": 40,
-          "reverse_text": false
-        },
         "tal_title": {
           "english": "Tail rotor",
           "translation": "Heckrotor",
@@ -11500,34 +11528,6 @@
           "max_length": 17,
           "reverse_text": false
         },
-        "tal_lim_cw": {
-          "english": "The tail is held at full travel one way. Lower the limit until the slider stops short of binding.",
-          "translation": "Das Heck wird auf vollem Weg in eine Richtung gehalten. Limit senken, bis die Schiebehülse kurz vor dem Anschlag stoppt.",
-          "needs_translation": false,
-          "max_length": 120,
-          "reverse_text": false
-        },
-        "tal_lim_ccw": {
-          "english": "Now the other way. Lower the limit until the slider stops short of binding.",
-          "translation": "Jetzt die andere Richtung. Limit senken, bis die Schiebehülse kurz vor dem Anschlag stoppt.",
-          "needs_translation": false,
-          "max_length": 91,
-          "reverse_text": false
-        },
-        "tal_done_title": {
-          "english": "Tail done",
-          "translation": "Heck fertig",
-          "needs_translation": false,
-          "max_length": 11,
-          "reverse_text": false
-        },
-        "tal_done": {
-          "english": "The tail rotor is set up.",
-          "translation": "Der Heckrotor ist eingerichtet.",
-          "needs_translation": false,
-          "max_length": 31,
-          "reverse_text": false
-        },
         "tal_trim": {
           "english": "Centre trim",
           "translation": "Mittentrimm.",
@@ -11568,13 +11568,6 @@
           "translation": "Falsch",
           "needs_translation": false,
           "max_length": 9,
-          "reverse_text": false
-        },
-        "tal_ok": {
-          "english": "Correct",
-          "translation": "Richtig",
-          "needs_translation": false,
-          "max_length": 7,
           "reverse_text": false
         },
         "tal_other_side": {
@@ -11773,20 +11766,6 @@
           "max_length": 11,
           "reverse_text": false
         },
-        "gyr_done_title": {
-          "english": "Gyro checked",
-          "translation": "Kreisel geprüft",
-          "needs_translation": false,
-          "max_length": 15,
-          "reverse_text": false
-        },
-        "gyr_done": {
-          "english": "The gyro corrects every axis against the movement.",
-          "translation": "Der Kreisel korrigiert jede Achse gegen die Bewegung.",
-          "needs_translation": false,
-          "max_length": 53,
-          "reverse_text": false
-        },
         "fin_title": {
           "english": "Finish",
           "translation": "Abschluss",
@@ -11820,13 +11799,6 @@
           "translation": "Heck",
           "needs_translation": false,
           "max_length": 4,
-          "reverse_text": false
-        },
-        "fin_pitch": {
-          "english": "Pitch limits",
-          "translation": "Pitch-Limits",
-          "needs_translation": false,
-          "max_length": 12,
           "reverse_text": false
         },
         "fin_pitch_fmt": {
