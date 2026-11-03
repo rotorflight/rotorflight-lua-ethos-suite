@@ -17,12 +17,16 @@
 --     does. A first version of this harness had no answering stub and stayed
 --     GREEN after the guard's latch had been deliberately removed -- it was
 --     measuring nothing. With the stub, that same sabotage yields 309 requests
---     instead of 6 and this file goes red.
+--     instead of 6 (9 since the SRXL2 ESC tile got its guard) and this file
+--     goes red.
 --
 -- The path deliberately enters BOTH guarded menus:
 --   root -> Hardware -> Servos            (servo_bus_guard,    MSP 54)
 --   root -> Hardware -> ESC & Motors -> ESC Tools
 --                                          (esc_protocol_guard, MSP 123)
+-- ESC & Motors and ESC Tools each carry their own esc_protocol_guard (the
+-- first lights the SRXL2 ESC tile), so a cycle reads MSP 123 twice: once per
+-- guarded menu entered, never more.
 -- A run that skipped them would measure nothing. The tick block matters for the
 -- same reason: a retry storm can only arrive through wakeup(), which
 -- menu_container.lua:305-306 forwards to the guards.
@@ -278,14 +282,15 @@ end
 out("")
 
 -- Each guarded menu issues exactly ONE request on entry: the guard reads once
--- and holds the answer (attempted). More than that is the storm this file is
+-- and holds the answer (attempted). Two ESC menus are entered, hence two ESC
+-- reads. More than that is the storm this file is
 -- here to catch.
 for i = 1, #tracePerCycle do
   local t = tracePerCycle[i]
   check(string.format("cycle %d  exactly one Servos read (MSP %d)", i, SERIAL_READ),
     t:find("Servos=1%(" .. SERIAL_READ .. "%)") ~= nil, t)
-  check(string.format("cycle %d  exactly one ESC read (MSP %d)", i, ESC_READ),
-    t:find("ESC=1%(" .. ESC_READ .. "%)") ~= nil, t)
+  check(string.format("cycle %d  one ESC read per ESC menu (MSP %d)", i, ESC_READ),
+    t:find("ESC=2%(" .. ESC_READ .. "," .. ESC_READ .. "%)") ~= nil, t)
 end
 
 -- And the property that matters: the trace must be the same in EVERY cycle. If
@@ -302,7 +307,7 @@ check("100 ticks inside the ESC menu produce no request",
   tracePerCycle[1]:find("Tick=0$") ~= nil, tracePerCycle[1])
 
 check("the same total number of requests in every cycle",
-  #trace == 2 * #tracePerCycle,
+  #trace == 3 * #tracePerCycle, -- one Servos read and two ESC reads
   "trace holds " .. #trace .. " entries for " .. #tracePerCycle .. " cycles")
 
 out("")
