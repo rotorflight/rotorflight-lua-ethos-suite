@@ -157,7 +157,11 @@ local function new(wiz)
       local rowField = scr:row(function()
         wiz.releaseMotor()
         go("prepare")
-      end, nil, {text = T.next, press = function() go("spin") end})
+      end, nil, {text = T.next, press = function()
+        -- Leaving the calibration releases the full-throttle hold, as Back does.
+        wiz.releaseMotor()
+        go("spin")
+      end})
       return field or rowField
     end
 

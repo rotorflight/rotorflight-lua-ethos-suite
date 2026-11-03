@@ -1505,7 +1505,10 @@ local function open(opts)
     if nextConnected == connected and nextArmed == armed and nextUnconfirmed == armedUnconfirmed then return end
     local lost = (connected ~= false and nextConnected == false) or (armed ~= true and nextArmed == true)
     local back = connected == false and nextConnected == true
-    local disarmed = armed == true and nextArmed == false
+    -- Disarmed: either a known armed model that is now disarmed, or an unconfirmed window that ended
+    -- with a fresh disarmed answer (armedUnconfirmed goes from true to false, nothing armed).
+    local disarmed = (armed == true and nextArmed == false) or
+      (armedUnconfirmed == true and nextUnconfirmed == false and nextArmed == false)
     connected, armed, armedUnconfirmed = nextConnected, nextArmed, nextUnconfirmed
     if not loaded then return end
     if lost then
