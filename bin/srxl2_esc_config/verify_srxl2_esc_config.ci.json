@@ -1,0 +1,7 @@
+{
+  "id": "srxl2-esc-config",
+  "name": "An SRXL2 ESC config reply of another version or length is refused",
+  "step": "Check the SRXL2 ESC config codec and page",
+  "script": "bin/srxl2_esc_config/verify_srxl2_esc_config.lua",
+  "rationale": "The SRXL2 ESC page (Setup -> ESC & Motors -> SRXL2 ESC) saves by writing\nback what it read, so a reply decoded in the wrong layout would be stored on the\nflight controller at the next save. The reply starts with a payload version byte\nfor exactly that reason, and the first codec read it and ignored it, and decoded\nany length. The wire sizes are pinned here against the firmware handler\n(rotorflight-firmware PR #537): a 5-byte version-1 reply, and a 4-byte write the\nfirmware rejects at any other length. The harness also checks the 32 motor 2\nchannel choices, that the page reboots after saving (the settings latch at boot),\nand that the menu row is gated on ESC telemetry protocol 14 (SRXL2). Cases 3, 4\nand 5 go red on the pre-fix codec."
+}
