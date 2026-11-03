@@ -401,14 +401,19 @@ local function openScreen(nav, menus, rootEntries, screen, setEventHandler, setW
           if entry.menuId then
             openScreen(nav, menus, rootEntries, entry.menuId, setEventHandler, setWakeupHandler, setPaintHandler, setCleanupHandler, taskGuard, armedState)
           elseif entry.script then
-            local page = loadPage(entry.script)
-            page.open({
-              onBack = goBack,
-              setEventHandler = setEventHandler,
-              setWakeupHandler = setWakeupHandler,
-              setPaintHandler = setPaintHandler,
-              setCleanupHandler = setCleanupHandler,
-            })
+            -- A page can open another one (a jump out of the wizard): that page takes the same handlers
+            -- and the same Back, which returns to this menu.
+            local function openPage(script)
+              loadPage(script).open({
+                onBack = goBack,
+                setEventHandler = setEventHandler,
+                setWakeupHandler = setWakeupHandler,
+                setPaintHandler = setPaintHandler,
+                setCleanupHandler = setCleanupHandler,
+                openScript = openPage,
+              })
+            end
+            openPage(entry.script)
           end
         end,
       })
