@@ -118,7 +118,7 @@ Rotorflight includes a rich feature set, including:
 
 RFSuite lets you read and adjust compatible ESC settings directly from your Ethos transmitter, including motor timing, startup behavior, governor settings and BEC voltage where supported. Available settings depend on the ESC model and firmware.
 
--   Supported ESC manufacturers and firmware: **Hobbywing (V5), FlyRotor, OMP Hobby, Scorpion, XDFLY, YGE and ZTW, AM32, BLHeli_S and Bluejay**
+-   Supported ESC manufacturers and firmware: Hobbywing (V5), FlyRotor, OMP Hobby, Scorpion, XDFLY, YGE and ZTW, AM32, BLHeli_S and Bluejay
 
 ### Additional Capabilities
 
