@@ -26,7 +26,8 @@ local PICTURE_W, PICTURE_H = 220, 160
 local PWM_PROTOCOL = 0
 local SPIN_SECONDS = 3
 local POWER_MIN, POWER_MAX, POWER_DEFAULT = 0, 50, 10
-local FULL_SECONDS, LOW_SECONDS = 4, 3
+-- Full throttle is held until Low throttle (or Back) is pressed: the timer only has to outlast that.
+local FULL_HOLD_SECONDS, LOW_SECONDS = 600, 3
 
 local T = {
   title = "@i18n(app.modules.setup_wizard.esc_title)@",
@@ -142,20 +143,21 @@ local function new(wiz)
       scr:picture(picture)
       local rows = {
         {answer = T.fullBtn, press = function()
-          calib.full = true
-          wiz.holdMotor(0, 1000, FULL_SECONDS)
+          -- Only once the full-throttle write went out: a refused hold must not count as calibrated.
+          if wiz.holdMotor(0, 1000, FULL_HOLD_SECONDS) then calib.full = true end
           wiz.rebuild()
         end},
         {answer = T.lowBtn, disabled = not calib.full, press = function()
-          calib.low = true
-          wiz.holdMotor(0, 0, LOW_SECONDS)
+          if wiz.holdMotor(0, 0, LOW_SECONDS) then calib.low = true end
           wiz.rebuild()
         end},
         {label = T.cal, value = status},
       }
       local field = scr:checks(rows)
-      local rowField = scr:row(function() go("prepare") end, nil,
-        {text = T.next, press = function() go("spin") end})
+      local rowField = scr:row(function()
+        wiz.releaseMotor()
+        go("prepare")
+      end, nil, {text = T.next, press = function() go("spin") end})
       return field or rowField
     end
 
@@ -174,8 +176,8 @@ local function new(wiz)
           if type(v) == "number" and v >= POWER_MIN and v <= POWER_MAX then power = v end
         end, "%"}},
       {answer = T.spinBtn, disabled = not canSpin, press = function()
-        wiz.holdMotor(0, power * 10, SPIN_SECONDS)
-        spinUntil = os.clock() + SPIN_SECONDS
+        -- The ring turns only when the motor write went out (a refused write sends nothing).
+        if wiz.holdMotor(0, power * 10, SPIN_SECONDS) then spinUntil = os.clock() + SPIN_SECONDS end
         wiz.rebuild()
       end},
       {answer = T.stopBtn, press = function()
@@ -191,7 +193,10 @@ local function new(wiz)
 
   function self.paint() scr:paint() end
 
-  function self.released() scr:refresh() end
+  function self.released()
+    spinUntil = 0
+    scr:refresh()
+  end
 
   return self
 end

@@ -113,6 +113,9 @@ local function new(wiz)
       go(index - 1)
     else
       phase, up, offsetRow, shownOffset = "arms", false, nil, nil
+      -- Back on the first page the servos are let go, as before Start.
+      wiz.releaseServos()
+      holding = false
       wiz.rebuild()
     end
   end
@@ -201,7 +204,8 @@ local function new(wiz)
 
   function self.build()
     scr:begin()
-    if not holding then holdAll() end
+    -- The servos move only on the servo pages (after Start): not on the blades question.
+    if phase == "servo" and not holding then holdAll() end
     if phase == "arms" then
       offsetRow = nil
       return buildArms()
@@ -223,7 +227,7 @@ local function new(wiz)
     local canMove = wiz.canMove()
     if canMove ~= lastCanMove then
       lastCanMove = canMove
-      if canMove and not holding then holdAll() end
+      if canMove and phase == "servo" and not holding then holdAll() end
       scr:refresh()
     end
     -- The offset follows a typed Mid without a rebuild, so the number field keeps its focus.

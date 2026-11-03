@@ -10549,8 +10549,8 @@
           "reverse_text": false
         },
         "esc_full_text": {
-          "english": "With the battery still unplugged and the flight controller on USB, press Full throttle. The output rises to 100 % in a few seconds.",
-          "translation": "Med batteriet fortsatt frakoblet og flykontrolleren på USB, trykk Fullgass. Utgangen går opp til 100 % i løpet av noen sekunder.",
+          "english": "With the battery still unplugged and the flight controller on USB, press Full throttle. The output stays at 100 % until you press Low throttle.",
+          "translation": "Med batteriet fortsatt frakoblet og flykontrolleren på USB: trykk Fullgass. Utgangen står på 100 % til du trykker Tomgang.",
           "needs_translation": false,
           "max_length": 131,
           "reverse_text": false

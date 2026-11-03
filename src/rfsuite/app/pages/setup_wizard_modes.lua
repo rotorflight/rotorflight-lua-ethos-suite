@@ -182,6 +182,14 @@ local function new(wiz)
     end
     return nil
   end
+  -- Every active slot of the mode: an FC can hold several ranges for one mode.
+  local function activeSlotsOf(mode)
+    local out = {}
+    for i, r in ipairs(ranges or {}) do
+      if r.id == mode.id and r.range.start < r.range["end"] then out[#out + 1] = i end
+    end
+    return out
+  end
   local function freeSlot()
     for i, r in ipairs(ranges or {}) do
       if not (r.range.start < r.range["end"]) then return i end
@@ -218,18 +226,21 @@ local function new(wiz)
     bus.publish("msp.request", modes.buildSetModeRangeMessage(index, ranges[index], {modeLogic = 0, linkedTo = 0}))
   end
 
+  -- Reassign and remove clear the mode's other ranges too, so the mode has one switch.
   local function save(mode, aux, from, to)
     local index = slotOf(mode) or freeSlot()
     if not index then
       note = T.noSlot
       return
     end
+    for _, i in ipairs(activeSlotsOf(mode)) do
+      if i ~= index then writeSlot(i, 0, 0, EMPTY_RANGE) end
+    end
     writeSlot(index, mode.id, aux, rangeForSwitch(from, to))
   end
 
   local function remove(mode)
-    local index = slotOf(mode)
-    if index then writeSlot(index, 0, 0, EMPTY_RANGE) end
+    for _, i in ipairs(activeSlotsOf(mode)) do writeSlot(i, 0, 0, EMPTY_RANGE) end
   end
 
   -- Listening: the AUX channel that moved furthest from where it was when

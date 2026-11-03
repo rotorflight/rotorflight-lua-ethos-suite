@@ -275,12 +275,12 @@ local function new(wiz)
   local function rpmDshot() return cfg.use_dshot_telemetry == 1 end
   local function setRpmSource(dshot)
     if dshot and cfg.motor_pwm_protocol == DSHOT150 then return end
-    wiz.send(featureConfig.buildReadMessage(function(f)
-      local want = withBit(f.enabledFeatures, RPM_BIT, not dshot)
-      if want ~= f.enabledFeatures then
-        wiz.send(featureConfig.buildWriteMessage({enabledFeatures = want}))
-      end
-    end))
+    -- The wire RPM feature bit goes through the wizard's feature setter: saved on Save, put back on
+    -- Discard, and a reboot is asked for when it changes.
+    if wiz.rpmFeatureOn() ~= (not dshot) then
+      wiz.setFeature(2 ^ RPM_BIT, not dshot)
+      wiz.requestReboot()
+    end
     if rpmDshot() ~= dshot then
       edit(function(c) c.use_dshot_telemetry = dshot and 1 or 0 end)
     end

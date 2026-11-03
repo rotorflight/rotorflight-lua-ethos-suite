@@ -283,6 +283,11 @@ local function open(opts)
   local commitIndex = {}
   local connected = nil
   local armed = nil
+  -- A link that came back without a fresh arm flag: not known yet (the session's own rule, #2548).
+  local armedUnconfirmed = false
+  -- Blocking arming is safe only when the model is known to be disarmed: MSP_SET_ARMING_DISABLED
+  -- disarms an armed model.
+  local function mayBlockArming() return armed ~= true and armedUnconfirmed ~= true end
   local handshakeDone = nil
   local armingBlocked = false
 
@@ -1314,7 +1319,7 @@ local function open(opts)
     recompute()
     closeProgress()
     clearAllOverrides()
-    if armed ~= true then blockArming(true) end
+    if mayBlockArming() then blockArming(true) end
     openStep(stepIndexOf(memory.stepKey) or 1)
   end
 
@@ -1492,14 +1497,16 @@ local function open(opts)
   sessionHandler = function(snapshotData)
     local nextConnected = snapshotData and snapshotData.connected == true
     local nextArmed = snapshotData and snapshotData.isArmed == true
+    local nextUnconfirmed = snapshotData ~= nil and snapshotData.isArmed == nil and snapshotData.armedUnconfirmed == true
     local hs = snapshotData and snapshotData.handshake
     handshakeDone = hs and hs.apiVersion == true
     local minor = snapshotData and tonumber(snapshotData.apiVersionMinor)
     if minor then apiMinor = minor end
-    if nextConnected == connected and nextArmed == armed then return end
+    if nextConnected == connected and nextArmed == armed and nextUnconfirmed == armedUnconfirmed then return end
     local lost = (connected ~= false and nextConnected == false) or (armed ~= true and nextArmed == true)
     local back = connected == false and nextConnected == true
-    connected, armed = nextConnected, nextArmed
+    local disarmed = armed == true and nextArmed == false
+    connected, armed, armedUnconfirmed = nextConnected, nextArmed, nextUnconfirmed
     if not loaded then return end
     if lost then
       releaseAll()
@@ -1508,7 +1515,10 @@ local function open(opts)
     if back and not rebootWait then
       clearAllOverrides()
       armingBlocked = false
-      if armed ~= true then blockArming(true) end
+      if mayBlockArming() then blockArming(true) end
+    elseif disarmed and not rebootWait and connected ~= false and mayBlockArming() then
+      -- The model was disarmed while the wizard is open: the block it had lost is sent again.
+      blockArming(true)
     end
     refreshNotice()
   end

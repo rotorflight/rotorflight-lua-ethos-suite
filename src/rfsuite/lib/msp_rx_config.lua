@@ -42,7 +42,7 @@ local msp_rx_config = {
 
 function msp_rx_config.decode(buf)
   buf.offset = 1
-  return {
+  local decoded = {
     serialrx_provider = mspcodec.readU8(buf),
     serialrx_inverted = mspcodec.readU8(buf),
     halfDuplex = mspcodec.readU8(buf),
@@ -51,8 +51,13 @@ function msp_rx_config.decode(buf)
     rx_spi_protocol = mspcodec.readU8(buf),
     rx_spi_id = mspcodec.readU32(buf),
     rx_spi_rf_channel_count = mspcodec.readU8(buf),
-    pinSwap = mspcodec.readU8(buf),
   }
+  -- pinSwap is absent on firmware that does not have it: nil, not the 0 that readU8 gives past the end,
+  -- so encode does not send a byte the firmware has no field for.
+  if buf[buf.offset] ~= nil then
+    decoded.pinSwap = mspcodec.readU8(buf)
+  end
+  return decoded
 end
 
 function msp_rx_config.buildReadMessage(onData, onError)

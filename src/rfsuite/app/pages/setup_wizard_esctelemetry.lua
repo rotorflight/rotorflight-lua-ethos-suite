@@ -188,11 +188,14 @@ local function new(wiz)
   local answers = {blades = false}   -- the safety answer, kept across rebuilds
   local pw = power.new(wiz)
 
+  -- The transport the link runs on, from the session. The subscription lives while the step does.
   if not transports[wiz] then
-    transports[wiz] = {}
-    bus.subscribe("session.update", function(snapshot)
-      transports[wiz].transport = snapshot and snapshot.mspTransport
-    end)
+    local state = {}
+    state.handler = function(snapshot)
+      state.transport = snapshot and snapshot.mspTransport
+    end
+    transports[wiz] = state
+    bus.subscribe("session.update", state.handler)
   end
 
   local loaded, failed = false, false
@@ -744,6 +747,11 @@ local function new(wiz)
   function self.released()
     left = true
     if trial then stopWith(T.stopped) end
+    local state = transports[wiz]
+    if state and state.handler then
+      bus.unsubscribe("session.update", state.handler)
+      transports[wiz] = nil
+    end
     scr:refresh()
   end
 

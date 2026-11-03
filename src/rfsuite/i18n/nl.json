@@ -8207,11 +8207,11 @@
           "translation": "Vol gas"
         },
         "esc_full_text": {
-          "english": "With the battery still unplugged and the flight controller on USB, press Full throttle. The output rises to 100 % in a few seconds.",
+          "english": "With the battery still unplugged and the flight controller on USB, press Full throttle. The output stays at 100 % until you press Low throttle.",
           "max_length": 131,
           "needs_translation": false,
           "reverse_text": false,
-          "translation": "Met de accu nog losgekoppeld en de vluchtcontroller via USB, druk je op Vol gas. De uitgang loopt in een paar seconden op tot 100 %."
+          "translation": "Met de accu nog losgekoppeld en de vluchtcontroller op USB: druk op Vol gas. De uitgang blijft op 100 % tot u Laag gas drukt."
         },
         "esc_low_btn": {
           "english": "Low throttle",

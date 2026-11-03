@@ -10549,8 +10549,8 @@
           "reverse_text": false
         },
         "esc_full_text": {
-          "english": "With the battery still unplugged and the flight controller on USB, press Full throttle. The output rises to 100 % in a few seconds.",
-          "translation": "电池仍未接入、飞控通过 USB 连接时，按下满油门。输出会在几秒内升至 100 %。",
+          "english": "With the battery still unplugged and the flight controller on USB, press Full throttle. The output stays at 100 % until you press Low throttle.",
+          "translation": "在电池仍未接入、飞控通过 USB 连接时，按下满油门。输出会保持在 100%，直到您按下怠速。",
           "needs_translation": false,
           "max_length": 131,
           "reverse_text": false

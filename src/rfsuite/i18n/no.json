@@ -8207,11 +8207,11 @@
           "translation": "Fullgass"
         },
         "esc_full_text": {
-          "english": "With the battery still unplugged and the flight controller on USB, press Full throttle. The output rises to 100 % in a few seconds.",
+          "english": "With the battery still unplugged and the flight controller on USB, press Full throttle. The output stays at 100 % until you press Low throttle.",
           "max_length": 131,
           "needs_translation": false,
           "reverse_text": false,
-          "translation": "Med batteriet fortsatt frakoblet og flykontrolleren på USB, trykk Fullgass. Utgangen går opp til 100 % i løpet av noen sekunder."
+          "translation": "Med batteriet fortsatt frakoblet og flykontrolleren på USB: trykk Fullgass. Utgangen står på 100 % til du trykker Tomgang."
         },
         "esc_low_btn": {
           "english": "Low throttle",

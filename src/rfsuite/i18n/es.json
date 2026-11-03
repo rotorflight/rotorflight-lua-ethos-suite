@@ -8207,11 +8207,11 @@
           "translation": "Gas máximo"
         },
         "esc_full_text": {
-          "english": "With the battery still unplugged and the flight controller on USB, press Full throttle. The output rises to 100 % in a few seconds.",
+          "english": "With the battery still unplugged and the flight controller on USB, press Full throttle. The output stays at 100 % until you press Low throttle.",
           "max_length": 131,
           "needs_translation": false,
           "reverse_text": false,
-          "translation": "Con la batería aún desconectada y la controladora por USB, pulse Gas máximo. La salida sube al 100 % en unos segundos."
+          "translation": "Con la batería aún desconectada y la controladora por USB, pulse Gas máximo. La salida se mantiene al 100 % hasta que pulse Ralentí."
         },
         "esc_low_btn": {
           "english": "Low throttle",

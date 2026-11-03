@@ -143,6 +143,8 @@ local US_PER_UNIT = 512 / 1024
 -- stick that held still (CHECK_STILL) while the read was out. Reads never overlap
 -- (CHECK_GIVE_UP for a lost reply), and not closer than CHECK_MIN_GAP.
 local CHECK_MOVE = 20
+-- The throttle's slot in the RX map (rxMapCodec.FIELDS: aileron, elevator, rudder, collective, throttle).
+local THROTTLE_SLOT = 5
 local CHECK_SETTLE = 0.3
 local CHECK_MIN_GAP = 0.05
 local CHECK_GIVE_UP = 3.0
@@ -925,7 +927,9 @@ local function new(wiz)
       scr:text(T.throttleTitle, T.throttleText, accent)
       scr:step(5, RECEIVER_SCREENS)
       scr:draw(drawThrottle)
+      -- Not while the FC reads the throttle channel differently from the radio (slot 5): the range would be offset.
       local canUse = heli.throttleFromMeasured(low, high) ~= nil and not measuring and not applied
+        and mismatch ~= THROTTLE_SLOT
       local field = scr:checks({
         {answer = measuring and T.stop or T.measure, press = function()
           if measuring then

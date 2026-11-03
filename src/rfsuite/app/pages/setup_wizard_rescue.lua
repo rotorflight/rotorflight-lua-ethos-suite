@@ -99,6 +99,13 @@ local function new(wiz)
     end
   end
 
+  local statusKnown = false   -- the active profile has been read
+
+  -- Selects the active PID profile again, whatever happened before (a failed step stops the chain).
+  local function backToActive()
+    if statusKnown then wiz.send(selectMsp.buildWriteMessage(activeProfile)) end
+  end
+
   -- The mode ranges, the status (active profile, count), then every profile, and the
   -- active one selected again.
   local function loadAll()
@@ -115,6 +122,7 @@ local function new(wiz)
         wiz.send(statusMsp.buildReadMessage(function(d)
           activeProfile = tonumber(d and d.current_pid_profile_index) or 0
           profileCount = math.min(tonumber(d and d.pid_profile_count) or 1, MAX_PROFILES)
+          statusKnown = true
           next(true)
         end, function() next(false) end))
       end,
@@ -131,6 +139,7 @@ local function new(wiz)
       loading = false
       loaded = ok == true
       failed = not loaded
+      if failed then backToActive() end
       wiz.rebuild()
     end)
   end
@@ -159,7 +168,10 @@ local function new(wiz)
       end
     end
     steps[#steps + 1] = function(next) select(activeProfile)(next) end
-    chain(steps, function() wiz.rebuild() end)
+    chain(steps, function(ok)
+      if ok == false then backToActive() end
+      wiz.rebuild()
+    end)
   end
 
   -- One setting on every profile: each is selected, written with the value, and the
@@ -182,8 +194,9 @@ local function new(wiz)
       end
     end
     steps[#steps + 1] = function(next) select(activeProfile)(next) end
-    chain(steps, function()
+    chain(steps, function(ok)
       busy = false
+      if ok == false then backToActive() end
       wiz.rebuild()
     end)
   end

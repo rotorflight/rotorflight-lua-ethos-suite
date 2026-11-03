@@ -799,7 +799,17 @@ end
 -- reached when a row is too long, so the allocation is rare.
 function ui.fit(text, maxW)
   local n = #text
-  while n > 1 and lcd.getTextSize(text:sub(1, n) .. "...") > maxW do n = n - 1 end
+  -- Cut on a character boundary: the byte after the cut must not be a UTF-8 continuation byte
+  -- (0x80-0xBF), or a multi-byte character is left half on the screen.
+  local function boundary(k)
+    while k > 1 do
+      local b = text:byte(k + 1)
+      if not b or b < 0x80 or b > 0xBF then break end
+      k = k - 1
+    end
+    return k
+  end
+  while n > 1 and lcd.getTextSize(text:sub(1, n) .. "...") > maxW do n = boundary(n - 1) end
   return text:sub(1, n) .. "..."
 end
 

@@ -93,6 +93,7 @@ local function new(wiz)
   local profileCount = 0
   local activeProfile = 0
   local loaded, loading, busy = false, false, false
+  local statusKnown = false   -- the active profile has been read
 
   local function go(name)
     screen = name
@@ -121,11 +122,16 @@ local function new(wiz)
     end
   end
 
+  -- Selects the active PID profile again, whatever happened before (a failed step stops the chain).
+  local function backToActive()
+    if statusKnown then wiz.send(selectMsp.buildWriteMessage(activeProfile)) end
+  end
+
   -- Writes one profile's data: select it, write it, select the active profile again.
   local function writeOne(index, data, done)
     local steps = {select(index), writeProfile(index, data), select(activeProfile)}
     chain(steps, function(ok)
-      if ok then profiles[index] = {data = data} end
+      if ok then profiles[index] = {data = data} else backToActive() end
       busy = false
       if done then done(ok) end
       wiz.rebuild()
@@ -142,6 +148,7 @@ local function new(wiz)
         wiz.send(statusMsp.buildReadMessage(function(d)
           activeProfile = tonumber(d and d.current_pid_profile_index) or 0
           profileCount = math.min(tonumber(d and d.pid_profile_count) or 1, MAX_PROFILES)
+          statusKnown = true
           next(true)
         end, function() next(false) end))
       end,
@@ -157,17 +164,19 @@ local function new(wiz)
     chain(steps, function(ok)
       loading = false
       loaded = ok == true
+      if not loaded then backToActive() end
       wiz.rebuild()
     end)
   end
 
   -- The mode as the EdgeTX card sets it: the governor's mode, the feature bit that
-  -- turns it on, and a throttle type the mode cannot use is reset to normal.
+  -- turns it on, and a throttle type the mode cannot use (the switch and function types need an
+  -- electric or nitro governor) is reset to normal.
   local function setMode(mode)
     wiz.editGovernor(function(g) g.gov_mode = mode end)
     wiz.setFeature(FEATURE_GOVERNOR, mode > 0)
     local config = wiz.governorConfig()
-    if mode < 3 and config and config.gov_throttle_type == 1 then
+    if mode < 3 and config and (config.gov_throttle_type or 0) ~= 0 then
       wiz.editGovernor(function(g) g.gov_throttle_type = 0 end)
     end
     wiz.rebuild()

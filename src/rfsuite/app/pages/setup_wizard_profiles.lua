@@ -233,7 +233,6 @@ local function new(wiz)
         touched[i] = true
         ranges[i] = adjMsp.defaultRange()
         bus.publish("msp.request", adjMsp.buildWriteMessage(i, ranges[i]))
-        return
       end
     end
   end
@@ -391,7 +390,7 @@ local function new(wiz)
       lcd.drawRectangle(cx, ry, cellW, rowH, 2)
       lcd.color(colors.active)
       lcd.drawFilledRectangle(cx, ry, 6, rowH)
-      local chText = string.format(T.chRow, r.aux + CONTROL_CHANNELS + 1)
+      local chText = string.format(T.chRow, auxChannel(r.aux) or (r.aux + CONTROL_CHANNELS + 1))
       if cols == 1 then
         -- One column: name, channel and state on one line.
         local big = rowH >= th + 12
@@ -513,7 +512,8 @@ local function new(wiz)
     end
     local lines = {}
     if method == "none" or not pid then return lines end
-    for _, t in ipairs(helpLines(string.format(T.countFmt, pid.adjChannel + CONTROL_CHANNELS + 1, pid.adjMax))) do
+    local chNum = auxChannel(pid.adjChannel) or (pid.adjChannel + CONTROL_CHANNELS + 1)
+    for _, t in ipairs(helpLines(string.format(T.countFmt, chNum, pid.adjMax))) do
       lines[#lines + 1] = t
     end
     local v = auxValue(pid.adjChannel)

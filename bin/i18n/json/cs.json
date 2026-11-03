@@ -10549,8 +10549,8 @@
           "reverse_text": false
         },
         "esc_full_text": {
-          "english": "With the battery still unplugged and the flight controller on USB, press Full throttle. The output rises to 100 % in a few seconds.",
-          "translation": "S odpojeným akumulátorem a letovým kontrolérem na USB stiskněte Plný plyn. Výstup do několika sekund vyskočí na 100 %.",
+          "english": "With the battery still unplugged and the flight controller on USB, press Full throttle. The output stays at 100 % until you press Low throttle.",
+          "translation": "Při stále odpojeném akumulátoru a řídicí jednotce na USB stiskněte Plný plyn. Výstup zůstává na 100 %, dokud nestisknete Volnoběh.",
           "needs_translation": false,
           "max_length": 131,
           "reverse_text": false

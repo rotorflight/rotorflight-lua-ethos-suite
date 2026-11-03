@@ -10549,8 +10549,8 @@
           "reverse_text": false
         },
         "esc_full_text": {
-          "english": "With the battery still unplugged and the flight controller on USB, press Full throttle. The output rises to 100 % in a few seconds.",
-          "translation": "Com a bateria ainda desconectada e o controlador de voo no USB, pressione Aceleração máxima. A saída sobe a 100 % em alguns segundos.",
+          "english": "With the battery still unplugged and the flight controller on USB, press Full throttle. The output stays at 100 % until you press Low throttle.",
+          "translation": "Com a bateria ainda desconectada e a controladora por USB, pressione Aceleração máxima. A saída fica em 100 % até você pressionar Marcha lenta.",
           "needs_translation": false,
           "max_length": 131,
           "reverse_text": false

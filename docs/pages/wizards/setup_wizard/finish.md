@@ -27,8 +27,10 @@ model is armed.
 ## Notes
 
 - Fit the blades and do a careful first hover before you fly.
-- Modes, rates and the governor are not set by the wizard. Use their own pages, from the buttons on
-  the second page. Back on those pages returns to the Wizards menu, not to the wizard.
+- The wizard sets the mode switches (step 3), the rate styles (step 6) and the governor (step 9) in
+  their own steps. Further tuning, such as the PID gains and the rate curves, is on the suite's own
+  pages: the buttons on the second page open the Governor and the PIDs. Back on those pages returns
+  to the Wizards menu, not to the wizard.
 
 ## Related
 
