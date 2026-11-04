@@ -1,0 +1,7 @@
+{
+  "id": "rescue-profile-count",
+  "name": "Rescue profile count",
+  "step": "Check MAX_PROFILES is 6",
+  "script": "bin/rescue_profile_count/verify_rescue_profile_count.lua",
+  "rationale": "Issue #2689: rescue written on all PID profiles."
+}
