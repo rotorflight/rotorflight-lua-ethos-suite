@@ -26,8 +26,8 @@ Variable-pitch (servo) tail, four pages with the EdgeTX suite's pictures. Each v
 | --- | --- |
 | Centre trim | The tail is held at zero. Type the trim, from -25 to +25 degrees, until the tail blades have zero pitch. |
 | Direction | Push the yaw stick right. The tail blades should push the tail left, turning the nose right. Wrong way reverses the yaw input; the button then reads Normal, and pressing it again takes the reversal back. |
-| Rate | The tail calibration rate, from 10 to 500 percent. The tail is held at 22.5 degrees, the side changed with Swap. Measure the tail blade pitch and adjust until it reads 22.5. Without a pitch gauge: fold a square of paper corner to corner (45 degrees). Seen from the tail tip, the fold fits flush between the blades. |
-| CW limit, CCW limit | The end stops, from 0 to 60 degrees each way, on one page. The tail is held at full travel on the side chosen with Swap. Lower each limit until the slider stops short of binding. |
+| Rate | The tail calibration rate, from 10 to 500 percent. Nothing is held when the page opens. Pressing Swap picks the side and holds the tail at 22.5 degrees there. Measure the tail blade pitch and adjust until it reads 22.5. Without a pitch gauge: fold a square of paper corner to corner (45 degrees). Seen from the tail tip, the fold fits flush between the blades. |
+| CW limit, CCW limit | The end stops, from 0 to 60 degrees each way, on one page. Nothing is held when the page opens. Pressing Swap picks the side and holds the tail at full travel there. Lower each limit until the slider stops short of binding. |
 
 Motor tail:
 
