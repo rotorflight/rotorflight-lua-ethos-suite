@@ -78,9 +78,9 @@ stays beside the title. A step with one screen shows no count.
   a step's first screen) asks the same, so one step's changes are never saved by
   another step's Save and continue.
 - Changes that only apply after a restart (board orientation, swash or tail type, servo
-  update rate, ESC protocol, the telemetry port) are saved as you go. The first restart point is
+  update rate, governor mode, ESC protocol, the telemetry port) are saved as you go. The first restart point is
   Connect servos (step 11): the restarts the earlier steps owe are done there, before the servos are
-  plugged in. ESC telemetry (step 12) is the second: the telemetry port changes are applied there,
+  plugged in. ESC telemetry (step 12) is the second: the telemetry port and protocol changes are applied there,
   and the step reopens on its wiring screen.
 - Not covered here: modes and switches beyond Arm, Rescue and Trainer,
   the ESC throttle calibration and spin test, and ESC telemetry. Use their own pages.
