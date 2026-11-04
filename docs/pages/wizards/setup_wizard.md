@@ -24,7 +24,7 @@ parts need newer firmware:
 - Board orientation detection (step 1) needs API 12.10. Without it, the step asks you to
   set the orientation on the Alignment page.
 - Moving the tail pin between SERVO 4 and MOTOR 2 (step 7) needs API 12.10.
-- SRXL2 is offered as an ESC protocol (step 11) from API 12.10.
+- SRXL2 is offered as an ESC protocol (step 10) from API 12.10.
 - F.Port2 is offered as a receiver protocol (step 2) only on API 12.7 to 12.9. From 12.10,
   FBUS detects it.
 
@@ -64,7 +64,7 @@ stays beside the title. A step with one screen shows no count.
 ## Notes
 
 - Take the main and tail blades off before you start, and leave the servos unplugged
-  until step 10. The wizard moves servos and, on a motorised tail, the tail motor.
+  until step 11. The wizard moves servos and, on a motorised tail, the tail motor.
 - Arming is blocked while the wizard is open. If the model arms anyway, or the link
   drops, every servo, mixer and motor override is released and the wizard says why.
   Leaving the wizard by any route releases them too.
@@ -76,7 +76,7 @@ stays beside the title. A step with one screen shows no count.
   another step's Save and continue.
 - Changes that only apply after a restart (board orientation, swash or tail type, servo
   update rate, ESC protocol, the telemetry port) are saved as you go. The first restart point is
-  Connect servos (step 10): the restarts the earlier steps owe are done there, before the servos are
+  Connect servos (step 11): the restarts the earlier steps owe are done there, before the servos are
   plugged in. ESC telemetry (step 12) is the second: the motor and telemetry changes are applied there,
   and the step reopens on its wiring screen.
 - Not covered here: modes and switches beyond Arm, Rescue and Trainer,
