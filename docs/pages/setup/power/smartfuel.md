@@ -29,6 +29,9 @@ Greyed out until the flight controller answers. Read-only while the model is arm
 - Changes are written to the flight controller EEPROM upon Save.
 - The *Smart Fuel* telemetry sensor in Ethos is sent at least every 2 seconds, also while the model is disarmed. After a disarm, while the estimate restarts, it holds its last value instead of showing as lost.
 
+- Voltage and charge drop rates are editable with Source OFF, the mode where the radio's own estimate
+  uses them.
+
 ## Related
 
 - [Rotorflight documentation](https://doc.rotorflight.org/)
