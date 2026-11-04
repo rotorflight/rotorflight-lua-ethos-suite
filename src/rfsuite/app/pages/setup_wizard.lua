@@ -24,8 +24,10 @@
 --   * Arming is blocked while the wizard is open (MSP_SET_ARMING_DISABLED),
 --     and the flight controller ignores overrides while armed anyway: an
 --     armed model releases everything and the page says why.
---   * Rotorflight's servo and mixer overrides do not time out: they hold
---     until they are released. Every way out (Back, the close key, a step
+--   * Below API 12.10, Rotorflight's servo and mixer overrides do not time out
+--     and hold until released. From API 12.10, holds carry a 3-second timeout
+--     and are re-sent from wakeup while active (#2690).
+--     Every way out (Back, the close key, a step
 --     change, closing the tool, arming) releases every override the page may
 --     have set, and a link that comes back after a drop is sent the releases
 --     again.
@@ -322,7 +324,9 @@ local function open(opts)
   -- Held overrides, with the time each was last sent: from API 12.10 every hold carries a
   -- timeout and is re-sent from wakeup, so the FC drops it if the wizard goes away (#2690).
   local holds = overrideHold.new()
-  local function holdTimeout() return overrideHold.TIMEOUT_MS end
+  local function holdTimeout()
+    return (wiz and wiz.apiAtLeast and wiz.apiAtLeast(10) or apiMinor >= 10) and overrideHold.TIMEOUT_MS or nil
+  end
   local heldMotor = nil    -- {index =, value =, untilAt =, sentAt =}
 
   local sessionHandler = nil
@@ -1509,7 +1513,7 @@ local function open(opts)
   end
 
   -- A model that arms or a link that drops lets go of everything the step
-  -- holds. Overrides do not time out on the FC, so a link that comes back is
+  -- holds. Below API 12.10 overrides do not time out on the FC; on all versions,
   -- sent every release again.
   sessionHandler = function(snapshotData)
     local nextConnected = snapshotData and snapshotData.connected == true

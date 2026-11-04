@@ -7,6 +7,10 @@
 -- The tracker only keeps the time and the list of held items; the messages are built and sent
 -- by the caller.
 
+if package.loaded["rfsuite.lib.override_hold"] then
+  return package.loaded["rfsuite.lib.override_hold"]
+end
+
 local M = {}
 
 M.TIMEOUT_MS = 3000
@@ -64,4 +68,5 @@ function M.new()
   return self
 end
 
+package.loaded["rfsuite.lib.override_hold"] = M
 return M

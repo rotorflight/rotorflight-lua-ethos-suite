@@ -89,6 +89,7 @@ end
 local function runTracker()
   local before = failures
   local hold = assert(loadfile(LIB .. "override_hold.lua"))()
+  check("override_hold caches itself in package.loaded", package.loaded["rfsuite.lib.override_hold"] == hold)
   check("the timeout outlasts the refresh with room to spare",
     hold.TIMEOUT_MS / 1000 >= 2 * hold.REFRESH_S, "timeout=" .. hold.TIMEOUT_MS)
 
@@ -117,6 +118,8 @@ local function runWiring(source)
   check("the wizard sends its holds with the timeout", timeoutUses >= 4, "holdTimeout uses=" .. timeoutUses)
   check("the wizard re-sends its holds from wakeup", source:find("holds:due%(now%)") ~= nil)
   check("the wizard uses the hold tracker", source:find("overrideHold.new()", 1, true) ~= nil)
+  check("the wizard gates the timeout behind API 12.10",
+    source:find("apiMinor >= 10") ~= nil or source:find("apiAtLeast%(10%)") ~= nil)
   return failures - before
 end
 
