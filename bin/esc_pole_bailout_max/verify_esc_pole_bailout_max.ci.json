@@ -1,0 +1,7 @@
+{
+  "id": "esc-pole-bailout-max",
+  "name": "ESC motor pole count and scorpion bailout max",
+  "step": "Check the wire-limit caps",
+  "script": "bin/esc_pole_bailout_max/verify_esc_pole_bailout_max.lua",
+  "rationale": "Issue #2657: motor_pole_count is U8 (max 255) and scorpion bailout is u16 (max 65535)."
+}
