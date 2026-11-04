@@ -65,6 +65,7 @@ local function loadSession(opts)
   local published, subscriptions = {}, {}
   local cleared = 0
   local added = {}
+  local modelLoads, modelSaves = {}, {}
 
   local spyQueue = {
     cleared = cleared,
@@ -79,8 +80,10 @@ local function loadSession(opts)
   -- The smallest thing that behaves like a built MSP request: session.lua only
   -- ever hands it to the queue, and the queue only ever calls its callbacks,
   -- which only run if a scenario delivers a reply.
-  local function message()
-    return { command = 1, payload = {}, processReply = function() end, errorHandler = function() end }
+  local function message(name, onSuccess)
+    return { name = name, command = 1, payload = {},
+      processReply = function(self, data) if onSuccess then onSuccess(data) end end,
+      errorHandler = function() end }
   end
 
   -- The real flight timer, not a stub: setConnected() consults it to decide
@@ -115,22 +118,32 @@ local function loadSession(opts)
       return { applyPercent = function() end }
     elseif name == "lib/model_preferences.lua" then
       return {
-        load = function() return {} end, save = function() end,
-        setSmartfuelModelType = function() end, setStats = function() end,
+        load = function(mcuId)
+          modelLoads[#modelLoads + 1] = mcuId
+          return {stats = {flightcount = 0, lastflighttime = 0, totalflighttime = 0}}, mcuId
+        end,
+        save = function(path, prefs)
+          modelSaves[#modelSaves + 1] = {path = path, stats = prefs.stats}
+        end,
+        setSmartfuelModelType = function() end,
+        escCurrentLimit = function() return nil end,
+        setStats = function(prefs, stats) prefs.stats = stats; return prefs end,
         setTimerTarget = function() end,
         smartfuelModelType = function() return 0 end,
-        stats = function() return {} end, timerTarget = function() return 300 end,
+        stats = function(prefs) return prefs.stats end, timerTarget = function() return 300 end,
       }
     elseif name == "lib/msp_api_version.lua" then
       return {
-        buildReadMessage = message,
+        buildReadMessage = function(onSuccess) return message("API_VERSION", onSuccess) end,
         isSupported = function() return true end,
         simResponseForVersion = function() return {} end,
       }
     end
     -- Everything else contributes one or more buildXMessage() builders, which
     -- session.lua only ever passes on to mspQueue:add().
-    return setmetatable({}, { __index = function() return function() return message() end end })
+    return setmetatable({}, { __index = function(_, builderName)
+      return function(onSuccess) return message(builderName, onSuccess) end
+    end })
   end
 
   CATEGORY_SYSTEM_EVENT, TELEMETRY_ACTIVE = 2, 0
@@ -150,6 +163,8 @@ local function loadSession(opts)
   return {
     session = session,
     queue = spyQueue,
+    modelLoads = modelLoads,
+    modelSaves = modelSaves,
     published = published,
     -- One background-task tick, with the telemetry link as given.
     tick = function(value)
@@ -169,6 +184,59 @@ do
   rig.tick(false)
   check("a disconnect drops the MSP request queue", rig.queue.cleared == before + 1,
     "clear() calls before=" .. before .. " after=" .. rig.queue.cleared)
+end
+
+-- A reconnect can identify FC B before disarmed telemetry closes the held
+-- flight from FC A. Flight-time stats must stay with the aircraft that owned
+-- the flight, not the currently connected controller.
+do
+  local activeFlight, stage = false, nil
+  local timerSnapshot = {timerLive = 0, timerSession = 0, timerFlightCounted = false}
+  local flightTimer = {
+    update = function()
+      if stage == "start" then
+        stage, activeFlight = nil, true
+        return true, timerSnapshot, nil
+      elseif stage == "finish" then
+        stage, activeFlight = nil, false
+        return true, timerSnapshot, {finishedSegment = 40, session = 40}
+      end
+      return false, timerSnapshot, nil
+    end,
+    inProgress = function() return activeFlight end,
+    resumable = function() return activeFlight end,
+    reset = function() activeFlight = false end,
+  }
+  local rig = loadSession({telemetryActive = true, flightTimer = flightTimer})
+  local function answer(name, data)
+    for _, request in ipairs(rig.queue.added) do
+      if request.name == name and not request.answered then
+        request.answered = true
+        request.processReply(request, data)
+        return true
+      end
+    end
+    return false
+  end
+  rig.tick(true)
+  local apiA = answer("API_VERSION", {major = 12, minor = 10})
+  local uidA = answer("buildUidReadMessage", "FC-A")
+  stage = "start"
+  rig.tick(true)
+  rig.tick(false)
+  rig.tick(true)
+  local apiB = answer("API_VERSION", {major = 12, minor = 10})
+  local uidB = answer("buildUidReadMessage", "FC-B")
+  rig.tick(true)
+  stage = "finish"
+  rig.tick(true)
+  local saved = rig.modelSaves[#rig.modelSaves]
+  check("a reconnect does not assign a held flight's time to the new FC",
+    apiA and uidA and apiB and uidB and saved and saved.path == "FC-A"
+      and saved.stats.totalflighttime == 40,
+    "API A=" .. tostring(apiA) .. " UID A=" .. tostring(uidA)
+      .. " API B=" .. tostring(apiB) .. " UID B=" .. tostring(uidB)
+      .. " saved=" .. tostring(saved and saved.path))
 end
 
 -- 2. The disconnect must not double-clear, and a re-connect must not either:
