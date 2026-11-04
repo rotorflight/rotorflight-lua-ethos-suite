@@ -1,7 +1,7 @@
 local function scriptDir()
   local src = debug.getinfo(1, "S").source
   local path = src:sub(1, 1) == "@" and src:sub(2) or src
-  return (path:match("^(.*)[/\\\\][^/\\\\]*$")) or "."
+  return (path:match("^(.*)[/\\][^/\\]*$")) or "."
 end
 local ROOT = scriptDir() .. "/../.."
 local SELF_TEST = arg and arg[1] == "--self-test"
@@ -20,7 +20,7 @@ local function check(label, ok)
 end
 
 local src = readFile(ROOT .. "/src/rfsuite/app/pages/setup_wizard_governor.lua")
-local needle = SELF_TEST and "if mode > 0 then" or "if mode >= 3 then"
+local needle = SELF_TEST and "    if mode > 0 then\n      forward = {text = T.next" or "    if mode >= 3 then\n      forward = {text = T.next"
 check("headspeed screen only for mode >= 3", contains(src, needle))
 
 if failures > 0 then print(string.format("\n%d of %d checks failed", failures, checks)); os.exit(1)
