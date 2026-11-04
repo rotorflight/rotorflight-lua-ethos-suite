@@ -83,7 +83,11 @@ end
 -- Runs the transaction checks against a given esc_params source.
 local function run(paramsSource)
   local before = failures
+  package.loaded["rfsuite.lib.esc_params"] = nil
   local params = loadLib(paramsSource)
+  check("esc_params caches itself in package.loaded", package.loaded["rfsuite.lib.esc_params"] == params)
+  check("esc_params returns cached table when already loaded", loadLib(paramsSource) == params)
+  package.loaded["rfsuite.lib.esc_params"] = nil
 
   -- 1. The range the ESC accepts.
   local family = params.familyFor(9)
@@ -165,6 +169,15 @@ local function run(paramsSource)
   tx4:write(changes, function(block, e) g4, e4 = block, e end)
   check("a write the ESC silently keeps old values for is reported as a mismatch",
     g4 ~= nil and e4 == "mismatch", "block=" .. tostring(g4) .. " reason=" .. tostring(e4))
+
+  local esc7, codec7, send7 = simulatedEsc()
+  function codec7.buildWriteMessage() return nil, "refused" end
+  local tx7 = params.new(codec7, send7)
+  tx7:read(function() end)
+  local g7, e7 = "unset", nil
+  tx7:write(changes, function(block, e) g7, e7 = block, e end)
+  check("a refused write message ends with its reason", g7 == nil and e7 == "refused",
+    "reason=" .. tostring(e7))
 
   return failures - before
 end

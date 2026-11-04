@@ -4,6 +4,10 @@
 -- No UI and no page state here. The codec and the send function are passed in, so the caller decides
 -- the bus; the messages are the codec's own (buildReadMessage / buildWriteMessage).
 
+if package.loaded["rfsuite.lib.esc_params"] then
+  return package.loaded["rfsuite.lib.esc_params"]
+end
+
 local M = {}
 
 -- ESC telemetry protocol id -> the parameter family. Only the families that have a throttle range
@@ -57,12 +61,17 @@ function M.new(codec, send)
 
   function s:read(after)
     self.block = nil
-    send(codec.buildReadMessage(function(block)
+    local msg = codec.buildReadMessage(function(block)
       self.block = block
       after(block)
     end, function()
       after(nil, "read")
-    end))
+    end)
+    if not msg then
+      after(nil, "read")
+      return
+    end
+    send(msg)
   end
 
   function s:verify(changes, after)
@@ -88,12 +97,18 @@ function M.new(codec, send)
       local data = {}
       for key, value in pairs(fresh) do data[key] = value end
       for key, value in pairs(changes) do data[key] = value end
-      send(codec.buildWriteMessage(data, function()
+      local msg, buildErr = codec.buildWriteMessage(data, function()
         self:verify(changes, after)
       end, function()
         self.block = nil
         after(nil, "write")
-      end))
+      end)
+      if not msg then
+        self.block = nil
+        after(nil, buildErr or "write")
+        return
+      end
+      send(msg)
     end)
     return true
   end
@@ -101,4 +116,5 @@ function M.new(codec, send)
   return s
 end
 
+package.loaded["rfsuite.lib.esc_params"] = M
 return M
