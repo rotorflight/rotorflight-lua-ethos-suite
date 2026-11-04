@@ -37,6 +37,8 @@ Greyed out until the flight controller answers. Read-only while the model is arm
 
 ## Related
 
+- Governor min and max throttle range from 10 to 100 %.
+
 - [Rotorflight documentation](https://doc.rotorflight.org/)
 
 *Documented against RFSuite Ethos 2.3.1.*
