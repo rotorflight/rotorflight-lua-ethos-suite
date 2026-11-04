@@ -108,5 +108,11 @@ function M.collectiveFullStick(tuning)
   return math.floor(raw / 100 * M.COLLECTIVE_DEG * 10 + 0.5) / 10
 end
 
+-- Whether the collective at full stick can be set from the Rotorflight scale. On
+-- the Actual type the same byte means something else, so the wizard leaves it alone.
+function M.collectiveSettable(tuning)
+  return tuning ~= nil and tuning.rates_type == M.ROTORFLIGHT
+end
+
 package.loaded["rfsuite.lib.setup_wizard_rates"] = M
 return M
