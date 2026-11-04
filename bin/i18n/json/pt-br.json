@@ -11128,10 +11128,10 @@
           "reverse_text": false
         },
         "tal_lim_both": {
-          "english": "Hold the tail at 60° each way, then set the limits as high as they go without the slider or links binding.",
-          "translation": "Mantenha a cauda a 60° para cada lado e depois ajuste os limites o mais alto possível sem que o corrediço ou as hastes travem.",
+          "english": "Press Swap to hold the tail at 60°, again for the other side, then set the limits as high as they go without the slider or links binding.",
+          "translation": "Toque em Trocar para manter a cauda a 60°, de novo para o outro lado, e depois ajuste os limites o mais alto possível sem que o corrediço ou as hastes travem.",
           "needs_translation": false,
-          "max_length": 106,
+          "max_length": 158,
           "reverse_text": false
         },
         "fin_arm_switch": {
@@ -11576,10 +11576,10 @@
           "reverse_text": false
         },
         "tal_cal": {
-          "english": "The tail is held at 22.5° each way. Measure the tail blade pitch and adjust until it reads 22.5°. No pitch gauge? Fold a square of paper corner to corner (45°): seen from the tail tip, the fold fits flush between the blades.",
-          "translation": "A cauda é mantida em 22,5° para cada lado. Meça o passo das pás de cauda e ajuste até ler 22,5°. Sem medidor? Dobre um quadrado de papel de canto a canto (45°): visto da ponta, a dobra encaixa certinho entre as pás.",
+          "english": "Press Swap to hold the tail at 22.5°; each press holds the other side. Measure the tail blade pitch and adjust until it reads 22.5°. No pitch gauge? Fold a square of paper corner to corner (45°): seen from the tail tip, the fold fits flush between the blades.",
+          "translation": "Toque em Trocar para manter a cauda em 22,5°; cada toque mantém o outro lado. Meça o passo das pás de cauda e ajuste até ler 22,5°. Sem medidor? Dobre um quadrado de papel de canto a canto (45°): visto da ponta, a dobra encaixa certinho entre as pás.",
           "needs_translation": false,
-          "max_length": 224,
+          "max_length": 250,
           "reverse_text": false
         },
         "tal_lim_title": {

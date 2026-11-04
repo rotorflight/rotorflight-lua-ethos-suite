@@ -9698,10 +9698,10 @@
           "translation": "Swashplate type"
         },
         "tal_cal": {
-          "english": "The tail is held at 22.5° each way. Measure the tail blade pitch and adjust until it reads 22.5°. No pitch gauge? Fold a square of paper corner to corner (45°): seen from the tail tip, the fold fits flush between the blades.",
-          "max_length": 224,
+          "english": "Press Swap to hold the tail at 22.5°; each press holds the other side. Measure the tail blade pitch and adjust until it reads 22.5°. No pitch gauge? Fold a square of paper corner to corner (45°): seen from the tail tip, the fold fits flush between the blades.",
+          "max_length": 259,
           "needs_translation": false,
-          "translation": "The tail is held at 22.5° each way. Measure the tail blade pitch and adjust until it reads 22.5°. No pitch gauge? Fold a square of paper corner to corner (45°): seen from the tail tip, the fold fits flush between the blades."
+          "translation": "Press Swap to hold the tail at 22.5°; each press holds the other side. Measure the tail blade pitch and adjust until it reads 22.5°. No pitch gauge? Fold a square of paper corner to corner (45°): seen from the tail tip, the fold fits flush between the blades."
         },
         "tal_cal_title": {
           "english": "Tail calibration",
@@ -9770,11 +9770,11 @@
           "translation": "Check the tail servo with the tail blades off: centre, direction, travel and end stops."
         },
         "tal_lim_both": {
-          "english": "Hold the tail at 60° each way, then set the limits as high as they go without the slider or links binding.",
-          "max_length": 106,
+          "english": "Press Swap to hold the tail at 60°, again for the other side, then set the limits as high as they go without the slider or links binding.",
+          "max_length": 137,
           "needs_translation": false,
           "reverse_text": false,
-          "translation": "Hold the tail at 60° each way, then set the limits as high as they go without the slider or links binding."
+          "translation": "Press Swap to hold the tail at 60°, again for the other side, then set the limits as high as they go without the slider or links binding."
         },
         "tal_lim_title": {
           "english": "Tail end stops",

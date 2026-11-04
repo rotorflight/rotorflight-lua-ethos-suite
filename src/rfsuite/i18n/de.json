@@ -11054,11 +11054,11 @@
           "translation": "Taumelscheibentyp"
         },
         "tal_cal": {
-          "english": "The tail is held at 22.5° each way. Measure the tail blade pitch and adjust until it reads 22.5°. No pitch gauge? Fold a square of paper corner to corner (45°): seen from the tail tip, the fold fits flush between the blades.",
-          "max_length": 234,
+          "english": "Press Swap to hold the tail at 22.5°; each press holds the other side. Measure the tail blade pitch and adjust until it reads 22.5°. No pitch gauge? Fold a square of paper corner to corner (45°): seen from the tail tip, the fold fits flush between the blades.",
+          "max_length": 252,
           "needs_translation": false,
           "reverse_text": false,
-          "translation": "Das Heck wird auf 22,5° je Richtung gehalten. Heckblattwinkel messen und anpassen, bis er 22,5° zeigt. Keine Lehre? Quadratisches Papier diagonal falten (45°): von der Blattspitze aus gesehen passt der Falz genau zwischen die Blätter."
+          "translation": "Wechseln hält das Heck auf 22,5°, jeder Druck die andere Seite. Heckblattwinkel messen und anpassen, bis er 22,5° zeigt. Keine Lehre? Quadratisches Papier diagonal falten (45°): von der Blattspitze aus gesehen passt der Falz genau zwischen die Blätter."
         },
         "tal_cal_title": {
           "english": "Tail calibration",
@@ -11138,11 +11138,11 @@
           "translation": "Heckservo bei abgenommenen Heckblättern prüfen: Mitte, Richtung, Weg und Endanschläge."
         },
         "tal_lim_both": {
-          "english": "Hold the tail at 60° each way, then set the limits as high as they go without the slider or links binding.",
-          "max_length": 106,
+          "english": "Press Swap to hold the tail at 60°, again for the other side, then set the limits as high as they go without the slider or links binding.",
+          "max_length": 164,
           "needs_translation": false,
           "reverse_text": false,
-          "translation": "Heckrotor je Seite auf 60° halten, dann die Grenzen so hoch setzen, wie es ohne Anschlag von Schieber oder Gestänge geht."
+          "translation": "Wechseln drücken, um das Heck auf 60° zu halten, erneut für die andere Seite. Dann die Grenzen so hoch setzen, wie es ohne Anschlag von Schieber oder Gestänge geht."
         },
         "tal_lim_title": {
           "english": "Tail end stops",
