@@ -39,6 +39,9 @@ model is armed.
 - The tail pin shows "Set in Mixer" when its current output does not fit the tail type, so the
   wizard cannot move it. Set it in the Mixer then.
 
+- A stored mismatch between mode and pin is staged to move on save as well, even if the tail type
+  does not change in this visit.
+
 ## Related
 
 - [Swash](../../setup/mixer/swash.md) and [Tail](../../setup/mixer/tail.md): the same
