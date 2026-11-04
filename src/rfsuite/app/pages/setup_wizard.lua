@@ -24,8 +24,10 @@
 --   * Arming is blocked while the wizard is open (MSP_SET_ARMING_DISABLED),
 --     and the flight controller ignores overrides while armed anyway: an
 --     armed model releases everything and the page says why.
---   * Rotorflight's servo and mixer overrides do not time out: they hold
---     until they are released. Every way out (Back, the close key, a step
+--   * Below API 12.10, Rotorflight's servo and mixer overrides do not time out
+--     and hold until released. From API 12.10, holds carry a 3-second timeout
+--     and are re-sent from wakeup while active (#2690).
+--     Every way out (Back, the close key, a step
 --     change, closing the tool, arming) releases every override the page may
 --     have set, and a link that comes back after a drop is sent the releases
 --     again.
@@ -75,6 +77,7 @@ local featureConfig = requireModule("lib/msp_feature_config.lua")
 local servoRead = requireModule("lib/msp_servo.lua")
 local servoOverride = requireModule("lib/msp_servo_override.lua")
 local mixerOverride = requireModule("lib/msp_mixer_override.lua")
+local overrideHold = requireModule("lib/override_hold.lua")
 local motorOverride = requireModule("lib/msp_motor_override.lua")
 local motorRead = requireModule("lib/msp_motor.lua")
 local rcChannels = requireModule("lib/msp_rc_channels.lua")
@@ -318,8 +321,12 @@ local function open(opts)
   local afterSave = nil
   local rebootWait = nil   -- {startedAt =, sawDisconnect =, remaining =, percent =} while restarting
 
-  local heldInputs = {}    -- mixer input -> true
-  local heldServos = {}    -- servo -> true
+  -- Held overrides, with the time each was last sent: from API 12.10 every hold carries a
+  -- timeout and is re-sent from wakeup, so the FC drops it if the wizard goes away (#2690).
+  local holds = overrideHold.new()
+  local function holdTimeout()
+    return (wiz and wiz.apiAtLeast and wiz.apiAtLeast(10) or apiMinor >= 10) and overrideHold.TIMEOUT_MS or nil
+  end
   local heldMotor = nil    -- {index =, value =, untilAt =, sentAt =}
 
   local sessionHandler = nil
@@ -333,20 +340,20 @@ local function open(opts)
   local function send(msg) bus.publish("msp.request", msg) end
 
   local function releaseAxes()
-    for input in pairs(heldInputs) do
-      heldInputs[input] = nil
-      send(mixerOverride.buildWriteMessage(input, heli.MIXER_OFF))
+    for _, item in ipairs(holds:list("mixer")) do
+      holds:release("mixer", item.key)
+      send(mixerOverride.buildWriteMessage(item.key, heli.MIXER_OFF))
     end
   end
 
   local function releaseServo(servo)
-    if not heldServos[servo] then return end
-    heldServos[servo] = nil
+    if not holds:isHeld("servo", servo) then return end
+    holds:release("servo", servo)
     send(servoOverride.buildWriteMessage(servo, heli.SERVO_OFF))
   end
 
   local function releaseServos()
-    for servo in pairs(heldServos) do releaseServo(servo) end
+    for _, item in ipairs(holds:list("servo")) do releaseServo(item.key) end
   end
 
   local function releaseMotor()
@@ -466,8 +473,9 @@ local function open(opts)
     for axis, value in pairs(values) do
       local input = heli.INPUT[axis]
       if input then
-        heldInputs[input] = true
-        send(mixerOverride.buildWriteMessage(input, math.floor(value + 0.5)))
+        local raw = math.floor(value + 0.5)
+        holds:hold("mixer", input, raw, os.clock())
+        send(mixerOverride.buildWriteMessage(input, raw, nil, nil, holdTimeout()))
       end
     end
     return true
@@ -476,8 +484,9 @@ local function open(opts)
   function wiz.holdAxis(axis, value)
     if not canMove() then return false end
     local input = heli.INPUT[axis]
-    heldInputs[input] = true
-    send(mixerOverride.buildWriteMessage(input, math.floor(value + 0.5)))
+    local raw = math.floor(value + 0.5)
+    holds:hold("mixer", input, raw, os.clock())
+    send(mixerOverride.buildWriteMessage(input, raw, nil, nil, holdTimeout()))
     return true
   end
 
@@ -487,8 +496,9 @@ local function open(opts)
   function wiz.holdServo(servo, raw)
     if not canMove() then return false end
     if raw < -2000 then raw = -2000 elseif raw > 2000 then raw = 2000 end
-    heldServos[servo] = true
-    send(servoOverride.buildWriteMessage(servo, math.floor(raw + 0.5)))
+    local value = math.floor(raw + 0.5)
+    holds:hold("servo", servo, value, os.clock())
+    send(servoOverride.buildWriteMessage(servo, value, nil, nil, holdTimeout()))
     return true
   end
 
@@ -1152,7 +1162,7 @@ local function open(opts)
     if disposed then return end
     disposed = true
     closeStep(true)
-    heldInputs, heldServos = {}, {}
+    holds:clear()
     releaseMotor()
     if loaded then clearAllOverrides() end
     blockArming(false)
@@ -1437,6 +1447,17 @@ local function open(opts)
       end
     end
 
+    -- Held overrides are re-sent before their timeout runs out.
+    if canMove() then
+      for _, item in ipairs(holds:due(now)) do
+        if item.kind == "mixer" then
+          send(mixerOverride.buildWriteMessage(item.key, item.value, nil, nil, holdTimeout()))
+        else
+          send(servoOverride.buildWriteMessage(item.key, item.value, nil, nil, holdTimeout()))
+        end
+      end
+    end
+
     if heldMotor then
       if now >= heldMotor.untilAt or not canMove() then
         releaseMotor()
@@ -1492,7 +1513,7 @@ local function open(opts)
   end
 
   -- A model that arms or a link that drops lets go of everything the step
-  -- holds. Overrides do not time out on the FC, so a link that comes back is
+  -- holds. Below API 12.10 overrides do not time out on the FC; on all versions,
   -- sent every release again.
   sessionHandler = function(snapshotData)
     local nextConnected = snapshotData and snapshotData.connected == true

@@ -68,6 +68,9 @@ stays beside the title. A step with one screen shows no count.
 - Arming is blocked while the wizard is open. If the model arms anyway, or the link
   drops, every servo, mixer and motor override is released and the wizard says why.
   Leaving the wizard by any route releases them too.
+- A servo or mixer hold is sent with a 3 second timeout on API 12.10 and later, and the
+  wizard re-sends it about every second. If the link or the wizard goes away, the flight
+  controller drops the hold by itself when the timeout runs out.
 - Changes are sent to the flight controller as you make them, so the servos move.
   *Next* becomes *Save and continue* once something has changed, and saves to EEPROM.
   Leaving with unsaved changes asks whether to save or discard them; Discard writes
