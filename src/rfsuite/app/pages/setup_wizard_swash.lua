@@ -232,7 +232,12 @@ local function new(wiz)
   local function pinText()
     if not pin or not pin.supported then return nil end
     local motorised = wiz.motorised()
-    if tailOutput.movable(pin, motorised) then return T.pinMove end
+    if tailOutput.movable(pin, motorised) then
+      -- Stage the move whenever the row says it will move, even if the tail type
+      -- did not change in this visit (a stored mismatch, or a refused move).
+      stageTailCommit(motorised)
+      return T.pinMove
+    end
     if not tailOutput.matches(pin.output, motorised) then return T.pinStuck end
     return PIN_NAMES[pin.output]
   end
