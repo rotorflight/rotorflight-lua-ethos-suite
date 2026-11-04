@@ -358,6 +358,9 @@ local function new(wiz)
     outcomes[wiz] = nil
     esc.protocol = v
     writeEsc(copy(esc))
+    -- The port was opened at boot with the old protocol's baud and callback;
+    -- a protocol change only takes effect after a restart.
+    wiz.requestReboot()
     wiz.rebuild()
   end
 

@@ -31,7 +31,7 @@ armed.
 | Setting | What it does |
 | --- | --- |
 | ESC telemetry: Used / Not used | Used: the ESC sends RPM, voltage, current and temperature to the flight controller. Not used: the flight controller measures the battery itself, or nothing does. |
-| Protocol | The ESC's telemetry protocol, from the list the flight controller's API version offers. Greyed out when not used. |
+| Protocol | The ESC's telemetry protocol, from the list the flight controller's API version offers. Greyed out when not used. Changing the protocol needs a restart. |
 | Port | The serial port the telemetry uses, chosen from the ports the Ports page offers (for example UART5 on a board with a telemetry port). On Used, the first free UART is taken. Choosing another port frees the previous one. The port change needs a restart. |
 
 This step is a restart point. When a restart is owed, the forward button is *Save and restart*: the
@@ -82,6 +82,7 @@ SmartFuel the screen says that too.
   first screen asks for the blades to be removed.
 - If there is no free UART, the step says so. Free one on the Ports page, then come back to the step.
 - Until the restart the port is not live: the readings show "--", and Detect is greyed out with the reason.
+- Changing the protocol also needs a restart: the port was opened at boot with the previous protocol's baud and callback.
 - A detection run takes a few seconds and gives up after six. Leaving the step, or Stop, ends it, and the
   flight controller restores the wiring it had.
 - Found writes the half-duplex and pin-swap settings and asks for a restart: *Save and restart* is the
