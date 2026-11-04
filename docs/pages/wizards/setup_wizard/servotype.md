@@ -33,6 +33,7 @@ shows a message instead.
 
 - A group whose servos match no type opens on its first type (Analog for the cyclic servos,
   Digital for the tail), written once when the step opens. Discard puts the servos back.
+- A hand-set frame rate is kept as-is on later visits; the default type is not applied again.
 - The servos must be centred and their travel set before the geometry correction is checked
   (the *Servo centre* step comes later), then check pitch and limits.
 - A new update rate applies after the restart at step 11, Connect servos.
