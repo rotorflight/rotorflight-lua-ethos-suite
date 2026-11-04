@@ -113,8 +113,10 @@ local BTN_CANCEL = "@i18n(app.btn_cancel)@"
 -- servos; needsSwash: on the swash servos alone. Either waits for the
 -- Swashplate step. gate: a restart point, where a restart owed from the steps before
 -- it happens (Save and restart). The connect gate comes first: the servos are plugged in
--- there, and the restarts owed by the steps before it are done. The ESC telemetry step is
--- the second: the port it sets is live on its second screen, the wiring.
+-- there, and the restarts owed by the steps before it are done. The motor step comes before
+-- it, so the protocol and gear ratios it sets are applied by that restart, and Connect reads
+-- the motor outputs after they are set. The ESC telemetry step is after the gate: the port it
+-- sets is live on its second screen, the wiring.
 local STEPS = {
   {key = "sensors", title = "@i18n(app.modules.setup_wizard.step_sensors)@"},
   {key = "receiver", title = "@i18n(app.modules.setup_wizard.step_receiver)@"},
@@ -126,8 +128,8 @@ local STEPS = {
   {key = "swash", title = "@i18n(app.modules.setup_wizard.step_swash)@"},
   {key = "servotype", title = "@i18n(app.modules.setup_wizard.step_servotype)@", needsServos = true},
   {key = "governor", title = "@i18n(app.modules.setup_wizard.step_governor)@"},
-  {key = "connect", title = "@i18n(app.modules.setup_wizard.step_connect)@", gate = true},
   {key = "motor", title = "@i18n(app.modules.setup_wizard.step_motor)@"},
+  {key = "connect", title = "@i18n(app.modules.setup_wizard.step_connect)@", gate = true},
   {key = "esctelemetry", title = "@i18n(app.modules.setup_wizard.tel_title)@", gate = true},
   {key = "esc", title = "@i18n(app.modules.setup_wizard.esc_title)@"},
   {key = "servos", title = "@i18n(app.modules.setup_wizard.step_servos)@", needsServos = true},
