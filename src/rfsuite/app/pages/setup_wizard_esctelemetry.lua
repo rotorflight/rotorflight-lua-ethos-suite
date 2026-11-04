@@ -53,7 +53,7 @@ local NO_PORT = -1
 local CASTLE = motorConfig.CASTLE_PROTOCOL
 local MIN_VOLTAGE = 1
 local POLL_INTERVAL = 0.2     -- seconds between polls while the flight controller tries
-local TRIAL_TIMEOUT = 6       -- seconds, as the Configurator's detection gives up
+local TRIAL_TIMEOUT = 12      -- seconds; seven protocols need up to 10 s for all four wiring combinations
 local ANALOG_INTERVAL = 0.5   -- seconds between MSP_ANALOG reads on a flight controller source
 local ANALOG_MAX_AGE = 1.0    -- a reading older than this is shown as "--"
 
