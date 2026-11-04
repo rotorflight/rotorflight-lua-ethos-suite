@@ -171,14 +171,18 @@ local function new(wiz)
 
   -- The mode as the EdgeTX card sets it: the governor's mode, the feature bit that
   -- turns it on, and a throttle type the mode cannot use (the switch and function types need an
-  -- electric or nitro governor) is reset to normal.
+  -- electric or nitro governor) is reset to normal. The firmware reads gov_mode at boot only,
+  -- so changing the mode requests a restart (applied at the Connect servos gate).
   local function setMode(mode)
+    local prevMode = wiz.governorMode()
+    if prevMode == mode then return end
     wiz.editGovernor(function(g) g.gov_mode = mode end)
     wiz.setFeature(FEATURE_GOVERNOR, mode > 0)
     local config = wiz.governorConfig()
     if mode < 3 and config and (config.gov_throttle_type or 0) ~= 0 then
       wiz.editGovernor(function(g) g.gov_throttle_type = 0 end)
     end
+    wiz.requestReboot()
     wiz.rebuild()
   end
 
