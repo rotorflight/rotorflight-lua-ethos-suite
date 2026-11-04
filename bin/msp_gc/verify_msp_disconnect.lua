@@ -213,6 +213,9 @@ do
       elseif stage == "finish_and_start" then
         stage, activeFlight = nil, true
         return true, timerSnapshot, {finishedSegment = 40, session = 40}
+      elseif stage == "finish_counted" then
+        stage, activeFlight = nil, false
+        return true, timerSnapshot, {flightCounted = true, finishedSegment = 40, session = 40}
       end
       return false, timerSnapshot, nil
     end,
@@ -289,6 +292,130 @@ do
   end
   check("stats sync resumes after the new FC UID is confirmed", readsAfterUid == readsBeforeUid + 1,
     readsBeforeUid .. " -> " .. readsAfterUid .. " stats reads")
+  os.clock = realClock
+end
+
+-- An unidentified flight is bound to its first connection, not to a later
+-- controller that happens to answer the reconnect handshake.
+do
+  local activeFlight, stage = false, nil
+  local timerSnapshot = {timerLive = 0, timerSession = 0, timerFlightCounted = false}
+  local flightTimer = {
+    update = function()
+      if stage == "start" then
+        stage, activeFlight = nil, true
+        return true, timerSnapshot, nil
+      elseif stage == "finish" then
+        stage, activeFlight = nil, false
+        return true, timerSnapshot, {flightCounted = true, finishedSegment = 35, session = 35}
+      end
+      return false, timerSnapshot, nil
+    end,
+    inProgress = function() return activeFlight end,
+    resumable = function() return activeFlight end,
+    reset = function() activeFlight = false end,
+  }
+  local rig = loadSession({telemetryActive = true, flightTimer = flightTimer})
+  local realClock, clock = os.clock, 800
+  os.clock = function() return clock end
+  rig.tick(true)
+  stage = "start" -- UID is deliberately unanswered on this connection.
+  rig.tick(true)
+  rig.tick(false)
+  clock = clock + 2
+  rig.tick(true)
+  local apiB = false
+  for _, request in ipairs(rig.queue.added) do
+    if request.name == "API_VERSION" and not request.answered then
+      request.answered = true
+      request.processReply(request, {major = 12, minor = 10})
+      apiB = true
+      break
+    end
+  end
+  local uidB = false
+  for _, request in ipairs(rig.queue.added) do
+    if request.name == "buildUidReadMessage" and not request.answered then
+      request.answered = true
+      request.processReply(request, "FC-B")
+      uidB = true
+      break
+    end
+  end
+  rig.tick(true)
+  stage = "finish"
+  rig.tick(true)
+  local assignedToB = false
+  for _, saved in ipairs(rig.modelSaves) do
+    if saved.path == "FC-B" and (saved.stats.flightcount > 0 or saved.stats.totalflighttime > 0) then
+      assignedToB = true
+    end
+  end
+  check("a later connection cannot claim an unidentified held flight",
+    apiB and uidB and not assignedToB,
+    "API B=" .. tostring(apiB) .. " UID B=" .. tostring(uidB)
+      .. " assigned to B=" .. tostring(assignedToB))
+  os.clock = realClock
+end
+
+-- If the owning connection supplies its UID after flight events, retain and
+-- apply both the count and finish time once that UID is confirmed.
+do
+  local activeFlight, stage = false, nil
+  local timerSnapshot = {timerLive = 0, timerSession = 0, timerFlightCounted = false}
+  local flightTimer = {
+    update = function()
+      if stage == "start" then
+        stage, activeFlight = nil, true
+        return true, timerSnapshot, nil
+      elseif stage == "finish_counted" then
+        stage, activeFlight = nil, false
+        return true, timerSnapshot, {flightCounted = true, finishedSegment = 55, session = 55}
+      end
+      return false, timerSnapshot, nil
+    end,
+    inProgress = function() return activeFlight end,
+    resumable = function() return activeFlight end,
+    reset = function() activeFlight = false end,
+  }
+  local rig = loadSession({telemetryActive = true, flightTimer = flightTimer})
+  local realClock, clock = os.clock, 900
+  os.clock = function() return clock end
+  rig.tick(true)
+  stage = "start"
+  rig.tick(true)
+  stage = "finish_counted"
+  rig.tick(true)
+  local savesBeforeUid = #rig.modelSaves
+  local api = false
+  for _, request in ipairs(rig.queue.added) do
+    if request.name == "API_VERSION" and not request.answered then
+      request.answered = true
+      request.processReply(request, {major = 12, minor = 10})
+      api = true
+      break
+    end
+  end
+  local uid = false
+  for _, request in ipairs(rig.queue.added) do
+    if request.name == "buildUidReadMessage" and not request.answered then
+      request.answered = true
+      request.processReply(request, "FC-LATE")
+      uid = true
+      break
+    end
+  end
+  rig.tick(true)
+  local saved
+  for i = savesBeforeUid + 1, #rig.modelSaves do
+    if rig.modelSaves[i].path == "FC-LATE" then saved = rig.modelSaves[i] end
+  end
+  check("flight count and finish events are retained until their UID is confirmed",
+    api and uid and saved and saved.stats.flightcount == 1
+      and saved.stats.lastflighttime == 55 and saved.stats.totalflighttime == 55,
+    "API=" .. tostring(api) .. " UID=" .. tostring(uid)
+      .. " saved count=" .. tostring(saved and saved.stats.flightcount)
+      .. " last=" .. tostring(saved and saved.stats.lastflighttime))
   os.clock = realClock
 end
 

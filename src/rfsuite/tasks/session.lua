@@ -182,6 +182,16 @@ local session = {
 -- session.mcuId to a different connected controller before the held flight
 -- closes, so flight-time events must not use the current link's preferences.
 local flightOwnerMcuId = nil
+-- Bind each held flight to the connection that first observed it armed. A UID
+-- received by a later connection must never claim a flight whose owner was
+-- unidentified when it started.
+local connectionEpoch = 0
+local flightOwnerConnectionEpoch = nil
+local flightOwnerMcuIdByConnectionEpoch = {}
+-- Flight events can precede the UID response on their owning connection. Keep
+-- them until that same connection confirms its MCU ID instead of dropping or
+-- attributing them to whichever controller happens to be connected later.
+local pendingFlightStats = {}
 
 local localSmartFuel = SmartFuel.new()
 
@@ -944,6 +954,18 @@ local gpsSeenHealthy = false
 local function setConnected(value, mspQueue, protocol)
   if session.connected == value then return end
   session.connected = value
+  if value then
+    connectionEpoch = connectionEpoch + 1
+    -- A disconnected connection cannot complete its old handshake later: its
+    -- request queue is cleared below. Retain its events through that teardown,
+    -- but discard any still-unidentified bucket now that it is unresolvable.
+    for ownerEpoch in pairs(pendingFlightStats) do
+      if ownerEpoch < connectionEpoch then pendingFlightStats[ownerEpoch] = nil end
+    end
+    for ownerEpoch in pairs(flightOwnerMcuIdByConnectionEpoch) do
+      if ownerEpoch < connectionEpoch then flightOwnerMcuIdByConnectionEpoch[ownerEpoch] = nil end
+    end
+  end
   -- Published like every other state change: a page that waits for the link (the setup wizard's
   -- reboot wait) sees the drop and the return through session.update.
   publish()
@@ -1423,13 +1445,29 @@ local function updateFlightTimer(now)
   local changed, snapshot, event = flightTimer.update(session.connected, session.isArmed, now)
   local inProgress = flightTimer.inProgress and flightTimer.inProgress(now)
   local finishedFlight = event and (event.finishedSegment or 0) > 0
-  local eventOwnerMcuId = finishedFlight and flightOwnerMcuId or nil
-  if finishedFlight then flightOwnerMcuId = nil end
-  if inProgress and not flightOwnerMcuId
-      and session.handshake.mcuId == true and session.mcuId then
-    flightOwnerMcuId = session.mcuId
+  local eventOwnerMcuId = flightOwnerMcuId
+  local eventOwnerConnectionEpoch = flightOwnerConnectionEpoch
+
+  -- A close/start tick belongs to the old flight for its event, then to a new
+  -- flight for subsequent events. Capture the old owner above before latching
+  -- the new flight below.
+  if finishedFlight then
+    flightOwnerMcuId = nil
+    flightOwnerConnectionEpoch = nil
   end
-  if not finishedFlight then eventOwnerMcuId = flightOwnerMcuId end
+  if inProgress and not flightOwnerConnectionEpoch then
+    flightOwnerConnectionEpoch = connectionEpoch
+  end
+  -- Only the owning connection can identify a previously unidentified flight.
+  if flightOwnerConnectionEpoch == connectionEpoch
+      and session.handshake.mcuId == true and session.mcuId then
+    flightOwnerMcuId = flightOwnerMcuId or session.mcuId
+    flightOwnerMcuIdByConnectionEpoch[connectionEpoch] = flightOwnerMcuId
+  end
+  if not finishedFlight then
+    eventOwnerMcuId = flightOwnerMcuId
+    eventOwnerConnectionEpoch = flightOwnerConnectionEpoch
+  end
   -- Recomputed every tick, not only on change: the grace window can expire
   -- while the link stays down, and the log writer has to learn that the flight
   -- can no longer be resumed.
@@ -1442,36 +1480,77 @@ local function updateFlightTimer(now)
     publish()
   end
 
-  if event and eventOwnerMcuId and (event.flightCounted or (event.finishedSegment or 0) > 0) then
-    local ownerPreferences, ownerPreferencesFile
-    local ownerIsConnectedModel = session.modelPreferencesMcuId == eventOwnerMcuId
-    if ownerIsConnectedModel then
-      ownerPreferences, ownerPreferencesFile = session.modelPreferences, session.modelPreferencesFile
-    else
-      ownerPreferences, ownerPreferencesFile = modelPreferences.load(eventOwnerMcuId)
+  if event and eventOwnerConnectionEpoch
+      and (event.flightCounted or (event.finishedSegment or 0) > 0) then
+    if eventOwnerMcuId then
+      flightOwnerMcuIdByConnectionEpoch[eventOwnerConnectionEpoch] = eventOwnerMcuId
     end
-    local stats = modelPreferences.stats(ownerPreferences)
-    if event.flightCounted then
-      stats.flightcount = (tonumber(stats.flightcount) or 0) + 1
+    local pending = pendingFlightStats[eventOwnerConnectionEpoch]
+    if not pending then
+      pending = { flightcount = 0, totalflighttime = 0 }
+      pendingFlightStats[eventOwnerConnectionEpoch] = pending
     end
+    if event.flightCounted then pending.flightcount = pending.flightcount + 1 end
     if event.finishedSegment and event.finishedSegment > 0 then
-      stats.lastflighttime = event.session or event.finishedSegment
-      stats.totalflighttime = (tonumber(stats.totalflighttime) or 0) + event.finishedSegment
-    end
-    ownerPreferences = modelPreferences.setStats(ownerPreferences, stats)
-    if ownerIsConnectedModel then
-      session.modelPreferences = ownerPreferences
-      saveModelPreferences()
-    else
-      modelPreferences.save(ownerPreferencesFile, ownerPreferences)
-    end
-    if event.finishedSegment and event.finishedSegment > 0
-        and session.connected == true and session.mcuId == eventOwnerMcuId then
-      scheduleStatsSync(1)
+      pending.lastflighttime = event.session or event.finishedSegment
+      pending.totalflighttime = pending.totalflighttime + event.finishedSegment
     end
   end
 
-  if not inProgress then flightOwnerMcuId = nil end
+  -- Drain only events for a connection whose UID has been confirmed. Entries
+  -- from an earlier unidentified connection deliberately remain unresolved;
+  -- a later FC's handshake is not evidence of their owner.
+  if session.handshake.mcuId == true and session.mcuId then
+    if flightOwnerConnectionEpoch == connectionEpoch then
+      flightOwnerMcuIdByConnectionEpoch[connectionEpoch] =
+        flightOwnerMcuIdByConnectionEpoch[connectionEpoch] or flightOwnerMcuId or session.mcuId
+    elseif finishedFlight and eventOwnerConnectionEpoch == connectionEpoch then
+      flightOwnerMcuIdByConnectionEpoch[connectionEpoch] =
+        flightOwnerMcuIdByConnectionEpoch[connectionEpoch] or eventOwnerMcuId or session.mcuId
+    elseif pendingFlightStats[connectionEpoch] then
+      -- The flight may already have ended before this connection's UID reply.
+      -- Its epoch still proves the pending events belong to this connection.
+      flightOwnerMcuIdByConnectionEpoch[connectionEpoch] =
+        flightOwnerMcuIdByConnectionEpoch[connectionEpoch] or session.mcuId
+    end
+  end
+  for ownerEpoch, pending in pairs(pendingFlightStats) do
+    local ownerMcuId = flightOwnerMcuIdByConnectionEpoch[ownerEpoch]
+    if ownerMcuId then
+      local ownerPreferences, ownerPreferencesFile
+      local ownerIsConnectedModel = session.modelPreferencesMcuId == ownerMcuId
+      if ownerIsConnectedModel then
+        ownerPreferences, ownerPreferencesFile = session.modelPreferences, session.modelPreferencesFile
+      else
+        ownerPreferences, ownerPreferencesFile = modelPreferences.load(ownerMcuId)
+      end
+      local stats = modelPreferences.stats(ownerPreferences)
+      stats.flightcount = (tonumber(stats.flightcount) or 0) + pending.flightcount
+      if pending.lastflighttime then
+        stats.lastflighttime = pending.lastflighttime
+        stats.totalflighttime = (tonumber(stats.totalflighttime) or 0) + pending.totalflighttime
+      end
+      ownerPreferences = modelPreferences.setStats(ownerPreferences, stats)
+      if ownerIsConnectedModel then
+        session.modelPreferences = ownerPreferences
+        saveModelPreferences()
+      else
+        modelPreferences.save(ownerPreferencesFile, ownerPreferences)
+      end
+      pendingFlightStats[ownerEpoch] = nil
+      if flightOwnerConnectionEpoch ~= ownerEpoch then
+        flightOwnerMcuIdByConnectionEpoch[ownerEpoch] = nil
+      end
+      if pending.lastflighttime and session.connected == true and session.mcuId == ownerMcuId then
+        scheduleStatsSync(1)
+      end
+    end
+  end
+
+  if not inProgress then
+    flightOwnerMcuId = nil
+    flightOwnerConnectionEpoch = nil
+  end
 
   if not session.connected and not inProgress then
     clearAircraftIdentity()
