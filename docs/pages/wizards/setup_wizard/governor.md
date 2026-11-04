@@ -38,6 +38,7 @@ model is armed.
   Normal, as the mode cannot use it.
 - Changing the governor mode requests a restart (applied at the Connect servos gate, step 11),
   as the firmware reads the governor mode on boot only.
+- Profile-only edits (RPM, curves, gains) do not require a restart.
 
 ## Related
 
