@@ -268,7 +268,7 @@ local function new(wiz)
       {label = T.rowMode, choice = {values = modeValues(), get = function() return wiz.governorMode() end,
         set = function(v) setMode(v) end}},
     }
-    if mode > 0 then
+    if mode >= 3 then
       rows[#rows + 1] = {label = T.rowThrottle, choice = {values = throttleValues(mode),
         get = function() return config and config.gov_throttle_type or 0 end,
         set = function(v) setThrottle(v) end}}
@@ -276,7 +276,7 @@ local function new(wiz)
     end
     local field = scr:checks(rows)
     local forward = nil
-    if mode > 0 then
+    if mode >= 3 then
       forward = {text = T.next, press = function() go("speed") end}
     end
     local rowField = scr:row(function() go("prepare") end, nil, forward)
