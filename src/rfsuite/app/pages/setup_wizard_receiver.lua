@@ -245,6 +245,9 @@ local function new(wiz)
   local checkInFlight, checkAt = false, -1000
   local checkWanted, movedAt = true, -1000
   local mismatch = nil
+  -- The throttle channel differs from the radio by more than the arm margin allows (#2694). Kept
+  -- apart from `mismatch`, which names only the first channel that differs.
+  local throttleOff = false
 
   -- The radio's channel outputs, in us: raw by receiver channel, rc by function
   -- through the receiver map (as MSP_RX_CHANNELS and MSP_RC would answer).
@@ -770,7 +773,11 @@ local function new(wiz)
       if snap and now and fc and fc > 0 and math.abs(snap - now) <= CHECK_STILL then
         compared = true
         if slot == mismatch then judgedMismatch = true end
-        if not found and math.abs(fc - now) > CHECK_TOLERANCE then found = slot end
+        if slot == THROTTLE_SLOT then
+          throttleOff = not heli.throttleOffsetOk(fc, now)
+        end
+        local tolerance = slot == THROTTLE_SLOT and heli.THROTTLE_TOLERANCE_US or CHECK_TOLERANCE
+        if not found and math.abs(fc - now) > tolerance then found = slot end
       end
     end
     if not compared or found == mismatch then return end
@@ -929,7 +936,7 @@ local function new(wiz)
       scr:draw(drawThrottle)
       -- Not while the FC reads the throttle channel differently from the radio (slot 5): the range would be offset.
       local canUse = heli.throttleFromMeasured(low, high) ~= nil and not measuring and not applied
-        and mismatch ~= THROTTLE_SLOT
+        and not throttleOff
       local field = scr:checks({
         {answer = measuring and T.stop or T.measure, press = function()
           if measuring then

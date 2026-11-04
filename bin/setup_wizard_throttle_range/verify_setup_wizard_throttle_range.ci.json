@@ -1,0 +1,7 @@
+{
+  "id": "setup-wizard-throttle-range",
+  "name": "Setup Wizard throttle range is blocked when the FC could not arm on it",
+  "step": "Check that the throttle range guard blocks every FC offset that would stop arming",
+  "script": "bin/setup_wizard_throttle_range/verify_setup_wizard_throttle_range.lua",
+  "rationale": "The Receiver step measures the throttle travel on the radio and writes it to the FC as the\nthrottle range. The wizard writes rc_min 20 us above the measured low, and the FC arms only below rc_min\nminus a 5 us deadband. A guard that accepts a 30 us gap between the FC and the radio let through a range\nthe FC could not arm on, with the arming block left set. Only the first channel that differed was kept, so\na roll mismatch could leave the throttle guard open as well.\n\nThe harness pins the written range, that an FC reading up to 14 us above the radio passes the guard and\nfrom 15 us up is blocked, and that the throttle gap is judged on its own channel.\n\n--self-test raises the guard back to 30 us and requires the blocked cases to go red."
+}
