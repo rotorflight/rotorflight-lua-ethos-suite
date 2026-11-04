@@ -16,7 +16,8 @@
 --   3. a save with no source written (every source skipped) shows the plain text, without the restart;
 --   4. a save whose first source was written and whose second source write failed shows the running
 --      text with the restart: the first source's values may already run;
---   5. the restart is not offered while armed.
+--   5. the restart is not offered while armed or unconfirmed (#2548 latch), and
+--      restartAfterFailedSave() guards against rebooting in those states.
 --
 -- --self-test drops the flag that marks a written save and requires the restart checks to go red.
 
@@ -239,13 +240,42 @@ check("4a. a later source refused after an earlier write shows the running text"
   d4 ~= nil and d4.message == RUNNING, "message=" .. tostring(d4 and d4.message))
 check("4b. ... and offers the restart", hasLabel(buttonLabels(d4), RESTART))
 
--- 5. Armed: the restart is not offered.
+-- 5. Armed or unconfirmed: the restart is not offered, and restartAfterFailedSave() refuses.
 scenario = {}
 local rt5 = newRuntime({sourceFor("mixer", true)})
 rt5.isArmed = true
 dialogs = {}
 rt5:showSaveError(function() end, true)
-check("5. the restart is not offered while armed", not hasLabel(buttonLabels(lastDialog()), RESTART))
+check("5a. the restart is not offered while armed", not hasLabel(buttonLabels(lastDialog()), RESTART))
+
+-- 5b. armedUnconfirmed latch (#2548): isArmed is nil (e.g. after disconnect), but was previously armed.
+local rt5b = newRuntime({sourceFor("mixer", true)})
+rt5b.isArmed = nil
+rt5b.armedUnconfirmed = true
+dialogs = {}
+rt5b:showSaveError(function() end, true)
+check("5b. the restart is not offered when armed state is unconfirmed (#2548 latch)",
+  not hasLabel(buttonLabels(lastDialog()), RESTART))
+
+-- 5c. restartAfterFailedSave directly refuses while armed or unconfirmed
+published = {}
+rt5:restartAfterFailedSave()
+check("5c. restartAfterFailedSave() does not publish MSP_REBOOT while armed",
+  #published == 0, "published=" .. table.concat(published, ","))
+
+published = {}
+rt5b:restartAfterFailedSave()
+check("5d. restartAfterFailedSave() does not publish MSP_REBOOT when armedUnconfirmed",
+  #published == 0, "published=" .. table.concat(published, ","))
+
+-- 5e. restartAfterFailedSave proceeds and sets busy when disarmed
+published = {}
+local rt5e = newRuntime({sourceFor("mixer", true)})
+rt5e.isArmed = false
+rt5e.armedUnconfirmed = false
+rt5e:restartAfterFailedSave()
+check("5e. restartAfterFailedSave() marks runtime busy and publishes MSP_REBOOT when disarmed",
+  rt5e.busy == true and #published == 1 and published[1] == "reboot")
 
 if SELF_TEST then
   if failures > 0 then

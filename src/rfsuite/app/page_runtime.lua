@@ -1064,13 +1064,13 @@ end
 -- showSaveArmed() below instead, since that's not actually a failure.
 -- running: the writes went out before the EEPROM commit failed, so the FC may already run the new
 -- values until it restarts. Then the dialog says so and offers the restart (#2679); a restart is
--- not offered while armed.
+-- not offered while armed or unconfirmed (#2548).
 function PageRuntime:showSaveError(focusFn, running)
   if self.disposed then return end
 
   if running then
     local buttons = {}
-    if self.isArmed ~= true then
+    if not armedOrUnconfirmed(self) then
       buttons[#buttons + 1] = {label = BTN_RESTART_FC, action = function()
         self:restartAfterFailedSave()
         return true
@@ -1107,7 +1107,8 @@ end
 -- Publishes the restart the committed save would have sent; the wakeup then waits for the board
 -- to come back, as after a save with a reboot.
 function PageRuntime:restartAfterFailedSave()
-  if self.disposed then return end
+  if self.disposed or armedOrUnconfirmed(self) then return end
+  self:setBusy(true)
   self:log("restart after a failed save: publishing MSP_REBOOT")
   self.pendingReboot = true
   bus.publish("msp.request", reboot.buildWriteMessage(function()
