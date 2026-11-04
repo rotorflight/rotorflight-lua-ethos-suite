@@ -9,11 +9,11 @@
 --              the tail blades sit at zero pitch
 --   direction  yaw passed through from the stick: push it right and the tail
 --              should push the nose right; Wrong reverses the yaw input rate
---   calibrate  yaw held at 22.5 degrees each way: nudge |rate| (100..5000)
+--   calibrate  nothing held until the side button is pressed, then yaw held at 22.5 degrees each way: nudge |rate| (100..5000)
 --              until the blades measure 22.5 degrees (end-on, the two
 --              blades then open to 45 degrees: a square of paper folded
 --              corner to corner fits between them)
---   limits     yaw held at 60 degrees each way (raw 2500): the CW and CCW
+--   limits     nothing held until the side button is pressed, then yaw held at 60 degrees each way (raw 2500): the CW and CCW
 --              limits (yaw input min / max) set where the slider stops
 --              short of binding
 --
@@ -96,6 +96,10 @@ local function new(wiz)
   local power = 10                -- motor test power, %
   local answers = {motor = false} -- the first page: the motor is unplugged
   local limitSide = -1            -- the end stops page: -1 holds the clockwise end, +1 the counter-clockwise
+  -- The calibrate and end stops pages hold nothing on entry (0). Their side button, which
+  -- flips the side, is the press that starts the hold: nothing moves until the pilot presses.
+  local calHeld = false
+  local limitHeld = false
   local yawReversed = false       -- the direction page: the yaw input is reversed
   -- The EdgeTX suite's tail pictures: the tail at rest, and the tail with its arrow (moves).
   local tailLayout = art.image("tail-servo", PICTURE_W, PICTURE_H)
@@ -105,6 +109,8 @@ local function new(wiz)
   local lastCanMove, lastRunning, lastYaw, lastOutput = nil, nil, nil, nil
 
   local function go(name, i)
+    if name == "calibrate" then calHeld = false end
+    if name == "limits" then limitHeld = false end
     screen = name
     index = i or index
     wiz.rebuild()
@@ -124,8 +130,14 @@ local function new(wiz)
   local function wantedHold()
     if screen == "centre" then return 0 end
     if screen == "direction" then return heli.MIXER_PASSTHROUGH end
-    if screen == "calibrate" then return calSide * heli.tailRaw(CAL_DEGREES) end
-    if screen == "limits" then return limitSide * heli.tailRaw(LIMIT_DEGREES) end
+    if screen == "calibrate" then
+      if not calHeld then return 0 end
+      return calSide * heli.tailRaw(CAL_DEGREES)
+    end
+    if screen == "limits" then
+      if not limitHeld then return 0 end
+      return limitSide * heli.tailRaw(LIMIT_DEGREES)
+    end
     return nil
   end
 
@@ -269,6 +281,7 @@ local function new(wiz)
         {label = T.side, value = calSide > 0 and T.sideCcw or T.sideCw},
         {answer = T.other, needsMotion = true, press = function()
           calSide = -calSide
+          calHeld = true
           applyHold()
           wiz.rebuild()
         end},
@@ -285,6 +298,7 @@ local function new(wiz)
       {label = T.side, value = limitSide < 0 and T.sideCw or T.sideCcw},
       {answer = T.other, needsMotion = true, press = function()
         limitSide = -limitSide
+        limitHeld = true
         applyHold()
         wiz.rebuild()
       end},
