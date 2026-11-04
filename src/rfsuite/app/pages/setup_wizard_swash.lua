@@ -201,6 +201,9 @@ local function new(wiz)
     local values = {supported = pin and pin.supported or false, output = pin and pin.output, motorised = motorised}
     if base.motorised ~= nil and motorised ~= base.motorised then values.setTta = motorised end
     local needed = values.setTta ~= nil or tailOutput.movable(values, motorised)
+    if tailOutput.movable(values, motorised) then
+      wiz.requestReboot()
+    end
     wiz.commitOnSave("tail_pin", function(onDone, onFail)
       if not needed then
         onDone()
