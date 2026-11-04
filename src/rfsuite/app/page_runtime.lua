@@ -86,6 +86,9 @@ local MSG_SAVING_TITLE = "@i18n(app.msg_saving)@"
 local MSG_SAVING_BODY = "@i18n(app.msg_saving_settings)@"
 local MSG_SAVE_FAILED_TITLE = "@i18n(app.msg_save_failed_title)@"
 local MSG_SAVE_FAILED_BODY = "@i18n(app.msg_save_failed_body)@"
+-- #2679: a save whose writes went out but whose EEPROM commit failed: the FC may already run the new values.
+local MSG_SAVE_FAILED_RUNNING_BODY = "@i18n(app.msg_save_failed_running_body)@"
+local BTN_RESTART_FC = "@i18n(app.btn_restart_fc)@"
 local MSG_LOAD_FAILED_TITLE = "@i18n(app.msg_load_failed_title)@"
 local MSG_LOAD_FAILED_BODY = "@i18n(app.msg_load_failed_body)@"
 -- EEPROM_WRITE is rejected by the FC while armed -- not a real failure, the
@@ -841,6 +844,9 @@ function PageRuntime:performSave(focusFn)
     finishSave()
   end
 
+  -- Set once a source's write is acknowledged: from then on the FC may already run the new values.
+  local wroteAny = false
+
   local function writeSource(index)
     if self_.disposed then return end
     if index > #self_.sources then
@@ -854,6 +860,7 @@ function PageRuntime:performSave(focusFn)
           self_.pendingSaveArmed = true
         else
           self_.pendingSaveError = reason or true
+          self_.pendingSaveRunning = wroteAny or nil
         end
         finishSave()
       end))
@@ -888,10 +895,12 @@ function PageRuntime:performSave(focusFn)
     -- reaches this, and it applies to every codec, not only this one.
     local message, missing = source.mspModule.buildWriteMessage(values, function()
       if self_.disposed then return end
+      wroteAny = true
       writeSource(index + 1)
     end, function(reason)
       self_:log("performSave: write FAILED (" .. tostring(source.key) .. "): " .. tostring(reason))
       self_.pendingSaveError = reason or true
+      self_.pendingSaveRunning = wroteAny or nil
       finishSave()
     end)
 
@@ -900,6 +909,7 @@ function PageRuntime:performSave(focusFn)
         .. "): the codec declined to build a payload (missing "
         .. tostring(missing) .. ")")
       self_.pendingSaveError = "incomplete " .. tostring(source.key) .. " data"
+      self_.pendingSaveRunning = wroteAny or nil
       finishSave()
       return
     end
@@ -1052,8 +1062,33 @@ end
 -- shown to the pilot: the FC could reject EEPROM_WRITE outright and the
 -- save would silently no-op. Armed-FC rejections are routed to
 -- showSaveArmed() below instead, since that's not actually a failure.
-function PageRuntime:showSaveError(focusFn)
+-- running: the writes went out before the EEPROM commit failed, so the FC may already run the new
+-- values until it restarts. Then the dialog says so and offers the restart (#2679); a restart is
+-- not offered while armed or unconfirmed (#2548).
+function PageRuntime:showSaveError(focusFn, running)
   if self.disposed then return end
+
+  if running then
+    local buttons = {}
+    if not armedOrUnconfirmed(self) then
+      buttons[#buttons + 1] = {label = BTN_RESTART_FC, action = function()
+        self:restartAfterFailedSave()
+        return true
+      end}
+    end
+    buttons[#buttons + 1] = {label = BTN_OK, action = function()
+      if focusFn then focusFn() end
+      return true
+    end}
+    self:openMessageDialog({
+      title = MSG_SAVE_FAILED_TITLE,
+      message = MSG_SAVE_FAILED_RUNNING_BODY,
+      buttons = buttons,
+      wakeup = function() end,
+      paint = function() end,
+    })
+    return
+  end
 
   self:openMessageDialog({
     title = MSG_SAVE_FAILED_TITLE,
@@ -1067,6 +1102,20 @@ function PageRuntime:showSaveError(focusFn)
     wakeup = function() end,
     paint = function() end,
   })
+end
+
+-- Publishes the restart the committed save would have sent; the wakeup then waits for the board
+-- to come back, as after a save with a reboot.
+function PageRuntime:restartAfterFailedSave()
+  if self.disposed or armedOrUnconfirmed(self) then return end
+  self:setBusy(true)
+  self:log("restart after a failed save: publishing MSP_REBOOT")
+  self.pendingReboot = true
+  bus.publish("msp.request", reboot.buildWriteMessage(function()
+    self:log("restart after a failed save: MSP_REBOOT acked")
+  end, function(reason)
+    self:log("restart after a failed save: MSP_REBOOT failed: " .. tostring(reason))
+  end))
 end
 
 -- Shown from the wakeup tick instead of showSaveError() when the EEPROM
@@ -1486,8 +1535,9 @@ function PageRuntime:buildChrome()
         runtime:showLoadError(runtime.headerHandle and runtime.headerHandle.focusReload)
       end
       if runtime.pendingSaveError and not runtime.activeDialog then
-        runtime.pendingSaveError = nil
-        runtime:showSaveError(runtime.headerHandle and runtime.headerHandle.focusSave)
+        local running = runtime.pendingSaveRunning
+        runtime.pendingSaveError, runtime.pendingSaveRunning = nil, nil
+        runtime:showSaveError(runtime.headerHandle and runtime.headerHandle.focusSave, running)
       end
       if runtime.pendingSaveArmed and not runtime.activeDialog then
         runtime.pendingSaveArmed = false
