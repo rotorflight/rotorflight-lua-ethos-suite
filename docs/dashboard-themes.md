@@ -356,3 +356,5 @@ selection is `system/bastion`; instrument thresholds use the `dashboard.bastion`
 section of `SCRIPTS:/rfsuite.user/settings.ini`.
 
 See the [complete theme guide](dashboard/bastion.md) and its three phase previews.
+
+- Info panel decodes arming-disable flags using the board's reported flag count (4.6+).
