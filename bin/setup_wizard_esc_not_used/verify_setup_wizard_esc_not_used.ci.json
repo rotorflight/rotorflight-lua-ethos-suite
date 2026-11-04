@@ -1,0 +1,7 @@
+{
+  "id": "setup-wizard-esc-not-used",
+  "name": "Setup Wizard ESC telemetry: Not used clears the stored protocol",
+  "step": "Check that Not used on the ESC telemetry step clears the feature, the port and the stored protocol",
+  "script": "bin/setup_wizard_esc_not_used/verify_setup_wizard_esc_not_used.lua",
+  "rationale": "Not used on the Setup Wizard's ESC telemetry step cleared the ESC sensor feature bit and freed the port, but kept the\nstored protocol. The firmware's validateAndFixConfig runs at every EEPROM write and at boot, and turns the feature back on\nfor protocol F.BUS with an FBUS or S.Port master port (config.c), so the step showed Used again at its next read.\n\nThe harness drives the real setup_wizard_esctelemetry.lua against a simulated flight controller, picks Not used on the\nsetup screen, and pins: the feature bit is cleared, the port is freed, the protocol is written as 0, and Discard writes\nthe protocol back.\n\n--self-test removes the protocol reset and requires the protocol check to go red."
+}

@@ -93,6 +93,8 @@ SmartFuel the screen says that too.
 - The flight controller needs the ESC sensor trial command (MSP2 0x5F0C). Without it the status reads
   Not supported.
 - The battery and SmartFuel settings apply at once. They are kept for Discard with the rest of the step.
+- Setting ESC telemetry to Not used also clears the stored protocol, so the feature is not turned back on
+  by the flight controller's config check (F.BUS with a master port).
 
 ## Related
 
