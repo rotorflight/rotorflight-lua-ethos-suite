@@ -128,14 +128,14 @@ local function resetFc()
   end
 end
 
-local wakeup
+local wakeup, paintFn
 local session = {mcuId = "abc", connected = true, isArmed = false, pidProfile = 0, rateProfile = 0}
 
 local function openPage()
   local page = assert(loadfile(ROOT .. "app/pages/tune_advisor.lua"))()
   page.open({
     setWakeupHandler = function(f) wakeup = f end,
-    setPaintHandler = function() end,
+    setPaintHandler = function(f) paintFn = f end,
     setCleanupHandler = function() end,
     setEventHandler = function() end,
     onBack = function() end,
@@ -388,6 +388,25 @@ do
   for _ in confirm.message:gmatch("[^\n]+") do lines = lines + 1 end
   check("a calm axis gets its usual advice", lines == 4, confirm.message)
   flightRollShake = nil
+end
+
+-- Issue #2643: a shaking axis that gets no P step still names the shake; it
+-- must not sit under "answers the stick as asked" with no reason for the shake
+print("A shaking axis with no P step still gives the shake reason")
+do
+  resetFc()
+  flightRollShake = 49
+  flightRoll = {P = 1}            -- P already at its floor: no P step
+  openPage()
+  pump()
+  local shown = {}
+  lcd.drawText = function(_, _, text) shown[#shown + 1] = tostring(text) end
+  paintFn()
+  lcd.drawText = nil
+  local text = table.concat(shown, "\n")
+  check("the shake is named in the reasons", text:find("why_shake", 1, true) ~= nil, text)
+  flightRollShake = nil
+  flightRoll = nil
 end
 
 print("Advice past a setting's limit is not given")

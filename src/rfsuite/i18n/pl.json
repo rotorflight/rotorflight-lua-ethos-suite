@@ -12120,6 +12120,13 @@
           "reverse_text": false,
           "translation": "Shakes %d deg/s at centre stick. Less P calms it."
         },
+        "why_shake_no_step_fmt": {
+          "english": "Shakes %d deg/s at centre stick. No P step made.",
+          "max_length": 48,
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "Shakes %d deg/s at centre stick. No P step made."
+        },
         "why_slow": {
           "english": "The heli turns slower than the stick asks for.",
           "max_length": 46,
