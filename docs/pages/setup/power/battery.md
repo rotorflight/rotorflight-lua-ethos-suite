@@ -44,6 +44,8 @@ Greyed out until the flight controller answers. Read-only while the model is arm
   on all firmware versions.
 - *Edit Battery* starts on the active profile each time the page is opened.
 
+- A value of 0 disables the consumption reserve.
+
 ## Related
 
 - [Rotorflight documentation](https://doc.rotorflight.org/)
