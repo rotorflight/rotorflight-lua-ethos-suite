@@ -73,6 +73,8 @@ Servo override (`MSP_SET_SERVO_OVERRIDE`, 196) holds until something writes
 the servo side. Servo override pages in this suite therefore re-send only when the value
 actually changes, and release on close.
 
+- Motor pole count is limited to 255 (U8). Scorpion bailout time is limited to 65.535 s (u16).
+
 ## Related
 
 - [Rotorflight documentation](https://doc.rotorflight.org/)
