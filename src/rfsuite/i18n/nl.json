@@ -300,6 +300,12 @@
       "reverse_text": false,
       "translation": "                OK                "
     },
+    "btn_restart_fc": {
+      "english": "Restart FC",
+      "max_length": 12,
+      "needs_translation": true,
+      "translation": "Restart FC"
+    },
     "btn_save": {
       "english": "SAVE",
       "max_length": 4,
@@ -12256,6 +12262,12 @@
       "needs_translation": false,
       "reverse_text": false,
       "translation": "Instellingen niet opgeslagen op de zender. Probeer het opnieuw."
+    },
+    "msg_save_failed_running_body": {
+      "english": "The flight controller may already be using the new values. Restart it to use the saved settings.",
+      "max_length": 110,
+      "needs_translation": true,
+      "translation": "The flight controller may already be using the new values. Restart it to use the saved settings."
     },
     "msg_save_failed_title": {
       "english": "Save failed",
