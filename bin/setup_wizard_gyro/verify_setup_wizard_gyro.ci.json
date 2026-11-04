@@ -1,0 +1,7 @@
+{
+  "id": "setup-wizard-gyro",
+  "name": "Setup Wizard gyro axes are unanswered until the pilot picks Against",
+  "step": "Check that the Gyro step does not assume an answer and waits for Against",
+  "script": "bin/setup_wizard_gyro/verify_setup_wizard_gyro.lua",
+  "rationale": "The Gyro step of the Setup Wizard checks that the swash pushes back against each movement.\nEach axis used to start on Against, so the way forward was enabled before the pilot had answered,\nand a pilot who pressed through passed a check that exists to catch a reversed gyro.\n\nThe harness drives the real setup_wizard_gyro.lua through its Start and roll pages, with the UI and\nart modules replaced by recording stubs, and pins: an unanswered axis does not read as Against,\nthe way forward is disabled until Against is picked, and With shows the wrong-answer note.\n\n--self-test runs the same checks on a copy with the old default restored and requires it to go red."
+}
