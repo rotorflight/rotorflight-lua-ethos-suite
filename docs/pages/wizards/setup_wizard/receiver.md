@@ -37,6 +37,9 @@ model is armed.
   map. On S.Port, F.Port and FBUS every MSP reply pauses the flight controller's telemetry
   sensors, so the values come from the radio instead.
 - After each stick movement, once the stick has settled, the step compares the radio's channels with what the flight controller receives, and names a stick that differs.
+- The throttle range is not used if the flight controller reads the throttle more than 14 µs away from the radio
+  at the low end. A larger gap would stop the flight controller arming, so Use stays greyed out
+  while it differs, even when the note names another stick.
 - The last screen says whether the way forward is Next (nothing changed) or Save and
   continue (the changes already work on the flight controller but are not yet stored in
   its EEPROM).

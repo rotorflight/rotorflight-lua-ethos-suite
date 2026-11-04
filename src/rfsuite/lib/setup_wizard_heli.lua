@@ -280,9 +280,22 @@ end
 
 -- Measured low/high (us) -> rc_min_throttle, rc_max_throttle, or nil when
 -- the travel is under 300 us.
+-- The range the wizard writes is the measured travel, 20 us in from each end. The FC arms only
+-- while the throttle reads below rc_min minus a 5 us deadband.
+M.RANGE_MARGIN_US = 20
+M.ARM_DEADBAND_US = 5
+
 function M.throttleFromMeasured(low, high)
   if not low or not high or high - low < 300 then return nil end
-  return low + 20, high - 20
+  return low + M.RANGE_MARGIN_US, high - M.RANGE_MARGIN_US
+end
+
+-- The most the FC's throttle reading may differ from the radio's at the stick's low end and
+-- still arm: the arm margin less one. A larger gap blocks the throttle range.
+M.THROTTLE_TOLERANCE_US = M.RANGE_MARGIN_US - M.ARM_DEADBAND_US - 1
+
+function M.throttleOffsetOk(fc, now)
+  return math.abs(fc - now) <= M.THROTTLE_TOLERANCE_US
 end
 
 package.loaded["rfsuite.lib.setup_wizard_heli"] = M
