@@ -580,6 +580,9 @@ end
 local function syncStatsWithFc(mspQueue)
   if not mspQueue or statsReadInFlight or statsWriteInFlight then return end
   if session.connected ~= true or armedOrUnconfirmed() then return end
+  -- The retained UID may belong to the flight before a reconnect. Never use
+  -- it for an MSP stats request until this connection's handshake confirms it.
+  if session.handshake.mcuId ~= true then return end
   if not loadModelPreferences() then return end
 
   statsReadInFlight = true
@@ -1417,13 +1420,16 @@ local function updateInfoPanelTelemetry(protocol)
 end
 
 local function updateFlightTimer(now)
-  local wasInProgress = flightTimer.inProgress and flightTimer.inProgress(now)
   local changed, snapshot, event = flightTimer.update(session.connected, session.isArmed, now)
   local inProgress = flightTimer.inProgress and flightTimer.inProgress(now)
-  if (wasInProgress or inProgress) and not flightOwnerMcuId
+  local finishedFlight = event and (event.finishedSegment or 0) > 0
+  local eventOwnerMcuId = finishedFlight and flightOwnerMcuId or nil
+  if finishedFlight then flightOwnerMcuId = nil end
+  if inProgress and not flightOwnerMcuId
       and session.handshake.mcuId == true and session.mcuId then
     flightOwnerMcuId = session.mcuId
   end
+  if not finishedFlight then eventOwnerMcuId = flightOwnerMcuId end
   -- Recomputed every tick, not only on change: the grace window can expire
   -- while the link stays down, and the log writer has to learn that the flight
   -- can no longer be resumed.
@@ -1436,13 +1442,13 @@ local function updateFlightTimer(now)
     publish()
   end
 
-  if event and flightOwnerMcuId and (event.flightCounted or (event.finishedSegment or 0) > 0) then
+  if event and eventOwnerMcuId and (event.flightCounted or (event.finishedSegment or 0) > 0) then
     local ownerPreferences, ownerPreferencesFile
-    local ownerIsConnectedModel = session.modelPreferencesMcuId == flightOwnerMcuId
+    local ownerIsConnectedModel = session.modelPreferencesMcuId == eventOwnerMcuId
     if ownerIsConnectedModel then
       ownerPreferences, ownerPreferencesFile = session.modelPreferences, session.modelPreferencesFile
     else
-      ownerPreferences, ownerPreferencesFile = modelPreferences.load(flightOwnerMcuId)
+      ownerPreferences, ownerPreferencesFile = modelPreferences.load(eventOwnerMcuId)
     end
     local stats = modelPreferences.stats(ownerPreferences)
     if event.flightCounted then
@@ -1460,7 +1466,7 @@ local function updateFlightTimer(now)
       modelPreferences.save(ownerPreferencesFile, ownerPreferences)
     end
     if event.finishedSegment and event.finishedSegment > 0
-        and session.connected == true and session.mcuId == flightOwnerMcuId then
+        and session.connected == true and session.mcuId == eventOwnerMcuId then
       scheduleStatsSync(1)
     end
   end
