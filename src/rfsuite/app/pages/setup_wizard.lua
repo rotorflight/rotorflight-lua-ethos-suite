@@ -457,6 +457,8 @@ local function open(opts)
   function wiz.motorised() return heli.motorised(mixConfig and mixConfig.tail_rotor_mode) end
   function wiz.apiAtLeast(minor) return apiMinor >= minor end
   function wiz.canMove() return canMove() end
+  -- A message built by a codec, for a step that talks to the ESC over the link (#2704).
+  function wiz.send(msg) send(msg) end
   function wiz.armed() return armed == true end
   function wiz.change(key, original, restore) change(key, original, restore) end
   function wiz.markChanged() markChanged() end

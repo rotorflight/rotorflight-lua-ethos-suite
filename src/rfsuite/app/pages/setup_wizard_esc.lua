@@ -19,6 +19,9 @@ local requireModule = package.loaded["rfsuite.lib.require"] or assert(loadfile("
 local ui = requireModule("app/setup_wizard_ui.lua")
 local art = requireModule("app/setup_wizard_art.lua")
 local motorConfig = requireModule("lib/msp_motor_config.lua")
+local rcConfig = requireModule("lib/msp_rc_config.lua")
+local escSensorConfig = requireModule("lib/msp_esc_sensor_config.lua")
+local escParams = requireModule("lib/esc_params.lua")
 
 local OWNED = {}
 
@@ -47,6 +50,10 @@ local T = {
   spinBtn = "@i18n(app.modules.setup_wizard.esc_spin_btn)@",
   stopBtn = "@i18n(app.modules.setup_wizard.esc_stop_btn)@",
   needCalib = "@i18n(app.modules.setup_wizard.esc_need_calib)@",
+  linkBtn = "@i18n(app.modules.setup_wizard.esc_link_btn)@",
+  linkBusy = "@i18n(app.modules.setup_wizard.esc_link_busy)@",
+  linkDone = "@i18n(app.modules.setup_wizard.esc_link_done)@",
+  linkFailed = "@i18n(app.modules.setup_wizard.esc_link_failed)@",
   cal = "@i18n(app.modules.setup_wizard.esc_cal_status)@",
   next = "@i18n(app.modules.setup_wizard.btn_next)@",
   running = "@i18n(app.modules.setup_wizard.esc_running)@",
@@ -78,16 +85,35 @@ local function new(wiz)
   -- and test speed.
   local calib = {full = false, low = false}
   local power = POWER_DEFAULT
+  -- The ESC's throttle range over the parameter link (#2704, as the EdgeTX suite): the family of
+  -- the ESC telemetry protocol, the transaction on the ESC's block, and the state of a set.
+  local family, link, linkBlock = nil, nil, nil
+  local linkState = nil          -- nil, "busy", "done" or "failed:<reason>"
+  local linkRc, linkMotor = nil, nil
 
   wiz.fetch({
     motor = function(ok, err) return motorConfig.buildReadMessage(ok, err) end,
+    rc = function(ok, err) return rcConfig.buildReadMessage(ok, err) end,
+    escSensor = function(ok, err) return escSensorConfig.buildReadMessage(ok, err) end,
   }, function(results, failed)
     local cfg = results.motor
     loadFailed = failed or cfg == nil
     pwm = cfg ~= nil and cfg.motor_pwm_protocol == PWM_PROTOCOL
+    linkRc, linkMotor = results.rc, cfg
+    -- The ESC's block is read once per visit, for an ESC whose family has a throttle range.
+    local esc = results.escSensor
+    family = esc and escParams.familyFor(esc.protocol) or nil
+    if family and pwm and cfg then
+      link = escParams.new(requireModule(family.codec), wiz.send)
+      link:read(function(block)
+        linkBlock = block
+        wiz.rebuild()
+      end)
+    end
     loaded = true
     wiz.rebuild()
   end)
+
 
   -- The screens: a PWM ESC has three, the others two (no calibration).
   local function total() return pwm and 3 or 2 end
@@ -114,6 +140,65 @@ local function new(wiz)
   local function go(name)
     screen = name
     wiz.rebuild()
+  end
+
+  -- The link row: only for a PWM ESC of a family with a range, once its block is read, while the
+  -- model is disarmed and no set is running or done.
+  local function canLink()
+    return link ~= nil and linkBlock ~= nil and not calib.low and not wiz.armed()
+      and linkState ~= "busy" and linkRc ~= nil and linkMotor ~= nil
+  end
+
+  local function linkText()
+    if linkState == "busy" then return T.linkBusy end
+    if linkState == "done" then return T.linkDone end
+    return T.linkFailed
+  end
+
+  -- Sets the FC's motor endpoints to the measured throttle range, saves them, reads them back, and
+  -- then writes the same range to the ESC and reads that back. Only when both read back does the
+  -- range count as set.
+  local function startLink()
+    if not canLink() then return end
+    local minUs, maxUs = linkRc.rc_min_throttle, linkRc.rc_max_throttle
+    local changes, why = escParams.rangeChanges(family, minUs, maxUs)
+    if not changes then
+      linkState = "failed:" .. tostring(why)
+      wiz.rebuild()
+      return
+    end
+    linkState = "busy"
+    wiz.rebuild()
+    local data = {}
+    for key, value in pairs(linkMotor) do data[key] = value end
+    data.mincommand, data.minthrottle, data.maxthrottle = 1000, minUs, maxUs
+    wiz.send(motorConfig.buildWriteMessage(data, function()
+      wiz.saveThen(function()
+        wiz.fetch({
+          motor = function(ok, err) return motorConfig.buildReadMessage(ok, err) end,
+        }, function(results, failed)
+          local m = results.motor
+          if failed or not m or m.minthrottle ~= minUs or m.maxthrottle ~= maxUs then
+            linkState = "failed:fc"
+            wiz.rebuild()
+            return
+          end
+          link:write(changes, function(block, err)
+            if err then
+              linkState = "failed:" .. tostring(err)
+            else
+              linkBlock = block
+              linkState = "done"
+              calib.full, calib.low = true, true
+            end
+            wiz.rebuild()
+          end)
+        end)
+      end)
+    end, function()
+      linkState = "failed:fc"
+      wiz.rebuild()
+    end))
   end
 
   function self.build()
@@ -153,6 +238,8 @@ local function new(wiz)
         end},
         {label = T.cal, value = status},
       }
+      if canLink() then rows[#rows + 1] = {answer = T.linkBtn, press = startLink} end
+      if linkState then rows[#rows + 1] = {note = linkText()} end
       local field = scr:checks(rows)
       local rowField = scr:row(function()
         wiz.releaseMotor()

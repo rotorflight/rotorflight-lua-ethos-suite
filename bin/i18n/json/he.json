@@ -10686,6 +10686,30 @@
           "max_length": 4,
           "reverse_text": true
         },
+        "esc_link_btn": {
+          "english": "Set over the ESC link",
+          "translation": "Set over the ESC link",
+          "needs_translation": true,
+          "max_length": 24
+        },
+        "esc_link_busy": {
+          "english": "Setting the range on the ESC...",
+          "translation": "Setting the range on the ESC...",
+          "needs_translation": true,
+          "max_length": 40
+        },
+        "esc_link_done": {
+          "english": "Range set on the ESC and the FC.",
+          "translation": "Range set on the ESC and the FC.",
+          "needs_translation": true,
+          "max_length": 40
+        },
+        "esc_link_failed": {
+          "english": "The ESC link did not confirm the range.",
+          "translation": "The ESC link did not confirm the range.",
+          "needs_translation": true,
+          "max_length": 50
+        },
         "esc_need_calib": {
           "english": "Calibrate the ESC first.",
           "translation": "כיילו קודם את הבקר.",
