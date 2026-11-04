@@ -48,6 +48,7 @@ local MAX_FAILURES = 3            -- link errors per disarm before waiting for t
 local lastArmed = nil             -- last known arm state; a link loss (nil) keeps it
 local pending = false             -- a disarm has not been captured yet
 local clearPending = false        -- saved, the FC not cleared yet
+local clearMcuId = nil            -- the FC that flew the saved flight: the clear goes to it only
 local busy = false                -- a request is out
 local refusedOnFc = false         -- the FC holds a flight this layout refused: no clear, it would erase that flight
 local nextAt = 0                  -- no request before this os.clock()
@@ -202,7 +203,10 @@ local function finishCapture()
   end
   clearReplies()
   pending = false
-  if seconds > 0 then clearPending = true end
+  if seconds > 0 then
+    clearPending = true
+    clearMcuId = mcuId
+  end
   waitFor(GAP_SECONDS)
 end
 
@@ -246,7 +250,12 @@ local function advance()
       requestAxis(#capture.replies + 1)
     end
   elseif not refusedOnFc then
-    sendClear()
+    -- Another FC since the flight was saved: its clear would erase that FC's flights
+    if clearMcuId == link.mcuId then
+      sendClear()
+    else
+      clearPending = false
+    end
   end
 end
 

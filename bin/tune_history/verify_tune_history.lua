@@ -386,6 +386,24 @@ do
   check("the refused flight is not saved", #lines() == 4, #lines() .. " lines")
 end
 
+-- A flight on one FC is saved and its clear fails. Another FC is connected next: the clear
+-- is owed to the first one, and must not erase the second one's statistics.
+do
+  load()
+  clock = 500
+  update({isArmed = true})
+  update({isArmed = false})
+  local asked = pump({clear = {n = 99, reason = "timeout"}}, 4)
+  check("flight one is saved before its clear fails", asked == "roll,pitch,yaw,clear" and #lines() == 4,
+    asked .. " / " .. #lines() .. " lines")
+  for _ = 1, 60 do
+    clock = clock + 0.5
+    update({isArmed = false, mcuId = "def456"})
+  end
+  check("a clear owed to one flight controller is not sent to another", #requests == 0, #requests .. " requests")
+  drop()
+end
+
 -- The page's aggregate
 do
   load()
