@@ -73,20 +73,28 @@ function M.new(codec, send)
     end)
   end
 
+  -- A write needs a read in this visit (as the EdgeTX suite). The block is read again right before the
+  -- write: the ESC must answer now, and a change made since the first read is kept, not overwritten.
   function s:write(changes, after)
     if not self.block then
       after(nil, "esc_not_read")
       return false
     end
-    local data = {}
-    for key, value in pairs(self.block) do data[key] = value end
-    for key, value in pairs(changes) do data[key] = value end
-    send(codec.buildWriteMessage(data, function()
-      self:verify(changes, after)
-    end, function()
-      self.block = nil
-      after(nil, "write")
-    end))
+    self:read(function(fresh, err)
+      if err or not fresh then
+        after(nil, err or "esc_not_read")
+        return
+      end
+      local data = {}
+      for key, value in pairs(fresh) do data[key] = value end
+      for key, value in pairs(changes) do data[key] = value end
+      send(codec.buildWriteMessage(data, function()
+        self:verify(changes, after)
+      end, function()
+        self.block = nil
+        after(nil, "write")
+      end))
+    end)
     return true
   end
 

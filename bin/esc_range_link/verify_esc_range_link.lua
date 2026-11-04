@@ -116,6 +116,26 @@ local function run(paramsSource)
     "reason=" .. tostring(reason))
   check("the ESC holds the written values", esc.block.stick_zero_us == 1020 and esc.block.stick_range_us == 960)
 
+  -- 2b. The block is read again before the write: a change the ESC got since the first read is kept,
+  -- and an ESC that does not answer the re-read gets nothing written.
+  local esc5, codec5, send5 = simulatedEsc()
+  local tx5 = params.new(codec5, send5)
+  tx5:read(function() end)
+  esc5.block.governor = 3
+  local kept
+  tx5:write(changes, function(block) kept = block end)
+  check("a change made since the first read is kept", kept ~= nil and esc5.block.governor == 3
+    and esc5.block.stick_zero_us == 1020, "governor=" .. tostring(esc5.block.governor))
+
+  local esc6, codec6, send6 = simulatedEsc()
+  local tx6 = params.new(codec6, send6)
+  tx6:read(function() end)
+  esc6.failRead = true
+  local reason6
+  tx6:write(changes, function(_, err) reason6 = err end)
+  check("an ESC that does not answer the re-read gets nothing written",
+    reason6 == "read" and esc6.block.stick_zero_us == 1100, "reason=" .. tostring(reason6))
+
   -- 3. Failures end with a reason and leave no block behind.
   local esc2, codec2, send2 = simulatedEsc()
   local tx2 = params.new(codec2, send2)
@@ -160,19 +180,41 @@ if not SELF_TEST then
   os.exit(1)
 end
 
--- Drop the read-back: a write counts as done as soon as it is acknowledged.
-local mutated, n = paramsSource:gsub("      self:verify%(changes, after%)\n    end, function%(%)",
-  "      after(data)\n    end, function()")
-if n ~= 1 then
-  print("FAIL  self-test: the read-back line was not found once; update this harness")
-  os.exit(1)
+-- Two broken copies: no re-read before the write (the cached block is sent, which can overwrite a change
+-- made since), and no read-back after the write (a write counts as done as soon as it is acknowledged).
+local mutants = {
+  {name = "no re-read before the write", patterns = {
+    {"    self:read%(function%(fresh, err%)\n", "    local fresh, err = self.block, nil\n    do\n"},
+    {"    end%)\n    return true\n", "    end\n    return true\n"},
+  }},
+  {name = "no read-back after the write", patterns = {
+    {"        self:verify%(changes, after%)\n      end, function%(%)",
+     "        after(data)\n      end, function()"},
+  }},
+}
+local red = 0
+for _, m in ipairs(mutants) do
+  local text, ok = paramsSource, true
+  for _, p in ipairs(m.patterns) do
+    local t, c = text:gsub(p[1], (p[2]:gsub("%%", "%%%%")))
+    if c ~= 1 then ok = false end
+    text = t
+  end
+  if not ok then
+    print("FAIL  self-test: the lines for '" .. m.name .. "' were not found once; update this harness")
+    os.exit(1)
+  end
+  failures, checks = 0, 0
+  local caught = run(text)
+  if caught > 0 then
+    red = red + 1
+    print("ok    mutant red: " .. m.name .. " (" .. caught .. " failed checks)")
+  else
+    print("FAIL  mutant passed the checks: " .. m.name)
+  end
 end
-failures, checks = 0, 0
-local caught = run(mutated)
-if caught > 0 then
-  print("ok    mutant red: write counted without read-back (" .. caught .. " failed checks)")
-  print("OK  self-test: a write without read-back goes red")
+if red == #mutants then
+  print("OK  self-test: both broken copies go red")
   os.exit(0)
 end
-print("FAIL  mutant passed the checks: write without read-back")
 os.exit(1)

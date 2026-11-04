@@ -226,8 +226,8 @@ do
     local seen = {}
     for i = mark + 1, #ctx.world.sent do seen[#seen + 1] = ctx.world.sent[i] end
     local order = table.concat(seen, ",")
-    check("2a. the FC endpoints are written, read back, then the ESC is written and read back",
-      order == "motor_write,motor_read,esc_write,esc_read" or order == "motor_write,motor_read,esc_write,esc_read,esc_read",
+    check("2a. the FC endpoints are written and read back, then the ESC is read again, written and read back",
+      order == "motor_write,motor_read,esc_read,esc_write,esc_read",
       "order=" .. order)
     check("2b. the FC ends with the measured range",
       ctx.world.fc.motor.minthrottle == 1020 and ctx.world.fc.motor.maxthrottle == 1980 and ctx.world.fc.motor.mincommand == 1000,
