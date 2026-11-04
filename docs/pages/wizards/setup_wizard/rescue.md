@@ -26,7 +26,7 @@ model is armed.
 ## Notes
 
 - The rescue settings are kept for each profile on the flight controller. The wizard sets the same
-  values on every profile, so the flight profile you fly does not matter.
+  values on every profile (up to six), so the flight profile you fly does not matter.
 - Rescue uses the accelerometer, so the step needs one, as the Board orientation step (step 1) sets it up.
 - The settings are written to the flight controller at once. Discard puts the original values back
   on every profile.
