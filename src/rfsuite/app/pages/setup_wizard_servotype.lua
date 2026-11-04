@@ -26,7 +26,11 @@ local ui = requireModule("app/setup_wizard_ui.lua")
 local heli = requireModule("lib/setup_wizard_heli.lua")
 local art = requireModule("app/setup_wizard_art.lua")
 
-local OWNED = {}\r\n-- Persists which groups have already had their default type applied, across step visits.\r\nlocal openedStore = package.loaded["rfsuite.setup_wizard.servotype.opened"] or setmetatable({}, {__mode = "k"})\r\npackage.loaded["rfsuite.setup_wizard.servotype.opened"] = openedStore\r\n
+local OWNED = {}
+-- Persists which groups have already had their default type applied, across step visits.
+local openedStore = package.loaded["rfsuite.setup_wizard.servotype.opened"] or setmetatable({}, {__mode = "k"})
+package.loaded["rfsuite.setup_wizard.servotype.opened"] = openedStore
+
 -- Prepare, then one screen per group.
 local PICTURE_W, PICTURE_H = 220, 160
 
