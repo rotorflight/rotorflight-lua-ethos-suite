@@ -8280,6 +8280,30 @@
           "reverse_text": false,
           "translation": "Con la batteria ancora scollegata e il controllore via USB, premere Gas pieno. L'uscita resta al 100 % finché non si preme Minimo."
         },
+        "esc_link_btn": {
+          "english": "Set over the ESC link",
+          "max_length": 24,
+          "needs_translation": true,
+          "translation": "Set over the ESC link"
+        },
+        "esc_link_busy": {
+          "english": "Setting the range on the ESC...",
+          "max_length": 40,
+          "needs_translation": true,
+          "translation": "Setting the range on the ESC..."
+        },
+        "esc_link_done": {
+          "english": "Range set on the ESC and the FC.",
+          "max_length": 40,
+          "needs_translation": true,
+          "translation": "Range set on the ESC and the FC."
+        },
+        "esc_link_failed": {
+          "english": "The ESC link did not confirm the range.",
+          "max_length": 50,
+          "needs_translation": true,
+          "translation": "The ESC link did not confirm the range."
+        },
         "esc_low_btn": {
           "english": "Low throttle",
           "max_length": 12,

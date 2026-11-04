@@ -32,6 +32,15 @@ powers up with full throttle, so the steps are in order:
 
 DShot and the other protocols need no calibration, and the step goes straight to the spin test.
 
+### Set over the ESC link (YGE)
+
+For a YGE ESC the calibration screen also offers **Set over the ESC link**. It takes the throttle range
+the Receiver step measured, writes it to the flight controller's motor endpoints and saves them, reads
+them back, then writes the same range to the ESC as its stick zero and span, and reads that back too.
+The ESC is not changed unless the flight controller has the range. The spin test is unlocked only when
+both read back. Without a read-back the step says the ESC link did not confirm the range, and the calibration
+by hand remains. The link needs the ESC's parameters to be readable, and the model disarmed.
+
 ## Spin test
 
 The main motor runs at the test speed for 3 seconds, or until **Stop** is pressed. The test speed is

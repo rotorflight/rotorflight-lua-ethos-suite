@@ -1,0 +1,7 @@
+{
+  "id": "esc-link-wizard",
+  "name": "Setup Wizard ESC step: range over the ESC link unlocks the spin test only after read-back",
+  "step": "Check the ESC step's link range: write order, read-back on both ends, and the spin unlock",
+  "script": "bin/esc_link_wizard/verify_esc_link_wizard.lua",
+  "rationale": "The ESC step of the Setup Wizard used to unlock the spin test on a PWM ESC only after the pilot pressed Full\nthrottle and Low throttle. A YGE ESC can take the range over the parameter link, so the step now offers it, and the spin\ntest is unlocked by that set only when the FC and the ESC both read the same range back.\n\nThe harness runs the real setup_wizard_esc.lua with a simulated FC and ESC: the link row is offered for a PWM YGE ESC and\nnot for another family; the writes go FC, save, FC read-back, ESC, ESC read-back; the spin test unlocks after a confirmed\nset and stays locked when either end refuses.\n\n--self-test drops the flags a confirmed set sets and requires the spin unlock to go red."
+}
