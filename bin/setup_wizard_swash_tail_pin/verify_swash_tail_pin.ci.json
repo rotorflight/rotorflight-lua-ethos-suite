@@ -1,0 +1,7 @@
+{
+  "id": "setup-wizard-swash-tail-pin",
+  "name": "Setup Wizard swash step stages tail pin move and requests FC reboot",
+  "step": "Check Setup Wizard swash tail pin staging and reboot request on stored mismatch",
+  "script": "bin/setup_wizard_swash_tail_pin/verify_swash_tail_pin.lua",
+  "rationale": "Issue #2700: the swash tail-pin row computed movability from the stored mode and pin, but the move commit was only staged in setTail, which returns early unless the tail type changes in this visit. A stored mismatch (or a refused move) therefore reported 'Moves on save' while saving moved nothing, and did not request the required FC restart.\n\nThe harness drives src/rfsuite/app/pages/setup_wizard_swash.lua through its step navigation with recording stubs for UI, real heli units, and real MSP tail motor output logic:\n  1. on a stored mismatch (motorised mode, pin on SERVO 4), entering the tail screen shows 'Moves on save', stages the tail_pin commit on save, and requests an FC reboot;\n  2. the tail screen and the done screen display the restart note;\n  3. on a matching configuration (motorised mode, pin on MOTOR 2), the tail screen shows the pin name, stages no commit, and requests no reboot;\n  4. changing the tail mode via the drop-down requests a reboot and stages the commit;\n  5. an unmovable pin (NONE) shows 'Set in Mixer', stages no commit, and requests no reboot.\n\n--self-test injects mutants (omitted reboot request on movable pin, omitted stageTailCommit in pinText) and verifies that each fails as expected."
+}
