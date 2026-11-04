@@ -22,17 +22,20 @@ local function cleanModelType(value)
   return math.floor(value + 0.5)
 end
 
-local function tuningActive(runtime)
+local function smartfuelActive(runtime)
   local mode = tonumber(runtime.data.smartfuel_mode or 0) or 0
   return mode == 1 or mode == 3
 end
 
 local function refreshTuning(runtime)
-  local enabled = runtime.loaded and tuningActive(runtime) and not runtime.activeDialog
+  local mode = tonumber(runtime.data.smartfuel_mode or 0) or 0
+  local loaded = runtime.loaded and not runtime.activeDialog
+  local dropEnabled = loaded and (mode == 0 or mode == 1 or mode == 3)
+  local sagEnabled = loaded and (mode == 1 or mode == 3)
   local fields = runtime.fields or {}
-  if fields.voltage_drop_rate then fields.voltage_drop_rate:enable(enabled) end
-  if fields.charge_drop_rate then fields.charge_drop_rate:enable(enabled) end
-  if fields.sag_gain then fields.sag_gain:enable(enabled) end
+  if fields.voltage_drop_rate then fields.voltage_drop_rate:enable(dropEnabled) end
+  if fields.charge_drop_rate then fields.charge_drop_rate:enable(dropEnabled) end
+  if fields.sag_gain then fields.sag_gain:enable(sagEnabled) end
 end
 
 local function open(opts)
@@ -97,7 +100,8 @@ local function open(opts)
       modelTypeField = nil
     end,
     onWakeup = function(rt)
-      local enabled = tuningActive(rt)
+      local mode = tonumber(rt.data.smartfuel_mode or 0) or 0
+      local enabled = mode == 0 or mode == 1 or mode == 3
       if enabled ~= lastEnabled then
         lastEnabled = enabled
         refreshTuning(rt)
