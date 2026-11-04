@@ -11078,11 +11078,11 @@
           "translation": "Typ desky"
         },
         "tal_cal": {
-          "english": "The tail is held at 22.5° each way. Measure the tail blade pitch and adjust until it reads 22.5°. No pitch gauge? Fold a square of paper corner to corner (45°): seen from the tail tip, the fold fits flush between the blades.",
-          "max_length": 224,
+          "english": "Press Swap to hold the tail at 22.5°; each press holds the other side. Measure the tail blade pitch and adjust until it reads 22.5°. No pitch gauge? Fold a square of paper corner to corner (45°): seen from the tail tip, the fold fits flush between the blades.",
+          "max_length": 247,
           "needs_translation": false,
           "reverse_text": false,
-          "translation": "Ocas je držen na 22,5° na obě strany. Změřte úhel ocasního listu a dolaďte, až ukáže 22,5°. Nemáte měrku? Přeložte čtverec papíru úhlopříčně (45°): při pohledu od špičky listu sedí přehyb přesně mezi listy."
+          "translation": "Stiskem Prohodit podržíte ocas na 22,5°, každý další stisk drží druhou stranu. Změřte úhel ocasního listu a dolaďte, až ukáže 22,5°. Nemáte měrku? Přeložte čtverec papíru úhlopříčně (45°): při pohledu od špičky listu sedí přehyb přesně mezi listy."
         },
         "tal_cal_title": {
           "english": "Tail calibration",
@@ -11162,11 +11162,11 @@
           "translation": "Zkontrolujte ocasní servo se sundanými ocasními listy: střed, směr, výchylku a dorazy."
         },
         "tal_lim_both": {
-          "english": "Hold the tail at 60° each way, then set the limits as high as they go without the slider or links binding.",
-          "max_length": 106,
+          "english": "Press Swap to hold the tail at 60°, again for the other side, then set the limits as high as they go without the slider or links binding.",
+          "max_length": 139,
           "needs_translation": false,
           "reverse_text": false,
-          "translation": "Držte ocas na 60° na každou stranu, pak nastavte koncové dorazy co nejvýše bez zadírání posuvníku a táhel."
+          "translation": "Stiskem Prohodit podržíte ocas na 60°, dalším stiskem druhou stranu, pak nastavte koncové dorazy co nejvýše bez zadírání posuvníku a táhel."
         },
         "tal_lim_title": {
           "english": "Tail end stops",

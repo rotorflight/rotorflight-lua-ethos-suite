@@ -6,12 +6,12 @@ sidebar_position: 60
 
 # Motor & ESC
 
-Step 11 of the Model setup wizard. It sets the ESC protocol, where the headspeed comes from
+Step 10 of the Model setup wizard. It sets the ESC protocol, where the headspeed comes from
 (when a governor runs), the motor poles and the gear ratios.
 
 ## Where to find it
 
-*Configuration* → *Wizards* → *Model setup*, step 11 *Motor & ESC*. The step starts with a safety
+*Configuration* → *Wizards* → *Model setup*, step 10 *Motor & ESC*. The step starts with a safety
 card: the blades come off, and Start follows once that is confirmed. Then the protocol screen, the headspeed source (only when a governor runs), the
 motor poles, the main gear ratio, the tail gear ratio (only for a pitch tail) and a summary.
 
@@ -85,7 +85,7 @@ while the wizard stays open.
 - A governor needs a fast RPM signal: an RPM sensor, or bidirectional DShot telemetry. Serial
   ESC telemetry is too slow for it.
 - Leaving Castle turns the ESC sensor off, unless a serial ESC telemetry protocol is set.
-- The protocol and the gear ratios apply after the restart at step 12, ESC telemetry.
+- The protocol and the gear ratios apply after the restart at step 11, Connect servos.
 
 ## Related
 

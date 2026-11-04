@@ -2,7 +2,7 @@
 --
 -- The radio's copy of rotorflight-configurator's StepMotor.svelte:
 --
---   prepare   the safety card: blades off (the servos are plugged in since Connect servos)
+--   prepare   the safety card: blades off (the servos are still unplugged: Connect comes after this step)
 --   protocol  the ESC protocol (MSP_MOTOR_CONFIG motor_pwm_protocol) in one
 --             drop-down: PWM, DShot150 and DShot300 first, then every other
 --             protocol (DShot600, Castle, OneShot, ProShot, DISABLED, ...).

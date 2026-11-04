@@ -11078,11 +11078,11 @@
           "translation": "斜盘类型"
         },
         "tal_cal": {
-          "english": "The tail is held at 22.5° each way. Measure the tail blade pitch and adjust until it reads 22.5°. No pitch gauge? Fold a square of paper corner to corner (45°): seen from the tail tip, the fold fits flush between the blades.",
-          "max_length": 224,
+          "english": "Press Swap to hold the tail at 22.5°; each press holds the other side. Measure the tail blade pitch and adjust until it reads 22.5°. No pitch gauge? Fold a square of paper corner to corner (45°): seen from the tail tip, the fold fits flush between the blades.",
+          "max_length": 98,
           "needs_translation": false,
           "reverse_text": false,
-          "translation": "尾桨两侧各保持在 22.5°。 测量尾桨叶螺距 并调整至 22.5°。 没有螺距尺？ 将正方形纸 沿对角线对折（45°）： 从桨尖看去， 折痕应正好 贴合两片桨叶之间。"
+          "translation": "按 切换 将尾桨保持在 22.5°， 每按一次换到另一侧。 测量尾桨叶螺距 并调整至 22.5°。 没有螺距尺？ 将正方形纸 沿对角线对折（45°）： 从桨尖看去， 折痕应正好 贴合两片桨叶之间。"
         },
         "tal_cal_title": {
           "english": "Tail calibration",
@@ -11162,11 +11162,11 @@
           "translation": "拆下尾桨叶后检查尾舵机：中位、方向、行程和末端限位。"
         },
         "tal_lim_both": {
-          "english": "Hold the tail at 60° each way, then set the limits as high as they go without the slider or links binding.",
-          "max_length": 106,
+          "english": "Press Swap to hold the tail at 60°, again for the other side, then set the limits as high as they go without the slider or links binding.",
+          "max_length": 48,
           "needs_translation": false,
           "reverse_text": false,
-          "translation": "尾桨两侧各保持 60°，然后把限位设得尽量高，但不能让滑块或连杆卡住。"
+          "translation": "按 切换 将尾桨保持在 60°，再按一次换另一侧，然后把限位设得尽量高，但不能让滑块或连杆卡住。"
         },
         "tal_lim_title": {
           "english": "Tail end stops",

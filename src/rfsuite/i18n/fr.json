@@ -11078,11 +11078,11 @@
           "translation": "Type de plateau"
         },
         "tal_cal": {
-          "english": "The tail is held at 22.5° each way. Measure the tail blade pitch and adjust until it reads 22.5°. No pitch gauge? Fold a square of paper corner to corner (45°): seen from the tail tip, the fold fits flush between the blades.",
-          "max_length": 231,
+          "english": "Press Swap to hold the tail at 22.5°; each press holds the other side. Measure the tail blade pitch and adjust until it reads 22.5°. No pitch gauge? Fold a square of paper corner to corner (45°): seen from the tail tip, the fold fits flush between the blades.",
+          "max_length": 248,
           "needs_translation": false,
           "reverse_text": false,
-          "translation": "La queue est tenue à 22,5° de chaque côté. Mesurez le pas des pales de queue et ajustez jusqu'à lire 22,5°. Pas de jauge ? Pliez un carré de papier en diagonale (45°) : vu depuis le bout des pales, le pli s'ajuste pile entre elles."
+          "translation": "Inverser tient la queue à 22,5°, chaque appui l'autre côté. Mesurez le pas des pales de queue et ajustez jusqu'à lire 22,5°. Pas de jauge ? Pliez un carré de papier en diagonale (45°) : vu depuis le bout des pales, le pli s'ajuste pile entre elles."
         },
         "tal_cal_title": {
           "english": "Tail calibration",
@@ -11162,11 +11162,11 @@
           "translation": "Vérifiez le servo de queue, pales de queue retirées : centre, sens, course et butées."
         },
         "tal_lim_both": {
-          "english": "Hold the tail at 60° each way, then set the limits as high as they go without the slider or links binding.",
-          "max_length": 106,
+          "english": "Press Swap to hold the tail at 60°, again for the other side, then set the limits as high as they go without the slider or links binding.",
+          "max_length": 172,
           "needs_translation": false,
           "reverse_text": false,
-          "translation": "Maintenir la queue à 60° de chaque côté, puis régler les butées aussi haut que possible sans que le curseur ni les biellettes ne butent."
+          "translation": "Appuyez sur Inverser pour tenir la queue à 60°, à nouveau pour l'autre côté, puis réglez les butées aussi haut que possible sans que le curseur ni les biellettes ne butent."
         },
         "tal_lim_title": {
           "english": "Tail end stops",
