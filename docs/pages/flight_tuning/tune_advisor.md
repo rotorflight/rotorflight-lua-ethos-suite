@@ -22,7 +22,9 @@ Each time you disarm, the background task reads all three axes from the flight c
 flight, then clears the flight controller so the next flight is measured on its own. This happens whether or not
 this page is open. It starts 5 seconds after the disarm and takes about 10 seconds, with pauses between the reads
 so telemetry sensors keep updating meanwhile. If the link drops the reading three times, the radio tries again at
-the next disarm; the flight controller keeps the measurements until then. The flights are kept in `LOGS:/rfsuite/tune/<model>/history.csv` on the radio's SD card, one
+the next disarm; the flight controller keeps the measurements until then. After a reconnect, the radio reads the
+connected flight controller's UID before it resumes a capture or retries a pending clear. A clear is only sent to
+the controller whose flight was saved, so connecting another controller cannot erase its measurements. The flights are kept in `LOGS:/rfsuite/tune/<model>/history.csv` on the radio's SD card, one
 row per axis, newest last; only the last 5 flights are kept. `<model>` is the same flight controller ID that
 names the flight log folders, and a `logs.ini` beside the history holds the model name. A flight without rate
 flight is not saved. A disarm while the link is down is saved once the radio reconnects, provided the flight

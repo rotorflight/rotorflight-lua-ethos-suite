@@ -94,7 +94,8 @@ local function load()
 end
 
 local function update(fields)
-  local snapshot = {connected = true, mcuId = MCU, craftName = "Wing", fcVersion = "4.7.0"}
+  local snapshot = {connected = true, mcuId = MCU, craftName = "Wing", fcVersion = "4.7.0",
+    handshake = {mcuId = true}}
   for k, v in pairs(fields) do snapshot[k] = v end
   if fields.mcuId == false then snapshot.mcuId = nil end
   handlers["session.update"](snapshot)
@@ -396,9 +397,15 @@ do
   local asked = pump({clear = {n = 99, reason = "timeout"}}, 4)
   check("flight one is saved before its clear fails", asked == "roll,pitch,yaw,clear" and #lines() == 4,
     asked .. " / " .. #lines() .. " lines")
+  for _ = 1, 4 do
+    clock = clock + 0.5
+    update({isArmed = false, mcuId = MCU, handshake = {mcuId = false}})
+  end
+  check("a retained UID cannot send an owed clear before the reconnect handshake",
+    #requests == 0, #requests .. " requests")
   for _ = 1, 60 do
     clock = clock + 0.5
-    update({isArmed = false, mcuId = "def456"})
+    update({isArmed = false, mcuId = "def456", handshake = {mcuId = true}})
   end
   check("a clear owed to one flight controller is not sent to another", #requests == 0, #requests .. " requests")
   drop()

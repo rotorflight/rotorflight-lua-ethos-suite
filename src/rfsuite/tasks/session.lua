@@ -980,9 +980,10 @@ local function setConnected(value, mspQueue, protocol)
     for k in pairs(handshakeInFlight) do
       handshakeInFlight[k] = false
     end
-    if holdingFlight and session.mcuId then
-      session.handshake.mcuId = true
-    end
+    -- A flight may resume after reconnect, but the next FC may be a different
+    -- aircraft. Keep the flight state and retained identity for continuity,
+    -- but do not let that old UID complete the new connection's handshake.
+    -- Consumers must wait for the connected FC's UID before capture or clear.
     session.fcVersion = nil
     session.rfVersion = nil
     session.apiVersionMajor = nil
