@@ -9,7 +9,8 @@
 -- keys in order. It pins:
 --   1. motor comes before connect, connect is a gate, and esctelemetry is a gate after it;
 --   2. the step numbers in the docs (Step N of the Model setup wizard) are the positions in that list;
---   3. the wizard's overview states the same numbers for the Connect step.
+--   3. the wizard's overview states the same numbers for the Connect step;
+--   4. overview, README and cross-referencing steps match the step positions.
 --
 -- --self-test puts Connect back in front of Motor and requires check 1 to go red.
 
@@ -96,6 +97,29 @@ local function runDocs()
   local overview = readFile(ROOT .. "/docs/pages/wizards/setup_wizard.md")
   check("the overview names Connect servos at its position",
     overview:find("Connect servos (step " .. tostring(iConnect) .. ")", 1, true) ~= nil)
+  check("the overview table lists Motor & ESC at its position",
+    overview:find("| " .. tostring(iMotor) .. ". [Motor & ESC](setup_wizard/motor.md)", 1, true) ~= nil)
+  check("the overview table lists Connect servos at its position",
+    overview:find("| " .. tostring(iConnect) .. ". [Connect servos](setup_wizard/connect.md)", 1, true) ~= nil)
+
+  local readme = readFile(ROOT .. "/docs/pages/README.md")
+  check("README lists Motor & ESC at its position",
+    readme:find("| " .. tostring(iMotor) .. ". Motor & ESC", 1, true) ~= nil)
+  check("README lists Connect servos at its position",
+    readme:find("| " .. tostring(iConnect) .. ". Connect servos", 1, true) ~= nil)
+
+  local gov = readFile(ROOT .. "/docs/pages/wizards/setup_wizard/governor.md")
+  check("governor.md references the Motor & ESC step position",
+    gov:find("Motor & ESC step (step " .. tostring(iMotor) .. ")", 1, true) ~= nil)
+  local sensors = readFile(ROOT .. "/docs/pages/wizards/setup_wizard/sensors.md")
+  check("sensors.md references the Connect servos step position",
+    sensors:find("step " .. tostring(iConnect) .. ", Connect servos", 1, true) ~= nil)
+  local servotype = readFile(ROOT .. "/docs/pages/wizards/setup_wizard/servotype.md")
+  check("servotype.md references the Connect servos step position",
+    servotype:find("step " .. tostring(iConnect) .. ", Connect servos", 1, true) ~= nil)
+  local swash = readFile(ROOT .. "/docs/pages/wizards/setup_wizard/swash.md")
+  check("swash.md references the Connect servos step position",
+    swash:find("step " .. tostring(iConnect) .. ", Connect servos", 1, true) ~= nil)
   return failures - before
 end
 

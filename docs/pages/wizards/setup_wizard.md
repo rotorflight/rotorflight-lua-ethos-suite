@@ -49,8 +49,8 @@ stays beside the title. A step with one screen shows no count.
 | 7. [Swashplate](setup_wizard/swash.md) | Sets the swash type, the rotor direction and the tail type. |
 | 8. [Servo type](setup_wizard/servotype.md) | Sets the servo type, and with it the update rate and centre pulse. |
 | 9. [Governor](setup_wizard/governor.md) | Sets the governor mode and the throttle type, and the headspeed of each PID profile when a governor runs. |
-| 10. [Connect servos](setup_wizard/connect.md) | Applies a pending restart and checks the outputs before the servos are plugged in. |
-| 11. [Motor & ESC](setup_wizard/motor.md) | Sets the ESC protocol, where the headspeed comes from (a wire, or bidirectional DShot) when a governor runs, the motor poles and the gear ratios. |
+| 10. [Motor & ESC](setup_wizard/motor.md) | Sets the ESC protocol, where the headspeed comes from (a wire, or bidirectional DShot) when a governor runs, the motor poles and the gear ratios. |
+| 11. [Connect servos](setup_wizard/connect.md) | Applies a pending restart and checks the outputs before the servos are plugged in. |
 | 12. [ESC telemetry](setup_wizard/esctelemetry.md) | Sets whether the ESC sends telemetry, its protocol and the port it uses. Restart point: the port applies after it. Then finds the wiring (half duplex, and whether TX and RX are swapped), shows the battery voltage and the ESC temperature, and sets the voltage and current sources, the battery capacities and SmartFuel. |
 | 13. [ESC & spin test](setup_wizard/esc.md) | Calibrates a PWM ESC's throttle range (full and low throttle), and spins the main motor at a test speed up to 50 %, for 3 seconds at a time. |
 | 14. [Servo centre](setup_wizard/servos.md) | Checks the direction of each swash servo and centres it. |
@@ -77,7 +77,7 @@ stays beside the title. A step with one screen shows no count.
 - Changes that only apply after a restart (board orientation, swash or tail type, servo
   update rate, ESC protocol, the telemetry port) are saved as you go. The first restart point is
   Connect servos (step 11): the restarts the earlier steps owe are done there, before the servos are
-  plugged in. ESC telemetry (step 12) is the second: the motor and telemetry changes are applied there,
+  plugged in. ESC telemetry (step 12) is the second: the telemetry port changes are applied there,
   and the step reopens on its wiring screen.
 - Not covered here: modes and switches beyond Arm, Rescue and Trainer,
   the ESC throttle calibration and spin test, and ESC telemetry. Use their own pages.
