@@ -317,6 +317,12 @@ local function new(wiz)
     else
       local old = escPort()
       if old then writePort(old, 0) end
+      -- Drop the stored protocol so validateAndFixConfig does not turn the
+      -- feature back on (F.BUS with a master port) at the next save or boot.
+      if esc then
+        esc.protocol = 0
+        writeEsc(copy(esc))
+      end
     end
     wiz.requestReboot()
     wiz.rebuild()
