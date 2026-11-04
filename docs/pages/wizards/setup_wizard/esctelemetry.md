@@ -83,7 +83,7 @@ SmartFuel the screen says that too.
 - If there is no free UART, the step says so. Free one on the Ports page, then come back to the step.
 - Until the restart the port is not live: the readings show "--", and Detect is greyed out with the reason.
 - Changing the protocol also needs a restart: the port was opened at boot with the previous protocol's baud and callback.
-- A detection run takes a few seconds and gives up after six. Leaving the step, or Stop, ends it, and the
+- A detection run takes a few seconds and gives up after twelve. Leaving the step, or Stop, ends it, and the
   flight controller restores the wiring it had.
 - Found writes the half-duplex and pin-swap settings and asks for a restart: *Save and restart* is the
   button on screen 3.
