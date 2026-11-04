@@ -26,8 +26,7 @@ local ui = requireModule("app/setup_wizard_ui.lua")
 local heli = requireModule("lib/setup_wizard_heli.lua")
 local art = requireModule("app/setup_wizard_art.lua")
 
-local OWNED = {}
-
+local OWNED = {}\r\n-- Persists which groups have already had their default type applied, across step visits.\r\nlocal openedStore = package.loaded["rfsuite.setup_wizard.servotype.opened"] or setmetatable({}, {__mode = "k"})\r\npackage.loaded["rfsuite.setup_wizard.servotype.opened"] = openedStore\r\n
 -- Prepare, then one screen per group.
 local PICTURE_W, PICTURE_H = 220, 160
 
@@ -266,9 +265,11 @@ local function new(wiz)
   end
 
   local function groupScreen(g)
-    -- The first time the step shows a group, a group that matches no type opens on its first type.
-    if not g.opened then
-      g.opened = true
+    -- A group that matches no type opens on its first type only the first time the step
+    -- is ever shown for it; later visits keep the stored (hand-set) rate untouched.
+    if not openedStore[wiz] then openedStore[wiz] = {} end
+    if not openedStore[wiz][g.title] then
+      openedStore[wiz][g.title] = true
       if groupState(g) == "custom" then
         defaultType(g)
       end
