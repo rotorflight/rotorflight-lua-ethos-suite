@@ -26,9 +26,11 @@ local function writeValue(value)
   return payload
 end
 
-function msp_servo_override.buildWriteMessage(index, value, onWritten, onError)
+function msp_servo_override.buildWriteMessage(index, value, onWritten, onError, timeoutMs)
   local payload = {tonumber(index) or 0}
   mspcodec.writeU16(payload, value or OVERRIDE_OFF)
+  -- From API 12.10 a hold can carry a timeout (ms), and the FC drops it when it runs out.
+  if timeoutMs then mspcodec.writeU16(payload, timeoutMs) end
   return {
     command = WRITE_COMMAND,
     payload = payload,
