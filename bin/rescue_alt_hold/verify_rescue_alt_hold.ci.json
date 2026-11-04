@@ -1,0 +1,7 @@
+{
+  "id": "rescue-alt-hold",
+  "name": "Rescue altitude hold kept on On",
+  "step": "Check altitude hold preserved",
+  "script": "bin/rescue_alt_hold/verify_rescue_alt_hold.lua",
+  "rationale": "Issue #2688: On must not overwrite altitude hold with climb."
+}
