@@ -81,6 +81,8 @@ SmartFuel the screen says that too.
 - The step comes after the Connect servos gate. The servos are plugged in by then, which is why the
   first screen asks for the blades to be removed.
 - If there is no free UART, the step says so. Free one on the Ports page, then come back to the step.
+- Only free ports (and the one already in use) are offered, so an occupied port is never replaced
+  silently.
 - Until the restart the port is not live: the readings show "--", and Detect is greyed out with the reason.
 - Changing the protocol also needs a restart: the port was opened at boot with the previous protocol's baud and callback.
 - A detection run takes a few seconds and gives up after twelve. Leaving the step, or Stop, ends it, and the
