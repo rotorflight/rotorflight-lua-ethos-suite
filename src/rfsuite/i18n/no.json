@@ -11054,11 +11054,11 @@
           "translation": "Swashplate-type"
         },
         "tal_cal": {
-          "english": "The tail is held at 22.5° each way. Measure the tail blade pitch and adjust until it reads 22.5°. No pitch gauge? Fold a square of paper corner to corner (45°): seen from the tail tip, the fold fits flush between the blades.",
-          "max_length": 224,
+          "english": "Press Swap to hold the tail at 22.5°; each press holds the other side. Measure the tail blade pitch and adjust until it reads 22.5°. No pitch gauge? Fold a square of paper corner to corner (45°): seen from the tail tip, the fold fits flush between the blades.",
+          "max_length": 249,
           "needs_translation": false,
           "reverse_text": false,
-          "translation": "Halen holdes på 22,5° begge veier. Mål halebladpitchen og juster til den viser 22,5°. Ingen måler? Brett et kvadratisk papir hjørne mot hjørne (45°): sett fra bladtuppen passer bretten nøyaktig mellom bladene."
+          "translation": "Trykk Bytt for å holde halen på 22,5°; hvert trykk holder den andre siden. Mål halebladpitchen og juster til den viser 22,5°. Ingen måler? Brett et kvadratisk papir hjørne mot hjørne (45°): sett fra bladtuppen passer bretten nøyaktig mellom bladene."
         },
         "tal_cal_title": {
           "english": "Tail calibration",
@@ -11138,11 +11138,11 @@
           "translation": "Sjekk haleservoen med halebladene av: senter, retning, utslag og endestopp."
         },
         "tal_lim_both": {
-          "english": "Hold the tail at 60° each way, then set the limits as high as they go without the slider or links binding.",
-          "max_length": 106,
+          "english": "Press Swap to hold the tail at 60°, again for the other side, then set the limits as high as they go without the slider or links binding.",
+          "max_length": 136,
           "needs_translation": false,
           "reverse_text": false,
-          "translation": "Hold halen på 60° i hver retning, og sett grensene så høyt det går uten at glideren eller stengene binder."
+          "translation": "Trykk Bytt for å holde halen på 60°, igjen for den andre siden, og sett grensene så høyt det går uten at glideren eller stengene binder."
         },
         "tal_lim_title": {
           "english": "Tail end stops",

@@ -11128,10 +11128,10 @@
           "reverse_text": false
         },
         "tal_lim_both": {
-          "english": "Hold the tail at 60° each way, then set the limits as high as they go without the slider or links binding.",
-          "translation": "Tenere la coda a 60° per lato, poi impostare i limiti il più alti possibile senza che il cursore o i collegamenti si blocchino.",
+          "english": "Press Swap to hold the tail at 60°, again for the other side, then set the limits as high as they go without the slider or links binding.",
+          "translation": "Premere Inverti per tenere la coda a 60°, di nuovo per l'altro lato, poi impostare i limiti il più alti possibile senza che il cursore o i collegamenti si blocchino.",
           "needs_translation": false,
-          "max_length": 106,
+          "max_length": 165,
           "reverse_text": false
         },
         "fin_arm_switch": {
@@ -11576,10 +11576,10 @@
           "reverse_text": false
         },
         "tal_cal": {
-          "english": "The tail is held at 22.5° each way. Measure the tail blade pitch and adjust until it reads 22.5°. No pitch gauge? Fold a square of paper corner to corner (45°): seen from the tail tip, the fold fits flush between the blades.",
-          "translation": "La coda è tenuta a 22,5° per lato. Misura il passo delle pale di coda e regola finché legge 22,5°. Niente misuratore? Piega un quadrato di carta da angolo ad angolo (45°): visto dalla punta, la piega entra esatta tra le pale.",
+          "english": "Press Swap to hold the tail at 22.5°; each press holds the other side. Measure the tail blade pitch and adjust until it reads 22.5°. No pitch gauge? Fold a square of paper corner to corner (45°): seen from the tail tip, the fold fits flush between the blades.",
+          "translation": "Premi Inverti per tenere la coda a 22,5°; ogni pressione tiene l'altro lato. Misura il passo delle pale di coda e regola finché legge 22,5°. Niente misuratore? Piega un quadrato di carta da angolo ad angolo (45°): visto dalla punta, la piega entra esatta tra le pale.",
           "needs_translation": false,
-          "max_length": 225,
+          "max_length": 267,
           "reverse_text": false
         },
         "tal_lim_title": {

@@ -11128,10 +11128,10 @@
           "reverse_text": false
         },
         "tal_lim_both": {
-          "english": "Hold the tail at 60° each way, then set the limits as high as they go without the slider or links binding.",
-          "translation": "Trzymaj ogon na 60° w każdą stronę, potem ustaw ograniczenia tak wysoko, jak się da, bez blokowania suwaka i drążków.",
+          "english": "Press Swap to hold the tail at 60°, again for the other side, then set the limits as high as they go without the slider or links binding.",
+          "translation": "Naciśnij Zamień, aby trzymać ogon na 60°, ponownie dla drugiej strony, potem ustaw ograniczenia tak wysoko, jak się da, bez blokowania suwaka i drążków.",
           "needs_translation": false,
-          "max_length": 106,
+          "max_length": 152,
           "reverse_text": false
         },
         "fin_arm_switch": {
@@ -11576,10 +11576,10 @@
           "reverse_text": false
         },
         "tal_cal": {
-          "english": "The tail is held at 22.5° each way. Measure the tail blade pitch and adjust until it reads 22.5°. No pitch gauge? Fold a square of paper corner to corner (45°): seen from the tail tip, the fold fits flush between the blades.",
-          "translation": "Ogon jest trzymany na 22,5° w każdą stronę. Zmierz skok łopat ogona i koryguj, aż pokaże 22,5°. Brak miernika? Złóż kwadrat papieru po przekątnej (45°): patrząc od końcówki łopaty, zgięcie pasuje dokładnie między łopaty.",
+          "english": "Press Swap to hold the tail at 22.5°; each press holds the other side. Measure the tail blade pitch and adjust until it reads 22.5°. No pitch gauge? Fold a square of paper corner to corner (45°): seen from the tail tip, the fold fits flush between the blades.",
+          "translation": "Zamień trzyma ogon na 22,5°, każde naciśnięcie drugą stronę. Zmierz skok łopat ogona i koryguj, aż pokaże 22,5°. Brak miernika? Złóż kwadrat papieru po przekątnej (45°): patrząc od końcówki łopaty, zgięcie pasuje dokładnie między łopaty.",
           "needs_translation": false,
-          "max_length": 224,
+          "max_length": 237,
           "reverse_text": false
         },
         "tal_lim_title": {

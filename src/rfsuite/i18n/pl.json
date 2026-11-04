@@ -11054,11 +11054,11 @@
           "translation": "Typ tarczy"
         },
         "tal_cal": {
-          "english": "The tail is held at 22.5° each way. Measure the tail blade pitch and adjust until it reads 22.5°. No pitch gauge? Fold a square of paper corner to corner (45°): seen from the tail tip, the fold fits flush between the blades.",
-          "max_length": 224,
+          "english": "Press Swap to hold the tail at 22.5°; each press holds the other side. Measure the tail blade pitch and adjust until it reads 22.5°. No pitch gauge? Fold a square of paper corner to corner (45°): seen from the tail tip, the fold fits flush between the blades.",
+          "max_length": 237,
           "needs_translation": false,
           "reverse_text": false,
-          "translation": "Ogon jest trzymany na 22,5° w każdą stronę. Zmierz skok łopat ogona i koryguj, aż pokaże 22,5°. Brak miernika? Złóż kwadrat papieru po przekątnej (45°): patrząc od końcówki łopaty, zgięcie pasuje dokładnie między łopaty."
+          "translation": "Zamień trzyma ogon na 22,5°, każde naciśnięcie drugą stronę. Zmierz skok łopat ogona i koryguj, aż pokaże 22,5°. Brak miernika? Złóż kwadrat papieru po przekątnej (45°): patrząc od końcówki łopaty, zgięcie pasuje dokładnie między łopaty."
         },
         "tal_cal_title": {
           "english": "Tail calibration",
@@ -11138,11 +11138,11 @@
           "translation": "Sprawdź serwo ogona ze zdjętymi łopatami ogona: środek, kierunek, wychylenie i ograniczniki."
         },
         "tal_lim_both": {
-          "english": "Hold the tail at 60° each way, then set the limits as high as they go without the slider or links binding.",
-          "max_length": 106,
+          "english": "Press Swap to hold the tail at 60°, again for the other side, then set the limits as high as they go without the slider or links binding.",
+          "max_length": 152,
           "needs_translation": false,
           "reverse_text": false,
-          "translation": "Trzymaj ogon na 60° w każdą stronę, potem ustaw ograniczenia tak wysoko, jak się da, bez blokowania suwaka i drążków."
+          "translation": "Naciśnij Zamień, aby trzymać ogon na 60°, ponownie dla drugiej strony, potem ustaw ograniczenia tak wysoko, jak się da, bez blokowania suwaka i drążków."
         },
         "tal_lim_title": {
           "english": "Tail end stops",

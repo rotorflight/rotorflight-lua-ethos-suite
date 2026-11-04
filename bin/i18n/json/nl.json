@@ -11128,10 +11128,10 @@
           "reverse_text": false
         },
         "tal_lim_both": {
-          "english": "Hold the tail at 60° each way, then set the limits as high as they go without the slider or links binding.",
-          "translation": "Houd de staart op 60° in elke richting, stel de grenzen dan zo hoog in als kan zonder dat de schuif of stangen blokkeren.",
+          "english": "Press Swap to hold the tail at 60°, again for the other side, then set the limits as high as they go without the slider or links binding.",
+          "translation": "Druk op Wissel om de staart op 60° te houden, nogmaals voor de andere kant, en stel de grenzen dan zo hoog in als kan zonder dat de schuif of stangen blokkeren.",
           "needs_translation": false,
-          "max_length": 106,
+          "max_length": 160,
           "reverse_text": false
         },
         "fin_arm_switch": {
@@ -11576,10 +11576,10 @@
           "reverse_text": false
         },
         "tal_cal": {
-          "english": "The tail is held at 22.5° each way. Measure the tail blade pitch and adjust until it reads 22.5°. No pitch gauge? Fold a square of paper corner to corner (45°): seen from the tail tip, the fold fits flush between the blades.",
-          "translation": "De staart staat op 22,5° in beide richtingen. Meet de staartbladpitch en verstel tot die 22,5° is. Geen meter? Vouw een vierkant papier van hoek tot hoek (45°): vanaf de bladpunt gezien past de vouw precies tussen de bladen.",
+          "english": "Press Swap to hold the tail at 22.5°; each press holds the other side. Measure the tail blade pitch and adjust until it reads 22.5°. No pitch gauge? Fold a square of paper corner to corner (45°): seen from the tail tip, the fold fits flush between the blades.",
+          "translation": "Druk op Wissel om de staart op 22,5° te houden; elke druk houdt de andere kant. Meet de staartbladpitch en verstel tot die 22,5° is. Geen meter? Vouw een vierkant papier van hoek tot hoek (45°): vanaf de bladpunt gezien past de vouw precies tussen de bladen.",
           "needs_translation": false,
-          "max_length": 224,
+          "max_length": 258,
           "reverse_text": false
         },
         "tal_lim_title": {

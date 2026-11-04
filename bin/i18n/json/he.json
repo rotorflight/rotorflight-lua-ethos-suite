@@ -11128,10 +11128,10 @@
           "reverse_text": true
         },
         "tal_lim_both": {
-          "english": "Hold the tail at 60° each way, then set the limits as high as they go without the slider or links binding.",
-          "translation": "החזיקו את הזנב ב-60° לכל כיוון, ואז הגדירו את הגבולות גבוה ככל האפשר בלי שהמחוון או המוטות ייתקעו.",
+          "english": "Press Swap to hold the tail at 60°, again for the other side, then set the limits as high as they go without the slider or links binding.",
+          "translation": "לחצו על החלף כדי להחזיק את הזנב ב-60°, שוב לצד השני, ואז הגדירו את הגבולות גבוה ככל האפשר בלי שהמחוון או המוטות ייתקעו.",
           "needs_translation": false,
-          "max_length": 106,
+          "max_length": 119,
           "reverse_text": true
         },
         "fin_arm_switch": {
@@ -11576,10 +11576,10 @@
           "reverse_text": true
         },
         "tal_cal": {
-          "english": "The tail is held at 22.5° each way. Measure the tail blade pitch and adjust until it reads 22.5°. No pitch gauge? Fold a square of paper corner to corner (45°): seen from the tail tip, the fold fits flush between the blades.",
-          "translation": "הזנב מוחזק ב-22.5° לכל כיוון. מדוד את פיץ' להבי הזנב וכוונן עד שהוא 22.5°. אין מד? קפל ריבוע נייר פינה לפינה (45°): במבט מקצה הלהב, הקפל נכנס בדיוק בין הלהבים.",
+          "english": "Press Swap to hold the tail at 22.5°; each press holds the other side. Measure the tail blade pitch and adjust until it reads 22.5°. No pitch gauge? Fold a square of paper corner to corner (45°): seen from the tail tip, the fold fits flush between the blades.",
+          "translation": "לחצו על החלף כדי להחזיק את הזנב ב-22.5°; כל לחיצה מחזיקה את הצד השני. מדוד את פיץ' להבי הזנב וכוונן עד שהוא 22.5°. אין מד? קפל ריבוע נייר פינה לפינה (45°): במבט מקצה הלהב, הקפל נכנס בדיוק בין הלהבים.",
           "needs_translation": false,
-          "max_length": 224,
+          "max_length": 199,
           "reverse_text": true
         },
         "tal_lim_title": {
