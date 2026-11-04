@@ -23,7 +23,7 @@ model is armed.
 | Setting | What it does |
 | --- | --- |
 | Governor mode | Off, Limit, Direct, Electric or Nitro. Off means no governor: the throttle goes straight to the ESC. |
-| Throttle type | Normal, Switch or Function. Only for Electric and Nitro. Switch and Function are not offered for the other modes. |
+| Throttle type | Normal, Switch or Function. Shown for every governor mode; Switch and Function are offered only for Electric and Nitro. |
 | Headspeed, per PID profile | The headspeed the governor holds, for the first three PID profiles, which the profile switch uses. Shown only for Electric and Nitro. |
 
 ## Notes
