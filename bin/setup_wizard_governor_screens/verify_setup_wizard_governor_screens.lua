@@ -11,10 +11,12 @@
 --   1. Off: no throttle row and no way on to the headspeed screen;
 --   2. Limit and Direct: the throttle row is shown (Direct reads the type: governor.c govDataUpdate),
 --      and there is no way on to the headspeed screen (neither mode holds a headspeed);
---   3. Electric and Nitro: the throttle row is shown and the way on leads to the headspeed screen.
+--   3. Electric and Nitro: the throttle row is shown, forward action is offered, and pressing it opens
+--      the headspeed screen (step 3).
 --
--- --self-test runs the same checks on two broken copies (the headspeed screen offered for every mode;
--- the throttle row hidden below Electric) and requires both to go red.
+-- --self-test runs the same checks on three broken copies (the headspeed screen offered for every mode;
+-- the throttle row hidden below Electric; the forward action returning to the mode screen) and requires
+-- all three to go red.
 
 local function scriptDir()
   local src = debug.getinfo(1, "S").source
@@ -43,15 +45,16 @@ local function anyObject()
   return setmetatable({}, { __index = function() return function() end end })
 end
 
--- A recording screen: the rows, the safety card's Start and the way forward of the last row().
+-- A recording screen: the rows, the safety card's Start, current step index, and the forward action.
 local holder = {}
 local function newScreen()
-  local s = {rows = nil, start = nil, forward = nil}
+  local s = {rows = nil, start = nil, forward = nil, stepIndex = nil}
   holder.screen = s
-  function s.begin() s.rows, s.start, s.forward = nil, nil, nil end
+  function s.begin() s.rows, s.start, s.forward, s.stepIndex = nil, nil, nil, nil end
   function s.checks(_, rows) s.rows = rows; return {} end
   function s.row(_, _, _, forward) s.forward = forward; return {} end
   function s.safety(_, _, _, _, startPress) s.start = startPress; return {} end
+  function s.step(_, current) s.stepIndex = current; return {} end
   return setmetatable(s, { __index = function() return function() return {} end end })
 end
 
@@ -78,6 +81,14 @@ end
 
 local function run(source)
   local before = failures
+  rfsuite = {
+    app = {
+      msp = {
+        mspQueue = {add = function() end},
+        common = setmetatable({}, { __index = function() return function() return {} end end }),
+      },
+    },
+  }
   package.loaded["rfsuite.lib.require"] = function(path)
     if path == "app/setup_wizard_ui.lua" then return {new = function() return newScreen() end} end
     if path == "app/setup_wizard_art.lua" then
@@ -108,7 +119,17 @@ local function run(source)
       check(name .. ": no way on to the headspeed screen", not onward)
     else
       check(name .. ": the throttle row is shown", hasThrottle)
-      check(name .. ": the way on leads to the headspeed screen", onward)
+      check(name .. ": forward button offered", onward)
+      local reachedHeadspeed = false
+      if onward then
+        local fwd = rawget(scr, "forward")
+        if fwd and fwd.press then
+          fwd.press()
+          node.build()
+          reachedHeadspeed = rawget(holder.screen, "stepIndex") == 3
+        end
+      end
+      check(name .. ": forward action opens headspeed screen", reachedHeadspeed)
     end
   end
   return failures - before
@@ -132,6 +153,9 @@ local mutants = {
   {name = "throttle row hidden below Electric",
    from = "(%-%- so a stored type must stay visible and changeable there%.\n)    if mode > 0 then\n",
    to = "%1    if mode >= 3 then\n"},
+  {name = "forward action returns to mode screen",
+   from = "forward = {text = T%.next, press = function%(%) go%(%\"speed%\"%) end}",
+   to = "forward = {text = T.next, press = function() go(\"mode\") end}"},
 }
 local red = 0
 for _, m in ipairs(mutants) do
@@ -150,7 +174,7 @@ for _, m in ipairs(mutants) do
   end
 end
 if red == #mutants then
-  print("OK  self-test: both broken copies go red")
+  print("OK  self-test: all " .. #mutants .. " broken copies go red")
   os.exit(0)
 end
 os.exit(1)
