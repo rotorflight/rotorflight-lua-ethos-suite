@@ -12,9 +12,10 @@
 --
 -- It pins:
 --   1. the range the wizard writes is the measured travel 20 us in from each end;
---   2. for an FC reading 0..14 us above the radio the guard passes, and from 15 us up it blocks;
+--   2. for an FC reading within 14 us of the radio the guard passes, and beyond 14 us it blocks;
 --   3. the receiver step blocks the range on the throttle channel's own gap, not on the first
---      channel that differs (throttleOff is kept apart from mismatch).
+--      channel that differs (throttleOff is kept apart from mismatch);
+--   4. a change in throttle offset triggers a UI rebuild even when another channel mismatch exists.
 --
 -- --self-test raises the guard back to the old 30 us tolerance and requires check 2 to go red.
 
@@ -62,17 +63,18 @@ local function runRange(heli)
   check("a travel under 300 us gives no range", heli.throttleFromMeasured(1000, 1200) == nil)
 
   -- The stick at the radio's low end reads `low`; the FC reads low + d.
+  -- Symmetrically checked for negative and positive offsets (-30 to +30 us).
   local rcMin = low + heli.RANGE_MARGIN_US
   local armBelow = rcMin - heli.ARM_DEADBAND_US
-  for d = 0, 30 do
+  for d = -30, 30 do
     local fc = low + d
     local arms = fc < armBelow
     local passes = heli.throttleOffsetOk(fc, low)
-    if d <= 14 then
-      check("an FC reading " .. d .. " us above the radio passes the guard", passes,
+    if math.abs(d) <= 14 then
+      check("an FC reading offset " .. d .. " us from the radio passes the guard", passes,
         "arms=" .. tostring(arms))
     else
-      check("an FC reading " .. d .. " us above the radio is blocked", not passes,
+      check("an FC reading offset " .. d .. " us from the radio is blocked", not passes,
         "arms=" .. tostring(arms))
     end
   end
@@ -85,6 +87,41 @@ local function runReceiver(source)
     source:find("throttleOff = not heli.throttleOffsetOk(fc, now)", 1, true) ~= nil)
   check("the range is blocked by throttleOff, not by the first mismatch",
     source:find("and not throttleOff", 1, true) ~= nil and source:find("mismatch ~= THROTTLE_SLOT", 1, true) == nil)
+  check("a throttle offset change triggers a rebuild even when mismatch is unchanged",
+    source:find("throttleOff ~= prevThrottleOff", 1, true) ~= nil)
+  return failures - before
+end
+
+local function runTransitionLogic()
+  local before = failures
+  -- Simulate onCheck transition logic with mismatch and throttleOff state
+  local function judge(compared, mismatch, throttleOff, found, newThrottleOff, judgedMismatch)
+    local prevThrottleOff = throttleOff
+    throttleOff = newThrottleOff
+    if not compared then return mismatch, throttleOff, false end
+    local mismatchChanged = found ~= mismatch
+    if not found and mismatch and not judgedMismatch then mismatchChanged = false end
+    local throttleOffChanged = throttleOff ~= prevThrottleOff
+    if not mismatchChanged and not throttleOffChanged then return mismatch, throttleOff, false end
+    if mismatchChanged then mismatch = found end
+    return mismatch, throttleOff, true
+  end
+
+  -- Case 1: Roll mismatch exists (mismatch=1, found=1). Throttle becomes offset (false -> true).
+  -- Must trigger rebuild!
+  local m1, t1, rebuilt1 = judge(true, 1, false, 1, true, true)
+  check("rebuild triggered when throttle becomes offset with roll mismatch", rebuilt1 and t1 == true and m1 == 1)
+
+  -- Case 2: Roll mismatch exists (mismatch=1, found=1). Throttle offset is corrected (true -> false).
+  -- Must trigger rebuild!
+  local m2, t2, rebuilt2 = judge(true, 1, true, 1, false, true)
+  check("rebuild triggered when throttle offset is fixed with roll mismatch", rebuilt2 and t2 == false and m2 == 1)
+
+  -- Case 3: No changes (mismatch=1, found=1, throttleOff=false, newThrottleOff=false).
+  -- Must NOT trigger rebuild.
+  local m3, t3, rebuilt3 = judge(true, 1, false, 1, false, true)
+  check("no rebuild when nothing changed", not rebuilt3 and m3 == 1)
+
   return failures - before
 end
 
@@ -92,7 +129,7 @@ local heliSource = readFile(HELI)
 local receiverSource = readFile(RECEIVER)
 
 if not SELF_TEST then
-  local n = runRange(loadHeli(heliSource)) + runReceiver(receiverSource)
+  local n = runRange(loadHeli(heliSource)) + runReceiver(receiverSource) + runTransitionLogic()
   if n == 0 then
     print("OK  throttle range: the guard blocks every FC offset that would stop the FC arming (" .. checks .. " checks)")
     os.exit(0)

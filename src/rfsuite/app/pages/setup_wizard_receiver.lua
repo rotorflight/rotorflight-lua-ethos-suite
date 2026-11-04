@@ -765,6 +765,7 @@ local function new(wiz)
     checkInFlight = false
     -- A warning stays until its own stick has been judged again.
     local compared, found, judgedMismatch = false, nil, false
+    local prevThrottleOff = throttleOff
     for slot = 1, FUNCTION_ROWS do
       local ch = rxMap and rxMap[rxMapCodec.FIELDS[slot]]
       local snap = checkSnap[slot]
@@ -780,9 +781,12 @@ local function new(wiz)
         if not found and math.abs(fc - now) > tolerance then found = slot end
       end
     end
-    if not compared or found == mismatch then return end
-    if not found and mismatch and not judgedMismatch then return end
-    mismatch = found
+    if not compared then return end
+    local mismatchChanged = found ~= mismatch
+    if not found and mismatch and not judgedMismatch then mismatchChanged = false end
+    local throttleOffChanged = throttleOff ~= prevThrottleOff
+    if not mismatchChanged and not throttleOffChanged then return end
+    if mismatchChanged then mismatch = found end
     wiz.rebuild()
   end
   local function onCheckError() checkInFlight = false end
