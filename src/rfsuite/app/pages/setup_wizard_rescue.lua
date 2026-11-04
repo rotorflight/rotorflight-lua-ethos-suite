@@ -219,8 +219,13 @@ local function new(wiz)
     local rows = {
       {label = T.enable, choice = {
         values = {{text = T.off, value = 0}, {text = T.on, value = 1}},
-        get = function() return current().rescue_mode or 0 end,
-        set = function(v) setAll("rescue_mode", tonumber(v)) end,
+        get = function() return (current().rescue_mode or 0) ~= 0 and 1 or 0 end,
+        set = function(v)
+          local m = tonumber(v) or 0
+          -- Keep a stored altitude-hold mode (2) when the pilot picks On.
+          if m == 1 and (current().rescue_mode or 0) == 2 then m = 2 end
+          setAll("rescue_mode", m)
+        end,
         disabled = not assigned}},
       {label = T.flip, choice = {
         values = {{text = T.noflip, value = 0}, {text = T.flipOn, value = 1}},
