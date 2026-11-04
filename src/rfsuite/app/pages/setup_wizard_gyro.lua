@@ -5,10 +5,10 @@
 --
 --   safety  the motor is unplugged; Start is greyed out until it is answered. Under the answer, what the
 --           check is: the helicopter is moved, and the swash (or the tail blades) should push back.
---   roll, pitch, yaw  one page per axis: the EdgeTX picture on the left; on the right a switch between
---           Against the movement (the default, as the gyro should do it) and With the movement. With
---           the movement shows the board orientation note and a button to the Sensors step, and the way
---           forward waits until the answer is Against. Yaw only for a servo tail: a motor tail does not
+--   roll, pitch, yaw  one page per axis: the EdgeTX picture on the left; on the right a choice between
+--           Against the movement and With the movement. No answer is pre-set: each axis starts unanswered,
+--           and the way forward waits until the pilot picks Against. With the movement shows the board
+--           orientation note and a button to the Sensors step. Yaw only for a servo tail: a motor tail does not
 --           turn while disarmed. On the last axis the way forward is Save and continue.
 --
 -- A wrong answer means the board orientation doesn't match how the board is mounted (the earlier steps
@@ -62,7 +62,7 @@ local function new(wiz)
 
   local screen = "safety"
   local ci = 1
-  local against = {}          -- per axis: true (the default) when the gyro corrects against the movement
+  local against = {}          -- per axis: true when Against, false when With, nil while unanswered
 
   local function go(name)
     screen = name
@@ -82,25 +82,28 @@ local function new(wiz)
     if ci > 1 then ci = ci - 1; go("check") else go("safety") end
   end
 
-  -- The page of an axis: the picture on the left; on the right the switch between the two answers.
+  -- The page of an axis: the picture on the left; on the right the choice between the two answers.
+  -- No answer is assumed: an axis starts unanswered (nil), and the way forward waits for an explicit
+  -- Against. Only an explicit With shows the wrong-answer note.
   local function buildCheck()
     local c = checks[ci]
-    local isAgainst = against[ci] ~= false
+    local isAgainst = against[ci] == true
     scr:text(c.title, c.text, nil, string.format(T.progress, ci, #checks))
     scr:step(ci + 1, #checks + 1)
     scr:picture(layouts[ci])
     local rows = {
-      {toggle = {
-        function() return against[ci] ~= false end,
-        function(v)
-          against[ci] = v and true or false
-          wiz.rebuild()
-        end,
-        T.with, T.against}},
+      {answer = T.against, marked = against[ci] == true, press = function()
+        against[ci] = true
+        wiz.rebuild()
+      end},
+      {answer = T.with, marked = against[ci] == false, press = function()
+        against[ci] = false
+        wiz.rebuild()
+      end},
     }
-    if not isAgainst then
+    if against[ci] == false then
       rows[#rows + 1] = {note = T.wrong}
-      rows[#rows + 1] = {answer = T.goSensors, press = function() wiz.goToStep("sensors") end}
+      rows[#rows + 1] = {answer = T.goSensors, marked = false, press = function() wiz.goToStep("sensors") end}
     end
     local field = scr:checks(rows)
     local last = ci >= #checks

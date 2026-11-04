@@ -24,7 +24,7 @@ model is armed. The step needs a swashplate type to be set first.
 | Roll | Roll the helicopter quickly to the right. The swash should tilt left, against the movement. |
 | Pitch | Tip the nose down quickly. The swash should tilt back, against the movement. |
 | Yaw | Turn the nose quickly to the right. The tail blades should push the nose back to the left. |
-| Against / With | A switch on the right. Against (the default) is the gyro correcting the movement, as the picture shows. Press it to switch to With: the gyro moves with the movement. That shows the board orientation note and a button to the Sensors step, and the way forward waits until the answer is Against again. |
+| Against / With | Two choices on the right. Nothing is answered at first: neither is marked, and the way forward stays greyed out until you pick Against, the gyro correcting the movement as the picture shows. Pick With if the gyro moves with the movement: that marks With, shows the board orientation note and a button to the Sensors step, and the way forward waits until the answer is Against again. |
 
 ## Notes
 
