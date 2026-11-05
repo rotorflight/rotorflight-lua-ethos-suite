@@ -396,7 +396,11 @@ print("A shaking axis with no P step still gives the shake reason")
 do
   resetFc()
   flightRollShake = 49
-  flightRoll = {P = 1}            -- P already at its floor: no P step
+  -- P already at its floor: no P step. The response is on target and the
+  -- collective is even, so the shake is the only reason and "answers as asked"
+  -- would sit beside it on the base page.
+  local even = {{gain = 1, count = 0}, {gain = 1, count = 0}, {gain = 1, count = 0}}
+  flightRoll = {P = 1, ffGain = 1.0, collBands = even}
   openPage()
   pump()
   local shown = {}
@@ -404,7 +408,8 @@ do
   paintFn()
   lcd.drawText = nil
   local text = table.concat(shown, "\n")
-  check("the shake is named in the reasons", text:find("why_shake", 1, true) ~= nil, text)
+  check("the shake is named in the reasons", text:find("why_shake_no_step_fmt", 1, true) ~= nil, text)
+  check("the axis is not said to answer as asked", text:find("why_ok", 1, true) == nil, text)
   flightRollShake = nil
   flightRoll = nil
 end
