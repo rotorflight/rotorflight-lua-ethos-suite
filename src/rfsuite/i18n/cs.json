@@ -7143,10 +7143,10 @@
           "translation": "Před letem"
         },
         "activelook_restart_radio": {
-          "english": "Apply: restart radio",
-          "max_length": 21,
+          "english": "Save, then restart the radio.",
+          "max_length": 30,
           "needs_translation": false,
-          "translation": "Použít: restart rádia"
+          "translation": "Uložte, pak restartujte rádio."
         },
         "activelook_rf_link_limit": {
           "english": "RSSI limit",

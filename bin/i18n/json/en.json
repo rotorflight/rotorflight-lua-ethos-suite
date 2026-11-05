@@ -1841,10 +1841,10 @@
           "max_length": 21
         },
         "activelook_restart_radio": {
-          "english": "Apply: restart radio",
-          "translation": "Apply: restart radio",
+          "english": "Save, then restart the radio.",
+          "translation": "Save, then restart the radio.",
           "needs_translation": false,
-          "max_length": 20
+          "max_length": 29
         },
         "activelook_setup_hint": {
           "english": "One-time setup:\nModel > Glasses > Screen\nChoose the Full-Screen layout.\nAssign Rotorflight ActiveLook.",

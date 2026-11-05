@@ -7143,10 +7143,10 @@
           "translation": "Preflight"
         },
         "activelook_restart_radio": {
-          "english": "Apply: restart radio",
-          "max_length": 25,
+          "english": "Save, then restart the radio.",
+          "max_length": 41,
           "needs_translation": false,
-          "translation": "Bruk: start radio på nytt"
+          "translation": "Lagre, og start deretter radioen på nytt."
         },
         "activelook_rf_link_limit": {
           "english": "RSSI limit",

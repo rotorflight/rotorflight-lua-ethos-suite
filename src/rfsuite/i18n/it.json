@@ -7143,10 +7143,10 @@
           "translation": "Privolo"
         },
         "activelook_restart_radio": {
-          "english": "Apply: restart radio",
-          "max_length": 24,
+          "english": "Save, then restart the radio.",
+          "max_length": 32,
           "needs_translation": false,
-          "translation": "Applicare: riavvio radio"
+          "translation": "Salvare, poi riavviare la radio."
         },
         "activelook_rf_link_limit": {
           "english": "RSSI limit",

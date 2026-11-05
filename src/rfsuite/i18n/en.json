@@ -6141,10 +6141,10 @@
           "translation": "Preflight"
         },
         "activelook_restart_radio": {
-          "english": "Apply: restart radio",
-          "max_length": 20,
+          "english": "Save, then restart the radio.",
+          "max_length": 29,
           "needs_translation": false,
-          "translation": "Apply: restart radio"
+          "translation": "Save, then restart the radio."
         },
         "activelook_rf_link_limit": {
           "english": "RSSI limit",
