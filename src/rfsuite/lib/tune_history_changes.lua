@@ -111,7 +111,7 @@ end
 function changes.pilotValue(rows, axis, key, value, pidProfile)
   for i = #rows, 1, -1 do
     local c = rows[i]
-    local sameProfile = pidProfile == nil or c.pidProfile == pidProfile
+    local sameProfile = pidProfile == nil or c.pidProfile == nil or c.pidProfile == pidProfile
     if c.axis == axis and c.key == key and sameProfile then
       if c.to ~= value then break end
       value = c.from

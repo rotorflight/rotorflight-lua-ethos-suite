@@ -68,8 +68,14 @@ end
 
 local tuneHistory = {MAX_FLIGHTS = MAX_FLIGHTS, AXIS_COUNT = AXIS_COUNT, TUNE_KEYS = TUNE_KEYS}
 
--- Apply-record handling is also used by the Tune Advisor page.
-local changesModule = requireModule("lib/tune_history_changes.lua")
+-- Apply-record handling is only used by the Tune Advisor page. Keep its
+-- implementation out of the boot-resident flight-history module; the page
+-- loads it on demand through these API-compatible wrappers.
+local changesModule
+local function getChangesModule()
+  if not changesModule then changesModule = requireModule("lib/tune_history_changes.lua") end
+  return changesModule
+end
 
 local function safeMkdir(path)
   if os and os.mkdir then pcall(os.mkdir, path) end
@@ -148,15 +154,15 @@ function tuneHistory.save(mcuId, modelName, replies)
 end
 
 function tuneHistory.logChanges(...)
-  return changesModule.logChanges(...)
+  return getChangesModule().logChanges(...)
 end
 
 function tuneHistory.readChanges(...)
-  return changesModule.readChanges(...)
+  return getChangesModule().readChanges(...)
 end
 
 function tuneHistory.pilotValue(...)
-  return changesModule.pilotValue(...)
+  return getChangesModule().pilotValue(...)
 end
 
 function tuneHistory.erase(mcuId)
