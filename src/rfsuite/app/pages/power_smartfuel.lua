@@ -22,11 +22,8 @@ local function cleanModelType(value)
   return math.floor(value + 0.5)
 end
 
-local function smartfuelActive(runtime)
-  local mode = tonumber(runtime.data.smartfuel_mode or 0) or 0
-  return mode == 1 or mode == 3
-end
-
+-- The drop rates feed the radio's own estimate (Source OFF) and the voltage-based modes;
+-- sag gain only the voltage-based modes. CURRENT (2) uses none of them.
 local function refreshTuning(runtime)
   local mode = tonumber(runtime.data.smartfuel_mode or 0) or 0
   local loaded = runtime.loaded and not runtime.activeDialog
@@ -39,7 +36,8 @@ local function refreshTuning(runtime)
 end
 
 local function open(opts)
-  local lastEnabled = nil
+  -- The mode the fields were last enabled for: each mode enables its own set.
+  local lastMode = nil
   local sessionHandler = nil
   local mcuId = nil
   local prefs = nil
@@ -60,7 +58,7 @@ local function open(opts)
       "rfsuite.lib.msp_smartfuel_config",
     },
     onLoaded = function()
-      lastEnabled = nil
+      lastMode = nil
       refreshTuning(runtime)
       if modelTypeField and modelTypeField.enable then
         modelTypeField:enable(modelTypeLoaded and runtime.loaded and not runtime.activeDialog)
@@ -101,9 +99,8 @@ local function open(opts)
     end,
     onWakeup = function(rt)
       local mode = tonumber(rt.data.smartfuel_mode or 0) or 0
-      local enabled = mode == 0 or mode == 1 or mode == 3
-      if enabled ~= lastEnabled then
-        lastEnabled = enabled
+      if mode ~= lastMode then
+        lastMode = mode
         refreshTuning(rt)
       end
       if modelTypeField and modelTypeField.enable then
