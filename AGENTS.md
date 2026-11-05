@@ -195,3 +195,17 @@ This repository:
   (`quit`, then start it again).
 - **No flight controller needed:** the suite's built-in simulated sensors and MSP responses (`src/rfsuite/sim/sensors/` and the `simulatorResponse` tables in `src/rfsuite/lib/msp_*.lua`) populate pages such as PIDs.
 - **Lua errors** appear in the output of the `log` command, not on screen.
+
+## 12) Agent Skills
+
+Step-by-step skills for tasks that need local tools are in
+[rotorflight-agent-skills](https://github.com/rotorflight/rotorflight-agent-skills).
+In Claude Code, install them with `/plugin marketplace add rotorflight/rotorflight-agent-skills`
+and `/plugin install rotorflight-dev@rotorflight`. Other agents: clone that repository and read
+the skill's `SKILL.md` before starting the task.
+
+| Skill | Use it to |
+| --- | --- |
+| [ethos-simulator](https://github.com/rotorflight/rotorflight-agent-skills/blob/master/skills/ethos-simulator/SKILL.md) | run the Ethos suite in the Ethos simulator |
+| [ethos-real-radio](https://github.com/rotorflight/rotorflight-agent-skills/blob/master/skills/ethos-real-radio/SKILL.md) | drive a real Ethos radio over USB |
+| [firmware-sitl](https://github.com/rotorflight/rotorflight-agent-skills/blob/master/skills/firmware-sitl/SKILL.md) | build and run the firmware on a PC, drive it over MSP/CRSF/UDP |
