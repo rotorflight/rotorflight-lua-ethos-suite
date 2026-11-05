@@ -58,6 +58,7 @@ local T = {
   suggest = "@i18n(app.modules.setup_wizard.pit_suggest_fmt)@",
   fullTitle = "@i18n(app.modules.setup_wizard.pit_full_title)@",
   fullText = "@i18n(app.modules.setup_wizard.pit_full_text)@",
+  actualNote = "@i18n(app.modules.setup_wizard.rates_actual_note)@",
   profileFmt = "@i18n(app.modules.setup_wizard.pit_profile_fmt)@",
   start = "@i18n(app.modules.setup_wizard.btn_start)@",
   next = "@i18n(app.modules.setup_wizard.btn_next)@",
@@ -345,7 +346,7 @@ local function new(wiz)
 
   local function setFullStick(index, tenths)
     local current = tunings[index]
-    if not current or not originals[index] then return end
+    if not current or not originals[index] or not R.collectiveSettable(current) then return end
     local raw = heli.clamp(math.floor(tenths / FULL_TENTHS_PER_RAW + 0.5), 0, 255)
     if math.floor(current.rcRates_4 or 0) == raw then return end
     local written = R.copy(current)
@@ -427,16 +428,20 @@ local function new(wiz)
   -- One page for all rate profiles the switch picks: a row each for its collective at full stick.
   local function buildFull(back, forwardSpec)
     local rows = {}
+    local actual = false
     for _, index in ipairs(indexes) do
-      if tunings[index] then
+      if tunings[index] and R.collectiveSettable(tunings[index]) then
         rows[#rows + 1] = {label = string.format(T.profileFmt, index + 1), number = {0, FULL_MAX,
           function() return fullTenths(index) end,
           function(value) setFullStick(index, math.floor(value + 0.5)) end,
           DEG, 1}}
+      elseif tunings[index] then
+        actual = true
       end
     end
     local ready = #rows > 0
-    scr:text(T.fullTitle, ready and T.fullText or (loadFailed and T.loadFailed or T.loading))
+    local body = (ready or actual) and T.fullText or (loadFailed and T.loadFailed or T.loading)
+    scr:text(T.fullTitle, body, actual and T.actualNote or nil)
     scr:picture(pitchPicture)
     return finish(ready and scr:checks(rows) or nil, back, forwardSpec)
   end
