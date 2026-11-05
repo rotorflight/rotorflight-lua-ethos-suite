@@ -44,7 +44,8 @@ Greyed out until the flight controller answers. Read-only while the model is arm
   on all firmware versions.
 - *Edit Battery* starts on the active profile each time the page is opened.
 
-- A value of 0 disables the consumption reserve.
+- *Consumption Warning %* can be set from 0, as the flight controller accepts it. At 0 there is no
+  warning stage: the flight controller only reports the pack as critical once the capacity is used up.
 
 ## Related
 
