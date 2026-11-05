@@ -16,7 +16,7 @@ local modesMsp = requireModule("lib/msp_modes.lua")
 
 local OWNED = {}
 
-local MAX_PROFILES = 3
+local MAX_PROFILES = 6
 -- The Rescue box in the mode list (the Modes step's "rescue", id 53).
 local RESCUE_BOX = 53
 
