@@ -286,5 +286,3 @@ end
 bus.subscribe("session.update", onSessionUpdate)
 
 return {wakeup = wakeup}
- 
- 
