@@ -235,7 +235,7 @@ local function open(opts)
   fieldLayout.buildSingle(runtime, "    @i18n(app.modules.power.consumption_warning_percentage)@", {
     source = "battery",
     key = "consumptionWarningPercentage",
-    min = 15,
+    min = 0,
     max = 60,
   })
 
