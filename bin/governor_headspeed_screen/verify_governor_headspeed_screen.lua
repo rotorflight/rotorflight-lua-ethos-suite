@@ -7,8 +7,8 @@ local ROOT = scriptDir() .. "/../.."
 local SELF_TEST = arg and arg[1] == "--self-test"
 
 local function readFile(p)
-  local f = io.open(p, "r"); assert(f, p)
-  local s = f:read("*a"); f:close(); return s
+  local f = io.open(p, "rb"); assert(f, p)
+  local s = f:read("*a"); f:close(); return (s:gsub("\r\n", "\n"))
 end
 local function contains(s, needle) return s:find(needle, 1, true) ~= nil end
 
