@@ -41,7 +41,7 @@ local FIELD_META = {
   motor_startup_sound = {choices = ON_OFF},
   soft_start_time = {min = 0, max = 60000, scale = 1000, suffix = "s"},
   runup_time = {min = 0, max = 60000, scale = 1000, suffix = "s"},
-  bailout = {min = 0, max = 65535, scale = 1000, suffix = "s"},
+  bailout = {min = 0, max = 65000, scale = 1000, suffix = "s"}, -- u16 ms: 65 s is the last whole second
   gov_proportional = {min = 30, max = 180, scale = 100, decimals = 2},
   gov_integral = {min = 150, max = 250, scale = 100, decimals = 2},
 }

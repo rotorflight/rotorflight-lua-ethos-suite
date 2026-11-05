@@ -20,7 +20,7 @@ Greyed out until the flight controller answers. Read-only while the model is arm
 | --- | --- |
 | RPM Sensor | Configures RPM Sensor. |
 | DShot RPM Telemetry | Configures DShot RPM Telemetry. |
-| Motor Pole Count | Configures Motor Pole Count. Range: 2 to 256. Default: 10. |
+| Motor Pole Count | Configures Motor Pole Count. Range: 2 to 255. Default: 10. The flight controller holds it in one byte, so 255 is the highest value it can store. |
 | Main Motor Ratio (Pinion) | Configures Main Motor Ratio (Pinion). Range: 1 to 50000. Default: 1. |
 | Main Motor Ratio (Main) | Configures Main Motor Ratio (Main). Range: 1 to 50000. Default: 1. |
 | Tail Motor Ratio (Rear) | Configures Tail Motor Ratio (Rear). Range: 1 to 50000. Default: 1. |
