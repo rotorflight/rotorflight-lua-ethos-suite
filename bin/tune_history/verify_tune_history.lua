@@ -27,6 +27,15 @@ local files = {}
 local realOpen = io.open
 io.open = function(path, mode)
   if type(path) == "string" and path:sub(1, 5) == "LOGS:" then
+    if mode == "a" then
+      if files[path] == nil then files[path] = "" end
+      return {
+        write = function(_, ...)
+          for i = 1, select("#", ...) do files[path] = files[path] .. tostring(select(i, ...)) end
+        end,
+        close = function() end,
+      }
+    end
     if files[path] == nil then return nil end
     return {close = function() end}
   end
@@ -433,6 +442,25 @@ do
   -- logChanges() appends whatever the header says: those rows must still read
   files[CHANGES] = "date;axis;setting\n2026-10-01 10:00:00,roll,P,50,60\n"
   check("rows under another header are still read", #tuneHistory.readChanges(MCU) == 1)
+  files[CHANGES] = nil
+end
+
+print("Appending an Apply upgrades the recognized legacy CSV header")
+do
+  local CHANGES = "LOGS:/rfsuite/tune/" .. MCU .. "/changes.csv"
+  files[CHANGES] = "date,axis,setting,from,to\n"
+    .. "2026-10-01 10:00:00,roll,P,50,60\n"
+    .. "2026-10-01 10:01:00,pitch,F,90,80"
+  check("a legacy Apply appends successfully", tuneHistory.logChanges(MCU, 1, {
+    {key = "P", from = 60, to = 70},
+  }, 2))
+  local text = files[CHANGES]
+  check("the migrated header names pid_profile", text:match("^[^\r\n]*") == "date,axis,setting,from,to,pid_profile")
+  check("legacy rows gain an empty profile field", text:find("2026%-10%-01 10:00:00,roll,P,50,60,\n") ~= nil
+    and text:find("2026%-10%-01 10:01:00,pitch,F,90,80,\n") ~= nil)
+  local rows = tuneHistory.readChanges(MCU)
+  check("legacy and appended rows still parse with their profile values", #rows == 3
+    and rows[1].pidProfile == nil and rows[2].pidProfile == nil and rows[3].pidProfile == 2, #rows)
   files[CHANGES] = nil
 end
 

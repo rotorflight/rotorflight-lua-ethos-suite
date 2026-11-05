@@ -687,15 +687,19 @@ local function open(opts)
 
   local function onSession(snapshot)
     if disposed then return end
+    local pidProfileChanged = false
     if snapshot then
       link.connected = snapshot.connected == true
       link.armed = snapshot.isArmed == true
+      pidProfileChanged = link.pidProfile ~= snapshot.pidProfile
       link.pidProfile, link.rateProfile = snapshot.pidProfile, snapshot.rateProfile
       if snapshot.fcVersion ~= nil then fcVersion = snapshot.fcVersion end
     end
     -- A link loss keeps the aircraft: its saved flights do not need the link
     local nextMcuId = snapshot and snapshot.mcuId or nil
     if nextMcuId == nil or nextMcuId == mcuId then
+      -- The P cap depends on the active PID profile.
+      if pidProfileChanged then render() end
       probe()
       return
     end

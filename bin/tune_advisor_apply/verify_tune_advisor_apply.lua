@@ -474,6 +474,30 @@ do
   check("no record: the current value", tuneHistory.pilotValue({}, 1, "P", 58, 0) == 58)
 end
 
+print("Advice refreshes when the PID profile changes on the same aircraft")
+do
+  resetFc()
+  flightRoll = {ffGain = 1.0, fullCount = 0, releases = 20, meanRebound = 0.2, meanIterm = 0}
+  changeLog = {
+    {axis = 1, key = "P", from = 50, to = 60, pidProfile = 0},
+    {axis = 2, key = "P", from = 50, to = 60, pidProfile = 0},
+    {axis = 1, key = "P", from = 60, to = 70, pidProfile = 0},
+  }
+  session.pidProfile = 0
+  openPage()
+  pump()
+  check("the current profile's 1.5x P cap blocks another increase", saveEnabled == false)
+
+  session.pidProfile = 1
+  subs["session.update"](session)
+  pump()
+  check("same-aircraft profile change refreshes the P cap", saveEnabled == true)
+
+  session.pidProfile = 0
+  flightRoll = nil
+  changeLog = {}
+end
+
 print()
 print(string.format("%d checks, %d failed", checks, failures))
 os.exit(failures == 0 and 0 or 1)

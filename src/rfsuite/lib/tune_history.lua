@@ -150,12 +150,53 @@ end
 -- changes have moved a setting on that profile (pilotValue()).
 -- Appended, never trimmed, and kept by erase(): it is the pilot's record.
 local CHANGES_HEADER = "date,axis,setting,from,to,pid_profile"
+local LEGACY_CHANGES_HEADER = "date,axis,setting,from,to"
+
+-- Keep a recognized pre-profile file usable by CSV readers after the first
+-- profile-aware Apply. Preserve line endings and malformed rows; only legacy
+-- five-column rows need an empty sixth field.
+local function migrateLegacyChanges(path)
+  local text = ini.load_file_as_string(path)
+  if not text or text:match("^[^\r\n]*") ~= LEGACY_CHANGES_HEADER then return true end
+
+  local out, lineNumber, start = {}, 0, 1
+  while start <= #text do
+    local ending = text:find("[\r\n]", start)
+    local line, newline
+    if ending then
+      line = text:sub(start, ending - 1)
+      newline = text:sub(ending, ending)
+      if newline == "\r" and text:sub(ending + 1, ending + 1) == "\n" then
+        newline = "\r\n"
+      end
+      start = ending + #newline
+    else
+      line, newline = text:sub(start), ""
+      start = #text + 1
+    end
+
+    lineNumber = lineNumber + 1
+    if lineNumber == 1 then
+      line = CHANGES_HEADER
+    elseif line ~= "" and select(2, line:gsub(",", "")) == 4 then
+      line = line .. ","
+    end
+    out[#out + 1] = line .. newline
+  end
+
+  local migrated = table.concat(out)
+  if migrated:sub(-1) ~= "\n" and migrated:sub(-1) ~= "\r" then
+    migrated = migrated .. "\n"
+  end
+  return atomicWrite.write(path, migrated)
+end
 
 -- changes: {key, from, to} as the Tune Advisor page builds them; pidProfile
 -- is the profile they were applied to (empty when the FC did not say)
 function tuneHistory.logChanges(mcuId, axis, changes, pidProfile)
   local path = BASE_DIR .. "/" .. mcuId .. "/changes.csv"
   local isNew = not fileExists(path)
+  if not isNew and not migrateLegacyChanges(path) then return false end
   local file = io.open(path, "a")
   if not file then return false end
   local date = os.date("%Y-%m-%d %H:%M:%S")
@@ -168,10 +209,10 @@ function tuneHistory.logChanges(mcuId, axis, changes, pidProfile)
 end
 
 -- The Apply record, oldest first: {axis, key, from, to, pidProfile} per row.
--- Every row that parses is read, whatever the header says: logChanges() appends
--- to the file as it is, so a header check would lose every later record. A row
--- from before the pid_profile column reads with pidProfile nil. A missing file,
--- or one with no such rows, reads as no changes.
+-- Every row that parses is read regardless of header. The writer upgrades only
+-- the exact legacy header before appending; foreign files remain untouched.
+-- Rows from before the pid_profile column read with pidProfile nil. A missing
+-- file, or one with no such rows, reads as no changes.
 function tuneHistory.readChanges(mcuId)
   local changes = {}
   local text = ini.load_file_as_string(BASE_DIR .. "/" .. mcuId .. "/changes.csv")

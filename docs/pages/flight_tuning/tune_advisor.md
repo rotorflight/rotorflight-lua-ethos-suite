@@ -120,8 +120,9 @@ applies an adjustment straight away and saves it when you disarm.
   knob moves, and at every power-up while its range is enabled, the value goes back to what the knob says. A value
   written by *Save* then lasts only until that happens. Before applying advice to a setting, set its *Mapped*
   adjustment's *Type* to *Off*, or leave the knob where it gives the new value.
-- *Save* checks the profiles and values at the moment it writes, so an adjustment or profile switch made since the
-  flights stops it with nothing changed.
+- The advice refreshes when the active PID profile changes, so its P cap follows the new profile. *Save* checks the
+  profiles and values at the moment it writes, so an adjustment or profile switch made since the flights stops it
+  with nothing changed.
 
 ## Source
 
