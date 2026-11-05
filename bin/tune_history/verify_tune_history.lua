@@ -67,6 +67,8 @@ local requireModule = package.loaded["rfsuite.lib.require"]
 
 local tuneAdvisor = requireModule("lib/msp_tune_advisor.lua")
 local tuneHistory = requireModule("lib/tune_history.lua")
+check("boot-resident flight history leaves Apply-record code unloaded",
+  package.loaded["rfsuite.lib.tune_history_changes"] == nil)
 
 -- Each reply is the simulator fixture with these overrides
 local reply = {seconds = 147, F = 100}
@@ -433,6 +435,8 @@ do
     .. "2026-10-01 10:00:00,pitch,relaxCutoff,10,8\n"
     .. "not,a,row\n"
   local rows = tuneHistory.readChanges(MCU)
+  check("the Apply-record code loads on first page-specific use",
+    package.loaded["rfsuite.lib.tune_history_changes"] ~= nil)
   check("each row reads as axis, setting, from, to", #rows == 2 and rows[1].axis == 1 and rows[1].key == "P"
     and rows[1].from == 50 and rows[1].to == 60 and rows[2].axis == 2 and rows[2].to == 8, #rows)
   files[CHANGES] = nil
