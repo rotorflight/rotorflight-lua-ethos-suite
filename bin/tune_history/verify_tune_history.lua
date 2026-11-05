@@ -67,8 +67,6 @@ local requireModule = package.loaded["rfsuite.lib.require"]
 
 local tuneAdvisor = requireModule("lib/msp_tune_advisor.lua")
 local tuneHistory = requireModule("lib/tune_history.lua")
-check("boot-resident flight history leaves Apply-record code unloaded",
-  package.loaded["rfsuite.lib.tune_history_changes"] == nil)
 
 -- Each reply is the simulator fixture with these overrides
 local reply = {seconds = 147, F = 100}
@@ -435,8 +433,6 @@ do
     .. "2026-10-01 10:00:00,pitch,relaxCutoff,10,8\n"
     .. "not,a,row\n"
   local rows = tuneHistory.readChanges(MCU)
-  check("the Apply-record code loads on first page-specific use",
-    package.loaded["rfsuite.lib.tune_history_changes"] ~= nil)
   check("each row reads as axis, setting, from, to", #rows == 2 and rows[1].axis == 1 and rows[1].key == "P"
     and rows[1].from == 50 and rows[1].to == 60 and rows[2].axis == 2 and rows[2].to == 8, #rows)
   files[CHANGES] = nil
@@ -480,8 +476,11 @@ do
   check("another PID profile's Apply is not followed", tuneHistory.pilotValue(rows, 1, "P", 60, 2) == 60,
     tostring(tuneHistory.pilotValue(rows, 1, "P", 60, 2)))
   files[CHANGES] = "date,axis,setting,from,to\n2026-10-01 10:00:00,roll,P,50,60\n"
-  check("a row from before the PID profile column is followed as before", tuneHistory.pilotValue(
-    tuneHistory.readChanges(MCU), 1, "P", 60, 1) == 50)
+  local legacyRows = tuneHistory.readChanges(MCU)
+  check("a legacy row without a profile is not followed when the active profile is known",
+    tuneHistory.pilotValue(legacyRows, 1, "P", 60, 1) == 60)
+  check("a legacy row without a profile is followed when the active profile is unknown",
+    tuneHistory.pilotValue(legacyRows, 1, "P", 60, nil) == 50)
   files[CHANGES] = "date,axis,setting,from,to,pid_profile\n"
     .. "2026-10-01 10:00:00,roll,P,50,60,1\n"
   check("with no active PID profile known, the Apply record is still followed", tuneHistory.pilotValue(
