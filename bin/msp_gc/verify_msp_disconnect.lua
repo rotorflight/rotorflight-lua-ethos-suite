@@ -275,6 +275,11 @@ do
   for _, request in ipairs(rig.queue.added) do
     if request.name == "FLIGHT_STATS" then readsBeforeReconnect = readsBeforeReconnect + 1 end
   end
+  stage = "finish"
+  rig.tick(true)
+  -- Let the finish-triggered sync become due while the reconnect handshake is
+  -- still unanswered. This reaches the retained-UID MSP request path.
+  clock = clock + 2
   rig.tick(true)
   local readsBeforeUid = 0
   for _, request in ipairs(rig.queue.added) do

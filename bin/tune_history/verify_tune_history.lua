@@ -377,7 +377,7 @@ do
   update({isArmed = true})
   update({isArmed = false})
   local asked = pump({clear = {n = 1, reason = "timeout"}}, 4)
-  check("flight one is saved before its clear fails", asked == "roll,pitch,yaw,clear" and #lines() == 4,
+  check("a flight is saved before its clear fails", asked == "roll,pitch,yaw,clear" and #lines() == 4,
     asked .. " / " .. #lines() .. " lines")
   disarmAndWait()
   requests[1].errorHandler("tune advisor payload version 2, expected 1", true)
@@ -395,9 +395,9 @@ do
   update({isArmed = true})
   update({isArmed = false})
   local asked = pump({clear = {n = 99, reason = "timeout"}}, 4)
-  check("flight one is saved before its clear fails", asked == "roll,pitch,yaw,clear" and #lines() == 4,
+  check("the first FC's flight is saved before its clear fails", asked == "roll,pitch,yaw,clear" and #lines() == 4,
     asked .. " / " .. #lines() .. " lines")
-  for _ = 1, 4 do
+  for _ = 1, 12 do -- past RETRY_SECONDS while the reconnect UID is still unconfirmed
     clock = clock + 0.5
     update({isArmed = false, mcuId = MCU, handshake = {mcuId = false}})
   end
