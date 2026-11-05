@@ -7,16 +7,53 @@ for each phase.
 
 ## Configure
 
-Open **System → Settings → ActiveLook** on the transmitter. The Settings page
-enables the widget and sets its display offset. The Preflight, Inflight and
-Postflight pages each select a layout and assign up to four values to it. The
-Alerts page configures Low Fuel, ESC temperature and governor overlays.
-These settings are available offline and become read-only while the model is
-armed.
+Open **System → Settings → ActiveLook** on the transmitter. Settings are available
+offline and read-only while the model is armed. Changes are stored on Save in
+`[activelook]` in `SCRIPTS:/rfsuite.user/settings.ini`, not in FC EEPROM.
 
-Settings are stored in `[activelook]` in
-`SCRIPTS:/rfsuite.user/settings.ini`. They are RFSuite settings, not flight
-controller EEPROM settings.
+The **ETHOS Glasses menu** switch is shown only on ETHOS **26.2.0 or newer** and
+only when `system.registerGlasses()` is available. It defaults to **off**; an
+existing saved choice is preserved. Enable it, save, and restart the transmitter
+to make **Model → Glasses** available. Pair and configure the glasses there.
+Changing the switch in either direction shows a restart reminder dialog instead
+of a permanent form note. Turning it off, saving and restarting skips the suite's
+registration. Other Lua scripts can still register the menu.
+
+**Rotorflight ActiveLook** enables the Rotorflight glasses display. This switch
+is disabled while the visible ETHOS Glasses menu switch is off; its saved value
+is retained. When the menu switch is unavailable, this restriction does not apply.
+Switching the display from off to on shows a setup reminder: open **Model →
+Glasses → Screen**, choose the **Full-Screen** layout and assign **Rotorflight
+ActiveLook**. Confirming the reminder does not configure ETHOS or save the page.
+Use Save as usual. Opening an already enabled page shows no reminder.
+
+The Settings page also selects a Hide Display switch and the display offsets.
+The Preflight, Inflight and Postflight pages select layouts and up to four values
+per phase. Alerts configures fuel, temperature, RF link and governor overlays.
+
+When the saved menu preference is on and the API exists, `main.lua` registers
+support once per loaded suite instance in `init()`, before registering the
+existing glasses widget. The suite does not unregister it during the session.
+Opening the tool or enabling an additional task is unnecessary for registration.
+The existing background task is still needed for Rotorflight telemetry and alerts.
+Firmware without the API skips the call and retains its existing behavior.
+
+Startup reads only `register_glasses` from the settings file, without loading or
+normalizing the full configuration. This avoids a reproduced startup instruction
+limit with larger saved dashboard sections. The full settings reader remains in
+use for the normal settings flows; no periodic registration or reader is added.
+
+The [official API example](https://ethos-lua-doc.frsky-rc.com/api/system/registerGlasses/)
+registers support in `init()` without a wakeup callback. No polling or additional
+background task is added. The suite must remain installed and load successfully
+after a transmitter restart.
+
+Registration, opening the Glasses page and both saved preference values across
+restarts were checked in the X20PRO simulator with ETHOS 26.2.0-RC1 and suite
+2.3.1. Full visual verification of the settings interactions remains incomplete:
+tool opening encountered an instruction-limit error and subsequent navigation
+was restricted with the background task inactive. Bluetooth connectivity and
+ENGO2 hardware operation still require validation on compatible hardware.
 
 ## Flight phases and statistics
 

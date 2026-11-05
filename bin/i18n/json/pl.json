@@ -2132,6 +2132,24 @@
           "reverse_text": false,
           "max_length": 8
         },
+        "activelook_glasses_menu": {
+          "english": "ETHOS Glasses menu",
+          "translation": "Menu okularów ETHOS",
+          "needs_translation": false,
+          "max_length": 21
+        },
+        "activelook_restart_radio": {
+          "english": "Apply: restart radio",
+          "translation": "Zastosuj: restart radia",
+          "needs_translation": false,
+          "max_length": 23
+        },
+        "activelook_setup_hint": {
+          "english": "One-time setup:\nModel > Glasses > Screen\nChoose the Full-Screen layout.\nAssign Rotorflight ActiveLook.",
+          "translation": "Konfiguracja jednorazowa:\nModel > Okulary > Ekran\nWybierz układ Full-Screen.\nPrzypisz Rotorflight ActiveLook.",
+          "needs_translation": false,
+          "max_length": 120
+        },
         "feature_activelook": {
           "english": "Rotorflight ActiveLook",
           "translation": "Rotorflight ActiveLook",

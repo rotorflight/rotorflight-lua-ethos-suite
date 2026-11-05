@@ -6062,6 +6062,12 @@
           "needs_translation": false,
           "translation": "ESC temp warning"
         },
+        "activelook_glasses_menu": {
+          "english": "ETHOS Glasses menu",
+          "max_length": 21,
+          "needs_translation": false,
+          "translation": "ETHOS Glasses menu"
+        },
         "activelook_governor_lost": {
           "english": "Lost headspeed",
           "max_length": 14,
@@ -6134,6 +6140,12 @@
           "needs_translation": false,
           "translation": "Preflight"
         },
+        "activelook_restart_radio": {
+          "english": "Apply: restart radio",
+          "max_length": 20,
+          "needs_translation": false,
+          "translation": "Apply: restart radio"
+        },
         "activelook_rf_link_limit": {
           "english": "RSSI limit",
           "max_length": 10,
@@ -6157,6 +6169,12 @@
           "max_length": 8,
           "needs_translation": false,
           "translation": "Settings"
+        },
+        "activelook_setup_hint": {
+          "english": "One-time setup:\nModel > Glasses > Screen\nChoose the Full-Screen layout.\nAssign Rotorflight ActiveLook.",
+          "max_length": 120,
+          "needs_translation": false,
+          "translation": "One-time setup:\nModel > Glasses > Screen\nChoose the Full-Screen layout.\nAssign Rotorflight ActiveLook."
         },
         "activelook_smartfuel_max": {
           "english": "Max Smart Fuel",

@@ -2132,6 +2132,24 @@
           "reverse_text": false,
           "max_length": 8
         },
+        "activelook_glasses_menu": {
+          "english": "ETHOS Glasses menu",
+          "translation": "ETHOS 眼镜菜单",
+          "needs_translation": false,
+          "max_length": 21
+        },
+        "activelook_restart_radio": {
+          "english": "Apply: restart radio",
+          "translation": "重启遥控器后生效",
+          "needs_translation": false,
+          "max_length": 20
+        },
+        "activelook_setup_hint": {
+          "english": "One-time setup:\nModel > Glasses > Screen\nChoose the Full-Screen layout.\nAssign Rotorflight ActiveLook.",
+          "translation": "首次设置：\n模型 > 眼镜 > 屏幕\n选择全屏布局（Full-Screen）。\n分配 Rotorflight ActiveLook。",
+          "needs_translation": false,
+          "max_length": 120
+        },
         "feature_activelook": {
           "english": "Rotorflight ActiveLook",
           "translation": "Rotorflight ActiveLook",
