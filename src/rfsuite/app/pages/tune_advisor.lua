@@ -621,7 +621,7 @@ local function open(opts)
     clearList(actions)
     clearList(whys)
     clearList(view.changes)
-    local pilotP = tuneHistory.pilotValue(changeLog, axis, "P", a.P)
+    local pilotP = tuneHistory.pilotValue(changeLog, axis, "P", a.P, link.pidProfile)
     view.response, view.stops = advise(a, axis, AXES[selected][1], pilotP, actions, whys, view.changes)
     view.axis = axis
     for _, k in ipairs(tuneHistory.TUNE_KEYS) do view.tune[k] = a[k] end
@@ -865,7 +865,7 @@ local function open(opts)
     applyResult, applying = nil, nil
     closeApplyDialog()
     if result == true then
-      tuneHistory.logChanges(mcuId, done.axis, done.changes)
+      tuneHistory.logChanges(mcuId, done.axis, done.changes, done.pidProfile)
       changeLog = tuneHistory.readChanges(mcuId)
       applied[done.axis] = true
       render()

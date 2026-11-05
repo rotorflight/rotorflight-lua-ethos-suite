@@ -436,6 +436,27 @@ do
   files[CHANGES] = nil
 end
 
+print("The Apply record is followed only on its own PID profile")
+do
+  local CHANGES = "LOGS:/rfsuite/tune/" .. MCU .. "/changes.csv"
+  files[CHANGES] = "date,axis,setting,from,to,pid_profile\n"
+    .. "2026-10-01 10:00:00,roll,P,50,60,1\n"
+  local rows = tuneHistory.readChanges(MCU)
+  check("the PID profile of each row is read", #rows == 1 and rows[1].pidProfile == 1, tostring(rows[1] and rows[1].pidProfile))
+  check("the pilot's own P on the same profile is the one before the Apply",
+    tuneHistory.pilotValue(rows, 1, "P", 60, 1) == 50, tostring(tuneHistory.pilotValue(rows, 1, "P", 60, 1)))
+  check("another PID profile's Apply is not followed", tuneHistory.pilotValue(rows, 1, "P", 60, 2) == 60,
+    tostring(tuneHistory.pilotValue(rows, 1, "P", 60, 2)))
+  files[CHANGES] = "date,axis,setting,from,to\n2026-10-01 10:00:00,roll,P,50,60\n"
+  check("a row from before the PID profile column is followed as before", tuneHistory.pilotValue(
+    tuneHistory.readChanges(MCU), 1, "P", 60, 1) == 50)
+  files[CHANGES] = "date,axis,setting,from,to,pid_profile\n"
+    .. "2026-10-01 10:00:00,roll,P,50,60,1\n"
+  check("with no active PID profile known, the Apply record is still followed", tuneHistory.pilotValue(
+    tuneHistory.readChanges(MCU), 1, "P", 60, nil) == 50)
+  files[CHANGES] = nil
+end
+
 print()
 print(string.format("%d checks, %d failed", checks, failures))
 os.exit(failures == 0 and 0 or 1)

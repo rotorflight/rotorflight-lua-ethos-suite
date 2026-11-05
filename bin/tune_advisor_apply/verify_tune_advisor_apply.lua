@@ -445,15 +445,16 @@ do
 
   -- The page raised the pilot's 50 twice already: 84 would be past 75
   resetFc()
-  changeLog = {{axis = 1, key = "P", from = 50, to = 60}, {axis = 2, key = "P", from = 50, to = 60},
-    {axis = 1, key = "P", from = 60, to = 70}}
+  changeLog = {{axis = 1, key = "P", from = 50, to = 60, pidProfile = 0},
+    {axis = 2, key = "P", from = 50, to = 60, pidProfile = 0},
+    {axis = 1, key = "P", from = 60, to = 70, pidProfile = 0}}
   openPage()
   pump()
   check("no more P past 1.5x the pilot's own", saveEnabled == false)
 
   -- The pilot set 70 by hand after the page's 50 -> 60: 70 is the pilot's own
   resetFc()
-  changeLog = {{axis = 1, key = "P", from = 50, to = 60}}
+  changeLog = {{axis = 1, key = "P", from = 50, to = 60, pidProfile = 0}}
   openPage()
   pump()
   check("a P set by hand starts again from that P", saveEnabled == true)
@@ -463,12 +464,14 @@ end
 
 print("pilotValue follows only an unbroken chain of Apply changes")
 do
-  local log = {{axis = 1, key = "P", from = 40, to = 48}, {axis = 1, key = "F", from = 100, to = 80},
-    {axis = 1, key = "P", from = 48, to = 58}}
-  check("follows the chain back", tuneHistory.pilotValue(log, 1, "P", 58) == 40)
-  check("a different current value is the pilot's", tuneHistory.pilotValue(log, 1, "P", 65) == 65)
-  check("another axis is not followed", tuneHistory.pilotValue(log, 2, "P", 58) == 58)
-  check("no record: the current value", tuneHistory.pilotValue({}, 1, "P", 58) == 58)
+  local log = {{axis = 1, key = "P", from = 40, to = 48, pidProfile = 0},
+    {axis = 1, key = "F", from = 100, to = 80, pidProfile = 0},
+    {axis = 1, key = "P", from = 48, to = 58, pidProfile = 0}}
+  check("follows the chain back", tuneHistory.pilotValue(log, 1, "P", 58, 0) == 40)
+  check("a different current value is the pilot's", tuneHistory.pilotValue(log, 1, "P", 65, 0) == 65)
+  check("another axis is not followed", tuneHistory.pilotValue(log, 2, "P", 58, 0) == 58)
+  check("another PID profile is not followed", tuneHistory.pilotValue(log, 1, "P", 58, 1) == 58)
+  check("no record: the current value", tuneHistory.pilotValue({}, 1, "P", 58, 0) == 58)
 end
 
 print()

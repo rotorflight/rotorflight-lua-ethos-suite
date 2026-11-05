@@ -101,7 +101,7 @@ read-back does not confirm the change, check the values on *PIDs*, *Rates* and *
 
 The saved flights are kept. The next flight is on the new tune, so the page starts again from it and leaves the
 older flights out. Each change written is added to `changes.csv` beside the flight history (date, axis, setting,
-old value, new value), so you can always see what the advisor changed and set it back by hand. *Clear*
+old value, new value, PID profile), so you can always see what the advisor changed and set it back by hand. *Clear*
 does not erase it.
 
 ## Adjustment functions

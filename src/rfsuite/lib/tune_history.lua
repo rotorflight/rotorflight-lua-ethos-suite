@@ -145,14 +145,15 @@ function tuneHistory.save(mcuId, modelName, replies)
 end
 
 -- The Tune Advisor's Apply record, beside the history: one row per setting
--- changed, with the value it replaced, so a change can be undone by hand,
--- and so the page can tell how far its own changes have moved a setting
--- (pilotValue()).
+-- changed, with the value it replaced and the PID profile it was made on, so a
+-- change can be undone by hand, and so the page can tell how far its own
+-- changes have moved a setting on that profile (pilotValue()).
 -- Appended, never trimmed, and kept by erase(): it is the pilot's record.
-local CHANGES_HEADER = "date,axis,setting,from,to"
+local CHANGES_HEADER = "date,axis,setting,from,to,pid_profile"
 
--- changes: {key, from, to} as the Tune Advisor page builds them
-function tuneHistory.logChanges(mcuId, axis, changes)
+-- changes: {key, from, to} as the Tune Advisor page builds them; pidProfile
+-- is the profile they were applied to (empty when the FC did not say)
+function tuneHistory.logChanges(mcuId, axis, changes, pidProfile)
   local path = BASE_DIR .. "/" .. mcuId .. "/changes.csv"
   local isNew = not fileExists(path)
   local file = io.open(path, "a")
@@ -160,42 +161,48 @@ function tuneHistory.logChanges(mcuId, axis, changes)
   local date = os.date("%Y-%m-%d %H:%M:%S")
   if isNew then file:write(CHANGES_HEADER, "\n") end
   for _, c in ipairs(changes) do
-    file:write(string.format("%s,%s,%s,%d,%d\n", date, AXIS_NAMES[axis], c.key, c.from, c.to))
+    file:write(string.format("%s,%s,%s,%d,%d,%s\n", date, AXIS_NAMES[axis], c.key, c.from, c.to, pidProfile or ""))
   end
   file:close()
   return true
 end
 
--- The Apply record, oldest first: {axis, key, from, to} per row. Every row
--- that parses is read, whatever the header says: logChanges() appends to the
--- file as it is, so a header check would lose every later record. A missing
--- file, or one with no such rows, reads as no changes.
+-- The Apply record, oldest first: {axis, key, from, to, pidProfile} per row.
+-- Every row that parses is read, whatever the header says: logChanges() appends
+-- to the file as it is, so a header check would lose every later record. A row
+-- from before the pid_profile column reads with pidProfile nil. A missing file,
+-- or one with no such rows, reads as no changes.
 function tuneHistory.readChanges(mcuId)
   local changes = {}
   local text = ini.load_file_as_string(BASE_DIR .. "/" .. mcuId .. "/changes.csv")
   if not text then return changes end
   local lines = splitLines(text)
   for i = 1, #lines do
-    local axisName, key, from, to = lines[i]:match("^[^,]*,([^,]*),([^,]*),(%-?%d+),(%-?%d+)$")
+    local axisName, key, from, to, pidProfile = lines[i]:match("^[^,]*,([^,]*),([^,]*),(%-?%d+),(%-?%d+),?(%d*)$")
     local axis = nil
     for n = 1, AXIS_COUNT do
       if AXIS_NAMES[n] == axisName then axis = n end
     end
     if axis then
-      changes[#changes + 1] = {axis = axis, key = key, from = tonumber(from), to = tonumber(to)}
+      changes[#changes + 1] = {axis = axis, key = key, from = tonumber(from), to = tonumber(to), pidProfile = tonumber(pidProfile)}
     end
   end
   return changes
 end
 
--- The value the pilot last set by hand for one setting (a TUNE_KEYS name):
--- from the current value, follows the Apply record back while each change
--- ended at the value the next one started from. A change made by hand breaks
--- that chain, so the value it set counts as the pilot's.
-function tuneHistory.pilotValue(changes, axis, key, value)
+-- The value the pilot last set by hand for one setting (a TUNE_KEYS name) on
+-- one PID profile: from the current value, follows the Apply record back while
+-- each change ended at the value the next one started from. Changes made on
+-- other profiles are skipped. A row from before the pid_profile column has no
+-- profile to check, so it is followed as it always was, which keeps the value
+-- the same after an upgrade. When the active profile is not known, every row
+-- is followed, as before the column existed. A change made by hand breaks that
+-- chain, so the value it set counts as the pilot's.
+function tuneHistory.pilotValue(changes, axis, key, value, pidProfile)
   for i = #changes, 1, -1 do
     local c = changes[i]
-    if c.axis == axis and c.key == key then
+    local sameProfile = pidProfile == nil or c.pidProfile == nil or c.pidProfile == pidProfile
+    if c.axis == axis and c.key == key and sameProfile then
       if c.to ~= value then break end
       value = c.from
     end
