@@ -8,8 +8,11 @@
 --
 -- Event-driven from "session.update", no scheduler job: a capture is armed
 -- by a disarm and runs once the link and aircraft identity are there, so a
--- flight that ends during a link loss is still captured on reconnect (the
--- FC kept the numbers). Nothing is saved for a flight with no acro flight
+-- flight that ends during a link loss is still captured on reconnect to the
+-- same aircraft (the FC kept the numbers). The flight is read from the FC of
+-- the aircraft that was disarmed, and the clear goes to the FC whose flight
+-- was saved: another aircraft connected in between is left alone until the
+-- right one is back. Nothing is saved for a flight with no acro flight
 -- (flight_seconds 0). If the clear never gets through before the next arm,
 -- that next flight's row also holds this one's data: the FC cannot tell.
 --
@@ -48,7 +51,8 @@ local MAX_FAILURES = 3            -- link errors per disarm before waiting for t
 local lastArmed = nil             -- last known arm state; a link loss (nil) keeps it
 local pending = false             -- a disarm has not been captured yet
 local clearPending = false        -- saved, the FC not cleared yet
-local clearMcuId = nil            -- the FC that flew the saved flight: the clear goes to it only
+local pendingMcu = nil            -- the FC of the aircraft that was disarmed: where its flight is read
+local clearMcu = nil              -- the FC whose saved flight is not cleared yet: where the clear goes
 local busy = false                -- a request is out
 local refusedOnFc = false         -- the FC holds a flight this layout refused: no clear, it would erase that flight
 local nextAt = 0                  -- no request before this os.clock()
@@ -56,8 +60,8 @@ local failures = 0                -- link errors since the last disarm
 local capture = {mcuId = nil, modelName = nil, replies = {}}
 -- The latest session snapshot's fields this task reads, copied rather than
 -- holding on to the snapshot table
-local link = {armed = nil, connected = false, mcuId = nil, mcuIdReady = false,
-  apiVersionSupported = nil, craftName = nil, fcVersion = nil, support = nil}
+local link = {armed = nil, connected = false, mcuId = nil, mcuIdReady = false, apiVersionSupported = nil, craftName = nil,
+  fcVersion = nil, support = nil}
 local lastSeconds = {}            -- by mcuId: flight_seconds of the last flight saved
 local state = nil                 -- last "tune_history.state" published
 
@@ -108,9 +112,11 @@ local function failed()
   waitFor(RETRY_SECONDS)
 end
 
-local function onCleared()
+-- target: the mcuId the clear was sent to, the FC whose flight was saved (see sendClear)
+local function onCleared(target)
   waitFor(0)
   clearPending = false
+  lastSeconds[target] = nil  -- that FC holds nothing now
   publishState()
 end
 
@@ -163,9 +169,12 @@ local function onError(reason, refused)
   publishState()
 end
 
+-- The clear goes to the FC whose saved flight it erases, and advance() sends it only
+-- while that aircraft is connected. The marker reset is keyed by that same FC.
 local function sendClear()
   busy = true
-  bus.publish("msp.request", tuneAdvisor.buildClearMessage(onCleared, onError))
+  local target = clearMcu
+  bus.publish("msp.request", tuneAdvisor.buildClearMessage(function() onCleared(target) end, onError))
 end
 
 local onData
@@ -205,7 +214,7 @@ local function finishCapture()
   pending = false
   if seconds > 0 then
     clearPending = true
-    clearMcuId = mcuId
+    clearMcu = mcuId
   end
   waitFor(GAP_SECONDS)
 end
@@ -232,16 +241,18 @@ local function advance()
     return
   end
   if link.support ~= true then return end
-  -- session.mcuId can be retained for flight continuity across a disconnect.
-  -- Do not read or clear against it until this connection's UID handshake has
-  -- completed; otherwise the FC now on the link could be mistaken for the old
-  -- one before its own UID reply arrives.
+  -- session.mcuId is kept across a disconnect for the held flight. Until this
+  -- connection's UID handshake answers, it can still be the previous FC's, so
+  -- nothing is read or cleared against it before then.
   if not link.mcuIdReady then return end
   if not (pending or clearPending) or busy or link.armed ~= false or link.connected ~= true then return end
   if not link.mcuId or link.apiVersionSupported == false then return end
   if os.clock() < nextAt then return end
 
   if pending then
+    -- The flight is in the FC of the aircraft that was disarmed. Another aircraft
+    -- connected in between does not hold it, so the read waits for this one.
+    if pendingMcu and link.mcuId ~= pendingMcu then return end
     -- Another aircraft since the last answer: its axes, not these
     if #capture.replies > 0 and capture.mcuId ~= link.mcuId then clearReplies() end
     if #capture.replies == 0 then
@@ -254,13 +265,9 @@ local function advance()
     else
       requestAxis(#capture.replies + 1)
     end
-  elseif not refusedOnFc then
-    -- Another FC since the flight was saved: its clear would erase that FC's flights
-    if clearMcuId == link.mcuId then
-      sendClear()
-    else
-      clearPending = false
-    end
+  elseif not refusedOnFc and clearMcu == link.mcuId then
+    -- the clear goes to the FC that holds the saved flight, and only there
+    sendClear()
   end
 end
 
@@ -271,6 +278,8 @@ local function onSessionUpdate(snapshot)
     pending = false               -- the next disarm captures this flight too
   elseif armed == false and lastArmed == true then
     pending = true
+    -- the aircraft that was flown: its FC holds this flight, whatever is connected later
+    pendingMcu = snapshot.mcuId or link.mcuId
     failures = 0
     clearReplies()
     nextAt = os.clock() + START_SECONDS

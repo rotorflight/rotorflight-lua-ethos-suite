@@ -53,7 +53,7 @@ local NO_PORT = -1
 local CASTLE = motorConfig.CASTLE_PROTOCOL
 local MIN_VOLTAGE = 1
 local POLL_INTERVAL = 0.2     -- seconds between polls while the flight controller tries
-local TRIAL_TIMEOUT = 6       -- seconds, as the Configurator's detection gives up
+local TRIAL_TIMEOUT = 12      -- seconds; seven protocols need up to 10 s for all four wiring combinations
 local ANALOG_INTERVAL = 0.5   -- seconds between MSP_ANALOG reads on a flight controller source
 local ANALOG_MAX_AGE = 1.0    -- a reading older than this is shown as "--"
 
@@ -317,6 +317,12 @@ local function new(wiz)
     else
       local old = escPort()
       if old then writePort(old, 0) end
+      -- Drop the stored protocol so validateAndFixConfig does not turn the
+      -- feature back on (F.BUS with a master port) at the next save or boot.
+      if esc then
+        esc.protocol = 0
+        writeEsc(copy(esc))
+      end
     end
     wiz.requestReboot()
     wiz.rebuild()
@@ -330,8 +336,10 @@ local function new(wiz)
     local current = escPort()
     if not current then values[#values + 1] = {text = T.noPort, value = NO_PORT} end
     for _, p in ipairs(ports) do
-      local receives = (p.function_mask or 0) & FUNCTION_MASK_RX_SERIAL ~= 0
-      if p.identifier ~= USB_VCP and (not receives or p == current) then
+      -- Only free ports (and the one already in use) are offered, so an occupied
+      -- port (S.Port, GPS, MSP, SBUS out, ...) is never replaced silently.
+      local free = (p.function_mask or 0) == 0
+      if p.identifier ~= USB_VCP and (free or p == current) then
         values[#values + 1] = {text = portName(p, board), value = p.identifier}
       end
     end
@@ -358,6 +366,9 @@ local function new(wiz)
     outcomes[wiz] = nil
     esc.protocol = v
     writeEsc(copy(esc))
+    -- The port was opened at boot with the old protocol's baud and callback;
+    -- a protocol change only takes effect after a restart.
+    wiz.requestReboot()
     wiz.rebuild()
   end
 

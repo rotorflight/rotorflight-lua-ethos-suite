@@ -300,6 +300,12 @@
       "reverse_text": false,
       "translation": "确定"
     },
+    "btn_restart_fc": {
+      "english": "Restart FC",
+      "max_length": 12,
+      "needs_translation": true,
+      "translation": "Restart FC"
+    },
     "btn_save": {
       "english": "SAVE",
       "max_length": 4,
@@ -7046,6 +7052,12 @@
           "reverse_text": false,
           "translation": "ESC temp warning"
         },
+        "activelook_glasses_menu": {
+          "english": "ETHOS Glasses menu",
+          "max_length": 21,
+          "needs_translation": false,
+          "translation": "ETHOS 眼镜菜单"
+        },
         "activelook_governor_lost": {
           "english": "Lost headspeed",
           "max_length": 14,
@@ -7130,6 +7142,12 @@
           "reverse_text": false,
           "translation": "P飞行"
         },
+        "activelook_restart_radio": {
+          "english": "Save, then restart the radio.",
+          "max_length": 29,
+          "needs_translation": false,
+          "translation": "先保存，再重启遥控器。"
+        },
         "activelook_rf_link_limit": {
           "english": "RSSI limit",
           "max_length": 10,
@@ -7157,6 +7175,12 @@
           "needs_translation": false,
           "reverse_text": false,
           "translation": "设定"
+        },
+        "activelook_setup_hint": {
+          "english": "One-time setup:\nModel > Glasses > Screen\nChoose the Full-Screen layout.\nAssign Rotorflight ActiveLook.",
+          "max_length": 120,
+          "needs_translation": false,
+          "translation": "首次设置：\n模型 > 眼镜 > 屏幕\n选择全屏布局（Full-Screen）。\n分配 Rotorflight ActiveLook。"
         },
         "activelook_smartfuel_max": {
           "english": "Max Smart Fuel",
@@ -8279,6 +8303,30 @@
           "needs_translation": false,
           "reverse_text": false,
           "translation": "在电池仍未接入、飞控通过 USB 连接时，按下满油门。输出会保持在 100%，直到您按下怠速。"
+        },
+        "esc_link_btn": {
+          "english": "Set over the ESC link",
+          "max_length": 24,
+          "needs_translation": true,
+          "translation": "Set over the ESC link"
+        },
+        "esc_link_busy": {
+          "english": "Setting the range on the ESC...",
+          "max_length": 40,
+          "needs_translation": true,
+          "translation": "Setting the range on the ESC..."
+        },
+        "esc_link_done": {
+          "english": "Range set on the ESC and the FC.",
+          "max_length": 40,
+          "needs_translation": true,
+          "translation": "Range set on the ESC and the FC."
+        },
+        "esc_link_failed": {
+          "english": "The ESC link did not confirm the range.",
+          "max_length": 50,
+          "needs_translation": true,
+          "translation": "The ESC link did not confirm the range."
         },
         "esc_low_btn": {
           "english": "Low throttle",
@@ -11054,11 +11102,11 @@
           "translation": "斜盘类型"
         },
         "tal_cal": {
-          "english": "The tail is held at 22.5° each way. Measure the tail blade pitch and adjust until it reads 22.5°. No pitch gauge? Fold a square of paper corner to corner (45°): seen from the tail tip, the fold fits flush between the blades.",
-          "max_length": 224,
+          "english": "Press Swap to hold the tail at 22.5°; each press holds the other side. Measure the tail blade pitch and adjust until it reads 22.5°. No pitch gauge? Fold a square of paper corner to corner (45°): seen from the tail tip, the fold fits flush between the blades.",
+          "max_length": 98,
           "needs_translation": false,
           "reverse_text": false,
-          "translation": "尾桨两侧各保持在 22.5°。 测量尾桨叶螺距 并调整至 22.5°。 没有螺距尺？ 将正方形纸 沿对角线对折（45°）： 从桨尖看去， 折痕应正好 贴合两片桨叶之间。"
+          "translation": "按 切换 将尾桨保持在 22.5°， 每按一次换到另一侧。 测量尾桨叶螺距 并调整至 22.5°。 没有螺距尺？ 将正方形纸 沿对角线对折（45°）： 从桨尖看去， 折痕应正好 贴合两片桨叶之间。"
         },
         "tal_cal_title": {
           "english": "Tail calibration",
@@ -11138,11 +11186,11 @@
           "translation": "拆下尾桨叶后检查尾舵机：中位、方向、行程和末端限位。"
         },
         "tal_lim_both": {
-          "english": "Hold the tail at 60° each way, then set the limits as high as they go without the slider or links binding.",
-          "max_length": 106,
+          "english": "Press Swap to hold the tail at 60°, again for the other side, then set the limits as high as they go without the slider or links binding.",
+          "max_length": 48,
           "needs_translation": false,
           "reverse_text": false,
-          "translation": "尾桨两侧各保持 60°，然后把限位设得尽量高，但不能让滑块或连杆卡住。"
+          "translation": "按 切换 将尾桨保持在 60°，再按一次换另一侧，然后把限位设得尽量高，但不能让滑块或连杆卡住。"
         },
         "tal_lim_title": {
           "english": "Tail end stops",
@@ -12120,6 +12168,13 @@
           "reverse_text": false,
           "translation": "Shakes %d deg/s at centre stick. Less P calms it."
         },
+        "why_shake_no_step_fmt": {
+          "english": "Shakes %d deg/s at centre stick. No P step made.",
+          "max_length": 48,
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "Shakes %d deg/s at centre stick. No P step made."
+        },
         "why_slow": {
           "english": "The heli turns slower than the stick asks for.",
           "max_length": 46,
@@ -12256,6 +12311,12 @@
       "needs_translation": false,
       "reverse_text": false,
       "translation": "设置未能保存到遥控器。请重试。"
+    },
+    "msg_save_failed_running_body": {
+      "english": "The flight controller may already be using the new values. Restart it to use the saved settings.",
+      "max_length": 110,
+      "needs_translation": true,
+      "translation": "The flight controller may already be using the new values. Restart it to use the saved settings."
     },
     "msg_save_failed_title": {
       "english": "Save failed",

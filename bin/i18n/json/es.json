@@ -210,6 +210,18 @@
       "reverse_text": false,
       "max_length": 31
     },
+    "msg_save_failed_running_body": {
+      "english": "The flight controller may already be using the new values. Restart it to use the saved settings.",
+      "translation": "The flight controller may already be using the new values. Restart it to use the saved settings.",
+      "needs_translation": true,
+      "max_length": 110
+    },
+    "btn_restart_fc": {
+      "english": "Restart FC",
+      "translation": "Restart FC",
+      "needs_translation": true,
+      "max_length": 12
+    },
     "msg_save_failed_title": {
       "english": "Save failed",
       "translation": "Fallo al",
@@ -2119,6 +2131,24 @@
           "needs_translation": false,
           "reverse_text": false,
           "max_length": 8
+        },
+        "activelook_glasses_menu": {
+          "english": "ETHOS Glasses menu",
+          "translation": "Menú de gafas ETHOS",
+          "needs_translation": false,
+          "max_length": 21
+        },
+        "activelook_restart_radio": {
+          "english": "Save, then restart the radio.",
+          "translation": "Guarde y luego reinicie la radio.",
+          "needs_translation": false,
+          "max_length": 33
+        },
+        "activelook_setup_hint": {
+          "english": "One-time setup:\nModel > Glasses > Screen\nChoose the Full-Screen layout.\nAssign Rotorflight ActiveLook.",
+          "translation": "Configuración inicial:\nModelo > Gafas > Pantalla\nElija el diseño Full-Screen.\nAsigne Rotorflight ActiveLook.",
+          "needs_translation": false,
+          "max_length": 120
         },
         "feature_activelook": {
           "english": "Rotorflight ActiveLook",
@@ -8401,6 +8431,13 @@
           "reverse_text": false,
           "max_length": 49
         },
+        "why_shake_no_step_fmt": {
+          "english": "Shakes %d deg/s at centre stick. No P step made.",
+          "translation": "Shakes %d deg/s at centre stick. No P step made.",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 48
+        },
         "why_ok": {
           "english": "The heli answers the stick as asked.",
           "translation": "The heli answers the stick as asked.",
@@ -10686,6 +10723,30 @@
           "max_length": 4,
           "reverse_text": false
         },
+        "esc_link_btn": {
+          "english": "Set over the ESC link",
+          "translation": "Set over the ESC link",
+          "needs_translation": true,
+          "max_length": 24
+        },
+        "esc_link_busy": {
+          "english": "Setting the range on the ESC...",
+          "translation": "Setting the range on the ESC...",
+          "needs_translation": true,
+          "max_length": 40
+        },
+        "esc_link_done": {
+          "english": "Range set on the ESC and the FC.",
+          "translation": "Range set on the ESC and the FC.",
+          "needs_translation": true,
+          "max_length": 40
+        },
+        "esc_link_failed": {
+          "english": "The ESC link did not confirm the range.",
+          "translation": "The ESC link did not confirm the range.",
+          "needs_translation": true,
+          "max_length": 50
+        },
         "esc_need_calib": {
           "english": "Calibrate the ESC first.",
           "translation": "Calibre primero el ESC.",
@@ -11128,10 +11189,10 @@
           "reverse_text": false
         },
         "tal_lim_both": {
-          "english": "Hold the tail at 60° each way, then set the limits as high as they go without the slider or links binding.",
-          "translation": "Mantenga la cola a 60° en cada sentido y luego ajuste los límites lo más alto posible sin que la corredera ni los varillajes topen.",
+          "english": "Press Swap to hold the tail at 60°, again for the other side, then set the limits as high as they go without the slider or links binding.",
+          "translation": "Pulse Cambiar para mantener la cola a 60°, otra vez para el otro lado, y luego ajuste los límites lo más alto posible sin que la corredera ni los varillajes topen.",
           "needs_translation": false,
-          "max_length": 106,
+          "max_length": 163,
           "reverse_text": false
         },
         "fin_arm_switch": {
@@ -11576,10 +11637,10 @@
           "reverse_text": false
         },
         "tal_cal": {
-          "english": "The tail is held at 22.5° each way. Measure the tail blade pitch and adjust until it reads 22.5°. No pitch gauge? Fold a square of paper corner to corner (45°): seen from the tail tip, the fold fits flush between the blades.",
-          "translation": "La cola se fija a 22,5° en cada sentido. Mida el paso de las palas de cola y ajuste hasta leer 22,5°. ¿Sin medidor? Doble un cuadrado de papel de esquina a esquina (45°): visto desde la punta, el pliegue encaja justo entre las palas.",
+          "english": "Press Swap to hold the tail at 22.5°; each press holds the other side. Measure the tail blade pitch and adjust until it reads 22.5°. No pitch gauge? Fold a square of paper corner to corner (45°): seen from the tail tip, the fold fits flush between the blades.",
+          "translation": "Pulse Cambiar para fijar la cola a 22,5°; cada pulsación fija el otro lado. Mida el paso de las palas de cola y ajuste hasta leer 22,5°. ¿Sin medidor? Doble un cuadrado de papel de esquina a esquina (45°): visto desde la punta, el pliegue encaja justo entre las palas.",
           "needs_translation": false,
-          "max_length": 233,
+          "max_length": 268,
           "reverse_text": false
         },
         "tal_lim_title": {

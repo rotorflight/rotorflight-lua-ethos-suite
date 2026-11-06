@@ -1,0 +1,7 @@
+{
+  "id": "save-failure-restart",
+  "name": "Failed save after a written value says the FC may run the new values, and offers the restart",
+  "step": "Check the save failure dialog: running text and Restart FC after a write went out, plain text otherwise",
+  "script": "bin/save_failure_restart/verify_save_failure_restart.lua",
+  "rationale": "A page save writes its values to the flight controller and then asks it to store them in EEPROM. The\nfirmware applies most writes to the running configuration at once, so when the EEPROM commit (or a later write)\nfails, the flight controller may already run the new values until it restarts, while the dialog said \"not saved\".\nA pilot who read that flew one pack with the new values and the next with the old.\n\nThe harness drives the real page_runtime.lua with a bus that acknowledges or refuses each write, and pins: the\nrunning text and the Restart FC button after a write went out and the EEPROM commit failed; the restart publishes\nMSP_REBOOT; the plain text when nothing was written or the first write failed; the running text when a later source\nfails after an earlier one was written; and no restart while armed.\n\n--self-test drops the flag that marks a written save and requires the restart checks to go red."
+}

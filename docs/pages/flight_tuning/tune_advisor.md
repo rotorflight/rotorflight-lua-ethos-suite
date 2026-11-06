@@ -64,7 +64,9 @@ The suggestions follow these rules:
 - **Shakes with the stick centred** (15 deg/s or more, measured over at least 5 s of centred stick): lower P by
   one step (P / 1.2), and nothing else for that axis until it is calm. An oscillation also reads as bounce-back
   after every stop and spoils the response figure, so the other rules would be misled. If lowering P does not
-  calm it, check D and the linkages. Needs firmware that reports shake; older firmware never shows it.
+  calm it, check D and the linkages. Needs firmware that reports shake; older firmware never shows it. When no P
+  step is made (P is already 1, or the suggestions are full), Why still names the shake, so it is never shown
+  beside "The heli answers the stick as asked".
 - **Turns faster or slower than asked** (more than 15% off): change F and the rates by the same amount in
   opposite directions, so the stick feel stays the same but the heli flies the rate you ask for. One step
   changes F by at most 20%. With Actual, Quick and Rotorflight rates the page gives the exact rate values;

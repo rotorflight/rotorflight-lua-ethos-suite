@@ -201,6 +201,9 @@ local function new(wiz)
     local values = {supported = pin and pin.supported or false, output = pin and pin.output, motorised = motorised}
     if base.motorised ~= nil and motorised ~= base.motorised then values.setTta = motorised end
     local needed = values.setTta ~= nil or tailOutput.movable(values, motorised)
+    if tailOutput.movable(values, motorised) then
+      wiz.requestReboot()
+    end
     wiz.commitOnSave("tail_pin", function(onDone, onFail)
       if not needed then
         onDone()
@@ -232,7 +235,12 @@ local function new(wiz)
   local function pinText()
     if not pin or not pin.supported then return nil end
     local motorised = wiz.motorised()
-    if tailOutput.movable(pin, motorised) then return T.pinMove end
+    if tailOutput.movable(pin, motorised) then
+      -- Stage the move whenever the row says it will move, even if the tail type
+      -- did not change in this visit (a stored mismatch, or a refused move).
+      stageTailCommit(motorised)
+      return T.pinMove
+    end
     if not tailOutput.matches(pin.output, motorised) then return T.pinStuck end
     return PIN_NAMES[pin.output]
   end

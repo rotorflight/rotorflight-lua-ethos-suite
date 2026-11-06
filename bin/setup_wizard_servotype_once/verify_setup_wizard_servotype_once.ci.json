@@ -1,0 +1,7 @@
+{
+  "id": "setup-wizard-servotype-once",
+  "name": "Setup Wizard servo type: default type once per wizard, a hand-set rate is kept",
+  "step": "Check that the servo type step applies a group's default type once and keeps a hand-set rate on later visits",
+  "script": "bin/setup_wizard_servotype_once/verify_setup_wizard_servotype_once.lua",
+  "rationale": "The servo type step rebuilt its groups on every entry, so the flag that marks a group as opened reset each time,\nand a group with a hand-set update rate was rewritten to its first type on every visit, with a restart owed. A narrow\nservo at 400 Hz became mid 1520.\n\nThe harness loads the real setup_wizard_servotype.lua with the real heli helpers and a wizard stand-in, and pins: the\nmodule loads at all (a broken line once passed CI because nothing loaded the file), the first visit applies the default\ntype, a rate set by hand afterwards is kept on the next visit in the same wizard, and a new wizard session applies the\ndefault again.\n\n--self-test forgets the applied groups on every visit and requires the kept-rate check to go red."
+}

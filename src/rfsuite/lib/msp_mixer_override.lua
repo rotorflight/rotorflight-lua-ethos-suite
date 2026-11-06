@@ -18,17 +18,19 @@ local msp_mixer_override = {
   OVERRIDE_PASSTHROUGH = OVERRIDE_PASSTHROUGH,
 }
 
-function msp_mixer_override.encode(index, value)
+function msp_mixer_override.encode(index, value, timeoutMs)
   local payload = {}
   mspcodec.writeU8(payload, index or 0)
   mspcodec.writeU16(payload, value or 0)
+  -- From API 12.10 a hold can carry a timeout (ms), and the FC drops it when it runs out.
+  if timeoutMs then mspcodec.writeU16(payload, timeoutMs) end
   return payload
 end
 
-function msp_mixer_override.buildWriteMessage(index, value, onWritten, onError)
+function msp_mixer_override.buildWriteMessage(index, value, onWritten, onError, timeoutMs)
   return {
     command = WRITE_COMMAND,
-    payload = msp_mixer_override.encode(index, value),
+    payload = msp_mixer_override.encode(index, value, timeoutMs),
     isWrite = true,
     processReply = function()
       if onWritten then onWritten() end

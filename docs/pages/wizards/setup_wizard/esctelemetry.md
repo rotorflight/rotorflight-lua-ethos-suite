@@ -31,7 +31,7 @@ armed.
 | Setting | What it does |
 | --- | --- |
 | ESC telemetry: Used / Not used | Used: the ESC sends RPM, voltage, current and temperature to the flight controller. Not used: the flight controller measures the battery itself, or nothing does. |
-| Protocol | The ESC's telemetry protocol, from the list the flight controller's API version offers. Greyed out when not used. |
+| Protocol | The ESC's telemetry protocol, from the list the flight controller's API version offers. Greyed out when not used. Changing the protocol needs a restart. |
 | Port | The serial port the telemetry uses, chosen from the ports the Ports page offers (for example UART5 on a board with a telemetry port). On Used, the first free UART is taken. Choosing another port frees the previous one. The port change needs a restart. |
 
 This step is a restart point. When a restart is owed, the forward button is *Save and restart*: the
@@ -81,8 +81,11 @@ SmartFuel the screen says that too.
 - The step comes after the Connect servos gate. The servos are plugged in by then, which is why the
   first screen asks for the blades to be removed.
 - If there is no free UART, the step says so. Free one on the Ports page, then come back to the step.
+- Only free ports (and the one already in use) are offered, so an occupied port is never replaced
+  silently.
 - Until the restart the port is not live: the readings show "--", and Detect is greyed out with the reason.
-- A detection run takes a few seconds and gives up after six. Leaving the step, or Stop, ends it, and the
+- Changing the protocol also needs a restart: the port was opened at boot with the previous protocol's baud and callback.
+- A detection run takes a few seconds and gives up after twelve. Leaving the step, or Stop, ends it, and the
   flight controller restores the wiring it had.
 - Found writes the half-duplex and pin-swap settings and asks for a restart: *Save and restart* is the
   button on screen 3.
@@ -92,6 +95,8 @@ SmartFuel the screen says that too.
 - The flight controller needs the ESC sensor trial command (MSP2 0x5F0C). Without it the status reads
   Not supported.
 - The battery and SmartFuel settings apply at once. They are kept for Discard with the rest of the step.
+- Setting ESC telemetry to Not used also clears the stored protocol, so the feature is not turned back on
+  by the flight controller's config check (F.BUS with a master port).
 
 ## Related
 

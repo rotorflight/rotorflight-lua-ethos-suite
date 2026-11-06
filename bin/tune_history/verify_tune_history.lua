@@ -73,11 +73,14 @@ local clock = 0
 os.clock = function() return clock end
 
 local MCU = "abc123"
+local OTHER = "def456"            -- a second aircraft, for the swap case
 local HISTORY = "LOGS:/rfsuite/tune/" .. MCU .. "/history.csv"
+local currentMcu = MCU            -- the FC the link is connected to
 
 local handlers, requests, saved, states, task
 local function load()
   handlers, requests, saved, states = {}, {}, {}, {}
+  currentMcu = MCU
   for k in pairs(files) do files[k] = nil end
   for i = #iniWrites, 1, -1 do iniWrites[i] = nil end
   local bus = {
@@ -94,7 +97,7 @@ local function load()
 end
 
 local function update(fields)
-  local snapshot = {connected = true, mcuId = MCU, craftName = "Wing", fcVersion = "4.7.0",
+  local snapshot = {connected = true, mcuId = currentMcu, craftName = "Wing", fcVersion = "4.7.0",
     handshake = {mcuId = true}}
   for k, v in pairs(fields) do snapshot[k] = v end
   if fields.mcuId == false then snapshot.mcuId = nil end
@@ -196,6 +199,60 @@ do
   r = lines()
   check("only the last 5 flights are kept", #r == 16 and r[2]:match(",102,roll,") and r[14]:match(",106,roll,"),
     #r .. " lines; first " .. tostring(r[2]))
+end
+
+-- Two flights of the same whole number of seconds: the clear after the first one went
+-- through, so the FC holds nothing of it, and the second is a flight of its own.
+do
+  load()
+  fly(147)
+  local asked = fly(147)
+  check("a flight with the same seconds as the one before is saved once that one is cleared",
+    asked == "roll,pitch,yaw,clear" and #lines() == 7, asked .. " / " .. #lines() .. " lines")
+end
+
+-- The clear of a saved flight is refused once, then another aircraft connects. That
+-- aircraft gets neither a clear nor a read: the clear belongs to the FC that holds the
+-- saved flight. Back on that aircraft its FC still holds the flight, so a read of the
+-- same seconds is not saved again.
+do
+  load()
+  reply.seconds, reply.F = 147, 100
+  clock = clock + 60
+  update({isArmed = true})
+  update({isArmed = false})
+  local asked = pump({clear = {n = 1, reason = "link"}}, 4)
+  check("a clear refused once is still to go", asked == "roll,pitch,yaw,clear", asked)
+
+  currentMcu = OTHER
+  asked = pump(nil, 1)
+  check("another aircraft gets neither a clear nor a read", asked == "", asked)
+
+  currentMcu = MCU
+  asked = fly(147)
+  check("the saved aircraft's FC still holds the flight: the same seconds are not saved again",
+    asked == "roll,pitch,yaw,clear" and #lines() == 4, asked .. " / " .. #lines() .. " lines")
+end
+
+-- A flight disarmed on one aircraft, the link lost before its capture, and another
+-- aircraft connected: the flight is in the FC of the first, so the other is not read.
+do
+  load()
+  reply.seconds, reply.F = 147, 100
+  update({isArmed = true})
+  update({isArmed = false})
+  update({connected = false, isArmed = false})
+  currentMcu = OTHER
+  update({connected = true, isArmed = false})
+  local asked = pump(nil, 1)
+  check("after a swap the flight is not read from the other aircraft's FC",
+    asked == "" and files["LOGS:/rfsuite/tune/" .. OTHER .. "/history.csv"] == nil, asked)
+
+  currentMcu = MCU
+  asked = pump(nil, 4)
+  check("back on the disarmed aircraft its flight is read and saved to it",
+    asked == "roll,pitch,yaw,clear" and #lines() == 4
+      and files["LOGS:/rfsuite/tune/" .. OTHER .. "/history.csv"] == nil, asked .. " / " .. #lines() .. " lines")
 end
 
 do
@@ -377,7 +434,7 @@ do
   update({isArmed = true})
   update({isArmed = false})
   local asked = pump({clear = {n = 1, reason = "timeout"}}, 4)
-  check("a flight is saved before its clear fails", asked == "roll,pitch,yaw,clear" and #lines() == 4,
+  check("flight one is saved before its clear fails", asked == "roll,pitch,yaw,clear" and #lines() == 4,
     asked .. " / " .. #lines() .. " lines")
   disarmAndWait()
   requests[1].errorHandler("tune advisor payload version 2, expected 1", true)
@@ -385,30 +442,6 @@ do
   asked = pump()
   check("a clear is not sent over a refused flight on the FC", asked == "", asked)
   check("the refused flight is not saved", #lines() == 4, #lines() .. " lines")
-end
-
--- A flight on one FC is saved and its clear fails. Another FC is connected next: the clear
--- is owed to the first one, and must not erase the second one's statistics.
-do
-  load()
-  clock = 500
-  update({isArmed = true})
-  update({isArmed = false})
-  local asked = pump({clear = {n = 99, reason = "timeout"}}, 4)
-  check("the first FC's flight is saved before its clear fails", asked == "roll,pitch,yaw,clear" and #lines() == 4,
-    asked .. " / " .. #lines() .. " lines")
-  for _ = 1, 12 do -- past RETRY_SECONDS while the reconnect UID is still unconfirmed
-    clock = clock + 0.5
-    update({isArmed = false, mcuId = MCU, handshake = {mcuId = false}})
-  end
-  check("a retained UID cannot send an owed clear before the reconnect handshake",
-    #requests == 0, #requests .. " requests")
-  for _ = 1, 60 do
-    clock = clock + 0.5
-    update({isArmed = false, mcuId = "def456", handshake = {mcuId = true}})
-  end
-  check("a clear owed to one flight controller is not sent to another", #requests == 0, #requests .. " requests")
-  drop()
 end
 
 -- The page's aggregate
@@ -439,6 +472,26 @@ do
 
   files[HISTORY] = "some,other,columns\n1,2,3\n"
   check("a file with other columns reads as no flights", #tuneHistory.read(MCU) == 0)
+end
+
+-- Until the reconnecting FC's UID handshake answers, the mcuId kept from the last
+-- connection can still be the previous FC's: the owed clear waits, and so does a read.
+do
+  load()
+  reply.seconds, reply.F = 147, 100
+  clock = clock + 60
+  update({isArmed = true})
+  update({isArmed = false})
+  local asked = pump({clear = {n = 1, reason = "timeout"}}, 4)
+  check("a clear of a saved flight is owed before the reconnect", asked == "roll,pitch,yaw,clear" and #lines() == 4,
+    asked .. " / " .. #lines() .. " lines")
+  drop()
+  for _ = 1, 12 do
+    clock = clock + 0.5
+    update({isArmed = false, mcuId = MCU, handshake = {mcuId = false}})
+  end
+  check("a retained mcuId sends no owed clear before the reconnect handshake", #requests == 0, #requests .. " requests")
+  drop()
 end
 
 print("The Apply record reads back")

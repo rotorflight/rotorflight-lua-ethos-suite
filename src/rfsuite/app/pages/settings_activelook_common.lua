@@ -19,6 +19,7 @@ function common.openPage(title, opts, build)
   opts = opts or {}
   local disposed = false
   local headerHandle
+  local pageCleanup
   local settings = settingsStore.load()
   local original = settingsStore.clone(settings)
   settings.activelook = settings.activelook or {}
@@ -41,6 +42,7 @@ function common.openPage(title, opts, build)
   local function dispose()
     if disposed then return end
     disposed = true
+    if pageCleanup then pageCleanup(); pageCleanup = nil end
     bus.publish("activelook.control", {previewMode = nil})
     if opts.setWakeupHandler then opts.setWakeupHandler(nil) end
     if opts.setCleanupHandler then opts.setCleanupHandler(nil) end
@@ -111,7 +113,7 @@ function common.openPage(title, opts, build)
     onSave = function() confirmSave(headerHandle and headerHandle.focusSave) end,
   })
 
-  build(settings, updateSaveEnabled)
+  pageCleanup = build(settings, updateSaveEnabled)
   updateSaveEnabled()
 
   if opts.setEventHandler then

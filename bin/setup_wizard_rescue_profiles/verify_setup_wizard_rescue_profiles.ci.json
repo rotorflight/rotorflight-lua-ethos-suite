@@ -1,0 +1,7 @@
+{
+  "id": "setup-wizard-rescue-profiles",
+  "name": "Setup Wizard rescue covers every PID profile the board has",
+  "step": "Check that the rescue step reads and writes every PID profile and keeps the active one",
+  "script": "bin/setup_wizard_rescue_profiles/verify_setup_wizard_rescue_profiles.lua",
+  "rationale": "The rescue step capped the profile count at three. Boards with more than 256K of flash have six PID profiles\n(firmware target/common_pre.h), so profiles 4 to 6 were never written, and with one of them active the step showed\nprofile 1's value while the profile being flown kept its own.\n\nThe harness drives the real setup_wizard_rescue.lua against a simulated flight controller that keeps a rescue profile per\nPID profile and answers profile selection, and pins: with six profiles and profile 5 active, all six are read, profile 5's\nvalue is shown, a change reaches all six, and profile 5 is selected again; with three profiles, nothing above profile 3 is\nselected, read or written.\n\n--self-test caps the step at three profiles again and requires the six-profile checks to go red."
+}

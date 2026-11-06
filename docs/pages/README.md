@@ -102,11 +102,11 @@ are documented one file per step, in the order the wizard runs them.
 | 4. Profiles & gain | [wizards/setup_wizard/profiles.md](wizards/setup_wizard/profiles.md) | The profile switch and the master gain; needs the adjustment ranges of the flight controller. | written |
 | 5. Rescue | [wizards/setup_wizard/rescue.md](wizards/setup_wizard/rescue.md) | Set on every PID profile. | written |
 | 6. Rates | [wizards/setup_wizard/rates.md](wizards/setup_wizard/rates.md) | One page per rate profile on the profile switch. | written |
-| 7. Swashplate | [wizards/setup_wizard/swash.md](wizards/setup_wizard/swash.md) | Tail type applies after the restart at step 10. | written |
-| 8. Servo type | [wizards/setup_wizard/servotype.md](wizards/setup_wizard/servotype.md) | Needs servos configured. Applies after the restart at step 10. | written |
+| 7. Swashplate | [wizards/setup_wizard/swash.md](wizards/setup_wizard/swash.md) | Tail type applies after the restart at step 11. | written |
+| 8. Servo type | [wizards/setup_wizard/servotype.md](wizards/setup_wizard/servotype.md) | Needs servos configured. Applies after the restart at step 11. | written |
 | 9. Governor | [wizards/setup_wizard/governor.md](wizards/setup_wizard/governor.md) | Governor mode and throttle type; the headspeed of each PID profile when a governor runs. | written |
-| 10. Connect servos | [wizards/setup_wizard/connect.md](wizards/setup_wizard/connect.md) | Restart step only when a restart is owed. Tail motor check only for a motor tail. | written |
-| 11. Motor & ESC | [wizards/setup_wizard/motor.md](wizards/setup_wizard/motor.md) | Tail gear screens only for a pitch tail. Applies after the restart at step 10. | written |
+| 10. Motor & ESC | [wizards/setup_wizard/motor.md](wizards/setup_wizard/motor.md) | Tail gear screens only for a pitch tail. Applies after the restart at step 11. | written |
+| 11. Connect servos | [wizards/setup_wizard/connect.md](wizards/setup_wizard/connect.md) | Restart step only when a restart is owed. Tail motor check only for a motor tail. | written |
 | 12. ESC telemetry | [wizards/setup_wizard/esctelemetry.md](wizards/setup_wizard/esctelemetry.md) | Restart point: the port applies after it. | written |
 | 13. ESC & spin test | [wizards/setup_wizard/esc.md](wizards/setup_wizard/esc.md) | Full and low throttle calibration only for a PWM ESC. | written |
 | 14. Servo centre | [wizards/setup_wizard/servos.md](wizards/setup_wizard/servos.md) | Needs servos configured. | written |

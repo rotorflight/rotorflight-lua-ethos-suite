@@ -363,6 +363,29 @@ function settings_store.load()
   return settings_store.withDefaults(ini.load_ini_file(SETTINGS_PATH) or {})
 end
 
+-- Startup only needs this flag. Loading and normalizing every setting here can
+-- exhaust Ethos's init instruction budget as saved dashboard sections grow.
+-- Stream without building tables, keeping the INI reader's last-value-wins rule.
+function settings_store.startupGlassesEnabled()
+  local file = io.open(SETTINGS_PATH, "rb")
+  if not file then return activelookConfig.DEFAULTS.register_glasses end
+  local section, value
+  while true do
+    local line = io.read(file, "L")
+    if not line then break end
+    line = line:match("^%s*(.-)%s*$")
+    local heading = line:match("^%[(.+)%]$")
+    if heading then
+      section = heading:match("^%s*(.-)%s*$")
+    elseif section == "activelook" then
+      local saved = line:match("^register_glasses%s-=%s-(.*)$")
+      if saved then value = tonumber(saved) or saved end
+    end
+  end
+  io.close(file)
+  return coerceBool(value, activelookConfig.DEFAULTS.register_glasses)
+end
+
 function settings_store.save(settings)
   safeMkdir(SETTINGS_DIR)
   return ini.save_ini_file(SETTINGS_PATH, settings_store.withDefaults(settings))

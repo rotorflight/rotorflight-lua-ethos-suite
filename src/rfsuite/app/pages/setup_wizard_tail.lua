@@ -9,13 +9,14 @@
 --              the tail blades sit at zero pitch
 --   direction  yaw passed through from the stick: push it right and the tail
 --              should push the nose right; Wrong reverses the yaw input rate
---   calibrate  yaw held at 22.5 degrees each way: nudge |rate| (100..5000)
---              until the blades measure 22.5 degrees (end-on, the two
---              blades then open to 45 degrees: a square of paper folded
---              corner to corner fits between them)
---   limits     yaw held at 60 degrees each way (raw 2500): the CW and CCW
---              limits (yaw input min / max) set where the slider stops
---              short of binding
+--   calibrate  yaw held at 0 until the side button is pressed, then at
+--              22.5 degrees each way: nudge |rate| (100..5000) until the
+--              blades measure 22.5 degrees (end-on, the two blades then
+--              open to 45 degrees: a square of paper folded corner to
+--              corner fits between them)
+--   limits     yaw held at 0 until the side button is pressed, then at
+--              60 degrees each way (raw 2500): the CW and CCW limits (yaw
+--              input min / max) set where the slider stops short of binding
 --
 -- A motorised tail (tail_rotor_mode 1 or 2): motor 2 (index 1) spun for a
 -- few seconds at a test power, reversed only on a bidirectional tail, and
@@ -81,6 +82,7 @@ local POWER_MIN, POWER_MAX = 5, 50
 local IDLE_MAX = 250            -- tail_motor_idle, 0.1 %
 local PICTURE_W, PICTURE_H = 220, 160
 local TRIM_MAX = 25             -- degrees, either way
+local NO_SIDE = "--"            -- the held side before the side button is pressed: none
 
 local function new(wiz)
   local self = {}
@@ -96,6 +98,11 @@ local function new(wiz)
   local power = 10                -- motor test power, %
   local answers = {motor = false} -- the first page: the motor is unplugged
   local limitSide = -1            -- the end stops page: -1 holds the clockwise end, +1 the counter-clockwise
+  -- The calibrate and end stops pages hold 0 on entry and show no held side. The first press
+  -- of their side button holds the side above, each later press the other side: nothing moves
+  -- until the pilot presses.
+  local calHeld = false
+  local limitHeld = false
   local yawReversed = false       -- the direction page: the yaw input is reversed
   -- The EdgeTX suite's tail pictures: the tail at rest, and the tail with its arrow (moves).
   local tailLayout = art.image("tail-servo", PICTURE_W, PICTURE_H)
@@ -105,6 +112,8 @@ local function new(wiz)
   local lastCanMove, lastRunning, lastYaw, lastOutput = nil, nil, nil, nil
 
   local function go(name, i)
+    if name == "calibrate" then calHeld = false end
+    if name == "limits" then limitHeld = false end
     screen = name
     index = i or index
     wiz.rebuild()
@@ -124,8 +133,14 @@ local function new(wiz)
   local function wantedHold()
     if screen == "centre" then return 0 end
     if screen == "direction" then return heli.MIXER_PASSTHROUGH end
-    if screen == "calibrate" then return calSide * heli.tailRaw(CAL_DEGREES) end
-    if screen == "limits" then return limitSide * heli.tailRaw(LIMIT_DEGREES) end
+    if screen == "calibrate" then
+      if not calHeld then return 0 end
+      return calSide * heli.tailRaw(CAL_DEGREES)
+    end
+    if screen == "limits" then
+      if not limitHeld then return 0 end
+      return limitSide * heli.tailRaw(LIMIT_DEGREES)
+    end
     return nil
   end
 
@@ -266,9 +281,10 @@ local function new(wiz)
       local field = scr:checks({
         {label = T.rate, number = {100, 5000,
           function() return math.abs(i and i.rate or 0) end, setYawRate, "%", 1}},
-        {label = T.side, value = calSide > 0 and T.sideCcw or T.sideCw},
+        {label = T.side, value = not calHeld and NO_SIDE or (calSide > 0 and T.sideCcw or T.sideCw)},
         {answer = T.other, needsMotion = true, press = function()
-          calSide = -calSide
+          if calHeld then calSide = -calSide end
+          calHeld = true
           applyHold()
           wiz.rebuild()
         end},
@@ -282,9 +298,10 @@ local function new(wiz)
     local field = scr:checks({
       limitRow(T.cw, "min"),
       limitRow(T.ccw, "max"),
-      {label = T.side, value = limitSide < 0 and T.sideCw or T.sideCcw},
+      {label = T.side, value = not limitHeld and NO_SIDE or (limitSide < 0 and T.sideCw or T.sideCcw)},
       {answer = T.other, needsMotion = true, press = function()
-        limitSide = -limitSide
+        if limitHeld then limitSide = -limitSide end
+        limitHeld = true
         applyHold()
         wiz.rebuild()
       end},

@@ -300,6 +300,12 @@
       "reverse_text": false,
       "translation": "                OK                "
     },
+    "btn_restart_fc": {
+      "english": "Restart FC",
+      "max_length": 12,
+      "needs_translation": true,
+      "translation": "Restart FC"
+    },
     "btn_save": {
       "english": "SAVE",
       "max_length": 4,
@@ -7046,6 +7052,12 @@
           "reverse_text": false,
           "translation": "ESC temp warning"
         },
+        "activelook_glasses_menu": {
+          "english": "ETHOS Glasses menu",
+          "max_length": 21,
+          "needs_translation": false,
+          "translation": "ETHOS menu brýlí"
+        },
         "activelook_governor_lost": {
           "english": "Lost headspeed",
           "max_length": 14,
@@ -7130,6 +7142,12 @@
           "reverse_text": false,
           "translation": "Před letem"
         },
+        "activelook_restart_radio": {
+          "english": "Save, then restart the radio.",
+          "max_length": 30,
+          "needs_translation": false,
+          "translation": "Uložte, pak restartujte rádio."
+        },
         "activelook_rf_link_limit": {
           "english": "RSSI limit",
           "max_length": 10,
@@ -7157,6 +7175,12 @@
           "needs_translation": false,
           "reverse_text": false,
           "translation": "Nastaveni"
+        },
+        "activelook_setup_hint": {
+          "english": "One-time setup:\nModel > Glasses > Screen\nChoose the Full-Screen layout.\nAssign Rotorflight ActiveLook.",
+          "max_length": 120,
+          "needs_translation": false,
+          "translation": "Jednorázové nastavení:\nModel > Brýle > Obrazovka\nVyberte rozvržení Full-Screen.\nPřiřaďte Rotorflight ActiveLook."
         },
         "activelook_smartfuel_max": {
           "english": "Max Smart Fuel",
@@ -8279,6 +8303,30 @@
           "needs_translation": false,
           "reverse_text": false,
           "translation": "Při stále odpojeném akumulátoru a řídicí jednotce na USB stiskněte Plný plyn. Výstup zůstává na 100 %, dokud nestisknete Volnoběh."
+        },
+        "esc_link_btn": {
+          "english": "Set over the ESC link",
+          "max_length": 24,
+          "needs_translation": true,
+          "translation": "Set over the ESC link"
+        },
+        "esc_link_busy": {
+          "english": "Setting the range on the ESC...",
+          "max_length": 40,
+          "needs_translation": true,
+          "translation": "Setting the range on the ESC..."
+        },
+        "esc_link_done": {
+          "english": "Range set on the ESC and the FC.",
+          "max_length": 40,
+          "needs_translation": true,
+          "translation": "Range set on the ESC and the FC."
+        },
+        "esc_link_failed": {
+          "english": "The ESC link did not confirm the range.",
+          "max_length": 50,
+          "needs_translation": true,
+          "translation": "The ESC link did not confirm the range."
         },
         "esc_low_btn": {
           "english": "Low throttle",
@@ -11054,11 +11102,11 @@
           "translation": "Typ desky"
         },
         "tal_cal": {
-          "english": "The tail is held at 22.5° each way. Measure the tail blade pitch and adjust until it reads 22.5°. No pitch gauge? Fold a square of paper corner to corner (45°): seen from the tail tip, the fold fits flush between the blades.",
-          "max_length": 224,
+          "english": "Press Swap to hold the tail at 22.5°; each press holds the other side. Measure the tail blade pitch and adjust until it reads 22.5°. No pitch gauge? Fold a square of paper corner to corner (45°): seen from the tail tip, the fold fits flush between the blades.",
+          "max_length": 247,
           "needs_translation": false,
           "reverse_text": false,
-          "translation": "Ocas je držen na 22,5° na obě strany. Změřte úhel ocasního listu a dolaďte, až ukáže 22,5°. Nemáte měrku? Přeložte čtverec papíru úhlopříčně (45°): při pohledu od špičky listu sedí přehyb přesně mezi listy."
+          "translation": "Stiskem Prohodit podržíte ocas na 22,5°, každý další stisk drží druhou stranu. Změřte úhel ocasního listu a dolaďte, až ukáže 22,5°. Nemáte měrku? Přeložte čtverec papíru úhlopříčně (45°): při pohledu od špičky listu sedí přehyb přesně mezi listy."
         },
         "tal_cal_title": {
           "english": "Tail calibration",
@@ -11138,11 +11186,11 @@
           "translation": "Zkontrolujte ocasní servo se sundanými ocasními listy: střed, směr, výchylku a dorazy."
         },
         "tal_lim_both": {
-          "english": "Hold the tail at 60° each way, then set the limits as high as they go without the slider or links binding.",
-          "max_length": 106,
+          "english": "Press Swap to hold the tail at 60°, again for the other side, then set the limits as high as they go without the slider or links binding.",
+          "max_length": 139,
           "needs_translation": false,
           "reverse_text": false,
-          "translation": "Držte ocas na 60° na každou stranu, pak nastavte koncové dorazy co nejvýše bez zadírání posuvníku a táhel."
+          "translation": "Stiskem Prohodit podržíte ocas na 60°, dalším stiskem druhou stranu, pak nastavte koncové dorazy co nejvýše bez zadírání posuvníku a táhel."
         },
         "tal_lim_title": {
           "english": "Tail end stops",
@@ -12120,6 +12168,13 @@
           "reverse_text": false,
           "translation": "Shakes %d deg/s at centre stick. Less P calms it."
         },
+        "why_shake_no_step_fmt": {
+          "english": "Shakes %d deg/s at centre stick. No P step made.",
+          "max_length": 48,
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "Shakes %d deg/s at centre stick. No P step made."
+        },
         "why_slow": {
           "english": "The heli turns slower than the stick asks for.",
           "max_length": 46,
@@ -12256,6 +12311,12 @@
       "needs_translation": false,
       "reverse_text": false,
       "translation": "Nastavení nebylo uloženo do vysílačky. Zkuste znovu."
+    },
+    "msg_save_failed_running_body": {
+      "english": "The flight controller may already be using the new values. Restart it to use the saved settings.",
+      "max_length": 110,
+      "needs_translation": true,
+      "translation": "The flight controller may already be using the new values. Restart it to use the saved settings."
     },
     "msg_save_failed_title": {
       "english": "Save failed",

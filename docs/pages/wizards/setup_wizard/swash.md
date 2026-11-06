@@ -31,13 +31,16 @@ model is armed.
 
 - The first screen asks you to unplug the servos and remove the blades. Start follows once both
   are confirmed, as on the other steps that move the servos.
-- Swashplate type and tail type apply after the restart at step 10, Connect servos.
+- Swashplate type and tail type apply after the restart at step 11, Connect servos.
 - A new tail type resets the yaw mixer rate: 250 for a pitch tail, 1000 for a motor tail,
   keeping its sign.
 - When the tail changes between servo and motor, Tail Torque Assist is set to match on every
   PID profile, as the Configurator does on commit.
 - The tail pin shows "Set in Mixer" when its current output does not fit the tail type, so the
   wizard cannot move it. Set it in the Mixer then.
+
+- A stored mismatch between mode and pin is staged to move on save as well, even if the tail type
+  does not change in this visit.
 
 ## Related
 
