@@ -331,6 +331,16 @@ local function runTests(moduleSource)
       check("8. on an F4 board the preset has no pin swap", w and w.data.half_duplex == 1 and w.data.pin_swap == 0,
         w and string.format("half=%s swap=%s", tostring(w.data.half_duplex), tostring(w.data.pin_swap)) or "no message")
     end)
+
+    -- 9. A board whose name is not known (its info not read, or no target name) keeps pin swap on.
+    case(function()
+      local s = session(yge(0), nil, moduleSource)
+      detect(s)
+      local w = s.sent[1]
+      check("9. on a board with no known target name the preset keeps pin swap on",
+        w and w.data.half_duplex == 1 and w.data.pin_swap == 1,
+        w and string.format("half=%s swap=%s", tostring(w.data.half_duplex), tostring(w.data.pin_swap)) or "no message")
+    end)
   end)
 
   os.clock = origClock

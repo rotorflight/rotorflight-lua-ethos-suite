@@ -413,9 +413,11 @@ local function new(wiz)
     if not esc or not escParams.familyFor(esc.protocol) or esc.half_duplex == 1 then return nil end
     local preset = copy(esc)
     preset.half_duplex = 1
-    -- F4 boards have no pin swap, as in the EdgeTX suite.
+    -- Pin swap is off only on an F4 board, as in the EdgeTX suite. A board whose name is not known
+    -- keeps pin swap on, the setting for the other boards.
     local target = board and board.targetName
-    preset.pin_swap = (type(target) == "string" and not string.find(target, "F4", 1, true)) and 1 or 0
+    local isF4 = type(target) == "string" and string.find(target, "F4", 1, true) ~= nil
+    preset.pin_swap = isF4 and 0 or 1
     return preset
   end
 
