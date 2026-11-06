@@ -334,6 +334,19 @@ local function mspPollReply()
   return nil, nil, nil
 end
 
+-- Forgets the request in flight and any reply part-way through it, and leaves
+-- the transport alone. From here on a reply is taken for a request only when
+-- one with its command is sent again, so a late answer to a request that was
+-- retired while the FC may still answer it is discarded (issue #2738). Unlike
+-- mspClearBufs() it does not drain: a reply already on its way for the next
+-- request must stay where it is.
+local function mspForgetRequest()
+  mspLastReq = 0
+  mspStarted = false
+  mspRxBuf, mspRxSize, mspRemoteSeq = {}, 0, 0
+  mspRxError = false
+end
+
 -- Drain stale replies out of the transport's incoming-frame queue. Bounded by
 -- a frame count rather than by a wall-time deadline: frames can back up on a
 -- busy link, and for the S.Port transport a single transport.mspPoll() call
@@ -372,6 +385,7 @@ return {
   mspProcessTxQ = mspProcessTxQ,
   mspPollReply = mspPollReply,
   mspClearBufs = mspClearBufs,
+  mspForgetRequest = mspForgetRequest,
   -- Exported separately from mspClearBufs because the two answer different
   -- questions. mspClearBufs() is a transport swap: throw away the queue AND
   -- drain the link's stale incoming frames. mspClearTxBuf() is narrower --

@@ -116,6 +116,20 @@ local function notifyError(message, reason)
   end
 end
 
+-- A request that was sent more than once, or retired without an answer, can
+-- still be answered late: by the copy the FC buffered, or by an answer that
+-- comes after the retry window. That answer carries this command, so the next
+-- request with the same command would take it for its own (issue #2738). Such
+-- a command is held back for one reply window before its next send. Meanwhile
+-- no request with that command is armed, so mspPollReply() discards the late
+-- answer. A request sent once and answered is not late, so it holds nothing.
+local function holdLateAnswers(queue, msg, answered)
+  if not msg or queue.retryCount == 0 then return end
+  if answered and queue.retryCount == 1 then return end
+  queue.quietUntil[msg.command] = os.clock() + DEFAULT_RETRY_DELAY + (msg.retryDelay or 0)
+  queue.common.mspForgetRequest()
+end
+
 function Queue.new(common)
   -- A new queue is a new link (tasks/background.lua makes one on a transport
   -- swap): version 2 until setFirmwareApi() says otherwise.
@@ -137,6 +151,9 @@ function Queue.new(common)
     rxBreaks = (common.mspRxBreakInfo()),
     framingFallbacks = common.mspFramingFallbackCount(),
     lastTickAt = nil,
+    -- Command id -> os.clock() time before which it is not sent again; see
+    -- holdLateAnswers().
+    quietUntil = {},
   }, Queue)
 end
 
@@ -245,7 +262,8 @@ end
 -- runs this on every background task wakeup. The header comment says what a
 -- full collect does and does not buy; bin/msp_gc/verify_msp_disconnect.lua
 -- pins both halves of that.
-function Queue:_finish()
+function Queue:_finish(answered)
+  holdLateAnswers(self, self.current, answered)
   self.common.mspClearTxBuf()
   self.current = nil
   self.lastSent = nil
@@ -256,16 +274,16 @@ end
 -- Abort the in-flight message: retire it, then report the reason. The message
 -- is snapshotted before _finish() because that clears self.current, and the
 -- handler has to be the one belonging to the message that was just abandoned.
-function Queue:abortCurrent(reason)
+function Queue:abortCurrent(reason, answered)
   local msg = self.current
-  self:_finish()
+  self:_finish(answered)
   notifyError(msg, reason or "aborted")
   return msg
 end
 
 function Queue:_deliver(buf)
   local msg = self.current
-  self:_finish()
+  self:_finish(true)
   if msg.processReply then
     -- The queue is already clear of this message (see _finish() above), so a
     -- failing callback leaves nothing half-done on this side.
@@ -309,7 +327,12 @@ function Queue:processQueue()
   local maxRetries = msg.maxRetries or DEFAULT_MAX_RETRIES
   local now = os.clock()
 
-  if not self.lastSent or self.resendNow or (now - self.lastSent) >= retryDelay then
+  -- Held back by holdLateAnswers(). The hold stops the send only: the rest of
+  -- this wakeup still reads the transport, which discards the late answer.
+  local heldUntil = self.quietUntil[msg.command]
+  local held = not self.lastSent and heldUntil ~= nil and now < heldUntil
+
+  if not held and (not self.lastSent or self.resendNow or (now - self.lastSent) >= retryDelay) then
     -- Only give up once a *previous* send's own retryDelay window has
     -- fully elapsed with no reply -- never fail the message in the same
     -- breath as firing a fresh (re)send, which would judge that attempt
@@ -406,7 +429,7 @@ function Queue:processQueue()
     self:_deliver(buf)
   elseif err then
     debugLog.msp("ERR", msg.command, msg.payload or EMPTY_PAYLOAD, err)
-    self:abortCurrent(err)
+    self:abortCurrent(err, true)
   end
 end
 
