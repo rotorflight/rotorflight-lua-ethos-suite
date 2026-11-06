@@ -22,7 +22,7 @@ Greyed out until the flight controller answers. Read-only while the model is arm
 
 ## Notes
 
-- AM32, Scorpion and YGE speed controllers store their own current limit. Opening their page under *ESC & Motors* → *Forward Programming* fills this value in automatically. Other speed controllers have no such field: type the limit in here.
+- AM32, Scorpion and YGE speed controllers store their own current limit. Opening their page under *ESC & Motors* → *Forward Programming* fills this value in automatically. An AM32 whose current limit is off clears the value. Other speed controllers have no such field: type the limit in here.
 - With no limit set, an ESC load box shows `--` instead of a percentage.
 - Changes are stored on the radio for the connected flight controller when you press Save.
 
