@@ -642,6 +642,108 @@ do
 end
 
 -- ---------------------------------------------------------------------------
+-- Issue #2738: a late answer to a repeated or abandoned request is not taken
+-- for the next request with the same command
+-- ---------------------------------------------------------------------------
+
+local function pushReply(rig, cmd, value)
+  for _, frame in ipairs(replyFrames(cmd, 1, { {value} })) do
+    rig.transport.replies[#rig.transport.replies + 1] = frame
+  end
+end
+
+-- The FC answers both copies of a request that was sent twice. The first
+-- answer completes it. The second arrives after the next request with the same
+-- command was queued, and used to complete that request with old data.
+do
+  local rig = newRig()
+  local first = newMessage(0x1E, { maxRetries = 2 })
+  rig.queue:add(first)
+  rig.tick() -- attempt 1
+  rig.jump(0.9)
+  rig.tick() -- no answer in the window: attempt 2
+  pushReply(rig, 0x1E, 7)
+  drainReplies(rig)
+  check("precondition: the first answer completes the resent request",
+    #first.replies == 1 and first.replies[1][1] == 7, "replies=" .. #first.replies)
+
+  local follower = newMessage(0x1E, { maxRetries = 2 })
+  rig.queue:add(follower)
+  rig.tick()
+  check("the next request with that command waits out the late answer's window",
+    framesForCommand(rig.transport.sent, 0x1E) == 2,
+    "frames=" .. framesForCommand(rig.transport.sent, 0x1E) .. " (3 means it went out at once)")
+  pushReply(rig, 0x1E, 5) -- the second answer to the first copy
+  rig.tick()
+  rig.jump(0.9)
+  rig.tick()
+  pushReply(rig, 0x1E, 9) -- the answer to the follower
+  drainReplies(rig)
+  check("the late answer does not complete the next request with the same command",
+    #follower.replies == 1 and follower.replies[1][1] == 9,
+    "replies=" .. #follower.replies .. " first=" .. tostring(follower.replies[1] and follower.replies[1][1]))
+end
+
+-- A request that was retired unanswered may still be answered once it is
+-- late. The next request with that command waits, the same way.
+do
+  local rig = newRig()
+  local abandoned = newMessage(0x1E, { maxRetries = 0 })
+  rig.queue:add(abandoned)
+  rig.tick()
+  rig.jump(0.9)
+  rig.tick()
+  check("precondition: the unanswered request is retired",
+    #abandoned.errors == 1 and abandoned.errors[1] == "max_retries",
+    "errors=" .. #abandoned.errors)
+
+  local follower = newMessage(0x1E)
+  rig.queue:add(follower)
+  rig.tick()
+  check("the next request waits out the window of a retired request",
+    framesForCommand(rig.transport.sent, 0x1E) == 1,
+    "frames=" .. framesForCommand(rig.transport.sent, 0x1E))
+  pushReply(rig, 0x1E, 5)
+  rig.tick()
+  rig.jump(0.9)
+  rig.tick()
+  pushReply(rig, 0x1E, 9)
+  drainReplies(rig)
+  check("a late answer to the retired request does not complete the next one",
+    #follower.replies == 1 and follower.replies[1][1] == 9,
+    "replies=" .. #follower.replies .. " first=" .. tostring(follower.replies[1] and follower.replies[1][1]))
+end
+
+-- The hold is per command, and a request answered once holds nothing back.
+do
+  local rig = newRig()
+  local retired = newMessage(0x1E, { maxRetries = 0 })
+  rig.queue:add(retired)
+  rig.tick()
+  rig.jump(0.9)
+  rig.tick()
+  local other = newMessage(0x1F)
+  rig.queue:add(other)
+  rig.tick()
+  check("a retired request holds back only its own command",
+    framesForCommand(rig.transport.sent, 0x1F) == 1)
+end
+
+do
+  local rig = newRig()
+  local once = newMessage(0x1E)
+  rig.queue:add(once)
+  rig.tick()
+  pushReply(rig, 0x1E, 7)
+  drainReplies(rig)
+  local again = newMessage(0x1E)
+  rig.queue:add(again)
+  rig.tick()
+  check("a request answered on its first send holds nothing back",
+    framesForCommand(rig.transport.sent, 0x1E) == 2)
+end
+
+-- ---------------------------------------------------------------------------
 -- A frame the transport refuses is offered again, unchanged
 -- ---------------------------------------------------------------------------
 
