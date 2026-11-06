@@ -60,7 +60,7 @@ local failures = 0                -- link errors since the last disarm
 local capture = {mcuId = nil, modelName = nil, replies = {}}
 -- The latest session snapshot's fields this task reads, copied rather than
 -- holding on to the snapshot table
-local link = {armed = nil, connected = false, mcuId = nil, apiVersionSupported = nil, craftName = nil,
+local link = {armed = nil, connected = false, mcuId = nil, mcuIdReady = false, apiVersionSupported = nil, craftName = nil,
   fcVersion = nil, support = nil}
 local lastSeconds = {}            -- by mcuId: flight_seconds of the last flight saved
 local state = nil                 -- last "tune_history.state" published
@@ -241,6 +241,10 @@ local function advance()
     return
   end
   if link.support ~= true then return end
+  -- session.mcuId is kept across a disconnect for the held flight. Until this
+  -- connection's UID handshake answers, it can still be the previous FC's, so
+  -- nothing is read or cleared against it before then.
+  if not link.mcuIdReady then return end
   if not (pending or clearPending) or busy or link.armed ~= false or link.connected ~= true then return end
   if not link.mcuId or link.apiVersionSupported == false then return end
   if os.clock() < nextAt then return end
@@ -284,6 +288,7 @@ local function onSessionUpdate(snapshot)
   link.armed = armed
   link.connected = snapshot.connected
   link.mcuId = snapshot.mcuId
+  link.mcuIdReady = snapshot.handshake and snapshot.handshake.mcuId == true or false
   link.apiVersionSupported = snapshot.apiVersionSupported
   link.craftName = snapshot.craftName
   if snapshot.fcVersion ~= link.fcVersion then
