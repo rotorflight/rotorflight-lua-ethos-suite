@@ -27,6 +27,15 @@ local files = {}
 local realOpen = io.open
 io.open = function(path, mode)
   if type(path) == "string" and path:sub(1, 5) == "LOGS:" then
+    if mode == "a" then
+      if files[path] == nil then files[path] = "" end
+      return {
+        write = function(_, ...)
+          for i = 1, select("#", ...) do files[path] = files[path] .. tostring(select(i, ...)) end
+        end,
+        close = function() end,
+      }
+    end
     if files[path] == nil then return nil end
     return {close = function() end}
   end
@@ -58,6 +67,8 @@ local requireModule = package.loaded["rfsuite.lib.require"]
 
 local tuneAdvisor = requireModule("lib/msp_tune_advisor.lua")
 local tuneHistory = requireModule("lib/tune_history.lua")
+check("boot-resident flight history leaves Apply-record code unloaded",
+  package.loaded["rfsuite.lib.tune_history_changes"] == nil)
 
 -- Each reply is the simulator fixture with these overrides
 local reply = {seconds = 147, F = 100}
@@ -481,6 +492,8 @@ do
     .. "2026-10-01 10:00:00,pitch,relaxCutoff,10,8\n"
     .. "not,a,row\n"
   local rows = tuneHistory.readChanges(MCU)
+  check("the Apply-record code loads on first page-specific use",
+    package.loaded["rfsuite.lib.tune_history_changes"] ~= nil)
   check("each row reads as axis, setting, from, to", #rows == 2 and rows[1].axis == 1 and rows[1].key == "P"
     and rows[1].from == 50 and rows[1].to == 60 and rows[2].axis == 2 and rows[2].to == 8, #rows)
   files[CHANGES] = nil
@@ -490,6 +503,49 @@ do
   -- logChanges() appends whatever the header says: those rows must still read
   files[CHANGES] = "date;axis;setting\n2026-10-01 10:00:00,roll,P,50,60\n"
   check("rows under another header are still read", #tuneHistory.readChanges(MCU) == 1)
+  files[CHANGES] = nil
+end
+
+print("Appending an Apply upgrades the recognized legacy CSV header")
+do
+  local CHANGES = "LOGS:/rfsuite/tune/" .. MCU .. "/changes.csv"
+  files[CHANGES] = "date,axis,setting,from,to\n"
+    .. "2026-10-01 10:00:00,roll,P,50,60\n"
+    .. "2026-10-01 10:01:00,pitch,F,90,80"
+  check("a legacy Apply appends successfully", tuneHistory.logChanges(MCU, 1, {
+    {key = "P", from = 60, to = 70},
+  }, 2))
+  local text = files[CHANGES]
+  check("the migrated header names pid_profile", text:match("^[^\r\n]*") == "date,axis,setting,from,to,pid_profile")
+  check("legacy rows gain an empty profile field", text:find("2026%-10%-01 10:00:00,roll,P,50,60,\n") ~= nil
+    and text:find("2026%-10%-01 10:01:00,pitch,F,90,80,\n") ~= nil)
+  local rows = tuneHistory.readChanges(MCU)
+  check("legacy and appended rows still parse with their profile values", #rows == 3
+    and rows[1].pidProfile == nil and rows[2].pidProfile == nil and rows[3].pidProfile == 2, #rows)
+  files[CHANGES] = nil
+end
+
+print("The Apply record is followed only on its own PID profile")
+do
+  local CHANGES = "LOGS:/rfsuite/tune/" .. MCU .. "/changes.csv"
+  files[CHANGES] = "date,axis,setting,from,to,pid_profile\n"
+    .. "2026-10-01 10:00:00,roll,P,50,60,1\n"
+  local rows = tuneHistory.readChanges(MCU)
+  check("the PID profile of each row is read", #rows == 1 and rows[1].pidProfile == 1, tostring(rows[1] and rows[1].pidProfile))
+  check("the pilot's own P on the same profile is the one before the Apply",
+    tuneHistory.pilotValue(rows, 1, "P", 60, 1) == 50, tostring(tuneHistory.pilotValue(rows, 1, "P", 60, 1)))
+  check("another PID profile's Apply is not followed", tuneHistory.pilotValue(rows, 1, "P", 60, 2) == 60,
+    tostring(tuneHistory.pilotValue(rows, 1, "P", 60, 2)))
+  files[CHANGES] = "date,axis,setting,from,to\n2026-10-01 10:00:00,roll,P,50,60\n"
+  local legacyRows = tuneHistory.readChanges(MCU)
+  check("a legacy row without a profile is followed when the active profile is known",
+    tuneHistory.pilotValue(legacyRows, 1, "P", 60, 1) == 50)
+  check("a legacy row without a profile is followed when the active profile is unknown",
+    tuneHistory.pilotValue(legacyRows, 1, "P", 60, nil) == 50)
+  files[CHANGES] = "date,axis,setting,from,to,pid_profile\n"
+    .. "2026-10-01 10:00:00,roll,P,50,60,1\n"
+  check("with no active PID profile known, the Apply record is still followed", tuneHistory.pilotValue(
+    tuneHistory.readChanges(MCU), 1, "P", 60, nil) == 50)
   files[CHANGES] = nil
 end
 

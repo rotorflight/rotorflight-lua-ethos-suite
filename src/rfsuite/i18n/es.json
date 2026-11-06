@@ -11811,6 +11811,12 @@
           "reverse_text": false,
           "translation": "Changes saved to the flight controller. Fly again to check the new tune."
         },
+        "applied_not_recorded": {
+          "english": "Saved to the flight controller. The change record was not written.",
+          "max_length": 72,
+          "needs_translation": true,
+          "translation": "Saved to the flight controller. The change record was not written."
+        },
         "apply_hint": {
           "english": "Press Save to write these to the flight controller.",
           "max_length": 51,
