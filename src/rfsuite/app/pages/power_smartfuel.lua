@@ -22,21 +22,22 @@ local function cleanModelType(value)
   return math.floor(value + 0.5)
 end
 
-local function tuningActive(runtime)
-  local mode = tonumber(runtime.data.smartfuel_mode or 0) or 0
-  return mode == 1 or mode == 3
-end
-
+-- The drop rates feed the radio's own estimate (Source OFF) and the voltage-based modes;
+-- sag gain only the voltage-based modes. CURRENT (2) uses none of them.
 local function refreshTuning(runtime)
-  local enabled = runtime.loaded and tuningActive(runtime) and not runtime.activeDialog
+  local mode = tonumber(runtime.data.smartfuel_mode or 0) or 0
+  local loaded = runtime.loaded and not runtime.activeDialog
+  local dropEnabled = loaded and (mode == 0 or mode == 1 or mode == 3)
+  local sagEnabled = loaded and (mode == 1 or mode == 3)
   local fields = runtime.fields or {}
-  if fields.voltage_drop_rate then fields.voltage_drop_rate:enable(enabled) end
-  if fields.charge_drop_rate then fields.charge_drop_rate:enable(enabled) end
-  if fields.sag_gain then fields.sag_gain:enable(enabled) end
+  if fields.voltage_drop_rate then fields.voltage_drop_rate:enable(dropEnabled) end
+  if fields.charge_drop_rate then fields.charge_drop_rate:enable(dropEnabled) end
+  if fields.sag_gain then fields.sag_gain:enable(sagEnabled) end
 end
 
 local function open(opts)
-  local lastEnabled = nil
+  -- The mode the fields were last enabled for: each mode enables its own set.
+  local lastMode = nil
   local sessionHandler = nil
   local mcuId = nil
   local prefs = nil
@@ -57,7 +58,7 @@ local function open(opts)
       "rfsuite.lib.msp_smartfuel_config",
     },
     onLoaded = function()
-      lastEnabled = nil
+      lastMode = nil
       refreshTuning(runtime)
       if modelTypeField and modelTypeField.enable then
         modelTypeField:enable(modelTypeLoaded and runtime.loaded and not runtime.activeDialog)
@@ -97,9 +98,9 @@ local function open(opts)
       modelTypeField = nil
     end,
     onWakeup = function(rt)
-      local enabled = tuningActive(rt)
-      if enabled ~= lastEnabled then
-        lastEnabled = enabled
+      local mode = tonumber(rt.data.smartfuel_mode or 0) or 0
+      if mode ~= lastMode then
+        lastMode = mode
         refreshTuning(rt)
       end
       if modelTypeField and modelTypeField.enable then

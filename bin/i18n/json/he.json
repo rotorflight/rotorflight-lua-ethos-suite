@@ -8431,6 +8431,13 @@
           "reverse_text": false,
           "max_length": 49
         },
+        "why_shake_no_step_fmt": {
+          "english": "Shakes %d deg/s at centre stick. No P step made.",
+          "translation": "Shakes %d deg/s at centre stick. No P step made.",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 48
+        },
         "why_ok": {
           "english": "The heli answers the stick as asked.",
           "translation": "The heli answers the stick as asked.",

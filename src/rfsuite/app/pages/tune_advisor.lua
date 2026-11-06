@@ -132,6 +132,7 @@ local T = {
   whyFixFFmt = "@i18n(app.modules.tune_advisor.why_fix_f_fmt)@",
   whyBrakeFmt = "@i18n(app.modules.tune_advisor.why_brake_fmt)@",
   whyShakeFmt = "@i18n(app.modules.tune_advisor.why_shake_fmt)@",
+  whyShakeNoStepFmt = "@i18n(app.modules.tune_advisor.why_shake_no_step_fmt)@",
   whyOk = "@i18n(app.modules.tune_advisor.why_ok)@",
   whyLimit = "@i18n(app.modules.tune_advisor.why_limit)@",
   whyPMaxFmt = "@i18n(app.modules.tune_advisor.why_p_max_fmt)@",
@@ -422,6 +423,9 @@ local function advise(a, axis, name, pilotP, actions, whys, changes)
       local newP = clamp(round(a.P / P_STEP), 1, a.P - 1)
       change(string.format(T.actPFmt, name, a.P, newP), "P", a.P, newP)
       why(string.format(T.whyShakeFmt, rms))
+    else
+      -- No P step (P at its floor, or the slots are full): still name the shake
+      why(string.format(T.whyShakeNoStepFmt, rms))
     end
   elseif a.releases < STOPS_MIN then
     stops = string.format(T.stopsMoreFmt, a.releases, STOPS_MIN)

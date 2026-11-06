@@ -49,6 +49,8 @@ model is armed. The step needs a swashplate type to be set first.
   type your own within the range.
 - The collective at full stick is set for every rate profile on the profile switch, because each
   profile can fly a different collective. Keep it at or below the collective limit.
+- The collective at full stick is only set on the Rotorflight rates type. On a profile with the
+  Actual rates type its rows are left out, and the page says so: set the rates on the Rates page.
 - Each change is sent to the flight controller as you make it. The rate profile the flight controller
   is on is selected again afterwards.
 

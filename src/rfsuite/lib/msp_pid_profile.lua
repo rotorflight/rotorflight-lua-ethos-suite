@@ -161,7 +161,7 @@ local SIMULATOR_RESPONSE = {
 local FIELD_META = {
   error_decay_time_ground = {min = 0, max = 250, default = 25, decimals = 1, suffix = "s"},
   error_decay_time_cyclic = {min = 0, max = 250, default = 250, decimals = 1, suffix = "s"},
-  error_decay_limit_cyclic = {min = 0, max = 25, default = 12, suffix = "°"},
+  error_decay_limit_cyclic = {min = 0, max = 250, default = 12, suffix = "°"},
   error_limit_0 = {min = 0, max = 180, default = 45, suffix = "°"},
   error_limit_1 = {min = 0, max = 180, default = 45, suffix = "°"},
   error_limit_2 = {min = 0, max = 180, default = 60, suffix = "°"},

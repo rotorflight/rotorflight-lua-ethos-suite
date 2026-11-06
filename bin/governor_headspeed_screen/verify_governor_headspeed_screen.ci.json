@@ -1,0 +1,7 @@
+{
+  "id": "governor-headspeed-screen",
+  "name": "Governor headspeed screen only Electric/Nitro",
+  "step": "Check mode >= 3 gating",
+  "script": "bin/governor_headspeed_screen/verify_governor_headspeed_screen.lua",
+  "rationale": "Issue #2702: Limit and Direct do not hold a headspeed."
+}
