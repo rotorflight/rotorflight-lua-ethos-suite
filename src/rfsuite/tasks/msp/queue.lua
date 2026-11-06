@@ -223,7 +223,6 @@ end
 function Queue:clear()
   local droppedCurrent = self.current
   local droppedPending = self.pending
-  holdLateAnswers(self, droppedCurrent, false)
   self.pending = {}
   self.current = nil
   self.lastSent = nil

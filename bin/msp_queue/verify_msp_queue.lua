@@ -743,6 +743,24 @@ do
     framesForCommand(rig.transport.sent, 0x1E) == 2)
 end
 
+-- clear() (a reconnect, arming, a transport swap) drops the request in flight
+-- without holding its command: the next request is the first on the new link.
+do
+  local rig = newRig()
+  local inflight = newMessage(0x1E, { maxRetries = 2 })
+  rig.queue:add(inflight)
+  rig.tick()
+  rig.jump(0.9)
+  rig.tick()
+  rig.queue:clear()
+  local after = newMessage(0x1E)
+  rig.queue:add(after)
+  rig.tick()
+  check("after clear() the next request with that command goes out at once",
+    framesForCommand(rig.transport.sent, 0x1E) == 3,
+    "frames=" .. framesForCommand(rig.transport.sent, 0x1E) .. " (2 means it waited)")
+end
+
 -- ---------------------------------------------------------------------------
 -- A frame the transport refuses is offered again, unchanged
 -- ---------------------------------------------------------------------------
