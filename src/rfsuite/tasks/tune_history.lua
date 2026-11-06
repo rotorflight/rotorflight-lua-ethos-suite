@@ -107,10 +107,12 @@ local function failed()
   waitFor(RETRY_SECONDS)
 end
 
-local function onCleared()
+-- target: the mcuId the clear was sent to, which is not always the aircraft whose
+-- flight was saved (see sendClear)
+local function onCleared(target)
   waitFor(0)
   clearPending = false
-  lastSeconds[capture.mcuId] = nil  -- the FC holds nothing of that flight now
+  lastSeconds[target] = nil  -- that FC holds nothing now
   publishState()
 end
 
@@ -163,9 +165,12 @@ local function onError(reason, refused)
   publishState()
 end
 
+-- The clear goes to the FC connected now. After an aircraft swap that can be another
+-- aircraft than the one just saved, so the marker reset is keyed by the FC it reached.
 local function sendClear()
   busy = true
-  bus.publish("msp.request", tuneAdvisor.buildClearMessage(onCleared, onError))
+  local target = link.mcuId
+  bus.publish("msp.request", tuneAdvisor.buildClearMessage(function() onCleared(target) end, onError))
 end
 
 local onData

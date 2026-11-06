@@ -73,11 +73,14 @@ local clock = 0
 os.clock = function() return clock end
 
 local MCU = "abc123"
+local OTHER = "def456"            -- a second aircraft, for the swap case
 local HISTORY = "LOGS:/rfsuite/tune/" .. MCU .. "/history.csv"
+local currentMcu = MCU            -- the FC the link is connected to
 
 local handlers, requests, saved, states, task
 local function load()
   handlers, requests, saved, states = {}, {}, {}, {}
+  currentMcu = MCU
   for k in pairs(files) do files[k] = nil end
   for i = #iniWrites, 1, -1 do iniWrites[i] = nil end
   local bus = {
@@ -94,7 +97,7 @@ local function load()
 end
 
 local function update(fields)
-  local snapshot = {connected = true, mcuId = MCU, craftName = "Wing", fcVersion = "4.7.0"}
+  local snapshot = {connected = true, mcuId = currentMcu, craftName = "Wing", fcVersion = "4.7.0"}
   for k, v in pairs(fields) do snapshot[k] = v end
   if fields.mcuId == false then snapshot.mcuId = nil end
   handlers["session.update"](snapshot)
@@ -205,6 +208,28 @@ do
   local asked = fly(147)
   check("a flight with the same seconds as the one before is saved once that one is cleared",
     asked == "roll,pitch,yaw,clear" and #lines() == 7, asked .. " / " .. #lines() .. " lines")
+end
+
+-- The clear of a saved flight is refused once, then another aircraft connects and gets
+-- the clear. That clears the other FC, not this one: this aircraft's FC still holds its
+-- flight, so a read of the same seconds on it is not saved again.
+do
+  load()
+  reply.seconds, reply.F = 147, 100
+  clock = clock + 60
+  update({isArmed = true})
+  update({isArmed = false})
+  local asked = pump({clear = {n = 1, reason = "link"}}, 4)
+  check("a clear refused once is still to go", asked == "roll,pitch,yaw,clear", asked)
+
+  currentMcu = OTHER
+  asked = pump(nil, 1)
+  check("the other aircraft's FC gets the clear", asked == "clear", asked)
+
+  currentMcu = MCU
+  asked = fly(147)
+  check("the aircraft whose FC was not cleared does not save the same seconds again",
+    asked == "roll,pitch,yaw,clear" and #lines() == 4, asked .. " / " .. #lines() .. " lines")
 end
 
 do
