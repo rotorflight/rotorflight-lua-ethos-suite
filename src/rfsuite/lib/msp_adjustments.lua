@@ -67,6 +67,18 @@ local function toS8Byte(value)
   return v
 end
 
+-- The firmware's AUX channel count (MAX_AUX_CHANNEL_COUNT, 18 - 5). An index above it is refused
+-- by the CLI and reads past rcInput[] (#2673). 255 is the only other value a channel byte takes:
+-- always on.
+local AUX_CHANNEL_COUNT = 13
+local ALWAYS_ON_BYTE = 255
+
+local function channelByte(value)
+  local v = math.floor(tonumber(value) or 0)
+  if v == ALWAYS_ON_BYTE then return v end
+  return clamp(v, 0, AUX_CHANNEL_COUNT - 1)
+end
+
 local function writeRange(payload, range)
   range = range or {}
   local enaRange = range.enaRange or {}
@@ -74,10 +86,10 @@ local function writeRange(payload, range)
   local adjRange2 = range.adjRange2 or {}
 
   mspcodec.writeU8(payload, range.adjFunction or 0)
-  mspcodec.writeU8(payload, range.enaChannel or 0)
+  mspcodec.writeU8(payload, channelByte(range.enaChannel))
   mspcodec.writeU8(payload, toS8Byte(usToStep(enaRange.start)))
   mspcodec.writeU8(payload, toS8Byte(usToStep(enaRange["end"])))
-  mspcodec.writeU8(payload, range.adjChannel or 0)
+  mspcodec.writeU8(payload, channelByte(range.adjChannel))
   mspcodec.writeU8(payload, toS8Byte(usToStep(adjRange1.start)))
   mspcodec.writeU8(payload, toS8Byte(usToStep(adjRange1["end"])))
   mspcodec.writeU8(payload, toS8Byte(usToStep(adjRange2.start)))
