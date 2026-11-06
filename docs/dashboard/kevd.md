@@ -51,7 +51,7 @@ title and a small rounded battery cap; timer digits retain their original size.
 Its voltage, cell voltage/count, and consumed-mAh readings share the largest
 adaptive font that fits all three rows, with panel-relative row spacing for
 full-screen and windowed views. With auto-detected cells and a pack voltage
-below 2 V, the cell readout shows `--.--V (--S)` instead of a guessed cell count.
+below 2 V, the cell readout shows `-` instead of a guessed cell count.
 Battery readings sit six pixels lower; the timer value is raised six pixels
 and the FLIGHT TIME title eight pixels, without moving their frames.
 Flights and Total Flight Time headings use larger resolution-specific fonts;
