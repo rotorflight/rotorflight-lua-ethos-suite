@@ -26,7 +26,6 @@ local THEME_DEFAULTS = {rpm_min = 0, rpm_max = 5500, bec_min = 6.0, bec_warn = 7
 
 local function estimateCellCountFromVoltage(voltage)
     voltage = tonumber(voltage) or 0
-    if voltage <= 0 then return 0 end
     if voltage < 2 then return 0 end
 
     local fullCell = 4.2

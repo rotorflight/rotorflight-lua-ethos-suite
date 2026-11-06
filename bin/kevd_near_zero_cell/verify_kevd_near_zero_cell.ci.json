@@ -3,5 +3,5 @@
   "name": "kevd near-zero cell count",
   "step": "Check the near-zero guard",
   "script": "bin/kevd_near_zero_cell/verify_kevd_near_zero_cell.lua",
-  "rationale": "Issue #2660: no cell count below about half a cell."
+  "rationale": "Issue #2660: no cell count below 2 V, where the auto-detect used to report 1S."
 }
