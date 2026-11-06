@@ -43,6 +43,28 @@ normalizing the full configuration. This avoids a reproduced startup instruction
 limit with larger saved dashboard sections. The full settings reader remains in
 use for the normal settings flows; no periodic registration or reader is added.
 
+### Startup validation and memory cost
+
+Run `lua5.4 bin/startup_glasses/verify_startup_glasses.lua` to check the startup
+reader against the full INI/settings reader and exercise the real `main.init()`.
+The adjacent `.ci.json` registers this harness with the existing CI matrix.
+Checks cover section isolation, repeated keys and sections, boolean/numeric
+values, invalid and missing values, whitespace, comments, CRLF, file closure,
+one-time registration, and no settings read or registration without the API.
+
+The earlier large-configuration instruction measurements were 26,679 for a full
+settings load, 7,590 for the scalar read and 8,367 for the complete updated
+`init()`. These are fixture-specific desktop Lua 5.4 counts, not upper bounds.
+
+This startup optimization has a retained-memory cost even if the glasses menu
+is never opened: both changed modules are loaded during boot. Comparing retained
+compiled chunks before and after the registration change on desktop Lua 5.4
+gave approximately **1.17 KiB more for `lib/settings_store.lua`** and
+**0.39 KiB more for `main.lua`**, or **1.56 KiB total**. This agrees with the
+review's estimate of about 1.5 kB additional boot-retained code. It is a fixed
+code-size estimate, not a measurement of the complete running suite's heap on
+an ETHOS radio; compiler and allocator differences can change the actual cost.
+
 The [official API example](https://ethos-lua-doc.frsky-rc.com/api/system/registerGlasses/)
 registers support in `init()` without a wakeup callback. No polling or additional
 background task is added. The suite must remain installed and load successfully
