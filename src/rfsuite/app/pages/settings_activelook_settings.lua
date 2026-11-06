@@ -24,14 +24,51 @@ end
 local function open(opts)
   pageCommon.openPage(PAGE_TITLE, opts, function(settings, updateSaveEnabled)
     settings.activelook = activeConfig.withDefaults(settings.activelook)
+    local setupDialog
+    local function closeSetupDialog()
+      if setupDialog then setupDialog:close(); setupDialog = nil end
+    end
 
-    local line = form.addLine("@i18n(app.modules.settings.feature_activelook)@")
-    form.addBooleanField(line, nil,
+    local function showHint(message)
+      closeSetupDialog()
+      setupDialog = form.openDialog({
+        title = "ActiveLook",
+        message = message,
+        buttons = {{label = "@i18n(app.btn_ok)@", action = function() setupDialog = nil; return true end}},
+        wakeup = function() end,
+        paint = function() end,
+      })
+    end
+    local hasGlassesMenu = type(system.registerGlasses) == "function" and requireModule("lib/ethos_version.lua").atLeast({26, 2, 0})
+    local displayField
+    local line
+    if hasGlassesMenu then
+      line = form.addLine("@i18n(app.modules.settings.activelook_glasses_menu)@")
+      form.addBooleanField(line, nil,
+        function() return settings.activelook.register_glasses == true end,
+        function(value)
+          local enabled = value == true
+          if settings.activelook.register_glasses == enabled then return end
+          settings.activelook.register_glasses = enabled
+          if displayField then displayField:enable(enabled) end
+          updateSaveEnabled()
+          showHint("@i18n(app.modules.settings.activelook_restart_radio)@")
+        end)
+    end
+
+    line = form.addLine("@i18n(app.modules.settings.feature_activelook)@")
+    displayField = form.addBooleanField(line, nil,
       function() return settings.activelook.enabled == true end,
       function(value)
+        if value == true and hasGlassesMenu and not settings.activelook.register_glasses then return end
+        local wasEnabled = settings.activelook.enabled == true
         settings.activelook.enabled = value == true
         updateSaveEnabled()
+        if settings.activelook.enabled and not wasEnabled then
+          showHint("@i18n(app.modules.settings.activelook_setup_hint)@")
+        end
       end)
+    if displayField and hasGlassesMenu then displayField:enable(settings.activelook.register_glasses == true) end
 
     line = form.addLine("@i18n(app.modules.settings.activelook_hide_display)@")
     form.addSwitchField(line, nil,
@@ -58,6 +95,7 @@ local function open(opts)
         updateSaveEnabled()
       end)
     if yField and yField.suffix then yField:suffix("px") end
+    return closeSetupDialog
   end)
 end
 

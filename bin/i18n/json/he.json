@@ -2132,6 +2132,24 @@
           "reverse_text": true,
           "max_length": 8
         },
+        "activelook_glasses_menu": {
+          "english": "ETHOS Glasses menu",
+          "translation": "תפריט משקפיים ETHOS",
+          "needs_translation": false,
+          "max_length": 21
+        },
+        "activelook_restart_radio": {
+          "english": "Save, then restart the radio.",
+          "translation": "שמרו ואז הפעילו מחדש את הרדיו.",
+          "needs_translation": false,
+          "max_length": 30
+        },
+        "activelook_setup_hint": {
+          "english": "One-time setup:\nModel > Glasses > Screen\nChoose the Full-Screen layout.\nAssign Rotorflight ActiveLook.",
+          "translation": "הגדרה חד פעמית:\nדגם > משקפיים > מסך\nבחרו פריסת Full-Screen.\nהקצו את Rotorflight ActiveLook.",
+          "needs_translation": false,
+          "max_length": 120
+        },
         "feature_activelook": {
           "english": "Rotorflight ActiveLook",
           "translation": "Rotorflight ActiveLook",
