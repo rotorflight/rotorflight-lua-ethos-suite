@@ -112,7 +112,11 @@ local function fixtureFlights()
   return {{date = "d", seconds = 147, axes = axes}}
 end
 tuneHistory.read = function() return fixtureFlights() end
-tuneHistory.logChanges = function(_, axis, changes) logged[#logged + 1] = {axis = axis, changes = changes} end
+local logFails = false            -- set to make the record write fail
+tuneHistory.logChanges = function(_, axis, changes)
+  logged[#logged + 1] = {axis = axis, changes = changes}
+  return not logFails
+end
 local changeLog = {}              -- what changes.csv holds: {axis, key, from, to} rows
 tuneHistory.readChanges = function() return changeLog end
 
@@ -239,6 +243,19 @@ do
   check("the change is logged with its old value", #logged == 1 and logged[1].axis == 1
     and logged[1].changes[1].from == 120 and logged[1].changes[1].to == 96)
   check("Save is disabled once applied", saveEnabled == false)
+end
+
+print("An FC write whose change record fails is reported, and Save stays off")
+do
+  resetFc()
+  openPage()
+  pump()
+  logFails = true
+  applyNow()
+  logFails = false
+  check("the outcome says the record was not written", lastMessage():find("tune_advisor.applied_not_recorded", 1, true) ~= nil,
+    lastMessage())
+  check("Save stays off after the FC write", saveEnabled == false)
 end
 
 print("A tune changed since the flights is never overwritten")

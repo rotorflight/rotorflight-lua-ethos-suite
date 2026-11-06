@@ -54,7 +54,7 @@ version is known, nothing is sent.
 | Stops | How much the heli bounces back after you centre the stick, as a share of the turn rate. Needs 10 stops. "Shaking 49 deg/s" instead means the heli oscillates with the stick centred (see the rules below). |
 | Suggested changes | Up to three changes, each named by the page and setting to change and in the units that page shows, for example *PIDs > Roll > F: 100 -> 80* and *Rates > Roll > Rate: 720 -> 900*. When there is something *Save* can write, a last line says so. After they are written, this shows "Changes saved to the flight controller" until the next flight is saved. |
 | Why | The reason for each change, and a fact worth knowing when there is room (for example how much faster the heli turns at high collective). |
-| Save button | Writes the suggested changes for the shown axis to the flight controller. Enabled only while connected, disarmed and with a change it can write. See *Applying the changes* below. |
+| Save button | Writes the suggested changes for the shown axis to the flight controller. Enabled only while connected, disarmed, with a known PID profile and with a change it can write. See *Applying the changes* below. |
 | Tool button | Erases this model's saved flights, and the flight controller's current measurements, after asking to confirm. |
 
 The suggestions follow these rules:
@@ -105,6 +105,11 @@ The saved flights are kept. The next flight is on the new tune, so the page star
 older flights out. Each change written is added to `changes.csv` beside the flight history (date, axis, setting,
 old value, new value, PID profile), so you can always see what the advisor changed and set it back by hand. *Clear*
 does not erase it.
+
+Changes written before the PID profile column was added have no profile. The advisor counts them on every profile, so
+on a profile that holds the same value they can still set the pilot's P. If the flight controller accepted the
+change but `changes.csv` cannot be written, the page says so after the write, and that change is missing from the
+record.
 
 ## Adjustment functions
 

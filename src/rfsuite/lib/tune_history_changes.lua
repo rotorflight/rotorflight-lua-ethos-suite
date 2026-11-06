@@ -72,12 +72,16 @@ function changes.logChanges(mcuId, axis, applied, pidProfile)
   local file = io.open(path, "a")
   if not file then return false end
   local date = os.date("%Y-%m-%d %H:%M:%S")
-  if isNew then file:write(CHANGES_HEADER, "\n") end
-  for _, c in ipairs(applied) do
-    file:write(string.format("%s,%s,%s,%d,%d,%s\n", date, AXIS_NAMES[axis], c.key, c.from, c.to, pidProfile or ""))
-  end
-  file:close()
-  return true
+  -- Ethos' file:write/close do not report failures uniformly, so a failed
+  -- write is caught by pcall, as atomic_write.lua does.
+  local written = pcall(function()
+    if isNew then file:write(CHANGES_HEADER, "\n") end
+    for _, c in ipairs(applied) do
+      file:write(string.format("%s,%s,%s,%d,%d,%s\n", date, AXIS_NAMES[axis], c.key, c.from, c.to, pidProfile or ""))
+    end
+  end)
+  pcall(function() file:close() end)
+  return written
 end
 
 -- The Apply record, oldest first: {axis, key, from, to, pidProfile} per row.

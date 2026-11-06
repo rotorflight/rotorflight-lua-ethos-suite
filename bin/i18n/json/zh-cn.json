@@ -8494,6 +8494,12 @@
           "reverse_text": false,
           "max_length": 72
         },
+        "applied_not_recorded": {
+          "english": "Saved to the flight controller. The change record was not written.",
+          "translation": "Saved to the flight controller. The change record was not written.",
+          "needs_translation": true,
+          "max_length": 72
+        },
         "stage_read": {
           "english": "Reading current settings...",
           "translation": "Reading current settings...",

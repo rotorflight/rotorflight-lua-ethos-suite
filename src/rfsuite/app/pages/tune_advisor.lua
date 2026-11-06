@@ -140,6 +140,7 @@ local T = {
   applyHint = "@i18n(app.modules.tune_advisor.apply_hint)@",
   applyPrompt = "@i18n(app.modules.tune_advisor.apply_prompt)@",
   applied = "@i18n(app.modules.tune_advisor.applied)@",
+  appliedNotRecorded = "@i18n(app.modules.tune_advisor.applied_not_recorded)@",
   stageRead = "@i18n(app.modules.tune_advisor.stage_read)@",
   stageWrite = "@i18n(app.modules.tune_advisor.stage_write)@",
   stageSave = "@i18n(app.modules.tune_advisor.stage_save)@",
@@ -875,15 +876,22 @@ local function open(opts)
     local result, done = applyResult, applying
     applyResult, applying = nil, nil
     closeApplyDialog()
+    -- The FC write has already succeeded; a record that cannot be written is
+    -- reported, not rolled back.
+    local recorded = true
     if result == true then
-      tuneHistory.logChanges(mcuId, done.axis, done.changes, done.pidProfile)
+      recorded = tuneHistory.logChanges(mcuId, done.axis, done.changes, done.pidProfile) == true
       changeLog = tuneHistory.readChanges(mcuId)
       applied[done.axis] = true
       render()
     end
+    local message = result
+    if result == true then
+      message = recorded and T.applied or T.appliedNotRecorded
+    end
     form.openDialog({
       title = PAGE_TITLE,
-      message = result == true and T.applied or result,
+      message = message,
       buttons = {{label = BTN_OK, action = function() return true end}},
       wakeup = function() end,
       paint = function() end,
