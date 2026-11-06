@@ -10860,7 +10860,7 @@
           "translation": "טלמטריה בלבד",
           "needs_translation": false,
           "max_length": 18,
-          "reverse_text": false
+          "reverse_text": true
         },
         "wir_found": {
           "english": "Found",
