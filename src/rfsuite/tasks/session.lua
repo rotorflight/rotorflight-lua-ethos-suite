@@ -960,7 +960,7 @@ local function setConnected(value, mspQueue, protocol)
     -- request queue is cleared below. Retain its events through that teardown,
     -- but discard any still-unidentified bucket now that it is unresolvable.
     for ownerEpoch in pairs(pendingFlightStats) do
-      if ownerEpoch < connectionEpoch then pendingFlightStats[ownerEpoch] = nil end
+      if ownerEpoch < connectionEpoch then debugLog.print("[session] discarding flight stats from an unidentified connection") pendingFlightStats[ownerEpoch] = nil end
     end
     for ownerEpoch in pairs(flightOwnerMcuIdByConnectionEpoch) do
       if ownerEpoch < connectionEpoch then flightOwnerMcuIdByConnectionEpoch[ownerEpoch] = nil end
