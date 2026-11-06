@@ -20,6 +20,8 @@ local MSG_SAVE_TITLE = "@i18n(app.modules.copyprofiles.msgbox_save)@"
 local MSG_COPY_TITLE = "@i18n(app.modules.copyprofiles.msgbox_copy_title)@"
 local MSG_COPY_FMT = "@i18n(app.modules.copyprofiles.msgbox_copy_fmt)@"
 local MSG_SAVE_BODY = "@i18n(app.modules.copyprofiles.msgbox_msg)@"
+local MSG_LOAD_FAILED_TITLE = "@i18n(app.msg_load_failed_title)@"
+local MSG_LOAD_FAILED_BODY = "@i18n(app.msg_load_failed_body)@"
 
 local PROFILE_TYPE_CHOICES = {
   {"@i18n(app.modules.copyprofiles.profile_type_pid)@", 0},
@@ -29,13 +31,14 @@ local PROFILE_TYPE_CHOICES = {
 local PROFILE_TYPE_RATE = 1
 local MAX_PROFILE_COUNT = 6
 
--- The profiles of the chosen type that the board has (MSP_STATUS reports both counts), as Select
--- Profile does it. A copy onto a profile the board does not have is acknowledged and changes
--- nothing, so the choices are the board's own (#2661).
+-- The profiles of the chosen type that the board has (MSP_STATUS reports both counts). A copy onto
+-- a profile the board does not have is acknowledged and changes nothing, so the choices are the
+-- board's own (#2661). A count the reply does not carry (absent or 0) is read as the most the page
+-- knows; Select Profile does the same for an absent count.
 local function countFor(status, profileType)
   local count = profileType == PROFILE_TYPE_RATE and status.control_rate_profile_count or status.pid_profile_count
-  count = math.floor(tonumber(count) or 0)
-  if count < 1 then return 1 end
+  count = math.floor(tonumber(count) or MAX_PROFILE_COUNT)
+  if count < 1 then return MAX_PROFILE_COUNT end
   if count > MAX_PROFILE_COUNT then return MAX_PROFILE_COUNT end
   return count
 end
@@ -202,6 +205,47 @@ local function open(opts)
     updateEnabled()
   end
 
+  local function showLoadFailed()
+    if headerHandle then headerHandle.setReloadEnabled(true) end
+    form.openDialog({
+      title = MSG_LOAD_FAILED_TITLE,
+      message = MSG_LOAD_FAILED_BODY,
+      buttons = {
+        {
+          label = BTN_OK,
+          action = function()
+            if headerHandle then headerHandle.focusReload() end
+            return true
+          end,
+        },
+      },
+      wakeup = function() end,
+      paint = function() end,
+      options = TEXT_LEFT,
+    })
+  end
+
+  -- Reads the board's counts. Lines are built once they are known; if the read fails the page
+  -- says so and Reload asks again.
+  local requestStatus
+  local function reloadStatus()
+    if disposed or loaded then return end
+    if headerHandle then headerHandle.setReloadEnabled(false) end
+    requestStatus()
+  end
+
+  requestStatus = function()
+    bus.publish("msp.request", statusMsp.buildReadMessage(function(data)
+      if disposed then return end
+      status = data
+      loaded = true
+      rebuildFields()
+    end, function()
+      if disposed then return end
+      showLoadFailed()
+    end))
+  end
+
   local function buildPage()
     form.clear()
     fields = {}
@@ -210,24 +254,14 @@ local function open(opts)
     headerHandle = header.build(PAGE_TITLE, {
       onBack = goBack,
       onSave = function() confirmSave(headerHandle and headerHandle.focusSave) end,
+      onReload = reloadStatus,
     })
     headerHandle.setReloadEnabled(false)
-    if loaded then addFields() end
     updateEnabled()
   end
 
   buildPage()
-
-  -- The board's counts, read on open (as Select Profile does). Lines are built once they are known.
-  bus.publish("msp.request", statusMsp.buildReadMessage(function(data)
-    if disposed then return end
-    if not data then return end
-    status = data
-    loaded = true
-    rebuildFields()
-  end, function()
-    if disposed then return end
-  end))
+  requestStatus()
 
   if opts.setEventHandler then
     opts.setEventHandler(function(category, value)

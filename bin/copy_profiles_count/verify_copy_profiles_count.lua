@@ -13,7 +13,10 @@
 --   4. changing the type to rate rebuilds the lists with the board's rate count;
 --   5. Save stays off while source and destination are the same profile;
 --   6. a count above six is offered as six, the most the page knows;
---   7. a save pressed before the counts are read sends nothing.
+--   7. a save pressed before the counts are read sends nothing;
+--   8. a count the reply does not carry (nil or 0) is offered as six, as Select Profile does;
+--   9. a failed counts read says so, keeps Save off and turns Reload on;
+--  10. Reload asks for the counts again, and the lists are built from the answer.
 --
 -- --self-test restores the fixed list of six and requires check 2 to go red.
 
@@ -72,11 +75,11 @@ form = {
   addNumberField = function() return {enable = noop} end,
 }
 
--- The header records whether Save is lit, and keeps the Save handler.
-local saveLit, headerOpts = nil, nil
+-- The header records whether Save and Reload are lit, and keeps the Save and Reload handlers.
+local saveLit, reloadLit, headerOpts = nil, nil, nil
 package.loaded["rfsuite.app.header"] = {build = function(_, opts)
   headerOpts = opts
-  return {setSaveEnabled = function(v) saveLit = v end, setReloadEnabled = noop,
+  return {setSaveEnabled = function(v) saveLit = v end, setReloadEnabled = function(v) reloadLit = v end,
     focusSave = noop, focusReload = noop, focusMenu = noop}
 end}
 package.loaded["rfsuite.app.close_key"] = {shouldHandleClose = function() return false end}
@@ -88,10 +91,10 @@ package.loaded["rfsuite.lib.msp_copy_profile"] = {buildWriteMessage = function()
 end}
 package.loaded["rfsuite.lib.msp_eeprom"] = {buildWriteMessage = function() return {} end}
 
--- The status read: the test decides when, and with what counts, the board answers.
+-- The status read: the test decides when, and with what counts (or failure), the board answers.
 local statusCallbacks = {}
-package.loaded["rfsuite.lib.msp_status"] = {buildReadMessage = function(onData)
-  statusCallbacks[#statusCallbacks + 1] = onData
+package.loaded["rfsuite.lib.msp_status"] = {buildReadMessage = function(onData, onError)
+  statusCallbacks[#statusCallbacks + 1] = {onData = onData, onError = onError}
   return {}
 end}
 
@@ -110,8 +113,13 @@ end
 package.loaded["rfsuite.lib.require"] = requireModule
 
 local function answerStatus(pid, rate)
-  local onData = table.remove(statusCallbacks, 1)
-  onData({pid_profile_count = pid, control_rate_profile_count = rate})
+  local read = table.remove(statusCallbacks, 1)
+  read.onData({pid_profile_count = pid, control_rate_profile_count = rate})
+end
+
+local function failStatus()
+  local read = table.remove(statusCallbacks, 1)
+  read.onError("no answer")
 end
 
 local function runTests(pageSource)
@@ -119,7 +127,7 @@ local function runTests(pageSource)
 
   -- Opens a fresh page and returns its wakeup. Nothing is answered yet.
   local function openPage()
-    choiceFields, dialogs, statusCallbacks, saveLit, headerOpts = {}, {}, {}, nil, nil
+    choiceFields, dialogs, statusCallbacks, saveLit, reloadLit, headerOpts = {}, {}, {}, nil, nil, nil
     sentMessages = 0
     local wakeup = nil
     page.open({onBack = noop, setWakeupHandler = function(h) wakeup = h end})
@@ -191,6 +199,43 @@ local function runTests(pageSource)
       "sent=" .. sentMessages)
     answerStatus(4, 2)
     wake()
+  end
+
+  do
+    local wake = openPage()
+    answerStatus(nil, 0)
+    wake()
+    check("8. a PID count the reply does not carry is offered as six",
+      #choiceFields[2].choices == 6, "length=" .. tostring(#choiceFields[2].choices))
+    choiceFields[1].set(1) -- rate
+    wake()
+    check("8. and a rate count of 0 is offered as six too",
+      #choiceFields[2].choices == 6, "length=" .. tostring(#choiceFields[2].choices))
+  end
+
+  do
+    local wake = openPage()
+    failStatus()
+    wake()
+    check("9. a failed counts read opens the load-failed dialog", #dialogs == 1,
+      "dialogs=" .. #dialogs)
+    check("9. and builds no profile line", #choiceFields == 0, "fields=" .. #choiceFields)
+    check("9. Save stays off", saveLit ~= true, "saveLit=" .. tostring(saveLit))
+    check("9. Reload is lit", reloadLit == true, "reloadLit=" .. tostring(reloadLit))
+  end
+
+  do
+    local wake = openPage()
+    failStatus()
+    wake()
+    headerOpts.onReload()
+    check("10. Reload asks for the counts again", #statusCallbacks == 1, "reads=" .. #statusCallbacks)
+    check("10. and turns itself off while the read is out", reloadLit == false, "reloadLit=" .. tostring(reloadLit))
+    answerStatus(4, 2)
+    wake()
+    check("10. the lists are built from the answer",
+      #choiceFields == 3 and #choiceFields[2].choices == 4, "fields=" .. #choiceFields)
+    check("10. and Save is lit", saveLit == true)
   end
 end
 

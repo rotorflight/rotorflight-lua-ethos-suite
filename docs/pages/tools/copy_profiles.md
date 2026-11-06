@@ -25,7 +25,7 @@ Greyed out until the flight controller answers. Read-only while the model is arm
 ## Notes
 
 - Changes are written to the flight controller EEPROM upon Save.
-- The Source and Dest. Profile lists offer the profiles the flight controller has for the chosen type: PID profiles or rate profiles. Save stays off until the flight controller has reported its counts, and while source and destination are the same profile.
+- The Source and Dest. Profile lists offer the profiles the flight controller has for the chosen type: PID profiles or rate profiles. Save stays off until the flight controller has reported its counts, and while source and destination are the same profile. If the counts cannot be read, the page says so; Reload asks again.
 
 ## Related
 
