@@ -1,6 +1,8 @@
 -- Behaviour check for Issue #2492: the ESC telemetry protocol list follows the API
 -- version the board reports. RECORD is 14 before API 12.10 and 15 from it, when SRXL2
--- takes 14 (rotorflight-firmware Changes.md, MSP Changes, API 12.10).
+-- takes 14 (rotorflight-firmware Changes.md, MSP Changes, API 12.10). API 12.10 also
+-- appends Goosky at 16, an alias of BLHELI32 (rotorflight-firmware#568), so it is offered
+-- from 12.10 and never before.
 --
 -- Run it:
 --     lua5.4 bin/esc_sensor_protocol/verify_esc_sensor_protocol.lua
@@ -96,6 +98,7 @@ do
   local list = offered(9)
   check("RECORD is offered at 14", valueOf(list, "RECORD") == 14, "RECORD = " .. tostring(valueOf(list, "RECORD")))
   check("SRXL2 is not offered", valueOf(list, "SRXL2") == nil)
+  check("Goosky is not offered", valueOf(list, "Goosky") == nil)
 end
 
 print("API 10 (SRXL2 at 14): SRXL2 is 14 and RECORD is 15")
@@ -104,6 +107,10 @@ do
   check("SRXL2 is offered at 14", valueOf(list, "SRXL2") == 14, "SRXL2 = " .. tostring(valueOf(list, "SRXL2")))
   check("RECORD is offered at 15, not 14", valueOf(list, "RECORD") == 15,
     "RECORD = " .. tostring(valueOf(list, "RECORD")))
+  check("Goosky is offered at 16", valueOf(list, "Goosky") == 16,
+    "Goosky = " .. tostring(valueOf(list, "Goosky")))
+  check("the module names Goosky as 16 and BLHELI32 as 1",
+    escSensorConfig.GOOSKY_PROTOCOL == 16 and escSensorConfig.BLHELI32_PROTOCOL == 1)
   check("values are ascending", ascending(list))
 end
 
@@ -112,6 +119,7 @@ do
   local list = offered(nil)
   check("no SRXL2 and no RECORD are offered", list ~= nil and valueOf(list, "SRXL2") == nil
     and valueOf(list, "RECORD") == nil)
+  check("no Goosky is offered", list ~= nil and valueOf(list, "Goosky") == nil)
   check("the base list is still there", valueOf(list, "FrSky F.BUS") == 13)
 end
 
@@ -150,6 +158,9 @@ do
   check("API 10: the page offers SRXL2 at 14 and RECORD at 15", valueOf(on10, "SRXL2") == 14
     and valueOf(on10, "RECORD") == 15, "SRXL2 = " .. tostring(valueOf(on10, "SRXL2"))
     .. ", RECORD = " .. tostring(valueOf(on10, "RECORD")))
+  check("API 10: the page offers Goosky at 16", valueOf(on10, "Goosky") == 16,
+    "Goosky = " .. tostring(valueOf(on10, "Goosky")))
+  check("API 9: the page does not offer Goosky", valueOf(on9, "Goosky") == nil)
   local onNil = pageProtocolList(nil)
   check("no version: the page offers the base list only", onNil ~= nil
     and valueOf(onNil, "SRXL2") == nil and valueOf(onNil, "RECORD") == nil)

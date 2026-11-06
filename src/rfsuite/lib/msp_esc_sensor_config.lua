@@ -12,10 +12,15 @@ local WRITE_COMMAND = 216
 
 -- The telemetry protocol enum moved with API 12.10 (Changes.md, MSP Changes): SRXL2 was
 -- inserted at 14, which shifted RECORD from 14 to 15. Before 12.10, RECORD is 14.
+-- API 12.10 also appends GOOSKY at 16 (rotorflight-firmware#568): Goosky ESCs run AM32
+-- firmware and send BLHeli32 telemetry, so the firmware treats 16 as an alias of 1.
+local BLHELI32 = 1
 local SRXL2 = 14
 local RECORD_BEFORE_SRXL2 = 14
 local RECORD_FROM_SRXL2 = 15
+local GOOSKY = 16
 local SRXL2_MIN_API_MINOR = 10
+local GOOSKY_MIN_API_MINOR = 10
 
 local BASE_PROTOCOL_CHOICES = {
   {"NONE", 0},
@@ -46,6 +51,9 @@ local function choicesFor(apiMinor)
     if apiMinor >= SRXL2_MIN_API_MINOR then
       choices[#choices + 1] = {"SRXL2", SRXL2}
       choices[#choices + 1] = {"RECORD", RECORD_FROM_SRXL2}
+      if apiMinor >= GOOSKY_MIN_API_MINOR then
+        choices[#choices + 1] = {"Goosky", GOOSKY}
+      end
     else
       choices[#choices + 1] = {"RECORD", RECORD_BEFORE_SRXL2}
     end
@@ -106,6 +114,9 @@ local msp_esc_sensor_config = {
   FIELD_META = FIELD_META,
   choicesFor = choicesFor,
   SRXL2_MIN_API_MINOR = SRXL2_MIN_API_MINOR,
+  GOOSKY_MIN_API_MINOR = GOOSKY_MIN_API_MINOR,
+  BLHELI32_PROTOCOL = BLHELI32,
+  GOOSKY_PROTOCOL = GOOSKY,
   ON_OFF_CHOICES = ON_OFF_CHOICES,
 }
 
