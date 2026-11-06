@@ -100,8 +100,8 @@ local FIELD_META = {
   governor_yaw_weight = {min = 0, max = 250, default = 0},
   governor_cyclic_weight = {min = 0, max = 250, default = 10},
   governor_collective_weight = {min = 0, max = 250, default = 100},
-  governor_max_throttle = {min = 0, max = 100, default = 100, suffix = "%"},
-  governor_min_throttle = {min = 0, max = 100, default = 10, suffix = "%"},
+  governor_max_throttle = {min = 10, max = 100, default = 100, suffix = "%"},
+  governor_min_throttle = {min = 10, max = 100, default = 10, suffix = "%"},
   governor_fallback_drop = {min = 0, max = 50, default = 10, suffix = "%"},
 }
 

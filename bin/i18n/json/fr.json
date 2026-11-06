@@ -2132,6 +2132,24 @@
           "reverse_text": false,
           "max_length": 8
         },
+        "activelook_glasses_menu": {
+          "english": "ETHOS Glasses menu",
+          "translation": "Menu lunettes ETHOS",
+          "needs_translation": false,
+          "max_length": 21
+        },
+        "activelook_restart_radio": {
+          "english": "Save, then restart the radio.",
+          "translation": "Enregistrer, puis redémarrer la radio.",
+          "needs_translation": false,
+          "max_length": 38
+        },
+        "activelook_setup_hint": {
+          "english": "One-time setup:\nModel > Glasses > Screen\nChoose the Full-Screen layout.\nAssign Rotorflight ActiveLook.",
+          "translation": "Configuration initiale :\nModèle > Lunettes > Écran\nChoisir le mode Full-Screen.\nAffecter Rotorflight ActiveLook.",
+          "needs_translation": false,
+          "max_length": 120
+        },
         "feature_activelook": {
           "english": "Rotorflight ActiveLook",
           "translation": "Rotorflight ActiveLook",
@@ -8412,6 +8430,13 @@
           "needs_translation": true,
           "reverse_text": false,
           "max_length": 49
+        },
+        "why_shake_no_step_fmt": {
+          "english": "Shakes %d deg/s at centre stick. No P step made.",
+          "translation": "Shakes %d deg/s at centre stick. No P step made.",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 48
         },
         "why_ok": {
           "english": "The heli answers the stick as asked.",
