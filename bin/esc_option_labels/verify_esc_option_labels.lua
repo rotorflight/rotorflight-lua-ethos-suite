@@ -64,6 +64,7 @@ local STAYS = {
   ["ESC Gov"] = true, ["FW Gov"] = true, ["RF Gov"] = true, ["VBar Gov"] = true,
   ["FLYROTOR"] = true, ["F3A"] = true, ["Standard"] = true, ["VBar"] = true, ["EX Bus"] = true,
   ["Unsolicited"] = true, ["Futaba SBUS"] = true,
+  ["4D"] = true, ["4D Reverse"] = true,                              -- hw1128 rotation model names
 }
 
 local function staysAsItIs(label, file)
@@ -102,6 +103,14 @@ local function checkFiles(sources)
         leftovers[#leftovers + 1] = label
       end
     end
+    -- Option lists written as choices({"Label", ...}) hold bare strings, which the pair pattern above does not see.
+    for body in text:gmatch("choices%(%{(.-)%}%)") do
+      for label in body:gmatch('"([^"]*)"') do
+        if not label:match("^@i18n%(") and not staysAsItIs(label, rel) then
+          leftovers[#leftovers + 1] = label
+        end
+      end
+    end
     check("1. " .. rel .. " keeps its " .. expected .. " option entries", count == expected,
       "entries=" .. count)
     check("2. " .. rel .. " has no translatable English label left",
@@ -133,12 +142,10 @@ local function loadSources()
   return sources
 end
 
-local sources = loadSources()
-if SELF_TEST then
-  -- One English label put back in the BlueJay table.
-  local rel = "src/rfsuite/lib/msp_esc_parameters_bluejay.lua"
-  local mutant, n = sources[rel]:gsub('@i18n%(app%.modules%.esc_tools%.opt%.low%)@', "Low", 1)
-  assert(n == 1, "could not apply self-test mutation")
+-- Put one English label back into a copy of the sources and require check 2 to go red.
+local function mutantCaught(sources, rel, pattern, replacement)
+  local mutant, n = sources[rel]:gsub(pattern, replacement, 1)
+  assert(n == 1, "could not apply self-test mutation to " .. rel)
   local mutated = {}
   for k, v in pairs(sources) do mutated[k] = v end
   mutated[rel] = mutant
@@ -147,11 +154,24 @@ if SELF_TEST then
   checkFiles(mutated)
   local caught = failures - before
   silent = false
-  if caught == 0 then
-    print("SELF-TEST FAILED: the English-label mutant did not produce any failure")
-    os.exit(1)
+  return caught
+end
+
+local sources = loadSources()
+if SELF_TEST then
+  -- A pair-table label (BlueJay) and a choices({...}) label (hw5) each put back in English.
+  local cases = {
+    {"src/rfsuite/lib/msp_esc_parameters_bluejay.lua", '@i18n%(app%.modules%.esc_tools%.opt%.low%)@', "Low"},
+    {"src/rfsuite/lib/msp_esc_parameters_hw5.lua", '@i18n%(api%.BATTERY_INI%.tbl_auto%)@', "Auto"},
+  }
+  for _, c in ipairs(cases) do
+    local caught = mutantCaught(sources, c[1], c[2], c[3])
+    if caught == 0 then
+      print("SELF-TEST FAILED: the English-label mutant in " .. c[1] .. " did not produce any failure")
+      os.exit(1)
+    end
+    print(string.format("self-test ok: English label in %s caught (%d failure(s))", c[1], caught))
   end
-  print(string.format("self-test ok: English-label mutant caught %d failure(s)", caught))
   os.exit(0)
 end
 

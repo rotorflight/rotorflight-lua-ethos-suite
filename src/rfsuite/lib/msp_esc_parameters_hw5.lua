@@ -31,20 +31,20 @@ end
 
 local TABLES = {
   rotation = ROTATION,
-  rotation_hw1128 = choices({"Forward", "Reverse", "4D", "4D Reverse"}),
+  rotation_hw1128 = choices({"@i18n(app.modules.setup_wizard.rcv_dir_forward)@", "@i18n(app.modules.servos.reverse)@", "4D", "4D Reverse"}),
   lipo_3_to_14 = LIPO_CELLS,
-  lipo_3_to_8 = choices({"Auto", "3S", "4S", "5S", "6S", "7S", "8S"}),
-  lipo_even_6_to_14 = choices({"Auto", "6S", "8S", "10S", "12S", "14S"}),
-  lipo_2_to_4 = choices({"Auto", "2S", "3S", "4S"}),
+  lipo_3_to_8 = choices({"@i18n(api.BATTERY_INI.tbl_auto)@", "3S", "4S", "5S", "6S", "7S", "8S"}),
+  lipo_even_6_to_14 = choices({"@i18n(api.BATTERY_INI.tbl_auto)@", "6S", "8S", "10S", "12S", "14S"}),
+  lipo_2_to_4 = choices({"@i18n(api.BATTERY_INI.tbl_auto)@", "2S", "3S", "4S"}),
   cutoff_28_to_38 = CUTOFF_VOLTAGE,
-  cutoff_25_to_38 = choices({"Disabled", "2.5V", "2.6V", "2.7V", "2.8V", "2.9V", "3.0V", "3.1V", "3.2V", "3.3V", "3.4V", "3.5V", "3.6V", "3.7V", "3.8V"}),
+  cutoff_25_to_38 = choices({"@i18n(app.modules.ports.function_disabled)@", "2.5V", "2.6V", "2.7V", "2.8V", "2.9V", "3.0V", "3.1V", "3.2V", "3.3V", "3.4V", "3.5V", "3.6V", "3.7V", "3.8V"}),
   bec_50_to_84 = choices({"5.0V", "5.1V", "5.2V", "5.3V", "5.4V", "5.5V", "5.6V", "5.7V", "5.8V", "5.9V", "6.0V", "6.1V", "6.2V", "6.3V", "6.4V", "6.5V", "6.6V", "6.7V", "6.8V", "6.9V", "7.0V", "7.1V", "7.2V", "7.3V", "7.4V", "7.5V", "7.6V", "7.7V", "7.8V", "7.9V", "8.0V", "8.1V", "8.2V", "8.3V", "8.4V"}),
   bec_54_to_84 = choices({"5.4V", "5.5V", "5.6V", "5.7V", "5.8V", "5.9V", "6.0V", "6.1V", "6.2V", "6.3V", "6.4V", "6.5V", "6.6V", "6.7V", "6.8V", "6.9V", "7.0V", "7.1V", "7.2V", "7.3V", "7.4V", "7.5V", "7.6V", "7.7V", "7.8V", "7.9V", "8.0V", "8.1V", "8.2V", "8.3V", "8.4V"}),
   bec_60_74_84 = choices({"6.0V", "7.4V", "8.4V"}),
   bec_50_to_120 = choices({"5.0V", "5.1V", "5.2V", "5.3V", "5.4V", "5.5V", "5.6V", "5.7V", "5.8V", "5.9V", "6.0V", "6.1V", "6.2V", "6.3V", "6.4V", "6.5V", "6.6V", "6.7V", "6.8V", "6.9V", "7.0V", "7.1V", "7.2V", "7.3V", "7.4V", "7.5V", "7.6V", "7.7V", "7.8V", "7.9V", "8.0V", "8.1V", "8.2V", "8.3V", "8.4V", "8.5V", "8.6V", "8.7V", "8.8V", "8.9V", "9.0V", "9.1V", "9.2V", "9.3V", "9.4V", "9.5V", "9.6V", "9.7V", "9.8V", "9.9V", "10.0V", "10.1V", "10.2V", "10.3V", "10.4V", "10.5V", "10.6V", "10.7V", "10.8V", "10.9V", "11.0V", "11.1V", "11.2V", "11.3V", "11.4V", "11.5V", "11.6V", "11.7V", "11.8V", "11.9V", "12.0V"}),
   brake_full = BRAKE_TYPE,
-  brake_no_prop = choices({"Disabled", "Normal", "Reverse"}),
-  brake_basic = choices({"Disabled", "Normal"}),
+  brake_no_prop = choices({"@i18n(app.modules.ports.function_disabled)@", "@i18n(api.MIXER_INPUT.tbl_normal)@", "@i18n(app.modules.servos.reverse)@"}),
+  brake_basic = choices({"@i18n(app.modules.ports.function_disabled)@", "@i18n(api.MIXER_INPUT.tbl_normal)@"}),
   response_time = RESPONSE_TIME,
 }
 
