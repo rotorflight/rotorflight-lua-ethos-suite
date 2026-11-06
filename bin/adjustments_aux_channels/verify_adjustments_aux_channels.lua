@@ -8,7 +8,8 @@
 -- What it pins:
 --   1. the codec writes enaChannel and adjChannel clamped to 0..12 (AUX 1..13);
 --   2. channels already in range are written unchanged, including AUX 1 and AUX 13;
---   3. 255, always on, is written as is;
+--   3. 255, always on, is written as is on the enable channel, and clamped on the value channel
+--      (the value channel has no always-on choice);
 --   4. the page's picker count is 13 (read from the page's source, since the page needs the radio UI).
 --
 -- --self-test removes the clamp and requires check 1 to go red.
@@ -74,6 +75,10 @@ local function runTests(codecSource)
   ena, adj = writtenChannels(msp, 255, 5)
   check("3. always on (255) is written as is, and AUX 6 unchanged", ena == 255 and adj == 5,
     "ena=" .. tostring(ena) .. " adj=" .. tostring(adj))
+
+  ena, adj = writtenChannels(msp, 0, 255)
+  check("3b. the value channel clamps 255 to AUX 13 (no always-on choice there)", adj == 12,
+    "adj=" .. tostring(adj))
 
   ena, adj = writtenChannels(msp, nil, nil)
   check("nil channels are written as AUX 1", ena == 0 and adj == 0)
