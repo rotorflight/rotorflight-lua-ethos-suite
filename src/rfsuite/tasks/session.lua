@@ -1495,7 +1495,8 @@ local function onModelEscCurrentLimitUpdate(payload)
   local updated
   if payload.forget then
     -- A page clears only a figure that a page stored. The figure the pilot typed in on
-    -- Setup > Power > Preferences stays, whatever the ESC page reports (#2744).
+    -- Setup > Power > Preferences stays when the ESC page reports no limit (#2744). A different
+    -- limit that a page reads replaces it, as a page's figure (see the write below).
     if modelPreferences.escCurrentLimitOrigin(before) ~= "page" then return end
     updated = modelPreferences.setEscCurrentLimit(before, nil)
   else

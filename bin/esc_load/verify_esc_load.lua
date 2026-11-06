@@ -205,6 +205,15 @@ check("forget clears the figure on file for this flight controller",
     and limitEvents[1].forget == true,
   "events=" .. #limitEvents)
 
+-- No session snapshot arrives between the clear and this read: the module must not still count
+-- the cleared figure as on file, or the new figure would not be handed over.
+limitEvents = {}
+check("a figure read right after a clear is handed over, not skipped",
+  escCurrentLimit.remember(30) == true and #limitEvents == 1 and limitEvents[1].origin == "page",
+  "events=" .. #limitEvents)
+limitEvents = {}
+escCurrentLimit.forget()
+
 bus.publish("session.update", {connected = true, mcuId = "M4"})
 limitEvents = {}
 check("forget with no figure on file sends nothing",
@@ -270,9 +279,10 @@ check("Scorpion: max_current 12000 (hundredths of an amp) is 120 A",
   "events=" .. #limitEvents .. " amps=" .. tostring(limitEvents[1] and limitEvents[1].amps))
 limitEvents = {}
 vendorConfig.onLoaded({data = {max_current = 0}})
--- A zero is not stored as a limit: at most the clear of a figure a page stored is sent.
-check("Scorpion: a zero max_current is not a limit",
-  #limitEvents == 0 or (#limitEvents == 1 and limitEvents[1].forget == true and limitEvents[1].amps == 0))
+-- The 120 A above is on file from this page, so the zero clears exactly that figure and stores nothing.
+check("Scorpion: a zero max_current is not a limit, it clears the page's 120 A (#2744)",
+  #limitEvents == 1 and limitEvents[1].forget == true and limitEvents[1].amps == 0,
+  "events=" .. #limitEvents)
 bus.publish("session.update", {mcuId = "M1", escCurrentLimit = 45})
 limitEvents = {}
 vendorConfig.onLoaded({data = {max_current = 0}})
@@ -499,6 +509,19 @@ writes = {}
 check("the page's next visit hands the refused figure over again",
   escCurrentLimit.remember(35) == true and writesWith(35) == 1 and S.escCurrentLimit == 35,
   "writes=" .. #writes .. " held=" .. tostring(S.escCurrentLimit))
+
+-- The ESC's own reading is what a page stores: a different reading replaces a figure the pilot
+-- typed in, and the zero reading that follows clears that page's figure again (#2744).
+writes = {}
+bus.publish("model.esc_current_limit.update", {mcuId = "M1", amps = 35, origin = "preferences"})
+writes = {}
+bus.publish("model.esc_current_limit.update", {mcuId = "M1", amps = 40, origin = "page"})
+check("a page's different reading replaces a figure typed in on Preferences",
+  S.escCurrentLimit == 40 and writesWith(40) == 1, "held=" .. tostring(S.escCurrentLimit))
+writes = {}
+bus.publish("model.esc_current_limit.update", {mcuId = "M1", forget = true})
+check("a zero reading then clears that page's figure",
+  S.escCurrentLimit == nil and writesWith(0) == 1, "held=" .. tostring(S.escCurrentLimit))
 
 -- ---------------------------------------------------------------------------
 -- 6. The dashboard's ESC load

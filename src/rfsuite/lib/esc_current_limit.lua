@@ -91,6 +91,8 @@ function esc_current_limit.forget()
   end
   if currentLimit == nil then return true end
   bus.publish("model.esc_current_limit.update", {mcuId = currentMcuId, amps = 0, forget = true})
+  -- Not on file any more, so the next read is handed over at once instead of waiting for a snapshot.
+  currentLimit = nil
   return true
 end
 
