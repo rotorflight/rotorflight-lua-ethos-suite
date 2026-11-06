@@ -95,6 +95,8 @@ local modelPreferences = requireModule("lib/model_preferences.lua")
 
 -- Every write the model preferences would make goes to this list instead of the card.
 local writes = {}
+-- When set, the card refuses every write (a full card, a write-protected store).
+local refuseWrites = false
 do
   -- What the card holds: the last table written to each path, handed back on the next load,
   -- the way the real file would be read again after a reconnect.
@@ -111,8 +113,9 @@ do
     return deepcopy(card[path])
   end
   ini.save_ini_file = function(path, tbl)
-    card[path] = deepcopy(tbl)
     writes[#writes + 1] = {path = path, battery = tbl.battery}
+    if refuseWrites then return false end
+    card[path] = deepcopy(tbl)
     return true
   end
 end
@@ -185,6 +188,52 @@ check("a kept limit is dropped on disconnect and never reaches the next connecti
   #limitEvents == 0, "events=" .. #limitEvents)
 
 -- ---------------------------------------------------------------------------
+-- 1b. forget() clears a figure on file, and only when there is one
+-- ---------------------------------------------------------------------------
+
+print("esc_current_limit: forget")
+bus.publish("session.update", {connected = true, mcuId = "M4"})
+limitEvents = {}
+check("a figure a page hands over is marked as the page's",
+  escCurrentLimit.remember(44) == true and #limitEvents == 1 and limitEvents[1].origin == "page",
+  "origin=" .. tostring(limitEvents[1] and limitEvents[1].origin))
+
+bus.publish("session.update", {connected = true, mcuId = "M4", escCurrentLimit = 30})
+limitEvents = {}
+check("forget clears the figure on file for this flight controller",
+  escCurrentLimit.forget() == true and #limitEvents == 1 and limitEvents[1].mcuId == "M4"
+    and limitEvents[1].forget == true,
+  "events=" .. #limitEvents)
+
+-- No session snapshot arrives between the clear and this read: the module must not still count
+-- the cleared figure as on file, or the new figure would not be handed over.
+limitEvents = {}
+check("a figure read right after a clear is handed over, not skipped",
+  escCurrentLimit.remember(30) == true and #limitEvents == 1 and limitEvents[1].origin == "page",
+  "events=" .. #limitEvents)
+limitEvents = {}
+escCurrentLimit.forget()
+
+bus.publish("session.update", {connected = true, mcuId = "M4"})
+limitEvents = {}
+check("forget with no figure on file sends nothing",
+  escCurrentLimit.forget() == true and #limitEvents == 0, "events=" .. #limitEvents)
+
+bus.publish("session.update", {connected = true})
+limitEvents = {}
+check("forget before the MCU ID arrives is kept, not sent",
+  escCurrentLimit.forget() == true and #limitEvents == 0, "events=" .. #limitEvents)
+bus.publish("session.update", {connected = true, mcuId = "M5", escCurrentLimit = 30})
+check("the kept clear is handed over when the MCU ID arrives",
+  #limitEvents == 1 and limitEvents[1].mcuId == "M5" and limitEvents[1].forget == true,
+  "events=" .. #limitEvents)
+
+bus.publish("session.update", {connected = false})
+limitEvents = {}
+check("forget with no flight controller connected is refused", escCurrentLimit.forget() == false
+  and #limitEvents == 0)
+
+-- ---------------------------------------------------------------------------
 -- 2. Model preferences keep the figure per model, zero as not set
 -- ---------------------------------------------------------------------------
 
@@ -196,6 +245,14 @@ check("storing zero clears the figure back to not set",
   modelPreferences.escCurrentLimit(modelPreferences.setEscCurrentLimit({}, 0)) == nil)
 check("storing nil clears the figure back to not set",
   modelPreferences.escCurrentLimit(modelPreferences.setEscCurrentLimit({}, nil)) == nil)
+check("no figure stored has no origin", modelPreferences.escCurrentLimitOrigin({}) == "")
+check("a figure stored without an origin is a page's figure",
+  modelPreferences.escCurrentLimitOrigin(modelPreferences.setEscCurrentLimit({}, 90)) == "page")
+check("a figure typed in on Preferences keeps that origin",
+  modelPreferences.escCurrentLimitOrigin(modelPreferences.setEscCurrentLimit({}, 90, "preferences")) == "preferences")
+check("clearing the figure clears its origin",
+  modelPreferences.escCurrentLimitOrigin(modelPreferences.setEscCurrentLimit(
+    modelPreferences.setEscCurrentLimit({}, 90, "preferences"), 0)) == "")
 check("a figure above the range is held to 1000 A",
   modelPreferences.escCurrentLimit(modelPreferences.setEscCurrentLimit({}, 5000)) == 1000)
 
@@ -222,7 +279,15 @@ check("Scorpion: max_current 12000 (hundredths of an amp) is 120 A",
   "events=" .. #limitEvents .. " amps=" .. tostring(limitEvents[1] and limitEvents[1].amps))
 limitEvents = {}
 vendorConfig.onLoaded({data = {max_current = 0}})
-check("Scorpion: a zero max_current is not a limit", #limitEvents == 0)
+-- The 120 A above is on file from this page, so the zero clears exactly that figure and stores nothing.
+check("Scorpion: a zero max_current is not a limit, it clears the page's 120 A (#2744)",
+  #limitEvents == 1 and limitEvents[1].forget == true and limitEvents[1].amps == 0,
+  "events=" .. #limitEvents)
+bus.publish("session.update", {mcuId = "M1", escCurrentLimit = 45})
+limitEvents = {}
+vendorConfig.onLoaded({data = {max_current = 0}})
+check("Scorpion: a zero max_current clears a page's figure on file (#2744)",
+  #limitEvents == 1 and limitEvents[1].forget == true, "events=" .. #limitEvents)
 
 bus.publish("session.update", {mcuId = "M1"})
 limitEvents = {}
@@ -337,6 +402,9 @@ fieldSetter(0)
 pressSaveAndConfirm()
 check("Save with 0 clears the figure (amps = nil)",
   #limitEvents == 1 and limitEvents[1].amps == nil, "events=" .. #limitEvents)
+check("a figure saved on Preferences is marked as the pilot's",
+  limitEvents[1] and limitEvents[1].origin == "preferences",
+  "origin=" .. tostring(limitEvents[1] and limitEvents[1].origin))
 
 fieldSetter(70)
 bus.publish("session.update", {mcuId = "M1", escCurrentLimit = 20})
@@ -399,6 +467,61 @@ writes = {}
 send("M1", nil)
 check("a cleared figure is written as not set",
   writesWith(0) == 1 and S.escCurrentLimit == nil, "writes=" .. #writes .. " held=" .. tostring(S.escCurrentLimit))
+
+-- A page clears only a figure a page stored (#2744): the figure typed in on Preferences stays.
+writes = {}
+send("M1", 60)
+writes = {}
+bus.publish("model.esc_current_limit.update", {mcuId = "M1", forget = true})
+check("forget clears a figure a page stored",
+  S.escCurrentLimit == nil and writesWith(0) == 1, "held=" .. tostring(S.escCurrentLimit))
+
+writes = {}
+bus.publish("model.esc_current_limit.update", {mcuId = "M1", amps = 50, origin = "preferences"})
+check("a figure typed in on Preferences is written", S.escCurrentLimit == 50 and writesWith(50) == 1)
+writes = {}
+bus.publish("model.esc_current_limit.update", {mcuId = "M1", forget = true})
+check("forget leaves the figure typed in on Preferences",
+  S.escCurrentLimit == 50 and #writes == 0, "writes=" .. #writes .. " held=" .. tostring(S.escCurrentLimit))
+
+-- The pilot typing in the figure a page stored makes it the pilot's: the next forget keeps it.
+writes = {}
+bus.publish("model.esc_current_limit.update", {mcuId = "M1", amps = 20, origin = "page"})
+bus.publish("model.esc_current_limit.update", {mcuId = "M1", amps = 20, origin = "preferences"})
+check("the same figure typed in on Preferences changes its origin and is written",
+  S.escCurrentLimit == 20 and writesWith(20) == 2, "writes=" .. #writes)
+writes = {}
+bus.publish("model.esc_current_limit.update", {mcuId = "M1", forget = true})
+check("forget then keeps a figure the pilot typed in, even equal to the page's",
+  S.escCurrentLimit == 20 and #writes == 0, "writes=" .. #writes .. " held=" .. tostring(S.escCurrentLimit))
+
+-- A refused write is not a figure on file (#2658): the figure before it stays, and the next page
+-- visit hands the new one over again, so the write is tried again.
+writes = {}
+refuseWrites = true
+send("M1", 35)
+check("a refused write is attempted once", writesWith(35) == 1, "writes=" .. #writes)
+check("a refused write leaves the figure before it on file", S.escCurrentLimit == 20,
+  "held=" .. tostring(S.escCurrentLimit))
+refuseWrites = false
+bus.publish("session.update", {connected = true, mcuId = "M1", escCurrentLimit = 20})
+writes = {}
+check("the page's next visit hands the refused figure over again",
+  escCurrentLimit.remember(35) == true and writesWith(35) == 1 and S.escCurrentLimit == 35,
+  "writes=" .. #writes .. " held=" .. tostring(S.escCurrentLimit))
+
+-- The ESC's own reading is what a page stores: a different reading replaces a figure the pilot
+-- typed in, and the zero reading that follows clears that page's figure again (#2744).
+writes = {}
+bus.publish("model.esc_current_limit.update", {mcuId = "M1", amps = 35, origin = "preferences"})
+writes = {}
+bus.publish("model.esc_current_limit.update", {mcuId = "M1", amps = 40, origin = "page"})
+check("a page's different reading replaces a figure typed in on Preferences",
+  S.escCurrentLimit == 40 and writesWith(40) == 1, "held=" .. tostring(S.escCurrentLimit))
+writes = {}
+bus.publish("model.esc_current_limit.update", {mcuId = "M1", forget = true})
+check("a zero reading then clears that page's figure",
+  S.escCurrentLimit == nil and writesWith(0) == 1, "held=" .. tostring(S.escCurrentLimit))
 
 -- ---------------------------------------------------------------------------
 -- 6. The dashboard's ESC load
