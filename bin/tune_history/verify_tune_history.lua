@@ -108,7 +108,8 @@ local function load()
 end
 
 local function update(fields)
-  local snapshot = {connected = true, mcuId = currentMcu, craftName = "Wing", fcVersion = "4.7.0"}
+  local snapshot = {connected = true, mcuId = currentMcu, craftName = "Wing", fcVersion = "4.7.0",
+    handshake = {mcuId = true}}
   for k, v in pairs(fields) do snapshot[k] = v end
   if fields.mcuId == false then snapshot.mcuId = nil end
   handlers["session.update"](snapshot)
@@ -482,6 +483,26 @@ do
 
   files[HISTORY] = "some,other,columns\n1,2,3\n"
   check("a file with other columns reads as no flights", #tuneHistory.read(MCU) == 0)
+end
+
+-- Until the reconnecting FC's UID handshake answers, the mcuId kept from the last
+-- connection can still be the previous FC's: the owed clear waits, and so does a read.
+do
+  load()
+  reply.seconds, reply.F = 147, 100
+  clock = clock + 60
+  update({isArmed = true})
+  update({isArmed = false})
+  local asked = pump({clear = {n = 1, reason = "timeout"}}, 4)
+  check("a clear of a saved flight is owed before the reconnect", asked == "roll,pitch,yaw,clear" and #lines() == 4,
+    asked .. " / " .. #lines() .. " lines")
+  drop()
+  for _ = 1, 12 do
+    clock = clock + 0.5
+    update({isArmed = false, mcuId = MCU, handshake = {mcuId = false}})
+  end
+  check("a retained mcuId sends no owed clear before the reconnect handshake", #requests == 0, #requests .. " requests")
+  drop()
 end
 
 print("The Apply record reads back")
