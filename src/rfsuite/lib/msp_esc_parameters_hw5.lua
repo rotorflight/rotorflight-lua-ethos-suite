@@ -10,16 +10,16 @@ local mspcodec = requireModule("lib/mspcodec.lua")
 local READ_COMMAND = 217
 local WRITE_COMMAND = 218
 
-local FLIGHT_MODE = {{"Fixed Wing", 0}, {"Heli Ext Gov", 1}, {"Heli Gov", 2}, {"Heli Store", 3}}
+local FLIGHT_MODE = {{"@i18n(app.modules.esc_tools.opt.fixed_wing)@", 0}, {"Heli Ext Gov", 1}, {"Heli Gov", 2}, {"Heli Store", 3}}
 local ROTATION = {{"CW", 0}, {"CCW", 1}}
-local LIPO_CELLS = {{"Auto", 0}, {"3S", 1}, {"4S", 2}, {"5S", 3}, {"6S", 4}, {"7S", 5}, {"8S", 6}, {"9S", 7}, {"10S", 8}, {"11S", 9}, {"12S", 10}, {"13S", 11}, {"14S", 12}}
-local CUTOFF_TYPE = {{"Soft", 0}, {"Hard", 1}}
-local CUTOFF_VOLTAGE = {{"Disabled", 0}, {"2.8V", 1}, {"2.9V", 2}, {"3.0V", 3}, {"3.1V", 4}, {"3.2V", 5}, {"3.3V", 6}, {"3.4V", 7}, {"3.5V", 8}, {"3.6V", 9}, {"3.7V", 10}, {"3.8V", 11}}
+local LIPO_CELLS = {{"@i18n(api.BATTERY_INI.tbl_auto)@", 0}, {"3S", 1}, {"4S", 2}, {"5S", 3}, {"6S", 4}, {"7S", 5}, {"8S", 6}, {"9S", 7}, {"10S", 8}, {"11S", 9}, {"12S", 10}, {"13S", 11}, {"14S", 12}}
+local CUTOFF_TYPE = {{"@i18n(app.modules.esc_tools.opt.soft)@", 0}, {"@i18n(app.modules.esc_tools.opt.hard)@", 1}}
+local CUTOFF_VOLTAGE = {{"@i18n(app.modules.ports.function_disabled)@", 0}, {"2.8V", 1}, {"2.9V", 2}, {"3.0V", 3}, {"3.1V", 4}, {"3.2V", 5}, {"3.3V", 6}, {"3.4V", 7}, {"3.5V", 8}, {"3.6V", 9}, {"3.7V", 10}, {"3.8V", 11}}
 local RESTART_TIME = {{"1s", 0}, {"1.5s", 1}, {"2s", 2}, {"2.5s", 3}, {"3s", 4}}
 local RESPONSE_TIME = {{"1", 0}, {"2", 1}, {"3", 2}, {"4", 3}, {"5", 4}, {"6", 5}, {"7", 6}, {"8", 7}, {"9", 8}, {"10", 9}}
 local STARTUP_POWER = {{"1", 0}, {"2", 1}, {"3", 2}, {"4", 3}, {"5", 4}, {"6", 5}, {"7", 6}}
-local ENABLED_DISABLED = {{"Enabled", 0}, {"Disabled", 1}}
-local BRAKE_TYPE = {{"Disabled", 0}, {"Normal", 1}, {"Proportional", 2}, {"Reverse", 3}}
+local ENABLED_DISABLED = {{"@i18n(app.modules.esc_tools.opt.enabled)@", 0}, {"@i18n(app.modules.ports.function_disabled)@", 1}}
+local BRAKE_TYPE = {{"@i18n(app.modules.ports.function_disabled)@", 0}, {"@i18n(api.MIXER_INPUT.tbl_normal)@", 1}, {"@i18n(app.modules.esc_tools.opt.proportional)@", 2}, {"@i18n(app.modules.servos.reverse)@", 3}}
 
 local function choices(labels)
   local result = {}

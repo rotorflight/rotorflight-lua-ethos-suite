@@ -7,8 +7,8 @@ local escCurrentLimit = requireModule("lib/esc_current_limit.lua")
 
 local PAGE_TITLE = "@i18n(app.modules.esc_tools.mfg.yge.name)@"
 
-local ROTATION = {{"Normal", 0}, {"Reverse", 1}}
-local OFF_ON = {{"Off", 0}, {"On", 1}}
+local ROTATION = {{"@i18n(api.MIXER_INPUT.tbl_normal)@", 0}, {"@i18n(app.modules.servos.reverse)@", 1}}
+local OFF_ON = {{"@i18n(app.modules.governor.tbl_off)@", 0}, {"@i18n(app.modules.governor.tbl_on)@", 1}}
 
 local FIELDS = {
   {group = "@i18n(app.modules.esc_tools.mfg.yge.basic)@"},

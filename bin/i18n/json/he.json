@@ -214,13 +214,13 @@
       "english": "The flight controller may already be using the new values. Restart it to use the saved settings.",
       "translation": "The flight controller may already be using the new values. Restart it to use the saved settings.",
       "needs_translation": true,
-      "max_length": 110
+      "max_length": 96
     },
     "btn_restart_fc": {
       "english": "Restart FC",
       "translation": "Restart FC",
       "needs_translation": true,
-      "max_length": 12
+      "max_length": 10
     },
     "msg_save_failed_title": {
       "english": "Save failed",
@@ -2136,19 +2136,19 @@
           "english": "ETHOS Glasses menu",
           "translation": "תפריט משקפיים ETHOS",
           "needs_translation": false,
-          "max_length": 21
+          "max_length": 18
         },
         "activelook_restart_radio": {
           "english": "Save, then restart the radio.",
           "translation": "שמרו ואז הפעילו מחדש את הרדיו.",
           "needs_translation": false,
-          "max_length": 30
+          "max_length": 29
         },
         "activelook_setup_hint": {
           "english": "One-time setup:\nModel > Glasses > Screen\nChoose the Full-Screen layout.\nAssign Rotorflight ActiveLook.",
           "translation": "הגדרה חד פעמית:\nדגם > משקפיים > מסך\nבחרו פריסת Full-Screen.\nהקצו את Rotorflight ActiveLook.",
           "needs_translation": false,
-          "max_length": 120
+          "max_length": 102
         },
         "feature_activelook": {
           "english": "Rotorflight ActiveLook",
@@ -3628,7 +3628,7 @@
           "translation": "מחזיק את הזנב במרכז כך ששינויי טרים מזיזים אותו מיד. לחץ שמור כדי לשמור.",
           "needs_translation": false,
           "reverse_text": true,
-          "max_length": 92
+          "max_length": 78
         },
         "tail_tta_off": {
           "english": "Also sets Tail Torque Assist to 0 in every profile.",
@@ -7969,6 +7969,358 @@
           "needs_translation": false,
           "translation": "כלי ESC",
           "reverse_text": true
+        },
+        "opt": {
+          "low": {
+            "english": "Low",
+            "translation": "נמוך",
+            "needs_translation": false,
+            "max_length": 3,
+            "reverse_text": false
+          },
+          "medium": {
+            "english": "Medium",
+            "translation": "בינוני",
+            "needs_translation": false,
+            "max_length": 6,
+            "reverse_text": false
+          },
+          "high": {
+            "english": "High",
+            "translation": "גבוה",
+            "needs_translation": false,
+            "max_length": 4,
+            "reverse_text": false
+          },
+          "medium_low": {
+            "english": "Medium Low",
+            "translation": "בינוני-נמוך",
+            "needs_translation": false,
+            "max_length": 10,
+            "reverse_text": false
+          },
+          "medium_high": {
+            "english": "Medium High",
+            "translation": "בינוני-גבוה",
+            "needs_translation": false,
+            "max_length": 11,
+            "reverse_text": false
+          },
+          "slow": {
+            "english": "Slow",
+            "translation": "איטי",
+            "needs_translation": false,
+            "max_length": 4,
+            "reverse_text": false
+          },
+          "fast": {
+            "english": "Fast",
+            "translation": "מהיר",
+            "needs_translation": false,
+            "max_length": 4,
+            "reverse_text": false
+          },
+          "very_slow": {
+            "english": "Very Slow",
+            "translation": "איטי מאוד",
+            "needs_translation": false,
+            "max_length": 9,
+            "reverse_text": false
+          },
+          "soft": {
+            "english": "Soft",
+            "translation": "רך",
+            "needs_translation": false,
+            "max_length": 4,
+            "reverse_text": false
+          },
+          "hard": {
+            "english": "Hard",
+            "translation": "קשיח",
+            "needs_translation": false,
+            "max_length": 4,
+            "reverse_text": false
+          },
+          "enabled": {
+            "english": "Enabled",
+            "translation": "מופעל",
+            "needs_translation": false,
+            "max_length": 7,
+            "reverse_text": false
+          },
+          "automatic": {
+            "english": "Automatic",
+            "translation": "אוטומטי",
+            "needs_translation": false,
+            "max_length": 9,
+            "reverse_text": false
+          },
+          "always_on": {
+            "english": "Always On",
+            "translation": "תמיד פעיל",
+            "needs_translation": false,
+            "max_length": 9,
+            "reverse_text": false
+          },
+          "always_off": {
+            "english": "Always Off",
+            "translation": "תמיד כבוי",
+            "needs_translation": false,
+            "max_length": 10,
+            "reverse_text": false
+          },
+          "dynamic": {
+            "english": "Dynamic",
+            "translation": "דינמי",
+            "needs_translation": false,
+            "max_length": 7,
+            "reverse_text": false
+          },
+          "not_during_startup": {
+            "english": "Not during startup",
+            "translation": "לא במהלך ההפעלה",
+            "needs_translation": false,
+            "max_length": 18,
+            "reverse_text": false
+          },
+          "linear_thr": {
+            "english": "Linear Thr",
+            "translation": "גז ליניארי",
+            "needs_translation": false,
+            "max_length": 10,
+            "reverse_text": false
+          },
+          "fixed_wing": {
+            "english": "Fixed Wing",
+            "translation": "כנף קבועה",
+            "needs_translation": false,
+            "max_length": 10,
+            "reverse_text": false
+          },
+          "proportional": {
+            "english": "Proportional",
+            "translation": "פרופורציונלי",
+            "needs_translation": false,
+            "max_length": 12,
+            "reverse_text": false
+          },
+          "airplane": {
+            "english": "Airplane",
+            "translation": "מטוס",
+            "needs_translation": false,
+            "max_length": 8,
+            "reverse_text": false
+          },
+          "boat": {
+            "english": "Boat",
+            "translation": "סירה",
+            "needs_translation": false,
+            "max_length": 4,
+            "reverse_text": false
+          },
+          "quad": {
+            "english": "Quad",
+            "translation": "קוואדקופטר",
+            "needs_translation": false,
+            "max_length": 4,
+            "reverse_text": false
+          },
+          "glider": {
+            "english": "Glider",
+            "translation": "גליידר",
+            "needs_translation": false,
+            "max_length": 6,
+            "reverse_text": false
+          },
+          "slowdown": {
+            "english": "Slowdown",
+            "translation": "האטה",
+            "needs_translation": false,
+            "max_length": 8,
+            "reverse_text": false
+          },
+          "cutoff": {
+            "english": "Cutoff",
+            "translation": "ניתוק",
+            "needs_translation": false,
+            "max_length": 6,
+            "reverse_text": false
+          },
+          "freewheel": {
+            "english": "Freew.",
+            "translation": "גלגול חופשי",
+            "needs_translation": false,
+            "max_length": 6,
+            "reverse_text": false
+          },
+          "unused": {
+            "english": "Unused",
+            "translation": "לא בשימוש",
+            "needs_translation": false,
+            "max_length": 6,
+            "reverse_text": false
+          },
+          "infinite": {
+            "english": "Infinite",
+            "translation": "אינסופי",
+            "needs_translation": false,
+            "max_length": 8,
+            "reverse_text": false
+          },
+          "minutes_1": {
+            "english": "1 minute",
+            "translation": "דקה אחת",
+            "needs_translation": false,
+            "max_length": 8,
+            "reverse_text": false
+          },
+          "minutes_2": {
+            "english": "2 minutes",
+            "translation": "2 דקות",
+            "needs_translation": false,
+            "max_length": 9,
+            "reverse_text": false
+          },
+          "minutes_5": {
+            "english": "5 minutes",
+            "translation": "5 דקות",
+            "needs_translation": false,
+            "max_length": 9,
+            "reverse_text": false
+          },
+          "minutes_10": {
+            "english": "10 minutes",
+            "translation": "10 דקות",
+            "needs_translation": false,
+            "max_length": 10,
+            "reverse_text": false
+          },
+          "auto_norm": {
+            "english": "Auto Norm",
+            "translation": "אוטו רגיל",
+            "needs_translation": false,
+            "max_length": 9,
+            "reverse_text": false
+          },
+          "auto_eff": {
+            "english": "Auto Eff",
+            "translation": "אוטו יעיל",
+            "needs_translation": false,
+            "max_length": 8,
+            "reverse_text": false
+          },
+          "auto_power": {
+            "english": "Auto Power",
+            "translation": "אוטו הספק",
+            "needs_translation": false,
+            "max_length": 10,
+            "reverse_text": false
+          },
+          "auto_extr": {
+            "english": "Auto Extr",
+            "translation": "אוטו קיצוני",
+            "needs_translation": false,
+            "max_length": 9,
+            "reverse_text": false
+          },
+          "bidirectional_rev": {
+            "english": "Bidirectional Rev",
+            "translation": "דו-כיווני הפוך",
+            "needs_translation": false,
+            "max_length": 17,
+            "reverse_text": false
+          },
+          "x13_less_protection": {
+            "english": "13x (Less protection)",
+            "translation": "13x (הגנה פחותה)",
+            "needs_translation": false,
+            "max_length": 21,
+            "reverse_text": false
+          },
+          "red": {
+            "english": "Red",
+            "translation": "אדום",
+            "needs_translation": false,
+            "max_length": 3,
+            "reverse_text": false
+          },
+          "yellow": {
+            "english": "Yellow",
+            "translation": "צהוב",
+            "needs_translation": false,
+            "max_length": 6,
+            "reverse_text": false
+          },
+          "orange": {
+            "english": "Orange",
+            "translation": "כתום",
+            "needs_translation": false,
+            "max_length": 6,
+            "reverse_text": false
+          },
+          "green": {
+            "english": "Green",
+            "translation": "ירוק",
+            "needs_translation": false,
+            "max_length": 5,
+            "reverse_text": false
+          },
+          "jade_green": {
+            "english": "Jade Green",
+            "translation": "ירוק ירקן",
+            "needs_translation": false,
+            "max_length": 10,
+            "reverse_text": false
+          },
+          "blue": {
+            "english": "Blue",
+            "translation": "כחול",
+            "needs_translation": false,
+            "max_length": 4,
+            "reverse_text": false
+          },
+          "cyan": {
+            "english": "Cyan",
+            "translation": "ציאן",
+            "needs_translation": false,
+            "max_length": 4,
+            "reverse_text": false
+          },
+          "purple": {
+            "english": "Purple",
+            "translation": "סגול",
+            "needs_translation": false,
+            "max_length": 6,
+            "reverse_text": false
+          },
+          "pink": {
+            "english": "Pink",
+            "translation": "ורוד",
+            "needs_translation": false,
+            "max_length": 4,
+            "reverse_text": false
+          },
+          "white": {
+            "english": "White",
+            "translation": "לבן",
+            "needs_translation": false,
+            "max_length": 5,
+            "reverse_text": false
+          },
+          "selecting_fmt": {
+            "english": "Selecting %s...",
+            "translation": "בוחר %s...",
+            "needs_translation": false,
+            "max_length": 15,
+            "reverse_text": false
+          },
+          "x1_more_protection": {
+            "english": "1x (More protection)",
+            "translation": "1x (הגנה רבה יותר)",
+            "needs_translation": false,
+            "max_length": 20,
+            "reverse_text": false
+          }
         }
       },
       "msp_exp": {
@@ -8498,7 +8850,7 @@
           "english": "Saved to the flight controller. The change record was not written.",
           "translation": "Saved to the flight controller. The change record was not written.",
           "needs_translation": true,
-          "max_length": 72
+          "max_length": 66
         },
         "stage_read": {
           "english": "Reading current settings...",
@@ -8667,7 +9019,7 @@
           "english": "Unsaved changes",
           "translation": "שינויים לא שמורים",
           "needs_translation": false,
-          "max_length": 17,
+          "max_length": 15,
           "reverse_text": true
         },
         "leave_body": {
@@ -8695,14 +9047,14 @@
           "english": "%d of %d",
           "translation": "%d מתוך %d",
           "needs_translation": false,
-          "max_length": 10,
+          "max_length": 8,
           "reverse_text": true
         },
         "step_progress_fmt": {
           "english": "Step %d of %d",
           "translation": "שלב %d מתוך %d",
           "needs_translation": false,
-          "max_length": 14,
+          "max_length": 13,
           "reverse_text": true
         },
         "step_receiver": {
@@ -8834,7 +9186,7 @@
           "english": "Gyro check",
           "translation": "בדיקת ג'ירו",
           "needs_translation": false,
-          "max_length": 11,
+          "max_length": 10,
           "reverse_text": true
         },
         "role_pitch": {
@@ -9037,7 +9389,7 @@
           "english": "Roll",
           "translation": "גלגול",
           "needs_translation": false,
-          "max_length": 5,
+          "max_length": 4,
           "reverse_text": true
         },
         "sen_pitch": {
@@ -9051,7 +9403,7 @@
           "english": "Yaw",
           "translation": "סבסוב",
           "needs_translation": false,
-          "max_length": 5,
+          "max_length": 3,
           "reverse_text": true
         },
         "sen_align_lift": {
@@ -9363,14 +9715,14 @@
           "english": "Use",
           "translation": "השתמש",
           "needs_translation": false,
-          "max_length": 5,
+          "max_length": 3,
           "reverse_text": true
         },
         "rcv_defaults": {
           "english": "Defaults",
           "translation": "ברירת מחדל",
           "needs_translation": false,
-          "max_length": 10,
+          "max_length": 8,
           "reverse_text": true
         },
         "rcv_too_short": {
@@ -9439,7 +9791,7 @@
           "english": "Not used",
           "translation": "לא בשימוש",
           "needs_translation": false,
-          "max_length": 9
+          "max_length": 8
         },
         "prof_chosen": {
           "english": "Selected",
@@ -9457,7 +9809,7 @@
           "english": "Now: profile %d",
           "translation": "עכשיו: פרופיל %d",
           "needs_translation": false,
-          "max_length": 16
+          "max_length": 15
         },
         "prof_listen": {
           "english": "Move the switch…",
@@ -9475,7 +9827,7 @@
           "english": "Use",
           "translation": "השתמש",
           "needs_translation": false,
-          "max_length": 5
+          "max_length": 3
         },
         "prof_gain_title": {
           "english": "Master gain in flight",
@@ -9499,13 +9851,13 @@
           "english": "Knob",
           "translation": "סיבוב",
           "needs_translation": false,
-          "max_length": 5
+          "max_length": 4
         },
         "prof_gain_none": {
           "english": "Not used",
           "translation": "לא בשימוש",
           "needs_translation": false,
-          "max_length": 9
+          "max_length": 8
         },
         "prof_gain_buttons_note": {
           "english": "Set up the GAIN mix first (see the docs).",
@@ -9523,7 +9875,7 @@
           "english": "Now",
           "translation": "עכשיו",
           "needs_translation": false,
-          "max_length": 5
+          "max_length": 3
         },
         "prof_listen_buttons": {
           "english": "Press a trim button…",
@@ -9535,7 +9887,7 @@
           "english": "Turn the knob…",
           "translation": "סובבו את הכפתור…",
           "needs_translation": false,
-          "max_length": 16
+          "max_length": 14
         },
         "prof_channels_title": {
           "english": "Channels in use",
@@ -9595,7 +9947,7 @@
           "english": "Cyclic gain up",
           "translation": "הגבר ציקלי למעלה",
           "needs_translation": false,
-          "max_length": 16
+          "max_length": 14
         },
         "prof_btn_yaw_down": {
           "english": "Yaw gain down",
@@ -9607,7 +9959,7 @@
           "english": "Yaw gain up",
           "translation": "הגבר זנב למעלה",
           "needs_translation": false,
-          "max_length": 14
+          "max_length": 11
         },
         "prof_help_both": {
           "english": "The switch picks the PID profile and the rate profile 1, 2 or 3 together.",
@@ -9679,7 +10031,7 @@
           "english": "Cyclic %d °/s · yaw %d °/s · expo %d %%",
           "translation": "ציקלי %d °/s · סטייה %d °/s · אקספו %d %%",
           "needs_translation": false,
-          "max_length": 41
+          "max_length": 39
         },
         "rates_busy": {
           "english": "Writing the rates…",
@@ -9691,7 +10043,7 @@
           "english": "Rates set",
           "translation": "הקצבים הוגדרו",
           "needs_translation": false,
-          "max_length": 13
+          "max_length": 9
         },
         "rates_done_keep": {
           "english": "Nothing has changed: the flight controller keeps its rates. Next goes on to the swashplate.",
@@ -9745,7 +10097,7 @@
           "english": "Yaw %d °/s · expo %d %%",
           "translation": "סטייה %d °/s · אקספו %d %%",
           "needs_translation": false,
-          "max_length": 26
+          "max_length": 23
         },
         "rates_axis_cyclic": {
           "english": "Cyclic",
@@ -9757,7 +10109,7 @@
           "english": "Yaw",
           "translation": "סטייה",
           "needs_translation": false,
-          "max_length": 5
+          "max_length": 3
         },
         "rates_axis_collective": {
           "english": "Collective",
@@ -9769,7 +10121,7 @@
           "english": "Value: °/s at full stick",
           "translation": "ערך: מעלות/שנייה במלוא הזזה",
           "needs_translation": false,
-          "max_length": 27
+          "max_length": 24
         },
         "rates_legend_shape": {
           "english": "Form: shape · Expo: expo in %",
@@ -9889,13 +10241,13 @@
           "english": "On",
           "translation": "פעיל",
           "needs_translation": false,
-          "max_length": 4
+          "max_length": 2
         },
         "mod_off": {
           "english": "Off",
           "translation": "כבוי",
           "needs_translation": false,
-          "max_length": 4
+          "max_length": 3
         },
         "mod_done_title": {
           "english": "Switches done",
@@ -9913,7 +10265,7 @@
           "english": "Arm",
           "translation": "חימוש",
           "needs_translation": false,
-          "max_length": 5
+          "max_length": 3
         },
         "mod_rescue": {
           "english": "Rescue",
@@ -9968,19 +10320,19 @@
           "english": "Three servos, 135° apart.",
           "translation": "שלושה סרוווים, במרחק של 135°.",
           "needs_translation": false,
-          "max_length": 29
+          "max_length": 25
         },
         "swa_type_help_140": {
           "english": "Three servos, 140° apart.",
           "translation": "שלושה סרוווים, במרחק של 140°.",
           "needs_translation": false,
-          "max_length": 29
+          "max_length": 25
         },
         "swa_type_help_90l": {
           "english": "Two servos, front and left, 90° apart.",
           "translation": "שני סרוווים, קדמי ושמאלי, במרחק של 90°.",
           "needs_translation": false,
-          "max_length": 39
+          "max_length": 38
         },
         "swa_type_help_90v": {
           "english": "Two servos, front left and front right.",
@@ -10010,7 +10362,7 @@
           "english": "Rear",
           "translation": "אחורי",
           "needs_translation": false,
-          "max_length": 5
+          "max_length": 4
         },
         "swa_type_text": {
           "english": "The servo numbers are the flight controller's servo outputs. Servo 1 can be in front of the main shaft or behind it.",
@@ -10086,7 +10438,7 @@
           "english": "Motor, 2-way",
           "translation": "מנוע, דו-כיווני",
           "needs_translation": false,
-          "max_length": 15,
+          "max_length": 12,
           "reverse_text": true
         },
         "swa_pin_move": {
@@ -10175,7 +10527,7 @@
           "english": "Own pin",
           "translation": "פין נפרד",
           "needs_translation": false,
-          "max_length": 8,
+          "max_length": 7,
           "reverse_text": true
         },
         "swa_pin_none": {
@@ -10656,7 +11008,7 @@
           "english": "With the battery still unplugged and the flight controller on USB, press Full throttle. The output stays at 100 % until you press Low throttle.",
           "translation": "כשהסוללה עדיין מנותקת והבקר מחובר ב-USB, לחצו על גז מלא. היציאה נשארת על 100% עד שלוחצים על סרק.",
           "needs_translation": false,
-          "max_length": 131,
+          "max_length": 143,
           "reverse_text": true
         },
         "esc_batt_text": {
@@ -10733,25 +11085,25 @@
           "english": "Set over the ESC link",
           "translation": "Set over the ESC link",
           "needs_translation": true,
-          "max_length": 24
+          "max_length": 21
         },
         "esc_link_busy": {
           "english": "Setting the range on the ESC...",
           "translation": "Setting the range on the ESC...",
           "needs_translation": true,
-          "max_length": 40
+          "max_length": 31
         },
         "esc_link_done": {
           "english": "Range set on the ESC and the FC.",
           "translation": "Range set on the ESC and the FC.",
           "needs_translation": true,
-          "max_length": 40
+          "max_length": 32
         },
         "esc_link_failed": {
           "english": "The ESC link did not confirm the range.",
           "translation": "The ESC link did not confirm the range.",
           "needs_translation": true,
-          "max_length": 50
+          "max_length": 39
         },
         "esc_need_calib": {
           "english": "Calibrate the ESC first.",
@@ -11198,7 +11550,7 @@
           "english": "Press Swap to hold the tail at 60°, again for the other side, then set the limits as high as they go without the slider or links binding.",
           "translation": "לחצו על החלף כדי להחזיק את הזנב ב-60°, שוב לצד השני, ואז הגדירו את הגבולות גבוה ככל האפשר בלי שהמחוון או המוטות ייתקעו.",
           "needs_translation": false,
-          "max_length": 119,
+          "max_length": 137,
           "reverse_text": true
         },
         "fin_arm_switch": {
@@ -11233,14 +11585,14 @@
           "english": "Tail gear in",
           "translation": "גלגל זנב כניסה",
           "needs_translation": false,
-          "max_length": 14,
+          "max_length": 12,
           "reverse_text": true
         },
         "mot_tail_out": {
           "english": "Tail gear out",
           "translation": "גלגל זנב יציאה",
           "needs_translation": false,
-          "max_length": 14,
+          "max_length": 13,
           "reverse_text": true
         },
         "mot_ratio_fmt": {
@@ -11275,7 +11627,7 @@
           "english": "Motor & ESC set",
           "translation": "מנוע ו-ESC הוגדרו",
           "needs_translation": false,
-          "max_length": 17,
+          "max_length": 15,
           "reverse_text": true
         },
         "con_title": {
@@ -11317,7 +11669,7 @@
           "english": "OK",
           "translation": "תקין",
           "needs_translation": false,
-          "max_length": 4,
+          "max_length": 2,
           "reverse_text": true
         },
         "con_missing": {
@@ -11366,7 +11718,7 @@
           "english": "Servos set",
           "translation": "הסרווים הוגדרו",
           "needs_translation": false,
-          "max_length": 14,
+          "max_length": 10,
           "reverse_text": true
         },
         "srv_done": {
@@ -11590,7 +11942,7 @@
           "english": "Use %.0f",
           "translation": "השתמש %.0f",
           "needs_translation": false,
-          "max_length": 10,
+          "max_length": 8,
           "reverse_text": true
         },
         "tal_title": {
@@ -11646,7 +11998,7 @@
           "english": "Press Swap to hold the tail at 22.5°; each press holds the other side. Measure the tail blade pitch and adjust until it reads 22.5°. No pitch gauge? Fold a square of paper corner to corner (45°): seen from the tail tip, the fold fits flush between the blades.",
           "translation": "לחצו על החלף כדי להחזיק את הזנב ב-22.5°; כל לחיצה מחזיקה את הצד השני. מדוד את פיץ' להבי הזנב וכוונן עד שהוא 22.5°. אין מד? קפל ריבוע נייר פינה לפינה (45°): במבט מקצה הלהב, הקפל נכנס בדיוק בין הלהבים.",
           "needs_translation": false,
-          "max_length": 199,
+          "max_length": 259,
           "reverse_text": true
         },
         "tal_lim_title": {
@@ -11695,7 +12047,7 @@
           "english": "Wrong way",
           "translation": "כיוון שגוי",
           "needs_translation": false,
-          "max_length": 10,
+          "max_length": 9,
           "reverse_text": true
         },
         "tal_other_side": {
@@ -11800,7 +12152,7 @@
           "english": "Use test",
           "translation": "השתמש בבדיקה",
           "needs_translation": false,
-          "max_length": 12,
+          "max_length": 8,
           "reverse_text": true
         },
         "tal_run_idle": {
@@ -11814,7 +12166,7 @@
           "english": "Gyro check",
           "translation": "בדיקת ג'ירו",
           "needs_translation": false,
-          "max_length": 11,
+          "max_length": 10,
           "reverse_text": true
         },
         "gyr_intro": {
@@ -12058,13 +12410,13 @@
           "english": "Up",
           "translation": "למעלה",
           "needs_translation": false,
-          "max_length": 5
+          "max_length": 2
         },
         "rcv_dir_back": {
           "english": "Back",
           "translation": "אחורה",
           "needs_translation": false,
-          "max_length": 5
+          "max_length": 4
         },
         "rcv_dir_down": {
           "english": "Down",

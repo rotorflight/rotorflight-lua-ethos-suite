@@ -11,17 +11,17 @@ local READ_COMMAND = 217
 local WRITE_COMMAND = 218
 
 local GOV_MODE = {{"ESC Gov", 0}, {"Ext Gov", 1}, {"FW Gov", 2}}
-local LOW_VOLTAGE = {{"Off", 0}, {"2.7V", 1}, {"3.0V", 2}, {"3.2V", 3}, {"3.4V", 4}, {"3.6V", 5}, {"3.8V", 6}}
-local TIMING = {{"Auto", 0}, {"Low", 1}, {"Medium", 2}, {"High", 3}}
+local LOW_VOLTAGE = {{"@i18n(app.modules.governor.tbl_off)@", 0}, {"2.7V", 1}, {"3.0V", 2}, {"3.2V", 3}, {"3.4V", 4}, {"3.6V", 5}, {"3.8V", 6}}
+local TIMING = {{"@i18n(api.BATTERY_INI.tbl_auto)@", 0}, {"@i18n(app.modules.esc_tools.opt.low)@", 1}, {"@i18n(app.modules.esc_tools.opt.medium)@", 2}, {"@i18n(app.modules.esc_tools.opt.high)@", 3}}
 local BEC_LV = {{"6.0V", 0}, {"7.4V", 1}, {"8.4V", 2}}
 local DIRECTION = {{"CW", 0}, {"CCW", 1}}
-local ACCEL = {{"Fast", 0}, {"Normal", 1}, {"Slow", 2}, {"Very Slow", 3}}
-local AUTO_RESTART = {{"Off", 0}, {"90s", 1}}
+local ACCEL = {{"@i18n(app.modules.esc_tools.opt.fast)@", 0}, {"@i18n(api.MIXER_INPUT.tbl_normal)@", 1}, {"@i18n(app.modules.esc_tools.opt.slow)@", 2}, {"@i18n(app.modules.esc_tools.opt.very_slow)@", 3}}
+local AUTO_RESTART = {{"@i18n(app.modules.governor.tbl_off)@", 0}, {"90s", 1}}
 local BEC_HV = {{"6.0V", 0}, {"6.2V", 1}, {"6.4V", 2}, {"6.6V", 3}, {"6.8V", 4}, {"7.0V", 5}, {"7.2V", 6}, {"7.4V", 7}, {"7.6V", 8}, {"7.8V", 9}, {"8.0V", 10}, {"8.2V", 11}, {"8.4V", 12}, {"8.6V", 13}, {"8.8V", 14}, {"9.0V", 15}, {"9.2V", 16}, {"9.4V", 17}, {"9.6V", 18}, {"9.8V", 19}, {"10.0V", 20}, {"10.2V", 21}, {"10.4V", 22}, {"10.6V", 23}, {"10.8V", 24}, {"11.0V", 25}, {"11.2V", 26}, {"11.4V", 27}, {"11.6V", 28}, {"11.8V", 29}, {"12.0V", 30}}
-local STARTUP_POWER = {{"Low", 0}, {"Medium", 1}, {"High", 2}}
-local BRAKE_TYPE = {{"Normal", 0}, {"Reverse", 1}}
-local ON_OFF = {{"On", 0}, {"Off", 1}}
-local LED_COLOR = {{"Red", 0}, {"Yellow", 1}, {"Orange", 2}, {"Green", 3}, {"Jade Green", 4}, {"Blue", 5}, {"Cyan", 6}, {"Purple", 7}, {"Pink", 8}, {"White", 9}}
+local STARTUP_POWER = {{"@i18n(app.modules.esc_tools.opt.low)@", 0}, {"@i18n(app.modules.esc_tools.opt.medium)@", 1}, {"@i18n(app.modules.esc_tools.opt.high)@", 2}}
+local BRAKE_TYPE = {{"@i18n(api.MIXER_INPUT.tbl_normal)@", 0}, {"@i18n(app.modules.servos.reverse)@", 1}}
+local ON_OFF = {{"@i18n(app.modules.governor.tbl_on)@", 0}, {"@i18n(app.modules.governor.tbl_off)@", 1}}
+local LED_COLOR = {{"@i18n(app.modules.esc_tools.opt.red)@", 0}, {"@i18n(app.modules.esc_tools.opt.yellow)@", 1}, {"@i18n(app.modules.esc_tools.opt.orange)@", 2}, {"@i18n(app.modules.esc_tools.opt.green)@", 3}, {"@i18n(app.modules.esc_tools.opt.jade_green)@", 4}, {"@i18n(app.modules.esc_tools.opt.blue)@", 5}, {"@i18n(app.modules.esc_tools.opt.cyan)@", 6}, {"@i18n(app.modules.esc_tools.opt.purple)@", 7}, {"@i18n(app.modules.esc_tools.opt.pink)@", 8}, {"@i18n(app.modules.esc_tools.opt.white)@", 9}}
 local ESC_MODELS = {"RESERVED", "35A", "65A", "85A", "125A", "155A", "130A", "195A", "300A"}
 
 local FIELD_META = {
