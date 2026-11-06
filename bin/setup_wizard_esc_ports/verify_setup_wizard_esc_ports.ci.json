@@ -1,0 +1,7 @@
+{
+  "id": "setup-wizard-esc-ports",
+  "name": "Setup Wizard ESC telemetry offers only free ports and its own",
+  "step": "Check that the ESC telemetry port list leaves out ports that carry another function",
+  "script": "bin/setup_wizard_esc_ports/verify_setup_wizard_esc_ports.lua",
+  "rationale": "The ESC telemetry step listed every serial port that does not receive, and choosing one set its function mask to\nthe ESC sensor, replacing whatever it held. On a split wiring the S.Port UART could be picked, and after the restart\ntelemetry and MSP over S.Port were gone, with USB as the only way back. The same went for GPS, MSP and SBUS out.\n\nThe harness drives the real setup_wizard_esctelemetry.lua against a simulated flight controller with a receiver, an\nESC telemetry, a free, an S.Port, a GPS port and the USB VCP, and pins that only the free port and the ESC telemetry's\nown port are offered.\n\n--self-test restores the old rule (every port that does not receive) and requires the S.Port and GPS checks to go red."
+}

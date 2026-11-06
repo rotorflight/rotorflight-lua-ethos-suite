@@ -23,7 +23,7 @@ Greyed out until the flight controller answers. Read-only while the model is arm
 | Ground Error Decay | Configures Ground Error Decay. Range: 0 to 250 s. Default: 25 s. |
 | Iterm Relax: Type | Configures Iterm Relax: Type. |
 | In-flight Error Decay (Time) | Configures In-flight Error Decay (Time). Range: 0 to 250 s. Default: 250 s. |
-| In-flight Error Decay (Limit) | Configures In-flight Error Decay (Limit). Range: 0 to 25 °. Default: 12 °. |
+| In-flight Error Decay (Limit) | Configures In-flight Error Decay (Limit). Range: 0 to 250 °, as the flight controller accepts it. Default: 12 °. |
 | Error Limit (R) | Configures Error Limit (R). Range: 0 to 180 °. Default: 45 °. |
 | Error Limit (P) | Configures Error Limit (P). Range: 0 to 180 °. Default: 45 °. |
 | Error Limit (Y) | Configures Error Limit (Y). Range: 0 to 180 °. Default: 60 °. |

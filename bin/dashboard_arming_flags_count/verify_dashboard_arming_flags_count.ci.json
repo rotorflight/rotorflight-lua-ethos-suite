@@ -1,0 +1,7 @@
+{
+  "id": "dashboard-arming-flags-count",
+  "name": "Dashboard arming flags count",
+  "step": "Check the count is passed",
+  "script": "bin/dashboard_arming_flags_count/verify_dashboard_arming_flags_count.lua",
+  "rationale": "Issue #2668: 4.6+ override bit decoded correctly."
+}

@@ -1,0 +1,7 @@
+{
+  "id": "esc-port-list-free",
+  "name": "ESC telemetry port list free ports",
+  "step": "Check only free ports offered",
+  "script": "bin/esc_port_list_free/verify_esc_port_list_free.lua",
+  "rationale": "Issue #2691: occupied ports must not be replaced silently."
+}

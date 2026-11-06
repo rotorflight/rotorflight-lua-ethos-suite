@@ -37,7 +37,7 @@ bus.subscribe("session.update", function(snapshot)
   if pendingLimit and currentMcuId and currentMcuId ~= "" then
     local limit = pendingLimit
     pendingLimit = nil
-    if currentLimit ~= limit then
+    if (currentLimit or 0) ~= limit then
       bus.publish("model.esc_current_limit.update", {mcuId = currentMcuId, amps = limit})
       currentLimit = limit
     end
@@ -70,6 +70,22 @@ function esc_current_limit.remember(amps)
   if currentLimit == limit then return true end
   bus.publish("model.esc_current_limit.update", {mcuId = currentMcuId, amps = limit})
   currentLimit = limit
+  return true
+end
+
+-- Clears the figure on file for the connected flight controller. A page calls this when its ESC
+-- reports no limit (AM32 with its limit off): a figure stored for such an ESC is wrong, and
+-- nothing else would ever replace it. Returns true when the clear was handed over or is kept
+-- until the MCU ID arrives; false when there is no connected flight controller.
+function esc_current_limit.forget()
+  if not currentMcuId or currentMcuId == "" then
+    if not currentConnected then return false end
+    pendingLimit = 0
+    return true
+  end
+  if currentLimit == nil then return true end
+  bus.publish("model.esc_current_limit.update", {mcuId = currentMcuId, amps = 0})
+  currentLimit = nil
   return true
 end
 

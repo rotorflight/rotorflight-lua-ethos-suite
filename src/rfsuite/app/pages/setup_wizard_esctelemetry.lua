@@ -341,8 +341,10 @@ local function new(wiz)
     local current = escPort()
     if not current then values[#values + 1] = {text = T.noPort, value = NO_PORT} end
     for _, p in ipairs(ports) do
-      local receives = (p.function_mask or 0) & FUNCTION_MASK_RX_SERIAL ~= 0
-      if p.identifier ~= USB_VCP and (not receives or p == current) then
+      -- Only free ports (and the one already in use) are offered, so an occupied
+      -- port (S.Port, GPS, MSP, SBUS out, ...) is never replaced silently.
+      local free = (p.function_mask or 0) == 0
+      if p.identifier ~= USB_VCP and (free or p == current) then
         values[#values + 1] = {text = portName(p, board), value = p.identifier}
       end
     end

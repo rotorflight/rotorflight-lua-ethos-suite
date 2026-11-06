@@ -241,6 +241,32 @@ check("AM32: current_limit 60 is already amps",
   #limitEvents == 1 and limitEvents[1].amps == 60,
   "events=" .. #limitEvents .. " amps=" .. tostring(limitEvents[1] and limitEvents[1].amps))
 
+-- The AM32 firmware enables a limit only for bytes 1..100 (2..200 A); byte 0 and any byte above
+-- 100 are "off". The page decodes a byte as raw * 2, so byte 101 arrives as 202 and byte 255 as
+-- 510. An off ESC clears the figure on file (a stored figure for it is wrong), and an off value
+-- is never stored as a limit.
+for _, case in ipairs({{0, "0 (byte 0)"}, {202, "202 A (byte 101)"}, {510, "510 A (byte 255)"}}) do
+  bus.publish("session.update", {mcuId = "M1", escCurrentLimit = 60})
+  limitEvents = {}
+  vendorConfig.onLoaded({loaded = true, data = {current_limit = case[1]}})
+  check("AM32: a reported " .. case[2] .. " (limit off) clears the figure on file",
+    #limitEvents == 1 and limitEvents[1].amps == 0,
+    "events=" .. #limitEvents .. " amps=" .. tostring(limitEvents[1] and limitEvents[1].amps))
+
+  bus.publish("session.update", {mcuId = "M1"})
+  limitEvents = {}
+  vendorConfig.onLoaded({loaded = true, data = {current_limit = case[1]}})
+  check("AM32: a reported " .. case[2] .. " with no figure on file sends nothing", #limitEvents == 0,
+    "events=" .. #limitEvents .. " amps=" .. tostring(limitEvents[1] and limitEvents[1].amps))
+end
+
+bus.publish("session.update", {mcuId = "M1"})
+limitEvents = {}
+vendorConfig.onLoaded({loaded = true, data = {current_limit = 200}})
+check("AM32: 200 A (byte 100, the highest working limit) is remembered",
+  #limitEvents == 1 and limitEvents[1].amps == 200,
+  "events=" .. #limitEvents .. " amps=" .. tostring(limitEvents[1] and limitEvents[1].amps))
+
 bus.publish("session.update", {mcuId = "M1", escCurrentLimit = 60})
 limitEvents = {}
 vendorConfig.onLoaded({loaded = true, data = {current_limit = 60}})

@@ -112,7 +112,11 @@ local function fixtureFlights()
   return {{date = "d", seconds = 147, axes = axes}}
 end
 tuneHistory.read = function() return fixtureFlights() end
-tuneHistory.logChanges = function(_, axis, changes) logged[#logged + 1] = {axis = axis, changes = changes} end
+local logFails = false            -- set to make the record write fail
+tuneHistory.logChanges = function(_, axis, changes)
+  logged[#logged + 1] = {axis = axis, changes = changes}
+  return not logFails
+end
 local changeLog = {}              -- what changes.csv holds: {axis, key, from, to} rows
 tuneHistory.readChanges = function() return changeLog end
 
@@ -128,14 +132,14 @@ local function resetFc()
   end
 end
 
-local wakeup
+local wakeup, paintFn
 local session = {mcuId = "abc", connected = true, isArmed = false, pidProfile = 0, rateProfile = 0}
 
 local function openPage()
   local page = assert(loadfile(ROOT .. "app/pages/tune_advisor.lua"))()
   page.open({
     setWakeupHandler = function(f) wakeup = f end,
-    setPaintHandler = function() end,
+    setPaintHandler = function(f) paintFn = f end,
     setCleanupHandler = function() end,
     setEventHandler = function() end,
     onBack = function() end,
@@ -241,6 +245,19 @@ do
   check("Save is disabled once applied", saveEnabled == false)
 end
 
+print("An FC write whose change record fails is reported, and Save stays off")
+do
+  resetFc()
+  openPage()
+  pump()
+  logFails = true
+  applyNow()
+  logFails = false
+  check("the outcome says the record was not written", lastMessage():find("tune_advisor.applied_not_recorded", 1, true) ~= nil,
+    lastMessage())
+  check("Save stays off after the FC write", saveEnabled == false)
+end
+
 print("A tune changed since the flights is never overwritten")
 do
   openPage()                      -- the same flights, but the FC holds F 96 now
@@ -332,6 +349,19 @@ do
   session.connected = true
 end
 
+print("Save waits until the active PID profile is known")
+do
+  session.pidProfile = nil
+  resetFc()
+  openPage()
+  pump()
+  check("no Apply while the PID profile is unknown", saveEnabled == false)
+  session.pidProfile = 0
+  subs["session.update"](session)
+  pump()
+  check("Save comes back once the PID profile is known", saveEnabled == true)
+end
+
 -- tasks/tune_history.lua reads the last flight for about 10 s after a disarm.
 -- Advice and the erase button wait for it.
 print("While the last flight is being read, Save and erase wait")
@@ -390,6 +420,30 @@ do
   flightRollShake = nil
 end
 
+-- Issue #2643: a shaking axis that gets no P step still names the shake; it
+-- must not sit under "answers the stick as asked" with no reason for the shake
+print("A shaking axis with no P step still gives the shake reason")
+do
+  resetFc()
+  flightRollShake = 49
+  -- P already at its floor: no P step. The response is on target and the
+  -- collective is even, so the shake is the only reason and "answers as asked"
+  -- would sit beside it on the base page.
+  local even = {{gain = 1, count = 0}, {gain = 1, count = 0}, {gain = 1, count = 0}}
+  flightRoll = {P = 1, ffGain = 1.0, collBands = even}
+  openPage()
+  pump()
+  local shown = {}
+  lcd.drawText = function(_, _, text) shown[#shown + 1] = tostring(text) end
+  paintFn()
+  lcd.drawText = nil
+  local text = table.concat(shown, "\n")
+  check("the shake is named in the reasons", text:find("why_shake_no_step_fmt", 1, true) ~= nil, text)
+  check("the axis is not said to answer as asked", text:find("why_ok", 1, true) == nil, text)
+  flightRollShake = nil
+  flightRoll = nil
+end
+
 print("Advice past a setting's limit is not given")
 do
   -- Max rate 220: F 120 -> 96 would need it at 275, past the FC's 255
@@ -445,15 +499,16 @@ do
 
   -- The page raised the pilot's 50 twice already: 84 would be past 75
   resetFc()
-  changeLog = {{axis = 1, key = "P", from = 50, to = 60}, {axis = 2, key = "P", from = 50, to = 60},
-    {axis = 1, key = "P", from = 60, to = 70}}
+  changeLog = {{axis = 1, key = "P", from = 50, to = 60, pidProfile = 0},
+    {axis = 2, key = "P", from = 50, to = 60, pidProfile = 0},
+    {axis = 1, key = "P", from = 60, to = 70, pidProfile = 0}}
   openPage()
   pump()
   check("no more P past 1.5x the pilot's own", saveEnabled == false)
 
   -- The pilot set 70 by hand after the page's 50 -> 60: 70 is the pilot's own
   resetFc()
-  changeLog = {{axis = 1, key = "P", from = 50, to = 60}}
+  changeLog = {{axis = 1, key = "P", from = 50, to = 60, pidProfile = 0}}
   openPage()
   pump()
   check("a P set by hand starts again from that P", saveEnabled == true)
@@ -463,12 +518,38 @@ end
 
 print("pilotValue follows only an unbroken chain of Apply changes")
 do
-  local log = {{axis = 1, key = "P", from = 40, to = 48}, {axis = 1, key = "F", from = 100, to = 80},
-    {axis = 1, key = "P", from = 48, to = 58}}
-  check("follows the chain back", tuneHistory.pilotValue(log, 1, "P", 58) == 40)
-  check("a different current value is the pilot's", tuneHistory.pilotValue(log, 1, "P", 65) == 65)
-  check("another axis is not followed", tuneHistory.pilotValue(log, 2, "P", 58) == 58)
-  check("no record: the current value", tuneHistory.pilotValue({}, 1, "P", 58) == 58)
+  local log = {{axis = 1, key = "P", from = 40, to = 48, pidProfile = 0},
+    {axis = 1, key = "F", from = 100, to = 80, pidProfile = 0},
+    {axis = 1, key = "P", from = 48, to = 58, pidProfile = 0}}
+  check("follows the chain back", tuneHistory.pilotValue(log, 1, "P", 58, 0) == 40)
+  check("a different current value is the pilot's", tuneHistory.pilotValue(log, 1, "P", 65, 0) == 65)
+  check("another axis is not followed", tuneHistory.pilotValue(log, 2, "P", 58, 0) == 58)
+  check("another PID profile is not followed", tuneHistory.pilotValue(log, 1, "P", 58, 1) == 58)
+  check("no record: the current value", tuneHistory.pilotValue({}, 1, "P", 58, 0) == 58)
+end
+
+print("Advice refreshes when the PID profile changes on the same aircraft")
+do
+  resetFc()
+  flightRoll = {ffGain = 1.0, fullCount = 0, releases = 20, meanRebound = 0.2, meanIterm = 0}
+  changeLog = {
+    {axis = 1, key = "P", from = 50, to = 60, pidProfile = 0},
+    {axis = 2, key = "P", from = 50, to = 60, pidProfile = 0},
+    {axis = 1, key = "P", from = 60, to = 70, pidProfile = 0},
+  }
+  session.pidProfile = 0
+  openPage()
+  pump()
+  check("the current profile's 1.5x P cap blocks another increase", saveEnabled == false)
+
+  session.pidProfile = 1
+  subs["session.update"](session)
+  pump()
+  check("same-aircraft profile change refreshes the P cap", saveEnabled == true)
+
+  session.pidProfile = 0
+  flightRoll = nil
+  changeLog = {}
 end
 
 print()

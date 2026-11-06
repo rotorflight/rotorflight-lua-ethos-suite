@@ -132,6 +132,7 @@ local T = {
   whyFixFFmt = "@i18n(app.modules.tune_advisor.why_fix_f_fmt)@",
   whyBrakeFmt = "@i18n(app.modules.tune_advisor.why_brake_fmt)@",
   whyShakeFmt = "@i18n(app.modules.tune_advisor.why_shake_fmt)@",
+  whyShakeNoStepFmt = "@i18n(app.modules.tune_advisor.why_shake_no_step_fmt)@",
   whyOk = "@i18n(app.modules.tune_advisor.why_ok)@",
   whyLimit = "@i18n(app.modules.tune_advisor.why_limit)@",
   whyPMaxFmt = "@i18n(app.modules.tune_advisor.why_p_max_fmt)@",
@@ -139,6 +140,7 @@ local T = {
   applyHint = "@i18n(app.modules.tune_advisor.apply_hint)@",
   applyPrompt = "@i18n(app.modules.tune_advisor.apply_prompt)@",
   applied = "@i18n(app.modules.tune_advisor.applied)@",
+  appliedNotRecorded = "@i18n(app.modules.tune_advisor.applied_not_recorded)@",
   stageRead = "@i18n(app.modules.tune_advisor.stage_read)@",
   stageWrite = "@i18n(app.modules.tune_advisor.stage_write)@",
   stageSave = "@i18n(app.modules.tune_advisor.stage_save)@",
@@ -422,6 +424,9 @@ local function advise(a, axis, name, pilotP, actions, whys, changes)
       local newP = clamp(round(a.P / P_STEP), 1, a.P - 1)
       change(string.format(T.actPFmt, name, a.P, newP), "P", a.P, newP)
       why(string.format(T.whyShakeFmt, rms))
+    else
+      -- No P step (P at its floor, or the slots are full): still name the shake
+      why(string.format(T.whyShakeNoStepFmt, rms))
     end
   elseif a.releases < STOPS_MIN then
     stops = string.format(T.stopsMoreFmt, a.releases, STOPS_MIN)
@@ -621,7 +626,7 @@ local function open(opts)
     clearList(actions)
     clearList(whys)
     clearList(view.changes)
-    local pilotP = tuneHistory.pilotValue(changeLog, axis, "P", a.P)
+    local pilotP = tuneHistory.pilotValue(changeLog, axis, "P", a.P, link.pidProfile)
     view.response, view.stops = advise(a, axis, AXES[selected][1], pilotP, actions, whys, view.changes)
     view.axis = axis
     for _, k in ipairs(tuneHistory.TUNE_KEYS) do view.tune[k] = a[k] end
@@ -687,15 +692,19 @@ local function open(opts)
 
   local function onSession(snapshot)
     if disposed then return end
+    local pidProfileChanged = false
     if snapshot then
       link.connected = snapshot.connected == true
       link.armed = snapshot.isArmed == true
+      pidProfileChanged = link.pidProfile ~= snapshot.pidProfile
       link.pidProfile, link.rateProfile = snapshot.pidProfile, snapshot.rateProfile
       if snapshot.fcVersion ~= nil then fcVersion = snapshot.fcVersion end
     end
     -- A link loss keeps the aircraft: its saved flights do not need the link
     local nextMcuId = snapshot and snapshot.mcuId or nil
     if nextMcuId == nil or nextMcuId == mcuId then
+      -- The P cap depends on the active PID profile.
+      if pidProfileChanged then render() end
       probe()
       return
     end
@@ -735,9 +744,12 @@ local function open(opts)
 
   -- Apply (header Save). Each step runs from the previous one's MSP reply;
   -- any failure ends it through finish(), and the wakeup handler reports.
+  -- The write checks the PID profile the advice was made on, so an unknown
+  -- profile cannot be recorded against the Apply.
   local function canApply()
     return not applying and not unsupported and mcuId ~= nil and link.connected
       and not link.armed and capture ~= "reading" and #view.changes > 0
+      and link.pidProfile ~= nil
   end
 
   local function finish(result)
@@ -864,15 +876,22 @@ local function open(opts)
     local result, done = applyResult, applying
     applyResult, applying = nil, nil
     closeApplyDialog()
+    -- The FC write has already succeeded; a record that cannot be written is
+    -- reported, not rolled back.
+    local recorded = true
     if result == true then
-      tuneHistory.logChanges(mcuId, done.axis, done.changes)
+      recorded = tuneHistory.logChanges(mcuId, done.axis, done.changes, done.pidProfile) == true
       changeLog = tuneHistory.readChanges(mcuId)
       applied[done.axis] = true
       render()
     end
+    local message = result
+    if result == true then
+      message = recorded and T.applied or T.appliedNotRecorded
+    end
     form.openDialog({
       title = PAGE_TITLE,
-      message = result == true and T.applied or result,
+      message = message,
       buttons = {{label = BTN_OK, action = function() return true end}},
       wakeup = function() end,
       paint = function() end,

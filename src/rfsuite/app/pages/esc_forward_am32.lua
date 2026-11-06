@@ -8,6 +8,10 @@ local escCurrentLimit = requireModule("lib/esc_current_limit.lua")
 
 local PAGE_TITLE = "@i18n(app.modules.esc_tools.mfg.am32.name)@"
 local SWITCH_READ_DELAY = 4.0
+-- The firmware enables a current limit only for bytes 1..100 (Src/main.c:730-731), that is
+-- 2..200 A on this page. Byte 0 and bytes 101..255 are off, and they arrive here as 0 or as
+-- 202..510 A. An off ESC clears the figure on file rather than storing it.
+local AM32_HIGHEST_LIMIT_AMPS = 200
 
 local FIELDS = {
   {group = "@i18n(app.modules.esc_tools.mfg.am32.basic)@"},
@@ -64,7 +68,13 @@ local function openEditor(opts, selection)
     fields = FIELDS,
     onLoaded = function(runtime)
       updateDependentFields(runtime)
-      escCurrentLimit.remember(runtime and runtime.data and runtime.data.current_limit)
+      local reported = tonumber(runtime and runtime.data and runtime.data.current_limit)
+      if reported == nil then return end
+      if reported <= 0 or reported > AM32_HIGHEST_LIMIT_AMPS then
+        escCurrentLimit.forget()
+      else
+        escCurrentLimit.remember(reported)
+      end
     end,
     onWakeup = updateDependentFields,
     eepromWrite = false,

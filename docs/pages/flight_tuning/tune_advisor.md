@@ -22,7 +22,9 @@ Each time you disarm, the background task reads all three axes from the flight c
 flight, then clears the flight controller so the next flight is measured on its own. This happens whether or not
 this page is open. It starts 5 seconds after the disarm and takes about 10 seconds, with pauses between the reads
 so telemetry sensors keep updating meanwhile. If the link drops the reading three times, the radio tries again at
-the next disarm; the flight controller keeps the measurements until then. The flights are kept in `LOGS:/rfsuite/tune/<model>/history.csv` on the radio's SD card, one
+the next disarm; the flight controller keeps the measurements until then. After a reconnect, the radio reads the
+connected flight controller's UID before it resumes a capture or retries a pending clear. A clear is only sent to
+the controller whose flight was saved, so connecting another controller cannot erase its measurements. The flights are kept in `LOGS:/rfsuite/tune/<model>/history.csv` on the radio's SD card, one
 row per axis, newest last; only the last 5 flights are kept. `<model>` is the same flight controller ID that
 names the flight log folders, and a `logs.ini` beside the history holds the model name. A flight without rate
 flight is not saved. A disarm while the link is down is saved once the radio reconnects, provided the flight
@@ -54,7 +56,7 @@ version is known, nothing is sent.
 | Stops | How much the heli bounces back after you centre the stick, as a share of the turn rate. Needs 10 stops. "Shaking 49 deg/s" instead means the heli oscillates with the stick centred (see the rules below). |
 | Suggested changes | Up to three changes, each named by the page and setting to change and in the units that page shows, for example *PIDs > Roll > F: 100 -> 80* and *Rates > Roll > Rate: 720 -> 900*. When there is something *Save* can write, a last line says so. After they are written, this shows "Changes saved to the flight controller" until the next flight is saved. |
 | Why | The reason for each change, and a fact worth knowing when there is room (for example how much faster the heli turns at high collective). |
-| Save button | Writes the suggested changes for the shown axis to the flight controller. Enabled only while connected, disarmed and with a change it can write. See *Applying the changes* below. |
+| Save button | Writes the suggested changes for the shown axis to the flight controller. Enabled only while connected, disarmed, with a known PID profile and with a change it can write. See *Applying the changes* below. |
 | Tool button | Erases this model's saved flights, and the flight controller's current measurements, after asking to confirm. |
 
 The suggestions follow these rules:
@@ -62,7 +64,9 @@ The suggestions follow these rules:
 - **Shakes with the stick centred** (15 deg/s or more, measured over at least 5 s of centred stick): lower P by
   one step (P / 1.2), and nothing else for that axis until it is calm. An oscillation also reads as bounce-back
   after every stop and spoils the response figure, so the other rules would be misled. If lowering P does not
-  calm it, check D and the linkages. Needs firmware that reports shake; older firmware never shows it.
+  calm it, check D and the linkages. Needs firmware that reports shake; older firmware never shows it. When no P
+  step is made (P is already 1, or the suggestions are full), Why still names the shake, so it is never shown
+  beside "The heli answers the stick as asked".
 - **Turns faster or slower than asked** (more than 15% off): change F and the rates by the same amount in
   opposite directions, so the stick feel stays the same but the heli flies the rate you ask for. One step
   changes F by at most 20%. With Actual, Quick and Rotorflight rates the page gives the exact rate values;
@@ -101,8 +105,13 @@ read-back does not confirm the change, check the values on *PIDs*, *Rates* and *
 
 The saved flights are kept. The next flight is on the new tune, so the page starts again from it and leaves the
 older flights out. Each change written is added to `changes.csv` beside the flight history (date, axis, setting,
-old value, new value), so you can always see what the advisor changed and set it back by hand. *Clear*
+old value, new value, PID profile), so you can always see what the advisor changed and set it back by hand. *Clear*
 does not erase it.
+
+Changes written before the PID profile column was added have no profile. The advisor counts them on every profile, so
+on a profile that holds the same value they can still set the pilot's P. If the flight controller accepted the
+change but `changes.csv` cannot be written, the page says so after the write, and that change is missing from the
+record.
 
 ## Adjustment functions
 
@@ -120,8 +129,9 @@ applies an adjustment straight away and saves it when you disarm.
   knob moves, and at every power-up while its range is enabled, the value goes back to what the knob says. A value
   written by *Save* then lasts only until that happens. Before applying advice to a setting, set its *Mapped*
   adjustment's *Type* to *Off*, or leave the knob where it gives the new value.
-- *Save* checks the profiles and values at the moment it writes, so an adjustment or profile switch made since the
-  flights stops it with nothing changed.
+- The advice refreshes when the active PID profile changes, so its P cap follows the new profile. *Save* checks the
+  profiles and values at the moment it writes, so an adjustment or profile switch made since the flights stops it
+  with nothing changed.
 
 ## Source
 
