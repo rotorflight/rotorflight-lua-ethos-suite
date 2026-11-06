@@ -73,11 +73,14 @@ local clock = 0
 os.clock = function() return clock end
 
 local MCU = "abc123"
+local OTHER = "def456"            -- a second aircraft, for the swap case
 local HISTORY = "LOGS:/rfsuite/tune/" .. MCU .. "/history.csv"
+local currentMcu = MCU            -- the FC the link is connected to
 
 local handlers, requests, saved, states, task
 local function load()
   handlers, requests, saved, states = {}, {}, {}, {}
+  currentMcu = MCU
   for k in pairs(files) do files[k] = nil end
   for i = #iniWrites, 1, -1 do iniWrites[i] = nil end
   local bus = {
@@ -94,7 +97,7 @@ local function load()
 end
 
 local function update(fields)
-  local snapshot = {connected = true, mcuId = MCU, craftName = "Wing", fcVersion = "4.7.0"}
+  local snapshot = {connected = true, mcuId = currentMcu, craftName = "Wing", fcVersion = "4.7.0"}
   for k, v in pairs(fields) do snapshot[k] = v end
   if fields.mcuId == false then snapshot.mcuId = nil end
   handlers["session.update"](snapshot)
@@ -195,6 +198,60 @@ do
   r = lines()
   check("only the last 5 flights are kept", #r == 16 and r[2]:match(",102,roll,") and r[14]:match(",106,roll,"),
     #r .. " lines; first " .. tostring(r[2]))
+end
+
+-- Two flights of the same whole number of seconds: the clear after the first one went
+-- through, so the FC holds nothing of it, and the second is a flight of its own.
+do
+  load()
+  fly(147)
+  local asked = fly(147)
+  check("a flight with the same seconds as the one before is saved once that one is cleared",
+    asked == "roll,pitch,yaw,clear" and #lines() == 7, asked .. " / " .. #lines() .. " lines")
+end
+
+-- The clear of a saved flight is refused once, then another aircraft connects. That
+-- aircraft gets neither a clear nor a read: the clear belongs to the FC that holds the
+-- saved flight. Back on that aircraft its FC still holds the flight, so a read of the
+-- same seconds is not saved again.
+do
+  load()
+  reply.seconds, reply.F = 147, 100
+  clock = clock + 60
+  update({isArmed = true})
+  update({isArmed = false})
+  local asked = pump({clear = {n = 1, reason = "link"}}, 4)
+  check("a clear refused once is still to go", asked == "roll,pitch,yaw,clear", asked)
+
+  currentMcu = OTHER
+  asked = pump(nil, 1)
+  check("another aircraft gets neither a clear nor a read", asked == "", asked)
+
+  currentMcu = MCU
+  asked = fly(147)
+  check("the saved aircraft's FC still holds the flight: the same seconds are not saved again",
+    asked == "roll,pitch,yaw,clear" and #lines() == 4, asked .. " / " .. #lines() .. " lines")
+end
+
+-- A flight disarmed on one aircraft, the link lost before its capture, and another
+-- aircraft connected: the flight is in the FC of the first, so the other is not read.
+do
+  load()
+  reply.seconds, reply.F = 147, 100
+  update({isArmed = true})
+  update({isArmed = false})
+  update({connected = false, isArmed = false})
+  currentMcu = OTHER
+  update({connected = true, isArmed = false})
+  local asked = pump(nil, 1)
+  check("after a swap the flight is not read from the other aircraft's FC",
+    asked == "" and files["LOGS:/rfsuite/tune/" .. OTHER .. "/history.csv"] == nil, asked)
+
+  currentMcu = MCU
+  asked = pump(nil, 4)
+  check("back on the disarmed aircraft its flight is read and saved to it",
+    asked == "roll,pitch,yaw,clear" and #lines() == 4
+      and files["LOGS:/rfsuite/tune/" .. OTHER .. "/history.csv"] == nil, asked .. " / " .. #lines() .. " lines")
 end
 
 do
