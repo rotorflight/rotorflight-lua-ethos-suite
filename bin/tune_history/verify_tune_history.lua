@@ -210,9 +210,10 @@ do
     asked == "roll,pitch,yaw,clear" and #lines() == 7, asked .. " / " .. #lines() .. " lines")
 end
 
--- The clear of a saved flight is refused once, then another aircraft connects and gets
--- the clear. That clears the other FC, not this one: this aircraft's FC still holds its
--- flight, so a read of the same seconds on it is not saved again.
+-- The clear of a saved flight is refused once, then another aircraft connects. That
+-- aircraft gets neither a clear nor a read: the clear belongs to the FC that holds the
+-- saved flight. Back on that aircraft its FC still holds the flight, so a read of the
+-- same seconds is not saved again.
 do
   load()
   reply.seconds, reply.F = 147, 100
@@ -224,12 +225,33 @@ do
 
   currentMcu = OTHER
   asked = pump(nil, 1)
-  check("the other aircraft's FC gets the clear", asked == "clear", asked)
+  check("another aircraft gets neither a clear nor a read", asked == "", asked)
 
   currentMcu = MCU
   asked = fly(147)
-  check("the aircraft whose FC was not cleared does not save the same seconds again",
+  check("the saved aircraft's FC still holds the flight: the same seconds are not saved again",
     asked == "roll,pitch,yaw,clear" and #lines() == 4, asked .. " / " .. #lines() .. " lines")
+end
+
+-- A flight disarmed on one aircraft, the link lost before its capture, and another
+-- aircraft connected: the flight is in the FC of the first, so the other is not read.
+do
+  load()
+  reply.seconds, reply.F = 147, 100
+  update({isArmed = true})
+  update({isArmed = false})
+  update({connected = false, isArmed = false})
+  currentMcu = OTHER
+  update({connected = true, isArmed = false})
+  local asked = pump(nil, 1)
+  check("after a swap the flight is not read from the other aircraft's FC",
+    asked == "" and files["LOGS:/rfsuite/tune/" .. OTHER .. "/history.csv"] == nil, asked)
+
+  currentMcu = MCU
+  asked = pump(nil, 4)
+  check("back on the disarmed aircraft its flight is read and saved to it",
+    asked == "roll,pitch,yaw,clear" and #lines() == 4
+      and files["LOGS:/rfsuite/tune/" .. OTHER .. "/history.csv"] == nil, asked .. " / " .. #lines() .. " lines")
 end
 
 do
