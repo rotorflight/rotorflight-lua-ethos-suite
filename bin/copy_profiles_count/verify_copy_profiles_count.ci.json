@@ -1,0 +1,7 @@
+{
+  "id": "copy-profiles-count",
+  "name": "Tools > Copy Profiles offers the profiles the board has, for the chosen type",
+  "step": "Check the Copy Profiles profile lists",
+  "script": "bin/copy_profiles_count/verify_copy_profiles_count.lua",
+  "rationale": "Issue #2661: Copy Profiles always offered profiles 1 to 6, for PID and rate alike. The firmware acknowledges a copy onto a profile the board does not have and changes nothing, so the page reported success for a copy that did nothing.\n\nThe page now builds its source and destination lists from the board's own counts (MSP_STATUS pid_profile_count and control_rate_profile_count, as Select Profile does), for the chosen type, and keeps Save off until the counts are read.\n\nThe harness drives the real page with a status read it answers itself: no lines or Save before the counts, PID and rate lists of the board's size, a destination clamped to the count, the type change rebuilding the lists, Save off for the same profile, a count above six offered as six, no save sent before the counts are known, a count the reply does not carry offered as six, and a failed read that opens the load-failed dialog and turns Reload on, with Reload asking again. --self-test restores the fixed list of six and requires the count check to go red."
+}
