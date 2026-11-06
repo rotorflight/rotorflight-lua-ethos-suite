@@ -478,10 +478,16 @@ local function updateModelSnapshots()
   end
 end
 
-local function saveModelPreferences()
+-- Writes the model preferences. False when the store refused the write.
+local function writeModelPreferences()
   if session.modelPreferences and session.modelPreferencesFile then
-    modelPreferences.save(session.modelPreferencesFile, session.modelPreferences)
+    return modelPreferences.save(session.modelPreferencesFile, session.modelPreferences) ~= false
   end
+  return true
+end
+
+local function saveModelPreferences()
+  writeModelPreferences()
   updateModelSnapshots()
   publish()
 end
@@ -1485,10 +1491,29 @@ local function onModelEscCurrentLimitUpdate(payload)
   if type(payload) ~= "table" then return end
   if not session.mcuId or payload.mcuId ~= session.mcuId then return end
   loadModelPreferences()
-  local updated = modelPreferences.setEscCurrentLimit(session.modelPreferences, payload.amps)
-  if modelPreferences.escCurrentLimit(updated) == session.escCurrentLimit then return end
+  local before = session.modelPreferences
+  local updated
+  if payload.forget then
+    -- A page clears only a figure that a page stored. The figure the pilot typed in on
+    -- Setup > Power > Preferences stays, whatever the ESC page reports (#2744).
+    if modelPreferences.escCurrentLimitOrigin(before) ~= "page" then return end
+    updated = modelPreferences.setEscCurrentLimit(before, nil)
+  else
+    updated = modelPreferences.setEscCurrentLimit(before, payload.amps, payload.origin)
+  end
+  -- The same figure with another origin is still a change: the pilot typing in the figure a page
+  -- stored makes it the pilot's (#2744).
+  if modelPreferences.escCurrentLimit(updated) == session.escCurrentLimit
+    and modelPreferences.escCurrentLimitOrigin(updated) == modelPreferences.escCurrentLimitOrigin(before) then
+    return
+  end
   session.modelPreferences = updated
-  saveModelPreferences()
+  -- A refused write leaves the figure not on file: the figure before it stays, and the next page
+  -- visit hands the new one over again, so the write is tried again (#2658).
+  if not writeModelPreferences() then
+    session.modelPreferences = before
+    print("[session] ESC current limit not saved: the model preferences write was refused")
+  end
   updateModelSnapshots()
   publish()
 end
