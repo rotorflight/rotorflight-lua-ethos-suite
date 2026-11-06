@@ -90,6 +90,19 @@ end
 
 arming_flags.tagFor = tagFor
 
+-- The blocking reasons for the dashboard's info panel: active() without the
+-- arm switch. The arm switch is only set together with another reason (see
+-- docs/dashboard/controls.md, Info panel), so listing it would only repeat
+-- "and the arm switch is on". Without a count the 26-flag table applies, so
+-- bit 25 is the arm switch there as well.
+function arming_flags.blockingReasons(mask, count)
+  local reasons = {}
+  for _, name in ipairs(arming_flags.active(mask, count)) do
+    if name ~= ARM_SWITCH_TAG then reasons[#reasons + 1] = name end
+  end
+  return reasons
+end
+
 -- The flag count to assume when only the API version is known (the
 -- dashboard, which gets the mask from telemetry rather than MSP_STATUS), or
 -- nil when the version is unknown. The 29-flag layout is assumed for
