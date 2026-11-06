@@ -11468,6 +11468,13 @@
           "reverse_text": true,
           "translation": "הופסק"
         },
+        "wir_telemetry_only": {
+          "english": "Telemetry only",
+          "max_length": 18,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "טלמטריה בלבד"
+        },
         "wir_timeout": {
           "english": "Timed out",
           "max_length": 9,

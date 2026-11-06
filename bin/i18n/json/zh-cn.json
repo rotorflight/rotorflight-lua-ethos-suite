@@ -10855,6 +10855,13 @@
           "max_length": 7,
           "reverse_text": false
         },
+        "wir_telemetry_only": {
+          "english": "Telemetry only",
+          "translation": "仅遥测",
+          "needs_translation": false,
+          "max_length": 18,
+          "reverse_text": false
+        },
         "wir_found": {
           "english": "Found",
           "translation": "已找到",

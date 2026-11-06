@@ -42,8 +42,8 @@ owed, the forward button goes to screen 3.
 
 | Setting | What it does |
 | --- | --- |
-| Status | Not run, the combination being tried (1 to 4), or the result: Found, Not found, Rejected, Timed out, Not supported or Stopped. |
-| Wiring: Detect / Stop | Detect tries the four combinations of half duplex and pin swap on the telemetry port, and stops at the one that receives the ESC. Stop ends a run early. |
+| Status | Not run, the combination being tried (1 to 4), or the result: Found, Telemetry only, Not found, Rejected, Timed out, Not supported or Stopped. |
+| Wiring: Detect / Stop | Detect tries the four combinations of half duplex and pin swap on the telemetry port, and stops at the one that receives the ESC. On a YGE it starts from half duplex, so the wiring that can program the ESC is tried first. Stop ends a run early. |
 | Battery voltage | Read from the telemetry. Shows "--" until the battery is connected and the telemetry arrives. |
 | ESC temperature | Read from the telemetry, the same way. |
 
@@ -85,8 +85,15 @@ SmartFuel the screen says that too.
 - Changing the protocol also needs a restart: the port was opened at boot with the previous protocol's baud and callback.
 - A detection run takes a few seconds and gives up after twelve. Leaving the step, or Stop, ends it, and the
   flight controller restores the wiring it had.
+- On a YGE, Detect first writes half duplex to the flight controller, so the search tries the half-duplex
+  wirings first. When the run ends, the wiring you had is written back. Without this, a YGE that sends
+  telemetry by itself stops the search at the first wiring, and its parameters cannot be read.
 - Found writes the half-duplex and pin-swap settings and asks for a restart: *Save and restart* is the
   button on screen 3.
+- Telemetry only means the run found telemetry on a wiring without half duplex, on a YGE. That wiring
+  receives the telemetry but cannot program the ESC. The settings are written as found. The ESC cannot
+  be programmed over that wiring; its Half Duplex setting is on the ESC telemetry page
+  ([ESC telemetry](../../setup/esc_motors/telemetry.md)), where it can be changed by hand.
 - Not found, Rejected, Timed out and Stopped write nothing. Check the telemetry wire between the ESC and
   the flight controller and that the ESC has power, then try again.
 - Castle Link has no wiring to detect, so the step says so and does not run.

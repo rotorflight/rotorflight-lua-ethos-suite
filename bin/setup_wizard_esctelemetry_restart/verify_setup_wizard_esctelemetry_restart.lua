@@ -121,6 +121,7 @@ local stubs = {
   ["lib/live_sensors.lua"] = { value = function() return nil end },
   ["lib/msp_analog.lua"] = { buildReadMessage = function() return {} end },
   ["lib/msp_esc_sensor_trial.lua"] = { COMBINATIONS = 4, buildCancelMessage = function() return {} end },
+  ["lib/esc_params.lua"] = { familyFor = function() return nil end },
   ["lib/msp_esc_sensor_config.lua"] = {
     choicesFor = function() return { {"None", 0}, {"Protocol 1", 1}, {"Protocol 2", 2} } end,
     buildReadMessage = function() return {} end,

@@ -65,6 +65,8 @@ stubs["lib/mspcodec.lua"] = mspcodec
 
 local trialConfig = assert(loadfile(ROOT .. "/src/rfsuite/lib/msp_esc_sensor_trial.lua"))()
 stubs["lib/msp_esc_sensor_trial.lua"] = trialConfig
+-- No ESC here has a parameter family, so the walk starts as configured (#2739).
+stubs["lib/esc_params.lua"] = { familyFor = function() return nil end }
 stubs["app/setup_wizard_ui.lua"] = {
   new = function()
     scr = newScreen()

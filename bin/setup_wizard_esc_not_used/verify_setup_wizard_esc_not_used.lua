@@ -128,6 +128,7 @@ local function stubs()
     ["lib/live_sensors.lua"] = {value = function() return nil end},
     ["lib/msp_analog.lua"] = anyObject(),
     ["lib/msp_esc_sensor_trial.lua"] = anyObject(),
+    ["lib/esc_params.lua"] = {familyFor = function() return nil end},
     ["lib/msp_esc_sensor_config.lua"] = {
       choicesFor = function() return {{"None", 0}, {"F.BUS", FBUS_PROTOCOL}} end,
       buildReadMessage = reader("esc_read"),

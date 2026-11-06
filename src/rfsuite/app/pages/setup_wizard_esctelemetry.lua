@@ -12,9 +12,12 @@
 -- Screen 2, the wiring, as the Configurator's EscWiringDetectWizard on the radio:
 --   * Detect: the flight controller tries the half-duplex and pin-swap combinations on the
 --     telemetry port (MSP2_ESC_SENSOR_TRIAL, lib/msp_esc_sensor_trial.lua). The step polls it
---     while it runs, and stops after the trial's timeout.
+--     while it runs, and stops after the trial's timeout. For an ESC whose parameters the wizard
+--     can read, the walk starts from half duplex: half duplex is written first and put back when
+--     the run ends (#2739).
 --   * Found: half duplex and pin swap are written to the ESC sensor config. They take effect
---     after a restart, which is Save and restart on this step.
+--     after a restart, which is Save and restart on this step. Telemetry only, on such an ESC,
+--     is said as such: this wiring cannot program it.
 --   * Battery voltage and ESC temperature from the telemetry, read live (lib/live_sensors.lua)
 --     over the session's transport (sport or crsf). They show "--" until the port is live.
 --
@@ -36,6 +39,7 @@ local bus = requireModule("lib/bus.lua")
 local live = requireModule("lib/live_sensors.lua")
 local analog = requireModule("lib/msp_analog.lua")
 local trialConfig = requireModule("lib/msp_esc_sensor_trial.lua")
+local escParams = requireModule("lib/esc_params.lua")
 local escSensor = requireModule("lib/msp_esc_sensor_config.lua")
 local featureConfig = requireModule("lib/msp_feature_config.lua")
 local serialConfig = requireModule("lib/msp_serial_config.lua")
@@ -85,6 +89,7 @@ local T = {
   trying = "@i18n(app.modules.setup_wizard.wir_trying_fmt)@",
   idle = "@i18n(app.modules.setup_wizard.wir_idle)@",
   found = "@i18n(app.modules.setup_wizard.wir_found)@",
+  telemetryOnly = "@i18n(app.modules.setup_wizard.wir_telemetry_only)@",
   notFound = "@i18n(app.modules.setup_wizard.wir_not_found)@",
   rejected = "@i18n(app.modules.setup_wizard.wir_rejected)@",
   timeout = "@i18n(app.modules.setup_wizard.wir_timeout)@",
@@ -399,24 +404,50 @@ local function new(wiz)
     return outcomes[wiz] or T.idle
   end
 
-  -- Ends the run: a cancel makes the flight controller restore its wiring, and the outcome
-  -- is shown. Nothing happens when no run is going.
+  -- The wiring a detection starts from. The firmware walks outward from the configured wiring and
+  -- keeps the first one that delivers frames. An ESC that sends telemetry by itself passes at once
+  -- with half duplex off, and on that wiring its parameters cannot be read. So for an ESC whose
+  -- parameters the wizard can read (lib/esc_params.lua), the walk starts from half duplex (#2739).
+  -- Nil when there is no such ESC, or the configured wiring already has half duplex on.
+  local function presetFor()
+    if not esc or not escParams.familyFor(esc.protocol) or esc.half_duplex == 1 then return nil end
+    local preset = copy(esc)
+    preset.half_duplex = 1
+    -- F4 boards have no pin swap, as in the EdgeTX suite.
+    local target = board and board.targetName
+    preset.pin_swap = (type(target) == "string" and not string.find(target, "F4", 1, true)) and 1 or 0
+    return preset
+  end
+
+  -- Puts back the ESC sensor config a run started from. The flight controller's cancel restores the
+  -- wiring the walk started from, which is the preset when there was one.
+  local function putBack(ended)
+    if ended and ended.original then writeEsc(copy(ended.original)) end
+  end
+
+  -- Ends the run: a cancel makes the flight controller restore its wiring, the page's own values
+  -- go back where a preset changed them, and the outcome is shown. Nothing happens when no run is going.
   local function stopWith(text)
     if not trial then return end
+    local ended = trial
     trial = nil
     wiz.send(trialConfig.buildCancelMessage())
+    putBack(ended)
     outcomes[wiz] = text
     wiz.rebuild()
   end
 
   local function found(halfDuplex, pinSwap)
+    -- A run that started from the preset and found telemetry only: the wiring is kept, and the
+    -- status says it cannot program this ESC.
+    local presetRun = trial ~= nil and trial.original ~= nil
     trial = nil
     wiz.change("esc_wiring", snapshot(), restore)
     esc.half_duplex = halfDuplex
     esc.pin_swap = pinSwap
     wiz.send(escSensor.buildWriteMessage(copy(esc)))
     wiz.requestReboot()
-    outcomes[wiz] = T.found
+    outcomes[wiz] = (presetRun and halfDuplex ~= 1) and T.telemetryOnly or T.found
     wiz.rebuild()
   end
 
@@ -435,17 +466,26 @@ local function new(wiz)
     if d.state == S.SUCCESS then
       return found(d.half_duplex, d.pin_swap)
     end
-    trial = nil
-    wiz.send(trialConfig.buildCancelMessage())
-    outcomes[wiz] = d.state == S.FAILED and T.notFound or T.rejected
-    wiz.rebuild()
+    stopWith(d.state == S.FAILED and T.notFound or T.rejected)
   end
 
   local function start()
     if trial or blocker() then return end
     outcomes[wiz] = nil
-    trial = {startedAt = os.clock(), nextPoll = 0, inFlight = true, combo = 0}
-    wiz.send(trialConfig.buildStartMessage(handle, fail))
+    local t = {startedAt = os.clock(), nextPoll = 0, inFlight = true, combo = 0}
+    trial = t
+    local preset = presetFor()
+    if preset then
+      -- The preset is written first, and the walk starts once the write has been answered. A
+      -- failed write starts the walk all the same, from the wiring the ESC already had.
+      t.original = copy(esc)
+      local function startWalk()
+        if trial == t then wiz.send(trialConfig.buildStartMessage(handle, fail)) end
+      end
+      wiz.send(escSensor.buildWriteMessage(preset, startWalk, startWalk))
+    else
+      wiz.send(trialConfig.buildStartMessage(handle, fail))
+    end
     wiz.rebuild()
   end
 
