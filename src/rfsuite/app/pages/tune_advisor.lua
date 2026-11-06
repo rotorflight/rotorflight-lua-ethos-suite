@@ -739,9 +739,12 @@ local function open(opts)
 
   -- Apply (header Save). Each step runs from the previous one's MSP reply;
   -- any failure ends it through finish(), and the wakeup handler reports.
+  -- The write checks the PID profile the advice was made on, so an unknown
+  -- profile cannot be recorded against the Apply.
   local function canApply()
     return not applying and not unsupported and mcuId ~= nil and link.connected
       and not link.armed and capture ~= "reading" and #view.changes > 0
+      and link.pidProfile ~= nil
   end
 
   local function finish(result)

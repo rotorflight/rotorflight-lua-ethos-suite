@@ -106,8 +106,8 @@ end
 
 -- The value the pilot last set by hand for one setting (a TUNE_KEYS name) on
 -- one PID profile, following the Apply record back through an unbroken chain.
--- Older rows without a profile are followed only when no active profile is
--- known; a known profile must not inherit changes from an unknown profile.
+-- Older rows without a profile are followed on any profile: they cannot say
+-- which one they were made on.
 function changes.pilotValue(rows, axis, key, value, pidProfile)
   for i = #rows, 1, -1 do
     local c = rows[i]

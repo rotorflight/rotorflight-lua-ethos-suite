@@ -332,6 +332,19 @@ do
   session.connected = true
 end
 
+print("Save waits until the active PID profile is known")
+do
+  session.pidProfile = nil
+  resetFc()
+  openPage()
+  pump()
+  check("no Apply while the PID profile is unknown", saveEnabled == false)
+  session.pidProfile = 0
+  subs["session.update"](session)
+  pump()
+  check("Save comes back once the PID profile is known", saveEnabled == true)
+end
+
 -- tasks/tune_history.lua reads the last flight for about 10 s after a disarm.
 -- Advice and the erase button wait for it.
 print("While the last flight is being read, Save and erase wait")
