@@ -61,7 +61,9 @@ local MODE_NAME_BY_ID = {
   [56] = "GOVERNOR SUSPEND",
   [57] = "GOVERNOR BYPASS",
 }
-local AUX_CHANNEL_COUNT = 20
+-- The firmware's AUX channel count (MAX_AUX_CHANNEL_COUNT, 18 - 5). Pickers and auto-detect
+-- offer no more (#2749).
+local AUX_CHANNEL_COUNT = 13
 local RANGE_MIN = 875
 local RANGE_MAX = 2125
 local RANGE_STEP = 5
