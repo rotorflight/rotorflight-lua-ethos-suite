@@ -12295,6 +12295,18 @@
           "reverse_text": false,
           "translation": "Connect to a model first"
         },
+        "no_flight": {
+          "english": "No flight saved yet",
+          "max_length": 19,
+          "needs_translation": true,
+          "translation": "Aucun vol enregistré pour l'instant"
+        },
+        "no_flight_hint": {
+          "english": "Fly acro with real rotation, then disarm",
+          "max_length": 40,
+          "needs_translation": true,
+          "translation": "Volez en acro avec une vraie rotation, puis désarmez"
+        },
         "not_read": {
           "english": "Last flight not read. It is read at the next disarm.",
           "max_length": 52,

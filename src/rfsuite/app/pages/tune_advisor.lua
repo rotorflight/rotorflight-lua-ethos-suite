@@ -85,6 +85,8 @@ local T = {
   axis = "@i18n(app.modules.tune_advisor.axis)@",
   data = "@i18n(app.modules.tune_advisor.data)@",
   dataFlightsFmt = "@i18n(app.modules.tune_advisor.data_flights_fmt)@",
+  noFlight = "@i18n(app.modules.tune_advisor.no_flight)@",
+  noFlightHint = "@i18n(app.modules.tune_advisor.no_flight_hint)@",
   noAircraft = "@i18n(app.modules.tune_advisor.no_aircraft)@",
   unsupported = "@i18n(app.modules.tune_advisor.unsupported)@",
   reading = "@i18n(app.modules.tune_advisor.reading)@",
@@ -610,6 +612,19 @@ local function open(opts)
     changed()
   end
 
+  -- No flight saved yet (the FC counted no rate flight at the last disarm,
+  -- or none has been read): say so, with the reason, instead of an empty
+  -- "0m 00s, 0/5 flights" and the advice for too little data.
+  local function showNoFlight()
+    view.data, view.response, view.stops = T.noFlight, "-", "-"
+    clearList(view.actions)
+    clearList(view.whys)
+    clearList(view.changes)
+    if capture == "failed" then view.actions[1] = T.notRead end
+    view.actions[#view.actions + 1] = T.noFlightHint
+    changed()
+  end
+
   local function render()
     if disposed then return end
     if unsupported then showOnly(T.unsupported) return end
@@ -617,6 +632,7 @@ local function open(opts)
     -- The advice would change in a few seconds: show none until it does
     if capture == "reading" then showOnly(T.reading) return end
     if not flights then return end
+    if #flights == 0 then showNoFlight() return end
 
     local axis = AXES[selected][2]
     local a, used, seconds = tuneHistory.aggregate(flights, axis)

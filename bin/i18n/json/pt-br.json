@@ -8818,6 +8818,18 @@
           "reverse_text": false,
           "max_length": 24
         },
+        "no_flight": {
+          "english": "No flight saved yet",
+          "translation": "Nenhum voo salvo ainda",
+          "needs_translation": true,
+          "max_length": 19
+        },
+        "no_flight_hint": {
+          "english": "Fly acro with real rotation, then disarm",
+          "translation": "Voe em acro com rotação real e depois desarme",
+          "needs_translation": true,
+          "max_length": 40
+        },
         "no_aircraft": {
           "english": "Connect to a model first",
           "translation": "Connect to a model first",
