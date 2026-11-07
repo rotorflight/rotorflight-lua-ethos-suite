@@ -56,7 +56,7 @@ form = {
 }
 
 local queue, subs = {}, {}
-local saveEnabled, toolEnabled, onSave = nil, nil, nil
+local saveEnabled, toolEnabled, onSave, onTool = nil, nil, nil, nil
 local logged = {}
 local cache = {
   ["lib/bus.lua"] = {
@@ -65,7 +65,7 @@ local cache = {
     unsubscribe = function() end,
   },
   ["app/header.lua"] = {build = function(_, o)
-    onSave = o.onSave
+    onSave, onTool = o.onSave, o.onTool
     return {setSaveEnabled = function(e) saveEnabled = e end,
       setToolEnabled = function(e) toolEnabled = e end, focusMenu = function() end,
       focusReload = function() end}
@@ -111,7 +111,8 @@ local function fixtureFlights()
   if flightRollShake then axes[1].shakeRms = flightRollShake end
   return {{date = "d", seconds = 147, axes = axes}}
 end
-tuneHistory.read = function() return fixtureFlights() end
+local noFlights = false           -- set to make the history hold no flight yet
+tuneHistory.read = function() if noFlights then return {} end return fixtureFlights() end
 local logFails = false            -- set to make the record write fail
 tuneHistory.logChanges = function(_, axis, changes)
   logged[#logged + 1] = {axis = axis, changes = changes}
@@ -454,6 +455,102 @@ do
   pump()
   check("neither F nor the rates are offered", saveEnabled == false)
   flightRoll = nil
+end
+
+print("With no flight saved, the page says so instead of the too-little-data advice")
+do
+  resetFc()
+  noFlights = true
+  openPage()
+  pump()
+  local shown = {}
+  lcd.drawText = function(_, _, text) shown[#shown + 1] = tostring(text) end
+  paintFn()
+  lcd.drawText = nil
+  local text = table.concat(shown, "\n")
+  check("Flight data says no flight is saved", text:find("tune_advisor.no_flight)@", 1, true) ~= nil, text)
+  check("the reason to fly is given", text:find("tune_advisor.no_flight_hint)@", 1, true) ~= nil, text)
+  check("no 0/5 flight count is shown", text:find("tune_advisor.data_flights_fmt)@", 1, true) == nil, text)
+  check("no too-little-data response is given", text:find("tune_advisor.resp_more_fmt)@", 1, true) == nil, text)
+  check("Save stays disabled", saveEnabled == false)
+  noFlights = false
+end
+
+print("Erasing the saved flights on the open page drops the advice and the pending changes")
+do
+  resetFc()
+  openPage()
+  pump()
+  local function paintText()
+    local shown = {}
+    lcd.drawText = function(_, _, text) shown[#shown + 1] = tostring(text) end
+    paintFn()
+    lcd.drawText = nil
+    return table.concat(shown, "\n")
+  end
+  -- The fixture gives advice with a change to write: the test starts from that state
+  check("before the erase, the advice has a change to save", saveEnabled == true and paintText():find("tune_advisor.act_f_fmt)@", 1, true) ~= nil)
+
+  -- The erase: the saved flights go, then the page reloads them (no flights left)
+  local erased = false
+  tuneHistory.erase = function() erased = true; noFlights = true end
+  onTool()
+  local confirm = dialogs[#dialogs]
+  confirm.buttons[1].action()
+  pump()
+  check("the erase reached the saved flights", erased)
+
+  local text = paintText()
+  check("no advice is left on the page", text:find("tune_advisor.act_f_fmt)@", 1, true) == nil, text)
+  check("the page says no flight is saved", text:find("tune_advisor.no_flight)@", 1, true) ~= nil, text)
+  check("Save is disabled, nothing is left to write", saveEnabled == false)
+  noFlights = false
+end
+
+print("A flight the FC holds but the radio did not read is not met with a hint to fly again")
+do
+  local function paintText()
+    local shown = {}
+    lcd.drawText = function(_, _, text) shown[#shown + 1] = tostring(text) end
+    paintFn()
+    lcd.drawText = nil
+    return table.concat(shown, "\n")
+  end
+  resetFc()
+  noFlights = true
+  openPage()
+  pump()
+  for _, state in ipairs({"unread", "failed"}) do
+    subs["tune_history.state"](state)
+    pump()
+    local text = paintText()
+    check(state .. ": the last flight is said to be not read", text:find("tune_advisor.not_read)@", 1, true) ~= nil, text)
+    check(state .. ": no fly-again hint", text:find("tune_advisor.no_flight_hint)@", 1, true) == nil, text)
+    check(state .. ": Flight data still says no flight is saved", text:find("tune_advisor.no_flight)@", 1, true) ~= nil, text)
+  end
+  subs["tune_history.state"]("idle")
+  pump()
+  check("idle again: the fly-again hint is back", paintText():find("tune_advisor.no_flight_hint)@", 1, true) ~= nil)
+  noFlights = false
+end
+
+print("A flight the FC holds but the radio did not read is said so over saved flights too")
+do
+  resetFc()
+  noFlights = false
+  openPage()
+  pump()
+  subs["tune_history.state"]("unread")
+  pump()
+  local shown = {}
+  lcd.drawText = function(_, _, text) shown[#shown + 1] = tostring(text) end
+  paintFn()
+  lcd.drawText = nil
+  local text = table.concat(shown, "\n")
+  check("the last flight is said to be not read", text:find("tune_advisor.not_read)@", 1, true) ~= nil, text)
+  check("the saved flights are still shown", text:find("tune_advisor.data_flights_fmt)@", 1, true) ~= nil, text)
+  subs["tune_history.state"]("idle")
+  pump()
 end
 
 print("A full-stick rate cut is limited to one step")
