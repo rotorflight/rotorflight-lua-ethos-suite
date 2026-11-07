@@ -649,10 +649,11 @@ end
 -- Deliberately does NOT touch fcConfigData/fcConfig/fcConfigRequested --
 -- unlike the module-side probe state below (re-probed fresh on every
 -- start(), since the module itself could have changed), the Rotorflight
--- telemetry-config read is cheap to keep warm across repeated probe/sync
--- presses within the same connection (see ensureFcConfig() below); it's
--- only invalidated on an actual disconnect (see the session.update
--- subscriber above).
+-- telemetry-config cache survives repeated probe presses within the same
+-- connection (see ensureFcConfig() below); it's only invalidated on an
+-- actual disconnect (see the session.update subscriber above). The ELRS ->
+-- Rotorflight sync does not trust this cache: it re-reads the config before
+-- it writes (issue #2674).
 local function resetState()
   taskComplete = false
   probeStartedAt = 0
@@ -677,6 +678,7 @@ end
 -- per connection and caches it -- `onReady()` fires immediately if already
 -- cached, or once the read completes; `onError()` (optional) only fires
 -- on an actual read failure, never for an already-cached hit.
+-- Not used by the ELRS -> Rotorflight sync, which always re-reads first.
 local function ensureFcConfig(onReady, onError)
   if fcConfig then
     onReady()

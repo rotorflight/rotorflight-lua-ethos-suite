@@ -102,6 +102,7 @@ do
   local slots, wanted = {}, {}
   for i = 1, 40 do slots[i] = 0 end
   slots[1], slots[2], slots[3] = 200, 201, 202
+  slots[4] = 1001 -- a managed sensor that is already placed and stays selected
   for i = 1, 37 do wanted[i] = 1000 + i end
   for i = 1, 37 do managed[1000 + i] = true end
   local out = layout.place(slots, wanted, isManaged, 40)
@@ -113,7 +114,38 @@ do
     seen[out[i]] = true
   end
   check("37 new selections plus 3 native slots fill exactly 40 slots without duplicates",
-    count == 40 and out[1] == 200 and out[2] == 201 and out[3] == 202, "count=" .. tostring(count))
+    count == 40 and out[1] == 200 and out[2] == 201 and out[3] == 202 and out[4] == 1001,
+    "count=" .. tostring(count) .. ", slot4=" .. tostring(out[4]))
+end
+
+do
+  -- The rule before the fix: refill the managed slots in catalogue order.
+  local function oldRefill(slots, orderedSelected, isManagedFn, slotCount)
+    local out, index = {}, 1
+    for i = 1, slotCount do
+      local id = slots[i] or 0
+      if id ~= 0 and not isManagedFn(id) then
+        out[i] = id
+      else
+        out[i] = orderedSelected[index] or 0
+        index = index + 1
+      end
+    end
+    return out
+  end
+  local old = oldRefill({10, 0, 20, 200, 30}, {10, 20, 30}, isManaged, 8)
+  check("the old catalogue-order refill moves sensor 30 from slot 5 to slot 3 (the no-change case catches it)",
+    old[3] == 30 and old[5] == 0, show(old, 8))
+end
+
+do
+  -- 41 selections cannot fit into 40 slots: one must be reported, not dropped.
+  local function isManagedHigh(id) return id >= 2000 end
+  local wanted = {}
+  for i = 1, 41 do wanted[i] = 2000 + i end
+  local out, unplaced = layout.place({}, wanted, isManagedHigh, 40)
+  check("41 selections for 40 slots report exactly one unplaced sensor and keep the first 40",
+    unplaced == 1 and out[1] == 2001 and out[40] == 2040, "unplaced=" .. tostring(unplaced))
 end
 
 print("wiring")
@@ -125,6 +157,8 @@ check("the Telemetry page places its slots through the shared rule",
   page:find("slotLayout.place(", 1, true) ~= nil)
 check("the Telemetry page no longer refills slots in catalogue order",
   page:find("slots[i] = orderedSelected[index]", 1, true) == nil)
+check("the Telemetry page refuses a save that cannot place every sensor",
+  page:find("if unplaced > 0 then", 1, true) ~= nil)
 
 local elrs = readFile("src/rfsuite/lib/elrslink_task.lua") or ""
 local startAt = elrs:find("local function syncElrsToRotorflight(", 1, true)
@@ -137,8 +171,12 @@ local writeAt = body:find("telemetryConfig.buildWriteMessage(fresh", 1, true)
 check("the ELRS sync reads the telemetry config before it writes it",
   readAt ~= nil and writeAt ~= nil and readAt < writeAt,
   string.format("read at %s, write at %s", tostring(readAt), tostring(writeAt)))
-check("the ELRS sync writes the frame it has just read, not the cached copy",
-  body:find("buildWriteMessage(fcConfigData", 1, true) == nil)
+-- The write must be the frame from this read: it is built from `fresh`, which
+-- is the callback argument of the read, and it sits inside that callback.
+local readCallbackAt = body:find("buildReadConfigMessage(function(fresh)", 1, true)
+check("the ELRS sync writes the frame it has just read (fresh), not the cached copy",
+  readCallbackAt ~= nil and writeAt ~= nil and writeAt > readCallbackAt
+    and body:find("buildWriteMessage(fcConfigData", 1, true) == nil)
 
 print(string.format("\n%d checks, %d failed", checks, failures))
 if failures > 0 then os.exit(1) end

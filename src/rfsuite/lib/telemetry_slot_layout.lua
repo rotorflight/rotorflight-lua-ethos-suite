@@ -21,6 +21,8 @@ local layout = {}
 -- A managed id that is selected keeps its slot; a second copy of it, or a
 -- slot holding a deselected managed id, is freed. Ids that were not placed
 -- take the first free slot, in the order of wanted.
+-- Second return value: how many wanted ids found no free slot. The page
+-- refuses the save in that case instead of dropping a sensor silently.
 function layout.place(slots, wanted, isManaged, slotCount)
   local out = {}
   local wantedSet = {}
@@ -40,15 +42,19 @@ function layout.place(slots, wanted, isManaged, slotCount)
   end
 
   local free = 1
+  local unplaced = 0
   for _, id in ipairs(wanted) do
     if not placed[id] then
       while free <= slotCount and out[free] ~= 0 do free = free + 1 end
-      if free > slotCount then break end
-      out[free] = id
-      placed[id] = true
+      if free > slotCount then
+        unplaced = unplaced + 1
+      else
+        out[free] = id
+        placed[id] = true
+      end
     end
   end
-  return out
+  return out, unplaced
 end
 
 return layout

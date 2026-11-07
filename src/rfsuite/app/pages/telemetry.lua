@@ -324,7 +324,14 @@ local function open(opts)
           openTooManyDialog()
           return
         end
-        telemetry.slots = slotsPreservingUnmanaged(telemetry.slots, ordered)
+        local placed, unplaced = slotsPreservingUnmanaged(telemetry.slots, ordered)
+        if unplaced > 0 then
+          -- Defensive: the budget check above should make this unreachable. If
+          -- it ever is not, refuse the save rather than drop a sensor silently.
+          openTooManyDialog()
+          return
+        end
+        telemetry.slots = placed
         telemetry.crsf_telemetry_mode = CRSF_TELEMETRY_MODE_CUSTOM
       end
     end,
