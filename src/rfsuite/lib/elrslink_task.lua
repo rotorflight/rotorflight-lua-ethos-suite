@@ -523,7 +523,7 @@ local function syncRotorflightToElrs(fc)
   completeTask()
 end
 
-local function syncElrsToRotorflight(fc, moduleRate, moduleRateText, moduleRatioText, ratioKind, effectiveRatio)
+local function syncElrsToRotorflight(moduleRate, moduleRateText, moduleRatioText, ratioKind, effectiveRatio)
   if not isElrsVerified then
     log("Cannot sync from ELRS: module is not verified as ExpressLRS")
     setStatus(T.statusNotElrs)
@@ -543,43 +543,49 @@ local function syncElrsToRotorflight(fc, moduleRate, moduleRateText, moduleRatio
     return
   end
 
-  if type(fcConfigData) ~= "table" then
-    log("ELRS sync could not update Rotorflight because the telemetry config was not read")
-    completeTask()
-    return
-  end
+  -- The cached copy can predate a Setup > Telemetry save made since this
+  -- connection (issue #2674), and the write sends the whole frame back. So the
+  -- FC's config is read again here, and the write starts from that copy.
+  bus.publish("msp.request", telemetryConfig.buildReadConfigMessage(function(fresh)
+    fcConfigData = fresh
+    fcConfig = {mode = fresh.crsf_telemetry_mode, linkRate = fresh.crsf_telemetry_link_rate, linkRatio = fresh.crsf_telemetry_link_ratio}
 
-  if fc.linkRate == moduleRate and fc.linkRatio == effectiveRatio then
-    log("Rotorflight already follows ELRS numerically")
-    setStatus(T.rfMatchesElrs)
-    completeTask()
-    return
-  end
-
-  fcConfigData.crsf_telemetry_link_rate = moduleRate
-  fcConfigData.crsf_telemetry_link_ratio = effectiveRatio
-
-  log("Syncing Rotorflight telemetry to match ELRS: rate=" .. tostring(moduleRateText) .. ", ratio=1:" .. tostring(effectiveRatio))
-  setStatus(T.writingRotorflight)
-
-  bus.publish("msp.request", telemetryConfig.buildWriteMessage(fcConfigData, function()
-    fc.linkRate = moduleRate
-    fc.linkRatio = effectiveRatio
-    log("Rotorflight telemetry now matches ELRS: mode=" .. telemetryModeLabel(fc.mode) .. ", rate=" .. tostring(moduleRate) .. ", ratio=1:" .. tostring(effectiveRatio))
-    setStatus(T.savingRotorflight)
-
-    bus.publish("msp.request", eeprom.buildWriteMessage(function()
-      log("Saved Rotorflight telemetry sync to EEPROM")
-      setStatus(T.rotorflightUpdated)
+    if fcConfig.linkRate == moduleRate and fcConfig.linkRatio == effectiveRatio then
+      log("Rotorflight already follows ELRS numerically")
+      setStatus(T.rfMatchesElrs)
       completeTask()
-    end, function()
-      log("EEPROM write failed after ELRS telemetry sync")
-      setStatus(T.rotorflightSaveFailed)
+      return
+    end
+
+    fresh.crsf_telemetry_link_rate = moduleRate
+    fresh.crsf_telemetry_link_ratio = effectiveRatio
+
+    log("Syncing Rotorflight telemetry to match ELRS: rate=" .. tostring(moduleRateText) .. ", ratio=1:" .. tostring(effectiveRatio))
+    setStatus(T.writingRotorflight)
+
+    bus.publish("msp.request", telemetryConfig.buildWriteMessage(fresh, function()
+      fcConfig.linkRate = moduleRate
+      fcConfig.linkRatio = effectiveRatio
+      log("Rotorflight telemetry now matches ELRS: mode=" .. telemetryModeLabel(fcConfig.mode) .. ", rate=" .. tostring(moduleRate) .. ", ratio=1:" .. tostring(effectiveRatio))
+      setStatus(T.savingRotorflight)
+
+      bus.publish("msp.request", eeprom.buildWriteMessage(function()
+        log("Saved Rotorflight telemetry sync to EEPROM")
+        setStatus(T.rotorflightUpdated)
+        completeTask()
+      end, function()
+        log("EEPROM write failed after ELRS telemetry sync")
+        setStatus(T.rotorflightSaveFailed)
+        completeTask()
+      end))
+    end, function(reason)
+      log("Failed to sync Rotorflight telemetry from ELRS (" .. tostring(reason) .. ")")
+      setStatus(T.rotorflightWriteFailed)
       completeTask()
     end))
   end, function(reason)
-    log("Failed to sync Rotorflight telemetry from ELRS (" .. tostring(reason) .. ")")
-    setStatus(T.rotorflightWriteFailed)
+    log("ELRS sync could not re-read the Rotorflight telemetry config (" .. tostring(reason) .. "), nothing written")
+    setStatus(T.rotorflightConfigNotReady)
     completeTask()
   end))
 end
@@ -626,7 +632,7 @@ local function finalize()
   log("ELRS telemetry sync mode: " .. syncModeLabel(syncMode))
 
   if syncMode == SYNC_MODE_ELRS_TO_ROTORFLIGHT then
-    syncElrsToRotorflight(fcConfig, moduleRate, moduleRateLabel, moduleRatioLabel, ratioKind, effectiveRatio)
+    syncElrsToRotorflight(moduleRate, moduleRateLabel, moduleRatioLabel, ratioKind, effectiveRatio)
     return
   end
 
@@ -643,10 +649,11 @@ end
 -- Deliberately does NOT touch fcConfigData/fcConfig/fcConfigRequested --
 -- unlike the module-side probe state below (re-probed fresh on every
 -- start(), since the module itself could have changed), the Rotorflight
--- telemetry-config read is cheap to keep warm across repeated probe/sync
--- presses within the same connection (see ensureFcConfig() below); it's
--- only invalidated on an actual disconnect (see the session.update
--- subscriber above).
+-- telemetry-config cache survives repeated probe presses within the same
+-- connection (see ensureFcConfig() below); it's only invalidated on an
+-- actual disconnect (see the session.update subscriber above). The ELRS ->
+-- Rotorflight sync does not trust this cache: it re-reads the config before
+-- it writes (issue #2674).
 local function resetState()
   taskComplete = false
   probeStartedAt = 0
@@ -671,6 +678,7 @@ end
 -- per connection and caches it -- `onReady()` fires immediately if already
 -- cached, or once the read completes; `onError()` (optional) only fires
 -- on an actual read failure, never for an already-cached hit.
+-- Not used by the ELRS -> Rotorflight sync, which always re-reads first.
 local function ensureFcConfig(onReady, onError)
   if fcConfig then
     onReady()

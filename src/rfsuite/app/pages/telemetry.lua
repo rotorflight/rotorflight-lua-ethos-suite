@@ -23,6 +23,7 @@ local featureConfig = requireModule("lib/msp_feature_config.lua")
 local telemetryConfig = requireModule("lib/msp_telemetry_config.lua")
 local catalog = requireModule("lib/telemetry_sensor_catalog.lua")
 local slotBudget = requireModule("lib/telemetry_slot_budget.lua")
+local slotLayout = requireModule("lib/telemetry_slot_layout.lua")
 
 local PAGE_TITLE = "@i18n(app.modules.telemetry.name)@"
 local BTN_OK = "@i18n(app.btn_ok)@"
@@ -166,30 +167,15 @@ end
 -- A native CRSF slot is exactly such an id for most of the native sensor set,
 -- so saving from this page dropped the flight controller's native feeds.
 --
--- The fix walks the original array instead: a slot whose incoming id is not
--- one this catalog manages is left exactly as it was, and the pilot's
--- selection fills the remaining slots in order. Mirrors the EdgeTX page's
--- buildWritePayload().
+-- A slot whose incoming id is not one this catalog manages is left exactly as
+-- it was. A managed sensor that stays selected keeps its slot, a deselected one
+-- frees it, and a new selection takes the first free slot (issue #2671: the
+-- previous version refilled every managed slot in catalogue order on each save).
+-- The rule lives in lib/telemetry_slot_layout.lua.
 local function slotsPreservingUnmanaged(slots, orderedSelected)
-  slots = slots or {}
-  local index = 1
-  for i = 1, telemetryConfig.SLOT_COUNT do
-    local originalId = slots[i] or 0
-    if originalId ~= 0 and catalog.SENSOR_LIST[originalId] == nil then
-      -- Unmanaged slot (a native CRSF id, say): preserve it where it was.
-    else
-      slots[i] = orderedSelected[index] or 0
-      index = index + 1
-    end
-  end
-  -- Anything past the original array is a slot this page owns, so a short read
-  -- (or a pilot holding more than SLOT_COUNT selections) cannot leave stale
-  -- entries behind.
-  for i = #slots + 1, telemetryConfig.SLOT_COUNT do
-    slots[i] = orderedSelected[index] or 0
-    index = index + 1
-  end
-  return slots
+  return slotLayout.place(slots, orderedSelected, function(id)
+    return catalog.SENSOR_LIST[id] ~= nil
+  end, telemetryConfig.SLOT_COUNT)
 end
 
 -- Slots the pilot does not see, kept where the FC had them. Counted so the
@@ -338,7 +324,14 @@ local function open(opts)
           openTooManyDialog()
           return
         end
-        telemetry.slots = slotsPreservingUnmanaged(telemetry.slots, ordered)
+        local placed, unplaced = slotsPreservingUnmanaged(telemetry.slots, ordered)
+        if unplaced > 0 then
+          -- Defensive: the budget check above should make this unreachable. If
+          -- it ever is not, refuse the save rather than drop a sensor silently.
+          openTooManyDialog()
+          return
+        end
+        telemetry.slots = placed
         telemetry.crsf_telemetry_mode = CRSF_TELEMETRY_MODE_CUSTOM
       end
     end,
