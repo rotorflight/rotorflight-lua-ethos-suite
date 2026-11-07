@@ -9,7 +9,9 @@
 --   1. the codec writes the mode range's AUX index clamped to 0..12 (AUX 1..13);
 --   2. indexes already in range are written unchanged, including AUX 1 and AUX 13;
 --   3. the mode range has no always-on choice, so 255 is clamped too;
---   4. the page's picker count is 13 (read from the page's source, since the page needs the radio UI).
+--   4. the page's picker count is 13 (read from the page's source, since the page needs the radio UI);
+--   5. the page clamps the AUX index of ranges it loads, after keeping the values as read, so an
+--      index the flight controller holds above 13 makes the page dirty and Save rewrites it.
 --
 -- --self-test removes the clamp and requires check 1 to go red.
 
@@ -81,6 +83,15 @@ end
 local pageSource = readFile(PAGE)
 local pageCount = pageSource:match("\nlocal AUX_CHANNEL_COUNT = (%d+)")
 check("4. the page's AUX picker count is the firmware's 13", pageCount == "13", "count=" .. tostring(pageCount))
+
+-- 5. The loader: the originals are cloned from the values as read, then the loaded ranges are
+-- clamped, then the page recomputes dirty (markDirty) instead of clearing it.
+local loaderClamp = pageSource:find(
+  "originalExtras = cloneExtras%(modeRangesExtra%)%s+.-for i = 1, #modeRanges do%s+modeRanges%[i%]%.auxChannelIndex = clamp%(modeRanges%[i%]%.auxChannelIndex or 0, 0, AUX_CHANNEL_COUNT %- 1%)")
+  ~= nil
+local loaderDirty = pageSource:find("loaded = true%s+markDirty%(%)") ~= nil
+check("5. loaded AUX indexes are clamped after the originals are kept, and the page recomputes dirty",
+  loaderClamp and loaderDirty, "clamp=" .. tostring(loaderClamp) .. " dirty=" .. tostring(loaderDirty))
 
 local codecSource = readFile(CODEC)
 if SELF_TEST then
