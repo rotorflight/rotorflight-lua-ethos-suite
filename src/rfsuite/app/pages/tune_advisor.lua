@@ -135,6 +135,7 @@ local T = {
   whyRelax = "@i18n(app.modules.tune_advisor.why_relax)@",
   whyPolar = "@i18n(app.modules.tune_advisor.why_polar)@",
   whyReliefOff = "@i18n(app.modules.tune_advisor.why_relief_off)@",
+  whyRingFmt = "@i18n(app.modules.tune_advisor.why_ring_fmt)@",
   whyFixFFmt = "@i18n(app.modules.tune_advisor.why_fix_f_fmt)@",
   whyBrakeFmt = "@i18n(app.modules.tune_advisor.why_brake_fmt)@",
   whyShakeFmt = "@i18n(app.modules.tune_advisor.why_shake_fmt)@",
@@ -424,7 +425,8 @@ local function advise(a, axis, name, pilotP, actions, whys, changes)
     -- The FC limits the cyclic setpoint by the cyclic ring too (issue #2640): a
     -- ring below 100% caps the rate it asks for at that share of the curve.
     -- Ring 0 is no limit in the firmware.
-    if asked and a.ring > 0 and a.ring < 100 then asked = asked * a.ring / 100 end
+    local ringCaps = asked ~= nil and a.ring > 0 and a.ring < 100
+    if ringCaps then asked = asked * a.ring / 100 end
     if not shaking and axis ~= AXIS_YAW and asked and a.fullCount >= FULL_MIN_COUNT
         and a.fullSatCount >= FULL_SAT_SHARE * a.fullCount
         and a.fullMaxRate < FULL_REACH * asked and room(rateActionCount(a)) then
@@ -434,6 +436,8 @@ local function advise(a, axis, name, pilotP, actions, whys, changes)
         local k = math.max(a.fullMaxRate / asked, 1 - FF_STEP_MAX)
         local fits = ratesFit(a, axis, k)
         if fits then rateActions(a, name, k, act, change) end
+        -- The asked rate is the ring's share of the curve: say so, or the number reads as wrong
+        if ringCaps then why(string.format(T.whyRingFmt, a.ring)) end
         why(string.format(T.whyFullFmt, asked, a.fullMaxRate))
         if not fits then atLimit() end
       end
@@ -472,8 +476,14 @@ local function advise(a, axis, name, pilotP, actions, whys, changes)
           atLimit()
         end
       elseif ffOff(a) and a.F > 0 then
-        -- F first, unless F was at its limit: then nothing is advised here
-        if not limited then why(string.format(T.whyFixFFmt, rebound)) end
+        -- F first, unless F was at its limit: then nothing is advised here.
+        -- Roll under polar cyclic gets no F advice (issue #2639): the reason
+        -- says so instead of sending the pilot to F
+        if polarRoll then
+          why(T.whyPolar)
+        elseif not limited then
+          why(string.format(T.whyFixFFmt, rebound))
+        end
       elseif room(1) then
         local newP = math.max(round(a.P * P_STEP), a.P + 1)
         if not inRange("P", axis, newP) then

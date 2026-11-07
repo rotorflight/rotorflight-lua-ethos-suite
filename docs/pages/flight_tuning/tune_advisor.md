@@ -74,9 +74,10 @@ The suggestions follow these rules:
   with the other rate types it gives a percentage. An axis with F set to 0 (often the tail) gets no F advice.
 - **Full stick asks for more rate than the heli reaches** (roll and pitch), with the cyclic at its limit: lower
   the rates toward what the heli reaches, by at most 20% per step. The rate the cyclic asks for is capped by the
-  *Cyclic ring* when it is below 100%, so a ring of 50% asks for half the curve. A ring of 0% is no limit.
+  *Cyclic ring* when it is below 100%, so a ring of 50% asks for half the curve. A ring of 0% is no limit. When the
+  ring caps the rate, the page says so.
 - **Polar cyclic on**: roll then follows the *Cyclic* rates, not its own, so the page gives roll no rate or F advice
-  and says so. Pitch is unchanged.
+  and says so. Pitch is unchanged. With F set, roll's stops get neither the F advice nor a P step there; the page says why.
 - **Stops bounce back 12% or more**: if the I-term pushes back, lower *Advanced > PID Controller > Iterm Relax
   Cutoff* by 20%, but only on an axis I-term relax acts on. With relax *Off* no axis is covered, and with *RP*
   yaw is not; the page says so and gives no cut-off advice there. If F does not match yet, fix F first. Otherwise

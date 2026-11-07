@@ -220,7 +220,9 @@ local function finishCapture()
       return
     end
   end
-  -- The settings belong to the flight, so every axis row carries them
+  -- The settings are read at capture, not during the flight: the FC keeps no
+  -- snapshot of them, so a change made after the flight and before this capture
+  -- lands on it. Every axis row carries them
   local rc, pid = capture.settings[1], capture.settings[2]
   for i = 1, #replies do
     local a = replies[i].a

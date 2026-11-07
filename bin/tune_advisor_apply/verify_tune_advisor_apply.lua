@@ -715,6 +715,50 @@ do
   flightRoll = nil
 end
 
+print("A ring that caps the rate asked says so, next to the full-stick reason (issue #2640)")
+do
+  -- Ring 50 asks 120 deg/s; the heli tops out at 50, so the rates are cut, and the
+  -- reason names the ring as well as the capped number
+  resetFc()
+  flightRoll = {ffGain = 1.0, fullCount = 200, fullSatCount = 200, fullMaxRate = 50, ring = 50}
+  openPage()
+  pump()
+  local text = paintText()
+  check("the rates are cut toward the ring's limit", text:find("act_rate_fmt", 1, true) ~= nil, text)
+  check("the reason names the ring", text:find("why_ring_fmt", 1, true) ~= nil, text)
+  check("the full-stick reason is still given", text:find("why_full_fmt", 1, true) ~= nil, text)
+  -- control: with no ring limit there is no ring reason
+  flightRoll = {ffGain = 1.0, fullCount = 200, fullSatCount = 200, fullMaxRate = 50, ring = 0}
+  openPage()
+  pump()
+  check("with no ring limit no ring reason is given", paintText():find("why_ring_fmt", 1, true) == nil)
+  flightRoll = nil
+end
+
+print("Polar cyclic: roll's stops get no F-first reason (issue #2639)")
+do
+  -- Relax off on roll, so the cut-off branch is out and the stops reach the F branch
+  resetFc()
+  -- F set and feed-forward off (gain 1.3): only then do the stops reach the F branch
+  flightAxisFields[1] = {polar = 1, relaxType = 0, F = 120}
+  -- meanIterm stays under the push: no relief reason, so the 3 reasons are not full
+  flightRoll = {ffGain = 1.3, releases = 20, meanRebound = 0.2, meanIterm = 0.01}   -- F off: too hot
+  openPage()
+  pump()
+  local text = paintText()
+  check("no F-first reason on roll under polar", text:find("why_fix_f_fmt", 1, true) == nil, text)
+  check("the reason names the Cyclic rates", text:find("why_polar", 1, true) ~= nil, text)
+  check("no change is offered on roll under polar", saveEnabled == false)
+  -- control: polar off, the same stops say fix F first
+  flightAxisFields[1] = {polar = 0, relaxType = 0, F = 120}
+  openPage()
+  pump()
+  local control = paintText()
+  check("with polar off the F-first reason is given", control:find("why_fix_f_fmt", 1, true) ~= nil, control)
+  flightAxisFields[1] = nil
+  flightRoll = nil
+end
+
 print("I-term relax off on an axis: no relax cut-off there (issue #2642)")
 do
   resetFc()

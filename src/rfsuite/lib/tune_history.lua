@@ -38,7 +38,8 @@ local FIELDS = {
   {"rates_type", "ratesType", "%d"}, {"rc_rate", "rcRate", "%d"}, {"s_rate", "sRate", "%d"},
   -- The settings the firmware does not put in its statistics (issue #2639,
   -- #2640, #2642): the Cyclic polarity and ring of the rate profile, and the
-  -- I-term relax type of the PID profile, as the FC held them at the flight.
+  -- I-term relax type of the PID profile, as the FC held them when the flight
+  -- was captured (shortly after the disarm, see tasks/tune_history.lua).
   {"cyclic_polar", "polar", "%d"}, {"cyclic_ring", "ring", "%d"}, {"iterm_relax_type", "relaxType", "%d"},
   {"ff_count", "ffCount", "%d"}, {"ff_gain", "ffGain", "%.3f"}, {"ff_corr", "ffCorr", "%.3f"},
   {"ff_lag_ms", "ffLagMs", "%d"},

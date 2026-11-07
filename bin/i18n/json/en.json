@@ -7573,7 +7573,8 @@
           "translation": "It turns %d%% faster at low collective than at high.",
           "needs_translation": false,
           "max_length": 52
-        },        "why_polar": {
+        },
+        "why_polar": {
           "english": "Polar cyclic: roll follows the Cyclic rates",
           "translation": "Polar cyclic: roll follows the Cyclic rates",
           "needs_translation": false,
@@ -7585,7 +7586,12 @@
           "needs_translation": false,
           "max_length": 46
         },
-
+        "why_ring_fmt": {
+          "english": "Cyclic ring at %d%% caps the rate asked.",
+          "translation": "Cyclic ring at %d%% caps the rate asked.",
+          "needs_translation": false,
+          "max_length": 46
+        },
         "why_relax": {
           "english": "After a stop, the I-term pushes the heli back.",
           "translation": "After a stop, the I-term pushes the heli back.",

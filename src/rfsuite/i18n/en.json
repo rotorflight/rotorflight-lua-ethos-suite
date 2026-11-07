@@ -11072,6 +11072,12 @@
           "needs_translation": false,
           "translation": "I-term relax does not act on this axis"
         },
+        "why_ring_fmt": {
+          "english": "Cyclic ring at %d%% caps the rate asked.",
+          "max_length": 46,
+          "needs_translation": false,
+          "translation": "Cyclic ring at %d%% caps the rate asked."
+        },
         "why_shake_fmt": {
           "english": "Shakes %d deg/s at centre stick. Less P calms it.",
           "max_length": 49,
