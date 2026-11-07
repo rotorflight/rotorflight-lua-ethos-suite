@@ -117,7 +117,9 @@ older flights out.
 > [!NOTE] After an update
 > The flight history file gains three columns (Cyclic polarity, Cyclic ring, I-term Relax type). The page does not
 > read a history with the old columns, so its flights are not shown after the update. The file is replaced at the
-> next saved flight. Flights saved before the update are not kept. Each change written is added to `changes.csv` beside the flight history (date, axis, setting,
+> next saved flight. Flights saved before the update are not kept.
+
+Each change written is added to `changes.csv` beside the flight history (date, axis, setting,
 old value, new value, PID profile), so you can always see what the advisor changed and set it back by hand. *Clear*
 does not erase it.
 
