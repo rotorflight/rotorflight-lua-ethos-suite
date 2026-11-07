@@ -56,7 +56,7 @@ form = {
 }
 
 local queue, subs = {}, {}
-local saveEnabled, toolEnabled, onSave = nil, nil, nil
+local saveEnabled, toolEnabled, onSave, onTool = nil, nil, nil, nil
 local logged = {}
 local cache = {
   ["lib/bus.lua"] = {
@@ -65,7 +65,7 @@ local cache = {
     unsubscribe = function() end,
   },
   ["app/header.lua"] = {build = function(_, o)
-    onSave = o.onSave
+    onSave, onTool = o.onSave, o.onTool
     return {setSaveEnabled = function(e) saveEnabled = e end,
       setToolEnabled = function(e) toolEnabled = e end, focusMenu = function() end,
       focusReload = function() end}
@@ -473,6 +473,37 @@ do
   check("no 0/5 flight count is shown", text:find("tune_advisor.data_flights_fmt)@", 1, true) == nil, text)
   check("no too-little-data response is given", text:find("tune_advisor.resp_more_fmt)@", 1, true) == nil, text)
   check("Save stays disabled", saveEnabled == false)
+  noFlights = false
+end
+
+print("Erasing the saved flights on the open page drops the advice and the pending changes")
+do
+  resetFc()
+  openPage()
+  pump()
+  local function paintText()
+    local shown = {}
+    lcd.drawText = function(_, _, text) shown[#shown + 1] = tostring(text) end
+    paintFn()
+    lcd.drawText = nil
+    return table.concat(shown, "\n")
+  end
+  -- The fixture gives advice with a change to write: the test starts from that state
+  check("before the erase, the advice has a change to save", saveEnabled == true and paintText():find("tune_advisor.act_f_fmt)@", 1, true) ~= nil)
+
+  -- The erase: the saved flights go, then the page reloads them (no flights left)
+  local erased = false
+  tuneHistory.erase = function() erased = true; noFlights = true end
+  onTool()
+  local confirm = dialogs[#dialogs]
+  confirm.buttons[1].action()
+  pump()
+  check("the erase reached the saved flights", erased)
+
+  local text = paintText()
+  check("no advice is left on the page", text:find("tune_advisor.act_f_fmt)@", 1, true) == nil, text)
+  check("the page says no flight is saved", text:find("tune_advisor.no_flight)@", 1, true) ~= nil, text)
+  check("Save is disabled, nothing is left to write", saveEnabled == false)
   noFlights = false
 end
 
