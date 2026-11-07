@@ -18,8 +18,9 @@ Relax Cutoff or the rates on that axis is left out, because the advice is worked
 now. A useful set is about ten seconds of rolls, flips and pirouettes with the stick centred after each one,
 which one flight may or may not give.
 
-Each time you disarm, the background task reads all three axes from the flight controller, saves them as one
-flight, then clears the flight controller so the next flight is measured on its own. This happens whether or not
+Each time you disarm, the background task reads all three axes from the flight controller, and the settings the
+measurements do not carry (Cyclic polarity and ring, I-term Relax type), saves them as one flight, then clears the
+flight controller so the next flight is measured on its own. This happens whether or not
 this page is open. It starts 5 seconds after the disarm and takes about 10 seconds, with pauses between the reads
 so telemetry sensors keep updating meanwhile. If the link drops the reading three times, the radio tries again at
 the next disarm; the flight controller keeps the measurements until then. After a reconnect, the radio reads the
@@ -72,9 +73,15 @@ The suggestions follow these rules:
   changes F by at most 20%. With Actual, Quick and Rotorflight rates the page gives the exact rate values;
   with the other rate types it gives a percentage. An axis with F set to 0 (often the tail) gets no F advice.
 - **Full stick asks for more rate than the heli reaches** (roll and pitch), with the cyclic at its limit: lower
-  the rates toward what the heli reaches, by at most 20% per step.
+  the rates toward what the heli reaches, by at most 20% per step. The rate the cyclic asks for is capped by the
+  *Cyclic ring* when it is below 100%, so a ring of 50% asks for half the curve. A ring of 0% is no limit. When the
+  ring caps the rate, the page says so.
+- **Polar cyclic on**: roll then follows the *Cyclic* rates, not its own, so the page gives roll no rate or F advice
+  and says so. Pitch is unchanged. With F set, roll's stops get neither the F advice nor a P step there; the page says why.
 - **Stops bounce back 12% or more**: if the I-term pushes back, lower *Advanced > PID Controller > Iterm Relax
-  Cutoff* by 20%. If F does not match yet, fix F first. Otherwise raise P by 20% (or add B).
+  Cutoff* by 20%, but only on an axis I-term relax acts on. With relax *Off* no axis is covered, and with *RP*
+  yaw is not; the page says so and gives no cut-off advice there. If F does not match yet, fix F first. Otherwise
+  raise P by 20% (or add B).
   The page raises P to at most 50% above your own P, which allows two steps. Your own P is the last one you
   set by hand: the page works it out from `changes.csv` (see below), and setting P by hand starts the count again. If stops still bounce back after that, the reasons say "P is already ...% above your
   setting. Check the mechanics." More P will not fix it.
@@ -89,7 +96,8 @@ The suggestions follow these rules:
 1. **Reading current settings**: reads PIDs, PID Controller and Rates from the flight controller. A failed or short
    read stops here and nothing is changed.
 2. It checks that the flight controller still holds the tune these flights were flown with: the same PID and rate
-   profile, and the same P, F, B, Iterm Relax Cutoff, rate type and rates on that axis. If anything differs (you
+   profile, and the same P, F, B, Iterm Relax Cutoff, rate type and rates on that axis, and the same Cyclic polarity,
+   Cyclic ring and I-term Relax type. If anything differs (you
    changed it by hand, switched profile, or already applied this advice), it stops and nothing is changed: fly
    again on the current settings. It also stops if a new value is out of range or the heli is armed.
 3. **Writing changes**: writes only the settings that change; every other setting is written back as it was read.
@@ -104,7 +112,14 @@ If writing fails, nothing is saved and restarting the flight controller undoes a
 read-back does not confirm the change, check the values on *PIDs*, *Rates* and *PID Controller*.
 
 The saved flights are kept. The next flight is on the new tune, so the page starts again from it and leaves the
-older flights out. Each change written is added to `changes.csv` beside the flight history (date, axis, setting,
+older flights out.
+
+> [!NOTE] After an update
+> The flight history file gains three columns (Cyclic polarity, Cyclic ring, I-term Relax type). The page does not
+> read a history with the old columns, so its flights are not shown after the update. The file is replaced at the
+> next saved flight. Flights saved before the update are not kept.
+
+Each change written is added to `changes.csv` beside the flight history (date, axis, setting,
 old value, new value, PID profile), so you can always see what the advisor changed and set it back by hand. *Clear*
 does not erase it.
 
