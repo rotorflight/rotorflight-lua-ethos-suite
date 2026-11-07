@@ -27,8 +27,10 @@ Greyed out until the flight controller answers. Read-only while the model is arm
 - **Save preserves sensor slots this page does not manage.** The flight
   controller has 40 telemetry slots. Any slot holding a sensor the page has no
   switch for — a native CRSF sensor, for instance — keeps its sensor *and its
-  position* when you save, instead of being cleared. Ticked switches are
-  written into the remaining slots in page order.
+  position* when you save, instead of being cleared.
+- **A sensor that stays ticked keeps its slot.** Saving does not reorder the
+  sensors you already have. A switch you turn off frees its slot, and a newly
+  ticked switch takes the first free slot.
 - **A maximum of 40 sensors can be active in total**, counting the preserved
   slots. If your switches plus the preserved ones would exceed 40, the switch
   that would go over is refused when you tap it, with a dialog that says so.
