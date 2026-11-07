@@ -25,15 +25,17 @@
 --   (often the tail) gets no F advice: its PID gains set the response.
 -- - Full stick (roll and pitch): cyclic saturated and the rate reached well
 --   below the rate asked, so the rate is lowered toward what the heli
---   reaches, again at most FF_STEP_MAX per step.
+--   reaches, again at most FF_STEP_MAX per step. The rate asked is capped by
+--   the cyclic ring (below 100%). With polar cyclic on, roll follows the
+--   Cyclic rates, so roll gets no rate or F advice (issue #2639, #2640).
 -- - |Collective| spread is shown as a fact, last, when there is room.
 -- - Shake: the heli oscillates with the stick centred, usually P too high.
 --   Less P, and nothing else on that axis: an oscillation also reads as
 --   bounce-back after every stop and spoils the F match, so the rules below
 --   would otherwise ask for more P and make it worse.
 -- - Stick releases: the rebound after a stop. I-term pushing back points at
---   a lower Iterm Relax Cutoff; with F still off, F comes first; otherwise
---   more P (or B).
+--   a lower Iterm Relax Cutoff, but only on an axis I-term relax acts on
+--   (issue #2642); with F still off, F comes first; otherwise more P (or B).
 -- - P is never raised past P_RAISE_MAX times the pilot's own P (the value
 --   before this page's own P changes, from changes.csv): when stops still
 --   bounce back after that, more P is not the answer.
@@ -129,6 +131,8 @@ local T = {
   whyCollHighFmt = "@i18n(app.modules.tune_advisor.why_coll_high_fmt)@",
   whyCollLowFmt = "@i18n(app.modules.tune_advisor.why_coll_low_fmt)@",
   whyRelax = "@i18n(app.modules.tune_advisor.why_relax)@",
+  whyPolar = "@i18n(app.modules.tune_advisor.why_polar)@",
+  whyReliefOff = "@i18n(app.modules.tune_advisor.why_relief_off)@",
   whyFixFFmt = "@i18n(app.modules.tune_advisor.why_fix_f_fmt)@",
   whyBrakeFmt = "@i18n(app.modules.tune_advisor.why_brake_fmt)@",
   whyShakeFmt = "@i18n(app.modules.tune_advisor.why_shake_fmt)@",
@@ -238,6 +242,9 @@ local IS_SIM = system.getVersion().simulation == true
 -- name (lib/msp_rc_tuning.lua calls the srate column rates_N)
 local function fcField(key, axis)
   if key == "relaxCutoff" then return "profile", "iterm_relax_cutoff_" .. (axis - 1) end
+  if key == "relaxType" then return "profile", "iterm_relax_type" end
+  if key == "polar" then return "rates", "cyclic_polarity" end
+  if key == "ring" then return "rates", "cyclic_ring" end
   if key == "ratesType" then return "rates", "rates_type" end
   if key == "rcRate" then return "rates", "rcRates_" .. axis end
   if key == "sRate" then return "rates", "rates_" .. axis end
@@ -364,6 +371,12 @@ local function advise(a, axis, name, pilotP, actions, whys, changes)
   end
 
   local shaking = a.shakeCount >= SHAKE_MIN_COUNT and a.shakeRms >= SHAKE_RMS
+  -- Polar cyclic: roll follows the Cyclic rates, so roll's own rate bytes are
+  -- not what the FC uses (issue #2639). No roll rate or F advice then.
+  local polarRoll = axis == AXIS_ROLL and a.polar == 1
+  -- I-term relax acts only on the axes its type names (issue #2642): RP is
+  -- roll and pitch, RPY all three, OFF none.
+  local reliefCovers = a.relaxType == 2 or (a.relaxType == 1 and axis ~= AXIS_YAW)
 
   -- Response: feed-forward match
   local response
@@ -380,6 +393,8 @@ local function advise(a, axis, name, pilotP, actions, whys, changes)
     response = string.format(hot and T.respFastFmt or T.respSlowFmt, round(math.abs(g - 1) * 100))
     if shaking then
       -- The shake comes first: see Stops
+    elseif polarRoll then
+      why(T.whyPolar)
     elseif a.F > 0 then
       local newF = round(a.F * clamp(1 / g, 1 - FF_STEP_MAX, 1 + FF_STEP_MAX))
       -- Keep the stick feel: F x rate is what the pilot feels. F is applied
@@ -404,14 +419,22 @@ local function advise(a, axis, name, pilotP, actions, whys, changes)
   else
     response = T.respOk
     local asked = maxRateAsked(a)
+    -- The FC limits the cyclic setpoint by the cyclic ring too (issue #2640): a
+    -- ring below 100% caps the rate it asks for at that share of the curve.
+    -- Ring 0 is no limit in the firmware.
+    if asked and a.ring > 0 and a.ring < 100 then asked = asked * a.ring / 100 end
     if not shaking and axis ~= AXIS_YAW and asked and a.fullCount >= FULL_MIN_COUNT
         and a.fullSatCount >= FULL_SAT_SHARE * a.fullCount
         and a.fullMaxRate < FULL_REACH * asked and room(rateActionCount(a)) then
-      local k = math.max(a.fullMaxRate / asked, 1 - FF_STEP_MAX)
-      local fits = ratesFit(a, axis, k)
-      if fits then rateActions(a, name, k, act, change) end
-      why(string.format(T.whyFullFmt, asked, a.fullMaxRate))
-      if not fits then atLimit() end
+      if polarRoll then
+        why(T.whyPolar)
+      else
+        local k = math.max(a.fullMaxRate / asked, 1 - FF_STEP_MAX)
+        local fits = ratesFit(a, axis, k)
+        if fits then rateActions(a, name, k, act, change) end
+        why(string.format(T.whyFullFmt, asked, a.fullMaxRate))
+        if not fits then atLimit() end
+      end
     end
   end
 
@@ -436,7 +459,9 @@ local function advise(a, axis, name, pilotP, actions, whys, changes)
     if a.meanRebound >= REBOUND_BAD then
       -- No room for the cutoff only after F and two rate lines; F is off
       -- then, so the next branch says to fix F first.
-      if a.meanIterm >= ITERM_PUSH and a.relaxCutoff > CUTOFF_MIN and room(1) then
+      -- Relax off for this axis: a lower cut-off would change nothing in flight
+      if a.meanIterm >= ITERM_PUSH and not reliefCovers then why(T.whyReliefOff) end
+      if a.meanIterm >= ITERM_PUSH and reliefCovers and a.relaxCutoff > CUTOFF_MIN and room(1) then
         local newCutoff = math.min(round(a.relaxCutoff * CUTOFF_STEP), a.relaxCutoff - 1)
         if inRange("relaxCutoff", axis, newCutoff) then
           change(string.format(T.actRelaxFmt, name, a.relaxCutoff, newCutoff), "relaxCutoff", a.relaxCutoff, newCutoff)

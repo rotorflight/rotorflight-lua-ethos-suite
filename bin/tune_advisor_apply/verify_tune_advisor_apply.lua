@@ -93,6 +93,11 @@ local EEPROM = 250
 -- The saved flights: one flight from the advisor's simulator fixture, whose
 -- tune is the other codecs' fixtures (Actual rates). Roll: F 120 -> 96, and
 -- center sensitivity 18 -> 23 and max rate 24 -> 30.
+-- The settings every flight carries (issues #2639, #2640, #2642): the values the
+-- FC answers with (resetFc). The relax type is the firmware default, RPY, not the
+-- codec fixture's OFF, so the rules above keep their cut-off advice.
+local FC_SETTINGS = {polar = 0, ring = 150, relaxType = 2}
+local flightAxisFields = {}       -- [axis] = fields overriding that axis's flight values
 local flightRatesType = nil       -- overrides the fixture's rates_type when set
 local flightRollShake = nil       -- overrides roll's shake (deg/s) when set
 local flightRoll = nil            -- fields overriding the fixture's roll axis when set
@@ -104,6 +109,8 @@ local function fixtureFlights()
     for i, b in ipairs(m.simulatorResponse) do buf[i] = b end
     m.processReply(nil, buf)
     if flightRatesType then axes[axis].ratesType = flightRatesType end
+    for k, v in pairs(FC_SETTINGS) do axes[axis][k] = v end
+    for k, v in pairs(flightAxisFields[axis] or {}) do axes[axis][k] = v end
     if flightRoll and axis == 1 then
       for k, v in pairs(flightRoll) do axes[axis][k] = v end
     end
@@ -129,6 +136,10 @@ local function resetFc()
     local buf = {}
     for i, b in ipairs(m.simulatorResponse) do buf[i] = b end
     fc[cmd] = codec.decode(buf)
+    if cmd == 111 then
+      fc[cmd].cyclic_polarity, fc[cmd].cyclic_ring = FC_SETTINGS.polar, FC_SETTINGS.ring
+    end
+    if cmd == 94 then fc[cmd].iterm_relax_type = FC_SETTINGS.relaxType end
   end
 end
 
@@ -550,6 +561,100 @@ do
   session.pidProfile = 0
   flightRoll = nil
   changeLog = {}
+end
+
+-- What the page paints: the advice reasons and actions, by their i18n keys
+local function paintText()
+  local shown = {}
+  lcd.drawText = function(_, _, text) shown[#shown + 1] = tostring(text) end
+  paintFn()
+  lcd.drawText = nil
+  return table.concat(shown, "\n")
+end
+
+print("Polar cyclic: roll gets no F advice (issue #2639)")
+do
+  resetFc()
+  flightAxisFields[1] = {polar = 1}
+  openPage()
+  pump()
+  check("no F or rate change is offered on roll", saveEnabled == false)
+  check("the reason names the Cyclic rates", paintText():find("why_polar", 1, true) ~= nil)
+  flightAxisFields[1] = nil
+end
+
+print("Polar cyclic: roll's full-stick rate is not cut (issue #2639)")
+do
+  resetFc()
+  flightAxisFields[1] = {polar = 1}
+  flightRoll = {ffGain = 1.0, fullCount = 200, fullSatCount = 200, fullMaxRate = 100}
+  openPage()
+  pump()
+  -- The base flight still gets a P step from its rebound, so only the rate lines count here
+  local text = paintText()
+  check("the full-stick rate is not cut", text:find("act_rate_fmt", 1, true) == nil
+    and text:find("act_rate_pct", 1, true) == nil, text)
+  check("the reason names the Cyclic rates", paintText():find("why_polar", 1, true) ~= nil)
+  flightAxisFields[1] = nil
+  flightRoll = nil
+end
+
+print("A cyclic ring below 100% caps the rate asked at full stick (issue #2640)")
+do
+  -- Actual rates: the curve asks for 240 deg/s; a 50% ring caps that at 120,
+  -- so 100 deg/s is no shortfall
+  resetFc()
+  flightRoll = {ffGain = 1.0, fullCount = 200, fullSatCount = 200, fullMaxRate = 100, ring = 50}
+  openPage()
+  pump()
+  local text = paintText()
+  check("100 deg/s is not short of the 120 the ring allows", text:find("act_rate_fmt", 1, true) == nil, text)
+  check("no full-stick reason is given", text:find("why_full_fmt", 1, true) == nil, text)
+  -- control: ring 0 is no limit in the firmware, so the same 100 deg/s is a shortfall
+  flightRoll = {ffGain = 1.0, fullCount = 200, fullSatCount = 200, fullMaxRate = 100, ring = 0}
+  openPage()
+  pump()
+  check("with no ring limit the rates are cut", paintText():find("act_rate_fmt", 1, true) ~= nil)
+  flightRoll = nil
+end
+
+print("I-term relax off on an axis: no relax cut-off there (issue #2642)")
+do
+  resetFc()
+  flightAxisFields[1] = {relaxType = 0}   -- OFF: relax acts on no axis
+  flightRoll = {ffGain = 1.0, releases = 20, meanRebound = 0.2, meanIterm = 0.05}
+  openPage()
+  pump()
+  local text = paintText()
+  check("the reason says I-term relax does not act on this axis", text:find("why_relief_off", 1, true) ~= nil, text)
+  check("no relax cut-off is offered", text:find("act_relax_fmt", 1, true) == nil, text)
+  flightAxisFields[1] = nil
+  flightRoll = nil
+end
+
+print("I-term relax on the axis: the cut-off is still offered (issue #2642)")
+do
+  resetFc()
+  flightRoll = {ffGain = 1.0, releases = 20, meanRebound = 0.2, meanIterm = 0.05}
+  openPage()
+  pump()
+  check("the cut-off is offered with relax on RPY", paintText():find("act_relax_fmt", 1, true) ~= nil)
+  flightRoll = nil
+end
+
+print("Apply does not write a flight's advice onto another relax type (issue #2642)")
+do
+  resetFc()
+  flightAxisFields[1] = {relaxType = 1}   -- flown on RP; the FC holds RPY
+  openPage()
+  pump()
+  local before = snapshot()
+  local sent = applyNow()
+  check("nothing is written", changedFields(before) == "" and not has(sent, 202) and not has(sent, EEPROM),
+    table.concat(sent, ","))
+  check("the pilot is told the tune changed", lastMessage():find("tune_advisor.err_changed", 1, true) ~= nil,
+    lastMessage())
+  flightAxisFields[1] = nil
 end
 
 print()

@@ -1,10 +1,12 @@
 -- Tune Advisor capture, owned by the background task.
 --
 -- The FC measures the rate loop while you fly (lib/msp_tune_advisor.lua) but
--- keeps it in RAM. On each disarm this reads all three axes, saves them as
--- one flight (lib/tune_history.lua: the last few flights per aircraft), then
--- clears the FC so the next flight is measured on its own. The Tune Advisor
--- page works from the saved flights, not from the FC.
+-- keeps it in RAM. On each disarm this reads all three axes and the two
+-- settings the statistics do not carry (Cyclic polarity and ring, I-term relax
+-- type: MSP_RC_TUNING and MSP_PID_PROFILE), saves them as one flight
+-- (lib/tune_history.lua: the last few flights per aircraft), then clears the FC
+-- so the next flight is measured on its own. The Tune Advisor page works from
+-- the saved flights, not from the FC.
 --
 -- Event-driven from "session.update", no scheduler job: a capture is armed
 -- by a disarm and runs once the link and aircraft identity are there, so a
@@ -57,7 +59,7 @@ local busy = false                -- a request is out
 local refusedOnFc = false         -- the FC holds a flight this layout refused: no clear, it would erase that flight
 local nextAt = 0                  -- no request before this os.clock()
 local failures = 0                -- link errors since the last disarm
-local capture = {mcuId = nil, modelName = nil, replies = {}}
+local capture = {mcuId = nil, modelName = nil, replies = {}, settings = {}}
 -- The latest session snapshot's fields this task reads, copied rather than
 -- holding on to the snapshot table
 local link = {armed = nil, connected = false, mcuId = nil, mcuIdReady = false, apiVersionSupported = nil, craftName = nil,
@@ -93,6 +95,16 @@ end
 
 local function clearReplies()
   for i = #capture.replies, 1, -1 do capture.replies[i] = nil end
+  for i = #capture.settings, 1, -1 do capture.settings[i] = nil end
+end
+
+-- The settings the statistics do not carry (issues #2639, #2640, #2642) are
+-- read after the three axes and stored on every axis row of the flight; see
+-- lib/tune_history_settings.lua for the two reads.
+local SETTINGS_COUNT = 2
+
+local function captureComplete()
+  return #capture.replies >= tuneAdvisor.AXIS_COUNT and #capture.settings >= SETTINGS_COUNT
 end
 
 local function waitFor(seconds)
@@ -178,13 +190,20 @@ local function sendClear()
 end
 
 local onData
+local onSetting
 
 local function requestAxis(axis)
   busy = true
   bus.publish("msp.request", tuneAdvisor.buildReadMessage(axis, onData, onError))
 end
 
--- All three axes are in: save them as one flight, then clear the FC.
+local function requestSetting(index)
+  busy = true
+  -- Index 1: MSP_RC_TUNING (Cyclic polarity, ring), index 2: MSP_PID_PROFILE (relax type)
+  requireModule("lib/tune_history_settings.lua").request(index, function(data) onSetting(data) end, onError)
+end
+
+-- All three axes and both settings are in: save them as one flight, then clear the FC.
 local function finishCapture()
   local replies = capture.replies
   local mcuId, seconds = capture.mcuId, replies[1].seconds
@@ -196,6 +215,14 @@ local function finishCapture()
       failed()
       return
     end
+  end
+  -- The settings belong to the flight, so every axis row carries them
+  local rc, pid = capture.settings[1], capture.settings[2]
+  for i = 1, #replies do
+    local a = replies[i].a
+    a.polar = rc.cyclic_polarity
+    a.ring = rc.cyclic_ring
+    a.relaxType = pid.iterm_relax_type
   end
   -- 0: no acro flight. Same as last time: the clear after that flight never
   -- got through and nothing new was flown.
@@ -222,10 +249,20 @@ end
 onData = function(data)
   local replies = capture.replies
   replies[#replies + 1] = data
-  if #replies < tuneAdvisor.AXIS_COUNT then
-    waitFor(GAP_SECONDS)
-  else
+  if captureComplete() then
     finishCapture()
+  else
+    waitFor(GAP_SECONDS)
+  end
+  publishState()
+end
+
+onSetting = function(data)
+  capture.settings[#capture.settings + 1] = data
+  if captureComplete() then
+    finishCapture()
+  else
+    waitFor(GAP_SECONDS)
   end
   publishState()
 end
@@ -260,10 +297,12 @@ local function advance()
       capture.mcuId = link.mcuId
       capture.modelName = modelName()
     end
-    if #capture.replies >= tuneAdvisor.AXIS_COUNT then
+    if captureComplete() then
       finishCapture()             -- a save that failed, tried again
-    else
+    elseif #capture.replies < tuneAdvisor.AXIS_COUNT then
       requestAxis(#capture.replies + 1)
+    else
+      requestSetting(#capture.settings + 1)
     end
   elseif not refusedOnFc and clearMcu == link.mcuId then
     -- the clear goes to the FC that holds the saved flight, and only there

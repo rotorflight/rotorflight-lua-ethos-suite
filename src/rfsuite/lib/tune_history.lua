@@ -36,6 +36,10 @@ local BAND_COUNT = 3
 local FIELDS = {
   {"p", "P", "%d"}, {"f", "F", "%d"}, {"b", "B", "%d"}, {"relax_cutoff", "relaxCutoff", "%d"},
   {"rates_type", "ratesType", "%d"}, {"rc_rate", "rcRate", "%d"}, {"s_rate", "sRate", "%d"},
+  -- The settings the firmware does not put in its statistics (issue #2639,
+  -- #2640, #2642): the Cyclic polarity and ring of the rate profile, and the
+  -- I-term relax type of the PID profile, as the FC held them at the flight.
+  {"cyclic_polar", "polar", "%d"}, {"cyclic_ring", "ring", "%d"}, {"iterm_relax_type", "relaxType", "%d"},
   {"ff_count", "ffCount", "%d"}, {"ff_gain", "ffGain", "%.3f"}, {"ff_corr", "ffCorr", "%.3f"},
   {"ff_lag_ms", "ffLagMs", "%d"},
 }
@@ -57,7 +61,7 @@ for _, f in ipairs({
 }) do FIELDS[#FIELDS + 1] = f end
 
 -- The tune a flight was measured with: flights are only combined when these match
-local TUNE_KEYS = {"P", "F", "B", "relaxCutoff", "ratesType", "rcRate", "sRate"}
+local TUNE_KEYS = {"P", "F", "B", "relaxCutoff", "ratesType", "rcRate", "sRate", "polar", "ring", "relaxType"}
 
 local HEADER
 do

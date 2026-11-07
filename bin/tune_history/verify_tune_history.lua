@@ -120,27 +120,38 @@ end
 -- name to {n = times, reason = errorHandler reason}: that many of its sends
 -- fail instead. `limit` stops after that many requests. Returns what was asked,
 -- e.g. "roll,pitch,yaw,clear", and the clock at each request.
+-- The two settings reads (issues #2639, #2640, #2642) are answered too, but are
+-- kept out of that list: they are in lastSettings ("rc,pid"), so the advisor
+-- sequence and its limits read as before.
 local NAMES = {"roll", "pitch", "yaw"}
+local SETTINGS = {[111] = "rc", [94] = "pid"}
+local lastSettings = ""
 local function pump(fail, limit, seconds)
-  local asked, times = {}, {}
+  local asked, times, settings = {}, {}, {}
   local stopAt = clock + (seconds or 30)
   while clock < stopAt and not (limit and #asked >= limit) do
     clock = clock + 0.5
     update({isArmed = false})
     while requests[1] and not (limit and #asked >= limit) do
       local msg = table.remove(requests, 1)
-      local name = msg.command == tuneAdvisor.CLEAR_COMMAND and "clear" or NAMES[msg.payload[1] + 1]
-      asked[#asked + 1] = name
-      times[#times + 1] = clock
-      local f = fail and fail[name]
-      if f and f.n > 0 then
-        f.n = f.n - 1
-        msg.errorHandler(f.reason)
-      else
+      if SETTINGS[msg.command] then
+        settings[#settings + 1] = SETTINGS[msg.command]
         msg.processReply(msg, msg.simulatorResponse)
+      else
+        local name = msg.command == tuneAdvisor.CLEAR_COMMAND and "clear" or NAMES[msg.payload[1] + 1]
+        asked[#asked + 1] = name
+        times[#times + 1] = clock
+        local f = fail and fail[name]
+        if f and f.n > 0 then
+          f.n = f.n - 1
+          msg.errorHandler(f.reason)
+        else
+          msg.processReply(msg, msg.simulatorResponse)
+        end
       end
     end
   end
+  lastSettings = table.concat(settings, ",")
   return table.concat(asked, ","), times
 end
 
@@ -180,6 +191,7 @@ do
   check("nothing is asked straight after the disarm", #requests == 0, #requests .. " requests")
   local asked, times = pump()
   check("a disarm reads roll, pitch and yaw, then clears the FC", asked == "roll,pitch,yaw,clear", asked)
+  check("the cyclic and relax settings are read too, in the same flight", lastSettings == "rc,pid", lastSettings)
   local spaced = times[1] ~= nil and times[1] - disarmedAt >= 5
   for i = 2, #times do spaced = spaced and times[i] - times[i - 1] >= 2 end
   check("the first read waits 5 s, and each request 2 s after the last", spaced,
@@ -192,6 +204,10 @@ do
   local _, commas = r[1]:gsub(",", "")
   local _, rowCommas = r[2]:gsub(",", "")
   check("rows have as many columns as the header", commas == rowCommas, commas .. " vs " .. rowCommas)
+  check("the header names the polar, ring and relax type columns",
+    r[1]:find(",s_rate,cyclic_polar,cyclic_ring,iterm_relax_type,", 1, true) ~= nil, r[1])
+  check("each row holds the settings the FC answered (polar 0, ring 150, relax OFF)",
+    r[2]:find(",0,150,0,", 1, true) ~= nil and r[4]:find(",0,150,0,", 1, true) ~= nil, r[2])
   check("the aircraft is named beside its history", #iniWrites == 1
     and iniWrites[1][1] == "LOGS:/rfsuite/tune/" .. MCU .. "/logs.ini"
     and iniWrites[1][2].model.name == "Wing")
@@ -373,7 +389,10 @@ do
     task.wakeup()
     while requests[1] do
       local msg = table.remove(requests, 1)
-      asked[#asked + 1] = msg.command == tuneAdvisor.CLEAR_COMMAND and "clear" or NAMES[msg.payload[1] + 1]
+      -- the settings reads (no payload) are answered, not counted with the advisor's
+      if msg.payload or msg.command == tuneAdvisor.CLEAR_COMMAND then
+        asked[#asked + 1] = msg.command == tuneAdvisor.CLEAR_COMMAND and "clear" or NAMES[msg.payload[1] + 1]
+      end
       msg.processReply(msg, msg.simulatorResponse)
     end
   end
@@ -453,6 +472,31 @@ do
   asked = pump()
   check("a clear is not sent over a refused flight on the FC", asked == "", asked)
   check("the refused flight is not saved", #lines() == 4, #lines() .. " lines")
+end
+
+-- A settings reply too short for its fields is refused like any other layout the
+-- suite does not know: the flight is not saved, and no clear goes out over it.
+do
+  load()
+  clock = 500
+  update({isArmed = true})
+  update({isArmed = false})
+  local asked = pump(nil, 3)
+  check("(setup) the three axes are read first", asked == "roll,pitch,yaw", asked)
+  -- the next request goes out GAP_SECONDS after the last axis answer
+  local rc
+  for _ = 1, 20 do
+    clock = clock + 0.5
+    update({isArmed = false})
+    if requests[1] then rc = requests[1] break end
+  end
+  check("(setup) the cyclic settings read is queued next", rc ~= nil and rc.command == 111,
+    tostring(rc and rc.command))
+  rc.processReply(rc, {0})
+  drop()
+  local after = pump()
+  check("a short settings reply sends no clear", after == "", after)
+  check("a short settings reply saves no flight", files[HISTORY] == nil, tostring(files[HISTORY]))
 end
 
 -- The page's aggregate

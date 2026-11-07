@@ -12519,12 +12519,24 @@
           "reverse_text": false,
           "translation": "P is already %d%% above your setting. Check the mechanics."
         },
+        "why_polar": {
+          "english": "Polar cyclic: roll follows the Cyclic rates",
+          "max_length": 46,
+          "needs_translation": false,
+          "translation": "Polar-Cyclic: Roll folgt den Cyclic-Raten"
+        },
         "why_relax": {
           "english": "After a stop, the I-term pushes the heli back.",
           "max_length": 46,
           "needs_translation": true,
           "reverse_text": false,
           "translation": "After a stop, the I-term pushes the heli back."
+        },
+        "why_relief_off": {
+          "english": "I-term relax does not act on this axis",
+          "max_length": 46,
+          "needs_translation": false,
+          "translation": "I-Term-Relax wirkt auf diese Achse nicht"
         },
         "why_shake_fmt": {
           "english": "Shakes %d deg/s at centre stick. Less P calms it.",

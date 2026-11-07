@@ -8754,7 +8754,19 @@
           "needs_translation": true,
           "reverse_text": false,
           "max_length": 52
+        },        "why_polar": {
+          "english": "Polar cyclic: roll follows the Cyclic rates",
+          "translation": "Polar-Cyclic: Roll folgt den Cyclic-Raten",
+          "needs_translation": false,
+          "max_length": 46
         },
+        "why_relief_off": {
+          "english": "I-term relax does not act on this axis",
+          "translation": "I-Term-Relax wirkt auf diese Achse nicht",
+          "needs_translation": false,
+          "max_length": 46
+        },
+
         "why_relax": {
           "english": "After a stop, the I-term pushes the heli back.",
           "translation": "After a stop, the I-term pushes the heli back.",
