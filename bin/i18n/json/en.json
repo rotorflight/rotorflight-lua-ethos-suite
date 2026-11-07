@@ -184,13 +184,13 @@
       "english": "The flight controller may already be using the new values. Restart it to use the saved settings.",
       "translation": "The flight controller may already be using the new values. Restart it to use the saved settings.",
       "needs_translation": false,
-      "max_length": 110
+      "max_length": 96
     },
     "btn_restart_fc": {
       "english": "Restart FC",
       "translation": "Restart FC",
       "needs_translation": false,
-      "max_length": 12
+      "max_length": 10
     },
     "msg_save_failed_title": {
       "english": "Save failed",
@@ -1838,7 +1838,7 @@
           "english": "ETHOS Glasses menu",
           "translation": "ETHOS Glasses menu",
           "needs_translation": false,
-          "max_length": 21
+          "max_length": 18
         },
         "activelook_restart_radio": {
           "english": "Save, then restart the radio.",
@@ -1850,7 +1850,7 @@
           "english": "One-time setup:\nModel > Glasses > Screen\nChoose the Full-Screen layout.\nAssign Rotorflight ActiveLook.",
           "translation": "One-time setup:\nModel > Glasses > Screen\nChoose the Full-Screen layout.\nAssign Rotorflight ActiveLook.",
           "needs_translation": false,
-          "max_length": 120
+          "max_length": 102
         },
         "feature_activelook": {
           "english": "Rotorflight ActiveLook",
@@ -3120,7 +3120,7 @@
           "english": "Hold the tail at center so trim changes move it live. Press Save to keep them.",
           "translation": "Hold the tail at center so trim changes move it live. Press Save to keep them.",
           "needs_translation": false,
-          "max_length": 92
+          "max_length": 78
         },
         "tail_tta_off": {
           "english": "Also sets Tail Torque Assist to 0 in every profile.",
@@ -6849,6 +6849,358 @@
           "max_length": 9,
           "needs_translation": false,
           "translation": "ESC Prog."
+        },
+        "opt": {
+          "low": {
+            "english": "Low",
+            "translation": "Low",
+            "needs_translation": false,
+            "max_length": 3,
+            "reverse_text": false
+          },
+          "medium": {
+            "english": "Medium",
+            "translation": "Medium",
+            "needs_translation": false,
+            "max_length": 6,
+            "reverse_text": false
+          },
+          "high": {
+            "english": "High",
+            "translation": "High",
+            "needs_translation": false,
+            "max_length": 4,
+            "reverse_text": false
+          },
+          "medium_low": {
+            "english": "Medium Low",
+            "translation": "Medium Low",
+            "needs_translation": false,
+            "max_length": 10,
+            "reverse_text": false
+          },
+          "medium_high": {
+            "english": "Medium High",
+            "translation": "Medium High",
+            "needs_translation": false,
+            "max_length": 11,
+            "reverse_text": false
+          },
+          "slow": {
+            "english": "Slow",
+            "translation": "Slow",
+            "needs_translation": false,
+            "max_length": 4,
+            "reverse_text": false
+          },
+          "fast": {
+            "english": "Fast",
+            "translation": "Fast",
+            "needs_translation": false,
+            "max_length": 4,
+            "reverse_text": false
+          },
+          "very_slow": {
+            "english": "Very Slow",
+            "translation": "Very Slow",
+            "needs_translation": false,
+            "max_length": 9,
+            "reverse_text": false
+          },
+          "soft": {
+            "english": "Soft",
+            "translation": "Soft",
+            "needs_translation": false,
+            "max_length": 4,
+            "reverse_text": false
+          },
+          "hard": {
+            "english": "Hard",
+            "translation": "Hard",
+            "needs_translation": false,
+            "max_length": 4,
+            "reverse_text": false
+          },
+          "enabled": {
+            "english": "Enabled",
+            "translation": "Enabled",
+            "needs_translation": false,
+            "max_length": 7,
+            "reverse_text": false
+          },
+          "automatic": {
+            "english": "Automatic",
+            "translation": "Automatic",
+            "needs_translation": false,
+            "max_length": 9,
+            "reverse_text": false
+          },
+          "always_on": {
+            "english": "Always On",
+            "translation": "Always On",
+            "needs_translation": false,
+            "max_length": 9,
+            "reverse_text": false
+          },
+          "always_off": {
+            "english": "Always Off",
+            "translation": "Always Off",
+            "needs_translation": false,
+            "max_length": 10,
+            "reverse_text": false
+          },
+          "dynamic": {
+            "english": "Dynamic",
+            "translation": "Dynamic",
+            "needs_translation": false,
+            "max_length": 7,
+            "reverse_text": false
+          },
+          "not_during_startup": {
+            "english": "Not during startup",
+            "translation": "Not during startup",
+            "needs_translation": false,
+            "max_length": 18,
+            "reverse_text": false
+          },
+          "linear_thr": {
+            "english": "Linear Thr",
+            "translation": "Linear Thr",
+            "needs_translation": false,
+            "max_length": 10,
+            "reverse_text": false
+          },
+          "fixed_wing": {
+            "english": "Fixed Wing",
+            "translation": "Fixed Wing",
+            "needs_translation": false,
+            "max_length": 10,
+            "reverse_text": false
+          },
+          "proportional": {
+            "english": "Proportional",
+            "translation": "Proportional",
+            "needs_translation": false,
+            "max_length": 12,
+            "reverse_text": false
+          },
+          "airplane": {
+            "english": "Airplane",
+            "translation": "Airplane",
+            "needs_translation": false,
+            "max_length": 8,
+            "reverse_text": false
+          },
+          "boat": {
+            "english": "Boat",
+            "translation": "Boat",
+            "needs_translation": false,
+            "max_length": 4,
+            "reverse_text": false
+          },
+          "quad": {
+            "english": "Quad",
+            "translation": "Quad",
+            "needs_translation": false,
+            "max_length": 4,
+            "reverse_text": false
+          },
+          "glider": {
+            "english": "Glider",
+            "translation": "Glider",
+            "needs_translation": false,
+            "max_length": 6,
+            "reverse_text": false
+          },
+          "slowdown": {
+            "english": "Slowdown",
+            "translation": "Slowdown",
+            "needs_translation": false,
+            "max_length": 8,
+            "reverse_text": false
+          },
+          "cutoff": {
+            "english": "Cutoff",
+            "translation": "Cutoff",
+            "needs_translation": false,
+            "max_length": 6,
+            "reverse_text": false
+          },
+          "freewheel": {
+            "english": "Freew.",
+            "translation": "Freew.",
+            "needs_translation": false,
+            "max_length": 6,
+            "reverse_text": false
+          },
+          "unused": {
+            "english": "Unused",
+            "translation": "Unused",
+            "needs_translation": false,
+            "max_length": 6,
+            "reverse_text": false
+          },
+          "infinite": {
+            "english": "Infinite",
+            "translation": "Infinite",
+            "needs_translation": false,
+            "max_length": 8,
+            "reverse_text": false
+          },
+          "minutes_1": {
+            "english": "1 minute",
+            "translation": "1 minute",
+            "needs_translation": false,
+            "max_length": 8,
+            "reverse_text": false
+          },
+          "minutes_2": {
+            "english": "2 minutes",
+            "translation": "2 minutes",
+            "needs_translation": false,
+            "max_length": 9,
+            "reverse_text": false
+          },
+          "minutes_5": {
+            "english": "5 minutes",
+            "translation": "5 minutes",
+            "needs_translation": false,
+            "max_length": 9,
+            "reverse_text": false
+          },
+          "minutes_10": {
+            "english": "10 minutes",
+            "translation": "10 minutes",
+            "needs_translation": false,
+            "max_length": 10,
+            "reverse_text": false
+          },
+          "auto_norm": {
+            "english": "Auto Norm",
+            "translation": "Auto Norm",
+            "needs_translation": false,
+            "max_length": 9,
+            "reverse_text": false
+          },
+          "auto_eff": {
+            "english": "Auto Eff",
+            "translation": "Auto Eff",
+            "needs_translation": false,
+            "max_length": 8,
+            "reverse_text": false
+          },
+          "auto_power": {
+            "english": "Auto Power",
+            "translation": "Auto Power",
+            "needs_translation": false,
+            "max_length": 10,
+            "reverse_text": false
+          },
+          "auto_extr": {
+            "english": "Auto Extr",
+            "translation": "Auto Extr",
+            "needs_translation": false,
+            "max_length": 9,
+            "reverse_text": false
+          },
+          "bidirectional_rev": {
+            "english": "Bidirectional Rev",
+            "translation": "Bidirectional Rev",
+            "needs_translation": false,
+            "max_length": 17,
+            "reverse_text": false
+          },
+          "x13_less_protection": {
+            "english": "13x (Less protection)",
+            "translation": "13x (Less protection)",
+            "needs_translation": false,
+            "max_length": 21,
+            "reverse_text": false
+          },
+          "red": {
+            "english": "Red",
+            "translation": "Red",
+            "needs_translation": false,
+            "max_length": 3,
+            "reverse_text": false
+          },
+          "yellow": {
+            "english": "Yellow",
+            "translation": "Yellow",
+            "needs_translation": false,
+            "max_length": 6,
+            "reverse_text": false
+          },
+          "orange": {
+            "english": "Orange",
+            "translation": "Orange",
+            "needs_translation": false,
+            "max_length": 6,
+            "reverse_text": false
+          },
+          "green": {
+            "english": "Green",
+            "translation": "Green",
+            "needs_translation": false,
+            "max_length": 5,
+            "reverse_text": false
+          },
+          "jade_green": {
+            "english": "Jade Green",
+            "translation": "Jade Green",
+            "needs_translation": false,
+            "max_length": 10,
+            "reverse_text": false
+          },
+          "blue": {
+            "english": "Blue",
+            "translation": "Blue",
+            "needs_translation": false,
+            "max_length": 4,
+            "reverse_text": false
+          },
+          "cyan": {
+            "english": "Cyan",
+            "translation": "Cyan",
+            "needs_translation": false,
+            "max_length": 4,
+            "reverse_text": false
+          },
+          "purple": {
+            "english": "Purple",
+            "translation": "Purple",
+            "needs_translation": false,
+            "max_length": 6,
+            "reverse_text": false
+          },
+          "pink": {
+            "english": "Pink",
+            "translation": "Pink",
+            "needs_translation": false,
+            "max_length": 4,
+            "reverse_text": false
+          },
+          "white": {
+            "english": "White",
+            "translation": "White",
+            "needs_translation": false,
+            "max_length": 5,
+            "reverse_text": false
+          },
+          "selecting_fmt": {
+            "english": "Selecting %s...",
+            "translation": "Selecting %s...",
+            "needs_translation": false,
+            "max_length": 15,
+            "reverse_text": false
+          },
+          "x1_more_protection": {
+            "english": "1x (More protection)",
+            "translation": "1x (More protection)",
+            "needs_translation": false,
+            "max_length": 20,
+            "reverse_text": false
+          }
         }
       },
       "msp_exp": {
@@ -7304,7 +7656,7 @@
           "english": "Saved to the flight controller. The change record was not written.",
           "translation": "Saved to the flight controller. The change record was not written.",
           "needs_translation": false,
-          "max_length": 72
+          "max_length": 66
         },
         "stage_read": {
           "english": "Reading current settings...",
@@ -9300,7 +9652,7 @@
           "english": "With the battery still unplugged and the flight controller on USB, press Full throttle. The output stays at 100 % until you press Low throttle.",
           "translation": "With the battery still unplugged and the flight controller on USB, press Full throttle. The output stays at 100 % until you press Low throttle.",
           "needs_translation": false,
-          "max_length": 131,
+          "max_length": 143,
           "reverse_text": false
         },
         "esc_batt_text": {
@@ -9377,25 +9729,25 @@
           "english": "Set over the ESC link",
           "translation": "Set over the ESC link",
           "needs_translation": false,
-          "max_length": 24
+          "max_length": 21
         },
         "esc_link_busy": {
           "english": "Setting the range on the ESC...",
           "translation": "Setting the range on the ESC...",
           "needs_translation": false,
-          "max_length": 40
+          "max_length": 31
         },
         "esc_link_done": {
           "english": "Range set on the ESC and the FC.",
           "translation": "Range set on the ESC and the FC.",
           "needs_translation": false,
-          "max_length": 40
+          "max_length": 32
         },
         "esc_link_failed": {
           "english": "The ESC link did not confirm the range.",
           "translation": "The ESC link did not confirm the range.",
           "needs_translation": false,
-          "max_length": 50
+          "max_length": 39
         },
         "esc_need_calib": {
           "english": "Calibrate the ESC first.",

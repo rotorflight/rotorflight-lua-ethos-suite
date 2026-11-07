@@ -302,7 +302,7 @@
     },
     "btn_restart_fc": {
       "english": "Restart FC",
-      "max_length": 12,
+      "max_length": 10,
       "needs_translation": true,
       "translation": "Restart FC"
     },
@@ -4013,6 +4013,358 @@
           "reverse_text": false,
           "translation": "Open"
         },
+        "opt": {
+          "airplane": {
+            "english": "Airplane",
+            "max_length": 8,
+            "needs_translation": false,
+            "reverse_text": false,
+            "translation": "Fly"
+          },
+          "always_off": {
+            "english": "Always Off",
+            "max_length": 10,
+            "needs_translation": false,
+            "reverse_text": false,
+            "translation": "Alltid av"
+          },
+          "always_on": {
+            "english": "Always On",
+            "max_length": 9,
+            "needs_translation": false,
+            "reverse_text": false,
+            "translation": "Alltid på"
+          },
+          "auto_eff": {
+            "english": "Auto Eff",
+            "max_length": 8,
+            "needs_translation": false,
+            "reverse_text": false,
+            "translation": "Auto effektiv"
+          },
+          "auto_extr": {
+            "english": "Auto Extr",
+            "max_length": 9,
+            "needs_translation": false,
+            "reverse_text": false,
+            "translation": "Auto ekstrem"
+          },
+          "auto_norm": {
+            "english": "Auto Norm",
+            "max_length": 9,
+            "needs_translation": false,
+            "reverse_text": false,
+            "translation": "Auto normal"
+          },
+          "auto_power": {
+            "english": "Auto Power",
+            "max_length": 10,
+            "needs_translation": false,
+            "reverse_text": false,
+            "translation": "Auto effekt"
+          },
+          "automatic": {
+            "english": "Automatic",
+            "max_length": 9,
+            "needs_translation": false,
+            "reverse_text": false,
+            "translation": "Automatisk"
+          },
+          "bidirectional_rev": {
+            "english": "Bidirectional Rev",
+            "max_length": 17,
+            "needs_translation": false,
+            "reverse_text": false,
+            "translation": "Bidireksjonal rev."
+          },
+          "blue": {
+            "english": "Blue",
+            "max_length": 4,
+            "needs_translation": false,
+            "reverse_text": false,
+            "translation": "Blå"
+          },
+          "boat": {
+            "english": "Boat",
+            "max_length": 4,
+            "needs_translation": false,
+            "reverse_text": false,
+            "translation": "Båt"
+          },
+          "cutoff": {
+            "english": "Cutoff",
+            "max_length": 6,
+            "needs_translation": false,
+            "reverse_text": false,
+            "translation": "Avstengning"
+          },
+          "cyan": {
+            "english": "Cyan",
+            "max_length": 4,
+            "needs_translation": false,
+            "reverse_text": false,
+            "translation": "Cyan"
+          },
+          "dynamic": {
+            "english": "Dynamic",
+            "max_length": 7,
+            "needs_translation": false,
+            "reverse_text": false,
+            "translation": "Dynamisk"
+          },
+          "enabled": {
+            "english": "Enabled",
+            "max_length": 7,
+            "needs_translation": false,
+            "reverse_text": false,
+            "translation": "Aktivert"
+          },
+          "fast": {
+            "english": "Fast",
+            "max_length": 4,
+            "needs_translation": false,
+            "reverse_text": false,
+            "translation": "Raskt"
+          },
+          "fixed_wing": {
+            "english": "Fixed Wing",
+            "max_length": 10,
+            "needs_translation": false,
+            "reverse_text": false,
+            "translation": "Fastvinge"
+          },
+          "freewheel": {
+            "english": "Freew.",
+            "max_length": 6,
+            "needs_translation": false,
+            "reverse_text": false,
+            "translation": "Frilauf"
+          },
+          "glider": {
+            "english": "Glider",
+            "max_length": 6,
+            "needs_translation": false,
+            "reverse_text": false,
+            "translation": "Seilfly"
+          },
+          "green": {
+            "english": "Green",
+            "max_length": 5,
+            "needs_translation": false,
+            "reverse_text": false,
+            "translation": "Grønn"
+          },
+          "hard": {
+            "english": "Hard",
+            "max_length": 4,
+            "needs_translation": false,
+            "reverse_text": false,
+            "translation": "Hard"
+          },
+          "high": {
+            "english": "High",
+            "max_length": 4,
+            "needs_translation": false,
+            "reverse_text": false,
+            "translation": "Høy"
+          },
+          "infinite": {
+            "english": "Infinite",
+            "max_length": 8,
+            "needs_translation": false,
+            "reverse_text": false,
+            "translation": "Uendelig"
+          },
+          "jade_green": {
+            "english": "Jade Green",
+            "max_length": 10,
+            "needs_translation": false,
+            "reverse_text": false,
+            "translation": "Jadegrønn"
+          },
+          "linear_thr": {
+            "english": "Linear Thr",
+            "max_length": 10,
+            "needs_translation": false,
+            "reverse_text": false,
+            "translation": "Lineær gass"
+          },
+          "low": {
+            "english": "Low",
+            "max_length": 3,
+            "needs_translation": false,
+            "reverse_text": false,
+            "translation": "Lav"
+          },
+          "medium": {
+            "english": "Medium",
+            "max_length": 6,
+            "needs_translation": false,
+            "reverse_text": false,
+            "translation": "Middels"
+          },
+          "medium_high": {
+            "english": "Medium High",
+            "max_length": 11,
+            "needs_translation": false,
+            "reverse_text": false,
+            "translation": "Middels-høy"
+          },
+          "medium_low": {
+            "english": "Medium Low",
+            "max_length": 10,
+            "needs_translation": false,
+            "reverse_text": false,
+            "translation": "Middels-lav"
+          },
+          "minutes_1": {
+            "english": "1 minute",
+            "max_length": 8,
+            "needs_translation": false,
+            "reverse_text": false,
+            "translation": "1 minutt"
+          },
+          "minutes_10": {
+            "english": "10 minutes",
+            "max_length": 10,
+            "needs_translation": false,
+            "reverse_text": false,
+            "translation": "10 minutter"
+          },
+          "minutes_2": {
+            "english": "2 minutes",
+            "max_length": 9,
+            "needs_translation": false,
+            "reverse_text": false,
+            "translation": "2 minutter"
+          },
+          "minutes_5": {
+            "english": "5 minutes",
+            "max_length": 9,
+            "needs_translation": false,
+            "reverse_text": false,
+            "translation": "5 minutter"
+          },
+          "not_during_startup": {
+            "english": "Not during startup",
+            "max_length": 18,
+            "needs_translation": false,
+            "reverse_text": false,
+            "translation": "Ikke under oppstart"
+          },
+          "orange": {
+            "english": "Orange",
+            "max_length": 6,
+            "needs_translation": false,
+            "reverse_text": false,
+            "translation": "Oransje"
+          },
+          "pink": {
+            "english": "Pink",
+            "max_length": 4,
+            "needs_translation": false,
+            "reverse_text": false,
+            "translation": "Rosa"
+          },
+          "proportional": {
+            "english": "Proportional",
+            "max_length": 12,
+            "needs_translation": false,
+            "reverse_text": false,
+            "translation": "Proporsjonal"
+          },
+          "purple": {
+            "english": "Purple",
+            "max_length": 6,
+            "needs_translation": false,
+            "reverse_text": false,
+            "translation": "Lilla"
+          },
+          "quad": {
+            "english": "Quad",
+            "max_length": 4,
+            "needs_translation": false,
+            "reverse_text": false,
+            "translation": "Quadkopter"
+          },
+          "red": {
+            "english": "Red",
+            "max_length": 3,
+            "needs_translation": false,
+            "reverse_text": false,
+            "translation": "Rød"
+          },
+          "selecting_fmt": {
+            "english": "Selecting %s...",
+            "max_length": 15,
+            "needs_translation": false,
+            "reverse_text": false,
+            "translation": "Velger %s..."
+          },
+          "slow": {
+            "english": "Slow",
+            "max_length": 4,
+            "needs_translation": false,
+            "reverse_text": false,
+            "translation": "Sakte"
+          },
+          "slowdown": {
+            "english": "Slowdown",
+            "max_length": 8,
+            "needs_translation": false,
+            "reverse_text": false,
+            "translation": "Senking"
+          },
+          "soft": {
+            "english": "Soft",
+            "max_length": 4,
+            "needs_translation": false,
+            "reverse_text": false,
+            "translation": "Myk"
+          },
+          "unused": {
+            "english": "Unused",
+            "max_length": 6,
+            "needs_translation": false,
+            "reverse_text": false,
+            "translation": "Ubrukt"
+          },
+          "very_slow": {
+            "english": "Very Slow",
+            "max_length": 9,
+            "needs_translation": false,
+            "reverse_text": false,
+            "translation": "Veldig sakte"
+          },
+          "white": {
+            "english": "White",
+            "max_length": 5,
+            "needs_translation": false,
+            "reverse_text": false,
+            "translation": "Hvit"
+          },
+          "x13_less_protection": {
+            "english": "13x (Less protection)",
+            "max_length": 21,
+            "needs_translation": false,
+            "reverse_text": false,
+            "translation": "13x (mindre beskyttelse)"
+          },
+          "x1_more_protection": {
+            "english": "1x (More protection)",
+            "max_length": 20,
+            "needs_translation": false,
+            "reverse_text": false,
+            "translation": "1x (mer beskyttelse)"
+          },
+          "yellow": {
+            "english": "Yellow",
+            "max_length": 6,
+            "needs_translation": false,
+            "reverse_text": false,
+            "translation": "Gul"
+          }
+        },
         "select_esc": {
           "english": "Select ESC",
           "max_length": 10,
@@ -5258,7 +5610,7 @@
         },
         "tail_override_msg": {
           "english": "Hold the tail at center so trim changes move it live. Press Save to keep them.",
-          "max_length": 92,
+          "max_length": 78,
           "needs_translation": false,
           "reverse_text": false,
           "translation": "Holder halen i midten så trim flytter den direkte. Trykk Lagre for å beholde endringene."
@@ -7054,7 +7406,7 @@
         },
         "activelook_glasses_menu": {
           "english": "ETHOS Glasses menu",
-          "max_length": 21,
+          "max_length": 18,
           "needs_translation": false,
           "translation": "ETHOS-brillemeny"
         },
@@ -7144,7 +7496,7 @@
         },
         "activelook_restart_radio": {
           "english": "Save, then restart the radio.",
-          "max_length": 41,
+          "max_length": 29,
           "needs_translation": false,
           "translation": "Lagre, og start deretter radioen på nytt."
         },
@@ -7178,7 +7530,7 @@
         },
         "activelook_setup_hint": {
           "english": "One-time setup:\nModel > Glasses > Screen\nChoose the Full-Screen layout.\nAssign Rotorflight ActiveLook.",
-          "max_length": 120,
+          "max_length": 102,
           "needs_translation": false,
           "translation": "Engangsoppsett:\nModell > Briller > Skjerm\nVelg Full-Screen-oppsettet.\nTilordne Rotorflight ActiveLook."
         },
@@ -8012,7 +8364,7 @@
       "setup_wizard": {
         "armed": {
           "english": "Armed: servos can't be moved.",
-          "max_length": 33,
+          "max_length": 29,
           "needs_translation": false,
           "reverse_text": false,
           "translation": "Armert: servoer kan ikke flyttes."
@@ -8026,7 +8378,7 @@
         },
         "art_side": {
           "english": "Side view",
-          "max_length": 11,
+          "max_length": 9,
           "needs_translation": false,
           "reverse_text": false,
           "translation": "Sidevisning"
@@ -8040,14 +8392,14 @@
         },
         "btn_next": {
           "english": "Next",
-          "max_length": 5,
+          "max_length": 4,
           "needs_translation": false,
           "reverse_text": false,
           "translation": "Neste"
         },
         "btn_no": {
           "english": "No",
-          "max_length": 3,
+          "max_length": 2,
           "needs_translation": false,
           "reverse_text": false,
           "translation": "Nei"
@@ -8229,7 +8581,7 @@
         },
         "dir_roll": {
           "english": "Push the roll stick right. The swash should tilt right.",
-          "max_length": 57,
+          "max_length": 55,
           "needs_translation": false,
           "reverse_text": false,
           "translation": "Skyv rollstikken til høyre. Swashen skal tippe til høyre."
@@ -8264,7 +8616,7 @@
         },
         "disconnected": {
           "english": "No link to the flight controller.",
-          "max_length": 38,
+          "max_length": 33,
           "needs_translation": false,
           "reverse_text": false,
           "translation": "Ingen forbindelse med flykontrolleren."
@@ -8299,32 +8651,32 @@
         },
         "esc_full_text": {
           "english": "With the battery still unplugged and the flight controller on USB, press Full throttle. The output stays at 100 % until you press Low throttle.",
-          "max_length": 131,
+          "max_length": 143,
           "needs_translation": false,
           "reverse_text": false,
           "translation": "Med batteriet fortsatt frakoblet og flykontrolleren på USB: trykk Fullgass. Utgangen står på 100 % til du trykker Tomgang."
         },
         "esc_link_btn": {
           "english": "Set over the ESC link",
-          "max_length": 24,
+          "max_length": 21,
           "needs_translation": true,
           "translation": "Set over the ESC link"
         },
         "esc_link_busy": {
           "english": "Setting the range on the ESC...",
-          "max_length": 40,
+          "max_length": 31,
           "needs_translation": true,
           "translation": "Setting the range on the ESC..."
         },
         "esc_link_done": {
           "english": "Range set on the ESC and the FC.",
-          "max_length": 40,
+          "max_length": 32,
           "needs_translation": true,
           "translation": "Range set on the ESC and the FC."
         },
         "esc_link_failed": {
           "english": "The ESC link did not confirm the range.",
-          "max_length": 50,
+          "max_length": 39,
           "needs_translation": true,
           "translation": "The ESC link did not confirm the range."
         },
@@ -8442,7 +8794,7 @@
         },
         "fin_button": {
           "english": "Save and finish",
-          "max_length": 16,
+          "max_length": 15,
           "needs_translation": false,
           "reverse_text": false,
           "translation": "Lagre og fullfør"
@@ -8463,28 +8815,28 @@
         },
         "fin_esc": {
           "english": "ESC protocol",
-          "max_length": 13,
+          "max_length": 12,
           "needs_translation": false,
           "reverse_text": false,
           "translation": "ESC-protokoll"
         },
         "fin_intro": {
           "english": "What the wizard set:",
-          "max_length": 23,
+          "max_length": 20,
           "needs_translation": false,
           "reverse_text": false,
           "translation": "Dette satte veiviseren:"
         },
         "fin_none": {
           "english": "None",
-          "max_length": 5,
+          "max_length": 4,
           "needs_translation": false,
           "reverse_text": false,
           "translation": "Ingen"
         },
         "fin_pitch_fmt": {
           "english": "Coll. %s°, cyc. %s°",
-          "max_length": 20,
+          "max_length": 19,
           "needs_translation": false,
           "reverse_text": false,
           "translation": "Koll. %s°, sykl. %s°"
@@ -8526,7 +8878,7 @@
         },
         "fin_title": {
           "english": "Finish",
-          "max_length": 7,
+          "max_length": 6,
           "needs_translation": false,
           "reverse_text": false,
           "translation": "Fullfør"
@@ -8678,7 +9030,7 @@
         },
         "leave_body": {
           "english": "Save the wizard's changes to the flight controller, or discard them?",
-          "max_length": 70,
+          "max_length": 68,
           "needs_translation": false,
           "reverse_text": false,
           "translation": "Lagre endringene fra veiviseren i flykontrolleren, eller forkaste dem?"
@@ -8692,7 +9044,7 @@
         },
         "leave_save": {
           "english": "Save",
-          "max_length": 5,
+          "max_length": 4,
           "needs_translation": false,
           "reverse_text": false,
           "translation": "Lagre"
@@ -8727,7 +9079,7 @@
         },
         "lvl_reset": {
           "english": "Reset",
-          "max_length": 9,
+          "max_length": 5,
           "needs_translation": false,
           "reverse_text": false,
           "translation": "Nullstill"
@@ -8769,7 +9121,7 @@
         },
         "missing_servos_fmt": {
           "english": "Servo %s is needed for this setup, but the board has no output for it.",
-          "max_length": 73,
+          "max_length": 70,
           "needs_translation": false,
           "reverse_text": false,
           "translation": "Servo %s trengs for dette oppsettet, men kortet har ingen utgang for den."
@@ -8800,25 +9152,25 @@
         },
         "mod_done_title": {
           "english": "Switches done",
-          "max_length": 14,
+          "max_length": 13,
           "needs_translation": false,
           "translation": "Brytere ferdig"
         },
         "mod_help_arm": {
           "english": "Arms the motor. Use a switch you won't knock by accident.",
-          "max_length": 64,
+          "max_length": 57,
           "needs_translation": false,
           "translation": "Armer motoren. Bruk en bryter du ikke kommer borti ved et uhell."
         },
         "mod_help_rescue": {
           "english": "Turns the helicopter upright and holds it level.",
-          "max_length": 49,
+          "max_length": 48,
           "needs_translation": false,
           "translation": "Snur helikopteret rett vei og holder det i vater."
         },
         "mod_help_trainer": {
           "english": "Limits how far the helicopter can tilt, to help while learning.",
-          "max_length": 67,
+          "max_length": 63,
           "needs_translation": false,
           "translation": "Begrenser hvor mye helikopteret kan helle, som hjelp mens du lærer."
         },
@@ -8842,7 +9194,7 @@
         },
         "mod_no_switch": {
           "english": "No switch moved. Press Assign and flick it within 15 s.",
-          "max_length": 61,
+          "max_length": 55,
           "needs_translation": false,
           "translation": "Ingen bryter beveget seg. Trykk Tildel og slå den innen 15 s."
         },
@@ -8872,7 +9224,7 @@
         },
         "mod_reassign": {
           "english": "Assign again",
-          "max_length": 14,
+          "max_length": 12,
           "needs_translation": false,
           "translation": "Tildel på nytt"
         },
@@ -8890,7 +9242,7 @@
         },
         "mod_rescue": {
           "english": "Rescue",
-          "max_length": 7,
+          "max_length": 6,
           "needs_translation": false,
           "translation": "Redning"
         },
@@ -8902,14 +9254,14 @@
         },
         "mot_done_title": {
           "english": "Motor & ESC set",
-          "max_length": 17,
+          "max_length": 15,
           "needs_translation": false,
           "reverse_text": false,
           "translation": "Motor og ESC satt"
         },
         "mot_dshot150_note": {
           "english": "DShot150 sends no RPM. Governor and RPM filter need DShot300 or an RPM sensor.",
-          "max_length": 92,
+          "max_length": 78,
           "needs_translation": false,
           "reverse_text": false,
           "translation": "DShot150 sender ikke turtall. Governor og RPM-filter krever DShot300 eller en turtallsensor."
@@ -8930,14 +9282,14 @@
         },
         "mot_intro": {
           "english": "How does the FC talk to the ESC? Use PWM if unsure. Blades off.",
-          "max_length": 65,
+          "max_length": 63,
           "needs_translation": false,
           "reverse_text": false,
           "translation": "Hvordan snakker FC med ESC? Bruk PWM om du er usikker. Blader av."
         },
         "mot_main_gear": {
           "english": "Main gear teeth",
-          "max_length": 16,
+          "max_length": 15,
           "needs_translation": false,
           "reverse_text": false,
           "translation": "Tenner hovedhjul"
@@ -9014,7 +9366,7 @@
         },
         "mot_pinion": {
           "english": "Pinion teeth",
-          "max_length": 14,
+          "max_length": 12,
           "needs_translation": false,
           "reverse_text": false,
           "translation": "Tenner pinjong"
@@ -9042,7 +9394,7 @@
         },
         "mot_protocol": {
           "english": "Protocol",
-          "max_length": 9,
+          "max_length": 8,
           "needs_translation": false,
           "reverse_text": false,
           "translation": "Protokoll"
@@ -9175,7 +9527,7 @@
         },
         "mot_title": {
           "english": "ESC protocol",
-          "max_length": 13,
+          "max_length": 12,
           "needs_translation": false,
           "reverse_text": false,
           "translation": "ESC-protokoll"
@@ -9231,7 +9583,7 @@
         },
         "pit_cyc_title": {
           "english": "Cyclic",
-          "max_length": 7,
+          "max_length": 6,
           "needs_translation": false,
           "reverse_text": false,
           "translation": "Syklisk"
@@ -9273,7 +9625,7 @@
         },
         "pit_lim_cyc_title": {
           "english": "Cyclic limit",
-          "max_length": 14,
+          "max_length": 12,
           "needs_translation": false,
           "reverse_text": false,
           "translation": "Syklisk grense"
@@ -9294,14 +9646,14 @@
         },
         "pit_lim_total_title": {
           "english": "Total limit",
-          "max_length": 12,
+          "max_length": 11,
           "needs_translation": false,
           "reverse_text": false,
           "translation": "Total grense"
         },
         "pit_limit": {
           "english": "Limit",
-          "max_length": 6,
+          "max_length": 5,
           "needs_translation": false,
           "reverse_text": false,
           "translation": "Grense"
@@ -9329,7 +9681,7 @@
         },
         "pit_suggest_fmt": {
           "english": "Use %.0f",
-          "max_length": 9,
+          "max_length": 8,
           "needs_translation": false,
           "reverse_text": false,
           "translation": "Bruk %.0f"
@@ -9361,7 +9713,7 @@
         },
         "prof_btn_cyclic_up": {
           "english": "Cyclic gain up",
-          "max_length": 16,
+          "max_length": 14,
           "needs_translation": false,
           "translation": "Syklisk gain opp"
         },
@@ -9373,7 +9725,7 @@
         },
         "prof_btn_yaw_up": {
           "english": "Yaw gain up",
-          "max_length": 13,
+          "max_length": 11,
           "needs_translation": false,
           "translation": "Hale-gain opp"
         },
@@ -9421,7 +9773,7 @@
         },
         "prof_full": {
           "english": "Every adjustment slot is in use. Free one under Adjustments.",
-          "max_length": 64,
+          "max_length": 60,
           "needs_translation": false,
           "translation": "Alle justeringsplassene er i bruk. Frigjør en under Justeringer."
         },
@@ -9433,7 +9785,7 @@
         },
         "prof_gain_buttons_note": {
           "english": "Set up the GAIN mix first (see the docs).",
-          "max_length": 48,
+          "max_length": 41,
           "needs_translation": false,
           "translation": "Sett først opp GAIN-miksen (se dokumentasjonen)."
         },
@@ -9445,7 +9797,7 @@
         },
         "prof_gain_help_knob": {
           "english": "A knob or slider sets the master gain, on a spare channel.",
-          "max_length": 65,
+          "max_length": 58,
           "needs_translation": false,
           "translation": "En dreieknapp eller skyver setter hovedgainen, på en ledig kanal."
         },
@@ -9457,19 +9809,19 @@
         },
         "prof_gain_knob": {
           "english": "Knob",
-          "max_length": 10,
+          "max_length": 4,
           "needs_translation": false,
           "translation": "Dreieknapp"
         },
         "prof_gain_knob_note": {
           "english": "Set a knob or slider on a spare channel, then move it.",
-          "max_length": 64,
+          "max_length": 54,
           "needs_translation": false,
           "translation": "Sett en dreieknapp eller skyver på en ledig kanal, og beveg den."
         },
         "prof_gain_none": {
           "english": "Not used",
-          "max_length": 10,
+          "max_length": 8,
           "needs_translation": false,
           "translation": "Ikke brukt"
         },
@@ -9523,19 +9875,19 @@
         },
         "prof_listen_buttons": {
           "english": "Press a trim button…",
-          "max_length": 22,
+          "max_length": 20,
           "needs_translation": false,
           "translation": "Trykk på en trimknapp…"
         },
         "prof_listen_knob": {
           "english": "Turn the knob…",
-          "max_length": 15,
+          "max_length": 14,
           "needs_translation": false,
           "translation": "Vri på knappen…"
         },
         "prof_none": {
           "english": "Not used",
-          "max_length": 10,
+          "max_length": 8,
           "needs_translation": false,
           "translation": "Ikke brukt"
         },
@@ -9553,7 +9905,7 @@
         },
         "prof_switch_text": {
           "english": "A 2- or 3-position switch. Press Assign, then move it through every position: each one lands on its own profile.",
-          "max_length": 119,
+          "max_length": 112,
           "needs_translation": false,
           "translation": "En bryter med 2 eller 3 stillinger. Trykk Tildel og flytt den gjennom alle stillingene: hver havner på sin egen profil."
         },
@@ -9565,7 +9917,7 @@
         },
         "prof_use": {
           "english": "Use",
-          "max_length": 4,
+          "max_length": 3,
           "needs_translation": false,
           "translation": "Bruk"
         },
@@ -9650,7 +10002,7 @@
         },
         "rates_axis_cyclic": {
           "english": "Cyclic",
-          "max_length": 7,
+          "max_length": 6,
           "needs_translation": false,
           "translation": "Syklisk"
         },
@@ -9680,7 +10032,7 @@
         },
         "rates_cyclic_fmt": {
           "english": "Cyclic %d °/s · expo %d %%",
-          "max_length": 27,
+          "max_length": 26,
           "needs_translation": false,
           "translation": "Syklisk %d °/s · expo %d %%"
         },
@@ -9698,7 +10050,7 @@
         },
         "rates_done_title": {
           "english": "Rates set",
-          "max_length": 10,
+          "max_length": 9,
           "needs_translation": false,
           "translation": "Rater satt"
         },
@@ -9722,7 +10074,7 @@
         },
         "rates_legend_value": {
           "english": "Value: °/s at full stick",
-          "max_length": 27,
+          "max_length": 24,
           "needs_translation": false,
           "translation": "Verdi: °/s ved fullt utslag"
         },
@@ -9788,7 +10140,7 @@
         },
         "rates_values_fmt": {
           "english": "Cyclic %d °/s · yaw %d °/s · expo %d %%",
-          "max_length": 40,
+          "max_length": 39,
           "needs_translation": false,
           "translation": "Syklisk %d °/s · gir %d °/s · expo %d %%"
         },
@@ -9841,7 +10193,7 @@
         },
         "rcv_custom": {
           "english": "Custom",
-          "max_length": 8,
+          "max_length": 6,
           "needs_translation": false,
           "reverse_text": false,
           "translation": "Egendef."
@@ -9869,14 +10221,14 @@
         },
         "rcv_detect_text_fmt": {
           "english": "%s Leave the other sticks still.",
-          "max_length": 34,
+          "max_length": 32,
           "needs_translation": false,
           "reverse_text": false,
           "translation": "%s La de andre stikkene være i ro."
         },
         "rcv_dir_back": {
           "english": "Back",
-          "max_length": 7,
+          "max_length": 4,
           "needs_translation": false,
           "translation": "Bakover"
         },
@@ -9894,7 +10246,7 @@
         },
         "rcv_dir_up": {
           "english": "Up",
-          "max_length": 3,
+          "max_length": 2,
           "needs_translation": false,
           "translation": "Opp"
         },
@@ -9912,14 +10264,14 @@
         },
         "rcv_done_title": {
           "english": "Receiver done",
-          "max_length": 15,
+          "max_length": 13,
           "needs_translation": false,
           "reverse_text": false,
           "translation": "Mottaker ferdig"
         },
         "rcv_fc_range": {
           "english": "FC range",
-          "max_length": 9,
+          "max_length": 8,
           "needs_translation": false,
           "translation": "FC-område"
         },
@@ -9943,7 +10295,7 @@
         },
         "rcv_link_warning": {
           "english": "Experienced pilots only: a setting that cuts the receiver link ends this setup.",
-          "max_length": 92,
+          "max_length": 79,
           "needs_translation": false,
           "translation": "Kun for erfarne piloter: en innstilling som kobler fra mottakeren avslutter dette oppsettet."
         },
@@ -9976,7 +10328,7 @@
         },
         "rcv_move_roll": {
           "english": "Move the roll stick fully left and right.",
-          "max_length": 44,
+          "max_length": 41,
           "needs_translation": false,
           "reverse_text": false,
           "translation": "Flytt rollstikken helt til venstre og høyre."
@@ -9990,7 +10342,7 @@
         },
         "rcv_move_yaw": {
           "english": "Move the yaw stick fully left and right.",
-          "max_length": 43,
+          "max_length": 40,
           "needs_translation": false,
           "reverse_text": false,
           "translation": "Flytt yawstikken helt til venstre og høyre."
@@ -10004,27 +10356,27 @@
         },
         "rcv_order_text": {
           "english": "Each bar should follow its own stick. If not, pick a preset or detect the order.",
-          "max_length": 102,
+          "max_length": 80,
           "needs_translation": false,
           "reverse_text": false,
           "translation": "Hver stolpe skal følge sin egen stikke. Hvis ikke, velg en forhåndsinnstilling eller finn rekkefølgen."
         },
         "rcv_order_title": {
           "english": "Channel order",
-          "max_length": 15,
+          "max_length": 13,
           "needs_translation": false,
           "reverse_text": false,
           "translation": "Kanalrekkefølge"
         },
         "rcv_prepare_text": {
           "english": "This step uses the settings already in the FC. Confirm the physical prerequisites before continuing.",
-          "max_length": 115,
+          "max_length": 100,
           "needs_translation": false,
           "translation": "Dette trinnet bruker innstillingene som allerede finnes i FC. Bekreft de fysiske forutsetningene før du går videre."
         },
         "rcv_prepare_title": {
           "english": "Before this step",
-          "max_length": 17,
+          "max_length": 16,
           "needs_translation": false,
           "translation": "Før dette trinnet"
         },
@@ -10058,21 +10410,21 @@
         },
         "rcv_presets": {
           "english": "Presets",
-          "max_length": 12,
+          "max_length": 7,
           "needs_translation": false,
           "reverse_text": false,
           "translation": "Forhåndsvalg"
         },
         "rcv_presets_text": {
           "english": "Pick your radio's channel order.",
-          "max_length": 39,
+          "max_length": 32,
           "needs_translation": false,
           "reverse_text": false,
           "translation": "Velg kanalrekkefølgen til senderen din."
         },
         "rcv_protocol": {
           "english": "Protocol",
-          "max_length": 9,
+          "max_length": 8,
           "needs_translation": false,
           "translation": "Protokoll"
         },
@@ -10084,7 +10436,7 @@
         },
         "rcv_signal_none": {
           "english": "No valid receiver signal.",
-          "max_length": 27,
+          "max_length": 25,
           "needs_translation": false,
           "reverse_text": false,
           "translation": "Ikke gyldig mottakersignal."
@@ -10098,14 +10450,14 @@
         },
         "rcv_skip": {
           "english": "Skip",
-          "max_length": 9,
+          "max_length": 4,
           "needs_translation": false,
           "reverse_text": false,
           "translation": "Hopp over"
         },
         "rcv_standard_order": {
           "english": "Std. order",
-          "max_length": 15,
+          "max_length": 10,
           "needs_translation": false,
           "translation": "Std. rekkefølge"
         },
@@ -10124,7 +10476,7 @@
         },
         "rcv_stop": {
           "english": "Stop",
-          "max_length": 5,
+          "max_length": 4,
           "needs_translation": false,
           "reverse_text": false,
           "translation": "Stopp"
@@ -10152,14 +10504,14 @@
         },
         "rcv_too_short": {
           "english": "Under 300 us of travel: move it end to end.",
-          "max_length": 45,
+          "max_length": 43,
           "needs_translation": false,
           "reverse_text": false,
           "translation": "Under 300 us utslag: flytt fra ende til ende."
         },
         "rcv_use": {
           "english": "Use",
-          "max_length": 4,
+          "max_length": 3,
           "needs_translation": false,
           "reverse_text": false,
           "translation": "Bruk"
@@ -10173,7 +10525,7 @@
         },
         "reboot_wait_fmt": {
           "english": "Reconnecting, up to %d s",
-          "max_length": 29,
+          "max_length": 24,
           "needs_translation": false,
           "reverse_text": false,
           "translation": "Kobler til igjen, opptil %d s"
@@ -10215,7 +10567,7 @@
         },
         "role_front_left": {
           "english": "Front left",
-          "max_length": 13,
+          "max_length": 10,
           "needs_translation": false,
           "reverse_text": false,
           "translation": "Foran venstre"
@@ -10229,7 +10581,7 @@
         },
         "role_left": {
           "english": "Left",
-          "max_length": 7,
+          "max_length": 4,
           "needs_translation": false,
           "reverse_text": false,
           "translation": "Venstre"
@@ -10302,7 +10654,7 @@
         },
         "sen_acc_failed": {
           "english": "Calibration failed. Keep the model still and try again.",
-          "max_length": 56,
+          "max_length": 55,
           "needs_translation": false,
           "reverse_text": false,
           "translation": "Kalibrering mislyktes. Hold modellen i ro og prøv igjen."
@@ -10358,7 +10710,7 @@
         },
         "sen_attitude_waiting": {
           "english": "Waiting for live attitude...",
-          "max_length": 29,
+          "max_length": 28,
           "needs_translation": false,
           "reverse_text": false,
           "translation": "Venter på sanntidsstilling..."
@@ -10372,14 +10724,14 @@
         },
         "sen_available": {
           "english": "Available",
-          "max_length": 12,
+          "max_length": 9,
           "needs_translation": false,
           "reverse_text": false,
           "translation": "Tilgjengelig"
         },
         "sen_blades_removed": {
           "english": "All blades removed",
-          "max_length": 19,
+          "max_length": 18,
           "needs_translation": false,
           "reverse_text": false,
           "translation": "Alle blader fjernet"
@@ -10400,7 +10752,7 @@
         },
         "sen_check_title": {
           "english": "Check orientation",
-          "max_length": 22,
+          "max_length": 17,
           "needs_translation": false,
           "reverse_text": false,
           "translation": "Kontroller orientering"
@@ -10414,14 +10766,14 @@
         },
         "sen_done_restart": {
           "english": "The new orientation applies after a restart. Restart now to check it, or Next: the restart then follows at the Connect the servos step.",
-          "max_length": 146,
+          "max_length": 135,
           "needs_translation": false,
           "reverse_text": false,
           "translation": "Den nye orienteringen gjelder først etter omstart. Start på nytt nå for å kontrollere, eller Neste: omstarten skjer da i steget Koble til servoer."
         },
         "sen_intro": {
           "english": "Remove main and tail blades. Unplug all servos before starting.",
-          "max_length": 72,
+          "max_length": 63,
           "needs_translation": false,
           "reverse_text": false,
           "translation": "Fjern hoved- og halerotorbladene. Koble fra alle servoer før du starter."
@@ -10470,7 +10822,7 @@
         },
         "sen_servos_unplugged": {
           "english": "Servos unplugged",
-          "max_length": 17,
+          "max_length": 16,
           "needs_translation": false,
           "reverse_text": false,
           "translation": "Servoer frakoblet"
@@ -10561,7 +10913,7 @@
         },
         "srv_done_title": {
           "english": "Servos set",
-          "max_length": 12,
+          "max_length": 10,
           "needs_translation": false,
           "reverse_text": false,
           "translation": "Servoer satt"
@@ -10631,7 +10983,7 @@
         },
         "step_finish": {
           "english": "Finish",
-          "max_length": 7,
+          "max_length": 6,
           "needs_translation": false,
           "reverse_text": false,
           "translation": "Fullfør"
@@ -10664,7 +11016,7 @@
         },
         "step_motor": {
           "english": "Motor & ESC",
-          "max_length": 12,
+          "max_length": 11,
           "needs_translation": false,
           "reverse_text": false,
           "translation": "Motor og ESC"
@@ -10678,7 +11030,7 @@
         },
         "step_profiles": {
           "english": "Profiles & gain",
-          "max_length": 16,
+          "max_length": 15,
           "needs_translation": false,
           "translation": "Profiler og gain"
         },
@@ -10745,7 +11097,7 @@
         },
         "sty_custom": {
           "english": "Custom",
-          "max_length": 8,
+          "max_length": 6,
           "needs_translation": false,
           "reverse_text": false,
           "translation": "Egendef."
@@ -10790,7 +11142,7 @@
         },
         "sty_mixed": {
           "english": "Mixed",
-          "max_length": 7,
+          "max_length": 5,
           "needs_translation": false,
           "reverse_text": false,
           "translation": "Blandet"
@@ -10809,7 +11161,7 @@
         },
         "sty_row_rate": {
           "english": "Frame rate",
-          "max_length": 13,
+          "max_length": 10,
           "needs_translation": false,
           "translation": "Rammefrekvens"
         },
@@ -10828,7 +11180,7 @@
         },
         "sty_swash_title": {
           "english": "Cyclic servos",
-          "max_length": 16,
+          "max_length": 13,
           "needs_translation": false,
           "reverse_text": false,
           "translation": "Sykliske servoer"
@@ -10870,14 +11222,14 @@
         },
         "swa_cw": {
           "english": "Clockwise",
-          "max_length": 10,
+          "max_length": 9,
           "needs_translation": false,
           "reverse_text": false,
           "translation": "Med klokka"
         },
         "swa_dir_text": {
           "english": "Seen from above. Most helicopters turn clockwise.",
-          "max_length": 56,
+          "max_length": 49,
           "needs_translation": false,
           "reverse_text": false,
           "translation": "Sett ovenfra. De fleste helikoptere snurrer med klokken."
@@ -10891,14 +11243,14 @@
         },
         "swa_direct": {
           "english": "Direct",
-          "max_length": 7,
+          "max_length": 6,
           "needs_translation": false,
           "reverse_text": false,
           "translation": "Direkte"
         },
         "swa_done_title": {
           "english": "Swashplate set",
-          "max_length": 15,
+          "max_length": 14,
           "needs_translation": false,
           "reverse_text": false,
           "translation": "Swashplate satt"
@@ -10911,7 +11263,7 @@
         },
         "swa_pin_both": {
           "english": "Own pin",
-          "max_length": 10,
+          "max_length": 7,
           "needs_translation": false,
           "reverse_text": false,
           "translation": "Egen pinne"
@@ -10925,14 +11277,14 @@
         },
         "swa_pin_move": {
           "english": "Moves on save",
-          "max_length": 19,
+          "max_length": 13,
           "needs_translation": false,
           "reverse_text": false,
           "translation": "Flyttes ved lagring"
         },
         "swa_pin_none": {
           "english": "None",
-          "max_length": 5,
+          "max_length": 4,
           "needs_translation": false,
           "reverse_text": false,
           "translation": "Ingen"
@@ -10946,7 +11298,7 @@
         },
         "swa_pin_stuck": {
           "english": "Set in Mixer",
-          "max_length": 13,
+          "max_length": 12,
           "needs_translation": false,
           "reverse_text": false,
           "translation": "Sett i Mikser"
@@ -10979,7 +11331,7 @@
         },
         "swa_row_pin": {
           "english": "Tail pin",
-          "max_length": 9,
+          "max_length": 8,
           "needs_translation": false,
           "reverse_text": false,
           "translation": "Halepinne"
@@ -11012,13 +11364,13 @@
         },
         "swa_servo_none": {
           "english": "None",
-          "max_length": 5,
+          "max_length": 4,
           "needs_translation": false,
           "translation": "Ingen"
         },
         "swa_tail_bidir": {
           "english": "Motor, 2-way",
-          "max_length": 13,
+          "max_length": 12,
           "needs_translation": false,
           "reverse_text": false,
           "translation": "Motor, 2-veis"
@@ -11053,37 +11405,37 @@
         },
         "swa_type_help_120": {
           "english": "Three servos, 120° apart. The most common.",
-          "max_length": 47,
+          "max_length": 42,
           "needs_translation": false,
           "translation": "Tre servoer, 120° fra hverandre. Den vanligste."
         },
         "swa_type_help_135": {
           "english": "Three servos, 135° apart.",
-          "max_length": 32,
+          "max_length": 25,
           "needs_translation": false,
           "translation": "Tre servoer, 135° fra hverandre."
         },
         "swa_type_help_140": {
           "english": "Three servos, 140° apart.",
-          "max_length": 32,
+          "max_length": 25,
           "needs_translation": false,
           "translation": "Tre servoer, 140° fra hverandre."
         },
         "swa_type_help_90l": {
           "english": "Two servos, front and left, 90° apart.",
-          "max_length": 48,
+          "max_length": 38,
           "needs_translation": false,
           "translation": "To servoer, foran og venstre, 90° fra hverandre."
         },
         "swa_type_help_90v": {
           "english": "Two servos, front left and front right.",
-          "max_length": 41,
+          "max_length": 39,
           "needs_translation": false,
           "translation": "To servoer, foran venstre og foran høyre."
         },
         "swa_type_help_direct": {
           "english": "Pitch, roll and collective on servos 1-3, for a mechanical mixer.",
-          "max_length": 67,
+          "max_length": 65,
           "needs_translation": false,
           "translation": "Syklisk, rull og kollektiv på servoene 1-3, for en mekanisk mikser."
         },
@@ -11103,7 +11455,7 @@
         },
         "tal_cal": {
           "english": "Press Swap to hold the tail at 22.5°; each press holds the other side. Measure the tail blade pitch and adjust until it reads 22.5°. No pitch gauge? Fold a square of paper corner to corner (45°): seen from the tail tip, the fold fits flush between the blades.",
-          "max_length": 249,
+          "max_length": 259,
           "needs_translation": false,
           "reverse_text": false,
           "translation": "Trykk Bytt for å holde halen på 22,5°; hvert trykk holder den andre siden. Mål halebladpitchen og juster til den viser 22,5°. Ingen måler? Brett et kvadratisk papir hjørne mot hjørne (45°): sett fra bladtuppen passer bretten nøyaktig mellom bladene."
@@ -11117,7 +11469,7 @@
         },
         "tal_ccw": {
           "english": "CCW limit",
-          "max_length": 10,
+          "max_length": 9,
           "needs_translation": false,
           "reverse_text": false,
           "translation": "CCW-grense"
@@ -11138,14 +11490,14 @@
         },
         "tal_cw": {
           "english": "CW limit",
-          "max_length": 9,
+          "max_length": 8,
           "needs_translation": false,
           "reverse_text": false,
           "translation": "CW-grense"
         },
         "tal_dir": {
           "english": "Push the yaw stick right. The tail blades should push the tail left, turning the nose right.",
-          "max_length": 95,
+          "max_length": 92,
           "needs_translation": false,
           "reverse_text": false,
           "translation": "Skyv yawstikken til høyre. Halebladene skal skyve halen til venstre, så nesen dreier til høyre."
@@ -11159,7 +11511,7 @@
         },
         "tal_idle": {
           "english": "The power the tail motor keeps at zero yaw. Blades still off.",
-          "max_length": 62,
+          "max_length": 61,
           "needs_translation": false,
           "reverse_text": false,
           "translation": "Effekten halemotoren holder ved null yaw. Bladene fortsatt av."
@@ -11187,7 +11539,7 @@
         },
         "tal_lim_both": {
           "english": "Press Swap to hold the tail at 60°, again for the other side, then set the limits as high as they go without the slider or links binding.",
-          "max_length": 136,
+          "max_length": 137,
           "needs_translation": false,
           "reverse_text": false,
           "translation": "Trykk Bytt for å holde halen på 60°, igjen for den andre siden, og sett grensene så høyt det går uten at glideren eller stengene binder."
@@ -11257,7 +11609,7 @@
         },
         "tal_run_idle": {
           "english": "Run idle",
-          "max_length": 9,
+          "max_length": 8,
           "needs_translation": false,
           "reverse_text": false,
           "translation": "Kjør idle"
@@ -11271,7 +11623,7 @@
         },
         "tal_side": {
           "english": "Held side",
-          "max_length": 10,
+          "max_length": 9,
           "needs_translation": false,
           "reverse_text": false,
           "translation": "Holdt side"
@@ -11292,7 +11644,7 @@
         },
         "tal_stop": {
           "english": "Stop",
-          "max_length": 5,
+          "max_length": 4,
           "needs_translation": false,
           "reverse_text": false,
           "translation": "Stopp"
@@ -11320,7 +11672,7 @@
         },
         "tal_use_idle": {
           "english": "Use test",
-          "max_length": 9,
+          "max_length": 8,
           "needs_translation": false,
           "reverse_text": false,
           "translation": "Bruk test"
@@ -11820,7 +12172,7 @@
         },
         "applied_not_recorded": {
           "english": "Saved to the flight controller. The change record was not written.",
-          "max_length": 72,
+          "max_length": 66,
           "needs_translation": true,
           "translation": "Saved to the flight controller. The change record was not written."
         },
@@ -12213,14 +12565,14 @@
       "wizards": {
         "model_setup": {
           "english": "Model setup",
-          "max_length": 15,
+          "max_length": 11,
           "needs_translation": false,
           "reverse_text": false,
           "translation": "Sett opp modell"
         },
         "name": {
           "english": "Wizards",
-          "max_length": 9,
+          "max_length": 7,
           "needs_translation": false,
           "reverse_text": false,
           "translation": "Veivisere"
@@ -12327,7 +12679,7 @@
     },
     "msg_save_failed_running_body": {
       "english": "The flight controller may already be using the new values. Restart it to use the saved settings.",
-      "max_length": 110,
+      "max_length": 96,
       "needs_translation": true,
       "translation": "The flight controller may already be using the new values. Restart it to use the saved settings."
     },

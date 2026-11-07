@@ -260,8 +260,8 @@ local function open(opts, config)
     if state ~= "idle" then return end
     selected = item
     state = "pre_switch"
-    setStatus("Selecting " .. item.label .. "...")
-    showProgress(MSG_LOADING_TITLE, "Selecting " .. item.label .. "...")
+    setStatus(string.format("@i18n(app.modules.esc_tools.opt.selecting_fmt)@", item.label))
+    showProgress(MSG_LOADING_TITLE, string.format("@i18n(app.modules.esc_tools.opt.selecting_fmt)@", item.label))
     startSwitchPhase(preSwitchTarget, preSwitchWriteCount, function()
       nextAt = os.clock() + simDelay(preSwitchDelay)
       state = "wait_pre"

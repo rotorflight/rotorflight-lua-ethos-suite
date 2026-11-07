@@ -214,13 +214,13 @@
       "english": "The flight controller may already be using the new values. Restart it to use the saved settings.",
       "translation": "The flight controller may already be using the new values. Restart it to use the saved settings.",
       "needs_translation": true,
-      "max_length": 110
+      "max_length": 96
     },
     "btn_restart_fc": {
       "english": "Restart FC",
       "translation": "Restart FC",
       "needs_translation": true,
-      "max_length": 12
+      "max_length": 10
     },
     "msg_save_failed_title": {
       "english": "Save failed",
@@ -2136,7 +2136,7 @@
           "english": "ETHOS Glasses menu",
           "translation": "ETHOS 眼镜菜单",
           "needs_translation": false,
-          "max_length": 21
+          "max_length": 18
         },
         "activelook_restart_radio": {
           "english": "Save, then restart the radio.",
@@ -2148,7 +2148,7 @@
           "english": "One-time setup:\nModel > Glasses > Screen\nChoose the Full-Screen layout.\nAssign Rotorflight ActiveLook.",
           "translation": "首次设置：\n模型 > 眼镜 > 屏幕\n选择全屏布局（Full-Screen）。\n分配 Rotorflight ActiveLook。",
           "needs_translation": false,
-          "max_length": 120
+          "max_length": 102
         },
         "feature_activelook": {
           "english": "Rotorflight ActiveLook",
@@ -3628,7 +3628,7 @@
           "translation": "将尾舵保持在中位，调整微调时实时移动。按保存以保留更改。",
           "needs_translation": false,
           "reverse_text": false,
-          "max_length": 92
+          "max_length": 78
         },
         "tail_tta_off": {
           "english": "Also sets Tail Torque Assist to 0 in every profile.",
@@ -7969,6 +7969,358 @@
           "needs_translation": false,
           "reverse_text": false,
           "max_length": 9
+        },
+        "opt": {
+          "low": {
+            "english": "Low",
+            "translation": "低",
+            "needs_translation": false,
+            "max_length": 3,
+            "reverse_text": false
+          },
+          "medium": {
+            "english": "Medium",
+            "translation": "中",
+            "needs_translation": false,
+            "max_length": 6,
+            "reverse_text": false
+          },
+          "high": {
+            "english": "High",
+            "translation": "高",
+            "needs_translation": false,
+            "max_length": 4,
+            "reverse_text": false
+          },
+          "medium_low": {
+            "english": "Medium Low",
+            "translation": "中低",
+            "needs_translation": false,
+            "max_length": 10,
+            "reverse_text": false
+          },
+          "medium_high": {
+            "english": "Medium High",
+            "translation": "中高",
+            "needs_translation": false,
+            "max_length": 11,
+            "reverse_text": false
+          },
+          "slow": {
+            "english": "Slow",
+            "translation": "慢",
+            "needs_translation": false,
+            "max_length": 4,
+            "reverse_text": false
+          },
+          "fast": {
+            "english": "Fast",
+            "translation": "快",
+            "needs_translation": false,
+            "max_length": 4,
+            "reverse_text": false
+          },
+          "very_slow": {
+            "english": "Very Slow",
+            "translation": "很慢",
+            "needs_translation": false,
+            "max_length": 9,
+            "reverse_text": false
+          },
+          "soft": {
+            "english": "Soft",
+            "translation": "软",
+            "needs_translation": false,
+            "max_length": 4,
+            "reverse_text": false
+          },
+          "hard": {
+            "english": "Hard",
+            "translation": "硬",
+            "needs_translation": false,
+            "max_length": 4,
+            "reverse_text": false
+          },
+          "enabled": {
+            "english": "Enabled",
+            "translation": "启用",
+            "needs_translation": false,
+            "max_length": 7,
+            "reverse_text": false
+          },
+          "automatic": {
+            "english": "Automatic",
+            "translation": "自动",
+            "needs_translation": false,
+            "max_length": 9,
+            "reverse_text": false
+          },
+          "always_on": {
+            "english": "Always On",
+            "translation": "始终开启",
+            "needs_translation": false,
+            "max_length": 9,
+            "reverse_text": false
+          },
+          "always_off": {
+            "english": "Always Off",
+            "translation": "始终关闭",
+            "needs_translation": false,
+            "max_length": 10,
+            "reverse_text": false
+          },
+          "dynamic": {
+            "english": "Dynamic",
+            "translation": "动态",
+            "needs_translation": false,
+            "max_length": 7,
+            "reverse_text": false
+          },
+          "not_during_startup": {
+            "english": "Not during startup",
+            "translation": "启动时不启用",
+            "needs_translation": false,
+            "max_length": 18,
+            "reverse_text": false
+          },
+          "linear_thr": {
+            "english": "Linear Thr",
+            "translation": "线性油门",
+            "needs_translation": false,
+            "max_length": 10,
+            "reverse_text": false
+          },
+          "fixed_wing": {
+            "english": "Fixed Wing",
+            "translation": "固定翼",
+            "needs_translation": false,
+            "max_length": 10,
+            "reverse_text": false
+          },
+          "proportional": {
+            "english": "Proportional",
+            "translation": "比例",
+            "needs_translation": false,
+            "max_length": 12,
+            "reverse_text": false
+          },
+          "airplane": {
+            "english": "Airplane",
+            "translation": "飞机",
+            "needs_translation": false,
+            "max_length": 8,
+            "reverse_text": false
+          },
+          "boat": {
+            "english": "Boat",
+            "translation": "船",
+            "needs_translation": false,
+            "max_length": 4,
+            "reverse_text": false
+          },
+          "quad": {
+            "english": "Quad",
+            "translation": "四轴",
+            "needs_translation": false,
+            "max_length": 4,
+            "reverse_text": false
+          },
+          "glider": {
+            "english": "Glider",
+            "translation": "滑翔机",
+            "needs_translation": false,
+            "max_length": 6,
+            "reverse_text": false
+          },
+          "slowdown": {
+            "english": "Slowdown",
+            "translation": "减速",
+            "needs_translation": false,
+            "max_length": 8,
+            "reverse_text": false
+          },
+          "cutoff": {
+            "english": "Cutoff",
+            "translation": "切断",
+            "needs_translation": false,
+            "max_length": 6,
+            "reverse_text": false
+          },
+          "freewheel": {
+            "english": "Freew.",
+            "translation": "自由轮",
+            "needs_translation": false,
+            "max_length": 6,
+            "reverse_text": false
+          },
+          "unused": {
+            "english": "Unused",
+            "translation": "未使用",
+            "needs_translation": false,
+            "max_length": 6,
+            "reverse_text": false
+          },
+          "infinite": {
+            "english": "Infinite",
+            "translation": "无限",
+            "needs_translation": false,
+            "max_length": 8,
+            "reverse_text": false
+          },
+          "minutes_1": {
+            "english": "1 minute",
+            "translation": "1 分钟",
+            "needs_translation": false,
+            "max_length": 8,
+            "reverse_text": false
+          },
+          "minutes_2": {
+            "english": "2 minutes",
+            "translation": "2 分钟",
+            "needs_translation": false,
+            "max_length": 9,
+            "reverse_text": false
+          },
+          "minutes_5": {
+            "english": "5 minutes",
+            "translation": "5 分钟",
+            "needs_translation": false,
+            "max_length": 9,
+            "reverse_text": false
+          },
+          "minutes_10": {
+            "english": "10 minutes",
+            "translation": "10 分钟",
+            "needs_translation": false,
+            "max_length": 10,
+            "reverse_text": false
+          },
+          "auto_norm": {
+            "english": "Auto Norm",
+            "translation": "自动 标准",
+            "needs_translation": false,
+            "max_length": 9,
+            "reverse_text": false
+          },
+          "auto_eff": {
+            "english": "Auto Eff",
+            "translation": "自动 高效",
+            "needs_translation": false,
+            "max_length": 8,
+            "reverse_text": false
+          },
+          "auto_power": {
+            "english": "Auto Power",
+            "translation": "自动 动力",
+            "needs_translation": false,
+            "max_length": 10,
+            "reverse_text": false
+          },
+          "auto_extr": {
+            "english": "Auto Extr",
+            "translation": "自动 极限",
+            "needs_translation": false,
+            "max_length": 9,
+            "reverse_text": false
+          },
+          "bidirectional_rev": {
+            "english": "Bidirectional Rev",
+            "translation": "双向 反转",
+            "needs_translation": false,
+            "max_length": 17,
+            "reverse_text": false
+          },
+          "x13_less_protection": {
+            "english": "13x (Less protection)",
+            "translation": "13x (保护较少)",
+            "needs_translation": false,
+            "max_length": 21,
+            "reverse_text": false
+          },
+          "red": {
+            "english": "Red",
+            "translation": "红",
+            "needs_translation": false,
+            "max_length": 3,
+            "reverse_text": false
+          },
+          "yellow": {
+            "english": "Yellow",
+            "translation": "黄",
+            "needs_translation": false,
+            "max_length": 6,
+            "reverse_text": false
+          },
+          "orange": {
+            "english": "Orange",
+            "translation": "橙",
+            "needs_translation": false,
+            "max_length": 6,
+            "reverse_text": false
+          },
+          "green": {
+            "english": "Green",
+            "translation": "绿",
+            "needs_translation": false,
+            "max_length": 5,
+            "reverse_text": false
+          },
+          "jade_green": {
+            "english": "Jade Green",
+            "translation": "翡翠绿",
+            "needs_translation": false,
+            "max_length": 10,
+            "reverse_text": false
+          },
+          "blue": {
+            "english": "Blue",
+            "translation": "蓝",
+            "needs_translation": false,
+            "max_length": 4,
+            "reverse_text": false
+          },
+          "cyan": {
+            "english": "Cyan",
+            "translation": "青",
+            "needs_translation": false,
+            "max_length": 4,
+            "reverse_text": false
+          },
+          "purple": {
+            "english": "Purple",
+            "translation": "紫",
+            "needs_translation": false,
+            "max_length": 6,
+            "reverse_text": false
+          },
+          "pink": {
+            "english": "Pink",
+            "translation": "粉",
+            "needs_translation": false,
+            "max_length": 4,
+            "reverse_text": false
+          },
+          "white": {
+            "english": "White",
+            "translation": "白",
+            "needs_translation": false,
+            "max_length": 5,
+            "reverse_text": false
+          },
+          "selecting_fmt": {
+            "english": "Selecting %s...",
+            "translation": "正在选择 %s...",
+            "needs_translation": false,
+            "max_length": 15,
+            "reverse_text": false
+          },
+          "x1_more_protection": {
+            "english": "1x (More protection)",
+            "translation": "1x (保护较多)",
+            "needs_translation": false,
+            "max_length": 20,
+            "reverse_text": false
+          }
         }
       },
       "msp_exp": {
@@ -8498,7 +8850,7 @@
           "english": "Saved to the flight controller. The change record was not written.",
           "translation": "Saved to the flight controller. The change record was not written.",
           "needs_translation": true,
-          "max_length": 72
+          "max_length": 66
         },
         "stage_read": {
           "english": "Reading current settings...",
@@ -10656,7 +11008,7 @@
           "english": "With the battery still unplugged and the flight controller on USB, press Full throttle. The output stays at 100 % until you press Low throttle.",
           "translation": "在电池仍未接入、飞控通过 USB 连接时，按下满油门。输出会保持在 100%，直到您按下怠速。",
           "needs_translation": false,
-          "max_length": 131,
+          "max_length": 143,
           "reverse_text": false
         },
         "esc_batt_text": {
@@ -10733,25 +11085,25 @@
           "english": "Set over the ESC link",
           "translation": "Set over the ESC link",
           "needs_translation": true,
-          "max_length": 24
+          "max_length": 21
         },
         "esc_link_busy": {
           "english": "Setting the range on the ESC...",
           "translation": "Setting the range on the ESC...",
           "needs_translation": true,
-          "max_length": 40
+          "max_length": 31
         },
         "esc_link_done": {
           "english": "Range set on the ESC and the FC.",
           "translation": "Range set on the ESC and the FC.",
           "needs_translation": true,
-          "max_length": 40
+          "max_length": 32
         },
         "esc_link_failed": {
           "english": "The ESC link did not confirm the range.",
           "translation": "The ESC link did not confirm the range.",
           "needs_translation": true,
-          "max_length": 50
+          "max_length": 39
         },
         "esc_need_calib": {
           "english": "Calibrate the ESC first.",
@@ -11205,7 +11557,7 @@
           "english": "Press Swap to hold the tail at 60°, again for the other side, then set the limits as high as they go without the slider or links binding.",
           "translation": "按 切换 将尾桨保持在 60°，再按一次换另一侧，然后把限位设得尽量高，但不能让滑块或连杆卡住。",
           "needs_translation": false,
-          "max_length": 48,
+          "max_length": 137,
           "reverse_text": false
         },
         "fin_arm_switch": {
@@ -11653,7 +12005,7 @@
           "english": "Press Swap to hold the tail at 22.5°; each press holds the other side. Measure the tail blade pitch and adjust until it reads 22.5°. No pitch gauge? Fold a square of paper corner to corner (45°): seen from the tail tip, the fold fits flush between the blades.",
           "translation": "按 切换 将尾桨保持在 22.5°， 每按一次换到另一侧。 测量尾桨叶螺距 并调整至 22.5°。 没有螺距尺？ 将正方形纸 沿对角线对折（45°）： 从桨尖看去， 折痕应正好 贴合两片桨叶之间。",
           "needs_translation": false,
-          "max_length": 98,
+          "max_length": 259,
           "reverse_text": false
         },
         "tal_lim_title": {

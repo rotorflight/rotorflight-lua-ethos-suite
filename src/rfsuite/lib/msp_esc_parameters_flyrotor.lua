@@ -10,12 +10,12 @@ local mspcodec = requireModule("lib/mspcodec.lua")
 local READ_COMMAND = 217
 local WRITE_COMMAND = 218
 
-local ESC_MODE = {{"ESC Gov", 0}, {"Linear Thr", 1}, {"RF Gov", 2}}
-local BEC_VOLTAGE = {{"Disabled", 0}, {"7.5V", 1}, {"8.0V", 2}, {"8.5V", 3}, {"12.0V", 4}}
-local ELECTRICAL_ANGLE = {{"Auto", 0}, {"1 deg", 1}, {"2 deg", 2}, {"3 deg", 3}, {"4 deg", 4}, {"5 deg", 5}, {"6 deg", 6}, {"7 deg", 7}, {"8 deg", 8}, {"9 deg", 9}, {"10 deg", 10}}
+local ESC_MODE = {{"ESC Gov", 0}, {"@i18n(app.modules.esc_tools.opt.linear_thr)@", 1}, {"RF Gov", 2}}
+local BEC_VOLTAGE = {{"@i18n(app.modules.ports.function_disabled)@", 0}, {"7.5V", 1}, {"8.0V", 2}, {"8.5V", 3}, {"12.0V", 4}}
+local ELECTRICAL_ANGLE = {{"@i18n(api.BATTERY_INI.tbl_auto)@", 0}, {"1 deg", 1}, {"2 deg", 2}, {"3 deg", 3}, {"4 deg", 4}, {"5 deg", 5}, {"6 deg", 6}, {"7 deg", 7}, {"8 deg", 8}, {"9 deg", 9}, {"10 deg", 10}}
 local DIRECTION = {{"CW", 0}, {"CCW", 1}}
-local FAN_CONTROL = {{"Automatic", 0}, {"Always On", 1}, {"Always Off", 2}}
-local DISABLED_ENABLED = {{"Disabled", 0}, {"Enabled", 1}}
+local FAN_CONTROL = {{"@i18n(app.modules.esc_tools.opt.automatic)@", 0}, {"@i18n(app.modules.esc_tools.opt.always_on)@", 1}, {"@i18n(app.modules.esc_tools.opt.always_off)@", 2}}
+local DISABLED_ENABLED = {{"@i18n(app.modules.ports.function_disabled)@", 0}, {"@i18n(app.modules.esc_tools.opt.enabled)@", 1}}
 local THROTTLE_PROTOCOL = {{"PWM", 0}, {"DShot", 1}, {"Serial", 2}}
 local TELEMETRY_PROTOCOL = {{"FLYROTOR", 0}}
 local LED_COLOR = {

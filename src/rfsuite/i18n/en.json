@@ -262,7 +262,7 @@
     },
     "btn_restart_fc": {
       "english": "Restart FC",
-      "max_length": 12,
+      "max_length": 10,
       "needs_translation": false,
       "translation": "Restart FC"
     },
@@ -3450,6 +3450,358 @@
           "needs_translation": false,
           "translation": "Open"
         },
+        "opt": {
+          "airplane": {
+            "english": "Airplane",
+            "max_length": 8,
+            "needs_translation": false,
+            "reverse_text": false,
+            "translation": "Airplane"
+          },
+          "always_off": {
+            "english": "Always Off",
+            "max_length": 10,
+            "needs_translation": false,
+            "reverse_text": false,
+            "translation": "Always Off"
+          },
+          "always_on": {
+            "english": "Always On",
+            "max_length": 9,
+            "needs_translation": false,
+            "reverse_text": false,
+            "translation": "Always On"
+          },
+          "auto_eff": {
+            "english": "Auto Eff",
+            "max_length": 8,
+            "needs_translation": false,
+            "reverse_text": false,
+            "translation": "Auto Eff"
+          },
+          "auto_extr": {
+            "english": "Auto Extr",
+            "max_length": 9,
+            "needs_translation": false,
+            "reverse_text": false,
+            "translation": "Auto Extr"
+          },
+          "auto_norm": {
+            "english": "Auto Norm",
+            "max_length": 9,
+            "needs_translation": false,
+            "reverse_text": false,
+            "translation": "Auto Norm"
+          },
+          "auto_power": {
+            "english": "Auto Power",
+            "max_length": 10,
+            "needs_translation": false,
+            "reverse_text": false,
+            "translation": "Auto Power"
+          },
+          "automatic": {
+            "english": "Automatic",
+            "max_length": 9,
+            "needs_translation": false,
+            "reverse_text": false,
+            "translation": "Automatic"
+          },
+          "bidirectional_rev": {
+            "english": "Bidirectional Rev",
+            "max_length": 17,
+            "needs_translation": false,
+            "reverse_text": false,
+            "translation": "Bidirectional Rev"
+          },
+          "blue": {
+            "english": "Blue",
+            "max_length": 4,
+            "needs_translation": false,
+            "reverse_text": false,
+            "translation": "Blue"
+          },
+          "boat": {
+            "english": "Boat",
+            "max_length": 4,
+            "needs_translation": false,
+            "reverse_text": false,
+            "translation": "Boat"
+          },
+          "cutoff": {
+            "english": "Cutoff",
+            "max_length": 6,
+            "needs_translation": false,
+            "reverse_text": false,
+            "translation": "Cutoff"
+          },
+          "cyan": {
+            "english": "Cyan",
+            "max_length": 4,
+            "needs_translation": false,
+            "reverse_text": false,
+            "translation": "Cyan"
+          },
+          "dynamic": {
+            "english": "Dynamic",
+            "max_length": 7,
+            "needs_translation": false,
+            "reverse_text": false,
+            "translation": "Dynamic"
+          },
+          "enabled": {
+            "english": "Enabled",
+            "max_length": 7,
+            "needs_translation": false,
+            "reverse_text": false,
+            "translation": "Enabled"
+          },
+          "fast": {
+            "english": "Fast",
+            "max_length": 4,
+            "needs_translation": false,
+            "reverse_text": false,
+            "translation": "Fast"
+          },
+          "fixed_wing": {
+            "english": "Fixed Wing",
+            "max_length": 10,
+            "needs_translation": false,
+            "reverse_text": false,
+            "translation": "Fixed Wing"
+          },
+          "freewheel": {
+            "english": "Freew.",
+            "max_length": 6,
+            "needs_translation": false,
+            "reverse_text": false,
+            "translation": "Freew."
+          },
+          "glider": {
+            "english": "Glider",
+            "max_length": 6,
+            "needs_translation": false,
+            "reverse_text": false,
+            "translation": "Glider"
+          },
+          "green": {
+            "english": "Green",
+            "max_length": 5,
+            "needs_translation": false,
+            "reverse_text": false,
+            "translation": "Green"
+          },
+          "hard": {
+            "english": "Hard",
+            "max_length": 4,
+            "needs_translation": false,
+            "reverse_text": false,
+            "translation": "Hard"
+          },
+          "high": {
+            "english": "High",
+            "max_length": 4,
+            "needs_translation": false,
+            "reverse_text": false,
+            "translation": "High"
+          },
+          "infinite": {
+            "english": "Infinite",
+            "max_length": 8,
+            "needs_translation": false,
+            "reverse_text": false,
+            "translation": "Infinite"
+          },
+          "jade_green": {
+            "english": "Jade Green",
+            "max_length": 10,
+            "needs_translation": false,
+            "reverse_text": false,
+            "translation": "Jade Green"
+          },
+          "linear_thr": {
+            "english": "Linear Thr",
+            "max_length": 10,
+            "needs_translation": false,
+            "reverse_text": false,
+            "translation": "Linear Thr"
+          },
+          "low": {
+            "english": "Low",
+            "max_length": 3,
+            "needs_translation": false,
+            "reverse_text": false,
+            "translation": "Low"
+          },
+          "medium": {
+            "english": "Medium",
+            "max_length": 6,
+            "needs_translation": false,
+            "reverse_text": false,
+            "translation": "Medium"
+          },
+          "medium_high": {
+            "english": "Medium High",
+            "max_length": 11,
+            "needs_translation": false,
+            "reverse_text": false,
+            "translation": "Medium High"
+          },
+          "medium_low": {
+            "english": "Medium Low",
+            "max_length": 10,
+            "needs_translation": false,
+            "reverse_text": false,
+            "translation": "Medium Low"
+          },
+          "minutes_1": {
+            "english": "1 minute",
+            "max_length": 8,
+            "needs_translation": false,
+            "reverse_text": false,
+            "translation": "1 minute"
+          },
+          "minutes_10": {
+            "english": "10 minutes",
+            "max_length": 10,
+            "needs_translation": false,
+            "reverse_text": false,
+            "translation": "10 minutes"
+          },
+          "minutes_2": {
+            "english": "2 minutes",
+            "max_length": 9,
+            "needs_translation": false,
+            "reverse_text": false,
+            "translation": "2 minutes"
+          },
+          "minutes_5": {
+            "english": "5 minutes",
+            "max_length": 9,
+            "needs_translation": false,
+            "reverse_text": false,
+            "translation": "5 minutes"
+          },
+          "not_during_startup": {
+            "english": "Not during startup",
+            "max_length": 18,
+            "needs_translation": false,
+            "reverse_text": false,
+            "translation": "Not during startup"
+          },
+          "orange": {
+            "english": "Orange",
+            "max_length": 6,
+            "needs_translation": false,
+            "reverse_text": false,
+            "translation": "Orange"
+          },
+          "pink": {
+            "english": "Pink",
+            "max_length": 4,
+            "needs_translation": false,
+            "reverse_text": false,
+            "translation": "Pink"
+          },
+          "proportional": {
+            "english": "Proportional",
+            "max_length": 12,
+            "needs_translation": false,
+            "reverse_text": false,
+            "translation": "Proportional"
+          },
+          "purple": {
+            "english": "Purple",
+            "max_length": 6,
+            "needs_translation": false,
+            "reverse_text": false,
+            "translation": "Purple"
+          },
+          "quad": {
+            "english": "Quad",
+            "max_length": 4,
+            "needs_translation": false,
+            "reverse_text": false,
+            "translation": "Quad"
+          },
+          "red": {
+            "english": "Red",
+            "max_length": 3,
+            "needs_translation": false,
+            "reverse_text": false,
+            "translation": "Red"
+          },
+          "selecting_fmt": {
+            "english": "Selecting %s...",
+            "max_length": 15,
+            "needs_translation": false,
+            "reverse_text": false,
+            "translation": "Selecting %s..."
+          },
+          "slow": {
+            "english": "Slow",
+            "max_length": 4,
+            "needs_translation": false,
+            "reverse_text": false,
+            "translation": "Slow"
+          },
+          "slowdown": {
+            "english": "Slowdown",
+            "max_length": 8,
+            "needs_translation": false,
+            "reverse_text": false,
+            "translation": "Slowdown"
+          },
+          "soft": {
+            "english": "Soft",
+            "max_length": 4,
+            "needs_translation": false,
+            "reverse_text": false,
+            "translation": "Soft"
+          },
+          "unused": {
+            "english": "Unused",
+            "max_length": 6,
+            "needs_translation": false,
+            "reverse_text": false,
+            "translation": "Unused"
+          },
+          "very_slow": {
+            "english": "Very Slow",
+            "max_length": 9,
+            "needs_translation": false,
+            "reverse_text": false,
+            "translation": "Very Slow"
+          },
+          "white": {
+            "english": "White",
+            "max_length": 5,
+            "needs_translation": false,
+            "reverse_text": false,
+            "translation": "White"
+          },
+          "x13_less_protection": {
+            "english": "13x (Less protection)",
+            "max_length": 21,
+            "needs_translation": false,
+            "reverse_text": false,
+            "translation": "13x (Less protection)"
+          },
+          "x1_more_protection": {
+            "english": "1x (More protection)",
+            "max_length": 20,
+            "needs_translation": false,
+            "reverse_text": false,
+            "translation": "1x (More protection)"
+          },
+          "yellow": {
+            "english": "Yellow",
+            "max_length": 6,
+            "needs_translation": false,
+            "reverse_text": false,
+            "translation": "Yellow"
+          }
+        },
         "select_esc": {
           "english": "Select ESC",
           "max_length": 10,
@@ -4520,7 +4872,7 @@
         },
         "tail_override_msg": {
           "english": "Hold the tail at center so trim changes move it live. Press Save to keep them.",
-          "max_length": 92,
+          "max_length": 78,
           "needs_translation": false,
           "translation": "Hold the tail at center so trim changes move it live. Press Save to keep them."
         },
@@ -6064,7 +6416,7 @@
         },
         "activelook_glasses_menu": {
           "english": "ETHOS Glasses menu",
-          "max_length": 21,
+          "max_length": 18,
           "needs_translation": false,
           "translation": "ETHOS Glasses menu"
         },
@@ -6172,7 +6524,7 @@
         },
         "activelook_setup_hint": {
           "english": "One-time setup:\nModel > Glasses > Screen\nChoose the Full-Screen layout.\nAssign Rotorflight ActiveLook.",
-          "max_length": 120,
+          "max_length": 102,
           "needs_translation": false,
           "translation": "One-time setup:\nModel > Glasses > Screen\nChoose the Full-Screen layout.\nAssign Rotorflight ActiveLook."
         },
@@ -7145,32 +7497,32 @@
         },
         "esc_full_text": {
           "english": "With the battery still unplugged and the flight controller on USB, press Full throttle. The output stays at 100 % until you press Low throttle.",
-          "max_length": 131,
+          "max_length": 143,
           "needs_translation": false,
           "reverse_text": false,
           "translation": "With the battery still unplugged and the flight controller on USB, press Full throttle. The output stays at 100 % until you press Low throttle."
         },
         "esc_link_btn": {
           "english": "Set over the ESC link",
-          "max_length": 24,
+          "max_length": 21,
           "needs_translation": false,
           "translation": "Set over the ESC link"
         },
         "esc_link_busy": {
           "english": "Setting the range on the ESC...",
-          "max_length": 40,
+          "max_length": 31,
           "needs_translation": false,
           "translation": "Setting the range on the ESC..."
         },
         "esc_link_done": {
           "english": "Range set on the ESC and the FC.",
-          "max_length": 40,
+          "max_length": 32,
           "needs_translation": false,
           "translation": "Range set on the ESC and the FC."
         },
         "esc_link_failed": {
           "english": "The ESC link did not confirm the range.",
-          "max_length": 50,
+          "max_length": 39,
           "needs_translation": false,
           "translation": "The ESC link did not confirm the range."
         },
@@ -10392,7 +10744,7 @@
         },
         "applied_not_recorded": {
           "english": "Saved to the flight controller. The change record was not written.",
-          "max_length": 72,
+          "max_length": 66,
           "needs_translation": false,
           "translation": "Saved to the flight controller. The change record was not written."
         },
@@ -10828,7 +11180,7 @@
     },
     "msg_save_failed_running_body": {
       "english": "The flight controller may already be using the new values. Restart it to use the saved settings.",
-      "max_length": 110,
+      "max_length": 96,
       "needs_translation": false,
       "translation": "The flight controller may already be using the new values. Restart it to use the saved settings."
     },

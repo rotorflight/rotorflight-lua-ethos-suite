@@ -214,13 +214,13 @@
       "english": "The flight controller may already be using the new values. Restart it to use the saved settings.",
       "translation": "The flight controller may already be using the new values. Restart it to use the saved settings.",
       "needs_translation": true,
-      "max_length": 110
+      "max_length": 96
     },
     "btn_restart_fc": {
       "english": "Restart FC",
       "translation": "Restart FC",
       "needs_translation": true,
-      "max_length": 12
+      "max_length": 10
     },
     "msg_save_failed_title": {
       "english": "Save failed",
@@ -2136,19 +2136,19 @@
           "english": "ETHOS Glasses menu",
           "translation": "ETHOS menu brýlí",
           "needs_translation": false,
-          "max_length": 21
+          "max_length": 18
         },
         "activelook_restart_radio": {
           "english": "Save, then restart the radio.",
           "translation": "Uložte, pak restartujte rádio.",
           "needs_translation": false,
-          "max_length": 30
+          "max_length": 29
         },
         "activelook_setup_hint": {
           "english": "One-time setup:\nModel > Glasses > Screen\nChoose the Full-Screen layout.\nAssign Rotorflight ActiveLook.",
           "translation": "Jednorázové nastavení:\nModel > Brýle > Obrazovka\nVyberte rozvržení Full-Screen.\nPřiřaďte Rotorflight ActiveLook.",
           "needs_translation": false,
-          "max_length": 120
+          "max_length": 102
         },
         "feature_activelook": {
           "english": "Rotorflight ActiveLook",
@@ -3628,7 +3628,7 @@
           "translation": "Drží ocas ve středu, takže změny trimu jím hýbou živě. Uložte je tlačítkem Uložit.",
           "needs_translation": false,
           "reverse_text": false,
-          "max_length": 92
+          "max_length": 78
         },
         "tail_tta_off": {
           "english": "Also sets Tail Torque Assist to 0 in every profile.",
@@ -7969,6 +7969,358 @@
           "needs_translation": false,
           "max_length": 9,
           "reverse_text": false
+        },
+        "opt": {
+          "low": {
+            "english": "Low",
+            "translation": "Nízká",
+            "needs_translation": false,
+            "max_length": 3,
+            "reverse_text": false
+          },
+          "medium": {
+            "english": "Medium",
+            "translation": "Střední",
+            "needs_translation": false,
+            "max_length": 6,
+            "reverse_text": false
+          },
+          "high": {
+            "english": "High",
+            "translation": "Vysoká",
+            "needs_translation": false,
+            "max_length": 4,
+            "reverse_text": false
+          },
+          "medium_low": {
+            "english": "Medium Low",
+            "translation": "Střední-nízká",
+            "needs_translation": false,
+            "max_length": 10,
+            "reverse_text": false
+          },
+          "medium_high": {
+            "english": "Medium High",
+            "translation": "Střední-vysoká",
+            "needs_translation": false,
+            "max_length": 11,
+            "reverse_text": false
+          },
+          "slow": {
+            "english": "Slow",
+            "translation": "Pomalu",
+            "needs_translation": false,
+            "max_length": 4,
+            "reverse_text": false
+          },
+          "fast": {
+            "english": "Fast",
+            "translation": "Rychle",
+            "needs_translation": false,
+            "max_length": 4,
+            "reverse_text": false
+          },
+          "very_slow": {
+            "english": "Very Slow",
+            "translation": "Velmi pomalu",
+            "needs_translation": false,
+            "max_length": 9,
+            "reverse_text": false
+          },
+          "soft": {
+            "english": "Soft",
+            "translation": "Měkké",
+            "needs_translation": false,
+            "max_length": 4,
+            "reverse_text": false
+          },
+          "hard": {
+            "english": "Hard",
+            "translation": "Tvrdé",
+            "needs_translation": false,
+            "max_length": 4,
+            "reverse_text": false
+          },
+          "enabled": {
+            "english": "Enabled",
+            "translation": "Zapnuto",
+            "needs_translation": false,
+            "max_length": 7,
+            "reverse_text": false
+          },
+          "automatic": {
+            "english": "Automatic",
+            "translation": "Automaticky",
+            "needs_translation": false,
+            "max_length": 9,
+            "reverse_text": false
+          },
+          "always_on": {
+            "english": "Always On",
+            "translation": "Vždy zapnuto",
+            "needs_translation": false,
+            "max_length": 9,
+            "reverse_text": false
+          },
+          "always_off": {
+            "english": "Always Off",
+            "translation": "Vždy vypnuto",
+            "needs_translation": false,
+            "max_length": 10,
+            "reverse_text": false
+          },
+          "dynamic": {
+            "english": "Dynamic",
+            "translation": "Dynamicky",
+            "needs_translation": false,
+            "max_length": 7,
+            "reverse_text": false
+          },
+          "not_during_startup": {
+            "english": "Not during startup",
+            "translation": "Ne při startu",
+            "needs_translation": false,
+            "max_length": 18,
+            "reverse_text": false
+          },
+          "linear_thr": {
+            "english": "Linear Thr",
+            "translation": "Lineární plyn",
+            "needs_translation": false,
+            "max_length": 10,
+            "reverse_text": false
+          },
+          "fixed_wing": {
+            "english": "Fixed Wing",
+            "translation": "Letadlo",
+            "needs_translation": false,
+            "max_length": 10,
+            "reverse_text": false
+          },
+          "proportional": {
+            "english": "Proportional",
+            "translation": "Proporcionální",
+            "needs_translation": false,
+            "max_length": 12,
+            "reverse_text": false
+          },
+          "airplane": {
+            "english": "Airplane",
+            "translation": "Letadlo",
+            "needs_translation": false,
+            "max_length": 8,
+            "reverse_text": false
+          },
+          "boat": {
+            "english": "Boat",
+            "translation": "Loď",
+            "needs_translation": false,
+            "max_length": 4,
+            "reverse_text": false
+          },
+          "quad": {
+            "english": "Quad",
+            "translation": "Kvadrokoptéra",
+            "needs_translation": false,
+            "max_length": 4,
+            "reverse_text": false
+          },
+          "glider": {
+            "english": "Glider",
+            "translation": "Větroň",
+            "needs_translation": false,
+            "max_length": 6,
+            "reverse_text": false
+          },
+          "slowdown": {
+            "english": "Slowdown",
+            "translation": "Zpomalení",
+            "needs_translation": false,
+            "max_length": 8,
+            "reverse_text": false
+          },
+          "cutoff": {
+            "english": "Cutoff",
+            "translation": "Odpojení",
+            "needs_translation": false,
+            "max_length": 6,
+            "reverse_text": false
+          },
+          "freewheel": {
+            "english": "Freew.",
+            "translation": "Volný chod",
+            "needs_translation": false,
+            "max_length": 6,
+            "reverse_text": false
+          },
+          "unused": {
+            "english": "Unused",
+            "translation": "Nepoužito",
+            "needs_translation": false,
+            "max_length": 6,
+            "reverse_text": false
+          },
+          "infinite": {
+            "english": "Infinite",
+            "translation": "Nekonečně",
+            "needs_translation": false,
+            "max_length": 8,
+            "reverse_text": false
+          },
+          "minutes_1": {
+            "english": "1 minute",
+            "translation": "1 minuta",
+            "needs_translation": false,
+            "max_length": 8,
+            "reverse_text": false
+          },
+          "minutes_2": {
+            "english": "2 minutes",
+            "translation": "2 minuty",
+            "needs_translation": false,
+            "max_length": 9,
+            "reverse_text": false
+          },
+          "minutes_5": {
+            "english": "5 minutes",
+            "translation": "5 minut",
+            "needs_translation": false,
+            "max_length": 9,
+            "reverse_text": false
+          },
+          "minutes_10": {
+            "english": "10 minutes",
+            "translation": "10 minut",
+            "needs_translation": false,
+            "max_length": 10,
+            "reverse_text": false
+          },
+          "auto_norm": {
+            "english": "Auto Norm",
+            "translation": "Auto normál",
+            "needs_translation": false,
+            "max_length": 9,
+            "reverse_text": false
+          },
+          "auto_eff": {
+            "english": "Auto Eff",
+            "translation": "Auto účinné",
+            "needs_translation": false,
+            "max_length": 8,
+            "reverse_text": false
+          },
+          "auto_power": {
+            "english": "Auto Power",
+            "translation": "Auto výkon",
+            "needs_translation": false,
+            "max_length": 10,
+            "reverse_text": false
+          },
+          "auto_extr": {
+            "english": "Auto Extr",
+            "translation": "Auto extrém",
+            "needs_translation": false,
+            "max_length": 9,
+            "reverse_text": false
+          },
+          "bidirectional_rev": {
+            "english": "Bidirectional Rev",
+            "translation": "Obousměrné zpět",
+            "needs_translation": false,
+            "max_length": 17,
+            "reverse_text": false
+          },
+          "x13_less_protection": {
+            "english": "13x (Less protection)",
+            "translation": "13x (menší ochrana)",
+            "needs_translation": false,
+            "max_length": 21,
+            "reverse_text": false
+          },
+          "red": {
+            "english": "Red",
+            "translation": "Červená",
+            "needs_translation": false,
+            "max_length": 3,
+            "reverse_text": false
+          },
+          "yellow": {
+            "english": "Yellow",
+            "translation": "Žlutá",
+            "needs_translation": false,
+            "max_length": 6,
+            "reverse_text": false
+          },
+          "orange": {
+            "english": "Orange",
+            "translation": "Oranžová",
+            "needs_translation": false,
+            "max_length": 6,
+            "reverse_text": false
+          },
+          "green": {
+            "english": "Green",
+            "translation": "Zelená",
+            "needs_translation": false,
+            "max_length": 5,
+            "reverse_text": false
+          },
+          "jade_green": {
+            "english": "Jade Green",
+            "translation": "Jadová zelená",
+            "needs_translation": false,
+            "max_length": 10,
+            "reverse_text": false
+          },
+          "blue": {
+            "english": "Blue",
+            "translation": "Modrá",
+            "needs_translation": false,
+            "max_length": 4,
+            "reverse_text": false
+          },
+          "cyan": {
+            "english": "Cyan",
+            "translation": "Azurová",
+            "needs_translation": false,
+            "max_length": 4,
+            "reverse_text": false
+          },
+          "purple": {
+            "english": "Purple",
+            "translation": "Fialová",
+            "needs_translation": false,
+            "max_length": 6,
+            "reverse_text": false
+          },
+          "pink": {
+            "english": "Pink",
+            "translation": "Růžová",
+            "needs_translation": false,
+            "max_length": 4,
+            "reverse_text": false
+          },
+          "white": {
+            "english": "White",
+            "translation": "Bílá",
+            "needs_translation": false,
+            "max_length": 5,
+            "reverse_text": false
+          },
+          "selecting_fmt": {
+            "english": "Selecting %s...",
+            "translation": "Vybírám %s...",
+            "needs_translation": false,
+            "max_length": 15,
+            "reverse_text": false
+          },
+          "x1_more_protection": {
+            "english": "1x (More protection)",
+            "translation": "1x (více ochrany)",
+            "needs_translation": false,
+            "max_length": 20,
+            "reverse_text": false
+          }
         }
       },
       "msp_exp": {
@@ -8498,7 +8850,7 @@
           "english": "Saved to the flight controller. The change record was not written.",
           "translation": "Saved to the flight controller. The change record was not written.",
           "needs_translation": true,
-          "max_length": 72
+          "max_length": 66
         },
         "stage_read": {
           "english": "Reading current settings...",
@@ -8597,7 +8949,7 @@
           "english": "Next",
           "translation": "Další",
           "needs_translation": false,
-          "max_length": 5,
+          "max_length": 4,
           "reverse_text": false
         },
         "btn_start": {
@@ -8639,14 +8991,14 @@
           "english": "Save and continue",
           "translation": "Uložit a pokračovat",
           "needs_translation": false,
-          "max_length": 19,
+          "max_length": 17,
           "reverse_text": false
         },
         "fin_button": {
           "english": "Save and finish",
           "translation": "Uložit a dokončit",
           "needs_translation": false,
-          "max_length": 17,
+          "max_length": 15,
           "reverse_text": false
         },
         "reboot_wait_fmt": {
@@ -8681,7 +9033,7 @@
           "english": "Save",
           "translation": "Uložit",
           "needs_translation": false,
-          "max_length": 6,
+          "max_length": 4,
           "reverse_text": false
         },
         "leave_discard": {
@@ -8716,13 +9068,13 @@
           "english": "Mode switches",
           "translation": "Přepínače režimů",
           "needs_translation": false,
-          "max_length": 16
+          "max_length": 13
         },
         "step_finish": {
           "english": "Finish",
           "translation": "Dokončit",
           "needs_translation": false,
-          "max_length": 8,
+          "max_length": 6,
           "reverse_text": false
         },
         "servo_role_fmt": {
@@ -8771,7 +9123,7 @@
           "english": "Swashplate",
           "translation": "Cyklická deska",
           "needs_translation": false,
-          "max_length": 14,
+          "max_length": 10,
           "reverse_text": false
         },
         "step_servotype": {
@@ -8813,7 +9165,7 @@
           "english": "Level swash",
           "translation": "Vyrovnání desky",
           "needs_translation": false,
-          "max_length": 15,
+          "max_length": 11,
           "reverse_text": false
         },
         "step_pitch": {
@@ -8827,28 +9179,28 @@
           "english": "Tail rotor",
           "translation": "Ocasní rotor",
           "needs_translation": false,
-          "max_length": 12,
+          "max_length": 10,
           "reverse_text": false
         },
         "step_gyro": {
           "english": "Gyro check",
           "translation": "Kontrola gyra",
           "needs_translation": false,
-          "max_length": 13,
+          "max_length": 10,
           "reverse_text": false
         },
         "role_pitch": {
           "english": "Pitch",
           "translation": "Klopení",
           "needs_translation": false,
-          "max_length": 7,
+          "max_length": 5,
           "reverse_text": false
         },
         "role_roll": {
           "english": "Roll",
           "translation": "Klonění",
           "needs_translation": false,
-          "max_length": 7,
+          "max_length": 4,
           "reverse_text": false
         },
         "role_collective": {
@@ -8869,21 +9221,21 @@
           "english": "Left",
           "translation": "Vlevo",
           "needs_translation": false,
-          "max_length": 5,
+          "max_length": 4,
           "reverse_text": false
         },
         "role_right": {
           "english": "Right",
           "translation": "Vpravo",
           "needs_translation": false,
-          "max_length": 6,
+          "max_length": 5,
           "reverse_text": false
         },
         "role_front": {
           "english": "Front",
           "translation": "Vpředu",
           "needs_translation": false,
-          "max_length": 6,
+          "max_length": 5,
           "reverse_text": false
         },
         "role_front_left": {
@@ -8918,7 +9270,7 @@
           "english": "Remove main and tail blades. Unplug all servos before starting.",
           "translation": "Sundejte hlavní a ocasní listy. Před začátkem odpojte všechna serva.",
           "needs_translation": false,
-          "max_length": 68,
+          "max_length": 63,
           "reverse_text": false
         },
         "sen_servos_unplugged": {
@@ -8932,21 +9284,21 @@
           "english": "All blades removed",
           "translation": "Všechny listy sundány",
           "needs_translation": false,
-          "max_length": 21,
+          "max_length": 18,
           "reverse_text": false
         },
         "art_side": {
           "english": "Side view",
           "translation": "Boční pohled",
           "needs_translation": false,
-          "max_length": 12,
+          "max_length": 9,
           "reverse_text": false
         },
         "art_front": {
           "english": "Front",
           "translation": "Předek",
           "needs_translation": false,
-          "max_length": 6,
+          "max_length": 5,
           "reverse_text": false
         },
         "sen_no_acc": {
@@ -8981,7 +9333,7 @@
           "english": "Available",
           "translation": "K dispozici",
           "needs_translation": false,
-          "max_length": 11,
+          "max_length": 9,
           "reverse_text": false
         },
         "sen_acc_busy": {
@@ -9023,7 +9375,7 @@
           "english": "Keep level, start detection, then lift the tail about 20 degrees.",
           "translation": "Držte vodorovně, spusťte detekci, pak zvedněte ocas asi o 20 stupňů.",
           "needs_translation": false,
-          "max_length": 68,
+          "max_length": 65,
           "reverse_text": false
         },
         "sen_auto_align": {
@@ -9037,21 +9389,21 @@
           "english": "Roll",
           "translation": "Klonění",
           "needs_translation": false,
-          "max_length": 7,
+          "max_length": 4,
           "reverse_text": false
         },
         "sen_pitch": {
           "english": "Pitch",
           "translation": "Klopení",
           "needs_translation": false,
-          "max_length": 7,
+          "max_length": 5,
           "reverse_text": false
         },
         "sen_yaw": {
           "english": "Yaw",
           "translation": "Bočení",
           "needs_translation": false,
-          "max_length": 6,
+          "max_length": 3,
           "reverse_text": false
         },
         "sen_align_lift": {
@@ -9065,14 +9417,14 @@
           "english": "Found: roll %d, pitch %d, yaw %d degrees.",
           "translation": "Zjištěno: klonění %d, klopení %d, bočení %d stupňů.",
           "needs_translation": false,
-          "max_length": 51,
+          "max_length": 41,
           "reverse_text": false
         },
         "sen_rejected_armed": {
           "english": "Refused: the model is armed.",
           "translation": "Odmítnuto: model je odjištěn.",
           "needs_translation": false,
-          "max_length": 29,
+          "max_length": 28,
           "reverse_text": false
         },
         "sen_rejected_uncal": {
@@ -9093,21 +9445,21 @@
           "english": "No orientation matched. Lift the tail straight up and try again.",
           "translation": "Žádná orientace nesouhlasí. Zvedněte ocas přímo nahoru a zkuste znovu.",
           "needs_translation": false,
-          "max_length": 70,
+          "max_length": 64,
           "reverse_text": false
         },
         "sen_unsupported": {
           "english": "This firmware cannot find the orientation: set it on the Alignment page.",
           "translation": "Tento firmware neumí zjistit orientaci: nastavte ji na stránce Zarovnání.",
           "needs_translation": false,
-          "max_length": 73,
+          "max_length": 72,
           "reverse_text": false
         },
         "sen_check_title": {
           "english": "Check orientation",
           "translation": "Kontrola orientace",
           "needs_translation": false,
-          "max_length": 18,
+          "max_length": 17,
           "reverse_text": false
         },
         "sen_check_text": {
@@ -9155,14 +9507,14 @@
           "english": "Receiver signal: OK",
           "translation": "Signál přijímače: OK",
           "needs_translation": false,
-          "max_length": 20,
+          "max_length": 19,
           "reverse_text": false
         },
         "rcv_signal_none": {
           "english": "No valid receiver signal.",
           "translation": "Žádný platný signál přijímače.",
           "needs_translation": false,
-          "max_length": 30,
+          "max_length": 25,
           "reverse_text": false
         },
         "rcv_order_title": {
@@ -9176,21 +9528,21 @@
           "english": "Each bar should follow its own stick. If not, pick a preset or detect the order.",
           "translation": "Každý pruh má sledovat svou páku. Pokud ne, vyberte předvolbu nebo zjistěte pořadí.",
           "needs_translation": false,
-          "max_length": 83,
+          "max_length": 80,
           "reverse_text": false
         },
         "rcv_order_now_fmt": {
           "english": "Now: %s.",
           "translation": "Nyní: %s.",
           "needs_translation": false,
-          "max_length": 9,
+          "max_length": 8,
           "reverse_text": false
         },
         "rcv_custom": {
           "english": "Custom",
           "translation": "Vlastní",
           "needs_translation": false,
-          "max_length": 7,
+          "max_length": 6,
           "reverse_text": false
         },
         "rcv_preset_elrs": {
@@ -9225,7 +9577,7 @@
           "english": "Detect",
           "translation": "Zjistit",
           "needs_translation": false,
-          "max_length": 7,
+          "max_length": 6,
           "reverse_text": false
         },
         "rcv_detect_text_fmt": {
@@ -9246,35 +9598,35 @@
           "english": "Skip",
           "translation": "Přeskočit",
           "needs_translation": false,
-          "max_length": 9,
+          "max_length": 4,
           "reverse_text": false
         },
         "rcv_move_roll": {
           "english": "Move the roll stick fully left and right.",
           "translation": "Pohněte pákou klonění naplno vlevo a vpravo.",
           "needs_translation": false,
-          "max_length": 44,
+          "max_length": 41,
           "reverse_text": false
         },
         "rcv_move_pitch": {
           "english": "Move the pitch stick fully forward and back.",
           "translation": "Pohněte pákou klopení naplno dopředu a dozadu.",
           "needs_translation": false,
-          "max_length": 46,
+          "max_length": 44,
           "reverse_text": false
         },
         "rcv_move_yaw": {
           "english": "Move the yaw stick fully left and right.",
           "translation": "Pohněte pákou bočení naplno vlevo a vpravo.",
           "needs_translation": false,
-          "max_length": 43,
+          "max_length": 40,
           "reverse_text": false
         },
         "rcv_move_collective": {
           "english": "Move the collective stick fully up and down.",
           "translation": "Pohněte pákou kolektivu naplno nahoru a dolů.",
           "needs_translation": false,
-          "max_length": 45,
+          "max_length": 44,
           "reverse_text": false
         },
         "rcv_move_throttle": {
@@ -9288,21 +9640,21 @@
           "english": "Roll",
           "translation": "Klonění",
           "needs_translation": false,
-          "max_length": 7,
+          "max_length": 4,
           "reverse_text": false
         },
         "rcv_ch_pitch": {
           "english": "Pitch",
           "translation": "Klopení",
           "needs_translation": false,
-          "max_length": 7,
+          "max_length": 5,
           "reverse_text": false
         },
         "rcv_ch_yaw": {
           "english": "Yaw",
           "translation": "Bočení",
           "needs_translation": false,
-          "max_length": 6,
+          "max_length": 3,
           "reverse_text": false
         },
         "rcv_ch_collective": {
@@ -9363,7 +9715,7 @@
           "english": "Use",
           "translation": "Použít",
           "needs_translation": false,
-          "max_length": 6,
+          "max_length": 3,
           "reverse_text": false
         },
         "rcv_defaults": {
@@ -9384,7 +9736,7 @@
           "english": "Receiver done",
           "translation": "Přijímač hotov",
           "needs_translation": false,
-          "max_length": 14,
+          "max_length": 13,
           "reverse_text": false
         },
         "rcv_done_keep": {
@@ -9403,7 +9755,7 @@
           "english": "Profiles & gain",
           "translation": "Profily a zesílení",
           "needs_translation": false,
-          "max_length": 18
+          "max_length": 15
         },
         "prof_intro": {
           "english": "One switch picks the flight profile, master gain fine-tunes the gains in flight. Both are optional.",
@@ -9415,19 +9767,19 @@
           "english": "Profile switch",
           "translation": "Přepínač profilů",
           "needs_translation": false,
-          "max_length": 16
+          "max_length": 14
         },
         "prof_switch_text": {
           "english": "A 2- or 3-position switch. Press Assign, then move it through every position: each one lands on its own profile.",
           "translation": "Přepínač se 2 nebo 3 polohami. Stiskněte Přiřadit a přepněte jej přes všechny polohy: každá připadne na vlastní profil.",
           "needs_translation": false,
-          "max_length": 119
+          "max_length": 112
         },
         "prof_both": {
           "english": "Profiles and rates",
           "translation": "Profily a rychlosti",
           "needs_translation": false,
-          "max_length": 19
+          "max_length": 18
         },
         "prof_pid": {
           "english": "PID profiles only",
@@ -9439,7 +9791,7 @@
           "english": "Not used",
           "translation": "Nepoužito",
           "needs_translation": false,
-          "max_length": 9
+          "max_length": 8
         },
         "prof_chosen": {
           "english": "Selected",
@@ -9463,7 +9815,7 @@
           "english": "Move the switch…",
           "translation": "Přepněte přepínač…",
           "needs_translation": false,
-          "max_length": 18
+          "max_length": 16
         },
         "prof_found_fmt": {
           "english": "%d positions found. Move through every position, then press Use.",
@@ -9475,13 +9827,13 @@
           "english": "Use",
           "translation": "Použít",
           "needs_translation": false,
-          "max_length": 6
+          "max_length": 3
         },
         "prof_gain_title": {
           "english": "Master gain in flight",
           "translation": "Hlavní zesílení za letu",
           "needs_translation": false,
-          "max_length": 23
+          "max_length": 21
         },
         "prof_gain_text": {
           "english": "Changes all gains together. Raise it in flight until the wobble starts, then come back a few steps.",
@@ -9493,55 +9845,55 @@
           "english": "Trim buttons",
           "translation": "Trim tlačítka",
           "needs_translation": false,
-          "max_length": 13
+          "max_length": 12
         },
         "prof_gain_knob": {
           "english": "Knob",
           "translation": "Otočný ovladač",
           "needs_translation": false,
-          "max_length": 14
+          "max_length": 4
         },
         "prof_gain_none": {
           "english": "Not used",
           "translation": "Nepoužito",
           "needs_translation": false,
-          "max_length": 9
+          "max_length": 8
         },
         "prof_gain_buttons_note": {
           "english": "Set up the GAIN mix first (see the docs).",
           "translation": "Nejprve nastavte mix GAIN (viz dokumentace).",
           "needs_translation": false,
-          "max_length": 44
+          "max_length": 41
         },
         "prof_gain_knob_note": {
           "english": "Set a knob or slider on a spare channel, then move it.",
           "translation": "Nastavte otočný ovladač nebo posuvník na volném kanálu a pohněte jím.",
           "needs_translation": false,
-          "max_length": 69
+          "max_length": 54
         },
         "prof_gain_now": {
           "english": "Now",
           "translation": "Nyní",
           "needs_translation": false,
-          "max_length": 4
+          "max_length": 3
         },
         "prof_listen_buttons": {
           "english": "Press a trim button…",
           "translation": "Stiskněte trim tlačítko…",
           "needs_translation": false,
-          "max_length": 24
+          "max_length": 20
         },
         "prof_listen_knob": {
           "english": "Turn the knob…",
           "translation": "Otočte ovladačem…",
           "needs_translation": false,
-          "max_length": 17
+          "max_length": 14
         },
         "prof_channels_title": {
           "english": "Channels in use",
           "translation": "Kanály v použití",
           "needs_translation": false,
-          "max_length": 16
+          "max_length": 15
         },
         "prof_channel_fmt": {
           "english": "CH %d",
@@ -9553,25 +9905,25 @@
           "english": "Profile switch",
           "translation": "Přepínač profilů",
           "needs_translation": false,
-          "max_length": 16
+          "max_length": 14
         },
         "prof_use_gain": {
           "english": "Master gain",
           "translation": "Hlavní zesílení",
           "needs_translation": false,
-          "max_length": 15
+          "max_length": 11
         },
         "prof_beyond8": {
           "english": "Needs more than 8 channels.",
           "translation": "Potřebuje více než 8 kanálů.",
           "needs_translation": false,
-          "max_length": 28
+          "max_length": 27
         },
         "prof_full": {
           "english": "Every adjustment slot is in use. Free one under Adjustments.",
           "translation": "Všechna místa pro úpravy jsou obsazena. Uvolněte jedno v Úpravách.",
           "needs_translation": false,
-          "max_length": 66
+          "max_length": 60
         },
         "prof_done_keep": {
           "english": "Nothing has changed: the flight controller keeps its profile and gain settings. Next goes on to the swashplate.",
@@ -9589,25 +9941,25 @@
           "english": "Cyclic gain down",
           "translation": "Cyklické zesílení dolů",
           "needs_translation": false,
-          "max_length": 22
+          "max_length": 16
         },
         "prof_btn_cyclic_up": {
           "english": "Cyclic gain up",
           "translation": "Cyklické zesílení nahoru",
           "needs_translation": false,
-          "max_length": 24
+          "max_length": 14
         },
         "prof_btn_yaw_down": {
           "english": "Yaw gain down",
           "translation": "Zesílení ocasu dolů",
           "needs_translation": false,
-          "max_length": 19
+          "max_length": 13
         },
         "prof_btn_yaw_up": {
           "english": "Yaw gain up",
           "translation": "Zesílení ocasu nahoru",
           "needs_translation": false,
-          "max_length": 21
+          "max_length": 11
         },
         "prof_help_both": {
           "english": "The switch picks the PID profile and the rate profile 1, 2 or 3 together.",
@@ -9631,37 +9983,37 @@
           "english": "Rates",
           "translation": "Rychlosti otáčení",
           "needs_translation": false,
-          "max_length": 17
+          "max_length": 5
         },
         "rates_intro": {
           "english": "Sets the flying style of each rate profile. Each one is a starting point you can refine later on the Rates page.",
           "translation": "Nastavuje letový styl každého profilu rychlostí. Každý je výchozí bod, který lze později doladit na stránce Rychlosti.",
           "needs_translation": false,
-          "max_length": 118
+          "max_length": 112
         },
         "rates_page_fmt": {
           "english": "Rate profile %d",
           "translation": "Profil rychlostí %d",
           "needs_translation": false,
-          "max_length": 19
+          "max_length": 15
         },
         "rates_position_fmt": {
           "english": "Switch position %d.",
           "translation": "Poloha přepínače %d.",
           "needs_translation": false,
-          "max_length": 20
+          "max_length": 19
         },
         "rates_page_text": {
           "english": "Pick a flying style for this profile. Unchanged keeps its rates.",
           "translation": "Vyberte letový styl pro tento profil. Beze změny ponechá rychlosti.",
           "needs_translation": false,
-          "max_length": 67
+          "max_length": 64
         },
         "rates_custom": {
           "english": "Custom",
           "translation": "Vlastní",
           "needs_translation": false,
-          "max_length": 7
+          "max_length": 6
         },
         "rates_none_matches": {
           "english": "None of the styles matches the rates this profile has now. Picking one replaces them.",
@@ -9673,25 +10025,25 @@
           "english": "This firmware uses the Actual rates type: set the rates on the Rates page.",
           "translation": "Tato firmware používá typ rychlostí Actual: rychlosti nastavte na stránce Rychlosti.",
           "needs_translation": false,
-          "max_length": 84
+          "max_length": 74
         },
         "rates_values_fmt": {
           "english": "Cyclic %d °/s · yaw %d °/s · expo %d %%",
           "translation": "Cyklicky %d °/s · zatáčení %d °/s · expo %d %%",
           "needs_translation": false,
-          "max_length": 46
+          "max_length": 39
         },
         "rates_busy": {
           "english": "Writing the rates…",
           "translation": "Zapisují se rychlosti…",
           "needs_translation": false,
-          "max_length": 22
+          "max_length": 18
         },
         "rates_done_title": {
           "english": "Rates set",
           "translation": "Rychlosti nastaveny",
           "needs_translation": false,
-          "max_length": 19
+          "max_length": 9
         },
         "rates_done_keep": {
           "english": "Nothing has changed: the flight controller keeps its rates. Next goes on to the swashplate.",
@@ -9709,7 +10061,7 @@
           "english": "Rate profile %d",
           "translation": "Profil rychlostí %d",
           "needs_translation": false,
-          "max_length": 19
+          "max_length": 15
         },
         "rates_trainer": {
           "english": "Trainer",
@@ -9739,25 +10091,25 @@
           "english": "Cyclic %d °/s · expo %d %%",
           "translation": "Cyklicky %d °/s · expo %d %%",
           "needs_translation": false,
-          "max_length": 28
+          "max_length": 26
         },
         "rates_yaw_fmt": {
           "english": "Yaw %d °/s · expo %d %%",
           "translation": "Zatáčení %d °/s · expo %d %%",
           "needs_translation": false,
-          "max_length": 28
+          "max_length": 23
         },
         "rates_axis_cyclic": {
           "english": "Cyclic",
           "translation": "Cyklicky",
           "needs_translation": false,
-          "max_length": 8
+          "max_length": 6
         },
         "rates_axis_yaw": {
           "english": "Yaw",
           "translation": "Zatáčení",
           "needs_translation": false,
-          "max_length": 8
+          "max_length": 3
         },
         "rates_axis_collective": {
           "english": "Collective",
@@ -9769,7 +10121,7 @@
           "english": "Value: °/s at full stick",
           "translation": "Hodnota: °/s při plném vychýlení",
           "needs_translation": false,
-          "max_length": 32
+          "max_length": 24
         },
         "rates_legend_shape": {
           "english": "Form: shape · Expo: expo in %",
@@ -9811,13 +10163,13 @@
           "english": "A knob or slider sets the master gain, on a spare channel.",
           "translation": "Otočný ovladač nebo posuvník nastavuje hlavní zesílení na volném kanálu.",
           "needs_translation": false,
-          "max_length": 72
+          "max_length": 58
         },
         "prof_gain_help_none": {
           "english": "Master gain stays as it is. Find it later in flight, or on the Profiles page.",
           "translation": "Hlavní zesílení zůstane beze změny. Najděte jej později za letu nebo na stránce Profily.",
           "needs_translation": false,
-          "max_length": 88
+          "max_length": 77
         },
         "mod_intro": {
           "english": "Put modes on switches on your radio: press Assign, then flick the switch to the position that should turn the mode on. Only ARM is required; the others can be added later under Modes.",
@@ -9835,19 +10187,19 @@
           "english": "Assign",
           "translation": "Přiřadit",
           "needs_translation": false,
-          "max_length": 8
+          "max_length": 6
         },
         "mod_reassign": {
           "english": "Assign again",
           "translation": "Přiřadit znovu",
           "needs_translation": false,
-          "max_length": 14
+          "max_length": 12
         },
         "mod_remove": {
           "english": "Remove",
           "translation": "Odebrat",
           "needs_translation": false,
-          "max_length": 7
+          "max_length": 6
         },
         "mod_cancel": {
           "english": "Cancel",
@@ -9859,19 +10211,19 @@
           "english": "Flick the switch now…",
           "translation": "Teď přepněte přepínač…",
           "needs_translation": false,
-          "max_length": 22
+          "max_length": 21
         },
         "mod_no_switch": {
           "english": "No switch moved. Press Assign and flick it within 15 s.",
           "translation": "Žádný přepínač se nepohnul. Stiskněte Přiřadit a přepněte ho do 15 s.",
           "needs_translation": false,
-          "max_length": 69
+          "max_length": 55
         },
         "mod_no_slot": {
           "english": "No free mode slot on the FC: remove one under Modes.",
           "translation": "Ve FC není volné místo pro režim: jeden odeberte v Režimech.",
           "needs_translation": false,
-          "max_length": 60
+          "max_length": 52
         },
         "mod_not_set": {
           "english": "Not assigned",
@@ -9889,7 +10241,7 @@
           "english": "On",
           "translation": "Zap",
           "needs_translation": false,
-          "max_length": 3
+          "max_length": 2
         },
         "mod_off": {
           "english": "Off",
@@ -9901,7 +10253,7 @@
           "english": "Switches done",
           "translation": "Přepínače hotové",
           "needs_translation": false,
-          "max_length": 16
+          "max_length": 13
         },
         "mod_done_keep": {
           "english": "Nothing has changed: the flight controller keeps its mode switches. Next goes on to the swashplate.",
@@ -9919,7 +10271,7 @@
           "english": "Rescue",
           "translation": "Záchrana",
           "needs_translation": false,
-          "max_length": 8
+          "max_length": 6
         },
         "mod_trainer": {
           "english": "Trainer",
@@ -9931,13 +10283,13 @@
           "english": "Arms the motor. Use a switch you won't knock by accident.",
           "translation": "Odjistí motor. Použijte přepínač, který omylem nepřepnete.",
           "needs_translation": false,
-          "max_length": 58
+          "max_length": 57
         },
         "mod_help_rescue": {
           "english": "Turns the helicopter upright and holds it level.",
           "translation": "Otočí vrtulník do normální polohy a drží ho vodorovně.",
           "needs_translation": false,
-          "max_length": 54
+          "max_length": 48
         },
         "mod_help_trainer": {
           "english": "Limits how far the helicopter can tilt, to help while learning.",
@@ -9962,31 +10314,31 @@
           "english": "Three servos, 120° apart. The most common.",
           "translation": "Tři serva, o 120° od sebe. Nejčastější varianta.",
           "needs_translation": false,
-          "max_length": 48
+          "max_length": 42
         },
         "swa_type_help_135": {
           "english": "Three servos, 135° apart.",
           "translation": "Tři serva, o 135° od sebe.",
           "needs_translation": false,
-          "max_length": 26
+          "max_length": 25
         },
         "swa_type_help_140": {
           "english": "Three servos, 140° apart.",
           "translation": "Tři serva, o 140° od sebe.",
           "needs_translation": false,
-          "max_length": 26
+          "max_length": 25
         },
         "swa_type_help_90l": {
           "english": "Two servos, front and left, 90° apart.",
           "translation": "Dvě serva, vpředu a vlevo, o 90° od sebe.",
           "needs_translation": false,
-          "max_length": 41
+          "max_length": 38
         },
         "swa_type_help_90v": {
           "english": "Two servos, front left and front right.",
           "translation": "Dvě serva, vpředu vlevo a vpředu vpravo.",
           "needs_translation": false,
-          "max_length": 40
+          "max_length": 39
         },
         "swa_servo1": {
           "english": "Servo 1",
@@ -10004,13 +10356,13 @@
           "english": "Front",
           "translation": "Vpředu",
           "needs_translation": false,
-          "max_length": 6
+          "max_length": 5
         },
         "swa_rear": {
           "english": "Rear",
           "translation": "Vzadu",
           "needs_translation": false,
-          "max_length": 5
+          "max_length": 4
         },
         "swa_type_text": {
           "english": "The servo numbers are the flight controller's servo outputs. Servo 1 can be in front of the main shaft or behind it.",
@@ -10023,7 +10375,7 @@
           "english": "Now: %s",
           "translation": "Nyní: %s",
           "needs_translation": false,
-          "max_length": 8,
+          "max_length": 7,
           "reverse_text": false
         },
         "swa_dir_title": {
@@ -10037,7 +10389,7 @@
           "english": "Seen from above. Most helicopters turn clockwise.",
           "translation": "Pohled shora. Většina vrtulníků se točí po směru hodinových ručiček.",
           "needs_translation": false,
-          "max_length": 68,
+          "max_length": 49,
           "reverse_text": false
         },
         "swa_cw": {
@@ -10051,7 +10403,7 @@
           "english": "Counter-CW",
           "translation": "Proti směru",
           "needs_translation": false,
-          "max_length": 11,
+          "max_length": 10,
           "reverse_text": false
         },
         "swa_tail_title": {
@@ -10086,21 +10438,21 @@
           "english": "Motor, 2-way",
           "translation": "Motor, 2 směry",
           "needs_translation": false,
-          "max_length": 14,
+          "max_length": 12,
           "reverse_text": false
         },
         "swa_pin_move": {
           "english": "Moves on save",
           "translation": "Změní se uložením",
           "needs_translation": false,
-          "max_length": 17,
+          "max_length": 13,
           "reverse_text": false
         },
         "swa_pin_stuck": {
           "english": "Set in Mixer",
           "translation": "Nastavit v Mixéru",
           "needs_translation": false,
-          "max_length": 17,
+          "max_length": 12,
           "reverse_text": false
         },
         "swa_restart": {
@@ -10114,7 +10466,7 @@
           "english": "Swashplate set",
           "translation": "Deska nastavena",
           "needs_translation": false,
-          "max_length": 15,
+          "max_length": 14,
           "reverse_text": false
         },
         "swa_row_type": {
@@ -10142,20 +10494,20 @@
           "english": "Tail pin",
           "translation": "Pin ocasu",
           "needs_translation": false,
-          "max_length": 9,
+          "max_length": 8,
           "reverse_text": false
         },
         "swa_row_servo": {
           "english": "Tail servo",
           "translation": "Servo ocasu",
           "needs_translation": false,
-          "max_length": 11
+          "max_length": 10
         },
         "swa_servo_none": {
           "english": "None",
           "translation": "Žádné",
           "needs_translation": false,
-          "max_length": 5
+          "max_length": 4
         },
         "swa_pin_servo": {
           "english": "Servo 4",
@@ -10175,14 +10527,14 @@
           "english": "Own pin",
           "translation": "Vlastní pin",
           "needs_translation": false,
-          "max_length": 11,
+          "max_length": 7,
           "reverse_text": false
         },
         "swa_pin_none": {
           "english": "None",
           "translation": "Žádný",
           "needs_translation": false,
-          "max_length": 5,
+          "max_length": 4,
           "reverse_text": false
         },
         "swa_direct": {
@@ -10210,28 +10562,28 @@
           "english": "Cyclic servos",
           "translation": "Cyklická serva",
           "needs_translation": false,
-          "max_length": 14,
+          "max_length": 13,
           "reverse_text": false
         },
         "sty_tail_title": {
           "english": "Tail servo",
           "translation": "Ocasní servo",
           "needs_translation": false,
-          "max_length": 12,
+          "max_length": 10,
           "reverse_text": false
         },
         "sty_custom": {
           "english": "Custom",
           "translation": "Vlastní",
           "needs_translation": false,
-          "max_length": 7,
+          "max_length": 6,
           "reverse_text": false
         },
         "sty_mixed": {
           "english": "Mixed",
           "translation": "Smíšené",
           "needs_translation": false,
-          "max_length": 7,
+          "max_length": 5,
           "reverse_text": false
         },
         "sty_row_type": {
@@ -10329,31 +10681,31 @@
           "english": "Hi-End digital",
           "translation": "Hi-End digitální",
           "needs_translation": false,
-          "max_length": 16
+          "max_length": 14
         },
         "sty_specific_digital": {
           "english": "Specific digital",
           "translation": "Specifické digitální",
           "needs_translation": false,
-          "max_length": 20
+          "max_length": 16
         },
         "sty_hiend_specific_digital": {
           "english": "Hi-End specific digital",
           "translation": "Hi-End specifické digitální",
           "needs_translation": false,
-          "max_length": 27
+          "max_length": 23
         },
         "sty_analog": {
           "english": "Analog",
           "translation": "Analogové",
           "needs_translation": false,
-          "max_length": 9
+          "max_length": 6
         },
         "sty_digital": {
           "english": "Digital",
           "translation": "Digitální",
           "needs_translation": false,
-          "max_length": 9
+          "max_length": 7
         },
         "sty_narrow": {
           "english": "Narrow band",
@@ -10371,7 +10723,7 @@
           "english": "Frame rate",
           "translation": "Frekvence rámce",
           "needs_translation": false,
-          "max_length": 15
+          "max_length": 10
         },
         "sty_geo_title": {
           "english": "Geometry correction",
@@ -10404,7 +10756,7 @@
           "english": "How does the FC talk to the ESC? Use PWM if unsure. Blades off.",
           "translation": "Jak FC komunikuje s ESC? Pokud si nejste jisti, použijte PWM. Bez listů.",
           "needs_translation": false,
-          "max_length": 72,
+          "max_length": 63,
           "reverse_text": false
         },
         "mot_other": {
@@ -10418,7 +10770,7 @@
           "english": "DShot150 sends no RPM. Governor and RPM filter need DShot300 or an RPM sensor.",
           "translation": "DShot150 neposílá otáčky. Governor a RPM filtr potřebují DShot300 nebo snímač otáček.",
           "needs_translation": false,
-          "max_length": 85,
+          "max_length": 78,
           "reverse_text": false
         },
         "mot_poles": {
@@ -10432,7 +10784,7 @@
           "english": "Magnet poles of the main motor, from its data sheet (often 10 or 12).",
           "translation": "Počet magnetických pólů hlavního motoru podle datového listu (často 10 nebo 12).",
           "needs_translation": false,
-          "max_length": 80,
+          "max_length": 69,
           "reverse_text": false
         },
         "mot_main_title": {
@@ -10656,7 +11008,7 @@
           "english": "With the battery still unplugged and the flight controller on USB, press Full throttle. The output stays at 100 % until you press Low throttle.",
           "translation": "Při stále odpojeném akumulátoru a řídicí jednotce na USB stiskněte Plný plyn. Výstup zůstává na 100 %, dokud nestisknete Volnoběh.",
           "needs_translation": false,
-          "max_length": 131,
+          "max_length": 143,
           "reverse_text": false
         },
         "esc_batt_text": {
@@ -10733,25 +11085,25 @@
           "english": "Set over the ESC link",
           "translation": "Set over the ESC link",
           "needs_translation": true,
-          "max_length": 24
+          "max_length": 21
         },
         "esc_link_busy": {
           "english": "Setting the range on the ESC...",
           "translation": "Setting the range on the ESC...",
           "needs_translation": true,
-          "max_length": 40
+          "max_length": 31
         },
         "esc_link_done": {
           "english": "Range set on the ESC and the FC.",
           "translation": "Range set on the ESC and the FC.",
           "needs_translation": true,
-          "max_length": 40
+          "max_length": 32
         },
         "esc_link_failed": {
           "english": "The ESC link did not confirm the range.",
           "translation": "The ESC link did not confirm the range.",
           "needs_translation": true,
-          "max_length": 50
+          "max_length": 39
         },
         "esc_need_calib": {
           "english": "Calibrate the ESC first.",
@@ -11205,7 +11557,7 @@
           "english": "Press Swap to hold the tail at 60°, again for the other side, then set the limits as high as they go without the slider or links binding.",
           "translation": "Stiskem Prohodit podržíte ocas na 60°, dalším stiskem druhou stranu, pak nastavte koncové dorazy co nejvýše bez zadírání posuvníku a táhel.",
           "needs_translation": false,
-          "max_length": 139,
+          "max_length": 137,
           "reverse_text": false
         },
         "fin_arm_switch": {
@@ -11226,7 +11578,7 @@
           "english": "Pinion teeth",
           "translation": "Zuby pastorku",
           "needs_translation": false,
-          "max_length": 13,
+          "max_length": 12,
           "reverse_text": false
         },
         "mot_main_gear": {
@@ -11240,14 +11592,14 @@
           "english": "Tail gear in",
           "translation": "Ocas. kolo vstup",
           "needs_translation": false,
-          "max_length": 16,
+          "max_length": 12,
           "reverse_text": false
         },
         "mot_tail_out": {
           "english": "Tail gear out",
           "translation": "Ocas. kolo výstup",
           "needs_translation": false,
-          "max_length": 17,
+          "max_length": 13,
           "reverse_text": false
         },
         "mot_ratio_fmt": {
@@ -11268,7 +11620,7 @@
           "english": "Tail ratio",
           "translation": "Převod ocasu",
           "needs_translation": false,
-          "max_length": 12,
+          "max_length": 10,
           "reverse_text": false
         },
         "mot_protocol": {
@@ -11282,7 +11634,7 @@
           "english": "Motor & ESC set",
           "translation": "Motor a ESC hotovo",
           "needs_translation": false,
-          "max_length": 18,
+          "max_length": 15,
           "reverse_text": false
         },
         "con_title": {
@@ -11303,21 +11655,21 @@
           "english": "Plug the servos in now and power them.",
           "translation": "Nyní serva připojte a zapněte napájení.",
           "needs_translation": false,
-          "max_length": 39,
+          "max_length": 38,
           "reverse_text": false
         },
         "con_main_motor": {
           "english": "Main motor",
           "translation": "Hlavní motor",
           "needs_translation": false,
-          "max_length": 12,
+          "max_length": 10,
           "reverse_text": false
         },
         "con_tail_motor": {
           "english": "Tail motor",
           "translation": "Ocasní motor",
           "needs_translation": false,
-          "max_length": 12,
+          "max_length": 10,
           "reverse_text": false
         },
         "con_ok": {
@@ -11366,21 +11718,21 @@
           "english": "Far from centre: move the arm a spline instead.",
           "translation": "Daleko od středu: přesaďte páku o zub drážkování.",
           "needs_translation": false,
-          "max_length": 49,
+          "max_length": 47,
           "reverse_text": false
         },
         "srv_done_title": {
           "english": "Servos set",
           "translation": "Serva hotova",
           "needs_translation": false,
-          "max_length": 12,
+          "max_length": 10,
           "reverse_text": false
         },
         "srv_done": {
           "english": "Every servo moves the right way and is centred.",
           "translation": "Všechna serva jdou správným směrem a jsou vystředěna.",
           "needs_translation": false,
-          "max_length": 53,
+          "max_length": 47,
           "reverse_text": false
         },
         "dir_title": {
@@ -11401,21 +11753,21 @@
           "english": "Does the swash move as shown?",
           "translation": "Pohybuje se deska podle obrázku?",
           "needs_translation": false,
-          "max_length": 32,
+          "max_length": 29,
           "reverse_text": false
         },
         "dir_reversed": {
           "english": "Reversed. Check it again.",
           "translation": "Obráceno. Zkontrolujte znovu.",
           "needs_translation": false,
-          "max_length": 29,
+          "max_length": 25,
           "reverse_text": false
         },
         "dir_roll_title": {
           "english": "Roll",
           "translation": "Klonění",
           "needs_translation": false,
-          "max_length": 7,
+          "max_length": 4,
           "reverse_text": false
         },
         "dir_roll": {
@@ -11429,7 +11781,7 @@
           "english": "Pitch",
           "translation": "Klopení",
           "needs_translation": false,
-          "max_length": 7,
+          "max_length": 5,
           "reverse_text": false
         },
         "dir_pitch": {
@@ -11506,7 +11858,7 @@
           "english": "Cyclic",
           "translation": "Cyklika",
           "needs_translation": false,
-          "max_length": 7,
+          "max_length": 6,
           "reverse_text": false
         },
         "pit_cyc_text": {
@@ -11541,21 +11893,21 @@
           "english": "Calibrate",
           "translation": "Kalibrovat",
           "needs_translation": false,
-          "max_length": 10,
+          "max_length": 9,
           "reverse_text": false
         },
         "pit_calibrated": {
           "english": "Calibrated. Measure again to check.",
           "translation": "Zkalibrováno. Pro kontrolu změřte znovu.",
           "needs_translation": false,
-          "max_length": 40,
+          "max_length": 35,
           "reverse_text": false
         },
         "pit_lim_cyc_title": {
           "english": "Cyclic limit",
           "translation": "Limit cykliky",
           "needs_translation": false,
-          "max_length": 13,
+          "max_length": 12,
           "reverse_text": false
         },
         "pit_lim_coll_title": {
@@ -11569,7 +11921,7 @@
           "english": "Total limit",
           "translation": "Celkový limit",
           "needs_translation": false,
-          "max_length": 13,
+          "max_length": 11,
           "reverse_text": false
         },
         "pit_lim_text": {
@@ -11583,7 +11935,7 @@
           "english": "The most blade pitch cyclic and collective together may reach.",
           "translation": "Největší úhel listů, který cyklika a kolektiv spolu smí dosáhnout.",
           "needs_translation": false,
-          "max_length": 66,
+          "max_length": 62,
           "reverse_text": false
         },
         "pit_limit": {
@@ -11597,14 +11949,14 @@
           "english": "Use %.0f",
           "translation": "Použít %.0f",
           "needs_translation": false,
-          "max_length": 11,
+          "max_length": 8,
           "reverse_text": false
         },
         "tal_title": {
           "english": "Tail rotor",
           "translation": "Ocasní rotor",
           "needs_translation": false,
-          "max_length": 12,
+          "max_length": 10,
           "reverse_text": false
         },
         "tal_intro": {
@@ -11653,7 +12005,7 @@
           "english": "Press Swap to hold the tail at 22.5°; each press holds the other side. Measure the tail blade pitch and adjust until it reads 22.5°. No pitch gauge? Fold a square of paper corner to corner (45°): seen from the tail tip, the fold fits flush between the blades.",
           "translation": "Stiskem Prohodit podržíte ocas na 22,5°, každý další stisk drží druhou stranu. Změřte úhel ocasního listu a dolaďte, až ukáže 22,5°. Nemáte měrku? Přeložte čtverec papíru úhlopříčně (45°): při pohledu od špičky listu sedí přehyb přesně mezi listy.",
           "needs_translation": false,
-          "max_length": 247,
+          "max_length": 259,
           "reverse_text": false
         },
         "tal_lim_title": {
@@ -11674,14 +12026,14 @@
           "english": "Tail rate",
           "translation": "Rate ocasu",
           "needs_translation": false,
-          "max_length": 10,
+          "max_length": 9,
           "reverse_text": false
         },
         "tal_side": {
           "english": "Held side",
           "translation": "Držená strana",
           "needs_translation": false,
-          "max_length": 13,
+          "max_length": 9,
           "reverse_text": false
         },
         "tal_cw": {
@@ -11709,56 +12061,56 @@
           "english": "Swap",
           "translation": "Prohodit",
           "needs_translation": false,
-          "max_length": 8,
+          "max_length": 4,
           "reverse_text": false
         },
         "tal_motor_title": {
           "english": "Tail motor",
           "translation": "Ocasní motor",
           "needs_translation": false,
-          "max_length": 12,
+          "max_length": 10,
           "reverse_text": false
         },
         "tal_motor": {
           "english": "Take the tail blades off. Spin the tail motor at low power to check it runs.",
           "translation": "Sundejte ocasní listy. Roztočte ocasní motor na nízký výkon a ověřte, že běží.",
           "needs_translation": false,
-          "max_length": 78,
+          "max_length": 76,
           "reverse_text": false
         },
         "tal_no_motor": {
           "english": "No tail motor output (motor 2) on this flight controller.",
           "translation": "Tato řídicí jednotka nemá výstup ocasního motoru (motor 2).",
           "needs_translation": false,
-          "max_length": 59,
+          "max_length": 57,
           "reverse_text": false
         },
         "tal_power": {
           "english": "Test power",
           "translation": "Test. výkon",
           "needs_translation": false,
-          "max_length": 11,
+          "max_length": 10,
           "reverse_text": false
         },
         "tal_output": {
           "english": "Tail motor",
           "translation": "Ocasní motor",
           "needs_translation": false,
-          "max_length": 12,
+          "max_length": 10,
           "reverse_text": false
         },
         "tal_spin": {
           "english": "Spin",
           "translation": "Roztočit",
           "needs_translation": false,
-          "max_length": 8,
+          "max_length": 4,
           "reverse_text": false
         },
         "tal_spin_rev": {
           "english": "Reverse",
           "translation": "Obráceně",
           "needs_translation": false,
-          "max_length": 8,
+          "max_length": 7,
           "reverse_text": false
         },
         "tal_stop": {
@@ -11779,49 +12131,49 @@
           "english": "Stopped",
           "translation": "Zastaveno",
           "needs_translation": false,
-          "max_length": 9,
+          "max_length": 7,
           "reverse_text": false
         },
         "tal_idle_title": {
           "english": "Tail idle",
           "translation": "Volnoběh ocasu",
           "needs_translation": false,
-          "max_length": 14,
+          "max_length": 9,
           "reverse_text": false
         },
         "tal_idle": {
           "english": "The power the tail motor keeps at zero yaw. Blades still off.",
           "translation": "Výkon, který ocasní motor drží při nulovém bočení. Listy stále sundané.",
           "needs_translation": false,
-          "max_length": 71,
+          "max_length": 61,
           "reverse_text": false
         },
         "tal_idle_value": {
           "english": "Tail idle",
           "translation": "Volnoběh ocasu",
           "needs_translation": false,
-          "max_length": 14,
+          "max_length": 9,
           "reverse_text": false
         },
         "tal_use_idle": {
           "english": "Use test",
           "translation": "Použít test",
           "needs_translation": false,
-          "max_length": 11,
+          "max_length": 8,
           "reverse_text": false
         },
         "tal_run_idle": {
           "english": "Run idle",
           "translation": "Spustit volnoběh",
           "needs_translation": false,
-          "max_length": 16,
+          "max_length": 8,
           "reverse_text": false
         },
         "gyr_title": {
           "english": "Gyro check",
           "translation": "Kontrola gyra",
           "needs_translation": false,
-          "max_length": 13,
+          "max_length": 10,
           "reverse_text": false
         },
         "gyr_intro": {
@@ -11835,7 +12187,7 @@
           "english": "Roll",
           "translation": "Klonění",
           "needs_translation": false,
-          "max_length": 7,
+          "max_length": 4,
           "reverse_text": false
         },
         "gyr_roll": {
@@ -11849,7 +12201,7 @@
           "english": "Pitch",
           "translation": "Klopení",
           "needs_translation": false,
-          "max_length": 7,
+          "max_length": 5,
           "reverse_text": false
         },
         "gyr_pitch": {
@@ -11863,7 +12215,7 @@
           "english": "Yaw",
           "translation": "Bočení",
           "needs_translation": false,
-          "max_length": 6,
+          "max_length": 3,
           "reverse_text": false
         },
         "gyr_yaw": {
@@ -11884,7 +12236,7 @@
           "english": "With",
           "translation": "S pohybem",
           "needs_translation": false,
-          "max_length": 9,
+          "max_length": 4,
           "reverse_text": false
         },
         "gyr_wrong": {
@@ -11905,14 +12257,14 @@
           "english": "Finish",
           "translation": "Dokončit",
           "needs_translation": false,
-          "max_length": 8,
+          "max_length": 6,
           "reverse_text": false
         },
         "fin_intro": {
           "english": "What the wizard set:",
           "translation": "Co průvodce nastavil:",
           "needs_translation": false,
-          "max_length": 21,
+          "max_length": 20,
           "reverse_text": false
         },
         "fin_before": {
@@ -11968,7 +12320,7 @@
           "english": "None",
           "translation": "Žádný",
           "needs_translation": false,
-          "max_length": 5,
+          "max_length": 4,
           "reverse_text": false
         },
         "fin_tail_variable": {
@@ -11996,14 +12348,14 @@
           "english": "Presets",
           "translation": "Předvolby",
           "needs_translation": false,
-          "max_length": 9,
+          "max_length": 7,
           "reverse_text": false
         },
         "rcv_presets_text": {
           "english": "Pick your radio's channel order.",
           "translation": "Vyberte pořadí kanálů svého vysílače.",
           "needs_translation": false,
-          "max_length": 37,
+          "max_length": 32,
           "reverse_text": false
         },
         "rcv_ch_fmt": {
@@ -12017,7 +12369,7 @@
           "english": "Before this step",
           "translation": "Před tímto krokem",
           "needs_translation": false,
-          "max_length": 17
+          "max_length": 16
         },
         "rcv_prepare_text": {
           "english": "This step uses the settings already in the FC. Confirm the physical prerequisites before continuing.",
@@ -12041,19 +12393,19 @@
           "english": "Experienced pilots only: a setting that cuts the receiver link ends this setup.",
           "translation": "Jen pro zkušené: nastavení, které přeruší spojení s přijímačem, ukončí toto nastavení.",
           "needs_translation": false,
-          "max_length": 86
+          "max_length": 79
         },
         "rcv_link_text": {
           "english": "The protocol must match your receiver, or the radio link breaks.",
           "translation": "Protokol musí odpovídat přijímači, jinak se spojení s vysílačkou přeruší.",
           "needs_translation": false,
-          "max_length": 73
+          "max_length": 64
         },
         "rcv_standard_order": {
           "english": "Std. order",
           "translation": "Std. pořadí",
           "needs_translation": false,
-          "max_length": 11
+          "max_length": 10
         },
         "rcv_dir_forward": {
           "english": "Forward",
@@ -12065,13 +12417,13 @@
           "english": "Up",
           "translation": "Nahoru",
           "needs_translation": false,
-          "max_length": 6
+          "max_length": 2
         },
         "rcv_dir_back": {
           "english": "Back",
           "translation": "Dozadu",
           "needs_translation": false,
-          "max_length": 6
+          "max_length": 4
         },
         "rcv_dir_down": {
           "english": "Down",
@@ -12083,7 +12435,7 @@
           "english": "FC range",
           "translation": "Rozsah FC",
           "needs_translation": false,
-          "max_length": 9
+          "max_length": 8
         },
         "rcv_measured": {
           "english": "Measured",
@@ -12103,14 +12455,14 @@
           "english": "Wizards",
           "translation": "Průvodci",
           "needs_translation": false,
-          "max_length": 8,
+          "max_length": 7,
           "reverse_text": false
         },
         "model_setup": {
           "english": "Model setup",
           "translation": "Nastavit model",
           "needs_translation": false,
-          "max_length": 14,
+          "max_length": 11,
           "reverse_text": false
         }
       }
