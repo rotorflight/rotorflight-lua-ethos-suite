@@ -18,6 +18,11 @@ local msp_modes = {
   SET_MODE_RANGE_COMMAND = 35,
 }
 
+-- The firmware's AUX channel count (MAX_AUX_CHANNEL_COUNT, 18 - 5). A mode range reads
+-- rcInput[auxChannelIndex + 5] without a check, and MSP_SET_MODE_RANGE stores the index as sent,
+-- so a larger index reads past rcInput[] (#2749).
+local AUX_CHANNEL_COUNT = 13
+
 local function clamp(value, minValue, maxValue)
   if value < minValue then return minValue end
   if value > maxValue then return maxValue end
@@ -176,7 +181,7 @@ function msp_modes.buildSetModeRangeMessage(slotIndex, range, extra, onWritten, 
   local payload = {
     (slotIndex or 1) - 1,
     clamp(range.id or 0, 0, 255),
-    clamp(range.auxChannelIndex or 0, 0, 255),
+    clamp(range.auxChannelIndex or 0, 0, AUX_CHANNEL_COUNT - 1),
     toS8Byte(usToStep(values.start)),
     toS8Byte(usToStep(values["end"])),
     clamp(extra.modeLogic or 0, 0, 1),

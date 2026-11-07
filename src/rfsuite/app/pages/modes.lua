@@ -61,7 +61,9 @@ local MODE_NAME_BY_ID = {
   [56] = "GOVERNOR SUSPEND",
   [57] = "GOVERNOR BYPASS",
 }
-local AUX_CHANNEL_COUNT = 20
+-- The firmware's AUX channel count (MAX_AUX_CHANNEL_COUNT, 18 - 5). Pickers and auto-detect
+-- offer no more (#2749).
+local AUX_CHANNEL_COUNT = 13
 local RANGE_MIN = 875
 local RANGE_MAX = 2125
 local RANGE_STEP = 5
@@ -362,10 +364,16 @@ local function open(opts)
         end
         originalRanges = cloneRanges(modeRanges)
         originalExtras = cloneExtras(modeRangesExtra)
+        -- An index above the firmware's AUX count (only reachable through the CLI or an older
+        -- page) is shown and written as AUX 13 (#2749). The original keeps the value as read,
+        -- so the page is dirty and Save writes the clamped index to the flight controller.
+        for i = 1, #modeRanges do
+          modeRanges[i].auxChannelIndex = clamp(modeRanges[i].auxChannelIndex or 0, 0, AUX_CHANNEL_COUNT - 1)
+        end
         buildModesFromRaw()
         loading = false
         loaded = true
-        dirty = false
+        markDirty()
         closeDialog(focusFn)
         needsRender = true
         setBusy()
