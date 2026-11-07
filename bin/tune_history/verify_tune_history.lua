@@ -321,6 +321,10 @@ do
   update({isArmed = false})
   check("a refused reply stays refused, flight by flight", #requests == 0, #requests .. " requests")
   check("a refused flight is not saved", files[HISTORY] == nil, tostring(files[HISTORY]))
+  check("the page is told the flight is unread, not failed",
+    states[#states] == "unread", table.concat(states, ","))
+  update({isArmed = true})
+  check("arming ends the unread note", states[#states] == "idle", table.concat(states, ","))
   -- The next DISARM asks again, once: the suite may learn the layout, and a pilot who
   -- reconnects expects the capture to run.
   disarmAndWait()

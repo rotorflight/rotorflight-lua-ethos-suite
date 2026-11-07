@@ -8830,6 +8830,18 @@
           "reverse_text": false,
           "max_length": 24
         },
+        "no_flight": {
+          "english": "No flight saved yet",
+          "translation": "尚未保存任何飞行",
+          "needs_translation": true,
+          "max_length": 19
+        },
+        "no_flight_hint": {
+          "english": "Fly acro with real rotation, then disarm",
+          "translation": "以 Acro 模式飞出真实旋转，然后解除武装",
+          "needs_translation": true,
+          "max_length": 40
+        },
         "no_aircraft": {
           "english": "Connect to a model first",
           "translation": "Connect to a model first",

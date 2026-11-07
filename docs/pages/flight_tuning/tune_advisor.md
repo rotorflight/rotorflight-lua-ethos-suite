@@ -39,8 +39,8 @@ exactly.
 *Configuration* → *Flight Tuning* → *Tune Advisor*
 
 Greyed out until the flight controller answers. The page works from the flights saved for the connected model,
-and updates when a flight is saved while it is open, about 10 seconds after you disarm; through a link loss it keeps showing them. Until a flight is saved it shows "Reading the last flight..." in
-place of the advice, with *Save* and the erase button greyed out. If the radio could not read the flight, the
+and updates when a flight is saved while it is open, about 10 seconds after you disarm; through a link loss it keeps showing them. While the radio reads the last flight after a disarm, it shows "Reading the last flight..." in
+place of the advice, with *Save* and the erase button greyed out. With no flight saved yet, *Flight data* reads "No flight saved yet" and *Suggested changes* gives the reason: fly acro with real rotation, then disarm. A flight is saved only when the flight controller counted acro flight. If the flight controller holds a flight the radio could not read, *Suggested changes* says "Last flight not read" instead of the reason. If the radio could not read the flight, the
 advice from the saved flights comes back with "Last flight not read" above it until you arm again. The page reads the
 firmware version the flight controller reports. Firmware older than 4.7.0 has no Tune Advisor: the page shows
 "Needs newer firmware" and sends no request, and the same applies to the capture after each flight. Until the
@@ -52,7 +52,7 @@ version is known, nothing is sent.
 | --- | --- |
 | Axis | Roll, Pitch or Yaw. Everything below is for the chosen axis. |
 | Changes / Why | Only on 480-pixel-wide radios (X18, X18R, X10 and similar), beside Axis. *Changes* shows the suggested changes and as many reasons as fit, ending in "More under Why" when some are left out; *Why* shows all the reasons. Larger radios show everything. |
-| Flight data | Minutes and seconds of acro flight in the flights combined, and how many of the last 5 that is, for example "2m 12s, 3/5 flights". |
+| Flight data | Minutes and seconds of acro flight in the flights combined, and how many of the last 5 that is, for example "2m 12s, 3/5 flights". "No flight saved yet" until the first flight is saved. |
 | Response | How fast the heli turns compared with the rate the stick asks for, for example "53% faster than asked". "Needs more flying" shows how much data is still needed; "Too uneven to judge" means the response varies too much. |
 | Stops | How much the heli bounces back after you centre the stick, as a share of the turn rate. Needs 10 stops. "Shaking 49 deg/s" instead means the heli oscillates with the stick centred (see the rules below). |
 | Suggested changes | Up to three changes, each named by the page and setting to change and in the units that page shows, for example *PIDs > Roll > F: 100 -> 80* and *Rates > Roll > Rate: 720 -> 900*. When there is something *Save* can write, a last line says so. After they are written, this shows "Changes saved to the flight controller" until the next flight is saved. |

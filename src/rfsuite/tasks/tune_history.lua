@@ -33,6 +33,8 @@
 -- changes, so the Tune Advisor page can hold its advice until the flight is in:
 --   "reading"  disarmed with this flight not saved yet, or its clear still to go
 --   "failed"   gave up after MAX_FAILURES; the next disarm reads it
+--   "unread"   the FC answered in a layout this suite refuses: the flight is held
+--              there but not read; the next disarm asks once more
 --   "idle"     anything else
 --
 -- Clocked by tasks/background.lua's scheduler (wakeup(), every 0.5 s), not by
@@ -73,7 +75,9 @@ local function publishState()
     now = "idle"
   elseif pending then
     now = nextAt == math.huge and "failed" or "reading"
-  elseif clearPending and not refusedOnFc and nextAt ~= math.huge then
+  elseif refusedOnFc then
+    now = "unread"
+  elseif clearPending and nextAt ~= math.huge then
     now = "reading"
   else
     now = "idle"
