@@ -567,7 +567,8 @@ local function open(opts)
   local probing = false
   local unsupported = false       -- the FC refused the command: until Reload
   -- tasks/tune_history.lua's capture: "reading" (a flight since the disarm
-  -- not saved yet), "failed" (it gave up until the next disarm) or "idle"
+  -- not saved yet), "failed" (it gave up until the next disarm), "unread"
+  -- (the FC holds a flight this suite refuses to read) or "idle"
   local capture = "idle"
   local toolEnabled = nil
   local mcuId = nil               -- the session's aircraft
@@ -612,6 +613,12 @@ local function open(opts)
     changed()
   end
 
+  -- A flight the FC holds that this suite did not read: "failed" gave up,
+  -- "unread" refused the layout. Telling the pilot to fly again would be wrong.
+  local function flightNotRead()
+    return capture == "failed" or capture == "unread"
+  end
+
   -- No flight saved yet (the FC counted no rate flight at the last disarm,
   -- or none has been read): say so, with the reason, instead of an empty
   -- "0m 00s, 0/5 flights" and the advice for too little data.
@@ -620,8 +627,11 @@ local function open(opts)
     clearList(view.actions)
     clearList(view.whys)
     clearList(view.changes)
-    if capture == "failed" then view.actions[1] = T.notRead end
-    view.actions[#view.actions + 1] = T.noFlightHint
+    if flightNotRead() then
+      view.actions[1] = T.notRead
+    else
+      view.actions[1] = T.noFlightHint
+    end
     changed()
   end
 
@@ -658,7 +668,7 @@ local function open(opts)
       -- After the changes, so the compact Changes view never cuts it
       if #view.changes > 0 then view.actions[#view.actions + 1] = T.applyHint end
     end
-    if capture == "failed" then table.insert(view.actions, 1, T.notRead) end
+    if flightNotRead() then table.insert(view.actions, 1, T.notRead) end
     changed()
   end
 

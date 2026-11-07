@@ -39,7 +39,7 @@ exactly.
 
 Greyed out until the flight controller answers. The page works from the flights saved for the connected model,
 and updates when a flight is saved while it is open, about 10 seconds after you disarm; through a link loss it keeps showing them. While the radio reads the last flight after a disarm, it shows "Reading the last flight..." in
-place of the advice, with *Save* and the erase button greyed out. With no flight saved yet, *Flight data* reads "No flight saved yet" and *Suggested changes* gives the reason: fly acro with real rotation, then disarm. A flight is saved only when the flight controller counted acro flight. If the radio could not read the flight, the
+place of the advice, with *Save* and the erase button greyed out. With no flight saved yet, *Flight data* reads "No flight saved yet" and *Suggested changes* gives the reason: fly acro with real rotation, then disarm. A flight is saved only when the flight controller counted acro flight. If the flight controller holds a flight the radio could not read, *Suggested changes* says "Last flight not read" instead of the reason. If the radio could not read the flight, the
 advice from the saved flights comes back with "Last flight not read" above it until you arm again. The page reads the
 firmware version the flight controller reports. Firmware older than 4.7.0 has no Tune Advisor: the page shows
 "Needs newer firmware" and sends no request, and the same applies to the capture after each flight. Until the

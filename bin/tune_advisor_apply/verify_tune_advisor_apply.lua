@@ -507,6 +507,52 @@ do
   noFlights = false
 end
 
+print("A flight the FC holds but the radio did not read is not met with a hint to fly again")
+do
+  local function paintText()
+    local shown = {}
+    lcd.drawText = function(_, _, text) shown[#shown + 1] = tostring(text) end
+    paintFn()
+    lcd.drawText = nil
+    return table.concat(shown, "\n")
+  end
+  resetFc()
+  noFlights = true
+  openPage()
+  pump()
+  for _, state in ipairs({"unread", "failed"}) do
+    subs["tune_history.state"](state)
+    pump()
+    local text = paintText()
+    check(state .. ": the last flight is said to be not read", text:find("tune_advisor.not_read)@", 1, true) ~= nil, text)
+    check(state .. ": no fly-again hint", text:find("tune_advisor.no_flight_hint)@", 1, true) == nil, text)
+    check(state .. ": Flight data still says no flight is saved", text:find("tune_advisor.no_flight)@", 1, true) ~= nil, text)
+  end
+  subs["tune_history.state"]("idle")
+  pump()
+  check("idle again: the fly-again hint is back", paintText():find("tune_advisor.no_flight_hint)@", 1, true) ~= nil)
+  noFlights = false
+end
+
+print("A flight the FC holds but the radio did not read is said so over saved flights too")
+do
+  resetFc()
+  noFlights = false
+  openPage()
+  pump()
+  subs["tune_history.state"]("unread")
+  pump()
+  local shown = {}
+  lcd.drawText = function(_, _, text) shown[#shown + 1] = tostring(text) end
+  paintFn()
+  lcd.drawText = nil
+  local text = table.concat(shown, "\n")
+  check("the last flight is said to be not read", text:find("tune_advisor.not_read)@", 1, true) ~= nil, text)
+  check("the saved flights are still shown", text:find("tune_advisor.data_flights_fmt)@", 1, true) ~= nil, text)
+  subs["tune_history.state"]("idle")
+  pump()
+end
+
 print("A full-stick rate cut is limited to one step")
 do
   -- The response matches, but full stick reaches 100 of the 240 deg/s asked:
