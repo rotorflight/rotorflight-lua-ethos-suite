@@ -332,10 +332,20 @@ local function new(wiz)
 
   -- Set when a stage change was refused; the page says so until the next change or screen.
   local stageRefused = false
+  local refusedRow = nil
+
+  local function clearRefused()
+    if not stageRefused and not refusedRow then return end
+    stageRefused = false
+    if refusedRow and scr and scr.setCheckNote then
+      scr:setCheckNote(refusedRow, nil)
+    end
+    refusedRow = nil
+  end
 
   local function goTo(name)
     screen = name
-    stageRefused = false
+    clearRefused()
     wiz.rebuild()
   end
   local function nextScreen()
@@ -509,7 +519,7 @@ local function new(wiz)
     v = (v == 2 or v == 3) and v or 1
     if v == stageChoice() then
       if stageRefused then
-        stageRefused = false
+        clearRefused()
         wiz.rebuild()
       end
       return
@@ -535,7 +545,7 @@ local function new(wiz)
       wiz.rebuild()
       return
     end
-    stageRefused = false
+    clearRefused()
     if plan.main0 then
       setFields({main_rotor_gear_ratio_0 = plan.main0, main_rotor_gear_ratio_1 = plan.main1})
     end
@@ -614,7 +624,7 @@ local function new(wiz)
   -- The ratio only, turned: refused when the counts would not fit, else kept and sent.
   local function setDirectRatio(v)
     if not inRange(v, 100, 10000) then return end
-    stageRefused = false
+    clearRefused()
     local _, p0, p1 = ratioProducts(v)
     if p0 > TRAIN_MAX or p1 > TRAIN_MAX then return end
     base.direct = {ratio = v}
@@ -643,7 +653,7 @@ local function new(wiz)
   -- A main gear turned to a new count (pos 1 to 4 for two stages, 1 or 2 for one).
   local function setMainGear(pos, v)
     if not inRange(v, 1, TRAIN_MAX) then return end
-    stageRefused = false
+    clearRefused()
     lastGear = {screen = "main", pos = pos}
     if stageCount() == 2 then
       local t = {}
@@ -798,7 +808,12 @@ local function new(wiz)
           get = function() return stageChoice() end,
           set = function(v) setStages(tonumber(v)) end}},
       }
-      if stageRefused then rows[#rows + 1] = {note = T.stageRefused} end
+      if stageRefused then
+        rows[#rows + 1] = {note = T.stageRefused}
+        refusedRow = #rows
+      else
+        refusedRow = nil
+      end
       -- Each stage's two counts side by side, "a : b".
       local function pairOf(from, to)
         return {{1, TRAIN_MAX, function() return base.train[TRAIN_KEYS[from]] end, function(v) setMainGear(from, v) end},

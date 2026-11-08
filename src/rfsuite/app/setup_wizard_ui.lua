@@ -198,6 +198,22 @@ function Screen:setCheckValue(i, value)
   return true
 end
 
+-- A checks() note's text, changed in place (then invalidate): true when changed.
+function Screen:setCheckNote(i, note)
+  local row = self.view.checks and self.view.checks[i]
+  if not row or row.note == note then return false end
+  row.note = note
+  local lines = nil
+  if note and note ~= "" then
+    local width = lcd.getWindowSize()
+    local room = width - self.wiz.FORM_RIGHT_PADDING
+    local noteX = row.noteX or self.view.checksX or MARGIN
+    lines = self.wiz.wrapLines(note, room - noteX, FONT_S)
+  end
+  row.lines = lines
+  return true
+end
+
 function Screen:setRow(i, value, accent)
   local row = self.view.rows[i]
   if not row or (row[2] == value and row[3] == accent) then return false end
@@ -431,6 +447,7 @@ function Screen:checks(list, focus)
     elseif c.note then
       local noteX = hasMark and (x + MARK_SIZE + MARK_GAP) or x
       row.lines = self.wiz.wrapLines(c.note, room - noteX, FONT_S)
+      row.note = c.note
       row.noteX, row.muted, row.plain = noteX, c.muted, c.plain
       row.y = y
       y = y + #row.lines * lineH + CHECK_ROW_GAP

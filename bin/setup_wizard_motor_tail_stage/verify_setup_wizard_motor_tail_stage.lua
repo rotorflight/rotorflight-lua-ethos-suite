@@ -57,6 +57,13 @@ local function newScreen()
     s.rows = rows
     return {}
   end
+  function s.setCheckNote(_, i, note)
+    if s.rows and s.rows[i] then
+      s.rows[i].note = note
+      return true
+    end
+    return false
+  end
   function s.row(_, back, _, forward)
     s.back, s.forward = back, forward
     return {}
@@ -164,7 +171,7 @@ local function scenario(opts)
     tail_rotor_gear_ratio_0 = tail0, tail_rotor_gear_ratio_1 = tail1,
   }
   package.loaded["rfsuite.setup_wizard.motor"] = {
-    [wiz] = { stages = opts.stages or 1, train = opts.train,
+    [wiz] = { stages = opts.stages or 1, train = opts.train, direct = opts.direct,
       tail = { from = from, a = a, b = b, mesh = mesh } },
   }
   local chunk = assert(loadfile(opts.module or MODULE))
@@ -307,6 +314,56 @@ local function run()
     end
   end
 
+  -- 8. Refusal note is cleared when a gear count is edited without a rebuild (preserving focus).
+  do
+    local res, err = scenario({ target = 2, mesh = 7 })
+    check("scenario 8 runs", res ~= nil, err)
+    if res then
+      check("8: initial refusal note shown", res.refusedNote)
+      local gearSet = nil
+      for _, row in ipairs(res.scr.rows or {}) do
+        if row.pair and row.pair[1] and row.pair[1][4] then
+          gearSet = row.pair[1][4]
+          break
+        end
+      end
+      check("8: gear setter found", gearSet ~= nil)
+      if gearSet then
+        gearSet(12)
+        local refused = false
+        for _, row in ipairs(res.scr.rows or {}) do
+          if row.note == T_REFUSED then refused = true end
+        end
+        check("8: refusal note cleared on gear edit without page.build()", not refused)
+      end
+    end
+  end
+
+  -- 9. Refusal note is cleared when a direct ratio is edited without a rebuild (preserving focus).
+  do
+    local res, err = scenario({ direct = { ratio = 800 }, target = 2, mesh = 7 })
+    check("scenario 9 runs", res ~= nil, err)
+    if res then
+      check("9: initial refusal note shown", res.refusedNote)
+      local ratioSet = nil
+      for _, row in ipairs(res.scr.rows or {}) do
+        if row.number and row.number[4] then
+          ratioSet = row.number[4]
+          break
+        end
+      end
+      check("9: direct ratio setter found", ratioSet ~= nil)
+      if ratioSet then
+        ratioSet(850)
+        local refused = false
+        for _, row in ipairs(res.scr.rows or {}) do
+          if row.note == T_REFUSED then refused = true end
+        end
+        check("9: refusal note cleared on direct ratio edit without page.build()", not refused)
+      end
+    end
+  end
+
   return failures - before
 end
 
@@ -330,6 +387,7 @@ if SELF_TEST then
     mutant("no drive tooth correction", "plan.tailDrive = a", "plan.tailDrive = nil"),
     mutant("no product limit on the tail", "plan.mainT * a <= TRAIN_MAX", "true"),
     mutant("no mesh inheritance on direct stage", "mesh = tr and tr.mainSide or nil", "mesh = nil"),
+    mutant("no note clearing on gear edit", "scr:setCheckNote(refusedRow, nil)", "-- scr:setCheckNote(refusedRow, nil)"),
   }
   local red = 0
   local realModule = MODULE
