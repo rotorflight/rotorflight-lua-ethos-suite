@@ -9571,6 +9571,12 @@
           "reverse_text": false,
           "translation": "Questo passo usa i servi del piatto. Scegli prima un tipo di piatto."
         },
+        "pit_back_nine": {
+          "english": "Back to 9 degrees",
+          "max_length": 24,
+          "needs_translation": true,
+          "translation": "Torna a 9 gradi"
+        },
         "pit_calibrate": {
           "english": "Calibrate",
           "max_length": 9,
@@ -9584,6 +9590,12 @@
           "needs_translation": false,
           "reverse_text": false,
           "translation": "Calibrato. Misura di nuovo per verificare."
+        },
+        "pit_check_zero": {
+          "english": "Check at 0 degrees",
+          "max_length": 24,
+          "needs_translation": true,
+          "translation": "Controlla a 0 gradi"
         },
         "pit_coll_text": {
           "english": "The collective is held at 9 degrees. Measure the blade pitch, enter it, then Calibrate.",

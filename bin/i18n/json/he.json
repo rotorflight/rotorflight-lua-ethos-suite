@@ -11951,6 +11951,18 @@
           "max_length": 9,
           "reverse_text": true
         },
+        "pit_check_zero": {
+          "english": "Check at 0 degrees",
+          "translation": "בדיקה ב-0 מעלות",
+          "needs_translation": true,
+          "max_length": 24
+        },
+        "pit_back_nine": {
+          "english": "Back to 9 degrees",
+          "translation": "חזרה ל-9 מעלות",
+          "needs_translation": true,
+          "max_length": 24
+        },
         "pit_calibrated": {
           "english": "Calibrated. Measure again to check.",
           "translation": "כויל. מדוד שוב לבדיקה.",

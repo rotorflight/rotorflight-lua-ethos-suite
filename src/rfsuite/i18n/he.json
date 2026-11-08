@@ -9571,6 +9571,12 @@
           "reverse_text": true,
           "translation": "שלב זה עובד על סרווי הסוואש. בחר קודם סוג סוואש."
         },
+        "pit_back_nine": {
+          "english": "Back to 9 degrees",
+          "max_length": 24,
+          "needs_translation": true,
+          "translation": "חזרה ל-9 מעלות"
+        },
         "pit_calibrate": {
           "english": "Calibrate",
           "max_length": 9,
@@ -9584,6 +9590,12 @@
           "needs_translation": false,
           "reverse_text": true,
           "translation": "כויל. מדוד שוב לבדיקה."
+        },
+        "pit_check_zero": {
+          "english": "Check at 0 degrees",
+          "max_length": 24,
+          "needs_translation": true,
+          "translation": "בדיקה ב-0 מעלות"
         },
         "pit_coll_text": {
           "english": "The collective is held at 9 degrees. Measure the blade pitch, enter it, then Calibrate.",

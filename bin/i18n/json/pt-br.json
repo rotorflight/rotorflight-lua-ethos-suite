@@ -11951,6 +11951,18 @@
           "max_length": 9,
           "reverse_text": false
         },
+        "pit_check_zero": {
+          "english": "Check at 0 degrees",
+          "translation": "Verificar a 0 graus",
+          "needs_translation": true,
+          "max_length": 24
+        },
+        "pit_back_nine": {
+          "english": "Back to 9 degrees",
+          "translation": "Voltar a 9 graus",
+          "needs_translation": true,
+          "max_length": 24
+        },
         "pit_calibrated": {
           "english": "Calibrated. Measure again to check.",
           "translation": "Calibrado. Meça de novo para conferir.",
