@@ -1,0 +1,7 @@
+{
+  "id": "battery-smartfuel-save",
+  "name": "The battery save writes the SmartFuel configuration after the battery configuration",
+  "step": "Check the battery save order for SmartFuel",
+  "script": "bin/battery_smartfuel_save/verify_battery_smartfuel_save.lua",
+  "rationale": "Issue #2651: a new minimum or full cell voltage saved on Setup > Power > Battery reached the flight controller's SmartFuel estimate only after a restart. The firmware copies those voltages into SmartFuel only in smartFuelInit(), which MSP2_SET_SMARTFUEL_CONFIG calls and MSP_SET_BATTERY_CONFIG does not (rotorflight-firmware msp.c). The battery page now reads the SmartFuel configuration as a third source and writes it back unchanged after the battery configuration, in the same save, as the Rotorflight Configurator's Power tab does. The suite accepts only firmware from API 12.9, which has SmartFuel, so the read is always there. The harness drives the real power_battery.lua with a stand-in page runtime that records the sources, and checks their order (battery, profile, SmartFuel), that the SmartFuel source reads and writes, and that a read of four SmartFuel values is written back unchanged as MSP2_SET_SMARTFUEL_CONFIG. Its self-test removes the SmartFuel source and requires the order check to go red. On the code before the fix the page declares no SmartFuel source and the checks fail."
+}
