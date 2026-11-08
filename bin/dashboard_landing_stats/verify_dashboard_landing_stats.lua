@@ -146,13 +146,13 @@ check("the ending voltage is the landing voltage (22.0), not the live 24.6",
 
 -- 2. The landing voltage per cell, two decimals (22.0 / 6 = 3.67).
 c = wakeWith("lastcell")
-check("the landing voltage per cell is 3.67, from the landing's own cell count",
-  c.displayValue == 3.67, "displayValue=" .. tostring(c.displayValue))
+check("the landing voltage per cell is formatted to two decimals (3.67), from the landing's own cell count",
+  c.displayValue == "3.67", "displayValue=" .. tostring(c.displayValue))
 
--- 3. The lowest voltage of the flight per cell (21.6 / 6 = 3.6).
+-- 3. The lowest voltage of the flight per cell (21.6 / 6 = 3.60, keeping trailing zero).
 c = wakeWith("mincell")
-check("the flight's lowest voltage per cell is 3.6",
-  c.displayValue == 3.6, "displayValue=" .. tostring(c.displayValue))
+check("the flight's lowest voltage per cell is formatted to two decimals (3.60)",
+  c.displayValue == "3.60", "displayValue=" .. tostring(c.displayValue))
 
 -- 4. The cell count of the landing, not of the profile selected now: the landing
 --    says 6, and a profile for 4 cells must not rescale the flight.
@@ -161,19 +161,35 @@ rfsuite.session = rfsuite.session or {}
 rfsuite.session.batteryConfig = {cellCount = 4} -- the profile selected now
 c = wakeWith("mincell")
 check("the minimum per cell uses the flight's cell count, not the current profile's",
-  c.displayValue == 3.6, "displayValue=" .. tostring(c.displayValue))
+  c.displayValue == "3.60", "displayValue=" .. tostring(c.displayValue))
 
 -- 5. No landing yet: nothing to show, so no number is invented.
 landing = nil
 c = wakeWith("lastcell")
 check("with no landing the per-cell tile shows no number",
-  type(c.displayValue) ~= "number", "displayValue=" .. tostring(c.displayValue))
+  tonumber(c.displayValue) == nil, "displayValue=" .. tostring(c.displayValue))
 
 -- 6. A landing without a cell count: no per-cell number either.
 landing = {voltage = 22.0, cells = nil}
 c = wakeWith("lastcell")
 check("with no cell count at the landing the per-cell tile shows no number",
-  type(c.displayValue) ~= "number", "displayValue=" .. tostring(c.displayValue))
+  tonumber(c.displayValue) == nil, "displayValue=" .. tostring(c.displayValue))
+
+-- 7. Unit fallback: when unit is omitted from the box, resolve from sensorTable ('V')
+landing = {voltage = 22.0, cells = 6}
+local boxNoUnit = {source = "voltage", stattype = "last"}
+stats.wakeup(boxNoUnit)
+local cNoUnit = boxNoUnit._cache or {}
+check("unit falls back to sensorTable ('V') when omitted from box",
+  cNoUnit.unit == "V", "unit=" .. tostring(cNoUnit.unit))
+
+-- 8. Source guard: non-voltage source with landing stattype does not return landing voltage
+local boxRpm = {source = "rpm", stattype = "mincell"}
+flightStats["rpm"] = {min = 1500, max = 2200}
+stats.wakeup(boxRpm)
+local cRpm = boxRpm._cache or {}
+check("non-voltage source with landing stattype does not return voltage",
+  cRpm.displayValue ~= "3.60", "displayValue=" .. tostring(cRpm.displayValue))
 
 print()
 print(string.format("%d checks, %d failed", checks, failures))

@@ -122,6 +122,9 @@ function render.wakeup(box)
         cfg.stattype = getParam(box, "stattype") or "max"
         cfg.manualUnit = getParam(box, "unit")
         cfg.decimals = getParam(box, "decimals")
+        if (cfg.stattype == "lastcell" or cfg.stattype == "mincell") and cfg.decimals == nil then
+            cfg.decimals = 2
+        end
         cfg.transform = getParam(box, "transform")
         cfg.transformFn = compileTransform(cfg.transform, cfg.decimals)
 
@@ -134,15 +137,20 @@ function render.wakeup(box)
 
     local telemetryActive = rfsuite.session and rfsuite.session.isConnected
 
-    if LANDING_STAT_TYPES[statType] and telemetry then
-        value = landingValue(telemetry, statType)
+    local sensorSource = source
+    if sensorSource == nil and LANDING_STAT_TYPES[statType] then
+        sensorSource = "voltage"
     end
 
-    if source and telemetry and telemetry.getSensorStats and not LANDING_STAT_TYPES[statType] then
+    if (source == "voltage" or source == nil) and LANDING_STAT_TYPES[statType] and telemetry then
+        value = landingValue(telemetry, statType)
+    elseif source and telemetry and telemetry.getSensorStats then
         local stats = telemetry.getSensorStats(source)
         if stats and stats[statType] then value = stats[statType] end
+    end
 
-        local sensorDef = telemetry.sensorTable and telemetry.sensorTable[source]
+    if sensorSource and telemetry and telemetry.sensorTable and not cfg.manualUnit then
+        local sensorDef = telemetry.sensorTable[sensorSource]
         local localize = sensorDef and sensorDef.localizations
 
         if sensorDef and sensorDef.unit_string then unit = sensorDef.unit_string end
