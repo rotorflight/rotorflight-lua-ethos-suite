@@ -8,7 +8,6 @@
 
 local requireModule = package.loaded["rfsuite.lib.require"] or assert(loadfile("lib/require.lua"))()
 local common = requireModule("app/pages/settings_audio_events_common.lua")
-local settingsStore = requireModule("lib/settings_store.lua")
 
 local PAGE_TITLE = "@i18n(app.modules.settings.name)@ / @i18n(app.modules.settings.audio)@ / @i18n(app.modules.settings.esc_temperature)@"
 
@@ -21,7 +20,7 @@ local function fahrenheitToCelsius(fahrenheit) return (fahrenheit - 32) / 1.8 en
 local function open(opts)
   common.openPage(PAGE_TITLE, opts, function(ctx)
     local fields = ctx.fields
-    local fahrenheit = settingsStore.temperatureUnit(settingsStore.load()) == 1
+    local fahrenheit = ctx.temperatureUnit() == 1
 
     local function updateFields()
       ctx.setEnabled(fields.escTempThreshold, ctx.get("temp_esc") == true)

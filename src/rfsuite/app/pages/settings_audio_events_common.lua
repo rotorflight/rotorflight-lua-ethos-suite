@@ -175,6 +175,10 @@ function common.openPage(pageTitle, opts, build)
     return settings and settings.events and settings.events[key]
   end
 
+  function ctx.temperatureUnit()
+    return settingsStore.temperatureUnit(settings)
+  end
+
   function ctx.setEnabled(field, enabled)
     if field and field.enable then field:enable(enabled == true) end
   end

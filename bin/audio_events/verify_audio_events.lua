@@ -408,6 +408,10 @@ package.loaded["rfsuite.lib.settings_store"] = {
     snapshot = deepCopy(t)
     return true
   end,
+  temperatureUnit = function(s)
+    local general = type(s) == "table" and s.general or nil
+    return (general and general.temperature_unit) or 0
+  end,
 }
 package.loaded["rfsuite.lib.bus"] = {
   subscribe = function() return function() end end,
