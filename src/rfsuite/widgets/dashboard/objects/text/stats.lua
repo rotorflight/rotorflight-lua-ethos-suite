@@ -20,6 +20,7 @@ Title & Layout
 Stat Source & Value
     source              : string                    -- (Required for stat mode) Telemetry sensor name used to fetch stats (e.g., "rpm", "current")
     stattype            : string                    -- (Optional) Which stat to show ("max", "min", "avg", etc; default: "max")
+                                                    --   Voltage only, from the landing: "last", "lastcell", "mincell" (#2663)
     value               : any                       -- (Optional, advanced) Static value. If omitted, widget shows the selected stat for 'source'
 Value Display
     unit                : string                    -- (Optional) Dynamic localized unit displayed by default, you can use override this or "" to hide unit
@@ -57,6 +58,32 @@ local compileTransform = utils.compileTransform
 local prepareTextLayout = utils.prepareTextLayout
 local paintTextLayout = utils.paintTextLayout
 local lastDisplayValue = nil
+
+-- Post-flight voltage stats, taken from the landing (lib/flight_stats.lua's land()),
+-- not from the live sensor (#2663):
+--   last      the voltage at the disarm
+--   lastcell  that voltage per cell of the pack that was flown
+--   mincell   the lowest voltage of the flight per cell of that pack
+-- Per-cell values are rounded to two decimals, as the tiles showed them before.
+local LANDING_STAT_TYPES = {last = true, lastcell = true, mincell = true}
+
+local function roundCell(v)
+  return math.floor(v * 100 + 0.5) / 100
+end
+
+local function landingValue(telemetry, statType)
+  local landing = telemetry.getLanding and telemetry.getLanding()
+  if not landing then return nil end
+  if statType == "last" then return landing.voltage end
+  local cells = landing.cells
+  if not cells or cells <= 0 then return nil end
+  if statType == "lastcell" then
+    return landing.voltage and roundCell(landing.voltage / cells) or nil
+  end
+  local voltage = telemetry.getSensorStats and telemetry.getSensorStats("voltage")
+  if not voltage or voltage.min == nil then return nil end
+  return roundCell(voltage.min / cells)
+end
 
 function render.dirty(box)
     return utils.dirtyOnDisplayValueChange(box)
@@ -107,7 +134,11 @@ function render.wakeup(box)
 
     local telemetryActive = rfsuite.session and rfsuite.session.isConnected
 
-    if source and telemetry and telemetry.getSensorStats then
+    if LANDING_STAT_TYPES[statType] and telemetry then
+        value = landingValue(telemetry, statType)
+    end
+
+    if source and telemetry and telemetry.getSensorStats and not LANDING_STAT_TYPES[statType] then
         local stats = telemetry.getSensorStats(source)
         if stats and stats[statType] then value = stats[statType] end
 

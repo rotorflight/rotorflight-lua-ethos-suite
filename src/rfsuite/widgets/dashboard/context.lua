@@ -672,6 +672,13 @@ function context.tasks.telemetry.getSensorStats(name)
   return result
 end
 
+-- The voltage and cell count taken when the flight ended ({voltage, cells}), or nil
+-- when there is none yet. See lib/flight_stats.lua's land().
+function context.tasks.telemetry.getLanding()
+  local stats = currentWidget and currentWidget.dashboardStats
+  return stats and stats.landing or nil
+end
+
 function context.tasks.telemetry.active()
   return currentWidget and currentWidget.connected == true
 end
