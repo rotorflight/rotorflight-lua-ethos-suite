@@ -7728,6 +7728,12 @@
               "translation": "גוב-פ",
               "reverse_text": true
             },
+            "keep_mah": {
+              "english": "Keep mAh",
+              "max_length": 8,
+              "needs_translation": true,
+              "translation": "שמור mAh"
+            },
             "lv_bec_voltage": {
               "english": "BEC",
               "max_length": 3,
@@ -7783,6 +7789,18 @@
               "needs_translation": false,
               "translation": "שיני פיניונ",
               "reverse_text": true
+            },
+            "startup_response": {
+              "english": "Startup Response",
+              "max_length": 16,
+              "needs_translation": true,
+              "translation": "תגובת הפעלה"
+            },
+            "startup_smooth": {
+              "english": "Smooth",
+              "max_length": 6,
+              "needs_translation": true,
+              "translation": "חלקה"
             },
             "stick_range_us": {
               "english": "Stick Range",

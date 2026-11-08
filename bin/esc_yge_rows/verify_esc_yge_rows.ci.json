@@ -1,0 +1,7 @@
+{
+  "id": "esc-yge-rows",
+  "name": "The YGE forward programming page shows the Keep mAh flag and the startup response",
+  "step": "Check the YGE ESC rows",
+  "script": "bin/esc_yge_rows/verify_esc_yge_rows.lua",
+  "rationale": "Issue #2672: the YGE codec reads and writes flags bit 2 (Keep mAh) and the acceleration parameter (startup response), but the YGE page had no row for either, so a pilot could neither see nor change them. The page now has a Keep mAh row bound to bit 2 of the flags byte, and a Startup Response row bound to acceleration with Normal (0) and Smooth (1), the values of the EdgeTX suite's fix and of the older Lua suite. The labels are i18n keys in every locale. The harness drives the real esc_forward_yge.lua and records the field list it hands to the shared vendor page. It checks that the two rows exist with the right bit, field and choices, that the direction and F3C rows are still there, and, through the real codec, that a block with Keep mAh on and Smooth set keeps both values through a write. Its self-test removes the Keep mAh row and requires it to be gone. On the code before the fix the two rows are missing and the checks fail."
+}

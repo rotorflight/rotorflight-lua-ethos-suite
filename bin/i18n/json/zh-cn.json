@@ -7728,6 +7728,12 @@
               "reverse_text": false,
               "max_length": 5
             },
+            "keep_mah": {
+              "english": "Keep mAh",
+              "max_length": 8,
+              "needs_translation": true,
+              "translation": "保持mAh"
+            },
             "lv_bec_voltage": {
               "english": "BEC",
               "translation": "BEC",
@@ -7783,6 +7789,18 @@
               "needs_translation": false,
               "reverse_text": false,
               "max_length": 12
+            },
+            "startup_response": {
+              "english": "Startup Response",
+              "max_length": 16,
+              "needs_translation": true,
+              "translation": "启动响应"
+            },
+            "startup_smooth": {
+              "english": "Smooth",
+              "max_length": 6,
+              "needs_translation": true,
+              "translation": "平滑"
             },
             "stick_range_us": {
               "english": "Stick Range",

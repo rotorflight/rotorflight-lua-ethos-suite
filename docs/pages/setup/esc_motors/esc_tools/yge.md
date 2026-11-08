@@ -37,6 +37,10 @@ Greyed out until the flight controller answers. Read-only while the model is arm
   at **8.4 V** on the ones that do not. The ceiling follows the ESC that answered,
   so it changes with the model; an ESC this page has no entry for is treated as an
   8.4 V one. See #2337.
+- *Keep mAh* is bit 2 of the ESC's flags byte, Off or On. It was read and written
+  before this page had a row for it, and the row now shows the ESC's own value.
+- *Startup Response* is the ESC's acceleration setting: *Normal* or *Smooth*. The
+  values are those of the other suites that read the same block (see #2672).
 - The *BEC Voltage* row is **hidden entirely** on an Opto model. An Opto ESC has no
   BEC, so there is no voltage to set — a capped control for a setting that cannot
   exist would be worse than no control.
