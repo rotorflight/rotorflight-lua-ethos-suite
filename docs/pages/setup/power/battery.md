@@ -33,6 +33,9 @@ Greyed out until the flight controller answers. Read-only while the model is arm
 ## Notes
 
 - Changes are written to the flight controller EEPROM upon Save.
+- A Save also writes the SmartFuel configuration, unchanged, after the battery configuration. The
+  flight controller takes the minimum and full cell voltages into SmartFuel only at that write, so
+  a new cell voltage is in effect for SmartFuel at once, not after the next power-up (#2651).
 - The capacity, the cell count and the four cell voltage thresholds follow
   *Edit Battery*, not the active profile. Editing another profile's values therefore
   does not make that profile active when you save (Issue #2502). *Profiles* stays on the
