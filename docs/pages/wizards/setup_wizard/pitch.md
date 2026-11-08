@@ -38,7 +38,7 @@ model is armed. The step needs a swashplate type to be set first.
 
 | Setting | What it does |
 | --- | --- |
-| Hold angle | The angle the axis is held at on the measure page, in 0.1 degrees: 0 up to the stored limit of the axis, but at least 9 and at most 12 degrees. It starts at 9 degrees. Use it to look at the gauge at another angle; the calibration still counts from 9 degrees. |
+| Hold angle | The angle the axis is held at on the measure page, in 0.1 degrees, either side of zero: from minus to plus the stored limit of the axis, but at least 9 and at most 12 degrees. The negative side checks the collective geometry, for example -10 after +10. It starts at 9 degrees. Use it to look at the gauge at another angle; the calibration still counts from 9 degrees. |
 | Measured | The blade pitch you read on the gauge, typed in its field, 1.0 to 30.0 degrees. |
 | Rate | The rate of the axis, in 0.1 %, typed in its field. Adjust it until the gauge reads 9 degrees. |
 | Calibrate | Scales the mixer so that 9 degrees on the gauge is 9 degrees in the flight controller. It then reads "Calibrated. Measure again to check." |

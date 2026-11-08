@@ -407,10 +407,12 @@ local function new(wiz)
     return math.min(HOLD_MAX, math.max(limitTenths(name), TEST_DEGREES * 10))
   end
 
-  -- Holds the angle the stepper sets. Calibrate counts from 9 degrees, so any other angle is only held
+  -- Holds the angle the stepper sets, either side of zero: the negative side checks the collective
+  -- geometry (-10 after +10). Calibrate counts from 9 degrees, so any other angle is only held
   -- to look at the gauge (#2708).
   local function setHeld(tenths)
-    heldDeg = heli.clamp(math.floor(tenths + 0.5), 0, holdMaxTenths(screen)) / 10
+    local limit = holdMaxTenths(screen)
+    heldDeg = heli.clamp(math.floor(tenths + 0.5), -limit, limit) / 10
     hold()
     wiz.rebuild()
   end
@@ -427,7 +429,7 @@ local function new(wiz)
     scr:text(coll and T.collTitle or T.cycTitle, coll and T.collText or T.cycText)
     scr:picture(pitchPicture)
     local rows = {}
-    rows[#rows + 1] = {label = T.holdAngle, number = {0, holdMaxTenths(name),
+    rows[#rows + 1] = {label = T.holdAngle, number = {-holdMaxTenths(name), holdMaxTenths(name),
       function() return heli.round(heldDeg * 10) end,
       function(value) setHeld(value) end,
       DEG, 1}}

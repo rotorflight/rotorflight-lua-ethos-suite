@@ -14,7 +14,8 @@
 --   4. the fine page still holds 9 degrees;
 --   5. the cyclic measure page holds roll at 9 degrees (#2709);
 --   6. the hold angle stepper (#2708) holds the angle it is set to, at most the stored limit, and
---      away from 9 degrees the page does not measure or calibrate.
+--      either side of zero (the negative side checks the collective geometry), and away from 9
+--      degrees the page does not measure or calibrate.
 
 local function scriptDir()
   local src = debug.getinfo(1, "S").source
@@ -205,6 +206,25 @@ do
   check("6g. back to 9 degrees it holds 9 degrees and Calibrate is back",
     hold ~= nil and hold.roll == RAW_9 and rowWithAnswer(CALIBRATE) ~= nil,
     "roll=" .. tostring(hold and hold.roll))
+  -- The stepper goes both ways: the negative side checks the collective geometry (-10 after +10).
+  stepper = rowWithLabel(HOLD_ANGLE)
+  check("6h. the stepper range is symmetric about zero, at the stored limit",
+    stepper ~= nil and stepper.number[1] == -100 and stepper.number[2] == 100,
+    "range=" .. tostring(stepper and stepper.number[1]) .. ".." .. tostring(stepper and stepper.number[2]))
+  stepper.number[4](-1200)   -- minus 120 degrees asked for
+  node.build()
+  stepper = rowWithLabel(HOLD_ANGLE)
+  hold = lastHold()
+  check("6i. the stepper holds the negative side, at most minus the stored limit",
+    hold ~= nil and hold.roll == heli.swashRaw(-10) and stepper ~= nil and stepper.number[3]() == -100,
+    "roll=" .. tostring(hold and hold.roll) .. " value=" .. tostring(stepper and stepper.number[3]()))
+  stepper.number[4](-50)     -- minus 5 degrees
+  node.build()
+  hold = lastHold()
+  check("6j. at minus 5 degrees the page holds roll at minus 5 degrees", hold ~= nil and hold.roll == heli.swashRaw(-5),
+    "roll=" .. tostring(hold and hold.roll))
+  rowWithLabel(HOLD_ANGLE).number[4](90)   -- back to 9 degrees
+  node.build()
   wiz.inputs.roll = nil
 end
 
@@ -241,7 +261,7 @@ if selfTest then
   print()
   print("--self-test: the stepper must go red without its bound")
   local bounded, bReplacements = source:gsub(
-    "heli%.clamp%(math%.floor%(tenths %+ 0%.5%), 0, holdMaxTenths%(screen%)%) / 10", "tenths / 10", 1)
+    "heli%.clamp%(math%.floor%(tenths %+ 0%.5%), %-limit, limit%) / 10", "tenths / 10", 1)
   check("self-test: the stepper bound was found in the page exactly once", bReplacements == 1,
     "replacements=" .. bReplacements)
   if bReplacements == 1 then
