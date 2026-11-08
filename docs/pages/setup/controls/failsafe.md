@@ -24,6 +24,8 @@ Greyed out until the flight controller answers. Read-only while the model is arm
 ## Notes
 
 - Changes are written to the flight controller EEPROM upon Save.
+- The page lists one row per channel the flight controller reports: 16 rows on CRSF (up to AUX 11),
+  18 on other links (up to AUX 13). Channels the board does not have are not shown.
 
 ## Related
 
