@@ -348,6 +348,7 @@ end
 -- themselves are left alone -- see lib/diy_sensor.lua's own reasoning for
 -- why lib/frsky_sensors.lua doesn't tear those down either.
 local function reset()
+  firmwareDecimetres = nil
   relevantSids = nil
   for _, sensor in pairs(sensors) do sensor:reset() end
 end

@@ -113,7 +113,7 @@ return function(decoders)
     [0x1127] = {name = "GPS Course", unit = UNIT_DEGREE, prec = 1, min = -1800, max = 3600, dec = decS16},
     [0x1128] = {name = "GPS Speed", unit = UNIT_METER_PER_SECOND, prec = 2, min = 0, max = 10000, dec = decU16},
     [0x1129] = {name = "GPS Home Dist", unit = UNIT_METER, prec = 0, min = 0, max = 65535, dec = decU16},
-    [0x112A] = {name = "GPS Home Dir", unit = UNIT_DEGREE, prec = 0, min = 0, max = 3600, dec = decU16},
+    [0x112A] = {name = "GPS Home Dir", unit = UNIT_DEGREE, prec = 0, min = 0, max = 360, dec = decU16},
     [0x1141] = {name = "CPU Load", unit = UNIT_PERCENT, prec = 0, min = 0, max = 100, dec = decU8},
     [0x1142] = {name = "SYS Load", unit = UNIT_PERCENT, prec = 0, min = 0, max = 10, dec = decU8},
     [0x1143] = {name = "RT Load", unit = UNIT_PERCENT, prec = 0, min = 0, max = 200, dec = decU8},

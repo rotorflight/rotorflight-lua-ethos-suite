@@ -228,8 +228,9 @@ do
   check("home distance is whole metres (500 m, two decimals not applied)",
     dist ~= nil and dist.last == 500 and hasCall(dist, "decimals", 0) and hasCall(dist, "unit", UNIT_METER),
     "published " .. tostring(dist and dist.last))
-  check("home direction is whole degrees (270 deg, metres not applied)",
-    dir ~= nil and dir.last == 270 and hasCall(dir, "decimals", 0) and hasCall(dir, "unit", UNIT_DEGREE),
+  check("home direction is whole degrees (270 deg, metres not applied, max 360)",
+    dir ~= nil and dir.last == 270 and hasCall(dir, "decimals", 0) and hasCall(dir, "unit", UNIT_DEGREE)
+      and hasCall(dir, "maximum", 360),
     "published " .. tostring(dir and dir.last))
 end
 
@@ -261,6 +262,32 @@ do
   check("an existing home direction sensor is reused, not created again",
     createdFor(HOME_DIR) == nil, "a second sensor was created")
   check("the value reaches the existing sensor", oldDir.last == 270, "published " .. tostring(oldDir.last))
+end
+
+-- ---------------------------------------------------------------------------
+-- 5. Disconnect reset: clears firmwareDecimetres so a subsequent connection
+--    does not publish altitude before its own API version is known.
+-- ---------------------------------------------------------------------------
+print("Reset on disconnect")
+do
+  local module = run({frame({s16(ALT, 1234)})}, 12, 10)
+  check("altitude was published while connected to API 12.10",
+    createdFor(ALT) ~= nil and createdFor(ALT).last == 12340)
+
+  module.reset()
+
+  -- A subsequent connection delivers an altitude frame before its API version is known.
+  created = {}
+  local queue = {frame({s16(ALT, 1234)})}
+  local transport = {
+    popCustomTelemetryFrame = function()
+      if #queue == 0 then return nil end
+      return 0x88, table.remove(queue, 1)
+    end,
+  }
+  module.wakeup(transport, nil, nil, nil)
+  check("reset cleared the API version: altitude is held again until known",
+    createdFor(ALT) == nil, "altitude sensor was published after reset without API version")
 end
 
 -- ---------------------------------------------------------------------------
