@@ -501,6 +501,61 @@ do
   flightRoll = nil
 end
 
+-- The same ceiling per rates_type (RAW_LIMITS in lib/rate_curve_scale.lua, from
+-- fc/rc_rates.c ratesSettingLimits): Quick's srate and Rotorflight's rc rate also stop at 200.
+print("Quick's srate and Rotorflight's rc rate also stop at the firmware's 200")
+do
+  local rateCurveScale = requireModule("lib/rate_curve_scale.lua")
+
+  -- Quick: srate 190 -> 238 for the same 1.25 step, past 200
+  resetFc()
+  fc[111].rates_type = rateCurveScale.RATE_TYPE_QUICK
+  flightRatesType = rateCurveScale.RATE_TYPE_QUICK
+  fc[111].rates_1 = 190
+  flightRoll = {sRate = 190}
+  openPage()
+  pump()
+  check("Quick: F and srate are not offered past its srate limit of 200", saveEnabled == false)
+  flightRoll = nil
+  flightRatesType = nil
+
+  -- control: Quick srate 150 -> 188 stays within 200, so the advice is offered
+  resetFc()
+  fc[111].rates_type = rateCurveScale.RATE_TYPE_QUICK
+  flightRatesType = rateCurveScale.RATE_TYPE_QUICK
+  fc[111].rates_1 = 150
+  flightRoll = {sRate = 150}
+  openPage()
+  pump()
+  check("Quick: the same advice is offered while srate stays within 200", saveEnabled == true)
+  flightRoll = nil
+  flightRatesType = nil
+
+  -- Rotorflight: rc rate 170 -> 212 for the same 1.25 step, past its rc rate limit of 200
+  resetFc()
+  fc[111].rates_type = rateCurveScale.RATE_TYPE_ROTORFLIGHT
+  flightRatesType = rateCurveScale.RATE_TYPE_ROTORFLIGHT
+  fc[111].rcRates_1 = 170
+  flightRoll = {rcRate = 170}
+  openPage()
+  pump()
+  check("Rotorflight: F and rc rate are not offered past its rc rate limit of 200", saveEnabled == false)
+  flightRoll = nil
+  flightRatesType = nil
+
+  -- control: Rotorflight rc rate 150 -> 188 stays within 200, so the advice is offered
+  resetFc()
+  fc[111].rates_type = rateCurveScale.RATE_TYPE_ROTORFLIGHT
+  flightRatesType = rateCurveScale.RATE_TYPE_ROTORFLIGHT
+  fc[111].rcRates_1 = 150
+  flightRoll = {rcRate = 150}
+  openPage()
+  pump()
+  check("Rotorflight: the same advice is offered while rc rate stays within 200", saveEnabled == true)
+  flightRoll = nil
+  flightRatesType = nil
+end
+
 print("With no flight saved, the page says so instead of the too-little-data advice")
 do
   resetFc()
