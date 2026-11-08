@@ -174,8 +174,12 @@ local FF_MIN_CORR = 0.85
 local FF_HOT = 1.15
 local FF_LOW = 0.85
 local FF_STEP_MAX = 0.2         -- change F (and rates) by at most 20% per step
--- Rate bytes the FC accepts (firmware fc/rc_rates.h, cli/settings.c)
-local RATE_RANGE = {rcRate = {1, 255}, sRate = {0, 255}}
+-- Lowest rate byte the FC accepts (firmware fc/rc_rates.h, cli/settings.c). The
+-- ceiling is lower for some rates_type: the firmware keeps rc_rate and srate within
+-- ratesSettingLimits (fc/rc_rates.c) and trims them on every EEPROM write, so the
+-- ceiling is rawMaxFor() for the type (#2756).
+local RATE_FLOOR = {rcRate = 1, sRate = 0}
+local RATE_ROLE = {rcRate = "rcRate", sRate = "srate"}
 
 -- Which rate columns scale the whole curve linearly, per rates_type. The
 -- others (Betaflight, Raceflight, KISS) get a percentage instead.
@@ -254,10 +258,11 @@ local function fcField(key, axis)
   return "tuning", AXIS_FIELDS[axis] .. "_" .. string.lower(key)
 end
 
--- Whether value is one the FC accepts for that setting
-local function inRange(key, axis, value)
-  local range = RATE_RANGE[key]
-  if range then return value >= range[1] and value <= range[2] end
+-- Whether value is one the FC accepts for that setting. A rate column's ceiling
+-- depends on the rates_type, so the rate checks pass it.
+local function inRange(key, axis, value, rateType)
+  local floor = RATE_FLOOR[key]
+  if floor then return value >= floor and value <= R.rawMaxFor(rateType, RATE_ROLE[key]) end
   local src, field = fcField(key, axis)
   local meta = SOURCE_BY_KEY[src].codec.FIELD_META[field]
   return meta ~= nil and value >= meta.min and value <= meta.max
@@ -300,7 +305,7 @@ local function ratesFit(a, axis, k)
   if not roles then return true end
   for _, role in ipairs(roles) do
     local key = rateKey(role)
-    if not inRange(key, axis, round(a[key] * k)) then return false end
+    if not inRange(key, axis, round(a[key] * k), a.ratesType) then return false end
   end
   return true
 end
@@ -865,7 +870,10 @@ local function open(opts)
     local dirty = {}
     for _, c in ipairs(applying.changes) do
       local src, field = fcField(c.key, axis)
-      if data[src][field] ~= c.from or not inRange(c.key, axis, c.to) then finish(T.errChanged) return end
+      if data[src][field] ~= c.from or not inRange(c.key, axis, c.to, applying.tune.ratesType) then
+        finish(T.errChanged)
+        return
+      end
       data[src][field] = c.to
       dirty[src] = true
     end
