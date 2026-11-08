@@ -1032,35 +1032,28 @@ out("")
 out("case 7: the main-power alert")
 mainPowerChecks()
 
--- ── case 8: the telemetry link, gated by the armed state (issue #2311) ─────
+-- ── case 8: the flight controller's silence, gated by the armed state (#2311, #2664) ─
 --
--- The one announcement in this file that is gated on the state the model was in
--- *before* the event, and the two halves are gated on each other. Nothing in the
--- build or the package step reaches tasks/audio_events.lua's
--- announceTelemetryLost()/announceTelemetryRecovered(), and both failure modes
--- are quiet in the direction that costs the pilot something: drop the armed gate
--- and every bench power-down shouts, drop the pending flag and a model that was
--- told it lost the link is never told it got it back.
+-- The loss the radio cannot see: the RF link is up and the flight controller has
+-- stopped sending. A lost RF link is the radio's own announcement and is not spoken
+-- here. session.lua decides the silence (telemetryFcSilent) and publishes each edge;
+-- this case feeds those edges in and checks what audio_events.lua says for them.
 --
--- The same rig the main-power case uses, with no sound present by default: no
--- pack carries the two telemetry words yet, so "haptic only until a pack gains
--- them" is what has to be pinned, and a scenario that declares one present
--- proves the resolution order.
+-- The silence itself (the 6 s, the frame stamps, the CRSF-only watch) is checked on
+-- the real session in bin/fc_silence.
 --
 -- Pinned:
---   * a link loss while armed is announced once, with the haptic, and never
---     again while the link stays down;
---   * a link loss while disarmed says nothing at all -- the bench case the
---     issue was filed about;
---   * the link coming back is announced once, and only for a loss that was
---     announced;
+--   * a silent flight controller while armed is announced once, with the haptic, and
+--     not again while the silence stands;
+--   * the silence ending is announced once, and only for a silence that was announced;
+--   * a silence while disarmed says nothing: the bench case the issue was filed about;
+--   * a link that drops is not announced here, and a link that comes back is not a
+--     recovery, because nothing was announced;
 --   * a model that answers again after the recovery window gets no recovery;
---   * telemetry_lost = false keeps both halves silent;
---   * nothing is announced for a link that was already down at startup.
+--   * telemetry_lost = false keeps both halves silent.
 --
--- The last check strips the armed gate from a copy of the task and requires a
--- disarmed loss to fire there. If it stops turning red, the instrument has gone
--- blind.
+-- Two checks strip a gate from a copy of the task and require the case to fire there.
+-- If they stop turning red, the instrument has gone blind.
 
 local TELEMETRY_LOST_FILE = "SCRIPTS:/rfsuite/audio/en/default/events/alerts/telemetrylost.wav"
 local TELEMETRY_OK_FILE = "SCRIPTS:/rfsuite/audio/en/default/events/alerts/telemetryok.wav"
@@ -1191,36 +1184,36 @@ local function repeatChecks()
 end
 
 local function telemetryLinkChecks()
-  -- Armed, and the link goes. The first wakeup only initializes the task, so the
-  -- loss is on the second connected tick's successor.
+  -- Armed, and the flight controller goes quiet with the link up. The first wakeup
+  -- only initializes the task.
   do
     local rig = newLinkRig({telemetry_lost = true})
-    rig.setClock(0); rig.step({connected = true, isArmed = true}) -- initialize
-    rig.setClock(1); rig.step({connected = true, isArmed = true}) -- armed tick
-    rig.setClock(2); rig.step({connected = false})                -- link lost
-    check("a link loss while armed buzzes",
+    rig.setClock(0); rig.step({connected = true, isArmed = true})                      -- initialize
+    rig.setClock(1); rig.step({connected = true, isArmed = true})                      -- armed tick
+    rig.setClock(2); rig.step({connected = true, isArmed = true, telemetryFcSilent = true})
+    check("a silent flight controller while armed buzzes",
       #rig.haptics == 1, #rig.haptics .. " haptic(s)")
     check("with no telemetrylost.wav in the pack, no file is played",
       rig.count(".wav") == 0, rig.count(".wav") .. " file(s) played")
-    rig.setClock(3); rig.step({connected = false})                -- still down
-    check("a loss that stands is not announced again",
+    rig.setClock(3); rig.step({connected = true, isArmed = true, telemetryFcSilent = true})
+    check("a silence that stands is not announced again",
       #rig.haptics == 1, #rig.haptics .. " haptic(s)")
   end
 
-  -- A pack that carries the words plays them: the dedicated file on the way
-  -- out, and its pair on the way back in.
+  -- A pack that carries the words plays them: the dedicated file on the way out, and
+  -- its pair when the flight controller answers again.
   do
     local rig = newLinkRig({telemetry_lost = true})
     scriptFiles[TELEMETRY_LOST_FILE] = true
     scriptFiles[TELEMETRY_OK_FILE] = true
     rig.setClock(0); rig.step({connected = true, isArmed = true})
     rig.setClock(1); rig.step({connected = true, isArmed = true})
-    rig.setClock(2); rig.step({connected = false})
+    rig.setClock(2); rig.step({connected = true, isArmed = true, telemetryFcSilent = true})
     check("a pack that carries telemetrylost.wav plays it",
       (rig.lastPlayed() or ""):find("telemetrylost.wav", 1, true) ~= nil,
       tostring(rig.lastPlayed()))
-    rig.setClock(3); rig.step({connected = true, isArmed = true}) -- back
-    check("the link coming back plays telemetryok.wav",
+    rig.setClock(3); rig.step({connected = true, isArmed = true})
+    check("the flight controller answering again plays telemetryok.wav",
       rig.count("telemetryok.wav") == 1, "telemetryok.wav played " .. rig.count("telemetryok.wav") .. "x")
     check("the recovery buzzes once",
       #rig.haptics == 2, #rig.haptics .. " haptic(s)")
@@ -1229,23 +1222,8 @@ local function telemetryLinkChecks()
       rig.count("telemetryok.wav") == 1, "telemetryok.wav played " .. rig.count("telemetryok.wav") .. "x")
   end
 
-  -- The bench case from the issue: disarmed, pack unplugged. Nothing at all --
-  -- no file, no haptic -- and no recovery either, because nothing was lost.
-  do
-    local rig = newLinkRig({telemetry_lost = true})
-    rig.setClock(0); rig.step({connected = true, isArmed = false})
-    rig.setClock(1); rig.step({connected = true, isArmed = false})
-    rig.setClock(2); rig.step({connected = false})
-    check("a link loss while disarmed is silent",
-      #rig.haptics == 0 and rig.count(".wav") == 0,
-      #rig.haptics .. " haptic(s), " .. rig.count(".wav") .. " file(s)")
-    rig.setClock(3); rig.step({connected = true, isArmed = false})
-    check("a model that was never told it lost the link is not told it recovered",
-      rig.count("telemetryok.wav") == 0 and #rig.haptics == 0,
-      #rig.haptics .. " haptic(s), " .. rig.count(".wav") .. " file(s)")
-  end
-
-  -- The window: a model that answers again long after the loss is a new flight.
+  -- The link drops while armed: the radio announces that itself. Nothing here, and
+  -- the link coming back is no recovery, because nothing was announced.
   do
     local rig = newLinkRig({telemetry_lost = true})
     scriptFiles[TELEMETRY_LOST_FILE] = true
@@ -1253,8 +1231,44 @@ local function telemetryLinkChecks()
     rig.setClock(0); rig.step({connected = true, isArmed = true})
     rig.setClock(1); rig.step({connected = true, isArmed = true})
     rig.setClock(2); rig.step({connected = false})
+    check("a link that drops while armed is not announced here",
+      #rig.haptics == 0 and rig.count(".wav") == 0,
+      #rig.haptics .. " haptic(s), " .. rig.count(".wav") .. " file(s)")
+    rig.setClock(3); rig.step({connected = true, isArmed = true})
+    check("a link that comes back is not announced as a recovery",
+      rig.count("telemetryok.wav") == 0 and #rig.haptics == 0,
+      #rig.haptics .. " haptic(s), " .. rig.count(".wav") .. " file(s)")
+  end
+
+  -- The bench case from the issue: disarmed, the flight controller goes quiet. Nothing
+  -- at all, and no recovery when it answers again.
+  do
+    local rig = newLinkRig({telemetry_lost = true})
+    scriptFiles[TELEMETRY_LOST_FILE] = true
+    scriptFiles[TELEMETRY_OK_FILE] = true
+    rig.setClock(0); rig.step({connected = true, isArmed = false})
+    rig.setClock(1); rig.step({connected = true, isArmed = false})
+    rig.setClock(2); rig.step({connected = true, isArmed = false, telemetryFcSilent = true})
+    check("a silent flight controller while disarmed is silent",
+      #rig.haptics == 0 and rig.count(".wav") == 0,
+      #rig.haptics .. " haptic(s), " .. rig.count(".wav") .. " file(s)")
+    rig.setClock(3); rig.step({connected = true, isArmed = false})
+    check("a model that was never told it went quiet is not told it recovered",
+      rig.count("telemetryok.wav") == 0 and #rig.haptics == 0,
+      #rig.haptics .. " haptic(s), " .. rig.count(".wav") .. " file(s)")
+  end
+
+  -- The window: a flight controller that answers again long after the silence is a
+  -- new flight.
+  do
+    local rig = newLinkRig({telemetry_lost = true})
+    scriptFiles[TELEMETRY_LOST_FILE] = true
+    scriptFiles[TELEMETRY_OK_FILE] = true
+    rig.setClock(0); rig.step({connected = true, isArmed = true})
+    rig.setClock(1); rig.step({connected = true, isArmed = true})
+    rig.setClock(2); rig.step({connected = true, isArmed = true, telemetryFcSilent = true})
     rig.setClock(200); rig.step({connected = true, isArmed = true})
-    check("a link back after the recovery window gets no recovery callout",
+    check("an answer after the recovery window gets no recovery callout",
       rig.count("telemetryok.wav") == 0, "telemetryok.wav played " .. rig.count("telemetryok.wav") .. "x")
   end
 
@@ -1263,24 +1277,15 @@ local function telemetryLinkChecks()
     local rig = newLinkRig({telemetry_lost = false})
     rig.setClock(0); rig.step({connected = true, isArmed = true})
     rig.setClock(1); rig.step({connected = true, isArmed = true})
-    rig.setClock(2); rig.step({connected = false})
-    check("telemetry_lost = false keeps the loss silent",
+    rig.setClock(2); rig.step({connected = true, isArmed = true, telemetryFcSilent = true})
+    check("telemetry_lost = false keeps the silence silent",
       #rig.haptics == 0, #rig.haptics .. " haptic(s)")
     rig.setClock(3); rig.step({connected = true, isArmed = true})
     check("telemetry_lost = false keeps the recovery silent",
       #rig.haptics == 0, #rig.haptics .. " haptic(s)")
   end
 
-  -- A task that starts on a down link has no `previous` to read an edge from.
-  do
-    local rig = newLinkRig({telemetry_lost = true})
-    rig.setClock(0); rig.step({connected = false})
-    rig.setClock(1); rig.step({connected = false})
-    check("a link that was already down at startup is not a loss",
-      #rig.haptics == 0, #rig.haptics .. " haptic(s)")
-  end
-
-  -- Can-fail: strip the armed gate and require a disarmed loss to fire. If this
+  -- Can-fail: strip the armed gate and require a disarmed silence to fire. If this
   -- stops turning red, the checks above prove nothing.
   local source = readFile(AUDIO_PATH)
   local stripped = source:gsub("if lastSeenArmed ~= true then return end", "", 1)
@@ -1288,24 +1293,9 @@ local function telemetryLinkChecks()
   local rig = newTaskRig(withStoreDefaults({telemetry_lost = true}), stripped)
   rig.setClock(0); rig.step({connected = true, isArmed = false})
   rig.setClock(1); rig.step({connected = true, isArmed = false})
-  rig.setClock(2); rig.step({connected = false})
-  check("without the armed gate a disarmed loss fires (this check can go red)",
+  rig.setClock(2); rig.step({connected = true, isArmed = false, telemetryFcSilent = true})
+  check("without the armed gate a disarmed silence fires (this check can go red)",
     #rig.haptics == 1, #rig.haptics .. " haptic(s)")
-
-  -- Can-fail the other way round: read the armed state off the session instead
-  -- of the snapshot. The session clears isArmed in the same step that clears
-  -- connected, so this copy answers with an empty value and has to stay quiet --
-  -- and it is what the real code would do if the announcement ran after
-  -- rememberCurrent() instead of before it.
-  local stale = source:gsub("if lastSeenArmed ~= true then return end",
-    "if session.isArmed ~= true then return end", 1)
-  check("the armed gate could be re-pointed at the session", stale ~= source)
-  local quiet = newTaskRig({telemetry_lost = true}, stale)
-  quiet.setClock(0); quiet.step({connected = true, isArmed = true})
-  quiet.setClock(1); quiet.step({connected = true, isArmed = true})
-  quiet.setClock(2); quiet.step({connected = false})
-  check("a gate reading the session's armed state says nothing (this check can go red)",
-    #quiet.haptics == 0, #quiet.haptics .. " haptic(s)")
 end
 
 out("")
