@@ -32,8 +32,9 @@ never reported arm flags at all is not affected: these two tiles stay usable for
 
 The same holds for the connect sequence. On a new link the suite reads the identity and
 configuration of the flight controller only after it has the armed state of that link, or
-five seconds after the link came up when the flight controller reports neither the arm flags
-nor the System Status word. A model that is already armed when the link comes up therefore
+fifteen seconds after the link came up when the flight controller reports neither the arm flags
+nor the System Status word. A flight controller whose arm-state reading arrives late, within
+that wait, is still held until the reading is in. A model that is already armed when the link comes up therefore
 gets none of those reads while it is armed, and the connect waits for the disarm.
 
 ## Armed warning

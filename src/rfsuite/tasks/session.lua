@@ -599,8 +599,12 @@ end
 -- isArmed == nil there means "not read yet", and the reads would reach an armed
 -- flight controller. A flight controller that reports neither the arming flags
 -- nor the System Status word never gives a reading, so the wait ends
--- ARMED_STATE_WAIT seconds after the link came up.
-local ARMED_STATE_WAIT = 5.0
+-- ARMED_STATE_WAIT seconds after the link came up. That is a time bound, not a
+-- proof: the armflags sensor can be broadcast late on a weak link (the S.Port
+-- and CRSF round-robin cycles through the sensors), so the bound has to outlast
+-- one full round-robin. Only a flight controller that never reports the arm
+-- state pays the full wait.
+local ARMED_STATE_WAIT = 15.0
 local linkUpAt = nil
 
 local function armedStateKnown()

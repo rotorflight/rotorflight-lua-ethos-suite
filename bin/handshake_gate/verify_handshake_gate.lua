@@ -416,26 +416,26 @@ end
 
 -- ---------------------------------------------------------------------------
 -- 6. (#2758) With no arm-state reading yet, nothing goes out on the link: the
---    session waits up to ARMED_STATE_WAIT (5 s) for one, then the handshake
---    starts. The first retry tick after the 5 s is the one that starts it
---    (2 s cadence), so it is queued by 7 s.
+--    session waits up to ARMED_STATE_WAIT (15 s) for one, then the handshake
+--    starts. The first retry tick after the 15 s is the one that starts it
+--    (2 s cadence), so it is queued by 17 s.
 -- ---------------------------------------------------------------------------
 do
   local rig = newRig({ telemetryActive = true, armflags = false })
   rig.tick(true)
-  for _ = 1, 4 do
+  for _ = 1, 14 do
     rig.advance(1.0)
     rig.tick(true)
   end
-  check("with no arm-state reading yet, nothing is queued in the first 4 s",
+  check("with no arm-state reading yet, nothing is queued in the first 14 s",
     #rig.queue.added == 0, #rig.queue.added .. " queued: " .. commandsOf(rig))
 
   for _ = 1, 3 do
     rig.advance(1.0)
     rig.tick(true)
   end
-  check("the handshake starts once the 5 s wait has run out",
-    findCommand(rig, API_VERSION) ~= nil, "commands by 7 s: " .. commandsOf(rig))
+  check("the handshake starts once the 15 s wait has run out",
+    findCommand(rig, API_VERSION) ~= nil, "commands by 17 s: " .. commandsOf(rig))
 end
 
 -- ---------------------------------------------------------------------------
@@ -456,6 +456,34 @@ do
   rig.setArmflags(0)
   rig.tick(true)
   check("the disarm reading starts the handshake at once",
+    findCommand(rig, API_VERSION) ~= nil, "commands: " .. commandsOf(rig))
+end
+
+-- ---------------------------------------------------------------------------
+-- 8. (#2758) The arm-state reading comes late, after the old 5 s bound, and it
+--    says armed: nothing may go out on the link while the model is armed. A
+--    flight controller that reports the arm state a few seconds late is the
+--    same race as an armed model at connect.
+-- ---------------------------------------------------------------------------
+do
+  local rig = newRig({ telemetryActive = true, armflags = false })
+  rig.tick(true)
+  for _ = 1, 10 do
+    rig.advance(1.0)
+    rig.tick(true)
+  end
+  rig.setArmflags(1)
+  rig.tick(true)
+  for _ = 1, 10 do
+    rig.advance(1.0)
+    rig.tick(true)
+  end
+  check("a late armed reading (at 10 s) keeps the link quiet for the next 10 s",
+    #rig.queue.added == 0, #rig.queue.added .. " queued: " .. commandsOf(rig))
+
+  rig.setArmflags(0)
+  rig.tick(true)
+  check("the late disarm reading starts the handshake at once",
     findCommand(rig, API_VERSION) ~= nil, "commands: " .. commandsOf(rig))
 end
 
