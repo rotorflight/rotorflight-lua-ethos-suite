@@ -470,6 +470,7 @@ local function flush()
     bblSize = session.bblSize,
     bblUsed = session.bblUsed,
     isArmed = session.isArmed,
+    telemetryFcSilent = session.telemetryFcSilent,
     armedUnconfirmed = session.armedUnconfirmed,
     armDisableFlags = session.armDisableFlags,
     rxMap = session.rxMap,
@@ -975,6 +976,34 @@ local function clearAircraftIdentity()
   session.modelStats = nil
 end
 
+-- The flight controller has stopped sending while the RF link is up (#2664). The
+-- radio announces a lost RF link itself, so this is the case it cannot see. Only
+-- CRSF carries the custom telemetry this follows: tasks/elrs_sensors.lua stamps
+-- session.telemetryFrameAt when it takes a frame. The silence is counted from the
+-- later of that stamp and the first wakeup of the link, so a link that has just come
+-- up is not taken for a silence that began before it. session.telemetryFcSilent is
+-- published only when it changes, which is the edge audio_events announces.
+local TELEMETRY_QUIET_SECONDS = 6
+local telemetryWatchFrom = nil
+
+local function watchFlightControllerTelemetry(now, protocol)
+  if session.connected ~= true or protocol ~= "crsf" then
+    telemetryWatchFrom = nil
+    if session.telemetryFcSilent ~= nil then
+      session.telemetryFcSilent = nil
+      publish()
+    end
+    return
+  end
+  if telemetryWatchFrom == nil then telemetryWatchFrom = now end
+  local since = math.max(session.telemetryFrameAt or telemetryWatchFrom, telemetryWatchFrom)
+  local silent = (now - since) >= TELEMETRY_QUIET_SECONDS
+  if silent ~= (session.telemetryFcSilent == true) then
+    session.telemetryFcSilent = silent or nil
+    publish()
+  end
+end
+
 -- Set once system_status has reported a healthy GPS this connection; see
 -- updateSystemStatus().
 local gpsSeenHealthy = false
@@ -1103,6 +1132,7 @@ local function setConnected(value, mspQueue, protocol)
     -- grace window.
     session.flightResumable = holdingFlight == true
     session.isArmed = nil
+    session.telemetryFrameAt = nil
     session.armDisableFlags = nil
     localSmartFuel:reset()
     smartfuelSensor:reset()
@@ -1917,13 +1947,16 @@ local function wakeup(mspQueue, protocol, transport, simSensors)
     if protocol == "crsf" and session.connected and shouldRunScheduled("elrs", ELRS_SENSOR_INTERVAL, now) then
       -- A capped drain (see tasks/elrs_sensors.lua's MAX_FRAMES_PER_WAKEUP)
       -- left frames queued: run again next tick rather than in 0.18s.
-      if ensureElrsSensors().wakeup(transport, session.telemetrySlots, session.apiVersionMajor,
-          session.apiVersionMinor) then
+      local retry, frameAt = ensureElrsSensors().wakeup(transport, session.telemetrySlots,
+        session.apiVersionMajor, session.apiVersionMinor)
+      if frameAt then session.telemetryFrameAt = frameAt end
+      if retry then
         nextScheduledAt.elrs = nil
       end
     end
   end
 
+  watchFlightControllerTelemetry(now, protocol)
   updateFlightTimer(now)
   local flightPhase = flightRecord:update(session, liveSensors.read, now)
   if flightPhase ~= session.flightState then

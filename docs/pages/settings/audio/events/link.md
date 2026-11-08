@@ -6,7 +6,7 @@ sidebar_position: 55
 
 # Link
 
-Callouts for the flight controller link going away and coming back.
+Callouts for the flight controller going quiet while the radio link is up, and answering again.
 
 ## Where to find it
 
@@ -18,18 +18,22 @@ Always available offline without an active flight controller connection. Read-on
 
 | Setting | What it does |
 | --- | --- |
-| *Telemetry lost* | Calls out the link when it drops **while the model is armed**, and again when it comes back. On by default. |
-| *Vibrate* | Vibrates the radio when the link drops while armed. On by default. A lost link is announced once per loss, so it has no repeat count. |
+| *Telemetry lost* | Calls out the flight controller when it stops sending **while the model is armed** and the radio link is up, and again when it sends again. On by default. |
+| *Vibrate* | Vibrates the radio when the flight controller goes quiet while armed. On by default. Each silence is announced once, so it has no repeat count. |
 
 ## Notes
 
-- One switch governs both halves, because the recovery is gated on the loss: the link coming
-  back is only announced if the loss was announced, and only while that loss is still the same
-  flight.
-- The armed state is read from the tick *before* the link went. Unplugging the pack on the
-  bench, or powering down after landing, is the normal end of a session and stays completely
-  silent; the same drop with the rotors turning is the one event here a pilot must not have to
-  notice for himself.
+- A link that drops is not announced here. The radio announces a lost RF link itself, so this
+  page only covers the case the radio cannot see: the link is up and the flight controller has
+  stopped sending.
+- The silence is counted after 6 seconds without a flight controller frame, while the link is up.
+  Only CRSF (ELRS) telemetry is watched; on other protocols nothing is announced here.
+- One switch governs both halves, because the recovery is gated on the silence: the flight
+  controller answering again is only announced if its silence was announced, and only while that
+  silence is still the same flight.
+- A silence while disarmed stays completely silent, for example on the bench or after landing.
+  The same silence with the rotors turning is the one event here a pilot must not have to notice
+  for himself.
 - A model that answers again more than 120 seconds later gets no recovery callout — that is a
   new flight, and "telemetry recovered" belongs to the one that was interrupted.
 - The dedicated *Telemetry lost* / *Telemetry recovered* sounds are not in the packs yet, and

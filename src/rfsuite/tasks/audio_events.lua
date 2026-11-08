@@ -34,7 +34,7 @@ local mainPowerLostActive = false
 local lowVoltageHoldStart = nil
 -- The moment a telemetry loss that was announced happened, or nil while nothing
 -- is outstanding. This is what gates the recovery on the *initial* loss rather
--- than on the link being back: a model that comes back is told it recovered
+-- than on the flight controller answering again: a model that answers is told it recovered
 -- only if it was told it was lost, and only while that loss still belongs to
 -- this flight (issue #2311).
 local connectionLostAt = nil
@@ -154,6 +154,7 @@ local AUDIO_SESSION_KEYS = {
   "connected",
   "craftName",
   "isArmed",
+  "telemetryFcSilent",
   "pidProfile",
   "rateProfile",
   "batteryProfile",
@@ -683,18 +684,12 @@ local function announceMainPowerLost(now)
   haptic()
 end
 
--- The flight controller link went away. Announced once per loss, and only when
--- the model was armed in the tick before it went: unplugging the pack on the
--- bench, or powering down after landing, is the normal end of a session and
--- says nothing, while the same drop with the rotors turning is the one event a
--- pilot must not have to notice for himself (issue #2311).
---
--- The armed state is read from `lastSeenArmed`, not from `session`: the session
--- clears isArmed in the same step that clears connected (tasks/session.lua's
--- setConnected()), so by the time a down link is visible here the armed state
--- is already gone -- and rememberCurrent() overwrites `previous` with that
--- empty value at the end of the branch wakeup() calls this from, which is why
--- this runs before it.
+-- The flight controller stopped sending while the RF link is up (#2664). Announced
+-- once per loss, and only when the model is armed: a silent flight controller on
+-- the bench, or after landing, is the normal end of a session and says nothing,
+-- while the same silence with the rotors turning is the event a pilot must not
+-- have to notice for himself (issue #2311). The armed state is `lastSeenArmed`,
+-- the one the task saw on its previous tick.
 local function announceTelemetryLost(now)
   if not events.telemetry_lost then return end
   if lastSeenArmed ~= true then return end
@@ -704,8 +699,8 @@ local function announceTelemetryLost(now)
   if path then system.playFile(path) end
   -- Out whether or not a file resolves, for the same reason as the main-power
   -- alert above: a pack that carries none of the words would otherwise get no
-  -- alert at all, and a lost link while armed is not something to leave to a
-  -- file the pack happens to ship.
+  -- alert at all, and a silent flight controller while armed is not something to
+  -- leave to a file the pack happens to ship.
   hapticFor("telemetry_lost")
 end
 
@@ -724,6 +719,18 @@ local function announceTelemetryRecovered(now)
   local path = firstResolvedSound(TELEMETRY_OK_SOUNDS)
   if path then system.playFile(path) end
   haptic()
+end
+
+-- The flight controller has gone quiet while the RF link is up (#2664). session.lua
+-- decides that and publishes each edge; this announces it. A lost RF link is the
+-- radio's own announcement, so it is not spoken here.
+local fcSilent = false
+
+local function watchFlightControllerTelemetry(now)
+  local silent = session.telemetryFcSilent == true
+  if silent == fcSilent then return end
+  fcSilent = silent
+  if silent then announceTelemetryLost(now) else announceTelemetryRecovered(now) end
 end
 
 local function announceEscTemp(now)
@@ -1093,11 +1100,9 @@ function audio_events.wakeup()
       return
     end
     disconnectApplied = true
-    -- Whether this tick is the loss itself, read before rememberCurrent()
-    -- below overwrites `previous` with the values of the down session. Both
-    -- edges the link announcement needs -- that the link went, and that the
-    -- model was armed when it did -- are only in `previous` on this one tick.
-    local linkLost = previous.connected == true
+    -- A link that drops is announced by the radio itself (#2664), so nothing is
+    -- announced here. The flight controller's silence is watched while the link is up.
+    fcSilent = false
     initialized = false
     craftNameAnnounced = false
     resetFuelAnnouncements()
@@ -1115,9 +1120,6 @@ function audio_events.wakeup()
     for key in pairs(rollingSamples) do rollingSamples[key] = nil end
     for key in pairs(lastAlertAt) do lastAlertAt[key] = nil end
     clearAlertState()
-    -- Before rememberCurrent(): the announcement reads `previous`, and that
-    -- call is what overwrites it with the values of the down session.
-    if linkLost then announceTelemetryLost(now) end
     rememberCurrent()
     return
   end
@@ -1127,10 +1129,10 @@ function audio_events.wakeup()
   if not initialized then
     initialized = true
     rememberCurrent()
-    -- The first connected tick after a link loss. Nothing else runs on it --
-    -- this is the branch that keeps the first evaluation after a connect from
-    -- carrying a sound -- so the recovery is announced from here.
-    announceTelemetryRecovered(now)
+    -- The first connected tick. Nothing else runs on it -- this is the branch
+    -- that keeps the first evaluation after a connect from carrying a sound. A
+    -- flight controller that is still silent is not a recovery, so none is
+    -- announced here (#2664).
     -- No fuel seed here: announceSmartfuel() seeds the first reading it
     -- evaluates, whatever that reading is, and gating it in two places is how
     -- the zero case came to be announced at all. Skipping this branch is what
@@ -1138,6 +1140,7 @@ function audio_events.wakeup()
     return
   end
 
+  watchFlightControllerTelemetry(now)
   announceCraftName()
   announceArmed(now)
   announceProfile(now, "pidProfile", events.pid_profile, "profile.wav")
@@ -1158,6 +1161,7 @@ end
 
 function audio_events.reset()
   lastSeenArmed = nil
+  fcSilent = false
   initialized = false
   disconnectApplied = false
   craftNameAnnounced = false
