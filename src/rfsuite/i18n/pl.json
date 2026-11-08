@@ -9580,9 +9580,9 @@
           "translation": "Sprawdź przy 0 stopniach"
         },
         "pit_coll_text": {
-          "english": "Align the blades with the boom. The collective is held at 9 degrees. Measure the blade pitch, enter it, then Calibrate.",
-          "max_length": 130,
-          "needs_translation": true,
+          "english": "The collective is held at 9 degrees. Measure the blade pitch, enter it, then Calibrate.",
+          "max_length": 87,
+          "needs_translation": false,
           "reverse_text": false,
           "translation": "Kolektyw jest trzymany na 9 stopniach. Zmierz skok łopaty, wpisz go i naciśnij Kalibruj."
         },
@@ -9594,8 +9594,8 @@
           "translation": "Kolektyw"
         },
         "pit_cyc_text": {
-          "english": "Blades along the boom, as for the collective. Roll is held at 9 degrees. Measure, enter it, then Calibrate.",
-          "max_length": 120,
+          "english": "Turn the blades to point left and right. Roll is held at 9 degrees. Measure, enter it, then Calibrate.",
+          "max_length": 103,
           "needs_translation": true,
           "reverse_text": false,
           "translation": "Ustaw łopaty w lewo i w prawo. Skok trzymany na 9 stopniach. Zmierz, wpisz i naciśnij Kalibruj."
