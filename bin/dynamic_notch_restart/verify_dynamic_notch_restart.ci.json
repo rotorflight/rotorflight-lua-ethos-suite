@@ -1,0 +1,7 @@
+{
+  "id": "dynamic-notch-restart",
+  "name": "A save that changes a dynamic notch value restarts the flight controller",
+  "step": "Check the Filters page restart for the dynamic notch",
+  "script": "bin/dynamic_notch_restart/verify_dynamic_notch_restart.lua",
+  "rationale": "Issue #2655: Setup > Filters saved the dynamic notch values with an EEPROM write and no restart, so the flight controller kept flying the old notch until the next power-up. The firmware sets the dynamic notch up only once, in dynNotchInit() called from fc/init.c; MSP_SET_FILTER_CONFIG stores the dyn_notch_* values and re-initialises the gyro and RPM filters, but not the notch (rotorflight-firmware msp.c). The page now restarts the flight controller after a save that changed one of the four dyn_notch_* values, and only then. The runtime calls onSaved() before its restart decision, so the page makes the comparison in onSaved() against the values before that save, and the decision returns it. The harness drives the real filters.lua with a stand-in page runtime, runs the save in the runtime's order (onSaved, then the decision), and checks that a change to each notch value restarts, that a save with nothing changed does not, that a change to the other filters does not, and that a change back to the value the FC holds restarts. Its self-test removes the comparison and requires a notch change not to restart. On the code before the fix no save restarts and the checks fail."
+}
