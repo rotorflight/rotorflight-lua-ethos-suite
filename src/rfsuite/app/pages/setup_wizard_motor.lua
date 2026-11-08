@@ -329,8 +329,13 @@ local function new(wiz)
     return (indexOf(name) or #sequence()) + 1
   end
   local function total() return #sequence() + 1 end
+
+  -- Set when a stage change was refused; the page says so until the next change or screen.
+  local stageRefused = false
+
   local function goTo(name)
     screen = name
+    stageRefused = false
     wiz.rebuild()
   end
   local function nextScreen()
@@ -457,7 +462,10 @@ local function new(wiz)
       local ratio = base.direct and base.direct.ratio
         or math.max(100, math.min(10000, math.floor(gearOr1(cfg.main_rotor_gear_ratio_1) * 100 / gearOr1(cfg.main_rotor_gear_ratio_0) + 0.5)))
       local _, p0, p1 = ratioProducts(ratio)
-      return {stages = 1, direct = {ratio = ratio}, main0 = p0, main1 = p1, mainT = p1, meshT = gearOr1(t.mesh)}
+      local tr = base.train
+      local mesh = tr and tr.mainSide or nil
+      return {stages = 1, direct = {ratio = ratio}, main0 = p0, main1 = p1, mesh = mesh,
+        mainT = p1, meshT = mesh or gearOr1(t.mesh)}
     end
     if v == 2 then
       local d = base.direct
@@ -497,12 +505,15 @@ local function new(wiz)
     return {stages = 1, mainT = gearOr1(cfg.main_rotor_gear_ratio_1), meshT = gearOr1(t.mesh)}
   end
 
-  -- Set when a stage change was refused; the page says so until the next change.
-  local stageRefused = false
-
   local function setStages(v)
     v = (v == 2 or v == 3) and v or 1
-    if v == stageChoice() then return end
+    if v == stageChoice() then
+      if stageRefused then
+        stageRefused = false
+        wiz.rebuild()
+      end
+      return
+    end
     local plan = stagePlan(v)
     local t = ensureTail()
     if plan and t.from == 2 then
@@ -603,6 +614,7 @@ local function new(wiz)
   -- The ratio only, turned: refused when the counts would not fit, else kept and sent.
   local function setDirectRatio(v)
     if not inRange(v, 100, 10000) then return end
+    stageRefused = false
     local _, p0, p1 = ratioProducts(v)
     if p0 > TRAIN_MAX or p1 > TRAIN_MAX then return end
     base.direct = {ratio = v}
@@ -631,6 +643,7 @@ local function new(wiz)
   -- A main gear turned to a new count (pos 1 to 4 for two stages, 1 or 2 for one).
   local function setMainGear(pos, v)
     if not inRange(v, 1, TRAIN_MAX) then return end
+    stageRefused = false
     lastGear = {screen = "main", pos = pos}
     if stageCount() == 2 then
       local t = {}

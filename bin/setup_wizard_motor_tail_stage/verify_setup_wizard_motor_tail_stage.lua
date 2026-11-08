@@ -147,10 +147,17 @@ local function scenario(opts)
   local wiz = newWiz()
   local main0, main1 = opts.main0 or 10, opts.main1 or 20
   local from, a, b, mesh = opts.from or 2, opts.a or 30, opts.b or 20, opts.mesh or 5
-  -- The FC's tail products as the tail's teeth give them in this state: from the intermediate
-  -- shaft, mesh x b and main x a; from the main shaft, b and a.
   local tail0, tail1
-  if from == 2 then tail0, tail1 = mesh * b, main1 * a else tail0, tail1 = b, a end
+  if from == 2 then
+    if opts.stages == 2 and opts.train then
+      main0, main1 = opts.train.pinion * opts.train.mainSide, opts.train.pinionSide * opts.train.main
+      tail0, tail1 = opts.train.mainSide * b, opts.train.main * a
+    else
+      tail0, tail1 = mesh * b, main1 * a
+    end
+  else
+    tail0, tail1 = b, a
+  end
   S_CFG = {
     motor_pwm_protocol = 0,
     main_rotor_gear_ratio_0 = main0, main_rotor_gear_ratio_1 = main1,
@@ -178,13 +185,14 @@ local function scenario(opts)
   end
   if not stage then return nil, "no stage drop-down on Main" end
   local before = #writes
-  stage.set(opts.target)
+  if opts.target then stage.set(opts.target) end
   local refusedNote = false
   page.build()
   for _, row in ipairs(scr.rows or {}) do
     if row.note == T_REFUSED then refusedNote = true end
   end
-  return { writes = writes, before = before, cfg = S_CFG, refusedNote = refusedNote }
+  return { writes = writes, before = before, cfg = S_CFG, refusedNote = refusedNote,
+    stage = stage, page = page, scr = scr }
 end
 
 local function lastWrite(res)
@@ -246,6 +254,59 @@ local function run()
     end
   end
 
+  -- 5. Tail from the intermediate shaft, two stages to direct (3); whole teeth keep the ratio,
+  -- and the mesh gear on the intermediate shaft is inherited into the tail state.
+  do
+    local tr = { pinion = 10, pinionSide = 20, mainSide = 15, main = 60 }
+    local res, err = scenario({ stages = 2, train = tr, target = 3, from = 2, a = 30, b = 20, mesh = 1 })
+    check("scenario 5 runs", res ~= nil, err)
+    if res then
+      local w = lastWrite(res)
+      check("5: the stage changed (a write was made)", #res.writes > res.before)
+      check("5: tail ratio stays 6 (1800 / 300)", w and (w.tail_rotor_gear_ratio_1 / w.tail_rotor_gear_ratio_0) == 6,
+        w and (tostring(w.tail_rotor_gear_ratio_1) .. "/" .. tostring(w.tail_rotor_gear_ratio_0)))
+      check("5: mesh tooth inherited from train.mainSide (300 / 20 = 15)", w and w.tail_rotor_gear_ratio_0 == 15 * 20,
+        w and tostring(w.tail_rotor_gear_ratio_0))
+      check("5: no refusal note", not res.refusedNote)
+    end
+  end
+
+  -- 6. Refusal note is cleared when the current stage choice is reselected.
+  do
+    local res, err = scenario({ target = 2, mesh = 7 })
+    check("scenario 6 runs", res ~= nil, err)
+    if res then
+      check("6: initial refusal note shown", res.refusedNote)
+      res.stage.set(1)
+      res.page.build()
+      local refused = false
+      for _, row in ipairs(res.scr.rows or {}) do
+        if row.note == T_REFUSED then refused = true end
+      end
+      check("6: refusal note cleared after reselecting current stage", not refused)
+    end
+  end
+
+  -- 7. Refusal note is cleared when navigating away via Next.
+  do
+    local res, err = scenario({ target = 2, mesh = 7 })
+    check("scenario 7 runs", res ~= nil, err)
+    if res then
+      check("7: initial refusal note shown", res.refusedNote)
+      if res.scr.forward and res.scr.forward.press then
+        res.scr.forward.press()
+        res.page.build()
+        local refused = false
+        for _, row in ipairs(res.scr.rows or {}) do
+          if row.note == T_REFUSED then refused = true end
+        end
+        check("7: refusal note cleared on next screen", not refused)
+      else
+        check("7: forward button present", false)
+      end
+    end
+  end
+
   return failures - before
 end
 
@@ -268,6 +329,7 @@ if SELF_TEST then
   local mutants = {
     mutant("no drive tooth correction", "plan.tailDrive = a", "plan.tailDrive = nil"),
     mutant("no product limit on the tail", "plan.mainT * a <= TRAIN_MAX", "true"),
+    mutant("no mesh inheritance on direct stage", "mesh = tr and tr.mainSide or nil", "mesh = nil"),
   }
   local red = 0
   local realModule = MODULE
