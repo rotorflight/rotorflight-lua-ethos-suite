@@ -41,7 +41,8 @@ model is armed. The step needs a swashplate type to be set first.
 - Each trim moves in 0.1 % steps, between -100 % and +100 %.
 - Changes are sent to the flight controller as you make them.
 - Level the swash mechanically first (the servo links, with a swash leveller or by eye). The trims
-  are for what the links cannot adjust.
+  are for what the links cannot adjust. The level page gives the three steps in that order: links
+  until the swash is level, then trim, then the blade links until the blades are at zero pitch (#2705).
 
 ## Related
 

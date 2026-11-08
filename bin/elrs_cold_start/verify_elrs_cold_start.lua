@@ -176,12 +176,17 @@ do
   local elrs = freshModule()
   local transport = newTransport(backlog(RELEVANT_SID, 3))
   elrs.wakeup(transport, SLOTS)
-  local retry = elrs.wakeup(transport, SLOTS)
+  local retry, frameAt = elrs.wakeup(transport, SLOTS)
 
   check("the next pass decodes the whole backlog",
     transport.pops == 3 and #published == 3,
     "pops=" .. transport.pops .. " published=" .. #published)
   check("the next pass asks for no retry once the queue is empty", retry == false)
+  -- Second value: when the pass last took a frame (session.lua keeps it, #2664).
+  check("a pass that took frames reports when it last took one", type(frameAt) == "number",
+    "frameAt=" .. tostring(frameAt))
+  local _, quietAt = elrs.wakeup(transport, SLOTS)
+  check("a pass that took no frame reports none", quietAt == nil, "frameAt=" .. tostring(quietAt))
   check("the table is not loaded a second time", tableLoads == 1,
     "loads=" .. tableLoads)
 end

@@ -7728,6 +7728,12 @@
               "reverse_text": false,
               "max_length": 5
             },
+            "keep_mah": {
+              "english": "Keep mAh",
+              "max_length": 8,
+              "needs_translation": false,
+              "translation": "mAh behalten"
+            },
             "lv_bec_voltage": {
               "english": "BEC",
               "translation": "BEC",
@@ -7783,6 +7789,18 @@
               "needs_translation": false,
               "reverse_text": false,
               "max_length": 12
+            },
+            "startup_response": {
+              "english": "Startup Response",
+              "max_length": 16,
+              "needs_translation": false,
+              "translation": "Startreaktion"
+            },
+            "startup_smooth": {
+              "english": "Smooth",
+              "max_length": 6,
+              "needs_translation": false,
+              "translation": "Weich"
             },
             "stick_range_us": {
               "english": "Stick Range",
@@ -11556,8 +11574,8 @@
           "reverse_text": false
         },
         "lvl_rear_text": {
-          "english": "Roll and collective: trim until the swash is level and the blades sit at zero pitch.",
-          "translation": "Roll und Kollektiv trimmen, bis die TS waagerecht ist und die Blätter auf null Pitch stehen.",
+          "english": "Roll and collective: 1 links to level, 2 trim, 3 blade links to zero pitch.",
+          "translation": "Roll und Kollektiv: 1 Anlenkungen, 2 Trim, 3 Blattanlenkungen auf 0 Grad.",
           "needs_translation": false,
           "max_length": 84,
           "reverse_text": false
@@ -11850,8 +11868,8 @@
           "reverse_text": false
         },
         "lvl_intro": {
-          "english": "The swash is held at its centre. Trim it until it is level and the blades sit at zero pitch.",
-          "translation": "Die TS wird in der Mitte gehalten. Trimmen, bis sie waagerecht ist und die Blätter auf null Pitch stehen.",
+          "english": "Links until the swash is level, then trim it, then the blade links to zero pitch.",
+          "translation": "Erst Anlenkungen, bis die TS waagerecht ist, dann trimmen, dann Blattanlenkungen auf 0 Grad.",
           "needs_translation": false,
           "max_length": 92,
           "reverse_text": false

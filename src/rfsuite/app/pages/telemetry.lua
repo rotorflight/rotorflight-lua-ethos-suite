@@ -21,6 +21,7 @@ local requireModule = package.loaded["rfsuite.lib.require"] or assert(loadfile("
 local pageRuntime = requireModule("app/page_runtime.lua")
 local featureConfig = requireModule("lib/msp_feature_config.lua")
 local telemetryConfig = requireModule("lib/msp_telemetry_config.lua")
+local rxConfig = requireModule("lib/msp_rx_config.lua")
 local catalog = requireModule("lib/telemetry_sensor_catalog.lua")
 local slotBudget = requireModule("lib/telemetry_slot_budget.lua")
 local slotLayout = requireModule("lib/telemetry_slot_layout.lua")
@@ -41,6 +42,9 @@ local SWITCH_HINT = "  OFF  WWW  ON  "
 -- Firmware's CRSF_TELEMETRY_MODE_* (src/main/pg/telemetry.h, 0 = NATIVE).
 local CRSF_TELEMETRY_MODE_NATIVE = 0
 local CRSF_TELEMETRY_MODE_CUSTOM = 1
+-- The firmware's SERIALRX_CRSF provider number (src/main/rx/rx.h), the serial receiver
+-- that carries CRSF telemetry.
+local SERIALRX_CRSF = 9
 
 -- Why this page still forces CUSTOM -- and what it does NOT do.
 --
@@ -74,6 +78,10 @@ local telemetryConfigPage = {
   buildReadMessage = telemetryConfig.buildReadConfigMessage,
   buildWriteMessage = telemetryConfig.buildWriteMessage,
 }
+
+-- The receiver's provider is read only. The codec can write the whole receiver
+-- configuration, and this page must not, so the source has no write half.
+local rxReadOnly = {buildReadMessage = rxConfig.buildReadMessage}
 
 local function clearTable(t)
   for k in pairs(t) do t[k] = nil end
@@ -280,6 +288,7 @@ local function open(opts)
     sources = {
       {key = "feature", mspModule = featureConfig},
       {key = "telemetry", mspModule = telemetryConfigPage},
+      {key = "rx", mspModule = rxReadOnly},
     },
     opts = opts,
     profileField = "none",
@@ -288,10 +297,16 @@ local function open(opts)
       "rfsuite.lib.msp_feature_config",
       "rfsuite.lib.msp_telemetry_config",
       "rfsuite.lib.telemetry_sensor_catalog",
+      "rfsuite.lib.msp_rx_config",
     },
     onLoaded = function()
       local telemetry = runtime.data.telemetry or {}
-      crsfMode = telemetry.crsf_telemetry_mode
+      local rx = runtime.data.rx or {}
+      -- The native mode is the flight controller's CRSF telemetry, which it only sends
+      -- on a CRSF receiver. With any other receiver the lock does not apply, and the
+      -- sensors are ordinary switches (#2670).
+      local crsfReceiver = tonumber(rx.serialrx_provider) == SERIALRX_CRSF
+      crsfMode = crsfReceiver and telemetry.crsf_telemetry_mode or nil
       selectedFromSlots(telemetry.slots, selected)
       previousConflictState = {}
       refreshConflictFields()

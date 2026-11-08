@@ -3764,6 +3764,12 @@
               "reverse_text": false,
               "translation": "调速比例"
             },
+            "keep_mah": {
+              "english": "Keep mAh",
+              "max_length": 8,
+              "needs_translation": true,
+              "translation": "保持mAh"
+            },
             "lv_bec_voltage": {
               "english": "BEC",
               "max_length": 3,
@@ -3819,6 +3825,18 @@
               "needs_translation": false,
               "reverse_text": false,
               "translation": "小齿轮齿数"
+            },
+            "startup_response": {
+              "english": "Startup Response",
+              "max_length": 16,
+              "needs_translation": true,
+              "translation": "启动响应"
+            },
+            "startup_smooth": {
+              "english": "Smooth",
+              "max_length": 6,
+              "needs_translation": true,
+              "translation": "平滑"
             },
             "stick_range_us": {
               "english": "Stick Range",
@@ -9057,9 +9075,9 @@
           "translation": "未保存的更改"
         },
         "lvl_intro": {
-          "english": "The swash is held at its centre. Trim it until it is level and the blades sit at zero pitch.",
+          "english": "Links until the swash is level, then trim it, then the blade links to zero pitch.",
           "max_length": 92,
-          "needs_translation": false,
+          "needs_translation": true,
           "reverse_text": false,
           "translation": "斜盘保持在中位。微调至水平且桨叶为零螺距。"
         },
@@ -9071,9 +9089,9 @@
           "translation": "电机已拔下"
         },
         "lvl_rear_text": {
-          "english": "Roll and collective: trim until the swash is level and the blades sit at zero pitch.",
+          "english": "Roll and collective: 1 links to level, 2 trim, 3 blade links to zero pitch.",
           "max_length": 84,
-          "needs_translation": false,
+          "needs_translation": true,
           "reverse_text": false,
           "translation": "调整横滚和总距，直到斜盘水平且桨叶为零。"
         },

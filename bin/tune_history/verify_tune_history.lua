@@ -594,6 +594,23 @@ do
   files[CHANGES] = nil
 end
 
+print("A change written to another axis is recorded on that axis (issue #2639)")
+do
+  -- Roll under polar cyclic is advised on the Cyclic (pitch) rates: that row is pitch's
+  local CHANGES = "LOGS:/rfsuite/tune/" .. MCU .. "/changes.csv"
+  files[CHANGES] = "date,axis,setting,from,to,pid_profile\n"
+  check("the Cyclic rate change is appended", tuneHistory.logChanges(MCU, 1, {
+    {key = "rcRate", from = 18, to = 14, axis = 2},
+    {key = "P", from = 60, to = 70},
+  }, 0))
+  local rows = tuneHistory.readChanges(MCU)
+  check("the Cyclic rate row is recorded on pitch", #rows == 2 and rows[1].axis == 2 and rows[1].key == "rcRate"
+    and rows[1].from == 18 and rows[1].to == 14, #rows)
+  check("a change with no axis of its own stays on the axis given", rows[2] ~= nil and rows[2].axis == 1
+    and rows[2].key == "P", tostring(rows[2] and rows[2].axis))
+  files[CHANGES] = nil
+end
+
 print("The Apply record is followed only on its own PID profile")
 do
   local CHANGES = "LOGS:/rfsuite/tune/" .. MCU .. "/changes.csv"

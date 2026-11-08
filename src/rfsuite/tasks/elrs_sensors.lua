@@ -337,8 +337,10 @@ local function wakeup(transport, telemetrySlots, apiMajor, apiMinor)
   -- STALE_REFRESH_SECONDS window has actually elapsed.
   for _, sensor in pairs(sensors) do sensor:refresh() end
 
-  -- Ask session.lua to retry next wakeup when a budget leaves frames queued.
-  return budgetReached or frames >= MAX_FRAMES_PER_WAKEUP
+  -- Ask session.lua to retry next wakeup when a budget leaves frames queued. The
+  -- second value is when this pass last took a frame, or nil when it took none
+  -- (session.lua keeps it to tell a flight controller that has gone quiet, #2664).
+  return budgetReached or frames >= MAX_FRAMES_PER_WAKEUP, frames > 0 and os_clock() or nil
 end
 
 -- Called on disconnect (mirrors tasks/session.lua's own field resets):

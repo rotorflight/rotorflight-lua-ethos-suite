@@ -23,7 +23,7 @@ Greyed out until the flight controller answers. Read-only while the model is arm
 | @i18n(app.modules.power.warn_cell_voltage)@ | Configures @i18n(app.modules.power.warn_cell_voltage)@. Range: 0 to 500 V. Default: 350 V. |
 | @i18n(app.modules.power.min_cell_voltage)@ | Configures @i18n(app.modules.power.min_cell_voltage)@. Range: 0 to 500 V. Default: 330 V. |
 | @i18n(app.modules.power.cell_count)@ | Configures @i18n(app.modules.power.cell_count)@. Range: 0 to 24. Default: 6. |
-| @i18n(app.modules.power.consumption_warning_percentage)@ | Configures @i18n(app.modules.power.consumption_warning_percentage)@. Range: 0 to 60 %. Default: 35 %. |
+| @i18n(app.modules.power.consumption_warning_percentage)@ | Configures @i18n(app.modules.power.consumption_warning_percentage)@. Range: 0 to 60 %. Default: 35 %. The SmartFuel value reads 0 % at this share of the pack, and the low-fuel warning is spoken there (the Fuel page's callouts). |
 | Profiles | Configures Profiles. |
 | @i18n(app.modules.power.selected)@ | Configures @i18n(app.modules.power.selected)@. |
 | @i18n(app.modules.power.edit_battery)@ | Chooses the profile whose capacity, cell count and cell voltages the rows below show and edit. It does not change the active profile. |
@@ -33,6 +33,9 @@ Greyed out until the flight controller answers. Read-only while the model is arm
 ## Notes
 
 - Changes are written to the flight controller EEPROM upon Save.
+- A Save also writes the SmartFuel configuration, unchanged, after the battery configuration. The
+  flight controller takes the minimum and full cell voltages into SmartFuel only at that write, so
+  a new cell voltage is in effect for SmartFuel at once, not after the next power-up (#2651).
 - The capacity, the cell count and the four cell voltage thresholds follow
   *Edit Battery*, not the active profile. Editing another profile's values therefore
   does not make that profile active when you save (Issue #2502). *Profiles* stays on the

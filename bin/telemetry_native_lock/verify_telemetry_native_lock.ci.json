@@ -1,0 +1,7 @@
+{
+  "id": "telemetry-native-lock",
+  "name": "The native CRSF sensor lock on Setup > Telemetry applies only with a CRSF receiver",
+  "step": "Check the native CRSF sensor lock on the Telemetry page",
+  "script": "bin/telemetry_native_lock/verify_telemetry_native_lock.lua",
+  "rationale": "Issue #2670: the Telemetry page locked Altitude, Attitude (Combined) and Flight mode whenever the flight controller's CRSF telemetry mode was native, which is the default on 4.6, and it did not check the receiver. On a SmartPort, F.Port, FBUS or SBUS model the switches were locked on, and the first save wrote them into the sensor slots. The firmware starts native CRSF telemetry only when a CRSF receiver is active (src/main/telemetry/crsf.c, initCrsfTelemetry). The page now reads MSP_RX_CONFIG as a read-only source and applies the lock only when the serial receiver provider is CRSF (9, src/main/rx/rx.h). The harness drives the real app/pages/telemetry.lua with a stand-in page runtime that loads the test's telemetry and receiver data and runs the page's own onLoaded(). It checks, for a CRSF receiver in native mode, that the three native rows show the native tag and are locked; for an SBUS receiver in native mode, and for a CRSF receiver in custom mode, that they show no tag and their switches are free. Its self-test removes the receiver test and requires an SBUS model in native mode to be locked. On the code before the fix the SBUS checks fail."
+}
