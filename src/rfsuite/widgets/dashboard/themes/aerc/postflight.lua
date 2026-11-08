@@ -16,8 +16,6 @@ local utils = rfsuite.widgets.dashboard.utils
 local headeropts = utils.getHeaderOptions()
 local colorMode = utils.themeColors()
 
-local maxVoltageToCellVoltage = utils.maxVoltageToCellVoltage
-
 local theme_section = "system/aerc"
 
 local THEME_DEFAULTS = {rpm_min = 0, rpm_max = 3000, bec_min = 3.0, bec_warn = 6.0, bec_max = 13.0, esctemp_warn = 90, esctemp_max = 140}
@@ -81,7 +79,7 @@ local function buildBoxes(W)
         {col = 2, row = 7, rowspan = 2, type = "text", subtype = "stats", source = "altitude", title = "@i18n(widgets.dashboard.altitude_max)@", titlepos = "top", titlepaddingtop = opts.titlepaddingtop, font = opts.font, titlefont = opts.titlefont, bgcolor = colorMode.bgcolor, titlecolor = colorMode.titlecolor, textcolor = "orange", transform = "floor"},
         {col = 3, row = 1, rowspan = 2, type = "text", subtype = "stats", stattype = "max", source = "smartconsumption", title = "@i18n(widgets.dashboard.consumed_mah)@", titlepos = "top", titlepaddingtop = opts.titlepaddingtop, font = opts.font, titlefont = opts.titlefont, bgcolor = colorMode.bgcolor, titlecolor = colorMode.titlecolor, textcolor = "orange", transform = "floor"},
         {col = 3, row = 3, rowspan = 2, type = "text", subtype = "stats", stattype = "min", source = "smartfuel", title = "@i18n(widgets.dashboard.fuel_remaining)@", titlepos = "top", titlepaddingtop = opts.titlepaddingtop, font = opts.font, titlefont = opts.titlefont, bgcolor = colorMode.bgcolor, titlecolor = colorMode.titlecolor, textcolor = "orange", transform = "floor"},
-        {col = 3, row = 5, rowspan = 2, type = "text", subtype = "telemetry", source = "voltage", title = "@i18n(widgets.dashboard.volts_per_cell)@", titlepos = "top", titlepaddingtop = opts.titlepaddingtop, font = opts.font, titlefont = opts.titlefont, bgcolor = colorMode.bgcolor, titlecolor = colorMode.titlecolor, textcolor = "orange", unit = "V", transform = function(v) return maxVoltageToCellVoltage(v) end},
+        {col = 3, row = 5, rowspan = 2, type = "text", subtype = "stats", stattype = "lastcell", source = "voltage", title = "@i18n(widgets.dashboard.volts_per_cell)@", titlepos = "top", titlepaddingtop = opts.titlepaddingtop, font = opts.font, titlefont = opts.titlefont, bgcolor = colorMode.bgcolor, titlecolor = colorMode.titlecolor, textcolor = "orange", unit = "V"},
         {col = 3, row = 7, rowspan = 2, type = "text", subtype = "stats", stattype = "min", source = "link", title = "@i18n(widgets.dashboard.link_min)@", titlepos = "top", titlepaddingtop = opts.titlepaddingtop, font = opts.font, titlefont = opts.titlefont, bgcolor = colorMode.bgcolor, titlecolor = colorMode.titlecolor, textcolor = "orange", transform = "floor"}
     }
 end

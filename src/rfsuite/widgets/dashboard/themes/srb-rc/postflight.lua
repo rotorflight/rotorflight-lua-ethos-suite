@@ -16,8 +16,6 @@ local utils = rfsuite.widgets.dashboard.utils
 local headeropts = utils.getHeaderOptions()
 local colorMode = utils.themeColors()
 
-local maxVoltageToCellVoltage = utils.maxVoltageToCellVoltage
-
 local theme_section = "system/srb-rc"
 
 local THEME_DEFAULTS = {}
@@ -202,7 +200,8 @@ local function buildBoxes(W)
             row = 3,
             rowspan = 2,
             type = "text",
-            subtype = "telemetry",
+            subtype = "stats",
+            stattype = "last",
             source = "voltage",
             title = "Ending Voltage",
             titlepos = "top",
@@ -220,7 +219,8 @@ local function buildBoxes(W)
             row = 5,
             rowspan = 2,
             type = "text",
-            subtype = "telemetry",
+            subtype = "stats",
+            stattype = "lastcell",
             source = "voltage",
             title = "Volts per cell",
             titlepos = "top",
@@ -232,9 +232,6 @@ local function buildBoxes(W)
             titlecolor = colorMode.titlecolor,
             textcolor = colorMode.fillwarncolor,
             unit = "V",
-            transform = function(v)
-                return maxVoltageToCellVoltage(v)
-            end,
         },
         {
             col = 2,
