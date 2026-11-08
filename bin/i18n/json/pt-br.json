@@ -11963,6 +11963,12 @@
           "needs_translation": true,
           "max_length": 24
         },
+        "pit_hold_angle": {
+          "english": "Hold angle",
+          "translation": "Ângulo de manutenção",
+          "needs_translation": true,
+          "max_length": 20
+        },
         "pit_calibrated": {
           "english": "Calibrated. Measure again to check.",
           "translation": "Calibrado. Meça de novo para conferir.",

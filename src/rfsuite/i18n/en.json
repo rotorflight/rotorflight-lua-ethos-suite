@@ -8433,6 +8433,12 @@
           "reverse_text": false,
           "translation": "Collective at full stick"
         },
+        "pit_hold_angle": {
+          "english": "Hold angle",
+          "max_length": 20,
+          "needs_translation": false,
+          "translation": "Hold angle"
+        },
         "pit_intro": {
           "english": "You need a pitch gauge. The wizard holds the blades at a set pitch; you measure it and enter what you read.",
           "max_length": 107,

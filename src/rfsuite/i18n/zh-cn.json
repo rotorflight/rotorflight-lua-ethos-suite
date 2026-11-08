@@ -9646,6 +9646,12 @@
           "reverse_text": false,
           "translation": "满杆时总距"
         },
+        "pit_hold_angle": {
+          "english": "Hold angle",
+          "max_length": 20,
+          "needs_translation": true,
+          "translation": "保持角度"
+        },
         "pit_intro": {
           "english": "You need a pitch gauge. The wizard holds the blades at a set pitch; you measure it and enter what you read.",
           "max_length": 107,

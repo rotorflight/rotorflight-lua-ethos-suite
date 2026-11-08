@@ -11,7 +11,11 @@
 --   1. the measure page holds 9 degrees at the start, with the measure, rate, calibrate and check rows;
 --   2. the check row holds 0 degrees, and the page then shows only the check row back to 9 degrees;
 --   3. the check row again holds 9 degrees, with the calibrate row back;
---   4. the fine page still holds 9 degrees.
+--   4. the fine page still holds 9 degrees;
+--   5. the cyclic measure page holds roll at 9 degrees (#2709);
+--   6. the hold angle stepper (#2708) holds the angle it is set to, at most the stored limit, and
+--      either side of zero (the negative side checks the collective geometry), and away from 9
+--      degrees the page does not measure or calibrate.
 
 local function scriptDir()
   local src = debug.getinfo(1, "S").source
@@ -38,6 +42,8 @@ end
 local CALIBRATE = "@i18n(app.modules.setup_wizard.pit_calibrate)@"
 local CHECK_ZERO = "@i18n(app.modules.setup_wizard.pit_check_zero)@"
 local BACK_NINE = "@i18n(app.modules.setup_wizard.pit_back_nine)@"
+local MEASURED = "@i18n(app.modules.setup_wizard.pit_measured)@"
+local HOLD_ANGLE = "@i18n(app.modules.setup_wizard.pit_hold_angle)@"
 
 -- The page's screen: records the rows the page last drew.
 local view = {}
@@ -82,11 +88,16 @@ local function rowWithAnswer(answer)
   return nil
 end
 
-local function hasMeasure()
+local function rowWithLabel(label)
   for _, row in ipairs(view.rows or {}) do
-    if row.number and row.number[3] and row.label then return true end
+    if row.label == label then return row end
   end
-  return false
+  return nil
+end
+
+-- The measured blade pitch row (the stepper and the rate rows are not measures).
+local function hasMeasure()
+  return rowWithLabel(MEASURED) ~= nil
 end
 
 local function lastHold()
@@ -166,6 +177,57 @@ do
   check("5c. the cyclic page offers Calibrate", rowWithAnswer(CALIBRATE) ~= nil)
 end
 
+print("the hold angle stepper on the cyclic page")
+do
+  -- The stored roll limit is 10 degrees here (tenths: 100). The stepper cannot hold past it.
+  wiz.inputs.roll = {max = heli.limitRaw(10)}
+  node.build()
+  local stepper = rowWithLabel(HOLD_ANGLE)
+  check("6a. the cyclic page offers the hold angle stepper", stepper ~= nil and stepper.number ~= nil)
+  check("6b. the stepper starts at 9 degrees", stepper ~= nil and stepper.number[3]() == 90,
+    "value=" .. tostring(stepper and stepper.number[3]()))
+  stepper.number[4](1200)   -- 120 degrees asked for
+  node.build()
+  stepper = rowWithLabel(HOLD_ANGLE)
+  local hold = lastHold()
+  check("6c. the stepper holds at most the stored limit", hold ~= nil and hold.roll == heli.swashRaw(10)
+    and stepper ~= nil and stepper.number[3]() == 100,
+    "roll=" .. tostring(hold and hold.roll) .. " value=" .. tostring(stepper and stepper.number[3]()))
+  stepper.number[4](50)   -- 5 degrees, to look at the gauge
+  node.build()
+  hold = lastHold()
+  check("6d. at 5 degrees the page holds roll at 5 degrees", hold ~= nil and hold.roll == heli.swashRaw(5),
+    "roll=" .. tostring(hold and hold.roll))
+  check("6e. at 5 degrees it does not measure or calibrate", not hasMeasure() and rowWithAnswer(CALIBRATE) == nil)
+  check("6f. at 5 degrees it offers the way back to 9 degrees", rowWithAnswer(BACK_NINE) ~= nil)
+  rowWithAnswer(BACK_NINE).press()
+  node.build()
+  hold = lastHold()
+  check("6g. back to 9 degrees it holds 9 degrees and Calibrate is back",
+    hold ~= nil and hold.roll == RAW_9 and rowWithAnswer(CALIBRATE) ~= nil,
+    "roll=" .. tostring(hold and hold.roll))
+  -- The stepper goes both ways: the negative side checks the collective geometry (-10 after +10).
+  stepper = rowWithLabel(HOLD_ANGLE)
+  check("6h. the stepper range is symmetric about zero, at the stored limit",
+    stepper ~= nil and stepper.number[1] == -100 and stepper.number[2] == 100,
+    "range=" .. tostring(stepper and stepper.number[1]) .. ".." .. tostring(stepper and stepper.number[2]))
+  stepper.number[4](-1200)   -- minus 120 degrees asked for
+  node.build()
+  stepper = rowWithLabel(HOLD_ANGLE)
+  hold = lastHold()
+  check("6i. the stepper holds the negative side, at most minus the stored limit",
+    hold ~= nil and hold.roll == heli.swashRaw(-10) and stepper ~= nil and stepper.number[3]() == -100,
+    "roll=" .. tostring(hold and hold.roll) .. " value=" .. tostring(stepper and stepper.number[3]()))
+  stepper.number[4](-50)     -- minus 5 degrees
+  node.build()
+  hold = lastHold()
+  check("6j. at minus 5 degrees the page holds roll at minus 5 degrees", hold ~= nil and hold.roll == heli.swashRaw(-5),
+    "roll=" .. tostring(hold and hold.roll))
+  rowWithLabel(HOLD_ANGLE).number[4](90)   -- back to 9 degrees
+  node.build()
+  wiz.inputs.roll = nil
+end
+
 -- ---------------------------------------------------------------------------
 -- self-test: without the check row there is no way to 0 degrees.
 -- ---------------------------------------------------------------------------
@@ -194,6 +256,32 @@ if selfTest then
     end
     check("self-test: without the toggle there is no check at 0 degrees (the checks above go red)",
       rowWithAnswer(CHECK_ZERO) == nil, "the check row is still there")
+  end
+
+  print()
+  print("--self-test: the stepper must go red without its bound")
+  local bounded, bReplacements = source:gsub(
+    "heli%.clamp%(math%.floor%(tenths %+ 0%.5%), %-limit, limit%) / 10", "tenths / 10", 1)
+  check("self-test: the stepper bound was found in the page exactly once", bReplacements == 1,
+    "replacements=" .. bReplacements)
+  if bReplacements == 1 then
+    holds = {}
+    view.rows = nil
+    wiz.inputs.collective = {max = heli.limitRaw(10)}
+    local unbounded = assert(load(bounded, "@" .. PAGE))().new(wiz)
+    unbounded.build()
+    view.onStart()
+    for _ = 1, 10 do
+      unbounded.build()
+      if hasMeasure() then break end
+      view.forward.press()
+    end
+    local stepper = rowWithLabel(HOLD_ANGLE)
+    stepper.number[4](1200)
+    unbounded.build()
+    local hold = lastHold()
+    check("self-test: without the bound the stepper holds past the limit (the checks above go red)",
+      hold ~= nil and hold.collective ~= heli.swashRaw(10), "collective=" .. tostring(hold and hold.collective))
   end
 end
 
