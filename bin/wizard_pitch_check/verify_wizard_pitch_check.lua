@@ -155,7 +155,7 @@ end
 print("the cyclic measure page")
 do
   -- The fine page's Next goes on to the cyclic measure page (#2709): roll is held at 9 degrees,
-  -- so the blades stay along the boom and pitch is not held.
+  -- so pitch is not held.
   view.forward.press()
   node.build()
   local hold = lastHold()

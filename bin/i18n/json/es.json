@@ -11885,10 +11885,10 @@
           "reverse_text": false
         },
         "pit_coll_text": {
-          "english": "Align the blades with the boom. The collective is held at 9 degrees. Measure the blade pitch, enter it, then Calibrate.",
+          "english": "The collective is held at 9 degrees. Measure the blade pitch, enter it, then Calibrate.",
           "translation": "El colectivo se fija a 9 grados. Mida el paso de las palas, introdúzcalo y pulse Calibrar.",
-          "needs_translation": true,
-          "max_length": 130,
+          "needs_translation": false,
+          "max_length": 87,
           "reverse_text": false
         },
         "pit_cyc_title": {
@@ -11899,10 +11899,10 @@
           "reverse_text": false
         },
         "pit_cyc_text": {
-          "english": "Blades along the boom, as for the collective. Roll is held at 9 degrees. Measure, enter it, then Calibrate.",
+          "english": "Turn the blades to point left and right. Roll is held at 9 degrees. Measure, enter it, then Calibrate.",
           "translation": "Gire las palas a izquierda y derecha. El paso se fija a 9 grados. Mida, introdúzcalo y pulse Calibrar.",
           "needs_translation": true,
-          "max_length": 120,
+          "max_length": 103,
           "reverse_text": false
         },
         "pit_fine_text": {
