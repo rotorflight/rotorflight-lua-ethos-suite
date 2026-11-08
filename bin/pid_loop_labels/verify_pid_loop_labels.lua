@@ -122,6 +122,18 @@ do
     other ~= nil and other.sampleRateHz == nil and other.targetName == "ABC",
     "rate=" .. tostring(other and other.sampleRateHz))
 
+  local api143 = reply({usesBoardInfo = true, sampleRateHz = 3200})
+  for _ = 1, 2 do api143[#api143] = nil end
+  local legacy = boardInfo.parse(api143)
+  check("an MSP API 1.43 reply (without SPI/I2C counts) gives the rate",
+    legacy ~= nil and legacy.sampleRateHz == 3200, "rate=" .. tostring(legacy and legacy.sampleRateHz))
+
+  local other143 = reply({usesBoardInfo = false, sampleRateHz = 3200})
+  for _ = 1, 2 do other143[#other143] = nil end
+  local legacyOther = boardInfo.parse(other143)
+  check("a build without USE_BOARD_INFO on MSP API 1.43 gives no rate",
+    legacyOther ~= nil and legacyOther.sampleRateHz == nil, "rate=" .. tostring(legacyOther and legacyOther.sampleRateHz))
+
   local cut = reply({usesBoardInfo = true, sampleRateHz = 3200})
   for _ = 1, 8 do cut[#cut] = nil end
   local truncated = boardInfo.parse(cut)

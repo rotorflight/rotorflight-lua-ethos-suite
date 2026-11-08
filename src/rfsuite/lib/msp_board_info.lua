@@ -55,16 +55,20 @@ end
 -- type, the configuration state, then the rate (u16). The firmware writes this layout with
 -- the manufacturer id only in builds with USE_BOARD_INFO. Other builds have no manufacturer
 -- id and a reply one byte shorter, and the reads below would then run past the end of the
--- reply or read the wrong bytes. So the rate is taken only when the reply still holds the
--- configuration problems (u32) and the SPI and I2C counts (u8 each) after it, which every
--- reply of this layout carries (#2648).
+-- reply or read the wrong bytes.
+-- In MSP API 1.44+ every reply of this layout carries configuration problems (u32) and SPI
+-- and I2C counts (u8 each), for 42 bytes after manufacturerId (32 + 1 + 1 + 2 + 4 + 1 + 1).
+-- Older MSP API 1.43 carries configuration problems but not the SPI/I2C counts, for 40 bytes
+-- (32 + 1 + 1 + 2 + 4). The rate is taken only when the reply matches one of these complete
+-- layouts (#2648).
 local SIGNATURE_LENGTH = 32
-local TAIL_AFTER_SAMPLE_RATE = 4 + 1 + 1
-local SAMPLE_RATE_SPAN = SIGNATURE_LENGTH + 1 + 1 + 2 + TAIL_AFTER_SAMPLE_RATE
+local SPAN_API_143 = SIGNATURE_LENGTH + 1 + 1 + 2 + 4
+local SPAN_API_144 = SIGNATURE_LENGTH + 1 + 1 + 2 + 4 + 1 + 1
 
 local function readSampleRate(buf)
   local offset = buf.offset or 1
-  if offset + SAMPLE_RATE_SPAN - 1 > #buf then return nil end
+  local rem = #buf - offset + 1
+  if rem < SPAN_API_144 and rem ~= SPAN_API_143 then return nil end
   buf.offset = offset + SIGNATURE_LENGTH
   mspcodec.readU8(buf) -- MCU type
   mspcodec.readU8(buf) -- configuration state
