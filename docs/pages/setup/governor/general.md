@@ -18,7 +18,7 @@ Greyed out until the flight controller answers. Read-only while the model is arm
 
 | Setting | What it does |
 | --- | --- |
-| Mode | Configures Mode. |
+| Mode | Configures Mode. Shows OFF while the flight controller's GOVERNOR feature is off, even when a mode is stored; the stored mode comes back when the feature is on. Picking a mode turns the feature on, and OFF turns it off. |
 | Throttle type | Configures Throttle type. |
 | Idle throttle | Configures Idle throttle. Range: 0 to 250 %. Default: 0 %. |
 | Auto throttle | Configures Auto throttle. Range: 0 to 250 %. Default: 0 %. |
@@ -28,7 +28,7 @@ Greyed out until the flight controller answers. Read-only while the model is arm
 
 ## Notes
 
-- Written to the flight controller EEPROM on Save; Rotorflight 2 applies governor settings immediately, so the save does not restart the flight controller.
+- Written to the flight controller EEPROM on Save. Rotorflight 2 applies governor settings immediately. A save that turns the GOVERNOR feature on or off restarts the flight controller, because the governor starts only at start-up (#2649).
 
 ## Related
 
