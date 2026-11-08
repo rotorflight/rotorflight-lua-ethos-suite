@@ -593,9 +593,24 @@ local function armedOrUnconfirmed()
   return session.isArmed == nil and session.armedUnconfirmed == true
 end
 
+-- #2758: a model can already be armed when its link comes up (a late link, a
+-- radio restarted with the model running). Until this connection has a reading
+-- of the arm state, nothing the session queues on the MSP link may go out:
+-- isArmed == nil there means "not read yet", and the reads would reach an armed
+-- flight controller. A flight controller that reports neither the arming flags
+-- nor the System Status word never gives a reading, so the wait ends
+-- ARMED_STATE_WAIT seconds after the link came up.
+local ARMED_STATE_WAIT = 5.0
+local linkUpAt = nil
+
+local function armedStateKnown()
+  if session.isArmed ~= nil then return true end
+  return linkUpAt ~= nil and os.clock() - linkUpAt >= ARMED_STATE_WAIT
+end
+
 local function syncStatsWithFc(mspQueue)
   if not mspQueue or statsReadInFlight or statsWriteInFlight then return end
-  if session.connected ~= true or armedOrUnconfirmed() then return end
+  if session.connected ~= true or armedOrUnconfirmed() or not armedStateKnown() then return end
   -- The retained UID may belong to the flight before a reconnect. Never use
   -- it for an MSP stats request until this connection's handshake confirms it.
   if session.handshake.mcuId ~= true then return end
@@ -616,7 +631,7 @@ end
 
 local function updateBlackboxSummary(mspQueue)
   if not mspQueue or blackboxReadInFlight then return end
-  if session.connected ~= true or session.isArmed == true then return end
+  if session.connected ~= true or session.isArmed == true or not armedStateKnown() then return end
   -- Skip while a page/menu is open (app/tool.lua's "app.state" -- see
   -- appRunning's own comment above): this is a "nice to have, eventually"
   -- background refresh, not something any page depends on, and it was
@@ -670,7 +685,10 @@ local function provisionFrskySensors(protocol)
 end
 
 local function requestTelemetryConfig(mspQueue, protocol)
-  if not mspQueue or telemetryConfigReadInFlight or session.telemetrySlots or session.isArmed == true then return end
+  if not mspQueue or telemetryConfigReadInFlight or session.telemetrySlots or session.isArmed == true
+      or not armedStateKnown() then
+    return
+  end
 
   telemetryConfigReadInFlight = true
   local queued = mspQueue:add(telemetryConfig.buildReadMessage(function(slots)
@@ -705,7 +723,7 @@ end
 -- mspQueue:clear()), their error handlers receive reason == "cleared", leaving
 -- the element uncompleted so it can be resumed upon disarm.
 local function runHandshake(mspQueue, protocol)
-  if not mspQueue or session.connected ~= true or session.isArmed == true then
+  if not mspQueue or session.connected ~= true or session.isArmed == true or not armedStateKnown() then
     return
   end
 
@@ -960,6 +978,7 @@ local gpsSeenHealthy = false
 local function setConnected(value, mspQueue, protocol)
   if session.connected == value then return end
   session.connected = value
+  linkUpAt = value and os.clock() or nil
   if value then
     connectionEpoch = connectionEpoch + 1
     -- A disconnected connection cannot complete its old handshake later: its
@@ -1331,6 +1350,10 @@ local function updateArmState(protocol, mspQueue)
         debugLog.print("[session] disarmed with pending handshake elements; resuming handshake")
         runHandshake(mspQueue, protocol)
       end
+    elseif wasArmed == nil and session.connected == true and not isHandshakeComplete() then
+      -- The first reading of this link says disarmed: the wait for it is over
+      -- (#2758), so the handshake starts now instead of at the next retry tick.
+      runHandshake(mspQueue, protocol)
     end
     publish()
   end

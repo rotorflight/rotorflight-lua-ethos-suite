@@ -30,6 +30,12 @@ first arm flags arrive, so for a moment the flight controller is connected and i
 armed state is missing while the rotor may still be turning. A flight controller that has
 never reported arm flags at all is not affected: these two tiles stay usable for it.
 
+The same holds for the connect sequence. On a new link the suite reads the identity and
+configuration of the flight controller only after it has the armed state of that link, or
+five seconds after the link came up when the flight controller reports neither the arm flags
+nor the System Status word. A model that is already armed when the link comes up therefore
+gets none of those reads while it is armed, and the connect waits for the disarm.
+
 ## Armed warning
 
 While the model is armed, the dashboard shows a red bar across the top edge with an

@@ -135,6 +135,11 @@ local REAL = {
 local function newRig(opts)
   opts = opts or {}
   local active = opts.telemetryActive
+  -- The FC's arming flags as the radio reads them. Disarmed by default, so the
+  -- checks about the API_VERSION gate start from a known arm state (#2758).
+  -- `false` means no reading yet (the sensor has not reported), `1` armed.
+  local armflags = opts.armflags
+  if armflags == nil then armflags = 0 end
 
   local published, subscriptions = {}, {}
   local spyQueue = {
@@ -212,12 +217,19 @@ local function newRig(opts)
   local session = assert(load(source, "@" .. SESSION_PATH))()
   -- setConnected()'s disconnect branch calls reset() on the sensor instance it
   -- holds; a stub without one would abort that branch before it finished.
-  session.setTelemetrySensors({ getValue = function() return nil end, reset = function() end })
+  session.setTelemetrySensors({
+    getValue = function(_, name)
+      if name == "armflags" and armflags then return armflags end
+      return nil
+    end,
+    reset = function() end,
+  })
 
   return {
     session = session,
     queue = spyQueue,
     published = published,
+    setArmflags = function(value) armflags = value end,
     -- One background-task tick. `value` is the telemetry-link state the tick
     -- sees; omitting it keeps the previous one.
     tick = function(value)
@@ -403,6 +415,51 @@ do
 end
 
 -- ---------------------------------------------------------------------------
+-- 6. (#2758) With no arm-state reading yet, nothing goes out on the link: the
+--    session waits up to ARMED_STATE_WAIT (5 s) for one, then the handshake
+--    starts. The first retry tick after the 5 s is the one that starts it
+--    (2 s cadence), so it is queued by 7 s.
+-- ---------------------------------------------------------------------------
+do
+  local rig = newRig({ telemetryActive = true, armflags = false })
+  rig.tick(true)
+  for _ = 1, 4 do
+    rig.advance(1.0)
+    rig.tick(true)
+  end
+  check("with no arm-state reading yet, nothing is queued in the first 4 s",
+    #rig.queue.added == 0, #rig.queue.added .. " queued: " .. commandsOf(rig))
+
+  for _ = 1, 3 do
+    rig.advance(1.0)
+    rig.tick(true)
+  end
+  check("the handshake starts once the 5 s wait has run out",
+    findCommand(rig, API_VERSION) ~= nil, "commands by 7 s: " .. commandsOf(rig))
+end
+
+-- ---------------------------------------------------------------------------
+-- 7. (#2758) A model already armed when the link comes up gets no request on
+--    the link, not even the ones that would otherwise go out after the wait,
+--    until a reading says disarmed; then the handshake runs.
+-- ---------------------------------------------------------------------------
+do
+  local rig = newRig({ telemetryActive = true, armflags = 1 })
+  rig.tick(true)
+  for _ = 1, 10 do
+    rig.advance(1.0)
+    rig.tick(true)
+  end
+  check("an armed model gets no request on the link, 10 s after it came up",
+    #rig.queue.added == 0, #rig.queue.added .. " queued: " .. commandsOf(rig))
+
+  rig.setArmflags(0)
+  rig.tick(true)
+  check("the disarm reading starts the handshake at once",
+    findCommand(rig, API_VERSION) ~= nil, "commands: " .. commandsOf(rig))
+end
+
+-- ---------------------------------------------------------------------------
 -- self-test: the central check must be able to go red.
 -- ---------------------------------------------------------------------------
 
@@ -427,6 +484,19 @@ if selfTest then
     check("self-test: without the gate the identity reads are queued before the verdict",
       n > 0, "identity reads before the verdict on the sabotaged copy=" .. n ..
       " (0 means the central check would have passed on the pre-fix code)")
+  end
+
+  local waited, waitCount = source:gsub("if session%.isArmed ~= nil then return true end",
+    "if true then return true end", 1)
+  check("self-test: the arm-state wait was found in session.lua exactly once",
+    waitCount == 1, "replacements=" .. waitCount)
+
+  if waitCount == 1 then
+    local rig = newRig({ telemetryActive = true, armflags = false, source = waited })
+    rig.tick(true)
+    check("self-test: without the arm-state wait the handshake is queued on connect",
+      findCommand(rig, API_VERSION) ~= nil,
+      "commands on the sabotaged copy: " .. commandsOf(rig) .. " (the wait check above would pass without the wait)")
   end
 end
 
