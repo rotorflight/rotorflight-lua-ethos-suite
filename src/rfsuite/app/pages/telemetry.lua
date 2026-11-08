@@ -297,6 +297,7 @@ local function open(opts)
       "rfsuite.lib.msp_feature_config",
       "rfsuite.lib.msp_telemetry_config",
       "rfsuite.lib.telemetry_sensor_catalog",
+      "rfsuite.lib.msp_rx_config",
     },
     onLoaded = function()
       local telemetry = runtime.data.telemetry or {}
