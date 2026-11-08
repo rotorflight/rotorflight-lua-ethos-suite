@@ -24,9 +24,11 @@ model is armed. The step needs a swashplate type to be set first.
    greyed out until *Motor unplugged* is answered with yes.
 2. **Collective and cyclic.** Each in two pages: *measure* (the collective held at 9 degrees, or the
    blades along the boom, with roll held at 9 degrees; #2709), then *fine* (the rate in 0.1 %). On the *measure*
-   page, *Check at 0 degrees* holds the blades at zero pitch, so you can see the zero at the gauge
-   before you calibrate. At zero the page only shows that button and *Back to 9 degrees*; Calibrate
-   is not offered there, because it counts from 9 degrees (#2706).
+   page, *Hold angle* sets the angle the axis is held at (9 degrees by default, up to the stored limit; #2708).
+   *Check at 0 degrees* holds the blades at zero pitch, so you can see the zero at the gauge before you
+   calibrate. Away from 9 degrees the page only shows *Hold angle*, the check button and *Back to 9 degrees*;
+   Measured, the rate and Calibrate are offered at 9 degrees only, because the calibration counts from 9
+   degrees (#2706).
 3. **Limits.** Cyclic, collective and total. These are the hard limits of the mixer, the same for
    every rate profile.
 4. **Collective at full stick.** One page with a row per rate profile the profile switch picks (or the
@@ -36,6 +38,7 @@ model is armed. The step needs a swashplate type to be set first.
 
 | Setting | What it does |
 | --- | --- |
+| Hold angle | The angle the axis is held at on the measure page, in 0.1 degrees: 0 up to the stored limit of the axis, but at least 9 and at most 12 degrees. It starts at 9 degrees. Use it to look at the gauge at another angle; the calibration still counts from 9 degrees. |
 | Measured | The blade pitch you read on the gauge, typed in its field, 1.0 to 30.0 degrees. |
 | Rate | The rate of the axis, in 0.1 %, typed in its field. Adjust it until the gauge reads 9 degrees. |
 | Calibrate | Scales the mixer so that 9 degrees on the gauge is 9 degrees in the flight controller. It then reads "Calibrated. Measure again to check." |
