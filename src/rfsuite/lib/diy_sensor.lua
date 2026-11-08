@@ -68,6 +68,18 @@ local STALE_REFRESH_SECONDS = 2.0
 -- on the radio's external RF module bay rather than the internal one.
 local DEFAULT_MODULE_INDEX = 0
 
+-- The unit and decimals this instance is given, on a new sensor or an existing one.
+local function applyUnitAndDecimals(sensor, self)
+  if self.unit then
+    sensor:unit(self.unit)
+    sensor:protocolUnit(self.unit)
+  end
+  if self.decimals then
+    sensor:decimals(self.decimals)
+    sensor:protocolDecimals(self.decimals)
+  end
+end
+
 local DiySensor = {}
 DiySensor.__index = DiySensor
 
@@ -99,6 +111,9 @@ function DiySensor:_resolve(connected)
   if existing then
     self.sensor = existing
     self.resolved = true
+    -- An existing sensor keeps the unit and decimals it was created with, which
+    -- an older suite may have set differently. Bring them to this table's (#2665).
+    applyUnitAndDecimals(existing, self)
     debugLog.format("[diy_sensor] %s (appId=0x%04X) already exists, reusing", self.name, self.appId)
     return self.sensor
   end
@@ -108,14 +123,7 @@ function DiySensor:_resolve(connected)
   sensor:appId(self.appId)
   sensor:physId(0)
   sensor:module(self.moduleIndex)
-  if self.unit then
-    sensor:unit(self.unit)
-    sensor:protocolUnit(self.unit)
-  end
-  if self.decimals then
-    sensor:decimals(self.decimals)
-    sensor:protocolDecimals(self.decimals)
-  end
+  applyUnitAndDecimals(sensor, self)
   sensor:minimum(self.minimum)
   sensor:maximum(self.maximum)
   debugLog.format("[diy_sensor] created %s (appId=0x%04X)", self.name, self.appId)

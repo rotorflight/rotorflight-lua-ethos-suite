@@ -187,6 +187,22 @@ local function decAdjFunc(data, pos)
   return nil, pos
 end
 
+-- GPS altitude. The firmware sends it in decimetres from MSP API 12.10
+-- (rotorflight-firmware#549) and in centimetres before that. The sensor keeps
+-- its centimetre precision (prec 2), and the value is scaled to it, so a radio
+-- that already created the sensor never has to change its decimals (#2665).
+-- firmwareDecimetres is set per wakeup from the session's API version. Until
+-- that is known nothing is published, since a guessed scale reads ten times off.
+local firmwareDecimetres = nil
+
+local function decGpsAltitude(data, pos)
+  local val
+  val, pos = elrsDecode.decS16(data, pos)
+  if firmwareDecimetres == nil then return nil, pos end
+  if firmwareDecimetres then val = val * 10 end
+  return val, pos
+end
+
 local function buildSensorTable()
   if sensorTable then return end
   local factory = requireModule("lib/elrs_sensor_table.lua")
@@ -207,6 +223,7 @@ local function buildSensorTable()
     decAccel = decAccel,
     decLatLong = decLatLong,
     decAdjFunc = decAdjFunc,
+    decGpsAltitude = decGpsAltitude,
   })
 end
 
@@ -283,8 +300,13 @@ local function parseFrame(data)
   end
 end
 
-local function wakeup(transport, telemetrySlots)
+local function wakeup(transport, telemetrySlots, apiMajor, apiMinor)
   if not transport or not transport.popCustomTelemetryFrame then return end
+  if apiMajor == nil or apiMinor == nil then
+    firmwareDecimetres = nil
+  else
+    firmwareDecimetres = apiMajor > 12 or (apiMajor == 12 and apiMinor >= 10)
+  end
   if not sensorTable then
     -- Cold start (once per connection): loading the decoder table is a pass of
     -- its own. Decoding starts on the next wakeup, so this pass does not stack
@@ -326,6 +348,7 @@ end
 -- themselves are left alone -- see lib/diy_sensor.lua's own reasoning for
 -- why lib/frsky_sensors.lua doesn't tear those down either.
 local function reset()
+  firmwareDecimetres = nil
   relevantSids = nil
   for _, sensor in pairs(sensors) do sensor:reset() end
 end
