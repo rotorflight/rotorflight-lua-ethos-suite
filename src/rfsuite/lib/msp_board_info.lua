@@ -10,7 +10,14 @@
 --   u8 len + len bytes   targetName
 --   u8 len + len bytes   boardName
 --   u8 len + len bytes   boardDesign
--- Only boardDesign is used here. It selects the port labels in lib/port_labels.lua.
+--   u8 len + len bytes   manufacturerId        (USE_BOARD_INFO builds only)
+--   32 bytes             signature
+--   u8                   mcuTypeId
+--   u8                   configurationState
+--   u16                  sampleRateHz          (the gyro sample rate, see readSampleRate())
+--   ...                  configuration problems, SPI and I2C counts, and later fields
+-- boardDesign selects the port labels in lib/port_labels.lua. sampleRateHz labels the PID
+-- loop speeds on the Configuration page.
 --
 -- An empty boardDesign (length 0) is the generic-board case: lookups return nil
 -- and the Ports page falls back to the plain UART name.
@@ -44,9 +51,32 @@ local function readLengthPrefixed(buf)
   return table.concat(chars)
 end
 
+-- The gyro sample rate that follows the manufacturer id: the signature (32 bytes), the MCU
+-- type, the configuration state, then the rate (u16). The firmware writes this layout with
+-- the manufacturer id only in builds with USE_BOARD_INFO. Other builds have no manufacturer
+-- id and a reply one byte shorter, and the reads below would then run past the end of the
+-- reply or read the wrong bytes. So the rate is taken only when the reply still holds the
+-- configuration problems (u32) and the SPI and I2C counts (u8 each) after it, which every
+-- reply of this layout carries (#2648).
+local SIGNATURE_LENGTH = 32
+local TAIL_AFTER_SAMPLE_RATE = 4 + 1 + 1
+local SAMPLE_RATE_SPAN = SIGNATURE_LENGTH + 1 + 1 + 2 + TAIL_AFTER_SAMPLE_RATE
+
+local function readSampleRate(buf)
+  local offset = buf.offset or 1
+  if offset + SAMPLE_RATE_SPAN - 1 > #buf then return nil end
+  buf.offset = offset + SIGNATURE_LENGTH
+  mspcodec.readU8(buf) -- MCU type
+  mspcodec.readU8(buf) -- configuration state
+  local rate = mspcodec.readU16(buf)
+  if rate <= 0 then return nil end
+  return rate
+end
+
 -- Parses a reply buffer (table of bytes, 1-based). Returns
--- {boardDesign = "...", targetName = "...", boardName = "..."} or nil if the reply is
--- truncated. boardDesign is "" when the firmware reports none.
+-- {boardDesign = "...", targetName = "...", boardName = "...", sampleRateHz = n} or nil if
+-- the reply is truncated. boardDesign is "" when the firmware reports none. sampleRateHz is
+-- nil when the reply does not carry it (see readSampleRate()).
 function msp_board_info.parse(buf)
   if #buf < HEADER_LENGTH then return nil end
   buf.offset = HEADER_LENGTH + 1
@@ -56,7 +86,16 @@ function msp_board_info.parse(buf)
   local boardDesign = readLengthPrefixed(buf)
   if targetName == nil or boardName == nil or boardDesign == nil then return nil end
 
-  return {targetName = targetName, boardName = boardName, boardDesign = boardDesign}
+  local manufacturerId = readLengthPrefixed(buf)
+  local sampleRateHz = nil
+  if manufacturerId ~= nil then sampleRateHz = readSampleRate(buf) end
+
+  return {
+    targetName = targetName,
+    boardName = boardName,
+    boardDesign = boardDesign,
+    sampleRateHz = sampleRateHz,
+  }
 end
 
 function msp_board_info.buildReadMessage(onData, onError, simulatorResponse)
