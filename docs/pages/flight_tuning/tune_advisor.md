@@ -87,7 +87,7 @@ The suggestions follow these rules:
   setting. Check the mechanics." More P will not fix it.
 - **A change would go past a setting's limit**: the page does not suggest it, or any change that goes with it
   (F is never suggested without its rates). Instead, the reasons say "The change needed goes past a setting's
-  limit." Look for the cause outside the tune, for example the mechanics or the head speed.
+  limit." Look for the cause outside the tune, for example the mechanics or the head speed. For Actual, rc rate and srate stop at 200, the firmware's limit for that rates type (the Rates page shows the same limit).
 
 ## Applying the changes
 

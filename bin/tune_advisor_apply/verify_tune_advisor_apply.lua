@@ -468,6 +468,39 @@ do
   flightRoll = nil
 end
 
+-- Issue #2756: Actual keeps rc_rate and srate at 200 (fc/rc_rates.c
+-- ratesSettingLimits), not at the byte's 255. The firmware trims a larger value
+-- on the next EEPROM write, so the advice must not offer it.
+print("Actual's rate ceiling is the firmware's 200, not the byte's 255")
+do
+  -- srate 190: F 120 -> 96 needs it at 238, past 200 but within the byte
+  resetFc()
+  fc[111].rates_1 = 190
+  flightRoll = {sRate = 190}
+  openPage()
+  pump()
+  check("F and srate are not offered past Actual's srate limit of 200", saveEnabled == false)
+  flightRoll = nil
+
+  -- control: srate 150 needs 188, within 200, so the same advice is offered
+  resetFc()
+  fc[111].rates_1 = 150
+  flightRoll = {sRate = 150}
+  openPage()
+  pump()
+  check("the same advice is offered while srate stays within 200", saveEnabled == true)
+  flightRoll = nil
+
+  -- rc rate 170: the same 1.25 step needs 212, past Actual's rc_rate limit of 200
+  resetFc()
+  fc[111].rcRates_1 = 170
+  flightRoll = {rcRate = 170}
+  openPage()
+  pump()
+  check("F and rc rate are not offered past Actual's rc_rate limit of 200", saveEnabled == false)
+  flightRoll = nil
+end
+
 print("With no flight saved, the page says so instead of the too-little-data advice")
 do
   resetFc()
