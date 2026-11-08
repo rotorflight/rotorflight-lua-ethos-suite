@@ -3236,6 +3236,12 @@
               "needs_translation": false,
               "translation": "Gov-P"
             },
+            "keep_mah": {
+              "english": "Keep mAh",
+              "max_length": 8,
+              "needs_translation": false,
+              "translation": "Keep mAh"
+            },
             "lv_bec_voltage": {
               "english": "BEC",
               "max_length": 3,
@@ -3283,6 +3289,18 @@
               "max_length": 12,
               "needs_translation": false,
               "translation": "Pinion Teeth"
+            },
+            "startup_response": {
+              "english": "Startup Response",
+              "max_length": 16,
+              "needs_translation": false,
+              "translation": "Startup Response"
+            },
+            "startup_smooth": {
+              "english": "Smooth",
+              "max_length": 6,
+              "needs_translation": false,
+              "translation": "Smooth"
             },
             "stick_range_us": {
               "english": "Stick Range",
