@@ -52,7 +52,7 @@ local FILES = {
   {"src/rfsuite/lib/msp_esc_parameters_scorpion.lua", 21},
   {"src/rfsuite/lib/msp_esc_parameters_xdfly.lua", 73},
   {"src/rfsuite/lib/msp_esc_parameters_yge.lua", 38},
-  {"src/rfsuite/app/pages/esc_forward_yge.lua", 4},
+  {"src/rfsuite/app/pages/esc_forward_yge.lua", 6},
 }
 
 -- Names that stay as they are, and why: protocol and governor names the pilot matches with the maker's

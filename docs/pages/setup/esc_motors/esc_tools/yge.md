@@ -18,7 +18,8 @@ Greyed out until the flight controller answers. Read-only while the model is arm
 
 | Setting | What it does |
 | --- | --- |
-| *None* | This page provides status or interactive operations without persistent settings. |
+| *Keep mAh* | Bit 2 of the ESC's flags byte (*Off* or *On*). Preserves consumed mAh across reconnects. |
+| *Startup Response* | ESC acceleration setting: *Normal* (0) or *Smooth* (1). See #2672. |
 
 
 ## Notes
