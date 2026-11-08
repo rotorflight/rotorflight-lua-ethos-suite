@@ -122,6 +122,7 @@ local T = {
   actNone = "@i18n(app.modules.tune_advisor.act_none)@",
   rcRate = "@i18n(app.modules.rates.rc_rate)@",
   rate = "@i18n(app.modules.rates.rate)@",
+  cyclic = "@i18n(app.modules.radio_config.cyclic)@",
 
   whyMore = "@i18n(app.modules.tune_advisor.why_more)@",
   whyUneven = "@i18n(app.modules.tune_advisor.why_uneven)@",
@@ -300,12 +301,14 @@ end
 
 -- Whether scaling the rate curve by k keeps every scaled byte in the range
 -- the FC accepts. A percentage-only rates_type has nothing to check.
-local function ratesFit(a, axis, k)
-  local roles = LINEAR_ROLES[a.ratesType]
+-- src holds the rate bytes, axis is the axis they are written to (the Cyclic
+-- bytes for roll under polar cyclic, #2639).
+local function ratesFit(src, axis, k)
+  local roles = LINEAR_ROLES[src.ratesType]
   if not roles then return true end
   for _, role in ipairs(roles) do
     local key = rateKey(role)
-    if not inRange(key, axis, round(a[key] * k), a.ratesType) then return false end
+    if not inRange(key, axis, round(src[key] * k), src.ratesType) then return false end
   end
   return true
 end
@@ -324,11 +327,11 @@ local function ratesMove(a, k)
 end
 
 -- Suggests scaling the rate curve by k (e.g. 1.25 = 25% faster everywhere);
--- callers check ratesFit() first. change(text, key, from, to) adds a line
--- Apply can write; a percentage (no linear column for this rates_type) is
--- only shown.
-local function rateActions(a, name, k, act, change)
-  local roles = LINEAR_ROLES[a.ratesType]
+-- callers check ratesFit() first. change(text, key, from, to, axis) adds a line
+-- Apply can write, to the given axis; a percentage (no linear column for this
+-- rates_type) is only shown.
+local function rateActions(src, name, k, act, change, axis)
+  local roles = LINEAR_ROLES[src.ratesType]
   if not roles then
     local pct = round(math.abs(k - 1) * 100)
     act(string.format(k > 1 and T.actRatePctUpFmt or T.actRatePctDownFmt, name, pct))
@@ -336,10 +339,10 @@ local function rateActions(a, name, k, act, change)
   end
   for _, role in ipairs(roles) do
     local key = rateKey(role)
-    local raw = a[key]
+    local raw = src[key]
     local newRaw = round(raw * k)
     change(string.format(T.actRateFmt, name, (role == "rcRate") and T.rcRate or T.rate,
-      rateText(raw, a.ratesType, role), rateText(newRaw, a.ratesType, role)), key, raw, newRaw)
+      rateText(raw, src.ratesType, role), rateText(newRaw, src.ratesType, role)), key, raw, newRaw, axis)
   end
 end
 
@@ -364,14 +367,18 @@ end
 --
 -- A change that would leave the range the FC accepts is dropped with
 -- anything tied to it, and the reasons say so once (atLimit).
-local function advise(a, axis, name, pilotP, actions, whys, changes)
+-- cyc is the Cyclic (pitch) axis's record, passed for roll under polar cyclic (#2639).
+local function advise(a, axis, name, pilotP, actions, whys, changes, cyc)
   local function room(n) return #actions + n <= MAX_ACTIONS end
   local function act(s) if #actions < MAX_ACTIONS then actions[#actions + 1] = s end end
   local function why(s) if #whys < MAX_WHYS then whys[#whys + 1] = s end end
-  -- A setting action: callers check room() first, so it is never dropped
-  local function change(text, key, from, to)
+  -- A setting action: callers check room() first, so it is never dropped.
+  -- target is the axis the setting is written to (the axis itself by default).
+  local function change(text, key, from, to, target)
     act(text)
-    if from ~= to then changes[#changes + 1] = {key = key, from = from, to = to, text = text} end
+    if from ~= to then
+      changes[#changes + 1] = {key = key, from = from, to = to, text = text, axis = target or axis}
+    end
   end
   local limited = false
   local function atLimit()
@@ -380,8 +387,13 @@ local function advise(a, axis, name, pilotP, actions, whys, changes)
 
   local shaking = a.shakeCount >= SHAKE_MIN_COUNT and a.shakeRms >= SHAKE_RMS
   -- Polar cyclic: roll follows the Cyclic rates, so roll's own rate bytes are
-  -- not what the FC uses (issue #2639). No roll rate or F advice then.
+  -- not what the FC uses (issue #2639). The full-stick rate advice for roll is
+  -- then worked out from the Cyclic bytes and written to them; F gets none.
   local polarRoll = axis == AXIS_ROLL and a.polar == 1
+  local rates, rateAxis, rateName = a, axis, name
+  if polarRoll then
+    rates, rateAxis, rateName = cyc, AXIS_PITCH, T.cyclic
+  end
   -- I-term relax acts only on the axes its type names (issue #2642): RP is
   -- roll and pitch, RPY all three, OFF none.
   local reliefCovers = a.relaxType == 2 or (a.relaxType == 1 and axis ~= AXIS_YAW)
@@ -417,7 +429,7 @@ local function advise(a, axis, name, pilotP, actions, whys, changes)
       else
         local text = string.format(T.actFFmt, name, a.F, newF)
         if LINEAR_ROLES[a.ratesType] then change(text, "F", a.F, newF) else act(text) end
-        rateActions(a, name, a.F / newF, act, change)
+        rateActions(a, name, a.F / newF, act, change, axis)
         why(hot and T.whyFast or T.whySlow)
         why(T.whyKeepFeel)
       end
@@ -426,7 +438,9 @@ local function advise(a, axis, name, pilotP, actions, whys, changes)
     end
   else
     response = T.respOk
-    local asked = maxRateAsked(a)
+    -- The rate the FC asks for at full stick, from the bytes it uses: roll's own,
+    -- or the Cyclic bytes under polar cyclic (rates is nil only without them)
+    local asked = rates and maxRateAsked(rates)
     -- The FC limits the cyclic setpoint by the cyclic ring too (issue #2640): a
     -- ring below 100% caps the rate it asks for at that share of the curve.
     -- Ring 0 is no limit in the firmware.
@@ -434,18 +448,16 @@ local function advise(a, axis, name, pilotP, actions, whys, changes)
     if ringCaps then asked = asked * a.ring / 100 end
     if not shaking and axis ~= AXIS_YAW and asked and a.fullCount >= FULL_MIN_COUNT
         and a.fullSatCount >= FULL_SAT_SHARE * a.fullCount
-        and a.fullMaxRate < FULL_REACH * asked and room(rateActionCount(a)) then
-      if polarRoll then
-        why(T.whyPolar)
-      else
-        local k = math.max(a.fullMaxRate / asked, 1 - FF_STEP_MAX)
-        local fits = ratesFit(a, axis, k)
-        if fits then rateActions(a, name, k, act, change) end
-        -- The asked rate is the ring's share of the curve: say so, or the number reads as wrong
-        if ringCaps then why(string.format(T.whyRingFmt, a.ring)) end
-        why(string.format(T.whyFullFmt, asked, a.fullMaxRate))
-        if not fits then atLimit() end
-      end
+        and a.fullMaxRate < FULL_REACH * asked and room(rateActionCount(rates)) then
+      local k = math.max(a.fullMaxRate / asked, 1 - FF_STEP_MAX)
+      local fits = ratesFit(rates, rateAxis, k)
+      -- Roll's reach is compared with the Cyclic rate: say so first
+      if polarRoll then why(T.whyPolar) end
+      if fits then rateActions(rates, rateName, k, act, change, rateAxis) end
+      -- The asked rate is the ring's share of the curve: say so, or the number reads as wrong
+      if ringCaps then why(string.format(T.whyRingFmt, a.ring)) end
+      why(string.format(T.whyFullFmt, asked, a.fullMaxRate))
+      if not fits then atLimit() end
     end
   end
 
@@ -693,9 +705,17 @@ local function open(opts)
     clearList(whys)
     clearList(view.changes)
     local pilotP = tuneHistory.pilotValue(changeLog, axis, "P", a.P, link.pidProfile)
-    view.response, view.stops = advise(a, axis, AXES[selected][1], pilotP, actions, whys, view.changes)
+    -- Roll under polar cyclic is advised on the Cyclic (pitch) rate bytes (#2639)
+    local cyc = nil
+    if axis == AXIS_ROLL and a.polar == 1 then cyc = tuneHistory.aggregate(flights, AXIS_PITCH) end
+    view.response, view.stops = advise(a, axis, AXES[selected][1], pilotP, actions, whys, view.changes, cyc)
     view.axis = axis
-    for _, k in ipairs(tuneHistory.TUNE_KEYS) do view.tune[k] = a[k] end
+    -- The rate bytes Apply holds the FC to are those of the axis the rates were advised on
+    local rateSrc = cyc or a
+    view.rateAxis = cyc and AXIS_PITCH or axis
+    for _, k in ipairs(tuneHistory.TUNE_KEYS) do
+      if k == "rcRate" or k == "sRate" then view.tune[k] = rateSrc[k] else view.tune[k] = a[k] end
+    end
     clearList(view.actions)
     clearList(view.whys)
     if applied[axis] then
@@ -848,7 +868,7 @@ local function open(opts)
     readAll(1, readBack, T.errVerify, function()
       if not IS_SIM then
         for _, c in ipairs(applying.changes) do
-          local src, field = fcField(c.key, applying.axis)
+          local src, field = fcField(c.key, c.axis or applying.axis)
           if readBack[src][field] ~= c.to then finish(T.errVerify) return end
         end
       end
@@ -864,13 +884,16 @@ local function open(opts)
       finish(T.errChanged) return
     end
     for k, value in pairs(applying.tune) do
-      local src, field = fcField(k, axis)
+      -- The rate bytes are those of the rate axis (the Cyclic axis under polar cyclic, #2639)
+      local ax = (k == "rcRate" or k == "sRate") and (applying.rateAxis or axis) or axis
+      local src, field = fcField(k, ax)
       if data[src][field] ~= value then finish(T.errChanged) return end
     end
     local dirty = {}
     for _, c in ipairs(applying.changes) do
-      local src, field = fcField(c.key, axis)
-      if data[src][field] ~= c.from or not inRange(c.key, axis, c.to, applying.tune.ratesType) then
+      local ax = c.axis or axis
+      local src, field = fcField(c.key, ax)
+      if data[src][field] ~= c.from or not inRange(c.key, ax, c.to, applying.tune.ratesType) then
         finish(T.errChanged)
         return
       end
@@ -902,7 +925,7 @@ local function open(opts)
     local tune, changes = {}, {}
     for k, v in pairs(view.tune) do tune[k] = v end
     for i, c in ipairs(view.changes) do changes[i] = c end
-    applying = {axis = view.axis, tune = tune, changes = changes, data = {},
+    applying = {axis = view.axis, rateAxis = view.rateAxis, tune = tune, changes = changes, data = {},
       pidProfile = link.pidProfile, rateProfile = link.rateProfile}
     applyResult = nil
     applyStage, shownStage = T.stageRead, T.stageRead

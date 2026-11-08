@@ -63,8 +63,10 @@ local function fileExists(path)
   return true
 end
 
--- changes: {key, from, to} as the Tune Advisor page builds them; pidProfile
--- is the profile they were applied to (empty when the FC did not say)
+-- changes: {key, from, to, axis} as the Tune Advisor page builds them; axis is the
+-- axis the setting was written to (the Cyclic axis for roll under polar cyclic) and
+-- defaults to the axis given. pidProfile is the profile they were applied to (empty
+-- when the FC did not say)
 function changes.logChanges(mcuId, axis, applied, pidProfile)
   local path = BASE_DIR .. "/" .. mcuId .. "/changes.csv"
   local isNew = not fileExists(path)
@@ -77,7 +79,7 @@ function changes.logChanges(mcuId, axis, applied, pidProfile)
   local written = pcall(function()
     if isNew then file:write(CHANGES_HEADER, "\n") end
     for _, c in ipairs(applied) do
-      file:write(string.format("%s,%s,%s,%d,%d,%s\n", date, AXIS_NAMES[axis], c.key, c.from, c.to, pidProfile or ""))
+      file:write(string.format("%s,%s,%s,%d,%d,%s\n", date, AXIS_NAMES[c.axis or axis], c.key, c.from, c.to, pidProfile or ""))
     end
   end)
   pcall(function() file:close() end)
