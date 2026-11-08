@@ -768,18 +768,27 @@ do
   flightAxisFields[1] = nil
 end
 
-print("Polar cyclic: roll's full-stick rate is not cut (issue #2639)")
+print("Polar cyclic: roll's full-stick cut is advised on, and written to, the Cyclic rates (issue #2639)")
 do
   resetFc()
+  -- The FC is on polar cyclic too, as the flights say: Apply holds the FC to the tune they show
+  fc[111].cyclic_polarity = 1
   flightAxisFields[1] = {polar = 1}
   flightRoll = {ffGain = 1.0, fullCount = 200, fullSatCount = 200, fullMaxRate = 100}
   openPage()
   pump()
   -- The base flight still gets a P step from its rebound, so only the rate lines count here
   local text = paintText()
-  check("the full-stick rate is not cut", text:find("act_rate_fmt", 1, true) == nil
-    and text:find("act_rate_pct", 1, true) == nil, text)
-  check("the reason names the Cyclic rates", paintText():find("why_polar", 1, true) ~= nil)
+  check("the full-stick rate is cut", text:find("act_rate_fmt", 1, true) ~= nil, text)
+  check("the reason names the Cyclic rates", text:find("why_polar", 1, true) ~= nil, text)
+  -- The cut is the Cyclic (pitch) rates: roll's own rate bytes stay as they are
+  local before = snapshot()
+  applyNow()
+  -- roll_p is the P step from the rebound on the same flight, as above
+  check("the write holds the Cyclic rates, not roll's", changedFields(before) == "rates_2,rcRates_2,roll_p",
+    changedFields(before))
+  check("roll's own rates are untouched", fc[111].rcRates_1 == before[111].rcRates_1 and fc[111].rates_1 == before[111].rates_1,
+    tostring(fc[111].rcRates_1) .. "/" .. tostring(fc[111].rates_1))
   flightAxisFields[1] = nil
   flightRoll = nil
 end
