@@ -56,7 +56,7 @@ the second divided by the first, so for the SAB Goblin 700 (pinion 22, intermedi
 main gear 68) the stored numbers are 22 x 19 = 418 and 60 x 68 = 4080: a ratio of 9.76:1. The
 SAB manual gives 9.7.
 
-When you switch to two stages, both intermediate gears take the main gear's count, so each is 1:1 with the main gear. The main ratio and a tail drive from the intermediate shaft stay the same. Enter the real intermediate teeth afterwards.
+When you switch to two stages, both intermediate gears take the main gear's count, so each is 1:1 with the main gear. The main ratio stays the same. With a tail drive from the intermediate shaft, the drive pulley on that shaft is set to a whole tooth count that keeps the tail ratio. If no whole count does, the switch is refused and the page says so. Enter the real intermediate teeth afterwards.
 
 A gear that is not set (0 in the flight controller) reads as 1, so an unset gear train is 1:1. Switching back to one stage divides the two numbers by their common factor. The ratio stays the same, but the numbers are then the reduced products, not the teeth: the Goblin example gives 209 and 2040.
 
@@ -73,8 +73,11 @@ gear the wizard takes the main gear and the main-side intermediate gear from the
 one-stage main gear (a T-Rex) you enter the intermediate gear that meshes with the main gear. The
 flight controller stores the two products: the main gear times the drive pulley, and the
 main-side intermediate gear times the tail rotor pulley. The ratio is the same as for a tail on the
-main shaft, and it follows when the main gear changes. Like the main train, these counts are kept
-while the wizard stays open.
+main shaft. When you change the gear stage, the wizard sets the drive pulley to the whole tooth
+count that keeps the tail ratio, and keeps the tail rotor pulley as you entered it. If no whole
+drive pulley keeps the ratio with every count and product at or below 50000, the wizard's limit, the stage is not
+changed and the page says so. Like the main train, these counts are kept while the wizard stays
+open.
 
 ## Notes
 

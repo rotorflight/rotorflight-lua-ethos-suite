@@ -9441,6 +9441,13 @@
           "reverse_text": false,
           "translation": "Um estágio"
         },
+        "mot_stage_refused": {
+          "english": "Stage not changed: the tail ratio cannot be kept with whole teeth that fit.",
+          "max_length": 80,
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "Stage not changed: the tail ratio cannot be kept with whole teeth that fit."
+        },
         "mot_stage_two": {
           "english": "Two stages",
           "max_length": 10,
