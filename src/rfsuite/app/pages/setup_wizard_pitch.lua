@@ -49,6 +49,8 @@ local T = {
   rate = "@i18n(app.modules.setup_wizard.pit_rate)@",
   calibrate = "@i18n(app.modules.setup_wizard.pit_calibrate)@",
   calibrated = "@i18n(app.modules.setup_wizard.pit_calibrated)@",
+  checkZero = "@i18n(app.modules.setup_wizard.pit_check_zero)@",
+  backNine = "@i18n(app.modules.setup_wizard.pit_back_nine)@",
   limCycTitle = "@i18n(app.modules.setup_wizard.pit_lim_cyc_title)@",
   limCollTitle = "@i18n(app.modules.setup_wizard.pit_lim_coll_title)@",
   limTotalTitle = "@i18n(app.modules.setup_wizard.pit_lim_total_title)@",
@@ -70,9 +72,20 @@ local PICTURE_W, PICTURE_H = 220, 160
 local TEST_DEGREES = 9
 local DEG = "\194\176"
 local TEST_RAW = heli.swashRaw(TEST_DEGREES)
-local HOLD_COLL = {roll = 0, pitch = 0, collective = TEST_RAW}
-local HOLD_CYC = {roll = 0, pitch = TEST_RAW, collective = 0}
-local HOLDS = {coll_measure = HOLD_COLL, coll_fine = HOLD_COLL, cyc_measure = HOLD_CYC, cyc_fine = HOLD_CYC}
+-- The pages that hold an axis, and the axis each holds at the angle asked for. The measure pages
+-- can also hold at 0 degrees, to check the gauge there (#2706); the fine pages always hold at 9.
+local HOLD_PAGES = {coll_measure = true, coll_fine = true, cyc_measure = true, cyc_fine = true}
+local CHECK_DEGREES = 0
+
+local function holdAt(name, degrees)
+  local raw = heli.swashRaw(degrees)
+  if name == "coll_measure" or name == "coll_fine" then return {roll = 0, pitch = 0, collective = raw} end
+  return {roll = 0, pitch = raw, collective = 0}
+end
+
+local function sameHold(a, b)
+  return a ~= nil and b ~= nil and a.roll == b.roll and a.pitch == b.pitch and a.collective == b.collective
+end
 
 -- The pages before the rate profiles, in order; `group` says which inputs a page works on.
 local BASE_PAGES = {"coll_measure", "coll_fine", "cyc_measure", "cyc_fine", "lim_cyc", "lim_coll", "lim_total"}
@@ -124,7 +137,8 @@ local function new(wiz)
   local answers = {motor = false}
   local measured = TEST_DEGREES * 10   -- tenths of a degree
   local calibratedNote = false
-  local holding = nil                  -- the HOLDS table sent, or nil
+  local holding = nil                  -- the hold table sent, or nil
+  local heldDeg = TEST_DEGREES         -- the angle the measure page holds: 9, or 0 to check the gauge (#2706)
 
   -- The rate profiles of the FC (0-based indexes), read as the Rates step reads them.
   local activeIndex = nil
@@ -254,13 +268,14 @@ local function new(wiz)
   end
 
   local function hold()
-    local want = HOLDS[screen]
-    if not want then
+    if not HOLD_PAGES[screen] then
       if holding then wiz.releaseAxes() end
       holding = nil
       return
     end
-    if holding ~= want then
+    local deg = (screen == "coll_measure" or screen == "cyc_measure") and heldDeg or TEST_DEGREES
+    local want = holdAt(screen, deg)
+    if not sameHold(holding, want) then
       holding = wiz.holdAxes(want) and want or nil
     end
   end
@@ -269,6 +284,7 @@ local function new(wiz)
     screen = name
     calibratedNote = false
     measured = TEST_DEGREES * 10
+    heldDeg = TEST_DEGREES
     hold()
     wiz.rebuild()
   end
@@ -378,20 +394,32 @@ local function new(wiz)
     })
   end
 
+  -- Between 9 degrees (to calibrate) and 0 degrees (to check the gauge there), on the measure page.
+  local function toggleCheck()
+    heldDeg = heldDeg == TEST_DEGREES and CHECK_DEGREES or TEST_DEGREES
+    hold()
+    wiz.rebuild()
+  end
+
   local function buildMeasure(name, back, forwardSpec)
     local coll = name == "coll_measure"
     scr:text(coll and T.collTitle or T.cycTitle, coll and T.collText or T.cycText)
     scr:picture(pitchPicture)
-    local rows = {
-      {label = T.measured, number = {MEASURE_MIN, MEASURE_MAX,
+    local rows = {}
+    -- At 0 degrees the page only checks the gauge: nothing is measured or calibrated there,
+    -- since the calibration counts from 9 degrees (#2706).
+    if heldDeg == TEST_DEGREES then
+      rows[#rows + 1] = {label = T.measured, number = {MEASURE_MIN, MEASURE_MAX,
         function() return measured end,
         function(value) measured = heli.clamp(math.floor(value + 0.5), MEASURE_MIN, MEASURE_MAX) end,
-        DEG, 1}},
-    }
-    for _, axis in ipairs(GROUP[name]) do rows[#rows + 1] = rateRow(axis) end
-    rows[#rows + 1] = {answer = T.calibrate, press = calibrate, needsMotion = true}
-    -- The result sits under the button, so the header does not move when it appears.
-    if calibratedNote then rows[#rows + 1] = {note = T.calibrated} end
+        DEG, 1}}
+      for _, axis in ipairs(GROUP[name]) do rows[#rows + 1] = rateRow(axis) end
+      rows[#rows + 1] = {answer = T.calibrate, press = calibrate, needsMotion = true}
+      -- The result sits under the button, so the header does not move when it appears.
+      if calibratedNote then rows[#rows + 1] = {note = T.calibrated} end
+    end
+    local checkAnswer = heldDeg == TEST_DEGREES and T.checkZero or T.backNine
+    rows[#rows + 1] = {answer = checkAnswer, press = toggleCheck, needsMotion = true}
     return finish(scr:checks(rows), back, forwardSpec)
   end
 
@@ -470,7 +498,7 @@ local function new(wiz)
     local canMove = wiz.canMove()
     if canMove ~= lastCanMove then
       lastCanMove = canMove
-      if canMove and HOLDS[screen] and not holding then hold() end
+      if canMove and HOLD_PAGES[screen] and not holding then hold() end
       scr:refresh()
     end
   end

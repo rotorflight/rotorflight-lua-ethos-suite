@@ -9553,6 +9553,12 @@
           "reverse_text": false,
           "translation": "Dieser Schritt betrifft die TS-Servos. Erst einen Taumelscheibentyp wählen."
         },
+        "pit_back_nine": {
+          "english": "Back to 9 degrees",
+          "max_length": 24,
+          "needs_translation": false,
+          "translation": "Zurück zu 9 Grad"
+        },
         "pit_calibrate": {
           "english": "Calibrate",
           "max_length": 9,
@@ -9566,6 +9572,12 @@
           "needs_translation": false,
           "reverse_text": false,
           "translation": "Kalibriert. Zur Kontrolle neu messen."
+        },
+        "pit_check_zero": {
+          "english": "Check at 0 degrees",
+          "max_length": 24,
+          "needs_translation": false,
+          "translation": "Bei 0 Grad prüfen"
         },
         "pit_coll_text": {
           "english": "The collective is held at 9 degrees. Measure the blade pitch, enter it, then Calibrate.",

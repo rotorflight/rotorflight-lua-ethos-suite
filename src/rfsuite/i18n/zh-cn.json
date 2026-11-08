@@ -9553,6 +9553,12 @@
           "reverse_text": false,
           "translation": "此步骤用于斜盘舵机。请先选择斜盘类型。"
         },
+        "pit_back_nine": {
+          "english": "Back to 9 degrees",
+          "max_length": 24,
+          "needs_translation": true,
+          "translation": "返回9度"
+        },
         "pit_calibrate": {
           "english": "Calibrate",
           "max_length": 9,
@@ -9566,6 +9572,12 @@
           "needs_translation": false,
           "reverse_text": false,
           "translation": "已校准。再次测量以确认。"
+        },
+        "pit_check_zero": {
+          "english": "Check at 0 degrees",
+          "max_length": 24,
+          "needs_translation": true,
+          "translation": "在0度检查"
         },
         "pit_coll_text": {
           "english": "The collective is held at 9 degrees. Measure the blade pitch, enter it, then Calibrate.",

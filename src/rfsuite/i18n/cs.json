@@ -9553,6 +9553,12 @@
           "reverse_text": false,
           "translation": "Tento krok pracuje se servy desky. Nejprve zvolte typ desky."
         },
+        "pit_back_nine": {
+          "english": "Back to 9 degrees",
+          "max_length": 24,
+          "needs_translation": true,
+          "translation": "Zpět na 9 stupňů"
+        },
         "pit_calibrate": {
           "english": "Calibrate",
           "max_length": 9,
@@ -9566,6 +9572,12 @@
           "needs_translation": false,
           "reverse_text": false,
           "translation": "Zkalibrováno. Pro kontrolu změřte znovu."
+        },
+        "pit_check_zero": {
+          "english": "Check at 0 degrees",
+          "max_length": 24,
+          "needs_translation": true,
+          "translation": "Zkontrolovat na 0 stupních"
         },
         "pit_coll_text": {
           "english": "The collective is held at 9 degrees. Measure the blade pitch, enter it, then Calibrate.",
