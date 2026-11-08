@@ -357,6 +357,30 @@ local function extractFirstInteger(text)
   return nil
 end
 
+-- The air rate of a DVDA mode. Its label names the handset rate, and the module runs at a
+-- different rate on air (ExpressLRS common.cpp): D250, D500, DK250 and DK500 at 1000 Hz,
+-- D50Hz at 200 Hz. The telemetry ratio and the rate written to the flight controller are
+-- counted at the air rate, so they use this rather than the number in the label (Issue #2669).
+local DVDA_AIR_RATE = {
+  D = {[50] = 200, [250] = 1000, [500] = 1000},
+  DK = {[250] = 1000, [500] = 1000},
+}
+
+local function packetRateFromLabel(label)
+  if type(label) == "string" then
+    local prefix, digits, rest = string.match(label, "^%s*[dD]([kK]?)(%d+)(.*)$")
+    if prefix then
+      local airRates = DVDA_AIR_RATE[prefix == "" and "D" or "DK"]
+      -- A DVDA label is the name followed by the dBm figure, "Hz", or nothing. "D500X" is
+      -- not one of them, and keeps the number it has.
+      local isDvda = rest == "" or string.match(rest, "^[%s%(%-]") or string.match(rest, "^[Hh][Zz]")
+      local airRate = airRates[tonumber(digits)]
+      if isDvda and airRate then return airRate end
+    end
+  end
+  return extractFirstInteger(label)
+end
+
 local function parseRatioLabel(label)
   if type(label) ~= "string" or label == "" then return nil, "unknown" end
 
@@ -596,7 +620,7 @@ local function finalize()
   if rateField then moduleRateLabel = rateField.selectedLabel end
   if ratioField then moduleRatioLabel = ratioField.selectedLabel end
 
-  local moduleRate = extractFirstInteger(moduleRateLabel)
+  local moduleRate = packetRateFromLabel(moduleRateLabel)
   local explicitRatio, ratioKind = parseRatioLabel(moduleRatioLabel)
   local effectiveRatio = resolveEffectiveRatio(moduleRate, ratioKind, explicitRatio)
   local ratioSummary = formatRatioSummary(moduleRatioLabel, ratioKind, effectiveRatio)
