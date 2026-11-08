@@ -168,7 +168,12 @@ local function loadSession(opts)
   -- setConnected()'s disconnect branch calls reset() on the sensor instances it
   -- holds; a stub without one aborts the branch under test before it finishes,
   -- which looks exactly like "the queue was not dropped".
-  session.setTelemetrySensors({ getValue = function() return nil end, reset = function() end })
+  -- A connected, disarmed FC: its arming flags are read, so the handshake is not
+  -- held back for the arm-state wait (#2758).
+  session.setTelemetrySensors({
+    getValue = function(_, name) if name == "armflags" then return 0 end return nil end,
+    reset = function() end,
+  })
 
   return {
     session = session,
