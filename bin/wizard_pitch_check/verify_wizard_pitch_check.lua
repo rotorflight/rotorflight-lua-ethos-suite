@@ -152,6 +152,20 @@ do
     "collective=" .. tostring(hold and hold.collective))
 end
 
+print("the cyclic measure page")
+do
+  -- The fine page's Next goes on to the cyclic measure page (#2709): roll is held at 9 degrees,
+  -- so the blades stay along the boom and pitch is not held.
+  view.forward.press()
+  node.build()
+  local hold = lastHold()
+  check("5a. the cyclic page holds roll at 9 degrees", hold ~= nil and hold.roll == RAW_9,
+    "roll=" .. tostring(hold and hold.roll))
+  check("5b. the cyclic page does not hold pitch", hold ~= nil and hold.pitch == 0,
+    "pitch=" .. tostring(hold and hold.pitch))
+  check("5c. the cyclic page offers Calibrate", rowWithAnswer(CALIBRATE) ~= nil)
+end
+
 -- ---------------------------------------------------------------------------
 -- self-test: without the check row there is no way to 0 degrees.
 -- ---------------------------------------------------------------------------

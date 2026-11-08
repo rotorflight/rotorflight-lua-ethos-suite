@@ -9580,9 +9580,9 @@
           "translation": "在0度检查"
         },
         "pit_coll_text": {
-          "english": "The collective is held at 9 degrees. Measure the blade pitch, enter it, then Calibrate.",
-          "max_length": 87,
-          "needs_translation": false,
+          "english": "Align the blades with the boom. The collective is held at 9 degrees. Measure the blade pitch, enter it, then Calibrate.",
+          "max_length": 130,
+          "needs_translation": true,
           "reverse_text": false,
           "translation": "总距保持在9度。测量桨叶螺距并输入，然后校准。"
         },
@@ -9594,9 +9594,9 @@
           "translation": "总距"
         },
         "pit_cyc_text": {
-          "english": "Turn the blades to point left and right. Pitch is held at 9 degrees. Measure, enter it, then Calibrate.",
-          "max_length": 103,
-          "needs_translation": false,
+          "english": "Blades along the boom, as for the collective. Roll is held at 9 degrees. Measure, enter it, then Calibrate.",
+          "max_length": 120,
+          "needs_translation": true,
           "reverse_text": false,
           "translation": "将桨叶转到指向左右。螺距保持在9度。测量并输入，然后校准。"
         },
