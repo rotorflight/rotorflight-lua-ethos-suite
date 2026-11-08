@@ -9061,7 +9061,7 @@
           "max_length": 92,
           "needs_translation": false,
           "reverse_text": false,
-          "translation": "Erst Anlenkungen bis die TS waagerecht ist, dann trimmen, dann Blattanlenkungen auf 0 Grad."
+          "translation": "Erst Anlenkungen, bis die TS waagerecht ist, dann trimmen, dann Blattanlenkungen auf 0 Grad."
         },
         "lvl_motor_off": {
           "english": "Motor unplugged",
@@ -9075,7 +9075,7 @@
           "max_length": 84,
           "needs_translation": false,
           "reverse_text": false,
-          "translation": "Roll und Kollektiv: 1 Anlenkung, 2 Trim, 3 Blatt auf 0 Grad."
+          "translation": "Roll und Kollektiv: 1 Anlenkungen, 2 Trim, 3 Blattanlenkungen auf 0 Grad."
         },
         "lvl_reset": {
           "english": "Reset",
