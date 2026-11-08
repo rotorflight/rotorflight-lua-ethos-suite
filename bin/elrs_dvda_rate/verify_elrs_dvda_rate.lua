@@ -1,4 +1,4 @@
--- Behaviour check for the ELRS link's packet rate (#2669): a DVDA mode runs at its air rate,
+-- Behaviour check for the ELRS link's packet rate (Issue #2669): a DVDA mode runs at its air rate,
 -- not the number in its label. The telemetry ratio and the rate written to the flight
 -- controller are counted at that rate.
 --

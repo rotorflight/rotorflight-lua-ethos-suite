@@ -360,7 +360,7 @@ end
 -- The air rate of a DVDA mode. Its label names the handset rate, and the module runs at a
 -- different rate on air (ExpressLRS common.cpp): D250, D500, DK250 and DK500 at 1000 Hz,
 -- D50Hz at 200 Hz. The telemetry ratio and the rate written to the flight controller are
--- counted at the air rate, so they use this rather than the number in the label (#2669).
+-- counted at the air rate, so they use this rather than the number in the label (Issue #2669).
 local DVDA_AIR_RATE = {
   D = {[50] = 200, [250] = 1000, [500] = 1000},
   DK = {[250] = 1000, [500] = 1000},
