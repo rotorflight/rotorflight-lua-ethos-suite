@@ -10978,6 +10978,13 @@
           "max_length": 10,
           "reverse_text": false
         },
+        "mot_stage_refused": {
+          "english": "Stage not changed: the tail ratio cannot be kept with whole teeth that fit.",
+          "translation": "Stage not changed: the tail ratio cannot be kept with whole teeth that fit.",
+          "needs_translation": true,
+          "max_length": 80,
+          "reverse_text": false
+        },
         "mot_ratio_direct": {
           "english": "Gear ratio",
           "translation": "Utveksling",

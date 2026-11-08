@@ -9441,6 +9441,13 @@
           "reverse_text": false,
           "translation": "Einstufig"
         },
+        "mot_stage_refused": {
+          "english": "Stage not changed: the tail ratio cannot be kept with whole teeth that fit.",
+          "max_length": 100,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Stufe nicht geändert: Das Heck-Verhältnis lässt sich mit ganzen, passenden Zähnen nicht halten."
+        },
         "mot_stage_two": {
           "english": "Two stages",
           "max_length": 10,

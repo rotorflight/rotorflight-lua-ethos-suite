@@ -79,6 +79,7 @@ local T = {
   pairTail = "@i18n(app.modules.setup_wizard.mot_pair_tail)@",
   pairTailShaft = "@i18n(app.modules.setup_wizard.mot_pair_tail_shaft)@",
   stageDirect = "@i18n(app.modules.setup_wizard.mot_stage_direct)@",
+  stageRefused = "@i18n(app.modules.setup_wizard.mot_stage_refused)@",
   ratioDirect = "@i18n(app.modules.setup_wizard.mot_ratio_direct)@",
   pairMainMesh = "@i18n(app.modules.setup_wizard.mot_pair_main_mesh)@",
   ratio = "@i18n(app.modules.setup_wizard.mot_ratio_fmt)@",
@@ -446,63 +447,93 @@ local function new(wiz)
     return stageCount()
   end
 
-  local function setStages(v)
-    v = (v == 2 or v == 3) and v or 1
-    if v == stageChoice() then return end
+  -- What a stage change to v leaves, worked out before anything is written: the new stage,
+  -- train and direct ratio; main0 and main1, the FC's main products (nil where they stay);
+  -- mesh, the tail's main-side count (nil where it stays); and mainT and meshT, the counts the
+  -- tail's products use after the change. Nil when the counts would not fit.
+  local function stagePlan(v)
+    local t = ensureTail()
     if v == 3 then
-      if not base.direct then
-        local ratio = math.floor(gearOr1(cfg.main_rotor_gear_ratio_1) * 100 / gearOr1(cfg.main_rotor_gear_ratio_0) + 0.5)
-        base.direct = {ratio = math.max(100, math.min(10000, ratio))}
-      end
-      base.stages = 1
-      base.train = nil
-      applyDirect()
-      wiz.rebuild()
-      return
-    end
-    local d = base.direct
-    base.direct = nil
-    if v == 2 and d then
-      -- The ratio as a two-stage train: the pinion's count k, a 1:1 intermediate, the main gear.
-      local k, _, p1 = ratioProducts(d.ratio)
-      base.stages = 2
-      base.train = {pinion = k, pinionSide = INTERMEDIATE_DEFAULT, mainSide = 1, main = p1}
-      applyTail()
-      wiz.rebuild()
-      return
+      local ratio = base.direct and base.direct.ratio
+        or math.max(100, math.min(10000, math.floor(gearOr1(cfg.main_rotor_gear_ratio_1) * 100 / gearOr1(cfg.main_rotor_gear_ratio_0) + 0.5)))
+      local _, p0, p1 = ratioProducts(ratio)
+      return {stages = 1, direct = {ratio = ratio}, main0 = p0, main1 = p1, mainT = p1, meshT = gearOr1(t.mesh)}
     end
     if v == 2 then
+      local d = base.direct
+      if d then
+        -- The ratio as a two-stage train: the pinion's count k, a 1:1 intermediate, the main gear.
+        local k, _, p1 = ratioProducts(d.ratio)
+        return {stages = 2, train = {pinion = k, pinionSide = INTERMEDIATE_DEFAULT, mainSide = 1, main = p1},
+          mainT = p1, meshT = 1}
+      end
       local pinion, main = gearOr1(cfg.main_rotor_gear_ratio_0), gearOr1(cfg.main_rotor_gear_ratio_1)
       -- Both intermediate gears take the main gear's count: a 1:1 pair to the main gear, which
       -- keeps the main ratio and a tail drive from the intermediate shaft. Too large for the
       -- counts: 1:1 with 1.
       local x = main
       if pinion * x > TRAIN_MAX or x * main > TRAIN_MAX then x = INTERMEDIATE_DEFAULT end
-      if pinion * x > TRAIN_MAX or x * main > TRAIN_MAX then return end
-      base.stages = 2
-      base.train = {pinion = pinion, pinionSide = x, mainSide = x, main = main}
-      setFields({main_rotor_gear_ratio_0 = pinion * x, main_rotor_gear_ratio_1 = x * main})
-      applyTail()
-    else
-      local t = base.train
-      if t then
-        -- The tail keeps the main-side gear for a drive from the intermediate shaft.
-        ensureTail().mesh = t.mainSide
-        local p0, p1 = t.pinion * t.mainSide, t.pinionSide * t.main
-        -- The pinion keeps its teeth when the main gear comes out in whole teeth at the
-        -- same ratio; otherwise the smallest whole pair with that ratio.
-        local main = (t.pinion * p1) / p0
-        if main == math.floor(main) and main <= TRAIN_MAX then
-          setFields({main_rotor_gear_ratio_0 = t.pinion, main_rotor_gear_ratio_1 = main})
-        else
-          local g = gcd(p0, p1)
-          setFields({main_rotor_gear_ratio_0 = p0 / g, main_rotor_gear_ratio_1 = p1 / g})
-        end
-      end
-      base.stages = 1
-      base.train = nil
-      applyTail()
+      if pinion * x > TRAIN_MAX or x * main > TRAIN_MAX then return nil end
+      return {stages = 2, train = {pinion = pinion, pinionSide = x, mainSide = x, main = main},
+        main0 = pinion * x, main1 = x * main, mainT = main, meshT = x}
     end
+    local tr = base.train
+    if tr then
+      -- The pinion keeps its teeth when the main gear comes out in whole teeth at the
+      -- same ratio; otherwise the smallest whole pair with that ratio.
+      local p0, p1 = tr.pinion * tr.mainSide, tr.pinionSide * tr.main
+      local main = (tr.pinion * p1) / p0
+      local main0, main1
+      if main == math.floor(main) and main <= TRAIN_MAX then
+        main0, main1 = tr.pinion, main
+      else
+        local g = gcd(p0, p1)
+        main0, main1 = p0 / g, p1 / g
+      end
+      -- The tail keeps the main-side gear for a drive from the intermediate shaft.
+      return {stages = 1, main0 = main0, main1 = main1, mesh = tr.mainSide,
+        mainT = main1, meshT = tr.mainSide}
+    end
+    return {stages = 1, mainT = gearOr1(cfg.main_rotor_gear_ratio_1), meshT = gearOr1(t.mesh)}
+  end
+
+  -- Set when a stage change was refused; the page says so until the next change.
+  local stageRefused = false
+
+  local function setStages(v)
+    v = (v == 2 or v == 3) and v or 1
+    if v == stageChoice() then return end
+    local plan = stagePlan(v)
+    local t = ensureTail()
+    if plan and t.from == 2 then
+      -- A tail driven from the intermediate shaft keeps its ratio, main x a / (mesh x b), when the
+      -- main side counts change: its drive tooth a takes the whole value that restores the ratio.
+      -- The tail tooth b stays as set. No whole value, or a product past TRAIN_MAX: refused.
+      local now = tailProducts(t)
+      local old0, old1 = now.tail_rotor_gear_ratio_0, now.tail_rotor_gear_ratio_1
+      local num, den = old1 * plan.meshT * t.b, old0 * plan.mainT
+      local a = (num % den == 0) and math.floor(num / den) or nil
+      if a and inRange(a, 1, TRAIN_MAX) and plan.meshT * t.b <= TRAIN_MAX and plan.mainT * a <= TRAIN_MAX then
+        plan.tailDrive = a
+      else
+        plan = nil
+      end
+    end
+    if not plan then
+      stageRefused = true
+      wiz.rebuild()
+      return
+    end
+    stageRefused = false
+    if plan.main0 then
+      setFields({main_rotor_gear_ratio_0 = plan.main0, main_rotor_gear_ratio_1 = plan.main1})
+    end
+    if plan.mesh then t.mesh = plan.mesh end
+    if plan.tailDrive then t.a = plan.tailDrive end
+    base.stages = plan.stages
+    base.train = plan.train
+    base.direct = plan.direct
+    applyTail()
     wiz.rebuild()
   end
 
@@ -754,6 +785,7 @@ local function new(wiz)
           get = function() return stageChoice() end,
           set = function(v) setStages(tonumber(v)) end}},
       }
+      if stageRefused then rows[#rows + 1] = {note = T.stageRefused} end
       -- Each stage's two counts side by side, "a : b".
       local function pairOf(from, to)
         return {{1, TRAIN_MAX, function() return base.train[TRAIN_KEYS[from]] end, function(v) setMainGear(from, v) end},
