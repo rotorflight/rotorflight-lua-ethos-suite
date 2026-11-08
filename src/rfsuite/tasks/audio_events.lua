@@ -1102,7 +1102,6 @@ function audio_events.wakeup()
     disconnectApplied = true
     -- A link that drops is announced by the radio itself (#2664), so nothing is
     -- announced here. The flight controller's silence is watched while the link is up.
-    fcSilent = false
     initialized = false
     craftNameAnnounced = false
     resetFuelAnnouncements()

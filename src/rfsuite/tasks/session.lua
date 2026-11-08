@@ -1133,6 +1133,8 @@ local function setConnected(value, mspQueue, protocol)
     session.flightResumable = holdingFlight == true
     session.isArmed = nil
     session.telemetryFrameAt = nil
+    session.telemetryFcSilent = nil
+    telemetryWatchFrom = nil
     session.armDisableFlags = nil
     localSmartFuel:reset()
     smartfuelSensor:reset()

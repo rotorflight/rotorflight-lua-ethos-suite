@@ -18,7 +18,7 @@ Always available offline without an active flight controller connection. Read-on
 
 | Setting | What it does |
 | --- | --- |
-| *Telemetry lost* | Calls out the flight controller when it stops sending **while the model is armed** and the radio link is up, and again when it sends again. On by default. |
+| *Telemetry lost* | Calls out the flight controller when it stops sending **while the model is armed** and the radio link is up, and again once telemetry recovers. On by default. |
 | *Vibrate* | Vibrates the radio when the flight controller goes quiet while armed. On by default. Each silence is announced once, so it has no repeat count. |
 
 ## Notes

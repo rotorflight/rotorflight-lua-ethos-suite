@@ -214,8 +214,8 @@ do
   seed(rig, {connected = true, isArmed = false, pidProfile = 1})
   rig.setClock(0.50); rig.step({connected = true, isArmed = false, pidProfile = 2})
   rig.setClock(0.75); rig.step({connected = true, isArmed = true, pidProfile = 2})
-  rig.setClock(1.00); rig.step({connected = false})
-  check("a link drop right after a waiting arming change still raises the telemetry-lost alert",
+  rig.setClock(1.00); rig.step({connected = true, isArmed = true, pidProfile = 2, telemetryFcSilent = true})
+  check("flight controller silence right after a waiting arming change still raises the telemetry-lost alert",
     rig.timeline() == "0.50 profile.wav; 0.50 num:2; 1.00 haptic", "got: " .. rig.timeline())
 end
 

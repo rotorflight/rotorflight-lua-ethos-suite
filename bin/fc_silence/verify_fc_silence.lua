@@ -272,7 +272,10 @@ do
   rig.advance(7.0)
   rig.tick()
   check("silent before the link drops", silent(rig))
+  local beforeDrop = rig.publishedCount()
   rig.tick(false)
+  check("a link that drops publishes exactly once", rig.publishedCount() == beforeDrop + 1,
+    "publications on drop: " .. (rig.publishedCount() - beforeDrop))
   check("a link that drops clears the silence", not silent(rig),
     "still silent after the drop")
   rig.tick(true)
