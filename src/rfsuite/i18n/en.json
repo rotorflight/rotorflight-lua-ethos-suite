@@ -7872,10 +7872,10 @@
           "translation": "Unsaved changes"
         },
         "lvl_intro": {
-          "english": "The swash is held at its centre. Trim it until it is level and the blades sit at zero pitch.",
+          "english": "Links until the swash is level, then trim it, then the blade links to zero pitch.",
           "max_length": 92,
           "needs_translation": false,
-          "translation": "The swash is held at its centre. Trim it until it is level and the blades sit at zero pitch."
+          "translation": "Links until the swash is level, then trim it, then the blade links to zero pitch."
         },
         "lvl_motor_off": {
           "english": "Motor unplugged",
@@ -7885,11 +7885,11 @@
           "translation": "Motor unplugged"
         },
         "lvl_rear_text": {
-          "english": "Roll and collective: trim until the swash is level and the blades sit at zero pitch.",
+          "english": "Roll and collective: 1 links to level, 2 trim, 3 blade links to zero pitch.",
           "max_length": 84,
           "needs_translation": false,
           "reverse_text": false,
-          "translation": "Roll and collective: trim until the swash is level and the blades sit at zero pitch."
+          "translation": "Roll and collective: 1 links to level, 2 trim, 3 blade links to zero pitch."
         },
         "lvl_reset": {
           "english": "Reset",
