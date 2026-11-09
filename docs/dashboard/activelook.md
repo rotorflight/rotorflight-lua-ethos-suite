@@ -61,7 +61,9 @@ ETHOS-specific `io.read(file, "L")` spelling. The startup scalar scan is protect
 so its file is closed after a read exception. `main.init()` catches reader
 exceptions, skips registration for that script lifetime, and continues registering
 the other subsystems. A boot diagnostic reports the failure without adding a
-periodic retry. A missing file still uses the default-off preference.
+periodic retry. A confirmed missing file (`ENOENT`, error code 2) still uses the default-off
+preference. Other open failures, including failures without an error code, are
+reported by the guarded boot diagnostic instead of silently treated as missing.
 Both standard Lua's `true` and ETHOS's empty successful close return are accepted.
 These native reads and successful startup were checked in the X20PRO simulator
 running ETHOS 26.2.0-RC1 after the robustness follow-up.

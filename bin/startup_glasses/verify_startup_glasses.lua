@@ -47,7 +47,10 @@ local env = setmetatable({
       assert(path == "SCRIPTS:/rfsuite.user/settings.ini" and mode == "rb")
       opens = opens + 1
       if fault == "open-throw" then error("injected SD open error") end
-      if fixture == nil then return nil end
+      if fault == "open-denied" then return nil, "Permission denied", 13 end
+      if fault == "open-io" then return nil, "Input/output error", 5 end
+      if fault == "open-unknown" then return nil end
+      if fixture == nil then return nil, "No such file or directory", 2 end
       return setmetatable({text = fixture, pos = 1, closed = false}, {__index = fileMethods})
     end,
     read = function() error("io.read(file, ...) is not standard Lua") end,
@@ -137,7 +140,7 @@ local function startupCase(label, api, text, shouldRegister, widgetApi, failure)
   check(label .. ": file opened only with API", opens == beforeOpen + (api and 1 or 0))
   if not api then check(label .. ": no file reads", reads == beforeRead) end
   check(label .. ": diagnostic on failure only", warnings == (api and failure and failure ~= "close-void" and 1 or 0))
-  check(label .. ": close on read failure", closes == beforeClose + (api and text ~= nil and failure ~= "open-throw" and 1 or 0))
+  check(label .. ": close on read failure", closes == beforeClose + (api and text ~= nil and not (failure and failure:match("^open%-")) and 1 or 0))
   local opened, read = opens, reads
   -- A UI save in this lifetime must not change the startup decision.
   fixture = "[activelook]\nregister_glasses=" .. (shouldRegister and "false" or "true") .. "\n"
@@ -155,7 +158,7 @@ for _, widgetApi in ipairs({false, true}) do
   startupCase("missing file", true, nil, false, widgetApi)
   startupCase("API absent", false, "[activelook]\nregister_glasses=true\n", false, widgetApi)
 end
-for _, failure in ipairs({"open-throw", "read-throw", "read-return", "close-throw", "close-return"}) do
+for _, failure in ipairs({"open-throw", "open-denied", "open-io", "open-unknown", "read-throw", "read-return", "close-throw", "close-return"}) do
   startupCase(failure, true, "[activelook]\nregister_glasses=true\n", false, true, failure)
   startupCase(failure .. " without API", false, "[activelook]\nregister_glasses=true\n", false, true, failure)
 end

@@ -387,8 +387,13 @@ local function readStartupGlasses(file)
 end
 
 function settings_store.startupGlassesEnabled()
-  local file = io.open(SETTINGS_PATH, "rb")
-  if not file then return activelookConfig.DEFAULTS.register_glasses end
+  local file, openError, code = io.open(SETTINGS_PATH, "rb")
+  if not file then
+    -- ENOENT is the only failure that means no saved preference exists.
+    -- Unknown failures must reach main.init's guarded boot diagnostic too.
+    if code == 2 then return activelookConfig.DEFAULTS.register_glasses end
+    error(openError or "Cannot open glasses settings file", 0)
+  end
   local ok, value = pcall(readStartupGlasses, file)
   local closed, err = file:close()
   if not ok then error(value, 0) end
