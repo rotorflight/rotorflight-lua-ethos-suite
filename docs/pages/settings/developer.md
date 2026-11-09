@@ -20,11 +20,12 @@ Always available offline without an active flight controller connection. Read-on
 | --- | --- |
 | Debug logs | Configures Debug logs. |
 | Log MSP data | Configures Log MSP data. |
-| Memory logs | Configures Memory logs. |
+| Memory logs | Logs memory usage on menu/page changes and when closing the tool. |
 | Simulated API version | Configures Simulated API version. |
 
 ## Notes
 
+- The Rotorflight menu is available on the first tool launch with memory logging either on or off. Disabling ActiveLook does not require opening the tool twice.
 - Changes are written to the flight controller EEPROM upon Save.
 
 ## Related

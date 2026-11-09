@@ -600,7 +600,9 @@ bus.subscribe("session.update", function(session)
 end)
 
 local function updateDeveloperMode(settings)
-  developerModeEnabled = settingsStore.developerModeEnabled(settings or settingsStore.load())
+  settings = settings or settingsStore.load()
+  developerModeEnabled = settingsStore.developerModeEnabled(settings)
+  return settings
 end
 
 bus.subscribe("settings.update", updateDeveloperMode)
@@ -626,8 +628,10 @@ local function create()
   taskAlertPending = false
   taskAlertOpen = false
   taskAlertShown = false
-  updateDeveloperMode()
-  ensureMemstats()
+  local settings = updateDeveloperMode()
+  -- Reuse this read: a second full load during the cold menu build can exceed
+  -- Ethos's create() instruction budget before any tiles have been created.
+  ensureMemstats().setSettings(settings)
   -- Guards first: menu_container consults them while building the first
   -- screen, so they have to be in place before openRoot() runs.
   installMenuGuards()
