@@ -366,13 +366,14 @@ end
 -- Startup only needs this flag. Loading and normalizing every setting here can
 -- exhaust Ethos's init instruction budget as saved dashboard sections grow.
 -- Stream without building tables, keeping the INI reader's last-value-wins rule.
-function settings_store.startupGlassesEnabled()
-  local file = io.open(SETTINGS_PATH, "rb")
-  if not file then return activelookConfig.DEFAULTS.register_glasses end
+local function readStartupGlasses(file)
   local section, value
   while true do
-    local line = io.read(file, "L")
-    if not line then break end
+    local line, err = file:read("L")
+    if not line then
+      if err then error(err, 0) end
+      break
+    end
     line = line:match("^%s*(.-)%s*$")
     local heading = line:match("^%[(.+)%]$")
     if heading then
@@ -382,8 +383,20 @@ function settings_store.startupGlassesEnabled()
       if saved then value = tonumber(saved) or saved end
     end
   end
-  io.close(file)
   return coerceBool(value, activelookConfig.DEFAULTS.register_glasses)
+end
+
+function settings_store.startupGlassesEnabled()
+  local file = io.open(SETTINGS_PATH, "rb")
+  if not file then return activelookConfig.DEFAULTS.register_glasses end
+  local ok, value = pcall(readStartupGlasses, file)
+  local closed, err = file:close()
+  if not ok then error(value, 0) end
+  -- ETHOS close() returns no values on success; standard Lua returns true.
+  if closed == false or (closed == nil and err ~= nil) then
+    error(err or "Cannot close glasses settings file", 0)
+  end
+  return value
 end
 
 function settings_store.save(settings)
