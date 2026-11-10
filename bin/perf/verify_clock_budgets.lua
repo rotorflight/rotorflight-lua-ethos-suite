@@ -576,6 +576,31 @@ do
   check("instruction-sliced long reply survives beyond the retry window",
     result and #result == POOL_BYTES and not failure and #longTransport.queue == 0)
 
+  -- The first read of a wakeup is taken even over budget: a budget checked
+  -- before it let a wakeup that starts over the limit move nothing, so every
+  -- request under constant pressure ended on max_retries.
+  usage = 100
+  local pressured = newMspTransport(replyFrames(POOL_CMD, 20, chunksOf(20, 5)))
+  local pressuredCommon = newCommon(pressured)
+  pressuredCommon.mspSendRequest(POOL_CMD, {})
+  pressuredCommon.mspPollReply()
+  check("a wakeup that starts over budget still reads one frame", pressured.polls == 1)
+
+  usage = 100
+  local saturated = newMspTransport(replyFrames(POOL_CMD, POOL_BYTES, chunksOf(POOL_BYTES, 5)))
+  local saturatedQueue = Queue.new(newCommon(saturated))
+  local satResult, satFailure
+  saturatedQueue:add({command = POOL_CMD, payload = {},
+    processReply = function(_, reply) satResult = reply end,
+    errorHandler = function(reason) satFailure = reason end})
+  for _ = 1, 400 do
+    clock.now = clock.now + WAKEUP_SECONDS
+    saturatedQueue:processQueue()
+    if satResult or satFailure then break end
+  end
+  check("a long reply under constant budget pressure still completes, one frame a wakeup",
+    satResult and #satResult == POOL_BYTES and not satFailure, satFailure)
+
   local elrs = dofile(TASKS .. "/elrs_sensors.lua")
   local remaining = 5
   local custom = { popCustomTelemetryFrame = function()
@@ -619,6 +644,29 @@ do
   local packet = transportSport.mspPoll()
   check("S.Port finds the queued reply on the next wakeup",
     packet and packet[1] == 0x34 and packet[6] == 0x12 and pops == 3)
+
+  -- Over budget from the start, the first frame of the call is still taken.
+  local searchSport = sport
+  local replyPops = 0
+  local replyFrame = {
+    physId = function() return 0x1B end,
+    primId = function() return 0x32 end,
+    appId = function() return 0x1234 end,
+    value = function() return 0x12345678 end,
+  }
+  sport = { getSensor = function() return {
+    popFrame = function()
+      replyPops = replyPops + 1
+      usage = usage + 30
+      return replyFrame
+    end,
+  } end }
+  transportSport = dofile(MSP .. "/transport_sport.lua")
+  usage = 100
+  local firstFrame = transportSport.mspPoll()
+  check("S.Port takes the first frame of a wakeup that starts over budget",
+    firstFrame ~= nil and replyPops == 1)
+  sport = searchSport
 
   system.getInstructionsUsage = nil
   pops = 0

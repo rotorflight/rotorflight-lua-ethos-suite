@@ -55,9 +55,14 @@ function transport.mspPoll()
   local s = getSensor()
   if not s then return nil end
 
+  -- The first frame of each call is taken whatever the budget says, for the
+  -- same reason as common.lua's mspPollReply(): a budget checked first would
+  -- starve the link while the wakeup starts over the limit.
+  local popped = false
   while true do
-    if getInstructionsUsage and getInstructionsUsage() >= DRAIN_INSTRUCTION_LIMIT then return nil end
+    if popped and getInstructionsUsage and getInstructionsUsage() >= DRAIN_INSTRUCTION_LIMIT then return nil end
     local frame = s:popFrame()
+    popped = true
     if not frame then return nil end
 
     local sensorId, frameId, dataId, value = frame:physId(), frame:primId(), frame:appId(), frame:value()

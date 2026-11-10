@@ -317,8 +317,15 @@ end
 local function mspPollReply()
   if not transport then return nil, nil, nil end
   local deadline = os_clock() + POLL_SLICE_SECONDS
+  local polled = false
   while os_clock() < deadline do
-    if getInstructionsUsage and getInstructionsUsage() >= DRAIN_INSTRUCTION_LIMIT then break end
+    -- The first read of every wakeup is taken whatever the budget says. A
+    -- budget checked before the first read lets a wakeup that starts over the
+    -- limit read nothing at all; while the budget stays over, no reply is ever
+    -- read and every request ends on max_retries. One frame per wakeup is the
+    -- progress the budget leaves room for; the rest waits for the budget.
+    if polled and getInstructionsUsage and getInstructionsUsage() >= DRAIN_INSTRUCTION_LIMIT then break end
+    polled = true
     local pkt = transport.mspPoll()
     if pkt == nil then
       return nil, nil, nil
