@@ -9598,11 +9598,11 @@
           "translation": "Bei 0 Grad prüfen"
         },
         "pit_coll_text": {
-          "english": "The collective is held at 9 degrees. Measure the blade pitch, enter it, then Calibrate.",
-          "max_length": 87,
+          "english": "Align the blades with the boom. The collective is held at 9 degrees. Measure the blade pitch, enter it, then Calibrate.",
+          "max_length": 130,
           "needs_translation": false,
           "reverse_text": false,
-          "translation": "Kollektiv wird auf 9 Grad gehalten. Blattwinkel messen, eingeben, dann Kalibrieren."
+          "translation": "Blätter in Auslegerrichtung ausrichten. Kollektiv wird auf 9 Grad gehalten. Blattwinkel messen, eingeben, dann Kalibrieren."
         },
         "pit_coll_title": {
           "english": "Collective",
@@ -9612,11 +9612,11 @@
           "translation": "Kollektiv"
         },
         "pit_cyc_text": {
-          "english": "Turn the blades to point left and right. Roll is held at 9 degrees. Measure, enter it, then Calibrate.",
-          "max_length": 103,
+          "english": "Blades along the boom, as for the collective. Roll is held at 9 degrees. Measure, enter it, then Calibrate.",
+          "max_length": 120,
           "needs_translation": false,
           "reverse_text": false,
-          "translation": "Blätter links und rechts drehen. Roll wird auf 9 Grad gehalten. Messen, eingeben, dann Kalibrieren."
+          "translation": "Blätter in Auslegerrichtung wie beim Kollektiv. Roll wird auf 9 Grad gehalten. Messen, eingeben, dann Kalibrieren."
         },
         "pit_cyc_title": {
           "english": "Cyclic",

@@ -23,7 +23,7 @@ model is armed. The step needs a swashplate type to be set first.
 1. **Safety card.** The motor is unplugged, because the blades are measured in this step. Start is
    greyed out until *Motor unplugged* is answered with yes.
 2. **Collective and cyclic.** Each in two pages: *measure* (the collective held at 9 degrees, or the
-   blades turned left and right, with roll held at 9 degrees; #2709), then *fine* (the rate in 0.1 %). On the *measure*
+   blades along the boom, with roll held at 9 degrees; #2709), then *fine* (the rate in 0.1 %). On the *measure*
    page, *Hold angle* sets the angle the axis is held at (9 degrees by default, up to the stored limit; #2708).
    *Check at 0 degrees* holds the blades at zero pitch, so you can see the zero at the gauge before you
    calibrate. Away from 9 degrees the page only shows *Hold angle*, the check button and *Back to 9 degrees*;
