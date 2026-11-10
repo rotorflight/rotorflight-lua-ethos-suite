@@ -9,8 +9,8 @@
 --              rate so 9 degrees comes out as 9 degrees (lib/setup_wizard_heli.lua's calibratedRate()).
 --              A hold angle stepper sets the held angle (#2708); Calibrate is only offered at 9 degrees
 --   coll_fine  the collective rate itself, in 0.1 %
---   cyc_measure  blades turned left and right, as the Configurator holds them, roll held at 9 degrees; Calibrate scales roll
---              and pitch together (#2709: roll is held instead of pitch)
+--   cyc_measure  blades along the boom as for the collective, roll held at 9 degrees; Calibrate scales roll
+--              and pitch together (#2709: roll is held, so the head does not have to be turned)
 --   cyc_fine   both rates, in 0.1 %
 --   lim_cyc, lim_coll, lim_total  the hard limits of the mixer (the same for every profile): the most
 --              blade pitch the FC will ever command, in 0.1 degree
@@ -85,7 +85,7 @@ local HOLD_MAX = 120
 local function holdAt(name, degrees)
   local raw = heli.swashRaw(degrees)
   if name == "coll_measure" or name == "coll_fine" then return {roll = 0, pitch = 0, collective = raw} end
-  -- Cyclic: roll is held at the angle, with the blades turned left and right as the Configurator has them (#2709).
+  -- Cyclic: roll is held at the angle, so the blades stay along the boom (#2709).
   return {roll = raw, pitch = 0, collective = 0}
 end
 
