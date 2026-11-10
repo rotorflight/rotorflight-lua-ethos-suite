@@ -9612,9 +9612,9 @@
           "translation": "קולקטיב"
         },
         "pit_cyc_text": {
-          "english": "Turn the blades to point left and right. Pitch is held at 9 degrees. Measure, enter it, then Calibrate.",
+          "english": "Turn the blades to point left and right. Roll is held at 9 degrees. Measure, enter it, then Calibrate.",
           "max_length": 103,
-          "needs_translation": false,
+          "needs_translation": true,
           "reverse_text": true,
           "translation": "סובב את הלהבים כך שיפנו שמאלה וימינה. הפיץ' מוחזק ב-9 מעלות. מדוד, הזן, ואז כייל."
         },
@@ -9645,6 +9645,12 @@
           "needs_translation": false,
           "reverse_text": true,
           "translation": "קולקטיב בהטיה מלאה"
+        },
+        "pit_hold_angle": {
+          "english": "Hold angle",
+          "max_length": 20,
+          "needs_translation": true,
+          "translation": "זווית החזקה"
         },
         "pit_intro": {
           "english": "You need a pitch gauge. The wizard holds the blades at a set pitch; you measure it and enter what you read.",

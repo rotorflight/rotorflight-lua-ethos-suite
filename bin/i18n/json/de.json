@@ -11917,8 +11917,8 @@
           "reverse_text": false
         },
         "pit_cyc_text": {
-          "english": "Turn the blades to point left and right. Pitch is held at 9 degrees. Measure, enter it, then Calibrate.",
-          "translation": "Blätter nach links und rechts drehen. Pitch wird auf 9 Grad gehalten. Messen, eingeben, dann Kalibrieren.",
+          "english": "Turn the blades to point left and right. Roll is held at 9 degrees. Measure, enter it, then Calibrate.",
+          "translation": "Blätter links und rechts drehen. Roll wird auf 9 Grad gehalten. Messen, eingeben, dann Kalibrieren.",
           "needs_translation": false,
           "max_length": 103,
           "reverse_text": false
@@ -11962,6 +11962,12 @@
           "translation": "Zurück zu 9 Grad",
           "needs_translation": false,
           "max_length": 24
+        },
+        "pit_hold_angle": {
+          "english": "Hold angle",
+          "translation": "Haltewinkel",
+          "needs_translation": false,
+          "max_length": 20
         },
         "pit_calibrated": {
           "english": "Calibrated. Measure again to check.",

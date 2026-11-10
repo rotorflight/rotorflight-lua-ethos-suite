@@ -11917,9 +11917,9 @@
           "reverse_text": false
         },
         "pit_cyc_text": {
-          "english": "Turn the blades to point left and right. Pitch is held at 9 degrees. Measure, enter it, then Calibrate.",
+          "english": "Turn the blades to point left and right. Roll is held at 9 degrees. Measure, enter it, then Calibrate.",
           "translation": "Gire las palas a izquierda y derecha. El paso se fija a 9 grados. Mida, introdúzcalo y pulse Calibrar.",
-          "needs_translation": false,
+          "needs_translation": true,
           "max_length": 103,
           "reverse_text": false
         },
@@ -11962,6 +11962,12 @@
           "translation": "Volver a 9 grados",
           "needs_translation": true,
           "max_length": 24
+        },
+        "pit_hold_angle": {
+          "english": "Hold angle",
+          "translation": "Ángulo de sujeción",
+          "needs_translation": true,
+          "max_length": 20
         },
         "pit_calibrated": {
           "english": "Calibrated. Measure again to check.",

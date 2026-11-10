@@ -6,10 +6,11 @@
 --   safety     the motor is unplugged, the blades are measured in this step
 --   coll_measure  collective held at 9 degrees (mixer override, roll and pitch at 0); the pilot measures
 --              the blade pitch with a gauge and enters it, and Calibrate scales the collective input's
---              rate so 9 degrees comes out as 9 degrees (lib/setup_wizard_heli.lua's calibratedRate())
+--              rate so 9 degrees comes out as 9 degrees (lib/setup_wizard_heli.lua's calibratedRate()).
+--              A hold angle stepper sets the held angle (#2708); Calibrate is only offered at 9 degrees
 --   coll_fine  the collective rate itself, in 0.1 %
---   cyc_measure  blades turned to point left and right, pitch held at 9 degrees; Calibrate scales roll
---              and pitch together
+--   cyc_measure  blades turned left and right, as the Configurator holds them, roll held at 9 degrees; Calibrate scales roll
+--              and pitch together (#2709: roll is held instead of pitch)
 --   cyc_fine   both rates, in 0.1 %
 --   lim_cyc, lim_coll, lim_total  the hard limits of the mixer (the same for every profile): the most
 --              blade pitch the FC will ever command, in 0.1 degree
@@ -51,6 +52,7 @@ local T = {
   calibrated = "@i18n(app.modules.setup_wizard.pit_calibrated)@",
   checkZero = "@i18n(app.modules.setup_wizard.pit_check_zero)@",
   backNine = "@i18n(app.modules.setup_wizard.pit_back_nine)@",
+  holdAngle = "@i18n(app.modules.setup_wizard.pit_hold_angle)@",
   limCycTitle = "@i18n(app.modules.setup_wizard.pit_lim_cyc_title)@",
   limCollTitle = "@i18n(app.modules.setup_wizard.pit_lim_coll_title)@",
   limTotalTitle = "@i18n(app.modules.setup_wizard.pit_lim_total_title)@",
@@ -73,14 +75,18 @@ local TEST_DEGREES = 9
 local DEG = "\194\176"
 local TEST_RAW = heli.swashRaw(TEST_DEGREES)
 -- The pages that hold an axis, and the axis each holds at the angle asked for. The measure pages
--- can also hold at 0 degrees, to check the gauge there (#2706); the fine pages always hold at 9.
+-- hold the angle on their stepper (#2708), which can be 0 to check the gauge there (#2706); the fine
+-- pages always hold at 9.
 local HOLD_PAGES = {coll_measure = true, coll_fine = true, cyc_measure = true, cyc_fine = true}
 local CHECK_DEGREES = 0
+-- The most the stepper holds, tenths of a degree: the full range of the swash override (1000 = 12 degrees).
+local HOLD_MAX = 120
 
 local function holdAt(name, degrees)
   local raw = heli.swashRaw(degrees)
   if name == "coll_measure" or name == "coll_fine" then return {roll = 0, pitch = 0, collective = raw} end
-  return {roll = 0, pitch = raw, collective = 0}
+  -- Cyclic: roll is held at the angle, with the blades turned left and right as the Configurator has them (#2709).
+  return {roll = raw, pitch = 0, collective = 0}
 end
 
 local function sameHold(a, b)
@@ -394,7 +400,24 @@ local function new(wiz)
     })
   end
 
-  -- Between 9 degrees (to calibrate) and 0 degrees (to check the gauge there), on the measure page.
+  -- The most the stepper holds on this page, tenths of a degree: the stored limit of the page's
+  -- first axis, but at least 9 degrees (so the calibration angle is always reachable) and at most the
+  -- swash's full range.
+  local function holdMaxTenths(name)
+    return math.min(HOLD_MAX, math.max(limitTenths(name), TEST_DEGREES * 10))
+  end
+
+  -- Holds the angle the stepper sets, either side of zero: the negative side checks the collective
+  -- geometry (-10 after +10). Calibrate counts from 9 degrees, so any other angle is only held
+  -- to look at the gauge (#2708).
+  local function setHeld(tenths)
+    local limit = holdMaxTenths(screen)
+    heldDeg = heli.clamp(math.floor(tenths + 0.5), -limit, limit) / 10
+    hold()
+    wiz.rebuild()
+  end
+
+  -- Between 9 degrees and 0 degrees (to check the gauge there), on the measure page (#2706).
   local function toggleCheck()
     heldDeg = heldDeg == TEST_DEGREES and CHECK_DEGREES or TEST_DEGREES
     hold()
@@ -406,7 +429,11 @@ local function new(wiz)
     scr:text(coll and T.collTitle or T.cycTitle, coll and T.collText or T.cycText)
     scr:picture(pitchPicture)
     local rows = {}
-    -- At 0 degrees the page only checks the gauge: nothing is measured or calibrated there,
+    rows[#rows + 1] = {label = T.holdAngle, number = {-holdMaxTenths(name), holdMaxTenths(name),
+      function() return heli.round(heldDeg * 10) end,
+      function(value) setHeld(value) end,
+      DEG, 1}}
+    -- Away from 9 degrees the page only holds the angle: nothing is measured or calibrated there,
     -- since the calibration counts from 9 degrees (#2706).
     if heldDeg == TEST_DEGREES then
       rows[#rows + 1] = {label = T.measured, number = {MEASURE_MIN, MEASURE_MAX,

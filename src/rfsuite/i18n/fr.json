@@ -9612,9 +9612,9 @@
           "translation": "Collectif"
         },
         "pit_cyc_text": {
-          "english": "Turn the blades to point left and right. Pitch is held at 9 degrees. Measure, enter it, then Calibrate.",
+          "english": "Turn the blades to point left and right. Roll is held at 9 degrees. Measure, enter it, then Calibrate.",
           "max_length": 103,
-          "needs_translation": false,
+          "needs_translation": true,
           "reverse_text": false,
           "translation": "Orientez les pales à gauche et à droite. Le pas est tenu à 9 degrés. Mesurez, saisissez, puis Calibrer."
         },
@@ -9645,6 +9645,12 @@
           "needs_translation": false,
           "reverse_text": false,
           "translation": "Collectif à pleine course"
+        },
+        "pit_hold_angle": {
+          "english": "Hold angle",
+          "max_length": 20,
+          "needs_translation": true,
+          "translation": "Angle de maintien"
         },
         "pit_intro": {
           "english": "You need a pitch gauge. The wizard holds the blades at a set pitch; you measure it and enter what you read.",

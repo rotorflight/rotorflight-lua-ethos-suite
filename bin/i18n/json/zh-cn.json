@@ -11917,9 +11917,9 @@
           "reverse_text": false
         },
         "pit_cyc_text": {
-          "english": "Turn the blades to point left and right. Pitch is held at 9 degrees. Measure, enter it, then Calibrate.",
+          "english": "Turn the blades to point left and right. Roll is held at 9 degrees. Measure, enter it, then Calibrate.",
           "translation": "将桨叶转到指向左右。螺距保持在9度。测量并输入，然后校准。",
-          "needs_translation": false,
+          "needs_translation": true,
           "max_length": 103,
           "reverse_text": false
         },
@@ -11962,6 +11962,12 @@
           "translation": "返回9度",
           "needs_translation": true,
           "max_length": 24
+        },
+        "pit_hold_angle": {
+          "english": "Hold angle",
+          "translation": "保持角度",
+          "needs_translation": true,
+          "max_length": 20
         },
         "pit_calibrated": {
           "english": "Calibrated. Measure again to check.",

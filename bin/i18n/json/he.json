@@ -11917,9 +11917,9 @@
           "reverse_text": true
         },
         "pit_cyc_text": {
-          "english": "Turn the blades to point left and right. Pitch is held at 9 degrees. Measure, enter it, then Calibrate.",
+          "english": "Turn the blades to point left and right. Roll is held at 9 degrees. Measure, enter it, then Calibrate.",
           "translation": "סובב את הלהבים כך שיפנו שמאלה וימינה. הפיץ' מוחזק ב-9 מעלות. מדוד, הזן, ואז כייל.",
-          "needs_translation": false,
+          "needs_translation": true,
           "max_length": 103,
           "reverse_text": true
         },
@@ -11962,6 +11962,12 @@
           "translation": "חזרה ל-9 מעלות",
           "needs_translation": true,
           "max_length": 24
+        },
+        "pit_hold_angle": {
+          "english": "Hold angle",
+          "translation": "זווית החזקה",
+          "needs_translation": true,
+          "max_length": 20
         },
         "pit_calibrated": {
           "english": "Calibrated. Measure again to check.",
