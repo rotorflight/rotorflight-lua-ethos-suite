@@ -10,32 +10,51 @@ local function check(label, ok)
 end
 
 local fixture, opens, reads, closes = nil, 0, 0, 0
+local fault, warnings = nil, 0
+local fileMethods = {}
+function fileMethods:read(mode)
+  assert(mode == "L" and not self.closed)
+  reads = reads + 1
+  if self.pos > #self.text then
+    if fault == "read-throw" then error("injected SD read error") end
+    if fault == "read-return" then return nil, "injected SD read error" end
+    return nil
+  end
+  local last = self.text:find("\n", self.pos, true) or #self.text
+  local line = self.text:sub(self.pos, last)
+  self.pos = last + 1
+  return line
+end
+function fileMethods:close()
+  assert(not self.closed)
+  self.closed = true
+  closes = closes + 1
+  if fault == "close-throw" then error("injected SD close error") end
+  if fault == "close-return" then return nil, "injected SD close error" end
+  if fault == "close-void" then return end
+  return true
+end
 local env = setmetatable({
   package = {loaded = {}},
   os = {clock = os.clock}, -- no directory creation or settings writes
-  print = function() end,
+  print = function(message)
+    assert(message:find("[boot]", 1, true))
+    if message:find("glasses registration skipped", 1, true) then warnings = warnings + 1 end
+  end,
   collectgarbage = function() end,
   io = {
     open = function(path, mode)
       assert(path == "SCRIPTS:/rfsuite.user/settings.ini" and mode == "rb")
       opens = opens + 1
-      if fixture == nil then return nil end
-      return {text = fixture, pos = 1, closed = false}
+      if fault == "open-throw" then error("injected SD open error") end
+      if fault == "open-denied" then return nil, "Permission denied", 13 end
+      if fault == "open-io" then return nil, "Input/output error", 5 end
+      if fault == "open-unknown" then return nil end
+      if fixture == nil then return nil, "No such file or directory", 2 end
+      return setmetatable({text = fixture, pos = 1, closed = false}, {__index = fileMethods})
     end,
-    read = function(file, mode)
-      assert(mode == "L" and not file.closed)
-      reads = reads + 1
-      if file.pos > #file.text then return nil end
-      local last = file.text:find("\n", file.pos, true) or #file.text
-      local line = file.text:sub(file.pos, last)
-      file.pos = last + 1
-      return line
-    end,
-    close = function(file)
-      assert(not file.closed)
-      file.closed = true
-      closes = closes + 1
-    end,
+    read = function() error("io.read(file, ...) is not standard Lua") end,
+    close = function(file) return file:close() end,
   },
 }, {__index = _G})
 
@@ -100,8 +119,8 @@ env.package.loaded["rfsuite.lib.require"] = function(path)
   end}
 end
 
-local function startupCase(label, api, text, shouldRegister, widgetApi)
-  fixture = text
+local function startupCase(label, api, text, shouldRegister, widgetApi, failure)
+  fixture, fault, warnings = text, failure, 0
   readerCalls, registrations, subsystemCalls, widgetCalls = 0, 0, 0, 0
   env.system = {}
   if api then
@@ -111,7 +130,7 @@ local function startupCase(label, api, text, shouldRegister, widgetApi)
     end
   end
   if widgetApi then env.system.registerGlassesWidget = function() end end
-  local beforeOpen, beforeRead = opens, reads
+  local beforeOpen, beforeRead, beforeClose = opens, reads, closes
   local main = assert(loadfile(root .. "main.lua", "t", env))()
   check(label .. ": no read at chunk load", opens == beforeOpen and readerCalls == 0)
   check(label .. ": no registration at chunk load", registrations == 0)
@@ -120,12 +139,15 @@ local function startupCase(label, api, text, shouldRegister, widgetApi)
   check(label .. ": reader called only with API", readerCalls == (api and 1 or 0))
   check(label .. ": file opened only with API", opens == beforeOpen + (api and 1 or 0))
   if not api then check(label .. ": no file reads", reads == beforeRead) end
+  check(label .. ": diagnostic on failure only", warnings == (api and failure and failure ~= "close-void" and 1 or 0))
+  check(label .. ": close on read failure", closes == beforeClose + (api and text ~= nil and not (failure and failure:match("^open%-")) and 1 or 0))
   local opened, read = opens, reads
   -- A UI save in this lifetime must not change the startup decision.
   fixture = "[activelook]\nregister_glasses=" .. (shouldRegister and "false" or "true") .. "\n"
   main.init()
   check(label .. ": no second read", opens == opened and reads == read and readerCalls == (api and 1 or 0))
   check(label .. ": at most one registration", registrations == (shouldRegister and 1 or 0))
+  check(label .. ": warning not repeated", warnings == (api and failure and failure ~= "close-void" and 1 or 0))
   check(label .. ": other subsystems unchanged", subsystemCalls == 6)
   check(label .. ": widget registration independent", widgetCalls == (widgetApi and 2 or 0))
 end
@@ -136,4 +158,25 @@ for _, widgetApi in ipairs({false, true}) do
   startupCase("missing file", true, nil, false, widgetApi)
   startupCase("API absent", false, "[activelook]\nregister_glasses=true\n", false, widgetApi)
 end
+for _, failure in ipairs({"open-throw", "open-denied", "open-io", "open-unknown", "read-throw", "read-return", "close-throw", "close-return"}) do
+  startupCase(failure, true, "[activelook]\nregister_glasses=true\n", false, true, failure)
+  startupCase(failure .. " without API", false, "[activelook]\nregister_glasses=true\n", false, true, failure)
+end
+startupCase("ETHOS void close", true, "[activelook]\nregister_glasses=true\n", true, true, "close-void")
+fault = nil
+-- Independent standard-Lua check with an actual file handle, without the mock.
+local nativePath = os.tmpname()
+local nativeFile = assert(io.open(nativePath, "wb"))
+assert(nativeFile:write("[activelook]\nregister_glasses=true\n"))
+assert(nativeFile:close())
+local mockIo = env.io
+local nativeOk, nativeErr = pcall(function()
+  env.io = {open = function(_, mode) return io.open(nativePath, mode) end, close = io.close}
+  check("native file startup reader", store.startupGlassesEnabled() == true)
+  check("native file INI reader", store.load().activelook.register_glasses == true)
+  check("native file whole-file reader", requireModule("lib/ini.lua").load_file_as_string("settings") == "[activelook]\nregister_glasses=true\n")
+end)
+env.io = mockIo
+assert(os.remove(nativePath))
+assert(nativeOk, nativeErr)
 print(string.format("Glasses startup: %d checks passed", checks))

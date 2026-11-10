@@ -86,6 +86,7 @@ local function newHandle(path, mode, content)
   function h:flush() end
   function h:seek() self.pos = 1 end
   function h:read(fmt)
+    if fmt == "L" then return self:readLine() end
     if fmt == "a" or fmt == "*a" then
       local rest = self.content:sub(self.pos)
       self.pos = #self.content + 1

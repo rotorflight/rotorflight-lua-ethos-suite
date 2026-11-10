@@ -51,18 +51,35 @@ The adjacent `.ci.json` registers this harness with the existing CI matrix.
 Checks cover section isolation, repeated keys and sections, boolean/numeric
 values, invalid and missing values, whitespace, comments, CRLF, file closure,
 one-time registration, and no settings read or registration without the API.
+Native standard-Lua handles also exercise all three readers without an I/O mock.
+Injected open, read and close failures check that startup continues without
+registering glasses, reports the failure once, and attempts to close an opened
+file even when reading raises an exception.
 
-The earlier large-configuration instruction measurements were 26,679 for a full
-settings load, 7,590 for the scalar read and 8,367 for the complete updated
-`init()`. These are fixture-specific desktop Lua 5.4 counts, not upper bounds.
+The readers use standard file-handle methods (`file:read("L")`) rather than the
+ETHOS-specific `io.read(file, "L")` spelling. The startup scalar scan is protected
+so its file is closed after a read exception. `main.init()` catches reader
+exceptions, skips registration for that script lifetime, and continues registering
+the other subsystems. A boot diagnostic reports the failure without adding a
+periodic retry. A confirmed missing file (`ENOENT`, error code 2) still uses the default-off
+preference. Other open failures, including failures without an error code, are
+reported by the guarded boot diagnostic instead of silently treated as missing.
+Both standard Lua's `true` and ETHOS's empty successful close return are accepted.
+These native reads and successful startup were checked in the X20PRO simulator
+running ETHOS 26.2.0-RC1 after the robustness follow-up.
+
+A desktop Lua 5.4 measurement with the local settings plus 200 unrelated saved
+theme keys gave 17,454 instructions for the full settings load, 4,372 for the
+scalar read and 5,152 for the complete updated `init()`. These counts apply only
+to that fixture and are not upper bounds for arbitrary files.
 
 This startup optimization has a retained-memory cost even if the glasses menu
 is never opened: both changed modules are loaded during boot. Comparing retained
-compiled chunks before and after the registration change on desktop Lua 5.4
-gave approximately **1.17 KiB more for `lib/settings_store.lua`** and
-**0.39 KiB more for `main.lua`**, or **1.56 KiB total**. This agrees with the
-review's estimate of about 1.5 kB additional boot-retained code. It is a fixed
-code-size estimate, not a measurement of the complete running suite's heap on
+compiled chunks against the pre-registration baseline on desktop Lua 5.4 after
+the robustness follow-up gave approximately **1.90 KiB more for
+`lib/settings_store.lua`** and **0.62 KiB more for `main.lua`**, or **2.52 KiB total**.
+The earlier estimate before error guards was about 1.56 KiB. These are fixed
+code-size estimates, not measurements of the complete running suite's heap on
 an ETHOS radio; compiler and allocator differences can change the actual cost.
 
 The [official API example](https://ethos-lua-doc.frsky-rc.com/api/system/registerGlasses/)

@@ -125,7 +125,12 @@ local function init()
   -- Read the startup preference once. Changes take effect on radio restart;
   -- older firmware has no registration API and needs no settings read here.
   if not glassesRegistrationDone and type(system.registerGlasses) == "function" then
-    if requireModule("lib/settings_store.lua").startupGlassesEnabled() then system.registerGlasses() end
+    local ok, enabled = pcall(requireModule("lib/settings_store.lua").startupGlassesEnabled)
+    if ok then
+      if enabled then system.registerGlasses() end
+    else
+      print("[boot] glasses registration skipped: " .. tostring(enabled))
+    end
     -- Also latch an opted-out startup: init must not apply later UI changes.
     glassesRegistrationDone = true
   end

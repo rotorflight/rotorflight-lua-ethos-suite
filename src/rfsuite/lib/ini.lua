@@ -15,7 +15,7 @@ function ini.load_file_as_string(path)
 
   local chunks = {}
   while true do
-    local chunk = io.read(file, "L")
+    local chunk = file:read("L")
     if not chunk then break end
     chunks[#chunks + 1] = chunk
   end
@@ -67,7 +67,7 @@ function ini.load_ini_file(fileName)
   local section = nil
 
   while true do
-    local line = io.read(file, "L")
+    local line = file:read("L")
     if not line then break end
     section = parseLine(data, section, line)
   end

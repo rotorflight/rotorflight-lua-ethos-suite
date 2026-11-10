@@ -259,7 +259,14 @@ end
 
 out("")
 out("case 2: after create() -- the tool's UI subtree must be complete")
+local settingsStore = package.loaded["rfsuite.lib.settings_store"]
+local originalLoad, settingsLoads = settingsStore.load, 0
+settingsStore.load = function()
+  settingsLoads = settingsLoads + 1
+  return originalLoad()
+end
 registeredTool.create()
+check("first open loads settings only once", settingsLoads == 1)
 for _, name in ipairs(UNDER_TEST) do
   check(string.format("%-34s loaded", name), moduleLoaded(name),
     "still not loaded after create()")
@@ -281,6 +288,7 @@ if memstatsMod then
 end
 
 registeredTool.close()
+check("close diagnostics do not reload settings", settingsLoads == 1)
 
 if memstatsMod then
   memstatsMod.print = origMemstatsPrint
@@ -299,10 +307,23 @@ out("")
 out("case 4: a second create() loads nothing again")
 for _, name in ipairs(UNDER_TEST) do before[name] = countUnder(name) end
 registeredTool.create()
+check("second open refreshes settings exactly once", settingsLoads == 2)
 for _, name in ipairs(UNDER_TEST) do
   check(string.format("%-34s no second load", name), countUnder(name) == before[name],
     string.format("loaded again: %d", countUnder(name) - before[name]))
 end
+
+local diagnosticLines = 0
+_G.print = function() diagnosticLines = diagnosticLines + 1 end
+local bus = package.loaded["rfsuite.lib.bus"]
+bus.publish("settings.update", {developer = {memory_logs = true}})
+memstatsMod.print("enabled")
+check("saved memory logging enable takes effect", diagnosticLines == 1)
+bus.publish("settings.update", {developer = {memory_logs = false}})
+memstatsMod.print("disabled")
+check("saved memory logging disable takes effect", diagnosticLines == 1)
+check("diagnostic updates need no file read", settingsLoads == 2)
+settingsStore.load = originalLoad
 
 out("")
 out(string.rep("-", 60))

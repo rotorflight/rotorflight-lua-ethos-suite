@@ -29,15 +29,16 @@ local requireModule = package.loaded["rfsuite.lib.require"] or assert(loadfile("
 local bus = requireModule("lib/bus.lua")
 local settingsStore = requireModule("lib/settings_store.lua")
 
-local settings = nil
+local memoryLogsEnabled = nil
 
-local function currentSettings()
-  if not settings then settings = settingsStore.load() end
-  return settings
+function memstats.setSettings(settings)
+  -- Only retain the diagnostic flag, not an entire settings snapshot.
+  memoryLogsEnabled = settingsStore.memoryLogsEnabled(settings)
 end
 
 local function enabled()
-  return settingsStore.memoryLogsEnabled(currentSettings())
+  if memoryLogsEnabled == nil then memstats.setSettings(settingsStore.load()) end
+  return memoryLogsEnabled
 end
 
 function memstats.print(tag)
@@ -55,9 +56,7 @@ function memstats.print(tag)
   ))
 end
 
-bus.subscribe("settings.update", function(snapshot)
-  settings = snapshot or {}
-end)
+bus.subscribe("settings.update", memstats.setSettings)
 
 package.loaded["rfsuite.lib.memstats"] = memstats
 return memstats
