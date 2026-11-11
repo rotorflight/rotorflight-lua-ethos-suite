@@ -21,7 +21,7 @@ Greyed out until the flight controller answers. Read-only while the model is arm
 | Headspeed Filter Cutoff | Configures Headspeed Filter Cutoff. Range: 0 to 250 Hz. Default: 20 Hz. |
 | Voltage Filter Cutoff | Configures Voltage Filter Cutoff. Range: 0 to 250 Hz. Default: 20 Hz. |
 | TTA Bandwidth | Configures TTA Bandwidth. Range: 0 to 250 Hz. Default: 20 Hz. |
-| Precomp Bandwidth | Configures Precomp Bandwidth. Range: 0 to 25 Hz. Default: 10 Hz. |
+| Precomp Bandwidth | Configures Precomp Bandwidth. Range: 0 to 250 Hz. Default: 10 Hz. |
 | D-Term Cutoff | Configures D-Term Cutoff. Range: 0 to 250 Hz. Default: 50 Hz. |
 
 ## Notes
