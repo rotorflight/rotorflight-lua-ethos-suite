@@ -815,6 +815,14 @@ local function runChecks()
     for _, page in ipairs(pages) do
       local source = readFile(SUITE .. "/app/pages/" .. page .. ".lua")
       local codecName = source:match('requireModule%("(lib/msp_esc_parameters_[%w_]+%.lua)"%)')
+      -- A brand page with no codec of its own opens another ESC page (Goosky is the
+      -- AM32 page under its name): the codec, and so the gate, is that page's.
+      local delegate = not codecName
+        and source:match('requireModule%("app/pages/(esc_forward_[%w_]+)%.lua"%)')
+      if delegate then
+        local delegateSource = readFile(SUITE .. "/app/pages/" .. delegate .. ".lua")
+        codecName = delegateSource:match('requireModule%("(lib/msp_esc_parameters_[%w_]+%.lua)"%)')
+      end
       if not codecName then
         ungated[#ungated + 1] = page .. " (no codec)"
       else
