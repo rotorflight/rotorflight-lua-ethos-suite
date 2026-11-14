@@ -26,7 +26,7 @@ controller has rebooted.
 | Setting | What it does |
 | --- | --- |
 | Telemetry Interval | How many SRXL2 frames pass between telemetry polls of the ESC; 0 turns polling off. Range: 0 to 255 frames. Default: 7. |
-| Motor 2 Channel | The SRXL2 channel that carries motor 2 on a dual-motor Smart ESC (for example the Spektrum SPMXAE1020). *Off* for a single-motor ESC; otherwise channel 1 to 31 (channel 0 is always motor 1). Default: Off. |
+| Motor 2 Channel | The SRXL2 channel that carries motor 2 on a dual-motor Smart ESC (for example the Spektrum SPMXAE1020). *Off* for a single-motor ESC; otherwise channel 2 to 32 (channel 1 is always motor 1). Default: Off. |
 
 ## Notes
 
