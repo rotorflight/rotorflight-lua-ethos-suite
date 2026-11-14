@@ -71,7 +71,7 @@ local FIELD_META = {
   gov_pwr_filter = {min = 0, max = 250, default = 20, suffix = "Hz"},
   gov_rpm_filter = {min = 0, max = 250, default = 20, suffix = "Hz"},
   gov_tta_filter = {min = 0, max = 250, default = 20, suffix = "Hz"},
-  gov_ff_filter = {min = 0, max = 25, default = 10, suffix = "Hz"},
+  gov_ff_filter = {min = 0, max = 250, default = 10, suffix = "Hz"},
   gov_d_filter = {min = 0, max = 250, default = 50, decimals = 1, suffix = "Hz"},
   gov_spooldown_time = {min = 0, max = 600, default = 100, decimals = 1, suffix = "s"},
   gov_throttle_type = {choices = THROTTLE_TYPE_CHOICES},
