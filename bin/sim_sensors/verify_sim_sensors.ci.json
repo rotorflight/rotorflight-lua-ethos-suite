@@ -1,0 +1,7 @@
+{
+  "id": "sim-sensors",
+  "name": "The simulated sensors are refreshed a few per wakeup",
+  "step": "Check the simulated sensors task",
+  "script": "bin/sim_sensors/verify_sim_sensors.lua",
+  "rationale": "tasks/sim_sensors.lua runs only in the Ethos simulator, where it reads one file per simulated sensor so the desktop editor's changes show up live. It read every file in one wakeup, about 30 loadfile() calls, and when the app opened in the same tick the background task ran out of instructions: [scheduler] sim_sensors failed: ... Max instructions count reached. The sensors after the failing one kept their old value until the next pass, and bin/sim/test_pages.py had to treat the line as noise. A wakeup now refreshes four sensors and the next one carries on, on a 0.25 second interval the task gives to tasks/background.lua. The harness drives the real tasks/sim_sensors.lua with a stub DIY sensor and a stub loadfile(). It checks that a wakeup refreshes at most four sensors, that a pass sets every sensor once and takes less than two seconds, that the telemetry state file is read once per pass, that the packed system status is right, and that the next pass starts again from the first sensor. Its self-test puts every sensor in one slice again and requires the checks to fail."
+}

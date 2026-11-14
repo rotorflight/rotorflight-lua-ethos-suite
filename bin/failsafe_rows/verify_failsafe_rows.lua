@@ -14,6 +14,12 @@
 -- with the reply a board would send, and records every write.
 --
 -- Against the unpatched page the row checks fail: it draws 18 rows before any reply.
+--
+-- The rows are built from the page's wakeup, not from the reply callback. On the radio
+-- form.addLine() returns nil inside that callback (the MSP queue runs it, with the
+-- progress dialog open), so the page stayed empty and logged
+-- "bad argument #1 to 'getFieldSlots' (FormLine expected, got nil)". The form stub
+-- does the same while a reply is being processed.
 
 local function scriptDir()
   local src = debug.getinfo(1, "S").source
@@ -63,11 +69,20 @@ local function resetForm()
 end
 resetForm()
 
+-- True while the stub bus runs a reply callback: the form refuses new lines then, as
+-- Ethos does.
+local inReply = false
+local replyError = nil  -- what the reply callback raised, if it did
+
 form = {
   clear = function() end,
   invalidate = function() end,
-  getFieldSlots = function() return {1, 2} end,
+  getFieldSlots = function(line)
+    if line == nil then error("bad argument #1 to 'getFieldSlots' (FormLine expected, got nil)") end
+    return {1, 2}
+  end,
   addLine = function(label)
+    if inReply then return nil end
     rowLabels[#rowLabels + 1] = label
     return {label = label}
   end,
@@ -131,15 +146,28 @@ local function lastRequest(command)
   return nil
 end
 
--- Opens the page, answers its read with `count` channels, and returns the page's data.
+-- Opens the page built by `chunk`, answers its read with `count` channels as the MSP
+-- queue does (a failing callback is caught and reported), then runs the page's wakeup.
 local READ_COMMAND = 77
-local function openAnsweredBy(count)
+local function openChunkAnsweredBy(chunk, count)
   resetForm()
   requests = {}
-  local page = dofile(PAGE_PATH)
-  page.open({})
+  replyError = nil
+  local wakeup = nil
+  local page = chunk()
+  page.open({setWakeupHandler = function(fn) wakeup = fn end})
   local read = lastRequest(READ_COMMAND)
-  if read then read.processReply(read, reply(count, 0, 1500)) end
+  if read then
+    inReply = true
+    local ok, err = pcall(read.processReply, read, reply(count, 0, 1500))
+    inReply = false
+    if not ok then replyError = err end
+  end
+  if wakeup then wakeup() end
+end
+
+local function openAnsweredBy(count)
+  openChunkAnsweredBy(function() return dofile(PAGE_PATH) end, count)
 end
 
 local LABEL_AUX12 = "@i18n(app.modules.failsafe.aux12)@"
@@ -151,6 +179,8 @@ local LABEL_AUX11 = "@i18n(app.modules.failsafe.aux11)@"
 print("CRSF board (16 channels)")
 do
   openAnsweredBy(16)
+  check("the reply callback adds no line to the form (it can't, on the radio)", replyError == nil,
+    tostring(replyError))
   check("a 16-channel reply gives 16 rows", #rowLabels == 16, "rows=" .. #rowLabels)
   check("the last row is AUX 11", rowLabels[#rowLabels] == LABEL_AUX11, "last=" .. tostring(rowLabels[#rowLabels]))
   local shows12 = false
@@ -223,15 +253,28 @@ if selfTest then
   check("self-test: the row count was found in the page exactly once", replacements == 1,
     "replacements=" .. replacements)
   if replacements == 1 then
-    local chunk = assert(load(mutated, "@" .. PAGE_PATH))
-    resetForm()
-    requests = {}
-    local page = chunk()
-    page.open({})
-    local read = lastRequest(READ_COMMAND)
-    if read then read.processReply(read, reply(16, 0, 1500)) end
+    openChunkAnsweredBy(assert(load(mutated, "@" .. PAGE_PATH)), 16)
     check("self-test: with a fixed count a 16-channel board gets 18 rows (the check above goes red)",
       #rowLabels == 18, "rows=" .. #rowLabels)
+  end
+
+  print()
+  print("--self-test: the rows must be missing when they are built in the reply callback")
+  local inCallback, moved = source:gsub(
+    "pendingReply = {data = data, focusFn = focusFn}",
+    "pendingReply = {data = data, focusFn = focusFn}; applyReplyNow()", 1)
+  local declared
+  inCallback, declared = inCallback:gsub("  local function loadData%(focusFn%)",
+    "  local applyReplyNow\n  local function loadData(focusFn)", 1)
+  local assigned
+  inCallback, assigned = inCallback:gsub("  local function wakeup%(%)",
+    "  applyReplyNow = applyReply\n  local function wakeup()", 1)
+  check("self-test: the reply handling was found in the page", moved == 1 and declared == 1 and assigned == 1,
+    string.format("moved=%d declared=%d assigned=%d", moved, declared, assigned))
+  if moved == 1 and declared == 1 and assigned == 1 then
+    openChunkAnsweredBy(assert(load(inCallback, "@" .. PAGE_PATH)), 16)
+    check("self-test: built in the callback, the page raises and has no row (the checks above go red)",
+      replyError ~= nil and #rowLabels == 0, "rows=" .. #rowLabels .. " error=" .. tostring(replyError))
   end
 end
 

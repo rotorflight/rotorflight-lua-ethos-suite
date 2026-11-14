@@ -32,10 +32,6 @@ ROOT = '__root__'
 SIMULATOR_ONLY = ('app/pages/motor_override.lua', 'app/pages/setup_wizard.lua')
 
 LUA_ERROR = re.compile(r'\.lua:\d+: |stack traceback|attempt to (call|index|compare|perform|concatenate)')
-# Errors of the simulator-only code, noted but not failed on: tasks/sim_sensors.lua reads
-# every simulated sensor file in one wakeup, which can run out of instructions when the
-# app opens at the same moment. No radio runs that task.
-SIMULATOR_NOISE = re.compile(r'\[scheduler\] sim_sensors failed')
 MEMORY = re.compile(r'\[mem\] (.+?): lua=([\d.]+)KB')
 
 
@@ -136,7 +132,6 @@ class PagesTest(EthosBaseTest):
         self.skipped = []     # (page, reason)
         self.opened = 0
         self.memory = []      # (tag, Lua heap in KB), as the suite logs them
-        self.noise = []       # (page, log line) of the simulator-only errors
         self.cut = []         # (title, text shown) of the tiles too narrow for their title
         self.reader = LogReader(self.remote)  # the errors are listed at the end, not raised
         self.reader.start()
@@ -150,9 +145,7 @@ class PagesTest(EthosBaseTest):
         """The new log lines: the Lua errors go to self.errors, the memory lines to self.memory."""
         lines = self.reader.take()
         for line in lines:
-            if SIMULATOR_NOISE.search(line):
-                self.noise.append((page, line.strip()))
-            elif LUA_ERROR.search(line):
+            if LUA_ERROR.search(line):
                 self.errors.append((page, line.strip()))
                 self.trace(f'Lua error: {line.strip()}')
             memory = MEMORY.search(line)
@@ -236,8 +229,6 @@ class PagesTest(EthosBaseTest):
         self.trace(f'{self.opened} pages opened, {len(self.skipped)} skipped')
         for title, shown in self.cut:
             self.trace(f'title cut on this display: "{title}" shown as "{shown}"')
-        for page, line in self.noise:
-            self.trace(f'simulator only, not failed on ({page}): {line}')
         if self.reader.lost:
             self.trace(f'warning: log lines were lost {self.reader.lost} time(s), an error among them is not seen')
         for page, reason in self.skipped:
