@@ -25,9 +25,9 @@
 --     lib/telemetry_sensors.lua's own "sim" candidates table.
 --
 -- Each sensor's *value* comes from sim/sensors/<key>.lua, a `return <n>`
--- script the bin/sensors/ desktop editor overwrites -- re-read every
--- wakeup (not cached) so edits made there show up live without a script
--- reload.
+-- script the bin/sensors/ desktop editor overwrites -- re-read from its
+-- file (not cached) so edits made there show up live without a script
+-- reload. A wakeup reads a few sensors, not all of them (see SLICE below).
 
 local requireModule = package.loaded["rfsuite.lib.require"] or assert(loadfile("lib/require.lua"))()
 local DiySensor = requireModule("lib/diy_sensor.lua")
@@ -114,10 +114,10 @@ end
 -- always trusts its own rfsuite.simevent.telemetry_state instead whenever
 -- running in sim. sim/sensors/simevent_telemetry_state.lua backs the
 -- editor's "Telemetry State" switch (0 = Enabled, 1 = Disabled, matching
--- bin/sensors/sensors.xml's Option values) -- read at the same 2-second
--- cadence as the sensors above (that original polled it once a second, via
--- its own separate scheduler entry; folding it into this task's own
--- wakeup avoids a second scheduler entry for one boolean).
+-- bin/sensors/sensors.xml's Option values) -- read once per pass over the
+-- sensors above (that original polled it once a second, via its own
+-- separate scheduler entry; folding it into this task's own wakeup avoids
+-- a second scheduler entry for one boolean).
 local telemetryStateOverride = true -- fail open, matches that original's own
                                      -- `rfsuite.simevent = {telemetry_state = true}` boot default
 
@@ -132,15 +132,36 @@ end
 -- schedules this at a 2-second interval (matches that original's own
 -- default config.sim.wakeupInterval), so no need to duplicate the
 -- throttling here.
-local function wakeup()
-  readTelemetryStateOverride()
+-- The sensor keys in a fixed order, for wakeup() to go through in slices.
+local order = {}
+for key in pairs(sensors) do order[#order + 1] = key end
+table.sort(order)
 
-  for key, sensor in pairs(sensors) do
+-- A wakeup refreshes SLICE sensors and the next one carries on where it
+-- stopped. Reading every file in one wakeup (30 loadfile() calls or more)
+-- could run the background task out of instructions when the app opened in
+-- the same tick: "[scheduler] sim_sensors failed: ... Max instructions
+-- count reached", and the sensors after the failing one kept their old
+-- value until the next pass. tasks/background.lua schedules wakeup() every
+-- INTERVAL seconds, so a pass over all the sensors takes about the 2
+-- seconds one wakeup used to be scheduled at.
+local SLICE = 4
+local INTERVAL = 0.25
+local cursor = 0
+
+local function wakeup()
+  if cursor == 0 then readTelemetryStateOverride() end
+
+  local last = cursor + SLICE
+  if last > #order then last = #order end
+  for i = cursor + 1, last do
+    local key = order[i]
     local pack = PACKED[key]
     local value
     if pack then value = pack(readValue) else value = readValue(key) end
-    if value ~= nil then sensor:set(value, true) end
+    if value ~= nil then sensors[key]:set(value, true) end
   end
+  cursor = last < #order and last or 0
 end
 
 -- tasks/session.lua reads this every wakeup (much more often than the
@@ -161,4 +182,4 @@ local function reset()
   for _, sensor in pairs(sensors) do sensor:reset() end
 end
 
-return {wakeup = wakeup, reset = reset, telemetryState = telemetryState}
+return {wakeup = wakeup, reset = reset, telemetryState = telemetryState, interval = INTERVAL}
