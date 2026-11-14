@@ -808,13 +808,34 @@ local function checkRoundTrip()
 end
 
 -- Issue claim 2, recorded as a fact rather than a comment.
+-- A label is an @i18n(key)@ tag in the source (#2652). What it shows is the "english" of that key in
+-- en.json: the blocks are found in order along the key's path, then the first english value after them.
+local EN_JSON = nil
+local function englishOf(label)
+  local key = label:match("^@i18n%((.-)%)@$")
+  if not key then return label end
+  if not EN_JSON then
+    local f = assert(io.open(ROOT .. "/bin/i18n/json/en.json", "rb"))
+    EN_JSON = f:read("a")
+    f:close()
+  end
+  local pos = 1
+  for segment in key:gmatch("[^%.]+") do
+    local _, e = EN_JSON:find('"' .. segment .. '": {', pos, true)
+    if not e then return label end
+    pos = e + 1
+  end
+  local _, _, value = EN_JSON:find('"english": "([^"]*)"', pos)
+  return value or label
+end
+
 local function checkActiveFreewheelMapping()
   out("")
   out("Active Freewheel: the mapping, and why nothing here is inverted")
 
   local mapping = {}
   for _, choice in ipairs(codec.FIELD_META.active_freewheel.choices or {}) do
-    mapping[choice[2]] = choice[1]
+    mapping[choice[2]] = englishOf(choice[1])
   end
   check("this suite maps 0 to Enabled and 1 to Disabled",
     mapping[0] == "Enabled" and mapping[1] == "Disabled",

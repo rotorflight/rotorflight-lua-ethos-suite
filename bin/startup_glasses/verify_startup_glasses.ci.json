@@ -1,0 +1,7 @@
+{
+  "id": "startup-glasses",
+  "name": "Glasses startup preserves saved preference semantics",
+  "step": "Check the glasses startup reader and registration",
+  "script": "bin/startup_glasses/verify_startup_glasses.lua",
+  "rationale": "The startup scalar reader replaces the full INI/settings reader on the path that decides whether main.init registers glasses support. The harness runs both real readers against the same in-memory file, checking section isolation, repeated keys/sections, boolean and numeric values, invalid/missing values, whitespace, comments, CRLF and handle closure. It also runs the real main.init with unrelated subsystem registration stubbed: an enabled preference registers once, an opted-out startup stays opted out until reload, and an absent API causes neither a settings read nor registration. The existing glasses widget and other subsystem initialization remain independent. No package or build step otherwise exercises this runtime behavior. Native standard-Lua file handles independently verify method-based reads. Missing files (ENOENT) use the default; permission, I/O and unknown open failures must be reported. Injected open/read/close failures verify that boot continues, files are closed after read errors, registration is skipped, and the error is reported once. Both standard Lua and ETHOS close-success return conventions are covered."
+}

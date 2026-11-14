@@ -1,0 +1,7 @@
+{
+  "id": "pid-governor-ranges",
+  "name": "PID/governor firmware ranges",
+  "step": "Check the error decay and throttle limit ranges",
+  "script": "bin/pid_governor_ranges/verify_pid_governor_ranges.lua",
+  "rationale": "Issue #2656: inflight error decay limit is 0-250 and governor throttle limits 10-100."
+}

@@ -860,8 +860,9 @@ local function refreshControllerRows(widget, rows, reasons)
       row.text, row.color = "-", nil
     else
       armingFlags = armingFlags or requireModule("lib/arming_flags.lua")
-      local active = armingFlags.active(mask)
-      for i = 1, #active do reasons[i] = active[i] end
+      local count = armingFlags.countForApi(widget.apiVersionMajor, widget.apiVersionMinor)
+      local blocking = armingFlags.blockingReasons(mask, count)
+      for i = 1, #blocking do reasons[i] = blocking[i] end
       if #reasons == 0 then
         row.text, row.color = "@i18n(widgets.dashboard.info_ready)@", INFO_GOOD
       else

@@ -62,6 +62,7 @@ local dashboard_widget = requireModule("widgets/dashboard.lua")
 mark("widgets/dashboard.lua load", t0)
 
 local activelook_widget = nil
+local glassesRegistrationDone = false
 
 -- The incremental collector's pause, as a percentage of the live heap. A
 -- collection cycle starts once the heap has reached live * pause / 100, so the
@@ -120,6 +121,19 @@ local function init()
   -- measure and not a boot-peak measure.
   applyGcPause()
   mark("gc.setpause", t0)
+
+  -- Read the startup preference once. Changes take effect on radio restart;
+  -- older firmware has no registration API and needs no settings read here.
+  if not glassesRegistrationDone and type(system.registerGlasses) == "function" then
+    local ok, enabled = pcall(requireModule("lib/settings_store.lua").startupGlassesEnabled)
+    if ok then
+      if enabled then system.registerGlasses() end
+    else
+      print("[boot] glasses registration skipped: " .. tostring(enabled))
+    end
+    -- Also latch an opted-out startup: init must not apply later UI changes.
+    glassesRegistrationDone = true
+  end
 
   t0 = os.clock()
   background_task.init()

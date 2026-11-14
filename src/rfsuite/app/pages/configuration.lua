@@ -112,6 +112,10 @@ local mspName = requireModule("lib/msp_name.lua")
 local advancedConfig = requireModule("lib/msp_advanced_config.lua")
 local featureConfig = requireModule("lib/msp_feature_config.lua")
 local mspStatus = requireModule("lib/msp_status.lua")
+local mspBoardInfo = requireModule("lib/msp_board_info.lua")
+-- The board's gyro sample rate, read only: the codec has no write half, and this page
+-- must not write the board info (#2648).
+local boardInfoReadOnly = {buildReadMessage = mspBoardInfo.buildReadMessage}
 local bus = requireModule("lib/bus.lua")
 
 local PAGE_TITLE = "@i18n(app.modules.configuration.name)@"
@@ -145,9 +149,18 @@ end
 -- file's own header comment: this only ever runs after MSP_STATUS has
 -- already loaded), so there's no "before data arrives" guess to fall
 -- back to, unlike rates.lua's own construction-time bounds.
-local function pidLoopChoices(gyroDeltaUs, currentValue)
-  local rawGyroHz = 1000000 / gyroDeltaUs
-  local gyroHz = math.floor(rawGyroHz / 1000 + 0.5) * 1000
+local function pidLoopChoices(gyroDeltaUs, currentValue, sampleRateHz)
+  local gyroHz
+  if sampleRateHz and sampleRateHz > 0 then
+    -- The board's gyro sample rate, as MSP_BOARD_INFO reports it and the Rotorflight
+    -- Configurator labels from. Not rounded: a 3.2 kHz gyro is 3.2 kHz (#2648).
+    gyroHz = sampleRateHz
+  else
+    -- A board that does not report its sample rate: the last gyro task interval, rounded
+    -- to the nearest kHz, as before.
+    local rawGyroHz = 1000000 / gyroDeltaUs
+    gyroHz = math.floor(rawGyroHz / 1000 + 0.5) * 1000
+  end
   local options = {}
   local present = {}
   for _, denom in ipairs(PID_LOOP_DENOMS) do
@@ -179,6 +192,7 @@ local function open(opts)
       {key = "advancedConfig", mspModule = advancedConfig},
       {key = "featureConfig", mspModule = featureConfig},
       {key = "status", mspModule = mspStatus},
+      {key = "boardInfo", mspModule = boardInfoReadOnly},
     },
     opts = opts,
     -- See this file's own header comment for why "none", not the
@@ -190,6 +204,7 @@ local function open(opts)
       "rfsuite.lib.msp_advanced_config",
       "rfsuite.lib.msp_feature_config",
       "rfsuite.lib.msp_status",
+      "rfsuite.lib.msp_board_info",
     },
     onLoaded = function()
       if buildFields then
@@ -262,10 +277,12 @@ local function open(opts)
     local gyroDeltaUs = (status and status.task_delta_time_gyro) or 0
     if gyroDeltaUs <= 0 then gyroDeltaUs = 250 end
     local currentValue = advanced and advanced.pid_process_denom
+    local boardInfo = dataRef.data.boardInfo
+    local sampleRateHz = boardInfo and tonumber(boardInfo.sampleRateHz) or nil
 
     local pidLoopLine = form.addLine("@i18n(app.modules.configuration.pid_loop_speed)@")
     local pidLoopField = form.addChoiceField(pidLoopLine, nil,
-      pidLoopChoices(gyroDeltaUs, currentValue),
+      pidLoopChoices(gyroDeltaUs, currentValue, sampleRateHz),
       function()
         local adv = dataRef.data.advancedConfig
         return adv and adv.pid_process_denom

@@ -1,0 +1,7 @@
+{
+  "id": "esc-range-link",
+  "name": "ESC throttle range over the parameter link: accepted range, read-back, failure reasons",
+  "step": "Check the ESC parameter transaction behind the Setup Wizard's ESC link range",
+  "script": "bin/esc_range_link/verify_esc_range_link.lua",
+  "rationale": "The Setup Wizard can set the throttle range on a YGE ESC over the parameter link, as the EdgeTX suite does. A\nwrite to the ESC is only trusted when its block reads back with the same values, because the ESC may refuse a write\nwithout saying so. The range the ESC accepts is also fixed by the codec's own limits.\n\nThe harness drives lib/esc_params.lua against a simulated ESC and pins: the accepted range (zero 900..1900 us, span\n600..1500 us, a start above 1000 us), a write confirmed by read-back, and the reasons a write ends with when the read,\nthe write, the read-back or the order fails.\n\n--self-test drops the read-back and requires the silent refusal to go red."
+}

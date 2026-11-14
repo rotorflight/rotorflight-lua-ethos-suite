@@ -10,22 +10,22 @@ local mspcodec = requireModule("lib/mspcodec.lua")
 local READ_COMMAND = 217
 local WRITE_COMMAND = 218
 
-local ON_OFF = {{"Off", 0}, {"On", 1}}
-local MOTOR_DIRECTION = {{"Normal", 1}, {"Reversed", 2}, {"Bidirectional", 3}, {"Bidirectional Rev", 4}}
-local MOTOR_TIMING = {{"Low", 1}, {"Medium Low", 2}, {"Medium", 3}, {"Medium High", 4}, {"High", 5}}
-local DEMAG = {{"Off", 1}, {"Low", 2}, {"High", 3}}
+local ON_OFF = {{"@i18n(app.modules.governor.tbl_off)@", 0}, {"@i18n(app.modules.governor.tbl_on)@", 1}}
+local MOTOR_DIRECTION = {{"@i18n(api.MIXER_INPUT.tbl_normal)@", 1}, {"@i18n(api.MIXER_INPUT.tbl_reversed)@", 2}, {"@i18n(api.MIXER_CONFIG.tbl_tail_bidirectional)@", 3}, {"@i18n(app.modules.esc_tools.opt.bidirectional_rev)@", 4}}
+local MOTOR_TIMING = {{"@i18n(app.modules.esc_tools.opt.low)@", 1}, {"@i18n(app.modules.esc_tools.opt.medium_low)@", 2}, {"@i18n(app.modules.esc_tools.opt.medium)@", 3}, {"@i18n(app.modules.esc_tools.opt.medium_high)@", 4}, {"@i18n(app.modules.esc_tools.opt.high)@", 5}}
+local DEMAG = {{"@i18n(app.modules.governor.tbl_off)@", 1}, {"@i18n(app.modules.esc_tools.opt.low)@", 2}, {"@i18n(app.modules.esc_tools.opt.high)@", 3}}
 local BEACON_DELAY = {
-  {"1 minute", 1}, {"2 minutes", 2}, {"5 minutes", 3}, {"10 minutes", 4}, {"Infinite", 5},
+  {"@i18n(app.modules.esc_tools.opt.minutes_1)@", 1}, {"@i18n(app.modules.esc_tools.opt.minutes_2)@", 2}, {"@i18n(app.modules.esc_tools.opt.minutes_5)@", 3}, {"@i18n(app.modules.esc_tools.opt.minutes_10)@", 4}, {"@i18n(app.modules.esc_tools.opt.infinite)@", 5},
 }
 local TEMP_PROTECTION = {
-  {"Disabled", 0}, {"80C", 1}, {"90C", 2}, {"100C", 3}, {"110C", 4},
+  {"@i18n(app.modules.ports.function_disabled)@", 0}, {"80C", 1}, {"90C", 2}, {"100C", 3}, {"110C", 4},
   {"120C", 5}, {"130C", 6}, {"140C", 7},
 }
 local RAMPUP_POWER = {
-  {"1x (More protection)", 1}, {"2x", 2}, {"3x", 3}, {"4x", 4},
+  {"@i18n(app.modules.esc_tools.opt.x1_more_protection)@", 1}, {"2x", 2}, {"3x", 3}, {"4x", 4},
   {"5x", 5}, {"6x", 6}, {"7x", 7}, {"8x", 8}, {"9x", 9},
-  {"10x", 10}, {"11x", 11}, {"12x", 12}, {"13x (Less protection)", 13},
-  {"Off", 0},
+  {"10x", 10}, {"11x", 11}, {"12x", 12}, {"@i18n(app.modules.esc_tools.opt.x13_less_protection)@", 13},
+  {"@i18n(app.modules.governor.tbl_off)@", 0},
 }
 local RAMPUP_START_POWER = {
   {"0.5% (0.031)", 1}, {"5% (0.25)", 7}, {"7% (0.38)", 8},
@@ -33,10 +33,10 @@ local RAMPUP_START_POWER = {
   {"24% (1.25)", 12}, {"29% (1.50)", 13},
 }
 local PWM_OLD = {{"24kHz", 24}, {"48kHz", 48}, {"96kHz", 96}}
-local PWM_DYNAMIC = {{"24kHz", 24}, {"48kHz", 48}, {"96kHz", 96}, {"Dynamic", 0}}
+local PWM_DYNAMIC = {{"24kHz", 24}, {"48kHz", 48}, {"96kHz", 96}, {"@i18n(app.modules.esc_tools.opt.dynamic)@", 0}}
 local STARTUP_BEEP_OLD = ON_OFF
-local STARTUP_BEEP_205 = {{"Off", 0}, {"Normal", 1}, {"Custom", 2}}
-local BRAKING_MODE = {{"Off", 0}, {"Not during startup", 1}, {"On", 2}}
+local STARTUP_BEEP_205 = {{"@i18n(app.modules.governor.tbl_off)@", 0}, {"@i18n(api.MIXER_INPUT.tbl_normal)@", 1}, {"@i18n(app.modules.ports.function_custom)@", 2}}
+local BRAKING_MODE = {{"@i18n(app.modules.governor.tbl_off)@", 0}, {"@i18n(app.modules.esc_tools.opt.not_during_startup)@", 1}, {"@i18n(app.modules.governor.tbl_on)@", 2}}
 local POWER_RATING = {{"1S", 1}, {"2S+", 2}}
 
 local FIELD_META = {

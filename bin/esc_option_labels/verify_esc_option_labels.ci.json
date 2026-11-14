@@ -1,0 +1,7 @@
+{
+  "id": "esc-option-labels",
+  "name": "ESC parameter option names go through i18n, values unchanged",
+  "step": "Check the ESC option names are translated",
+  "script": "bin/esc_option_labels/verify_esc_option_labels.lua",
+  "rationale": "Issue #2652: the option lists of the ESC forward-programming pages were English literals (On/Off, Low/Medium/High, Normal/Reversed, Slow/Fast, Auto and the like), so a translated row label was followed by an English choice. Words the pilot reads now go through i18n under app.modules.esc_tools.opt, and words several pages share reuse the existing keys. Protocol and governor names, rotation directions (CW/CCW), numbers with units and the FlyRotor colour names, which the issue does not list, stay as they are.\n\nThe harness pins the entry count of each option table against master (so no value is dropped), that no translatable English label is left, that every tag resolves in en.json, and that the 4-way progress text keeps its %s in every locale. --self-test puts one English label back and requires the label check to go red."
+}

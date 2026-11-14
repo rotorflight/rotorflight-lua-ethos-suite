@@ -180,5 +180,7 @@ function msp_esc_sensor_config.buildWriteMessage(data, onWritten, onError)
   }
 end
 
+-- The protocol list for an API minor (the ESC telemetry step offers it as a drop-down).
+msp_esc_sensor_config.choicesFor = choicesFor
 package.loaded["rfsuite.lib.msp_esc_sensor_config"] = msp_esc_sensor_config
 return msp_esc_sensor_config

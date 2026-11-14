@@ -1,0 +1,7 @@
+{
+  "id": "elrs-gps-scale",
+  "name": "GPS sensors of the CRSF telemetry are shown at the scale the firmware sends",
+  "step": "Check the GPS sensor scale",
+  "script": "bin/elrs_gps_scale/verify_elrs_gps_scale.lua",
+  "rationale": "Issue #2665: Home Dist and Home Dir were decoded with one decimal (Home Dir in metres), so both showed a tenth of the value, and GPS altitude was read in centimetres although the firmware sends decimetres from MSP API 12.10 (rotorflight-firmware#549). The harness drives the real tasks/elrs_sensors.lua, the real decoder table and the real lib/diy_sensor.lua through a frame. Only Ethos's sensor objects are stubbed, and they record what the suite asks of them. It checks the value each sensor publishes, the unit and decimals it is created with, that a sensor the radio already has is brought to the new unit and decimals, and that nothing is published for the altitude before the API version is known. Its self-test removes the altitude scale and requires the altitude check to go red. On the code before the fix 6 of its 12 checks fail."
+}

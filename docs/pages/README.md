@@ -84,6 +84,40 @@ and structure follow [_template.md](../_template.md).
 | Filters | [setup/governor/filters.md](setup/governor/filters.md) | Greyed out until the flight controller answers. Read-only while the model is armed. | written |
 | Bypass Curve | [setup/governor/curves.md](setup/governor/curves.md) | Greyed out until the flight controller answers. Read-only while the model is armed. | written |
 
+## Configuration → Wizards
+
+| Page | File | Conditions | Status |
+| --- | --- | --- | --- |
+| Model setup | [wizards/setup_wizard.md](wizards/setup_wizard.md) | Greyed out until the flight controller answers. Read-only while the model is armed. | written |
+
+### Model setup → steps
+
+The wizard's steps are not menu entries, so `generate_menu_docs.py` does not list them. They
+are documented one file per step, in the order the wizard runs them.
+
+| Step | File | Conditions | Status |
+| --- | --- | --- | --- |
+| 1. Board orientation | [wizards/setup_wizard/sensors.md](wizards/setup_wizard/sensors.md) | Only inside the wizard. Alignment page instead when the board has no accelerometer or the firmware cannot detect the orientation. | written |
+| 2. Receiver | [wizards/setup_wizard/receiver.md](wizards/setup_wizard/receiver.md) | Only inside the wizard. F.Port2 only on API 12.7 to 12.9. | written |
+| 3. Mode switches | [wizards/setup_wizard/modes.md](wizards/setup_wizard/modes.md) | Rescue and Trainer only when the flight controller offers them (accelerometer needed). | written |
+| 4. Profiles & gain | [wizards/setup_wizard/profiles.md](wizards/setup_wizard/profiles.md) | The profile switch and the master gain; needs the adjustment ranges of the flight controller. | written |
+| 5. Rescue | [wizards/setup_wizard/rescue.md](wizards/setup_wizard/rescue.md) | Set on every PID profile. | written |
+| 6. Rates | [wizards/setup_wizard/rates.md](wizards/setup_wizard/rates.md) | One page per rate profile on the profile switch. | written |
+| 7. Swashplate | [wizards/setup_wizard/swash.md](wizards/setup_wizard/swash.md) | Tail type applies after the restart at step 11. | written |
+| 8. Servo type | [wizards/setup_wizard/servotype.md](wizards/setup_wizard/servotype.md) | Needs servos configured. Applies after the restart at step 11. | written |
+| 9. Governor | [wizards/setup_wizard/governor.md](wizards/setup_wizard/governor.md) | Governor mode and throttle type; the headspeed of each PID profile when a governor runs. | written |
+| 10. Motor & ESC | [wizards/setup_wizard/motor.md](wizards/setup_wizard/motor.md) | Tail gear screens only for a pitch tail. Applies after the restart at step 11. | written |
+| 11. Connect servos | [wizards/setup_wizard/connect.md](wizards/setup_wizard/connect.md) | Restart step only when a restart is owed. Tail motor check only for a motor tail. | written |
+| 12. ESC telemetry | [wizards/setup_wizard/esctelemetry.md](wizards/setup_wizard/esctelemetry.md) | Restart point: the port applies after it. | written |
+| 13. ESC & spin test | [wizards/setup_wizard/esc.md](wizards/setup_wizard/esc.md) | Full and low throttle calibration only for a PWM ESC. | written |
+| 14. Servo centre | [wizards/setup_wizard/servos.md](wizards/setup_wizard/servos.md) | Needs servos configured. | written |
+| 15. Directions | [wizards/setup_wizard/direction.md](wizards/setup_wizard/direction.md) | Needs a swashplate type. | written |
+| 16. Level swash | [wizards/setup_wizard/level.md](wizards/setup_wizard/level.md) | Needs a swashplate type. | written |
+| 17. Blade pitch | [wizards/setup_wizard/pitch.md](wizards/setup_wizard/pitch.md) | Needs a swashplate type and a pitch gauge. | written |
+| 18. Tail rotor | [wizards/setup_wizard/tail.md](wizards/setup_wizard/tail.md) | Motor screens for a motor tail, servo screens for a pitch tail. | written |
+| 19. Gyro check | [wizards/setup_wizard/gyro.md](wizards/setup_wizard/gyro.md) | Needs a swashplate type. | written |
+| 20. Finish | [wizards/setup_wizard/finish.md](wizards/setup_wizard/finish.md) | Summary and the save. | written |
+
 ## System → Tools
 
 | Page | File | Conditions | Status |

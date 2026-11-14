@@ -27,6 +27,7 @@ Greyed out until the flight controller answers. Read-only while the model is arm
 ## Notes
 
 - Changes are written to the flight controller EEPROM upon Save.
+- The AUX channel pickers, including auto-detect, offer AUX 1 to AUX 13, the number of AUX channels the firmware has. A range the flight controller holds above 13 is shown and saved as AUX 13.
 
 ## Related
 

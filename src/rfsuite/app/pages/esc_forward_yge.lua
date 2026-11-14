@@ -7,8 +7,12 @@ local escCurrentLimit = requireModule("lib/esc_current_limit.lua")
 
 local PAGE_TITLE = "@i18n(app.modules.esc_tools.mfg.yge.name)@"
 
-local ROTATION = {{"Normal", 0}, {"Reverse", 1}}
-local OFF_ON = {{"Off", 0}, {"On", 1}}
+local ROTATION = {{"@i18n(api.MIXER_INPUT.tbl_normal)@", 0}, {"@i18n(app.modules.servos.reverse)@", 1}}
+local OFF_ON = {{"@i18n(app.modules.governor.tbl_off)@", 0}, {"@i18n(app.modules.governor.tbl_on)@", 1}}
+local STARTUP_RESPONSE = {
+  {"@i18n(api.MIXER_INPUT.tbl_normal)@", 0},
+  {"@i18n(app.modules.esc_tools.mfg.yge.startup_smooth)@", 1},
+}
 
 local FIELDS = {
   {group = "@i18n(app.modules.esc_tools.mfg.yge.basic)@"},
@@ -28,6 +32,8 @@ local FIELDS = {
     max = function(data) return msp.becVoltageMax(data) end,
     enabledWhen = function(data) return msp.hasBec(data) end},
   {label = "@i18n(app.modules.esc_tools.mfg.yge.f3c_auto)@", key = "flags", bit = 1, choices = OFF_ON},
+  -- Bit 2 of the flags byte. The codec already reads and writes it; it had no row (#2672).
+  {label = "@i18n(app.modules.esc_tools.mfg.yge.keep_mah)@", key = "flags", bit = 2, choices = OFF_ON},
   {label = "@i18n(app.modules.esc_tools.mfg.yge.auto_restart_time)@", key = "auto_restart_time"},
   {label = "@i18n(app.modules.esc_tools.mfg.yge.cell_cutoff)@", key = "cell_cutoff"},
   {label = "@i18n(app.modules.esc_tools.mfg.yge.current_limit)@", key = "current_limit"},
@@ -35,6 +41,9 @@ local FIELDS = {
   {group = "@i18n(app.modules.esc_tools.mfg.yge.advanced)@"},
   {label = "@i18n(app.modules.esc_tools.mfg.yge.min_start_power)@", key = "min_start_power"},
   {label = "@i18n(app.modules.esc_tools.mfg.yge.max_start_power)@", key = "max_start_power"},
+  -- `acceleration` is the startup response: 0 Normal, 1 Smooth (EdgeTX suite, the older
+  -- Lua suite's startup_response). The codec already carries it; it had no row (#2672).
+  {label = "@i18n(app.modules.esc_tools.mfg.yge.startup_response)@", key = "acceleration", choices = STARTUP_RESPONSE},
   {label = "@i18n(app.modules.esc_tools.mfg.yge.throttle_response)@", key = "throttle_response"},
   {label = "@i18n(app.modules.esc_tools.mfg.yge.timing)@", key = "timing"},
   {label = "@i18n(app.modules.esc_tools.mfg.yge.active_freewheel)@", key = "active_freewheel"},

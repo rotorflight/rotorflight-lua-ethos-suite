@@ -32,8 +32,16 @@ local FIELDS = {
 }
 
 -- max_current is held in hundredths of an amp (msp_esc_parameters_scorpion.lua, scale = 100).
+-- A max_current of 0 is the ESC's "no limit": a figure stored for it is wrong, so it is cleared
+-- (a page's own figure only, see lib/esc_current_limit.lua). Nothing read, nothing done (#2744).
 local function rememberLimit(runtime)
-  escCurrentLimit.remember(runtime and runtime.data and (tonumber(runtime.data.max_current) or 0) / 100)
+  local maxCurrent = tonumber(runtime and runtime.data and runtime.data.max_current)
+  if maxCurrent == nil then return end
+  if maxCurrent <= 0 then
+    escCurrentLimit.forget()
+  else
+    escCurrentLimit.remember(maxCurrent / 100)
+  end
 end
 
 local function open(opts)

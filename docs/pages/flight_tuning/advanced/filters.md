@@ -38,6 +38,9 @@ Greyed out until the flight controller answers. Read-only while the model is arm
 ## Notes
 
 - Changes are written to the flight controller EEPROM upon Save.
+- A save that changes a *Dyn Notch* value (Count, Q, Range Min or Max) restarts the flight controller:
+  the dynamic notch is set up only at start-up. The other filters apply at once. A save while the model is
+  armed does not restart; the dynamic notch change then applies at the next power-up (#2655).
 
 ## Related
 

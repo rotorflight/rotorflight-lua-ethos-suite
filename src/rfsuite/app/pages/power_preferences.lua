@@ -49,6 +49,8 @@ local function open(opts)
     bus.publish("model.esc_current_limit.update", {
       mcuId = mcuId,
       amps = limit > 0 and limit or nil,
+      -- The pilot's own figure: a page visit does not clear it (#2744).
+      origin = "preferences",
     })
     original = limit
     updateEnabled()

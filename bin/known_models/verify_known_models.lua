@@ -86,6 +86,7 @@ local function newHandle(path, mode, content)
   function h:flush() end
   function h:seek() self.pos = 1 end
   function h:read(fmt)
+    if fmt == "L" then return self:readLine() end
     if fmt == "a" or fmt == "*a" then
       local rest = self.content:sub(self.pos)
       self.pos = #self.content + 1
@@ -499,7 +500,12 @@ local function newRig(sessionSource)
   model = { name = function() return "Test" end, set = function() end }
 
   local session = assert(load(sessionSource or readReal(SESSION_PATH), "@" .. SESSION_PATH))()
-  session.setTelemetrySensors({ getValue = function() return nil end, reset = function() end })
+  -- A connected, disarmed FC: its arming flags are read, so the handshake is not
+  -- held back for the arm-state wait (#2758).
+  session.setTelemetrySensors({
+    getValue = function(_, name) if name == "armflags" then return 0 end return nil end,
+    reset = function() end,
+  })
 
   local rig = { session = session, queue = queue, bus = fakeBus, handshake = modules["lib/msp_handshake.lua"]
     or assert(loadfile(SRC .. "/lib/msp_handshake.lua"))() }

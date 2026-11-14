@@ -1,0 +1,7 @@
+{
+  "id": "glasses-settings-page",
+  "name": "ActiveLook settings: glasses menu gating, hints and cleanup",
+  "step": "Check the menu switch version gate, restart reminder, setup hint, display gating and dialog cleanup",
+  "script": "bin/startup_glasses/verify_glasses_settings_page.lua",
+  "rationale": "The ActiveLook settings page decides whether the ETHOS Glasses menu switch is shown (ETHOS 26.2.0 or newer with the registration API), reminds the pilot to save and restart, gates the Rotorflight display field on the menu switch, shows the one-time Full-Screen setup hint on off-to-on, and closes a pending hint when the page is left. The harness drives the real page with form and system recorders and the real version and preference helpers. It is mutation-tested: a wrong version boundary, a missing cleanup callback and missing field gating each fail it."
+}

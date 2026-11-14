@@ -1,0 +1,7 @@
+{
+  "id": "adjustments-aux-channels",
+  "name": "Controls > Adjustments offers and writes AUX 1 to AUX 13 only",
+  "step": "Check the Adjustments AUX channel range",
+  "script": "bin/adjustments_aux_channels/verify_adjustments_aux_channels.lua",
+  "rationale": "Issue #2673: the Enable and Value channel pickers on Controls > Adjustments offered AUX 1 to AUX 20, but the firmware's MAX_AUX_CHANNEL_COUNT is 13 (18 - 5). An index above it is refused by the CLI and reads past rcInput[] in rc_adjustments.c, and the write path did not clamp it.\n\nThe page now offers 13 channels, and msp_adjustments.lua clamps the enable and adjustment channel bytes to AUX 1..13 on write. 255 (always on) is written as is on the enable channel only; the value channel has no always-on choice and is clamped.\n\nThe harness pins the clamp on the real codec (AUX 14 and 21 written as 13, AUX 1 and 13 unchanged, 255 kept on the enable channel, 255 clamped on the value channel) and reads the page's picker count from its source. --self-test removes the clamp and requires the clamp check to go red."
+}
