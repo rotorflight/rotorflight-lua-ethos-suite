@@ -317,6 +317,8 @@ local function openScreen(nav, menus, rootEntries, screen, setEventHandler, setW
   -- would divide-by-zero-equivalent (infinite tiles on one "row") below.
   local windowWidth, windowHeight = lcd.getWindowSize()
   local numPerRow, tileW, tileH, tilePadding, tileFont = tileGrid.metrics(windowWidth, windowHeight)
+  -- A smaller font for the whole screen when a title would be cut in tileFont.
+  tileFont = tileGrid.fontForTitles(entries, tileW, tileFont, isEntryVisible)
 
   -- The label one entry contributes to its tile. Pre-truncated with
   -- tile_grid.fitLabel() so a long title never spills over the border (Issue #2299).

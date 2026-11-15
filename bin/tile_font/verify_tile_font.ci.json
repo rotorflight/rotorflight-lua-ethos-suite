@@ -1,0 +1,7 @@
+{
+  "id": "tile-font",
+  "name": "A menu screen uses the smaller tile font when a title would be cut",
+  "step": "Check the font of the menu tiles",
+  "script": "bin/tile_font/verify_tile_font.lua",
+  "rationale": "On 800x480 radios the menu tiles are 120px wide and use FONT_S, which leaves 108px for the title. PID Bandwidth, Accelerometer, Motor Override and ELRS Telemetry are wider and were shown cut (PID Bandwid...). bin/i18n/check-fit.py measures the X18, whose tiles use FONT_XS, and the titles fit there, so it reported nothing. tile_grid.fontForTitles() now picks FONT_XS for all the tiles of a screen when one of its titles would be cut in FONT_S. The harness drives the real app/tile_grid.lua with a stub lcd. It checks that a screen whose titles fit keeps FONT_S, that one long title moves the screen to FONT_XS and is then whole, that a hidden entry and a title that is not text do not count, that a screen already on FONT_XS measures nothing, and that the font is kept without lcd. Its self-test keeps FONT_S always and requires the checks to fail."
+}

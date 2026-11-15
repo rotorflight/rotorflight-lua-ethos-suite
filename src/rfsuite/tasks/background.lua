@@ -172,7 +172,7 @@ local function registerSubtasks()
   -- Only ever loadfile'd in taskInit, behind its own simulation check -- see
   -- tasks/sim_sensors.lua's own header for why it costs nothing otherwise.
   if simSensors then
-    scheduler:add("sim_sensors", 2, function()
+    scheduler:add("sim_sensors", simSensors.interval, function()
       simSensors.wakeup()
     end)
   end

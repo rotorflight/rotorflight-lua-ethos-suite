@@ -21,10 +21,10 @@ local WRITE_COMMAND = 0x5F17
 local PAYLOAD_VERSION = 1
 local REPLY_LENGTH = 5
 
--- 0 = single motor; 1..31 = the SRXL2 channel carrying motor 2 (channel 0 is
+-- 0 = single motor; 2..32 = the SRXL2 channel carrying motor 2 (channel 1 is
 -- always motor 1). For dual-motor Smart ESCs such as the Spektrum SPMXAE1020.
 local MOTOR2_CHANNEL_CHOICES = {{"@i18n(api.SRXL2_ESC_CONFIG.tbl_off)@", 0}}
-for ch = 1, 31 do
+for ch = 2, 32 do
   MOTOR2_CHANNEL_CHOICES[#MOTOR2_CHANNEL_CHOICES + 1] = {tostring(ch), ch}
 end
 

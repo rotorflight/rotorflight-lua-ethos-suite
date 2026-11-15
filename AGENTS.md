@@ -158,15 +158,20 @@ Agents can check UI changes in the Ethos WASM simulator. They can boot the radio
 
 Tooling:
 - **Claude Code:** this repository's `.claude/settings.json` lists the `ethos-tools` marketplace and
-  enables its `ethos-simulator` plugin, so Claude Code offers to install it when you trust the folder.
+  enables its `ethos` plugin, so Claude Code offers to install it when you trust the folder.
   To install it by hand: `/plugin marketplace add FrSkyRC/ethos-tools` and then
-  `/plugin install ethos-simulator@ethos-tools`.
-  Its `ethos-navigate` skill covers starting the simulator, the screenshot loop and the radio buttons.
-  If `ethos-navigate` is not in the session's skill list (the plugin was installed mid-session, or the
-  install was declined), restart the session, or read `simulation/skills/ethos-navigate/SKILL.md` from a
-  clone of [FrSkyRC/ethos-tools](https://github.com/FrSkyRC/ethos-tools) and follow it by hand.
+  `/plugin install ethos@ethos-tools`. (Before plugin version 0.3.0 it was `ethos-simulator`, and its
+  skill `ethos-navigate`: a session that still has those names needs the plugin installed again.)
+  The plugin has two parts:
+  - an MCP server, whose tools (`startSimulator`, `press`, `touch`, `screenshot`, `getLog`, `reload`,
+    `writeFile`...) act on the simulator, or on a radio served by `radio_remote.py`;
+  - the `ethos:navigate` skill, which covers starting the simulator, the screenshot loop and the radio buttons.
+
+  If neither is in the session (the plugin was installed mid-session, or the install was declined),
+  restart the session, or read `simulation/skills/navigate/SKILL.md` from a clone of
+  [FrSkyRC/ethos-tools](https://github.com/FrSkyRC/ethos-tools) and follow it by hand.
 - **Other agents:** run `simulation/run_wasm.js --serve` from a clone of
-  [FrSkyRC/ethos-tools](https://github.com/FrSkyRC/ethos-tools) directly. Its README lists the commands.
+  [FrSkyRC/ethos-tools](https://github.com/FrSkyRC/ethos-tools) directly. `simulation/run_wasm.md` lists the commands.
 
 This repository:
 - **Simulator build:** board and protocol come from `ethos.board` / `ethos.protocol` in `.vscode/settings.json`.
@@ -190,11 +195,31 @@ This repository:
   1. Model menu, page 3, **Lua**: turn **Rotorflight [Background]** on.
   2. Model menu, page 1, **RF system**, **Internal module**: turn **State** on.
   3. Model menu, page 2, **Telemetry**: discover sensors if the list is empty.
-- **Cached modules:** `app/header.lua` and other shared modules cache themselves in
-  `package.loaded`, so a redeploy is not picked up until the simulator restarts
-  (`quit`, then start it again).
+- **After a redeploy, `reload ALL`:** `app/header.lua` and other shared modules cache themselves in
+  `package.loaded`. `reload SCRIPTS` runs `main.lua` again but keeps that cache, so the old modules stay.
+  `reload ALL` starts a new Lua state and picks everything up, without restarting the simulator; the
+  boot dialogs show again.
+- **Any board, without VS Code:** `startSimulator(radio, release, rootDirectory)` (or
+  `run_wasm.js --radio X18-EU`) downloads the simulator of an Ethos release, 26.2 or newer.
 - **No flight controller needed:** the suite's built-in simulated sensors and MSP responses (`src/rfsuite/sim/sensors/` and the `simulatorResponse` tables in `src/rfsuite/lib/msp_*.lua`) populate pages such as PIDs.
-- **Lua errors** appear in the output of the `log` command, not on screen.
+- **Lua errors** appear in the output of `getLog`, not on screen. The log also has a line for every
+  `loadFile()`, which shows what a page loads and what is loaded again and again, and the suite's
+  `[mem]` lines when memory logs are enabled. One call returns at most the last 200 lines, so read it
+  often, or read the output of `run_wasm.js --serve` itself, which has every line.
+- **Every page, in one command:** `python bin/sim/run.py --deployed` opens each page that has a tile in
+  `MENUS`, saves a screenshot of it and fails when one logs a Lua error or does not open
+  (`bin/sim/test_pages.py`). It needs a clone of ethos-tools beside this repository and
+  `pip install -r simulation/tests/requirements.txt` there. Run it when you add, move or rename a page.
+  `--option only=<part of a script path>` limits it to some pages; `--port 8766` runs it on a radio.
+  On a radio it skips its reload step: `reload ALL` restarted an X20S (26.2.0-RC11) into its STM32
+  bootloader, off the serial port, until it was turned off and on again. Never send `reload ALL` to a radio.
+- **Allocations:** a macro can trace every allocation of the Lua heap:
+  `simulator.setDebug("malloc", true)`, `simulator.sleep(3)`, `simulator.setDebug("malloc", false)`.
+  Each `ALLOC` / `REALLOC` / `FREE` line has the size and the heap total. It is about 1000 lines per
+  second with the app idle on its main menu, so count them in the output of `run_wasm.js --serve`, not
+  in `getLog`. The lines have no Lua source, and the simulated sensors (`sim/sensors/*.lua`, loaded from
+  their files every cycle) allocate all the time: compare two runs of the same screen, don't read the
+  absolute number. Don't send input while the macro runs; a macro can touch and press by itself.
 
 ## 12) Agent Skills
 
