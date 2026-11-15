@@ -27,9 +27,9 @@ both the theme picker and configuration grid. See the
 
 This package registers **NovaFly RC** as `system/novafly`. It is drawn for
 480 × 320 radios (X18, X18S, X18RS): one full-screen cockpit that serves
-preflight, inflight and postflight alike. On a larger window the layout is
-scaled to the window and the italic digit font gives way to the system font;
-this has not been checked on an 800 × 480 radio. See the
+preflight, inflight and postflight alike. The layout exists for 480 × 320 only,
+so both the theme picker and the configuration grid hide it on any other window
+size. See the
 [NovaFly RC guide](../../../dashboard/novafly.md) and the
 [screen capture](../../../dashboard-themes/README.md#novafly-rc).
 

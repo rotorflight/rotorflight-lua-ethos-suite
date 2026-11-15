@@ -47,9 +47,9 @@ The colour is stored as `farbe` in the `dashboard.novafly` section of
 
 ## Notes
 
-- Drawn for 480 × 320. On a larger window the layout is scaled to the window
-  and the italic font gives way to the system font. Not checked on an
-  800 × 480 radio.
+- The layout exists for 480 × 320 only. The theme picker and the settings grid
+  show NovaFly RC only on a 480 × 320 window (X18, X18S, X18RS) and hide it on
+  any other size, the way Bastion is hidden below 784 × 294.
 - The theme carries its own texts for de, en, es, fr, it and nl, chosen by the
   radio language.
 - The first frames after a theme load show only the panel: the theme builds

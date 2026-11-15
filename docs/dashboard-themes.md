@@ -361,7 +361,9 @@ See the [complete theme guide](dashboard/bastion.md) and its three phase preview
 
 NovaFly RC is the NovaFly cockpit as a dashboard theme for 480 × 320 radios:
 one instrument panel for all three flight phases, drawn over a panel image in
-one of nine colours, with an italic digit font made of bitmap masks. Tapping
+one of nine colours, with an italic digit font made of bitmap masks. The
+layout exists for 480 × 320 only; both pickers hide the theme on any other
+window size. Tapping
 BANK or RATE opens the bank screen, which reads the active PID bank from the
 flight controller over MSP and lets the governor head speed of that bank be
 set on the ground.

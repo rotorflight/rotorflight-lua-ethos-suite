@@ -32,7 +32,7 @@ local THEME_DEFS = {
   {label = "@i18n(app.modules.settings.dashboard_theme_kevd)@", path = "system/kevd", minResolution = {x = 784, y = 294}},
   {label = "@i18n(app.modules.settings.dashboard_theme_kse4)@", path = "system/kse4"},
   {label = "@i18n(app.modules.settings.dashboard_theme_kse5)@", path = "system/kse5"},
-  {label = "@i18n(app.modules.settings.dashboard_theme_novafly)@", path = "system/novafly"},
+  {label = "@i18n(app.modules.settings.dashboard_theme_novafly)@", path = "system/novafly", minResolution = {x = 480, y = 320}, maxResolution = {x = 480, y = 320}},
   {label = "@i18n(app.modules.settings.dashboard_theme_rfstatus)@", path = "system/rfstatus"},
   {label = "@i18n(app.modules.settings.dashboard_theme_rt_rc)@", path = "system/rt-rc"},
   {label = "@i18n(app.modules.settings.dashboard_theme_rt_rc_n)@", path = "system/rt-rc-n"},
@@ -53,11 +53,17 @@ local function themeKey(path)
   return folder
 end
 
+-- maxResolution: a theme drawn for one screen size is hidden on anything larger, the way
+-- minResolution hides a theme on anything smaller.
 local function themeVisible(theme)
   local minRes = theme and theme.minResolution
-  if type(minRes) ~= "table" then return true end
+  local maxRes = theme and theme.maxResolution
+  if type(minRes) ~= "table" and type(maxRes) ~= "table" then return true end
   local w, h = lcd.getWindowSize()
-  return not (w and h and (w < (minRes.x or 0) or h < (minRes.y or 0)))
+  if not (w and h) then return true end
+  if type(minRes) == "table" and (w < (minRes.x or 0) or h < (minRes.y or 0)) then return false end
+  if type(maxRes) == "table" and (w > (maxRes.x or w) or h > (maxRes.y or h)) then return false end
+  return true
 end
 
 local function buildThemeChoices()
