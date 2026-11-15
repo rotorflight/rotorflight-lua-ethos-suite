@@ -448,10 +448,45 @@ local function farbeLesen()
     if v and BILDER[v] then farbeNr = floor(v) end
 end
 
+-- rfsuite ohne gemeinsame Tabelle haelt savePreference nur im Speicher und baut ihn jeden Takt aus seiner Einstellungsdatei
+-- neu: dort wird die Farbe in die Datei geschrieben und gemeldet, wie es die Einstellungsseite der Suite tut. Ein rfsuite
+-- mit gemeinsamer Tabelle kennt den Weg nicht und merkt sich die Farbe ueber savePreference selbst.
+-- Das geht in zwei Wakeups, nicht im Druck selbst: Datei schreiben und die Meldung mit ihren Folgen (die Suite laedt
+-- Modelldatei und Theme neu) sind je ein eigener Aufruf, zusammen mit dem Druck waeren sie ueber der Befehlsgrenze.
+local farbeAblage, farbeEinstellungen = nil, nil
+local function farbeDateiSchreiben()
+    local laden = package.loaded["rfsuite.lib.require"]
+    if type(laden) ~= "function" then return false end
+    local ok, ablage = pcall(laden, "lib/settings_store.lua")
+    if not ok or type(ablage) ~= "table" or type(ablage.setDashboardTheme) ~= "function" then return false end
+    local einstellungen = ablage.load()
+    ablage.setDashboardTheme(einstellungen, "novafly", {farbe = farbeNr})
+    if not ablage.save(einstellungen) then return false end
+    farbeEinstellungen = ablage.clone(einstellungen)
+    return true
+end
+local function farbeMelden()
+    local laden = package.loaded["rfsuite.lib.require"]
+    local ok, bus = pcall(laden, "lib/bus.lua")
+    if ok and type(bus) == "table" and type(bus.publish) == "function" then bus.publish("settings.update", farbeEinstellungen) end
+    farbeEinstellungen = nil
+end
+local function farbeAblageTakt()
+    if farbeAblage == 1 then
+        farbeAblage = 2
+        local ok, geschrieben = pcall(farbeDateiSchreiben)
+        if not (ok and geschrieben) then farbeAblage = nil end
+    elseif farbeAblage == 2 then
+        farbeAblage = nil
+        pcall(farbeMelden)
+    end
+end
+
 local function farbeWeiter()
     farbeNr = farbeNr % #BILDER + 1
     local d = dash()
     if d and d.savePreference then pcall(d.savePreference, "farbe", farbeNr) end
+    farbeAblage = 1
 end
 
 local function quellenFinden()
@@ -533,6 +568,8 @@ end
 local rpmHoch, cellF = 0, nil
 local st = {link = false}
 local schlepp = {}   -- je Bank Min und Max der Drehzahl, solange scharf: der Schleppmonitor im BANK-Monitor liest hier
+local function celsius(v, fahrenheit) return fahrenheit and (v - 32) * 5 / 9 or v end   -- die Farbgrenzen stehen in °C
+local function gradZeichen(fahrenheit) return fahrenheit and "\194\176F" or "\194\176C" end
 
 local function lesen(tele)
     local s = {link = tele.active and tele.active() or false}
@@ -555,9 +592,18 @@ local function lesen(tele)
         s.rssi, s.vfr = g("link"), g("vfr")
         s.rpm = g("rpm")
         if s.rpm and s.rpm > rpmHoch then rpmHoch = s.rpm end
-        s.temp = ohneNull("temp", g("temp_esc"))
-        s.mcutemp = g("temp_mcu")
-        if s.mcutemp ~= nil and (s.mcutemp < 10 or s.mcutemp > 130) then s.mcutemp = nil end
+        -- Temperaturen kommen in der Einheit des Senders: rfsuite liefert bei Fahrenheit den Wert in °F und nennt die Einheit
+        -- (die gemeinsame Tabelle als zweiten, der Neubau als dritten Rueckgabewert); Grenzen und Zeichen folgen ihr
+        local function gTemp(k)
+            local v, a, b = tele.getSensor(k)
+            local einheit = (type(a) == "string" and a:find("\194\176") and a) or (type(b) == "string" and b:find("\194\176") and b) or nil
+            return tonumber(v), einheit == "\194\176F"
+        end
+        local tempEsc, escF = gTemp("temp_esc")
+        s.temp, s.tempF = ohneNull("temp", tempEsc), escF
+        local tempMcu, mcuF = gTemp("temp_mcu")
+        s.mcutemp, s.mcutempF = tempMcu, mcuF
+        if s.mcutemp ~= nil and (celsius(s.mcutemp, mcuF) < 10 or celsius(s.mcutemp, mcuF) > 130) then s.mcutemp = nil end
         local arm = g("armflags")
         if arm ~= nil then s.scharf = floor(arm) % 2 == 1 end
         s.bec = ohneNull("bec", becEcht(g("bec_voltage")))
@@ -771,10 +817,12 @@ local function malen(x, y, w, h, s)
     for i = 1, bars do flaeche(U.batt.x, U.batt.y - (i - 1) * (U.batt.bh + U.batt.gap), U.batt.bw, U.batt.bh, hc) end
 
     if s.temp then
-        wert2(U.temp, fmt(s.temp, "", 0), "\194\176C", (s.temp < 60) and C_LGREEN or ((s.temp < 80) and C_YELLOW or C_LRED))
+        local tc = celsius(s.temp, s.tempF)
+        wert2(U.temp, fmt(s.temp, "", 0), gradZeichen(s.tempF), (tc < 60) and C_LGREEN or ((tc < 80) and C_YELLOW or C_LRED))
     else wert(U.temp, "--", C_DIM) end
     if s.mcutemp then
-        wert2(U.mcutemp, fmt(s.mcutemp, "", 0), "\194\176C", (s.mcutemp < 70) and C_LGREEN or ((s.mcutemp < 90) and C_YELLOW or C_LRED), 8)
+        local tc = celsius(s.mcutemp, s.mcutempF)
+        wert2(U.mcutemp, fmt(s.mcutemp, "", 0), gradZeichen(s.mcutempF), (tc < 70) and C_LGREEN or ((tc < 90) and C_YELLOW or C_LRED), 8)
     else wert(U.mcutemp, "--", C_DIM, 8) end
 
     if sperre then beschriftungMittigPasst(252, 300, T.scharf, C_LRED, F_SM, 196) end
@@ -808,7 +856,8 @@ end
 local erstesWach = true
 local function wach(box, tele)
     if erstesWach then erstesWach = false   -- der erste Wakeup traegt schon das Laden dieser Datei
-    elseif tabellenStufe < 2 then tabellenSchritt() end
+    elseif tabellenStufe < 2 then tabellenSchritt()
+    elseif farbeAblage ~= nil then farbeAblageTakt() end
     local jetzt = os.clock()
     langdruckPruefen()
     if jetzt - farbeGelesen >= FARBE_LESEN_SEK then

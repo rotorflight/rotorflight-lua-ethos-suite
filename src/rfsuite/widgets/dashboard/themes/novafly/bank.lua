@@ -383,48 +383,62 @@ local function speichern()
             local neu = {}
             for k, v in pairs(alt) do neu[k] = v end
             neu[f] = wert
-            speicherStufe = 1
-            ganzSchreiben(API_DZ, neu, felder, function()
+            lesenApi("STATUS", function(st1)   -- unmittelbar vor dem Schreiben: der Satz geht in die Bank, auf der der FC JETZT steht
                 if dieser ~= vorgang then return end
                 start = os.clock()
-                speicherStufe = 2
-                nova.dirty = true
-                lesenApi(API_DZ, function(nachher)   -- ruecklesen und vergleichen, DANN sichern: was der FC anders uebernahm, wird nie dauerhaft
+                if stehtAuf(st1) ~= b then daneben(); return end
+                if scharfLautFc(st1) then rot("armiert"); return end
+                speicherStufe = 1
+                ganzSchreiben(API_DZ, neu, felder, function()
                     if dieser ~= vorgang then return end
                     start = os.clock()
-                    local gleich = true
-                    for k, v in pairs(neu) do
-                        if nachher[k] ~= v then gleich = false end
-                    end
-                    if not gleich then               -- der alte Satz geht zurueck in den FC, sonst sichert er den falschen selbst beim Entschaerfen
-                        ganzSchreiben(API_DZ, alt, felder, function() if dieser == vorgang then daneben() end end,
-                                      function() rot("abweichung") end)
-                        return
-                    end
-                    lesenApi("STATUS", function(st2)  -- vor dem Sichern fragt der FC selbst: scharf oder andere Bank sichert nichts
+                    speicherStufe = 2
+                    nova.dirty = true
+                    lesenApi(API_DZ, function(nachher)   -- ruecklesen und vergleichen, DANN sichern: was der FC anders uebernahm, wird nie dauerhaft
                         if dieser ~= vorgang then return end
                         start = os.clock()
-                        if scharfLautFc(st2) then rot("armiert"); return end
-                        if stehtAuf(st2) ~= b then rot("schreiben_abgelehnt"); return end
-                        eepromSchreiben(function()
+                        local gleich = true
+                        for k, v in pairs(neu) do
+                            if nachher[k] ~= v then gleich = false end
+                        end
+                        if not gleich then               -- der alte Satz geht zurueck in den FC, sonst sichert er den falschen selbst beim Entschaerfen
+                            lesenApi("STATUS", function(st3)   -- nur in dieselbe Bank und nur am Boden: steht der FC schon auf einer anderen, kam das Ruecklesen von dort
+                                if dieser ~= vorgang then return end
+                                start = os.clock()
+                                if stehtAuf(st3) ~= b then rot("schreiben_abgelehnt"); return end
+                                if scharfLautFc(st3) then rot("armiert"); return end
+                                local sperre3 = schreibsperre()
+                                if sperre3 then rot(sperre3); return end
+                                ganzSchreiben(API_DZ, alt, felder, function() if dieser == vorgang then daneben() end end,
+                                              function() rot("abweichung") end)
+                            end, rot)
+                            return
+                        end
+                        lesenApi("STATUS", function(st2)  -- vor dem Sichern fragt der FC selbst: scharf oder andere Bank sichert nichts
                             if dieser ~= vorgang then return end
                             start = os.clock()
-                            speicherStufe = 3
-                            nova.dirty = true
-                            lesenApi(API_DZ, function(gp)
+                            if scharfLautFc(st2) then rot("armiert"); return end
+                            if stehtAuf(st2) ~= b then rot("schreiben_abgelehnt"); return end
+                            eepromSchreiben(function()
                                 if dieser ~= vorgang then return end
-                                if gp[f] ~= wert then daneben(); return end
-                                laeuft = false
-                                gesehen[b] = gesehen[b] or {}
-                                if f == FELD_PROZENT then gesehen[b].maxgas = wert else gesehen[b].drehzahl = wert end
-                                soll, sollBank = nil, nil
-                                hinweis, geprueftAusstehend = "", true
-                                speicherStufe, speicherBis = 4, os.clock() + 2.0
+                                start = os.clock()
+                                speicherStufe = 3
                                 nova.dirty = true
+                                lesenApi(API_DZ, function(gp)
+                                    if dieser ~= vorgang then return end
+                                    if gp[f] ~= wert then daneben(); return end
+                                    laeuft = false
+                                    gesehen[b] = gesehen[b] or {}
+                                    if f == FELD_PROZENT then gesehen[b].maxgas = wert else gesehen[b].drehzahl = wert end
+                                    soll, sollBank = nil, nil
+                                    hinweis, geprueftAusstehend = "", true
+                                    speicherStufe, speicherBis = 4, os.clock() + 2.0
+                                    nova.dirty = true
+                                end, rot)
                             end, rot)
                         end, rot)
-                    end, rot)
-                end, function() rot("ruecklesen_offen") end)
+                    end, function() rot("ruecklesen_offen") end)
+                end, rot)
             end, rot)
         end, rot)
     end, rot)
@@ -733,9 +747,9 @@ local function takt()
         ui.rad.zone, ui.rad.stellt = nil, false
         nova.dirty = true
     end
-    if b ~= letzteBank and (b == nil or queueFrei()) then
+    if b ~= letzteBank and (b == nil or (queueFrei() and not laeuft)) then   -- waehrend eines Vorgangs bleibt der Wechsel offen, bis das Lesen starten kann
         letzteBank = b
-        if b ~= nil and not laeuft then lesen() end
+        if b ~= nil then lesen() end
         nova.dirty = true
     end
     local hs = (s.rpm ~= nil and s.rpm > 0) and floor(s.rpm + 0.5) or nil
@@ -810,4 +824,4 @@ local function verlassen()
 end
 
 return {malen = malen, ereignis = ereignis, oeffnen = oeffnen, verlassen = verlassen, takt = takt, zurueck = ZONEN.zurueck,
-        blick = function() return gesehen, soll, zustand, hinweis, govModus, speicherStufe end}
+        blick = function() return gesehen, soll, zustand, hinweis, govModus, speicherStufe, bank end}

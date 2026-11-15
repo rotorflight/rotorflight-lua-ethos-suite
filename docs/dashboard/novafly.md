@@ -52,6 +52,18 @@ The colour is stored as `farbe` in the `dashboard.novafly` section of
   any other size, the way Bastion is hidden below 784 × 294.
 - The theme carries its own texts for de, en, es, fr, it and nl, chosen by the
   radio language.
+- Temperatures follow the radio's temperature unit, in the value, the colour
+  limits and the unit sign.
+- The bank screen reads the flight controller's active bank right before it
+  writes and again before it would write a set back, and it never writes while
+  the model is armed. A bank change during a save is reported and nothing is
+  persisted; the screen then shows the new bank.
+- The colour chosen with the long press is written to the theme's section of
+  `settings.ini`, the same place the settings page writes to.
+- On this suite the bank screen opens and closes, but it reads and sets nothing
+  yet: its flight-controller path still uses the 2.3.x MSP API. The port to the
+  suite's `msp.request` bus is pending; on RFSuite Ethos 2.3.x radios the screen
+  works.
 - The first frames after a theme load show only the panel: the theme builds
   its angle and glyph tables in two steps and loads at most eight masks per
   wakeup, so no single callback nears the Ethos instruction limit.
