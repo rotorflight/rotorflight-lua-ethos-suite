@@ -2738,6 +2738,13 @@
           "reverse_text": true,
           "max_length": 4
         },
+        "dashboard_theme_novafly": {
+          "english": "NovaFly RC",
+          "translation": "NovaFly RC",
+          "needs_translation": false,
+          "reverse_text": false,
+          "max_length": 10
+        },
         "dashboard_theme_kse4": {
           "english": "KSE4",
           "translation": "KSE4",

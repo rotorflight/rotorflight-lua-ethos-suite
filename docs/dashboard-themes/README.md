@@ -94,3 +94,13 @@ Desktop preview, not radio capture. [Details and limits](Bastion/README.md).
 | Preflight | Inflight | Postflight |
 | --- | --- | --- |
 | ![Bastion preflight](Bastion/preflight.png) | ![Bastion inflight](Bastion/inflight.png) | ![Bastion postflight](Bastion/postflight.png) |
+
+## NovaFly RC
+
+Radio capture from the Ethos 26.1.2 X18 simulator (480 × 320) running this
+suite with its simulated telemetry. One screen serves all three phases.
+[Theme guide](../dashboard/novafly.md).
+
+| Cockpit | Settings tile |
+| --- | --- |
+| ![NovaFly RC cockpit](NovaFly%20RC/cockpit.png) | ![NovaFly RC settings tile](NovaFly%20RC/settings_tile.png) |

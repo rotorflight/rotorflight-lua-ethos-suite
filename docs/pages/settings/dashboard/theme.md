@@ -23,6 +23,16 @@ both the theme picker and configuration grid. See the
 [Bastion guide](../../../dashboard/bastion.md) and
 [phase previews](../../../dashboard-themes/Bastion/README.md).
 
+## NovaFly RC
+
+This package registers **NovaFly RC** as `system/novafly`. It is drawn for
+480 × 320 radios (X18, X18S, X18RS): one full-screen cockpit that serves
+preflight, inflight and postflight alike. On a larger window the layout is
+scaled to the window and the italic digit font gives way to the system font;
+this has not been checked on an 800 × 480 radio. See the
+[NovaFly RC guide](../../../dashboard/novafly.md) and the
+[screen capture](../../../dashboard-themes/README.md#novafly-rc).
+
 ## KSE4 and KSE5
 
 **KSE4** (`system/kse4`) and **KSE5** (`system/kse5`) follow the layouts of

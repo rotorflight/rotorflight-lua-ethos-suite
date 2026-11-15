@@ -356,3 +356,20 @@ selection is `system/bastion`; instrument thresholds use the `dashboard.bastion`
 section of `SCRIPTS:/rfsuite.user/settings.ini`.
 
 See the [complete theme guide](dashboard/bastion.md) and its three phase previews.
+
+## NovaFly RC
+
+NovaFly RC is the NovaFly cockpit as a dashboard theme for 480 × 320 radios:
+one instrument panel for all three flight phases, drawn over a panel image in
+one of nine colours, with an italic digit font made of bitmap masks. Tapping
+BANK or RATE opens the bank screen, which reads the active PID bank from the
+flight controller over MSP and lets the governor head speed of that bank be
+set on the ground.
+
+Select it under *System → Settings → Dashboard → Themes*, and choose the panel
+colour under *System → Settings → Dashboard → Settings*. The saved selection is
+`system/novafly`; the colour is kept in the `dashboard.novafly` section of
+`SCRIPTS:/rfsuite.user/settings.ini`.
+
+See the [theme guide](dashboard/novafly.md) and the
+[screen capture](dashboard-themes/README.md#novafly-rc).

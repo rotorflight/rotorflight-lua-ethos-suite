@@ -38,6 +38,7 @@ local THEME_DIRS = {
   kevd = "widgets/dashboard/themes/kevd",
   kse4 = "widgets/dashboard/themes/kse4",
   kse5 = "widgets/dashboard/themes/kse5",
+  novafly = "widgets/dashboard/themes/novafly",
   rfstatus = "widgets/dashboard/themes/rfstatus",
   ["rt-rc-n"] = "widgets/dashboard/themes/rt-rc-n",
   ["rt-rc"] = "widgets/dashboard/themes/rt-rc",

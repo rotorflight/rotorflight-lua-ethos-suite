@@ -40,5 +40,17 @@ value falls back to the default.
 
 Values are stored in the `dashboard.kse5` section of `settings.ini`.
 
+## NovaFly RC
+
+**NovaFly RC** has one setting.
+
+- **Colour** — the cockpit panel: Blue (default), Magenta, Green, Orange,
+  Yellow, Carbon, Carbon green, Carbon violet or Carbon red. A long press on
+  the panel head, with the model on the ground and not armed, steps through
+  the same colours.
+
+The value is stored as `farbe` in the `dashboard.novafly` section of
+`settings.ini`.
+
 See the [Bastion guide](../../../dashboard/bastion.md) for its appearance,
 installation, and [phase previews](../../../dashboard-themes/Bastion/README.md).
