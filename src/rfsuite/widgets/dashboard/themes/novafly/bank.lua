@@ -1,8 +1,10 @@
 -- BANK im NovaFly-Theme: das Bild malt der Code aus novasetup/lib/screen_bank.lua (ab "local W_Y" wortgleich), mit den
--- Zeichenteilen aus stil_teile.lua. Der FC-Weg geht ueber rfsuites MSP-Schlange: gelesen wird die Bank, auf der der FC
--- steht; gestellt wird mit Minus und Plus (Rad und Wischen nimmt rfsuites Dashboard fuer sich), gespeichert wird der
--- GANZE Satz der Bank mit der einen Aenderung - rfsuite fuellt jedes nicht gesetzte Feld mit dem Werkswert
--- (core.lua buildFullPayload) -, danach zurueckgelesen und Feld fuer Feld verglichen. Geschrieben wird nur am Boden.
+-- Zeichenteilen aus stil_teile.lua. Zum FC fuehren zwei Wege mit derselben Kette: rfsuite 2.3.x gibt dem Theme seine
+-- MSP-Schlange (tasks.msp.api), die Suite ohne gemeinsame Tabelle nur den Bus "msp.request" und je Kommando einen Codec
+-- in lib/. Gelesen wird die Bank, auf der der FC steht; gestellt wird mit Minus und Plus (Rad und Wischen nimmt rfsuites
+-- Dashboard fuer sich), gespeichert wird der GANZE Satz der Bank mit der einen Aenderung - die Schlange fuellt jedes nicht
+-- gesetzte Feld mit dem Werkswert (core.lua buildFullPayload), der Codec verweigert einen Satz mit Luecke -, danach
+-- zurueckgelesen und Feld fuer Feld verglichen. Geschrieben wird nur am Boden.
 local H = ...
 local floor = math.floor
 
@@ -13,7 +15,8 @@ local TOUCH_LANG = rawget(_G, "TOUCH_LONG")
 local SP_X, SP_B, SP_Y, SP_H = 14, 144, 54, 186
 local SP_LUECKE = 10
 local API_DZ, FELD_DZ = "GOVERNOR_PROFILE", "governor_headspeed"
-local NUR_LESBAR = {STATUS = {"flight_mode_flags", "current_pid_profile_index"}}   -- Kommandos ohne Feldliste in rfsuite und die Felder, die da sein muessen
+local NUR_LESBAR = {STATUS = {"flight_mode_flags", "current_pid_profile_index"},   -- Kommandos, die ohne Feldliste gelesen werden (rfsuite baut STATUS ohne,
+                    GOVERNOR_CONFIG = {"gov_mode"}}                                 -- der Codec der Suite nennt fuer GOVERNOR_CONFIG keine), und die Felder, die da sein muessen
 local FELD_PROZENT = "governor_max_throttle"
 local G_RX = 446
 local STELL_B, STELL_H, STELL_Y, STELL_TIPP = 22, 44, 38, 48
@@ -112,22 +115,51 @@ local function verbunden()
     return r.session.telemetryState == true and r.session.apiVersion ~= nil
 end
 
-local function mspBereit()
+-- Der Weg zum FC: rfsuite 2.3.x reicht dem Theme seine MSP-Schlange; die Suite ohne gemeinsame Tabelle reicht nur ihren
+-- Lader, ueber den der Bus "msp.request" und die Codecs kommen. Gibt es die Schlange, gilt sie; der Bus gilt nur ohne sie.
+local CODEC = {STATUS = "lib/msp_status.lua", GOVERNOR_PROFILE = "lib/msp_governor_profile.lua",
+               GOVERNOR_CONFIG = "lib/msp_governor_config.lua", EEPROM_WRITE = "lib/msp_eeprom.lua"}
+local SCHRITT = {governor_headspeed = 10}   -- die Codecs nennen keinen Schritt; die Drehzahl geht in Zehnern wie in der Feldliste von rfsuite 2.3.x
+local busModul = nil                        -- der Bus der Suite, einmal je Oeffnen geholt
+
+local function schlange()
     local r = rf()
-    if r == nil or r.tasks == nil then return false end
+    return (r and r.tasks and r.tasks.msp) or nil
+end
+
+local function suiteModul(pfad)             -- ein Modul der Suite ueber ihren Lader; nil, wenn es den Lader oder das Modul nicht gibt
+    local lader = package.loaded["rfsuite.lib.require"]
+    if type(lader) ~= "function" then return nil end
+    local ok, m = pcall(lader, pfad)
+    if ok and type(m) == "table" then return m end
+    return nil
+end
+
+local function bus()
+    if busModul ~= nil then return busModul end
+    if schlange() ~= nil then return nil end
+    local b = suiteModul("lib/bus.lua")
+    if b ~= nil and type(b.publish) == "function" then busModul = b end
+    return busModul
+end
+
+local function mspBereit()
+    local q = schlange()
+    if q == nil then return bus() ~= nil end
+    local r = rf()
     if type(r.tasks.active) == "function" then
         local ok, lebt = pcall(r.tasks.active)
         if ok and lebt ~= true then return false end
     end
-    return r.tasks.msp ~= nil and r.tasks.msp.api ~= nil and type(r.tasks.msp.api.load) == "function"
+    return q.api ~= nil and type(q.api.load) == "function"
 end
 
 local function queueFrei()
-    local r = rf()
-    if not r or not r.tasks or not r.tasks.msp then return false end
-    local q = r.tasks.msp.mspQueue
-    if q and type(q.isProcessed) == "function" then
-        local ok, res = pcall(q.isProcessed, q)
+    local q = schlange()
+    if q == nil then return bus() ~= nil end   -- der Bus ordnet seine Schlange selbst; die Kette hier schickt den naechsten Auftrag erst nach der Antwort
+    local mq = q.mspQueue
+    if mq and type(mq.isProcessed) == "function" then
+        local ok, res = pcall(mq.isProcessed, mq)
         if ok then return res == true end
     end
     return true
@@ -147,7 +179,7 @@ function ui.ohneHeli()
     return nil
 end
 
-local function apiLaden(name)
+local function apiLaden(name)                  -- Schlange: das Kommando von rfsuite 2.3.x
     if not mspBereit() then return nil, "msp_nicht_bereit" end
     local ok, api = pcall(rf().tasks.msp.api.load, name)
     if not ok or type(api) ~= "table" then return nil, "load_fehler" end
@@ -164,9 +196,121 @@ local function einreihen(fn)
     return true
 end
 
+local function codecLaden(name)                -- Bus: der Codec der Suite zum Kommando
+    local c = CODEC[name] and suiteModul(CODEC[name]) or nil
+    if c == nil then return nil, "load_fehler" end
+    return c
+end
+
+local function feldliste(codec)                -- die Feldliste des Codecs in der Form der Schlange: field, min, max, step
+    local liste, meta = codec.FIELDS, codec.FIELD_META
+    if type(liste) ~= "table" or #liste == 0 or type(meta) ~= "table" then return nil end
+    local felder = {}
+    for i = 1, #liste do
+        local name = liste[i][1]
+        local m = meta[name] or {}
+        felder[i] = {field = name, min = m.min, max = m.max, step = SCHRITT[name]}
+    end
+    return felder
+end
+
+local function busGrund(grund, sonst)          -- der Grund der Schlange der Suite in unseren Worten
+    if grund == "timeout" or grund == "max_retries" then return "zeitablauf" end
+    if grund == "queue_full" or grund == "cleared" then return "spaeter" end
+    return sonst
+end
+
+local function lesenBus(b, name, fertig, fehler)   -- die Antwort kommt entschluesselt; fehlt ein Pflichtfeld, gilt sie nicht
+    local codec, grund = codecLaden(name)
+    if codec == nil or type(codec.buildReadMessage) ~= "function" then fehler(grund or "load_fehler") return false end
+    local noetig = NUR_LESBAR[name]
+    local felder = (noetig == nil) and feldliste(codec) or nil
+    if noetig == nil and felder == nil then fehler("keine_struktur") return false end
+    local einmal = false
+    local nachricht = codec.buildReadMessage(function(d)
+        if einmal then return end
+        einmal = true
+        if type(d) ~= "table" then fehler("lesefehler") return end
+        local liste = noetig or felder
+        for i = 1, #liste do
+            local f = noetig and liste[i] or liste[i].field
+            if d[f] == nil then fehler("unvollstaendig") return end
+        end
+        fertig(d, felder)
+        nova.dirty = true
+    end, function(g)
+        if einmal then return end
+        einmal = true
+        fehler(busGrund(g, "lesefehler"))
+    end)
+    if not pcall(b.publish, "msp.request", nachricht) then einmal = true fehler("lesefehler") return false end
+    return true
+end
+
+local function schreibenBus(b, name, satz, felder, fertig, fehler)
+    local codec, grund = codecLaden(name)
+    if codec == nil or type(codec.buildWriteMessage) ~= "function" then fehler(grund or "load_fehler") return false end
+    for i = 1, #felder do
+        if satz[felder[i].field] == nil then fehler("unvollstaendig") return false end
+    end
+    local einmal = false
+    local nachricht = codec.buildWriteMessage(satz, function()
+        if einmal then return end
+        einmal = true
+        fertig()
+    end, function(g)
+        if einmal then return end
+        einmal = true
+        fehler(busGrund(g, "schreibfehler"))
+    end)
+    if nachricht == nil then fehler("unvollstaendig") return false end   -- der Codec verweigert einen Satz mit Luecke, statt eine 0 zu senden
+    if not pcall(b.publish, "msp.request", nachricht) then einmal = true fehler("schreibfehler") return false end
+    return true
+end
+
+local function eepromBus(b, fertig, fehler)
+    local codec, grund = codecLaden("EEPROM_WRITE")
+    if codec == nil or type(codec.buildWriteMessage) ~= "function" then fehler(grund or "load_fehler") return false end
+    local einmal = false
+    local nachricht = codec.buildWriteMessage(function()
+        if einmal then return end
+        einmal = true
+        fertig()
+    end, function()
+        if einmal then return end
+        einmal = true
+        fehler("eeprom_fehler")
+    end)
+    if not pcall(b.publish, "msp.request", nachricht) then einmal = true fehler("eeprom_fehler") return false end
+    return true
+end
+
+local lesenSchlange, schreibenSchlange, eepromSchlange
+
 local function lesenApi(name, fertig, fehler, nurWennFrei)   -- jedes Feld der Feldliste von rfsuite; fehlt ein Pflichtfeld, gilt die Antwort nicht
     if not verbunden() then fehler("keine_verbindung") return false end
     if nurWennFrei and not queueFrei() then fehler("spaeter") return false end
+    if schlange() ~= nil then return lesenSchlange(name, fertig, fehler) end
+    local b = bus()
+    if b == nil then fehler("msp_nicht_bereit") return false end
+    return lesenBus(b, name, fertig, fehler)
+end
+
+local function ganzSchreiben(name, satz, felder, fertig, fehler)   -- jedes Feld gesetzt: was fehlt, fuellt die Schlange mit dem Werkswert, der Codec verweigert
+    if schlange() ~= nil then return schreibenSchlange(name, satz, felder, fertig, fehler) end
+    local b = bus()
+    if b == nil then fehler("msp_nicht_bereit") return false end
+    return schreibenBus(b, name, satz, felder, fertig, fehler)
+end
+
+local function eepromSchreiben(fertig, fehler)
+    if schlange() ~= nil then return eepromSchlange(fertig, fehler) end
+    local b = bus()
+    if b == nil then fehler("msp_nicht_bereit") return false end
+    return eepromBus(b, fertig, fehler)
+end
+
+function lesenSchlange(name, fertig, fehler)
     local api, grund = apiLaden(name)
     if not api then fehler(grund) return false end
     local felder = api.__rfReadStructure
@@ -219,7 +363,7 @@ local function lesenApi(name, fertig, fehler, nurWennFrei)   -- jedes Feld der F
     return true
 end
 
-local function ganzSchreiben(name, satz, felder, fertig, fehler)   -- jedes Feld gesetzt: was fehlt, fuellt rfsuite mit dem Werkswert
+function schreibenSchlange(name, satz, felder, fertig, fehler)
     local api, grund = apiLaden(name)
     if not api then fehler(grund) return false end
     if type(api.setRebuildOnWrite) == "function" then pcall(api.setRebuildOnWrite, true) end
@@ -246,7 +390,7 @@ local function ganzSchreiben(name, satz, felder, fertig, fehler)   -- jedes Feld
     return true
 end
 
-local function eepromSchreiben(fertig, fehler)
+function eepromSchlange(fertig, fehler)
     local api, grund = apiLaden("EEPROM_WRITE")
     if not api then fehler(grund) return false end
     local einmal = false
@@ -459,6 +603,7 @@ function seite.build()
     govModus, govGelesen, govVersuche = govModusGemerkt(), false, 0
     speicherStufe, arbeitSeit, arbeitGemalt = nil, nil, nil
     ui.rad.zone, ui.rad.stellt, ui.quittung.zone = nil, false, nil
+    busModul = nil
     lesen()
 end
 

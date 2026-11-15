@@ -60,10 +60,18 @@ The colour is stored as `farbe` in the `dashboard.novafly` section of
   persisted; the screen then shows the new bank.
 - The colour chosen with the long press is written to the theme's section of
   `settings.ini`, the same place the settings page writes to.
-- On this suite the bank screen opens and closes, but it reads and sets nothing
-  yet: its flight-controller path still uses the 2.3.x MSP API. The port to the
-  suite's `msp.request` bus is pending; on RFSuite Ethos 2.3.x radios the screen
-  works.
+- The bank screen talks to the flight controller over the suite's `msp.request`
+  bus with the `lib/msp_status`, `lib/msp_governor_profile`,
+  `lib/msp_governor_config` and `lib/msp_eeprom` codecs; on RFSuite Ethos 2.3.x
+  radios it uses that release's MSP API. The chain is the same on both: STATUS,
+  the governor profile, STATUS again, the write, the read-back, the EEPROM save.
+  With governor mode LIMIT or DIRECT the bank shows its maximum throttle in
+  percent instead of the head speed.
+- In the simulator a write is acknowledged and the read-back returns the fixture,
+  so a save ends with "Read-back differs. NOT confirmed as saved." and the old
+  set is written back. The simulated STATUS reports PID profile 6 while the
+  simulated sensors report bank 1, so the three banks show "not read" until the
+  two agree.
 - The first frames after a theme load show only the panel: the theme builds
   its angle and glyph tables in two steps and loads at most eight masks per
   wakeup, so no single callback nears the Ethos instruction limit.
