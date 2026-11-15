@@ -22,6 +22,7 @@ Greyed out until the flight controller answers. Read-only while the model is arm
 | PID Spoolup | Configures PID Spoolup. |
 | Voltage Comp | Configures Voltage Comp. |
 | Dyn Min Throttle | Configures Dyn Min Throttle. |
+| TTA Banking | Electric governor with a motorised tail: hold the headspeed TTA adds above the target and wind it down as the yaw stick comes back. Limit, rate and release are on [Tail Rotor](../advanced/tail_rotor.md). Needs MSP API 12.11 (rotorflight-firmware#606); greyed out on older firmware. |
 
 ## Notes
 

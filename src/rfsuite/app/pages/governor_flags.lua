@@ -1,7 +1,7 @@
 -- Governor "Flags" profile editor page. Loaded on demand (plain loadfile) only when the user opens Flight Tuning ->
 -- Governor -> Flags -- see app/tool.lua.
 --
--- Edits four individual bits of MSP_GOVERNOR_PROFILE's `governor_flags`
+-- Edits individual bits of MSP_GOVERNOR_PROFILE's `governor_flags`
 -- (a packed U16, cmd 148/149, see lib/msp_governor_profile.lua) as
 -- separate Off/On choice fields -- matching the original suite's own
 -- app/modules/profile_governor/tools/flags.lua, which exposes the same
@@ -11,7 +11,8 @@
 -- the original's own app/modules/profile_governor/tools/general.lua,
 -- which decodes the same field locally for its own enable-rule logic):
 -- bit2=fallback_precomp, bit3=voltage_comp, bit4=pid_spoolup,
--- bit6=dyn_min_throttle. The other ~6 defined bits (fc_throttle_curve,
+-- bit6=dyn_min_throttle, plus bit7=tta_banking (API 12.11, greyed out
+-- on an FC without it). The other ~6 defined bits (fc_throttle_curve,
 -- tx_precomp_curve, hs_adjustment, autorotation, suspend, bypass) are
 -- wire-present and round-tripped like every other field this page
 -- doesn't touch, but the original doesn't expose them on this page
@@ -51,13 +52,25 @@ local OFF_ON_OPTIONS = {
 -- opts.setEventHandler/opts.setWakeupHandler: see app/menu_container.lua
 -- and app/tool.lua for how Ethos's event()/wakeup() reach a page.
 local function open(opts)
+  -- Assigned right after pageRuntime.new(); see app/pages/pid_controller.lua.
+  local controlRef
   local runtime = pageRuntime.new({
     pageTitle = PAGE_TITLE,
     logTag = "governorflags",
     mspModule = governorProfile,
     opts = opts,
     unloadPackageKeys = {"rfsuite.lib.msp_governor_profile"},
+    -- TTA banking (bit 7, rotorflight-firmware#606, MSP API 12.11): greyed
+    -- out when the FC does not send the TTA banking fields.
+    onLoaded = function()
+      local rt = controlRef and controlRef.runtime
+      if rt and rt.data and not rt.data.has_tta_banking then
+        local field = rt.fields["governor_flags:bit7"]
+        if field then field:enable(false) end
+      end
+    end,
   })
+  controlRef = runtime.controlRef
 
   form.clear()
   runtime:buildChrome()
@@ -73,6 +86,9 @@ local function open(opts)
 
   fieldLayout.buildSingle(runtime, "@i18n(app.modules.governor.dyn_min_throttle)@",
     {key = "governor_flags", bit = 6, choices = OFF_ON_OPTIONS})
+
+  fieldLayout.buildSingle(runtime, "@i18n(app.modules.governor.tta_banking)@",
+    {key = "governor_flags", bit = 7, choices = OFF_ON_OPTIONS})
 
   runtime:loadInitial()
 end

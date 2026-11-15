@@ -591,6 +591,34 @@
           "needs_translation": false,
           "reverse_text": true,
           "max_length": 5
+        },
+        "tta_threshold": {
+          "english": "TTA Threshold",
+          "translation": "סף TTA",
+          "needs_translation": false,
+          "reverse_text": true,
+          "max_length": 13
+        },
+        "tta_banking": {
+          "english": "TTA Banking",
+          "translation": "צבירת TTA",
+          "needs_translation": false,
+          "reverse_text": true,
+          "max_length": 11
+        },
+        "rate": {
+          "english": "Rate",
+          "translation": "קצב",
+          "needs_translation": false,
+          "reverse_text": true,
+          "max_length": 4
+        },
+        "release": {
+          "english": "Release",
+          "translation": "שחרור",
+          "needs_translation": false,
+          "reverse_text": true,
+          "max_length": 7
         }
       },
       "governor": {
@@ -740,6 +768,13 @@
           "needs_translation": false,
           "reverse_text": true,
           "max_length": 16
+        },
+        "tta_banking": {
+          "english": "TTA Banking",
+          "translation": "צבירת TTA",
+          "needs_translation": false,
+          "reverse_text": true,
+          "max_length": 11
         },
         "tbl_off": {
           "english": "Off",
@@ -3482,6 +3517,13 @@
           "needs_translation": false,
           "translation": "סרק מצערת זנב%",
           "reverse_text": true
+        },
+        "tail_motor_lead": {
+          "english": "Tail Motor Lead",
+          "translation": "הקדמת מנוע זנב",
+          "needs_translation": false,
+          "reverse_text": true,
+          "max_length": 15
         },
         "tail_rotor_mode": {
           "english": "Tail Mode",

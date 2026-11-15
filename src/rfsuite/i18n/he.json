@@ -5268,6 +5268,13 @@
           "reverse_text": true,
           "translation": "זמן מעקב"
         },
+        "tta_banking": {
+          "english": "TTA Banking",
+          "max_length": 11,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "צבירת TTA"
+        },
         "voltage_comp": {
           "english": "Voltage Comp",
           "max_length": 12,
@@ -5634,6 +5641,13 @@
           "needs_translation": false,
           "reverse_text": true,
           "translation": "סרק מצערת זנב%"
+        },
+        "tail_motor_lead": {
+          "english": "Tail Motor Lead",
+          "max_length": 15,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "הקדמת מנוע זנב"
         },
         "tail_override_msg": {
           "english": "Hold the tail at center so trim changes move it live. Press Save to keep them.",
@@ -12020,12 +12034,40 @@
           "reverse_text": true,
           "translation": "זנב Rotor"
         },
+        "rate": {
+          "english": "Rate",
+          "max_length": 4,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "קצב"
+        },
+        "release": {
+          "english": "Release",
+          "max_length": 7,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "שחרור"
+        },
         "tail_torque_assist": {
           "english": "Tail Torque Assist",
           "max_length": 18,
           "needs_translation": false,
           "reverse_text": false,
           "translation": "Tail Torque Assist"
+        },
+        "tta_banking": {
+          "english": "TTA Banking",
+          "max_length": 11,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "צבירת TTA"
+        },
+        "tta_threshold": {
+          "english": "TTA Threshold",
+          "max_length": 13,
+          "needs_translation": false,
+          "reverse_text": true,
+          "translation": "סף TTA"
         },
         "yaw_collective_ff_gain": {
           "english": "Yaw Collective FF Gain",

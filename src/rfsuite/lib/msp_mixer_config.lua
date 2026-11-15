@@ -4,6 +4,12 @@
 -- Rotorflight 2.3 / MSP API >= 12.09 is the floor for this rebuild, so
 -- the >=12.0.7/12.0.8 mixer fields from the original API are always
 -- present here.
+--
+-- `tail_motor_lead` (rotorflight-firmware#606, MSP API 12.11) is appended
+-- after collective_tilt_correction_neg. It is read only when the FC sends
+-- it and written back only when it was read, so an older FC never gets a
+-- byte it doesn't expect. `has_tail_motor_lead` tells pages whether the
+-- connected FC has it.
 
 if package.loaded["rfsuite.lib.msp_mixer_config"] then
   return package.loaded["rfsuite.lib.msp_mixer_config"]
@@ -31,7 +37,10 @@ local SIMULATOR_RESPONSE = {
   10,       -- swash_geo_correction
   3,        -- collective_tilt_correction_pos
   11,       -- collective_tilt_correction_neg
+  0,        -- tail_motor_lead
 }
+
+local BASE_BYTES = 21
 
 local msp_mixer_config = {
   READ_COMMAND = READ_COMMAND,
@@ -40,7 +49,7 @@ local msp_mixer_config = {
 
 function msp_mixer_config.decode(buf)
   buf.offset = 1
-  return {
+  local data = {
     main_rotor_dir = mspcodec.readU8(buf),
     tail_rotor_mode = mspcodec.readU8(buf),
     tail_motor_idle = mspcodec.readU8(buf),
@@ -57,6 +66,11 @@ function msp_mixer_config.decode(buf)
     collective_tilt_correction_pos = mspcodec.readS8(buf),
     collective_tilt_correction_neg = mspcodec.readS8(buf),
   }
+  data.has_tail_motor_lead = #buf >= BASE_BYTES + 1
+  if data.has_tail_motor_lead then
+    data.tail_motor_lead = mspcodec.readU8(buf)
+  end
+  return data
 end
 
 function msp_mixer_config.encode(data)
@@ -77,6 +91,9 @@ function msp_mixer_config.encode(data)
   mspcodec.writeS8(payload, data.swash_geo_correction or 0)
   mspcodec.writeS8(payload, data.collective_tilt_correction_pos or 0)
   mspcodec.writeS8(payload, data.collective_tilt_correction_neg or 0)
+  if data.has_tail_motor_lead and data.tail_motor_lead ~= nil then
+    mspcodec.writeU8(payload, data.tail_motor_lead)
+  end
   return payload
 end
 

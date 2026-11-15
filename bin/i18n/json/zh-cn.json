@@ -591,6 +591,34 @@
           "needs_translation": false,
           "reverse_text": false,
           "max_length": 5
+        },
+        "tta_threshold": {
+          "english": "TTA Threshold",
+          "translation": "TTA阈值",
+          "needs_translation": false,
+          "reverse_text": false,
+          "max_length": 13
+        },
+        "tta_banking": {
+          "english": "TTA Banking",
+          "translation": "TTA储备",
+          "needs_translation": false,
+          "reverse_text": false,
+          "max_length": 11
+        },
+        "rate": {
+          "english": "Rate",
+          "translation": "速率",
+          "needs_translation": false,
+          "reverse_text": false,
+          "max_length": 4
+        },
+        "release": {
+          "english": "Release",
+          "translation": "释放",
+          "needs_translation": false,
+          "reverse_text": false,
+          "max_length": 7
         }
       },
       "governor": {
@@ -740,6 +768,13 @@
           "needs_translation": false,
           "reverse_text": false,
           "max_length": 16
+        },
+        "tta_banking": {
+          "english": "TTA Banking",
+          "translation": "TTA储备",
+          "needs_translation": false,
+          "reverse_text": false,
+          "max_length": 11
         },
         "tbl_off": {
           "english": "Off",
@@ -3482,6 +3517,13 @@
           "needs_translation": false,
           "reverse_text": false,
           "max_length": 14
+        },
+        "tail_motor_lead": {
+          "english": "Tail Motor Lead",
+          "translation": "尾电机提前",
+          "needs_translation": false,
+          "reverse_text": false,
+          "max_length": 15
         },
         "tail_rotor_mode": {
           "english": "Tail Mode",
