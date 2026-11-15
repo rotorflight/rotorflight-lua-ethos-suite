@@ -31,7 +31,7 @@ local function open(opts)
 
     fields.smartfuel = ctx.addBool("@i18n(app.modules.settings.fuel)@", "smartfuel", updateFields)
     fields.smartfuelcallout = ctx.addChoice("@i18n(app.modules.settings.fuel_callout_percent)@",
-      "smartfuelcallout", FUEL_CHOICES, {default = 10})
+      "smartfuelcallout", FUEL_CHOICES, {default = 0})
     fields.smartfuelrepeats = ctx.addNumber("@i18n(app.modules.settings.fuel_repeats_below)@", "smartfuelrepeats",
       {min = 1, max = 10, default = 1, suffix = "x"})
     fields.smartfuelhaptic = ctx.addBool("@i18n(app.modules.settings.fuel_haptic_below)@", "smartfuelhaptic")

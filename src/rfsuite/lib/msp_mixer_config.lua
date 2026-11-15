@@ -20,7 +20,7 @@ local SIMULATOR_RESPONSE = {
   0,        -- tail_rotor_mode
   0,        -- tail_motor_idle
   165, 1,   -- tail_center_trim
-  0,        -- swash_type
+  2,        -- swash_type (120: the simulator is a helicopter, so the Setup Wizard has a swash)
   2,        -- swash_ring
   100, 0,   -- swash_phase
   131, 6,   -- swash_pitch_limit

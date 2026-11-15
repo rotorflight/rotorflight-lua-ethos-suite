@@ -152,6 +152,17 @@ function FlightStats:clear()
   self.gateAt = nil
 end
 
+-- The voltage and cell count at the moment the flight ends. The post-flight tiles
+-- show these, not the live values, which change once the pack is unplugged or the
+-- next pack is plugged in (#2663). Kept in the stats table, so the next flight's
+-- clear() drops it, and an offline phase keeps it.
+function FlightStats:land(s, read)
+  local voltage = tonumber((read(s, "voltage"))) -- read() also returns the unit
+  if voltage == nil then return end
+  local cells = s.batteryConfig and tonumber(s.batteryConfig.cellCount)
+  self.stats.landing = {voltage = voltage, cells = cells}
+end
+
 -- The dashboard's "reset flight" action, and the start state.
 function FlightStats:reset()
   self.phase = "preflight"
@@ -226,6 +237,7 @@ function FlightStats:update(s, read, now)
   end
   self.lastArmed = armed
   self.phase = mode
+  if mode == "postflight" and previous ~= "postflight" then self:land(s, read) end
 
   if mode == "inflight" then
     if previous == "preflight" or previous == "armed" then self:clear() end

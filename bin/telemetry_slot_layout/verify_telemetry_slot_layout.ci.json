@@ -1,0 +1,7 @@
+{
+  "id": "telemetry-slot-layout",
+  "name": "A Telemetry save keeps the sensors in their slots, and the ELRS sync writes the config it has just read",
+  "step": "Check the slot placement of a Telemetry save and the fresh read before the ELRS sync writes",
+  "script": "bin/telemetry_slot_layout/verify_telemetry_slot_layout.lua",
+  "rationale": "Issue #2671: every save refilled the managed telemetry slots in catalogue order, so a save with no change moved sensors and packed them to the front. The placement now lives in lib/telemetry_slot_layout.lua: a sensor that stays selected keeps its slot, a deselected one frees it, and a new one takes the first free slot. The harness checks that rule, including the 40-slot case with three native slots kept, and checks that the old rule (refill in catalogue order) would fail the no-change case. Issue #2674: the ELRS sync wrote the whole telemetry config back from a copy read once per connection, so a Setup > Telemetry save made in between was overwritten. The sync now reads the config again before it writes; the harness checks that order in elrslink_task.lua. The sync itself needs a radio, so the second part is a source check and not a run."
+}

@@ -53,9 +53,13 @@ local MODE_OPTIONS = {
   {"@i18n(api.RXFAIL_CONFIG.tbl_set)@", 2},
 }
 
-local function cloneChannels(channels)
+-- One record per channel the flight controller reports: 16 on CRSF, 18 on others (#2667).
+-- The page shows that many rows and no more, so the rows and the writes stay within
+-- what the board has. Before the reply arrives there are none.
+local function cloneChannels(channels, count)
   local out = {}
-  for i = 1, rxfail.CHANNEL_COUNT do
+  local total = count or (channels and #channels) or 0
+  for i = 1, total do
     local channel = channels and channels[i] or nil
     out[i] = {
       mode = channel and channel.mode or 0,
@@ -146,6 +150,32 @@ local function open(opts)
     if opts.onBack then opts.onBack() end
   end
 
+  -- One row per channel the board reports (#2667): built when the first reply is in,
+  -- so a CRSF board, which reports 16, gets 16 rows and AUX 12 and 13 are not shown.
+  local function buildRows(count)
+    local slotsHint = {0, 0}
+    for i = 1, count do
+      local line = form.addLine(CHANNEL_LABELS[i])
+      local slots = form.getFieldSlots(line, slotsHint)
+      local pair = {index = i}
+      pair.mode = form.addChoiceField(line, slots[1], MODE_OPTIONS,
+        function() return channels[i].mode end,
+        function(value)
+          markDirty()
+          channels[i].mode = value
+          refreshEnabled()
+        end)
+      pair.value = form.addNumberField(line, slots[2], 875, 2125,
+        function() return channels[i].value end,
+        function(value) markDirty(); channels[i].value = value end)
+      pair.value:suffix("us")
+      if pair.value.step then pair.value:step(5) end
+      pair.mode:enable(false)
+      pair.value:enable(false)
+      fields[#fields + 1] = pair
+    end
+  end
+
   local function loadData(focusFn)
     if disposed then return end
     loaded = false
@@ -153,10 +183,14 @@ local function open(opts)
     showProgress(MSG_LOADING_TITLE, MSG_LOADING_BODY)
     bus.publish("msp.request", rxfail.buildReadMessage(function(data)
       if disposed then return end
-      channels = cloneChannels(data.channels)
-      original = cloneChannels(data.channels)
+      -- The rows are built on the first reply, for the channels it holds. A later
+      -- reload keeps those rows and reads the same number of channels.
+      local count = #fields > 0 and #fields or math.min(#data.channels, #CHANNEL_LABELS)
+      channels = cloneChannels(data.channels, count)
+      original = cloneChannels(data.channels, count)
       loaded = true
       dirty = false
+      if #fields == 0 then buildRows(count) end
       applyBusy(false)
       closeDialog(focusFn)
       if form.invalidate then form.invalidate() end
@@ -175,10 +209,10 @@ local function open(opts)
     local index = 1
     local function writeNext()
       if disposed then return end
-      while index <= rxfail.CHANNEL_COUNT and not changed(channels, original, index) do
+      while index <= #channels and not changed(channels, original, index) do
         index = index + 1
       end
-      if index > rxfail.CHANNEL_COUNT then
+      if index > #channels then
         bus.publish("msp.request", eeprom.buildWriteMessage(function()
           if disposed then return end
           original = cloneChannels(channels)
@@ -294,28 +328,6 @@ local function open(opts)
   end
   if opts.setWakeupHandler then
     opts.setWakeupHandler(refreshEnabled)
-  end
-
-  local slotsHint = {0, 0}
-  for i = 1, #CHANNEL_LABELS do
-    local line = form.addLine(CHANNEL_LABELS[i])
-    local slots = form.getFieldSlots(line, slotsHint)
-    local pair = {index = i}
-    pair.mode = form.addChoiceField(line, slots[1], MODE_OPTIONS,
-      function() return channels[i].mode end,
-      function(value)
-        markDirty()
-        channels[i].mode = value
-        refreshEnabled()
-      end)
-    pair.value = form.addNumberField(line, slots[2], 875, 2125,
-      function() return channels[i].value end,
-      function(value) markDirty(); channels[i].value = value end)
-    pair.value:suffix("us")
-    if pair.value.step then pair.value:step(5) end
-    pair.mode:enable(false)
-    pair.value:enable(false)
-    fields[#fields + 1] = pair
   end
 
   loadData()

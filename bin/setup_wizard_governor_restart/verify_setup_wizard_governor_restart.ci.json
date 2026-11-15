@@ -1,0 +1,7 @@
+{
+  "id": "setup-wizard-governor-restart",
+  "name": "Setup Wizard governor mode change requests an FC restart",
+  "step": "Check that the Setup Wizard requests a restart when the governor mode changes",
+  "script": "bin/setup_wizard_governor_restart/verify_setup_wizard_governor_restart.lua",
+  "rationale": "The flight controller reads gov_mode only once at boot during governorInit (fc/init.c). While MSP_SET_GOVERNOR_CONFIG saves the mode field to EEPROM, the running firmware keeps using the old mode until reboot. In the Setup Wizard, changing only the governor mode did not set memory.rebootPending, so later steps and Finish never requested a reboot and left the model running the old mode.\n\nThis harness drives setup_wizard_governor.lua and verifies:\n1. Entering the governor step does not request a restart;\n2. Leaving the mode unchanged does not request a restart;\n3. Changing the mode (e.g. Off -> Electric, Electric -> Nitro, Electric -> Off) requests an FC restart (wiz.requestReboot());\n4. Relevant documentation pages note the restart requirement.\n\n--self-test removes the wiz.requestReboot() call and verifies that the checks fail."
+}

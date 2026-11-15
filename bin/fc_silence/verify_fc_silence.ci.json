@@ -1,0 +1,7 @@
+{
+  "id": "fc-silence",
+  "name": "The flight controller's silence on CRSF is measured by the session and announced once",
+  "step": "Check the flight controller silence watch",
+  "script": "bin/fc_silence/verify_fc_silence.lua",
+  "rationale": "Issue #2664: Telemetry Lost was announced when the RF link dropped, which the radio already announces itself. The case the radio cannot see, the flight controller stopping while the link is up, was never announced. The session now counts the silence from the last CRSF custom-telemetry frame (tasks/elrs_sensors.lua returns the time it last took one) and publishes its edges, and tasks/audio_events.lua announces those edges. The harness drives the real tasks/session.lua with a stand-in drain that returns the frame time as the real one does, and checks the 6 s bound, that frames keep it awake, that the next frame ends a silence, that an edge is published once, that only CRSF is watched, and that a dropped link clears it. Its self-test removes the bound and requires the silence to go unreported. On the code before the fix 4 of its 12 checks fail. The announcement itself is checked in bin/audio_events."
+}

@@ -128,6 +128,11 @@ package.loaded["rfsuite.app.close_key"] = {shouldHandleClose = function() return
 package.loaded["rfsuite.app.progress_dialog"] = {open = function() return {close = noop, value = noop} end, SPEED = {}}
 package.loaded["rfsuite.lib.msp_copy_profile"] = {buildWriteMessage = function() return {} end}
 package.loaded["rfsuite.lib.msp_eeprom"] = {buildWriteMessage = function() return {} end}
+-- The board reports six profiles of each kind: the page builds its lists from the counts (#2661).
+package.loaded["rfsuite.lib.msp_status"] = {buildReadMessage = function(onData)
+  onData({pid_profile_count = 6, control_rate_profile_count = 6})
+  return {}
+end}
 
 local bus = requireModule("lib/bus.lua")
 local page = requireModule("app/pages/copy_profiles.lua")

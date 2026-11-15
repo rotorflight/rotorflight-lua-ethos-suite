@@ -19,7 +19,7 @@ Always available offline without an active flight controller connection. Read-on
 | Setting | What it does |
 | --- | --- |
 | *Fuel* | Turns the SmartFuel callouts on. Everything below is greyed out while it is off. |
-| *Callout percent* | The step at which a percentage callout is made. *Default* leaves the choice to the flight controller; the others speak every 5, 10, 20, 25 or 50 percent. Defaults to 10. |
+| *Callout percent* | The step at which a percentage callout is made. *Default* speaks at 10 percent. *Every 5%* speaks at each 5 percent step, from 95 down to 5. *Every 10%*, *Every 20%*, *Every 25%* and *Every 50%* speak at their steps down to 10 percent. The 100 percent step is never spoken. Defaults to *Default*. |
 | *Low fuel repeats* | How often a standing low-fuel warning repeats. Range 1 to 10, default 1. |
 | *Low fuel haptic* | Vibrates as well as speaks on a low-fuel warning. Off by default. |
 
@@ -38,6 +38,10 @@ The callouts distinguish Nitro (Fuel / Low Fuel) from Electric (Battery / Batter
 - A **threshold** announcement (*fuel.wav* for Nitro or *battery.wav* for Electric, plus the percentage) is unchanged: it is made when the
   reading crosses a step of the callout range, once per step, and a standing value does not
   repeat it.
+- **0 % is the consumption reserve, not an empty pack.** The SmartFuel value reads 0 % at the
+  *Consumption Warning %* set on the Battery page (35 % by default). The low-fuel warning is
+  spoken at 0 %, so it comes while that share of the pack is still left. To be warned at 40 % left,
+  set *Consumption Warning %* to 40.
 - Changes are saved to the radio's settings store, not to the flight controller.
 
 ## Related

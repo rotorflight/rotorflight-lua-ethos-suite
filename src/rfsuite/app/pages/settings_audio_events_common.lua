@@ -175,6 +175,10 @@ function common.openPage(pageTitle, opts, build)
     return settings and settings.events and settings.events[key]
   end
 
+  function ctx.temperatureUnit()
+    return settingsStore.temperatureUnit(settings)
+  end
+
   function ctx.setEnabled(field, enabled)
     if field and field.enable then field:enable(enabled == true) end
   end
@@ -203,19 +207,30 @@ function common.openPage(pageTitle, opts, build)
   -- explicit spec field because the two thresholds are the only fields on the
   -- page that need it, and a shared hard-coded /10 here would silently scale
   -- the plain counts as well.
+  -- spec.toShown / spec.toStored, when given, convert between the stored value and the
+  -- shown one where a plain multiple is not enough: the ESC threshold is stored in
+  -- Celsius and shown in Fahrenheit on a Fahrenheit radio (#2662). Without them the shown
+  -- value is the stored one times spec.scale. Stored values are not rounded, so a value
+  -- typed in Fahrenheit reads back as typed.
   function ctx.addNumber(label, key, spec)
     local scale = spec.scale or 1
+    local toShown = spec.toShown or function(value) return value * scale end
+    local toStored = spec.toStored or function(value) return value / scale end
     local line = form.addLine(label)
     local field = form.addNumberField(line, nil, spec.min, spec.max,
       function()
         local value = settings and settings.events and settings.events[key]
         if value == nil then value = spec.default end
         if value == nil then return nil end
-        return math.floor((value * scale) + 0.5)
+        return math.floor(toShown(value) + 0.5)
       end,
       function(value)
         if disposed or not settings then return end
-        settings.events[key] = (value or (spec.default * scale)) / scale
+        if value == nil then
+          settings.events[key] = spec.default
+        else
+          settings.events[key] = toStored(value)
+        end
         updateSaveEnabled()
       end)
     if field then

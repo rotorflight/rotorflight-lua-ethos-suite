@@ -31,6 +31,10 @@ local DEFAULTS = {
     -- The speed controller's own current limit in whole amps. 0 is "not set": an
     -- ESC family that reports no limit, and no page has stored one yet (#2355).
     esc_current_limit = 0,
+    -- Who stored that figure: "page" (an ESC page read it from its ESC), "preferences" (typed
+    -- in on Setup > Power > Preferences), or "" with no figure on file. Only a page's figure is
+    -- cleared by a page that finds its ESC reports no limit (#2744).
+    esc_current_limit_origin = "",
   },
   -- What the flight controller calls itself (MSP_NAME), kept next to its preferences so
   -- the radio can name a model with no link up (lib/known_models.lua). Empty until a
@@ -113,6 +117,9 @@ local function normalize(prefs)
   prefs.battery.becalertvalue = clampDecimal(prefs.battery.becalertvalue, DEFAULTS.battery.becalertvalue, 3.0, 14.0)
   prefs.battery.rxalertvalue = clampDecimal(prefs.battery.rxalertvalue, DEFAULTS.battery.rxalertvalue, 3.0, 14.0)
   prefs.battery.esc_current_limit = clampNumber(prefs.battery.esc_current_limit, DEFAULTS.battery.esc_current_limit, 0, 1000)
+  local origin = prefs.battery.esc_current_limit_origin
+  if origin ~= "page" and origin ~= "preferences" then origin = "" end
+  prefs.battery.esc_current_limit_origin = origin
   return prefs
 end
 
@@ -239,10 +246,23 @@ function model_preferences.escCurrentLimit(prefs)
   return amps
 end
 
--- Stores the limit in whole amps. nil or zero clears it back to "not set".
-function model_preferences.setEscCurrentLimit(prefs, amps)
+-- Who stored the figure: "page", "preferences", or "" when none is on file.
+function model_preferences.escCurrentLimitOrigin(prefs)
+  return model_preferences.withDefaults(prefs).battery.esc_current_limit_origin
+end
+
+-- Stores the limit in whole amps, with its origin ("page" or "preferences"; "page" when not
+-- given). nil or zero clears it back to "not set", and the origin with it.
+function model_preferences.setEscCurrentLimit(prefs, amps, origin)
   prefs = model_preferences.withDefaults(prefs)
   prefs.battery.esc_current_limit = clampNumber(amps, 0, 0, 1000)
+  if prefs.battery.esc_current_limit == 0 then
+    prefs.battery.esc_current_limit_origin = ""
+  elseif origin == "preferences" then
+    prefs.battery.esc_current_limit_origin = "preferences"
+  else
+    prefs.battery.esc_current_limit_origin = "page"
+  end
   return prefs
 end
 

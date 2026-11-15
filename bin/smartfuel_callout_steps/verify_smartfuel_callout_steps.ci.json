@@ -1,0 +1,7 @@
+{
+  "id": "smartfuel-callout-steps",
+  "name": "The SmartFuel callout steps speak the percentages their labels say",
+  "step": "Check the SmartFuel callout steps and the Fuel page default",
+  "script": "bin/smartfuel_callout_steps/verify_smartfuel_callout_steps.lua",
+  "rationale": "Issue #2757: the Fuel page's Every 5% choice spoke only at 50 and 5 percent, because its table in tasks/audio_events.lua was {50, 5}, and Default was described as leaving the choice to the flight controller although it speaks at 10 percent only (the 100 step can never be crossed). The Every 5% table now has every 5 percent step from 95 down to 5, the Fuel page's default is the Default choice (0) that a new settings store holds, and the Fuel and Battery docs say that 0 percent is the consumption reserve set by Consumption Warning percent. The harness drives the real tasks/audio_events.lua with a falling fuel value, one percent per wakeup, and checks the percentages spoken for each callout step. Its self-test restores the old table and requires Every 5% to go red."
+}

@@ -21,11 +21,11 @@ local mspcodec = requireModule("lib/mspcodec.lua")
 local READ_COMMAND = 217
 local WRITE_COMMAND = 218
 
-local ESC_MODE = {{"Heli Gov", 0}, {"Heli Store", 1}, {"VBar Gov", 2}, {"Ext Gov", 3}, {"Airplane", 4}, {"Boat", 5}, {"Quad", 6}}
+local ESC_MODE = {{"Heli Gov", 0}, {"Heli Store", 1}, {"VBar Gov", 2}, {"Ext Gov", 3}, {"@i18n(app.modules.esc_tools.opt.airplane)@", 4}, {"@i18n(app.modules.esc_tools.opt.boat)@", 5}, {"@i18n(app.modules.esc_tools.opt.quad)@", 6}}
 local ROTATION = {{"CCW", 0}, {"CW", 1}}
-local BEC_VOLTAGE = {{"5.1 V", 0}, {"6.1 V", 1}, {"7.3 V", 2}, {"8.3 V", 3}, {"Disabled", 4}}
+local BEC_VOLTAGE = {{"5.1 V", 0}, {"6.1 V", 1}, {"7.3 V", 2}, {"8.3 V", 3}, {"@i18n(app.modules.ports.function_disabled)@", 4}}
 local TELEMETRY_PROTOCOL = {{"Standard", 0}, {"VBar", 1}, {"EX Bus", 2}, {"Unsolicited", 3}, {"Futaba SBUS", 4}}
-local ON_OFF = {{"On", 0}, {"Off", 1}}
+local ON_OFF = {{"@i18n(app.modules.governor.tbl_on)@", 0}, {"@i18n(app.modules.governor.tbl_off)@", 1}}
 
 local FIELD_META = {
   esc_mode = {choices = ESC_MODE},
@@ -41,7 +41,7 @@ local FIELD_META = {
   motor_startup_sound = {choices = ON_OFF},
   soft_start_time = {min = 0, max = 60000, scale = 1000, suffix = "s"},
   runup_time = {min = 0, max = 60000, scale = 1000, suffix = "s"},
-  bailout = {min = 0, max = 100000, scale = 1000, suffix = "s"},
+  bailout = {min = 0, max = 65000, scale = 1000, suffix = "s"}, -- u16 ms: 65 s is the last whole second
   gov_proportional = {min = 30, max = 180, scale = 100, decimals = 2},
   gov_integral = {min = 150, max = 250, scale = 100, decimals = 2},
 }

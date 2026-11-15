@@ -409,6 +409,22 @@ the screen state differs and the comparison is void.
 The `collectgarbage()` dead end in §9 is unaffected: nothing here is a cache
 problem. Fewer modules are loaded.
 
+### 10.1 Cold-open instruction budget
+
+Lazy loading also puts module initialization into the first `create()` callback's
+instruction budget. The tool used to load the full settings file for developer
+mode, then let `memstats` load it again while opening the root menu. With a saved
+configuration this reproduced `Max instructions count reached` before any tiles
+were created; a later open could succeed because the UI modules were cached.
+
+The tool now passes its already-read settings snapshot to `memstats.setSettings()`.
+Diagnostics retain only the memory-logging flag and receive later changes through
+the existing `settings.update` subscription. They do not retain the full snapshot
+or perform a second settings read during menu construction or close.
+`bin/tool_ui/verify_tool_ui_lazy.lua` checks one settings load per open, no extra
+diagnostic reads, and live logging enable/disable behavior. Cold first and second
+opens were also checked in the X20PRO ETHOS 26.2.0-RC1 simulator with ActiveLook off.
+
 ## 11. The C stack is a second budget, and it has exactly one unbounded term
 
 The heap is the budget everyone watches. It is not the only one. Ethos runs

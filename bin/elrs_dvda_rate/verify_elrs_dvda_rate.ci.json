@@ -1,0 +1,7 @@
+{
+  "id": "elrs-dvda-rate",
+  "name": "A DVDA packet rate is counted at its air rate, not the number in its label",
+  "step": "Check the ELRS packet rate and telemetry ratio",
+  "script": "bin/elrs_dvda_rate/verify_elrs_dvda_rate.lua",
+  "rationale": "Issue #2669: the ELRS link task took the packet rate from the first number in the module's label. DVDA modes are named after their handset rate, so D250 was looked up as 250 Hz and got the telemetry ratio 1:64 instead of 1:128, and D50 got 1:16 instead of 1:64. The rate written to the flight controller in ELRS to Rotorflight sync came from the same number. A DVDA label now maps to its air rate (D250, D500, DK250 and DK500 to 1000 Hz, D50Hz to 200 Hz, per ExpressLRS common.cpp), and every other label reads as before. The harness drives the real lib/elrslink_task.lua and reaches its helpers and finalize() through debug upvalues, as the EdgeTX suite's harness does. It checks the air rate of each DVDA label, the unchanged rate of every other label, the Std ratio at the air rate, and the link summary that finalize() publishes for a D250 module. Its self-test puts the label's number back and requires D250 to get 1:64. On the code before the fix the helper does not exist and the checks fail."
+}

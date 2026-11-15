@@ -1,0 +1,7 @@
+{
+  "id": "setup-wizard-motor-tail-stage",
+  "name": "Setup Wizard gear stage change keeps the tail ratio and never writes a product past the limit",
+  "step": "Check that a stage change on the Motor & ESC step keeps the tail ratio of a tail driven from the intermediate shaft, refuses what it cannot keep, and leaves a tail from the main shaft as it is",
+  "script": "bin/setup_wizard_motor_tail_stage/verify_setup_wizard_motor_tail_stage.lua",
+  "rationale": "A tail driven from the intermediate shaft has two FC products: main gear x drive tooth over intermediate gear x tail tooth. The Motor & ESC step recomputed the main-side counts on a stage change and kept the tail teeth, so the tail ratio changed with the stage (7.11 became 1.90 in #2701), and the restored products were written without the TRAIN_MAX check the tail edit has, so a value could wrap past 16 bits.\n\nThe harness drives the real setup_wizard_motor.lua from its Start page to the Main screen, with the UI, art and MSP modules replaced by recording stubs, and sets the stage drop-down. It pins the write each change makes: the tail ratio is 6 before and after with the drive tooth moved to 120; a restored tooth that is not whole, or a product past TRAIN_MAX, is refused with no write and the refusal note on the page; a tail from the main shaft keeps its products.\n\n--self-test runs the same checks on copies with the drive tooth correction and the product limit taken out. Each must go red."
+}

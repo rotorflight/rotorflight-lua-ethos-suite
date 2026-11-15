@@ -34,6 +34,14 @@ Rotorflight is based on **Betaflight 4.3**, but includes a wide range of advance
 -   FrSky and ELRS receiver compatibility
     
 -   Multiple embedded tools and widgets
+
+-   Flight-phase dashboards with statistics and quick access to battery profiles
+
+-   SmartFuel monitoring and battery profile management
+
+-   Configurable voice announcements and alerts for flight status, battery, ESC temperature and telemetry loss
+
+-   Multilingual interface and localized sound packs
     
 
 You can preview the experience using the interactive simulator:
@@ -58,11 +66,15 @@ Dashboard themes are available for different flight states. See the [Dashboard T
 **Governor Configuration**  
 ![Governor Config](https://raw.githubusercontent.com/rotorflight/rotorflight-lua-ethos-suite/master/.github/gfx/gov.png)
 
+### ActiveLook Smart Glasses
+
+RFSuite can display telemetry and alerts on compatible ActiveLook smart glasses, with configurable layouts for preflight, inflight and postflight. See the [ActiveLook Layout Overview](docs/Activelook%20Layout%20Overview.md) for previews of all five layouts and the alarm and status overlays.
+
 ----------
 
 ## Documentation
 
-- **[Configuration Pages](docs/pages/README.md):** Reference for all 76 configuration and tuning pages, organized by menu domain (*Flight Tuning*, *Setup*, *Tools*, *Logs*, *Settings*). Generated from the menu hierarchy and the page sources, and filled in as changes reach them — see the index for what the 76 means.
+- **[Configuration Pages](docs/pages/README.md):** Reference for all 87 configuration and tuning pages, organized by menu domain (*Flight Tuning*, *Setup*, *Tools*, *Logs*, *Settings*). Generated from the menu hierarchy and the page sources, and filled in as changes reach them — see the index for the current page list.
 - **[Documentation Overview](docs/README.md):** Directory map, conventions, dashboard theme overviews, and memory lifecycle guides.
 - **[Page Template](docs/_template.md):** Canonical template and frontmatter standard for all configuration pages.
 - **[Scaffold Generator](bin/docs/generate_menu_docs.py):** CLI tool to scaffold, inspect, and verify that every reachable page has a documentation file (`bin/docs/generate_menu_docs.cmd --check`). It checks that a file exists, not that its contents are right.
@@ -79,7 +91,7 @@ Rotorflight includes a rich feature set, including:
     
 -   Telemetry: CRSF, S.Port, HoTT, and more
     
--   ESC telemetry: BLHeli32, Hobbywing, Scorpion, Kontronik, OMP Hobby, ZTW, APD, YGE
+-   ESC telemetry: BLHeli32, Hobbywing V4/V5, Scorpion, Kontronik, OMP Hobby, ZTW, APD, YGE (OpenYGE), FlyRotor, Graupner, XDFLY and FrSky F.BUS; SRXL2
     
 
 ### Helicopter-Specific Features
@@ -101,6 +113,12 @@ Rotorflight includes a rich feature set, including:
     
 -   Lua script interface on EdgeTX/OpenTX/Ethos
     
+
+### ESC Forward Programming
+
+RFSuite lets you read and adjust compatible ESC settings directly from your Ethos transmitter, including motor timing, startup behavior, governor settings and BEC voltage where supported. Available settings depend on the ESC model and firmware.
+
+-   Supported ESC manufacturers and firmware: Hobbywing (V5), FlyRotor, OMP Hobby, Scorpion, XDFLY, YGE and ZTW, AM32, BLHeli_S and Bluejay
 
 ### Additional Capabilities
 
@@ -136,7 +154,7 @@ To use RFSuite, you'll need:
     
 -   A compatible FrSky transmitter:
     
-    -   X10, X12, X14, X18, X20, or Twin X Lite
+    -   X10, X12, X14, X18, X20, XE or Twin X Lite
         
 -   A supported receiver:
     
@@ -179,8 +197,18 @@ For Windows, Mac & Linux users, a prebuilt GUI updater is available to simplify 
 - Standalone Windows executable (plus macOS/Linux builds)
 - Intended for end users or quick updates
 
-![Updater](https://raw.githubusercontent.com/rotorflight/rotorflight-lua-ethos-suite-updater/master/.github/gfx/updater.png)
+<img src="https://raw.githubusercontent.com/rotorflight/rotorflight-lua-ethos-suite-updater/master/src/README.png" alt="Updater" width="600">
 
+
+### Alternative: Manual Installation via FrSky Suite
+
+You can also install a release package using **FrSky Suite** (formerly Ethos Suite):
+
+1. Download the RFSuite release ZIP for your language from the [Releases page](https://github.com/rotorflight/rotorflight-lua-ethos-suite/releases), under **Assets**.
+2. Connect your transmitter to FrSky Suite and open **ETHOS → Lua library**.
+3. Under **Install Lua scripts**, open the downloaded ZIP to install it on the radio.
+
+Use a release package rather than **Code → Download ZIP**, which contains the source files. See the [official Suite guide](https://ethos-lua-doc.frsky-rc.com/tools/frsky-suite/) for details.
 
 ----------
 
@@ -189,8 +217,6 @@ For Windows, Mac & Linux users, a prebuilt GUI updater is available to simplify 
 To build and deploy RFSuite locally:
 
 ### Requirements
-
-See `docs/dev-environment.md` for the full developer environment setup guide.
 
 -   Visual Studio Code (VS Code)
     
@@ -210,25 +236,18 @@ See `docs/dev-environment.md` for the full developer environment setup guide.
 
 ### VS Code Tasks
 
--   **Deploy & Launch** – Pushes scripts to the default simulator
+Run these via **Terminal → Run Task**. For simulator deployment and launch together, select **Deploy & Launch [SIM]** in **Run and Debug**.
 
--   **Deploy & Choose** – Pushes scripts to the selected simulator 
-    
--   **Deploy Radio** – Pushes scripts to the radio
+| Task | Purpose |
+| --- | --- |
+| **Deploy & Launch [SIM]** | Deploys to the configured simulator; the Run and Debug configuration also launches it. |
+| **Deploy Radio** | Deploys scripts, translations, sound packs and sensors to the radio. |
+| **Deploy Radio + Serial Debug** | Deploys to the radio and opens the serial debug console. |
+| **Radio: Serial Debug** | Opens the serial debug console without deploying. |
+| **Run RFSuite Sensor Tool** | Opens the sensor editor for simulator test values. |
+| **ActiveLook Preview** | Opens the local browser preview for layouts, telemetry and alerts; requires Python 3.11+ and the [preview dependencies](bin/activelook_preview/README.md). |
 
--   **Deploy Radio and  Debug** – Pushes scripts to the radio and starts serial console
-    
-
-----------
-
-## Installation Instructions
-
-1.  Download the latest files:
-    
-    -   Click **Code** > **Download ZIP**
-        
-2.  Install using the Ethos Suite Lua Tools on your transmitter.
-    
+For language selection, use **Set Deployment Language** in **Run and Debug**, or set `rfsuite.deploy.language` in `.vscode/settings.json`. The task **RFSuite: Set Deployment Language** currently lacks its input definition in `tasks.json`.
 
 ----------
 
@@ -242,14 +261,14 @@ Rotorflight is a community-driven open-source project. You can contribute by:
     
 -   Testing and giving feedback on new versions
     
--   Updating the [Rotorflight documentation](https://doc.rotorflight.org/contributing/editing-the-docs/)
+-   Updating the [Rotorflight documentation](https://doc.rotorflight.org/stable/contributing/editing-the-docs/)
     
 -   Translating the configurator to other languages
     
 -   Contributing code (fixes, features, enhancements)
     
 
-🔧 See the full [Contributing Guide](https://doc.rotorflight.org/contributing/)
+🔧 See the full [Contributing Guide](https://doc.rotorflight.org/stable/contributing/)
 
 ----------
 

@@ -98,6 +98,7 @@ _G.form = {
   addTextButton = function() return widgetStub("textbutton") end,
   addStaticText = function() return widgetStub("text") end,
   addNumberField = function() return fieldStub() end,
+  addChoiceField = function() return fieldStub() end,
   addLine = function() return 1 end,
   clear = function() end,
   height = function() return 320 end,
@@ -354,7 +355,9 @@ local function governorRequestsReboot()
     if false then return name end
   end
   for _, config in ipairs(capturedConfigs) do
-    if config.rebootAfterSave then return true end
+    local reboot = config.rebootAfterSave
+    if type(reboot) == "function" then reboot = reboot() end
+    if reboot == true then return true end
   end
   return false
 end
@@ -544,10 +547,13 @@ if selfTest then
   out("")
   out("--self-test: the gates below must be able to go red")
 
-  local spliced = loadGovernorPages(function(_, source)
-    local outSource, n = source:gsub("rebootAfterSave = false", "rebootAfterSave = true", 1)
-    assert(n == 1, "splice did not apply to the governor page")
-    return outSource
+  local spliced = loadGovernorPages(function(name, source)
+    if name == "setup_governor_curves.lua" then
+      local outSource, n = source:gsub("rebootAfterSave = false", "rebootAfterSave = true", 1)
+      assert(n == 1, "splice did not apply to the governor page")
+      return outSource
+    end
+    return source
   end)
   check("the governor check goes red when a page asks for a reboot",
     governorRequestsReboot() == true and spliced.opened == 4,

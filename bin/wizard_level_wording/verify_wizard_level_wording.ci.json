@@ -1,0 +1,7 @@
+{
+  "id": "wizard-level-wording",
+  "name": "The Setup Wizard's level page names the three steps in order",
+  "step": "Check the Setup Wizard level wording",
+  "script": "bin/wizard_level_wording/verify_wizard_level_wording.lua",
+  "rationale": "Issue #2705: the level page told the pilot to trim to zero pitch without naming the links, while level.md says to level mechanically first, and the blades story differed between steps. The intro and the rear text now name the three work steps in order: the links until the swash is level, the trim for the fine adjustment, and the blade links until the pitch is zero. The gyro card still says Blades off. The strings are wording only; the flow and the controls are unchanged. The harness checks the order of the words in the English intro and rear text, that the gyro card keeps Blades off, that the runtime locale file carries the same texts as the source, and that German translations exist. Its self-test reads the previous wording from git and requires the step-order check to fail on it. The motor-off card before the level step, which the issue also suggests, is a flow change and is not made here."
+}

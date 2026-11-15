@@ -1,0 +1,7 @@
+{
+  "id": "lua-syntax",
+  "name": "Every Lua file under src/ parses",
+  "step": "Compile every tracked src/**/*.lua without running it",
+  "script": "bin/lua_syntax/verify_lua_syntax.lua",
+  "rationale": "Most harnesses load only the modules they test, so a file that no harness loads is never parsed in CI, and a\nbroken line in it only fails on the radio when its page opens. PR #2722 had one: a module held a literal \"\\r\\n\" as text,\ndid not parse, and every check was green.\n\nThe harness compiles every file `git ls-files` lists under src/ with load() in text mode, without running it, and\nnames each file that does not parse. Before the scan it checks itself: a chunk with the same kind of broken line must be\nrefused and a well-formed one accepted, on every run, so CI proves the job can go red."
+}

@@ -1,15 +1,20 @@
 -- Tune Advisor capture, owned by the background task.
 --
 -- The FC measures the rate loop while you fly (lib/msp_tune_advisor.lua) but
--- keeps it in RAM. On each disarm this reads all three axes, saves them as
--- one flight (lib/tune_history.lua: the last few flights per aircraft), then
--- clears the FC so the next flight is measured on its own. The Tune Advisor
--- page works from the saved flights, not from the FC.
+-- keeps it in RAM. On each disarm this reads all three axes and the two
+-- settings the statistics do not carry (Cyclic polarity and ring, I-term relax
+-- type: MSP_RC_TUNING and MSP_PID_PROFILE), saves them as one flight
+-- (lib/tune_history.lua: the last few flights per aircraft), then clears the FC
+-- so the next flight is measured on its own. The Tune Advisor page works from
+-- the saved flights, not from the FC.
 --
 -- Event-driven from "session.update", no scheduler job: a capture is armed
 -- by a disarm and runs once the link and aircraft identity are there, so a
--- flight that ends during a link loss is still captured on reconnect (the
--- FC kept the numbers). Nothing is saved for a flight with no acro flight
+-- flight that ends during a link loss is still captured on reconnect to the
+-- same aircraft (the FC kept the numbers). The flight is read from the FC of
+-- the aircraft that was disarmed, and the clear goes to the FC whose flight
+-- was saved: another aircraft connected in between is left alone until the
+-- right one is back. Nothing is saved for a flight with no acro flight
 -- (flight_seconds 0). If the clear never gets through before the next arm,
 -- that next flight's row also holds this one's data: the FC cannot tell.
 --
@@ -28,6 +33,8 @@
 -- changes, so the Tune Advisor page can hold its advice until the flight is in:
 --   "reading"  disarmed with this flight not saved yet, or its clear still to go
 --   "failed"   gave up after MAX_FAILURES; the next disarm reads it
+--   "unread"   the FC answered in a layout this suite refuses: the flight is held
+--              there but not read; the next disarm asks once more
 --   "idle"     anything else
 --
 -- Clocked by tasks/background.lua's scheduler (wakeup(), every 0.5 s), not by
@@ -48,14 +55,16 @@ local MAX_FAILURES = 3            -- link errors per disarm before waiting for t
 local lastArmed = nil             -- last known arm state; a link loss (nil) keeps it
 local pending = false             -- a disarm has not been captured yet
 local clearPending = false        -- saved, the FC not cleared yet
+local pendingMcu = nil            -- the FC of the aircraft that was disarmed: where its flight is read
+local clearMcu = nil              -- the FC whose saved flight is not cleared yet: where the clear goes
 local busy = false                -- a request is out
 local refusedOnFc = false         -- the FC holds a flight this layout refused: no clear, it would erase that flight
 local nextAt = 0                  -- no request before this os.clock()
 local failures = 0                -- link errors since the last disarm
-local capture = {mcuId = nil, modelName = nil, replies = {}}
+local capture = {mcuId = nil, modelName = nil, replies = {}, settings = {}}
 -- The latest session snapshot's fields this task reads, copied rather than
 -- holding on to the snapshot table
-local link = {armed = nil, connected = false, mcuId = nil, apiVersionSupported = nil, craftName = nil,
+local link = {armed = nil, connected = false, mcuId = nil, mcuIdReady = false, apiVersionSupported = nil, craftName = nil,
   fcVersion = nil, support = nil}
 local lastSeconds = {}            -- by mcuId: flight_seconds of the last flight saved
 local state = nil                 -- last "tune_history.state" published
@@ -66,7 +75,9 @@ local function publishState()
     now = "idle"
   elseif pending then
     now = nextAt == math.huge and "failed" or "reading"
-  elseif clearPending and not refusedOnFc and nextAt ~= math.huge then
+  elseif refusedOnFc then
+    now = "unread"
+  elseif clearPending and nextAt ~= math.huge then
     now = "reading"
   else
     now = "idle"
@@ -88,6 +99,16 @@ end
 
 local function clearReplies()
   for i = #capture.replies, 1, -1 do capture.replies[i] = nil end
+  for i = #capture.settings, 1, -1 do capture.settings[i] = nil end
+end
+
+-- The settings the statistics do not carry (issues #2639, #2640, #2642) are
+-- read after the three axes and stored on every axis row of the flight; see
+-- lib/tune_history_settings.lua for the two reads.
+local SETTINGS_COUNT = 2
+
+local function captureComplete()
+  return #capture.replies >= tuneAdvisor.AXIS_COUNT and #capture.settings >= SETTINGS_COUNT
 end
 
 local function waitFor(seconds)
@@ -107,9 +128,11 @@ local function failed()
   waitFor(RETRY_SECONDS)
 end
 
-local function onCleared()
+-- target: the mcuId the clear was sent to, the FC whose flight was saved (see sendClear)
+local function onCleared(target)
   waitFor(0)
   clearPending = false
+  lastSeconds[target] = nil  -- that FC holds nothing now
   publishState()
 end
 
@@ -162,19 +185,29 @@ local function onError(reason, refused)
   publishState()
 end
 
+-- The clear goes to the FC whose saved flight it erases, and advance() sends it only
+-- while that aircraft is connected. The marker reset is keyed by that same FC.
 local function sendClear()
   busy = true
-  bus.publish("msp.request", tuneAdvisor.buildClearMessage(onCleared, onError))
+  local target = clearMcu
+  bus.publish("msp.request", tuneAdvisor.buildClearMessage(function() onCleared(target) end, onError))
 end
 
 local onData
+local onSetting
 
 local function requestAxis(axis)
   busy = true
   bus.publish("msp.request", tuneAdvisor.buildReadMessage(axis, onData, onError))
 end
 
--- All three axes are in: save them as one flight, then clear the FC.
+local function requestSetting(index)
+  busy = true
+  -- Index 1: MSP_RC_TUNING (Cyclic polarity, ring), index 2: MSP_PID_PROFILE (relax type)
+  requireModule("lib/tune_history_settings.lua").request(index, function(data) onSetting(data) end, onError)
+end
+
+-- All three axes and both settings are in: save them as one flight, then clear the FC.
 local function finishCapture()
   local replies = capture.replies
   local mcuId, seconds = capture.mcuId, replies[1].seconds
@@ -186,6 +219,16 @@ local function finishCapture()
       failed()
       return
     end
+  end
+  -- The settings are read at capture, not during the flight: the FC keeps no
+  -- snapshot of them, so a change made after the flight and before this capture
+  -- lands on it. Every axis row carries them
+  local rc, pid = capture.settings[1], capture.settings[2]
+  for i = 1, #replies do
+    local a = replies[i].a
+    a.polar = rc.cyclic_polarity
+    a.ring = rc.cyclic_ring
+    a.relaxType = pid.iterm_relax_type
   end
   -- 0: no acro flight. Same as last time: the clear after that flight never
   -- got through and nothing new was flown.
@@ -202,17 +245,30 @@ local function finishCapture()
   end
   clearReplies()
   pending = false
-  if seconds > 0 then clearPending = true end
+  if seconds > 0 then
+    clearPending = true
+    clearMcu = mcuId
+  end
   waitFor(GAP_SECONDS)
 end
 
 onData = function(data)
   local replies = capture.replies
   replies[#replies + 1] = data
-  if #replies < tuneAdvisor.AXIS_COUNT then
-    waitFor(GAP_SECONDS)
-  else
+  if captureComplete() then
     finishCapture()
+  else
+    waitFor(GAP_SECONDS)
+  end
+  publishState()
+end
+
+onSetting = function(data)
+  capture.settings[#capture.settings + 1] = data
+  if captureComplete() then
+    finishCapture()
+  else
+    waitFor(GAP_SECONDS)
   end
   publishState()
 end
@@ -228,11 +284,18 @@ local function advance()
     return
   end
   if link.support ~= true then return end
+  -- session.mcuId is kept across a disconnect for the held flight. Until this
+  -- connection's UID handshake answers, it can still be the previous FC's, so
+  -- nothing is read or cleared against it before then.
+  if not link.mcuIdReady then return end
   if not (pending or clearPending) or busy or link.armed ~= false or link.connected ~= true then return end
   if not link.mcuId or link.apiVersionSupported == false then return end
   if os.clock() < nextAt then return end
 
   if pending then
+    -- The flight is in the FC of the aircraft that was disarmed. Another aircraft
+    -- connected in between does not hold it, so the read waits for this one.
+    if pendingMcu and link.mcuId ~= pendingMcu then return end
     -- Another aircraft since the last answer: its axes, not these
     if #capture.replies > 0 and capture.mcuId ~= link.mcuId then clearReplies() end
     if #capture.replies == 0 then
@@ -240,12 +303,15 @@ local function advance()
       capture.mcuId = link.mcuId
       capture.modelName = modelName()
     end
-    if #capture.replies >= tuneAdvisor.AXIS_COUNT then
+    if captureComplete() then
       finishCapture()             -- a save that failed, tried again
-    else
+    elseif #capture.replies < tuneAdvisor.AXIS_COUNT then
       requestAxis(#capture.replies + 1)
+    else
+      requestSetting(#capture.settings + 1)
     end
-  elseif not refusedOnFc then
+  elseif not refusedOnFc and clearMcu == link.mcuId then
+    -- the clear goes to the FC that holds the saved flight, and only there
     sendClear()
   end
 end
@@ -257,6 +323,8 @@ local function onSessionUpdate(snapshot)
     pending = false               -- the next disarm captures this flight too
   elseif armed == false and lastArmed == true then
     pending = true
+    -- the aircraft that was flown: its FC holds this flight, whatever is connected later
+    pendingMcu = snapshot.mcuId or link.mcuId
     failures = 0
     clearReplies()
     nextAt = os.clock() + START_SECONDS
@@ -265,6 +333,7 @@ local function onSessionUpdate(snapshot)
   link.armed = armed
   link.connected = snapshot.connected
   link.mcuId = snapshot.mcuId
+  link.mcuIdReady = snapshot.handshake and snapshot.handshake.mcuId == true or false
   link.apiVersionSupported = snapshot.apiVersionSupported
   link.craftName = snapshot.craftName
   if snapshot.fcVersion ~= link.fcVersion then

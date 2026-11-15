@@ -178,6 +178,21 @@ local session = {
   },
 }
 
+-- The aircraft that owns a flight in progress. A reconnect may update
+-- session.mcuId to a different connected controller before the held flight
+-- closes, so flight-time events must not use the current link's preferences.
+local flightOwnerMcuId = nil
+-- Bind each held flight to the connection that first observed it armed. A UID
+-- received by a later connection must never claim a flight whose owner was
+-- unidentified when it started.
+local connectionEpoch = 0
+local flightOwnerConnectionEpoch = nil
+local flightOwnerMcuIdByConnectionEpoch = {}
+-- Flight events can precede the UID response on their owning connection. Keep
+-- them until that same connection confirms its MCU ID instead of dropping or
+-- attributing them to whichever controller happens to be connected later.
+local pendingFlightStats = {}
+
 local localSmartFuel = SmartFuel.new()
 
 -- Pushed unconditionally whenever updateFuel() runs, regardless of
@@ -455,6 +470,7 @@ local function flush()
     bblSize = session.bblSize,
     bblUsed = session.bblUsed,
     isArmed = session.isArmed,
+    telemetryFcSilent = session.telemetryFcSilent,
     armedUnconfirmed = session.armedUnconfirmed,
     armDisableFlags = session.armDisableFlags,
     rxMap = session.rxMap,
@@ -478,10 +494,16 @@ local function updateModelSnapshots()
   end
 end
 
-local function saveModelPreferences()
+-- Writes the model preferences. False when the store refused the write.
+local function writeModelPreferences()
   if session.modelPreferences and session.modelPreferencesFile then
-    modelPreferences.save(session.modelPreferencesFile, session.modelPreferences)
+    return modelPreferences.save(session.modelPreferencesFile, session.modelPreferences) ~= false
   end
+  return true
+end
+
+local function saveModelPreferences()
+  writeModelPreferences()
   updateModelSnapshots()
   publish()
 end
@@ -572,9 +594,31 @@ local function armedOrUnconfirmed()
   return session.isArmed == nil and session.armedUnconfirmed == true
 end
 
+-- #2758: a model can already be armed when its link comes up (a late link, a
+-- radio restarted with the model running). Until this connection has a reading
+-- of the arm state, nothing the session queues on the MSP link may go out:
+-- isArmed == nil there means "not read yet", and the reads would reach an armed
+-- flight controller. A flight controller that reports neither the arming flags
+-- nor the System Status word never gives a reading, so the wait ends
+-- ARMED_STATE_WAIT seconds after the link came up. That is a time bound, not a
+-- proof: the armflags sensor can be broadcast late on a weak link (the S.Port
+-- and CRSF round-robin cycles through the sensors), so the bound has to outlast
+-- one full round-robin. Only a flight controller that never reports the arm
+-- state pays the full wait.
+local ARMED_STATE_WAIT = 15.0
+local linkUpAt = nil
+
+local function armedStateKnown()
+  if session.isArmed ~= nil then return true end
+  return linkUpAt ~= nil and os.clock() - linkUpAt >= ARMED_STATE_WAIT
+end
+
 local function syncStatsWithFc(mspQueue)
   if not mspQueue or statsReadInFlight or statsWriteInFlight then return end
-  if session.connected ~= true or armedOrUnconfirmed() then return end
+  if session.connected ~= true or armedOrUnconfirmed() or not armedStateKnown() then return end
+  -- The retained UID may belong to the flight before a reconnect. Never use
+  -- it for an MSP stats request until this connection's handshake confirms it.
+  if session.handshake.mcuId ~= true then return end
   if not loadModelPreferences() then return end
 
   statsReadInFlight = true
@@ -592,7 +636,7 @@ end
 
 local function updateBlackboxSummary(mspQueue)
   if not mspQueue or blackboxReadInFlight then return end
-  if session.connected ~= true or session.isArmed == true then return end
+  if session.connected ~= true or session.isArmed == true or not armedStateKnown() then return end
   -- Skip while a page/menu is open (app/tool.lua's "app.state" -- see
   -- appRunning's own comment above): this is a "nice to have, eventually"
   -- background refresh, not something any page depends on, and it was
@@ -646,7 +690,10 @@ local function provisionFrskySensors(protocol)
 end
 
 local function requestTelemetryConfig(mspQueue, protocol)
-  if not mspQueue or telemetryConfigReadInFlight or session.telemetrySlots or session.isArmed == true then return end
+  if not mspQueue or telemetryConfigReadInFlight or session.telemetrySlots or session.isArmed == true
+      or not armedStateKnown() then
+    return
+  end
 
   telemetryConfigReadInFlight = true
   local queued = mspQueue:add(telemetryConfig.buildReadMessage(function(slots)
@@ -681,7 +728,7 @@ end
 -- mspQueue:clear()), their error handlers receive reason == "cleared", leaving
 -- the element uncompleted so it can be resumed upon disarm.
 local function runHandshake(mspQueue, protocol)
-  if not mspQueue or session.connected ~= true or session.isArmed == true then
+  if not mspQueue or session.connected ~= true or session.isArmed == true or not armedStateKnown() then
     return
   end
 
@@ -929,6 +976,34 @@ local function clearAircraftIdentity()
   session.modelStats = nil
 end
 
+-- The flight controller has stopped sending while the RF link is up (#2664). The
+-- radio announces a lost RF link itself, so this is the case it cannot see. Only
+-- CRSF carries the custom telemetry this follows: tasks/elrs_sensors.lua stamps
+-- session.telemetryFrameAt when it takes a frame. The silence is counted from the
+-- later of that stamp and the first wakeup of the link, so a link that has just come
+-- up is not taken for a silence that began before it. session.telemetryFcSilent is
+-- published only when it changes, which is the edge audio_events announces.
+local TELEMETRY_QUIET_SECONDS = 6
+local telemetryWatchFrom = nil
+
+local function watchFlightControllerTelemetry(now, protocol)
+  if session.connected ~= true or protocol ~= "crsf" then
+    telemetryWatchFrom = nil
+    if session.telemetryFcSilent ~= nil then
+      session.telemetryFcSilent = nil
+      publish()
+    end
+    return
+  end
+  if telemetryWatchFrom == nil then telemetryWatchFrom = now end
+  local since = math.max(session.telemetryFrameAt or telemetryWatchFrom, telemetryWatchFrom)
+  local silent = (now - since) >= TELEMETRY_QUIET_SECONDS
+  if silent ~= (session.telemetryFcSilent == true) then
+    session.telemetryFcSilent = silent or nil
+    publish()
+  end
+end
+
 -- Set once system_status has reported a healthy GPS this connection; see
 -- updateSystemStatus().
 local gpsSeenHealthy = false
@@ -936,6 +1011,22 @@ local gpsSeenHealthy = false
 local function setConnected(value, mspQueue, protocol)
   if session.connected == value then return end
   session.connected = value
+  linkUpAt = value and os.clock() or nil
+  if value then
+    connectionEpoch = connectionEpoch + 1
+    -- A disconnected connection cannot complete its old handshake later: its
+    -- request queue is cleared below. Retain its events through that teardown,
+    -- but discard any still-unidentified bucket now that it is unresolvable.
+    for ownerEpoch in pairs(pendingFlightStats) do
+      if ownerEpoch < connectionEpoch then debugLog.print("[session] discarding flight stats from an unidentified connection") pendingFlightStats[ownerEpoch] = nil end
+    end
+    for ownerEpoch in pairs(flightOwnerMcuIdByConnectionEpoch) do
+      if ownerEpoch < connectionEpoch then flightOwnerMcuIdByConnectionEpoch[ownerEpoch] = nil end
+    end
+  end
+  -- Published like every other state change: a page that waits for the link (the setup wizard's
+  -- reboot wait) sees the drop and the return through session.update.
+  publish()
   resetScheduler()
 
   if value then
@@ -977,9 +1068,10 @@ local function setConnected(value, mspQueue, protocol)
     for k in pairs(handshakeInFlight) do
       handshakeInFlight[k] = false
     end
-    if holdingFlight and session.mcuId then
-      session.handshake.mcuId = true
-    end
+    -- A flight may resume after reconnect, but the next FC may be a different
+    -- aircraft. Keep the flight state and retained identity for continuity,
+    -- but do not let that old UID complete the new connection's handshake.
+    -- Consumers must wait for the connected FC's UID before capture or clear.
     session.fcVersion = nil
     session.rfVersion = nil
     session.apiVersionMajor = nil
@@ -1040,6 +1132,9 @@ local function setConnected(value, mspQueue, protocol)
     -- grace window.
     session.flightResumable = holdingFlight == true
     session.isArmed = nil
+    session.telemetryFrameAt = nil
+    session.telemetryFcSilent = nil
+    telemetryWatchFrom = nil
     session.armDisableFlags = nil
     localSmartFuel:reset()
     smartfuelSensor:reset()
@@ -1291,6 +1386,10 @@ local function updateArmState(protocol, mspQueue)
         debugLog.print("[session] disarmed with pending handshake elements; resuming handshake")
         runHandshake(mspQueue, protocol)
       end
+    elseif wasArmed == nil and session.connected == true and not isHandshakeComplete() then
+      -- The first reading of this link says disarmed: the wait for it is over
+      -- (#2758), so the handshake starts now instead of at the next retry tick.
+      runHandshake(mspQueue, protocol)
     end
     publish()
   end
@@ -1409,6 +1508,31 @@ end
 
 local function updateFlightTimer(now)
   local changed, snapshot, event = flightTimer.update(session.connected, session.isArmed, now)
+  local inProgress = flightTimer.inProgress and flightTimer.inProgress(now)
+  local finishedFlight = event and (event.finishedSegment or 0) > 0
+  local eventOwnerMcuId = flightOwnerMcuId
+  local eventOwnerConnectionEpoch = flightOwnerConnectionEpoch
+
+  -- A close/start tick belongs to the old flight for its event, then to a new
+  -- flight for subsequent events. Capture the old owner above before latching
+  -- the new flight below.
+  if finishedFlight then
+    flightOwnerMcuId = nil
+    flightOwnerConnectionEpoch = nil
+  end
+  if inProgress and not flightOwnerConnectionEpoch then
+    flightOwnerConnectionEpoch = connectionEpoch
+  end
+  -- Only the owning connection can identify a previously unidentified flight.
+  if flightOwnerConnectionEpoch == connectionEpoch
+      and session.handshake.mcuId == true and session.mcuId then
+    flightOwnerMcuId = flightOwnerMcuId or session.mcuId
+    flightOwnerMcuIdByConnectionEpoch[connectionEpoch] = flightOwnerMcuId
+  end
+  if not finishedFlight then
+    eventOwnerMcuId = flightOwnerMcuId
+    eventOwnerConnectionEpoch = flightOwnerConnectionEpoch
+  end
   -- Recomputed every tick, not only on change: the grace window can expire
   -- while the link stays down, and the log writer has to learn that the flight
   -- can no longer be resumed.
@@ -1421,24 +1545,79 @@ local function updateFlightTimer(now)
     publish()
   end
 
-  if event and loadModelPreferences() then
-    local stats = modelPreferences.stats(session.modelPreferences)
-    if event.flightCounted then
-      stats.flightcount = (tonumber(stats.flightcount) or 0) + 1
-      session.modelPreferences = modelPreferences.setStats(session.modelPreferences, stats)
-      saveModelPreferences()
+  if event and eventOwnerConnectionEpoch
+      and (event.flightCounted or (event.finishedSegment or 0) > 0) then
+    if eventOwnerMcuId then
+      flightOwnerMcuIdByConnectionEpoch[eventOwnerConnectionEpoch] = eventOwnerMcuId
     end
+    local pending = pendingFlightStats[eventOwnerConnectionEpoch]
+    if not pending then
+      pending = { flightcount = 0, totalflighttime = 0 }
+      pendingFlightStats[eventOwnerConnectionEpoch] = pending
+    end
+    if event.flightCounted then pending.flightcount = pending.flightcount + 1 end
     if event.finishedSegment and event.finishedSegment > 0 then
-      stats = modelPreferences.stats(session.modelPreferences)
-      stats.lastflighttime = event.session or event.finishedSegment
-      stats.totalflighttime = (tonumber(stats.totalflighttime) or 0) + event.finishedSegment
-      session.modelPreferences = modelPreferences.setStats(session.modelPreferences, stats)
-      saveModelPreferences()
-      scheduleStatsSync(1)
+      pending.lastflighttime = event.session or event.finishedSegment
+      pending.totalflighttime = pending.totalflighttime + event.finishedSegment
     end
   end
 
-  if not session.connected and not (flightTimer.inProgress and flightTimer.inProgress(now)) then
+  -- Drain only events for a connection whose UID has been confirmed. Entries
+  -- from an earlier unidentified connection deliberately remain unresolved;
+  -- a later FC's handshake is not evidence of their owner.
+  if session.handshake.mcuId == true and session.mcuId then
+    if flightOwnerConnectionEpoch == connectionEpoch then
+      flightOwnerMcuIdByConnectionEpoch[connectionEpoch] =
+        flightOwnerMcuIdByConnectionEpoch[connectionEpoch] or flightOwnerMcuId or session.mcuId
+    elseif finishedFlight and eventOwnerConnectionEpoch == connectionEpoch then
+      flightOwnerMcuIdByConnectionEpoch[connectionEpoch] =
+        flightOwnerMcuIdByConnectionEpoch[connectionEpoch] or eventOwnerMcuId or session.mcuId
+    elseif pendingFlightStats[connectionEpoch] then
+      -- The flight may already have ended before this connection's UID reply.
+      -- Its epoch still proves the pending events belong to this connection.
+      flightOwnerMcuIdByConnectionEpoch[connectionEpoch] =
+        flightOwnerMcuIdByConnectionEpoch[connectionEpoch] or session.mcuId
+    end
+  end
+  for ownerEpoch, pending in pairs(pendingFlightStats) do
+    local ownerMcuId = flightOwnerMcuIdByConnectionEpoch[ownerEpoch]
+    if ownerMcuId then
+      local ownerPreferences, ownerPreferencesFile
+      local ownerIsConnectedModel = session.modelPreferencesMcuId == ownerMcuId
+      if ownerIsConnectedModel then
+        ownerPreferences, ownerPreferencesFile = session.modelPreferences, session.modelPreferencesFile
+      else
+        ownerPreferences, ownerPreferencesFile = modelPreferences.load(ownerMcuId)
+      end
+      local stats = modelPreferences.stats(ownerPreferences)
+      stats.flightcount = (tonumber(stats.flightcount) or 0) + pending.flightcount
+      if pending.lastflighttime then
+        stats.lastflighttime = pending.lastflighttime
+        stats.totalflighttime = (tonumber(stats.totalflighttime) or 0) + pending.totalflighttime
+      end
+      ownerPreferences = modelPreferences.setStats(ownerPreferences, stats)
+      if ownerIsConnectedModel then
+        session.modelPreferences = ownerPreferences
+        saveModelPreferences()
+      else
+        modelPreferences.save(ownerPreferencesFile, ownerPreferences)
+      end
+      pendingFlightStats[ownerEpoch] = nil
+      if flightOwnerConnectionEpoch ~= ownerEpoch then
+        flightOwnerMcuIdByConnectionEpoch[ownerEpoch] = nil
+      end
+      if pending.lastflighttime and session.connected == true and session.mcuId == ownerMcuId then
+        scheduleStatsSync(1)
+      end
+    end
+  end
+
+  if not inProgress then
+    flightOwnerMcuId = nil
+    flightOwnerConnectionEpoch = nil
+  end
+
+  if not session.connected and not inProgress then
     clearAircraftIdentity()
   end
 end
@@ -1482,10 +1661,30 @@ local function onModelEscCurrentLimitUpdate(payload)
   if type(payload) ~= "table" then return end
   if not session.mcuId or payload.mcuId ~= session.mcuId then return end
   loadModelPreferences()
-  local updated = modelPreferences.setEscCurrentLimit(session.modelPreferences, payload.amps)
-  if modelPreferences.escCurrentLimit(updated) == session.escCurrentLimit then return end
+  local before = session.modelPreferences
+  local updated
+  if payload.forget then
+    -- A page clears only a figure that a page stored. The figure the pilot typed in on
+    -- Setup > Power > Preferences stays when the ESC page reports no limit (#2744). A different
+    -- limit that a page reads replaces it, as a page's figure (see the write below).
+    if modelPreferences.escCurrentLimitOrigin(before) ~= "page" then return end
+    updated = modelPreferences.setEscCurrentLimit(before, nil)
+  else
+    updated = modelPreferences.setEscCurrentLimit(before, payload.amps, payload.origin)
+  end
+  -- The same figure with another origin is still a change: the pilot typing in the figure a page
+  -- stored makes it the pilot's (#2744).
+  if modelPreferences.escCurrentLimit(updated) == session.escCurrentLimit
+    and modelPreferences.escCurrentLimitOrigin(updated) == modelPreferences.escCurrentLimitOrigin(before) then
+    return
+  end
   session.modelPreferences = updated
-  saveModelPreferences()
+  -- A refused write leaves the figure not on file: the figure before it stays, and the next page
+  -- visit hands the new one over again, so the write is tried again (#2658).
+  if not writeModelPreferences() then
+    session.modelPreferences = before
+    print("[session] ESC current limit not saved: the model preferences write was refused")
+  end
   updateModelSnapshots()
   publish()
 end
@@ -1558,6 +1757,19 @@ local function onCraftNameSaved(name)
   publish()
 end
 bus.subscribe("craft.name.saved", onCraftNameSaved)
+
+-- The Setup Wizard's Receiver step changed the RX map (in the FC's RAM; the
+-- wizard saves or reverts it). The FC uses the new map straight away, so the
+-- local copy behind the throttle and switch signals follows it now rather
+-- than at the next connect.
+local function onRxMapSaved(map)
+  if not session.connected or type(map) ~= "table" then return end
+  local copy = {}
+  for k, v in pairs(map) do copy[k] = v end
+  session.rxMap = copy
+  publish()
+end
+bus.subscribe("rx.map.saved", onRxMapSaved)
 
 -- If the FC computes smartfuel itself (smartfuelMode > 0), just mirror its
 -- broadcast sensor. Otherwise run the local sigmoid/slew estimator
@@ -1737,12 +1949,16 @@ local function wakeup(mspQueue, protocol, transport, simSensors)
     if protocol == "crsf" and session.connected and shouldRunScheduled("elrs", ELRS_SENSOR_INTERVAL, now) then
       -- A capped drain (see tasks/elrs_sensors.lua's MAX_FRAMES_PER_WAKEUP)
       -- left frames queued: run again next tick rather than in 0.18s.
-      if ensureElrsSensors().wakeup(transport, session.telemetrySlots) then
+      local retry, frameAt = ensureElrsSensors().wakeup(transport, session.telemetrySlots,
+        session.apiVersionMajor, session.apiVersionMinor)
+      if frameAt then session.telemetryFrameAt = frameAt end
+      if retry then
         nextScheduledAt.elrs = nil
       end
     end
   end
 
+  watchFlightControllerTelemetry(now, protocol)
   updateFlightTimer(now)
   local flightPhase = flightRecord:update(session, liveSensors.read, now)
   if flightPhase ~= session.flightState then

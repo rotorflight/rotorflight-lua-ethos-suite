@@ -133,6 +133,8 @@ local APP_SESSION_PACKAGE_KEYS = {
 local ROOT_ENTRIES = {
   {title = "@i18n(app.menu_section_flight_tuning)@", icon = lcd.loadMask("app/gfx/flight_tuning.png"), menuId = "flight_tuning_menu", group = "@i18n(app.header_configuration)@"},
   {title = "@i18n(app.modules.hardware_setup.name)@", icon = lcd.loadMask("app/gfx/hardware.png"), menuId = "setup_menu", group = "@i18n(app.header_configuration)@"},
+  -- Wizards, beside Setup as in the EdgeTX suite (app/manifest.lua's wizards_menu).
+  {title = "@i18n(app.modules.wizards.name)@", icon = lcd.loadMask("app/gfx/setup_wizard.png"), menuId = "wizards_menu", group = "@i18n(app.header_configuration)@"},
   {title = "@i18n(app.menu_section_tools)@", icon = lcd.loadMask("app/gfx/tools.png"), menuId = "tools_menu", group = "@i18n(app.header_system)@", offline = true},
   {title = "@i18n(app.modules.logs.name)@", icon = lcd.loadMask("app/gfx/logs.png"), script = "app/pages/logs.lua", group = "@i18n(app.header_system)@", offline = true},
   {title = "@i18n(app.modules.settings.name)@", icon = lcd.loadMask("app/gfx/settings.png"), menuId = "settings_menu", group = "@i18n(app.header_system)@", offline = true},
@@ -241,6 +243,10 @@ local MENUS = {
       {title = "@i18n(app.modules.esc_motors.motor_override)@", icon = lcd.loadMask("app/gfx/esc_motors_motor_override.png"), script = "app/pages/motor_override.lua", lockedWhileArmed = true},
       {title = "@i18n(app.modules.esc_motors.throttle)@", icon = lcd.loadMask("app/gfx/esc_motors_throttle.png"), script = "app/pages/esc_motors_throttle.lua", lockedWhileArmed = true},
       {title = "@i18n(app.modules.esc_motors.telemetry)@", icon = lcd.loadMask("app/gfx/esc_motors_telemetry.png"), script = "app/pages/esc_motors_telemetry.lua", lockedWhileArmed = true},
+      -- Lit only on SRXL2 ESC telemetry (14): the firmware forces that protocol
+      -- whenever a serial port carries the SRXL2 ESC function, which is when
+      -- these settings mean anything.
+      {title = "@i18n(app.modules.esc_motors.srxl2)@", icon = lcd.loadMask("app/gfx/esc_motors_telemetry.png"), script = "app/pages/esc_motors_srxl2.lua", escProtocolId = 14, lockedWhileArmed = true},
       {title = "@i18n(app.modules.esc_motors.rpm)@", icon = lcd.loadMask("app/gfx/esc_motors_rpm.png"), script = "app/pages/esc_motors_rpm.lua", lockedWhileArmed = true},
       {title = "@i18n(app.modules.esc_tools.name)@", icon = lcd.loadMask("app/gfx/esc_tools.png"), menuId = "esc_forward_menu"},
     },
@@ -252,7 +258,11 @@ local MENUS = {
     -- its own armed gating to the ESC pages themselves.
     entries = {
       {title = "@i18n(app.modules.esc_tools.mfg.hw5.name)@", icon = lcd.loadMask("app/gfx/esc_mfg_hw5.png"), script = "app/pages/esc_forward_hw5.lua", escProtocolId = 3, lockedWhileArmed = true},
-      {title = "@i18n(app.modules.esc_tools.mfg.am32.name)@", icon = lcd.loadMask("app/gfx/esc_mfg_am32.png"), script = "app/pages/esc_forward_am32.lua", escProtocolId = 1, lockedWhileArmed = true},
+      -- Goosky ESCs run AM32 firmware; protocol 16 (Goosky, API 12.10) is the firmware's
+      -- alias of 1 (BLHeli32), so AM32 answers under either and Goosky is the same editor
+      -- under its own brand.
+      {title = "@i18n(app.modules.esc_tools.mfg.am32.name)@", icon = lcd.loadMask("app/gfx/esc_mfg_am32.png"), script = "app/pages/esc_forward_am32.lua", escProtocolIds = {1, 16}, lockedWhileArmed = true},
+      {title = "@i18n(app.modules.esc_tools.mfg.goosky.name)@", icon = lcd.loadMask("app/gfx/esc_mfg_goosky.png"), script = "app/pages/esc_forward_goosky.lua", escProtocolIds = {16, 1}, lockedWhileArmed = true},
       {title = "@i18n(app.modules.esc_tools.mfg.blheli_s.name)@", icon = lcd.loadMask("app/gfx/esc_mfg_blheli_s.png"), script = "app/pages/esc_forward_blheli_s.lua", escProtocolId = 1, lockedWhileArmed = true},
       {title = "@i18n(app.modules.esc_tools.mfg.bluejay.name)@", icon = lcd.loadMask("app/gfx/esc_mfg_bluejay.png"), script = "app/pages/esc_forward_bluejay.lua", escProtocolId = 1, lockedWhileArmed = true},
       {title = "@i18n(app.modules.esc_tools.mfg.flrtr.name)@", icon = lcd.loadMask("app/gfx/esc_mfg_flyrotor.png"), script = "app/pages/esc_forward_flyrotor.lua", escProtocolId = 10, lockedWhileArmed = true},
@@ -270,6 +280,14 @@ local MENUS = {
       {title = "@i18n(app.modules.governor.menu_time)@", icon = lcd.loadMask("app/gfx/setup_governor_time.png"), script = "app/pages/setup_governor_time.lua", lockedWhileArmed = true},
       {title = "@i18n(app.modules.governor.menu_filters)@", icon = lcd.loadMask("app/gfx/setup_governor_filters.png"), script = "app/pages/setup_governor_filters.lua", lockedWhileArmed = true},
       {title = "@i18n(app.modules.governor.menu_curves)@", icon = lcd.loadMask("app/gfx/setup_governor_curves.png"), script = "app/pages/setup_governor_curves.lua", lockedWhileArmed = true},
+    },
+  },
+  -- The guided setups. Model setup (app/pages/setup_wizard.lua) moves servos
+  -- and writes the whole setup, so it is locked while armed.
+  wizards_menu = {
+    title = "@i18n(app.modules.wizards.name)@",
+    entries = {
+      {title = "@i18n(app.modules.wizards.model_setup)@", icon = lcd.loadMask("app/gfx/setup_wizard.png"), script = "app/pages/setup_wizard.lua", lockedWhileArmed = true},
     },
   },
   tools_menu = {
@@ -546,6 +564,13 @@ local function installMenuGuards()
     end,
   })
 
+  -- Gates only the SRXL2 ESC entry; the others carry no escProtocolId.
+  MENUS.esc_motors_menu.guard = ensureEscProtocolGuard().new({
+    canRequest = function()
+      return isBackgroundTaskRunning() and sessionConnected == true
+    end,
+  })
+
   MENUS.servos_menu.guard = ensureServoBusGuard().new({
     canRequest = function()
       return isBackgroundTaskRunning() and sessionConnected == true
@@ -579,7 +604,9 @@ bus.subscribe("session.update", function(session)
 end)
 
 local function updateDeveloperMode(settings)
-  developerModeEnabled = settingsStore.developerModeEnabled(settings or settingsStore.load())
+  settings = settings or settingsStore.load()
+  developerModeEnabled = settingsStore.developerModeEnabled(settings)
+  return settings
 end
 
 bus.subscribe("settings.update", updateDeveloperMode)
@@ -605,8 +632,10 @@ local function create()
   taskAlertPending = false
   taskAlertOpen = false
   taskAlertShown = false
-  updateDeveloperMode()
-  ensureMemstats()
+  local settings = updateDeveloperMode()
+  -- Reuse this read: a second full load during the cold menu build can exceed
+  -- Ethos's create() instruction budget before any tiles have been created.
+  ensureMemstats().setSettings(settings)
   -- Guards first: menu_container consults them while building the first
   -- screen, so they have to be in place before openRoot() runs.
   installMenuGuards()

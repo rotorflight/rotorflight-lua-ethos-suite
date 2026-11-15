@@ -14,19 +14,19 @@ local mspcodec = requireModule("lib/mspcodec.lua")
 local READ_COMMAND = 217
 local WRITE_COMMAND = 218
 
-local ESC_MODE = {{"Freew.", 0}, {"Ext Gov", 1}, {"Heli Gov", 2}, {"Heli Store", 3}, {"Glider", 4}, {"Airplane", 5}, {"F3A", 6}}
-local ROTATION = {{"Normal", 0}, {"Reverse", 1}}
-local CUTOFF = {{"Off", 0}, {"Slowdown", 1}, {"Cutoff", 2}}
+local ESC_MODE = {{"@i18n(app.modules.esc_tools.opt.freewheel)@", 0}, {"Ext Gov", 1}, {"Heli Gov", 2}, {"Heli Store", 3}, {"@i18n(app.modules.esc_tools.opt.glider)@", 4}, {"@i18n(app.modules.esc_tools.opt.airplane)@", 5}, {"F3A", 6}}
+local ROTATION = {{"@i18n(api.MIXER_INPUT.tbl_normal)@", 0}, {"@i18n(app.modules.servos.reverse)@", 1}}
+local CUTOFF = {{"@i18n(app.modules.governor.tbl_off)@", 0}, {"@i18n(app.modules.esc_tools.opt.slowdown)@", 1}, {"@i18n(app.modules.esc_tools.opt.cutoff)@", 2}}
 local CUTOFF_VOLTAGE = {{"2.9 V", 0}, {"3.0 V", 1}, {"3.1 V", 2}, {"3.2 V", 3}, {"3.3 V", 4}, {"3.4 V", 5}}
-local OFF_ON = {{"Off", 0}, {"On", 1}}
-local THROTTLE_RESPONSE = {{"Slow", 0}, {"Medium", 1}, {"Fast", 2}, {"Custom", 3}}
+local OFF_ON = {{"@i18n(app.modules.governor.tbl_off)@", 0}, {"@i18n(app.modules.governor.tbl_on)@", 1}}
+local THROTTLE_RESPONSE = {{"@i18n(app.modules.esc_tools.opt.slow)@", 0}, {"@i18n(app.modules.esc_tools.opt.medium)@", 1}, {"@i18n(app.modules.esc_tools.opt.fast)@", 2}, {"@i18n(app.modules.ports.function_custom)@", 3}}
 -- The Motor Timing row is drawn from list positions, because that is what the
 -- choice widget takes. Those positions are NOT the ESC's words: the ESC spells
 -- the four automatic modes 16..19 and the six fixed advance angles 1..6, with 0
 -- a second spelling of the first automatic mode, and 7..15 and everything above
 -- 19 are values it does not define. The word is therefore decoded on the way in
 -- and encoded again on the way out.
-local TIMING = {{"Auto Norm", 0}, {"Auto Eff", 1}, {"Auto Power", 2}, {"Auto Extr", 3}, {"0 deg", 4}, {"6 deg", 5}, {"12 deg", 6}, {"18 deg", 7}, {"24 deg", 8}, {"30 deg", 9}}
+local TIMING = {{"@i18n(app.modules.esc_tools.opt.auto_norm)@", 0}, {"@i18n(app.modules.esc_tools.opt.auto_eff)@", 1}, {"@i18n(app.modules.esc_tools.opt.auto_power)@", 2}, {"@i18n(app.modules.esc_tools.opt.auto_extr)@", 3}, {"0 deg", 4}, {"6 deg", 5}, {"12 deg", 6}, {"18 deg", 7}, {"24 deg", 8}, {"30 deg", 9}}
 local MOTOR_TIMING_TO_UI = {
   [0] = 0, [1] = 4, [2] = 5, [3] = 6, [4] = 7, [5] = 8, [6] = 9,
   [16] = 0, [17] = 1, [18] = 2, [19] = 3
@@ -35,7 +35,7 @@ local MOTOR_TIMING_FROM_UI = {
   [0] = 0, [1] = 17, [2] = 18, [3] = 19, [4] = 1,
   [5] = 2, [6] = 3, [7] = 4, [8] = 5, [9] = 6
 }
-local FREEWHEEL = {{"Off", 0}, {"Auto", 1}, {"Unused", 2}, {"Always On", 3}}
+local FREEWHEEL = {{"@i18n(app.modules.governor.tbl_off)@", 0}, {"@i18n(api.BATTERY_INI.tbl_auto)@", 1}, {"@i18n(app.modules.esc_tools.opt.unused)@", 2}, {"@i18n(app.modules.esc_tools.opt.always_on)@", 3}}
 
 -- Both halves of the same mapping, and both needed: decode() has to turn the
 -- ESC's word into a row the widget can show, and encode() has to turn the row

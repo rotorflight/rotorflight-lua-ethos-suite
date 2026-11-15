@@ -1,0 +1,7 @@
+{
+  "id": "setup-wizard-esc-wiring-timeout",
+  "name": "Setup Wizard ESC wiring detection timeout allows 10 s multi-protocol scan",
+  "step": "Check Setup Wizard ESC wiring detection timeout and trial cancellation",
+  "script": "bin/setup_wizard_esc_wiring_timeout/verify_esc_wiring_timeout.lua",
+  "rationale": "Issue #2699: ESC wiring detection in the Setup Wizard gave up after 6 s, but seven protocols (HW5, Scorpion, OpenYGE, Flyrotor, XDFly, ZTW, OMP) need up to 10 s to scan all four wiring combinations at 2.5 s each. With TRIAL_TIMEOUT = 12 s, the scan runs to completion with sufficient margin for MSP polling jitter.\n\nThe harness drives the real src/rfsuite/app/pages/setup_wizard_esctelemetry.lua through its wiring detection lifecycle with simulated clock progression:\n  1. at t < 12 s (t = 6 s and t = 10 s) a running trial remains active and is not cancelled early;\n  2. at t > 12 s (t = 12.1 s) the trial times out, stopWith(timeout) publishes MSP cancel to restore FC wiring, and the outcome shows timeout;\n  3. user cancel and leaving the step trigger early trial termination.\n\n--self-test restores the old 6 s timeout and requires the 10 s active check to go red."
+}

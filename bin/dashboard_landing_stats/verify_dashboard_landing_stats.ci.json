@@ -1,0 +1,7 @@
+{
+  "id": "dashboard-landing-stats",
+  "name": "Post-flight voltage tiles show the landing voltage, not the live one",
+  "step": "Check the post-flight voltage stats of the dashboard",
+  "script": "bin/dashboard_landing_stats/verify_dashboard_landing_stats.lua",
+  "rationale": "Issue #2663: the post-flight voltage tiles read the live telemetry, so after landing they showed the next pack's voltage, or nothing once the pack was unplugged, and Min V/Cell divided the flight's minimum by the cell count of the profile selected now. The session now keeps the voltage and cell count taken at the landing (lib/flight_stats.lua land()), and the stats text object shows them as the stattypes last, lastcell and mincell. The harness drives the real widgets/dashboard/objects/text/stats.lua with a live voltage that changes after the landing. It checks that the tiles keep the landing values, that the per-cell values use the landing's cell count rather than the profile selected now, and that no number is shown when there is no landing. Against the unpatched object the four landing checks fail. The flight phase rules are checked in bin/flight_stats."
+}

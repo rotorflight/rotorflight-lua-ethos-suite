@@ -1,0 +1,7 @@
+{
+  "id": "smartfuel-drop-rates",
+  "name": "SmartFuel drop rates with Source OFF",
+  "step": "Check drop rates enabled in mode 0",
+  "script": "bin/smartfuel_drop_rates/verify_smartfuel_drop_rates.lua",
+  "rationale": "Issue #2659: voltage and charge drop rates are used by the radio's own estimate in mode 0."
+}

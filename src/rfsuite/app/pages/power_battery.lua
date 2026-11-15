@@ -6,6 +6,7 @@ local fieldLayout = requireModule("app/field_layout.lua")
 local batteryConfig = requireModule("lib/msp_battery_config.lua")
 local batteryProfile = requireModule("lib/msp_battery_profile.lua")
 local batteryProfileIndex = requireModule("lib/battery_profile_index.lua")
+local smartfuelConfig = requireModule("lib/msp_smartfuel_config.lua")
 local bus = requireModule("lib/bus.lua")
 
 local PAGE_TITLE = "@i18n(app.modules.power.battery_name)@"
@@ -77,12 +78,19 @@ local function open(opts)
     sources = {
       {key = "battery", mspModule = batteryConfig},
       {key = "profile", mspModule = batteryProfile},
+      -- SmartFuel takes the new cell voltages only when its own configuration is written
+      -- (the firmware's smartFuelInit(), #2651). It is read here and written back unchanged
+      -- after the battery configuration, in the same save, as the Configurator does. The
+      -- suite accepts only firmware with SmartFuel (API 12.9 and later), so the read is
+      -- always there.
+      {key = "smartfuel", mspModule = smartfuelConfig},
     },
     opts = opts,
     profileField = "batteryProfile",
     unloadPackageKeys = {
       "rfsuite.lib.msp_battery_config",
       "rfsuite.lib.msp_battery_profile",
+      "rfsuite.lib.msp_smartfuel_config",
     },
     onLoaded = function()
       local active = normalizeProfile(runtime.lastProfile)
@@ -235,7 +243,7 @@ local function open(opts)
   fieldLayout.buildSingle(runtime, "    @i18n(app.modules.power.consumption_warning_percentage)@", {
     source = "battery",
     key = "consumptionWarningPercentage",
-    min = 15,
+    min = 0,
     max = 60,
   })
 

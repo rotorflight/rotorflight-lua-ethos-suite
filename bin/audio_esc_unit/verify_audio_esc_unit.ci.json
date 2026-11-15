@@ -1,0 +1,7 @@
+{
+  "id": "audio-esc-unit",
+  "name": "The ESC temperature threshold is shown and typed in the radio's temperature unit",
+  "step": "Check the ESC temperature threshold page",
+  "script": "bin/audio_esc_unit/verify_audio_esc_unit.lua",
+  "rationale": "Issue #2662: Settings > Audio > ESC showed the threshold as a Celsius number with the suffix deg, also on a radio set to Fahrenheit, while the ActiveLook ESC limit followed the setting. The page now shows and types the threshold in the radio's unit, with a °C or °F suffix, and stores it in Celsius, which is what the audio task compares against. The shared number field takes optional converters for this; the stored value is not rounded, so a value typed in Fahrenheit reads back as typed. The harness drives the real settings_audio_events_esc.lua and settings_audio_events_common.lua with the form widgets and the settings store stubbed. It checks the range, the suffix, the value shown and the value stored in both units, the round trip, and the default. Its self-test removes the conversion and requires the Fahrenheit display to go wrong. On the code before the fix the Fahrenheit checks fail."
+}

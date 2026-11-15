@@ -26,6 +26,26 @@ local SIMULATOR_RESPONSE = {
   0, -- step
 }
 
+-- The simulator's profile switch: the PID profile (slot 1) and the rate profile
+-- (slot 2) on CH7, profiles 1 to 3, 1000 to 2000 us. Other slots are empty.
+local function simulatedRange(index)
+  local system_sim = system and system.getVersion and system.getVersion().simulation == true
+  if system_sim and (index == 1 or index == 2) then
+    local function_id = index == 1 and 2 or 1
+    return {
+      function_id, 255,        -- function (PID profile, rate profile), always on
+      0, 0,                    -- enable range 1500..1500
+      1,                       -- adjustment channel: CH7
+      156, 100,                -- adjustment range 1: 1000..2000 us
+      0, 0,                    -- adjustment range 2
+      1, 0,                    -- min 1
+      3, 0,                    -- max 3
+      0,                       -- step
+    }
+  end
+  return SIMULATOR_RESPONSE
+end
+
 local function clamp(value, minValue, maxValue)
   value = tonumber(value) or minValue
   if value < minValue then return minValue end
@@ -47,6 +67,23 @@ local function toS8Byte(value)
   return v
 end
 
+-- The firmware's AUX channel count (MAX_AUX_CHANNEL_COUNT, 18 - 5). An index above it is refused
+-- by the CLI and reads past rcInput[] (#2673).
+local AUX_CHANNEL_COUNT = 13
+-- Enable channel only: 255 means always on. The value channel has no always-on choice.
+local ALWAYS_ON_BYTE = 255
+
+local function auxChannelByte(value)
+  local v = math.floor(tonumber(value) or 0)
+  return clamp(v, 0, AUX_CHANNEL_COUNT - 1)
+end
+
+local function enaChannelByte(value)
+  local v = math.floor(tonumber(value) or 0)
+  if v == ALWAYS_ON_BYTE then return v end
+  return auxChannelByte(v)
+end
+
 local function writeRange(payload, range)
   range = range or {}
   local enaRange = range.enaRange or {}
@@ -54,10 +91,10 @@ local function writeRange(payload, range)
   local adjRange2 = range.adjRange2 or {}
 
   mspcodec.writeU8(payload, range.adjFunction or 0)
-  mspcodec.writeU8(payload, range.enaChannel or 0)
+  mspcodec.writeU8(payload, enaChannelByte(range.enaChannel))
   mspcodec.writeU8(payload, toS8Byte(usToStep(enaRange.start)))
   mspcodec.writeU8(payload, toS8Byte(usToStep(enaRange["end"])))
-  mspcodec.writeU8(payload, range.adjChannel or 0)
+  mspcodec.writeU8(payload, auxChannelByte(range.adjChannel))
   mspcodec.writeU8(payload, toS8Byte(usToStep(adjRange1.start)))
   mspcodec.writeU8(payload, toS8Byte(usToStep(adjRange1["end"])))
   mspcodec.writeU8(payload, toS8Byte(usToStep(adjRange2.start)))
@@ -144,7 +181,7 @@ function msp_adjustments.buildReadSlotMessage(index, onData, onError)
       onData(msp_adjustments.decodeRange(buf))
     end,
     errorHandler = onError,
-    simulatorResponse = SIMULATOR_RESPONSE,
+    simulatorResponse = simulatedRange(index),
   }
 end
 

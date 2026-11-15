@@ -21,7 +21,8 @@ local MSG_RELOAD_TITLE = "@i18n(reload)@"
 local MSG_RELOAD_BODY = "@i18n(app.msg_reload_settings)@"
 
 local ALWAYS_ON_CHANNEL = 255
-local AUX_CHANNEL_COUNT = 20
+-- The firmware's AUX channel count (MAX_AUX_CHANNEL_COUNT, 18 - 5). Pickers offer no more (#2673).
+local AUX_CHANNEL_COUNT = 13
 local RANGE_MIN = 875
 local RANGE_MAX = 2125
 local RANGE_STEP = 5

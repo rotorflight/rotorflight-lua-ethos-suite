@@ -1,0 +1,7 @@
+{
+  "id": "battery-consumption-warning-min",
+  "name": "Battery consumption warning min",
+  "step": "Check the min is 0",
+  "script": "bin/battery_consumption_warning_min/verify_battery_consumption_warning_min.lua",
+  "rationale": "Issue #2666: the firmware accepts 0 (no reserve)."
+}

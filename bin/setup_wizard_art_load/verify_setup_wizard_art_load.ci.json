@@ -1,0 +1,7 @@
+{
+  "id": "setup-wizard-art-load",
+  "name": "Setup Wizard art loads the 3D helicopter only when drawn",
+  "step": "Check that opening the Setup Wizard does not load lib/heli3d.lua",
+  "script": "bin/setup_wizard_art_load/verify_setup_wizard_art_load.lua",
+  "rationale": "The Setup Wizard loads app/setup_wizard_art.lua when it opens. lib/heli3d.lua, about\n35 kB of source, is drawn only on the orientation check of the Sensors step, a screen the\nwizard does not open on. Loaded with the art module, it sat on the Lua heap from the first\nframe, and opening the wizard stopped Lua with \"Lua has used too much RAM\" in the Ethos\nsimulator.\n\nThe harness loads the art module with a counting stand-in for lib/heli3d.lua and pins that\nloading it, and the wire style, load nothing, that the first solid service and draw load it\nonce, and that later calls do not load it again. It then runs the same checks against a\ncopy that loads lib/heli3d.lua at the top and requires that copy to fail."
+}

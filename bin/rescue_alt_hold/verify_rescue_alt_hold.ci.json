@@ -1,0 +1,7 @@
+{
+  "id": "rescue-alt-hold",
+  "name": "Setup Wizard rescue keeps a stored altitude hold on On",
+  "step": "Check that On keeps ALT_HOLD and that ALT_HOLD shows as On",
+  "script": "bin/rescue_alt_hold/verify_rescue_alt_hold.lua",
+  "rationale": "Issue #2688: the rescue step offers Off and On, and On wrote CLIMB (1) over a stored ALT_HOLD (2),\nwhile a stored ALT_HOLD did not match either choice.\n\nThe harness drives the real setup_wizard_rescue.lua against a simulated flight controller with one rescue\nprofile per PID profile, and pins: ALT_HOLD shows as On and On keeps it on every profile; Off then On writes\nCLIMB; a stored CLIMB stays CLIMB.\n\n--self-test removes the line that keeps ALT_HOLD and requires the ALT_HOLD check to go red."
+}

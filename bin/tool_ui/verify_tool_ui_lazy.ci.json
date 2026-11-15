@@ -3,5 +3,5 @@
   "name": "Tool UI not loaded at boot",
   "step": "Check the tool's load timing",
   "script": "bin/tool_ui/verify_tool_ui_lazy.lua",
-  "rationale": ""
+  "rationale": "The tool UI remains unloaded until create(), and repeated opens reuse the cached UI modules. Cold create must read settings only once and pass that snapshot to memory diagnostics: a second full settings load plus lazy module initialization exceeded the ETHOS instruction budget and left the first open blank. Check that close and memory-log preference updates cause no additional settings reads, while saved enable/disable changes still take effect."
 }

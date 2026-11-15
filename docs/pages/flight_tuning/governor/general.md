@@ -19,8 +19,8 @@ Greyed out until the flight controller answers. Read-only while the model is arm
 | Setting | What it does |
 | --- | --- |
 | Full Headspeed | Configures Full Headspeed. Range: 0 to 50000 rpm. Default: 1000 rpm. |
-| Min Throttle | Configures Min Throttle. Range: 0 to 100 %. Default: 10 %. |
-| Max Throttle | Configures Max Throttle. Range: 0 to 100 %. Default: 100 %. |
+| Min Throttle | Configures Min Throttle. Range: 10 to 100 %, as the flight controller accepts it. Default: 10 %. |
+| Max Throttle | Configures Max Throttle. Range: 10 to 100 %, as the flight controller accepts it. Default: 100 %. |
 | Fallback Drop | Configures Fallback Drop. Range: 0 to 50 %. Default: 10 %. |
 | Gain | Configures Gain. Range: 0 to 250. Default: 40. |
 | Gains (P) | Configures Gains (P). Range: 0 to 250. Default: 40. |

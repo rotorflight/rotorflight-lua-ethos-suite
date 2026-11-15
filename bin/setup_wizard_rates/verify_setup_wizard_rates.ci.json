@@ -1,0 +1,7 @@
+{
+  "id": "setup-wizard-rates-collective",
+  "name": "Setup Wizard writes the collective at full stick on the Rotorflight type only",
+  "step": "Check the Setup Wizard's collective gate by rates type",
+  "script": "bin/setup_wizard_rates/verify_setup_wizard_rates.lua",
+  "rationale": "The Pitch step's collective at full stick is degrees on the Rotorflight rates type\n(12.5 degrees per 100 of rcRates_4). On the Actual type the same byte is scaled differently,\nso the wizard must not write it there; the harness pins which rates types the gate allows."
+}

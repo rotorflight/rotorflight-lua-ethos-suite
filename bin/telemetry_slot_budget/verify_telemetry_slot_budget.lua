@@ -127,7 +127,11 @@ do
     for i = #slots + 1, 40 do slots[i] = 0 end
 
     local spec, setters, dialogs, tags = nil, {}, 0, {}
-    local data = {telemetry = {crsf_telemetry_mode = mode or CUSTOM, slots = slots}, feature = {}}
+    local data = {
+      telemetry = {crsf_telemetry_mode = mode or CUSTOM, slots = slots},
+      feature = {},
+      rx = {serialrx_provider = 9},
+    }
     local stubs = {
       form = {
         clear = function() end,

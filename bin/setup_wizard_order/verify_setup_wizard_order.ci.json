@@ -1,0 +1,7 @@
+{
+  "id": "setup-wizard-order",
+  "name": "Setup Wizard: Motor & ESC before the Connect gate, ESC telemetry after it",
+  "step": "Check the Setup Wizard's step order and that the docs number the steps the same way",
+  "script": "bin/setup_wizard_order/verify_setup_wizard_order.lua",
+  "rationale": "Motor & ESC came after the Connect gate. Connect read the motor outputs before the Motor step had run,\nand a Motor edit owed a restart that happened at ESC telemetry, with the servos plugged in, and a notice that\nsent the pilot back to Connect although the next gate was ahead. Motor & ESC now comes before Connect, so the\nrestart it owes is done at the Connect gate, and Connect reads the outputs after they are set. ESC telemetry\nstays after the gate.\n\nThe harness reads the step list of setup_wizard.lua and pins that Motor comes before the Connect gate and\nthat ESC telemetry is a gate after it. It also pins that the step numbers in the docs are those positions.\n\n--self-test puts Connect back in front of Motor and requires the order check to go red."
+}

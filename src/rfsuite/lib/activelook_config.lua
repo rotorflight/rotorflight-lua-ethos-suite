@@ -7,6 +7,7 @@ end
 local config = {}
 
 config.DEFAULTS = {
+  register_glasses = false,
   enabled = false,
   inflight_fuel_icon = false,
   display_switch = "",
@@ -265,6 +266,7 @@ function config.normalize(out)
     end
   end
 
+  if out.register_glasses ~= config.DEFAULTS.register_glasses then out.register_glasses = coerceBool(out.register_glasses, config.DEFAULTS.register_glasses) end
   if out.enabled ~= config.DEFAULTS.enabled then out.enabled = coerceBool(out.enabled, config.DEFAULTS.enabled) end
   if out.inflight_fuel_icon ~= config.DEFAULTS.inflight_fuel_icon then out.inflight_fuel_icon = coerceBool(out.inflight_fuel_icon, config.DEFAULTS.inflight_fuel_icon) end
   if out.low_fuel_warning ~= config.DEFAULTS.low_fuel_warning then out.low_fuel_warning = coerceBool(out.low_fuel_warning, config.DEFAULTS.low_fuel_warning) end

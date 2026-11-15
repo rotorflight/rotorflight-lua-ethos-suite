@@ -54,13 +54,44 @@ local RPM_PRESET_OPTIONS = {
 -- the physical Back key -- see app/page_runtime.lua's buildChrome()).
 -- opts.setEventHandler/opts.setWakeupHandler: see app/menu_container.lua
 -- and app/tool.lua for how Ethos's event()/wakeup() reach a page.
+-- The dynamic notch is set up once, at start-up (dynNotchInit() in the firmware's fc/init.c);
+-- MSP_SET_FILTER_CONFIG stores its values without setting it up again. So a change to these
+-- values takes effect only after a restart. The gyro and RPM filters are re-initialised by the
+-- write itself and need none (#2655).
+local DYN_NOTCH_KEYS = {"dyn_notch_count", "dyn_notch_q", "dyn_notch_min_hz", "dyn_notch_max_hz"}
+
 local function open(opts)
-  local runtime = pageRuntime.new({
+  -- The dynamic notch values as last loaded or saved, and whether the save being made changed
+  -- one of them. The runtime calls onSaved() before it decides on the restart, so the
+  -- comparison is made there, against the values before that save.
+  local savedNotch = {}
+  local notchChanged = false
+
+  local function rememberNotch(rt)
+    for _, key in ipairs(DYN_NOTCH_KEYS) do savedNotch[key] = rt.data[key] end
+  end
+
+  local runtime
+  runtime = pageRuntime.new({
     pageTitle = PAGE_TITLE,
     logTag = "filters",
     mspModule = filterConfig,
     opts = opts,
     unloadPackageKeys = {"rfsuite.lib.msp_filter_config"},
+    rebootAfterSave = function()
+      return notchChanged
+    end,
+    onLoaded = function()
+      notchChanged = false
+      rememberNotch(runtime)
+    end,
+    onSaved = function(rt)
+      notchChanged = false
+      for _, key in ipairs(DYN_NOTCH_KEYS) do
+        if rt.data[key] ~= savedNotch[key] then notchChanged = true end
+      end
+      rememberNotch(rt)
+    end,
   })
 
   form.clear()

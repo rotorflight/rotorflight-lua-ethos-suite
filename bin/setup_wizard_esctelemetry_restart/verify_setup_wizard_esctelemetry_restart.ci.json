@@ -1,0 +1,7 @@
+{
+  "id": "setup-wizard-esctelemetry-restart",
+  "name": "Setup Wizard ESC telemetry protocol change requests an FC restart",
+  "step": "Check that the Setup Wizard requests a restart when the ESC telemetry protocol changes",
+  "script": "bin/setup_wizard_esctelemetry_restart/verify_setup_wizard_esctelemetry_restart.lua",
+  "rationale": "The flight controller opens the ESC telemetry UART port at boot with the baud rate and receive callback of the configured protocol (escSensorInit in sensors/esc_sensor.c). When the telemetry protocol changes in the Setup Wizard, the new protocol is written to the FC, but the port remains opened with the old baud and callback until reboot.\n\nThis harness drives setup_wizard_esctelemetry.lua and verifies:\n1. Entering the ESC telemetry step does not request a restart;\n2. Moving to the setup screen without changes requests no restart;\n3. Selecting the same protocol requests no restart;\n4. Changing the protocol requests an FC restart (wiz.requestReboot());\n5. The forward action from the setup screen sets resume to the wiring screen and finishes the step;\n6. Re-opening with resume set starts directly on the wiring screen;\n7. Relevant documentation pages note the restart requirement.\n\n--self-test removes the wiz.requestReboot() call in setProtocol() and verifies that the checks fail."
+}

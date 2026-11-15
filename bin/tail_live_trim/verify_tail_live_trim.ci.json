@@ -1,0 +1,7 @@
+{
+  "id": "tail-live-trim",
+  "name": "Mixer tail live Yaw Center Trim: override, settle, armed gate, restore",
+  "step": "Check the tail page's live centre trim: sends, settle time, armed gating and restore",
+  "script": "bin/tail_live_trim/verify_tail_live_trim.lua",
+  "rationale": "Setup > Mixer > Tail sends Yaw Center Trim to the flight controller live while the\nmixer override holds the tail, so the pilot can see the tail move. The write skips EEPROM,\nbut the trim is applied by the firmware at once, so a wrong send or a send while armed\nmoves a tail that is spinning.\n\nThe harness drives the real mixer_tail.lua through its hooks and pins: no trim before an\nedit, one send after the settle time with its confirmation callbacks, nothing else while a\nwrite is pending, a refused write kept and retried, no send while armed or not known to be\ndisarmed, and a restore of the saved trim on leaving without saving only while disarmed.\n\n--self-test runs the same checks on two broken copies of the page (a write without its\ncallbacks; the armed gate reduced to isArmed == true) and requires both to go red."
+}

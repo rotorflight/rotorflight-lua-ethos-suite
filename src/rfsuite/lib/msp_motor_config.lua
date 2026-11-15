@@ -178,7 +178,7 @@ local FIELD_META = {
   motor_pwm_protocol = {choices = BASE_CHOICES},
   motor_pwm_rate = {min = 50, max = 8000, default = 250, suffix = "Hz"},
   use_unsynced_pwm = {choices = ON_OFF_CHOICES},
-  motor_pole_count_0 = {min = 2, max = 256, default = 10},
+  motor_pole_count_0 = {min = 2, max = 255, default = 10},
   main_rotor_gear_ratio_0 = {min = 1, max = 50000, default = 1},
   main_rotor_gear_ratio_1 = {min = 1, max = 50000, default = 1},
   tail_rotor_gear_ratio_0 = {min = 1, max = 50000, default = 1},

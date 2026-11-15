@@ -1,0 +1,7 @@
+{
+  "id": "failsafe-rows",
+  "name": "The Failsafe page lists the channels the flight controller reports, and writes only those",
+  "step": "Check the Failsafe channel rows",
+  "script": "bin/failsafe_rows/verify_failsafe_rows.lua",
+  "rationale": "Issue #2667: the Failsafe page drew 18 rows whatever the board reported. On CRSF, which reports 16 records, AUX 12 and 13 showed as Auto/1500 and a save could write an index the board does not have. The page now builds one row per record of the reply, and its save and its channel copy use the same count. The harness drives the real failsafe.lua with the real lib/msp_rxfail_config.lua codec. The bus answers the read with a 16-record or an 18-record reply, and records the writes. It checks the number of rows and the last row for each reply, that AUX 12 is not shown on CRSF, that the first channel reads the board's value, and that a save writes only the changed channel, with an index the board has. Its self-test replaces the count with a fixed 18 and requires the rows to go wrong. On the code before the fix the row checks fail."
+}

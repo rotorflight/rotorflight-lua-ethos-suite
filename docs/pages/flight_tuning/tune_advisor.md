@@ -18,11 +18,14 @@ Relax Cutoff or the rates on that axis is left out, because the advice is worked
 now. A useful set is about ten seconds of rolls, flips and pirouettes with the stick centred after each one,
 which one flight may or may not give.
 
-Each time you disarm, the background task reads all three axes from the flight controller, saves them as one
-flight, then clears the flight controller so the next flight is measured on its own. This happens whether or not
+Each time you disarm, the background task reads all three axes from the flight controller, and the settings the
+measurements do not carry (Cyclic polarity and ring, I-term Relax type), saves them as one flight, then clears the
+flight controller so the next flight is measured on its own. This happens whether or not
 this page is open. It starts 5 seconds after the disarm and takes about 10 seconds, with pauses between the reads
 so telemetry sensors keep updating meanwhile. If the link drops the reading three times, the radio tries again at
-the next disarm; the flight controller keeps the measurements until then. The flights are kept in `LOGS:/rfsuite/tune/<model>/history.csv` on the radio's SD card, one
+the next disarm; the flight controller keeps the measurements until then. After a reconnect, the radio reads the
+connected flight controller's UID before it resumes a capture or retries a pending clear. A clear is only sent to
+the controller whose flight was saved, so connecting another controller cannot erase its measurements. The flights are kept in `LOGS:/rfsuite/tune/<model>/history.csv` on the radio's SD card, one
 row per axis, newest last; only the last 5 flights are kept. `<model>` is the same flight controller ID that
 names the flight log folders, and a `logs.ini` beside the history holds the model name. A flight without rate
 flight is not saved. A disarm while the link is down is saved once the radio reconnects, provided the flight
@@ -36,8 +39,8 @@ exactly.
 *Configuration* → *Flight Tuning* → *Tune Advisor*
 
 Greyed out until the flight controller answers. The page works from the flights saved for the connected model,
-and updates when a flight is saved while it is open, about 10 seconds after you disarm; through a link loss it keeps showing them. Until a flight is saved it shows "Reading the last flight..." in
-place of the advice, with *Save* and the erase button greyed out. If the radio could not read the flight, the
+and updates when a flight is saved while it is open, about 10 seconds after you disarm; through a link loss it keeps showing them. While the radio reads the last flight after a disarm, it shows "Reading the last flight..." in
+place of the advice, with *Save* and the erase button greyed out. With no flight saved yet, *Flight data* reads "No flight saved yet" and *Suggested changes* gives the reason: fly acro with real rotation, then disarm. A flight is saved only when the flight controller counted acro flight. If the flight controller holds a flight the radio could not read, *Suggested changes* says "Last flight not read" instead of the reason. If the radio could not read the flight, the
 advice from the saved flights comes back with "Last flight not read" above it until you arm again. The page reads the
 firmware version the flight controller reports. Firmware older than 4.7.0 has no Tune Advisor: the page shows
 "Needs newer firmware" and sends no request, and the same applies to the capture after each flight. Until the
@@ -49,12 +52,12 @@ version is known, nothing is sent.
 | --- | --- |
 | Axis | Roll, Pitch or Yaw. Everything below is for the chosen axis. |
 | Changes / Why | Only on 480-pixel-wide radios (X18, X18R, X10 and similar), beside Axis. *Changes* shows the suggested changes and as many reasons as fit, ending in "More under Why" when some are left out; *Why* shows all the reasons. Larger radios show everything. |
-| Flight data | Minutes and seconds of acro flight in the flights combined, and how many of the last 5 that is, for example "2m 12s, 3/5 flights". |
+| Flight data | Minutes and seconds of acro flight in the flights combined, and how many of the last 5 that is, for example "2m 12s, 3/5 flights". "No flight saved yet" until the first flight is saved. |
 | Response | How fast the heli turns compared with the rate the stick asks for, for example "53% faster than asked". "Needs more flying" shows how much data is still needed; "Too uneven to judge" means the response varies too much. |
 | Stops | How much the heli bounces back after you centre the stick, as a share of the turn rate. Needs 10 stops. "Shaking 49 deg/s" instead means the heli oscillates with the stick centred (see the rules below). |
 | Suggested changes | Up to three changes, each named by the page and setting to change and in the units that page shows, for example *PIDs > Roll > F: 100 -> 80* and *Rates > Roll > Rate: 720 -> 900*. When there is something *Save* can write, a last line says so. After they are written, this shows "Changes saved to the flight controller" until the next flight is saved. |
 | Why | The reason for each change, and a fact worth knowing when there is room (for example how much faster the heli turns at high collective). |
-| Save button | Writes the suggested changes for the shown axis to the flight controller. Enabled only while connected, disarmed and with a change it can write. See *Applying the changes* below. |
+| Save button | Writes the suggested changes for the shown axis to the flight controller. Enabled only while connected, disarmed, with a known PID profile and with a change it can write. See *Applying the changes* below. |
 | Tool button | Erases this model's saved flights, and the flight controller's current measurements, after asking to confirm. |
 
 The suggestions follow these rules:
@@ -62,21 +65,33 @@ The suggestions follow these rules:
 - **Shakes with the stick centred** (15 deg/s or more, measured over at least 5 s of centred stick): lower P by
   one step (P / 1.2), and nothing else for that axis until it is calm. An oscillation also reads as bounce-back
   after every stop and spoils the response figure, so the other rules would be misled. If lowering P does not
-  calm it, check D and the linkages. Needs firmware that reports shake; older firmware never shows it.
+  calm it, check D and the linkages. Needs firmware that reports shake; older firmware never shows it. When no P
+  step is made (P is already 1, or the suggestions are full), Why still names the shake, so it is never shown
+  beside "The heli answers the stick as asked".
 - **Turns faster or slower than asked** (more than 15% off): change F and the rates by the same amount in
   opposite directions, so the stick feel stays the same but the heli flies the rate you ask for. One step
   changes F by at most 20%. With Actual, Quick and Rotorflight rates the page gives the exact rate values;
   with the other rate types it gives a percentage. An axis with F set to 0 (often the tail) gets no F advice.
 - **Full stick asks for more rate than the heli reaches** (roll and pitch), with the cyclic at its limit: lower
-  the rates toward what the heli reaches, by at most 20% per step.
+  the rates toward what the heli reaches, by at most 20% per step. The rate the cyclic asks for is capped by the
+  *Cyclic ring* when it is below 100%, so a ring of 50% asks for half the curve. A ring of 0% is no limit. When the
+  ring caps the rate, the page says so.
+- **Polar cyclic on**: roll then follows the *Cyclic* rates, not its own. So a full-stick rate cut for roll is worked
+  out from the Cyclic rates and written to the *Cyclic* rate row, not to *Roll*, and the page says so. Roll's own rates
+  are not changed. Roll gets no F advice, and with F set its stops get neither the F advice nor a P step there; the
+  page says why. Pitch is unchanged.
 - **Stops bounce back 12% or more**: if the I-term pushes back, lower *Advanced > PID Controller > Iterm Relax
-  Cutoff* by 20%. If F does not match yet, fix F first. Otherwise raise P by 20% (or add B).
+  Cutoff* by 20%, but only on an axis I-term relax acts on. With relax *Off* no axis is covered, and with *RP*
+  yaw is not; the page says so and gives no cut-off advice there. If F does not match yet, fix F first. Otherwise
+  raise P by 20% (or add B).
   The page raises P to at most 50% above your own P, which allows two steps. Your own P is the last one you
   set by hand: the page works it out from `changes.csv` (see below), and setting P by hand starts the count again. If stops still bounce back after that, the reasons say "P is already ...% above your
   setting. Check the mechanics." More P will not fix it.
 - **A change would go past a setting's limit**: the page does not suggest it, or any change that goes with it
   (F is never suggested without its rates). Instead, the reasons say "The change needed goes past a setting's
-  limit." Look for the cause outside the tune, for example the mechanics or the head speed.
+  limit." Look for the cause outside the tune, for example the mechanics or the head speed. The limit is the
+  firmware's for the rates type: Actual keeps rc rate and srate at 200, Quick keeps srate at 200, and Rotorflight
+  keeps rc rate at 200 (the Rates page shows the same limits).
 
 ## Applying the changes
 
@@ -85,7 +100,8 @@ The suggestions follow these rules:
 1. **Reading current settings**: reads PIDs, PID Controller and Rates from the flight controller. A failed or short
    read stops here and nothing is changed.
 2. It checks that the flight controller still holds the tune these flights were flown with: the same PID and rate
-   profile, and the same P, F, B, Iterm Relax Cutoff, rate type and rates on that axis. If anything differs (you
+   profile, and the same P, F, B, Iterm Relax Cutoff, rate type and rates on that axis, and the same Cyclic polarity,
+   Cyclic ring and I-term Relax type. If anything differs (you
    changed it by hand, switched profile, or already applied this advice), it stops and nothing is changed: fly
    again on the current settings. It also stops if a new value is out of range or the heli is armed.
 3. **Writing changes**: writes only the settings that change; every other setting is written back as it was read.
@@ -100,9 +116,21 @@ If writing fails, nothing is saved and restarting the flight controller undoes a
 read-back does not confirm the change, check the values on *PIDs*, *Rates* and *PID Controller*.
 
 The saved flights are kept. The next flight is on the new tune, so the page starts again from it and leaves the
-older flights out. Each change written is added to `changes.csv` beside the flight history (date, axis, setting,
-old value, new value), so you can always see what the advisor changed and set it back by hand. *Clear*
+older flights out.
+
+> [!NOTE] After an update
+> The flight history file gains three columns (Cyclic polarity, Cyclic ring, I-term Relax type). The page does not
+> read a history with the old columns, so its flights are not shown after the update. The file is replaced at the
+> next saved flight. Flights saved before the update are not kept.
+
+Each change written is added to `changes.csv` beside the flight history (date, axis, setting,
+old value, new value, PID profile), so you can always see what the advisor changed and set it back by hand. *Clear*
 does not erase it.
+
+Changes written before the PID profile column was added have no profile. The advisor counts them on every profile, so
+on a profile that holds the same value they can still set the pilot's P. If the flight controller accepted the
+change but `changes.csv` cannot be written, the page says so after the write, and that change is missing from the
+record.
 
 ## Adjustment functions
 
@@ -120,8 +148,9 @@ applies an adjustment straight away and saves it when you disarm.
   knob moves, and at every power-up while its range is enabled, the value goes back to what the knob says. A value
   written by *Save* then lasts only until that happens. Before applying advice to a setting, set its *Mapped*
   adjustment's *Type* to *Off*, or leave the knob where it gives the new value.
-- *Save* checks the profiles and values at the moment it writes, so an adjustment or profile switch made since the
-  flights stops it with nothing changed.
+- The advice refreshes when the active PID profile changes, so its P cap follows the new profile. *Save* checks the
+  profiles and values at the moment it writes, so an adjustment or profile switch made since the flights stops it
+  with nothing changed.
 
 ## Source
 

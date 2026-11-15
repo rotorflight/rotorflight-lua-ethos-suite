@@ -109,7 +109,8 @@ bus.subscribe("msp.request", function() sent = sent + 1 end)
 requireModule("tasks/tune_history.lua")
 
 local function session(fields)
-  local snapshot = {connected = true, mcuId = "bench-1", apiVersionSupported = true, craftName = "Test"}
+  local snapshot = {connected = true, mcuId = "bench-1", apiVersionSupported = true, craftName = "Test",
+    handshake = {mcuId = true}}
   for k, v in pairs(fields) do snapshot[k] = v end
   bus.publish("session.update", snapshot)
 end

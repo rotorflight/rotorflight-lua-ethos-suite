@@ -181,20 +181,25 @@ do
   local rig = newRig({armflags = true, telemetry_lost = true})
   seed(rig, {connected = true, isArmed = false})
   rig.setClock(0.50); rig.step({connected = true, isArmed = true})
-  rig.setClock(1.00); rig.step({connected = false})
+  rig.setClock(1.00); rig.step({connected = true, isArmed = true, telemetryFcSilent = true})
+  rig.setClock(1.25); rig.step({connected = false})
   rig.setClock(1.50); rig.step({connected = true, isArmed = true})
-  rig.setClock(2.00); rig.step({connected = false})
+  rig.setClock(1.75); rig.step({connected = true, isArmed = true})
+  rig.setClock(2.00); rig.step({connected = true, isArmed = true, telemetryFcSilent = true})
+  rig.setClock(2.25); rig.step({connected = false})
   rig.setClock(2.50); rig.step({connected = true, isArmed = true})
+  rig.setClock(2.75); rig.step({connected = true, isArmed = true})
   local timeline = rig.timeline()
   local lossCount = 0
   for _ in timeline:gmatch("haptic") do lossCount = lossCount + 1 end
   check("the loss and the recovery of an armed model are announced for each of two outages",
-    timeline:find("2.00 ", 1, true) ~= nil and lossCount == 4,
+    timeline:find("2.00 ", 1, true) ~= nil and timeline:find("2.75 ", 1, true) ~= nil and lossCount == 4,
     "got: " .. timeline)
 end
 
 -- Can-fail: remove the re-arm of the falling edge from a copy of the task. The
--- second outage then goes silent, which is the bug this scenario exists to catch.
+-- second reconnect then lacks the initialization gate from the disconnect reset
+-- (this check can go red).
 do
   local source = readFile(AUDIO_PATH)
   local rearm = "disconnectApplied = false -- re-arm the falling edge"
@@ -205,12 +210,16 @@ do
     local rig = newRig({armflags = true, telemetry_lost = true}, stripped)
     seed(rig, {connected = true, isArmed = false})
     rig.setClock(0.50); rig.step({connected = true, isArmed = true})
-    rig.setClock(1.00); rig.step({connected = false})
+    rig.setClock(1.00); rig.step({connected = true, isArmed = true, telemetryFcSilent = true})
+    rig.setClock(1.25); rig.step({connected = false})
     rig.setClock(1.50); rig.step({connected = true, isArmed = true})
-    rig.setClock(2.00); rig.step({connected = false})
+    rig.setClock(1.75); rig.step({connected = true, isArmed = true})
+    rig.setClock(2.00); rig.step({connected = true, isArmed = true, telemetryFcSilent = true})
+    rig.setClock(2.25); rig.step({connected = false})
     rig.setClock(2.50); rig.step({connected = true, isArmed = true})
-    check("without the re-arm the second outage is silent (this check can go red)",
-      rig.timeline():find("2.00 ", 1, true) == nil, "got: " .. rig.timeline())
+    rig.setClock(2.75); rig.step({connected = true, isArmed = true})
+    check("without the re-arm the second reconnect lacks the initialization gate (this check can go red)",
+      rig.timeline():find("2.75 ", 1, true) == nil, "got: " .. rig.timeline())
   end
 end
 

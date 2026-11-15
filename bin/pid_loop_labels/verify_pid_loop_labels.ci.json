@@ -1,0 +1,7 @@
+{
+  "id": "pid-loop-labels",
+  "name": "The PID loop speed choices are labelled from the board's gyro sample rate",
+  "step": "Check the PID loop speed labels on the Configuration page",
+  "script": "bin/pid_loop_labels/verify_pid_loop_labels.lua",
+  "rationale": "Issue #2648: Setup > Configuration labelled the four PID loop speeds from MSP_STATUS's gyro task interval, rounded to the nearest kHz. That interval is the last measured one, not the board's rate, and the rounding made every label wrong on a gyro that is not a whole kHz: a 3.2 kHz gyro showed 3 / 1.5 / 1 / 0.75 kHz, and a 6.66 kHz gyro 7 kHz. The labels now come from sampleRateHz in MSP_BOARD_INFO, which the Rotorflight Configurator labels its drop-down from too. The reply carries it after the manufacturer id, the signature, the MCU type and the configuration state, so the codec reads it only when the reply holds the whole layout that comes after it. A build without USE_BOARD_INFO has no manufacturer id and a reply one byte shorter, and gives no rate. Without a rate the page keeps the old label, so nothing changes for that board. The harness checks the codec on a reply of each layout, a truncated reply and a longer reply, and checks the page's four labels for a 3.2 kHz board and the first label for a 6.66 kHz one, through a stand-in page runtime. Its self-test rounds the rate to the kHz and requires a 3.2 kHz board to read 3.0 kHz. On the code before the fix the page checks fail with the labels from the issue."
+}

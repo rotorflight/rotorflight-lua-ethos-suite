@@ -15,8 +15,9 @@ local bus = requireModule("lib/bus.lua")
 local currentConnected = false
 local currentMcuId = nil
 local currentLimit = nil
--- A limit read while the link is up but the MCU ID is not known yet. It is handed over
--- when the ID arrives, and dropped on disconnect so it cannot reach another connection.
+-- A page's read while the link is up but the MCU ID is not known yet: {amps = n} to store, or
+-- {forget = true} to clear. It is handed over when the ID arrives, and dropped on disconnect so
+-- it cannot reach another connection.
 local pendingLimit = nil
 
 bus.subscribe("session.update", function(snapshot)
@@ -35,11 +36,15 @@ bus.subscribe("session.update", function(snapshot)
     return
   end
   if pendingLimit and currentMcuId and currentMcuId ~= "" then
-    local limit = pendingLimit
+    local pending = pendingLimit
     pendingLimit = nil
-    if currentLimit ~= limit then
-      bus.publish("model.esc_current_limit.update", {mcuId = currentMcuId, amps = limit})
-      currentLimit = limit
+    if pending.forget then
+      if currentLimit ~= nil then
+        bus.publish("model.esc_current_limit.update", {mcuId = currentMcuId, amps = 0, forget = true})
+      end
+    elseif currentLimit ~= pending.amps then
+      bus.publish("model.esc_current_limit.update", {mcuId = currentMcuId, amps = pending.amps, origin = "page"})
+      currentLimit = pending.amps
     end
   end
 end)
@@ -64,12 +69,30 @@ function esc_current_limit.remember(amps)
   if limit == nil then return false end
   if not currentMcuId or currentMcuId == "" then
     if not currentConnected then return false end
-    pendingLimit = limit
+    pendingLimit = {amps = limit}
     return true
   end
   if currentLimit == limit then return true end
-  bus.publish("model.esc_current_limit.update", {mcuId = currentMcuId, amps = limit})
+  bus.publish("model.esc_current_limit.update", {mcuId = currentMcuId, amps = limit, origin = "page"})
   currentLimit = limit
+  return true
+end
+
+-- Clears a figure a page stored for the connected flight controller. A page calls this when its
+-- ESC reports no limit (AM32 with its limit off, Scorpion at 0): a figure stored for such an ESC
+-- is wrong, and nothing else would replace it. The session clears only a figure a page stored; one
+-- the pilot typed in on Setup > Power > Preferences stays (#2744). Returns true when the clear was
+-- handed over or is kept until the MCU ID arrives; false when there is no connected flight controller.
+function esc_current_limit.forget()
+  if not currentMcuId or currentMcuId == "" then
+    if not currentConnected then return false end
+    pendingLimit = {forget = true}
+    return true
+  end
+  if currentLimit == nil then return true end
+  bus.publish("model.esc_current_limit.update", {mcuId = currentMcuId, amps = 0, forget = true})
+  -- Not on file any more, so the next read is handed over at once instead of waiting for a snapshot.
+  currentLimit = nil
   return true
 end
 

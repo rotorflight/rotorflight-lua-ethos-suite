@@ -8,6 +8,10 @@ local escCurrentLimit = requireModule("lib/esc_current_limit.lua")
 
 local PAGE_TITLE = "@i18n(app.modules.esc_tools.mfg.am32.name)@"
 local SWITCH_READ_DELAY = 4.0
+-- The firmware enables a current limit only for bytes 1..100 (Src/main.c:730-731), that is
+-- 2..200 A on this page. Byte 0 and bytes 101..255 are off, and they arrive here as 0 or as
+-- 202..510 A. An off ESC clears the figure on file rather than storing it.
+local AM32_HIGHEST_LIMIT_AMPS = 200
 
 local FIELDS = {
   {group = "@i18n(app.modules.esc_tools.mfg.am32.basic)@"},
@@ -56,15 +60,40 @@ local function updateDependentFields(runtime)
   end
 end
 
-local function openEditor(opts, selection)
+-- The brand the page runs under. esc_forward_goosky.lua opens this page with its own
+-- title and log tag: a Goosky ESC is an AM32 ESC (same signature, layout and handshake).
+local function brandOf(config)
+  if type(config) ~= "table" then return PAGE_TITLE, "esc_am32", nil end
+  return config.pageTitle or PAGE_TITLE, config.logTag or "esc_am32", config.summaryBrand
+end
+
+-- The ESC reports no brand: its summary line reads "AM32 / EEPROM n / vX.Y" whatever the
+-- label on it. Under another brand the line is prefixed with that brand, as the
+-- configurator does, so the pilot sees "Goosky AM32 / ...". Everything else is the module.
+local function brandedModule(summaryBrand)
+  if not summaryBrand then return msp end
+  return setmetatable({
+    summaryFor = function(data, title)
+      return summaryBrand .. " " .. msp.summaryFor(data, title)
+    end,
+  }, {__index = msp})
+end
+
+local function openEditor(opts, selection, pageTitle, logTag, summaryBrand)
   vendorPage.open(opts, {
-    pageTitle = PAGE_TITLE .. " " .. selection.label,
-    logTag = "esc_am32",
-    mspModule = msp,
+    pageTitle = pageTitle .. " " .. selection.label,
+    logTag = logTag,
+    mspModule = brandedModule(summaryBrand),
     fields = FIELDS,
     onLoaded = function(runtime)
       updateDependentFields(runtime)
-      escCurrentLimit.remember(runtime and runtime.data and runtime.data.current_limit)
+      local reported = tonumber(runtime and runtime.data and runtime.data.current_limit)
+      if reported == nil then return end
+      if reported <= 0 or reported > AM32_HIGHEST_LIMIT_AMPS then
+        escCurrentLimit.forget()
+      else
+        escCurrentLimit.remember(reported)
+      end
     end,
     onWakeup = updateDependentFields,
     eepromWrite = false,
@@ -74,11 +103,14 @@ local function openEditor(opts, selection)
   })
 end
 
-local function open(opts)
+local function open(opts, config)
+  local pageTitle, logTag, summaryBrand = brandOf(config)
   fourWayPage.open(opts, {
-    pageTitle = PAGE_TITLE,
+    pageTitle = pageTitle,
     switchReadDelay = SWITCH_READ_DELAY,
-    openEditor = openEditor,
+    openEditor = function(editorOpts, selection)
+      openEditor(editorOpts, selection, pageTitle, logTag, summaryBrand)
+    end,
   })
 end
 

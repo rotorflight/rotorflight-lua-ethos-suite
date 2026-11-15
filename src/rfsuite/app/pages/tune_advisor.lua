@@ -25,15 +25,17 @@
 --   (often the tail) gets no F advice: its PID gains set the response.
 -- - Full stick (roll and pitch): cyclic saturated and the rate reached well
 --   below the rate asked, so the rate is lowered toward what the heli
---   reaches, again at most FF_STEP_MAX per step.
+--   reaches, again at most FF_STEP_MAX per step. The rate asked is capped by
+--   the cyclic ring (below 100%). With polar cyclic on, roll follows the
+--   Cyclic rates, so roll gets no rate or F advice (issue #2639, #2640).
 -- - |Collective| spread is shown as a fact, last, when there is room.
 -- - Shake: the heli oscillates with the stick centred, usually P too high.
 --   Less P, and nothing else on that axis: an oscillation also reads as
 --   bounce-back after every stop and spoils the F match, so the rules below
 --   would otherwise ask for more P and make it worse.
 -- - Stick releases: the rebound after a stop. I-term pushing back points at
---   a lower Iterm Relax Cutoff; with F still off, F comes first; otherwise
---   more P (or B).
+--   a lower Iterm Relax Cutoff, but only on an axis I-term relax acts on
+--   (issue #2642); with F still off, F comes first; otherwise more P (or B).
 -- - P is never raised past P_RAISE_MAX times the pilot's own P (the value
 --   before this page's own P changes, from changes.csv): when stops still
 --   bounce back after that, more P is not the answer.
@@ -85,6 +87,8 @@ local T = {
   axis = "@i18n(app.modules.tune_advisor.axis)@",
   data = "@i18n(app.modules.tune_advisor.data)@",
   dataFlightsFmt = "@i18n(app.modules.tune_advisor.data_flights_fmt)@",
+  noFlight = "@i18n(app.modules.tune_advisor.no_flight)@",
+  noFlightHint = "@i18n(app.modules.tune_advisor.no_flight_hint)@",
   noAircraft = "@i18n(app.modules.tune_advisor.no_aircraft)@",
   unsupported = "@i18n(app.modules.tune_advisor.unsupported)@",
   reading = "@i18n(app.modules.tune_advisor.reading)@",
@@ -118,6 +122,7 @@ local T = {
   actNone = "@i18n(app.modules.tune_advisor.act_none)@",
   rcRate = "@i18n(app.modules.rates.rc_rate)@",
   rate = "@i18n(app.modules.rates.rate)@",
+  cyclic = "@i18n(app.modules.radio_config.cyclic)@",
 
   whyMore = "@i18n(app.modules.tune_advisor.why_more)@",
   whyUneven = "@i18n(app.modules.tune_advisor.why_uneven)@",
@@ -129,9 +134,13 @@ local T = {
   whyCollHighFmt = "@i18n(app.modules.tune_advisor.why_coll_high_fmt)@",
   whyCollLowFmt = "@i18n(app.modules.tune_advisor.why_coll_low_fmt)@",
   whyRelax = "@i18n(app.modules.tune_advisor.why_relax)@",
+  whyPolar = "@i18n(app.modules.tune_advisor.why_polar)@",
+  whyReliefOff = "@i18n(app.modules.tune_advisor.why_relief_off)@",
+  whyRingFmt = "@i18n(app.modules.tune_advisor.why_ring_fmt)@",
   whyFixFFmt = "@i18n(app.modules.tune_advisor.why_fix_f_fmt)@",
   whyBrakeFmt = "@i18n(app.modules.tune_advisor.why_brake_fmt)@",
   whyShakeFmt = "@i18n(app.modules.tune_advisor.why_shake_fmt)@",
+  whyShakeNoStepFmt = "@i18n(app.modules.tune_advisor.why_shake_no_step_fmt)@",
   whyOk = "@i18n(app.modules.tune_advisor.why_ok)@",
   whyLimit = "@i18n(app.modules.tune_advisor.why_limit)@",
   whyPMaxFmt = "@i18n(app.modules.tune_advisor.why_p_max_fmt)@",
@@ -139,6 +148,7 @@ local T = {
   applyHint = "@i18n(app.modules.tune_advisor.apply_hint)@",
   applyPrompt = "@i18n(app.modules.tune_advisor.apply_prompt)@",
   applied = "@i18n(app.modules.tune_advisor.applied)@",
+  appliedNotRecorded = "@i18n(app.modules.tune_advisor.applied_not_recorded)@",
   stageRead = "@i18n(app.modules.tune_advisor.stage_read)@",
   stageWrite = "@i18n(app.modules.tune_advisor.stage_write)@",
   stageSave = "@i18n(app.modules.tune_advisor.stage_save)@",
@@ -165,8 +175,12 @@ local FF_MIN_CORR = 0.85
 local FF_HOT = 1.15
 local FF_LOW = 0.85
 local FF_STEP_MAX = 0.2         -- change F (and rates) by at most 20% per step
--- Rate bytes the FC accepts (firmware fc/rc_rates.h, cli/settings.c)
-local RATE_RANGE = {rcRate = {1, 255}, sRate = {0, 255}}
+-- Lowest rate byte the FC accepts (firmware fc/rc_rates.h, cli/settings.c). The
+-- ceiling is lower for some rates_type: the firmware keeps rc_rate and srate within
+-- ratesSettingLimits (fc/rc_rates.c) and trims them on every EEPROM write, so the
+-- ceiling is rawMaxFor() for the type (#2756).
+local RATE_FLOOR = {rcRate = 1, sRate = 0}
+local RATE_ROLE = {rcRate = "rcRate", sRate = "srate"}
 
 -- Which rate columns scale the whole curve linearly, per rates_type. The
 -- others (Betaflight, Raceflight, KISS) get a percentage instead.
@@ -236,16 +250,20 @@ local IS_SIM = system.getVersion().simulation == true
 -- name (lib/msp_rc_tuning.lua calls the srate column rates_N)
 local function fcField(key, axis)
   if key == "relaxCutoff" then return "profile", "iterm_relax_cutoff_" .. (axis - 1) end
+  if key == "relaxType" then return "profile", "iterm_relax_type" end
+  if key == "polar" then return "rates", "cyclic_polarity" end
+  if key == "ring" then return "rates", "cyclic_ring" end
   if key == "ratesType" then return "rates", "rates_type" end
   if key == "rcRate" then return "rates", "rcRates_" .. axis end
   if key == "sRate" then return "rates", "rates_" .. axis end
   return "tuning", AXIS_FIELDS[axis] .. "_" .. string.lower(key)
 end
 
--- Whether value is one the FC accepts for that setting
-local function inRange(key, axis, value)
-  local range = RATE_RANGE[key]
-  if range then return value >= range[1] and value <= range[2] end
+-- Whether value is one the FC accepts for that setting. A rate column's ceiling
+-- depends on the rates_type, so the rate checks pass it.
+local function inRange(key, axis, value, rateType)
+  local floor = RATE_FLOOR[key]
+  if floor then return value >= floor and value <= R.rawMaxFor(rateType, RATE_ROLE[key]) end
   local src, field = fcField(key, axis)
   local meta = SOURCE_BY_KEY[src].codec.FIELD_META[field]
   return meta ~= nil and value >= meta.min and value <= meta.max
@@ -283,12 +301,14 @@ end
 
 -- Whether scaling the rate curve by k keeps every scaled byte in the range
 -- the FC accepts. A percentage-only rates_type has nothing to check.
-local function ratesFit(a, axis, k)
-  local roles = LINEAR_ROLES[a.ratesType]
+-- src holds the rate bytes, axis is the axis they are written to (the Cyclic
+-- bytes for roll under polar cyclic, #2639).
+local function ratesFit(src, axis, k)
+  local roles = LINEAR_ROLES[src.ratesType]
   if not roles then return true end
   for _, role in ipairs(roles) do
     local key = rateKey(role)
-    if not inRange(key, axis, round(a[key] * k)) then return false end
+    if not inRange(key, axis, round(src[key] * k), src.ratesType) then return false end
   end
   return true
 end
@@ -307,11 +327,11 @@ local function ratesMove(a, k)
 end
 
 -- Suggests scaling the rate curve by k (e.g. 1.25 = 25% faster everywhere);
--- callers check ratesFit() first. change(text, key, from, to) adds a line
--- Apply can write; a percentage (no linear column for this rates_type) is
--- only shown.
-local function rateActions(a, name, k, act, change)
-  local roles = LINEAR_ROLES[a.ratesType]
+-- callers check ratesFit() first. change(text, key, from, to, axis) adds a line
+-- Apply can write, to the given axis; a percentage (no linear column for this
+-- rates_type) is only shown.
+local function rateActions(src, name, k, act, change, axis)
+  local roles = LINEAR_ROLES[src.ratesType]
   if not roles then
     local pct = round(math.abs(k - 1) * 100)
     act(string.format(k > 1 and T.actRatePctUpFmt or T.actRatePctDownFmt, name, pct))
@@ -319,10 +339,10 @@ local function rateActions(a, name, k, act, change)
   end
   for _, role in ipairs(roles) do
     local key = rateKey(role)
-    local raw = a[key]
+    local raw = src[key]
     local newRaw = round(raw * k)
     change(string.format(T.actRateFmt, name, (role == "rcRate") and T.rcRate or T.rate,
-      rateText(raw, a.ratesType, role), rateText(newRaw, a.ratesType, role)), key, raw, newRaw)
+      rateText(raw, src.ratesType, role), rateText(newRaw, src.ratesType, role)), key, raw, newRaw, axis)
   end
 end
 
@@ -347,14 +367,18 @@ end
 --
 -- A change that would leave the range the FC accepts is dropped with
 -- anything tied to it, and the reasons say so once (atLimit).
-local function advise(a, axis, name, pilotP, actions, whys, changes)
+-- cyc is the Cyclic (pitch) axis's record, passed for roll under polar cyclic (#2639).
+local function advise(a, axis, name, pilotP, actions, whys, changes, cyc)
   local function room(n) return #actions + n <= MAX_ACTIONS end
   local function act(s) if #actions < MAX_ACTIONS then actions[#actions + 1] = s end end
   local function why(s) if #whys < MAX_WHYS then whys[#whys + 1] = s end end
-  -- A setting action: callers check room() first, so it is never dropped
-  local function change(text, key, from, to)
+  -- A setting action: callers check room() first, so it is never dropped.
+  -- target is the axis the setting is written to (the axis itself by default).
+  local function change(text, key, from, to, target)
     act(text)
-    if from ~= to then changes[#changes + 1] = {key = key, from = from, to = to, text = text} end
+    if from ~= to then
+      changes[#changes + 1] = {key = key, from = from, to = to, text = text, axis = target or axis}
+    end
   end
   local limited = false
   local function atLimit()
@@ -362,6 +386,17 @@ local function advise(a, axis, name, pilotP, actions, whys, changes)
   end
 
   local shaking = a.shakeCount >= SHAKE_MIN_COUNT and a.shakeRms >= SHAKE_RMS
+  -- Polar cyclic: roll follows the Cyclic rates, so roll's own rate bytes are
+  -- not what the FC uses (issue #2639). The full-stick rate advice for roll is
+  -- then worked out from the Cyclic bytes and written to them; F gets none.
+  local polarRoll = axis == AXIS_ROLL and a.polar == 1
+  local rates, rateAxis, rateName = a, axis, name
+  if polarRoll then
+    rates, rateAxis, rateName = cyc, AXIS_PITCH, T.cyclic
+  end
+  -- I-term relax acts only on the axes its type names (issue #2642): RP is
+  -- roll and pitch, RPY all three, OFF none.
+  local reliefCovers = a.relaxType == 2 or (a.relaxType == 1 and axis ~= AXIS_YAW)
 
   -- Response: feed-forward match
   local response
@@ -378,6 +413,8 @@ local function advise(a, axis, name, pilotP, actions, whys, changes)
     response = string.format(hot and T.respFastFmt or T.respSlowFmt, round(math.abs(g - 1) * 100))
     if shaking then
       -- The shake comes first: see Stops
+    elseif polarRoll then
+      why(T.whyPolar)
     elseif a.F > 0 then
       local newF = round(a.F * clamp(1 / g, 1 - FF_STEP_MAX, 1 + FF_STEP_MAX))
       -- Keep the stick feel: F x rate is what the pilot feels. F is applied
@@ -392,7 +429,7 @@ local function advise(a, axis, name, pilotP, actions, whys, changes)
       else
         local text = string.format(T.actFFmt, name, a.F, newF)
         if LINEAR_ROLES[a.ratesType] then change(text, "F", a.F, newF) else act(text) end
-        rateActions(a, name, a.F / newF, act, change)
+        rateActions(a, name, a.F / newF, act, change, axis)
         why(hot and T.whyFast or T.whySlow)
         why(T.whyKeepFeel)
       end
@@ -401,13 +438,24 @@ local function advise(a, axis, name, pilotP, actions, whys, changes)
     end
   else
     response = T.respOk
-    local asked = maxRateAsked(a)
+    -- The rate the FC asks for at full stick, from the bytes it uses: roll's own,
+    -- or the Cyclic bytes under polar cyclic (rates is nil only without them)
+    local asked = rates and maxRateAsked(rates)
+    -- The FC limits the cyclic setpoint by the cyclic ring too (issue #2640): a
+    -- ring below 100% caps the rate it asks for at that share of the curve.
+    -- Ring 0 is no limit in the firmware.
+    local ringCaps = asked ~= nil and a.ring > 0 and a.ring < 100
+    if ringCaps then asked = asked * a.ring / 100 end
     if not shaking and axis ~= AXIS_YAW and asked and a.fullCount >= FULL_MIN_COUNT
         and a.fullSatCount >= FULL_SAT_SHARE * a.fullCount
-        and a.fullMaxRate < FULL_REACH * asked and room(rateActionCount(a)) then
+        and a.fullMaxRate < FULL_REACH * asked and room(rateActionCount(rates)) then
       local k = math.max(a.fullMaxRate / asked, 1 - FF_STEP_MAX)
-      local fits = ratesFit(a, axis, k)
-      if fits then rateActions(a, name, k, act, change) end
+      local fits = ratesFit(rates, rateAxis, k)
+      -- Roll's reach is compared with the Cyclic rate: say so first
+      if polarRoll then why(T.whyPolar) end
+      if fits then rateActions(rates, rateName, k, act, change, rateAxis) end
+      -- The asked rate is the ring's share of the curve: say so, or the number reads as wrong
+      if ringCaps then why(string.format(T.whyRingFmt, a.ring)) end
       why(string.format(T.whyFullFmt, asked, a.fullMaxRate))
       if not fits then atLimit() end
     end
@@ -422,6 +470,9 @@ local function advise(a, axis, name, pilotP, actions, whys, changes)
       local newP = clamp(round(a.P / P_STEP), 1, a.P - 1)
       change(string.format(T.actPFmt, name, a.P, newP), "P", a.P, newP)
       why(string.format(T.whyShakeFmt, rms))
+    else
+      -- No P step (P at its floor, or the slots are full): still name the shake
+      why(string.format(T.whyShakeNoStepFmt, rms))
     end
   elseif a.releases < STOPS_MIN then
     stops = string.format(T.stopsMoreFmt, a.releases, STOPS_MIN)
@@ -431,7 +482,9 @@ local function advise(a, axis, name, pilotP, actions, whys, changes)
     if a.meanRebound >= REBOUND_BAD then
       -- No room for the cutoff only after F and two rate lines; F is off
       -- then, so the next branch says to fix F first.
-      if a.meanIterm >= ITERM_PUSH and a.relaxCutoff > CUTOFF_MIN and room(1) then
+      -- Relax off for this axis: a lower cut-off would change nothing in flight
+      if a.meanIterm >= ITERM_PUSH and not reliefCovers then why(T.whyReliefOff) end
+      if a.meanIterm >= ITERM_PUSH and reliefCovers and a.relaxCutoff > CUTOFF_MIN and room(1) then
         local newCutoff = math.min(round(a.relaxCutoff * CUTOFF_STEP), a.relaxCutoff - 1)
         if inRange("relaxCutoff", axis, newCutoff) then
           change(string.format(T.actRelaxFmt, name, a.relaxCutoff, newCutoff), "relaxCutoff", a.relaxCutoff, newCutoff)
@@ -440,8 +493,14 @@ local function advise(a, axis, name, pilotP, actions, whys, changes)
           atLimit()
         end
       elseif ffOff(a) and a.F > 0 then
-        -- F first, unless F was at its limit: then nothing is advised here
-        if not limited then why(string.format(T.whyFixFFmt, rebound)) end
+        -- F first, unless F was at its limit: then nothing is advised here.
+        -- Roll under polar cyclic gets no F advice (issue #2639): the reason
+        -- says so instead of sending the pilot to F
+        if polarRoll then
+          why(T.whyPolar)
+        elseif not limited then
+          why(string.format(T.whyFixFFmt, rebound))
+        end
       elseif room(1) then
         local newP = math.max(round(a.P * P_STEP), a.P + 1)
         if not inRange("P", axis, newP) then
@@ -560,7 +619,8 @@ local function open(opts)
   local probing = false
   local unsupported = false       -- the FC refused the command: until Reload
   -- tasks/tune_history.lua's capture: "reading" (a flight since the disarm
-  -- not saved yet), "failed" (it gave up until the next disarm) or "idle"
+  -- not saved yet), "failed" (it gave up until the next disarm), "unread"
+  -- (the FC holds a flight this suite refuses to read) or "idle"
   local capture = "idle"
   local toolEnabled = nil
   local mcuId = nil               -- the session's aircraft
@@ -605,6 +665,28 @@ local function open(opts)
     changed()
   end
 
+  -- A flight the FC holds that this suite did not read: "failed" gave up,
+  -- "unread" refused the layout. Telling the pilot to fly again would be wrong.
+  local function flightNotRead()
+    return capture == "failed" or capture == "unread"
+  end
+
+  -- No flight saved yet (the FC counted no rate flight at the last disarm,
+  -- or none has been read): say so, with the reason, instead of an empty
+  -- "0m 00s, 0/5 flights" and the advice for too little data.
+  local function showNoFlight()
+    view.data, view.response, view.stops = T.noFlight, "-", "-"
+    clearList(view.actions)
+    clearList(view.whys)
+    clearList(view.changes)
+    if flightNotRead() then
+      view.actions[1] = T.notRead
+    else
+      view.actions[1] = T.noFlightHint
+    end
+    changed()
+  end
+
   local function render()
     if disposed then return end
     if unsupported then showOnly(T.unsupported) return end
@@ -612,6 +694,7 @@ local function open(opts)
     -- The advice would change in a few seconds: show none until it does
     if capture == "reading" then showOnly(T.reading) return end
     if not flights then return end
+    if #flights == 0 then showNoFlight() return end
 
     local axis = AXES[selected][2]
     local a, used, seconds = tuneHistory.aggregate(flights, axis)
@@ -621,10 +704,18 @@ local function open(opts)
     clearList(actions)
     clearList(whys)
     clearList(view.changes)
-    local pilotP = tuneHistory.pilotValue(changeLog, axis, "P", a.P)
-    view.response, view.stops = advise(a, axis, AXES[selected][1], pilotP, actions, whys, view.changes)
+    local pilotP = tuneHistory.pilotValue(changeLog, axis, "P", a.P, link.pidProfile)
+    -- Roll under polar cyclic is advised on the Cyclic (pitch) rate bytes (#2639)
+    local cyc = nil
+    if axis == AXIS_ROLL and a.polar == 1 then cyc = tuneHistory.aggregate(flights, AXIS_PITCH) end
+    view.response, view.stops = advise(a, axis, AXES[selected][1], pilotP, actions, whys, view.changes, cyc)
     view.axis = axis
-    for _, k in ipairs(tuneHistory.TUNE_KEYS) do view.tune[k] = a[k] end
+    -- The rate bytes Apply holds the FC to are those of the axis the rates were advised on
+    local rateSrc = cyc or a
+    view.rateAxis = cyc and AXIS_PITCH or axis
+    for _, k in ipairs(tuneHistory.TUNE_KEYS) do
+      if k == "rcRate" or k == "sRate" then view.tune[k] = rateSrc[k] else view.tune[k] = a[k] end
+    end
     clearList(view.actions)
     clearList(view.whys)
     if applied[axis] then
@@ -637,7 +728,7 @@ local function open(opts)
       -- After the changes, so the compact Changes view never cuts it
       if #view.changes > 0 then view.actions[#view.actions + 1] = T.applyHint end
     end
-    if capture == "failed" then table.insert(view.actions, 1, T.notRead) end
+    if flightNotRead() then table.insert(view.actions, 1, T.notRead) end
     changed()
   end
 
@@ -687,15 +778,19 @@ local function open(opts)
 
   local function onSession(snapshot)
     if disposed then return end
+    local pidProfileChanged = false
     if snapshot then
       link.connected = snapshot.connected == true
       link.armed = snapshot.isArmed == true
+      pidProfileChanged = link.pidProfile ~= snapshot.pidProfile
       link.pidProfile, link.rateProfile = snapshot.pidProfile, snapshot.rateProfile
       if snapshot.fcVersion ~= nil then fcVersion = snapshot.fcVersion end
     end
     -- A link loss keeps the aircraft: its saved flights do not need the link
     local nextMcuId = snapshot and snapshot.mcuId or nil
     if nextMcuId == nil or nextMcuId == mcuId then
+      -- The P cap depends on the active PID profile.
+      if pidProfileChanged then render() end
       probe()
       return
     end
@@ -735,9 +830,12 @@ local function open(opts)
 
   -- Apply (header Save). Each step runs from the previous one's MSP reply;
   -- any failure ends it through finish(), and the wakeup handler reports.
+  -- The write checks the PID profile the advice was made on, so an unknown
+  -- profile cannot be recorded against the Apply.
   local function canApply()
     return not applying and not unsupported and mcuId ~= nil and link.connected
       and not link.armed and capture ~= "reading" and #view.changes > 0
+      and link.pidProfile ~= nil
   end
 
   local function finish(result)
@@ -770,7 +868,7 @@ local function open(opts)
     readAll(1, readBack, T.errVerify, function()
       if not IS_SIM then
         for _, c in ipairs(applying.changes) do
-          local src, field = fcField(c.key, applying.axis)
+          local src, field = fcField(c.key, c.axis or applying.axis)
           if readBack[src][field] ~= c.to then finish(T.errVerify) return end
         end
       end
@@ -786,13 +884,19 @@ local function open(opts)
       finish(T.errChanged) return
     end
     for k, value in pairs(applying.tune) do
-      local src, field = fcField(k, axis)
+      -- The rate bytes are those of the rate axis (the Cyclic axis under polar cyclic, #2639)
+      local ax = (k == "rcRate" or k == "sRate") and (applying.rateAxis or axis) or axis
+      local src, field = fcField(k, ax)
       if data[src][field] ~= value then finish(T.errChanged) return end
     end
     local dirty = {}
     for _, c in ipairs(applying.changes) do
-      local src, field = fcField(c.key, axis)
-      if data[src][field] ~= c.from or not inRange(c.key, axis, c.to) then finish(T.errChanged) return end
+      local ax = c.axis or axis
+      local src, field = fcField(c.key, ax)
+      if data[src][field] ~= c.from or not inRange(c.key, ax, c.to, applying.tune.ratesType) then
+        finish(T.errChanged)
+        return
+      end
       data[src][field] = c.to
       dirty[src] = true
     end
@@ -821,7 +925,7 @@ local function open(opts)
     local tune, changes = {}, {}
     for k, v in pairs(view.tune) do tune[k] = v end
     for i, c in ipairs(view.changes) do changes[i] = c end
-    applying = {axis = view.axis, tune = tune, changes = changes, data = {},
+    applying = {axis = view.axis, rateAxis = view.rateAxis, tune = tune, changes = changes, data = {},
       pidProfile = link.pidProfile, rateProfile = link.rateProfile}
     applyResult = nil
     applyStage, shownStage = T.stageRead, T.stageRead
@@ -864,15 +968,22 @@ local function open(opts)
     local result, done = applyResult, applying
     applyResult, applying = nil, nil
     closeApplyDialog()
+    -- The FC write has already succeeded; a record that cannot be written is
+    -- reported, not rolled back.
+    local recorded = true
     if result == true then
-      tuneHistory.logChanges(mcuId, done.axis, done.changes)
+      recorded = tuneHistory.logChanges(mcuId, done.axis, done.changes, done.pidProfile) == true
       changeLog = tuneHistory.readChanges(mcuId)
       applied[done.axis] = true
       render()
     end
+    local message = result
+    if result == true then
+      message = recorded and T.applied or T.appliedNotRecorded
+    end
     form.openDialog({
       title = PAGE_TITLE,
-      message = result == true and T.applied or result,
+      message = message,
       buttons = {{label = BTN_OK, action = function() return true end}},
       wakeup = function() end,
       paint = function() end,

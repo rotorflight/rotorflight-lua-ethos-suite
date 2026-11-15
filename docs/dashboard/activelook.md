@@ -7,16 +7,92 @@ for each phase.
 
 ## Configure
 
-Open **System → Settings → ActiveLook** on the transmitter. The Settings page
-enables the widget and sets its display offset. The Preflight, Inflight and
-Postflight pages each select a layout and assign up to four values to it. The
-Alerts page configures Low Fuel, ESC temperature and governor overlays.
-These settings are available offline and become read-only while the model is
-armed.
+Open **System → Settings → ActiveLook** on the transmitter. Settings are available
+offline and read-only while the model is armed. Changes are stored on Save in
+`[activelook]` in `SCRIPTS:/rfsuite.user/settings.ini`, not in FC EEPROM.
 
-Settings are stored in `[activelook]` in
-`SCRIPTS:/rfsuite.user/settings.ini`. They are RFSuite settings, not flight
-controller EEPROM settings.
+The **ETHOS Glasses menu** switch is shown only on ETHOS **26.2.0 or newer** and
+only when `system.registerGlasses()` is available. It defaults to **off**; an
+existing saved choice is preserved. Enable it, save, and restart the transmitter
+to make **Model → Glasses** available. Pair and configure the glasses there.
+Changing the switch in either direction shows a restart reminder dialog instead
+of a permanent form note. Turning it off, saving and restarting skips the suite's
+registration. Other Lua scripts can still register the menu.
+
+**Rotorflight ActiveLook** enables the Rotorflight glasses display. This switch
+is disabled while the visible ETHOS Glasses menu switch is off; its saved value
+is retained. When the menu switch is unavailable, this restriction does not apply.
+Switching the display from off to on shows a setup reminder: open **Model →
+Glasses → Screen**, choose the **Full-Screen** layout and assign **Rotorflight
+ActiveLook**. Confirming the reminder does not configure ETHOS or save the page.
+Use Save as usual. Opening an already enabled page shows no reminder.
+
+The Settings page also selects a Hide Display switch and the display offsets.
+The Preflight, Inflight and Postflight pages select layouts and up to four values
+per phase. Alerts configures fuel, temperature, RF link and governor overlays.
+
+When the saved menu preference is on and the API exists, `main.lua` registers
+support once per loaded suite instance in `init()`, before registering the
+existing glasses widget. The suite does not unregister it during the session.
+Opening the tool or enabling an additional task is unnecessary for registration.
+The existing background task is still needed for Rotorflight telemetry and alerts.
+Firmware without the API skips the call and retains its existing behavior.
+
+Startup reads only `register_glasses` from the settings file, without loading or
+normalizing the full configuration. This avoids a reproduced startup instruction
+limit with larger saved dashboard sections. The full settings reader remains in
+use for the normal settings flows; no periodic registration or reader is added.
+
+### Startup validation and memory cost
+
+Run `lua5.4 bin/startup_glasses/verify_startup_glasses.lua` to check the startup
+reader against the full INI/settings reader and exercise the real `main.init()`.
+The adjacent `.ci.json` registers this harness with the existing CI matrix.
+Checks cover section isolation, repeated keys and sections, boolean/numeric
+values, invalid and missing values, whitespace, comments, CRLF, file closure,
+one-time registration, and no settings read or registration without the API.
+Native standard-Lua handles also exercise all three readers without an I/O mock.
+Injected open, read and close failures check that startup continues without
+registering glasses, reports the failure once, and attempts to close an opened
+file even when reading raises an exception.
+
+The readers use standard file-handle methods (`file:read("L")`) rather than the
+ETHOS-specific `io.read(file, "L")` spelling. The startup scalar scan is protected
+so its file is closed after a read exception. `main.init()` catches reader
+exceptions, skips registration for that script lifetime, and continues registering
+the other subsystems. A boot diagnostic reports the failure without adding a
+periodic retry. A confirmed missing file (`ENOENT`, error code 2) still uses the default-off
+preference. Other open failures, including failures without an error code, are
+reported by the guarded boot diagnostic instead of silently treated as missing.
+Both standard Lua's `true` and ETHOS's empty successful close return are accepted.
+These native reads and successful startup were checked in the X20PRO simulator
+running ETHOS 26.2.0-RC1 after the robustness follow-up.
+
+A desktop Lua 5.4 measurement with the local settings plus 200 unrelated saved
+theme keys gave 17,454 instructions for the full settings load, 4,372 for the
+scalar read and 5,152 for the complete updated `init()`. These counts apply only
+to that fixture and are not upper bounds for arbitrary files.
+
+This startup optimization has a retained-memory cost even if the glasses menu
+is never opened: both changed modules are loaded during boot. Comparing retained
+compiled chunks against the pre-registration baseline on desktop Lua 5.4 after
+the robustness follow-up gave approximately **1.90 KiB more for
+`lib/settings_store.lua`** and **0.62 KiB more for `main.lua`**, or **2.52 KiB total**.
+The earlier estimate before error guards was about 1.56 KiB. These are fixed
+code-size estimates, not measurements of the complete running suite's heap on
+an ETHOS radio; compiler and allocator differences can change the actual cost.
+
+The [official API example](https://ethos-lua-doc.frsky-rc.com/api/system/registerGlasses/)
+registers support in `init()` without a wakeup callback. No polling or additional
+background task is added. The suite must remain installed and load successfully
+after a transmitter restart.
+
+Registration, opening the Glasses page and both saved preference values across
+restarts were checked in the X20PRO simulator with ETHOS 26.2.0-RC1 and suite
+2.3.1. Full visual verification of the settings interactions remains incomplete:
+tool opening encountered an instruction-limit error and subsequent navigation
+was restricted with the background task inactive. Bluetooth connectivity and
+ENGO2 hardware operation still require validation on compatible hardware.
 
 ## Flight phases and statistics
 

@@ -198,6 +198,44 @@ do
     and m.layoutPhase("inflight") == "inflight")
 end
 
+-- Issue #2663: the post-flight tiles show the voltage and cell count taken when the
+-- flight ended. The live values after landing belong to the next pack.
+print("the voltage and cell count at landing")
+do
+  local fs = newFlightStats()
+  tick(fs, true, false)
+  tick(fs, true, true)
+  tick(fs, true, true, sample(2000, 30, {throttlePercent = 60, voltage = 22.2}))
+  check("nothing has landed while the flight is on", fs.stats.landing == nil)
+  check("disarming after flight is postflight",
+    tick(fs, true, false, {voltage = 21.0, batteryConfig = {cellCount = 6}}) == "postflight")
+  check("the landing keeps the voltage and cell count taken at the disarm",
+    fs.stats.landing ~= nil and fs.stats.landing.voltage == 21.0 and fs.stats.landing.cells == 6,
+    fs.stats.landing and (tostring(fs.stats.landing.voltage) .. "/" .. tostring(fs.stats.landing.cells)) or "nil")
+  tick(fs, true, false, {voltage = 24.6, batteryConfig = {cellCount = 4}})
+  check("the next pack, plugged in after landing, does not change the landing",
+    fs.stats.landing.voltage == 21.0 and fs.stats.landing.cells == 6)
+  tick(fs, false, false)
+  check("offline keeps the landing", fs.stats.landing ~= nil and fs.stats.landing.voltage == 21.0)
+  tick(fs, true, false)
+  check("reconnect closes the flight and clears the landing", fs.stats.landing == nil)
+end
+
+print("the landing is dropped when the next flight starts")
+do
+  local fs = newFlightStats()
+  tick(fs, true, false)
+  tick(fs, true, true)
+  tick(fs, true, true, sample(2000, 30, {throttlePercent = 60, voltage = 22.2}))
+  tick(fs, true, false, {voltage = 21.0, batteryConfig = {cellCount = 6}})
+  check("the landing is set after the flight", fs.stats.landing ~= nil)
+  tick(fs, true, true)
+  check("arming again on the ground keeps the landing for the post-flight tiles",
+    fs.stats.landing ~= nil)
+  tick(fs, true, true, sample(2000, 30, {throttlePercent = 60, voltage = 22.0}))
+  check("the next flight clears the landing", fs.stats.landing == nil)
+end
+
 print(string.rep("-", 60))
 print(string.format("checks: %d   failures: %d", checks, failures))
 if failures > 0 then

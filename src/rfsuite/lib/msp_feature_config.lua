@@ -47,6 +47,9 @@ local FEATURE_BIT_TELEMETRY = 10
 local FEATURE_BIT_LED_STRIP = 16
 local FEATURE_BIT_CMS = 19
 local FEATURE_BIT_FREQ_SENSOR = 28
+-- FEATURE_GOVERNOR = BIT(26) (rotorflight-firmware src/main/config/feature.h). The governor
+-- is started at start-up only while this is set (#2649).
+local FEATURE_BIT_GOVERNOR = 26
 
 local function getBit(value, bit)
   return math.floor((value or 0) / (2 ^ bit)) % 2 == 1
@@ -74,6 +77,7 @@ local msp_feature_config = {
   FEATURE_BIT_LED_STRIP = FEATURE_BIT_LED_STRIP,
   FEATURE_BIT_CMS = FEATURE_BIT_CMS,
   FEATURE_BIT_FREQ_SENSOR = FEATURE_BIT_FREQ_SENSOR,
+  FEATURE_BIT_GOVERNOR = FEATURE_BIT_GOVERNOR,
   getBit = getBit,
   setBit = setBit,
 }

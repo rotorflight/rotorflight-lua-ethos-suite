@@ -157,10 +157,12 @@ SCRIPT_TO_DOC_PATH = {
     "app/pages/power_preferences.lua": "setup/power/preferences.md",
     "app/pages/esc_motors_throttle.lua": "setup/esc_motors/throttle.md",
     "app/pages/esc_motors_telemetry.lua": "setup/esc_motors/telemetry.md",
+    "app/pages/esc_motors_srxl2.lua": "setup/esc_motors/srxl2.md",
     "app/pages/esc_motors_rpm.lua": "setup/esc_motors/rpm.md",
     "app/pages/motor_override.lua": "setup/esc_motors/motor_override.md",
     "app/pages/esc_forward_hw5.lua": "setup/esc_motors/esc_tools/hw5.md",
     "app/pages/esc_forward_am32.lua": "setup/esc_motors/esc_tools/am32.md",
+    "app/pages/esc_forward_goosky.lua": "setup/esc_motors/esc_tools/goosky.md",
     "app/pages/esc_forward_blheli_s.lua": "setup/esc_motors/esc_tools/blheli_s.md",
     "app/pages/esc_forward_bluejay.lua": "setup/esc_motors/esc_tools/bluejay.md",
     "app/pages/esc_forward_flyrotor.lua": "setup/esc_motors/esc_tools/flyrotor.md",
@@ -174,6 +176,8 @@ SCRIPT_TO_DOC_PATH = {
     "app/pages/setup_governor_filters.lua": "setup/governor/filters.md",
     "app/pages/setup_governor_curves.lua": "setup/governor/curves.md",
 
+    # Configuration -> Wizards
+    "app/pages/setup_wizard.lua": "wizards/setup_wizard.md",
     # System -> Tools
     "app/pages/copy_profiles.lua": "tools/copy_profiles.md",
     "app/pages/profile_select.lua": "tools/profile_select.md",
@@ -276,7 +280,8 @@ def parse_lua_menus():
         entries_block_match = re.search(r"entries\s*=\s*\{([\s\S]*)\}", m_body)
         if entries_block_match:
             entries_content = entries_block_match.group(1)
-            for e_match in re.finditer(r"\{([^{}]+)\}", entries_content):
+            # One level of nested braces, for list fields such as escProtocolIds = {1, 16}.
+            for e_match in re.finditer(r"\{((?:[^{}]|\{[^{}]*\})+)\}", entries_content):
                 e_body = e_match.group(1)
                 et_m = re.search(r'title\s*=\s*("(?:[^"\\]|\\.)*"|@[^@]+@)', e_body)
                 if not et_m:
@@ -288,8 +293,14 @@ def parse_lua_menus():
                 e_menu_id = em_m.group(1) if em_m else None
                 offline = "offline = true" in e_body
                 requires_bus = "requiresServoBus = true" in e_body
-                esc_proto_m = re.search(r"escProtocolId\s*=\s*(\d+)", e_body)
-                esc_proto = esc_proto_m.group(1) if esc_proto_m else None
+                # escProtocolId = 1, or escProtocolIds = {1, 16} for a tile lit by
+                # more than one protocol (AM32 and Goosky share an editor).
+                esc_ids_m = re.search(r"escProtocolIds\s*=\s*\{([\d\s,]+)\}", e_body)
+                if esc_ids_m:
+                    esc_proto = " or ".join(v.strip() for v in esc_ids_m.group(1).split(",") if v.strip())
+                else:
+                    esc_proto_m = re.search(r"escProtocolId\s*=\s*(\d+)", e_body)
+                    esc_proto = esc_proto_m.group(1) if esc_proto_m else None
                 developer = "developerModeEnabled" in e_body or "developer" in e_body.lower()
 
                 entries.append({

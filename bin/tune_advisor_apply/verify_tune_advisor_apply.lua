@@ -56,7 +56,7 @@ form = {
 }
 
 local queue, subs = {}, {}
-local saveEnabled, toolEnabled, onSave = nil, nil, nil
+local saveEnabled, toolEnabled, onSave, onTool = nil, nil, nil, nil
 local logged = {}
 local cache = {
   ["lib/bus.lua"] = {
@@ -65,7 +65,7 @@ local cache = {
     unsubscribe = function() end,
   },
   ["app/header.lua"] = {build = function(_, o)
-    onSave = o.onSave
+    onSave, onTool = o.onSave, o.onTool
     return {setSaveEnabled = function(e) saveEnabled = e end,
       setToolEnabled = function(e) toolEnabled = e end, focusMenu = function() end,
       focusReload = function() end}
@@ -93,6 +93,11 @@ local EEPROM = 250
 -- The saved flights: one flight from the advisor's simulator fixture, whose
 -- tune is the other codecs' fixtures (Actual rates). Roll: F 120 -> 96, and
 -- center sensitivity 18 -> 23 and max rate 24 -> 30.
+-- The settings every flight carries (issues #2639, #2640, #2642): the values the
+-- FC answers with (resetFc). The relax type is the firmware default, RPY, not the
+-- codec fixture's OFF, so the rules above keep their cut-off advice.
+local FC_SETTINGS = {polar = 0, ring = 150, relaxType = 2}
+local flightAxisFields = {}       -- [axis] = fields overriding that axis's flight values
 local flightRatesType = nil       -- overrides the fixture's rates_type when set
 local flightRollShake = nil       -- overrides roll's shake (deg/s) when set
 local flightRoll = nil            -- fields overriding the fixture's roll axis when set
@@ -104,6 +109,8 @@ local function fixtureFlights()
     for i, b in ipairs(m.simulatorResponse) do buf[i] = b end
     m.processReply(nil, buf)
     if flightRatesType then axes[axis].ratesType = flightRatesType end
+    for k, v in pairs(FC_SETTINGS) do axes[axis][k] = v end
+    for k, v in pairs(flightAxisFields[axis] or {}) do axes[axis][k] = v end
     if flightRoll and axis == 1 then
       for k, v in pairs(flightRoll) do axes[axis][k] = v end
     end
@@ -111,8 +118,13 @@ local function fixtureFlights()
   if flightRollShake then axes[1].shakeRms = flightRollShake end
   return {{date = "d", seconds = 147, axes = axes}}
 end
-tuneHistory.read = function() return fixtureFlights() end
-tuneHistory.logChanges = function(_, axis, changes) logged[#logged + 1] = {axis = axis, changes = changes} end
+local noFlights = false           -- set to make the history hold no flight yet
+tuneHistory.read = function() if noFlights then return {} end return fixtureFlights() end
+local logFails = false            -- set to make the record write fail
+tuneHistory.logChanges = function(_, axis, changes)
+  logged[#logged + 1] = {axis = axis, changes = changes}
+  return not logFails
+end
 local changeLog = {}              -- what changes.csv holds: {axis, key, from, to} rows
 tuneHistory.readChanges = function() return changeLog end
 
@@ -125,17 +137,21 @@ local function resetFc()
     local buf = {}
     for i, b in ipairs(m.simulatorResponse) do buf[i] = b end
     fc[cmd] = codec.decode(buf)
+    if cmd == 111 then
+      fc[cmd].cyclic_polarity, fc[cmd].cyclic_ring = FC_SETTINGS.polar, FC_SETTINGS.ring
+    end
+    if cmd == 94 then fc[cmd].iterm_relax_type = FC_SETTINGS.relaxType end
   end
 end
 
-local wakeup
+local wakeup, paintFn
 local session = {mcuId = "abc", connected = true, isArmed = false, pidProfile = 0, rateProfile = 0}
 
 local function openPage()
   local page = assert(loadfile(ROOT .. "app/pages/tune_advisor.lua"))()
   page.open({
     setWakeupHandler = function(f) wakeup = f end,
-    setPaintHandler = function() end,
+    setPaintHandler = function(f) paintFn = f end,
     setCleanupHandler = function() end,
     setEventHandler = function() end,
     onBack = function() end,
@@ -241,6 +257,19 @@ do
   check("Save is disabled once applied", saveEnabled == false)
 end
 
+print("An FC write whose change record fails is reported, and Save stays off")
+do
+  resetFc()
+  openPage()
+  pump()
+  logFails = true
+  applyNow()
+  logFails = false
+  check("the outcome says the record was not written", lastMessage():find("tune_advisor.applied_not_recorded", 1, true) ~= nil,
+    lastMessage())
+  check("Save stays off after the FC write", saveEnabled == false)
+end
+
 print("A tune changed since the flights is never overwritten")
 do
   openPage()                      -- the same flights, but the FC holds F 96 now
@@ -332,6 +361,19 @@ do
   session.connected = true
 end
 
+print("Save waits until the active PID profile is known")
+do
+  session.pidProfile = nil
+  resetFc()
+  openPage()
+  pump()
+  check("no Apply while the PID profile is unknown", saveEnabled == false)
+  session.pidProfile = 0
+  subs["session.update"](session)
+  pump()
+  check("Save comes back once the PID profile is known", saveEnabled == true)
+end
+
 -- tasks/tune_history.lua reads the last flight for about 10 s after a disarm.
 -- Advice and the erase button wait for it.
 print("While the last flight is being read, Save and erase wait")
@@ -390,6 +432,30 @@ do
   flightRollShake = nil
 end
 
+-- Issue #2643: a shaking axis that gets no P step still names the shake; it
+-- must not sit under "answers the stick as asked" with no reason for the shake
+print("A shaking axis with no P step still gives the shake reason")
+do
+  resetFc()
+  flightRollShake = 49
+  -- P already at its floor: no P step. The response is on target and the
+  -- collective is even, so the shake is the only reason and "answers as asked"
+  -- would sit beside it on the base page.
+  local even = {{gain = 1, count = 0}, {gain = 1, count = 0}, {gain = 1, count = 0}}
+  flightRoll = {P = 1, ffGain = 1.0, collBands = even}
+  openPage()
+  pump()
+  local shown = {}
+  lcd.drawText = function(_, _, text) shown[#shown + 1] = tostring(text) end
+  paintFn()
+  lcd.drawText = nil
+  local text = table.concat(shown, "\n")
+  check("the shake is named in the reasons", text:find("why_shake_no_step_fmt", 1, true) ~= nil, text)
+  check("the axis is not said to answer as asked", text:find("why_ok", 1, true) == nil, text)
+  flightRollShake = nil
+  flightRoll = nil
+end
+
 print("Advice past a setting's limit is not given")
 do
   -- Max rate 220: F 120 -> 96 would need it at 275, past the FC's 255
@@ -400,6 +466,190 @@ do
   pump()
   check("neither F nor the rates are offered", saveEnabled == false)
   flightRoll = nil
+end
+
+-- Issue #2756: Actual keeps rc_rate and srate at 200 (fc/rc_rates.c
+-- ratesSettingLimits), not at the byte's 255. The firmware trims a larger value
+-- on the next EEPROM write, so the advice must not offer it.
+print("Actual's rate ceiling is the firmware's 200, not the byte's 255")
+do
+  -- srate 190: F 120 -> 96 needs it at 238, past 200 but within the byte
+  resetFc()
+  fc[111].rates_1 = 190
+  flightRoll = {sRate = 190}
+  openPage()
+  pump()
+  check("F and srate are not offered past Actual's srate limit of 200", saveEnabled == false)
+  flightRoll = nil
+
+  -- control: srate 150 needs 188, within 200, so the same advice is offered
+  resetFc()
+  fc[111].rates_1 = 150
+  flightRoll = {sRate = 150}
+  openPage()
+  pump()
+  check("the same advice is offered while srate stays within 200", saveEnabled == true)
+  flightRoll = nil
+
+  -- rc rate 170: the same 1.25 step needs 212, past Actual's rc_rate limit of 200
+  resetFc()
+  fc[111].rcRates_1 = 170
+  flightRoll = {rcRate = 170}
+  openPage()
+  pump()
+  check("F and rc rate are not offered past Actual's rc_rate limit of 200", saveEnabled == false)
+  flightRoll = nil
+end
+
+-- The same ceiling per rates_type (RAW_LIMITS in lib/rate_curve_scale.lua, from
+-- fc/rc_rates.c ratesSettingLimits): Quick's srate and Rotorflight's rc rate also stop at 200.
+print("Quick's srate and Rotorflight's rc rate also stop at the firmware's 200")
+do
+  local rateCurveScale = requireModule("lib/rate_curve_scale.lua")
+
+  -- Quick: srate 190 -> 238 for the same 1.25 step, past 200
+  resetFc()
+  fc[111].rates_type = rateCurveScale.RATE_TYPE_QUICK
+  flightRatesType = rateCurveScale.RATE_TYPE_QUICK
+  fc[111].rates_1 = 190
+  flightRoll = {sRate = 190}
+  openPage()
+  pump()
+  check("Quick: F and srate are not offered past its srate limit of 200", saveEnabled == false)
+  flightRoll = nil
+  flightRatesType = nil
+
+  -- control: Quick srate 150 -> 188 stays within 200, so the advice is offered
+  resetFc()
+  fc[111].rates_type = rateCurveScale.RATE_TYPE_QUICK
+  flightRatesType = rateCurveScale.RATE_TYPE_QUICK
+  fc[111].rates_1 = 150
+  flightRoll = {sRate = 150}
+  openPage()
+  pump()
+  check("Quick: the same advice is offered while srate stays within 200", saveEnabled == true)
+  flightRoll = nil
+  flightRatesType = nil
+
+  -- Rotorflight: rc rate 170 -> 212 for the same 1.25 step, past its rc rate limit of 200
+  resetFc()
+  fc[111].rates_type = rateCurveScale.RATE_TYPE_ROTORFLIGHT
+  flightRatesType = rateCurveScale.RATE_TYPE_ROTORFLIGHT
+  fc[111].rcRates_1 = 170
+  flightRoll = {rcRate = 170}
+  openPage()
+  pump()
+  check("Rotorflight: F and rc rate are not offered past its rc rate limit of 200", saveEnabled == false)
+  flightRoll = nil
+  flightRatesType = nil
+
+  -- control: Rotorflight rc rate 150 -> 188 stays within 200, so the advice is offered
+  resetFc()
+  fc[111].rates_type = rateCurveScale.RATE_TYPE_ROTORFLIGHT
+  flightRatesType = rateCurveScale.RATE_TYPE_ROTORFLIGHT
+  fc[111].rcRates_1 = 150
+  flightRoll = {rcRate = 150}
+  openPage()
+  pump()
+  check("Rotorflight: the same advice is offered while rc rate stays within 200", saveEnabled == true)
+  flightRoll = nil
+  flightRatesType = nil
+end
+
+print("With no flight saved, the page says so instead of the too-little-data advice")
+do
+  resetFc()
+  noFlights = true
+  openPage()
+  pump()
+  local shown = {}
+  lcd.drawText = function(_, _, text) shown[#shown + 1] = tostring(text) end
+  paintFn()
+  lcd.drawText = nil
+  local text = table.concat(shown, "\n")
+  check("Flight data says no flight is saved", text:find("tune_advisor.no_flight)@", 1, true) ~= nil, text)
+  check("the reason to fly is given", text:find("tune_advisor.no_flight_hint)@", 1, true) ~= nil, text)
+  check("no 0/5 flight count is shown", text:find("tune_advisor.data_flights_fmt)@", 1, true) == nil, text)
+  check("no too-little-data response is given", text:find("tune_advisor.resp_more_fmt)@", 1, true) == nil, text)
+  check("Save stays disabled", saveEnabled == false)
+  noFlights = false
+end
+
+print("Erasing the saved flights on the open page drops the advice and the pending changes")
+do
+  resetFc()
+  openPage()
+  pump()
+  local function paintText()
+    local shown = {}
+    lcd.drawText = function(_, _, text) shown[#shown + 1] = tostring(text) end
+    paintFn()
+    lcd.drawText = nil
+    return table.concat(shown, "\n")
+  end
+  -- The fixture gives advice with a change to write: the test starts from that state
+  check("before the erase, the advice has a change to save", saveEnabled == true and paintText():find("tune_advisor.act_f_fmt)@", 1, true) ~= nil)
+
+  -- The erase: the saved flights go, then the page reloads them (no flights left)
+  local erased = false
+  tuneHistory.erase = function() erased = true; noFlights = true end
+  onTool()
+  local confirm = dialogs[#dialogs]
+  confirm.buttons[1].action()
+  pump()
+  check("the erase reached the saved flights", erased)
+
+  local text = paintText()
+  check("no advice is left on the page", text:find("tune_advisor.act_f_fmt)@", 1, true) == nil, text)
+  check("the page says no flight is saved", text:find("tune_advisor.no_flight)@", 1, true) ~= nil, text)
+  check("Save is disabled, nothing is left to write", saveEnabled == false)
+  noFlights = false
+end
+
+print("A flight the FC holds but the radio did not read is not met with a hint to fly again")
+do
+  local function paintText()
+    local shown = {}
+    lcd.drawText = function(_, _, text) shown[#shown + 1] = tostring(text) end
+    paintFn()
+    lcd.drawText = nil
+    return table.concat(shown, "\n")
+  end
+  resetFc()
+  noFlights = true
+  openPage()
+  pump()
+  for _, state in ipairs({"unread", "failed"}) do
+    subs["tune_history.state"](state)
+    pump()
+    local text = paintText()
+    check(state .. ": the last flight is said to be not read", text:find("tune_advisor.not_read)@", 1, true) ~= nil, text)
+    check(state .. ": no fly-again hint", text:find("tune_advisor.no_flight_hint)@", 1, true) == nil, text)
+    check(state .. ": Flight data still says no flight is saved", text:find("tune_advisor.no_flight)@", 1, true) ~= nil, text)
+  end
+  subs["tune_history.state"]("idle")
+  pump()
+  check("idle again: the fly-again hint is back", paintText():find("tune_advisor.no_flight_hint)@", 1, true) ~= nil)
+  noFlights = false
+end
+
+print("A flight the FC holds but the radio did not read is said so over saved flights too")
+do
+  resetFc()
+  noFlights = false
+  openPage()
+  pump()
+  subs["tune_history.state"]("unread")
+  pump()
+  local shown = {}
+  lcd.drawText = function(_, _, text) shown[#shown + 1] = tostring(text) end
+  paintFn()
+  lcd.drawText = nil
+  local text = table.concat(shown, "\n")
+  check("the last flight is said to be not read", text:find("tune_advisor.not_read)@", 1, true) ~= nil, text)
+  check("the saved flights are still shown", text:find("tune_advisor.data_flights_fmt)@", 1, true) ~= nil, text)
+  subs["tune_history.state"]("idle")
+  pump()
 end
 
 print("A full-stick rate cut is limited to one step")
@@ -445,15 +695,16 @@ do
 
   -- The page raised the pilot's 50 twice already: 84 would be past 75
   resetFc()
-  changeLog = {{axis = 1, key = "P", from = 50, to = 60}, {axis = 2, key = "P", from = 50, to = 60},
-    {axis = 1, key = "P", from = 60, to = 70}}
+  changeLog = {{axis = 1, key = "P", from = 50, to = 60, pidProfile = 0},
+    {axis = 2, key = "P", from = 50, to = 60, pidProfile = 0},
+    {axis = 1, key = "P", from = 60, to = 70, pidProfile = 0}}
   openPage()
   pump()
   check("no more P past 1.5x the pilot's own", saveEnabled == false)
 
   -- The pilot set 70 by hand after the page's 50 -> 60: 70 is the pilot's own
   resetFc()
-  changeLog = {{axis = 1, key = "P", from = 50, to = 60}}
+  changeLog = {{axis = 1, key = "P", from = 50, to = 60, pidProfile = 0}}
   openPage()
   pump()
   check("a P set by hand starts again from that P", saveEnabled == true)
@@ -463,12 +714,185 @@ end
 
 print("pilotValue follows only an unbroken chain of Apply changes")
 do
-  local log = {{axis = 1, key = "P", from = 40, to = 48}, {axis = 1, key = "F", from = 100, to = 80},
-    {axis = 1, key = "P", from = 48, to = 58}}
-  check("follows the chain back", tuneHistory.pilotValue(log, 1, "P", 58) == 40)
-  check("a different current value is the pilot's", tuneHistory.pilotValue(log, 1, "P", 65) == 65)
-  check("another axis is not followed", tuneHistory.pilotValue(log, 2, "P", 58) == 58)
-  check("no record: the current value", tuneHistory.pilotValue({}, 1, "P", 58) == 58)
+  local log = {{axis = 1, key = "P", from = 40, to = 48, pidProfile = 0},
+    {axis = 1, key = "F", from = 100, to = 80, pidProfile = 0},
+    {axis = 1, key = "P", from = 48, to = 58, pidProfile = 0}}
+  check("follows the chain back", tuneHistory.pilotValue(log, 1, "P", 58, 0) == 40)
+  check("a different current value is the pilot's", tuneHistory.pilotValue(log, 1, "P", 65, 0) == 65)
+  check("another axis is not followed", tuneHistory.pilotValue(log, 2, "P", 58, 0) == 58)
+  check("another PID profile is not followed", tuneHistory.pilotValue(log, 1, "P", 58, 1) == 58)
+  check("no record: the current value", tuneHistory.pilotValue({}, 1, "P", 58, 0) == 58)
+end
+
+print("Advice refreshes when the PID profile changes on the same aircraft")
+do
+  resetFc()
+  flightRoll = {ffGain = 1.0, fullCount = 0, releases = 20, meanRebound = 0.2, meanIterm = 0}
+  changeLog = {
+    {axis = 1, key = "P", from = 50, to = 60, pidProfile = 0},
+    {axis = 2, key = "P", from = 50, to = 60, pidProfile = 0},
+    {axis = 1, key = "P", from = 60, to = 70, pidProfile = 0},
+  }
+  session.pidProfile = 0
+  openPage()
+  pump()
+  check("the current profile's 1.5x P cap blocks another increase", saveEnabled == false)
+
+  session.pidProfile = 1
+  subs["session.update"](session)
+  pump()
+  check("same-aircraft profile change refreshes the P cap", saveEnabled == true)
+
+  session.pidProfile = 0
+  flightRoll = nil
+  changeLog = {}
+end
+
+-- What the page paints: the advice reasons and actions, by their i18n keys
+local function paintText()
+  local shown = {}
+  lcd.drawText = function(_, _, text) shown[#shown + 1] = tostring(text) end
+  paintFn()
+  lcd.drawText = nil
+  return table.concat(shown, "\n")
+end
+
+print("Polar cyclic: roll gets no F advice (issue #2639)")
+do
+  resetFc()
+  flightAxisFields[1] = {polar = 1}
+  openPage()
+  pump()
+  check("no F or rate change is offered on roll", saveEnabled == false)
+  check("the reason names the Cyclic rates", paintText():find("why_polar", 1, true) ~= nil)
+  flightAxisFields[1] = nil
+end
+
+print("Polar cyclic: roll's full-stick cut is advised on, and written to, the Cyclic rates (issue #2639)")
+do
+  resetFc()
+  -- The FC is on polar cyclic too, as the flights say: Apply holds the FC to the tune they show
+  fc[111].cyclic_polarity = 1
+  flightAxisFields[1] = {polar = 1}
+  flightRoll = {ffGain = 1.0, fullCount = 200, fullSatCount = 200, fullMaxRate = 100}
+  openPage()
+  pump()
+  -- The base flight still gets a P step from its rebound, so only the rate lines count here
+  local text = paintText()
+  check("the full-stick rate is cut", text:find("act_rate_fmt", 1, true) ~= nil, text)
+  check("the reason names the Cyclic rates", text:find("why_polar", 1, true) ~= nil, text)
+  -- The cut is the Cyclic (pitch) rates: roll's own rate bytes stay as they are
+  local before = snapshot()
+  applyNow()
+  -- roll_p is the P step from the rebound on the same flight, as above
+  check("the write holds the Cyclic rates, not roll's", changedFields(before) == "rates_2,rcRates_2,roll_p",
+    changedFields(before))
+  check("roll's own rates are untouched", fc[111].rcRates_1 == before[111].rcRates_1 and fc[111].rates_1 == before[111].rates_1,
+    tostring(fc[111].rcRates_1) .. "/" .. tostring(fc[111].rates_1))
+  flightAxisFields[1] = nil
+  flightRoll = nil
+end
+
+print("A cyclic ring below 100% caps the rate asked at full stick (issue #2640)")
+do
+  -- Actual rates: the curve asks for 240 deg/s; a 50% ring caps that at 120,
+  -- so 100 deg/s is no shortfall
+  resetFc()
+  flightRoll = {ffGain = 1.0, fullCount = 200, fullSatCount = 200, fullMaxRate = 100, ring = 50}
+  openPage()
+  pump()
+  local text = paintText()
+  check("100 deg/s is not short of the 120 the ring allows", text:find("act_rate_fmt", 1, true) == nil, text)
+  check("no full-stick reason is given", text:find("why_full_fmt", 1, true) == nil, text)
+  -- control: ring 0 is no limit in the firmware, so the same 100 deg/s is a shortfall
+  flightRoll = {ffGain = 1.0, fullCount = 200, fullSatCount = 200, fullMaxRate = 100, ring = 0}
+  openPage()
+  pump()
+  check("with no ring limit the rates are cut", paintText():find("act_rate_fmt", 1, true) ~= nil)
+  flightRoll = nil
+end
+
+print("A ring that caps the rate asked says so, next to the full-stick reason (issue #2640)")
+do
+  -- Ring 50 asks 120 deg/s; the heli tops out at 50, so the rates are cut, and the
+  -- reason names the ring as well as the capped number
+  resetFc()
+  flightRoll = {ffGain = 1.0, fullCount = 200, fullSatCount = 200, fullMaxRate = 50, ring = 50}
+  openPage()
+  pump()
+  local text = paintText()
+  check("the rates are cut toward the ring's limit", text:find("act_rate_fmt", 1, true) ~= nil, text)
+  check("the reason names the ring", text:find("why_ring_fmt", 1, true) ~= nil, text)
+  check("the full-stick reason is still given", text:find("why_full_fmt", 1, true) ~= nil, text)
+  -- control: with no ring limit there is no ring reason
+  flightRoll = {ffGain = 1.0, fullCount = 200, fullSatCount = 200, fullMaxRate = 50, ring = 0}
+  openPage()
+  pump()
+  check("with no ring limit no ring reason is given", paintText():find("why_ring_fmt", 1, true) == nil)
+  flightRoll = nil
+end
+
+print("Polar cyclic: roll's stops get no F-first reason (issue #2639)")
+do
+  -- Relax off on roll, so the cut-off branch is out and the stops reach the F branch
+  resetFc()
+  -- F set and feed-forward off (gain 1.3): only then do the stops reach the F branch
+  flightAxisFields[1] = {polar = 1, relaxType = 0, F = 120}
+  -- meanIterm stays under the push: no relief reason, so the 3 reasons are not full
+  flightRoll = {ffGain = 1.3, releases = 20, meanRebound = 0.2, meanIterm = 0.01}   -- F off: too hot
+  openPage()
+  pump()
+  local text = paintText()
+  check("no F-first reason on roll under polar", text:find("why_fix_f_fmt", 1, true) == nil, text)
+  check("the reason names the Cyclic rates", text:find("why_polar", 1, true) ~= nil, text)
+  check("no change is offered on roll under polar", saveEnabled == false)
+  -- control: polar off, the same stops say fix F first
+  flightAxisFields[1] = {polar = 0, relaxType = 0, F = 120}
+  openPage()
+  pump()
+  local control = paintText()
+  check("with polar off the F-first reason is given", control:find("why_fix_f_fmt", 1, true) ~= nil, control)
+  flightAxisFields[1] = nil
+  flightRoll = nil
+end
+
+print("I-term relax off on an axis: no relax cut-off there (issue #2642)")
+do
+  resetFc()
+  flightAxisFields[1] = {relaxType = 0}   -- OFF: relax acts on no axis
+  flightRoll = {ffGain = 1.0, releases = 20, meanRebound = 0.2, meanIterm = 0.05}
+  openPage()
+  pump()
+  local text = paintText()
+  check("the reason says I-term relax does not act on this axis", text:find("why_relief_off", 1, true) ~= nil, text)
+  check("no relax cut-off is offered", text:find("act_relax_fmt", 1, true) == nil, text)
+  flightAxisFields[1] = nil
+  flightRoll = nil
+end
+
+print("I-term relax on the axis: the cut-off is still offered (issue #2642)")
+do
+  resetFc()
+  flightRoll = {ffGain = 1.0, releases = 20, meanRebound = 0.2, meanIterm = 0.05}
+  openPage()
+  pump()
+  check("the cut-off is offered with relax on RPY", paintText():find("act_relax_fmt", 1, true) ~= nil)
+  flightRoll = nil
+end
+
+print("Apply does not write a flight's advice onto another relax type (issue #2642)")
+do
+  resetFc()
+  flightAxisFields[1] = {relaxType = 1}   -- flown on RP; the FC holds RPY
+  openPage()
+  pump()
+  local before = snapshot()
+  local sent = applyNow()
+  check("nothing is written", changedFields(before) == "" and not has(sent, 202) and not has(sent, EEPROM),
+    table.concat(sent, ","))
+  check("the pilot is told the tune changed", lastMessage():find("tune_advisor.err_changed", 1, true) ~= nil,
+    lastMessage())
+  flightAxisFields[1] = nil
 end
 
 print()

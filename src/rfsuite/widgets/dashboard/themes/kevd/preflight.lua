@@ -1,7 +1,7 @@
 --[[
   Copyright (C) 2025 Rotorflight Project
   GPLv3 — https://www.gnu.org/licenses/gpl-3.0.en.html
-]] --
+]]
 
 local requireModule = package.loaded["rfsuite.lib.require"] or assert(loadfile("lib/require.lua"))()
 local rfsuite = requireModule("widgets/dashboard/context.lua")
@@ -55,18 +55,14 @@ local themeOptions = {
 }
 
 local lastScreenW = nil
+local lastScreenH = nil
 local boxes_cache = nil
-local header_boxes_cache = nil
 local themeconfig = nil
-local last_txbatt_type = nil
 
 local layout = {cols = 7, rows = 12, padding = 0, bgcolor = colorMode.bgcolor}
 
-local header_layout = utils.standardHeaderLayout(headeropts)
-local topbarShiftY = 4
-if header_layout and header_layout.height then
-    header_layout.height = header_layout.height + topbarShiftY
-end
+local createHeader = requireModule("widgets/dashboard/themes/kevd/header.lua")
+local header_layout, header_boxes, oldHeaderHeight, pageBackground = createHeader(colorMode, headeropts)
 
 local screenBorderStyle = {
     enabled = true,
@@ -76,28 +72,28 @@ local screenBorderStyle = {
     inset = -1
 }
 
-local function header_boxes()
-    local txbatt_type = 0
-    if rfsuite and rfsuite.preferences and rfsuite.preferences.general then txbatt_type = rfsuite.preferences.general.txbatt_type or 0 end
-
-    if header_boxes_cache == nil or last_txbatt_type ~= txbatt_type then
-        local boxes = utils.standardHeaderBoxes(i18n, colorMode, headeropts, txbatt_type)
-
-        local headerBgColor = colorMode.headerbgcolor or colorMode.fillbgcolor or colorMode.bgcolor
-        for _, box in ipairs(boxes) do
-            box.bgcolor = headerBgColor
-            box.offsety = (box.offsety or 0) + topbarShiftY
-        end
-
-        header_boxes_cache = boxes
-        last_txbatt_type = txbatt_type
-    end
-    return header_boxes_cache
-end
-
 local function buildBoxes(W)
+    local _, H = lcd.getWindowSize()
+    local fullScreen = utils.isFullScreen(W, H)
+    local oldContentH = H - (fullScreen and oldHeaderHeight or 0)
+    local contentH = H - (fullScreen and header_layout.height or 0)
+    local oldCellH = math.floor(oldContentH / layout.rows)
+    local cellH = math.floor(contentH / layout.rows)
+    local modelHeight = oldCellH * 9
+    local fuelShift = modelHeight - cellH * 9
+    local modelWidth = math.floor(W / layout.cols) * 3
+
+    local fuelHeight = math.min(contentH, cellH * layout.rows + 3) - cellH * 9 + 8
+    if fullScreen then
+        -- Match Blackbox's bottom inset (-3), accounting for the gauge's
+        -- yoffset (-1 + fuelShift) and bottom padding (8).
+        fuelHeight = cellH * 3 - fuelShift + 12
+    end
 
     local opts = themeOptions[getThemeOptionKey(W)] or themeOptions.ls_full
+    local cardTextOffset = fullScreen and 2 or 4
+    local cardTitleFont = W >= 784 and (fullScreen and "FONT_STD" or "FONT_S") or "FONT_XS"
+    local batteryDetailFont = W >= 784 and (fullScreen and "FONT_XL" or "FONT_L") or opts.smartadvfont
 
     local footerBgColor = colorMode.headerbgcolor or colorMode.fillbgcolor or colorMode.bgcolor
     local screenBgColor = colorMode.bgcolor or footerBgColor
@@ -152,12 +148,14 @@ local function buildBoxes(W)
     }
 
     return {
-
+        pageBackground,
         {
             col = 1,
             row = 1,
             colspan = 3,
             rowspan = 9,
+            w = modelWidth,
+            h = modelHeight,
             type = "image",
             subtype = "model",
             imagewidth = 280,
@@ -176,10 +174,10 @@ local function buildBoxes(W)
             title = "RATES",
             titlepos = "bottom",
             font = opts.tilefont,
-            titlefont = opts.titlefont,
+            titlefont = cardTitleFont,
             titlespacing = opts.tiletitlespacing,
-            titlepaddingbottom = opts.tiletitlepaddingbottom,
-            valuepaddingtop = opts.tilevaluepaddingtop,
+            titlepaddingbottom = opts.tiletitlepaddingbottom - cardTextOffset,
+            valuepaddingtop = opts.tilevaluepaddingtop + cardTextOffset,
             valuepaddingbottom = opts.tilevaluepaddingbottom,
             bgcolor = statusTileTopRowBg,
             titlecolor = colorMode.titlecolor,
@@ -197,10 +195,10 @@ local function buildBoxes(W)
             title = "PROFILE",
             titlepos = "bottom",
             font = opts.tilefont,
-            titlefont = opts.titlefont,
+            titlefont = cardTitleFont,
             titlespacing = opts.tiletitlespacing,
-            titlepaddingbottom = opts.tiletitlepaddingbottom,
-            valuepaddingtop = opts.tilevaluepaddingtop,
+            titlepaddingbottom = opts.tiletitlepaddingbottom - cardTextOffset,
+            valuepaddingtop = opts.tilevaluepaddingtop + cardTextOffset,
             valuepaddingbottom = opts.tilevaluepaddingbottom,
             bgcolor = statusTileTopRowBg,
             titlecolor = colorMode.titlecolor,
@@ -219,10 +217,10 @@ local function buildBoxes(W)
             title = "FLIGHTS",
             titlepos = "bottom",
             font = opts.tilefont,
-            titlefont = opts.titlefont,
+            titlefont = cardTitleFont,
             titlespacing = opts.tiletitlespacing,
-            titlepaddingbottom = opts.tiletitlepaddingbottom,
-            valuepaddingtop = opts.flightvaluepaddingtop,
+            titlepaddingbottom = opts.tiletitlepaddingbottom - cardTextOffset,
+            valuepaddingtop = opts.flightvaluepaddingtop + cardTextOffset,
             valuepaddingbottom = opts.flightvaluepaddingbottom,
             bgcolor = statusTileTopRowRightEdgeBg,
             titlecolor = colorMode.titlecolor,
@@ -233,8 +231,10 @@ local function buildBoxes(W)
             row = 10,
             colspan = 3,
             rowspan = 3,
-            offsetx = 4,
-            offsety = -1,
+            xoffset = 4,
+            yoffset = -1 + fuelShift,
+            w = modelWidth,
+            h = fuelHeight,
             type = "gauge",
             source = "smartfuel",
             batteryframe = true,
@@ -251,9 +251,11 @@ local function buildBoxes(W)
             valuepaddingtop = opts.smartvaluepaddingtop,
             valuepaddingbottom = 0,
             gaugepaddingtop = 6,
-            battadvfont = opts.smartadvfont,
+            battadvfont = batteryDetailFont,
             battadvpaddingright = opts.smartbattadvpaddingright,
-            battadvpaddingtop = opts.smartbattadvpaddingtop,
+            -- Preserve the centred block height while shifting both lines down.
+            battadvpaddingtop = opts.smartbattadvpaddingtop + (fullScreen and 5 or 0),
+            battadvpaddingbottom = fullScreen and -5 or nil,
             cappaddingright = 4,
             fillcolor = colorMode.fillcolor,
             bgcolor = colorMode.bgcolor,
@@ -304,10 +306,10 @@ local function buildBoxes(W)
             title = "BLACKBOX",
             titlepos = "bottom",
             font = opts.tilefont,
-            titlefont = opts.titlefont,
+            titlefont = cardTitleFont,
             titlespacing = opts.tiletitlespacing,
-            titlepaddingbottom = opts.tiletitlepaddingbottom,
-            valuepaddingtop = opts.tilevaluepaddingtop,
+            titlepaddingbottom = opts.tiletitlepaddingbottom - cardTextOffset,
+            valuepaddingtop = opts.tilevaluepaddingtop + cardTextOffset,
             valuepaddingbottom = opts.tilevaluepaddingbottom,
             decimals = 0,
             bgcolor = statusTileBg,
@@ -359,10 +361,10 @@ local function buildBoxes(W)
             title = "GOVERNOR",
             titlepos = "bottom",
             font = opts.govfont,
-            titlefont = opts.titlefont,
+            titlefont = cardTitleFont,
             titlespacing = opts.tiletitlespacing,
-            titlepaddingbottom = opts.tiletitlepaddingbottom,
-            valuepaddingtop = opts.tilevaluepaddingtop,
+            titlepaddingbottom = opts.tiletitlepaddingbottom - cardTextOffset,
+            valuepaddingtop = opts.tilevaluepaddingtop + cardTextOffset,
             valuepaddingbottom = opts.tilevaluepaddingbottom,
             bgcolor = statusTileRightEdgeBg,
             titlecolor = colorMode.titlecolor,
@@ -376,11 +378,12 @@ end
 
 local function boxes()
     local config = rfsuite and rfsuite.session and rfsuite.session.modelPreferences and rfsuite.session.modelPreferences[theme_section]
-    local W = lcd.getWindowSize()
-    if boxes_cache == nil or themeconfig ~= config or lastScreenW ~= W then
+    local W, H = lcd.getWindowSize()
+    if boxes_cache == nil or themeconfig ~= config or lastScreenW ~= W or lastScreenH ~= H then
         boxes_cache = buildBoxes(W)
         themeconfig = config
         lastScreenW = W
+        lastScreenH = H
     end
     return boxes_cache
 end

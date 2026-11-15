@@ -22,7 +22,7 @@ Greyed out until the flight controller answers. Read-only while the model is arm
 | LED_STRIP | Configures LED_STRIP. |
 | CMS | Configures CMS. |
 | Craft name | Configures Craft name. |
-| PID loop speed | Configures PID loop speed. |
+| PID loop speed | Configures PID loop speed. The four choices are the board's gyro sample rate divided by 1, 2, 3 and 4, shown in kHz with the decimals they need (for example 3.2, 1.6, 1.07 and 0.8 kHz on a 3.2 kHz gyro). |
 
 ## Notes
 

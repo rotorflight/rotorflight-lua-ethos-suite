@@ -317,8 +317,15 @@ end
 local function mspPollReply()
   if not transport then return nil, nil, nil end
   local deadline = os_clock() + POLL_SLICE_SECONDS
+  local polled = false
   while os_clock() < deadline do
-    if getInstructionsUsage and getInstructionsUsage() >= DRAIN_INSTRUCTION_LIMIT then break end
+    -- The first read of every wakeup is taken whatever the budget says. A
+    -- budget checked before the first read lets a wakeup that starts over the
+    -- limit read nothing at all; while the budget stays over, no reply is ever
+    -- read and every request ends on max_retries. One frame per wakeup is the
+    -- progress the budget leaves room for; the rest waits for the budget.
+    if polled and getInstructionsUsage and getInstructionsUsage() >= DRAIN_INSTRUCTION_LIMIT then break end
+    polled = true
     local pkt = transport.mspPoll()
     if pkt == nil then
       return nil, nil, nil
@@ -332,6 +339,19 @@ local function mspPollReply()
     end
   end
   return nil, nil, nil
+end
+
+-- Forgets the request in flight and any reply part-way through it, and leaves
+-- the transport alone. From here on a reply is taken for a request only when
+-- one with its command is sent again, so a late answer to a request that was
+-- retired while the FC may still answer it is discarded (issue #2738). Unlike
+-- mspClearBufs() it does not drain: a reply already on its way for the next
+-- request must stay where it is.
+local function mspForgetRequest()
+  mspLastReq = 0
+  mspStarted = false
+  mspRxBuf, mspRxSize, mspRemoteSeq = {}, 0, 0
+  mspRxError = false
 end
 
 -- Drain stale replies out of the transport's incoming-frame queue. Bounded by
@@ -372,6 +392,7 @@ return {
   mspProcessTxQ = mspProcessTxQ,
   mspPollReply = mspPollReply,
   mspClearBufs = mspClearBufs,
+  mspForgetRequest = mspForgetRequest,
   -- Exported separately from mspClearBufs because the two answer different
   -- questions. mspClearBufs() is a transport swap: throw away the queue AND
   -- drain the link's stale incoming frames. mspClearTxBuf() is narrower --

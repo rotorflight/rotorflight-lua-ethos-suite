@@ -181,6 +181,17 @@ package.loaded["rfsuite.lib.msp_battery_profile"] = {
   end,
 }
 
+package.loaded["rfsuite.lib.msp_smartfuel_config"] = {
+  buildReadMessage = function(onValues, onErr)
+    return message("smartfuelRead", {processReply = function(v) if onValues then onValues(v or {}) end end})
+  end,
+  buildWriteMessage = function(values, onOk, onErr)
+    local m = message("smartfuelWrite", {values = deepcopy(values), processReply = function() if onOk then onOk() end end})
+    sent[#sent + 1] = m
+    return m, nil
+  end,
+}
+
 package.loaded["rfsuite.lib.msp_eeprom"] = {
   buildWriteMessage = function(onOk, onErr)
     local m = message("eeprom", {processReply = function() if onOk then onOk() end end})
@@ -245,6 +256,9 @@ local function openAndLoad()
       elseif m.kind == "profileRead" and not m.done then
         m.done = true; answered = true
         m.processReply({batteryProfile = 0})
+      elseif m.kind == "smartfuelRead" and not m.done then
+        m.done = true; answered = true
+        m.processReply({})
       end
     end
     if not answered then break end
@@ -264,7 +278,7 @@ local function save()
     for i = start + 1, #sent do
       local m = sent[i]
       if not m.answered and m.processReply and (m.kind == "batteryWrite" or m.kind == "profileWrite"
-          or m.kind == "eeprom" or m.kind == "reboot") then
+          or m.kind == "smartfuelWrite" or m.kind == "eeprom" or m.kind == "reboot") then
         m.answered = true; progressed = true
         m.processReply()
       end

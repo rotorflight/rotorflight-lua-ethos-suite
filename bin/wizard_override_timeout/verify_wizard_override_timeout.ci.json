@@ -1,0 +1,7 @@
+{
+  "id": "wizard-override-timeout",
+  "name": "Setup Wizard overrides carry a timeout and are re-sent before it runs out",
+  "step": "Check that the Setup Wizard's servo and mixer holds are timed and refreshed",
+  "script": "bin/wizard_override_timeout/verify_wizard_override_timeout.lua",
+  "rationale": "The Setup Wizard holds a servo or a mixer axis while the pilot checks it. A hold was sent once,\nwithout a timeout, so when the radio link or the wizard went away the FC kept the override: the servo\nstayed where it was held, and the FC refused to arm while an override was on.\n\nFrom API 12.10 a hold carries a timeout, and the FC drops it when the time runs out. The harness pins\nthat the mixer and servo write builders send the timeout as a third u16 (and the old 3-byte payload when\nnot asked), that the hold tracker re-sends a hold every second, before its 3 s timeout, and drops a\nreleased hold, and that the wizard sends its holds with the timeout and re-sends them from wakeup.\n\n--self-test drops the timeout from the builder and requires the payload check to go red."
+}

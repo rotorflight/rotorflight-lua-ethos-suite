@@ -259,6 +259,8 @@ if ROOT_ENTRIES and MENUS then
     setup_governor_menu = true, beepers_menu = true, blackbox_menu = true,
     flight_tuning_menu = true, rates_advanced_menu = true,
     governor_menu = true,
+    -- Wizards holds only Model setup, which moves servos and writes the setup.
+    wizards_menu = true,
   }
   for menuId in pairs(MUST_LOCK) do
     local sub = MENUS[menuId]

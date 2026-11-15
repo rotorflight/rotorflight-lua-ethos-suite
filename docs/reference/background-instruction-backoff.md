@@ -6,7 +6,10 @@ reaches a conservative threshold: 60% for MSP receive/cleanup and the nested
 S.Port reply search, 70% for ELRS custom telemetry. Existing time and frame caps
 still apply. Older versions retain their original behaviour without this API.
 
-Checks run before consuming the next frame. Partial MSP replies remain assembled
+Checks run before consuming the next frame, except the first MSP frame of each
+wakeup, which is always taken: a wakeup that starts over the limit would
+otherwise read nothing, and a link that stays over the limit would never receive
+a reply. Partial MSP replies remain assembled
 in memory, unread frames remain in the transport queue, and ELRS requests another
 drain on the next background wakeup. Cleanup always resets MSP state even when
 its optional stale-frame drain is skipped. No per-check tables, strings or

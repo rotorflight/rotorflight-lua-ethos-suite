@@ -36,6 +36,9 @@ Greyed out until the flight controller answers. Read-only while the model is arm
   for a Scorpion, the same length the EdgeTX suite uses. The two `stick` words at the
   end (bytes 77..84) have no row on this page: they are read from the ESC and written
   back unchanged, so a save cannot overwrite them. See #2457.
+- *Bailout Time* runs from 0 s to 65 s. The ESC holds it as a 16-bit count of
+  milliseconds, so 65 s is the longest whole second it can store; a longer time would
+  wrap to a short one. See #2657.
 
 ## Choosing the ESC
 

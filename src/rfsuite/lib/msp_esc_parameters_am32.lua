@@ -10,10 +10,10 @@ local mspcodec = requireModule("lib/mspcodec.lua")
 local READ_COMMAND = 217
 local WRITE_COMMAND = 218
 
-local MOTOR_DIRECTION = {{"Normal", 0}, {"Reversed", 1}}
-local ON_OFF = {{"Off", 0}, {"On", 1}}
+local MOTOR_DIRECTION = {{"@i18n(api.MIXER_INPUT.tbl_normal)@", 0}, {"@i18n(api.MIXER_INPUT.tbl_reversed)@", 1}}
+local ON_OFF = {{"@i18n(app.modules.governor.tbl_off)@", 0}, {"@i18n(app.modules.governor.tbl_on)@", 1}}
 local TIMING_ADVANCE = {{"0 deg", 0}, {"7.5 deg", 1}, {"15 deg", 2}, {"22.5 deg", 3}, {"30 deg", 4}}
-local PROTOCOL = {{"Auto", 0}, {"Dshot 300-600", 1}, {"Servo 1-2ms", 2}, {"Serial", 3}, {"BF Safe Arming", 4}}
+local PROTOCOL = {{"@i18n(api.BATTERY_INI.tbl_auto)@", 0}, {"Dshot 300-600", 1}, {"Servo 1-2ms", 2}, {"Serial", 3}, {"BF Safe Arming", 4}}
 local BRAKE_ON_STOP = {
   {"@i18n(app.modules.esc_tools.mfg.am32.tbl_brake_off)@", 0},
   {"@i18n(app.modules.esc_tools.mfg.am32.tbl_brake_brake)@", 1},
