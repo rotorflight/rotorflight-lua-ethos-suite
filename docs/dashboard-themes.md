@@ -334,8 +334,9 @@ end }
 * **State event handler:** a state layout may carry `event = function(widget, category, value, x, y)`.
   The dashboard hands it every touch after its own controls (toolbar, battery picker, info panel) and
   before the swipe gestures; return `true` to consume the touch, anything else lets the dashboard go on
-  with it. A theme without the field is unaffected. NovaFly RC uses it for its bank screen and its colour
-  long press.
+  with it. While the toolbar or the info panel is open the touch stays with the dashboard, and an error
+  raised by the handler is printed to the log and treated as not consumed. A theme without the field is
+  unaffected. NovaFly RC uses it for its bank screen and its colour long press.
 
 ---
 
