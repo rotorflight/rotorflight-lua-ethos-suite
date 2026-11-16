@@ -10,6 +10,7 @@ local floor = math.floor
 
 local BILD = "canvas.png"
 local ZEITABLAUF = 14.0
+local SCHREIB_FRIST = 30.0   -- so lange gehoert ein hinausgegangener Schreibbefehl dem Vorgang, auch wenn der Schirm nicht mehr wartet
 local DRIFT, QUITT_DAUER = 12, 0.22
 local TOUCH_LANG = rawget(_G, "TOUCH_LONG")
 local SP_X, SP_B, SP_Y, SP_H = 14, 144, 54, 186
@@ -105,6 +106,7 @@ local hinweis = ""
 local geprueftAusstehend = false
 local speicherStufe, speicherBis = nil, 0
 local arbeitSeit, arbeitGemalt = nil, nil
+local schreibtNoch, schreibtSeit = nil, 0     -- ein Schreibbefehl ist draussen und noch nicht zu Ende gefuehrt
 
 local function rf() return H.rf() end
 
@@ -485,12 +487,70 @@ local function lesen()
                 nova.dirty = true
             end, function(g) if dieser == vorgang then fehlerMelden(g) end end)
         end, function(g) if dieser == vorgang then fehlerMelden(g) end end)
-    end, fehlerMelden, true)
+    end, function(g) if dieser == vorgang then fehlerMelden(g) end end, true)
     if ok == false then laeuft = false end
 end
 
+-- Ab dem Schreibbefehl gehoert der Vorgang dem FC, nicht dem Schirm: ein Satz, der hinausgegangen ist, wird zurueckgelesen
+-- und verglichen, dann gesichert oder zurueckgeschrieben - auch wenn der Schirm nicht mehr wartet (Zeitablauf, ZURUECK),
+-- denn die Schlange schickt ihn trotzdem. Nur die Anzeige folgt dem Schirm: ist der Vorgang nicht mehr der aktuelle, steht
+-- am Ende das Ergebnis als Hinweis, und der Schirm liest die Bank neu.
+local function nachSchreiben(dieser, b, f, wert, neu, alt, felder, rot, daneben)
+    local function aktuell() return dieser == vorgang end
+    local function ende(spaet)
+        schreibtNoch = nil
+        if not aktuell() then
+            hinweis = spaet and t.klartext(spaet) or ""
+            nachlesenAb = os.clock()
+            nova.dirty = true
+        end
+    end
+    local function rotEnde(g) ende(g) rot(g) end
+    local function danebenEnde() ende("abweichung") if aktuell() then daneben() end end
+    if aktuell() then start, speicherStufe, nova.dirty = os.clock(), 2, true end
+    lesenApi(API_DZ, function(nachher)         -- ruecklesen und vergleichen, DANN sichern: was der FC anders uebernahm, wird nie dauerhaft
+        if aktuell() then start = os.clock() end
+        local gleich = true
+        for k, v in pairs(neu) do
+            if nachher[k] ~= v then gleich = false end
+        end
+        if not gleich then                     -- der alte Satz geht zurueck in den FC, sonst sichert er den falschen selbst beim Entschaerfen
+            lesenApi("STATUS", function(st3)   -- nur in dieselbe Bank und nur am Boden: steht der FC schon auf einer anderen, kam das Ruecklesen von dort
+                if aktuell() then start = os.clock() end
+                if stehtAuf(st3) ~= b then rotEnde("schreiben_abgelehnt"); return end
+                if scharfLautFc(st3) then rotEnde("armiert"); return end
+                local sperre3 = schreibsperre()
+                if sperre3 then rotEnde(sperre3); return end
+                ganzSchreiben(API_DZ, alt, felder, danebenEnde, function() rotEnde("abweichung") end)
+            end, rotEnde)
+            return
+        end
+        lesenApi("STATUS", function(st2)       -- vor dem Sichern fragt der FC selbst: scharf oder andere Bank sichert nichts
+            if aktuell() then start = os.clock() end
+            if scharfLautFc(st2) then rotEnde("armiert"); return end
+            if stehtAuf(st2) ~= b then rotEnde("schreiben_abgelehnt"); return end
+            eepromSchreiben(function()
+                if aktuell() then start, speicherStufe, nova.dirty = os.clock(), 3, true end
+                lesenApi(API_DZ, function(gp)
+                    if gp[f] ~= wert then danebenEnde(); return end
+                    gesehen[b] = gesehen[b] or {}
+                    if f == FELD_PROZENT then gesehen[b].maxgas = wert else gesehen[b].drehzahl = wert end
+                    if sollBank == b and soll == wert then soll, sollBank = nil, nil end
+                    if aktuell() then
+                        laeuft = false
+                        hinweis, geprueftAusstehend = "", true
+                        speicherStufe, speicherBis = 4, os.clock() + 2.0
+                        nova.dirty = true
+                    end
+                    ende()
+                end, rotEnde)
+            end, rotEnde)
+        end, rotEnde)
+    end, function() rotEnde("ruecklesen_offen") end)
+end
+
 local function speichern()
-    if laeuft then hinweis = t.k_warten; return end
+    if laeuft or schreibtNoch then hinweis = t.k_warten; return end   -- auch ein Schreibbefehl, auf den der Schirm nicht mehr wartet, muss erst zu Ende sein
     if zustand ~= "bereit" then return end
     if not geaendert() then hinweis = t.f_nichts_geaendert; return end
     local sperre = schreibsperre()
@@ -533,56 +593,9 @@ local function speichern()
                 if stehtAuf(st1) ~= b then daneben(); return end
                 if scharfLautFc(st1) then rot("armiert"); return end
                 speicherStufe = 1
-                ganzSchreiben(API_DZ, neu, felder, function()
-                    if dieser ~= vorgang then return end
-                    start = os.clock()
-                    speicherStufe = 2
-                    nova.dirty = true
-                    lesenApi(API_DZ, function(nachher)   -- ruecklesen und vergleichen, DANN sichern: was der FC anders uebernahm, wird nie dauerhaft
-                        if dieser ~= vorgang then return end
-                        start = os.clock()
-                        local gleich = true
-                        for k, v in pairs(neu) do
-                            if nachher[k] ~= v then gleich = false end
-                        end
-                        if not gleich then               -- der alte Satz geht zurueck in den FC, sonst sichert er den falschen selbst beim Entschaerfen
-                            lesenApi("STATUS", function(st3)   -- nur in dieselbe Bank und nur am Boden: steht der FC schon auf einer anderen, kam das Ruecklesen von dort
-                                if dieser ~= vorgang then return end
-                                start = os.clock()
-                                if stehtAuf(st3) ~= b then rot("schreiben_abgelehnt"); return end
-                                if scharfLautFc(st3) then rot("armiert"); return end
-                                local sperre3 = schreibsperre()
-                                if sperre3 then rot(sperre3); return end
-                                ganzSchreiben(API_DZ, alt, felder, function() if dieser == vorgang then daneben() end end,
-                                              function() rot("abweichung") end)
-                            end, rot)
-                            return
-                        end
-                        lesenApi("STATUS", function(st2)  -- vor dem Sichern fragt der FC selbst: scharf oder andere Bank sichert nichts
-                            if dieser ~= vorgang then return end
-                            start = os.clock()
-                            if scharfLautFc(st2) then rot("armiert"); return end
-                            if stehtAuf(st2) ~= b then rot("schreiben_abgelehnt"); return end
-                            eepromSchreiben(function()
-                                if dieser ~= vorgang then return end
-                                start = os.clock()
-                                speicherStufe = 3
-                                nova.dirty = true
-                                lesenApi(API_DZ, function(gp)
-                                    if dieser ~= vorgang then return end
-                                    if gp[f] ~= wert then daneben(); return end
-                                    laeuft = false
-                                    gesehen[b] = gesehen[b] or {}
-                                    if f == FELD_PROZENT then gesehen[b].maxgas = wert else gesehen[b].drehzahl = wert end
-                                    soll, sollBank = nil, nil
-                                    hinweis, geprueftAusstehend = "", true
-                                    speicherStufe, speicherBis = 4, os.clock() + 2.0
-                                    nova.dirty = true
-                                end, rot)
-                            end, rot)
-                        end, rot)
-                    end, function() rot("ruecklesen_offen") end)
-                end, rot)
+                schreibtNoch, schreibtSeit = true, os.clock()
+                ganzSchreiben(API_DZ, neu, felder, function() nachSchreiben(dieser, b, f, wert, neu, alt, felder, rot, daneben) end,
+                              function(g) schreibtNoch = nil; rot(g) end)
             end, rot)
         end, rot)
     end, rot)
@@ -873,6 +886,7 @@ local function takt()
         if zustand == "laedt" then fehlerMelden("zeitablauf")
         elseif hinweis == t.k_warten then hinweis = t.klartext("zeitablauf"); nova.dirty = true end
     end
+    if schreibtNoch and os.clock() - schreibtSeit > SCHREIB_FRIST then schreibtNoch = nil end   -- ein Schreibbefehl ohne jeden Rueckruf (rfsuite 2.3.x leert seine Schlange nach max_retries stumm) gibt den naechsten frei
     if geprueftAusstehend and not laeuft then
         geprueftAusstehend = false
         ui.piep()

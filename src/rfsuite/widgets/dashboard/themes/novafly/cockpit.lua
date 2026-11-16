@@ -453,7 +453,7 @@ end
 -- mit gemeinsamer Tabelle kennt den Weg nicht und merkt sich die Farbe ueber savePreference selbst.
 -- Das geht in zwei Wakeups, nicht im Druck selbst: Datei schreiben und die Meldung mit ihren Folgen (die Suite laedt
 -- Modelldatei und Theme neu) sind je ein eigener Aufruf, zusammen mit dem Druck waeren sie ueber der Befehlsgrenze.
-local farbeAblage, farbeEinstellungen = nil, nil
+local farbeAblage = nil
 local function farbeDateiSchreiben()
     local laden = package.loaded["rfsuite.lib.require"]
     if type(laden) ~= "function" then return false end
@@ -461,15 +461,14 @@ local function farbeDateiSchreiben()
     if not ok or type(ablage) ~= "table" or type(ablage.setDashboardTheme) ~= "function" then return false end
     local einstellungen = ablage.load()
     ablage.setDashboardTheme(einstellungen, "novafly", {farbe = farbeNr})
-    if not ablage.save(einstellungen) then return false end
-    farbeEinstellungen = ablage.clone(einstellungen)
-    return true
+    return ablage.save(einstellungen) == true
 end
-local function farbeMelden()
+local function farbeMelden()                   -- gemeldet wird, was JETZT in der Datei steht: hat eine Einstellungsseite seit dem Schreiben gespeichert, gilt ihr Stand
     local laden = package.loaded["rfsuite.lib.require"]
-    local ok, bus = pcall(laden, "lib/bus.lua")
-    if ok and type(bus) == "table" and type(bus.publish) == "function" then bus.publish("settings.update", farbeEinstellungen) end
-    farbeEinstellungen = nil
+    local okA, ablage = pcall(laden, "lib/settings_store.lua")
+    local okB, bus = pcall(laden, "lib/bus.lua")
+    if not (okA and type(ablage) == "table" and type(ablage.load) == "function") then return end
+    if okB and type(bus) == "table" and type(bus.publish) == "function" then bus.publish("settings.update", ablage.load()) end
 end
 local function farbeAblageTakt()
     if farbeAblage == 1 then
