@@ -68,12 +68,15 @@ The colour is stored as `farbe` in the `dashboard.novafly` section of
   connection the long press changes nothing and sounds the low tone. On this
   suite the colour is in `settings.ini` and changes with or without a
   connection.
-- A write that has left the screen is always carried to its end: read back,
-  compared, then saved or written back, even when the screen has stopped
-  waiting (no answer within 14 s, or Back during the save). A second save
-  waits until the first one has ended, at most 30 s; a first write that
-  answers after that no longer writes to the flight controller. The screen
-  then re-reads the bank.
+- A save is never cancelled: once its write is on the queue, the screen
+  carries it through to the end (read back, compare, keep or write the old set
+  back), even when the screen has stopped waiting (no answer within 14 s, or
+  Back during the save), and then reads the bank again, so the screen never
+  says one thing while the flight controller holds another. A second save
+  while the first is under way is refused with a hint; after 30 s without an
+  answer a second save may start, and the first then writes nothing more once
+  the second has written. Both MSP paths behave the same, since neither queue
+  offers a per-message cancel.
 - The colour chosen with the long press is written to the theme's section of
   `settings.ini`, the same place the settings page writes to.
 - The bank screen talks to the flight controller over the suite's `msp.request`

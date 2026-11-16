@@ -10,7 +10,7 @@ local floor = math.floor
 
 local BILD = "canvas.png"
 local ZEITABLAUF = 14.0
-local SCHREIB_FRIST = 30.0   -- so lange gehoert ein hinausgegangener Schreibbefehl dem Vorgang, auch wenn der Schirm nicht mehr wartet
+local SCHREIB_FRIST = 30.0   -- so lange sperrt ein hinausgegangener Schreibbefehl ein zweites SPEICHERN; seinem Vorgang gehoert er, bis ein neuerer schreibt
 local DRIFT, QUITT_DAUER = 12, 0.22
 local TOUCH_LANG = rawget(_G, "TOUCH_LONG")
 local SP_X, SP_B, SP_Y, SP_H = 14, 144, 54, 186
@@ -907,7 +907,7 @@ local function takt()
         govModus, govGelesen, govVersuche = govModusGemerkt(), false, 0
         lesen()
     end
-    if schreibtNoch and os.clock() - schreibtSeit > SCHREIB_FRIST then schreibtNoch, schreibVorgang = nil, nil end   -- ein Schreibbefehl ohne jeden Rueckruf (rfsuite 2.3.x leert seine Schlange nach max_retries stumm) gibt den naechsten frei; kommt er doch noch, schreibt sein Vorgang nichts mehr in den FC
+    if schreibtNoch and os.clock() - schreibtSeit > SCHREIB_FRIST then schreibtNoch = nil end   -- ein Schreibbefehl ohne jeden Rueckruf (rfsuite 2.3.x leert seine Schlange nach max_retries stumm) gibt ein zweites SPEICHERN frei; sein Vorgang behaelt ihn und fuehrt eine spaete Antwort zu Ende, bis ein neuerer Vorgang schreibt (wie das EdgeTX-Theme)
     if geprueftAusstehend and not laeuft then
         geprueftAusstehend = false
         ui.piep()
