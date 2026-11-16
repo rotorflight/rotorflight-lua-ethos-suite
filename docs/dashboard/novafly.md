@@ -61,7 +61,9 @@ The colour is stored as `farbe` in the `dashboard.novafly` section of
 - A write that has left the screen is always carried to its end: read back,
   compared, then saved or written back, even when the screen has stopped
   waiting (no answer within 14 s, or Back during the save). A second save
-  waits until the first one has ended; the screen then re-reads the bank.
+  waits until the first one has ended, at most 30 s; a first write that
+  answers after that no longer writes to the flight controller. The screen
+  then re-reads the bank.
 - The colour chosen with the long press is written to the theme's section of
   `settings.ini`, the same place the settings page writes to.
 - The bank screen talks to the flight controller over the suite's `msp.request`

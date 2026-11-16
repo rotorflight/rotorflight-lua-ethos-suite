@@ -106,7 +106,7 @@ local hinweis = ""
 local geprueftAusstehend = false
 local speicherStufe, speicherBis = nil, 0
 local arbeitSeit, arbeitGemalt = nil, nil
-local schreibtNoch, schreibtSeit = nil, 0     -- ein Schreibbefehl ist draussen und noch nicht zu Ende gefuehrt
+local schreibtNoch, schreibtSeit, schreibVorgang = nil, 0, nil   -- ein Schreibbefehl ist draussen und noch nicht zu Ende gefuehrt, und welcher Vorgang ihn schickte
 
 local function rf() return H.rf() end
 
@@ -497,8 +497,9 @@ end
 -- am Ende das Ergebnis als Hinweis, und der Schirm liest die Bank neu.
 local function nachSchreiben(dieser, b, f, wert, neu, alt, felder, rot, daneben)
     local function aktuell() return dieser == vorgang end
+    local function ueberholt() return schreibVorgang ~= dieser end   -- nach der Frist hat ein neuerer Vorgang geschrieben: der alte schreibt nichts mehr in den FC
     local function ende(spaet)
-        schreibtNoch = nil
+        if not ueberholt() then schreibtNoch = nil end
         if not aktuell() then
             hinweis = spaet and t.klartext(spaet) or ""
             nachlesenAb = os.clock()
@@ -517,6 +518,7 @@ local function nachSchreiben(dieser, b, f, wert, neu, alt, felder, rot, daneben)
         if not gleich then                     -- der alte Satz geht zurueck in den FC, sonst sichert er den falschen selbst beim Entschaerfen
             lesenApi("STATUS", function(st3)   -- nur in dieselbe Bank und nur am Boden: steht der FC schon auf einer anderen, kam das Ruecklesen von dort
                 if aktuell() then start = os.clock() end
+                if ueberholt() then ende(); return end
                 if stehtAuf(st3) ~= b then rotEnde("schreiben_abgelehnt"); return end
                 if scharfLautFc(st3) then rotEnde("armiert"); return end
                 local sperre3 = schreibsperre()
@@ -527,6 +529,7 @@ local function nachSchreiben(dieser, b, f, wert, neu, alt, felder, rot, daneben)
         end
         lesenApi("STATUS", function(st2)       -- vor dem Sichern fragt der FC selbst: scharf oder andere Bank sichert nichts
             if aktuell() then start = os.clock() end
+            if ueberholt() then ende(); return end
             if scharfLautFc(st2) then rotEnde("armiert"); return end
             if stehtAuf(st2) ~= b then rotEnde("schreiben_abgelehnt"); return end
             eepromSchreiben(function()
@@ -593,9 +596,9 @@ local function speichern()
                 if stehtAuf(st1) ~= b then daneben(); return end
                 if scharfLautFc(st1) then rot("armiert"); return end
                 speicherStufe = 1
-                schreibtNoch, schreibtSeit = true, os.clock()
+                schreibtNoch, schreibtSeit, schreibVorgang = true, os.clock(), dieser
                 ganzSchreiben(API_DZ, neu, felder, function() nachSchreiben(dieser, b, f, wert, neu, alt, felder, rot, daneben) end,
-                              function(g) schreibtNoch = nil; rot(g) end)
+                              function(g) if schreibVorgang == dieser then schreibtNoch = nil end; rot(g) end)
             end, rot)
         end, rot)
     end, rot)
