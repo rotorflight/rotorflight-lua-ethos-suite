@@ -9,6 +9,7 @@ local settingsStore = requireModule("lib/settings_store.lua")
 local settingsSave = requireModule("app/settings_save.lua")
 local tableClone = requireModule("lib/table_clone.lua")
 local leaveConfirm = requireModule("app/leave_confirm.lua")
+local dashboardThemes = requireModule("lib/dashboard_themes.lua")
 
 local PAGE_TITLE = "@i18n(app.modules.settings.name)@ / @i18n(app.modules.settings.dashboard)@ / @i18n(app.modules.settings.dashboard_theme)@"
 local BTN_OK = "@i18n(app.btn_ok)@"
@@ -46,10 +47,7 @@ local function coerceBool(value, default)
 end
 
 local function themeKey(path)
-  if type(path) ~= "string" then return nil end
-  local folder = path:match("^system/(.+)$") or path
-  if folder:sub(1, 1) == "@" then folder = folder:sub(2) end
-  return folder
+  return dashboardThemes.key(path)
 end
 
 local function themeVisible(theme)
@@ -59,39 +57,44 @@ local function themeVisible(theme)
   return not (w and h and (w < (minRes.x or 0) or h < (minRes.y or 0)))
 end
 
-local function buildThemeChoices()
+-- Shipped themes first, then the pilot's own from SCRIPTS:/rfsuite.user/dashboard/,
+-- read again each time the page opens.
+local function buildThemeChoices(userThemes)
   local choices = {}
   local modelChoices = {{MODEL_DISABLED, 0}}
   local pathById = {}
   local idByPath = {}
   local fallbackId = 1
 
+  local function add(label, path)
+    local id = #choices + 1
+    choices[id] = {label, id}
+    modelChoices[#modelChoices + 1] = {label, id}
+    pathById[id] = path
+    idByPath[path] = id
+    idByPath[themeKey(path)] = id
+    if path == DEFAULT_THEME then fallbackId = id end
+  end
+
   for _, theme in ipairs(THEME_DEFS) do
-    if themeVisible(theme) then
-      local id = #choices + 1
-      choices[id] = {theme.label, id}
-      modelChoices[#modelChoices + 1] = {theme.label, id}
-      pathById[id] = theme.path
-      idByPath[theme.path] = id
-      idByPath[themeKey(theme.path)] = id
-      if theme.path == DEFAULT_THEME then fallbackId = id end
-    end
+    if themeVisible(theme) then add(theme.label, theme.path) end
+  end
+  for _, theme in ipairs(userThemes) do
+    add(theme.label, theme.path)
   end
 
   return choices, modelChoices, pathById, idByPath, fallbackId
 end
 
+-- A user theme that is no longer in the folder is kept as stored: the choice
+-- shows the fallback, and the widget draws Default, until the pilot picks
+-- another theme or puts the folder back.
 local function normalizeThemePath(path, allowDisabled, defaultPath)
   if allowDisabled and (path == nil or path == "" or path == "nil" or path == 0 or path == "0") then
     return "nil"
   end
 
-  local key = themeKey(path or defaultPath)
-  for _, theme in ipairs(THEME_DEFS) do
-    if key == themeKey(theme.path) then return theme.path end
-  end
-
-  return defaultPath or DEFAULT_THEME
+  return dashboardThemes.path(path or defaultPath) or defaultPath or DEFAULT_THEME
 end
 
 local function normalizeDashboard(dashboard, allowDisabled)
@@ -166,7 +169,7 @@ local function open(opts)
   local sessionHandler
   local fields = {}
 
-  local choices, modelChoices, pathById, idByPath, fallbackId = buildThemeChoices()
+  local choices, modelChoices, pathById, idByPath, fallbackId = buildThemeChoices(dashboardThemes.listUser(true))
   settings.dashboard = normalizeDashboard(settings.dashboard, false)
   originalDashboard = tableClone.shallow(settings.dashboard)
 
