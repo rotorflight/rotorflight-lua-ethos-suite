@@ -46,9 +46,15 @@ function nova.flugbuch.schlepp(i)
 end
 
 local function modellJetzt() return (H.stand() or {}).modell or "" end
-local function govModusGemerkt()                -- der Modus ist je Modell fest: beim naechsten Oeffnen steht die Einheit sofort, gelesen wird trotzdem neu
+local function kennung()                        -- der FC ist die Identitaet (eine Modelldatei fuer mehrere Helis): seine Kennung, solange sie bekannt ist, sonst der Modellname
+    local r = H.rf()
+    local id = r and r.session and r.session.mcu_id
+    if type(id) == "string" and id ~= "" then return id end
+    return modellJetzt()
+end
+local function govModusGemerkt()                -- der Modus ist je FC fest: beim naechsten Oeffnen steht die Einheit sofort, gelesen wird trotzdem neu
     local m = H.merk.govModus
-    if type(m) == "table" and m.modell == modellJetzt() and type(m.wert) == "number" then return m.wert end
+    if type(m) == "table" and m.kennung == kennung() and type(m.wert) == "number" then return m.wert end
     return nil
 end
 local govModus = govModusGemerkt()
@@ -72,10 +78,10 @@ end
 local ZONEN_NAMEN = {"speichern", "b1", "b2", "b3"}
 seite.ZONEN = ZONEN
 
-local function gesehenHolen()   -- die gelesenen Baenke liegen je Heli beim Cockpit: der Schirm wird beim Schliessen entladen, der Merker nicht
+local function gesehenHolen()   -- die gelesenen Baenke liegen je FC beim Cockpit: der Schirm wird beim Schliessen entladen, der Merker nicht
     local m = H.merk.bank
-    if type(m) ~= "table" or m.modell ~= modellJetzt() then
-        m = {modell = modellJetzt(), baenke = {}}
+    if type(m) ~= "table" or m.kennung ~= kennung() then
+        m = {kennung = kennung(), baenke = {}}
         H.merk.bank = m
     end
     return m.baenke
@@ -446,8 +452,8 @@ local function scharfLautFc(st)                -- STATUS flight_mode_flags Bit 0
     return type(f) == "number" and floor(f) % 2 == 1
 end
 
-local function lesen()
-    if zustand ~= "bereit" then zustand = "laedt" end
+local function lesen()                         -- "bereit" erst, wenn STATUS, Satz und STATUS da sind: haengt der Satz, ist das ein Fehler, und der Takt liest neu
+    if zustand ~= "bereit" and zustand ~= "fehler" then zustand = "laedt" end   -- ein Fehler bleibt stehen, bis der FC geantwortet hat
     laeuft, start = true, os.clock()
     vorgang = vorgang + 1
     local dieser = vorgang
@@ -457,7 +463,6 @@ local function lesen()
         start = os.clock()
         local b = st.current_pid_profile_index
         bank = (b ~= nil) and (b + 1) or nil
-        zustand, meldung = "bereit", ""
         nova.dirty = true
         lesenApi(API_DZ, function(gp, felder)
             if dieser ~= vorgang then return end
@@ -474,7 +479,7 @@ local function lesen()
                 if bank ~= nil and steht2 ~= bank then
                     if not erstlesungWiederholt then erstlesungWiederholt = true; lesen(); return end
                     bank = (steht2 >= 1 and steht2 <= 3) and steht2 or nil
-                    laeuft = false
+                    zustand, meldung, laeuft = "bereit", "", false
                     nova.dirty = true
                     return
                 end
@@ -483,7 +488,7 @@ local function lesen()
                     gesehen[bank].drehzahl, gesehen[bank].maxgas = neu.drehzahl, neu.maxgas
                     frisch[bank] = true
                 end
-                laeuft = false
+                zustand, meldung, laeuft = "bereit", "", false
                 nova.dirty = true
             end, function(g) if dieser == vorgang then fehlerMelden(g) end end)
         end, function(g) if dieser == vorgang then fehlerMelden(g) end end)
@@ -519,7 +524,7 @@ local function nachSchreiben(dieser, b, f, wert, neu, alt, felder, rot, daneben)
             lesenApi("STATUS", function(st3)   -- nur in dieselbe Bank und nur am Boden: steht der FC schon auf einer anderen, kam das Ruecklesen von dort
                 if aktuell() then start = os.clock() end
                 if ueberholt() then ende(); return end
-                if stehtAuf(st3) ~= b then rotEnde("schreiben_abgelehnt"); return end
+                if stehtAuf(st3) ~= b then gesehen[b] = nil; rotEnde("schreiben_abgelehnt"); return end   -- die Bank, die den Satz bekam, zeigt bis zum naechsten Lesen nichts Altes
                 if scharfLautFc(st3) then rotEnde("armiert"); return end
                 local sperre3 = schreibsperre()
                 if sperre3 then rotEnde(sperre3); return end
@@ -531,7 +536,7 @@ local function nachSchreiben(dieser, b, f, wert, neu, alt, felder, rot, daneben)
             if aktuell() then start = os.clock() end
             if ueberholt() then ende(); return end
             if scharfLautFc(st2) then rotEnde("armiert"); return end
-            if stehtAuf(st2) ~= b then rotEnde("schreiben_abgelehnt"); return end
+            if stehtAuf(st2) ~= b then gesehen[b] = nil; rotEnde("schreiben_abgelehnt"); return end
             eepromSchreiben(function()
                 if aktuell() then start, speicherStufe, nova.dirty = os.clock(), 3, true end
                 lesenApi(API_DZ, function(gp)
@@ -875,7 +880,7 @@ local function takt()
             govModus = (type(gc.gov_mode) == "number") and gc.gov_mode or false
             if type(govModus) == "number" and vorher ~= nil and vorher ~= govModus then soll, sollBank = nil, nil end   -- anderer Modus als gemerkt: ein schon gestellter Wert traegt die falsche Einheit
             govGelesen = true
-            if type(govModus) == "number" then H.merk.govModus = {modell = modellJetzt(), wert = govModus} end
+            if type(govModus) == "number" then H.merk.govModus = {kennung = kennung(), wert = govModus} end
             nova.dirty = true
         end, function()
             govLesen, govVersuche = false, govVersuche + 1
@@ -885,9 +890,22 @@ local function takt()
     end
     if laeuft and start and os.clock() - start > ZEITABLAUF then
         vorgang = vorgang + 1
-        laeuft, speicherStufe = false, nil
-        if zustand == "laedt" then fehlerMelden("zeitablauf")
-        elseif hinweis == t.k_warten then hinweis = t.klartext("zeitablauf"); nova.dirty = true end
+        laeuft = false
+        if speicherStufe ~= nil then                    -- beim Speichern bleibt es der Hinweis: der Schreibbefehl gehoert weiter dem FC
+            speicherStufe = nil
+            if hinweis == t.k_warten then hinweis = t.klartext("zeitablauf") end
+            nova.dirty = true
+        else
+            fehlerMelden("zeitablauf")                 -- beim Lesen heisst Zeitablauf Fehler: der Takt liest alle 3 s neu
+        end
+    end
+    if verbunden() and type(H.merk.bank) == "table" and H.merk.bank.kennung ~= kennung() then   -- ein anderer FC am selben Modell: die Karten des alten gelten nicht
+        vorgang = vorgang + 1
+        laeuft, bank = false, nil
+        gesehen, frisch = gesehenHolen(), {}
+        soll, sollBank, hinweis = nil, nil, ""
+        govModus, govGelesen, govVersuche = govModusGemerkt(), false, 0
+        lesen()
     end
     if schreibtNoch and os.clock() - schreibtSeit > SCHREIB_FRIST then schreibtNoch = nil end   -- ein Schreibbefehl ohne jeden Rueckruf (rfsuite 2.3.x leert seine Schlange nach max_retries stumm) gibt den naechsten frei
     if geprueftAusstehend and not laeuft then

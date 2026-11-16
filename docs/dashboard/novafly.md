@@ -58,6 +58,16 @@ The colour is stored as `farbe` in the `dashboard.novafly` section of
   writes and again before it would write a set back, and it never writes while
   the model is armed. A bank change during a save is reported and nothing is
   persisted; the screen then shows the new bank.
+- The bank screen is ready only when STATUS, the governor profile and STATUS
+  again have answered. A read that gets no answer within 14 s is an error; the
+  screen shows it and reads again every 3 s until the flight controller answers.
+- The cards of the three banks belong to the flight controller (its MCU id),
+  not to the radio model: a different flight controller on the same model
+  starts with empty cards and reads again.
+- On RFSuite Ethos 2.3.x the colour belongs to the connected model; without a
+  connection the long press changes nothing and sounds the low tone. On this
+  suite the colour is in `settings.ini` and changes with or without a
+  connection.
 - A write that has left the screen is always carried to its end: read back,
   compared, then saved or written back, even when the screen has stopped
   waiting (no answer within 14 s, or Back during the save). A second save

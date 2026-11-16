@@ -481,11 +481,16 @@ local function farbeAblageTakt()
     end
 end
 
-local function farbeWeiter()
-    farbeNr = farbeNr % #BILDER + 1
+local function farbeWeiter()                   -- false, wenn die Farbe nirgends gespeichert wird: rfsuite 2.3.x haelt sie je Modell und hat ohne Verbindung kein Modell
+    local neu = farbeNr % #BILDER + 1
     local d = dash()
-    if d and d.savePreference then pcall(d.savePreference, "farbe", farbeNr) end
+    if d and d.savePreference then
+        local ok, gespeichert = pcall(d.savePreference, "farbe", neu)
+        if ok and gespeichert == false then return false end
+    end
+    farbeNr = neu
     farbeAblage = 1
+    return true
 end
 
 local function quellenFinden()
@@ -840,9 +845,10 @@ local function kopfLang()
     if scharfJetzt() then
         gesperrtBis = os.clock() + SPERRE_SEK
         ton(200, 90)
-    else
-        farbeWeiter()
+    elseif farbeWeiter() then
         ton(880, 120)
+    else
+        ton(200, 90)                               -- nichts gespeichert, nichts gewechselt
     end
 end
 
