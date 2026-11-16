@@ -907,7 +907,7 @@ local function takt()
         govModus, govGelesen, govVersuche = govModusGemerkt(), false, 0
         lesen()
     end
-    if schreibtNoch and os.clock() - schreibtSeit > SCHREIB_FRIST then schreibtNoch = nil end   -- ein Schreibbefehl ohne jeden Rueckruf (rfsuite 2.3.x leert seine Schlange nach max_retries stumm) gibt den naechsten frei
+    if schreibtNoch and os.clock() - schreibtSeit > SCHREIB_FRIST then schreibtNoch, schreibVorgang = nil, nil end   -- ein Schreibbefehl ohne jeden Rueckruf (rfsuite 2.3.x leert seine Schlange nach max_retries stumm) gibt den naechsten frei; kommt er doch noch, schreibt sein Vorgang nichts mehr in den FC
     if geprueftAusstehend and not laeuft then
         geprueftAusstehend = false
         ui.piep()
