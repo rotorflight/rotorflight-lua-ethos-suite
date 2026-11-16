@@ -9,7 +9,7 @@
 -- cold, as it does on the radio. The interpreter is the one running this file
 -- (arg[-1]), or $LUA when set -- e.g. a wrapper around an embedded Lua.
 --
--- Dashboard: every theme in widgets/dashboard.lua's THEME_DIRS, in all three
+-- Dashboard: every shipped theme in lib/dashboard_themes.lua's SHIPPED, in all three
 -- flight states, cold boot plus 400 connected ticks -- worst wakeup() and
 -- worst paint(). Background task: boot, link up, steady CRSF with ELRS
 -- frames, a 20-frame ELRS backlog, link down -- worst wakeup() per phase. App:
@@ -53,12 +53,12 @@ local function run(script, ...)
 end
 
 local function themes()
-  local f = assert(io.open(ROOT .. "/src/rfsuite/widgets/dashboard.lua", "r"))
+  local f = assert(io.open(ROOT .. "/src/rfsuite/lib/dashboard_themes.lua", "r"))
   local src = f:read("a")
   f:close()
-  local block = assert(src:match("local THEME_DIRS = (%b{})"), "THEME_DIRS not found")
+  local block = assert(src:match("local SHIPPED = (%b{})"), "SHIPPED not found")
   local list = {}
-  for key in block:gmatch('%[?"?([%w%-_]+)"?%]?%s*=%s*"widgets/dashboard/themes/') do
+  for key in block:gmatch('%[?"?([%w%-_]+)"?%]?%s*=%s*true') do
     list[#list + 1] = key
   end
   table.sort(list)
