@@ -26,24 +26,8 @@ local function ensureSystemAlerts()
   return systemAlerts
 end
 
-local THEME_DIRS = {
-  bastion = "widgets/dashboard/themes/bastion",
-  ["aerc-n"] = "widgets/dashboard/themes/aerc-n",
-  aerc = "widgets/dashboard/themes/aerc",
-  claude = "widgets/dashboard/themes/claude",
-  danielrc = "widgets/dashboard/themes/danielrc",
-  default = "widgets/dashboard/themes/default",
-  gismo = "widgets/dashboard/themes/gismo",
-  helihud = "widgets/dashboard/themes/helihud",
-  kevd = "widgets/dashboard/themes/kevd",
-  kse4 = "widgets/dashboard/themes/kse4",
-  kse5 = "widgets/dashboard/themes/kse5",
-  rfstatus = "widgets/dashboard/themes/rfstatus",
-  ["rt-rc-n"] = "widgets/dashboard/themes/rt-rc-n",
-  ["rt-rc"] = "widgets/dashboard/themes/rt-rc",
-  ["srb-rc"] = "widgets/dashboard/themes/srb-rc",
-  timer = "widgets/dashboard/themes/timer",
-}
+-- Shipped themes and the pilot's own in SCRIPTS:/rfsuite.user/dashboard/.
+local dashboardThemes = requireModule("lib/dashboard_themes.lua")
 
 local DEFAULT_DASHBOARD_SETTINGS = {
   theme = "default",
@@ -214,12 +198,22 @@ local function ensureDashboardEngine()
   return dashboardEngine
 end
 
+-- "<folder>" for a shipped theme, "user/<folder>" for a user theme.
 local function themeKey(value)
-  if type(value) ~= "string" then return "default" end
-  local folder = value:match("^system/(.+)$") or value
-  if folder:sub(1, 1) == "@" then folder = folder:sub(2) end
-  if THEME_DIRS[folder] then return folder end
-  return "default"
+  return dashboardThemes.key(value) or dashboardThemes.DEFAULT_KEY
+end
+
+-- A user theme that is missing, does not compile or errors while loading is
+-- replaced by Default instead of stopping the widget. Its key keeps pointing
+-- at the Default definition until the theme cache is cleared (a theme or
+-- settings change), so the broken file is not read again every frame.
+local function loadUserChunk(dir, file)
+  local chunk, err = loadfile(dir .. "/" .. file)
+  if not chunk then return nil, err end
+  local ok, result = pcall(chunk)
+  if not ok then return nil, result end
+  if type(result) ~= "table" then return nil, "did not return a table" end
+  return result
 end
 
 local function phaseTheme(dashboard, state)
@@ -256,8 +250,21 @@ local function loadThemeDef(theme)
     loadedTheme = theme
     return themeDef
   end
-  local dir = THEME_DIRS[theme] or THEME_DIRS.default
-  themeDef = assert(loadfile(dir .. "/init.lua"))()
+  local dir, isUser = dashboardThemes.dir(theme)
+  if isUser then
+    local def, err = loadUserChunk(dir, "init.lua")
+    if not def then
+      print("[dashboard] user theme " .. theme .. " not loaded, using Default: " .. tostring(err))
+      themeDef = loadThemeDef(dashboardThemes.DEFAULT_KEY)
+      themeDefs[theme] = themeDef
+      loadedTheme = theme
+      return themeDef
+    end
+    themeDef = def
+    themeDef.user = true
+  else
+    themeDef = assert(loadfile(dir .. "/init.lua"))()
+  end
   themeDef.dir = dir
   themeDefs[theme] = themeDef
   loadedTheme = theme
@@ -273,7 +280,16 @@ local function loadStateDef(theme, state)
     return stateDef
   end
   local file = def[state] or (state .. ".lua")
-  stateDef = assert(loadfile(def.dir .. "/" .. file))()
+  if def.user then
+    local loaded, err = loadUserChunk(def.dir, file)
+    if not loaded then
+      print("[dashboard] user theme " .. themeKey(theme) .. " " .. tostring(state) .. " not loaded, using Default: " .. tostring(err))
+      loaded = loadStateDef(dashboardThemes.DEFAULT_KEY, state)
+    end
+    stateDef = loaded
+  else
+    stateDef = assert(loadfile(def.dir .. "/" .. file))()
+  end
   stateDefs[key] = stateDef
   loadedState = state
   return stateDef

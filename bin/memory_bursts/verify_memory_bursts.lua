@@ -140,6 +140,9 @@ local function runThemeProbingCheck(useOldBehavior)
           }
         elseif p == "widgets/dashboard/context.lua" then
           return fakeEnv.rfsuite
+        elseif p == "lib/dashboard_themes.lua" then
+          -- No user themes: the check is about the shipped list's probing.
+          return { listUser = function() return {} end }
         end
         return {}
       end

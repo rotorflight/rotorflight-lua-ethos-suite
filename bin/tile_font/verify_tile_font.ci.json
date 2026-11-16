@@ -1,7 +1,7 @@
 {
   "id": "tile-font",
-  "name": "A menu screen uses the smaller tile font when a title would be cut",
+  "name": "Every menu screen uses one tile font",
   "step": "Check the font of the menu tiles",
   "script": "bin/tile_font/verify_tile_font.lua",
-  "rationale": "On 800x480 radios the menu tiles are 120px wide and use FONT_S, which leaves 108px for the title. PID Bandwidth, Accelerometer, Motor Override and ELRS Telemetry are wider and were shown cut (PID Bandwid...). bin/i18n/check-fit.py measures the X18, whose tiles use FONT_XS, and the titles fit there, so it reported nothing. tile_grid.fontForTitles() now picks FONT_XS for all the tiles of a screen when one of its titles would be cut in FONT_S. The harness drives the real app/tile_grid.lua with a stub lcd. It checks that a screen whose titles fit keeps FONT_S, that one long title moves the screen to FONT_XS and is then whole, that a hidden entry and a title that is not text do not count, that a screen already on FONT_XS measures nothing, and that the font is kept without lcd. Its self-test keeps FONT_S always and requires the checks to fail."
+  "rationale": "On 800x480 radios the menu tiles are 120px wide, which leaves 108px for the title. In FONT_S, PID Bandwidth, Accelerometer, Motor Override and ELRS Telemetry are wider. #2798 moved only the screens with such a title to FONT_XS, so the tile font changed from one screen to the next. app/tile_grid.lua now gives FONT_S to the tiles of every screen size, the X18 and X14 included, and a title too wide for its tile is cut with an ellipsis: the larger font is preferred to a whole title. The harness drives the real app/tile_grid.lua with a stub lcd. It checks that the 800x480, 640x360 and 480x320 layouts all use FONT_S, that PID Bandwidth is cut with an ellipsis to fit each tile, and that the per-screen switch tile_grid.fontForTitles() is gone. Its self-test sets the tile font to FONT_XS and requires the checks to fail."
 }

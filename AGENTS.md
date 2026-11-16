@@ -109,7 +109,8 @@ Rules:
   480x320). `max_length` only caps characters; check pixels with
   `python bin/i18n/check-fit.py [--lang <locale...>]` (exit 1 and file:line for
   each string too wide; the `i18n-fit` CI job runs it). Budgets on the X18:
-  menu tile 98px, page title 178px (only the page's own name: the header drops
+  menu tile 98px in FONT_S (a tile title too wide is cut with "..." and only
+  listed, not a failure), page title 178px (only the page's own name: the header drops
   leading breadcrumb levels), form label 215px, choice 200px. Fix an overflow by
   shortening the text in `bin/i18n/json/`, not by widening the layout. When you
   change English, also set the same `english` in every locale file and supply a
