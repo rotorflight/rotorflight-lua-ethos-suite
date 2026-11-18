@@ -2092,8 +2092,8 @@
         },
         "activelook_low_fuel_seconds": {
           "english": "Display duration",
-          "translation": "Display duration",
-          "needs_translation": true,
+          "translation": "显示时长",
+          "needs_translation": false,
           "reverse_text": false,
           "max_length": 16
         },
@@ -2901,80 +2901,80 @@
         },
         "activelook_esc_status": {
           "english": "ESC Status",
-          "translation": "ESC Status",
-          "needs_translation": true,
+          "translation": "电调状态",
+          "needs_translation": false,
           "max_length": 10
         },
         "activelook_esc_status_warning": {
           "english": "ESC Status Warning",
-          "translation": "ESC Status Warning",
-          "needs_translation": true,
+          "translation": "电调状态警报",
+          "needs_translation": false,
           "max_length": 18
         },
         "activelook_esc_offline": {
           "english": "Connect to check",
-          "translation": "Connect to check",
-          "needs_translation": true,
+          "translation": "连接后检查",
+          "needs_translation": false,
           "max_length": 20
         },
         "activelook_esc_missing": {
           "english": "Telemetry missing",
-          "translation": "Telemetry missing",
-          "needs_translation": true,
+          "translation": "缺少遥测",
+          "needs_translation": false,
           "max_length": 17
         },
         "activelook_esc_unsupported": {
           "english": "No status support",
-          "translation": "No status support",
-          "needs_translation": true,
+          "translation": "不支持状态反馈",
+          "needs_translation": false,
           "max_length": 21
         },
         "activelook_esc_generic": {
           "english": "Generic faults only",
-          "translation": "Generic faults only",
-          "needs_translation": true,
+          "translation": "仅报告一般故障",
+          "needs_translation": false,
           "max_length": 21
         },
         "activelook_esc_available": {
           "english": "Status available",
-          "translation": "Status available",
-          "needs_translation": true,
+          "translation": "状态可用",
+          "needs_translation": false,
           "max_length": 16
         },
         "activelook_esc_setup": {
           "english": "Set up telemetry",
-          "translation": "Set up telemetry",
-          "needs_translation": true,
+          "translation": "设置遥测",
+          "needs_translation": false,
           "max_length": 21
         },
         "activelook_esc_messages": {
           "english": "Show messages",
-          "translation": "Show messages",
-          "needs_translation": true,
+          "translation": "显示消息",
+          "needs_translation": false,
           "max_length": 18
         },
         "activelook_esc_messages_all": {
           "english": "Errors and warnings",
-          "translation": "Errors and warnings",
-          "needs_translation": true,
+          "translation": "错误和警告",
+          "needs_translation": false,
           "max_length": 20
         },
         "activelook_esc_messages_errors": {
           "english": "Errors only",
-          "translation": "Errors only",
-          "needs_translation": true,
+          "translation": "仅错误",
+          "needs_translation": false,
           "max_length": 11
         },
         "activelook_esc_messages_warnings": {
           "english": "Warnings only",
-          "translation": "Warnings only",
-          "needs_translation": true,
+          "translation": "仅警告",
+          "needs_translation": false,
           "max_length": 13
         },
         "activelook_esc_telemetry_help": {
           "english": "Requires ESC1 Status and ESC1 Model ID telemetry. Use Set up telemetry to select both sensors, then save on the Telemetry page. ESC telemetry must already be configured on the flight controller.",
-          "translation": "Requires ESC1 Status and ESC1 Model ID telemetry. Use Set up telemetry to select both sensors, then save on the Telemetry page. ESC telemetry must already be configured on the flight controller.",
-          "needs_translation": true,
+          "translation": "需要 ESC1 Status 和 ESC1 Model ID 遥测传感器。在“设置遥测”中选择这两个传感器，然后在遥测页面保存。飞控上的电调遥测必须已配置。",
+          "needs_translation": false,
           "max_length": 195
         }
       },
@@ -14736,20 +14736,20 @@
       },
       "alert_esc_error": {
         "english": "ESC ERROR",
-        "translation": "ESC ERROR",
-        "needs_translation": true,
+        "translation": "电调错误",
+        "needs_translation": false,
         "max_length": 10
       },
       "alert_esc_warning": {
         "english": "ESC WARNING",
-        "translation": "ESC WARNING",
-        "needs_translation": true,
+        "translation": "电调警告",
+        "needs_translation": false,
         "max_length": 11
       },
       "alert_no_esc_data": {
         "english": "NO ESC DATA",
-        "translation": "NO ESC DATA",
-        "needs_translation": true,
+        "translation": "无电调数据",
+        "needs_translation": false,
         "max_length": 15
       }
     }

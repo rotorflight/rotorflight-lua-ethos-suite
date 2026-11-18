@@ -2092,8 +2092,8 @@
         },
         "activelook_low_fuel_seconds": {
           "english": "Display duration",
-          "translation": "Display duration",
-          "needs_translation": true,
+          "translation": "Doba zobrazení",
+          "needs_translation": false,
           "reverse_text": false,
           "max_length": 16
         },
@@ -2901,80 +2901,80 @@
         },
         "activelook_esc_status": {
           "english": "ESC Status",
-          "translation": "ESC Status",
-          "needs_translation": true,
+          "translation": "Stav ESC",
+          "needs_translation": false,
           "max_length": 10
         },
         "activelook_esc_status_warning": {
           "english": "ESC Status Warning",
-          "translation": "ESC Status Warning",
-          "needs_translation": true,
+          "translation": "Výstrahy stavu ESC",
+          "needs_translation": false,
           "max_length": 18
         },
         "activelook_esc_offline": {
           "english": "Connect to check",
-          "translation": "Connect to check",
-          "needs_translation": true,
-          "max_length": 20
+          "translation": "Připojit pro kontrolu",
+          "needs_translation": false,
+          "max_length": 21
         },
         "activelook_esc_missing": {
           "english": "Telemetry missing",
-          "translation": "Telemetry missing",
-          "needs_translation": true,
+          "translation": "Chybí telemetrie",
+          "needs_translation": false,
           "max_length": 17
         },
         "activelook_esc_unsupported": {
           "english": "No status support",
-          "translation": "No status support",
-          "needs_translation": true,
+          "translation": "Stav nepodporován",
+          "needs_translation": false,
           "max_length": 21
         },
         "activelook_esc_generic": {
           "english": "Generic faults only",
-          "translation": "Generic faults only",
-          "needs_translation": true,
+          "translation": "Jen obecné chyby",
+          "needs_translation": false,
           "max_length": 21
         },
         "activelook_esc_available": {
           "english": "Status available",
-          "translation": "Status available",
-          "needs_translation": true,
+          "translation": "Stav dostupný",
+          "needs_translation": false,
           "max_length": 16
         },
         "activelook_esc_setup": {
           "english": "Set up telemetry",
-          "translation": "Set up telemetry",
-          "needs_translation": true,
+          "translation": "Nastavit telemetrii",
+          "needs_translation": false,
           "max_length": 21
         },
         "activelook_esc_messages": {
           "english": "Show messages",
-          "translation": "Show messages",
-          "needs_translation": true,
+          "translation": "Zobrazit hlášení",
+          "needs_translation": false,
           "max_length": 18
         },
         "activelook_esc_messages_all": {
           "english": "Errors and warnings",
-          "translation": "Errors and warnings",
-          "needs_translation": true,
+          "translation": "Chyby a varování",
+          "needs_translation": false,
           "max_length": 20
         },
         "activelook_esc_messages_errors": {
           "english": "Errors only",
-          "translation": "Errors only",
-          "needs_translation": true,
+          "translation": "Jen chyby",
+          "needs_translation": false,
           "max_length": 11
         },
         "activelook_esc_messages_warnings": {
           "english": "Warnings only",
-          "translation": "Warnings only",
-          "needs_translation": true,
+          "translation": "Jen varování",
+          "needs_translation": false,
           "max_length": 13
         },
         "activelook_esc_telemetry_help": {
           "english": "Requires ESC1 Status and ESC1 Model ID telemetry. Use Set up telemetry to select both sensors, then save on the Telemetry page. ESC telemetry must already be configured on the flight controller.",
-          "translation": "Requires ESC1 Status and ESC1 Model ID telemetry. Use Set up telemetry to select both sensors, then save on the Telemetry page. ESC telemetry must already be configured on the flight controller.",
-          "needs_translation": true,
+          "translation": "Vyžaduje telemetrii ESC1 Status a ESC1 Model ID. V Nastavit telemetrii vyberte oba senzory a uložte je na stránce Telemetrie. Telemetrie ESC musí být již nastavena v řídicí jednotce.",
+          "needs_translation": false,
           "max_length": 195
         }
       },
@@ -14736,20 +14736,20 @@
       },
       "alert_esc_error": {
         "english": "ESC ERROR",
-        "translation": "ESC ERROR",
-        "needs_translation": true,
+        "translation": "CHYBA ESC",
+        "needs_translation": false,
         "max_length": 10
       },
       "alert_esc_warning": {
         "english": "ESC WARNING",
-        "translation": "ESC WARNING",
-        "needs_translation": true,
-        "max_length": 11
+        "translation": "VAROVÁNÍ ESC",
+        "needs_translation": false,
+        "max_length": 12
       },
       "alert_no_esc_data": {
         "english": "NO ESC DATA",
-        "translation": "NO ESC DATA",
-        "needs_translation": true,
+        "translation": "CHYBÍ DATA ESC",
+        "needs_translation": false,
         "max_length": 15
       }
     }

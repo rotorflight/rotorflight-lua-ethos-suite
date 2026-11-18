@@ -155,6 +155,9 @@ do
   onDisk = {activelook = {esc_status_warning = true, esc_status_errors = false,
     esc_status_warnings = true, esc_status_seconds = 12, esc_status_repeats = 3}}
   local loaded = store.load()
+  for key, value in pairs(onDisk.activelook) do
+    check("ESC setting loaded from disk: " .. key, loaded.activelook[key] == value)
+  end
   store.save(loaded)
   onDisk = saved
   local reloaded = store.load()

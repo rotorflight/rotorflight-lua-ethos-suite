@@ -53,6 +53,7 @@ function alerts.new(settings)
     lost = {kind = "governor_lost", remaining = 0},
     temp = {kind = "esc_temp", remaining = 0},
     esc = {kind = "esc_status", remaining = 0, count = 0},
+    escWarning = {kind = "esc_status", remaining = 0, count = 0},
     fuel = {kind = "low_fuel", remaining = 0},
     status = {kind = "governor_status", remaining = 0},
     preview = {kind = "low_fuel", blinkOn = true}}
@@ -63,7 +64,9 @@ function alerts.reset(state)
   clear(state.lost)
   clear(state.temp)
   clear(state.esc)
+  clear(state.escWarning)
   state.esc.text, state.esc.level, state.esc.word, state.esc.family = nil, nil, nil, nil
+  state.escWarning.text, state.escWarning.level, state.escWarning.word, state.escWarning.family = nil, nil, nil, nil
   state.escSeeded, state.escVerdict, state.escSignature, state.escWord = nil, nil, nil, nil
   state.preview.text, state.preview.level = nil, nil
   clear(state.fuel)
@@ -107,14 +110,31 @@ local function cancel(state, entry)
   clear(entry)
 end
 
+local function updateEsc(state, entry, verdict, show, flying, settings)
+  if not flying or not settings.esc_status_warning then
+    cancel(state, entry)
+  elseif show then
+    if not entry.latched or entry.text ~= verdict.text or entry.level ~= verdict.level
+        or entry.word ~= verdict.word or entry.family ~= verdict.family then
+      start(entry, settings.esc_status_seconds, settings.esc_status_repeats)
+      entry.text, entry.level, entry.word, entry.family = verdict.text, verdict.level, verdict.word, verdict.family
+    end
+    entry.condition = true
+  elseif entry.count > 1 then
+    cancel(state, entry)
+  else
+    -- Keep the first display, including while preempted, but stop repeats.
+    entry.condition, entry.latched, entry.nextAt = false, false, nil
+  end
+end
+
 function alerts.configure(state, settings)
   state.settings = settings
   if not settings.rf_link_warning then cancel(state, state.link) end
   if not settings.low_fuel_warning then cancel(state, state.fuel) end
   if not settings.esc_temp_warning then cancel(state, state.temp) end
-  if not settings.esc_status_warning
-      or (state.esc.level == 3 and not settings.esc_status_errors)
-      or (state.esc.level == 2 and not settings.esc_status_warnings) then cancel(state, state.esc) end
+  if not settings.esc_status_warning or not settings.esc_status_errors then cancel(state, state.esc) end
+  if not settings.esc_status_warning or not settings.esc_status_warnings then cancel(state, state.escWarning) end
   if not settings.governor_lost_warning then cancel(state, state.lost) end
   if not settings.governor_status_overlays then cancel(state, state.status) end
 end
@@ -154,29 +174,10 @@ function alerts.update(state, data, phase, now)
   if governor then state.previousGovernor = governor end
   local armed = data.isArmed == true
   local flying = armed and phase == "inflight"
-  local esc = state.esc
   local verdict = state.escVerdict
   local level = verdict and not verdict.transient and verdict.level
-  local show = flying and settings.esc_status_warning and
-    ((level == 3 and settings.esc_status_errors) or (level == 2 and settings.esc_status_warnings))
-  if not flying or not settings.esc_status_warning then
-    cancel(state, esc)
-  elseif show then
-    if not esc.latched or esc.text ~= verdict.text or esc.level ~= level
-        or esc.word ~= verdict.word or esc.family ~= verdict.family then
-      start(esc, settings.esc_status_seconds, settings.esc_status_repeats)
-      esc.text, esc.level, esc.word, esc.family = verdict.text, level, verdict.word, verdict.family
-    end
-    esc.condition = true
-  else
-    -- Preserve even a one-sample event until its visible time is spent, but
-    -- never repeat a recovered/missing/filtered condition.
-    if esc.count > 1 then
-      cancel(state, esc)
-    else
-      esc.condition, esc.latched, esc.nextAt = false, false, nil
-    end
-  end
+  updateEsc(state, state.esc, verdict, level == 3 and settings.esc_status_errors, flying, settings)
+  updateEsc(state, state.escWarning, verdict, level == 2 and settings.esc_status_warnings, flying, settings)
   if not flying then
     cancel(state, state.link)
     cancel(state, state.fuel)
@@ -284,7 +285,8 @@ function alerts.update(state, data, phase, now)
     -- Only the newest transition matters; never queue status notifications.
     cancel(state, status)
     if not state.paused and (governor == 7 or governor == 8)
-        and state.link.remaining <= 0 and state.esc.remaining <= 0 and state.lost.remaining <= 0 and state.temp.remaining <= 0 and state.fuel.remaining <= 0 then
+        and state.link.remaining <= 0 and state.esc.remaining <= 0 and state.escWarning.remaining <= 0
+        and state.lost.remaining <= 0 and state.temp.remaining <= 0 and state.fuel.remaining <= 0 then
       start(status, settings.governor_status_seconds)
       status.governorState = governor
       status.expiresAt = now + settings.governor_status_seconds
@@ -322,16 +324,17 @@ function alerts.current(state, now)
   end
   repeatEntry(state.link, now)
   repeatEntry(state.esc, now)
+  repeatEntry(state.escWarning, now)
   repeatEntry(state.temp, now)
   repeatEntry(state.fuel, now)
   local status = state.status
   if status.remaining > 0 and now >= status.expiresAt then cancel(state, status) end
   local nextAlert
   if state.link.remaining > 0 then nextAlert = state.link
-  elseif state.esc.remaining > 0 and state.esc.level == 3 then nextAlert = state.esc
+  elseif state.esc.remaining > 0 then nextAlert = state.esc
   elseif state.lost.remaining > 0 then nextAlert = state.lost
   elseif state.temp.remaining > 0 then nextAlert = state.temp
-  elseif state.esc.remaining > 0 then nextAlert = state.esc
+  elseif state.escWarning.remaining > 0 then nextAlert = state.escWarning
   elseif state.fuel.remaining > 0 then nextAlert = state.fuel
   elseif status.remaining > 0 then nextAlert = status end
   if nextAlert and nextAlert ~= status then cancel(state, status) end

@@ -323,14 +323,16 @@ do
   sample(4.1, {escStatusWord = 0})
   check("recovery cancels repeats but retains pending display", not e.esc.condition and e.esc.nextAt == nil and e.esc.remaining > 0)
   check("ESC resumes after RF", sample(9, {linkQuality = 90}).kind == "esc_status")
-  check("recovered event finishes without repeats", sample(12) == nil and sample(20) == nil)
+  check("interrupted ESC warning resumes after recovered error", sample(12).level == 2)
+  check("recovered events finish without repeats", sample(15) == nil and sample(20) == nil)
   sample(21, {escStatusWord = 8, tempEsc = 100})
   check("temperature outranks ESC warning", sample(23).kind == "esc_temp")
   check("ESC error outranks temperature", sample(24, {escStatusWord = 64}).level == 3)
   sample(25, {governorState = 6})
   check("ESC error outranks lost headspeed", alerts.current(e, 25).kind == "esc_status")
-  check("lost headspeed outranks ESC warning", sample(26, {escStatusWord = 8}).kind == "governor_lost")
-  check("disarm clears ESC event", sample(27, {isArmed = false}) == nil and e.esc.remaining == 0)
+  check("downgrade retains initial ESC error", sample(26, {escStatusWord = 8}).level == 3)
+  check("lost headspeed outranks ESC warning after error finishes", sample(27).kind == "governor_lost")
+  check("disarm clears ESC event", sample(27.1, {isArmed = false}) == nil and e.esc.remaining == 0)
   sample(28, {isArmed = true, escStatusWord = 64})
   check("disconnect clears ESC event", sample(29, {connected = false}) == nil and e.esc.remaining == 0)
   alerts.setPreview(e, "esc_status", 30)
@@ -402,6 +404,46 @@ do
   check("short event never repeats", e.esc.nextAt == nil)
   sample(11, {isArmed = false})
   check("flight end clears all ESC budgets", e.esc.remaining == 0 and e.esc.nextAt == nil)
+end
+
+-- A downgraded warning must not erase an error's initial visible budget.
+do
+  for _, signature in ipairs({0x4B, 0xA0}) do
+    local errorWord = signature == 0x4B and 64 or 16
+    local warningWord = signature == 0x4B and 8 or 2
+    local e, data, sample = fixture({esc_status_warning = true, esc_status_seconds = 3})
+    sample(0, {escSignature = signature, escStatusWord = errorWord})
+    local errorText = e.esc.text
+    check("downgrade preserves pending error " .. signature, sample(1, {escStatusWord = warningWord}).text == errorText and e.esc.remaining == 2)
+    sample(2, {escStatusWord = 0})
+    check("warning follows completed initial error " .. signature, sample(3).level == 2)
+    check("recovered error and warning do not repeat " .. signature, sample(6) == nil and sample(20) == nil)
+    sample(21, {escStatusWord = errorWord})
+    sample(22, {escStatusWord = warningWord})
+    check("disarm clears both severity budgets " .. signature, sample(23, {isArmed = false}) == nil and e.esc.remaining == 0 and e.escWarning.remaining == 0)
+  end
+end
+do
+  local e, data, sample = fixture({esc_status_warning = true, esc_status_seconds = 3, rf_link_warning = true, rf_link_repeats = 1})
+  sample(0, {linkQuality = 20})
+  sample(2)
+  sample(3, {escSignature = 0x4B, escStatusWord = 64})
+  sample(4, {escStatusWord = 8})
+  sample(5, {escStatusWord = 0})
+  check("RF preemption retains downgraded error", sample(7, {linkQuality = 90}).level == 3 and e.esc.remaining == 3)
+  check("separate warning follows retained error", sample(10).level == 2)
+  check("recovery ends both retained first displays", sample(13) == nil)
+end
+
+-- Persistent downgraded warnings retain their own finite repeat budget.
+do
+  local e, data, sample = fixture({esc_status_warning = true, esc_status_seconds = 3})
+  sample(0, {escSignature = 0x4B, escStatusWord = 64})
+  sample(1, {escStatusWord = 8})
+  check("persistent warning waits for error", sample(3).level == 2)
+  check("warning repeat gap follows visible time", sample(6) == nil)
+  check("warning has its own repeat budget", sample(9).level == 2 and e.escWarning.count == 2 and e.esc.nextAt == nil)
+  check("recovery stops warning repeat", sample(10, {escStatusWord = 0}) == nil)
 end
 
 -- Integrate the actual widget with session flight statistics against fake glasses.

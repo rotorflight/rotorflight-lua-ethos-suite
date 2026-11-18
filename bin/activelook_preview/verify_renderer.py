@@ -59,10 +59,12 @@ class WidgetTests(unittest.TestCase):
         for language in ("en", "de"):
             data = request("esc_status")
             data["language"] = language
+            now = 0
             for signature in (0x4B, 0xA0, 0xFD, 0x53, 0xA5, 0xC0, 0xD0):
                 for bit in range(32):
                     data["sensors"].update(escSignature=signature, escStatusWord=1 << bit)
-                    frame = self.renderer.render(data, 1)
+                    now += 0.1
+                    frame = self.renderer.render(data, now)
                     for command in frame["commands"]:
                         text = command["text"]
                         self.assertLessEqual(text["x"] + font.getlength(text["text"]), 304,

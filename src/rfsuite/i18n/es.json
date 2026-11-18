@@ -7419,75 +7419,75 @@
         },
         "activelook_esc_available": {
           "english": "Status available",
-          "max_length": 16,
-          "needs_translation": true,
-          "translation": "Status available"
+          "max_length": 17,
+          "needs_translation": false,
+          "translation": "Estado disponible"
         },
         "activelook_esc_generic": {
           "english": "Generic faults only",
           "max_length": 21,
-          "needs_translation": true,
-          "translation": "Generic faults only"
+          "needs_translation": false,
+          "translation": "Solo fallos generales"
         },
         "activelook_esc_messages": {
           "english": "Show messages",
           "max_length": 18,
-          "needs_translation": true,
-          "translation": "Show messages"
+          "needs_translation": false,
+          "translation": "Mostrar mensajes"
         },
         "activelook_esc_messages_all": {
           "english": "Errors and warnings",
           "max_length": 20,
-          "needs_translation": true,
-          "translation": "Errors and warnings"
+          "needs_translation": false,
+          "translation": "Errores y avisos"
         },
         "activelook_esc_messages_errors": {
           "english": "Errors only",
-          "max_length": 11,
-          "needs_translation": true,
-          "translation": "Errors only"
+          "max_length": 12,
+          "needs_translation": false,
+          "translation": "Solo errores"
         },
         "activelook_esc_messages_warnings": {
           "english": "Warnings only",
           "max_length": 13,
-          "needs_translation": true,
-          "translation": "Warnings only"
+          "needs_translation": false,
+          "translation": "Solo avisos"
         },
         "activelook_esc_missing": {
           "english": "Telemetry missing",
           "max_length": 17,
-          "needs_translation": true,
-          "translation": "Telemetry missing"
+          "needs_translation": false,
+          "translation": "Falta telemetría"
         },
         "activelook_esc_offline": {
           "english": "Connect to check",
           "max_length": 20,
-          "needs_translation": true,
-          "translation": "Connect to check"
+          "needs_translation": false,
+          "translation": "Conectar para probar"
         },
         "activelook_esc_setup": {
           "english": "Set up telemetry",
           "max_length": 21,
-          "needs_translation": true,
-          "translation": "Set up telemetry"
+          "needs_translation": false,
+          "translation": "Config. telemetría"
         },
         "activelook_esc_status": {
           "english": "ESC Status",
           "max_length": 10,
-          "needs_translation": true,
-          "translation": "ESC Status"
+          "needs_translation": false,
+          "translation": "Estado ESC"
         },
         "activelook_esc_status_warning": {
           "english": "ESC Status Warning",
-          "max_length": 18,
-          "needs_translation": true,
-          "translation": "ESC Status Warning"
+          "max_length": 21,
+          "needs_translation": false,
+          "translation": "Alertas de estado ESC"
         },
         "activelook_esc_telemetry_help": {
           "english": "Requires ESC1 Status and ESC1 Model ID telemetry. Use Set up telemetry to select both sensors, then save on the Telemetry page. ESC telemetry must already be configured on the flight controller.",
           "max_length": 195,
-          "needs_translation": true,
-          "translation": "Requires ESC1 Status and ESC1 Model ID telemetry. Use Set up telemetry to select both sensors, then save on the Telemetry page. ESC telemetry must already be configured on the flight controller."
+          "needs_translation": false,
+          "translation": "Requiere la telemetría ESC1 Status y ESC1 Model ID. En Config. telemetría seleccione ambos sensores y guarde en Telemetría. La telemetría del ESC debe estar configurada en la controladora."
         },
         "activelook_esc_temp_limit": {
           "english": "ESC temp limit",
@@ -7506,8 +7506,8 @@
         "activelook_esc_unsupported": {
           "english": "No status support",
           "max_length": 21,
-          "needs_translation": true,
-          "translation": "No status support"
+          "needs_translation": false,
+          "translation": "Estado no admitido"
         },
         "activelook_glasses_menu": {
           "english": "ETHOS Glasses menu",
@@ -7574,9 +7574,9 @@
         "activelook_low_fuel_seconds": {
           "english": "Display duration",
           "max_length": 16,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
-          "translation": "Display duration"
+          "translation": "Duración"
         },
         "activelook_low_fuel_warning": {
           "english": "Smart Fuel warning",
@@ -13714,8 +13714,8 @@
       "alert_esc_error": {
         "english": "ESC ERROR",
         "max_length": 10,
-        "needs_translation": true,
-        "translation": "ESC ERROR"
+        "needs_translation": false,
+        "translation": "ERROR ESC"
       },
       "alert_esc_temp_high": {
         "english": "ESC TEMP HIGH",
@@ -13727,8 +13727,8 @@
       "alert_esc_warning": {
         "english": "ESC WARNING",
         "max_length": 11,
-        "needs_translation": true,
-        "translation": "ESC WARNING"
+        "needs_translation": false,
+        "translation": "AVISO ESC"
       },
       "alert_fuel_low": {
         "english": "LOW FUEL",
@@ -13761,8 +13761,8 @@
       "alert_no_esc_data": {
         "english": "NO ESC DATA",
         "max_length": 15,
-        "needs_translation": true,
-        "translation": "NO ESC DATA"
+        "needs_translation": false,
+        "translation": "SIN DATOS ESC"
       },
       "alert_rf_link_low": {
         "english": "RF LINK LOW",
