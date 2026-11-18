@@ -150,6 +150,25 @@ do
     "key=" .. tostring(ownKey) .. " kept=" .. tostring(ownKey and read.activelook[ownKey]) .. " sent=" .. tostring(probe))
 end
 
+print("ActiveLook ESC status settings persist and keep legacy defaults")
+do
+  onDisk = {activelook = {esc_status_warning = true, esc_status_errors = false,
+    esc_status_warnings = true, esc_status_seconds = 12, esc_status_repeats = 3}}
+  local loaded = store.load()
+  store.save(loaded)
+  onDisk = saved
+  local reloaded = store.load()
+  for key, value in pairs(loaded.activelook) do
+    check("ActiveLook save/load round trip: " .. key, reloaded.activelook[key] == value)
+  end
+  onDisk = {activelook = {low_fuel_warning = true}}
+  local legacy = store.load().activelook
+  check("legacy settings leave ESC status off", legacy.esc_status_warning == false)
+  check("legacy settings fill ESC status defaults", legacy.esc_status_errors and legacy.esc_status_warnings
+    and legacy.esc_status_seconds == 5 and legacy.esc_status_repeats == 2 and legacy.low_fuel_warning)
+  onDisk = nil
+end
+
 print("switches keeps valid keys and drops stale/malformed ones")
 do
   local read = store.withDefaults({

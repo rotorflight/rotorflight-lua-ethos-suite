@@ -7417,6 +7417,30 @@
           "reverse_text": false,
           "translation": "Alerts"
         },
+        "activelook_esc_status": {
+          "english": "ESC Status",
+          "max_length": 10,
+          "needs_translation": true,
+          "translation": "ESC Status"
+        },
+        "activelook_esc_status_errors": {
+          "english": "Show ESC Errors",
+          "max_length": 19,
+          "needs_translation": true,
+          "translation": "Show ESC Errors"
+        },
+        "activelook_esc_status_warning": {
+          "english": "ESC Status Warning",
+          "max_length": 18,
+          "needs_translation": true,
+          "translation": "ESC Status Warning"
+        },
+        "activelook_esc_status_warnings": {
+          "english": "Show ESC Warnings",
+          "max_length": 20,
+          "needs_translation": true,
+          "translation": "Show ESC Warnings"
+        },
         "activelook_esc_temp_limit": {
           "english": "ESC temp limit",
           "max_length": 14,
@@ -13633,12 +13657,24 @@
         "reverse_text": true,
         "translation": "סוללה ריקה"
       },
+      "alert_esc_error": {
+        "english": "ESC ERROR",
+        "max_length": 10,
+        "needs_translation": true,
+        "translation": "ESC ERROR"
+      },
       "alert_esc_temp_high": {
         "english": "ESC TEMP HIGH",
         "max_length": 13,
         "needs_translation": false,
         "reverse_text": true,
         "translation": "חום ESC גבוה"
+      },
+      "alert_esc_warning": {
+        "english": "ESC WARNING",
+        "max_length": 11,
+        "needs_translation": true,
+        "translation": "ESC WARNING"
       },
       "alert_fuel_low": {
         "english": "LOW FUEL",
@@ -13667,6 +13703,12 @@
         "needs_translation": false,
         "reverse_text": true,
         "translation": "סף"
+      },
+      "alert_no_esc_data": {
+        "english": "NO ESC DATA",
+        "max_length": 15,
+        "needs_translation": true,
+        "translation": "NO ESC DATA"
       },
       "alert_rf_link_low": {
         "english": "RF LINK LOW",

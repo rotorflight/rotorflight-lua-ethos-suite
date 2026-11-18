@@ -6,19 +6,19 @@ sidebar_position: 60
 
 # Alerts
 
-Configures Smart Fuel, temperature and governor overlays managed by the ActiveLook alert engine.
+Configures Smart Fuel, ESC status, temperature and governor overlays managed by the ActiveLook alert engine.
 
 ## Where to find it
 
 *System* -> *Settings* -> *ActiveLook* -> *Alerts*.
 
-Available offline without a flight controller connection. Read-only while the model is armed, like the other ActiveLook settings pages. Smart Fuel settings appear first, followed by ESC temperature, Lost headspeed, RF link and Governor status.
+Available offline without a flight controller connection. Read-only while the model is armed, like the other ActiveLook settings pages. Smart Fuel settings appear first, followed by ESC temperature, ESC Status, Lost headspeed, RF link and Governor status.
 
 ## Settings
 
 Audio inheritance is available for Smart Fuel and ESC temperature. RF link has no matching suite audio threshold or repeat budget; its values remain independent. Lost headspeed and Governor status use state changes rather than numeric audio limits, so they have no audio-inheritance switch. Warning Duration always remains an independent ActiveLook setting.
 
-Each alert has its own expandable panel, like Settings -> General. Smart Fuel is initially expanded; ESC temperature, Lost headspeed, RF link and Governor status start collapsed. Tap a panel heading to expand or collapse its settings. Opening a group closes the previous group and previews that alert on the glasses; closing the active group restores automatic display. All settings within a panel share the same indentation.
+Each alert has its own expandable panel, like Settings -> General. Smart Fuel is initially expanded; ESC temperature, ESC Status, Lost headspeed, RF link and Governor status start collapsed. Tap a panel heading to expand or collapse its settings. Opening a group closes the previous group and previews that alert on the glasses; closing the active group restores automatic display. All settings within a panel share the same indentation.
 
 | Setting | What it does |
 | --- | --- |
@@ -33,7 +33,12 @@ Each alert has its own expandable panel, like Settings -> General. Smart Fuel is
 | Repeats (ESC) | Total temperature warning displays per hot episode, 0-10; default 2. A value of 0 means unlimited warning displays while the hot condition remains active; it does not suppress the alert. The pause between displays equals Warning Duration. Disabled when the ESC warning is off or Use audio limits & repeats is on. |
 | Warning Duration (ESC) | Display time per temperature warning, 3-30 seconds; default 5. Pauses while a higher-priority warning is visible. Disabled when the ESC warning is off. |
 | Icon (ESC) | Shows blinking thermometer ID 18 beside the temperature. On by default; independently switchable from the Smart Fuel icon. Greyed out while the ESC warning is off. Save applies it to live warnings and preview. |
-| Lost headspeed | Enables a critical Governor LOST HS (state 6) overlay. RF link warnings have higher priority, so LOST HS does not interrupt an RF warning; it takes priority over the remaining alerts. Off by default. Requires a valid state transition while connected, armed and Inflight. |
+| ESC Status Warning | Enables decoded ESC status overlays only while connected, armed and Inflight. Off by default, including when loading older settings. |
+| Show ESC Errors | Shows decoder severity ERROR. On by default; disabled while ESC Status Warning is off. |
+| Show ESC Warnings | Shows decoder severity WARNING. On by default; disabled while ESC Status Warning is off. |
+| Warning Duration (ESC Status) | Visible time per display, 3–30 seconds, default 5. Pauses during higher-priority warnings or manual preview. Disabled while ESC Status Warning is off. |
+| Repeats (ESC Status) | Total displays per continuous fault episode, 1–10, default 2; the gap equals Warning Duration. Recovery, missing data or filtering stops repeats; flight end, disarm or disconnect clears the event. Disabled while ESC Status Warning is off. |
+| Lost headspeed | Enables a critical Governor LOST HS (state 6) overlay. RF link and ESC status errors have higher priority, so LOST HS does not interrupt either warning; it takes priority over the remaining alerts. Off by default. Requires a valid state transition while connected, armed and Inflight. |
 | Warning Duration (LOST HS) | Critical overlay time, 3-30 seconds; default 5. Same-state telemetry does not restart it; leaving and re-entering LOST HS can trigger a new warning. Disabled when Lost headspeed is off. |
 | RF link warning | Enables RF LINK LOW; off by default. Uses the suite Link sensor (RSSI in dB or VFR/LQ in percent), only while connected, armed and Inflight. Highest alert priority. |
 | RSSI limit | RSSI threshold, 1-100 dB; default 42. Triggers at or below the threshold for two seconds; rearms after recovery by 5 dB. Used only for dB telemetry. |
@@ -57,10 +62,12 @@ The preview stays visible without a duration limit and pauses automatic display 
 ## Priority and lifecycle
 
 1. RF link.
-2. Governor LOST HS.
-3. ESC temperature.
-4. Smart Fuel.
-5. Governor status information.
+2. ESC status ERROR.
+3. Governor LOST HS.
+4. ESC temperature.
+5. ESC status WARNING.
+6. Smart Fuel.
+7. Governor status information.
 
 A higher-priority warning interrupts a lower one. Interrupted warnings keep their remaining visible time; Smart Fuel repetition gaps begin only after a display completes. Governor information is never queued behind an alarm and is discarded when preempted. First governor telemetry seeds the state without inventing a transition. Disarm, flight end and link loss clear automatic warnings. SPOOLUP does not trigger a status overlay.
 
@@ -83,3 +90,13 @@ Smart Fuel covers both power types, matching the voice announcements: Nitro uses
 Independent ESC Repeats accepts 0 for unlimited displays while the condition remains active, including after Save and reload. Disabling ActiveLook clears the current display before the layout is released.
 
 Alert display text is localized through the deployment i18n step, including the battery/fuel headline, ESC and RF warnings, lost-headspeed message, Governor states and limit label. Deploy with the desired language (for example --lang de) and restart the radio scripts. German displays AKKU LEER for Electric and KRAFTSTOFF NIEDRIG for Nitro. The browser preview offers a Display language selector and defaults to the supported browser language. Font glyph coverage still depends on the glasses configuration.
+
+## ESC status events and preview
+
+The existing `lib/esc_status.lua` decoder consumes session `escSignature` and `escStatusWord`. No separate decoder, polling task or controller write is involved. Identical samples do not restart a display. A changed status word, family, message or severity starts a new event. A one-sample fault retains its first display even if it recovers while interrupted; further repeats require the same continuous condition. The newest ESC event replaces an older ESC event. No OK alarm is emitted. Invalid or missing data is never interpreted as OK. Transient RESTART ESC is not an automatic fault alarm.
+
+Opening ESC Status previews the current decoded text on the glasses even on the bench and with automatic ESC warnings off. Healthy or unsupported status uses a neutral ESC Status heading; absent/invalid telemetry shows NO ESC DATA. Preview pauses display budgets without consuming repeats. Closing the group restores the automatic layout. Error/warning overlays use text only, with the existing compact font and up to two lines; excessively long text is shortened with an ellipsis. No bitmap ID is required.
+
+Manufacturer coverage follows the shared decoder: Kontronik, APD, Hobbywing V5, Scorpion, OpenYGE and Graupner have protocol-specific decoding; opaque protocols can only report a generic fault. Protocols with no status word and unknown signatures produce no automatic alarm. Kontronik flags are documented for telemetry V4; compatibility with V5 has not been established and must be checked before relying on them.
+
+ESC status implementation checked 2026-11-18. A pilot hardware test confirmed that the new status view appears on ENGO 2. No ESC faults were present, so actual warning/error overlays and their interruption/resume remain unverified on hardware.

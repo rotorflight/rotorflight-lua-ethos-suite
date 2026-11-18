@@ -93,6 +93,9 @@ def main():
         ("headspeed_lost", "governor_lost", 1, 0),
         ("autorotation", "governor_status", 1, 0),
         ("bailout", "governor_status", 1, 2.1),
+        ("esc_status_error", "esc_status", 1, 0),
+        ("esc_status_warning", "esc_status", 1, 0),
+        ("esc_status_no_data", "esc_status", 1, 0),
     ]
     for name, preview, model, elapsed in examples:
         renderer = WidgetRenderer()
@@ -101,12 +104,15 @@ def main():
                                "cellCount": 6, "fuel": 0, "voltage": 22.6,
                                "consumption": 3250, "tempEsc": 95, "link": 35,
                                "rpm": 1200, "governorState": 4}}
+        if name.startswith("esc_status_") and name != "esc_status_no_data":
+            request["sensors"].update(escSignature=0x4B,
+                                      escStatusWord=64 if name.endswith("error") else 1 << 19)
         frame = renderer.render(request, now=10)
         if elapsed:
             frame = renderer.render(request, now=10 + elapsed)
         assert frame["commands"], name
         save_frame(frame, f"alert_{name}.jpg")
-    print(f"Exported 5 layouts and 7 alert/status examples to {OUT}")
+    print(f"Exported 5 layouts and {len(examples)} alert/status examples to {OUT}")
 
 
 if __name__ == "__main__":

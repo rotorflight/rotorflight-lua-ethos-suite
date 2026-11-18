@@ -22,6 +22,11 @@ config.DEFAULTS = {
   esc_temp_limit = 90,
   esc_temp_seconds = 5,
   esc_temp_repeats = 2,
+  esc_status_warning = false,
+  esc_status_errors = true,
+  esc_status_warnings = true,
+  esc_status_seconds = 5,
+  esc_status_repeats = 2,
   rf_link_warning = false,
   rf_link_icon = true,
   rf_link_limit = 42,
@@ -266,6 +271,11 @@ function config.normalize(out)
     end
   end
 
+  out.esc_status_warning = coerceBool(out.esc_status_warning, false)
+  out.esc_status_errors = coerceBool(out.esc_status_errors, true)
+  out.esc_status_warnings = coerceBool(out.esc_status_warnings, true)
+  out.esc_status_seconds = config.clampAlertSeconds(out.esc_status_seconds)
+  out.esc_status_repeats = config.clampLowFuelRepeats(out.esc_status_repeats)
   if out.register_glasses ~= config.DEFAULTS.register_glasses then out.register_glasses = coerceBool(out.register_glasses, config.DEFAULTS.register_glasses) end
   if out.enabled ~= config.DEFAULTS.enabled then out.enabled = coerceBool(out.enabled, config.DEFAULTS.enabled) end
   if out.inflight_fuel_icon ~= config.DEFAULTS.inflight_fuel_icon then out.inflight_fuel_icon = coerceBool(out.inflight_fuel_icon, config.DEFAULTS.inflight_fuel_icon) end

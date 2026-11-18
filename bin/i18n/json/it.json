@@ -2898,6 +2898,30 @@
           "needs_translation": false,
           "translation": "Avviso Armed pannello",
           "reverse_text": false
+        },
+        "activelook_esc_status": {
+          "english": "ESC Status",
+          "translation": "ESC Status",
+          "needs_translation": true,
+          "max_length": 10
+        },
+        "activelook_esc_status_warning": {
+          "english": "ESC Status Warning",
+          "translation": "ESC Status Warning",
+          "needs_translation": true,
+          "max_length": 18
+        },
+        "activelook_esc_status_errors": {
+          "english": "Show ESC Errors",
+          "translation": "Show ESC Errors",
+          "needs_translation": true,
+          "max_length": 19
+        },
+        "activelook_esc_status_warnings": {
+          "english": "Show ESC Warnings",
+          "translation": "Show ESC Warnings",
+          "needs_translation": true,
+          "max_length": 20
         }
       },
       "telemetry": {
@@ -14655,6 +14679,24 @@
         "needs_translation": false,
         "max_length": 5,
         "reverse_text": false
+      },
+      "alert_esc_error": {
+        "english": "ESC ERROR",
+        "translation": "ESC ERROR",
+        "needs_translation": true,
+        "max_length": 10
+      },
+      "alert_esc_warning": {
+        "english": "ESC WARNING",
+        "translation": "ESC WARNING",
+        "needs_translation": true,
+        "max_length": 11
+      },
+      "alert_no_esc_data": {
+        "english": "NO ESC DATA",
+        "translation": "NO ESC DATA",
+        "needs_translation": true,
+        "max_length": 15
       }
     }
   }
