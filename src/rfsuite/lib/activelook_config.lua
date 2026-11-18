@@ -274,6 +274,12 @@ function config.normalize(out)
   out.esc_status_warning = coerceBool(out.esc_status_warning, false)
   out.esc_status_errors = coerceBool(out.esc_status_errors, true)
   out.esc_status_warnings = coerceBool(out.esc_status_warnings, true)
+  -- The combined severity selector has no "none" mode: the master switch
+  -- represents that state, preserving the silence of older saved filters.
+  if not out.esc_status_errors and not out.esc_status_warnings then
+    out.esc_status_warning = false
+    out.esc_status_errors, out.esc_status_warnings = true, true
+  end
   out.esc_status_seconds = config.clampAlertSeconds(out.esc_status_seconds)
   out.esc_status_repeats = config.clampLowFuelRepeats(out.esc_status_repeats)
   if out.register_glasses ~= config.DEFAULTS.register_glasses then out.register_glasses = coerceBool(out.register_glasses, config.DEFAULTS.register_glasses) end

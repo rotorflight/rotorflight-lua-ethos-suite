@@ -2091,8 +2091,8 @@
           "max_length": 4
         },
         "activelook_low_fuel_seconds": {
-          "english": "Warning Duration",
-          "translation": "Dauer Warnung",
+          "english": "Display duration",
+          "translation": "Anzeigedauer",
           "needs_translation": false,
           "reverse_text": false,
           "max_length": 16
@@ -2911,17 +2911,71 @@
           "needs_translation": false,
           "max_length": 18
         },
-        "activelook_esc_status_errors": {
-          "english": "Show ESC Errors",
-          "translation": "ESC-Fehler anzeigen",
-          "needs_translation": false,
-          "max_length": 19
-        },
-        "activelook_esc_status_warnings": {
-          "english": "Show ESC Warnings",
-          "translation": "ESC-Warnungen zeigen",
+        "activelook_esc_offline": {
+          "english": "Connect to check",
+          "translation": "Zum Prüfen verbinden",
           "needs_translation": false,
           "max_length": 20
+        },
+        "activelook_esc_missing": {
+          "english": "Telemetry missing",
+          "translation": "Telemetrie fehlt",
+          "needs_translation": false,
+          "max_length": 17
+        },
+        "activelook_esc_unsupported": {
+          "english": "No status support",
+          "translation": "Kein Status verfügbar",
+          "needs_translation": false,
+          "max_length": 21
+        },
+        "activelook_esc_generic": {
+          "english": "Generic faults only",
+          "translation": "Nur allgemeine Fehler",
+          "needs_translation": false,
+          "max_length": 21
+        },
+        "activelook_esc_available": {
+          "english": "Status available",
+          "translation": "Status verfügbar",
+          "needs_translation": false,
+          "max_length": 16
+        },
+        "activelook_esc_setup": {
+          "english": "Set up telemetry",
+          "translation": "Telemetrie einrichten",
+          "needs_translation": false,
+          "max_length": 21
+        },
+        "activelook_esc_messages": {
+          "english": "Show messages",
+          "translation": "Meldungen anzeigen",
+          "needs_translation": false,
+          "max_length": 18
+        },
+        "activelook_esc_messages_all": {
+          "english": "Errors and warnings",
+          "translation": "Fehler und Warnungen",
+          "needs_translation": false,
+          "max_length": 20
+        },
+        "activelook_esc_messages_errors": {
+          "english": "Errors only",
+          "translation": "Nur Fehler",
+          "needs_translation": false,
+          "max_length": 11
+        },
+        "activelook_esc_messages_warnings": {
+          "english": "Warnings only",
+          "translation": "Nur Warnungen",
+          "needs_translation": false,
+          "max_length": 13
+        },
+        "activelook_esc_telemetry_help": {
+          "english": "Requires ESC1 Status and ESC1 Model ID telemetry. Use Set up telemetry to select both sensors, then save on the Telemetry page. ESC telemetry must already be configured on the flight controller.",
+          "translation": "Benötigt ESC1 Status und ESC1 Model ID als Telemetrie. Unter Telemetrie einrichten beide Sensoren wählen und dort speichern. Die ESC-Telemetrie muss am Flightcontroller bereits eingerichtet sein.",
+          "needs_translation": false,
+          "max_length": 195
         }
       },
       "telemetry": {

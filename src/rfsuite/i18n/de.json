@@ -7417,17 +7417,65 @@
           "reverse_text": false,
           "translation": "Warnungen"
         },
+        "activelook_esc_available": {
+          "english": "Status available",
+          "max_length": 16,
+          "needs_translation": false,
+          "translation": "Status verfügbar"
+        },
+        "activelook_esc_generic": {
+          "english": "Generic faults only",
+          "max_length": 21,
+          "needs_translation": false,
+          "translation": "Nur allgemeine Fehler"
+        },
+        "activelook_esc_messages": {
+          "english": "Show messages",
+          "max_length": 18,
+          "needs_translation": false,
+          "translation": "Meldungen anzeigen"
+        },
+        "activelook_esc_messages_all": {
+          "english": "Errors and warnings",
+          "max_length": 20,
+          "needs_translation": false,
+          "translation": "Fehler und Warnungen"
+        },
+        "activelook_esc_messages_errors": {
+          "english": "Errors only",
+          "max_length": 11,
+          "needs_translation": false,
+          "translation": "Nur Fehler"
+        },
+        "activelook_esc_messages_warnings": {
+          "english": "Warnings only",
+          "max_length": 13,
+          "needs_translation": false,
+          "translation": "Nur Warnungen"
+        },
+        "activelook_esc_missing": {
+          "english": "Telemetry missing",
+          "max_length": 17,
+          "needs_translation": false,
+          "translation": "Telemetrie fehlt"
+        },
+        "activelook_esc_offline": {
+          "english": "Connect to check",
+          "max_length": 20,
+          "needs_translation": false,
+          "translation": "Zum Prüfen verbinden"
+        },
+        "activelook_esc_setup": {
+          "english": "Set up telemetry",
+          "max_length": 21,
+          "needs_translation": false,
+          "translation": "Telemetrie einrichten"
+        },
         "activelook_esc_status": {
           "english": "ESC Status",
           "max_length": 10,
           "needs_translation": false,
           "translation": "ESC-Status"
-        },
-        "activelook_esc_status_errors": {
-          "english": "Show ESC Errors",
-          "max_length": 19,
-          "needs_translation": false,
-          "translation": "ESC-Fehler anzeigen"
         },
         "activelook_esc_status_warning": {
           "english": "ESC Status Warning",
@@ -7435,11 +7483,11 @@
           "needs_translation": false,
           "translation": "ESC-Statuswarnung"
         },
-        "activelook_esc_status_warnings": {
-          "english": "Show ESC Warnings",
-          "max_length": 20,
+        "activelook_esc_telemetry_help": {
+          "english": "Requires ESC1 Status and ESC1 Model ID telemetry. Use Set up telemetry to select both sensors, then save on the Telemetry page. ESC telemetry must already be configured on the flight controller.",
+          "max_length": 195,
           "needs_translation": false,
-          "translation": "ESC-Warnungen zeigen"
+          "translation": "Benötigt ESC1 Status und ESC1 Model ID als Telemetrie. Unter Telemetrie einrichten beide Sensoren wählen und dort speichern. Die ESC-Telemetrie muss am Flightcontroller bereits eingerichtet sein."
         },
         "activelook_esc_temp_limit": {
           "english": "ESC temp limit",
@@ -7454,6 +7502,12 @@
           "needs_translation": false,
           "reverse_text": false,
           "translation": "ESC-Temp.-Warnung"
+        },
+        "activelook_esc_unsupported": {
+          "english": "No status support",
+          "max_length": 21,
+          "needs_translation": false,
+          "translation": "Kein Status verfügbar"
         },
         "activelook_glasses_menu": {
           "english": "ETHOS Glasses menu",
@@ -7518,11 +7572,11 @@
           "translation": "Wiederholungen"
         },
         "activelook_low_fuel_seconds": {
-          "english": "Warning Duration",
+          "english": "Display duration",
           "max_length": 16,
           "needs_translation": false,
           "reverse_text": false,
-          "translation": "Dauer Warnung"
+          "translation": "Anzeigedauer"
         },
         "activelook_low_fuel_warning": {
           "english": "Smart Fuel warning",

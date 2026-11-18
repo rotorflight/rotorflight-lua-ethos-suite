@@ -165,4 +165,27 @@ function M.familyName(signature)
   return family and family.name or nil
 end
 
+-- Capability comes from the same protocol registry as decode(), without loading
+-- a manufacturer's layout. Missing/unknown signatures cannot prove support.
+function M.support(signature)
+  local sig = tonumber(signature)
+  if not sig or sig ~= sig or sig % 1 ~= 0 then return "unknown" end
+  local family = FAMILIES[sig]
+  if not family then return "unknown" end
+  if family.file then return "detailed" end
+  if family.opaque then return "generic" end
+  return "unsupported"
+end
+
+function M.availability(connected, signature, word)
+  if connected ~= true then return "offline" end
+  local sig = tonumber(signature)
+  if not sig or sig ~= sig or sig % 1 ~= 0 or sig < 1 or sig > 255 then return "missing" end
+  local support = M.support(sig)
+  if support == "unsupported" or support == "unknown" then return support end
+  local raw = tonumber(word)
+  if not raw or raw ~= raw or raw % 1 ~= 0 or raw < -2147483648 or raw > 4294967295 then return "missing" end
+  return support
+end
+
 return M

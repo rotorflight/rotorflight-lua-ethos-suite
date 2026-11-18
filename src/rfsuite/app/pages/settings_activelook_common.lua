@@ -50,10 +50,11 @@ function common.openPage(title, opts, build)
     original = nil
   end
 
-  local function leave()
+  local function leave(destination)
     if disposed then return end
     dispose()
-    if opts.onBack then opts.onBack() end
+    if destination then destination()
+    elseif opts.onBack then opts.onBack() end
   end
 
   local function save(focusFn)
@@ -90,13 +91,16 @@ function common.openPage(title, opts, build)
   form.clear()
   -- Back with unsaved changes asks first (issue #2504): Save saves and keeps the page,
   -- Discard leaves it, Stay keeps it.
-  local function goBack()
+  local function goBack(destination, canLeave)
     if disposed then return end
+    if canLeave and not canLeave() then return end
     if isDirty() then
       form.openDialog(leaveConfirm.args({
         canSave = true,
         save = function() save(nil) end,
-        discard = function() leave() end,
+        discard = function()
+          if not canLeave or canLeave() then leave(destination) end
+        end,
         focus = function()
           if headerHandle and headerHandle.focusSave then
             headerHandle.focusSave()
@@ -105,15 +109,15 @@ function common.openPage(title, opts, build)
       }))
       return
     end
-    leave()
+    leave(destination)
   end
 
   headerHandle = header.build(title, {
-    onBack = goBack,
+    onBack = function() goBack() end,
     onSave = function() confirmSave(headerHandle and headerHandle.focusSave) end,
   })
 
-  pageCleanup = build(settings, updateSaveEnabled)
+  pageCleanup = build(settings, updateSaveEnabled, goBack)
   updateSaveEnabled()
 
   if opts.setEventHandler then

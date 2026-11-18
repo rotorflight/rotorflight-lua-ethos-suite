@@ -45,6 +45,11 @@ do
       end
     end
   end
+  for _, enabled in ipairs({true, false, "true", "false"}) do
+    local legacy = config.withDefaults({esc_status_warning = enabled, esc_status_errors = "false", esc_status_warnings = 0})
+    check("legacy empty filters keep automatic alerts off", not legacy.esc_status_warning and legacy.esc_status_errors and legacy.esc_status_warnings)
+    check("legacy filter migration is idempotent", config.normalize(legacy) == legacy and not legacy.esc_status_warning)
+  end
   local owned = {low_fuel_seconds = "99", layout_inflight = "invalid", inflight_1 = "invalid", legacy = 42}
   local separate = config.withDefaults(owned)
   check("public normalization leaves input untouched", owned.low_fuel_seconds == "99" and owned.enabled == nil)
@@ -414,6 +419,7 @@ local modules = {
   ["lib/bus.lua"] = {subscribe = function(k, f) handlers[k] = f; return f end, unsubscribe = function(k) handlers[k] = nil end},
   ["lib/settings_store.lua"] = store, ["lib/activelook_config.lua"] = config,
   ["lib/activelook_alerts.lua"] = alerts,
+  ["lib/esc_status.lua"] = decoderModules["lib/esc_status.lua"],
   ["lib/engine_type.lua"] = assert(loadfile(root .. "lib/engine_type.lua"))(),
   ["lib/flight_stats.lua"] = assert(loadfile(root .. "lib/flight_stats.lua"))(),
 }
@@ -554,21 +560,36 @@ os.clock = oldClock
 do
   local pageSettings = {general = {temperature_unit = 1}, events = {escalertvalue = 100}, activelook = {}}
   local fields, ordered, panels, changes, line, preview = {}, {}, {}, 0, nil, nil
+  local pageCleanup, setupButton, destination
+  local staticFields = {}
   modules["lib/bus.lua"].publish = function(topic, action) preview = action.previewMode end
   modules["app/pages/settings_activelook_common.lua"] = {openPage = function(title, opts, build)
-    build(pageSettings, function() changes = changes + 1 end)
+    pageCleanup = build(pageSettings, function() changes = changes + 1 end, function(fn) destination = fn end)
   end}
   local function field(get, set)
     local f = {get = get, set = set, enableCalls = 0,
       enable = function(self, value) self.enabled = value; self.enableCalls = self.enableCalls + 1 end,
-      suffix = function(self, value) self.unit = value end}
+      suffix = function(self, value) self.unit = value end,
+      help = function(self, value) self.helpText = value end}
     fields[line] = f
     ordered[#ordered + 1] = f
     return f
   end
   form = {addLine = function(label) line = label:gsub("^%s+", ""); return label end,
     addBooleanField = function(l, slot, get, set) return field(get, set) end,
+    addChoiceField = function(l, slot, choices, get, set) return field(get, set) end,
     addNumberField = function(l, slot, minimum, maximum, get, set) return field(get, set) end}
+  form.getFieldSlots = function() return {{x = 0, y = 0, w = 480, h = 30}} end
+  lcd = {getWindowSize = function() return 480, 320 end}
+  form.addStaticText = function(label, rect, text)
+    local f = {text = text, calls = 0, value = function(self, value) self.text = value; self.calls = self.calls + 1 end}
+    staticFields[label] = f
+    return f
+  end
+  form.addButton = function(label, rect, args)
+    setupButton = {press = args.press, enable = function(self, enabled) self.enabled = enabled end}
+    return setupButton
+  end
   EVT_OPEN, EVT_CLOSE = 1001, 1002
   form.addExpansionPanel = function(title)
     local panel = {title = title, event = function(self, handler) self.handler = handler end,
@@ -579,6 +600,37 @@ do
   end
   assert(loadfile(root .. "app/pages/settings_activelook_alerts.lua"))().open({})
   check("six independently expandable alert groups", #panels == 6)
+  local availability = staticFields[""]
+  local function status(value) return "@i18n(app.modules.settings.activelook_esc_" .. value .. ")@" end
+  check("offline capability is explicit and setup disabled", availability.text == status("offline") and not setupButton.enabled)
+  setupButton.press(); check("offline setup cannot navigate", destination == nil)
+  handlers["session.update"]({connected = true, escSignature = 0xFD, escStatusWord = 0})
+  check("supported ESC is available and setup disabled", availability.text == "Hobbywing V5: " .. status("available") and not setupButton.enabled)
+  setupButton.press(); check("available telemetry cannot open setup", destination == nil)
+  local calls = availability.calls
+  handlers["session.update"]({connected = true, escSignature = 0xFD, escStatusWord = 1})
+  check("unchanged availability does not update UI", availability.calls == calls)
+  handlers["session.update"]({connected = true, escSignature = 0xFD})
+  check("missing status is not OK or unsupported", availability.text == "Hobbywing V5: " .. status("missing") and setupButton.enabled)
+  handlers["session.update"]({connected = true, escSignature = 0x9B})
+  check("known unsupported protocol needs no status sample", availability.text == "Hobbywing V4: " .. status("unsupported") and not setupButton.enabled)
+  handlers["session.update"]({connected = true, escSignature = 0xD0, escStatusWord = 0})
+  check("opaque protocol has generic capability", availability.text == "OMP Hobby: " .. status("generic") and not setupButton.enabled)
+  handlers["session.update"]({connected = true, escSignature = 0x01, escStatusWord = 0})
+  check("unknown ESC is explicit", availability.text == "@i18n(widgets.escstatus.unknown)@" and not setupButton.enabled)
+  handlers["session.update"]({connected = true, isArmed = true})
+  setupButton.press(); check("armed setup cannot navigate", not setupButton.enabled and destination == nil)
+  handlers["session.update"]({connected = true, isArmed = false})
+  setupButton.press(); check("setup uses guarded leave callback", type(destination) == "function")
+  local realLoadfile, childOptions = loadfile
+  loadfile = function(path, ...)
+    if path == "app/pages/telemetry.lua" then return function() return {open = function(opts) childOptions = opts end} end end
+    return realLoadfile(path, ...)
+  end
+  destination()
+  loadfile = realLoadfile
+  check("setup opens existing telemetry page with return route", childOptions and type(childOptions.onBack) == "function")
+
   check("Low Fuel initially open, other groups collapsed", panels[1].expanded
     and not panels[2].expanded and not panels[3].expanded and not panels[4].expanded and not panels[5].expanded and not panels[6].expanded)
 
@@ -602,10 +654,21 @@ do
   check("opening ESC selects its preview and closes Low Fuel", preview == "esc_temp" and not panels[1].expanded)
   panels[3]:open(true)
   check("ESC status group previews decoded status", preview == "esc_status" and not panels[2].expanded)
-  check("ESC status dependents disabled by default", not ordered[13].enabled and not ordered[14].enabled and not ordered[15].enabled and not ordered[16].enabled)
+  check("ESC status dependents disabled by default", not ordered[13].enabled and not ordered[14].enabled and not ordered[15].enabled)
   ordered[12].set(true)
-  check("ESC status enables dependent settings", ordered[13].enabled and ordered[14].enabled and ordered[15].enabled and ordered[16].enabled)
-  ordered[15].set(12); ordered[16].set(3); ordered[13].set(false)
+  check("ESC status enables dependent settings", ordered[13].enabled and ordered[14].enabled and ordered[15].enabled)
+  local messages = f("activelook_esc_messages")
+  check("ESC dropdown defaults to both severities", messages.get() == 1)
+  check("required sensor hint is available as field help", messages.helpText == "@i18n(app.modules.settings.activelook_esc_telemetry_help)@")
+  for choice = 1, 3 do
+    messages.set(choice)
+    check("ESC choice maps to persisted flags " .. choice, pageSettings.activelook.esc_status_errors == (choice == 1 or choice == 2)
+      and pageSettings.activelook.esc_status_warnings == (choice == 1 or choice == 3))
+    check("ESC choice reads persisted flags " .. choice, messages.get() == choice)
+  end
+  pageSettings.activelook.esc_status_errors, pageSettings.activelook.esc_status_warnings = true, false
+  check("legacy error-only flags map to dropdown", messages.get() == 2)
+  ordered[14].set(12); ordered[15].set(3); messages.set(3)
   local savedEsc = config.withDefaults(pageSettings.activelook)
   check("ESC status settings survive normalization", savedEsc.esc_status_warning and not savedEsc.esc_status_errors and savedEsc.esc_status_seconds == 12 and savedEsc.esc_status_repeats == 3)
   panels[4]:open(true)
@@ -619,7 +682,7 @@ do
   local linkToggle = f("activelook_rf_link_warning")
   local linkLimit = f("activelook_rf_link_limit")
   check("link warning defaults off with 42 dB threshold", not linkToggle.get() and linkLimit.get() == 42 and linkLimit.unit == "dB" and not linkLimit.enabled)
-  local linkIcon = ordered[24]
+  local linkIcon = ordered[23]
   check("RF symbol defaults on but disabled with warning", linkIcon.get() and not linkIcon.enabled)
   linkToggle.set(true); linkLimit.set(45)
   check("RF symbol becomes editable with warning", linkIcon.enabled)
@@ -655,11 +718,12 @@ do
   local normalized = config.withDefaults(pageSettings.activelook)
   check("ESC independent zero survives normalization", normalized.esc_temp_repeats == 0
     and config.alertRepeats(normalized, pageSettings.events, "esc_temp") == 0)
-
+  pageCleanup()
+  check("capability subscription is removed on close", handlers["session.update"] == nil)
 end
 -- Shared chrome compares only ActiveLook, without repeatedly normalizing the entire suite.
 do
-  local chrome, dirty, refresh, cleanup, dialog
+  local chrome, dirty, refresh, cleanup, dialog, leaveTo
   local saves, publishes = 0, 0
   local originalLoad, originalClone, originalSave, originalSame = store.load, store.clone, store.save, store.same
   local pageSettings = {general = {temperature_unit = 0}, events = {escalertvalue = 90}, activelook = config.withDefaults({})}
@@ -685,8 +749,8 @@ do
   form.clear = function() end
   form.openDialog = function(args) dialog = args end
   local common = assert(loadfile(root .. "app/pages/settings_activelook_common.lua"))()
-  common.openPage("Alerts", {setCleanupHandler = function(f) if f then cleanup = f end end}, function(s, update)
-    refresh = update
+  common.openPage("Alerts", {setCleanupHandler = function(f) if f then cleanup = f end end}, function(s, update, leave)
+    refresh, leaveTo = update, leave
   end)
   check("shared page starts clean", dirty == false)
   pageSettings.activelook.governor_lost_warning = true; refresh()
@@ -694,8 +758,23 @@ do
   chrome.onSave(); dialog.buttons[1].action()
   check("save resets dirty state", saves == 1 and dirty == false)
   check("save publishes settings/reset", publishes == 2)
+  local navigated = false
+  pageSettings.activelook.esc_status_warning = true; refresh()
+  leaveTo(function() navigated = true end)
+  check("shortcut asks before discarding edits", not navigated and dialog.canSave)
+  dialog.save()
+  check("shortcut save stays on page", not navigated and saves == 2)
+  pageSettings.activelook.esc_status_seconds = 12; refresh()
+  local canLeave = true
+  leaveTo(function() navigated = true end, function() return canLeave end)
+  canLeave = false
+  dialog.discard()
+  check("navigation guard rechecks after confirmation delay", not navigated)
+  canLeave = true
+  dialog.discard()
+  check("discard shortcut navigates after cleanup", navigated)
   cleanup(); cleanup()
-  check("shared cleanup is idempotent", publishes == 3)
+  check("shared cleanup is idempotent", publishes == 5)
   store.load, store.clone, store.save, store.same = originalLoad, originalClone, originalSave, originalSame
 end
 

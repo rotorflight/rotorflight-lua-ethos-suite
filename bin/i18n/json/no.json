@@ -2091,9 +2091,9 @@
           "max_length": 4
         },
         "activelook_low_fuel_seconds": {
-          "english": "Warning Duration",
-          "translation": "Varighet advarsel",
-          "needs_translation": false,
+          "english": "Display duration",
+          "translation": "Display duration",
+          "needs_translation": true,
           "reverse_text": false,
           "max_length": 16
         },
@@ -2911,17 +2911,71 @@
           "needs_translation": true,
           "max_length": 18
         },
-        "activelook_esc_status_errors": {
-          "english": "Show ESC Errors",
-          "translation": "Show ESC Errors",
-          "needs_translation": true,
-          "max_length": 19
-        },
-        "activelook_esc_status_warnings": {
-          "english": "Show ESC Warnings",
-          "translation": "Show ESC Warnings",
+        "activelook_esc_offline": {
+          "english": "Connect to check",
+          "translation": "Connect to check",
           "needs_translation": true,
           "max_length": 20
+        },
+        "activelook_esc_missing": {
+          "english": "Telemetry missing",
+          "translation": "Telemetry missing",
+          "needs_translation": true,
+          "max_length": 17
+        },
+        "activelook_esc_unsupported": {
+          "english": "No status support",
+          "translation": "No status support",
+          "needs_translation": true,
+          "max_length": 21
+        },
+        "activelook_esc_generic": {
+          "english": "Generic faults only",
+          "translation": "Generic faults only",
+          "needs_translation": true,
+          "max_length": 21
+        },
+        "activelook_esc_available": {
+          "english": "Status available",
+          "translation": "Status available",
+          "needs_translation": true,
+          "max_length": 16
+        },
+        "activelook_esc_setup": {
+          "english": "Set up telemetry",
+          "translation": "Set up telemetry",
+          "needs_translation": true,
+          "max_length": 21
+        },
+        "activelook_esc_messages": {
+          "english": "Show messages",
+          "translation": "Show messages",
+          "needs_translation": true,
+          "max_length": 18
+        },
+        "activelook_esc_messages_all": {
+          "english": "Errors and warnings",
+          "translation": "Errors and warnings",
+          "needs_translation": true,
+          "max_length": 20
+        },
+        "activelook_esc_messages_errors": {
+          "english": "Errors only",
+          "translation": "Errors only",
+          "needs_translation": true,
+          "max_length": 11
+        },
+        "activelook_esc_messages_warnings": {
+          "english": "Warnings only",
+          "translation": "Warnings only",
+          "needs_translation": true,
+          "max_length": 13
+        },
+        "activelook_esc_telemetry_help": {
+          "english": "Requires ESC1 Status and ESC1 Model ID telemetry. Use Set up telemetry to select both sensors, then save on the Telemetry page. ESC telemetry must already be configured on the flight controller.",
+          "translation": "Requires ESC1 Status and ESC1 Model ID telemetry. Use Set up telemetry to select both sensors, then save on the Telemetry page. ESC telemetry must already be configured on the flight controller.",
+          "needs_translation": true,
+          "max_length": 195
         }
       },
       "telemetry": {

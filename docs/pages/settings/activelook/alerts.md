@@ -16,35 +16,34 @@ Available offline without a flight controller connection. Read-only while the mo
 
 ## Settings
 
-Audio inheritance is available for Smart Fuel and ESC temperature. RF link has no matching suite audio threshold or repeat budget; its values remain independent. Lost headspeed and Governor status use state changes rather than numeric audio limits, so they have no audio-inheritance switch. Warning Duration always remains an independent ActiveLook setting.
+Audio inheritance is available for Smart Fuel and ESC temperature. RF link has no matching suite audio threshold or repeat budget; its values remain independent. Lost headspeed and Governor status use state changes rather than numeric audio limits, so they have no audio-inheritance switch. Display duration always remains an independent ActiveLook setting.
 
 Each alert has its own expandable panel, like Settings -> General. Smart Fuel is initially expanded; ESC temperature, ESC Status, Lost headspeed, RF link and Governor status start collapsed. Tap a panel heading to expand or collapse its settings. Opening a group closes the previous group and previews that alert on the glasses; closing the active group restores automatic display. All settings within a panel share the same indentation.
 
 | Setting | What it does |
 | --- | --- |
 | Smart Fuel Warning | Shows a short LOW FUEL message over the Inflight layout when Smart Fuel reaches 0% (the battery consumption-warning reserve). Off by default. |
-| Repeats | How many times the message is shown in total while the pack stays low, from 1 to 10 (default 1, shown once). The pause between two shows is as long as the Warning Duration. Greyed out while the warning is off or Use audio repeats is on. Turning audio inheritance off restores the saved independent count. |
+| Repeats | How many times the message is shown in total while the pack stays low, from 1 to 10 (default 1, shown once). The pause between two shows is as long as the Display duration. Greyed out while the warning is off or Use audio repeats is on. Turning audio inheritance off restores the saved independent count. |
 | Use audio repeats (Smart Fuel) | Inherits the audio Smart Fuel repeat count (`events.smartfuelrepeats`), even when audio announcements are off. Off by default. Repeats becomes read-only and displays the inherited count. The warning point remains Smart Fuel 0%, as in audio. |
-| Warning Duration | How long the LOW FUEL message stays on the display, from 3 to 30 seconds (default 5). It is greyed out, so it cannot be changed, while Smart Fuel Warning is off. |
+| Display duration | How long the LOW FUEL message stays on the display, from 3 to 30 seconds (default 5). It is greyed out, so it cannot be changed, while Smart Fuel Warning is off. |
 | Icon | Shows the fuel-pump icon for Nitro (image 11) or the battery icon for Electric (image 21) beside the remaining percentage (default on). Turn it off if the active glasses configuration shows no icon or a different image. Greyed out while the warning is off. |
 | ESC temp warning | Enables the ESC-temperature warning. Off by default. Requires a connected flight controller and armed Inflight telemetry. |
 | Use audio limits & repeats (ESC) | Inherits both the audio temperature threshold (`events.escalertvalue`, normally 90 C) and repeat count (`events.temp_esc_repeats`). Both fields become read-only and display the inherited values. Audio announcements need not be enabled. On by default; disabled while the ESC warning is off. Turning inheritance off restores both saved independent values. |
 | ESC temp limit | An independent 60-300 C threshold when Use audio limits & repeats is off. Displayed and edited in the selected temperature unit; stored and compared in C. Disabled when using the audio limit or when the warning is off. |
-| Repeats (ESC) | Total temperature warning displays per hot episode, 0-10; default 2. A value of 0 means unlimited warning displays while the hot condition remains active; it does not suppress the alert. The pause between displays equals Warning Duration. Disabled when the ESC warning is off or Use audio limits & repeats is on. |
-| Warning Duration (ESC) | Display time per temperature warning, 3-30 seconds; default 5. Pauses while a higher-priority warning is visible. Disabled when the ESC warning is off. |
+| Repeats (ESC) | Total temperature warning displays per hot episode, 0-10; default 2. A value of 0 means unlimited warning displays while the hot condition remains active; it does not suppress the alert. The pause between displays equals Display duration. Disabled when the ESC warning is off or Use audio limits & repeats is on. |
+| Display duration (ESC) | Display time per temperature warning, 3-30 seconds; default 5. Pauses while a higher-priority warning is visible. Disabled when the ESC warning is off. |
 | Icon (ESC) | Shows blinking thermometer ID 18 beside the temperature. On by default; independently switchable from the Smart Fuel icon. Greyed out while the ESC warning is off. Save applies it to live warnings and preview. |
 | ESC Status Warning | Enables decoded ESC status overlays only while connected, armed and Inflight. Off by default, including when loading older settings. |
-| Show ESC Errors | Shows decoder severity ERROR. On by default; disabled while ESC Status Warning is off. |
-| Show ESC Warnings | Shows decoder severity WARNING. On by default; disabled while ESC Status Warning is off. |
-| Warning Duration (ESC Status) | Visible time per display, 3–30 seconds, default 5. Pauses during higher-priority warnings or manual preview. Disabled while ESC Status Warning is off. |
-| Repeats (ESC Status) | Total displays per continuous fault episode, 1–10, default 2; the gap equals Warning Duration. Recovery, missing data or filtering stops repeats; flight end, disarm or disconnect clears the event. Disabled while ESC Status Warning is off. |
+| Show messages | Selects Errors and warnings (default), Errors only, or Warnings only. Disabled while ESC Status Warning is off. Older settings with both severity filters off are normalized to ESC Status Warning off and Errors and warnings, preserving the absence of automatic alerts. |
+| Display duration (ESC Status) | Visible time per display, 3–30 seconds, default 5. Pauses during higher-priority warnings or manual preview. Disabled while ESC Status Warning is off. |
+| Repeats (ESC Status) | Total displays per continuous fault episode, 1–10, default 2; the gap equals Display duration. Recovery, missing data or filtering stops repeats; flight end, disarm or disconnect clears the event. Disabled while ESC Status Warning is off. |
 | Lost headspeed | Enables a critical Governor LOST HS (state 6) overlay. RF link and ESC status errors have higher priority, so LOST HS does not interrupt either warning; it takes priority over the remaining alerts. Off by default. Requires a valid state transition while connected, armed and Inflight. |
-| Warning Duration (LOST HS) | Critical overlay time, 3-30 seconds; default 5. Same-state telemetry does not restart it; leaving and re-entering LOST HS can trigger a new warning. Disabled when Lost headspeed is off. |
+| Display duration (LOST HS) | Critical overlay time, 3-30 seconds; default 5. Same-state telemetry does not restart it; leaving and re-entering LOST HS can trigger a new warning. Disabled when Lost headspeed is off. |
 | RF link warning | Enables RF LINK LOW; off by default. Uses the suite Link sensor (RSSI in dB or VFR/LQ in percent), only while connected, armed and Inflight. Highest alert priority. |
 | RSSI limit | RSSI threshold, 1-100 dB; default 42. Triggers at or below the threshold for two seconds; rearms after recovery by 5 dB. Used only for dB telemetry. |
 | VFR/LQ limit | Percentage threshold, 1-100%; default 80%. Used when the resolved Link sensor reports percent. |
 | Repeats (RF) | Total displays per low-link episode, 1-10; default 2. The gap equals the display duration. |
-| Warning Duration (RF) | 3-30 seconds; default 5. |
+| Display duration (RF) | 3-30 seconds; default 5. |
 | Icon (RF) | Shows RF icon ID 16 beside the Link value, blinking one second on/off. On by default; independently switchable. Disabled while RF link warning is off. The saved choice applies to automatic warnings and preview. |
 | Governor status | Enables short AUTOROTATION (7) and BAILOUT (8) transition messages while armed or Inflight. Off by default. |
 | Status duration | Governor information display time, 1-5 seconds; default 2. Disabled when Governor status is off. |
@@ -100,3 +99,11 @@ Opening ESC Status previews the current decoded text on the glasses even on the 
 Manufacturer coverage follows the shared decoder: Kontronik, APD, Hobbywing V5, Scorpion, OpenYGE and Graupner have protocol-specific decoding; opaque protocols can only report a generic fault. Protocols with no status word and unknown signatures produce no automatic alarm. Kontronik flags are documented for telemetry V4; compatibility with V5 has not been established and must be checked before relying on them.
 
 ESC status implementation checked 2026-11-18. A pilot hardware test confirmed that the new status view appears on ENGO 2. No ESC faults were present, so actual warning/error overlays and their interruption/resume remain unverified on hardware.
+
+## ESC status availability and telemetry setup
+
+The ESC Status panel combines the detected protocol and availability in one full-width line: Status available, Generic faults only, No status support, UNKNOWN ESC, Telemetry missing, or Connect to check. Capability comes from the existing decoder registry; missing telemetry never proves that a protocol is unsupported. Preferences remain editable so they can be prepared offline.
+
+The field help for **Show messages** explains the required sensors, without permanent sensor rows or another nested panel. Both **ESC1 Status** and **ESC1 Model ID** must be transmitted and available as radio telemetry sensors. Temperature, voltage and current alone are insufficient. Configure the ESC-to-flight-controller telemetry first under *Setup -> ESC & Motors -> Telemetry* if necessary.
+
+**Set up telemetry** opens the existing *Setup -> Telemetry* page, where the pilot can select ESC1 Status and ESC1 Model ID and explicitly save. The shortcut is enabled only while connected, disarmed and required telemetry is missing. It is greyed out when data is available, the ESC protocol is unsupported or unknown, the model is armed, or the connection is absent. It never changes sensors automatically. The telemetry page retains its normal slot limits, save/reboot behavior and CRSF CUSTOM-mode handling. Back returns to ActiveLook Alerts. Unsaved ActiveLook changes use the normal Save / Discard / Stay prompt before leaving; Save keeps the page open, after which the shortcut can be pressed again.
