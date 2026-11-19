@@ -12440,7 +12440,7 @@
         "not_read": {
           "english": "Last flight not saved. Retry at the next disarm.",
           "max_length": 48,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
           "translation": "Flyging ikke lagret. Nytt forsøk ved neste deaktivering."
         },

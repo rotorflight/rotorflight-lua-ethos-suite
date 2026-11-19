@@ -12440,9 +12440,9 @@
         "not_read": {
           "english": "Last flight not saved. Retry at the next disarm.",
           "max_length": 48,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
-          "translation": "Let nebyl uložen. Zkusí se při dalším vypnutí."
+          "translation": "Let nebyl uložen. Zkusí se při dalším odzbrojení."
         },
         "pitch": {
           "english": "Pitch",

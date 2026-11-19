@@ -12440,9 +12440,9 @@
         "not_read": {
           "english": "Last flight not saved. Retry at the next disarm.",
           "max_length": 48,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
-          "translation": "Flug nicht gespeichert. Neuer Versuch beim nächsten Ausschalten."
+          "translation": "Flug nicht gespeichert. Neuer Versuch beim nächsten Disarm."
         },
         "pitch": {
           "english": "Pitch",

@@ -12440,7 +12440,7 @@
         "not_read": {
           "english": "Last flight not saved. Retry at the next disarm.",
           "max_length": 48,
-          "needs_translation": true,
+          "needs_translation": false,
           "reverse_text": false,
           "translation": "飞行记录未保存。下次解除锁定时重试。"
         },
