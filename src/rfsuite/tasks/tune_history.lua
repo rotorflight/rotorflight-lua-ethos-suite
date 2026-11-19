@@ -26,13 +26,14 @@
 -- model sat disarmed. So the first read waits START_SECONDS after the disarm
 -- (the pilot is reading the landing numbers, and the flight-stats sync goes
 -- first), each later request waits GAP_SECONDS, a failed axis is asked again
--- on its own, and after MAX_FAILURES link errors the capture waits for the
--- next disarm. The FC keeps the numbers, so that disarm still saves them.
+-- on its own, and after MAX_FAILURES link errors or MAX_SAVE_FAILURES failed
+-- writes the capture waits for the next disarm. The FC keeps the numbers, so
+-- that disarm still saves them.
 --
 -- Publishes "tune_history.state" (retained, see lib/bus.lua) whenever it
 -- changes, so the Tune Advisor page can hold its advice until the flight is in:
 --   "reading"  disarmed with this flight not saved yet, or its clear still to go
---   "failed"   gave up after MAX_FAILURES; the next disarm reads it
+--   "failed"   gave up after MAX_FAILURES link errors or MAX_SAVE_FAILURES failed writes
 --   "unread"   the FC answered in a layout this suite refuses: the flight is held
 --              there but not read; the next disarm asks once more
 --   "idle"     anything else
@@ -51,6 +52,7 @@ local START_SECONDS = 5           -- after a disarm, before the first read
 local GAP_SECONDS = 2             -- between one answered request and the next
 local RETRY_SECONDS = 5           -- after a link error, before asking again
 local MAX_FAILURES = 3            -- link errors per disarm before waiting for the next one
+local MAX_SAVE_FAILURES = 3       -- failed history writes per disarm before waiting for the next one
 
 local lastArmed = nil             -- last known arm state; a link loss (nil) keeps it
 local pending = false             -- a disarm has not been captured yet
@@ -61,6 +63,7 @@ local busy = false                -- a request is out
 local refusedOnFc = false         -- the FC holds a flight this layout refused: no clear, it would erase that flight
 local nextAt = 0                  -- no request before this os.clock()
 local failures = 0                -- link errors since the last disarm
+local saveFailures = 0            -- history write failures since the last disarm
 local capture = {mcuId = nil, modelName = nil, replies = {}, settings = {}}
 -- The latest session snapshot's fields this task reads, copied rather than
 -- holding on to the snapshot table
@@ -234,12 +237,19 @@ local function finishCapture()
   -- got through and nothing new was flown.
   if seconds > 0 and lastSeconds[mcuId] ~= seconds then
     if not tuneHistory.save(mcuId, capture.modelName, replies) then
-      -- The replies are kept and only the write is tried again: no MSP, so
-      -- not counted against MAX_FAILURES
+      -- Keep the replies for another write attempt, but do not retry forever:
+      -- the FC still holds the flight until a successful save and clear.
+      saveFailures = saveFailures + 1
       print("[tune_history] cannot write " .. tuneHistory.path(mcuId))
-      waitFor(RETRY_SECONDS)
+      if saveFailures >= MAX_SAVE_FAILURES then
+        busy = false
+        nextAt = math.huge
+      else
+        waitFor(RETRY_SECONDS)
+      end
       return
     end
+    saveFailures = 0
     lastSeconds[mcuId] = seconds
     bus.publish("tune_history.saved", mcuId)
   end
@@ -326,6 +336,7 @@ local function onSessionUpdate(snapshot)
     -- the aircraft that was flown: its FC holds this flight, whatever is connected later
     pendingMcu = snapshot.mcuId or link.mcuId
     failures = 0
+    saveFailures = 0
     clearReplies()
     nextAt = os.clock() + START_SECONDS
   end

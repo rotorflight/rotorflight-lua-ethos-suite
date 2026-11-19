@@ -12360,11 +12360,11 @@
           "translation": "Létejte acro s reálnou rotací, pak odzbrojte"
         },
         "not_read": {
-          "english": "Last flight not read. It is read at the next disarm.",
-          "max_length": 52,
+          "english": "Last flight not saved. Retry at the next disarm.",
+          "max_length": 48,
           "needs_translation": true,
           "reverse_text": false,
-          "translation": "Last flight not read. It is read at the next disarm."
+          "translation": "Last flight not saved. Retry at the next disarm."
         },
         "pitch": {
           "english": "Pitch",
