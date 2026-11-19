@@ -12438,11 +12438,11 @@
           "translation": "以 Acro 模式飞出真实旋转，然后解除武装"
         },
         "not_read": {
-          "english": "Last flight not read. It is read at the next disarm.",
-          "max_length": 52,
-          "needs_translation": true,
+          "english": "Last flight not saved. Retry at the next disarm.",
+          "max_length": 48,
+          "needs_translation": false,
           "reverse_text": false,
-          "translation": "Last flight not read. It is read at the next disarm."
+          "translation": "飞行记录未保存。下次解除锁定时重试。"
         },
         "pitch": {
           "english": "Pitch",

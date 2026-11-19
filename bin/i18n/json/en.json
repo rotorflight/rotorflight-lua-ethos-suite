@@ -7859,10 +7859,10 @@
           "max_length": 26
         },
         "not_read": {
-          "english": "Last flight not read. It is read at the next disarm.",
-          "translation": "Last flight not read. It is read at the next disarm.",
-          "needs_translation": true,
-          "max_length": 52
+          "english": "Last flight not saved. Retry at the next disarm.",
+          "translation": "Last flight not saved. Retry at the next disarm.",
+          "needs_translation": false,
+          "max_length": 48
         }
       },
       "setup_wizard": {

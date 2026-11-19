@@ -9065,11 +9065,11 @@
           "max_length": 26
         },
         "not_read": {
-          "english": "Last flight not read. It is read at the next disarm.",
-          "translation": "Last flight not read. It is read at the next disarm.",
-          "needs_translation": true,
+          "english": "Last flight not saved. Retry at the next disarm.",
+          "translation": "הטיסה לא נשמרה. ניסיון חוזר בנטרול הבא.",
+          "needs_translation": false,
           "reverse_text": false,
-          "max_length": 52
+          "max_length": 48
         }
       },
       "setup_wizard": {

@@ -10992,10 +10992,10 @@
           "translation": "Fly acro with real rotation, then disarm"
         },
         "not_read": {
-          "english": "Last flight not read. It is read at the next disarm.",
-          "max_length": 52,
-          "needs_translation": true,
-          "translation": "Last flight not read. It is read at the next disarm."
+          "english": "Last flight not saved. Retry at the next disarm.",
+          "max_length": 48,
+          "needs_translation": false,
+          "translation": "Last flight not saved. Retry at the next disarm."
         },
         "pitch": {
           "english": "Pitch",

@@ -441,15 +441,23 @@ do
   local realSave, saves = tuneHistory.save, 0
   tuneHistory.save = function(...)
     saves = saves + 1
-    if saves <= 4 then return false end
+    if saves <= 3 then return false end
     return realSave(...)
   end
   update({isArmed = true})
   update({isArmed = false})
   local asked = pump(nil, nil, 60)
-  tuneHistory.save = realSave
-  check("a failed write is tried again without reading again, past the link-error limit",
-    asked == "roll,pitch,yaw,clear" and saves == 5 and #lines() == 4,
+  check("a failed write is retried three times without rereading the FC",
+    asked == "roll,pitch,yaw" and saves == 3 and files[HISTORY] == nil,
+    asked .. " / " .. saves .. " saves")
+  check("the page is told the flight could not be saved",
+    states[#states] == "failed", table.concat(states, ","))
+  update({isArmed = true})
+  check("arming ends the failed-save notice", states[#states] == "idle", table.concat(states, ","))
+  update({isArmed = false})
+  asked = pump()
+  check("the next disarm resets the write limit and saves the held flight",
+    asked == "roll,pitch,yaw,clear" and saves == 4 and #lines() == 4,
     asked .. " / " .. saves .. " saves / " .. #lines() .. " lines")
 end
 
