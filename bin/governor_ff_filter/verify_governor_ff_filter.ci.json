@@ -1,0 +1,7 @@
+{
+  "id": "governor-ff-filter",
+  "name": "Governor Filters precomp bandwidth allows the firmware's 0..250 Hz",
+  "step": "Check the gov_ff_filter range in the governor config field metadata",
+  "script": "bin/governor_ff_filter/verify_governor_ff_filter.lua",
+  "rationale": "lib/msp_governor_config.lua capped gov_ff_filter at max = 25, while the firmware (src/main/cli/settings.c, {0, 250}) and the Configurator allow 0..250 Hz for the same cutoff. The field now uses max = 250, matching the other filter cutoffs in the table."
+}
