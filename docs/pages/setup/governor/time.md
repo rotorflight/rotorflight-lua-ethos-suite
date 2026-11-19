@@ -18,11 +18,11 @@ Greyed out until the flight controller answers. Read-only while the model is arm
 
 | Setting | What it does |
 | --- | --- |
-| Startup time | Configures Startup time. Range: 0 to 600. Default: 200. |
-| Spoolup time | Configures Spoolup time. Range: 0 to 600 s. Default: 100 s. |
-| Spooldown time | Configures Spooldown time. Range: 0 to 600 s. Default: 100 s. |
-| Tracking time | Configures Tracking time. Range: 0 to 100 s. Default: 10 s. |
-| Recovery time | Configures Recovery time. Range: 0 to 100 s. Default: 21 s. |
+| Startup time | Configures Startup time. Range: 0 to 60 s. Default: 20 s. |
+| Spoolup time | Configures Spoolup time. Range: 0 to 60 s. Default: 10 s. |
+| Spooldown time | Configures Spooldown time. Range: 0 to 60 s. Default: 10 s. |
+| Tracking time | Configures Tracking time. Range: 0 to 60 s. Default: 5 s. |
+| Recovery time | Configures Recovery time. Range: 0 to 60 s. Default: 3 s. |
 
 ## Notes
 

@@ -1,0 +1,7 @@
+{
+  "id": "governor-ramp-handover-ranges",
+  "name": "Governor tracking, recovery and handover ranges follow the firmware",
+  "step": "Check the gov_tracking_time, gov_recovery_time and gov_handover_throttle ranges and defaults in the governor config field metadata",
+  "script": "bin/governor_ramp_handover_ranges/verify_governor_ramp_handover_ranges.lua",
+  "rationale": "lib/msp_governor_config.lua capped tracking and recovery time at 10.0 s and offered handover throttle 0..50 %, while the firmware (src/main/cli/settings.c, API 12.09+) and the Configurator allow 0..60.0 s and 10..100 %. The defaults also differed from src/main/pg/governor.c (5.0 s, 3.0 s, 25 %)."
+}
