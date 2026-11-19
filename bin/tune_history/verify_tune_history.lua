@@ -434,7 +434,8 @@ do
   local realSave, saves = tuneHistory.save, 0
   tuneHistory.save = function(...)
     saves = saves + 1
-    return false
+    if saves <= 3 then return false end
+    return realSave(...)
   end
   update({isArmed = true})
   update({isArmed = false})
@@ -444,7 +445,6 @@ do
     asked .. " / " .. saves .. " saves")
   check("the page is told the flight could not be saved",
     states[#states] == "failed", table.concat(states, ","))
-  tuneHistory.save = realSave
   update({isArmed = true})
   check("arming ends the failed-save notice", states[#states] == "idle", table.concat(states, ","))
   update({isArmed = false})

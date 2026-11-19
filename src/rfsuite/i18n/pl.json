@@ -12364,7 +12364,7 @@
           "max_length": 48,
           "needs_translation": true,
           "reverse_text": false,
-          "translation": "Last flight not saved. Retry at the next disarm."
+          "translation": "Lot nie został zapisany. Ponowna próba po rozbrojeniu."
         },
         "pitch": {
           "english": "Pitch",
