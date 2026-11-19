@@ -471,7 +471,7 @@ local function overlaySlots(widget, overlay)
     }
     widget.alertSlots = slots
   end
-  slots[2].font = overlay.kind == "governor_lost" and 1 or 2
+  slots[2].font = (overlay.kind == "governor_lost" or overlay.kind == "esc_status") and 1 or 2
   local temperature = overlay.kind == "esc_temp" and widget.settings.esc_temp_icon
   local icon = temperature and ESC_TEMP_ICON or (overlay.kind == "rf_link" and widget.settings.rf_link_icon and RF_LINK_ICON or nil)
   slots[2].icon = overlay.blinkOn and icon or nil
@@ -489,7 +489,38 @@ local function overlayValues(widget, overlay)
     values[4] = overlayNumber(widget, 4, widget.consumption, 0, "mAh")
   else
     values[4] = nil
-    if kind == "esc_temp" then
+    if kind == "esc_status" then
+      values[1] = overlay.level == 3 and "@i18n(widgets.activelook.alert_esc_error)@"
+        or overlay.level == 2 and "@i18n(widgets.activelook.alert_esc_warning)@"
+        or "@i18n(app.modules.settings.activelook_esc_status)@"
+      local text = overlay.text or "@i18n(widgets.activelook.alert_no_esc_data)@"
+      local cache = widget.overlayCache[2]
+      local width = widget.metrics.areaW
+      if cache.escText ~= text or cache.escWidth ~= width then
+        cache.escText, cache.escWidth = text, width
+        local first, second = "", ""
+        for word in text:gmatch("%S+") do
+          local candidate = first == "" and word or first .. " " .. word
+          if second == "" and estimateTextWidth(candidate, 1) <= width then
+            first = candidate
+          else
+            second = second == "" and word or second .. " " .. word
+          end
+        end
+        if first == "" then first, second = second, "" end
+        local function fit(line)
+          if estimateTextWidth(line, 1) <= width then return line end
+          repeat
+            local last = #line
+            while last > 1 and line:byte(last) >= 128 and line:byte(last) < 192 do last = last - 1 end
+            line = line:sub(1, last - 1)
+          until line == "" or estimateTextWidth(line .. "...", 1) <= width
+          return line .. "..."
+        end
+        cache.escFirst, cache.escSecond = fit(first), fit(second)
+      end
+      values[2], values[3] = cache.escFirst, cache.escSecond
+    elseif kind == "esc_temp" then
       values[1] = "@i18n(widgets.activelook.alert_esc_temp_high)@"
       values[2] = overlayNumber(widget, 2, temperatureValue(widget, widget.tempEsc), 0, temperatureSuffix(widget))
       values[3] = overlayNumber(widget, 3, temperatureValue(widget, widget.escTempLimit), 0, temperatureSuffix(widget), ALERT_LIMIT_PREFIX)
@@ -529,6 +560,8 @@ local function update(widget, snapshot)
   widget.fuelPercent = snapshot.fuelPercent
   widget.governorMode = snapshot.governorMode
   widget.governorState = snapshot.governorState
+  widget.escSignature = snapshot.escSignature
+  widget.escStatusWord = snapshot.escStatusWord
   widget.timerLive = snapshot.timerLive or 0
   widget.timerSession = snapshot.timerSession or 0
   -- The phase comes from the session (lib/flight_stats.lua), the same one the

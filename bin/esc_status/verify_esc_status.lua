@@ -91,6 +91,21 @@ end
 -- ---------------------------------------------------------------------------
 
 print("laziness")
+for _, signature in ipairs({0xA0, 0xFD, 0x53, 0xA5, 0xC0}) do
+  check("detailed capability " .. signature, ESC.support(signature) == "detailed")
+end
+check("opaque capability", ESC.support(0xD0) == "generic")
+check("unsupported capability", ESC.support(0x9B) == "unsupported")
+check("unknown capability", ESC.support(0x01) == "unknown")
+check("offline capability", ESC.availability(false, 0xFD, 0) == "offline")
+check("missing signature", ESC.availability(true, nil, 0) == "missing")
+check("missing status", ESC.availability(true, 0xFD, nil) == "missing")
+check("known unsupported without status", ESC.availability(true, 0x9B, nil) == "unsupported")
+for _, value in ipairs({0/0, math.huge, -math.huge, 0.5, -2147483649, 4294967296}) do
+  check("invalid status availability", ESC.availability(true, 0xFD, value) == "missing")
+end
+check("valid signed status availability", ESC.availability(true, 0xFD, -2147483648) == "detailed")
+
 ESC.decode(0x9B, 5)   -- Hobbywing V4: fills no status word
 ESC.decode(0xC8, 0)   -- BLHeli32: fills no status word
 ESC.decode(0xD0, 0)   -- OMP Hobby: opaque, no layout file

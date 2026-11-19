@@ -13,7 +13,7 @@ ROOT = Path(__file__).resolve().parents[2]
 _i18n_spec = importlib.util.spec_from_file_location("activelook_i18n", ROOT / ".vscode/scripts/resolve_i18n_tags.py")
 _I18N = importlib.util.module_from_spec(_i18n_spec)
 _i18n_spec.loader.exec_module(_I18N)
-PREVIEWS = {None, "preflight", "inflight", "postflight", "low_fuel", "esc_temp", "governor_lost", "governor_status", "rf_link"}
+PREVIEWS = {None, "preflight", "inflight", "postflight", "low_fuel", "esc_temp", "esc_status", "governor_lost", "governor_status", "rf_link"}
 
 
 class WidgetRenderer:
@@ -33,7 +33,13 @@ class WidgetRenderer:
         source, _ = _I18N.replace_tags_in_text(source, translations, stats)
         if stats.get("unresolved"):
             raise RuntimeError("unresolved preview translations")
-        step = factory((ROOT / "src/rfsuite").as_posix() + "/", source)
+        suite = ROOT / "src/rfsuite"
+        decoder_sources = {}
+        for path in [suite / "lib/esc_status.lua", suite / "lib/esc_status_text.lua",
+                     *sorted((suite / "lib/esc_status_families").glob("*.lua"))]:
+            text, _ = _I18N.replace_tags_in_text(path.read_text(encoding="utf-8"), translations, stats)
+            decoder_sources[path.relative_to(suite).as_posix()] = text
+        step = factory(suite.as_posix() + "/", source, lua.table_from(decoder_sources))
         defaults = self.native(lua.eval('package.loaded["rfsuite.lib.activelook_config"].DEFAULTS'))
         self.lua, self.step, self.defaults = lua, step, defaults
         self.language = language
@@ -72,7 +78,7 @@ class WidgetRenderer:
         def number(key):
             value = sensors.get(key)
             return value if type(value) in (int, float) and math.isfinite(value) else None
-        snapshot = {key: number(key) for key in ("voltage", "current", "consumption", "tempEsc", "tempMcu", "rpm", "governorState", "throttlePercent")}
+        snapshot = {key: number(key) for key in ("voltage", "current", "consumption", "tempEsc", "tempMcu", "rpm", "governorState", "throttlePercent", "escSignature", "escStatusWord")}
         snapshot.update(connected=sensors.get("connected", True) is True, isArmed=sensors.get("armed") is True,
                         fuelPercent=number("fuel"), linkQuality=number("link"), linkQualityIsPercent=sensors.get("linkPercent") is True, timerLive=number("timer"), timerSession=number("timer"),
                         batteryConfig={"cellCount": number("cellCount")}, smartfuelModelType=number("modelType"))

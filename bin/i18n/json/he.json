@@ -2091,8 +2091,8 @@
           "max_length": 4
         },
         "activelook_low_fuel_seconds": {
-          "english": "Warning Duration",
-          "translation": "משך האזהרה",
+          "english": "Display duration",
+          "translation": "משך תצוגה",
           "needs_translation": false,
           "reverse_text": true,
           "max_length": 16
@@ -2898,6 +2898,84 @@
           "needs_translation": false,
           "translation": "אזהרת Armed בלוח מחוונים",
           "reverse_text": true
+        },
+        "activelook_esc_status": {
+          "english": "ESC Status",
+          "translation": "מצב ESC",
+          "needs_translation": false,
+          "max_length": 10
+        },
+        "activelook_esc_status_warning": {
+          "english": "ESC Status Warning",
+          "translation": "התראות מצב ESC",
+          "needs_translation": false,
+          "max_length": 18
+        },
+        "activelook_esc_offline": {
+          "english": "Connect to check",
+          "translation": "התחבר לבדיקה",
+          "needs_translation": false,
+          "max_length": 20
+        },
+        "activelook_esc_missing": {
+          "english": "Telemetry missing",
+          "translation": "טלמטריה חסרה",
+          "needs_translation": false,
+          "max_length": 17
+        },
+        "activelook_esc_unsupported": {
+          "english": "No status support",
+          "translation": "מצב לא נתמך",
+          "needs_translation": false,
+          "max_length": 21
+        },
+        "activelook_esc_generic": {
+          "english": "Generic faults only",
+          "translation": "תקלות כלליות בלבד",
+          "needs_translation": false,
+          "max_length": 21
+        },
+        "activelook_esc_available": {
+          "english": "Status available",
+          "translation": "מצב זמין",
+          "needs_translation": false,
+          "max_length": 16
+        },
+        "activelook_esc_setup": {
+          "english": "Set up telemetry",
+          "translation": "הגדרת טלמטריה",
+          "needs_translation": false,
+          "max_length": 21
+        },
+        "activelook_esc_messages": {
+          "english": "Show messages",
+          "translation": "הצג הודעות",
+          "needs_translation": false,
+          "max_length": 18
+        },
+        "activelook_esc_messages_all": {
+          "english": "Errors and warnings",
+          "translation": "שגיאות ואזהרות",
+          "needs_translation": false,
+          "max_length": 20
+        },
+        "activelook_esc_messages_errors": {
+          "english": "Errors only",
+          "translation": "שגיאות בלבד",
+          "needs_translation": false,
+          "max_length": 11
+        },
+        "activelook_esc_messages_warnings": {
+          "english": "Warnings only",
+          "translation": "אזהרות בלבד",
+          "needs_translation": false,
+          "max_length": 13
+        },
+        "activelook_esc_telemetry_help": {
+          "english": "Requires ESC1 Status and ESC1 Model ID telemetry. Use Set up telemetry to select both sensors, then save on the Telemetry page. ESC telemetry must already be configured on the flight controller.",
+          "translation": "נדרשים חיישני הטלמטריה ESC1 Status ו-ESC1 Model ID. בהגדרת טלמטריה בחר את שני החיישנים ושמור בדף הטלמטריה. טלמטריית ESC חייבת להיות מוגדרת מראש בבקר הטיסה.",
+          "needs_translation": false,
+          "max_length": 195
         }
       },
       "telemetry": {
@@ -14655,6 +14733,24 @@
         "needs_translation": false,
         "max_length": 5,
         "reverse_text": true
+      },
+      "alert_esc_error": {
+        "english": "ESC ERROR",
+        "translation": "שגיאת ESC",
+        "needs_translation": false,
+        "max_length": 10
+      },
+      "alert_esc_warning": {
+        "english": "ESC WARNING",
+        "translation": "אזהרת ESC",
+        "needs_translation": false,
+        "max_length": 11
+      },
+      "alert_no_esc_data": {
+        "english": "NO ESC DATA",
+        "translation": "אין נתוני ESC",
+        "needs_translation": false,
+        "max_length": 15
       }
     }
   }

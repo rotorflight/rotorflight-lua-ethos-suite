@@ -84,3 +84,5 @@ HTTP validation and continued availability of the background photo.
 RF Link Low uses the existing suite Link sensor. Choose its unit under Preview-only Values to test RSSI dB (42 default threshold) or VFR/LQ percent (80 default threshold). The Lua runtime selects the matching limit, waits two seconds and rearms after recovery by five native units. This warning is opt-in and has highest priority. Real CRSF sessions currently have no Link sensor mapping; missing values do not trigger an alarm.
 
 Display language selects the same alert translations used by the deployment. The initial selection follows the supported browser language, falling back to English. Text centering counts UTF-8 characters; actual glyph coverage depends on the glasses font.
+
+ESC Status preview uses the same lazy decoder as the radio. Set `escSignature` and `escStatusWord` in the preview-only fields (decimal 75 and 64 gives Kontronik BEC undervoltage; word 524288 gives current limit). Empty fields show NO ESC DATA. The exporter includes error, warning and absent-data examples. Manufacturer support and the Kontronik V4 limitation match the shared decoder.
