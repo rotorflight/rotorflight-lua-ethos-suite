@@ -35,6 +35,7 @@ lcd = setmetatable({
 }, {__index = function() return function() end end})
 
 local dialogs = {}
+local uiOrder = {}   -- "close" (progress) / "dialog" / "focus", in call order
 local progress = nil
 local field = setmetatable({}, {__index = function() return function() end end})
 form = {
@@ -43,14 +44,14 @@ form = {
   addLine = function() return field end,
   addChoiceField = function() return field end,
   getFieldSlots = function() return {{x = 0, y = 0, w = 100, h = 30}} end,
-  openDialog = function(d) dialogs[#dialogs + 1] = d end,
+  openDialog = function(d) dialogs[#dialogs + 1] = d; uiOrder[#uiOrder + 1] = "dialog" end,
   openProgressDialog = function(o)
     progress = {msgs = {o.message}, closed = false}
     return {
       value = function() end,
       closeAllowed = function() end,
       message = function(_, m) progress.msgs[#progress.msgs + 1] = m end,
-      close = function() progress.closed = true end,
+      close = function() progress.closed = true; uiOrder[#uiOrder + 1] = "close" end,
     }
   end,
 }
@@ -67,7 +68,8 @@ local cache = {
   ["app/header.lua"] = {build = function(_, o)
     onSave, onTool = o.onSave, o.onTool
     return {setSaveEnabled = function(e) saveEnabled = e end,
-      setToolEnabled = function(e) toolEnabled = e end, focusMenu = function() end,
+      setToolEnabled = function(e) toolEnabled = e end,
+      focusMenu = function() uiOrder[#uiOrder + 1] = "focus" end,
       focusReload = function() end}
   end},
 }
@@ -893,6 +895,20 @@ do
   check("the pilot is told the tune changed", lastMessage():find("tune_advisor.err_changed", 1, true) ~= nil,
     lastMessage())
   flightAxisFields[1] = nil
+end
+
+-- A form focus call made while a dialog is open moves focus to the page
+-- behind it: on a radio without a touch screen (X14) the dialog's buttons
+-- can then not be reached, and Enter presses Save under it.
+do
+  local behind, before = 0, 0
+  for i = 3, #uiOrder do
+    local a, b, c = uiOrder[i - 2], uiOrder[i - 1], uiOrder[i]
+    if a == "close" and b == "dialog" and c == "focus" then behind = behind + 1 end
+    if a == "close" and b == "focus" and c == "dialog" then before = before + 1 end
+  end
+  check("the outcome dialog opens after the page is refocused, not before", behind == 0 and before > 0,
+    behind .. " refocused behind the dialog, " .. before .. " before it")
 end
 
 print()
