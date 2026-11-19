@@ -1,5 +1,5 @@
 -- Desktop adapter: run the actual suite widget with a recording glasses API.
-return function(root, widgetSource)
+return function(root, widgetSource, decoderSources)
   local handlers, definition, widget, frame = {}, nil, nil, {commands = {}}
   local clock, bitmap, generation, selected = 0, nil, 0, nil
   local settings = {activelook = {}, general = {}, events = {}}
@@ -19,7 +19,12 @@ return function(root, widgetSource)
       temperatureUnit = function(value) return tonumber(value.general.temperature_unit) or 0 end,
     },
   }
-  package.loaded["rfsuite.lib.require"] = function(path) return assert(modules[path], path) end
+  package.loaded["rfsuite.lib.require"] = function(path)
+    if modules[path] == nil and decoderSources[path] then
+      modules[path] = assert(load(decoderSources[path], "@" .. root .. path))()
+    end
+    return assert(modules[path], path)
+  end
   os.clock = function() return clock end
   system = {registerGlassesWidget = function(value) definition = value end, getSource = function() return nil end}
   glasses = {

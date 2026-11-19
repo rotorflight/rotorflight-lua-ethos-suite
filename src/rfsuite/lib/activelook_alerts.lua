@@ -8,6 +8,30 @@ local huge = math.huge
 local ESC_DELAY = 2
 local ESC_HYSTERESIS = 5
 local PREVIEW_GOVERNOR_STATES = {7, 8}
+local escDecoder
+
+-- Validate before calling the shared decoder (which accepts fractional/raw values).
+-- Cache the verdict per widget: decode allocates only when telemetry changes.
+local function escVerdict(state, data)
+  local sig, word = tonumber(data.escSignature), tonumber(data.escStatusWord)
+  if data.connected ~= true or not sig or not word or sig ~= sig or word ~= word
+      or sig % 1 ~= 0 or word % 1 ~= 0 or sig < 1 or sig > 255
+      or word < -2147483648 or word > 4294967295 then
+    sig, word = nil, nil
+  end
+  if not state.escSeeded or state.escSignature ~= sig or state.escWord ~= word then
+    state.escSeeded, state.escSignature, state.escWord = true, sig, word
+    state.escVerdict = nil
+    if sig then
+      if not escDecoder then
+        local requireModule = package.loaded["rfsuite.lib.require"] or assert(loadfile("lib/require.lua"))()
+        escDecoder = requireModule("lib/esc_status.lua")
+      end
+      state.escVerdict = escDecoder.decode(sig, word)
+    end
+  end
+  return state.escVerdict
+end
 
 local function number(value)
   value = tonumber(value)
@@ -28,6 +52,8 @@ function alerts.new(settings)
     link = {kind = "rf_link", remaining = 0},
     lost = {kind = "governor_lost", remaining = 0},
     temp = {kind = "esc_temp", remaining = 0},
+    esc = {kind = "esc_status", remaining = 0, count = 0},
+    escWarning = {kind = "esc_status", remaining = 0, count = 0},
     fuel = {kind = "low_fuel", remaining = 0},
     status = {kind = "governor_status", remaining = 0},
     preview = {kind = "low_fuel", blinkOn = true}}
@@ -37,6 +63,12 @@ function alerts.reset(state)
   clear(state.link)
   clear(state.lost)
   clear(state.temp)
+  clear(state.esc)
+  clear(state.escWarning)
+  state.esc.text, state.esc.level, state.esc.word, state.esc.family = nil, nil, nil, nil
+  state.escWarning.text, state.escWarning.level, state.escWarning.word, state.escWarning.family = nil, nil, nil, nil
+  state.escSeeded, state.escVerdict, state.escSignature, state.escWord = nil, nil, nil, nil
+  state.preview.text, state.preview.level = nil, nil
   clear(state.fuel)
   clear(state.status)
   state.active = nil
@@ -78,11 +110,31 @@ local function cancel(state, entry)
   clear(entry)
 end
 
+local function updateEsc(state, entry, verdict, show, flying, settings)
+  if not flying or not settings.esc_status_warning then
+    cancel(state, entry)
+  elseif show then
+    if not entry.latched or entry.text ~= verdict.text or entry.level ~= verdict.level
+        or entry.word ~= verdict.word or entry.family ~= verdict.family then
+      start(entry, settings.esc_status_seconds, settings.esc_status_repeats)
+      entry.text, entry.level, entry.word, entry.family = verdict.text, verdict.level, verdict.word, verdict.family
+    end
+    entry.condition = true
+  elseif entry.count > 1 then
+    cancel(state, entry)
+  else
+    -- Keep the first display, including while preempted, but stop repeats.
+    entry.condition, entry.latched, entry.nextAt = false, false, nil
+  end
+end
+
 function alerts.configure(state, settings)
   state.settings = settings
   if not settings.rf_link_warning then cancel(state, state.link) end
   if not settings.low_fuel_warning then cancel(state, state.fuel) end
   if not settings.esc_temp_warning then cancel(state, state.temp) end
+  if not settings.esc_status_warning or not settings.esc_status_errors then cancel(state, state.esc) end
+  if not settings.esc_status_warning or not settings.esc_status_warnings then cancel(state, state.escWarning) end
   if not settings.governor_lost_warning then cancel(state, state.lost) end
   if not settings.governor_status_overlays then cancel(state, state.status) end
 end
@@ -91,12 +143,13 @@ end
 function alerts.setPreview(state, mode, now)
   advance(state, now)
   state.paused = mode ~= nil
-  if mode == "low_fuel" or mode == "esc_temp" or mode == "governor_lost" or mode == "governor_status" or mode == "rf_link" then
+  if mode == "low_fuel" or mode == "esc_temp" or mode == "esc_status" or mode == "governor_lost" or mode == "governor_status" or mode == "rf_link" then
     state.previewStart = now
     state.previewMode = mode
     state.preview.kind = mode
   else
     state.previewMode = nil
+    state.preview.text, state.preview.level = nil, nil
   end
   cancel(state, state.status)
 end
@@ -110,6 +163,7 @@ function alerts.update(state, data, phase, now)
   end
   local settings = state.settings
   if not settings.enabled then alerts.reset(state); state.lastAt = now; return end
+  if settings.esc_status_warning or state.previewMode == "esc_status" then escVerdict(state, data) end
   local fuel = number(data.fuelPercent)
   local seeded = state.fuelSeeded
   if fuel then state.fuelSeeded = true end
@@ -120,6 +174,10 @@ function alerts.update(state, data, phase, now)
   if governor then state.previousGovernor = governor end
   local armed = data.isArmed == true
   local flying = armed and phase == "inflight"
+  local verdict = state.escVerdict
+  local level = verdict and not verdict.transient and verdict.level
+  updateEsc(state, state.esc, verdict, level == 3 and settings.esc_status_errors, flying, settings)
+  updateEsc(state, state.escWarning, verdict, level == 2 and settings.esc_status_warnings, flying, settings)
   if not flying then
     cancel(state, state.link)
     cancel(state, state.fuel)
@@ -227,7 +285,8 @@ function alerts.update(state, data, phase, now)
     -- Only the newest transition matters; never queue status notifications.
     cancel(state, status)
     if not state.paused and (governor == 7 or governor == 8)
-        and state.link.remaining <= 0 and state.lost.remaining <= 0 and state.temp.remaining <= 0 and state.fuel.remaining <= 0 then
+        and state.link.remaining <= 0 and state.esc.remaining <= 0 and state.escWarning.remaining <= 0
+        and state.lost.remaining <= 0 and state.temp.remaining <= 0 and state.fuel.remaining <= 0 then
       start(status, settings.governor_status_seconds)
       status.governorState = governor
       status.expiresAt = now + settings.governor_status_seconds
@@ -251,6 +310,11 @@ function alerts.current(state, now)
     if state.previewMode then
       local elapsed = now - state.previewStart
       state.preview.blinkOn = floor(elapsed) % 2 == 0
+      if state.previewMode == "esc_status" then
+        local verdict = state.escVerdict
+        state.preview.text = verdict and verdict.text or nil
+        state.preview.level = verdict and not verdict.transient and verdict.level or nil
+      end
       if state.previewMode == "governor_status" then
         state.preview.governorState = PREVIEW_GOVERNOR_STATES[floor(elapsed / 2) % #PREVIEW_GOVERNOR_STATES + 1]
       end
@@ -259,14 +323,18 @@ function alerts.current(state, now)
     return nil
   end
   repeatEntry(state.link, now)
+  repeatEntry(state.esc, now)
+  repeatEntry(state.escWarning, now)
   repeatEntry(state.temp, now)
   repeatEntry(state.fuel, now)
   local status = state.status
   if status.remaining > 0 and now >= status.expiresAt then cancel(state, status) end
   local nextAlert
   if state.link.remaining > 0 then nextAlert = state.link
+  elseif state.esc.remaining > 0 then nextAlert = state.esc
   elseif state.lost.remaining > 0 then nextAlert = state.lost
   elseif state.temp.remaining > 0 then nextAlert = state.temp
+  elseif state.escWarning.remaining > 0 then nextAlert = state.escWarning
   elseif state.fuel.remaining > 0 then nextAlert = state.fuel
   elseif status.remaining > 0 then nextAlert = status end
   if nextAlert and nextAlert ~= status then cancel(state, status) end

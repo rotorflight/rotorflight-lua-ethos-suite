@@ -2091,11 +2091,11 @@
           "max_length": 4
         },
         "activelook_low_fuel_seconds": {
-          "english": "Warning Duration",
-          "translation": "Durée de l'alerte",
+          "english": "Display duration",
+          "translation": "Durée d’affichage",
           "needs_translation": false,
           "reverse_text": false,
-          "max_length": 16
+          "max_length": 17
         },
         "activelook_inflight_fuel_icon": {
           "english": "Smart Fuel icon",
@@ -2898,6 +2898,84 @@
           "needs_translation": false,
           "translation": "Alerte Armed tab. de bord",
           "reverse_text": false
+        },
+        "activelook_esc_status": {
+          "english": "ESC Status",
+          "translation": "État ESC",
+          "needs_translation": false,
+          "max_length": 10
+        },
+        "activelook_esc_status_warning": {
+          "english": "ESC Status Warning",
+          "translation": "Alertes état ESC",
+          "needs_translation": false,
+          "max_length": 18
+        },
+        "activelook_esc_offline": {
+          "english": "Connect to check",
+          "translation": "Connecter pour tester",
+          "needs_translation": false,
+          "max_length": 21
+        },
+        "activelook_esc_missing": {
+          "english": "Telemetry missing",
+          "translation": "Télémétrie absente",
+          "needs_translation": false,
+          "max_length": 18
+        },
+        "activelook_esc_unsupported": {
+          "english": "No status support",
+          "translation": "État non pris en charge",
+          "needs_translation": false,
+          "max_length": 23
+        },
+        "activelook_esc_generic": {
+          "english": "Generic faults only",
+          "translation": "Défauts généraux seuls",
+          "needs_translation": false,
+          "max_length": 22
+        },
+        "activelook_esc_available": {
+          "english": "Status available",
+          "translation": "État disponible",
+          "needs_translation": false,
+          "max_length": 16
+        },
+        "activelook_esc_setup": {
+          "english": "Set up telemetry",
+          "translation": "Régler télémétrie",
+          "needs_translation": false,
+          "max_length": 21
+        },
+        "activelook_esc_messages": {
+          "english": "Show messages",
+          "translation": "Afficher messages",
+          "needs_translation": false,
+          "max_length": 18
+        },
+        "activelook_esc_messages_all": {
+          "english": "Errors and warnings",
+          "translation": "Erreurs et alertes",
+          "needs_translation": false,
+          "max_length": 20
+        },
+        "activelook_esc_messages_errors": {
+          "english": "Errors only",
+          "translation": "Erreurs seules",
+          "needs_translation": false,
+          "max_length": 14
+        },
+        "activelook_esc_messages_warnings": {
+          "english": "Warnings only",
+          "translation": "Alertes seules",
+          "needs_translation": false,
+          "max_length": 14
+        },
+        "activelook_esc_telemetry_help": {
+          "english": "Requires ESC1 Status and ESC1 Model ID telemetry. Use Set up telemetry to select both sensors, then save on the Telemetry page. ESC telemetry must already be configured on the flight controller.",
+          "translation": "Nécessite les capteurs ESC1 Status et ESC1 Model ID. Dans Régler télémétrie, sélectionnez les deux capteurs et enregistrez sur la page Télémétrie. La télémétrie ESC doit déjà être configurée sur le contrôleur de vol.",
+          "needs_translation": false,
+          "max_length": 216
         }
       },
       "telemetry": {
@@ -14655,6 +14733,24 @@
         "needs_translation": false,
         "max_length": 5,
         "reverse_text": false
+      },
+      "alert_esc_error": {
+        "english": "ESC ERROR",
+        "translation": "ERREUR ESC",
+        "needs_translation": false,
+        "max_length": 10
+      },
+      "alert_esc_warning": {
+        "english": "ESC WARNING",
+        "translation": "ALERTE ESC",
+        "needs_translation": false,
+        "max_length": 11
+      },
+      "alert_no_esc_data": {
+        "english": "NO ESC DATA",
+        "translation": "PAS DE DONNÉES ESC",
+        "needs_translation": false,
+        "max_length": 18
       }
     }
   }

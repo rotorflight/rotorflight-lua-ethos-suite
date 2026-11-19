@@ -286,6 +286,7 @@
               <option value="low_fuel">Smart Fuel</option>
               <option value="esc_temp">ESC Temperature High</option>
               <option value="rf_link">RF Link Low</option>
+              <option value="esc_status">ESC Status (live data / no data)</option>
               <option value="governor_lost">Governor LOST HS</option>
               <option value="governor_status">Governor status (cycles in preview)</option>
             </select>
@@ -380,6 +381,8 @@
                 <label class="field"><span class="field-label">Link unit</span><select id="link-unit"><option value="db">RSSI (dB)</option><option value="percent">VFR / LQ (%)</option></select></label>
                 <label class="field"><span class="field-label">Timer · s</span><input data-value="timer" type="number" min="0" max="3600" step="1" value="92"></label>
                 <label class="field"><span class="field-label">RSSI / VFR / LQ</span><input data-value="link" type="number" min="0" max="100" step="1" value="82"></label>
+                <label class="field"><span class="field-label">ESC signature (decimal, 75 = Kontronik)</span><input data-value="escSignature" type="number" min="0" max="255" step="1"></label>
+                <label class="field"><span class="field-label">ESC status word (64 = BEC undervoltage)</span><input data-value="escStatusWord" type="number" min="0" max="4294967295" step="1"></label>
               </div>
             </section>
           </div>
@@ -467,6 +470,11 @@
         ["esc_temp_repeats", "ESC displays", 2, 0, 10],
         ["esc_temp_seconds", "ESC duration (s)", 5, 3, 30],
         ["esc_temp_icon", "ESC icon", true],
+        ["esc_status_warning", "ESC status warning", false],
+        ["esc_status_errors", "Show ESC errors", true],
+        ["esc_status_warnings", "Show ESC warnings", true],
+        ["esc_status_seconds", "ESC status duration (s)", 5, 3, 30],
+        ["esc_status_repeats", "ESC status displays", 2, 1, 10],
         ["rf_link_warning", "RF link warning", false],
         ["rf_link_icon", "RF link icon", true],
         ["rf_link_limit", "RSSI limit (dB)", 42, 1, 100],
@@ -876,7 +884,7 @@
           else if (key === "governorState") {
             sensors.governorState = Number(input.value);
             sensors.governor = input.selectedOptions[0]?.textContent || "UNKNOWN";
-          } else sensors[key] = Number(input.value);
+          } else sensors[key] = input.value === "" ? null : Number(input.value);
           if (phaseSelection === "auto") updateAutomaticMode();
           else draw();
         };

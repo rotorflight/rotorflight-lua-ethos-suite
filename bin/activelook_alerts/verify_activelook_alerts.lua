@@ -1,6 +1,11 @@
 -- Real engine + real widget tests; no FC, BLE or GUI required. Run with lua5.4.
 local source = debug.getinfo(1, "S").source:gsub("^@", ""):gsub("\\", "/")
 local root = (source:match("^(.*)bin/activelook_alerts/") or "./") .. "src/rfsuite/"
+local decoderModules = {}
+package.loaded["rfsuite.lib.require"] = function(path)
+  if not decoderModules[path] then decoderModules[path] = assert(loadfile(root .. path))() end
+  return decoderModules[path]
+end
 local config = assert(loadfile(root .. "lib/activelook_config.lua"))()
 local alerts = assert(loadfile(root .. "lib/activelook_alerts.lua"))()
 local checks = 0
@@ -40,6 +45,11 @@ do
       end
     end
   end
+  for _, enabled in ipairs({true, false, "true", "false"}) do
+    local legacy = config.withDefaults({esc_status_warning = enabled, esc_status_errors = "false", esc_status_warnings = 0})
+    check("legacy empty filters keep automatic alerts off", not legacy.esc_status_warning and legacy.esc_status_errors and legacy.esc_status_warnings)
+    check("legacy filter migration is idempotent", config.normalize(legacy) == legacy and not legacy.esc_status_warning)
+  end
   local owned = {low_fuel_seconds = "99", layout_inflight = "invalid", inflight_1 = "invalid", legacy = 42}
   local separate = config.withDefaults(owned)
   check("public normalization leaves input untouched", owned.low_fuel_seconds == "99" and owned.enabled == nil)
@@ -61,6 +71,7 @@ do
   local numbers = {
     low_fuel_seconds = {3, 30}, low_fuel_repeats = {1, 10},
     esc_temp_limit = {60, 300}, esc_temp_seconds = {3, 30}, esc_temp_repeats = {0, 10},
+    esc_status_seconds = {3, 30}, esc_status_repeats = {1, 10},
     rf_link_limit = {1, 100}, rf_link_percent_limit = {1, 100},
     rf_link_seconds = {3, 30}, rf_link_repeats = {1, 10},
     governor_lost_seconds = {3, 30}, governor_status_seconds = {1, 5},
@@ -297,6 +308,144 @@ do
   check("new settings clamped", clamped.esc_temp_limit == 300 and clamped.governor_status_seconds == 5 and clamped.governor_lost_seconds == 3)
 end
 
+-- Shared decoder, event retention, priority, bounded repeats and preview isolation.
+do
+  local e, data, sample, settings = fixture({esc_status_warning = true, esc_status_seconds = 3,
+    esc_status_repeats = 2, rf_link_warning = true, governor_lost_warning = true,
+    low_fuel_warning = true, esc_temp_warning = true})
+  check("ESC OK is silent", sample(0, {escSignature = 0x4B, escStatusWord = 0}) == nil)
+  local warning = sample(1, {escStatusWord = 8})
+  check("shared decoder warning", warning.kind == "esc_status" and warning.level == 2)
+  local critical = sample(2, {escStatusWord = 64, linkQuality = 30})
+  check("warning to error starts new event", critical.level == 3 and critical.remaining == 3 and critical.count == 1)
+  check("same word spends rather than restarts budget", sample(3).remaining == 2)
+  check("RF interrupts ESC error", sample(4).kind == "rf_link")
+  sample(4.1, {escStatusWord = 0})
+  check("recovery cancels repeats but retains pending display", not e.esc.condition and e.esc.nextAt == nil and e.esc.remaining > 0)
+  check("ESC resumes after RF", sample(9, {linkQuality = 90}).kind == "esc_status")
+  check("interrupted ESC warning resumes after recovered error", sample(12).level == 2)
+  check("recovered events finish without repeats", sample(15) == nil and sample(20) == nil)
+  sample(21, {escStatusWord = 8, tempEsc = 100})
+  check("temperature outranks ESC warning", sample(23).kind == "esc_temp")
+  check("ESC error outranks temperature", sample(24, {escStatusWord = 64}).level == 3)
+  sample(25, {governorState = 6})
+  check("ESC error outranks lost headspeed", alerts.current(e, 25).kind == "esc_status")
+  check("downgrade retains initial ESC error", sample(26, {escStatusWord = 8}).level == 3)
+  check("lost headspeed outranks ESC warning after error finishes", sample(27).kind == "governor_lost")
+  check("disarm clears ESC event", sample(27.1, {isArmed = false}) == nil and e.esc.remaining == 0)
+  sample(28, {isArmed = true, escStatusWord = 64})
+  check("disconnect clears ESC event", sample(29, {connected = false}) == nil and e.esc.remaining == 0)
+  alerts.setPreview(e, "esc_status", 30)
+  check("preview without telemetry never says OK", sample(30).kind == "esc_status" and alerts.current(e,30).text == nil)
+  sample(31, {connected = true, isArmed = false, escStatusWord = 64})
+  check("preview displays decoded error on bench", alerts.current(e,31).level == 3 and e.esc.count == 0)
+  sample(32, {escStatusWord = 0})
+  check("preview healthy status is neutral", alerts.current(e,32).level == 1)
+  alerts.setPreview(e, nil, 33)
+  check("preview closes to normal layout", alerts.current(e,33) == nil)
+end
+do
+  local e, data, sample = fixture({esc_status_warning = true, esc_status_seconds = 3})
+  for _, sig in ipairs({0x01, 0xC8, 0x9B, 0xC1, 0xC2, 0xCC, 0xFF}) do
+    check("unsupported/transient signature is silent " .. sig, sample(0, {escSignature = sig, escStatusWord = 64}) == nil)
+  end
+  data.escSignature = 0x4B
+  for _, word in ipairs({false, "invalid", 0/0, math.huge, -math.huge, 1.5, 4294967296, -2147483649}) do
+    check("invalid ESC data is silent", sample(1, {escStatusWord = word}) == nil)
+  end
+  data.escStatusWord = nil
+  check("missing status is silent", sample(2) == nil)
+  sample(3, {escStatusWord = 64})
+  check("first error display completes", sample(6) == nil)
+  check("repeat gap", sample(8.9) == nil)
+  check("second error display", sample(9).kind == "esc_status" and e.esc.count == 2)
+  check("identical error cannot exceed budget", sample(12) == nil and sample(100) == nil)
+  sample(101, {escStatusWord = 0})
+  check("new episode rearms", sample(102, {escStatusWord = 64}).count == 1)
+  local settings = e.settings
+  settings.esc_status_errors = false
+  alerts.configure(e, settings)
+  check("error filter cancels display", sample(103) == nil)
+  settings.esc_status_warnings = false
+  check("warning filter suppresses warning", sample(104, {escStatusWord = 8}) == nil)
+  settings.esc_status_warning = false
+  check("master switch suppresses error", sample(105, {escStatusWord = 64}) == nil)
+end
+do
+  local e, data, sample = fixture({esc_status_warning = true, esc_status_seconds = 3})
+  sample(0, {escSignature = 0x4B, escStatusWord = 64})
+  sample(3)
+  check("ESC repeat starts while condition holds", sample(6).count == 2)
+  check("recovery stops an ongoing repeat", sample(7, {escStatusWord = 0}) == nil and e.esc.remaining == 0)
+end
+do
+  local e, data, sample = fixture({esc_status_warning = true})
+  sample(0, {escSignature = 0x4B, escStatusWord = 64})
+  collectgarbage("collect"); collectgarbage("stop")
+  local before = collectgarbage("count")
+  local started = os.clock()
+  for i = 1, 10000 do alerts.update(e, data, "inflight", i / 1000); alerts.current(e, i / 1000) end
+  local growth = collectgarbage("count") - before
+  collectgarbage("restart")
+  check("unchanged ESC telemetry allocates no growing structures", growth < 2)
+  print(string.format("ESC unchanged path: 10000 updates, heap growth %.3f KiB, %.3f ms", growth, (os.clock() - started) * 1000))
+end
+
+do
+  local e, data, sample = fixture({esc_status_warning = true, rf_link_warning = true, rf_link_repeats = 1,
+    esc_status_seconds = 3, low_fuel_warning = true})
+  sample(0, {linkQuality = 20})
+  sample(2)
+  sample(3, {escSignature = 0x4B, escStatusWord = 64, fuelPercent = 0})
+  sample(3.1, {escStatusWord = 0})
+  check("one-sample ESC event survives behind RF", e.esc.remaining == 3 and not e.esc.condition)
+  check("short ESC event gets its first display", sample(7, {linkQuality = 90}).kind == "esc_status")
+  check("fuel resumes after short ESC event", sample(10).kind == "low_fuel")
+  check("short event never repeats", e.esc.nextAt == nil)
+  sample(11, {isArmed = false})
+  check("flight end clears all ESC budgets", e.esc.remaining == 0 and e.esc.nextAt == nil)
+end
+
+-- A downgraded warning must not erase an error's initial visible budget.
+do
+  for _, signature in ipairs({0x4B, 0xA0}) do
+    local errorWord = signature == 0x4B and 64 or 16
+    local warningWord = signature == 0x4B and 8 or 2
+    local e, data, sample = fixture({esc_status_warning = true, esc_status_seconds = 3})
+    sample(0, {escSignature = signature, escStatusWord = errorWord})
+    local errorText = e.esc.text
+    check("downgrade preserves pending error " .. signature, sample(1, {escStatusWord = warningWord}).text == errorText and e.esc.remaining == 2)
+    sample(2, {escStatusWord = 0})
+    check("warning follows completed initial error " .. signature, sample(3).level == 2)
+    check("recovered error and warning do not repeat " .. signature, sample(6) == nil and sample(20) == nil)
+    sample(21, {escStatusWord = errorWord})
+    sample(22, {escStatusWord = warningWord})
+    check("disarm clears both severity budgets " .. signature, sample(23, {isArmed = false}) == nil and e.esc.remaining == 0 and e.escWarning.remaining == 0)
+  end
+end
+do
+  local e, data, sample = fixture({esc_status_warning = true, esc_status_seconds = 3, rf_link_warning = true, rf_link_repeats = 1})
+  sample(0, {linkQuality = 20})
+  sample(2)
+  sample(3, {escSignature = 0x4B, escStatusWord = 64})
+  sample(4, {escStatusWord = 8})
+  sample(5, {escStatusWord = 0})
+  check("RF preemption retains downgraded error", sample(7, {linkQuality = 90}).level == 3 and e.esc.remaining == 3)
+  check("separate warning follows retained error", sample(10).level == 2)
+  check("recovery ends both retained first displays", sample(13) == nil)
+end
+
+-- Persistent downgraded warnings retain their own finite repeat budget.
+do
+  local e, data, sample = fixture({esc_status_warning = true, esc_status_seconds = 3})
+  sample(0, {escSignature = 0x4B, escStatusWord = 64})
+  sample(1, {escStatusWord = 8})
+  check("persistent warning waits for error", sample(3).level == 2)
+  check("warning repeat gap follows visible time", sample(6) == nil)
+  check("warning has its own repeat budget", sample(9).level == 2 and e.escWarning.count == 2 and e.esc.nextAt == nil)
+  check("recovery stops warning repeat", sample(10, {escStatusWord = 0}) == nil)
+end
+
 -- Integrate the actual widget with session flight statistics against fake glasses.
 local oldClock = os.clock
 local now, draws, bitmaps = 0, 0, 0
@@ -312,6 +461,7 @@ local modules = {
   ["lib/bus.lua"] = {subscribe = function(k, f) handlers[k] = f; return f end, unsubscribe = function(k) handlers[k] = nil end},
   ["lib/settings_store.lua"] = store, ["lib/activelook_config.lua"] = config,
   ["lib/activelook_alerts.lua"] = alerts,
+  ["lib/esc_status.lua"] = decoderModules["lib/esc_status.lua"],
   ["lib/engine_type.lua"] = assert(loadfile(root .. "lib/engine_type.lua"))(),
   ["lib/flight_stats.lua"] = assert(loadfile(root .. "lib/flight_stats.lua"))(),
 }
@@ -452,21 +602,36 @@ os.clock = oldClock
 do
   local pageSettings = {general = {temperature_unit = 1}, events = {escalertvalue = 100}, activelook = {}}
   local fields, ordered, panels, changes, line, preview = {}, {}, {}, 0, nil, nil
+  local pageCleanup, setupButton, destination
+  local staticFields = {}
   modules["lib/bus.lua"].publish = function(topic, action) preview = action.previewMode end
   modules["app/pages/settings_activelook_common.lua"] = {openPage = function(title, opts, build)
-    build(pageSettings, function() changes = changes + 1 end)
+    pageCleanup = build(pageSettings, function() changes = changes + 1 end, function(fn) destination = fn end)
   end}
   local function field(get, set)
     local f = {get = get, set = set, enableCalls = 0,
       enable = function(self, value) self.enabled = value; self.enableCalls = self.enableCalls + 1 end,
-      suffix = function(self, value) self.unit = value end}
+      suffix = function(self, value) self.unit = value end,
+      help = function(self, value) self.helpText = value end}
     fields[line] = f
     ordered[#ordered + 1] = f
     return f
   end
   form = {addLine = function(label) line = label:gsub("^%s+", ""); return label end,
     addBooleanField = function(l, slot, get, set) return field(get, set) end,
+    addChoiceField = function(l, slot, choices, get, set) return field(get, set) end,
     addNumberField = function(l, slot, minimum, maximum, get, set) return field(get, set) end}
+  form.getFieldSlots = function() return {{x = 0, y = 0, w = 480, h = 30}} end
+  lcd = {getWindowSize = function() return 480, 320 end}
+  form.addStaticText = function(label, rect, text)
+    local f = {text = text, calls = 0, value = function(self, value) self.text = value; self.calls = self.calls + 1 end}
+    staticFields[label] = f
+    return f
+  end
+  form.addButton = function(label, rect, args)
+    setupButton = {press = args.press, enable = function(self, enabled) self.enabled = enabled end}
+    return setupButton
+  end
   EVT_OPEN, EVT_CLOSE = 1001, 1002
   form.addExpansionPanel = function(title)
     local panel = {title = title, event = function(self, handler) self.handler = handler end,
@@ -476,9 +641,40 @@ do
     return panel
   end
   assert(loadfile(root .. "app/pages/settings_activelook_alerts.lua"))().open({})
-  check("five independently expandable alert groups", #panels == 5)
+  check("six independently expandable alert groups", #panels == 6)
+  local availability = staticFields[""]
+  local function status(value) return "@i18n(app.modules.settings.activelook_esc_" .. value .. ")@" end
+  check("offline capability is explicit and setup disabled", availability.text == status("offline") and not setupButton.enabled)
+  setupButton.press(); check("offline setup cannot navigate", destination == nil)
+  handlers["session.update"]({connected = true, escSignature = 0xFD, escStatusWord = 0})
+  check("supported ESC is available and setup disabled", availability.text == "Hobbywing V5: " .. status("available") and not setupButton.enabled)
+  setupButton.press(); check("available telemetry cannot open setup", destination == nil)
+  local calls = availability.calls
+  handlers["session.update"]({connected = true, escSignature = 0xFD, escStatusWord = 1})
+  check("unchanged availability does not update UI", availability.calls == calls)
+  handlers["session.update"]({connected = true, escSignature = 0xFD})
+  check("missing status is not OK or unsupported", availability.text == "Hobbywing V5: " .. status("missing") and setupButton.enabled)
+  handlers["session.update"]({connected = true, escSignature = 0x9B})
+  check("known unsupported protocol needs no status sample", availability.text == "Hobbywing V4: " .. status("unsupported") and not setupButton.enabled)
+  handlers["session.update"]({connected = true, escSignature = 0xD0, escStatusWord = 0})
+  check("opaque protocol has generic capability", availability.text == "OMP Hobby: " .. status("generic") and not setupButton.enabled)
+  handlers["session.update"]({connected = true, escSignature = 0x01, escStatusWord = 0})
+  check("unknown ESC is explicit", availability.text == "@i18n(widgets.escstatus.unknown)@" and not setupButton.enabled)
+  handlers["session.update"]({connected = true, isArmed = true})
+  setupButton.press(); check("armed setup cannot navigate", not setupButton.enabled and destination == nil)
+  handlers["session.update"]({connected = true, isArmed = false})
+  setupButton.press(); check("setup uses guarded leave callback", type(destination) == "function")
+  local realLoadfile, childOptions = loadfile
+  loadfile = function(path, ...)
+    if path == "app/pages/telemetry.lua" then return function() return {open = function(opts) childOptions = opts end} end end
+    return realLoadfile(path, ...)
+  end
+  destination()
+  loadfile = realLoadfile
+  check("setup opens existing telemetry page with return route", childOptions and type(childOptions.onBack) == "function")
+
   check("Low Fuel initially open, other groups collapsed", panels[1].expanded
-    and not panels[2].expanded and not panels[3].expanded and not panels[4].expanded and not panels[5].expanded)
+    and not panels[2].expanded and not panels[3].expanded and not panels[4].expanded and not panels[5].expanded and not panels[6].expanded)
 
   local function f(key) return assert(fields["@i18n(app.modules.settings." .. key .. ")@"], key) end
   check("Low Fuel is the first settings group", ordered[1] == f("activelook_low_fuel_warning"))
@@ -499,17 +695,36 @@ do
   panels[2]:open(true)
   check("opening ESC selects its preview and closes Low Fuel", preview == "esc_temp" and not panels[1].expanded)
   panels[3]:open(true)
-  check("opening LOST HS switches preview exclusively", preview == "governor_lost" and not panels[2].expanded)
+  check("ESC status group previews decoded status", preview == "esc_status" and not panels[2].expanded)
+  check("ESC status dependents disabled by default", not ordered[13].enabled and not ordered[14].enabled and not ordered[15].enabled)
+  ordered[12].set(true)
+  check("ESC status enables dependent settings", ordered[13].enabled and ordered[14].enabled and ordered[15].enabled)
+  local messages = f("activelook_esc_messages")
+  check("ESC dropdown defaults to both severities", messages.get() == 1)
+  check("required sensor hint is available as field help", messages.helpText == "@i18n(app.modules.settings.activelook_esc_telemetry_help)@")
+  for choice = 1, 3 do
+    messages.set(choice)
+    check("ESC choice maps to persisted flags " .. choice, pageSettings.activelook.esc_status_errors == (choice == 1 or choice == 2)
+      and pageSettings.activelook.esc_status_warnings == (choice == 1 or choice == 3))
+    check("ESC choice reads persisted flags " .. choice, messages.get() == choice)
+  end
+  pageSettings.activelook.esc_status_errors, pageSettings.activelook.esc_status_warnings = true, false
+  check("legacy error-only flags map to dropdown", messages.get() == 2)
+  ordered[14].set(12); ordered[15].set(3); messages.set(3)
+  local savedEsc = config.withDefaults(pageSettings.activelook)
+  check("ESC status settings survive normalization", savedEsc.esc_status_warning and not savedEsc.esc_status_errors and savedEsc.esc_status_seconds == 12 and savedEsc.esc_status_repeats == 3)
   panels[4]:open(true)
-  check("RF link group previews its alert", preview == "rf_link" and not panels[3].expanded)
+  check("opening LOST HS switches preview exclusively", preview == "governor_lost" and not panels[3].expanded)
   panels[5]:open(true)
-  check("opening governor selects status preview", preview == "governor_status" and not panels[4].expanded)
-  panels[5]:open(false)
+  check("RF link group previews its alert", preview == "rf_link" and not panels[4].expanded)
+  panels[6]:open(true)
+  check("opening governor selects status preview", preview == "governor_status" and not panels[5].expanded)
+  panels[6]:open(false)
   check("closing last panel restores automatic display", preview == nil)
   local linkToggle = f("activelook_rf_link_warning")
   local linkLimit = f("activelook_rf_link_limit")
   check("link warning defaults off with 42 dB threshold", not linkToggle.get() and linkLimit.get() == 42 and linkLimit.unit == "dB" and not linkLimit.enabled)
-  local linkIcon = ordered[19]
+  local linkIcon = ordered[23]
   check("RF symbol defaults on but disabled with warning", linkIcon.get() and not linkIcon.enabled)
   linkToggle.set(true); linkLimit.set(45)
   check("RF symbol becomes editable with warning", linkIcon.enabled)
@@ -545,11 +760,12 @@ do
   local normalized = config.withDefaults(pageSettings.activelook)
   check("ESC independent zero survives normalization", normalized.esc_temp_repeats == 0
     and config.alertRepeats(normalized, pageSettings.events, "esc_temp") == 0)
-
+  pageCleanup()
+  check("capability subscription is removed on close", handlers["session.update"] == nil)
 end
 -- Shared chrome compares only ActiveLook, without repeatedly normalizing the entire suite.
 do
-  local chrome, dirty, refresh, cleanup, dialog
+  local chrome, dirty, refresh, cleanup, dialog, leaveTo
   local saves, publishes = 0, 0
   local originalLoad, originalClone, originalSave, originalSame = store.load, store.clone, store.save, store.same
   local pageSettings = {general = {temperature_unit = 0}, events = {escalertvalue = 90}, activelook = config.withDefaults({})}
@@ -575,8 +791,8 @@ do
   form.clear = function() end
   form.openDialog = function(args) dialog = args end
   local common = assert(loadfile(root .. "app/pages/settings_activelook_common.lua"))()
-  common.openPage("Alerts", {setCleanupHandler = function(f) if f then cleanup = f end end}, function(s, update)
-    refresh = update
+  common.openPage("Alerts", {setCleanupHandler = function(f) if f then cleanup = f end end}, function(s, update, leave)
+    refresh, leaveTo = update, leave
   end)
   check("shared page starts clean", dirty == false)
   pageSettings.activelook.governor_lost_warning = true; refresh()
@@ -584,8 +800,23 @@ do
   chrome.onSave(); dialog.buttons[1].action()
   check("save resets dirty state", saves == 1 and dirty == false)
   check("save publishes settings/reset", publishes == 2)
+  local navigated = false
+  pageSettings.activelook.esc_status_warning = true; refresh()
+  leaveTo(function() navigated = true end)
+  check("shortcut asks before discarding edits", not navigated and dialog.canSave)
+  dialog.save()
+  check("shortcut save stays on page", not navigated and saves == 2)
+  pageSettings.activelook.esc_status_seconds = 12; refresh()
+  local canLeave = true
+  leaveTo(function() navigated = true end, function() return canLeave end)
+  canLeave = false
+  dialog.discard()
+  check("navigation guard rechecks after confirmation delay", not navigated)
+  canLeave = true
+  dialog.discard()
+  check("discard shortcut navigates after cleanup", navigated)
   cleanup(); cleanup()
-  check("shared cleanup is idempotent", publishes == 3)
+  check("shared cleanup is idempotent", publishes == 5)
   store.load, store.clone, store.save, store.same = originalLoad, originalClone, originalSave, originalSame
 end
 
