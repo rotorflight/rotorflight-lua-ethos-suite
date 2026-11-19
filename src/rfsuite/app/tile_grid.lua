@@ -30,17 +30,18 @@ local function closestProfile(windowWidth, windowHeight)
 end
 
 -- Standard tile grid uses profile.large across all resolutions:
--- - 784x406 (X20 / 800x480): 6 columns, 120 px width, FONT_S
--- - 632x314 (X14 / 640x360): 5 columns, 118 px width, FONT_XS
--- - 472x288 (X18 / 480x320): 4 columns, 110 px width, FONT_XS
+-- - 784x406 (X20 / 800x480): 6 columns, 120 px width
+-- - 632x314 (X14 / 640x360): 5 columns, 118 px width
+-- - 472x288 (X18 / 480x320): 4 columns, 110 px width
 -- This gives consistent, touch-friendly ~110-120 px tile widths on all radios
 -- and avoids cramming 5 narrow columns (89 px) onto 480x320 screens (Issue #2299).
-local function chooseSpec(profile, windowWidth)
-  local font = FONT_XS
-  if windowWidth > LOW_RES_WIDTH then
-    font = FONT_S
-  end
-  return profile.large or profile, font
+-- Every tile on every screen uses FONT_S, so the tiles of all screens look alike.
+-- A title too wide for its tile is cut by fitLabel() ("Motor Overr..."): that is
+-- accepted for the larger, easier-to-read font.
+local TILE_FONT = FONT_S
+
+local function chooseSpec(profile)
+  return profile.large or profile, TILE_FONT
 end
 
 local function fitSpecToWindow(spec, windowWidth)
@@ -65,7 +66,7 @@ function tile_grid.metrics(windowWidth, windowHeight)
     windowWidth, windowHeight = lcd.getWindowSize()
   end
   local profile = closestProfile(windowWidth, windowHeight)
-  local spec, tileFont = chooseSpec(profile, windowWidth)
+  local spec, tileFont = chooseSpec(profile)
   local numPerRow, tileW, tileH, tilePadding = fitSpecToWindow(spec, windowWidth)
   return numPerRow, tileW, tileH, tilePadding, tileFont
 end

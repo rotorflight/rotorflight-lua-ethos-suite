@@ -87,6 +87,8 @@ local function open(opts)
   local fields = {}
   local isArmed = nil
   local sessionHandler = nil
+  -- The read's reply, kept until the page's own wakeup applies it (see applyReply()).
+  local pendingReply = nil
 
   local function closeDialog(focusFn)
     if not dialog then return end
@@ -150,8 +152,8 @@ local function open(opts)
     if opts.onBack then opts.onBack() end
   end
 
-  -- One row per channel the board reports (#2667): built when the first reply is in,
-  -- so a CRSF board, which reports 16, gets 16 rows and AUX 12 and 13 are not shown.
+  -- One row per channel the board reports (#2667): built for the first reply, so a
+  -- CRSF board, which reports 16, gets 16 rows and AUX 12 and 13 are not shown.
   local function buildRows(count)
     local slotsHint = {0, 0}
     for i = 1, count do
@@ -183,22 +185,39 @@ local function open(opts)
     showProgress(MSG_LOADING_TITLE, MSG_LOADING_BODY)
     bus.publish("msp.request", rxfail.buildReadMessage(function(data)
       if disposed then return end
-      -- The rows are built on the first reply, for the channels it holds. A later
-      -- reload keeps those rows and reads the same number of channels.
-      local count = #fields > 0 and #fields or math.min(#data.channels, #CHANNEL_LABELS)
-      channels = cloneChannels(data.channels, count)
-      original = cloneChannels(data.channels, count)
-      loaded = true
-      dirty = false
-      if #fields == 0 then buildRows(count) end
-      applyBusy(false)
-      closeDialog(focusFn)
-      if form.invalidate then form.invalidate() end
+      -- Kept for the page's wakeup: the reply callback runs under the MSP queue, with
+      -- the progress dialog open, and form.addLine() returns nil there.
+      pendingReply = {data = data, focusFn = focusFn}
     end, function()
       if disposed then return end
       applyBusy(false)
       closeDialog(focusFn)
     end))
+  end
+
+  -- Applies the reply kept by loadData(), from the page's wakeup. The progress dialog
+  -- is closed first: rows can't be added to the page while it is open.
+  local function applyReply()
+    local reply = pendingReply
+    pendingReply = nil
+    local data = reply.data
+    -- The rows are built on the first reply, for the channels it holds. A later
+    -- reload keeps those rows and reads the same number of channels.
+    local count = #fields > 0 and #fields or math.min(#data.channels, #CHANNEL_LABELS)
+    channels = cloneChannels(data.channels, count)
+    original = cloneChannels(data.channels, count)
+    loaded = true
+    dirty = false
+    closeDialog(reply.focusFn)
+    if #fields == 0 then buildRows(count) end
+    applyBusy(false)
+    if form.invalidate then form.invalidate() end
+  end
+
+  local function wakeup()
+    if disposed then return end
+    if pendingReply then applyReply() end
+    refreshEnabled()
   end
 
   local function saveData(focusFn)
@@ -327,7 +346,7 @@ local function open(opts)
     end)
   end
   if opts.setWakeupHandler then
-    opts.setWakeupHandler(refreshEnabled)
+    opts.setWakeupHandler(wakeup)
   end
 
   loadData()

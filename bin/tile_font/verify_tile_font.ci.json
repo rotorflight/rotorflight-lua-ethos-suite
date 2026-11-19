@@ -1,0 +1,7 @@
+{
+  "id": "tile-font",
+  "name": "Every menu screen uses one tile font",
+  "step": "Check the font of the menu tiles",
+  "script": "bin/tile_font/verify_tile_font.lua",
+  "rationale": "On 800x480 radios the menu tiles are 120px wide, which leaves 108px for the title. In FONT_S, PID Bandwidth, Accelerometer, Motor Override and ELRS Telemetry are wider. #2798 moved only the screens with such a title to FONT_XS, so the tile font changed from one screen to the next. app/tile_grid.lua now gives FONT_S to the tiles of every screen size, the X18 and X14 included, and a title too wide for its tile is cut with an ellipsis: the larger font is preferred to a whole title. The harness drives the real app/tile_grid.lua with a stub lcd. It checks that the 800x480, 640x360 and 480x320 layouts all use FONT_S, that PID Bandwidth is cut with an ellipsis to fit each tile, and that the per-screen switch tile_grid.fontForTitles() is gone. Its self-test sets the tile font to FONT_XS and requires the checks to fail."
+}

@@ -3076,6 +3076,15 @@
               "translation": "Gasprotokoll"
             }
           },
+          "goosky": {
+            "name": {
+              "english": "Goosky",
+              "max_length": 6,
+              "needs_translation": false,
+              "reverse_text": false,
+              "translation": "Goosky"
+            }
+          },
           "hw5": {
             "active_freewheel": {
               "english": "Active Freewheel",

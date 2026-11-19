@@ -148,15 +148,15 @@ check("6-byte reply is reported through onError as refused", err and refused == 
 print("case 6: motor 2 channel choices")
 
 local choices = codec.MOTOR2_CHANNEL_CHOICES
-check("32 choices (Off + 1..31)", #choices == 32, #choices)
+check("32 choices (Off + 2..32)", #choices == 32, #choices)
 check("first choice is Off = 0",
   choices[1] and choices[1][1] == "@i18n(api.SRXL2_ESC_CONFIG.tbl_off)@" and choices[1][2] == 0)
 local seq = true
-for ch = 1, 31 do
-  local c = choices[ch + 1]
+for ch = 2, 32 do
+  local c = choices[ch]
   seq = seq and c ~= nil and c[2] == ch and c[1] == tostring(ch)
 end
-check("choices 2..32 are channels 1..31", seq)
+check("choices 2..32 are channels 2..32 (channel 1 is motor 1)", seq)
 
 -- ---------------------------------------------------------------------------
 print("case 7: the page and its menu row")

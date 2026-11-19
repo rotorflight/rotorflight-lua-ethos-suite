@@ -198,10 +198,13 @@ local function newServoGuard(connected)
   })
 end
 
--- Tiles from src/rfsuite/app/tool.lua:172-181 -- all of them carry an
--- escProtocolId.
+-- Tiles from src/rfsuite/app/tool.lua's esc_forward_menu -- all of them carry an
+-- escProtocolId, or an escProtocolIds list where more than one protocol lights the
+-- tile (AM32 and Goosky: 16 is the firmware's alias of 1).
 local BLHELI = { escProtocolId = 1 }
 local SCORPION = { escProtocolId = 4 }
+local AM32 = { escProtocolIds = {1, 16} }
+local GOOSKY = { escProtocolIds = {16, 1} }
 
 -- src/rfsuite/app/servos_menu entries gated by requiresServoBus; the mask in
 -- the entry is the only thing that matters to the guard.
@@ -311,6 +314,25 @@ check("case 7  the late reply can be delivered", reply(1, 1) == true)
 check("case 7  the late reply enables nothing", g.isEntryEnabled(BLHELI) == false)
 check("case 7  the second request can be answered", reply(2, 1) == true)
 check("case 7  the current reply enables the tile", g.isEntryEnabled(BLHELI) == true)
+
+-- ── case 7b: a tile lit by more than one protocol ───────────────────────────
+-- AM32 and Goosky carry {1, 16}: protocol 1 (BLHeli32) lights both, 16 (Goosky, the
+-- firmware's alias of 1) lights both, and any other protocol lights neither.
+g = newGuard()
+g.open()
+check("case 7b the request can be answered with Goosky", reply(1, 16) == true)
+check("case 7b protocol 16 lights the AM32 tile", g.isEntryEnabled(AM32) == true)
+check("case 7b protocol 16 lights the Goosky tile", g.isEntryEnabled(GOOSKY) == true)
+check("case 7b protocol 16 does not light a BLHeli-only tile", g.isEntryEnabled(BLHELI) == false)
+g = newGuard()
+g.open()
+check("case 7b the request can be answered with BLHeli32", reply(1, 1) == true)
+check("case 7b protocol 1 lights the Goosky tile", g.isEntryEnabled(GOOSKY) == true)
+g = newGuard()
+g.open()
+check("case 7b the request can be answered with Scorpion", reply(1, 4) == true)
+check("case 7b protocol 4 lights neither", g.isEntryEnabled(AM32) == false
+  and g.isEntryEnabled(GOOSKY) == false)
 
 -- ── case 8: servo_bus_guard, timeout then success ───────────────────────────
 -- The case that was NOT covered by the issue: this guard resets `attempted`
