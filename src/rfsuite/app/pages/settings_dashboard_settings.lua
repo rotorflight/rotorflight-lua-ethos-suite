@@ -48,7 +48,7 @@ local function themeVisible(theme)
   local minRes = theme and theme.minResolution
   local maxRes = theme and theme.maxResolution
   if type(minRes) ~= "table" and type(maxRes) ~= "table" then return true end
-  local version = system.getVersion and system.getVersion() or nil
+  local version = system and system.getVersion and system.getVersion() or nil
   local w, h = version and version.lcdWidth, version and version.lcdHeight
   if not (w and h) then w, h = lcd.getWindowSize() end
   if not (w and h) then return true end
