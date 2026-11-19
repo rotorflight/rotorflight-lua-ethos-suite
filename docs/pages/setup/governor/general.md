@@ -22,7 +22,7 @@ Greyed out until the flight controller answers. Read-only while the model is arm
 | Throttle type | Configures Throttle type. |
 | Idle throttle | Configures Idle throttle. Range: 0 to 250 %. Default: 0 %. |
 | Auto throttle | Configures Auto throttle. Range: 0 to 250 %. Default: 0 %. |
-| Handover throttle% | Configures Handover throttle%. Range: 0 to 50 %. Default: 20 %. |
+| Handover throttle% | Configures Handover throttle%. Range: 10 to 100 %. Default: 25 %. |
 | Throttle hold timeout | Configures Throttle hold timeout. Range: 0 to 250 s. Default: 5 s. |
 | Autorotation Timeout | Configures Autorotation Timeout. Range: 0 to 250 s. Default: 0 s. |
 
