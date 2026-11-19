@@ -52,12 +52,17 @@ local function themeKey(path)
 end
 
 -- maxResolution: a theme drawn for one screen size is hidden on anything larger, the way
--- minResolution hides a theme on anything smaller.
+-- minResolution hides a theme on anything smaller. Both are the radio's screen size
+-- (system.getVersion().lcdWidth/lcdHeight), not this page's window: inside the app the
+-- window is smaller than the screen (472 x 287 on a 480 x 320 X18), so a theme limited
+-- to 480 x 320 was hidden on the very radio it was drawn for.
 local function themeVisible(theme)
   local minRes = theme and theme.minResolution
   local maxRes = theme and theme.maxResolution
   if type(minRes) ~= "table" and type(maxRes) ~= "table" then return true end
-  local w, h = lcd.getWindowSize()
+  local version = system.getVersion and system.getVersion() or nil
+  local w, h = version and version.lcdWidth, version and version.lcdHeight
+  if not (w and h) then w, h = lcd.getWindowSize() end
   if not (w and h) then return true end
   if type(minRes) == "table" and (w < (minRes.x or 0) or h < (minRes.y or 0)) then return false end
   if type(maxRes) == "table" and (w > (maxRes.x or w) or h > (maxRes.y or h)) then return false end
