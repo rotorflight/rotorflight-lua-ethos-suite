@@ -2091,8 +2091,8 @@
           "max_length": 4
         },
         "activelook_low_fuel_seconds": {
-          "english": "Warning Duration",
-          "translation": "Durata avviso",
+          "english": "Display duration",
+          "translation": "Durata display",
           "needs_translation": false,
           "reverse_text": false,
           "max_length": 16
@@ -2905,6 +2905,84 @@
           "needs_translation": false,
           "translation": "Avviso Armed pannello",
           "reverse_text": false
+        },
+        "activelook_esc_status": {
+          "english": "ESC Status",
+          "translation": "Stato ESC",
+          "needs_translation": false,
+          "max_length": 10
+        },
+        "activelook_esc_status_warning": {
+          "english": "ESC Status Warning",
+          "translation": "Avvisi stato ESC",
+          "needs_translation": false,
+          "max_length": 18
+        },
+        "activelook_esc_offline": {
+          "english": "Connect to check",
+          "translation": "Collegare per test",
+          "needs_translation": false,
+          "max_length": 20
+        },
+        "activelook_esc_missing": {
+          "english": "Telemetry missing",
+          "translation": "Telemetria assente",
+          "needs_translation": false,
+          "max_length": 18
+        },
+        "activelook_esc_unsupported": {
+          "english": "No status support",
+          "translation": "Stato non supportato",
+          "needs_translation": false,
+          "max_length": 21
+        },
+        "activelook_esc_generic": {
+          "english": "Generic faults only",
+          "translation": "Solo guasti generici",
+          "needs_translation": false,
+          "max_length": 21
+        },
+        "activelook_esc_available": {
+          "english": "Status available",
+          "translation": "Stato disponibile",
+          "needs_translation": false,
+          "max_length": 17
+        },
+        "activelook_esc_setup": {
+          "english": "Set up telemetry",
+          "translation": "Config. telemetria",
+          "needs_translation": false,
+          "max_length": 21
+        },
+        "activelook_esc_messages": {
+          "english": "Show messages",
+          "translation": "Mostra messaggi",
+          "needs_translation": false,
+          "max_length": 18
+        },
+        "activelook_esc_messages_all": {
+          "english": "Errors and warnings",
+          "translation": "Errori e avvisi",
+          "needs_translation": false,
+          "max_length": 20
+        },
+        "activelook_esc_messages_errors": {
+          "english": "Errors only",
+          "translation": "Solo errori",
+          "needs_translation": false,
+          "max_length": 11
+        },
+        "activelook_esc_messages_warnings": {
+          "english": "Warnings only",
+          "translation": "Solo avvisi",
+          "needs_translation": false,
+          "max_length": 13
+        },
+        "activelook_esc_telemetry_help": {
+          "english": "Requires ESC1 Status and ESC1 Model ID telemetry. Use Set up telemetry to select both sensors, then save on the Telemetry page. ESC telemetry must already be configured on the flight controller.",
+          "translation": "Richiede i sensori ESC1 Status e ESC1 Model ID. In Config. telemetria selezionare entrambi i sensori e salvare nella pagina Telemetria. La telemetria ESC deve essere già configurata sulla centralina.",
+          "needs_translation": false,
+          "max_length": 199
         }
       },
       "telemetry": {
@@ -8994,11 +9072,11 @@
           "max_length": 26
         },
         "not_read": {
-          "english": "Last flight not read. It is read at the next disarm.",
-          "translation": "Last flight not read. It is read at the next disarm.",
-          "needs_translation": true,
+          "english": "Last flight not saved. Retry at the next disarm.",
+          "translation": "Volo non salvato. Nuovo tentativo al prossimo disarmo.",
+          "needs_translation": false,
           "reverse_text": false,
-          "max_length": 52
+          "max_length": 48
         }
       },
       "setup_wizard": {
@@ -14662,6 +14740,24 @@
         "needs_translation": false,
         "max_length": 5,
         "reverse_text": false
+      },
+      "alert_esc_error": {
+        "english": "ESC ERROR",
+        "translation": "ERRORE ESC",
+        "needs_translation": false,
+        "max_length": 10
+      },
+      "alert_esc_warning": {
+        "english": "ESC WARNING",
+        "translation": "AVVISO ESC",
+        "needs_translation": false,
+        "max_length": 11
+      },
+      "alert_no_esc_data": {
+        "english": "NO ESC DATA",
+        "translation": "DATI ESC ASSENTI",
+        "needs_translation": false,
+        "max_length": 16
       }
     }
   }

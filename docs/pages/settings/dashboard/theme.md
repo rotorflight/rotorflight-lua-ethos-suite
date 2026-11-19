@@ -15,6 +15,36 @@ theme** copies the preflight choice to inflight and postflight; otherwise each
 phase can be selected separately. **Disabled** on a model field uses the
 corresponding global selection.
 
+## User themes
+
+You can add your own themes as well as the shipped ones. Put each theme in a
+folder of its own under `SCRIPTS:/rfsuite.user/dashboard/`, for example
+`SCRIPTS:/rfsuite.user/dashboard/mytheme/init.lua`, with no `themes` folder in
+between. A suite update does not touch this folder, so your themes are kept.
+
+- A folder counts as a theme when it holds an `init.lua`. It is listed after
+  the shipped themes, under its folder name, in every theme field on this page.
+  The folder name can use letters, digits, `-`, `_` and `.`, but no spaces.
+- The list is read again each time this page opens, so a theme you copy to the
+  radio over USB shows up without a restart.
+- A user theme is stored as `user/<folder>`. A shipped theme is stored as
+  `system/<folder>`, so a copy named like a shipped theme is a separate choice.
+- To start a new theme, copy a shipped theme's folder from
+  `SCRIPTS:/rfsuite/widgets/dashboard/themes/` and rename it. A theme has an
+  `init.lua` and one file for each flight phase (`preflight.lua`,
+  `inflight.lua`, `postflight.lua`). It can also have a `configure.lua`, which
+  gives it its own tile in [Dashboard Settings](settings.md), and an
+  `icon.png` for that tile.
+- If a user theme cannot be loaded, the dashboard shows **Default** in its
+  place. That happens when its folder is gone, its `init.lua` or a phase file
+  has an error, or a phase file is missing. The choice stays saved, so the
+  theme comes back when you fix or restore the folder. This page shows
+  **Default** for a theme whose folder is gone, though, and saving the page
+  stores that. The error is written to the Lua log as
+  `[dashboard] user theme ... not loaded, using Default`.
+- `@i18n(...)@` tags are not translated in user themes. Write titles as the
+  plain text you want shown.
+
 ## Bastion
 
 This package registers **Bastion** as `system/bastion`. It supports 800 × 480

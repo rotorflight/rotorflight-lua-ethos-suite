@@ -2091,8 +2091,8 @@
           "max_length": 4
         },
         "activelook_low_fuel_seconds": {
-          "english": "Warning Duration",
-          "translation": "警告时长",
+          "english": "Display duration",
+          "translation": "显示时长",
           "needs_translation": false,
           "reverse_text": false,
           "max_length": 16
@@ -2905,6 +2905,84 @@
           "needs_translation": false,
           "translation": "仪表盘 Armed 警告",
           "reverse_text": false
+        },
+        "activelook_esc_status": {
+          "english": "ESC Status",
+          "translation": "电调状态",
+          "needs_translation": false,
+          "max_length": 10
+        },
+        "activelook_esc_status_warning": {
+          "english": "ESC Status Warning",
+          "translation": "电调状态警报",
+          "needs_translation": false,
+          "max_length": 18
+        },
+        "activelook_esc_offline": {
+          "english": "Connect to check",
+          "translation": "连接后检查",
+          "needs_translation": false,
+          "max_length": 20
+        },
+        "activelook_esc_missing": {
+          "english": "Telemetry missing",
+          "translation": "缺少遥测",
+          "needs_translation": false,
+          "max_length": 17
+        },
+        "activelook_esc_unsupported": {
+          "english": "No status support",
+          "translation": "不支持状态反馈",
+          "needs_translation": false,
+          "max_length": 21
+        },
+        "activelook_esc_generic": {
+          "english": "Generic faults only",
+          "translation": "仅报告一般故障",
+          "needs_translation": false,
+          "max_length": 21
+        },
+        "activelook_esc_available": {
+          "english": "Status available",
+          "translation": "状态可用",
+          "needs_translation": false,
+          "max_length": 16
+        },
+        "activelook_esc_setup": {
+          "english": "Set up telemetry",
+          "translation": "设置遥测",
+          "needs_translation": false,
+          "max_length": 21
+        },
+        "activelook_esc_messages": {
+          "english": "Show messages",
+          "translation": "显示消息",
+          "needs_translation": false,
+          "max_length": 18
+        },
+        "activelook_esc_messages_all": {
+          "english": "Errors and warnings",
+          "translation": "错误和警告",
+          "needs_translation": false,
+          "max_length": 20
+        },
+        "activelook_esc_messages_errors": {
+          "english": "Errors only",
+          "translation": "仅错误",
+          "needs_translation": false,
+          "max_length": 11
+        },
+        "activelook_esc_messages_warnings": {
+          "english": "Warnings only",
+          "translation": "仅警告",
+          "needs_translation": false,
+          "max_length": 13
+        },
+        "activelook_esc_telemetry_help": {
+          "english": "Requires ESC1 Status and ESC1 Model ID telemetry. Use Set up telemetry to select both sensors, then save on the Telemetry page. ESC telemetry must already be configured on the flight controller.",
+          "translation": "需要 ESC1 Status 和 ESC1 Model ID 遥测传感器。在“设置遥测”中选择这两个传感器，然后在遥测页面保存。飞控上的电调遥测必须已配置。",
+          "needs_translation": false,
+          "max_length": 195
         }
       },
       "telemetry": {
@@ -8994,11 +9072,11 @@
           "max_length": 26
         },
         "not_read": {
-          "english": "Last flight not read. It is read at the next disarm.",
-          "translation": "Last flight not read. It is read at the next disarm.",
-          "needs_translation": true,
+          "english": "Last flight not saved. Retry at the next disarm.",
+          "translation": "飞行记录未保存。下次解除锁定时重试。",
+          "needs_translation": false,
           "reverse_text": false,
-          "max_length": 52
+          "max_length": 48
         }
       },
       "setup_wizard": {
@@ -14662,6 +14740,24 @@
         "needs_translation": false,
         "max_length": 5,
         "reverse_text": false
+      },
+      "alert_esc_error": {
+        "english": "ESC ERROR",
+        "translation": "电调错误",
+        "needs_translation": false,
+        "max_length": 10
+      },
+      "alert_esc_warning": {
+        "english": "ESC WARNING",
+        "translation": "电调警告",
+        "needs_translation": false,
+        "max_length": 11
+      },
+      "alert_no_esc_data": {
+        "english": "NO ESC DATA",
+        "translation": "无电调数据",
+        "needs_translation": false,
+        "max_length": 15
       }
     }
   }

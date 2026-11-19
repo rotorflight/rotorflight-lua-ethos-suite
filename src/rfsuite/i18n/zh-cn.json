@@ -7417,6 +7417,78 @@
           "reverse_text": false,
           "translation": "Alerts"
         },
+        "activelook_esc_available": {
+          "english": "Status available",
+          "max_length": 16,
+          "needs_translation": false,
+          "translation": "状态可用"
+        },
+        "activelook_esc_generic": {
+          "english": "Generic faults only",
+          "max_length": 21,
+          "needs_translation": false,
+          "translation": "仅报告一般故障"
+        },
+        "activelook_esc_messages": {
+          "english": "Show messages",
+          "max_length": 18,
+          "needs_translation": false,
+          "translation": "显示消息"
+        },
+        "activelook_esc_messages_all": {
+          "english": "Errors and warnings",
+          "max_length": 20,
+          "needs_translation": false,
+          "translation": "错误和警告"
+        },
+        "activelook_esc_messages_errors": {
+          "english": "Errors only",
+          "max_length": 11,
+          "needs_translation": false,
+          "translation": "仅错误"
+        },
+        "activelook_esc_messages_warnings": {
+          "english": "Warnings only",
+          "max_length": 13,
+          "needs_translation": false,
+          "translation": "仅警告"
+        },
+        "activelook_esc_missing": {
+          "english": "Telemetry missing",
+          "max_length": 17,
+          "needs_translation": false,
+          "translation": "缺少遥测"
+        },
+        "activelook_esc_offline": {
+          "english": "Connect to check",
+          "max_length": 20,
+          "needs_translation": false,
+          "translation": "连接后检查"
+        },
+        "activelook_esc_setup": {
+          "english": "Set up telemetry",
+          "max_length": 21,
+          "needs_translation": false,
+          "translation": "设置遥测"
+        },
+        "activelook_esc_status": {
+          "english": "ESC Status",
+          "max_length": 10,
+          "needs_translation": false,
+          "translation": "电调状态"
+        },
+        "activelook_esc_status_warning": {
+          "english": "ESC Status Warning",
+          "max_length": 18,
+          "needs_translation": false,
+          "translation": "电调状态警报"
+        },
+        "activelook_esc_telemetry_help": {
+          "english": "Requires ESC1 Status and ESC1 Model ID telemetry. Use Set up telemetry to select both sensors, then save on the Telemetry page. ESC telemetry must already be configured on the flight controller.",
+          "max_length": 195,
+          "needs_translation": false,
+          "translation": "需要 ESC1 Status 和 ESC1 Model ID 遥测传感器。在“设置遥测”中选择这两个传感器，然后在遥测页面保存。飞控上的电调遥测必须已配置。"
+        },
         "activelook_esc_temp_limit": {
           "english": "ESC temp limit",
           "max_length": 14,
@@ -7430,6 +7502,12 @@
           "needs_translation": true,
           "reverse_text": false,
           "translation": "ESC temp warning"
+        },
+        "activelook_esc_unsupported": {
+          "english": "No status support",
+          "max_length": 21,
+          "needs_translation": false,
+          "translation": "不支持状态反馈"
         },
         "activelook_glasses_menu": {
           "english": "ETHOS Glasses menu",
@@ -7494,11 +7572,11 @@
           "translation": "重复次数"
         },
         "activelook_low_fuel_seconds": {
-          "english": "Warning Duration",
+          "english": "Display duration",
           "max_length": 16,
           "needs_translation": false,
           "reverse_text": false,
-          "translation": "警告时长"
+          "translation": "显示时长"
         },
         "activelook_low_fuel_warning": {
           "english": "Smart Fuel warning",
@@ -12367,11 +12445,11 @@
           "translation": "以 Acro 模式飞出真实旋转，然后解除武装"
         },
         "not_read": {
-          "english": "Last flight not read. It is read at the next disarm.",
-          "max_length": 52,
-          "needs_translation": true,
+          "english": "Last flight not saved. Retry at the next disarm.",
+          "max_length": 48,
+          "needs_translation": false,
           "reverse_text": false,
-          "translation": "Last flight not read. It is read at the next disarm."
+          "translation": "飞行记录未保存。下次解除锁定时重试。"
         },
         "pitch": {
           "english": "Pitch",
@@ -13640,12 +13718,24 @@
         "reverse_text": false,
         "translation": "电池电量耗尽"
       },
+      "alert_esc_error": {
+        "english": "ESC ERROR",
+        "max_length": 10,
+        "needs_translation": false,
+        "translation": "电调错误"
+      },
       "alert_esc_temp_high": {
         "english": "ESC TEMP HIGH",
         "max_length": 13,
         "needs_translation": false,
         "reverse_text": false,
         "translation": "电调温度过高"
+      },
+      "alert_esc_warning": {
+        "english": "ESC WARNING",
+        "max_length": 11,
+        "needs_translation": false,
+        "translation": "电调警告"
       },
       "alert_fuel_low": {
         "english": "LOW FUEL",
@@ -13674,6 +13764,12 @@
         "needs_translation": false,
         "reverse_text": false,
         "translation": "阈值"
+      },
+      "alert_no_esc_data": {
+        "english": "NO ESC DATA",
+        "max_length": 15,
+        "needs_translation": false,
+        "translation": "无电调数据"
       },
       "alert_rf_link_low": {
         "english": "RF LINK LOW",

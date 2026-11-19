@@ -28,6 +28,15 @@ window meets its minimum size. **Bastion** requires at least 784 × 294 pixels;
 
 The available fields are provided by the theme's configuration module.
 
+## User themes
+
+A [user theme](theme.md#user-themes) in `SCRIPTS:/rfsuite.user/dashboard/<folder>/`
+that has a `configure.lua` gets a tile after the shipped themes, named after its
+folder. Its values are saved in the `dashboard.user/<folder>` section of
+`settings.ini`, apart from any shipped theme with the same name. A copy of a
+shipped theme therefore starts from the theme's default values, not from the
+values saved for the shipped theme.
+
 ## KSE5
 
 **KSE5** sets the value at which each of its rings is full. A zero or missing

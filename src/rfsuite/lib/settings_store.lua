@@ -12,6 +12,7 @@ local ini = requireModule("lib/ini.lua")
 local activelookConfig = requireModule("lib/activelook_config.lua")
 local mspApiVersion = requireModule("lib/msp_api_version.lua")
 local tableClone = requireModule("lib/table_clone.lua")
+local dashboardThemes = requireModule("lib/dashboard_themes.lua")
 
 local SETTINGS_DIR = "SCRIPTS:/rfsuite.user"
 local SETTINGS_PATH = SETTINGS_DIR .. "/settings.ini"
@@ -126,26 +127,6 @@ local DEFAULTS = {
   activelook = activelookConfig.DEFAULTS,
 }
 
-local DASHBOARD_THEMES = {
-  bastion = true,
-  ["aerc-n"] = true,
-  aerc = true,
-  claude = true,
-  danielrc = true,
-  default = true,
-  gismo = true,
-  helihud = true,
-  kevd = true,
-  kse4 = true,
-  kse5 = true,
-  novafly = true,
-  rfstatus = true,
-  ["rt-rc-n"] = true,
-  ["rt-rc"] = true,
-  ["srb-rc"] = true,
-  timer = true,
-}
-
 local function normalizeDashboardTheme(value, allowDisabled, default)
   if allowDisabled and (value == nil or value == "" or value == "nil" or value == 0 or value == "0") then
     return "nil"
@@ -155,23 +136,11 @@ local function normalizeDashboardTheme(value, allowDisabled, default)
   value = tostring(value or "")
   if value == "" or value == "nil" then value = default end
 
-  local source, folder = value:match("^([^/]+)/(.+)$")
-  if source == "system" then
-    if type(folder) == "string" and folder:sub(1, 1) == "@" then folder = folder:sub(2) end
-    if DASHBOARD_THEMES[folder] then return "system/" .. folder end
-  elseif DASHBOARD_THEMES[value] then
-    return "system/" .. value
-  end
-
-  return default
+  return dashboardThemes.path(value) or default
 end
 
 local function dashboardThemeKey(value)
-  if type(value) ~= "string" then return DEFAULTS.dashboard.theme end
-  local folder = value:match("^system/(.+)$") or value
-  if folder:sub(1, 1) == "@" then folder = folder:sub(2) end
-  if DASHBOARD_THEMES[folder] then return folder end
-  return DEFAULTS.dashboard.theme
+  return dashboardThemes.key(value) or DEFAULTS.dashboard.theme
 end
 
 local settings_store = {

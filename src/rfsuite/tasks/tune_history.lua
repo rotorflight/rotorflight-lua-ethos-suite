@@ -16,7 +16,12 @@
 -- was saved: another aircraft connected in between is left alone until the
 -- right one is back. Nothing is saved for a flight with no acro flight
 -- (flight_seconds 0). If the clear never gets through before the next arm,
--- that next flight's row also holds this one's data: the FC cannot tell.
+-- that next flight's reading also holds this one's data: the FC cannot tell.
+-- That reading is then saved marked as containing the saved flight, which the
+-- page leaves out rather than counting it twice, when this task can tell
+-- (containsHeld): no clear answered and no new link since that save, the same
+-- PID and rate profile and tune, more seconds and no count smaller. Nothing
+-- saved is ever removed for it; where it cannot tell, both are kept.
 --
 -- Paced so telemetry keeps flowing. Over S.Port and FBUS each 51-byte reply
 -- takes 12 telemetry frames, every one a sensor frame the FC does not
@@ -26,13 +31,14 @@
 -- model sat disarmed. So the first read waits START_SECONDS after the disarm
 -- (the pilot is reading the landing numbers, and the flight-stats sync goes
 -- first), each later request waits GAP_SECONDS, a failed axis is asked again
--- on its own, and after MAX_FAILURES link errors the capture waits for the
--- next disarm. The FC keeps the numbers, so that disarm still saves them.
+-- on its own, and after MAX_FAILURES link errors or MAX_SAVE_FAILURES failed
+-- writes the capture waits for the next disarm. The FC keeps the numbers, so
+-- that disarm still saves them.
 --
 -- Publishes "tune_history.state" (retained, see lib/bus.lua) whenever it
 -- changes, so the Tune Advisor page can hold its advice until the flight is in:
 --   "reading"  disarmed with this flight not saved yet, or its clear still to go
---   "failed"   gave up after MAX_FAILURES; the next disarm reads it
+--   "failed"   gave up after MAX_FAILURES link errors or MAX_SAVE_FAILURES failed writes
 --   "unread"   the FC answered in a layout this suite refuses: the flight is held
 --              there but not read; the next disarm asks once more
 --   "idle"     anything else
@@ -51,6 +57,7 @@ local START_SECONDS = 5           -- after a disarm, before the first read
 local GAP_SECONDS = 2             -- between one answered request and the next
 local RETRY_SECONDS = 5           -- after a link error, before asking again
 local MAX_FAILURES = 3            -- link errors per disarm before waiting for the next one
+local MAX_SAVE_FAILURES = 3       -- failed history writes per disarm before waiting for the next one
 
 local lastArmed = nil             -- last known arm state; a link loss (nil) keeps it
 local pending = false             -- a disarm has not been captured yet
@@ -61,12 +68,14 @@ local busy = false                -- a request is out
 local refusedOnFc = false         -- the FC holds a flight this layout refused: no clear, it would erase that flight
 local nextAt = 0                  -- no request before this os.clock()
 local failures = 0                -- link errors since the last disarm
+local saveFailures = 0            -- history write failures since the last disarm
 local capture = {mcuId = nil, modelName = nil, replies = {}, settings = {}}
 -- The latest session snapshot's fields this task reads, copied rather than
 -- holding on to the snapshot table
 local link = {armed = nil, connected = false, mcuId = nil, mcuIdReady = false, apiVersionSupported = nil, craftName = nil,
-  fcVersion = nil, support = nil}
+  fcVersion = nil, support = nil, pidProfile = nil, rateProfile = nil}
 local lastSeconds = {}            -- by mcuId: flight_seconds of the last flight saved
+local held = {}                   -- by mcuId: the last flight saved (heldOf), until a clear for it is answered or a new link
 local state = nil                 -- last "tune_history.state" published
 
 local function publishState()
@@ -133,6 +142,7 @@ local function onCleared(target)
   waitFor(0)
   clearPending = false
   lastSeconds[target] = nil  -- that FC holds nothing now
+  held[target] = nil         -- so its next reading contains no saved flight
   publishState()
 end
 
@@ -207,6 +217,61 @@ local function requestSetting(index)
   requireModule("lib/tune_history_settings.lua").request(index, function(data) onSetting(data) end, onError)
 end
 
+-- The counts the FC only ever adds to until its statistics are reset
+-- (src/main/flight/tune_advisor.c): a reading that holds a saved flight has none
+-- smaller than it. Not ffCount, the count of the best feedforward lag: that lag
+-- can move.
+local GROWING = {"fullCount", "fullSatCount", "releases", "bigRebounds", "shakeCount"}
+local BAND_COUNT = 3
+
+-- What a later reading is checked against: per axis the tune and the growing
+-- counts, in one array, with the profiles and the date and seconds the flight
+-- was saved with
+local function heldOf(replies, date, seconds)
+  local v, n = {}, 0
+  for axis = 1, tuneAdvisor.AXIS_COUNT do
+    local a = replies[axis].a
+    for _, k in ipairs(tuneHistory.TUNE_KEYS) do n = n + 1; v[n] = a[k] end
+    for _, k in ipairs(GROWING) do n = n + 1; v[n] = a[k] or 0 end
+    for i = 1, BAND_COUNT do
+      n = n + 1; v[n] = a.spBands[i].count
+      n = n + 1; v[n] = a.collBands[i].count
+    end
+  end
+  return {pid = link.pidProfile, rate = link.rateProfile, date = date, seconds = seconds, v = v}
+end
+
+-- Whether this reading holds the held flight as well: the FC was not cleared
+-- since it was saved (a clear it answered drops it, and so does a new link: a
+-- pack swapped restarts the FC), it flew on the same known profiles and tune
+-- (a tune change restarts its statistics), it counts more seconds, and none of
+-- its counts is smaller. False and the first test that failed otherwise.
+local function containsHeld(h, replies, seconds)
+  if not h then return false, "no saved flight held" end
+  local pid, rate = link.pidProfile, link.rateProfile
+  if pid == nil or rate == nil or pid ~= h.pid or rate ~= h.rate then return false, "profiles" end
+  if seconds <= h.seconds then return false, "seconds" end
+  local v, n = h.v, 0
+  for axis = 1, tuneAdvisor.AXIS_COUNT do
+    local a = replies[axis].a
+    for _, k in ipairs(tuneHistory.TUNE_KEYS) do
+      n = n + 1
+      if a[k] ~= v[n] then return false, "tune" end
+    end
+    for _, k in ipairs(GROWING) do
+      n = n + 1
+      if (a[k] or 0) < v[n] then return false, "count" end
+    end
+    for i = 1, BAND_COUNT do
+      n = n + 1
+      if a.spBands[i].count < v[n] then return false, "count" end
+      n = n + 1
+      if a.collBands[i].count < v[n] then return false, "count" end
+    end
+  end
+  return true
+end
+
 -- All three axes and both settings are in: save them as one flight, then clear the FC.
 local function finishCapture()
   local replies = capture.replies
@@ -233,14 +298,32 @@ local function finishCapture()
   -- 0: no acro flight. Same as last time: the clear after that flight never
   -- got through and nothing new was flown.
   if seconds > 0 and lastSeconds[mcuId] ~= seconds then
-    if not tuneHistory.save(mcuId, capture.modelName, replies) then
-      -- The replies are kept and only the write is tried again: no MSP, so
-      -- not counted against MAX_FAILURES
+    -- A flight saved before and not cleared off the FC since: this reading may hold it too
+    local previous = nil
+    local contains, why = containsHeld(held[mcuId], replies, seconds)
+    if contains then previous = held[mcuId] end
+    local ok, date, marked = tuneHistory.save(mcuId, capture.modelName, replies, previous)
+    if not ok then
+      -- Keep the replies for another write attempt, but do not retry forever:
+      -- the FC still holds the flight until a successful save and clear.
+      saveFailures = saveFailures + 1
       print("[tune_history] cannot write " .. tuneHistory.path(mcuId))
-      waitFor(RETRY_SECONDS)
+      if saveFailures >= MAX_SAVE_FAILURES then
+        busy = false
+        nextAt = math.huge
+      else
+        waitFor(RETRY_SECONDS)
+      end
       return
     end
+    saveFailures = 0
     lastSeconds[mcuId] = seconds
+    held[mcuId] = heldOf(replies, date, seconds)
+    if marked then
+      print("[tune_history] reading holds the saved flight (FC not cleared): saved as containing it")
+    elseif previous == nil and why ~= "no saved flight held" then
+      print("[tune_history] saved flight not held in this reading (" .. tostring(why) .. ")")
+    end
     bus.publish("tune_history.saved", mcuId)
   end
   clearReplies()
@@ -326,12 +409,20 @@ local function onSessionUpdate(snapshot)
     -- the aircraft that was flown: its FC holds this flight, whatever is connected later
     pendingMcu = snapshot.mcuId or link.mcuId
     failures = 0
+    saveFailures = 0
     clearReplies()
     nextAt = os.clock() + START_SECONDS
   end
   if armed ~= nil then lastArmed = armed end
+  -- A new link: a fresh pack restarted the FC, which the radio cannot tell from
+  -- the same one, so no saved flight is taken to be held in its next reading
+  if snapshot.connected == true and link.connected ~= true then
+    for k in pairs(held) do held[k] = nil end
+  end
   link.armed = armed
   link.connected = snapshot.connected
+  link.pidProfile = snapshot.pidProfile
+  link.rateProfile = snapshot.rateProfile
   link.mcuId = snapshot.mcuId
   link.mcuIdReady = snapshot.handshake and snapshot.handshake.mcuId == true or false
   link.apiVersionSupported = snapshot.apiVersionSupported

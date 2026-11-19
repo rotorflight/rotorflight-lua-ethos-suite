@@ -12,6 +12,7 @@ local tileGrid = requireModule("app/tile_grid.lua")
 local settingsStore = requireModule("lib/settings_store.lua")
 local settingsSave = requireModule("app/settings_save.lua")
 local dashboardContext = requireModule("widgets/dashboard/context.lua")
+local dashboardThemes = requireModule("lib/dashboard_themes.lua")
 
 local PAGE_TITLE = "@i18n(app.modules.settings.name)@ / @i18n(app.modules.settings.dashboard)@ / @i18n(app.modules.settings.dashboard_settings)@"
 local NO_THEMES = "@i18n(app.modules.settings.no_themes_available_to_configure)@"
@@ -82,7 +83,7 @@ local function configuredThemes()
       if fileExists(dir .. "/configure.lua") then
         themes[#themes + 1] = {
           label = theme.label,
-          folder = theme.folder,
+          key = theme.folder,
           configure = dir .. "/configure.lua",
           icon = dir .. "/icon.png",
         }
@@ -93,9 +94,33 @@ local function configuredThemes()
   return themes
 end
 
-local function saveThemePrefs(settings, themeModule, folder)
+-- The shipped list above, then the user themes in SCRIPTS:/rfsuite.user/dashboard/
+-- that have a configure.lua. The user folder is read again on every visit (a
+-- theme can be copied in over USB while the script runs), so this list is
+-- rebuilt here rather than kept in the session cache.
+local function themeTiles()
+  local shipped = configuredThemes()
+  local userThemes = dashboardThemes.listUser(true)
+  if #userThemes == 0 then return shipped end
+  local tiles = {}
+  for i = 1, #shipped do tiles[i] = shipped[i] end
+  for _, theme in ipairs(userThemes) do
+    local configure = theme.dir .. "/configure.lua"
+    if fileExists(configure) then
+      tiles[#tiles + 1] = {
+        label = theme.label,
+        key = theme.key,
+        configure = configure,
+        icon = theme.dir .. "/icon.png",
+      }
+    end
+  end
+  return tiles
+end
+
+local function saveThemePrefs(settings, themeModule, key)
   if themeModule and themeModule.write then themeModule.write() end
-  settingsStore.setDashboardTheme(settings, folder, dashboardContext.widgets.dashboard.preferences())
+  settingsStore.setDashboardTheme(settings, key, dashboardContext.widgets.dashboard.preferences())
   if not settingsStore.save(settings) then
     settingsSave.reportFailure()
     return
@@ -127,14 +152,14 @@ local function open(opts)
     local themeModule = assert(loadfile(theme.configure))()
 
     form.clear()
-    dashboardContext.widgets.dashboard.setPreferences(settingsStore.dashboardTheme(settings, theme.folder))
+    dashboardContext.widgets.dashboard.setPreferences(settingsStore.dashboardTheme(settings, theme.key))
 
     headerHandle = header.build(theme.label, {
       onBack = function()
         open(opts)
       end,
       onSave = function()
-        saveThemePrefs(settings, themeModule, theme.folder)
+        saveThemePrefs(settings, themeModule, theme.key)
         if headerHandle then headerHandle.focusSave() end
       end,
       onReload = function()
@@ -180,7 +205,7 @@ local function open(opts)
     if opts.setCleanupHandler then opts.setCleanupHandler(goBack) end
 
     local gridHeader = header.build(PAGE_TITLE, {onBack = goBack})
-    local themes = configuredThemes()
+    local themes = themeTiles()
     local windowWidth, windowHeight = lcd.getWindowSize()
     local numPerRow, tileW, tileH, tilePadding, tileFont = tileGrid.metrics(windowWidth, windowHeight)
     local x, y = 0, form.height() + tilePadding

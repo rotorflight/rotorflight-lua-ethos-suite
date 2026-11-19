@@ -23,7 +23,9 @@ measurements do not carry (Cyclic polarity and ring, I-term Relax type), saves t
 flight controller so the next flight is measured on its own. This happens whether or not
 this page is open. It starts 5 seconds after the disarm and takes about 10 seconds, with pauses between the reads
 so telemetry sensors keep updating meanwhile. If the link drops the reading three times, the radio tries again at
-the next disarm; the flight controller keeps the measurements until then. After a reconnect, the radio reads the
+the next disarm; the flight controller keeps the measurements until then. The same applies when the history file
+cannot be written (for example a full or locked SD card): the radio tries three times, about 5 seconds apart, then
+waits for the next disarm, and does not clear the flight controller, so the flight is not lost. After a reconnect, the radio reads the
 connected flight controller's UID before it resumes a capture or retries a pending clear. A clear is only sent to
 the controller whose flight was saved, so connecting another controller cannot erase its measurements. The flights are kept in `LOGS:/rfsuite/tune/<model>/history.csv` on the radio's SD card, one
 row per axis, newest last; only the last 5 flights are kept. `<model>` is the same flight controller ID that
@@ -34,14 +36,29 @@ measurement weighted by how much data it came from; the flight controller weight
 differently, so the combined response is a close estimate rather than exact, while the stop figures combine
 exactly.
 
+Sometimes the clear does not happen before the next flight: you arm again within a few seconds of the save, or
+the clear fails three times on a poor link. The flight controller then keeps the saved flight and adds the next
+one to it, so the next reading holds both. The radio notices this when, since that save, no clear was answered and
+the link did not drop, and the new reading is on the same PID and rate profile and the same tune, with more seconds
+and no count smaller. It saves the reading with a line naming the flight it holds, and the page leaves that older
+flight out instead of counting it twice. Nothing saved is removed. The radio cannot tell in three cases:
+
+- After a link loss or a radio restart. A fresh pack restarts the flight controller, and the radio cannot tell
+  that apart from the same flight continuing. The reading is then saved beside the earlier flight unmarked, and
+  both count.
+- A tune changed in flight and changed back.
+- A clear the flight controller did but whose answer was lost.
+
+In the last two cases one real flight can be left out of the advice.
+
 ## Where to find it
 
 *Configuration* → *Flight Tuning* → *Tune Advisor*
 
 Greyed out until the flight controller answers. The page works from the flights saved for the connected model,
 and updates when a flight is saved while it is open, about 10 seconds after you disarm; through a link loss it keeps showing them. While the radio reads the last flight after a disarm, it shows "Reading the last flight..." in
-place of the advice, with *Save* and the erase button greyed out. With no flight saved yet, *Flight data* reads "No flight saved yet" and *Suggested changes* gives the reason: fly acro with real rotation, then disarm. A flight is saved only when the flight controller counted acro flight. If the flight controller holds a flight the radio could not read, *Suggested changes* says "Last flight not read" instead of the reason. If the radio could not read the flight, the
-advice from the saved flights comes back with "Last flight not read" above it until you arm again. The page reads the
+place of the advice, with *Save* and the erase button greyed out. With no flight saved yet, *Flight data* reads "No flight saved yet" and *Suggested changes* gives the reason: fly acro with real rotation, then disarm. A flight is saved only when the flight controller counted acro flight. If the flight controller holds a flight the radio could not read or save, *Suggested changes* says "Last flight not saved. Retry at the next disarm." instead of the reason. If the radio could not read or save the flight, the
+advice from the saved flights comes back with that line above it until you arm again. The page reads the
 firmware version the flight controller reports. Firmware older than 4.7.0 has no Tune Advisor: the page shows
 "Needs newer firmware" and sends no request, and the same applies to the capture after each flight. Until the
 version is known, nothing is sent.
@@ -122,6 +139,10 @@ older flights out.
 > The flight history file gains three columns (Cyclic polarity, Cyclic ring, I-term Relax type). The page does not
 > read a history with the old columns, so its flights are not shown after the update. The file is replaced at the
 > next saved flight. Flights saved before the update are not kept.
+
+In `history.csv` a flight whose reading holds an earlier saved flight is followed by a line
+`contains,<date>,<flight seconds>` naming that flight. An older version of the suite skips that line and counts
+both flights.
 
 Each change written is added to `changes.csv` beside the flight history (date, axis, setting,
 old value, new value, PID profile), so you can always see what the advisor changed and set it back by hand. *Clear*

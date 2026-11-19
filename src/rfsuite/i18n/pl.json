@@ -7417,6 +7417,78 @@
           "reverse_text": false,
           "translation": "Alerts"
         },
+        "activelook_esc_available": {
+          "english": "Status available",
+          "max_length": 16,
+          "needs_translation": false,
+          "translation": "Stan dostępny"
+        },
+        "activelook_esc_generic": {
+          "english": "Generic faults only",
+          "max_length": 21,
+          "needs_translation": false,
+          "translation": "Tylko ogólne błędy"
+        },
+        "activelook_esc_messages": {
+          "english": "Show messages",
+          "max_length": 18,
+          "needs_translation": false,
+          "translation": "Pokaż komunikaty"
+        },
+        "activelook_esc_messages_all": {
+          "english": "Errors and warnings",
+          "max_length": 20,
+          "needs_translation": false,
+          "translation": "Błędy i ostrzeżenia"
+        },
+        "activelook_esc_messages_errors": {
+          "english": "Errors only",
+          "max_length": 11,
+          "needs_translation": false,
+          "translation": "Tylko błędy"
+        },
+        "activelook_esc_messages_warnings": {
+          "english": "Warnings only",
+          "max_length": 17,
+          "needs_translation": false,
+          "translation": "Tylko ostrzeżenia"
+        },
+        "activelook_esc_missing": {
+          "english": "Telemetry missing",
+          "max_length": 17,
+          "needs_translation": false,
+          "translation": "Brak telemetrii"
+        },
+        "activelook_esc_offline": {
+          "english": "Connect to check",
+          "max_length": 21,
+          "needs_translation": false,
+          "translation": "Połącz, aby sprawdzić"
+        },
+        "activelook_esc_setup": {
+          "english": "Set up telemetry",
+          "max_length": 21,
+          "needs_translation": false,
+          "translation": "Ustaw telemetrię"
+        },
+        "activelook_esc_status": {
+          "english": "ESC Status",
+          "max_length": 10,
+          "needs_translation": false,
+          "translation": "Stan ESC"
+        },
+        "activelook_esc_status_warning": {
+          "english": "ESC Status Warning",
+          "max_length": 18,
+          "needs_translation": false,
+          "translation": "Alerty stanu ESC"
+        },
+        "activelook_esc_telemetry_help": {
+          "english": "Requires ESC1 Status and ESC1 Model ID telemetry. Use Set up telemetry to select both sensors, then save on the Telemetry page. ESC telemetry must already be configured on the flight controller.",
+          "max_length": 195,
+          "needs_translation": false,
+          "translation": "Wymaga czujników ESC1 Status i ESC1 Model ID. W Ustaw telemetrię wybierz oba czujniki i zapisz na stronie Telemetria. Telemetria ESC musi być wcześniej skonfigurowana w kontrolerze lotu."
+        },
         "activelook_esc_temp_limit": {
           "english": "ESC temp limit",
           "max_length": 14,
@@ -7430,6 +7502,12 @@
           "needs_translation": true,
           "reverse_text": false,
           "translation": "ESC temp warning"
+        },
+        "activelook_esc_unsupported": {
+          "english": "No status support",
+          "max_length": 21,
+          "needs_translation": false,
+          "translation": "Stan nieobsługiwany"
         },
         "activelook_glasses_menu": {
           "english": "ETHOS Glasses menu",
@@ -7494,11 +7572,11 @@
           "translation": "Powtórzenia"
         },
         "activelook_low_fuel_seconds": {
-          "english": "Warning Duration",
-          "max_length": 16,
+          "english": "Display duration",
+          "max_length": 17,
           "needs_translation": false,
           "reverse_text": false,
-          "translation": "Czas ostrzeżenia"
+          "translation": "Czas wyświetlania"
         },
         "activelook_low_fuel_warning": {
           "english": "Smart Fuel warning",
@@ -12367,11 +12445,11 @@
           "translation": "Lataj acro z prawdziwą rotacją, potem rozbrój"
         },
         "not_read": {
-          "english": "Last flight not read. It is read at the next disarm.",
-          "max_length": 52,
-          "needs_translation": true,
+          "english": "Last flight not saved. Retry at the next disarm.",
+          "max_length": 48,
+          "needs_translation": false,
           "reverse_text": false,
-          "translation": "Last flight not read. It is read at the next disarm."
+          "translation": "Lot nie został zapisany. Ponowna próba po rozbrojeniu."
         },
         "pitch": {
           "english": "Pitch",
@@ -13640,12 +13718,24 @@
         "reverse_text": false,
         "translation": "AKUMULATOR PUSTY"
       },
+      "alert_esc_error": {
+        "english": "ESC ERROR",
+        "max_length": 10,
+        "needs_translation": false,
+        "translation": "BŁĄD ESC"
+      },
       "alert_esc_temp_high": {
         "english": "ESC TEMP HIGH",
         "max_length": 13,
         "needs_translation": false,
         "reverse_text": false,
         "translation": "WYSOKA TEMP ESC"
+      },
+      "alert_esc_warning": {
+        "english": "ESC WARNING",
+        "max_length": 15,
+        "needs_translation": false,
+        "translation": "OSTRZEŻENIE ESC"
       },
       "alert_fuel_low": {
         "english": "LOW FUEL",
@@ -13674,6 +13764,12 @@
         "needs_translation": false,
         "reverse_text": false,
         "translation": "LIMIT"
+      },
+      "alert_no_esc_data": {
+        "english": "NO ESC DATA",
+        "max_length": 15,
+        "needs_translation": false,
+        "translation": "BRAK DANYCH ESC"
       },
       "alert_rf_link_low": {
         "english": "RF LINK LOW",

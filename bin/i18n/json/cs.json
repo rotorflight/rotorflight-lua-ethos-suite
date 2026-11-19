@@ -2091,8 +2091,8 @@
           "max_length": 4
         },
         "activelook_low_fuel_seconds": {
-          "english": "Warning Duration",
-          "translation": "Délka varování",
+          "english": "Display duration",
+          "translation": "Doba zobrazení",
           "needs_translation": false,
           "reverse_text": false,
           "max_length": 16
@@ -2905,6 +2905,84 @@
           "needs_translation": false,
           "translation": "Varování Armed na panelu",
           "reverse_text": false
+        },
+        "activelook_esc_status": {
+          "english": "ESC Status",
+          "translation": "Stav ESC",
+          "needs_translation": false,
+          "max_length": 10
+        },
+        "activelook_esc_status_warning": {
+          "english": "ESC Status Warning",
+          "translation": "Výstrahy stavu ESC",
+          "needs_translation": false,
+          "max_length": 18
+        },
+        "activelook_esc_offline": {
+          "english": "Connect to check",
+          "translation": "Připojit pro kontrolu",
+          "needs_translation": false,
+          "max_length": 21
+        },
+        "activelook_esc_missing": {
+          "english": "Telemetry missing",
+          "translation": "Chybí telemetrie",
+          "needs_translation": false,
+          "max_length": 17
+        },
+        "activelook_esc_unsupported": {
+          "english": "No status support",
+          "translation": "Stav nepodporován",
+          "needs_translation": false,
+          "max_length": 21
+        },
+        "activelook_esc_generic": {
+          "english": "Generic faults only",
+          "translation": "Jen obecné chyby",
+          "needs_translation": false,
+          "max_length": 21
+        },
+        "activelook_esc_available": {
+          "english": "Status available",
+          "translation": "Stav dostupný",
+          "needs_translation": false,
+          "max_length": 16
+        },
+        "activelook_esc_setup": {
+          "english": "Set up telemetry",
+          "translation": "Nastavit telemetrii",
+          "needs_translation": false,
+          "max_length": 21
+        },
+        "activelook_esc_messages": {
+          "english": "Show messages",
+          "translation": "Zobrazit hlášení",
+          "needs_translation": false,
+          "max_length": 18
+        },
+        "activelook_esc_messages_all": {
+          "english": "Errors and warnings",
+          "translation": "Chyby a varování",
+          "needs_translation": false,
+          "max_length": 20
+        },
+        "activelook_esc_messages_errors": {
+          "english": "Errors only",
+          "translation": "Jen chyby",
+          "needs_translation": false,
+          "max_length": 11
+        },
+        "activelook_esc_messages_warnings": {
+          "english": "Warnings only",
+          "translation": "Jen varování",
+          "needs_translation": false,
+          "max_length": 13
+        },
+        "activelook_esc_telemetry_help": {
+          "english": "Requires ESC1 Status and ESC1 Model ID telemetry. Use Set up telemetry to select both sensors, then save on the Telemetry page. ESC telemetry must already be configured on the flight controller.",
+          "translation": "Vyžaduje telemetrii ESC1 Status a ESC1 Model ID. V Nastavit telemetrii vyberte oba senzory a uložte je na stránce Telemetrie. Telemetrie ESC musí být již nastavena v řídicí jednotce.",
+          "needs_translation": false,
+          "max_length": 195
         }
       },
       "telemetry": {
@@ -8994,11 +9072,11 @@
           "max_length": 26
         },
         "not_read": {
-          "english": "Last flight not read. It is read at the next disarm.",
-          "translation": "Last flight not read. It is read at the next disarm.",
-          "needs_translation": true,
+          "english": "Last flight not saved. Retry at the next disarm.",
+          "translation": "Let nebyl uložen. Zkusí se při dalším odzbrojení.",
+          "needs_translation": false,
           "reverse_text": false,
-          "max_length": 52
+          "max_length": 48
         }
       },
       "setup_wizard": {
@@ -14662,6 +14740,24 @@
         "needs_translation": false,
         "max_length": 5,
         "reverse_text": false
+      },
+      "alert_esc_error": {
+        "english": "ESC ERROR",
+        "translation": "CHYBA ESC",
+        "needs_translation": false,
+        "max_length": 10
+      },
+      "alert_esc_warning": {
+        "english": "ESC WARNING",
+        "translation": "VAROVÁNÍ ESC",
+        "needs_translation": false,
+        "max_length": 12
+      },
+      "alert_no_esc_data": {
+        "english": "NO ESC DATA",
+        "translation": "CHYBÍ DATA ESC",
+        "needs_translation": false,
+        "max_length": 15
       }
     }
   }

@@ -4,10 +4,26 @@ local bus = requireModule("lib/bus.lua")
 local pageCommon = requireModule("app/pages/settings_activelook_common.lua")
 local activeConfig = requireModule("lib/activelook_config.lua")
 local settingsStore = requireModule("lib/settings_store.lua")
+local escStatus = requireModule("lib/esc_status.lua")
+
+local AVAILABILITY = {
+  offline = "@i18n(app.modules.settings.activelook_esc_offline)@",
+  missing = "@i18n(app.modules.settings.activelook_esc_missing)@",
+  unknown = "@i18n(widgets.escstatus.unknown)@",
+  unsupported = "@i18n(app.modules.settings.activelook_esc_unsupported)@",
+  generic = "@i18n(app.modules.settings.activelook_esc_generic)@",
+  detailed = "@i18n(app.modules.settings.activelook_esc_available)@",
+}
+local ESC_MESSAGES = {
+  {"@i18n(app.modules.settings.activelook_esc_messages_all)@", 1},
+  {"@i18n(app.modules.settings.activelook_esc_messages_errors)@", 2},
+  {"@i18n(app.modules.settings.activelook_esc_messages_warnings)@", 3},
+}
 
 local function open(opts)
+  opts = opts or {}
   pageCommon.openPage("@i18n(app.modules.settings.name)@ / ActiveLook / @i18n(app.modules.settings.activelook_alerts)@", opts,
-    function(settings, updateSaveEnabled)
+    function(settings, updateSaveEnabled, leaveTo)
       local values = activeConfig.withDefaults(settings.activelook)
       settings.activelook = values
       local fahrenheit = settingsStore.temperatureUnit(settings) == 1
@@ -36,6 +52,9 @@ local function open(opts)
         enable("link_icon", values.rf_link_warning)
         enable("lost_seconds", values.governor_lost_warning)
         enable("status_seconds", values.governor_status_overlays)
+        enable("esc_messages", values.esc_status_warning)
+        enable("esc_status_seconds", values.esc_status_warning)
+        enable("esc_status_repeats", values.esc_status_warning)
       end
       local function boolean(panel, label, key)
         return form.addBooleanField(panel:addLine(label), nil,
@@ -83,6 +102,23 @@ local function open(opts)
         function() return activeConfig.alertRepeats(values, settings.events, "esc_temp") end)
       fields.esc_seconds = number(escPanel, "@i18n(app.modules.settings.activelook_low_fuel_seconds)@", "esc_temp_seconds", 3, 30, activeConfig.clampAlertSeconds, "s")
       fields.esc_icon = boolean(escPanel, "@i18n(app.modules.settings.activelook_low_fuel_icon)@", "esc_temp_icon")
+      local escStatusPanel = form.addExpansionPanel("@i18n(app.modules.settings.activelook_esc_status)@")
+      escStatusPanel:open(false)
+      boolean(escStatusPanel, "@i18n(app.modules.settings.activelook_esc_status_warning)@", "esc_status_warning")
+      fields.esc_messages = form.addChoiceField(escStatusPanel:addLine("@i18n(app.modules.settings.activelook_esc_messages)@"), nil, ESC_MESSAGES,
+        function()
+          if values.esc_status_errors then return values.esc_status_warnings and 1 or 2 end
+          return 3
+        end,
+        function(value)
+          if value ~= 1 and value ~= 2 and value ~= 3 then return end
+          values.esc_status_errors = value == 1 or value == 2
+          values.esc_status_warnings = value == 1 or value == 3
+          updateSaveEnabled()
+        end)
+      fields.esc_messages:help("@i18n(app.modules.settings.activelook_esc_telemetry_help)@")
+      fields.esc_status_seconds = number(escStatusPanel, "@i18n(app.modules.settings.activelook_low_fuel_seconds)@", "esc_status_seconds", 3, 30, activeConfig.clampAlertSeconds, "s")
+      fields.esc_status_repeats = number(escStatusPanel, "@i18n(app.modules.settings.activelook_low_fuel_repeats)@", "esc_status_repeats", 1, 10, activeConfig.clampLowFuelRepeats, "x")
       local lostPanel = form.addExpansionPanel("@i18n(app.modules.settings.activelook_governor_lost)@")
       lostPanel:open(false)
       boolean(lostPanel, "@i18n(app.modules.settings.activelook_governor_lost)@", "governor_lost_warning")
@@ -99,6 +135,44 @@ local function open(opts)
       statusPanel:open(false)
       boolean(statusPanel, "@i18n(app.modules.settings.activelook_governor_status)@", "governor_status_overlays")
       fields.status_seconds = number(statusPanel, "@i18n(app.modules.settings.activelook_status_duration)@", "governor_status_seconds", 1, 5, activeConfig.clampGovernorStatusSeconds, "s")
+      -- One full-width status line, rather than squeezing protocol + availability
+      -- into the value column on the X18. Geometry is resolved only on page open.
+      local availabilityLine = escStatusPanel:addLine("")
+      local slot = form.getFieldSlots(availabilityLine, {0})[1]
+      local width = lcd.getWindowSize()
+      local availabilityField = form.addStaticText(availabilityLine,
+        {x = 24, y = slot.y, w = width - 40, h = slot.h}, AVAILABILITY.offline, LEFT)
+      local connected, armed, lastProtocol, lastAvailability, setupEnabled
+      local setupButton
+      local function canOpenTelemetry()
+        return connected and not armed and lastAvailability == "missing"
+      end
+      local function openTelemetry()
+        if not canOpenTelemetry() then return end
+        leaveTo(function()
+          local childOpts = {}
+          for key, value in pairs(opts) do childOpts[key] = value end
+          childOpts.onBack = function() open(opts) end
+          assert(loadfile("app/pages/telemetry.lua"))().open(childOpts)
+        end, canOpenTelemetry)
+      end
+      setupButton = form.addButton(escStatusPanel:addLine(""), nil, {
+        text = "@i18n(app.modules.settings.activelook_esc_setup)@", press = openTelemetry,
+      })
+      local function sessionUpdated(snapshot)
+        connected, armed = snapshot.connected == true, snapshot.isArmed == true
+        local protocol = connected and escStatus.familyName(snapshot.escSignature) or nil
+        local availability = escStatus.availability(connected, snapshot.escSignature, snapshot.escStatusWord)
+        if protocol ~= lastProtocol or availability ~= lastAvailability then
+          local text = AVAILABILITY[availability]
+          availabilityField:value(protocol and protocol .. ": " .. text or text)
+          lastProtocol, lastAvailability = protocol, availability
+        end
+        local canSetup = canOpenTelemetry()
+        if canSetup ~= setupEnabled then setupButton:enable(canSetup); setupEnabled = canSetup end
+      end
+      sessionUpdated({})
+      local sessionHandler = bus.subscribe("session.update", sessionUpdated)
       local activePanel = fuelPanel
       local function bindPreview(panel, mode)
         panel:event(function(event)
@@ -116,11 +190,16 @@ local function open(opts)
       end
       bindPreview(fuelPanel, "low_fuel")
       bindPreview(escPanel, "esc_temp")
+      bindPreview(escStatusPanel, "esc_status")
       bindPreview(lostPanel, "governor_lost")
       bindPreview(linkPanel, "rf_link")
       bindPreview(statusPanel, "governor_status")
       bus.publish("activelook.control", {previewMode = "low_fuel"})
       updateEnabled()
+      return function()
+        bus.unsubscribe("session.update", sessionHandler)
+        availabilityField, setupButton = nil, nil
+      end
     end)
 end
 return {open = open}

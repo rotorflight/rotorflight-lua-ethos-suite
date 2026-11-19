@@ -19,8 +19,9 @@ from its source line:
   title  last level of a PAGE_TITLE / header.build title: app/header.lua drops
          the leading breadcrumb levels to fit, so the page's own name must fit
          alone (178px, FONT_STD)
-  tile   a menu tile title in app/tool.lua (98px, FONT_XS: the tile is 110px,
-         less its frame padding)
+  tile   a menu tile title in app/tool.lua (98px, FONT_S: the tile is 110px,
+         less its frame padding). A tile title too wide is cut with "..." on
+         the radio, which is accepted: it is listed, but does not fail the check
   label  a form label with a field beside it (215px, FONT_STD: the field starts
          at x=225)
   choice an entry in a choice list (200px, FONT_STD)
@@ -62,12 +63,15 @@ GLYPHS = Path(__file__).resolve().parent / "fit" / "x18_glyph_widths.json"
 
 FONT_INDEX = {"XS": 0, "S": 1, "STD": 2}
 BUDGETS = OrderedDict([
-    ("tile", ("XS", 98)),
+    ("tile", ("S", 98)),
     ("title", ("STD", 178)),
     ("choice", ("STD", 200)),
     ("label", ("STD", 215)),
     ("note", ("STD", 460)),
 ])
+# Contexts where a string too wide is cut with "..." on the radio, and that is accepted:
+# listed, but not a failure.
+SOFT_CONTEXTS = ("tile",)
 SKIP_DIRS = ("widgets/", "i18n/", "sim/")
 
 PLACEHOLDER = "@T@"
@@ -163,7 +167,10 @@ def collect_uses(resolver, suite_root=SUITE_ROOT):
 
 
 def find_overflows(uses, locales, glyphs, unknown):
-    """Return a list of overflow records, tightest context per key and locale."""
+    """Return a list of overflow records, tightest context per key and locale.
+
+    A context that must fit wins over a soft one (SOFT_CONTEXTS), so a key that is
+    both a tile title and a label still fails as a label."""
     out = []
     for loc, tree in locales.items():
         for key, ctxs in sorted(uses.items()):
@@ -177,9 +184,13 @@ def find_overflows(uses, locales, glyphs, unknown):
             for ctx, where in ctxs.items():
                 font, budget = BUDGETS[ctx]
                 px = text_width(text, font, glyphs, unknown)
-                if px > budget and (worst is None or px - budget > worst["px"] - worst["budget"]):
+                if px <= budget:
+                    continue
+                soft = ctx in SOFT_CONTEXTS
+                if (worst is None or (worst["soft"] and not soft)
+                        or (worst["soft"] == soft and px - budget > worst["px"] - worst["budget"])):
                     worst = dict(lang=loc, key=key, context=ctx, px=px, budget=budget, text=text,
-                                 file=where[0][0], line=where[0][1])
+                                 file=where[0][0], line=where[0][1], soft=soft)
             if worst:
                 out.append(worst)
     return out
@@ -203,9 +214,15 @@ def self_test(resolver, glyphs):
     green = find_overflows(uses, narrow, glyphs, set())
     probe = classify("app/pages/x.lua", 'form.addBooleanField(form.addLine("@T@"), nil, get, set)')
     note = classify("app/pages/x.lua", '  form.addLine("@T@")')
-    ok = len(red) == 1 and not green and probe == "label" and note == "note"
+    # A tile title too wide is only listed; the same key as a label still fails.
+    tile = find_overflows({"t.k": {"tile": [("src/x.lua", 1)]}}, wide, glyphs, set())
+    both = find_overflows({"t.k": {"tile": [("src/x.lua", 1)], "label": [("src/x.lua", 2)]}},
+                          wide, glyphs, set())
+    soft_ok = len(tile) == 1 and tile[0]["soft"] and len(both) == 1 and not both[0]["soft"]
+    ok = (len(red) == 1 and not red[0]["soft"] and not green and probe == "label"
+          and note == "note" and soft_ok)
     print(f"[i18n-fit] self-test {'OK' if ok else 'FAILED'}: red={len(red)} green={len(green)} "
-          f"label={probe} note={note}")
+          f"label={probe} note={note} soft={soft_ok}")
     return 0 if ok else 1
 
 
@@ -224,22 +241,26 @@ def main():
     uses = collect_uses(resolver)
     unknown = set()
     overflows = find_overflows(uses, load_locales(set(args.lang or [])), glyphs, unknown)
+    failures = [o for o in overflows if not o["soft"]]
+    cut = [o for o in overflows if o["soft"]]
 
     if args.json:
         print(json.dumps({"overflows": overflows, "unknown_chars": sorted(unknown)}, ensure_ascii=False, indent=2))
     else:
-        for o in sorted(overflows, key=lambda o: (o["lang"], o["file"], o["line"])):
-            print(f"  {o['file']}:{o['line']}: [{o['lang']}] {o['key']} ({o['context']}) "
-                  f"{o['px']}px > {o['budget']}px: \"{o['text']}\"")
+        for o in sorted(overflows, key=lambda o: (o["soft"], o["lang"], o["file"], o["line"])):
+            print(f"  {o['file']}:{o['line']}: [{o['lang']}] {o['key']} ({o['context']}"
+                  f"{', cut' if o['soft'] else ''}) {o['px']}px > {o['budget']}px: \"{o['text']}\"")
         if unknown:
             print(f"[i18n-fit] {len(unknown)} character(s) missing from {GLYPHS.name}, counted as 'W': "
                   + "".join(sorted(unknown)))
-        if overflows:
-            print(f"[i18n-fit] {len(overflows)} string(s) too wide for the X18. Shorten them in "
+        if cut:
+            print(f"[i18n-fit] {len(cut)} tile title(s) cut with \"...\" on the X18 (accepted)")
+        if failures:
+            print(f"[i18n-fit] {len(failures)} string(s) too wide for the X18. Shorten them in "
                   "bin/i18n/json/ and regenerate (see AGENTS.md section 7).")
         else:
             print("[i18n-fit] OK: every checked string fits the X18")
-    return 1 if overflows else 0
+    return 1 if failures else 0
 
 
 if __name__ == "__main__":

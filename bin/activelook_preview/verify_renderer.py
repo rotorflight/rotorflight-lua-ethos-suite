@@ -33,6 +33,43 @@ class WidgetTests(unittest.TestCase):
     def setUp(self):
         self.renderer = WidgetRenderer()
 
+    def test_esc_preview_uses_shared_localized_decoder_and_no_guessed_icon(self):
+        for language, error, warning, no_data in (
+                ("en", "ESC ERROR", "ESC WARNING", "NO ESC DATA"),
+                ("de", "ESC-FEHLER", "ESC-WARNUNG", "KEINE ESC-DATEN")):
+            data = request("esc_status")
+            data["language"] = language
+            data["sensors"]["armed"] = False
+            self.assertIn(no_data, texts(self.renderer.render(data, 1)))
+            data["sensors"].update(escSignature=0x4B, escStatusWord=64)
+            frame = self.renderer.render(data, 2)
+            self.assertEqual(texts(frame)[0], error)
+            self.assertEqual(icons(frame), [])
+            self.assertNotIn("@i18n", " ".join(texts(frame)))
+            data["sensors"]["escStatusWord"] = 1 << 19
+            self.assertEqual(texts(self.renderer.render(data, 3))[0], warning)
+            data["sensors"]["escStatusWord"] = 0
+            self.assertNotIn(texts(self.renderer.render(data, 4))[0], (error, warning))
+            data["preview"] = None
+            self.assertIsNone(self.renderer.render(data, 5).get("overlay"))
+
+    def test_esc_text_fits_display_for_every_supported_family_flag(self):
+        from PIL import ImageFont
+        font = ImageFont.truetype(str(Path(__file__).parent / "SSP-SemiBold-Spacing.otf"), 24)
+        for language in ("en", "de"):
+            data = request("esc_status")
+            data["language"] = language
+            now = 0
+            for signature in (0x4B, 0xA0, 0xFD, 0x53, 0xA5, 0xC0, 0xD0):
+                for bit in range(32):
+                    data["sensors"].update(escSignature=signature, escStatusWord=1 << bit)
+                    now += 0.1
+                    frame = self.renderer.render(data, now)
+                    for command in frame["commands"]:
+                        text = command["text"]
+                        self.assertLessEqual(text["x"] + font.getlength(text["text"]), 304,
+                                             (language, signature, bit, text))
+
     def test_suite_defaults(self):
         defaults = self.renderer.defaults
         self.assertEqual([defaults[k] for k in ("low_fuel_seconds", "esc_temp_seconds", "governor_lost_seconds")], [5, 5, 5])
@@ -184,7 +221,7 @@ class WidgetTests(unittest.TestCase):
         self.assertEqual(self.renderer.render(data, 2)["overlay"], "low_fuel")
         data["sensors"]["tempEsc"] = 95
         self.renderer.render(data, 3)
-        self.assertEqual(self.renderer.render(data, 5)["overlay"], "esc_temp")
+        self.assertEqual(self.renderer.render(data, 5).get("overlay"), "esc_temp")
         data["sensors"]["governorState"] = 6
         self.assertEqual(self.renderer.render(data, 6)["overlay"], "governor_lost")
         self.assertEqual(self.renderer.render(data, 9)["overlay"], "esc_temp")

@@ -981,6 +981,12 @@ local function open(opts)
     if result == true then
       message = recorded and T.applied or T.appliedNotRecorded
     end
+    -- Give the form its focus back before the outcome dialog opens: Ethos drops
+    -- it when the progress dialog closes (app/header.lua). Done after the
+    -- dialog opens, it moved focus to the header behind the dialog, and on a
+    -- radio without a touch screen (X14) its OK could then not be reached: the
+    -- encoder moved the page's focus and Enter pressed Save under the dialog.
+    if headerHandle then headerHandle.focusMenu() end
     form.openDialog({
       title = PAGE_TITLE,
       message = message,
@@ -989,7 +995,6 @@ local function open(opts)
       paint = function() end,
       options = TEXT_LEFT,
     })
-    if headerHandle then headerHandle.focusMenu() end
   end
 
   local function confirmClear()
