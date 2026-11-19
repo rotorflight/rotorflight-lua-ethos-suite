@@ -9,6 +9,15 @@
 -- One row per axis per flight; only the last MAX_FLIGHTS flights are kept,
 -- since the page never looks further back.
 --
+-- A flight's rows may be followed by a mark line
+--   contains,<date>,<flight_seconds>
+-- saying that this flight's reading also holds the saved flight with that date
+-- and seconds: the FC was not cleared between the two (an arm before the clear
+-- after the save went through, or three failed clears), so its numbers hold
+-- both. aggregate() then leaves that older flight out rather than counting it
+-- twice. tasks/tune_history.lua writes it only on its own evidence; a reader
+-- without it skips the line (it does not have a row's columns) and counts both.
+--
 -- aggregate() combines the newest flights flown on the newest flight's tune,
 -- for one axis: counts add up, ratios are averaged weighted by the count they
 -- came from. The FC's own gains are setpoint-squared weighted, so this is an
@@ -63,6 +72,9 @@ for _, f in ipairs({
 
 -- The tune a flight was measured with: flights are only combined when these match
 local TUNE_KEYS = {"P", "F", "B", "relaxCutoff", "ratesType", "rcRate", "sRate", "polar", "ring", "relaxType"}
+
+-- The mark line (see the top of this file)
+local MARK = "contains"
 
 local HEADER
 do
@@ -124,10 +136,63 @@ local function splitLines(text)
   return lines
 end
 
+local ROW_COMMAS = #FIELDS + 2
+
+-- A row's date, seconds and axis (1..3), or nil for a line that is not a row
+local function rowKey(line)
+  local date, seconds, name = line:match("^([^,]*),([^,]*),([^,]*),")
+  if not date then return nil end
+  local axis = nil
+  for n = 1, AXIS_COUNT do
+    if AXIS_NAMES[n] == name then axis = n end
+  end
+  if not axis or select(2, line:gsub(",", "")) ~= ROW_COMMAS then return nil end
+  return date, tonumber(seconds) or 0, axis
+end
+
+-- A mark line's date and seconds, or nil
+local MARK_PATTERN = "^" .. MARK .. ",([^,]*),([^,]*)$"
+local function markOf(line)
+  local date, seconds = line:match(MARK_PATTERN)
+  if not date then return nil end
+  return date, tonumber(seconds) or 0
+end
+
+-- The file's lines grouped into flights, oldest first, by read()'s rule (a new
+-- flight where the date changes or an axis comes again): {date, seconds, lines,
+-- mark}. A mark is kept with the flight whose row is the line just before it;
+-- after any other line it marks nothing. Lines that are neither are dropped.
+local function groupLines(lines)
+  local flights, current, lastWasRow = {}, nil, false
+  for i = 2, #lines do
+    local line = lines[i]
+    local date, seconds, axis = rowKey(line)
+    if date then
+      if not current or current.date ~= date or current.seen[axis] then
+        current = {date = date, seconds = seconds, lines = {}, seen = {}}
+        flights[#flights + 1] = current
+      end
+      current.seen[axis] = true
+      current.lines[#current.lines + 1] = line
+      lastWasRow = true
+    else
+      if lastWasRow and markOf(line) then current.mark = line end
+      lastWasRow = false
+    end
+  end
+  return flights
+end
+
 -- replies: three decoded lib/msp_tune_advisor.lua replies, roll/pitch/yaw.
--- Appends one flight and drops all but the newest MAX_FLIGHTS. Returns true
--- when written.
-function tuneHistory.save(mcuId, modelName, replies)
+-- Appends one flight and drops all but the newest MAX_FLIGHTS.
+-- previous: {date, seconds} of a saved flight this one's numbers also hold (the
+-- capture's evidence that the FC was not cleared since), or nil. The new flight
+-- is marked as holding it only while that is still the file's newest flight:
+-- after an erase or a lost save it is another one, and nothing is marked.
+-- Nothing is ever removed for it.
+-- Returns true when written, the date the flight was saved with, and whether
+-- it was marked.
+function tuneHistory.save(mcuId, modelName, replies, previous)
   local dir = BASE_DIR .. "/" .. mcuId
   safeMkdir("LOGS:")
   safeMkdir("LOGS:/rfsuite")
@@ -138,24 +203,31 @@ function tuneHistory.save(mcuId, modelName, replies)
   end
 
   local path = tuneHistory.path(mcuId)
-  local keep = {}
+  local flights = {}
   local text = ini.load_file_as_string(path)
   if text then
     local lines = splitLines(text)
     -- A file written with other columns is started again
-    if lines[1] == HEADER then
-      local first = math.max(2, #lines - (MAX_FLIGHTS - 1) * AXIS_COUNT + 1)
-      for i = first, #lines do keep[#keep + 1] = lines[i] end
-    end
+    if lines[1] == HEADER then flights = groupLines(lines) end
   end
 
   local date = os.date("%Y-%m-%d %H:%M:%S")
   local seconds = replies[1].seconds
+  local last = flights[#flights]
+  local mark = nil
+  if previous and last and last.date == previous.date and last.seconds == previous.seconds then
+    mark = MARK .. "," .. last.date .. "," .. tostring(last.seconds)
+  end
   local out = {HEADER}
-  for i = 1, #keep do out[#out + 1] = keep[i] end
+  for i = math.max(1, #flights - MAX_FLIGHTS + 2), #flights do
+    local flight = flights[i]
+    for j = 1, #flight.lines do out[#out + 1] = flight.lines[j] end
+    if flight.mark then out[#out + 1] = flight.mark end
+  end
   for axis = 1, AXIS_COUNT do out[#out + 1] = row(date, seconds, axis, replies[axis].a) end
+  if mark then out[#out + 1] = mark end
   out[#out + 1] = ""
-  return atomicWrite.write(path, table.concat(out, "\n"))
+  return atomicWrite.write(path, table.concat(out, "\n")), date, mark ~= nil
 end
 
 function tuneHistory.logChanges(...)
@@ -174,7 +246,9 @@ function tuneHistory.erase(mcuId)
   if os and os.remove then pcall(os.remove, tuneHistory.path(mcuId)) end
 end
 
--- Returns the saved flights, oldest first: {date, seconds, axes = {a, a, a}}.
+-- Returns the saved flights, oldest first: {date, seconds, axes = {a, a, a},
+-- contains}, contains being the {date, seconds} of a saved flight this one's
+-- reading also holds (a mark line, see the top of this file), else nil.
 -- A missing or foreign file reads as no flights.
 function tuneHistory.read(mcuId)
   local flights = {}
@@ -183,7 +257,7 @@ function tuneHistory.read(mcuId)
   local lines = splitLines(text)
   if lines[1] ~= HEADER then return flights end
 
-  local current = nil
+  local current, lastWasRow = nil, false
   for i = 2, #lines do
     local cols = {}
     for v in (lines[i] .. ","):gmatch("([^,]*),") do cols[#cols + 1] = v end
@@ -191,7 +265,14 @@ function tuneHistory.read(mcuId)
     for n = 1, AXIS_COUNT do
       if AXIS_NAMES[n] == cols[3] then axis = n end
     end
-    if axis and #cols == #FIELDS + 3 then
+    local isRow = axis ~= nil and #cols == #FIELDS + 3
+    if not isRow and lastWasRow then
+      -- A mark belongs to the flight whose row is just before it
+      local markDate, markSeconds = markOf(lines[i])
+      if markDate then current.contains = {date = markDate, seconds = markSeconds} end
+    end
+    lastWasRow = isRow
+    if isRow then
       if not current or current.date ~= cols[1] or current.axes[axis] then
         current = {date = cols[1], seconds = tonumber(cols[2]) or 0, axes = {}}
         flights[#flights + 1] = current
@@ -227,9 +308,39 @@ local function addBand(bands, src)
   end
 end
 
+-- Adds one flight's axis table `a` to the running total `out`. shakeSq is the
+-- running mean square of the shake; returns it updated.
+local function addFlight(out, a, shakeSq)
+  out.ffCount = out.ffCount + a.ffCount
+  addMean(out, "ffGain", a.ffGain, a.ffCount, out.ffCount)
+  addMean(out, "ffCorr", a.ffCorr, a.ffCount, out.ffCount)
+  addMean(out, "ffLagMs", a.ffLagMs, a.ffCount, out.ffCount)
+  addBand(out.spBands, a.spBands)
+  addBand(out.collBands, a.collBands)
+
+  out.fullCount = out.fullCount + a.fullCount
+  out.fullSatCount = out.fullSatCount + a.fullSatCount
+  addMean(out, "fullRatio", a.fullRatio, a.fullCount, out.fullCount)
+  if a.fullMaxRate > out.fullMaxRate then out.fullMaxRate = a.fullMaxRate end
+
+  out.releases = out.releases + a.releases
+  out.bigRebounds = out.bigRebounds + a.bigRebounds
+  addMean(out, "meanRebound", a.meanRebound, a.releases, out.releases)
+  addMean(out, "meanOvershoot", a.meanOvershoot, a.releases, out.releases)
+  addMean(out, "meanCounter", a.meanCounter, a.releases, out.releases)
+  addMean(out, "meanIterm", a.meanIterm, a.releases, out.releases)
+
+  -- RMS combines exactly: the mean of the squares, weighted by count
+  out.shakeCount = out.shakeCount + a.shakeCount
+  shakeSq = shakeSq + (a.shakeRms * a.shakeRms - shakeSq) * (out.shakeCount > 0 and a.shakeCount / out.shakeCount or 0)
+  return shakeSq
+end
+
 -- One axis (1 roll, 2 pitch, 3 yaw) over the newest flights on the newest
 -- flight's tune. Returns the combined axis table (shaped like a decoded reply's
 -- `a`; all zeros with no flights), the flights used and their total seconds.
+-- A flight that a counted newer one contains (a mark line) is left out: it
+-- neither counts nor ends the count.
 function tuneHistory.aggregate(flights, axis)
   local out = newAxis()
   local newest = flights[#flights] and flights[#flights].axes[axis]
@@ -237,34 +348,27 @@ function tuneHistory.aggregate(flights, axis)
   for _, k in ipairs(TUNE_KEYS) do out[k] = newest[k] end
 
   local used, seconds, shakeSq = 0, 0, 0
-  for i = #flights, math.max(1, #flights - MAX_FLIGHTS + 1), -1 do
-    local a = flights[i].axes[axis]
-    if not a or not sameTune(a, newest) then break end
-    used = used + 1
-    seconds = seconds + flights[i].seconds
-
-    out.ffCount = out.ffCount + a.ffCount
-    addMean(out, "ffGain", a.ffGain, a.ffCount, out.ffCount)
-    addMean(out, "ffCorr", a.ffCorr, a.ffCount, out.ffCount)
-    addMean(out, "ffLagMs", a.ffLagMs, a.ffCount, out.ffCount)
-    addBand(out.spBands, a.spBands)
-    addBand(out.collBands, a.collBands)
-
-    out.fullCount = out.fullCount + a.fullCount
-    out.fullSatCount = out.fullSatCount + a.fullSatCount
-    addMean(out, "fullRatio", a.fullRatio, a.fullCount, out.fullCount)
-    if a.fullMaxRate > out.fullMaxRate then out.fullMaxRate = a.fullMaxRate end
-
-    out.releases = out.releases + a.releases
-    out.bigRebounds = out.bigRebounds + a.bigRebounds
-    addMean(out, "meanRebound", a.meanRebound, a.releases, out.releases)
-    addMean(out, "meanOvershoot", a.meanOvershoot, a.releases, out.releases)
-    addMean(out, "meanCounter", a.meanCounter, a.releases, out.releases)
-    addMean(out, "meanIterm", a.meanIterm, a.releases, out.releases)
-
-    -- RMS combines exactly: the mean of the squares, weighted by count
-    out.shakeCount = out.shakeCount + a.shakeCount
-    shakeSq = shakeSq + (a.shakeRms * a.shakeRms - shakeSq) * (out.shakeCount > 0 and a.shakeCount / out.shakeCount or 0)
+  local held = nil   -- "date|seconds" of the flights a counted one contains
+  for i = #flights, 1, -1 do
+    if used >= MAX_FLIGHTS then break end
+    local flight = flights[i]
+    local key = held and (tostring(flight.date) .. "|" .. tostring(flight.seconds))
+    if key and held[key] then
+      -- In the reading of a newer flight already counted: left out rather than
+      -- counted twice, and what it holds in turn too
+      held[key] = nil
+      if flight.contains then held[flight.contains.date .. "|" .. tostring(flight.contains.seconds)] = true end
+    else
+      local a = flight.axes[axis]
+      if not a or not sameTune(a, newest) then break end
+      used = used + 1
+      seconds = seconds + flight.seconds
+      if flight.contains then
+        held = held or {}
+        held[flight.contains.date .. "|" .. tostring(flight.contains.seconds)] = true
+      end
+      shakeSq = addFlight(out, a, shakeSq)
+    end
   end
   out.shakeRms = math.sqrt(shakeSq)
   out.ffLagMs = math.floor(out.ffLagMs + 0.5)
