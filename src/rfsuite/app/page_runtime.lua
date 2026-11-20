@@ -135,6 +135,10 @@ local STATUS_PROFILE_FIELD = {
 local STATUS_MIN_BYTES = 26
 -- Attempts per checked write, as many as the MSP queue's own (1 + 5 retries)
 local CHECKED_WRITE_ATTEMPTS = 6
+-- The queue reasons a checked write is resent for: the FC did not answer. Any
+-- other reason ends the save -- "cleared" in particular is the session dropping
+-- queued work (on arming, or a reconnect), which must not be sent again.
+local RESEND_REASONS = {max_retries = true, timeout = true}
 
 local PageRuntime = {}
 PageRuntime.__index = PageRuntime
@@ -873,18 +877,32 @@ function PageRuntime:performSave(focusFn)
   local expectedProfile = nil
   if statusField and system.getVersion().simulation ~= true then expectedProfile = self.loadedProfile end
 
-  local function stopSave(reason)
+  -- Set when a checked write went unanswered: the FC may have acted on it.
+  local unanswered = false
+
+  -- switched: the profile moved, so the data behind the page is not the
+  -- active profile's. It is read again once the failure dialog closes, so
+  -- another Save cannot send it (without a telemetry profile nothing else
+  -- would tell the page).
+  local function stopSave(reason, switched)
     self_:log("performSave: STOPPED: " .. tostring(reason))
     self_.pendingSaveError = reason
-    self_.pendingSaveRunning = wroteAny or nil
+    self_.pendingSaveRunning = (wroteAny or unanswered) or nil
+    if switched then self_.pendingReload = true end
     finishSave()
   end
 
+  -- Telemetry already shows the switch
+  local function telemetryMoved()
+    return self_.loadedProfile ~= nil and self_.lastProfile ~= self_.loadedProfile
+  end
+
+  -- Narrows the window to the time between the FC's answer and the write
+  -- reaching it; it cannot close it, since nothing makes the two one step.
   local function checkProfile(onSame)
     if self_.disposed then return end
-    -- Telemetry already shows the switch
-    if self_.loadedProfile ~= nil and self_.lastProfile ~= self_.loadedProfile then
-      stopSave("profile changed")
+    if telemetryMoved() then
+      stopSave("profile changed", true)
       return
     end
     local statusMsp = requireModule("lib/msp_status.lua")
@@ -892,8 +910,9 @@ function PageRuntime:performSave(focusFn)
       if self_.disposed then return end
       local active = status[statusField] + 1
       if expectedProfile == nil then expectedProfile = active end
-      if active ~= expectedProfile then
-        stopSave("profile changed")
+      -- telemetry is checked again: it may have moved while the request was out
+      if active ~= expectedProfile or telemetryMoved() then
+        stopSave("profile changed", true)
         return
       end
       onSame()
@@ -967,8 +986,9 @@ function PageRuntime:performSave(focusFn)
       if self_.disposed then return end
       -- A checked write is resent from here, after the profile is checked
       -- again: the queue's own resend could reach a profile selected since.
-      if statusField and attempt < CHECKED_WRITE_ATTEMPTS then
+      if statusField and RESEND_REASONS[reason] and attempt < CHECKED_WRITE_ATTEMPTS then
         self_:log("performSave: write unanswered (" .. tostring(source.key) .. "), checking the profile again")
+        unanswered = true
         writeSource(index, attempt + 1)
         return
       end

@@ -25,8 +25,17 @@ The flight controller stores a PID or rate profile setting in whichever profile 
 arrives. So on a page that edits one profile (PIDs, PID Controller, Tail Rotor, Rates, Rescue and the
 other profile pages), Save asks the flight controller which profile is active right before each write. If
 it is not the profile the page read, Save stops there: nothing more is sent and nothing is stored. A
-switch before the first write fails with nothing sent; a switch after a write fails with some values
-sent, as above. Either way the page then reads the new profile.
+switch before the first write fails with nothing sent; a switch after a write, or after a write whose
+answer was lost, fails with some values sent, as above. Either way the page then reads the new profile.
 
-A write whose answer is lost is sent again only after the same check, so it cannot land in a profile
-selected in the meantime.
+A write whose answer is lost is sent again only after the same check. A write the radio dropped from its
+queue (when the model arms, or the link reconnects) is not sent again.
+
+The check narrows the window; it cannot close it. The flight controller answers which profile is active
+and then receives the write in a separate step, so a switch in the moment between the two can still put
+that one write into the new profile. Telemetry is compared again when the answer arrives, which catches
+a switch it has already reported.
+
+Without a PID or rate profile telemetry sensor, the page does not know which profile it read. Save then
+takes the profile the flight controller names before the first write, so a switch made after the page
+was read and before Save is not caught. Every later write must still find that profile.

@@ -206,6 +206,8 @@ local function pump(hook, wakeup)
     if hook then action, switchAfter = hook(m) end
     if action == "error" then
       m.errorHandler("timeout")
+    elseif action == "cleared" then
+      m.errorHandler("cleared")   -- the session dropped the queued request
     elseif m.command == STATUS then
       m.processReply(m, statusReply())
     elseif WRITE_TO_READ[m.command] then
@@ -340,6 +342,8 @@ do
   check("nothing is committed", not has(sent, EEPROM))
   check("reported as a failed save with nothing sent", reported(SAVE_FAILED) and not reported(SAVE_FAILED_RUNNING),
     lastDialog())
+  check("the page reads the active profile again", count(sent, PID_READ) >= 1 and count(sent, GOV_READ) >= 1,
+    table.concat(sent, ","))
   if opts.cleanup then opts.cleanup() end
 end
 
@@ -379,6 +383,31 @@ do
   check("the write is not resent into profile 2", count(sent, PID_WRITE) == 1 and not pid2,
     table.concat(sent, ","))
   check("nothing more is sent", not gov2 and not has(sent, GOV_WRITE) and not has(sent, EEPROM))
+  check("reported as a failed save that may already run", reported(SAVE_FAILED_RUNNING), lastDialog())
+  if opts.cleanup then opts.cleanup() end
+end
+
+out("Tail Rotor: telemetry shows a switch while the status request is out")
+do
+  local rt, opts = openTailRotor()
+  local sent = save(rt, opts, function(m)
+    if m.command == STATUS then
+      session.pidProfile = 2
+      publishSession()
+      session.pidProfile = 1
+    end
+  end)
+  check("the write is not sent", not has(sent, PID_WRITE) and not has(sent, EEPROM), table.concat(sent, ","))
+  if opts.cleanup then opts.cleanup() end
+end
+
+out("Tail Rotor: a write the session dropped from the queue is not resent")
+do
+  local rt, opts = openTailRotor()
+  local sent = save(rt, opts, function(m) if m.command == PID_WRITE then return "cleared" end end)
+  check("sent once, nothing more", count(sent, PID_WRITE) == 1 and not has(sent, GOV_WRITE)
+    and not has(sent, EEPROM), table.concat(sent, ","))
+  check("reported as a failed save", reported(SAVE_FAILED), lastDialog())
   if opts.cleanup then opts.cleanup() end
 end
 
