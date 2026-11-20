@@ -207,6 +207,21 @@ end
 
 -- ── module stubs ───────────────────────────────────────────────────────────
 
+-- MSP_STATUS: app/page_runtime.lua checks the active profile before each write
+-- of a profile page (#2809). The FC answers profile 1, the one the page loaded.
+local STATUS_BYTES = {}
+for i = 1, 30 do STATUS_BYTES[i] = 0 end
+package.loaded["rfsuite.lib.msp_status"] = {
+  buildReadMessage = function(onData, onError)
+    return {
+      kind = "status",
+      errorHandler = onError,
+      processReply = function()
+        onData({current_pid_profile_index = 0, current_control_rate_profile_index = 0})
+      end,
+    }
+  end,
+}
 package.loaded["rfsuite.lib.bus"] = {
   subscribe = function(topic, handler)
     if topic == "session.update" then sessionHandlers[#sessionHandlers + 1] = handler end
@@ -214,6 +229,10 @@ package.loaded["rfsuite.lib.bus"] = {
   unsubscribe = function() end,
   publish = function(topic, message)
     if topic ~= "msp.request" or type(message) ~= "table" then return end
+    if message.kind == "status" then
+      message.processReply(message, STATUS_BYTES)
+      return
+    end
     if message.isReboot then
       -- A board that is rebooting does not acknowledge the command that reboots
       -- it (lib/msp_reboot.lua's maxRetries = 0, and its own comment says the

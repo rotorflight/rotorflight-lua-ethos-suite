@@ -31,6 +31,10 @@ Greyed out until the flight controller answers. Read-only while the model is arm
 ## Notes
 
 - Changes are written to the flight controller EEPROM upon Save.
+- Save writes two messages, one for the PID profile values and one for the governor profile, which also
+  carries the head speed and governor gains. If the PID profile is switched while Save runs, it stops
+  before the next write so the other profile's settings are not replaced. See
+  [Saving to the flight controller](../../../reference/saving.md#a-profile-switch-during-a-save).
 
 ## Related
 
