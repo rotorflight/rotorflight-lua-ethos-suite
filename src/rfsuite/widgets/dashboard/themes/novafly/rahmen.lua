@@ -31,8 +31,12 @@ function R.frisch(M)                     -- die Masse der Linien zum Fenster M, 
     local w, h, x0, y0 = M.sx(480), M.sy(320), M.X(0), M.Y(0)
     local q = M.q
     if q and q.w == w and q.h == h and q.x0 == x0 and q.y0 == y0 then return q end
-    if w < 700 then
+    if w < 600 then
         q = {w = w, h = h, x0 = x0, y0 = y0, k = 1, endung = "", ecke = R.ECKE[1], x = M.X, y = M.Y}
+    elseif w < 700 then   -- 640 x 360 (X14): Kern 1 wie 480 x 320, die Lage als Spalte und Zeile des Kerns wie bei 800 x 480, Masken mit der Endung _640
+        q = {w = w, h = h, x0 = x0, y0 = y0, k = 1, endung = "_640", ecke = R.ECKE[1],
+             x = function(v) return x0 + floor((v * w + 160) / 480) end,
+             y = function(v) return y0 + floor((v * h + 80) / 320) end}
     else
         q = {w = w, h = h, x0 = x0, y0 = y0, k = 2, endung = "_800", ecke = R.ECKE[2],
              x = function(v) return x0 + floor((v * w + 160) / 480) end,
@@ -46,7 +50,7 @@ local function masse(M)                  -- die Masse aus M, ohne Rechnung (jede
     return M.q or R.frisch(M)
 end
 
-function R.endung(M) return masse(M).endung end   -- die Endung der Maskendateien dieser Schirmgroesse: "" oder "_800"
+function R.endung(M) return masse(M).endung end   -- die Endung der Maskendateien dieser Schirmgroesse: "", "_640" oder "_800"
 
 function R.waagrecht(M, F, y, x0, x1)    -- Kern in Zeile y, Mittelton eine Zeile darueber und darunter, aussen je eine Zeile Schein (auf 800 x 480 der Kern zwei Zeilen)
     local q = masse(M)

@@ -23,7 +23,8 @@ local U_MIN = "U/min"
 
 local t = H.i18n
 local stil, S = nil, nil
-local nova = {dirty = false, armLage = "unbekannt", flugbuch = {}, hohesDetail = true, kursiv = nil, i18n = t}
+local nova = {dirty = false, armLage = "unbekannt", flugbuch = {}, hohesDetail = true, kursiv = nil,
+              i18n = setmetatable({wort = function(text) return text end}, {__index = t})}   -- die Seite uebersetzt ihre Woerter selbst (S.wort); was stil_teile malt, geht kein zweites Mal durch die Sprache (Rechenschritte)
 local werte = {pid = nil, rc = nil, gov = nil, govProfil = nil, fehler = nil}
 local gelesenFuer = nil                  -- {bank, rate}, fuer die die Werte gelesen wurden; ein Wechsel liest neu
 local laeuft = false

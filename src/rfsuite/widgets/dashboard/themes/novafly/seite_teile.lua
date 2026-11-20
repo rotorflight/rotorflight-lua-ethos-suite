@@ -56,7 +56,7 @@ end
 
 function S.mass() return M end
 
-function S.endung()   -- die Endung der Bilddateien dieser Schirmgroesse (rahmen.lua R.endung): "" oder "_800"
+function S.endung()   -- die Endung der Bilddateien dieser Schirmgroesse (rahmen.lua R.endung): "", "_640" oder "_800"
     local R = H.rahmen()
     return R and R.endung(M) or ""
 end
@@ -74,7 +74,6 @@ function S.linien(links)   -- die fuenf Linien des Cockpits, auslaufend als Mask
     local R = H.rahmen()
     if R then R.seite(M, H.linien(), links, type(H.auslaufMasken) == "function" and H.auslaufMasken(R) or nil) end
 end
-
 function S.chip(x, y, w, h, offen)   -- ein Viereck aus den Linien des Cockpits mit Ecken r 4 (Masken); offen = "links" oder "rechts": ohne diese Kante, die Linien laufen zum Schirmrand
     local R = H.rahmen()
     if not R then return end

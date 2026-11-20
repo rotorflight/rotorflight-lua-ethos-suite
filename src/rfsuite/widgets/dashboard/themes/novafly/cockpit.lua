@@ -1028,10 +1028,17 @@ local function langdruckPruefen()
 end
 
 local erstesWach = true
+local SEITEN_WORTE = {"GOVERNOR", "DREHZAHL", "HOCHLAUF", "GAIN", "IST", "BANK", "RATE", "ROLL", "NICK", "HECK", "KOLL.",
+                      "AKKU", "ZELLE", "VERBRAUCH", "HOEHE MAX", "STEIGEN MAX", "SINKEN MAX", "FLUGZEIT", "PID", "RATEN", "MSP"}
+local wortVorrat = 1   -- die Woerter der Seiten, je Wakeup eines vorab uebersetzt: sonst uebersetzt das erste Malen einer Seite alle auf einmal (Rechenschritte)
 local function wach(box, tele)
     if erstesWach then erstesWach = false   -- der erste Wakeup traegt schon das Laden dieser Datei
     elseif tabellenStufe < 2 then tabellenSchritt()
-    elseif farbeAblage ~= nil then farbeAblageTakt() end
+    elseif farbeAblage ~= nil then farbeAblageTakt()
+    elseif SPRACHE ~= nil and wortVorrat <= #SEITEN_WORTE then
+        pcall(SPRACHE.wort, SEITEN_WORTE[wortVorrat])
+        wortVorrat = wortVorrat + 1
+    end
     local jetzt = os.clock()
     langdruckPruefen()
     if jetzt - farbeGelesen >= FARBE_LESEN_SEK then

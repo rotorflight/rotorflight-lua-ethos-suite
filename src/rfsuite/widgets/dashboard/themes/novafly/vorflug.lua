@@ -17,7 +17,8 @@ local KEINE_ZONE = {x = 0, y = 0, w = 0, h = 0}   -- ZURUECK gibt es auf einer S
 
 local t = H.i18n
 local stil, S = nil, nil
-local nova = {dirty = false, armLage = "unbekannt", flugbuch = {}, hohesDetail = true, kursiv = nil, i18n = t}   -- Senderschrift, keine Masken
+local nova = {dirty = false, armLage = "unbekannt", flugbuch = {}, hohesDetail = true, kursiv = nil,   -- Senderschrift, keine Masken
+              i18n = setmetatable({wort = function(text) return text end}, {__index = t})}   -- die Seite uebersetzt ihre Woerter selbst (S.wort); was stil_teile malt, geht kein zweites Mal durch die Sprache
 local BILDER = H.merk.bilder or {}   -- Foto und Fotorand bleiben ueber das Schliessen der Seite hinaus geladen: jedes Oeffnen lud sie
 H.merk.bilder = BILDER               -- sonst neu, und der X18 blieb stehen
 local foto = nil
