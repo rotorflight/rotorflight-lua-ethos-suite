@@ -27,9 +27,14 @@ Greyed out until the flight controller answers. Read-only while the model is arm
 | Inertia Precomp (Cutoff) | Configures Inertia Precomp (Cutoff). Range: 0 to 250 Hz. Default: 25 Hz. |
 | Tail Torque Assist (Gain) | Configures Tail Torque Assist (Gain). Range: 0 to 250. Default: 0. |
 | Tail Torque Assist (Limit) | Configures Tail Torque Assist (Limit). Range: 0 to 250 %. Default: 20 %. |
+| TTA Threshold | Motorised tail. Tail throttle above Tail Idle where TTA starts; 0 starts it at the idle. Range: 0 to 25.0 %. Default: 0 (off). |
+| TTA Banking (Limit) | Most headspeed TTA banking may hold above the governor target, in % of headspeed. Range: 0 to 25 %. Default: 10 %. |
+| TTA Banking (Rate) | Fastest wind-down of the banked headspeed as the yaw stick comes back, in % of headspeed per second. Range: 1 to 100 %/s. Default: 20 %/s. |
+| TTA Banking (Release) | Tail throttle above which the banked headspeed is released as a main throttle cut. Range: 10 to 100 %. Default: 50 %. |
 
 ## Notes
 
+- TTA Threshold and the TTA Banking fields need Rotorflight with MSP API 12.11 (rotorflight-firmware#606) and are greyed out on older firmware. Banking itself is turned on with *TTA Banking* on [Governor → Behaviour](../governor/flags.md).
 - Changes are written to the flight controller EEPROM upon Save.
 
 ## Related

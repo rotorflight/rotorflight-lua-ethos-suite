@@ -69,6 +69,10 @@ end
 -- msp.c:2123-2139, and it is the length the suite's own module header calls
 -- "the full 17-byte struct".
 local EXPECTED_BYTES = 17
+-- The module's simulator fixture also carries the four TTA threshold/banking
+-- bytes of API 12.11 (rotorflight-firmware#606), which msp.c appends after the
+-- 17-byte struct. A write sends back what was read, so the runtime case writes 21.
+local FIXTURE_BYTES = EXPECTED_BYTES + 4
 
 -- ---------------------------------------------------------------------------
 -- Ethos environment
@@ -599,8 +603,8 @@ do
   for i = 1, #writes do
     if writes[i].command == codec.WRITE_COMMAND then gov = writes[i] end
   end
-  check("whose payload is the full struct", gov ~= nil and type(gov.payload) == "table"
-    and #gov.payload == EXPECTED_BYTES,
+  check("whose payload is the full struct it read", gov ~= nil and type(gov.payload) == "table"
+    and #gov.payload == FIXTURE_BYTES,
     gov and string.format("%d bytes", type(gov.payload) == "table" and #gov.payload or -1) or "no message")
 end
 
