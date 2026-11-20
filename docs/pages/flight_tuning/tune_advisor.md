@@ -89,6 +89,10 @@ The suggestions follow these rules:
   opposite directions, so the stick feel stays the same but the heli flies the rate you ask for. One step
   changes F by at most 20%. With Actual, Quick and Rotorflight rates the page gives the exact rate values;
   with the other rate types it gives a percentage. An axis with F set to 0 (often the tail) gets no F advice.
+  F, and the rates an F step moves, stay between 60% and 167% of your own values, which allows two steps either
+  way. Your own value is the last one you set by hand, worked out from `changes.csv` as for P. Past that the page
+  gives no F step and the reasons say how far F or the rates already are: set them on *PIDs* or *Rates* to go
+  further. A step back toward your own value is always given. The stops then get neither the F advice nor a P step.
 - **Full stick asks for more rate than the heli reaches** (roll and pitch), with the cyclic at its limit: lower
   the rates toward what the heli reaches, by at most 20% per step. The rate the cyclic asks for is capped by the
   *Cyclic ring* when it is below 100%, so a ring of 50% asks for half the curve. A ring of 0% is no limit. When the

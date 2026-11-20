@@ -8934,6 +8934,34 @@
           "reverse_text": false,
           "max_length": 58
         },
+        "why_f_below_fmt": {
+          "english": "F is already %d%% below your setting. Set it on PIDs to go further.",
+          "translation": "F est déjà %d%% sous votre réglage. Pour aller plus loin, réglez-le dans PIDs.",
+          "needs_translation": false,
+          "reverse_text": false,
+          "max_length": 67
+        },
+        "why_f_above_fmt": {
+          "english": "F is already %d%% above your setting. Set it on PIDs to go further.",
+          "translation": "F est déjà %d%% au-dessus de votre réglage. Pour aller plus loin, utilisez PIDs.",
+          "needs_translation": false,
+          "reverse_text": false,
+          "max_length": 67
+        },
+        "why_rates_below_fmt": {
+          "english": "Rates are already %d%% below your setting. Set them on Rates to go further.",
+          "translation": "Les taux sont déjà %d%% sous votre réglage. Pour aller plus loin, utilisez Taux.",
+          "needs_translation": false,
+          "reverse_text": false,
+          "max_length": 75
+        },
+        "why_rates_above_fmt": {
+          "english": "Rates are already %d%% above your setting. Set them on Rates to go further.",
+          "translation": "Les taux sont déjà %d%% au-dessus de votre réglage. Utilisez Taux pour aller plus loin.",
+          "needs_translation": false,
+          "reverse_text": false,
+          "max_length": 75
+        },
         "data_flights_fmt": {
           "english": "%dm %02ds, %d/%d flights",
           "translation": "%dm %02ds, %d/%d flights",
