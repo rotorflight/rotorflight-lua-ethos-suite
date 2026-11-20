@@ -113,14 +113,21 @@ local tuneHistory = requireModule("lib/tune_history.lua")
 check("boot-resident flight history leaves Apply-record code unloaded",
   package.loaded["rfsuite.lib.tune_history_changes"] == nil)
 
--- Each reply is the simulator fixture with these overrides
-local reply = {seconds = 147, F = 100, releases = nil}
+-- Each reply is the simulator fixture with these overrides. wrongAxis[name] = {n = times, axis = a}:
+-- that many answers to that axis's request name axis a instead (#2787).
+local reply = {seconds = 147, F = 100, releases = nil, wrongAxis = nil}
+local asking = nil                -- the axis name of the request being answered
 local realDecode = tuneAdvisor.decode
 tuneAdvisor.decode = function(buf)
   local data = realDecode(buf)
   data.seconds = reply.seconds
   data.a.F = reply.F
   if reply.releases then data.a.releases = reply.releases end
+  local w = reply.wrongAxis and asking and reply.wrongAxis[asking]
+  if w and w.n > 0 then
+    w.n = w.n - 1
+    data.axis = w.axis
+  end
   return data
 end
 
@@ -191,6 +198,7 @@ local function pump(fail, limit, seconds)
         local name = msg.command == tuneAdvisor.CLEAR_COMMAND and "clear" or NAMES[msg.payload[1] + 1]
         asked[#asked + 1] = name
         times[#times + 1] = clock
+        asking = name
         local f = fail and fail[name]
         if f and f.n > 0 then
           f.n = f.n - 1
@@ -401,6 +409,26 @@ do
   local asked = pump({pitch = {n = 1, reason = "max_retries"}})
   check("a lost axis is asked again on its own", asked == "roll,pitch,pitch,yaw,clear" and #lines() == 4,
     asked .. " / " .. #lines() .. " lines")
+end
+
+-- #2787: a late answer to the roll request taken as the pitch answer saved roll's numbers as
+-- pitch's. The reply names its axis; one that is not the axis asked for is not stored.
+do
+  load()
+  update({isArmed = true})
+  update({isArmed = false})
+  reply.wrongAxis = {pitch = {n = 1, axis = 1}}
+  local asked = pump()
+  check("a reply naming another axis is not stored, and that axis is asked again",
+    asked == "roll,pitch,pitch,yaw,clear" and #lines() == 4, asked .. " / " .. #lines() .. " lines")
+  load()
+  update({isArmed = true})
+  update({isArmed = false})
+  reply.wrongAxis = {pitch = {n = 99, axis = 1}}
+  asked = pump(nil, nil, 120)
+  check("a reply that keeps naming another axis stops like a link error",
+    asked == "roll,pitch,pitch,pitch", asked)
+  reply.wrongAxis = nil
 end
 
 -- What this pacing fixes: a reply lost on every try kept the MSP queue and the
