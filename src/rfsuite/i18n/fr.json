@@ -12605,6 +12605,20 @@
           "reverse_text": false,
           "translation": "It turns %d%% faster at low collective than at high."
         },
+        "why_f_above_fmt": {
+          "english": "F is already %d%% above your setting. Set it on PIDs to go further.",
+          "max_length": 67,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "F est déjà %d%% au-dessus de votre réglage. Pour aller plus loin, utilisez PIDs."
+        },
+        "why_f_below_fmt": {
+          "english": "F is already %d%% below your setting. Set it on PIDs to go further.",
+          "max_length": 67,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "F est déjà %d%% sous votre réglage. Pour aller plus loin, réglez-le dans PIDs."
+        },
         "why_fast": {
           "english": "The heli turns faster than the stick asks for.",
           "max_length": 46,
@@ -12673,6 +12687,20 @@
           "max_length": 46,
           "needs_translation": true,
           "translation": "Polar cyclic: roll follows the Cyclic rates"
+        },
+        "why_rates_above_fmt": {
+          "english": "Rates are already %d%% above your setting. Set them on Rates to go further.",
+          "max_length": 75,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Les taux sont déjà %d%% au-dessus de votre réglage. Utilisez Taux pour aller plus loin."
+        },
+        "why_rates_below_fmt": {
+          "english": "Rates are already %d%% below your setting. Set them on Rates to go further.",
+          "max_length": 75,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Les taux sont déjà %d%% sous votre réglage. Pour aller plus loin, utilisez Taux."
         },
         "why_relax": {
           "english": "After a stop, the I-term pushes the heli back.",

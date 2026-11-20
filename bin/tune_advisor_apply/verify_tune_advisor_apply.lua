@@ -864,6 +864,53 @@ do
   flightRoll = nil
 end
 
+print("F and the rates it moves stay within reach of the pilot's own values (issue #2788)")
+do
+  -- The fixture's roll runs hot: F 120 -> 96, with its rates raised by 120 / 96
+  local function shown()
+    local out = {}
+    lcd.drawText = function(_, _, text) out[#out + 1] = tostring(text) end
+    paintFn()
+    lcd.drawText = nil
+    return table.concat(out, "\n")
+  end
+
+  -- The page already lowered the pilot's F 200 twice: 96 would be past 60% of 200
+  resetFc()
+  changeLog = {{axis = 1, key = "F", from = 200, to = 160, pidProfile = 1},
+    {axis = 1, key = "F", from = 160, to = 120, pidProfile = 1}}
+  openPage()
+  pump()
+  local text = shown()
+  check("no F step past 60% of the pilot's own F", saveEnabled == false
+    and text:find("act_f_fmt", 1, true) == nil, tostring(saveEnabled))
+  check("the reasons say how far F already is", text:find("why_f_below_fmt", 1, true) ~= nil, text)
+
+  -- Within the bound: own F 150, 96 is 64% of it
+  resetFc()
+  changeLog = {{axis = 1, key = "F", from = 150, to = 120, pidProfile = 1}}
+  openPage()
+  pump()
+  check("an F step within the bound is given", saveEnabled == true and shown():find("act_f_fmt", 1, true) ~= nil)
+
+  -- A step back toward the pilot's own value is never held back
+  resetFc()
+  changeLog = {{axis = 1, key = "F", from = 50, to = 120, pidProfile = 1}}
+  openPage()
+  pump()
+  check("a step back toward the pilot's own F is given", saveEnabled == true)
+
+  -- The rates: the page raised the pilot's rc rate 12 to 18; 23 would be past 167% of 12
+  resetFc()
+  changeLog = {{axis = 1, key = "rcRate", from = 12, to = 18, pidProfile = 1}}
+  openPage()
+  pump()
+  text = shown()
+  check("no F step whose rates go past 167% of the pilot's own", saveEnabled == false, tostring(saveEnabled))
+  check("the reasons say how far the rates already are", text:find("why_rates_above_fmt", 1, true) ~= nil, text)
+  changeLog = {}
+end
+
 print("P is raised at most 50% above the pilot's own P")
 do
   -- The response matches and stops bounce back 20% with no I-term push: more P

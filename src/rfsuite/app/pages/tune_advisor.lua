@@ -145,6 +145,10 @@ local T = {
   whyOk = "@i18n(app.modules.tune_advisor.why_ok)@",
   whyLimit = "@i18n(app.modules.tune_advisor.why_limit)@",
   whyPMaxFmt = "@i18n(app.modules.tune_advisor.why_p_max_fmt)@",
+  whyFBelowFmt = "@i18n(app.modules.tune_advisor.why_f_below_fmt)@",
+  whyFAboveFmt = "@i18n(app.modules.tune_advisor.why_f_above_fmt)@",
+  whyRatesBelowFmt = "@i18n(app.modules.tune_advisor.why_rates_below_fmt)@",
+  whyRatesAboveFmt = "@i18n(app.modules.tune_advisor.why_rates_above_fmt)@",
 
   applyHint = "@i18n(app.modules.tune_advisor.apply_hint)@",
   applyPrompt = "@i18n(app.modules.tune_advisor.apply_prompt)@",
@@ -217,6 +221,11 @@ local REBOUND_BAD = 0.12
 local ITERM_PUSH = 0.03         -- I at release, output units
 local P_STEP = 1.2
 local P_RAISE_MAX = 1.5         -- P at most 50% above the pilot's own: two steps
+-- F, and the rates an F step moves, stay within 3/5 to 5/3 of the pilot's own values (60% to
+-- 167%): two 20% steps either way, with room for the rounding of each (issue #2788). Compared
+-- in integers, as to * 5 < own * 3: with 32-bit floats 100 * 0.6 is not exactly 60.
+local OWN_LOW_NUM, OWN_LOW_DEN = 3, 5
+local OWN_HIGH_NUM, OWN_HIGH_DEN = 5, 3
 local CUTOFF_STEP = 0.8         -- lower Iterm Relax Cutoff = more relax, less bounce-back
 local CUTOFF_MIN = 1
 
@@ -352,6 +361,32 @@ local function rateActions(src, name, k, act, change, axis)
   end
 end
 
+-- Whether a step from `from` to `to` stays within the bound around the pilot's own value. A
+-- step back toward the pilot's own value is never held back, so a record from before this bound
+-- does not lock a setting. An own value of 0 or less has no bound.
+local function withinOwn(from, to, own)
+  if not own or own <= 0 then return true end
+  if math.abs(to - own) < math.abs(from - own) then return true end
+  return to * OWN_LOW_DEN >= own * OWN_LOW_NUM and to * OWN_HIGH_DEN <= own * OWN_HIGH_NUM
+end
+
+-- How far `value` is from `own`, in percent, and whether it is below
+local function offOwn(value, own)
+  return round(math.abs(value / own - 1) * 100), value < own
+end
+
+-- The first rate the F step would scale past the bound, as key and new value, or nil
+local function rateOffOwn(src, k, own)
+  local roles = LINEAR_ROLES[src.ratesType]
+  if not roles or not own then return nil end
+  for _, role in ipairs(roles) do
+    local key = rateKey(role)
+    local newRaw = round(src[key] * k)
+    if not withinOwn(src[key], newRaw, own[key]) then return key, newRaw end
+  end
+  return nil
+end
+
 -- How many lines rateActions() adds for this rates_type
 local function rateActionCount(a)
   local roles = LINEAR_ROLES[a.ratesType]
@@ -369,12 +404,13 @@ end
 -- fits. The reasons for changes stay within MAX_WHYS; only the closing
 -- |collective| fact can be cut.
 --
--- pilotP is the pilot's own P for this axis (tune_history.pilotValue()).
+-- pilotP is the pilot's own P for this axis (tune_history.pilotValue()); own holds the
+-- pilot's own F and rate values the same way ({F, rcRate, sRate}), or nil.
 --
 -- A change that would leave the range the FC accepts is dropped with
 -- anything tied to it, and the reasons say so once (atLimit).
 -- cyc is the Cyclic (pitch) axis's record, passed for roll under polar cyclic (#2639).
-local function advise(a, axis, name, pilotP, actions, whys, changes, cyc)
+local function advise(a, axis, name, pilotP, actions, whys, changes, cyc, own)
   local function room(n) return #actions + n <= MAX_ACTIONS end
   local function act(s) if #actions < MAX_ACTIONS then actions[#actions + 1] = s end end
   local function why(s) if #whys < MAX_WHYS then whys[#whys + 1] = s end end
@@ -387,6 +423,9 @@ local function advise(a, axis, name, pilotP, actions, whys, changes, cyc)
     end
   end
   local limited = false
+  -- F was not stepped because it, or a rate it moves, is as far from the pilot's own value as
+  -- this page goes: the stops are not told to fix F first, and P is not raised for this axis.
+  local ownHeld = false
   local function atLimit()
     if not limited then limited = true; why(T.whyLimit) end
   end
@@ -423,10 +462,22 @@ local function advise(a, axis, name, pilotP, actions, whys, changes, cyc)
       why(T.whyPolar)
     elseif a.F > 0 then
       local newF = round(a.F * clamp(1 / g, 1 - FF_STEP_MAX, 1 + FF_STEP_MAX))
+      local rateKeyOff = newF >= 1 and rateOffOwn(a, a.F / newF, own) or nil
       -- Keep the stick feel: F x rate is what the pilot feels. F is applied
       -- only with its rates, so a percentage-only rates_type applies neither,
       -- and F is not given at all when F or a rate would leave its range.
-      if newF < 1 or not inRange("F", axis, newF) or not ratesFit(a, axis, a.F / newF) then
+      if newF >= 1 and own and not withinOwn(a.F, newF, own.F) then
+        -- As far from the pilot's own F as this page goes (#2788)
+        ownHeld = true
+        local pct, below = offOwn(a.F, own.F)
+        why(hot and T.whyFast or T.whySlow)
+        why(string.format(below and T.whyFBelowFmt or T.whyFAboveFmt, pct))
+      elseif rateKeyOff then
+        ownHeld = true
+        local pct, below = offOwn(a[rateKeyOff], own[rateKeyOff])
+        why(hot and T.whyFast or T.whySlow)
+        why(string.format(below and T.whyRatesBelowFmt or T.whyRatesAboveFmt, pct))
+      elseif newF < 1 or not inRange("F", axis, newF) or not ratesFit(a, axis, a.F / newF) then
         why(hot and T.whyFast or T.whySlow)
         atLimit()
       elseif not ratesMove(a, a.F / newF) then
@@ -504,7 +555,7 @@ local function advise(a, axis, name, pilotP, actions, whys, changes, cyc)
         -- says so instead of sending the pilot to F
         if polarRoll then
           why(T.whyPolar)
-        elseif not limited then
+        elseif not limited and not ownHeld then
           why(string.format(T.whyFixFFmt, rebound))
         end
       elseif room(1) then
@@ -711,10 +762,16 @@ local function open(opts)
     clearList(whys)
     clearList(view.changes)
     local pilotP = tuneHistory.pilotValue(changeLog, axis, "P", a.P, link.pidProfile)
+    -- The pilot's own F and rates on this axis, followed back the same way (#2788)
+    local own = {
+      F = tuneHistory.pilotValue(changeLog, axis, "F", a.F, link.pidProfile),
+      rcRate = tuneHistory.pilotValue(changeLog, axis, "rcRate", a.rcRate, link.pidProfile),
+      sRate = tuneHistory.pilotValue(changeLog, axis, "sRate", a.sRate, link.pidProfile),
+    }
     -- Roll under polar cyclic is advised on the Cyclic (pitch) rate bytes (#2639)
     local cyc = nil
     if axis == AXIS_ROLL and a.polar == 1 then cyc = tuneHistory.aggregate(flights, AXIS_PITCH) end
-    view.response, view.stops = advise(a, axis, AXES[selected][1], pilotP, actions, whys, view.changes, cyc)
+    view.response, view.stops = advise(a, axis, AXES[selected][1], pilotP, actions, whys, view.changes, cyc, own)
     view.axis = axis
     -- The rate bytes Apply holds the FC to are those of the axis the rates were advised on
     local rateSrc = cyc or a
