@@ -68,7 +68,9 @@ local function open(opts)
   -- The board's profile counts, once read. Until then no profile can be chosen and Save stays off.
   local status = nil
   local loaded = false
-  -- The profile type changed: the lists of profiles are rebuilt on the next wakeup.
+  -- The counts arrived, or the profile type changed: the lines are built on the next wakeup.
+  -- Never from the MSP reply itself: that runs in the background task, where form calls do
+  -- not reach this page's window, and the page stayed empty.
   local pendingRebuild = false
   local data = {
     profileType = 0,
@@ -195,12 +197,13 @@ local function open(opts)
       end)
   end
 
-  -- Clears the lines and builds them again for the current counts and type.
+  local buildPage
+
+  -- Clears the page and builds it again for the current counts and type. form.clear() takes
+  -- the header with it, so the header is built again too.
   local function rebuildFields()
     pendingRebuild = false
-    form.clear()
-    fields = {}
-    fieldsEnabled = nil
+    buildPage()
     addFields()
     updateEnabled()
   end
@@ -239,14 +242,14 @@ local function open(opts)
       if disposed then return end
       status = data
       loaded = true
-      rebuildFields()
+      pendingRebuild = true
     end, function()
       if disposed then return end
       showLoadFailed()
     end))
   end
 
-  local function buildPage()
+  buildPage = function()
     form.clear()
     fields = {}
     fieldsEnabled = nil
