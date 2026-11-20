@@ -1,0 +1,7 @@
+{
+  "id": "mixer-geometry-save",
+  "name": "Geometry save keeps the raw fields the pilot did not change",
+  "step": "Check the Mixer Geometry save round trip",
+  "script": "bin/mixer_geometry_save/verify_mixer_geometry_save.lua",
+  "rationale": "Issue #2792: Mixer > Geometry shows rounded values (cyclic and collective limits as tenths of a degree from 1/12-degree raw steps, geo correction halved), and its beforeSave rebuilt every raw field from them on any save: a raw limit of 1001 came back as 1000, the roll limits were replaced by the pitch limit, and each minimum was rewritten as -max. The page now writes only the raw fields behind the form values the pilot edited since the last read.\n\nThe harness drives the real mixer_geometry.lua with a stand-in runtime on raw data that does not round-trip: an unchanged save keeps every raw field, editing the phase writes only the phase, an edited cyclic limit is written to pitch and roll as +/- the limit and keeps the collective limit, an edited cyclic rate keeps each axis's direction and the limits, and a reload forgets the edits. --self-test makes the cyclic limit write unconditional and requires the untouched checks to fail."
+}
