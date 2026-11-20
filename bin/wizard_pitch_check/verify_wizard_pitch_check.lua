@@ -177,6 +177,33 @@ do
   check("5c. the cyclic page offers Calibrate", rowWithAnswer(CALIBRATE) ~= nil)
 end
 
+print("one cyclic rate row (#2707)")
+do
+  -- Roll is held on this page and pitch is not: two rows let pitch change with no reading at the
+  -- gauge, and Mixer > Geometry has one cyclic calibration. One row sets both, each keeping its sign.
+  local RATE_CYCLIC = "@i18n(app.modules.setup_wizard.pit_rate)@ @i18n(app.modules.setup_wizard.rates_axis_cyclic)@"
+  local RATE_PREFIX = "@i18n(app.modules.setup_wizard.pit_rate)@"
+  function wiz.editInput(axis, fn)
+    wiz.inputs[axis] = wiz.inputs[axis] or {}
+    fn(wiz.inputs[axis])
+  end
+  wiz.inputs.roll, wiz.inputs.pitch = {rate = 400}, {rate = -410}
+  node.build()
+  local rateRows = 0
+  for _, row in ipairs(view.rows or {}) do
+    if type(row.label) == "string" and row.label:sub(1, #RATE_PREFIX) == RATE_PREFIX then rateRows = rateRows + 1 end
+  end
+  local row = rowWithLabel(RATE_CYCLIC)
+  check("7a. the cyclic page has one rate row, for the cyclic", rateRows == 1 and row ~= nil, rateRows .. " rate rows")
+  check("7b. it shows the held roll axis's rate", row ~= nil and row.number[3]() == 400,
+    "shown=" .. tostring(row and row.number[3]()))
+  if row then row.number[4](500) end
+  check("7c. a value typed in sets roll and pitch together, each keeping its sign",
+    wiz.inputs.roll.rate == 500 and wiz.inputs.pitch.rate == -500,
+    tostring(wiz.inputs.roll.rate) .. "/" .. tostring(wiz.inputs.pitch.rate))
+  wiz.inputs.roll, wiz.inputs.pitch = nil, nil
+end
+
 print("the hold angle stepper on the cyclic page")
 do
   -- The stored roll limit is 10 degrees here (tenths: 100). The stepper cannot hold past it.
