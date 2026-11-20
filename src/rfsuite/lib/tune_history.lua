@@ -50,6 +50,10 @@ local FIELDS = {
   -- I-term relax type of the PID profile, as the FC held them when the flight
   -- was captured (shortly after the disarm, see tasks/tune_history.lua).
   {"cyclic_polar", "polar", "%d"}, {"cyclic_ring", "ring", "%d"}, {"iterm_relax_type", "relaxType", "%d"},
+  -- The PID and rate profile the flight was flown on, 1-based as the session reports them, 0
+  -- when the radio did not know (issue #2785). The FC resets its statistics when they change,
+  -- but the radio combines the saved rows itself.
+  {"pid_profile", "pidProfile", "%d"}, {"rate_profile", "rateProfile", "%d"},
   {"ff_count", "ffCount", "%d"}, {"ff_gain", "ffGain", "%.3f"}, {"ff_corr", "ffCorr", "%.3f"},
   {"ff_lag_ms", "ffLagMs", "%d"},
 }
@@ -288,11 +292,15 @@ function tuneHistory.read(mcuId)
   return flights
 end
 
+-- Flights are combined only on the same tune and the same PID and rate profile, and only when
+-- both profiles are known: two profiles can hold the same P, F, B and rates and differ in
+-- everything else (#2785). The profiles are not TUNE_KEYS, which Apply checks on the FC.
 local function sameTune(a, b)
   for _, k in ipairs(TUNE_KEYS) do
     if a[k] ~= b[k] then return false end
   end
-  return true
+  if (a.pidProfile or 0) < 1 or (a.rateProfile or 0) < 1 then return false end
+  return a.pidProfile == b.pidProfile and a.rateProfile == b.rateProfile
 end
 
 -- weighted running mean: adds value v with weight w to out[key] over total
@@ -360,7 +368,8 @@ function tuneHistory.aggregate(flights, axis)
       if flight.contains then held[flight.contains.date .. "|" .. tostring(flight.contains.seconds)] = true end
     else
       local a = flight.axes[axis]
-      if not a or not sameTune(a, newest) then break end
+      -- The newest flight always counts; an older one only on the same tune and profiles
+      if not a or (i < #flights and not sameTune(a, newest)) then break end
       used = used + 1
       seconds = seconds + flight.seconds
       if flight.contains then

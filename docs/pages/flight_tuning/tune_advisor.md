@@ -15,7 +15,8 @@ The flight controller counts only acro flight while spooled up and airborne, wit
 Time in Angle, Horizon, Trainer, Altitude hold, Rescue, GPS rescue or failsafe is left out. The page combines up
 to the last 5 flights flown with the same tune as the newest one: a flight before a change to P, F, B, Iterm
 Relax Cutoff or the rates on that axis is left out, because the advice is worked out against the tune you fly
-now. A useful set is about ten seconds of rolls, flips and pirouettes with the stick centred after each one,
+now. A flight on another PID or rate profile is left out too, even with the same values on that axis, and flights
+are only combined when the radio knew both profiles. A useful set is about ten seconds of rolls, flips and pirouettes with the stick centred after each one,
 which one flight may or may not give.
 
 Each time you disarm, the background task reads all three axes from the flight controller, and the settings the
@@ -147,7 +148,7 @@ The saved flights are kept. The next flight is on the new tune, so the page star
 older flights out.
 
 > [!NOTE] After an update
-> The flight history file gains three columns (Cyclic polarity, Cyclic ring, I-term Relax type). The page does not
+> The flight history file gains two columns (PID profile, rate profile). The page does not
 > read a history with the old columns, so its flights are not shown after the update. The file is replaced at the
 > next saved flight. Flights saved before the update are not kept.
 
