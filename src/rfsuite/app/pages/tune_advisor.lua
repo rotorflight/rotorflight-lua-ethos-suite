@@ -78,6 +78,7 @@ local pidTuning = requireModule("lib/msp_pid_tuning.lua")
 local pidProfile = requireModule("lib/msp_pid_profile.lua")
 local rcTuning = requireModule("lib/msp_rc_tuning.lua")
 local eeprom = requireModule("lib/msp_eeprom.lua")
+local statusMsp = requireModule("lib/msp_status.lua")
 
 local PAGE_TITLE = "@i18n(app.modules.tune_advisor.name)@"
 local BTN_OK = "@i18n(app.btn_ok)@"
@@ -159,6 +160,7 @@ local T = {
   errWrite = "@i18n(app.modules.tune_advisor.err_write)@",
   errSave = "@i18n(app.modules.tune_advisor.err_save)@",
   errVerify = "@i18n(app.modules.tune_advisor.err_verify)@",
+  errSwitched = "@i18n(app.modules.tune_advisor.err_switched)@",
 }
 
 -- {label, axis}: axis is the FC's 1-based axis (1 roll, 2 pitch, 3 yaw)
@@ -245,6 +247,10 @@ local AXIS_FIELDS = {"roll", "pitch", "yaw"}
 -- The simulator's MSP fixtures do not change on a write, so a read-back
 -- there cannot show the new values
 local IS_SIM = system.getVersion().simulation == true
+-- MSP_STATUS bytes up to current_control_rate_profile_index (lib/msp_status.lua)
+local STATUS_MIN_BYTES = 26
+-- Attempts per Apply write, as many as the MSP queue's own (1 + 5 retries)
+local WRITE_ATTEMPTS = 6
 
 -- Where a tune_history TUNE_KEYS value lives on the FC: source key, field
 -- name (lib/msp_rc_tuning.lua calls the srate column rates_N)
@@ -861,18 +867,56 @@ local function open(opts)
     bus.publish("msp.request", msg)
   end
 
+  -- The FC writes a PID or rate record into whichever profile is active when
+  -- the write arrives, so the profiles are asked of the FC (MSP_STATUS: the
+  -- telemetry value can lag or be absent) before the reads, before each write,
+  -- before the EEPROM commit and after the read-back (issue #2808). The first
+  -- answer must be the profiles the advice was made on, and every later one
+  -- the same as the first. failText ends the Apply when the FC does not
+  -- answer, changedText when the profiles differ.
+  local function checkProfiles(failText, changedText, onSame)
+    if disposed or not applying or applyResult ~= nil then return end
+    local msg = statusMsp.buildReadMessage(function(status)
+      if disposed or not applying or applyResult ~= nil then return end
+      local pid = status.current_pid_profile_index + 1
+      local rate = status.current_control_rate_profile_index + 1
+      if applying.fcPid == nil then
+        -- The simulator's MSP_STATUS fixture is not its telemetry profile
+        if not IS_SIM and (pid ~= applying.pidProfile
+            or (applying.rateProfile ~= nil and rate ~= applying.rateProfile)) then
+          finish(changedText)
+          return
+        end
+        applying.fcPid, applying.fcRate = pid, rate
+      elseif pid ~= applying.fcPid or rate ~= applying.fcRate then
+        finish(changedText)
+        return
+      end
+      onSame()
+    end, function() finish(failText) end)
+    local decode = msg.processReply
+    msg.processReply = function(self, buf)
+      if type(buf) ~= "table" or #buf < STATUS_MIN_BYTES then finish(failText) return end
+      decode(self, buf)
+    end
+    bus.publish("msp.request", msg)
+  end
+
   local function verify()
     if disposed or not applying then return end
     applyStage = T.stageVerify
     local readBack = {}
     readAll(1, readBack, T.errVerify, function()
-      if not IS_SIM then
-        for _, c in ipairs(applying.changes) do
-          local src, field = fcField(c.key, c.axis or applying.axis)
-          if readBack[src][field] ~= c.to then finish(T.errVerify) return end
+      -- A read-back from another profile confirms nothing
+      checkProfiles(T.errVerify, T.errVerify, function()
+        if not IS_SIM then
+          for _, c in ipairs(applying.changes) do
+            local src, field = fcField(c.key, c.axis or applying.axis)
+            if readBack[src][field] ~= c.to then finish(T.errVerify) return end
+          end
         end
-      end
-      finish(true)
+        finish(true)
+      end)
     end)
   end
 
@@ -902,22 +946,36 @@ local function open(opts)
     end
 
     applyStage = T.stageWrite
-    local function writeNext(index)
+    -- Until the first write is sent, a stop changes nothing
+    local sent = false
+    -- Each write leaves the queue once (maxRetries = 0) and is resent from
+    -- here, after the profiles are checked again: the queue's own resend, up
+    -- to seconds later, could reach a profile selected since the check.
+    local function writeNext(index, attempt)
       if disposed or not applying then return end
       local source = SOURCES[index]
       if not source then
-        applyStage = T.stageSave
-        bus.publish("msp.request", eeprom.buildWriteMessage(verify, function()
-          finish(link.armed and T.errArmed or T.errSave)
-        end))
+        checkProfiles(T.errWrite, T.errSwitched, function()
+          applyStage = T.stageSave
+          bus.publish("msp.request", eeprom.buildWriteMessage(verify, function()
+            finish(link.armed and T.errArmed or T.errSave)
+          end))
+        end)
         return
       end
-      if not dirty[source.key] then writeNext(index + 1) return end
-      bus.publish("msp.request", source.codec.buildWriteMessage(data[source.key],
-        function() writeNext(index + 1) end,
-        function() finish(T.errWrite) end))
+      if not dirty[source.key] then writeNext(index + 1, 1) return end
+      checkProfiles(sent and T.errWrite or T.errRead, sent and T.errSwitched or T.errChanged, function()
+        sent = true
+        local msg = source.codec.buildWriteMessage(data[source.key],
+          function() writeNext(index + 1, 1) end,
+          function()
+            if attempt < WRITE_ATTEMPTS then writeNext(index, attempt + 1) else finish(T.errWrite) end
+          end)
+        msg.maxRetries = 0
+        bus.publish("msp.request", msg)
+      end)
     end
-    writeNext(1)
+    writeNext(1, 1)
   end
 
   local function apply()
@@ -930,7 +988,9 @@ local function open(opts)
     applyResult = nil
     applyStage, shownStage = T.stageRead, T.stageRead
     applyDialog = progressDialog.open({title = PAGE_TITLE, message = T.stageRead})
-    readAll(1, applying.data, T.errRead, write)
+    checkProfiles(T.errRead, T.errChanged, function()
+      readAll(1, applying.data, T.errRead, write)
+    end)
   end
 
   local function confirmApply()

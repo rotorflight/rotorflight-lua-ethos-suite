@@ -9057,6 +9057,13 @@
           "reverse_text": false,
           "max_length": 97
         },
+        "err_switched": {
+          "english": "The PID or rate profile changed while writing. Nothing was saved: restart the flight controller to undo any part already sent.",
+          "translation": "Profil PID nebo Rate se změnil během zápisu. Nic nebylo uloženo: restartujte FC, aby se vrátilo, co už bylo odesláno.",
+          "needs_translation": false,
+          "reverse_text": false,
+          "max_length": 126
+        },
         "reading": {
           "english": "Reading the last flight...",
           "translation": "Reading the last flight...",

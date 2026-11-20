@@ -12390,6 +12390,13 @@
           "reverse_text": false,
           "translation": "Saving failed. The changes are active until the flight controller restarts, then undone."
         },
+        "err_switched": {
+          "english": "The PID or rate profile changed while writing. Nothing was saved: restart the flight controller to undo any part already sent.",
+          "max_length": 126,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "O perfil PID ou de taxa mudou durante a gravação. Nada foi salvo: reinicie o FC para desfazer o que já foi enviado."
+        },
         "err_verify": {
           "english": "Saved, but reading back did not confirm it. Check the settings on PIDs, Rates and PID Controller.",
           "max_length": 97,
