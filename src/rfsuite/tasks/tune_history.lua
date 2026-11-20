@@ -294,6 +294,10 @@ local function finishCapture()
     a.polar = rc.cyclic_polarity
     a.ring = rc.cyclic_ring
     a.relaxType = pid.iterm_relax_type
+    -- The profiles the flight was flown on: the FC resets its statistics when they change, so
+    -- they are the ones active now. 0 when the session does not know them (#2785).
+    a.pidProfile = link.pidProfile or 0
+    a.rateProfile = link.rateProfile or 0
   end
   -- 0: no acro flight. Same as last time: the clear after that flight never
   -- got through and nothing new was flown.

@@ -615,6 +615,36 @@ do
   local empty, none = tuneHistory.aggregate({}, 2)
   check("no flights aggregate to zeros", none == 0 and empty.ffCount == 0 and empty.collBands[3].count == 0)
 
+  -- #2785: two profiles can hold the same tune and differ in everything else
+  load()
+  fly(60, 80)
+  profiles.pid = 2
+  fly(70, 80)
+  local flights2 = tuneHistory.read(MCU)
+  check("each flight records its PID and rate profile", flights2[1].axes[1].pidProfile == 1
+    and flights2[2].axes[1].pidProfile == 2 and flights2[2].axes[1].rateProfile == 1,
+    tostring(flights2[2] and flights2[2].axes[1].pidProfile))
+  local _, usedPid = tuneHistory.aggregate(flights2, 1)
+  check("a flight on another PID profile is not combined", usedPid == 1, usedPid)
+  profiles.pid = 1
+
+  load()
+  fly(60, 80)
+  profiles.rate = 2
+  fly(70, 80)
+  local _, usedRate = tuneHistory.aggregate(tuneHistory.read(MCU), 1)
+  check("a flight on another rate profile is not combined", usedRate == 1, usedRate)
+  profiles.rate = 1
+
+  load()
+  profiles.pid, profiles.rate = nil, nil
+  fly(60, 80)
+  fly(70, 80)
+  local _, usedUnknown, secondsUnknown = tuneHistory.aggregate(tuneHistory.read(MCU), 1)
+  check("flights whose profiles were not known are not combined, the newest still counts",
+    usedUnknown == 1 and secondsUnknown == 70, usedUnknown .. " flights, " .. secondsUnknown .. " s")
+  profiles.pid, profiles.rate = 1, 1
+
   files[HISTORY] = "some,other,columns\n1,2,3\n"
   check("a file with other columns reads as no flights", #tuneHistory.read(MCU) == 0)
 end
