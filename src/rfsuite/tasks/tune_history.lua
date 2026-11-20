@@ -337,6 +337,15 @@ end
 
 onData = function(data)
   local replies = capture.replies
+  -- A reply carries only the command number, so a late answer to the previous request can
+  -- arrive as the answer to this one. It names its axis: one that is not the axis asked for is
+  -- not stored, and that axis is asked again, counted like a link error so a reply that keeps
+  -- naming another axis cannot loop (#2787).
+  if data.axis ~= #replies + 1 then
+    failed()
+    publishState()
+    return
+  end
   replies[#replies + 1] = data
   if captureComplete() then
     finishCapture()
