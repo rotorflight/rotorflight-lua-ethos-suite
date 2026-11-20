@@ -154,6 +154,12 @@ class RadioUI:
             end
             package.loaded["rfsuite.lib.require"]=requireModule
             bus=requireModule("lib/bus.lua")
+            -- paint() draws only once wakeup() has warmed the dashboard, one cold load per tick
+            -- (#2814), as on the radio: ticks first, then the paint.
+            function warmPaint(module, widget)
+                for _=1,10 do widget.needsPaint=true; module.wakeup(widget) end
+                module.paint(widget)
+            end
             local subscribe,unsubscribe=bus.subscribe,bus.unsubscribe
             bus.subscribe=function(topic,handler)
                 activeSubscriptions=activeSubscriptions+1; return subscribe(topic,handler)
@@ -327,19 +333,19 @@ def make_theme_test_case(manifest_path, module_name):
                         widget.settingsSnapshot["dashboard."..theme]={marker=theme}
                         widget.dashboardSettings=store.dashboard(widget.settingsSnapshot)
                         for _,phase in ipairs({"preflight","inflight","postflight"}) do
-                            widget.flightmodeState=phase; registeredWidget.paint(widget)
+                            widget.flightmodeState=phase; warmPaint(registeredWidget, widget)
                             local expected=phase=="inflight" and "default" or theme
                             assert(paintedKey==expected and paintedPhase==phase and paintedState==phase)
                             assert(loads["widgets/dashboard/themes/"..expected.."/"..phase..".lua"])
                         end
                         widget.modelDashboard={use_same_theme=true,theme_preflight="system/"..theme}
                         for _,phase in ipairs({"preflight","inflight","postflight"}) do
-                            widget.flightmodeState=phase; registeredWidget.paint(widget)
+                            widget.flightmodeState=phase; warmPaint(registeredWidget, widget)
                             assert(paintedKey==theme and paintedPhase==phase)
                             assert(context.widgets.dashboard.getPreference("marker")==theme)
                         end
                         widget.modelDashboard={use_same_theme=false,theme_inflight="nil"}
-                        widget.flightmodeState="inflight"; registeredWidget.paint(widget)
+                        widget.flightmodeState="inflight"; warmPaint(registeredWidget, widget)
                         assert(paintedKey=="default","disabled model phase did not use global choice")
                         registeredWidget.close(widget)
                     ''')

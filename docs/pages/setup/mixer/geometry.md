@@ -24,6 +24,10 @@ Greyed out until the flight controller answers. Read-only while the model is arm
 ## Notes
 
 - Changes are written to the flight controller EEPROM upon Save.
+- The page shows rounded values (limits in tenths of a degree). Save writes back only the settings you changed;
+  every other setting keeps the exact value the flight controller holds, including a roll limit that differs from
+  pitch (set in the Configurator). The Cyclic Calibration and Cyclic Pitch Limit you change here are written to both
+  pitch and roll.
 
 ## Related
 

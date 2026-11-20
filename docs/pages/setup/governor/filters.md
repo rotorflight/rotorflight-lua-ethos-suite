@@ -26,7 +26,7 @@ Greyed out until the flight controller answers. Read-only while the model is arm
 
 ## Notes
 
-- Written to the flight controller EEPROM on Save; Rotorflight 2 applies governor settings immediately, so the save does not restart the flight controller.
+- Written to the flight controller EEPROM on Save. The flight controller takes these settings into the running governor only at start-up, so a save that changes one of them restarts the flight controller; without the restart the new value would be stored but not flown until the next power-up (#2780). A save that changes nothing does not restart. The restart is skipped while the model is armed.
 
 ## Related
 

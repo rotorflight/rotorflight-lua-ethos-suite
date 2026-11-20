@@ -15,7 +15,8 @@ The flight controller counts only acro flight while spooled up and airborne, wit
 Time in Angle, Horizon, Trainer, Altitude hold, Rescue, GPS rescue or failsafe is left out. The page combines up
 to the last 5 flights flown with the same tune as the newest one: a flight before a change to P, F, B, Iterm
 Relax Cutoff or the rates on that axis is left out, because the advice is worked out against the tune you fly
-now. A useful set is about ten seconds of rolls, flips and pirouettes with the stick centred after each one,
+now. A flight on another PID or rate profile is left out too, even with the same values on that axis, and flights
+are only combined when the radio knew both profiles. A useful set is about ten seconds of rolls, flips and pirouettes with the stick centred after each one,
 which one flight may or may not give.
 
 Each time you disarm, the background task reads all three axes from the flight controller, and the settings the
@@ -89,6 +90,10 @@ The suggestions follow these rules:
   opposite directions, so the stick feel stays the same but the heli flies the rate you ask for. One step
   changes F by at most 20%. With Actual, Quick and Rotorflight rates the page gives the exact rate values;
   with the other rate types it gives a percentage. An axis with F set to 0 (often the tail) gets no F advice.
+  F, and the rates an F step moves, stay between 60% and 167% of your own values, which allows two steps either
+  way. Your own value is the last one you set by hand, worked out from `changes.csv` as for P. Past that the page
+  gives no F step and the reasons say how far F or the rates already are: set them on *PIDs* or *Rates* to go
+  further. A step back toward your own value is always given. The stops then get neither the F advice nor a P step.
 - **Full stick asks for more rate than the heli reaches** (roll and pitch), with the cyclic at its limit: lower
   the rates toward what the heli reaches, by at most 20% per step. The rate the cyclic asks for is capped by the
   *Cyclic ring* when it is below 100%, so a ring of 50% asks for half the curve. A ring of 0% is no limit. When the
@@ -125,6 +130,13 @@ The suggestions follow these rules:
 4. **Saving to flight controller**: commits them so they survive a restart.
 5. **Checking saved settings**: reads them back and confirms the new values.
 
+The flight controller writes each setting into the profile that is active when it arrives. So *Save* asks it which
+PID and rate profile are active before reading, before each write, before saving and after reading back. If you
+switch profile after a write has been sent but before saving, it stops before the next write and nothing is saved:
+restart the flight controller to undo the part already sent, then press *Save* again on the profile you flew. If you
+switch profile while it reads back, the changes are already saved and a restart does not undo them: it reports that
+the read-back did not confirm the change, so check the values on *PIDs*, *Rates* and *PID Controller*.
+
 With Betaflight, Raceflight or KISS rates the page can only give the rate change as a percentage, so *Save* does not
 write it, and does not write the F change that goes with it either: F on its own would change the stick feel. Make
 both changes by hand, or switch to Actual, Quick or Rotorflight rates.
@@ -136,7 +148,7 @@ The saved flights are kept. The next flight is on the new tune, so the page star
 older flights out.
 
 > [!NOTE] After an update
-> The flight history file gains three columns (Cyclic polarity, Cyclic ring, I-term Relax type). The page does not
+> The flight history file gains two columns (PID profile, rate profile). The page does not
 > read a history with the old columns, so its flights are not shown after the update. The file is replaced at the
 > next saved flight. Flights saved before the update are not kept.
 
@@ -147,6 +159,8 @@ both flights.
 Each change written is added to `changes.csv` beside the flight history (date, axis, setting,
 old value, new value, PID profile), so you can always see what the advisor changed and set it back by hand. *Clear*
 does not erase it.
+
+Once an Apply leaves `changes.csv` above 16 KiB, it is started afresh: it keeps one row per setting and PID profile, the advisor's newest run of its own changes from the value it started at to the value it ended at, which is all the page needs to work out your own P. The full record before that is kept beside it as `changes.csv.old` until the next time.
 
 Changes written before the PID profile column was added have no profile. The advisor counts them on every profile, so
 on a profile that holds the same value they can still set the pilot's P. If the flight controller accepted the
@@ -159,10 +173,18 @@ In-flight adjustments (*Setup* → *Controls* → *Adjustments*) can change the 
 and writes: P, F, B, the rates and Iterm Relax Cutoff per axis, and the PID and rate profile. The firmware
 applies an adjustment straight away and saves it when you disarm.
 
-- **Adjusting during a flight mixes two tunes.** The flight controller checks the tune only when you arm, so a
-  flight where you adjusted one of these settings (or switched profile) is measured partly on the old value and
-  saved as if flown on the value you ended on. Leave these adjustments alone while collecting flights for the
-  advisor. If you did use one, press *Clear* and fly again.
+- **Adjusting during a flight starts the measurements again.** On firmware that has rotorflight-firmware pull
+  request #607, a PID or rate profile switch during a flight, or a change to a P, I, D, F, B or O gain, Iterm Relax
+  Cutoff, the rates type, a rate or an expo, makes the flight controller drop what it has measured and start again
+  on the new tune. A change to a master gain does the same only from pull request #608 on. That holds for an
+  adjustment and for a write from the radio or the configurator alike. The flight is then saved with only the part
+  flown after the last change: a change shortly before landing leaves too little, or nothing, to save. A flight the
+  radio has not read yet is dropped with it. Leave these adjustments alone while collecting flights for the
+  advisor.
+- **On older firmware, adjusting during a flight mixes two tunes.** On a development build without #607 the flight
+  controller checks the tune only when you arm, so a flight where you adjusted one of these settings (or switched
+  profile) is measured partly on the old value and saved as if flown on the value you ended on. A build with #607
+  but not #608 does the same for a master gain. If you did use one, press *Clear* and fly again.
 - **Adjusting between flights is fine.** A *Stepped* adjustment (a switch) is saved at disarm, so the next flight is on
   a new tune and the advisor starts again from it, as it does after *Save*.
 - **A *Mapped* adjustment (a knob or slider) overrides Apply.** It sets the value from the knob's position: once the
@@ -170,8 +192,9 @@ applies an adjustment straight away and saves it when you disarm.
   written by *Save* then lasts only until that happens. Before applying advice to a setting, set its *Mapped*
   adjustment's *Type* to *Off*, or leave the knob where it gives the new value.
 - The advice refreshes when the active PID profile changes, so its P cap follows the new profile. *Save* checks the
-  profiles and values at the moment it writes, so an adjustment or profile switch made since the flights stops it
-  with nothing changed.
+  values before it writes, so an adjustment made since the flights stops it with nothing changed. It checks the
+  profiles before each write: a switch before the first write stops it with nothing changed, and a switch between
+  two writes stops it with nothing saved (see *Applying the changes*).
 
 ## Source
 

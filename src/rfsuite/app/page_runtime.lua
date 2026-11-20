@@ -121,6 +121,25 @@ local MSG_RESTARTING_BODY = "@i18n(app.msg_restarting_fc)@"
 -- bound is also 20 s (tasks/msp/save_pipeline.lua's RECONNECT_TIMEOUT_SECONDS).
 local REBOOT_TIMEOUT_SECONDS = 20
 
+-- The MSP_STATUS field naming the profile a page's data belongs to, by
+-- profileField (issue #2809). The FC writes a profile-scoped record into
+-- whichever profile is active when the write arrives, so before each write of
+-- such a page the FC is asked which profile is active (the telemetry value can
+-- lag or be absent). Pages with another profileField ("none", "batteryProfile")
+-- are not checked: MSP_STATUS does not carry the battery profile.
+local STATUS_PROFILE_FIELD = {
+  pidProfile = "current_pid_profile_index",
+  rateProfile = "current_control_rate_profile_index",
+}
+-- MSP_STATUS bytes up to current_control_rate_profile_index (lib/msp_status.lua)
+local STATUS_MIN_BYTES = 26
+-- Attempts per checked write, as many as the MSP queue's own (1 + 5 retries)
+local CHECKED_WRITE_ATTEMPTS = 6
+-- The queue reasons a checked write is resent for: the FC did not answer. Any
+-- other reason ends the save -- "cleared" in particular is the session dropping
+-- queued work (on arming, or a reconnect), which must not be sent again.
+local RESEND_REASONS = {max_retries = true, timeout = true}
+
 local PageRuntime = {}
 PageRuntime.__index = PageRuntime
 
@@ -199,6 +218,12 @@ end
 --                               -- that needs telling to refetch rather than keep serving a now-stale
 --                               -- copy for the rest of the connection. Not called on a save error or
 --                               -- an armed-FC EEPROM rejection.
+--   rebootIfChanged,            -- optional; true (single-source page) or a list of source keys: the
+--                               -- save restarts the FC, as rebootAfterSave does, when it changes a value
+--                               -- of that data. For settings the firmware takes only at start-up
+--                               -- (e.g. MSP_SET_GOVERNOR_CONFIG, #2780). Compared after beforeSave, with
+--                               -- the data as it was read, so a save that writes back what was read
+--                               -- does not restart.
 --   rebootAfterSave,            -- optional; if true, performSave() publishes lib/msp_reboot.lua's
 --                               MSP_REBOOT write right after the EEPROM write acks, matching
 --                               rotorflight-lua-ethos-suite's own rebootFc() (called from the same
@@ -264,6 +289,7 @@ function PageRuntime.new(config)
   self.onDispose = config.onDispose
   self.onSaved = config.onSaved
   self.rebootAfterSave = config.rebootAfterSave
+  self.rebootIfChanged = config.rebootIfChanged
   self.isMspPage = config.isMspPage
   -- A page that writes every change to the flight controller as it is made has nothing to save
   -- when Back is pressed, so it does not ask (issue #2504).
@@ -785,6 +811,21 @@ function PageRuntime:performSave(focusFn)
     return
   end
 
+  -- rebootIfChanged: worked out now, while cleanData still holds what was read
+  -- (commitSave() replaces it before rebootRequested() runs)
+  local changedReboot = false
+  if self.rebootIfChanged == true then
+    changedReboot = self.cleanData == nil or not sameValue(self.data, self.cleanData)
+  elseif type(self.rebootIfChanged) == "table" then
+    for _, key in ipairs(self.rebootIfChanged) do
+      local clean = self.cleanData and self.cleanData[key]
+      if clean == nil or not sameValue(self.data[key], clean) then
+        changedReboot = true
+        break
+      end
+    end
+  end
+
   self:setBusy(true)
   self:showDialog(MSG_SAVING_TITLE, MSG_SAVING_BODY)
 
@@ -809,6 +850,7 @@ function PageRuntime:performSave(focusFn)
     if type(shouldReboot) == "function" then
       shouldReboot = shouldReboot(self_)
     end
+    shouldReboot = shouldReboot or changedReboot
     if not shouldReboot then return false end
     if armedOrUnconfirmed(self_) then
       self_:log("performSave: rebootAfterSave skipped (armed or unconfirmed)")
@@ -847,8 +889,74 @@ function PageRuntime:performSave(focusFn)
   -- Set once a source's write is acknowledged: from then on the FC may already run the new values.
   local wroteAny = false
 
-  local function writeSource(index)
+  -- A save that sends a write must stop, unsent, once the active profile is
+  -- not the one the data was read from (issue #2809): the write would land in
+  -- the other profile. statusField is nil for a page that is not checked.
+  local statusField = STATUS_PROFILE_FIELD[self.profileField]
+  -- The profile the writes must find: the one the data was read for, from
+  -- telemetry. Without it (no profile sensor, or the simulator, whose MSP_STATUS
+  -- fixture is not its telemetry profile) the FC's answer before the first write
+  -- is taken, and every later write must find the same.
+  local expectedProfile = nil
+  if statusField and system.getVersion().simulation ~= true then expectedProfile = self.loadedProfile end
+
+  -- Set when a checked write went unanswered: the FC may have acted on it.
+  local unanswered = false
+
+  -- switched: the profile moved, so the data behind the page is not the
+  -- active profile's. It is read again once the failure dialog closes, so
+  -- another Save cannot send it (without a telemetry profile nothing else
+  -- would tell the page).
+  local function stopSave(reason, switched)
+    self_:log("performSave: STOPPED: " .. tostring(reason))
+    self_.pendingSaveError = reason
+    self_.pendingSaveRunning = (wroteAny or unanswered) or nil
+    if switched then self_.pendingReload = true end
+    finishSave()
+  end
+
+  -- Telemetry already shows the switch
+  local function telemetryMoved()
+    return self_.loadedProfile ~= nil and self_.lastProfile ~= self_.loadedProfile
+  end
+
+  -- Narrows the window to the time between the FC's answer and the write
+  -- reaching it; it cannot close it, since nothing makes the two one step.
+  local function checkProfile(onSame)
     if self_.disposed then return end
+    if telemetryMoved() then
+      stopSave("profile changed", true)
+      return
+    end
+    local statusMsp = requireModule("lib/msp_status.lua")
+    local message = statusMsp.buildReadMessage(function(status)
+      if self_.disposed then return end
+      local active = status[statusField] + 1
+      if expectedProfile == nil then expectedProfile = active end
+      -- telemetry is checked again: it may have moved while the request was out
+      if active ~= expectedProfile or telemetryMoved() then
+        stopSave("profile changed", true)
+        return
+      end
+      onSame()
+    end, function(reason)
+      if self_.disposed then return end
+      stopSave("status " .. tostring(reason))
+    end)
+    local decode = message.processReply
+    message.processReply = function(msg, buf)
+      if type(buf) ~= "table" or #buf < STATUS_MIN_BYTES then
+        if not self_.disposed then stopSave("short status") end
+        return
+      end
+      decode(msg, buf)
+    end
+    bus.publish("msp.request", message)
+  end
+
+  local function writeSource(index, attempt)
+    if self_.disposed then return end
+    attempt = attempt or 1
     if index > #self_.sources then
       if not self_.eepromWrite then
         commitSave()
@@ -898,6 +1006,15 @@ function PageRuntime:performSave(focusFn)
       wroteAny = true
       writeSource(index + 1)
     end, function(reason)
+      if self_.disposed then return end
+      -- A checked write is resent from here, after the profile is checked
+      -- again: the queue's own resend could reach a profile selected since.
+      if statusField and RESEND_REASONS[reason] and attempt < CHECKED_WRITE_ATTEMPTS then
+        self_:log("performSave: write unanswered (" .. tostring(source.key) .. "), checking the profile again")
+        unanswered = true
+        writeSource(index, attempt + 1)
+        return
+      end
       self_:log("performSave: write FAILED (" .. tostring(source.key) .. "): " .. tostring(reason))
       self_.pendingSaveError = reason or true
       self_.pendingSaveRunning = wroteAny or nil
@@ -914,7 +1031,15 @@ function PageRuntime:performSave(focusFn)
       return
     end
 
-    bus.publish("msp.request", message)
+    if not statusField then
+      bus.publish("msp.request", message)
+      return
+    end
+    -- Sent once by the queue (see the error handler above)
+    message.maxRetries = 0
+    checkProfile(function()
+      bus.publish("msp.request", message)
+    end)
   end
 
   writeSource(1)

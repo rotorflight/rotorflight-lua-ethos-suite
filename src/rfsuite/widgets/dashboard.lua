@@ -1761,6 +1761,38 @@ local function setDashboardPreferences(widget, theme)
   ensureDashboardContext().widgets.dashboard.setPreferences(widget.dashboardPrefsValues)
 end
 
+-- The dashboard's cold loads: context.lua, engine.lua, the theme's init.lua
+-- and its state file. Run back to back they passed Ethos's
+-- 20000-instruction limit on the first paint after boot, and they ran as
+-- pcall() arguments, outside its protection. Now wakeup() does at most one per
+-- tick (load = true) and paint() waits until none is left (load = false).
+-- Each one caches itself only once it completes, so a step cut short by the
+-- limit runs again on the next tick.
+local function warmDashboardStep(widget, theme, state, load)
+  if not dashboardContext then
+    if load then ensureDashboardContext() end
+    return false
+  end
+  if not dashboardEngine then
+    if load then ensureDashboardEngine() end
+    return false
+  end
+  if not themeDefs[theme] then
+    if load then loadThemeDef(theme) end
+    return false
+  end
+  if not stateDefs[theme .. ":" .. tostring(state)] then
+    if load then loadStateDef(theme, state) end
+    return false
+  end
+  return true
+end
+
+local function warmDashboard(widget)
+  local state = dashboardState(widget)
+  return warmDashboardStep(widget, selectedThemeForState(widget, state), state, true)
+end
+
 local function prepareDashboard(widget)
   local w, h = lcd.getWindowSize()
   local state = dashboardState(widget)
@@ -1791,11 +1823,22 @@ local function handleDashboardResize(widget)
   end
 end
 
+-- Everything paintDashboard() does past its warm check, so that pcall() covers
+-- all of it, not only engine.paint().
+local function paintDashboardFrame(widget, theme, state, w, h)
+  setDashboardPreferences(widget, theme)
+  return dashboardEngine.paint(widget, loadThemeDef(theme), loadStateDef(theme, state), state, w, h)
+end
+
 local function paintDashboard(widget, w, h)
   local state = dashboardState(widget)
   local theme = selectedThemeForState(widget, state)
-  setDashboardPreferences(widget, theme)
-  local ok, result = pcall(ensureDashboardEngine().paint, widget, loadThemeDef(theme), loadStateDef(theme, state), state, w, h)
+  -- Not warm yet: wakeup() is still loading (see warmDashboardStep()), or has
+  -- not yet prepared since its last load. The caller asks for another paint.
+  if widget.dashboardWarm ~= true or not warmDashboardStep(widget, theme, state, false) then
+    return false
+  end
+  local ok, result = pcall(paintDashboardFrame, widget, theme, state, w, h)
   if not ok then
     if isInstructionBudgetError(result) then
       if widget and widget.dashboardInstructionBudgetRetryLogged ~= true then
@@ -2289,7 +2332,18 @@ local function wakeup(widget)
 
   if widget.needsPaint then
     widget.needsPaint = false
-    local prepared = prepareDashboard(widget)
+    -- One cold load per tick until the dashboard is warm, then the engine's
+    -- own paced wakeup. An instruction-limit error in either is retried on the
+    -- next tick; any other error is raised as before.
+    local ok, prepared = pcall(warmDashboard, widget)
+    -- paint() waits for this: a tick that loaded something has not run the
+    -- engine's first wake pass yet, and paint() would otherwise do it.
+    widget.dashboardWarm = ok and prepared == true
+    if ok and prepared then ok, prepared = pcall(prepareDashboard, widget) end
+    if not ok then
+      if not isInstructionBudgetError(prepared) then error(prepared, 0) end
+      prepared = false
+    end
     if widget.themeReloadPending == true and prepared then finishThemeReload(widget) end
     if prepared == false then widget.needsPaint = true end
     if forcePaintRetry then

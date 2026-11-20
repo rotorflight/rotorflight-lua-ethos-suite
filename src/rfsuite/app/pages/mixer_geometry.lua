@@ -82,6 +82,12 @@ end
 
 local function open(opts)
   local formData = {}
+  -- The form fields the pilot changed since the last read. The fields are rounded on read
+  -- (limits in tenths of a degree from 1/12-degree steps, geo correction halved), so a raw
+  -- field is written from the form only when the field behind it was edited; every other raw
+  -- field keeps the value read, including a roll limit that differs from pitch and a minimum
+  -- that is not -max (#2792).
+  local edited = {}
   local directions = {}
   local inOverride = false
   local lastLiveDigest = nil
@@ -123,6 +129,7 @@ local function open(opts)
       formData.swash_phase = mixer.swash_phase or 0
       formData.collective_tilt_correction_pos = mixer.collective_tilt_correction_pos or 0
       formData.collective_tilt_correction_neg = mixer.collective_tilt_correction_neg or 0
+      for k in pairs(edited) do edited[k] = nil end
       lastLiveDigest = digest(formData)
       lastLiveAt = os.clock()
       if form.invalidate then form.invalidate() end
@@ -130,34 +137,53 @@ local function open(opts)
     beforeSave = function(rt)
       local mixer = rt.data.mixer
       if mixer then
-        mixer.swash_geo_correction = round((formData.geo_correction or 0) / 2)
-        mixer.swash_pitch_limit = round((formData.swash_pitch_limit or 0) * 100 / 12)
-        mixer.swash_phase = formData.swash_phase or 0
-        mixer.collective_tilt_correction_pos = formData.collective_tilt_correction_pos or 0
-        mixer.collective_tilt_correction_neg = formData.collective_tilt_correction_neg or 0
+        if edited.geo_correction then mixer.swash_geo_correction = round((formData.geo_correction or 0) / 2) end
+        if edited.swash_pitch_limit then
+          mixer.swash_pitch_limit = round((formData.swash_pitch_limit or 0) * 100 / 12)
+        end
+        if edited.swash_phase then mixer.swash_phase = formData.swash_phase or 0 end
+        if edited.collective_tilt_correction_pos then
+          mixer.collective_tilt_correction_pos = formData.collective_tilt_correction_pos or 0
+        end
+        if edited.collective_tilt_correction_neg then
+          mixer.collective_tilt_correction_neg = formData.collective_tilt_correction_neg or 0
+        end
       end
 
+      -- One cyclic rate and one cyclic limit on this page set both pitch and roll
       local cyclicRate = round(formData.cyclic_calibration or 0)
       local cyclicLimit = round((formData.cyclic_pitch_limit or 0) * 100 / 12)
       local pitch = rt.data.pitch
       if pitch then
-        pitch.rate_stabilized_pitch = s16ToU16(cyclicRate * dirSign(directions.elevator))
-        pitch.max_stabilized_pitch = s16ToU16(math.abs(cyclicLimit))
-        pitch.min_stabilized_pitch = s16ToU16(-math.abs(cyclicLimit))
+        if edited.cyclic_calibration then
+          pitch.rate_stabilized_pitch = s16ToU16(cyclicRate * dirSign(directions.elevator))
+        end
+        if edited.cyclic_pitch_limit then
+          pitch.max_stabilized_pitch = s16ToU16(math.abs(cyclicLimit))
+          pitch.min_stabilized_pitch = s16ToU16(-math.abs(cyclicLimit))
+        end
       end
       local roll = rt.data.roll
       if roll then
-        roll.rate_stabilized_roll = s16ToU16(cyclicRate * dirSign(directions.aileron))
-        roll.max_stabilized_roll = s16ToU16(math.abs(cyclicLimit))
-        roll.min_stabilized_roll = s16ToU16(-math.abs(cyclicLimit))
+        if edited.cyclic_calibration then
+          roll.rate_stabilized_roll = s16ToU16(cyclicRate * dirSign(directions.aileron))
+        end
+        if edited.cyclic_pitch_limit then
+          roll.max_stabilized_roll = s16ToU16(math.abs(cyclicLimit))
+          roll.min_stabilized_roll = s16ToU16(-math.abs(cyclicLimit))
+        end
       end
       local collective = rt.data.collective
       if collective then
-        local collectiveRate = round(formData.collective_calibration or 0)
-        local collectiveLimit = round((formData.collective_pitch_limit or 0) * 100 / 12)
-        collective.rate_stabilized_collective = s16ToU16(collectiveRate * dirSign(directions.collective))
-        collective.max_stabilized_collective = s16ToU16(math.abs(collectiveLimit))
-        collective.min_stabilized_collective = s16ToU16(-math.abs(collectiveLimit))
+        if edited.collective_calibration then
+          local collectiveRate = round(formData.collective_calibration or 0)
+          collective.rate_stabilized_collective = s16ToU16(collectiveRate * dirSign(directions.collective))
+        end
+        if edited.collective_pitch_limit then
+          local collectiveLimit = round((formData.collective_pitch_limit or 0) * 100 / 12)
+          collective.max_stabilized_collective = s16ToU16(math.abs(collectiveLimit))
+          collective.min_stabilized_collective = s16ToU16(-math.abs(collectiveLimit))
+        end
       end
     end,
     toolIcon = "app/gfx/nav/override.png",
@@ -239,7 +265,7 @@ local function open(opts)
     local line = form.addLine(spec.label)
     local field = form.addNumberField(line, nil, spec.min, spec.max,
       function() return formData[key] or 0 end,
-      function(value) markDirty(); formData[key] = value end)
+      function(value) markDirty(); formData[key] = value; edited[key] = true end)
     if spec.suffix then field:suffix(spec.suffix) end
     if spec.decimals then field:decimals(spec.decimals) end
     field:default(spec.default or 0)

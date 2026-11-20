@@ -12397,6 +12397,13 @@
           "reverse_text": false,
           "translation": "Saving failed. The changes are active until the flight controller restarts, then undone."
         },
+        "err_switched": {
+          "english": "The PID or rate profile changed while writing. Nothing was saved: restart the flight controller to undo any part already sent.",
+          "max_length": 126,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Profil PID nebo Rate se změnil během zápisu. Nic nebylo uloženo: restartujte FC, aby se vrátilo, co už bylo odesláno."
+        },
         "err_verify": {
           "english": "Saved, but reading back did not confirm it. Check the settings on PIDs, Rates and PID Controller.",
           "max_length": 97,
@@ -12605,6 +12612,20 @@
           "reverse_text": false,
           "translation": "It turns %d%% faster at low collective than at high."
         },
+        "why_f_above_fmt": {
+          "english": "F is already %d%% above your setting. Set it on PIDs to go further.",
+          "max_length": 67,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "F je už o %d%% nad vaším nastavením. Dál ho nastavte v PIDs."
+        },
+        "why_f_below_fmt": {
+          "english": "F is already %d%% below your setting. Set it on PIDs to go further.",
+          "max_length": 67,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "F je už o %d%% pod vaším nastavením. Dál ho nastavte v PIDs."
+        },
         "why_fast": {
           "english": "The heli turns faster than the stick asks for.",
           "max_length": 46,
@@ -12673,6 +12694,20 @@
           "max_length": 46,
           "needs_translation": true,
           "translation": "Polar cyclic: roll follows the Cyclic rates"
+        },
+        "why_rates_above_fmt": {
+          "english": "Rates are already %d%% above your setting. Set them on Rates to go further.",
+          "max_length": 75,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Rates jsou už o %d%% nad vaším nastavením. Dál je nastavte v Rates."
+        },
+        "why_rates_below_fmt": {
+          "english": "Rates are already %d%% below your setting. Set them on Rates to go further.",
+          "max_length": 75,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Rates jsou už o %d%% pod vaším nastavením. Dál je nastavte v Rates."
         },
         "why_relax": {
           "english": "After a stop, the I-term pushes the heli back.",

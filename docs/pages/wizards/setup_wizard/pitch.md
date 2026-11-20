@@ -40,7 +40,7 @@ model is armed. The step needs a swashplate type to be set first.
 | --- | --- |
 | Hold angle | The angle the axis is held at on the measure page, in 0.1 degrees, either side of zero: from minus to plus the stored limit of the axis, but at least 9 and at most 12 degrees. The negative side checks the collective geometry, for example -10 after +10. It starts at 9 degrees. Use it to look at the gauge at another angle; the calibration still counts from 9 degrees. |
 | Measured | The blade pitch you read on the gauge, typed in its field, 1.0 to 30.0 degrees. |
-| Rate | The rate of the axis, in 0.1 %, typed in its field. Adjust it until the gauge reads 9 degrees. |
+| Rate | The rate of the axis, in 0.1 %, typed in its field. Adjust it until the gauge reads 9 degrees. The cyclic pages have one row, *Rate Cyclic*, for roll and pitch together, as *Mixer > Geometry* and the Configurator have one cyclic calibration: it shows roll's rate, which is the axis held, and sets both, each keeping its direction. |
 | Calibrate | Scales the mixer so that 9 degrees on the gauge is 9 degrees in the flight controller. It then reads "Calibrated. Measure again to check." |
 | Cyclic limit | The most blade pitch the cyclic sticks can command: 0 to 20 degrees. |
 | Collective limit | The most blade pitch the collective stick can command: 0 to 20 degrees. |

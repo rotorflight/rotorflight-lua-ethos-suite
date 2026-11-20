@@ -62,12 +62,15 @@ local function open(opts)
     },
     opts = opts,
     profileField = "none",
-    -- A save restarts the flight controller only when it changes the GOVERNOR feature bit.
-    -- Governor writes alone apply in RAM at once, and a restart then dropped telemetry and
-    -- twitched the servos at the field on every RPM or curve correction.
+    -- A save restarts the flight controller when it changes the GOVERNOR feature bit, or any
+    -- governor setting: the firmware copies MSP_SET_GOVERNOR_CONFIG into the running governor
+    -- only at start-up (governorInit(), from init.c), so without a restart the new mode or
+    -- value is stored but not flown until the next power-up (#2780). A save that changes
+    -- nothing on the FC does not restart.
     rebootAfterSave = function()
       return state.featureChanged == true
     end,
+    rebootIfChanged = {"governor"},
     unloadPackageKeys = {"rfsuite.lib.msp_governor_config", "rfsuite.lib.msp_feature_config"},
     -- Picks a mode into the governor's stored mode, and sets the feature bit to match it on
     -- save. A save that did not touch the mode leaves both as they were.

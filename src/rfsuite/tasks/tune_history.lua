@@ -294,6 +294,10 @@ local function finishCapture()
     a.polar = rc.cyclic_polarity
     a.ring = rc.cyclic_ring
     a.relaxType = pid.iterm_relax_type
+    -- The profiles the flight was flown on: the FC resets its statistics when they change, so
+    -- they are the ones active now. 0 when the session does not know them (#2785).
+    a.pidProfile = link.pidProfile or 0
+    a.rateProfile = link.rateProfile or 0
   end
   -- 0: no acro flight. Same as last time: the clear after that flight never
   -- got through and nothing new was flown.
@@ -337,6 +341,15 @@ end
 
 onData = function(data)
   local replies = capture.replies
+  -- A reply carries only the command number, so a late answer to the previous request can
+  -- arrive as the answer to this one. It names its axis: one that is not the axis asked for is
+  -- not stored, and that axis is asked again, counted like a link error so a reply that keeps
+  -- naming another axis cannot loop (#2787).
+  if data.axis ~= #replies + 1 then
+    failed()
+    publishState()
+    return
+  end
   replies[#replies + 1] = data
   if captureComplete() then
     finishCapture()

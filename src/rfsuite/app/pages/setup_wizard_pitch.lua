@@ -11,7 +11,8 @@
 --   coll_fine  the collective rate itself, in 0.1 %
 --   cyc_measure  blades along the boom as for the collective, roll held at 9 degrees; Calibrate scales roll
 --              and pitch together (#2709: roll is held, so the head does not have to be turned)
---   cyc_fine   both rates, in 0.1 %
+--   cyc_fine   the cyclic rate, in 0.1 %: one row for roll and pitch together (#2707), as Geometry and the
+--              Configurator have one cyclic calibration
 --   lim_cyc, lim_coll, lim_total  the hard limits of the mixer (the same for every profile): the most
 --              blade pitch the FC will ever command, in 0.1 degree
 --   full       the collective pitch at full stick: one row per rate profile the profile switch picks
@@ -48,6 +49,7 @@ local T = {
   fineText = "@i18n(app.modules.setup_wizard.pit_fine_text)@",
   measured = "@i18n(app.modules.setup_wizard.pit_measured)@",
   rate = "@i18n(app.modules.setup_wizard.pit_rate)@",
+  cyclic = "@i18n(app.modules.setup_wizard.rates_axis_cyclic)@",
   calibrate = "@i18n(app.modules.setup_wizard.pit_calibrate)@",
   calibrated = "@i18n(app.modules.setup_wizard.pit_calibrated)@",
   checkZero = "@i18n(app.modules.setup_wizard.pit_check_zero)@",
@@ -334,6 +336,36 @@ local function new(wiz)
       "%", 1}}
   end
 
+  -- The cyclic rate as one number field (#2707): the held axis's rate is shown, and a value
+  -- typed in sets roll and pitch together, each keeping its sign. Two rows let the pitch row,
+  -- whose axis is not held, change without a reading at the gauge, and Mixer > Geometry has one
+  -- cyclic calibration, so a difference was gone at its next save of that value.
+  local function cyclicRateRow()
+    return {label = T.rate .. " " .. T.cyclic, number = {RATE_MIN, RATE_MAX,
+      function()
+        local input = wiz.inputs.roll
+        return math.abs(input and input.rate or 0)
+      end,
+      function(value)
+        for _, axis in ipairs(GROUP.cyc_fine) do
+          wiz.editInput(axis, function(input)
+            local sign = (input.rate or 0) < 0 and -1 or 1
+            input.rate = sign * heli.clamp(math.floor(value + 0.5), RATE_MIN, RATE_MAX)
+          end)
+        end
+      end,
+      "%", 1}}
+  end
+
+  -- The rate rows of a page: the cyclic pages have one for roll and pitch together
+  local function addRateRows(rows, name)
+    if name == "cyc_measure" or name == "cyc_fine" then
+      rows[#rows + 1] = cyclicRateRow()
+      return
+    end
+    for _, axis in ipairs(GROUP[name]) do rows[#rows + 1] = rateRow(axis) end
+  end
+
   -- Current limit, tenths of a degree.
   local function limitTenths(name)
     if name == "lim_total" then
@@ -440,7 +472,7 @@ local function new(wiz)
         function() return measured end,
         function(value) measured = heli.clamp(math.floor(value + 0.5), MEASURE_MIN, MEASURE_MAX) end,
         DEG, 1}}
-      for _, axis in ipairs(GROUP[name]) do rows[#rows + 1] = rateRow(axis) end
+      addRateRows(rows, name)
       rows[#rows + 1] = {answer = T.calibrate, press = calibrate, needsMotion = true}
       -- The result sits under the button, so the header does not move when it appears.
       if calibratedNote then rows[#rows + 1] = {note = T.calibrated} end
@@ -455,7 +487,7 @@ local function new(wiz)
     scr:text(coll and T.collTitle or T.cycTitle, T.fineText)
     scr:picture(pitchPicture)
     local rows = {}
-    for _, axis in ipairs(GROUP[name]) do rows[#rows + 1] = rateRow(axis) end
+    addRateRows(rows, name)
     return finish(scr:checks(rows), back, forwardSpec)
   end
 

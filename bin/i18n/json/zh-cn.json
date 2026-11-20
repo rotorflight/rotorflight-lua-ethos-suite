@@ -8941,6 +8941,34 @@
           "reverse_text": false,
           "max_length": 58
         },
+        "why_f_below_fmt": {
+          "english": "F is already %d%% below your setting. Set it on PIDs to go further.",
+          "translation": "F 已比你的设置低 %d%%。如需继续，请在 PIDs 页面设置。",
+          "needs_translation": false,
+          "reverse_text": false,
+          "max_length": 67
+        },
+        "why_f_above_fmt": {
+          "english": "F is already %d%% above your setting. Set it on PIDs to go further.",
+          "translation": "F 已比你的设置高 %d%%。如需继续，请在 PIDs 页面设置。",
+          "needs_translation": false,
+          "reverse_text": false,
+          "max_length": 67
+        },
+        "why_rates_below_fmt": {
+          "english": "Rates are already %d%% below your setting. Set them on Rates to go further.",
+          "translation": "速率已比你的设置低 %d%%。如需继续，请在速率页面设置。",
+          "needs_translation": false,
+          "reverse_text": false,
+          "max_length": 75
+        },
+        "why_rates_above_fmt": {
+          "english": "Rates are already %d%% above your setting. Set them on Rates to go further.",
+          "translation": "速率已比你的设置高 %d%%。如需继续，请在速率页面设置。",
+          "needs_translation": false,
+          "reverse_text": false,
+          "max_length": 75
+        },
         "data_flights_fmt": {
           "english": "%dm %02ds, %d/%d flights",
           "translation": "%dm %02ds, %d/%d flights",
@@ -9063,6 +9091,13 @@
           "needs_translation": true,
           "reverse_text": false,
           "max_length": 97
+        },
+        "err_switched": {
+          "english": "The PID or rate profile changed while writing. Nothing was saved: restart the flight controller to undo any part already sent.",
+          "translation": "写入时 PID 或速率配置已切换。未保存任何内容：重启飞控以撤销已发送的部分。",
+          "needs_translation": false,
+          "reverse_text": false,
+          "max_length": 126
         },
         "reading": {
           "english": "Reading the last flight...",

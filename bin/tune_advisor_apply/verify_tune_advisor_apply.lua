@@ -8,7 +8,10 @@
 -- (a percentage-only rates_type applies neither); advice that would leave a
 -- setting's range is not offered; a full-stick rate cut is one 20% step;
 -- P is raised at most 50% above the pilot's own P (from changes.csv).
--- Also pins that each stage is shown.
+-- Also pins that each stage is shown, and that the active profiles are asked
+-- of the FC (MSP_STATUS) before the reads, before each write, before the
+-- EEPROM commit and after the read-back, so a profile switch part way stops
+-- it (issue #2808).
 -- i18n tags are left unresolved: messages are matched by their key.
 
 local ROOT = "src/rfsuite/"
@@ -91,6 +94,8 @@ local codecs = {
 }
 local WRITE_TO_READ = {[202] = 112, [95] = 94, [204] = 111}
 local EEPROM = 250
+local STATUS = 101
+local statusMsp = requireModule("lib/msp_status.lua")
 
 -- The saved flights: one flight from the advisor's simulator fixture, whose
 -- tune is the other codecs' fixtures (Actual rates). Roll: F 120 -> 96, and
@@ -147,7 +152,19 @@ local function resetFc()
 end
 
 local wakeup, paintFn
-local session = {mcuId = "abc", connected = true, isArmed = false, pidProfile = 0, rateProfile = 0}
+-- Profiles are 1-based, as tasks/session.lua publishes them
+local session = {mcuId = "abc", connected = true, isArmed = false, pidProfile = 1, rateProfile = 1}
+
+-- The FC's active profiles (1-based); nil follows the session. MSP_STATUS
+-- answers them 0-based.
+local fcProfile = {pid = nil, rate = nil}
+local function statusReply()
+  local buf = {}
+  for i, b in ipairs(statusMsp.buildReadMessage(function() end).simulatorResponse) do buf[i] = b end
+  buf[24] = (fcProfile.pid or session.pidProfile) - 1    -- current_pid_profile_index
+  buf[26] = (fcProfile.rate or session.rateProfile) - 1  -- current_control_rate_profile_index
+  return buf
+end
 
 local function openPage()
   local page = assert(loadfile(ROOT .. "app/pages/tune_advisor.lua"))()
@@ -182,6 +199,8 @@ local function pump(reply)
       m.processReply(nil, {})
     elseif codecs[m.command] then
       m.processReply(nil, codecs[m.command].encode(fc[m.command]))
+    elseif m.command == STATUS then
+      m.processReply(nil, statusReply())
     elseif m.command ~= tuneAdvisor.READ_COMMAND then
       m.processReply(nil, {})
     end
@@ -247,8 +266,10 @@ do
   check("no other field changes", changedFields(before) == "rates_1,rcRates_1,roll_f", changedFields(before))
   check("only the messages holding a change are written", has(sent, 202) and has(sent, 204)
     and not has(sent, 95), table.concat(sent, ","))
-  check("the write is committed, then read back", has(sent, EEPROM) and sent[#sent] == 111,
+  check("the write is committed, then read back", has(sent, EEPROM) and sent[#sent - 1] == 111,
     table.concat(sent, ","))
+  check("the profiles are asked before the reads, each write, the commit and after the read-back",
+    table.concat(sent, ",") == "101,112,94,111,101,202,101,204,101,250,112,94,111,101", table.concat(sent, ","))
   local stages = table.concat(progress.msgs, ",")
   check("each stage is shown", stages:find("stage_read", 1, true) and stages:find("stage_write", 1, true)
     and stages:find("stage_save", 1, true) and stages:find("stage_verify", 1, true), stages)
@@ -291,11 +312,11 @@ do
   local before = snapshot()
   local sent = applyNow(function(m)
     if m.command == 111 then
-      session.pidProfile = 1
+      session.pidProfile = 2
       subs["session.update"](session)
     end
   end)
-  session.pidProfile = 0
+  session.pidProfile = 1
   subs["session.update"](session)
   check("nothing is written", changedFields(before) == "" and not has(sent, EEPROM), table.concat(sent, ","))
   check("reported as changed settings", lastMessage():find("tune_advisor.err_changed", 1, true) ~= nil)
@@ -316,6 +337,169 @@ do
   check("a short read writes nothing", changedFields(before) == "" and not has(sent, 202), table.concat(sent, ","))
   check("a short read is reported as a failed read", lastMessage():find("tune_advisor.err_read", 1, true) ~= nil,
     lastMessage())
+end
+
+-- Issue #2808: the FC writes into whichever profile is active when each write
+-- arrives, so a switch between two writes must stop the rest
+local function switchOn(command)
+  return function(m)
+    if m.command == command then fcProfile.pid = 2 end
+  end
+end
+
+print("A profile switch between two writes stops before the next one")
+do
+  resetFc()
+  openPage()
+  pump()
+  logged = {}
+  local sent = applyNow(switchOn(202))
+  fcProfile.pid = nil
+  check("the next write and the commit are not sent", has(sent, 202) and not has(sent, 204)
+    and not has(sent, EEPROM), table.concat(sent, ","))
+  check("the pilot is told the profile changed while writing",
+    lastMessage():find("tune_advisor.err_switched", 1, true) ~= nil, lastMessage())
+  check("nothing is logged", #logged == 0)
+end
+
+print("A profile switch after the last write is never committed")
+do
+  resetFc()
+  openPage()
+  pump()
+  local sent = applyNow(switchOn(204))
+  fcProfile.pid = nil
+  check("no EEPROM commit", has(sent, 204) and not has(sent, EEPROM), table.concat(sent, ","))
+  check("reported as a switch while writing", lastMessage():find("tune_advisor.err_switched", 1, true) ~= nil,
+    lastMessage())
+end
+
+print("A rate profile switch between two writes stops it too")
+do
+  resetFc()
+  openPage()
+  pump()
+  local sent = applyNow(function(m) if m.command == 202 then fcProfile.rate = 2 end end)
+  fcProfile.rate = nil
+  check("the rates are not written to the other profile", not has(sent, 204) and not has(sent, EEPROM),
+    table.concat(sent, ","))
+end
+
+print("A switch the telemetry has not shown yet writes nothing")
+do
+  resetFc()
+  openPage()
+  pump()
+  local before = snapshot()
+  fcProfile.pid = 2
+  local sent = applyNow()
+  fcProfile.pid = nil
+  check("nothing is read or written", changedFields(before) == "" and not has(sent, 112)
+    and not has(sent, EEPROM), table.concat(sent, ","))
+  check("reported as changed settings", lastMessage():find("tune_advisor.err_changed", 1, true) ~= nil,
+    lastMessage())
+end
+
+print("A profile switch during the reads, before telemetry shows it, writes nothing")
+do
+  resetFc()
+  openPage()
+  pump()
+  local before = snapshot()
+  local sent = applyNow(switchOn(111))
+  fcProfile.pid = nil
+  check("nothing is written", changedFields(before) == "" and not has(sent, 202) and not has(sent, EEPROM),
+    table.concat(sent, ","))
+  check("reported as changed settings", lastMessage():find("tune_advisor.err_changed", 1, true) ~= nil,
+    lastMessage())
+end
+
+print("A status request that fails or is short writes nothing")
+do
+  resetFc()
+  openPage()
+  pump()
+  local before = snapshot()
+  local sent = applyNow(function(m) if m.command == STATUS then return "error" end end)
+  check("a failed status writes nothing", changedFields(before) == "" and not has(sent, 202), table.concat(sent, ","))
+  check("reported as a failed read", lastMessage():find("tune_advisor.err_read", 1, true) ~= nil, lastMessage())
+  sent = applyNow(function(m) if m.command == STATUS then return {1, 2, 3} end end)
+  check("a short status writes nothing", changedFields(before) == "" and not has(sent, 202), table.concat(sent, ","))
+end
+
+print("A profile switch during the read-back is not reported as confirmed")
+do
+  resetFc()
+  openPage()
+  pump()
+  logged = {}
+  local sent = applyNow(switchOn(EEPROM))
+  fcProfile.pid = nil
+  check("the commit was sent", has(sent, EEPROM), table.concat(sent, ","))
+  check("reported as unconfirmed", lastMessage():find("tune_advisor.err_verify", 1, true) ~= nil, lastMessage())
+end
+
+-- The FC applies a write whose reply is then lost
+local function applyWrite(m)
+  local r = WRITE_TO_READ[m.command]
+  local buf = {}
+  for i, b in ipairs(m.payload) do buf[i] = b end
+  fc[r] = codecs[r].decode(buf)
+end
+
+print("Each write leaves the queue once, and is resent after the profiles are checked again")
+do
+  resetFc()
+  openPage()
+  pump()
+  local retries = {}
+  local lost = false
+  local sent = applyNow(function(m)
+    if WRITE_TO_READ[m.command] then retries[#retries + 1] = m.maxRetries end
+    if m.command == 202 and not lost then
+      lost = true
+      applyWrite(m)
+      return "error"
+    end
+  end)
+  local queueRetries = true
+  for _, r in ipairs(retries) do if r ~= 0 then queueRetries = false end end
+  check("the queue does not resend a write", #retries > 0 and queueRetries, #retries .. " writes")
+  check("a lost reply is resent after a status check", table.concat(sent, ","):find("202,101,202,101,204", 1, true)
+    ~= nil, table.concat(sent, ","))
+  check("the Apply completes", lastMessage():find("tune_advisor.applied", 1, true) ~= nil, lastMessage())
+end
+
+print("A lost write reply followed by a profile switch does not reach the new profile")
+do
+  resetFc()
+  openPage()
+  pump()
+  local writes = 0
+  local sent = applyNow(function(m)
+    if m.command == 202 then
+      writes = writes + 1
+      applyWrite(m)
+      fcProfile.pid = 2
+      return "error"
+    end
+  end)
+  fcProfile.pid = nil
+  check("the write is not resent, and nothing else is written", writes == 1 and not has(sent, 204)
+    and not has(sent, EEPROM), table.concat(sent, ","))
+  check("reported as a switch while writing", lastMessage():find("tune_advisor.err_switched", 1, true) ~= nil,
+    lastMessage())
+end
+
+print("A write that keeps failing ends the Apply")
+do
+  resetFc()
+  openPage()
+  pump()
+  local writes = 0
+  local sent = applyNow(function(m) if m.command == 204 then writes = writes + 1 return "error" end end)
+  check("tried a bounded number of times", writes == 6 and not has(sent, EEPROM), writes .. " attempts")
+  check("reported as a failed write", lastMessage():find("tune_advisor.err_write", 1, true) ~= nil, lastMessage())
 end
 
 print("A failed write is never committed")
@@ -370,7 +554,7 @@ do
   openPage()
   pump()
   check("no Apply while the PID profile is unknown", saveEnabled == false)
-  session.pidProfile = 0
+  session.pidProfile = 1
   subs["session.update"](session)
   pump()
   check("Save comes back once the PID profile is known", saveEnabled == true)
@@ -680,6 +864,53 @@ do
   flightRoll = nil
 end
 
+print("F and the rates it moves stay within reach of the pilot's own values (issue #2788)")
+do
+  -- The fixture's roll runs hot: F 120 -> 96, with its rates raised by 120 / 96
+  local function shown()
+    local out = {}
+    lcd.drawText = function(_, _, text) out[#out + 1] = tostring(text) end
+    paintFn()
+    lcd.drawText = nil
+    return table.concat(out, "\n")
+  end
+
+  -- The page already lowered the pilot's F 200 twice: 96 would be past 60% of 200
+  resetFc()
+  changeLog = {{axis = 1, key = "F", from = 200, to = 160, pidProfile = 1},
+    {axis = 1, key = "F", from = 160, to = 120, pidProfile = 1}}
+  openPage()
+  pump()
+  local text = shown()
+  check("no F step past 60% of the pilot's own F", saveEnabled == false
+    and text:find("act_f_fmt", 1, true) == nil, tostring(saveEnabled))
+  check("the reasons say how far F already is", text:find("why_f_below_fmt", 1, true) ~= nil, text)
+
+  -- Within the bound: own F 150, 96 is 64% of it
+  resetFc()
+  changeLog = {{axis = 1, key = "F", from = 150, to = 120, pidProfile = 1}}
+  openPage()
+  pump()
+  check("an F step within the bound is given", saveEnabled == true and shown():find("act_f_fmt", 1, true) ~= nil)
+
+  -- A step back toward the pilot's own value is never held back
+  resetFc()
+  changeLog = {{axis = 1, key = "F", from = 50, to = 120, pidProfile = 1}}
+  openPage()
+  pump()
+  check("a step back toward the pilot's own F is given", saveEnabled == true)
+
+  -- The rates: the page raised the pilot's rc rate 12 to 18; 23 would be past 167% of 12
+  resetFc()
+  changeLog = {{axis = 1, key = "rcRate", from = 12, to = 18, pidProfile = 1}}
+  openPage()
+  pump()
+  text = shown()
+  check("no F step whose rates go past 167% of the pilot's own", saveEnabled == false, tostring(saveEnabled))
+  check("the reasons say how far the rates already are", text:find("why_rates_above_fmt", 1, true) ~= nil, text)
+  changeLog = {}
+end
+
 print("P is raised at most 50% above the pilot's own P")
 do
   -- The response matches and stops bounce back 20% with no I-term push: more P
@@ -697,16 +928,16 @@ do
 
   -- The page raised the pilot's 50 twice already: 84 would be past 75
   resetFc()
-  changeLog = {{axis = 1, key = "P", from = 50, to = 60, pidProfile = 0},
-    {axis = 2, key = "P", from = 50, to = 60, pidProfile = 0},
-    {axis = 1, key = "P", from = 60, to = 70, pidProfile = 0}}
+  changeLog = {{axis = 1, key = "P", from = 50, to = 60, pidProfile = 1},
+    {axis = 2, key = "P", from = 50, to = 60, pidProfile = 1},
+    {axis = 1, key = "P", from = 60, to = 70, pidProfile = 1}}
   openPage()
   pump()
   check("no more P past 1.5x the pilot's own", saveEnabled == false)
 
   -- The pilot set 70 by hand after the page's 50 -> 60: 70 is the pilot's own
   resetFc()
-  changeLog = {{axis = 1, key = "P", from = 50, to = 60, pidProfile = 0}}
+  changeLog = {{axis = 1, key = "P", from = 50, to = 60, pidProfile = 1}}
   openPage()
   pump()
   check("a P set by hand starts again from that P", saveEnabled == true)
@@ -731,21 +962,21 @@ do
   resetFc()
   flightRoll = {ffGain = 1.0, fullCount = 0, releases = 20, meanRebound = 0.2, meanIterm = 0}
   changeLog = {
-    {axis = 1, key = "P", from = 50, to = 60, pidProfile = 0},
-    {axis = 2, key = "P", from = 50, to = 60, pidProfile = 0},
-    {axis = 1, key = "P", from = 60, to = 70, pidProfile = 0},
+    {axis = 1, key = "P", from = 50, to = 60, pidProfile = 1},
+    {axis = 2, key = "P", from = 50, to = 60, pidProfile = 1},
+    {axis = 1, key = "P", from = 60, to = 70, pidProfile = 1},
   }
-  session.pidProfile = 0
+  session.pidProfile = 1
   openPage()
   pump()
   check("the current profile's 1.5x P cap blocks another increase", saveEnabled == false)
 
-  session.pidProfile = 1
+  session.pidProfile = 2
   subs["session.update"](session)
   pump()
   check("same-aircraft profile change refreshes the P cap", saveEnabled == true)
 
-  session.pidProfile = 0
+  session.pidProfile = 1
   flightRoll = nil
   changeLog = {}
 end

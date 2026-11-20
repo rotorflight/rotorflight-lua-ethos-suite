@@ -1,23 +1,32 @@
--- Behaviour check for the Rotorflight 2 reboot policy (#2361).
+-- Behaviour check for the governor reboot policy (#2361, #2780).
 --
 -- Run it:
 --     lua5.4 bin/reboot_policy/verify_reboot_policy.lua
 --
 -- What it drives, and why:
 --   * The four real Setup -> Governor pages, loaded from their paths, to read
---     the config they hand PageRuntime.new. Whether a page reboots the flight
---     controller is one field of that config, and it is the field #2361 is
---     about: Rotorflight 2 applies governor writes in RAM immediately, so a
---     governor save must not restart the board.
+--     the config they hand PageRuntime.new. The firmware copies
+--     MSP_SET_GOVERNOR_CONFIG into the running governor only at start-up
+--     (governorInit(), called once from init.c), so a save that changes a
+--     governor value must restart the board or it is not flown until the next
+--     power-up (#2780). A save that changes nothing must not restart: #2361
+--     removed the unconditional restart, which dropped telemetry and twitched
+--     the servos on every save at the field. Each page declares
+--     rebootIfChanged, and none sets rebootAfterSave = true.
+--   * The real page_runtime.lua with rebootIfChanged: a save that changes a
+--     value publishes MSP_REBOOT, and one that writes back what was read does
+--     not.
 --   * The real src/rfsuite/app/page_runtime.lua, to drive a save that DOES
 --     restart the board and pin what the page does while it waits. The MSP
 --     answers are delivered inline (a queue that drains at once), which is
 --     enough here because the subject is the UI wait, not read ordering.
 --
 -- Which checks are gates, and how --self-test proves it:
---   1. "no governor page requests a reboot" -- goes red if the field is put
---      back to true. The self-test splices `rebootAfterSave = false` back to
---      `true` in a copy of one governor page and requires the check to fail.
+--   1. "every governor page restarts when a save changes a value" -- the
+--      self-test splices `rebootIfChanged = true` out of a copy of one governor
+--      page and requires the check to fail. "a changed governor value restarts
+--      the FC" -- the self-test splices the rebootIfChanged decision out of a
+--      copy of page_runtime.lua and requires it to fail.
 --   2. "the restart dialog is held after the save" and "the page reloads after
 --      the link returns" -- both go red on the pre-fix page_runtime, where the
 --      save path closed the dialog and reported the save done immediately. The
@@ -207,6 +216,21 @@ end
 
 -- ── module stubs ───────────────────────────────────────────────────────────
 
+-- MSP_STATUS: app/page_runtime.lua checks the active profile before each write
+-- of a profile page (#2809). The FC answers profile 1, the one the page loaded.
+local STATUS_BYTES = {}
+for i = 1, 30 do STATUS_BYTES[i] = 0 end
+package.loaded["rfsuite.lib.msp_status"] = {
+  buildReadMessage = function(onData, onError)
+    return {
+      kind = "status",
+      errorHandler = onError,
+      processReply = function()
+        onData({current_pid_profile_index = 0, current_control_rate_profile_index = 0})
+      end,
+    }
+  end,
+}
 package.loaded["rfsuite.lib.bus"] = {
   subscribe = function(topic, handler)
     if topic == "session.update" then sessionHandlers[#sessionHandlers + 1] = handler end
@@ -214,6 +238,10 @@ package.loaded["rfsuite.lib.bus"] = {
   unsubscribe = function() end,
   publish = function(topic, message)
     if topic ~= "msp.request" or type(message) ~= "table" then return end
+    if message.kind == "status" then
+      message.processReply(message, STATUS_BYTES)
+      return
+    end
     if message.isReboot then
       -- A board that is rebooting does not acknowledge the command that reboots
       -- it (lib/msp_reboot.lua's maxRetries = 0, and its own comment says the
@@ -349,11 +377,8 @@ local function loadGovernorPages(splice)
   return { opened = opened, configs = capturedConfigs }
 end
 
-local function governorRequestsReboot()
-  for _, name in ipairs(GOVERNOR_PAGES) do
-    -- never reached; kept only so the intent reads in the report
-    if false then return name end
-  end
+-- A page that restarts on every save, changed or not (#2361)
+local function governorAlwaysReboots()
   for _, config in ipairs(capturedConfigs) do
     local reboot = config.rebootAfterSave
     if type(reboot) == "function" then reboot = reboot() end
@@ -362,11 +387,24 @@ local function governorRequestsReboot()
   return false
 end
 
+-- Every page restarts when its save changes governor data (#2780)
+local function governorRebootsOnChange(configs)
+  for _, config in ipairs(configs) do
+    local r = config.rebootIfChanged
+    local ok = r == true
+    if type(r) == "table" then
+      for _, key in ipairs(r) do if key == "governor" then ok = true end end
+    end
+    if not ok then return false end
+  end
+  return #configs == #GOVERNOR_PAGES
+end
+
 -- ── part B: the save-and-reboot pipeline ───────────────────────────────────
 
 -- One page on the supplied PageRuntime class. Returns the runtime and a tick()
 -- that runs its wakeup handler, which is where every dialog below is opened.
-local function newPage(PageRuntimeClass, rebootAfterSave)
+local function newPage(PageRuntimeClass, rebootAfterSave, rebootIfChanged)
   local opts = {}
   local function setter(name)
     return function(handler) opts[name] = handler end
@@ -384,6 +422,7 @@ local function newPage(PageRuntimeClass, rebootAfterSave)
     mspModule = mspModuleStub(),
     opts = opts,
     rebootAfterSave = rebootAfterSave,
+    rebootIfChanged = rebootIfChanged,
   })
   runtime:buildChrome()
   runtime:registerField("default", widgetStub("field"))
@@ -454,6 +493,18 @@ local function rebootTrace(PageRuntimeClass, rebootAfterSave, opts)
   return trace
 end
 
+-- A rebootIfChanged page saved with (changed) or without a changed value.
+-- Returns how many MSP_REBOOTs the save published.
+local function changedRebootCount(PageRuntimeClass, changed)
+  resetTrace()
+  sessionHandlers = {}
+  local runtime, tick = newPage(PageRuntimeClass, nil, true)
+  loadPage(runtime, tick)
+  if changed then runtime.data.gov_mode = 2 end
+  savePage(runtime, tick)
+  return reboots
+end
+
 -- Same shape, but the board never comes back: the wait must end on its bound.
 local function timeoutTrace(PageRuntimeClass)
   resetTrace()
@@ -477,13 +528,17 @@ end
 
 local realPageRuntime = dofile(SUITE .. "/app/page_runtime.lua")
 
-out("part A: the governor pages do not restart the flight controller")
+out("part A: a governor save restarts the flight controller only when it changes a value")
 do
   local result = loadGovernorPages(nil)
   check("all four Setup -> Governor pages open", result.opened == 4,
     "opened " .. tostring(result.opened))
-  check("no governor page requests a reboot", governorRequestsReboot() == false,
-    "a governor page still declares rebootAfterSave; Rotorflight 2 applies governor writes in RAM")
+  check("every governor page restarts when a save changes a value", governorRebootsOnChange(result.configs),
+    "a governor page does not declare rebootIfChanged; the firmware takes governor config only at start-up")
+  check("no governor page restarts on every save", governorAlwaysReboots() == false,
+    "a governor page declares rebootAfterSave = true")
+  check("a changed governor value restarts the FC", changedRebootCount(realPageRuntime, true) == 1)
+  check("a save that changes nothing does not", changedRebootCount(realPageRuntime, false) == 0)
 end
 
 out("")
@@ -549,15 +604,28 @@ if selfTest then
 
   local spliced = loadGovernorPages(function(name, source)
     if name == "setup_governor_curves.lua" then
-      local outSource, n = source:gsub("rebootAfterSave = false", "rebootAfterSave = true", 1)
+      local outSource, n = source:gsub("rebootIfChanged = true,", "", 1)
       assert(n == 1, "splice did not apply to the governor page")
       return outSource
     end
     return source
   end)
-  check("the governor check goes red when a page asks for a reboot",
-    governorRequestsReboot() == true and spliced.opened == 4,
-    "spliced configs still all read false")
+  check("the governor check goes red when a page does not restart on a change",
+    governorRebootsOnChange(spliced.configs) == false and spliced.opened == 4,
+    "the spliced page still reads as restarting on a change")
+
+  do
+    local f = assert(io.open(SUITE .. "/app/page_runtime.lua", "r"))
+    local src = f:read("*a")
+    f:close()
+    local noChange, n = src:gsub("shouldReboot = shouldReboot or changedReboot", "shouldReboot = shouldReboot", 1)
+    assert(n == 1, "splice did not apply to page_runtime (rebootIfChanged)")
+    package.loaded["rfsuite.app.page_runtime"] = nil
+    local withoutChange = assert(load(noChange, "@page_runtime_no_change"))()
+    check("the changed-value gate goes red without the rebootIfChanged decision",
+      changedRebootCount(withoutChange, true) == 0, "the spliced page_runtime still restarted")
+    package.loaded["rfsuite.app.page_runtime"] = realPageRuntime
+  end
 
   -- The pre-fix page_runtime: one line short of arming the wait, which is what
   -- the pre-fix save path was -- it closed the dialog and reported the save

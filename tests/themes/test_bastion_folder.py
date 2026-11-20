@@ -41,7 +41,8 @@ class Radio:
             lcd={RGB=function(r,g,b) return r*65536+g*256+b end,
                 color=noop,font=noop,drawText=noop,drawFilledRectangle=noop,drawRectangle=noop,
                 getWindowSize=function() return 800,480 end,getTextSize=function(t) return #t*6,12 end,
-                loadMask=function() return nil end,darkMode=function() return true end,invalidate=noop}
+                loadMask=function() return nil end,darkMode=function() return true end,invalidate=noop,
+                isVisible=function() return true end}
             system={getSource=function() return {value=function() return 0 end} end,
                 registerWidget=function(w) widgetModule=w end,
                 getMemoryUsage=function() return {mainStackAvailable=9000} end}
@@ -91,6 +92,12 @@ class Radio:
             end
             package.loaded["rfsuite.lib.require"]=requireModule
             bus=requireModule("lib/bus.lua")
+            -- paint() draws only once wakeup() has warmed the dashboard, one cold load per tick
+            -- (#2814), as on the radio: ticks first, then the paint.
+            function warmPaint(module, widget)
+                for _=1,10 do widget.needsPaint=true; module.wakeup(widget) end
+                module.paint(widget)
+            end
             store=requireModule("lib/settings_store.lua")
             function bastionButton()
                 for _,button in ipairs(buttons) do if button.text=="Bastion" then return button end end
@@ -135,7 +142,7 @@ class BastionFolderTests(unittest.TestCase):
                         theme_inflight="system/bastion",theme_postflight="system/bastion"}
                 end
                 for _,phase in ipairs({"preflight","inflight","postflight"}) do
-                    widget.flightmodeState=phase; widgetModule.paint(widget)
+                    widget.flightmodeState=phase; warmPaint(widgetModule, widget)
                     assert(paintedDirectory=="widgets/dashboard/themes/bastion")
                     assert(paintedPhase==phase and paintedState==phase)
                     assert(context.widgets.dashboard.getPreference("rpm_max")==3450)

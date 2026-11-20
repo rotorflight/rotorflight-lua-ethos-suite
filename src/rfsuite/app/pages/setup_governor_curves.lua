@@ -43,6 +43,11 @@ end
 
 local function open(opts)
   local curve = {}
+  -- The points the pilot changed since the last read. The FC stores each point in half-percent
+  -- steps (gov_bypass_throttle / 200 in governorInit(); the Configurator writes x * 2), and the
+  -- fields show whole percent. Only an edited point is written back from its field, so a stored
+  -- 12.5 % the pilot did not touch is not saved as 13 % (#2782).
+  local edited = {}
   local activeIndex = nil
 
   local runtime
@@ -52,19 +57,20 @@ local function open(opts)
     mspModule = governorConfig,
     opts = opts,
     profileField = "none",
-    -- Rotorflight 2 applies governor writes in RAM immediately -- see
-    -- app/pages/setup_governor_general.lua's own note. No reboot on save.
-    rebootAfterSave = false,
+    -- The firmware takes MSP_SET_GOVERNOR_CONFIG only at start-up, so a save that changes a
+    -- value restarts the FC (#2780) -- see app/pages/setup_governor_general.lua's own note.
+    rebootIfChanged = true,
     unloadPackageKeys = {"rfsuite.lib.msp_governor_config"},
     onLoaded = function()
       for i = 1, FIELD_COUNT do
         curve[i] = clampPercent((runtime.data[curveKey(i)] or 0) / 2)
+        edited[i] = false
       end
       requestRepaint()
     end,
     beforeSave = function(rt)
       for i = 1, FIELD_COUNT do
-        rt.data[curveKey(i)] = clampPercent(curve[i]) * 2
+        if edited[i] then rt.data[curveKey(i)] = clampPercent(curve[i]) * 2 end
       end
     end,
     onPaint = function()
@@ -134,6 +140,7 @@ local function open(opts)
       function(value)
         markDirty()
         curve[index] = clampPercent(value)
+        edited[index] = true
         requestRepaint()
       end)
     field:suffix("%")

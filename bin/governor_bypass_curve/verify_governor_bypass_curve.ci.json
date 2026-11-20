@@ -1,0 +1,7 @@
+{
+  "id": "governor-bypass-curve",
+  "name": "Bypass Curve keeps a point the pilot did not edit",
+  "step": "Check the Bypass Curve half-percent round trip",
+  "script": "bin/governor_bypass_curve/verify_governor_bypass_curve.lua",
+  "rationale": "Issue #2782: the FC stores each bypass point in half-percent steps (gov_bypass_throttle / 200 in governorInit(); the Configurator writes x * 2), and Setup > Governor > Bypass Curve shows whole percent. The page wrote all nine points back from their rounded fields on every save, so a stored 12.5 % became 13 % on a save that changed nothing or changed another point, and with #2780 such a save also restarted the FC. The page now writes back only the points the pilot edited since the last read.\n\nThe harness drives the real setup_governor_curves.lua with a stand-in runtime: an unchanged save writes every point back as stored, editing one point leaves the half-percent points alone, the edited point is written in half-percent units, and a reload forgets the edits. --self-test restores the write-back of every point and requires the untouched checks to fail."
+}

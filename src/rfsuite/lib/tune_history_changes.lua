@@ -14,6 +14,11 @@ local AXIS_COUNT = 3
 local AXIS_NAMES = {"roll", "pitch", "yaw"}
 local CHANGES_HEADER = "date,axis,setting,from,to,pid_profile"
 local LEGACY_CHANGES_HEADER = "date,axis,setting,from,to"
+local ROW_PATTERN = "^([^,]*),([^,]*),([^,]*),(%-?%d+),(%-?%d+),?(%d*)$"
+-- The record is started afresh once an Apply leaves it above this size (#2807): it was
+-- appended forever and read whole on every page open.
+local COMPACT_BYTES = 16 * 1024
+local MAX_PID_PROFILES = 6
 
 local changes = {}
 
@@ -63,12 +68,131 @@ local function fileExists(path)
   return true
 end
 
+local function changesPath(mcuId)
+  return BASE_DIR .. "/" .. mcuId .. "/changes.csv"
+end
+
+-- The record before the last restart, kept until the next one
+local function backupPath(path)
+  return path .. ".old"
+end
+
+local function axisOf(name)
+  for n = 1, AXIS_COUNT do
+    if AXIS_NAMES[n] == name then return n end
+  end
+  return nil
+end
+
+-- Calls fn(date, axis, key, from, to, pidProfile) for every row that parses, oldest first,
+-- reading the file line by line rather than as one string. Returns the bytes read and the rows
+-- that parsed, or nil when the file cannot be opened or a read fails (a failed read is not
+-- taken for the end of the file).
+local function eachRow(path, fn)
+  local file = io.open(path, "rb")
+  if not file then return nil end
+  local bytes, rows, failed = 0, 0, false
+  while true do
+    local line, err = file:read("L")
+    if not line then
+      failed = err ~= nil
+      break
+    end
+    bytes = bytes + #line
+    local date, axisName, key, from, to, pidProfile = line:gsub("[\r\n]+$", ""):match(ROW_PATTERN)
+    local axis = axisOf(axisName)
+    if axis then
+      rows = rows + 1
+      if fn then fn(date, axis, key, tonumber(from), tonumber(to), tonumber(pidProfile)) end
+    end
+  end
+  pcall(function() file:close() end)
+  if failed then return nil end
+  return bytes, rows
+end
+
+-- A restart that stopped after the record was moved to the backup leaves no live record. The
+-- backup is the full record: it is put back before anything is appended, so the next Apply does
+-- not start a record of its own beside it. Returns false when it cannot be put back.
+local function recover(path)
+  if fileExists(path) then return true end
+  local backup = backupPath(path)
+  if not fileExists(backup) then return true end
+  pcall(os.rename, backup, path)
+  atomicWrite.discardTemp(path)
+  return fileExists(path)
+end
+
+-- Starts the record afresh with one row per setting and PID profile: the page's newest unbroken
+-- chain of its own changes, from the value it started at to the value it ended at. pilotValue()
+-- follows only that chain back from the current value, so it answers the same as over the whole
+-- record for every setting, PID profile and current value. A row without a profile (written
+-- before the column existed) counts on every profile, as pilotValue() counts it.
+-- The new record is staged beside the old one; the old one is kept as the backup.
+local function compact(path)
+  local chains, order = {}, {}
+  local read, rowsRead = eachRow(path, function(date, axis, key, from, to, pidProfile)
+    for p = 1, MAX_PID_PROFILES do
+      if pidProfile == nil or pidProfile == p then
+        local id = axis .. "|" .. key .. "|" .. p
+        local c = chains[id]
+        if c and c.to == from then
+          c.to, c.date = to, date
+        elseif c then
+          c.from, c.to, c.date = from, to, date
+        else
+          chains[id] = {axis = axis, key = key, profile = p, from = from, to = to, date = date}
+          order[#order + 1] = id
+        end
+      end
+    end
+  end)
+  -- A failed read, or a file with no rows of ours, is left as it is
+  if not read or rowsRead == 0 then return false end
+
+  local handle = atomicWrite.stage(path)
+  if not handle then return false end
+  local ok = pcall(function()
+    handle:write(CHANGES_HEADER, "\n")
+    for _, id in ipairs(order) do
+      local c = chains[id]
+      handle:write(string.format("%s,%s,%s,%d,%d,%d\n", c.date, AXIS_NAMES[c.axis], c.key, c.from, c.to, c.profile))
+    end
+  end)
+  if not ok then
+    atomicWrite.abort(handle, path)
+    return false
+  end
+
+  -- The full record becomes the backup. Without it the restart does not go ahead.
+  local backup = backupPath(path)
+  pcall(os.remove, backup)
+  pcall(os.rename, path, backup)
+  if fileExists(path) or not fileExists(backup) then
+    atomicWrite.abort(handle, path)
+    recover(path)
+    return false
+  end
+
+  -- Ethos' file:write/close do not report failures uniformly, so the new record is read back:
+  -- one row per chain, or the backup is put back in its place.
+  local committed = atomicWrite.commit(handle, path)
+  local _, rows = eachRow(path)
+  if not committed or rows ~= #order then
+    pcall(os.remove, path)
+    recover(path)
+    return false
+  end
+  return true
+end
+
 -- changes: {key, from, to, axis} as the Tune Advisor page builds them; axis is the
 -- axis the setting was written to (the Cyclic axis for roll under polar cyclic) and
 -- defaults to the axis given. pidProfile is the profile they were applied to (empty
 -- when the FC did not say)
 function changes.logChanges(mcuId, axis, applied, pidProfile)
-  local path = BASE_DIR .. "/" .. mcuId .. "/changes.csv"
+  local path = changesPath(mcuId)
+  if not recover(path) then return false end
   local isNew = not fileExists(path)
   if not isNew and not migrateLegacyChanges(path) then return false end
   local file = io.open(path, "a")
@@ -83,30 +207,24 @@ function changes.logChanges(mcuId, axis, applied, pidProfile)
     end
   end)
   pcall(function() file:close() end)
+  -- A restart that fails keeps the full record: the Apply above is already in it
+  if written and (eachRow(path) or 0) > COMPACT_BYTES then compact(path) end
   return written
 end
 
--- The Apply record, oldest first: {axis, key, from, to, pidProfile} per row.
+-- The Apply record, oldest first: {axis, key, from, to, pidProfile} per row, read line by line.
 -- Every row that parses is read regardless of header. The writer upgrades only
 -- the exact legacy header before appending; foreign files remain untouched.
 -- Rows from before the pid_profile column read with pidProfile nil. A missing
 -- file, or one with no such rows, reads as no changes.
 function changes.readChanges(mcuId)
   local rows = {}
-  local text = ini.load_file_as_string(BASE_DIR .. "/" .. mcuId .. "/changes.csv")
-  if not text then return rows end
-  local lines = {}
-  for line in text:gmatch("[^\r\n]+") do lines[#lines + 1] = line end
-  for i = 1, #lines do
-    local axisName, key, from, to, pidProfile = lines[i]:match("^[^,]*,([^,]*),([^,]*),(%-?%d+),(%-?%d+),?(%d*)$")
-    local axis = nil
-    for n = 1, AXIS_COUNT do
-      if AXIS_NAMES[n] == axisName then axis = n end
-    end
-    if axis then
-      rows[#rows + 1] = {axis = axis, key = key, from = tonumber(from), to = tonumber(to), pidProfile = tonumber(pidProfile)}
-    end
-  end
+  local path = changesPath(mcuId)
+  -- An interrupted restart leaves only the backup
+  if not fileExists(path) then path = backupPath(path) end
+  eachRow(path, function(_, axis, key, from, to, pidProfile)
+    rows[#rows + 1] = {axis = axis, key = key, from = from, to = to, pidProfile = pidProfile}
+  end)
   return rows
 end
 
