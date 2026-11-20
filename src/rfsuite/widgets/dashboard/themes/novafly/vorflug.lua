@@ -6,12 +6,12 @@
 local H = ...
 local floor = math.floor
 
-local FOTO = {x = 10, y = 66, h = 168}           -- das Fotofeld, 4:3 aus der Hoehe; dieselben Masse im Erzeuger des Fotorands (grund_bauen.py)
+local FOTO = {x = 10, y = 66, h = 168}           -- das Fotofeld, 4:3 aus der Hoehe; dieselben Masse hat der Fotorand (gfx/fotorand*.png)
 local BALKEN = {links = 12, rechts = 438, unten = 36, breite = 4, schritt = 6}   -- fuenf Empfangsbalken wie am Sender, steigend 6 bis 18
 local RSSI_STUFEN = {42, 50, 60, 70, 85}         -- dB je Balken; 42 ist die Warnschwelle des Senders
 local VFR_STUFEN = {20, 40, 60, 80, 95}          -- Prozent je Balken
 local KOPF_Y = 28                                 -- die Mitte des Kopfbands (y 8-47)
-local AKKU = {x = 246, y = 66, w = 234, h = 174}  -- die Umrandung rechts, offen zum Rand; unten bei 240 wie der Chip der Bankseite gegenueber (Kevin 20.11.: 'Dann ist alles parallel')
+local AKKU = {x = 246, y = 66, w = 234, h = 174}  -- die Umrandung rechts, offen zum Rand; unten bei 240 wie der Chip der Bankseite gegenueber, alles parallel
 local FUSS = {y = 262, h = 48, w = 112, luecke = 6, x = 10}
 local KEINE_ZONE = {x = 0, y = 0, w = 0, h = 0}   -- ZURUECK gibt es auf einer Seite nicht: zurueck geht das Wischen
 
@@ -21,6 +21,7 @@ local nova = {dirty = false, armLage = "unbekannt", flugbuch = {}, hohesDetail =
 local BILDER = H.merk.bilder or {}   -- Foto und Fotorand bleiben ueber das Schliessen der Seite hinaus geladen: jedes Oeffnen lud sie
 H.merk.bilder = BILDER               -- sonst neu, und der X18 blieb stehen
 local foto = nil
+local akku = nil   -- ohne rfsuite.session (Robs master): BATTERY_CONFIG, beim Oeffnen einmal ueber den Bus gelesen
 
 local function fotoLaden()   -- das Modellbild, das der Pilot in Ethos dem Modell gegeben hat; den Ort auf der Karte kennt das Cockpit (H.bildPfad)
     if foto ~= nil or BILDER.foto == false then return end
@@ -86,16 +87,12 @@ local function malen()
     empfang(BALKEN.links, stufen(s.rssi, RSSI_STUFEN), link)
     empfang(BALKEN.rechts, stufen(s.vfr, VFR_STUFEN), link)
     local z, f
-    if s.rssi ~= nil then z = zahl(s.rssi) S.zeileLinks(46, KOPF_Y + 1, {{z, link, FONT_S}, {"dB", stil.WEISS, FONT_XS}}) end   -- ohne Wert nur die leeren Balken, keine Striche (Kevin 20.11.: 'Entweder oder')
+    if s.rssi ~= nil then z = zahl(s.rssi) S.zeileLinks(46, KOPF_Y + 1, {{z, link, FONT_S}, {"dB", stil.WEISS, FONT_XS}}) end   -- ohne Wert nur die leeren Balken, keine Striche
     if s.vfr ~= nil then z = zahl(s.vfr) S.zeileRechts(432, KOPF_Y + 1, {{"VFR", stil.WEISS, FONT_XS}, {z, link, FONT_S}}) end
     stil.beschriftungMittigPasst(240, KOPF_Y, s.modell or "", stil.WEISS, FONT_L, 280)
     fotoLaden()
     local fx, fy, fw, fh = fotoBox()
     if foto ~= nil and pcall(lcd.drawBitmap, fx, fy, foto, fw, fh) then fotoRand() end
-    if not BILDER.gemeldet then   -- einmal je Lauf: der Lua-Speicher mit Foto und Rand (die Spitze, an der der X18 stehen blieb)
-        BILDER.gemeldet = true
-        H.merken("vorflug mit Bildern, Lua " .. floor(collectgarbage("count")) .. " KB")
-    end
 
     local a = AKKU
     S.chip(a.x, a.y, a.w, a.h, "rechts")
@@ -106,12 +103,15 @@ local function malen()
     S.zeile(cx, a.y + 45, {{z, s.fuel ~= nil and zelle or f, FONT_XL}, {"%", stil.WEISS, FONT_S}})
     local rf = H.rf()
     local bc = rf and rf.session and rf.session.batteryConfig
+    if type(bc) ~= "table" then bc = akku end
     local kap = type(bc) == "table" and tonumber(bc.batteryCapacity) or nil
     if kap ~= nil and kap <= 0 then kap = nil end
+    local zellen = s.zellen or (type(bc) == "table" and tonumber(bc.batteryCellCount)) or nil
+    if zellen ~= nil and zellen <= 0 then zellen = nil end
     local segs = {}
     local function seg(text, farbe) segs[#segs + 1] = {text, farbe, FONT_XS} end
     z, f = zahl(s.pack, "%.1f") seg(z, s.pack ~= nil and zelle or f) seg("V  ", stil.WEISS)
-    seg((s.zellen ~= nil and tostring(floor(s.zellen)) or "--") .. "S  ", s.zellen ~= nil and stil.WEISS or stil.FELD_LEISE)
+    seg((zellen ~= nil and tostring(floor(zellen)) or "--") .. "S  ", zellen ~= nil and stil.WEISS or stil.FELD_LEISE)
     z, f = zahl(kap) seg(z, f) seg("mAh", stil.WEISS)
     S.zeile(cx, a.y + 74, segs)
     local lx, rx = a.x + a.w / 4, a.x + a.w * 3 / 4
@@ -123,7 +123,7 @@ local function malen()
     S.zeile(rx, a.y + 133, {{z, f, FONT_L}, {"mAh", stil.WEISS, FONT_S}})
 
     local fl = H.flug() or {}   -- der letzte Flug hier: Hoehe und Steigen/Sinken aus dem Hoehensensor, die Flugzeit scharf mit drehendem Rotor;
-    local sz = type(H.sitzung) == "function" and H.sitzung() or {}   -- ohne Flug hier die Hoechstwerte seit dem Verbinden und die letzte Flugzeit, wie die Suite sie merkt (Kevin 20.11.: am X18 blieben die Chips leer)
+    local sz = type(H.sitzung) == "function" and H.sitzung() or {}   -- ohne Flug hier die Hoechstwerte seit dem Verbinden und die letzte Flugzeit, wie die Suite sie merkt
     local hoehe, rate = s.altFt and "ft" or "m", s.altFt and "ft/s" or "m/s"
     local sek = fl.zeit
     if sek == nil and type(H.letzteFlugzeit) == "function" then sek = H.letzteFlugzeit() end
@@ -159,6 +159,10 @@ local function oeffnen()
         ok, s = pcall(chunk, {H = H, stil = stil})
         if not ok or type(s) ~= "table" then stil = nil return false, "seite_teile.lua bricht ab: " .. tostring(s) end
         S = s
+    end
+    local rf = H.rf()
+    if akku == nil and not (rf and rf.session and type(rf.session.batteryConfig) == "table") then
+        S.busLesen("lib/msp_battery_config.lua", function(d) akku = d end)
     end
     return true
 end

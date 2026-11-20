@@ -14,7 +14,29 @@ S.SCHWARZ = lcd.RGB(0, 0, 0)
 local URSPRUNG = {WEISS = stil.WEISS, LEISE = stil.LEISE, FELD_LEISE = stil.FELD_LEISE, ROT = stil.ROT}   -- die Farben der Zeichenteile auf dunklem Grund, wie stil_teile.lua sie setzt
 local HELL = {WEISS = lcd.RGB(20, 20, 19), LEISE = lcd.RGB(95, 107, 120), FELD_LEISE = lcd.RGB(95, 107, 120), ROT = lcd.RGB(200, 32, 32)}   -- auf hellem Grund: Schrift dunkel, Leise und Rot wie im Cockpit (cockpit.lua PALETTE)
 local modusGesetzt = nil
-local M = {X = stil.sx, Y = stil.sy, sx = stil.sx, sy = stil.sy}   -- das Fenster der Seite fuer rahmen.lua: die Umrechner von stil_teile selbst, ohne Zwischenruf (Rechenschritte je Malen, 20.11.); M.q haengt rahmen.lua an (R.frisch)
+local M = {X = stil.sx, Y = stil.sy, sx = stil.sx, sy = stil.sy}   -- das Fenster der Seite fuer rahmen.lua: die Umrechner von stil_teile selbst, ohne Zwischenruf (Rechenschritte je Malen); M.q haengt rahmen.lua an (R.frisch)
+
+local function suiteModul(pfad)   -- ein Modul der Suite ueber ihren Lader; nil ohne Lader (rfsuite 2.3.x) oder ohne das Modul
+    local lader = package.loaded["rfsuite.lib.require"]
+    if type(lader) ~= "function" then return nil end
+    local ok, m = pcall(lader, pfad)
+    if ok and type(m) == "table" then return m end
+    return nil
+end
+
+function S.busLesen(codecPfad, fertig)   -- ein Satz ueber den Bus "msp.request" der Suite mit ihrem Codec; fertig(werte) einmal, nil bei Fehler; false, wenn nichts abging
+    local bus, codec = suiteModul("lib/bus.lua"), codecPfad and suiteModul(codecPfad) or nil
+    if bus == nil or type(bus.publish) ~= "function" or codec == nil or type(codec.buildReadMessage) ~= "function" then return false end
+    local einmal = false
+    local function ende(w)
+        if einmal then return end
+        einmal = true
+        fertig(w)
+    end
+    local ok, nachricht = pcall(codec.buildReadMessage, function(d) ende(type(d) == "table" and d or nil) end, function() ende(nil) end)
+    if not ok or type(nachricht) ~= "table" or not pcall(bus.publish, "msp.request", nachricht) then einmal = true return false end
+    return true
+end
 
 function S.hell() return type(H.hell) == "function" and H.hell() == true end   -- der Modus des Cockpits
 

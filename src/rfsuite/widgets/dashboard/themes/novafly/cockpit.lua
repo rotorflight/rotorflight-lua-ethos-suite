@@ -65,8 +65,8 @@ local LANG, DRIFT, SPERRE_SEK, FARBE_LESEN_SEK, MASKEN_JE_TAKT, MAX_WORTE, KALT_
 local BEC_FUELLBYTE, BEC_MIN, BEC_MAX = 25.5, 3.0, 13.0
 local RICHTUNG = {x = 147, y = 27, r = 16, rand = 1, spitze = 12, fuss = 10, ecke = 145}
 local CPU_NAMEN = {"RT Load", "CPU Load", "System Load", "MCU Load",   -- RT Load ist der lebendige Wert, CPU Load der Durchschnitt (Rotorflight sendet beide)
-                   kennungen = {{0x51D2, "RT Load"}, {0x51D0, "CPU Load"}, {0x51D1, "System Load"}}}   -- dieselben Sensoren ueber ihre Kennung, wenn kein Name trifft (Kevin 20.11. am X18: RT-Last fehlt)
-local YAW_QUELLEN = {0x5210, 0x1103, 0x5022}   -- rfsuite 2.3.1 reicht Y.Winkel und Hoehe nicht mehr durch getSensor: dann liest das Theme die Ethos-Sensoren selbst (S.Port, CRSF, Simulator der Suite)
+                   kennungen = {{0x51D2, "RT Load"}, {0x51D0, "CPU Load"}, {0x51D1, "System Load"}}}   -- dieselben Sensoren ueber ihre Kennung, wenn kein Name trifft
+local YAW_QUELLEN ={0x5210, 0x1103, 0x5022}   -- rfsuite 2.3.1 reicht Y.Winkel und Hoehe nicht mehr durch getSensor: dann liest das Theme die Ethos-Sensoren selbst (S.Port, CRSF, Simulator der Suite)
 local ALT_QUELLEN = {0x0100, 0x10B2, 0x5016}
 
 local U = {
@@ -77,7 +77,7 @@ local U = {
     rate = {x = 58, y = 150, f = F_MID},         -- RATE in der Mitte zwischen FLUGTIMER und BANK, gleiche Luft (37) nach oben und unten
     bank = {x = 58, y = 215, f = F_MID},
     rpm = {x = 241, y = 126, f = F_BIG},
-    bec = {x = 421, y = 89, f = F_BIG},          -- das rechte Feld reicht von der Linie 363 bis 480: Mitte 421; die drei Bloecke rechts auf den Hoehen der drei links (Kevin 20.11.: 'rechts und links gleich'): BEC wie FLUGTIMER, TX wie RATE, ESC wie BANK
+    bec = {x = 421, y = 89, f = F_BIG},          -- das rechte Feld reicht von der Linie 363 bis 480: Mitte 421; die drei Bloecke rechts auf den Hoehen der drei links: BEC wie FLUGTIMER, TX wie RATE, ESC wie BANK
     tx = {x = 421, y = 150, f = F_BIG},
     amp = {x = 421, y = 215, f = F_BIG},
     cpu = {x = 331, y = 63, f = F_SM},
@@ -144,26 +144,16 @@ local function laden(fn, datei)
     return nil, tostring(erster or (ok and grund) or x)
 end
 
-local function merken(text)   -- eine Zeile fuer die Fehlersuche auf die Karte; geht das Schreiben nicht, bleibt es still
-    local ok, f = pcall(io.open, "LOGS:/novafly_theme.log", "a")
-    if not ok or not f then return end
-    pcall(f.write, f, string.format("%.1f %s\n", os.clock(), tostring(text)))
-    pcall(f.close, f)
-end
-
 local SPRACHE = nil   -- die Texte in der Sprache des Senders, dieselben wie in NovaFly; laedt die Datei nicht, bleibt das Cockpit deutsch
 do
-    local chunk, grund = laden(loadfile, "i18n_teile.lua")
+    local chunk = laden(loadfile, "i18n_teile.lua")
     local ok, tab = false, nil
     if chunk then ok, tab = pcall(chunk, {laden = laden}) end
     if ok and type(tab) == "table" then
         SPRACHE = tab
         T = {timer = tab.wort(T.timer), unbekannt = tab.b_arm_unbekannt, link = tab.f_kein_heli, scharf = tab.f_setup_scharf}
-    else
-        merken("i18n_teile.lua laedt nicht: " .. tostring(grund or tab))
     end
 end
-merken("Theme geladen, Stand 20.11. (Seiten geben den Speicher frei), Lua " .. floor(collectgarbage("count")) .. " KB")   -- die erste Zeile im Log des Tests am Sender
 
 local function maskenLaden(n)
     if type(lcd.loadMask) ~= "function" then return end
@@ -327,18 +317,20 @@ end
 local function wert(fld, text, farbe, yoff) beschriftungMittig(fld.x, fld.y + (yoff or 14), text, farbe, fld.f) end
 local function wertSystem(fld, text, farbe, yoff) systemMittig(fld.x, fld.y + (yoff or 14), text, farbe, fld.f) end
 
-local function wert2(fld, zahl, einheit, farbe, yoff)
+local function wert2(fld, zahl, einheit, farbe, yoff, font)   -- gibt den rechten Rand zurueck; font ersetzt fld.f
+    font = font or fld.f
     zahl = tostring(zahl)
-    local zb, th = mass(zahl, fld.f)
-    local eb = mass(einheit, fld.f)
+    local zb, th = mass(zahl, font)
+    local eb = mass(einheit, font)
     local luecke = max(1, sx(2))   -- die Einheit dicht an ihrer Zahl
     local links   -- mittig um fld.x, oder ab fld.x (lage links), oder bis fld.x (lage rechts)
     if fld.lage == "links" then links = X(fld.x)
     elseif fld.lage == "rechts" then links = X(fld.x) - (zb + luecke + eb)
     else links = X(fld.x) - floor((zb + luecke + eb) / 2) end
     local oben = Y(fld.y + (yoff or 14)) - floor((th or 12) / 2)
-    textZug(links, oben, zahl, farbe, fld.f)
-    textZug(links + zb + luecke, oben, einheit, C_WHITE, fld.f)
+    textZug(links, oben, zahl, farbe, font)
+    textZug(links + zb + luecke, oben, einheit, C_WHITE, font)
+    return links + zb + luecke + eb
 end
 
 local function timerZeile(fld, kz, zeit, farbe)
@@ -424,11 +416,10 @@ end
 
 local function rahmen()   -- die Linien des Cockpits als Code (rahmen.lua), einmal geladen; false, wenn die Datei fehlt
     if LIN.rahmen == nil then
-        local chunk, grund = laden(loadfile, "rahmen.lua")
+        local chunk = laden(loadfile, "rahmen.lua")
         local ok, r = false, nil
         if chunk then ok, r = pcall(chunk) end
         LIN.rahmen = (ok and type(r) == "table") and r or false
-        if LIN.rahmen == false then merken("rahmen.lua laedt nicht: " .. tostring(grund or r)) end
     end
     return LIN.rahmen or nil
 end
@@ -441,7 +432,6 @@ local function absatzMasken(R)   -- die drei Lagen des Absatzes als Masken je Sc
         m = {schein = laden(lcd.loadMask, "gfx/" .. d[1] .. e .. ".png"), mitte = laden(lcd.loadMask, "gfx/" .. d[2] .. e .. ".png"), kern = laden(lcd.loadMask, "gfx/" .. d[3] .. e .. ".png")}
         m = (m.schein and m.mitte and m.kern) and m or false
         LIN.absatz[e] = m
-        if m == false then merken("Absatz-Masken fehlen: der Absatz kommt als Striche") end
     end
     return m or nil
 end
@@ -458,7 +448,6 @@ function LIN.eckenMasken(R)   -- die Ecken r 4 des Rahmens als Masken je Schirmg
         end
         ecken = alle and t or false
         LIN.ecken[e] = ecken
-        if ecken == false then merken("Ecken-Masken fehlen: die Ecken kommen als Ringstuecke") end
     end
     return ecken or nil
 end
@@ -478,7 +467,6 @@ function LIN.auslaufMasken(R)   -- der Auslauf der Linien auf den Seiten als Mas
         end
         a = alle and t or false
         LIN.auslauf[e] = a
-        if a == false then merken("Auslauf-Masken fehlen: der Auslauf kommt als Stufen") end
     end
     return a or nil
 end
@@ -489,7 +477,7 @@ function GRUND.hell(nr)   -- der helle Grund: 20 Baender ueber die Hoehe, von We
     local b = MODUS.baender[f]
     if b == nil then
         b = {}
-        for i = 0, MODUS.BAENDER - 1 do   -- die Farbe des i-ten Bands (0 oben): bis 45 % von Weiss zum Mittelton, dann zum Tint; dieselbe Rechnung baut fotorand_hell_<Farbe>.png (grund_bauen.py)
+        for i = 0, MODUS.BAENDER - 1 do   -- die Farbe des i-ten Bands (0 oben): bis 45 % von Weiss zum Mittelton, dann zum Tint; dieselbe Rechnung steckt in fotorand_hell_<Farbe>.png
             local t = (i + 0.5) / MODUS.BAENDER
             local a, c, u
             if t < 0.45 then a, c, u = {255, 255, 255}, MODUS.mitte[f], t / 0.45 else a, c, u = MODUS.mitte[f], MODUS.tint[f], (t - 0.45) / 0.55 end
@@ -522,7 +510,7 @@ function GRUND.malen(nr, R)
     end
     return gemalt == true
 end
-local LOGO = {bild = {}, versuche = {}}   -- das Logo der Suite oben in der Mitte des Kopfbands, je Schirmgroesse ein Bild (gfx/rotorflight<Endung>.png, 24 bzw. 36 Punkte hoch, Breite im Verhaeltnis 400 : 84); hell die dunkle Fassung rotorflight_hell<Endung>.png (logo_hell_bauen.py)
+local LOGO = {bild = {}, versuche = {}}   -- das Logo der Suite oben in der Mitte des Kopfbands, je Schirmgroesse ein Bild (gfx/rotorflight<Endung>.png, 24 bzw. 36 Punkte hoch, Breite im Verhaeltnis 400 : 84); hell die dunkle Fassung rotorflight_hell<Endung>.png
 function LOGO.malen(R)
     local e = (MODUS.hell and "_hell" or "") .. (R and R.endung(LIN.M) or "")
     local versuche = LOGO.versuche[e] or 0
@@ -716,7 +704,7 @@ local st = {link = false}
 local schlepp = {}   -- je Bank Min und Max der Drehzahl, solange scharf: der Schleppmonitor im BANK-Monitor liest hier
 local letzterFlug = {}   -- Strom-Hoechstwert, verbrauchte mAh und Bank des letzten Flugs: die Seiten vor und nach dem Flug lesen hier
 local flug = {laeuft = false, ende = false, mahStart = nil, stromMax = nil, bank = {0, 0, 0}, uhr = nil}   -- der laufende Flug; die Uhr je Bank zaehlt scharf mit drehendem Rotor, ab dem Scharfmachen von null, nach dem Flug bleibt sie stehen
-flug.sitzung = {}   -- Hoehe und Steigen/Sinken seit dem Verbinden, scharf oder nicht: die Seite links zeigt sie, solange hier kein Flug aufgezeichnet ist (Kevin 20.11. am X18: die Chips blieben leer)
+flug.sitzung = {}   -- Hoehe und Steigen/Sinken seit dem Verbinden, scharf oder nicht: die Seite links zeigt sie, solange hier kein Flug aufgezeichnet ist
 local function celsius(v, fahrenheit) return fahrenheit and (v - 32) * 5 / 9 or v end   -- die Farbgrenzen stehen in °C
 local function gradZeichen(fahrenheit) return fahrenheit and "\194\176F" or "\194\176C" end
 
@@ -907,14 +895,10 @@ local function monitorOeffnen(name)
     end
     if m == nil then return false end
     if m.oeffnen then
-        local ok, auf, grund = pcall(m.oeffnen)
-        if not ok or auf == false then
-            merken(name .. " oeffnet nicht: " .. tostring(grund or auf))
-            return false
-        end
+        local ok, auf = pcall(m.oeffnen)
+        if not ok or auf == false then return false end
     end
     MONITORE[name], monitorAktiv = m, name
-    merken(name .. " geoeffnet, Lua " .. floor(collectgarbage("count")) .. " KB")
     return true
 end
 
@@ -938,7 +922,6 @@ local function malen(x, y, w, h, s)
         return
     end
     kaltRest, bildZaehler = KALT_JE_BILD, bildZaehler + 1
-    if bildZaehler == 1 then merken("erstes Malen " .. tostring(w) .. "x" .. tostring(h) .. ", Lua " .. floor(collectgarbage("count")) .. " KB") end
     s = s or st
     local m = monitorAktiv and MONITORE[monitorAktiv]
     if m then
@@ -988,12 +971,15 @@ local function malen(x, y, w, h, s)
 
     local sperre = os.clock() < gesperrtBis
     local cv = s.cellF or s.cell
-    if s.pack and not sperre then wert2(U.pack, fmt(s.pack, "", 1), "V", SETC[cellKey(cv)], 16) end
+    local packEnde = nil
+    if s.pack and not sperre then packEnde = wert2(U.pack, fmt(s.pack, "", 1), "V", SETC[cellKey(cv)], 16) end
     local p = s.fuel   -- der Stand, wie die Suite ihn rechnet (derselbe wie die Balken im Tank); ohne fuel-Sensor aus der Zelle geschaetzt
     if p == nil and cv then p = (cv - 3.5) / 0.7 * 100 end
     if p ~= nil and not sperre then
         if p < 0 then p = 0 elseif p > 100 then p = 100 end
-        wert2(U.battpct, fmt(p, "", 0), "%", SETC[cellKey(cv)], 16)
+        local text, font = fmt(p, "", 0), U.battpct.f
+        if packEnde ~= nil and X(U.battpct.x) - (mass(text, font) + max(1, sx(2)) + mass("%", font)) < packEnde + sx(8) then font = F_BIG end   -- 100 % liefe sonst in das V der Spannung: eine Schrift kleiner, dieselbe Lage
+        wert2(U.battpct, text, "%", SETC[cellKey(cv)], 16, font)
     end
     local bars, hc = cellBars(cv, U.batt.n), SETC[cellKey(cv)]
     for i = 1, bars do flaeche(U.batt.x, U.batt.y - (i - 1) * (U.batt.bh + U.batt.gap), U.batt.bw, U.batt.bh, hc) end
@@ -1234,7 +1220,7 @@ function kursivHelfer.malen(px, py, text, font)
 end
 
 do   -- die Seiten neben dem Cockpit: eigene Dateien, bekommen den Schlepp-Merker, einen Merker ueber das Schliessen hinaus und rfsuite
-    local HELFER = {trifft = trifft, ton = ton, schlepp = schlepp, kursiv = kursivHelfer, laden = laden, auslaufMasken = LIN.auslaufMasken, eckenMasken = LIN.eckenMasken, merk = {}, merken = merken,
+    local HELFER = {trifft = trifft, ton = ton, schlepp = schlepp, kursiv = kursivHelfer, laden = laden, auslaufMasken = LIN.auslaufMasken, eckenMasken = LIN.eckenMasken, merk = {},
                     i18n = SPRACHE, rf = function() return rf end, stand = function() return st end,
                     oeffnen = function(name) return monitorOeffnen(name) end, zu = function() monitorZu() end,
                     farbe = function() return farbeNr end, bild = function() return BILDER[farbeNr] end,
@@ -1250,11 +1236,10 @@ do   -- die Seiten neben dem Cockpit: eigene Dateien, bekommen den Schlepp-Merke
     local MODULE = {{"vorflug"}, {"baenke", {x = 20, y = 184, w = 92, h = 44}}}   -- Tuer: das BANK/RATE-Feld oeffnet die Bankseite; die Seite links hat keine Tuer, beide auch durch Wischen quer; bank.lua wird nicht mehr geladen
     for _, m in ipairs(MODULE) do
         LADER[m[1]] = function()
-            local chunk, grund = laden(loadfile, m[1] .. ".lua")
-            if not chunk then merken(m[1] .. ".lua laedt nicht: " .. tostring(grund)) return nil end
+            local chunk = laden(loadfile, m[1] .. ".lua")
+            if not chunk then return nil end
             local ok, mon = pcall(chunk, HELFER)
             if ok and type(mon) == "table" then return mon end
-            merken(m[1] .. ".lua bricht ab: " .. tostring(mon))
             return nil
         end
         if m[2] then TUEREN[#TUEREN + 1] = {zone = m[2], ziel = m[1]} end

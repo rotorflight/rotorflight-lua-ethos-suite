@@ -28,10 +28,30 @@ local werte = {pid = nil, rc = nil, gov = nil, govProfil = nil, fehler = nil}
 local gelesenFuer = nil                  -- {bank, rate}, fuer die die Werte gelesen wurden; ein Wechsel liest neu
 local laeuft = false
 
+local CODEC = {PID_TUNING = "lib/msp_pid_tuning.lua", RC_TUNING = "lib/msp_rc_tuning.lua",
+               GOVERNOR_CONFIG = "lib/msp_governor_config.lua", GOVERNOR_PROFILE = "lib/msp_governor_profile.lua"}
+local ACHSE = {roll = 0, pitch = 1, yaw = 2}
+
+local function pidNamen(d)   -- die PID-Felder des Codecs (roll_p) in den Namen von rfsuite 2.3.x (pid_0_P), die malen() liest
+    local w = {}
+    for k, v in pairs(d) do
+        local achse, g = nil, nil
+        if type(k) == "string" then achse, g = string.match(k, "^(%a+)_(%a)$") end
+        if achse ~= nil and ACHSE[achse] ~= nil then w["pid_" .. ACHSE[achse] .. "_" .. string.upper(g)] = v else w[k] = v end
+    end
+    return w
+end
+
 local function lesen(name, fertig)
     local rf = H.rf()
-    if rf == nil or rf.tasks == nil or rf.tasks.msp == nil or rf.tasks.msp.api == nil then return false end
-    local ok, api = pcall(rf.tasks.msp.api.load, name)
+    local q = rf and rf.tasks and rf.tasks.msp
+    if q == nil or q.api == nil then   -- ohne die MSP-Schlange von rfsuite 2.3.x: der Bus der Suite mit ihrem Codec
+        return S.busLesen(CODEC[name], function(d)
+            if d ~= nil and name == "PID_TUNING" then d = pidNamen(d) end
+            fertig(d)
+        end)
+    end
+    local ok, api = pcall(q.api.load, name)
     if not ok or type(api) ~= "table" then return false end
     local felder = api.__rfReadStructure
     if type(felder) ~= "table" or #felder == 0 then felder = api.__rfWriteStructure end

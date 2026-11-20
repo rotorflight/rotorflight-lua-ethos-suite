@@ -1,9 +1,8 @@
 -- RAHMEN des Themes: die Linien des Cockpits als Code auf dem einen Grund. Masse aus der Vorlage 480 x 320: Kopfband mit
 -- Absatz, drei Felder, Fussreihe, Ecken, Tacho-Bogen, Teilstriche. Eine Linie ist drei Punkte Mittelton mit einem Punkt hellem
 -- Kern und aussen je einem Punkt Schein; auf 800 x 480 zwei Punkte Kern, vier Mittelton, sechs Schein (masse). Alles ueber
--- M = {X, Y, sx, sy} (Lage und Mass des Fensters) und F = {mitte, kern, schein, auslauf} (Farben des Bilds, cockpit.lua linien).
--- Der grosse Tacho traegt den Pfeil, die kleinen der Bankseite einen Balken; auf den Seiten laufen die Linien des Cockpits zum
--- Rand hin aus, und die Linien der Seiten kommen vom Rand her ins Cockpit und laufen dort aus (Stacheln): drei Bilder, die zusammengehoeren.
+-- M = {X, Y, sx, sy} (Fenster) und F = {mitte, kern, schein, auslauf} (Farben, cockpit.lua linien). Der Tacho traegt den Pfeil;
+-- die Linien des Cockpits laufen auf den Seiten zum Rand hin aus, die der Seiten im Cockpit (Stacheln): drei Bilder, die zusammengehoeren.
 local R = {}
 local floor, sin, cos, rad, min = math.floor, math.sin, math.cos, math.rad, math.min
 
@@ -24,11 +23,11 @@ R.STUFEN = 12                            -- Stufen, in denen eine Linie auslaeuf
 R.AUSLAUF_LINKS = {{5, 394}, {55, 200}, {250, 225}, {255, 215}, {314, 120}}   -- je Linie einer Seite: Zeile und wie weit sie vom Cockpit her ins Bild reicht (oben am weitesten, unten kurz); links endet die Linie bei 55 vor dem Foto (x 0-259)
 R.AUSLAUF_RECHTS = {{5, 394}, {55, 330}, {250, 225}, {255, 215}, {314, 120}}
 R.AUSLAUF_WEICH = 120                    -- Laenge des Verlaufs am Ende einer Linie (bei kurzen Linien 80 % der Linie, R.weich)
-R.STACHELN = {links = {{66, 105}, {240, 60}, {262, 45}, {310, 24}}, rechts = {{66, 105}, {124, 60}, {136, 45}, {240, 24}}}   -- die Linien der Seiten, die am Rand ihrer Seite enden und im Cockpit weiterlaufen: von links der AKKU-Kasten (66, 240) und der Fusschip (262, 310) der Vorflugseite, von rechts die Chips der Bankseite (66, 124, 136, 240); je Zeile, wie weit die Linie vom Schirmrand her ins Cockpit reicht - voll am Rand, dann auslaufend, der oberste der laengste, links und rechts gleich (Kevin 20.11.: 'Die Striche muessen von rechts nach links und von links nach rechts in das Bild in der Mitte hineinkommen, nicht umgekehrt. Und da auslaufen.')
+R.STACHELN = {links = {{66, 105}, {240, 60}, {262, 45}, {310, 24}}, rechts = {{66, 105}, {124, 60}, {136, 45}, {240, 24}}}   -- die Linien der Seiten, die am Rand ihrer Seite enden und im Cockpit weiterlaufen: von links der AKKU-Kasten (66, 240) und der Fusschip (262, 310) der Vorflugseite, von rechts die Chips der Bankseite (66, 124, 136, 240); je Zeile, wie weit die Linie vom Schirmrand her ins Cockpit reicht - voll am Rand, dann auslaufend, der oberste der laengste, links und rechts gleich; die Striche kommen von aussen in das Bild in der Mitte und laufen dort aus
 R.ABSATZ = {x = 114, y = 34, dateien = {"absatz_schein", "absatz_mitte", "absatz_kern"}}   -- der Absatz oben am Mittelfeld als geglaettete Maske in drei Lagen (gfx/<Name><Endung>.png); Rundung r 5 oben, r 4 an den Seitenlinien
 R.ECKE = {{n = 7, nah = 2, fern = 4}, {n = 10, nah = 2, fern = 6}}   -- die Ecken-Masken je Schirmgroesse (gfx/ecke_<Lage>_<Ort><Endung>.png): Kantenlaenge, Abstand des Kerns vom nahen und vom fernen Rand der Maske
 
-function R.frisch(M)                     -- die Masse der Linien zum Fenster M, einmal je Bild gerechnet (seite_teile.lua S.grund, cockpit.lua bildMalen) und an M gehaengt (M.q; kein Merker mit M als Schluessel - Lua-Speicher je Seite, 20.11.): 480 x 320: Kern 1, Mittelton 3, Schein 5 in der Lage von M; ab 700 Punkten Breite (800 x 480): Kern 2, Mittelton 4, Schein 6, die Lage als erste Spalte und Zeile des Kerns - Spalte x0 + (x*w+160)/480, Zeile y0 + (y*h+80)/320 abgerundet, x0/y0 die Lage des Fensters
+function R.frisch(M)                     -- die Masse der Linien zum Fenster M, einmal je Bild gerechnet (seite_teile.lua S.grund, cockpit.lua bildMalen) und an M gehaengt (M.q; kein Merker mit M als Schluessel - sonst bleibt je Seite Lua-Speicher liegen): 480 x 320: Kern 1, Mittelton 3, Schein 5 in der Lage von M; ab 700 Punkten Breite (800 x 480): Kern 2, Mittelton 4, Schein 6, die Lage als erste Spalte und Zeile des Kerns - Spalte x0 + (x*w+160)/480, Zeile y0 + (y*h+80)/320 abgerundet, x0/y0 die Lage des Fensters
     local w, h, x0, y0 = M.sx(480), M.sy(320), M.X(0), M.Y(0)
     local q = M.q
     if q and q.w == w and q.h == h and q.x0 == x0 and q.y0 == y0 then return q end
@@ -43,7 +42,7 @@ function R.frisch(M)                     -- die Masse der Linien zum Fenster M, 
     return q
 end
 
-local function masse(M)                  -- die Masse aus M, ohne Rechnung (jeder Zeichenbefehl geht hier durch: Rechenschritte je Malen, Kevin 20.11. 'Max instructions count reached' auf 800 x 480)
+local function masse(M)                  -- die Masse aus M, ohne Rechnung (jeder Zeichenbefehl geht hier durch: Rechenschritte je Malen, sonst 'Max instructions count reached' auf 800 x 480)
     return M.q or R.frisch(M)
 end
 
