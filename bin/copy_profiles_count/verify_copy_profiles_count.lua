@@ -140,6 +140,9 @@ local function runTests(pageSource)
       "fields=" .. #choiceFields)
     check("1. and Save stays off", saveLit ~= true, "saveLit=" .. tostring(saveLit))
     answerStatus(4, 2)
+    -- The reply runs in the background task, where form calls do not reach the page's window:
+    -- lines built there never showed. They are built on the page's own wakeup.
+    check("1. no line is built inside the MSP reply", #choiceFields == 0, "fields=" .. #choiceFields)
     wake()
     check("2. the lists have the board's four PID profiles",
       #choiceFields == 3 and #choiceFields[2].choices == 4 and #choiceFields[3].choices == 4,

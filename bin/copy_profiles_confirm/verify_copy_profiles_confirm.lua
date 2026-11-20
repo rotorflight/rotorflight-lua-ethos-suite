@@ -140,7 +140,10 @@ local page = requireModule("app/pages/copy_profiles.lua")
 local function confirmAfter(profileType, source, dest)
   dialogs, choiceSetters = {}, {}
   headerOpts = nil
-  page.open({onBack = noop})
+  -- The lines are built on the page's wakeup after the counts arrive, not in the reply
+  local wakeup = nil
+  page.open({onBack = noop, setWakeupHandler = function(h) wakeup = h end})
+  if wakeup then wakeup() end
   local typeSet, sourceSet, destSet = choiceSetters[1], choiceSetters[2], choiceSetters[3]
   -- Values are the choice values: type 0 = PID, 1 = Rate; profiles 0-based.
   typeSet(profileType)
