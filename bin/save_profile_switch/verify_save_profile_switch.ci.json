@@ -1,0 +1,7 @@
+{
+  "id": "save-profile-switch",
+  "name": "Save stops on a profile switch",
+  "step": "Check that a profile page's Save stops when the profile switches",
+  "script": "bin/save_profile_switch/verify_save_profile_switch.lua",
+  "rationale": "Issue #2809: the FC writes MSP_SET_PID_PROFILE and MSP_SET_GOVERNOR_PROFILE into\nwhichever PID profile is active when each arrives, and the governor write carries the whole\ngovernor profile. Tail Rotor saves both, so a PID profile switch between them replaced the other\nprofile's governor settings and committed them. app/page_runtime.lua now asks MSP_STATUS for the\nactive profile before each write of a page whose profileField is pidProfile or rateProfile, and\nstops unsent when it is not the profile the page read (or, without a telemetry profile, the FC's\nfirst answer). Each such write leaves the MSP queue once and is resent only after the check again.\n\nThe harness drives the real Tail Rotor page through the real page_runtime and codecs against a\nmocked FC with one record per profile, and pins the request order, a switch before and between the\nwrites, telemetry showing the switch, a lost reply with and without a switch, bounded resends, a\nfailed status request, no telemetry profile, and that a profileField \"none\" page is not checked."
+}

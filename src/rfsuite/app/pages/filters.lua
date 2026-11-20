@@ -76,6 +76,8 @@ local function open(opts)
     pageTitle = PAGE_TITLE,
     logTag = "filters",
     mspModule = filterConfig,
+    -- Gyro and D-term filters are global, not per PID profile
+    profileField = "none",
     opts = opts,
     unloadPackageKeys = {"rfsuite.lib.msp_filter_config"},
     rebootAfterSave = function()
