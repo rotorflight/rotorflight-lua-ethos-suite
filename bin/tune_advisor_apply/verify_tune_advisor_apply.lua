@@ -439,6 +439,69 @@ do
   check("reported as unconfirmed", lastMessage():find("tune_advisor.err_verify", 1, true) ~= nil, lastMessage())
 end
 
+-- The FC applies a write whose reply is then lost
+local function applyWrite(m)
+  local r = WRITE_TO_READ[m.command]
+  local buf = {}
+  for i, b in ipairs(m.payload) do buf[i] = b end
+  fc[r] = codecs[r].decode(buf)
+end
+
+print("Each write leaves the queue once, and is resent after the profiles are checked again")
+do
+  resetFc()
+  openPage()
+  pump()
+  local retries = {}
+  local lost = false
+  local sent = applyNow(function(m)
+    if WRITE_TO_READ[m.command] then retries[#retries + 1] = m.maxRetries end
+    if m.command == 202 and not lost then
+      lost = true
+      applyWrite(m)
+      return "error"
+    end
+  end)
+  local queueRetries = true
+  for _, r in ipairs(retries) do if r ~= 0 then queueRetries = false end end
+  check("the queue does not resend a write", #retries > 0 and queueRetries, #retries .. " writes")
+  check("a lost reply is resent after a status check", table.concat(sent, ","):find("202,101,202,101,204", 1, true)
+    ~= nil, table.concat(sent, ","))
+  check("the Apply completes", lastMessage():find("tune_advisor.applied", 1, true) ~= nil, lastMessage())
+end
+
+print("A lost write reply followed by a profile switch does not reach the new profile")
+do
+  resetFc()
+  openPage()
+  pump()
+  local writes = 0
+  local sent = applyNow(function(m)
+    if m.command == 202 then
+      writes = writes + 1
+      applyWrite(m)
+      fcProfile.pid = 2
+      return "error"
+    end
+  end)
+  fcProfile.pid = nil
+  check("the write is not resent, and nothing else is written", writes == 1 and not has(sent, 204)
+    and not has(sent, EEPROM), table.concat(sent, ","))
+  check("reported as a switch while writing", lastMessage():find("tune_advisor.err_switched", 1, true) ~= nil,
+    lastMessage())
+end
+
+print("A write that keeps failing ends the Apply")
+do
+  resetFc()
+  openPage()
+  pump()
+  local writes = 0
+  local sent = applyNow(function(m) if m.command == 204 then writes = writes + 1 return "error" end end)
+  check("tried a bounded number of times", writes == 6 and not has(sent, EEPROM), writes .. " attempts")
+  check("reported as a failed write", lastMessage():find("tune_advisor.err_write", 1, true) ~= nil, lastMessage())
+end
+
 print("A failed write is never committed")
 do
   resetFc()

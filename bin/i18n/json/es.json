@@ -9059,8 +9059,8 @@
         },
         "err_switched": {
           "english": "The PID or rate profile changed while writing. Nothing was saved: restart the flight controller to undo any part already sent.",
-          "translation": "The PID or rate profile changed while writing. Nothing was saved: restart the flight controller to undo any part already sent.",
-          "needs_translation": true,
+          "translation": "El perfil PID o de tasas cambió durante la escritura. No se guardó nada: reinicie el controlador de vuelo para deshacer lo ya enviado.",
+          "needs_translation": false,
           "reverse_text": false,
           "max_length": 126
         },

@@ -249,6 +249,8 @@ local AXIS_FIELDS = {"roll", "pitch", "yaw"}
 local IS_SIM = system.getVersion().simulation == true
 -- MSP_STATUS bytes up to current_control_rate_profile_index (lib/msp_status.lua)
 local STATUS_MIN_BYTES = 26
+-- Attempts per Apply write, as many as the MSP queue's own (1 + 5 retries)
+local WRITE_ATTEMPTS = 6
 
 -- Where a tune_history TUNE_KEYS value lives on the FC: source key, field
 -- name (lib/msp_rc_tuning.lua calls the srate column rates_N)
@@ -946,7 +948,10 @@ local function open(opts)
     applyStage = T.stageWrite
     -- Until the first write is sent, a stop changes nothing
     local sent = false
-    local function writeNext(index)
+    -- Each write leaves the queue once (maxRetries = 0) and is resent from
+    -- here, after the profiles are checked again: the queue's own resend, up
+    -- to seconds later, could reach a profile selected since the check.
+    local function writeNext(index, attempt)
       if disposed or not applying then return end
       local source = SOURCES[index]
       if not source then
@@ -958,15 +963,19 @@ local function open(opts)
         end)
         return
       end
-      if not dirty[source.key] then writeNext(index + 1) return end
+      if not dirty[source.key] then writeNext(index + 1, 1) return end
       checkProfiles(sent and T.errWrite or T.errRead, sent and T.errSwitched or T.errChanged, function()
         sent = true
-        bus.publish("msp.request", source.codec.buildWriteMessage(data[source.key],
-          function() writeNext(index + 1) end,
-          function() finish(T.errWrite) end))
+        local msg = source.codec.buildWriteMessage(data[source.key],
+          function() writeNext(index + 1, 1) end,
+          function()
+            if attempt < WRITE_ATTEMPTS then writeNext(index, attempt + 1) else finish(T.errWrite) end
+          end)
+        msg.maxRetries = 0
+        bus.publish("msp.request", msg)
       end)
     end
-    writeNext(1)
+    writeNext(1, 1)
   end
 
   local function apply()
