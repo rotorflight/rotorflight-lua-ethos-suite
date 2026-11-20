@@ -24,6 +24,9 @@ end
 
 -- In-memory LOGS: files; everything else is the real filesystem.
 local files = {}
+-- Faults the record's restart must survive: a failed read, a rename that does nothing, a commit
+-- that leaves a short file
+local faults = {}
 local realOpen = io.open
 io.open = function(path, mode)
   if type(path) == "string" and path:sub(1, 5) == "LOGS:" then
@@ -49,7 +52,8 @@ io.open = function(path, mode)
     -- Read handle: read("L") returns the next line with its terminator, as Ethos does
     local text, pos = files[path], 1
     return {
-      read = function(_, fmt)
+      read = function()
+        if faults.read then return nil, "read error" end
         if pos > #text then return nil end
         local stop = text:find("\n", pos, true) or #text
         local line = text:sub(pos, stop)
@@ -64,7 +68,7 @@ end
 local realRename = os.rename
 os.rename = function(from, to)
   if type(from) == "string" and from:sub(1, 5) == "LOGS:" then
-    if files[from] == nil then return nil end
+    if faults.rename or files[from] == nil then return nil end
     files[to], files[from] = files[from], nil
     return true
   end
@@ -86,8 +90,13 @@ local cache = {
   ["lib/atomic_write.lua"] = {
     write = function(path, data) files[path] = data; return true end,
     stage = function(path) return io.open(path .. ".tmp", "w") end,
-    commit = function(_, path) files[path], files[path .. ".tmp"] = files[path .. ".tmp"], nil; return true end,
+    commit = function(_, path)
+      files[path], files[path .. ".tmp"] = files[path .. ".tmp"], nil
+      if faults.commitShort then files[path] = files[path]:sub(1, 60) end
+      return true
+    end,
     abort = function(_, path) files[path .. ".tmp"] = nil end,
+    discardTemp = function(path) files[path .. ".tmp"] = nil end,
   },
 }
 package.loaded["rfsuite.lib.require"] = function(path)
@@ -851,6 +860,50 @@ print()
 -- #2807: the record was appended forever and read whole on every page open. Once an Apply leaves
 -- it above 16 KiB it is started afresh with one row per setting (and PID profile), and the
 -- page's own-P answer must not change for any setting, profile or current value.
+
+print("A restart of the Apply record that goes wrong keeps the full record")
+do
+  local CHANGES = "LOGS:/rfsuite/tune/" .. MCU .. "/changes.csv"
+  local function bigRecord()
+    local parts = {"date,axis,setting,from,to,pid_profile\n", "2026-09-01 09:00:00,roll,P,50,60,1\n"}
+    for n = 1, 500 do parts[#parts + 1] = string.format("2026-10-01 10:%02d:%02d,pitch,F,%d,%d,2\n", (n // 60) % 60, n % 60, n, n + 1) end
+    return table.concat(parts)
+  end
+
+  -- Interrupted after the record was moved to the backup: the next Apply puts it back first
+  files[CHANGES], files[CHANGES .. ".old"] = nil, "date,axis,setting,from,to,pid_profile\n" .. "2026-09-01 09:00:00,roll,P,50,60,1\n"
+  check("the Apply after an interrupted restart is recorded", tuneHistory.logChanges(MCU, 1, {{key = "P", from = 60, to = 72}}, 1))
+  check("the backup is put back, not left beside a new record", files[CHANGES .. ".old"] == nil
+    and files[CHANGES]:find(",50,60", 1, true) ~= nil)
+  check("the pilot's own P still follows the recovered record", tuneHistory.pilotValue(tuneHistory.readChanges(MCU), 1, "P", 72, 1) == 50, tostring(tuneHistory.pilotValue(tuneHistory.readChanges(MCU), 1, "P", 72, 1)))
+  files[CHANGES], files[CHANGES .. ".old"] = nil, nil
+
+  -- The record cannot be moved to the backup: no restart, the record stays whole
+  files[CHANGES] = bigRecord()
+  faults.rename = true
+  check("(setup) an Apply on a full record is recorded", tuneHistory.logChanges(MCU, 1, {{key = "P", from = 60, to = 72}}, 1))
+  faults.rename = nil
+  check("a rename that fails leaves the record whole", #files[CHANGES] > 16 * 1024
+    and files[CHANGES .. ".tmp"] == nil and tuneHistory.pilotValue(tuneHistory.readChanges(MCU), 1, "P", 72, 1) == 50, #files[CHANGES])
+
+  -- The new record comes out short: the backup is put back in its place
+  files[CHANGES], files[CHANGES .. ".old"] = bigRecord(), nil
+  faults.commitShort = true
+  tuneHistory.logChanges(MCU, 1, {{key = "P", from = 60, to = 72}}, 1)
+  faults.commitShort = nil
+  check("a short new record is replaced by the full one", #files[CHANGES] > 16 * 1024
+    and files[CHANGES .. ".old"] == nil and tuneHistory.pilotValue(tuneHistory.readChanges(MCU), 1, "P", 72, 1) == 50, #files[CHANGES])
+
+  -- A read that fails is not the end of the file: nothing is restarted
+  files[CHANGES], files[CHANGES .. ".old"] = bigRecord(), nil
+  local full = files[CHANGES]
+  faults.read = true
+  tuneHistory.logChanges(MCU, 1, {{key = "P", from = 60, to = 72}}, 1)
+  faults.read = nil
+  check("a failed read restarts nothing", files[CHANGES .. ".old"] == nil and #files[CHANGES] > #full)
+  files[CHANGES], files[CHANGES .. ".old"] = nil, nil
+end
+
 print("The Apply record is started afresh once it passes 16 KiB")
 do
   local CHANGES = "LOGS:/rfsuite/tune/" .. MCU .. "/changes.csv"
