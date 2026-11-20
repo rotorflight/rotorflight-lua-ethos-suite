@@ -166,18 +166,18 @@ In-flight adjustments (*Setup* → *Controls* → *Adjustments*) can change the 
 and writes: P, F, B, the rates and Iterm Relax Cutoff per axis, and the PID and rate profile. The firmware
 applies an adjustment straight away and saves it when you disarm.
 
-- **Adjusting during a flight starts the measurements again.** On firmware with rotorflight-firmware pull request
-  #607 (development builds from 2026-11-10 on), a PID or rate profile switch during a flight, or a change to a
-  P, I, D, F, B or O gain, a master gain, Iterm Relax Cutoff, the rates type, a rate or an expo, makes the flight
-  controller drop what it has measured and start again on the new tune. That holds for
-  an adjustment and for a write from the radio or the configurator alike. The flight is then saved with only the
-  part flown after the last change: a change shortly before landing leaves too little, or nothing, to save. A
-  flight the radio has not read yet is dropped with it. Leave these adjustments alone while collecting flights for
-  the advisor.
-- **On older firmware, adjusting during a flight mixes two tunes.** On a development build from before that pull
-  request the flight controller checks the tune only when you arm, so a flight where you adjusted one of these
-  settings (or switched profile) is measured partly on the old value and saved as if flown on the value you ended
-  on. If you did use one, press *Clear* and fly again.
+- **Adjusting during a flight starts the measurements again.** On firmware that has rotorflight-firmware pull
+  request #607, a PID or rate profile switch during a flight, or a change to a P, I, D, F, B or O gain, Iterm Relax
+  Cutoff, the rates type, a rate or an expo, makes the flight controller drop what it has measured and start again
+  on the new tune. A change to a master gain does the same only from pull request #608 on. That holds for an
+  adjustment and for a write from the radio or the configurator alike. The flight is then saved with only the part
+  flown after the last change: a change shortly before landing leaves too little, or nothing, to save. A flight the
+  radio has not read yet is dropped with it. Leave these adjustments alone while collecting flights for the
+  advisor.
+- **On older firmware, adjusting during a flight mixes two tunes.** On a development build without #607 the flight
+  controller checks the tune only when you arm, so a flight where you adjusted one of these settings (or switched
+  profile) is measured partly on the old value and saved as if flown on the value you ended on. A build with #607
+  but not #608 does the same for a master gain. If you did use one, press *Clear* and fly again.
 - **Adjusting between flights is fine.** A *Stepped* adjustment (a switch) is saved at disarm, so the next flight is on
   a new tune and the advisor starts again from it, as it does after *Save*.
 - **A *Mapped* adjustment (a knob or slider) overrides Apply.** It sets the value from the knob's position: once the
