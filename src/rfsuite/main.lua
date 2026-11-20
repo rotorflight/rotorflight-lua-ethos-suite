@@ -168,9 +168,9 @@ if not rfsuite.ini.ini_tables_equal(master_ini, updated_ini) then rfsuite.ini.sa
 
 if system.getVersion and system.getVersion().simulation then
     local dev = rfsuite.preferences.developer
-    if dev and simulator and type(simulator.setDebug) == "function" then
-        simulator.setDebug("malloc", dev.debugmalloc == true)
-    end
+   -- if dev and simulator and simulator.setDebug then
+   --     simulator.setDebug("malloc", dev.debugmalloc == true)
+   -- end
 end
 
 rfsuite.config.bgTaskName = rfsuite.config.toolName .. " [Background]"

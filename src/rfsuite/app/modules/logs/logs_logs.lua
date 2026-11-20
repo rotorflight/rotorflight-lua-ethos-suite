@@ -199,7 +199,6 @@ local function openPage(opts)
                     text = extractHourMinute(pageName),
                     icon = app.gfx_buttons["logs_logs"][currentButtonIndex],
                     options = FONT_S,
-                    paint = function() end,
                     press = function()
                         prefs.menulastselected["logs_logs"] = pageName
                         app.ui.progressDisplay()

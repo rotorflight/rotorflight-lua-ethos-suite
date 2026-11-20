@@ -198,7 +198,6 @@ local function addModeRangeLine(rangeIndex, modeRange)
         text = "@i18n(app.modules.modes.set)@",
         icon = nil,
         options = FONT_S,
-        paint = function() end,
         press = function()
             if state.autoDetectSlots[slot] then
                 local buttons = {{label = "OK", action = function() return true end}}
@@ -347,7 +346,6 @@ local function addModeRangeLine(rangeIndex, modeRange)
         text = "X",
         icon = nil,
         options = FONT_S,
-        paint = function() end,
         press = function()
             removeRangeSlot(modeRange.slot)
         end
@@ -627,7 +625,6 @@ local function render()
             text = "@i18n(app.modules.modes.unsaved_changes)@",
             icon = nil,
             options = FONT_S,
-            paint = function() end,
             press = function() end
         })
         if statusBtn and statusBtn.enable then statusBtn:enable(false) end
@@ -640,7 +637,6 @@ local function render()
         text = "@i18n(app.btn_add)@",
         icon = nil,
         options = FONT_S,
-        paint = function() end,
         press = function() addRangeToSelectedMode() end
     })
     if addBtn and addBtn.enable then addBtn:enable(true) end

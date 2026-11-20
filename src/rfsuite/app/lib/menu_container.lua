@@ -254,7 +254,6 @@ function container.create(cfg)
                 text = "@i18n(app.navigation_menu)@",
                 icon = nil,
                 options = FONT_S,
-                paint = NOOP_PAINT,
                 press = onNavMenuPress
             })
             app.formNavigationFields["menu"]:focus()
@@ -333,7 +332,6 @@ function container.create(cfg)
                     text = item.name,
                     icon = app.gfx_buttons[moduleKey][i],
                     options = FONT_S,
-                    paint = NOOP_PAINT,
                     press = getPagePressHandler(i)
                 })
 

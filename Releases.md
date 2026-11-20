@@ -1,7 +1,3 @@
-# 2.3.1
-
-- Resolve issue with i18n compilation for non english language releases
-
 # 2.3.0
 
 Release version for 2.3.0 Rotorflight
@@ -18,6 +14,8 @@ This release brings together the 2.3.0 snapshot and release-candidate work since
 - Added the new FrSky package format and cross-platform Ethos Suite updater/deployment tooling.
 - Reduced radio load throughout the app, background tasks, widgets, dashboard objects, ESC tools, telemetry modules, progress dialogs, image/theme handling, and navigation paths by reducing allocations, lazy loading more code, clearing caches, and fixing memory leaks.
 - Includes many UI fixes, translation/audio updates, sensor-tool updates, dashboard theme additions, and smaller stability fixes from the 2.3.0 snapshots and release candidates.
+- Fixed i18n compilation for non-English language releases.
+- Fixed menu and navigation buttons not being drawn on Ethos 26.2.
 
 # 2.3.0-RC3
 

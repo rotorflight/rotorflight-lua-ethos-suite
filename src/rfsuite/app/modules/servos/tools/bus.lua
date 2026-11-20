@@ -229,7 +229,6 @@ local function openPage(opts)
                 text = pvalue.title,
                 icon = rfsuite.app.gfx_buttons["bus"][pidx],
                 options = FONT_S,
-                paint = function() end,
                 press = function()
                     rfsuite.preferences.menulastselected["bus"] = pidx
                     rfsuite.currentServoIndex = pidx

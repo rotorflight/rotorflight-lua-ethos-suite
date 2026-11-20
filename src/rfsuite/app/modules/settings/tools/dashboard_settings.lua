@@ -92,7 +92,6 @@ local function openPage(opts)
                 text = theme.name,
                 icon = rfsuite.app.gfx_buttons["settings_dashboard_themes"][idx],
                 options = FONT_S,
-                paint = function() end,
                 press = function()
 
                     rfsuite.preferences.menulastselected["settings_dashboard_themes"] = idx

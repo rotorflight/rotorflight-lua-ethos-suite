@@ -1190,7 +1190,6 @@ local function render()
             text = "@i18n(app.modules.adjustments.unsaved_changes)@",
             icon = nil,
             options = FONT_S,
-            paint = function() end,
             press = function() end
         })
         if statusBtn and statusBtn.enable then statusBtn:enable(false) end
@@ -1308,7 +1307,6 @@ local function render()
         text = "@i18n(app.modules.adjustments.set)@",
         icon = nil,
         options = FONT_S,
-        paint = function() end,
         press = function()
             if adjRange.enaChannel == ALWAYS_ON_CHANNEL then
                 confirmRangeSet("@i18n(app.modules.adjustments.set_enable_range)@", "@i18n(app.modules.adjustments.always_fixed_1500_confirm)@", function()
@@ -1429,7 +1427,6 @@ local function render()
         text = "@i18n(app.modules.adjustments.set)@",
         icon = nil,
         options = FONT_S,
-        paint = function() end,
         press = function()
             local us = getChannelUsForRangeSet(adjRange.adjChannel, state.autoDetectAdjSlots, state.selectedRangeIndex)
             if not us then return end
@@ -1470,7 +1467,6 @@ local function render()
             text = "@i18n(app.modules.adjustments.set)@",
             icon = nil,
             options = FONT_S,
-            paint = function() end,
             press = function()
                 local us = getChannelUsForRangeSet(adjRange.adjChannel, state.autoDetectAdjSlots, state.selectedRangeIndex)
                 if not us then return end
