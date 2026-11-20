@@ -125,6 +125,11 @@ The suggestions follow these rules:
 4. **Saving to flight controller**: commits them so they survive a restart.
 5. **Checking saved settings**: reads them back and confirms the new values.
 
+The flight controller writes each setting into the profile that is active when it arrives. So *Save* asks it which
+PID and rate profile are active before reading, before each write, before saving and after reading back. If you
+switch profile after a write has been sent, it stops before the next one and nothing is saved: restart the flight
+controller to undo the part already sent, then press *Save* again on the profile you flew.
+
 With Betaflight, Raceflight or KISS rates the page can only give the rate change as a percentage, so *Save* does not
 write it, and does not write the F change that goes with it either: F on its own would change the stick feel. Make
 both changes by hand, or switch to Actual, Quick or Rotorflight rates.
@@ -170,8 +175,9 @@ applies an adjustment straight away and saves it when you disarm.
   written by *Save* then lasts only until that happens. Before applying advice to a setting, set its *Mapped*
   adjustment's *Type* to *Off*, or leave the knob where it gives the new value.
 - The advice refreshes when the active PID profile changes, so its P cap follows the new profile. *Save* checks the
-  profiles and values at the moment it writes, so an adjustment or profile switch made since the flights stops it
-  with nothing changed.
+  values before it writes, so an adjustment made since the flights stops it with nothing changed. It checks the
+  profiles before each write: a switch before the first write stops it with nothing changed, and a switch between
+  two writes stops it with nothing saved (see *Applying the changes*).
 
 ## Source
 
