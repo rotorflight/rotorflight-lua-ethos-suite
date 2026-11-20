@@ -100,6 +100,9 @@ package.loaded["rfsuite.lib.require"] = function(name)
   return cache[name]
 end
 
+-- What the page read, as the runtime's cleanData holds it
+local readData = nil
+
 -- Opens the page with a stored mode and a feature state, and returns the mode field.
 local function open(storedMode, featureOn, source)
   choiceFields = {}
@@ -107,16 +110,25 @@ local function open(storedMode, featureOn, source)
     governor = {gov_mode = storedMode},
     feature = {enabledFeatures = featureOn and FEATURE_GOVERNOR or 0},
   }
+  readData = {governor = {gov_mode = storedMode}}
   local page = source and (assert(load(source, "@" .. PAGE_PATH))()) or dofile(PAGE_PATH)
   page.open({})
   return choiceFields[1]
 end
 
--- The save steps the runtime runs: beforeSave, then the reboot decision.
+-- The save steps the runtime runs: beforeSave, then the reboot decision --
+-- rebootAfterSave, or rebootIfChanged naming data that differs from what was read.
 local function save()
   config.beforeSave(runtime)
   local reboot = config.rebootAfterSave
   if type(reboot) == "function" then reboot = reboot(runtime) end
+  if reboot ~= true and type(config.rebootIfChanged) == "table" then
+    for _, key in ipairs(config.rebootIfChanged) do
+      for k, v in pairs(runtime.data[key] or {}) do
+        if readData[key] == nil or readData[key][k] ~= v then reboot = true end
+      end
+    end
+  end
   return reboot == true
 end
 
@@ -185,7 +197,8 @@ do
 end
 
 -- ---------------------------------------------------------------------------
--- 6. Feature on, a different mode picked: the feature stays on, and no restart.
+-- 6. Feature on, a different mode picked: the feature stays on, and the save restarts the
+--    FC, as the firmware takes the governor mode only at start-up (#2780).
 -- ---------------------------------------------------------------------------
 print("feature on, another mode picked")
 do
@@ -193,7 +206,7 @@ do
   field.set(2)
   local reboot = save()
   check("the feature stays on", featureBit())
-  check("and the save does not restart the FC", reboot == false)
+  check("and the save restarts the FC, as the mode changed", reboot == true)
 end
 
 -- ---------------------------------------------------------------------------

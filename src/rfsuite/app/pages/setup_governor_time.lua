@@ -14,9 +14,9 @@ local function open(opts)
     mspModule = governorConfig,
     opts = opts,
     profileField = "none",
-    -- Rotorflight 2 applies governor writes in RAM immediately -- see
-    -- app/pages/setup_governor_general.lua's own note. No reboot on save.
-    rebootAfterSave = false,
+    -- The firmware takes MSP_SET_GOVERNOR_CONFIG only at start-up, so a save that changes a
+    -- value restarts the FC (#2780) -- see app/pages/setup_governor_general.lua's own note.
+    rebootIfChanged = true,
     unloadPackageKeys = {"rfsuite.lib.msp_governor_config"},
   })
 

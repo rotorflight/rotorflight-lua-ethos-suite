@@ -218,6 +218,12 @@ end
 --                               -- that needs telling to refetch rather than keep serving a now-stale
 --                               -- copy for the rest of the connection. Not called on a save error or
 --                               -- an armed-FC EEPROM rejection.
+--   rebootIfChanged,            -- optional; true (single-source page) or a list of source keys: the
+--                               -- save restarts the FC, as rebootAfterSave does, when it changes a value
+--                               -- of that data. For settings the firmware takes only at start-up
+--                               -- (e.g. MSP_SET_GOVERNOR_CONFIG, #2780). Compared after beforeSave, with
+--                               -- the data as it was read, so a save that writes back what was read
+--                               -- does not restart.
 --   rebootAfterSave,            -- optional; if true, performSave() publishes lib/msp_reboot.lua's
 --                               MSP_REBOOT write right after the EEPROM write acks, matching
 --                               rotorflight-lua-ethos-suite's own rebootFc() (called from the same
@@ -283,6 +289,7 @@ function PageRuntime.new(config)
   self.onDispose = config.onDispose
   self.onSaved = config.onSaved
   self.rebootAfterSave = config.rebootAfterSave
+  self.rebootIfChanged = config.rebootIfChanged
   self.isMspPage = config.isMspPage
   -- A page that writes every change to the flight controller as it is made has nothing to save
   -- when Back is pressed, so it does not ask (issue #2504).
@@ -804,6 +811,21 @@ function PageRuntime:performSave(focusFn)
     return
   end
 
+  -- rebootIfChanged: worked out now, while cleanData still holds what was read
+  -- (commitSave() replaces it before rebootRequested() runs)
+  local changedReboot = false
+  if self.rebootIfChanged == true then
+    changedReboot = self.cleanData == nil or not sameValue(self.data, self.cleanData)
+  elseif type(self.rebootIfChanged) == "table" then
+    for _, key in ipairs(self.rebootIfChanged) do
+      local clean = self.cleanData and self.cleanData[key]
+      if clean == nil or not sameValue(self.data[key], clean) then
+        changedReboot = true
+        break
+      end
+    end
+  end
+
   self:setBusy(true)
   self:showDialog(MSG_SAVING_TITLE, MSG_SAVING_BODY)
 
@@ -828,6 +850,7 @@ function PageRuntime:performSave(focusFn)
     if type(shouldReboot) == "function" then
       shouldReboot = shouldReboot(self_)
     end
+    shouldReboot = shouldReboot or changedReboot
     if not shouldReboot then return false end
     if armedOrUnconfirmed(self_) then
       self_:log("performSave: rebootAfterSave skipped (armed or unconfirmed)")
