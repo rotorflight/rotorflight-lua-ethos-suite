@@ -696,16 +696,4 @@ function stil.rahmen(z, farbe)
     lcd.drawAnnulusSector(x + r, y + r, r - 2, r, 270, 360)
 end
 
-local grund, grundVersuche = {}, {}
-function stil.bildGrund(x, y, w, h, datei)
-    local bmp = grund[datei]
-    if bmp == nil and (grundVersuche[datei] or 0) < 20 and type(lcd.loadBitmap) == "function" then
-        grundVersuche[datei] = (grundVersuche[datei] or 0) + 1
-        bmp = H.laden(lcd.loadBitmap, "gfx/" .. datei)
-        grund[datei] = bmp
-    end
-    if bmp and pcall(lcd.drawBitmap, stil.sx(x), stil.sy(y), bmp, stil.sx(w), stil.sy(h)) then return true end
-    return false
-end
-
 return stil

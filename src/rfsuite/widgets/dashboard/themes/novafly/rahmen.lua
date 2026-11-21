@@ -25,7 +25,7 @@ R.AUSLAUF_RECHTS = {{5, 394}, {55, 330}, {250, 225}, {255, 215}, {314, 120}}
 R.AUSLAUF_WEICH = 120                    -- Laenge des Verlaufs am Ende einer Linie (bei kurzen Linien 80 % der Linie, R.weich)
 R.STACHELN = {links = {{66, 105}, {240, 60}, {262, 45}, {310, 24}}, rechts = {{66, 105}, {124, 60}, {136, 45}, {240, 24}}}   -- die Linien der Seiten, die am Rand ihrer Seite enden und im Cockpit weiterlaufen: von links der AKKU-Kasten (66, 240) und der Fusschip (262, 310) der Vorflugseite, von rechts die Chips der Bankseite (66, 124, 136, 240); je Zeile, wie weit die Linie vom Schirmrand her ins Cockpit reicht - voll am Rand, dann auslaufend, der oberste der laengste, links und rechts gleich; die Striche kommen von aussen in das Bild in der Mitte und laufen dort aus
 R.ABSATZ = {x = 114, y = 34, dateien = {"absatz_schein", "absatz_mitte", "absatz_kern"}}   -- der Absatz oben am Mittelfeld als geglaettete Maske in drei Lagen (gfx/<Name><Endung>.png); Rundung r 5 oben, r 4 an den Seitenlinien
-R.ECKE = {{n = 7, nah = 2, fern = 4}, {n = 10, nah = 2, fern = 6}}   -- die Ecken-Masken je Schirmgroesse (gfx/ecke_<Lage>_<Ort><Endung>.png): Kantenlaenge, Abstand des Kerns vom nahen und vom fernen Rand der Maske
+R.ECKE = {{n = 7, nah = 2, fern = 4}, {n = 11, nah = 2, fern = 7}, {n = 9, nah = 2, fern = 6}}   -- die Ecken-Masken je Schirmgroesse 480, 800, 640 (gfx/ecke_<Lage>_<Ort><Endung>.png): Kantenlaenge, Abstand des Kerns vom nahen und vom fernen Rand; 640 und 800 tragen an beiden Armen die Linie weiter, 640 zwei Punkte, 800 einen (die Lage der Linien ergibt dort je Ecke einen Punkt mehr oder weniger Abstand)
 
 function R.frisch(M)                     -- die Masse der Linien zum Fenster M, einmal je Bild gerechnet (seite_teile.lua S.grund, cockpit.lua bildMalen) und an M gehaengt (M.q; kein Merker mit M als Schluessel - sonst bleibt je Seite Lua-Speicher liegen): 480 x 320: Kern 1, Mittelton 3, Schein 5 in der Lage von M; ab 700 Punkten Breite (800 x 480): Kern 2, Mittelton 4, Schein 6, die Lage als erste Spalte und Zeile des Kerns - Spalte x0 + (x*w+160)/480, Zeile y0 + (y*h+80)/320 abgerundet, x0/y0 die Lage des Fensters
     local w, h, x0, y0 = M.sx(480), M.sy(320), M.X(0), M.Y(0)
@@ -34,7 +34,7 @@ function R.frisch(M)                     -- die Masse der Linien zum Fenster M, 
     if w < 600 then
         q = {w = w, h = h, x0 = x0, y0 = y0, k = 1, endung = "", ecke = R.ECKE[1], x = M.X, y = M.Y}
     elseif w < 700 then   -- 640 x 360 (X14): Kern 1 wie 480 x 320, die Lage als Spalte und Zeile des Kerns wie bei 800 x 480, Masken mit der Endung _640
-        q = {w = w, h = h, x0 = x0, y0 = y0, k = 1, endung = "_640", ecke = R.ECKE[1],
+        q = {w = w, h = h, x0 = x0, y0 = y0, k = 1, endung = "_640", ecke = R.ECKE[3],
              x = function(v) return x0 + floor((v * w + 160) / 480) end,
              y = function(v) return y0 + floor((v * h + 80) / 320) end}
     else
@@ -240,19 +240,26 @@ function R.cockpit(M, F, masken, E, A)   -- der ganze Rahmen des Cockpits, links
     lcd.drawFilledRectangle(M.X(142), M.Y(263), M.sx(8), M.sy(4))
 end
 
+local function rund(M)                   -- der Tacho ist ein Kreis: das kleinere Mass von Breite und Hoehe gilt in beide Richtungen; 480 x 320 ist 1 : 1, 640 x 360 und 800 x 480 sind breiter gestreckt als hoch
+    local bx, by = M.sx(1000), M.sy(1000)
+    if bx <= by then return 1, bx / by, M.sx end
+    return by / bx, 1, M.sy
+end
+
 local STRICHE = {}                       -- die Teilstriche je Tacho und Lage, fertig in Fensterpixeln, einmal gerechnet
 local function striche(M, art, cx, cy)
     local X, Y = M.X(cx), M.Y(cy)
-    local key = art.r .. "|" .. X .. "|" .. Y .. "|" .. M.sx(1000)
+    local key = art.r .. "|" .. X .. "|" .. Y .. "|" .. M.sx(1000) .. "|" .. M.sy(1000)
     local t = STRICHE[key]
     if t then return t end
     local von, bis, n, lang, kurz = art.teile[1], art.teile[2], art.teile[3], art.teile[4], art.teile[5]
     local ra = art.r - 4
+    local kx, ky = rund(M)
     t = {}
     for i = 0, n - 1 do
         local a = rad(von + i * (bis - von) / (n - 1))
         local l = (i % 4 == 0) and lang or kurz
-        local dx, dy = sin(a), -cos(a)
+        local dx, dy = sin(a) * kx, -cos(a) * ky
         t[#t + 1] = {M.X(cx + dx * ra), M.Y(cy + dy * ra), M.X(cx + dx * (ra - l)), M.Y(cy + dy * (ra - l))}
     end
     STRICHE[key] = t
@@ -279,7 +286,8 @@ function R.tacho(M, F, art, cx, cy, anteil)   -- ein Tacho der Art R.GROSS oder 
         lcd.drawLine(s[1], s[2], s[3], s[4])
     end
     local X, Y, r = M.X(cx), M.Y(cy), art.r
-    local ri, ro = M.sx(r - 1), M.sx(r + 1)
+    local kx, ky, rs = rund(M)
+    local ri, ro = rs(r - 1), rs(r + 1)
     local anfang, ende = art.anfang, art.ende
     local gruenBis, gelbBis = anfang + (ende - anfang) * 0.78, anfang + (ende - anfang) * 0.90
     lcd.color(R.GRUEN)
@@ -294,17 +302,17 @@ function R.tacho(M, F, art, cx, cy, anteil)   -- ein Tacho der Art R.GROSS oder 
     if art.nadel then
         local fuss, spitze = art.nadel[1], art.nadel[2]
         local w, w1, w2 = rad(a), rad(a - 7), rad(a + 7)
-        local xs, ys = M.X(cx + spitze * sin(w)), M.Y(cy - spitze * cos(w))
+        local xs, ys = M.X(cx + spitze * sin(w) * kx), M.Y(cy - spitze * cos(w) * ky)
         lcd.color(R.NADEL)
         if type(lcd.drawFilledTriangle) == "function" then
-            lcd.drawFilledTriangle(M.X(cx + fuss * sin(w1)), M.Y(cy - fuss * cos(w1)), M.X(cx + fuss * sin(w2)), M.Y(cy - fuss * cos(w2)), xs, ys)
+            lcd.drawFilledTriangle(M.X(cx + fuss * sin(w1) * kx), M.Y(cy - fuss * cos(w1) * ky), M.X(cx + fuss * sin(w2) * kx), M.Y(cy - fuss * cos(w2) * ky), xs, ys)
         else
             lcd.drawLine(X, Y, xs, ys)
         end
     elseif art.balken then
         local aussen = r - 4 - art.teile[4] - 2   -- innen an den Teilstrichen
         lcd.color(F.mitte)
-        sektor(X, Y, M.sx(aussen - art.balken), M.sx(aussen), anfang, a)
+        sektor(X, Y, rs(aussen - art.balken), rs(aussen), anfang, a)
     end
 end
 

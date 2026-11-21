@@ -4,6 +4,9 @@
 -- Schrift, den Grund (hell: Baender von Weiss zum Tint der Farbe, wie der Canvas-Verlauf) und die Linien (hell: Kern dunkel).
 local BASIS = ...
 local BASIS_ALT = tostring(BASIS):gsub("^SCRIPTS:/", "/scripts/")
+local SUITE_NEU = type(package.loaded["rfsuite.lib.require"]) == "function"   -- die Suite mit lib/require.lua und lib/settings_store.lua (nicht rfsuite 2.3.x)
+local OHNE_LINK = {link = false}
+local THEMA_SCHLUESSEL = tostring(BASIS):find("/widgets/dashboard/themes/novafly/", 1, true) and "novafly" or "user/novafly"   -- der Abschnitt der Theme-Einstellungen: die mitgelieferte Fassung oder die Kopie unter rfsuite.user
 local rf = package.loaded.rfsuite
 if rf == nil and type(package.loaded["rfsuite.lib.require"]) == "function" then
     local ok, r = pcall(package.loaded["rfsuite.lib.require"], "widgets/dashboard/context.lua")
@@ -50,24 +53,19 @@ local F_BIG = FONT_XL or FONT_L or FONT_STD
 local F_HUGE = FONT_XXL or FONT_XL or FONT_L or FONT_STD
 local TREPPE = {F_HUGE, F_BIG, F_MID, F_STD_T, F_SM}
 
-local NACH_STUFE = {}
-for _, p in ipairs({{"FONT_XS", "s"}, {"FONT_S", "s"}, {"FONT_STD", "std"}, {"FONT_L", "l"}, {"FONT_XL", "xl"}, {"FONT_XXL", "xxl"}}) do
-    local wert = rawget(_G, p[1])
-    if wert ~= nil and NACH_STUFE[wert] == nil then NACH_STUFE[wert] = p[2] end
-end
-
 local T = {timer = "FLUGTIMER", unbekannt = "ARM ?", link = "NO LINK", scharf = "Heli ist scharf. Setup nur am Boden."}
 
 local VFR_YEL, VFR_RED = 90, 80
 local GAUGE = {cx = 239.5, cy = 171.5}   -- die Mitte des Tachos; Bogen und Balken malt rahmen.lua
 local BEZUG_OHNE_FLUG = 2000
-local LANG, DRIFT, SPERRE_SEK, FARBE_LESEN_SEK, MASKEN_JE_TAKT, MAX_WORTE, KALT_JE_BILD = 0.6, 12, 2.5, 1.0, 8, 160, 4
+local LANG, DRIFT, SPERRE_SEK, FARBE_LESEN_SEK = 0.6, 12, 2.5, 1.0
 local BEC_FUELLBYTE, BEC_MIN, BEC_MAX = 25.5, 3.0, 13.0
 local RICHTUNG = {x = 147, y = 27, r = 16, rand = 1, spitze = 12, fuss = 10, ecke = 145}
 local CPU_NAMEN = {"RT Load", "CPU Load", "System Load", "MCU Load",   -- RT Load ist der lebendige Wert, CPU Load der Durchschnitt (Rotorflight sendet beide)
                    kennungen = {{0x51D2, "RT Load"}, {0x51D0, "CPU Load"}, {0x51D1, "System Load"}}}   -- dieselben Sensoren ueber ihre Kennung, wenn kein Name trifft
 local YAW_QUELLEN ={0x5210, 0x1103, 0x5022}   -- rfsuite 2.3.1 reicht Y.Winkel und Hoehe nicht mehr durch getSensor: dann liest das Theme die Ethos-Sensoren selbst (S.Port, CRSF, Simulator der Suite)
 local ALT_QUELLEN = {0x0100, 0x10B2, 0x5016}
+local FLUGMODUS_QUELLEN = {0x5121, 0x1201}   -- flightModeFlags der Firmware roh (S.Port, CRSF): beide Suiten legen den Sensor nur an, das Theme liest ihn wie NovaSetup (sensoren.lua)
 
 local U = {
     arm = {x = 14, y = 14, w = 94, h = 28, f = F_MID, tief = 1},
@@ -95,45 +93,17 @@ local U = {
 }
 local ZONEN = {header = {x = 176, y = 0, w = 184, h = 48}, richtung = {x = 127, y = 7, w = 40, h = 40}}
 
-local SINT, COST = {}, {}   -- Winkeltabelle und Kursivmasse kommen in zwei Schritten beim ersten Wakeup und beim ersten Malen (Ethos bricht einen Aufruf ab 20 000 Befehlen ab); bis dahin malt das Cockpit nur den Grund
-local MASSE, ZIFFER_VORSCHUB = {}, {}
-local tabellenStufe = 0
+local tabellenStufe = 0   -- das erste Malen malt nur den Grund, der erste Wakeup traegt das Laden: so bleibt jeder Aufruf unter Ethos' Grenze
 
-local function tabellenSchritt()   -- Winkel- und Maskentabellen (SINT/COST, kursiv_masse.lua) liest seit der Senderschrift niemand mehr:
-    tabellenStufe = 2              -- nichts mehr bauen, nichts mehr laden (Lua-Speicher am X18)
+local function tabellenSchritt()
+    tabellenStufe = 2
 end
 
-local function zelle(stufe, code, e)   -- Vorschub und Versatz eines Zeichens in seiner Zelle
-    if code >= 48 and code <= 57 then
-        local adv = ZIFFER_VORSCHUB[stufe] or e[5]
-        return adv, floor((adv - e[5]) / 2)
-    end
-    return e[5], 0
-end
-
-local ox, oy, fx, fy, kursivAn = 0, 0, 1, 1, false
+local ox, oy, fx, fy = 0, 0, 1, 1
 local function sx(v) return floor(v * fx + 0.5) end
 local function sy(v) return floor(v * fy + 0.5) end
 local function X(v) return ox + floor(v * fx + 0.5) end   -- wie sx, ohne Zwischenruf: jeder Zeichenbefehl geht hier durch (Rechenschritte je Malen)
 local function Y(v) return oy + floor(v * fy + 0.5) end
-
-local masken, wunsch, wunschListe = {}, {}, {}
-local worte, worteZahl = {}, 0          -- Beschriftungen: aendern sich kaum
-local zahlen, zahlenZahl = {}, 0        -- Zahlen: kommen und gehen mit jedem Wert; wird es voll, bleiben nur die des laufenden Bildes
-local MAX_ZAHLEN = 96
-local bildZaehler = 0                    -- zaehlt die Bilder: welche Zahl gerade auf dem Schirm steht
-local function istZahl(text) return text:find("%d") ~= nil and text:find("%a") == nil end
-
-local function maske(stufe, code)
-    local k = stufe .. "/" .. code
-    local m = masken[k]
-    if m ~= nil then return m or nil end
-    if not wunsch[k] then
-        wunsch[k] = true
-        wunschListe[#wunschListe + 1] = {stufe, code, k}
-    end
-    return nil
-end
 
 local function laden(fn, datei)
     local ok, x, grund = pcall(fn, BASIS .. datei)
@@ -155,130 +125,13 @@ do
     end
 end
 
-local function maskenLaden(n)
-    if type(lcd.loadMask) ~= "function" then return end
-    for _ = 1, n do
-        local w = table.remove(wunschListe, 1)
-        if w == nil then return end
-        masken[w[3]] = laden(lcd.loadMask, "gfx/kursiv/" .. w[1] .. "/" .. w[2] .. ".png") or false
-        wunsch[w[3]] = nil
-    end
-end
-
-local function codes(text)
-    if not text:find("[\128-\255]") then return {text:byte(1, -1)} end
-    local aus, i = {}, 1
-    while i <= #text do
-        local b = text:byte(i)
-        if b == 194 and i < #text then
-            aus[#aus + 1] = text:byte(i + 1)
-            i = i + 2
-        elseif b >= 192 then
-            return nil
-        else
-            aus[#aus + 1] = b
-            i = i + 1
-        end
-    end
-    return aus
-end
-
-local function masze(text, stufe)
-    local tab = MASSE[stufe]
-    if tab == nil then return nil end
-    local cs = codes(text)
-    if cs == nil then return nil end
-    local marke, links, rechts = 0, nil, nil
-    for i = 1, #cs do
-        local e = tab[cs[i]]
-        if e == nil then return nil end
-        local adv, versatz = zelle(stufe, cs[i], e)
-        if cs[i] >= 48 and cs[i] <= 57 then   -- eine Ziffer zaehlt mit ihrer ganzen Zelle, sonst wandert die Mitte mit der Tinte der 1
-            if links == nil or marke < links then links = marke end
-            if rechts == nil or marke + adv > rechts then rechts = marke + adv end
-        elseif e[3] > 0 then
-            local l, r = marke + versatz + e[1], marke + versatz + e[1] + e[3]
-            if links == nil or l < links then links = l end
-            if rechts == nil or r > rechts then rechts = r end
-        end
-        marke = marke + adv
-    end
-    if links == nil then return marke, MASSE.hoehe[stufe], cs, 0 end
-    return rechts - links, MASSE.hoehe[stufe], cs, -links
-end
-
-local kaltRest = 0   -- kalte Woerter je Bild: das Bild rechnet hoechstens KALT_JE_BILD neue Woerter, der Rest malt in Ethos-Schrift und kommt im naechsten Bild
-
-local function zuegeBauen(w)   -- die Masken zu einem gemessenen Wort; false, solange eine noch nicht geladen ist
-    local tab, cs, zuege, px, ganz = MASSE[w.stufe], w.cs, {}, w.v, true
-    for i = 1, #cs do
-        local e = tab[cs[i]]
-        local adv, versatz = zelle(w.stufe, cs[i], e)
-        if e[3] > 0 then
-            local m = maske(w.stufe, cs[i])
-            if m == nil then ganz = false else zuege[#zuege + 1] = {px + versatz + e[1], e[2], m} end
-        end
-        px = px + adv
-    end
-    if ganz then w.zuege, w.cs, w.v = zuege, nil, nil end
-    return ganz
-end
-
-local function wort(text, font)
-    if not kursivAn or type(lcd.drawMask) ~= "function" then return nil end
-    local stufe = NACH_STUFE[font]
-    if stufe == nil or MASSE[stufe] == nil or MASSE.hoehe == nil then return nil end
-    local key = stufe .. "|" .. text
-    local zahl = istZahl(text)
-    local lager = zahl and zahlen or worte
-    local w = lager[key]
-    if w == false then return nil end   -- schon einmal nicht messbar (ein Zeichen ohne Maske): kostet kein kaltes Wort mehr
-    if w then
-        w.bild = bildZaehler
-        if w.zuege then return w end
-        if kaltRest <= 0 then return nil end   -- auch ein nachgeholtes Wort zaehlt: ein Bild baut hoechstens KALT_JE_BILD
-        kaltRest = kaltRest - 1
-        if zuegeBauen(w) then return w end
-        return nil
-    end
-    if kaltRest <= 0 then return nil end
-    kaltRest = kaltRest - 1
-    local b, h, cs, v = masze(text, stufe)
-    if b == nil then lager[key] = false; return nil end
-    if zahl then
-        if zahlenZahl >= MAX_ZAHLEN then   -- voll: nur die Zahlen behalten, die im laufenden oder vorigen Bild standen - kein Bild faellt in die Ethos-Schrift
-            local rest, n = {}, 0
-            for k2, w2 in pairs(zahlen) do
-                if w2 and w2.bild ~= nil and w2.bild >= bildZaehler - 1 then rest[k2], n = w2, n + 1 end
-            end
-            zahlen, zahlenZahl, lager = rest, n, rest
-        end
-        zahlenZahl = zahlenZahl + 1
-    else
-        if worteZahl >= MAX_WORTE then worte, worteZahl = {}, 0; lager = worte end
-        worteZahl = worteZahl + 1
-    end
-    w = {breite = b, hoehe = h, stufe = stufe, cs = cs, v = v, bild = bildZaehler}
-    lager[key] = w
-    if zuegeBauen(w) then return w end
-    return nil
-end
-
 local function mass(text, font)
-    local w = wort(text, font)
-    if w then return w.breite, w.hoehe end
     lcd.font(font or F_SM)
     return lcd.getTextSize(text)
 end
 
 local function textZug(px, py, text, farbe, font)
     lcd.color(farbe or C_WHITE)
-    local w = wort(text, font)
-    if w then
-        local z = w.zuege
-        for i = 1, #z do lcd.drawMask(floor(px) + z[i][1], floor(py) + z[i][2], z[i][3]) end
-        return w.breite
-    end
     lcd.font(font or F_SM)
     lcd.drawText(floor(px), floor(py), text)
     return (lcd.getTextSize(text))
@@ -400,7 +253,7 @@ local function linien(nr)
         local anteil = (i - 0.5) / 12
         auslauf[i] = {misch(e.mitte, 1, anteil), misch(e.kern, 1, anteil), hell and misch(e.mitte, 1, anteil * 0.3) or misch(e.mitte, 0.3, anteil)}
     end
-    LIN.aktiv = {mitte = RGB(e.mitte[1], e.mitte[2], e.mitte[3]), kern = RGB(e.kern[1], e.kern[2], e.kern[3]),   -- der Schein aussen an jeder Linie: 30 % des Mitteltons, wie im Bild tacho_base.png (Zeile 48 neben Zeile 49); hell 30 % des Mitteltons ueber dem Grund
+    LIN.aktiv = {mitte = RGB(e.mitte[1], e.mitte[2], e.mitte[3]), kern = RGB(e.kern[1], e.kern[2], e.kern[3]),   -- der Schein aussen an jeder Linie: 30 % des Mitteltons; hell 30 % des Mitteltons ueber dem Grund
                  schein = hell and misch(e.mitte, 1, 0.3) or RGB(floor(e.mitte[1] * 0.3 + 0.5), floor(e.mitte[2] * 0.3 + 0.5), floor(e.mitte[3] * 0.3 + 0.5)), auslauf = auslauf}
     LIN.nr, LIN.hell = nr, hell
     return LIN.aktiv
@@ -472,8 +325,7 @@ function LIN.auslaufMasken(R)   -- der Auslauf der Linien auf den Seiten als Mas
 end
 
 local GRUND = {bild = nil, name = nil, versuche = 0}   -- der eine Grund (Hochglanz, bei den Carbon-Farben Carbon) fuer das Cockpit und die zwei Seiten, je Schirmgroesse ein Bild (gfx/glanz<Endung>.png: Ethos passt ein Bild mit festem Seitenverhaeltnis ins Fenster ein, ein 480er-Bild liesse auf 800 x 480 beidseits 40 Punkte frei); ohne das Bild tiefschwarz
-function GRUND.hell(nr)   -- der helle Grund: 20 Baender ueber die Hoehe, von Weiss zum Tint der Farbe (der Canvas-Verlauf in Stufen); kein Bild, kein Speicher
-    local f = MODUS.von[nr] or 1
+local function baender(f)   -- die Farben der Baender des hellen Grunds der hellen Fassung f, einmal gerechnet
     local b = MODUS.baender[f]
     if b == nil then
         b = {}
@@ -485,10 +337,22 @@ function GRUND.hell(nr)   -- der helle Grund: 20 Baender ueber die Hoehe, von We
         end
         MODUS.baender[f] = b
     end
-    local schritt = 320 / MODUS.BAENDER
+    return b
+end
+local HELL_LAGE = {y = {}, h = {}}   -- Ober- und Unterkante der Baender im Fenster, einmal je Fenster gerechnet (Rechenschritte je Malen)
+function GRUND.hell(nr)   -- der helle Grund: 20 Baender ueber die Hoehe, von Weiss zum Tint der Farbe (der Canvas-Verlauf in Stufen); kein Bild, kein Speicher
+    local b, L = baender(MODUS.von[nr] or 1), HELL_LAGE
+    if L.ox ~= ox or L.oy ~= oy or L.fx ~= fx or L.fy ~= fy then
+        local schritt = 320 / MODUS.BAENDER
+        L.ox, L.oy, L.fx, L.fy, L.x, L.w = ox, oy, fx, fy, X(0), sx(480)
+        for i = 1, MODUS.BAENDER do
+            L.y[i], L.h[i] = Y((i - 1) * schritt), Y(i * schritt) - Y((i - 1) * schritt)
+        end
+    end
+    local farbe, rechteck, x, w, ys, hs = lcd.color, lcd.drawFilledRectangle, L.x, L.w, L.y, L.h
     for i = 1, MODUS.BAENDER do
-        lcd.color(b[i])
-        lcd.drawFilledRectangle(X(0), Y((i - 1) * schritt), sx(480), Y(i * schritt) - Y((i - 1) * schritt))
+        farbe(b[i])
+        rechteck(x, ys[i], w, hs[i])
     end
 end
 function GRUND.malen(nr, R)
@@ -534,7 +398,7 @@ local function bildMalen(nr)
 end
 
 local farbeNr, farbeGelesen, txSrc, cpuSrc, cpuName, quellenSuche = 1, -99, nil, nil, nil, -99
-local yawSrc, altSrc = nil, nil
+local yawSrc, altSrc, modusSrc = nil, nil, nil
 
 local function quelleWert(src)
     if not src then return nil end
@@ -556,51 +420,69 @@ end
 
 local function dash() return rf and rf.widgets and rf.widgets.dashboard end
 
-local function farbeLesen()
-    local d = dash()
-    local v = d and d.getPreference and tonumber(d.getPreference("color"))   -- englische Schluessel (Regel der Betreuer)
-    if v and BILDER[v] then farbeNr = floor(v) end
-    local m = d and d.getPreference and tonumber(d.getPreference("mode"))   -- 1 dunkel, 2 hell (configure.lua); ohne Eintrag bleibt der Modus
-    if m ~= nil and (m == 2) ~= MODUS.hell then MODUS.setzen(m == 2) end
-end
+local farbe = {schritt = nil, stand = nil, neu = nil, zeit = nil}   -- rfsuite ohne gemeinsame Tabelle: die Farbe des langen Drucks geht in drei Takten in settings.ini (lesen; setzen und schreiben; melden) - in einem Aufruf zusammen ueber 28 000 Schritte, Ethos bricht bei 20 000 ab
+local FARBE_LUECKE = 2   -- s ohne Takt: das Dashboard war verdeckt, eine Einstellungsseite kann inzwischen gespeichert haben; der gelesene Stand gilt nicht mehr, die Takte beginnen mit frischem Lesen
 
-local farbeAblage = nil   -- ohne gemeinsame Tabelle haelt rfsuite savePreference nur im Speicher: dann schreibt das Theme die Farbe selbst, in zwei Wakeups (Datei, dann Meldung)
-local function farbeDateiSchreiben()
-    local laden = package.loaded["rfsuite.lib.require"]
-    if type(laden) ~= "function" then return false end
-    local ok, ablage = pcall(laden, "lib/settings_store.lua")
-    if not ok or type(ablage) ~= "table" or type(ablage.setDashboardTheme) ~= "function" then return false end
-    local einstellungen = ablage.load()
-    ablage.setDashboardTheme(einstellungen, "novafly", {color = farbeNr, mode = MODUS.hell and 2 or 1})
-    return ablage.save(einstellungen) == true
-end
-local function farbeMelden()                   -- gemeldet wird, was JETZT in der Datei steht: hat eine Einstellungsseite seit dem Schreiben gespeichert, gilt ihr Stand
-    local laden = package.loaded["rfsuite.lib.require"]
-    local okA, ablage = pcall(laden, "lib/settings_store.lua")
-    local okB, bus = pcall(laden, "lib/bus.lua")
-    if not (okA and type(ablage) == "table" and type(ablage.load) == "function") then return end
-    if okB and type(bus) == "table" and type(bus.publish) == "function" then bus.publish("settings.update", ablage.load()) end
-end
-local function farbeAblageTakt()
-    if farbeAblage == 1 then
-        farbeAblage = 2
-        local ok, geschrieben = pcall(farbeDateiSchreiben)
-        if not (ok and geschrieben) then farbeAblage = nil end
-    elseif farbeAblage == 2 then
-        farbeAblage = nil
-        pcall(farbeMelden)
+local function farbeLesen()   -- Farbe und Modus, wie sie gespeichert sind (configure.lua); fehlt der Eintrag eines verbundenen Modells, gelten die Werkswerte wie auf der Einstellungsseite
+    local d = dash()
+    if not (d and d.getPreference) then return end
+    local v = tonumber(d.getPreference("color"))   -- englische Schluessel (Regel der Betreuer)
+    local m = tonumber(d.getPreference("mode"))    -- 1 dunkel, 2 hell
+    local modell = rf and rf.session and rf.session.modelPreferences   -- rfsuite 2.3.x: Farbe und Modus gehoeren dem FC; ohne Modell bleibt, was gilt
+    if modell ~= nil then v, m = v or 1, m or 1 end
+    local vorher, vorherHell = farbeNr, MODUS.hell
+    if farbe.schritt == nil and v and BILDER[v] then farbeNr = floor(v) end   -- solange der lange Druck speichert, gilt seine Farbe
+    if m ~= nil and (m == 2) ~= MODUS.hell then MODUS.setzen(m == 2) end
+    if farbeNr ~= vorher or MODUS.hell ~= vorherHell then   -- Linien und heller Grund rechnet dieser Takt, nicht das erste Bild danach: das traegt die ganze Seite (Rechenschritte)
+        linien(farbeNr)
+        if MODUS.hell then baender(MODUS.von[farbeNr] or 1) end
     end
 end
 
-local function farbeWeiter()                   -- false, wenn die Farbe nirgends gespeichert wird: rfsuite 2.3.x haelt sie je Modell und hat ohne Verbindung kein Modell
+local function ablageHolen()   -- lib/settings_store.lua der Suite, wenn es sie gibt (nicht in rfsuite 2.3.x)
+    local laden = package.loaded["rfsuite.lib.require"]
+    if type(laden) ~= "function" then return nil end
+    local ok, ablage = pcall(laden, "lib/settings_store.lua")
+    if not ok or type(ablage) ~= "table" or type(ablage.setDashboardTheme) ~= "function" or type(ablage.dashboardTheme) ~= "function" then return nil end
+    return ablage, laden
+end
+
+local function farbeTakt()   -- ein Schritt des Speicherns je Takt, wie die Einstellungsseite: Abschnitt des Themes, Modus und alles andere darin bleiben; settings.update laedt das Theme mit dem neuen Stand
+    local ablage, laden = ablageHolen()
+    if ablage == nil then farbe.schritt, farbe.stand = nil, nil return end
+    local jetzt = os.clock()
+    if jetzt - (farbe.zeit or jetzt) > FARBE_LUECKE then farbe.schritt = 1 end   -- nach der Luecke weder einen alten Stand schreiben noch melden
+    farbe.zeit = jetzt
+    if farbe.schritt == 1 then
+        farbe.stand, farbe.schritt = ablage.load(), 2
+    elseif farbe.schritt == 2 then
+        local werte = ablage.dashboardTheme(farbe.stand, THEMA_SCHLUESSEL) or {}
+        werte.color = farbe.neu
+        ablage.setDashboardTheme(farbe.stand, THEMA_SCHLUESSEL, werte)
+        farbe.schritt = (ablage.save(farbe.stand) == true) and 3 or nil
+    else
+        local ok, bus = pcall(laden, "lib/bus.lua")
+        if ok and type(bus) == "table" and type(bus.publish) == "function" then
+            bus.publish("settings.update", type(ablage.clone) == "function" and ablage.clone(farbe.stand) or farbe.stand)
+        end
+        farbe.schritt = nil
+    end
+    if farbe.schritt == nil then farbe.stand, farbe.zeit = nil, nil end
+end
+
+local function farbeWeiter()                   -- false, wenn nichts gespeichert wird: rfsuite 2.3.x haelt die Farbe je Modell und hat ohne Verbindung kein Modell; die Suite ohne gemeinsame Tabelle weckt das Theme ohne Verbindung nicht
     local neu = farbeNr % #BILDER + 1
-    local d = dash()
-    if d and d.savePreference then
-        local ok, gespeichert = pcall(d.savePreference, "color", neu)
-        if ok and gespeichert == false then return false end
+    if ablageHolen() ~= nil then
+        if not (rf and rf.session and rf.session.isConnected == true) or farbe.schritt ~= nil then return false end
+        farbe.neu, farbe.schritt, farbe.zeit = neu, 1, os.clock()
+    else
+        local d = dash()
+        if d and d.savePreference then
+            local ok, r = pcall(d.savePreference, "color", neu)
+            if ok and r == false then return false end
+        end
     end
     farbeNr = neu
-    farbeAblage = 1
     return true
 end
 
@@ -643,10 +525,12 @@ local function quellenFinden()
         if altSrc ~= nil and quelleWert(altSrc) == nil then altSrc = nil end
         if yawSrc == nil then yawSrc = sensorSuchen(YAW_QUELLEN) end
         if altSrc == nil then altSrc = sensorSuchen(ALT_QUELLEN) end
+        if modusSrc ~= nil and quelleWert(modusSrc) == nil then modusSrc = nil end
+        if modusSrc == nil then modusSrc = sensorSuchen(FLUGMODUS_QUELLEN) end
     end
 end
 
-local lebt, lebtModell = {}, nil
+local lebt, lebtHeli = {}, nil   -- je Heli: die Kennung des FC (session.mcu_id), nicht der Name des Ethos-Modells (ein Modell fuer mehrere Helis; 'Modellname synchronisieren' benennt beim Trennen um)
 local function ohneNull(key, v)
     if v == nil then return nil end
     if v ~= 0 then lebt[key] = true end
@@ -703,7 +587,8 @@ local rpmHoch, cellF = 0, nil
 local st = {link = false}
 local schlepp = {}   -- je Bank Min und Max der Drehzahl, solange scharf: der Schleppmonitor im BANK-Monitor liest hier
 local letzterFlug = {}   -- Strom-Hoechstwert, verbrauchte mAh und Bank des letzten Flugs: die Seiten vor und nach dem Flug lesen hier
-local flug = {laeuft = false, ende = false, mahStart = nil, stromMax = nil, bank = {0, 0, 0}, uhr = nil}   -- der laufende Flug; die Uhr je Bank zaehlt scharf mit drehendem Rotor, ab dem Scharfmachen von null, nach dem Flug bleibt sie stehen
+local flug = {laeuft = false, ende = false, mahStart = nil, stromMax = nil, bank = {0, 0, 0, 0, 0, 0}, uhr = nil, scharfZuletzt = nil}   -- der laufende Flug; die Uhr je Bank (Rotorflight 4.6: bis sechs) zaehlt scharf mit drehendem Rotor, ab dem Scharfmachen von null, nach dem Flug bleibt sie stehen
+local FLUG_AUSSETZER = 5   -- so lange darf die Telemetrie im Flug aussetzen, ohne dass der Flug endet
 flug.sitzung = {}   -- Hoehe und Steigen/Sinken seit dem Verbinden, scharf oder nicht: die Seite links zeigt sie, solange hier kein Flug aufgezeichnet ist
 local function celsius(v, fahrenheit) return fahrenheit and (v - 32) * 5 / 9 or v end   -- die Farbgrenzen stehen in °C
 local function gradZeichen(fahrenheit) return fahrenheit and "\194\176F" or "\194\176C" end
@@ -732,8 +617,9 @@ end
 local function lesen(tele)
     local s = {link = tele.active and tele.active() or false}
     local mn = modellName()
-    if mn ~= lebtModell then
-        lebt, lebtModell, rpmHoch, cellF = {}, mn, 0, nil
+    local heli = rf and rf.session and rf.session.mcu_id
+    if heli ~= nil and heli ~= lebtHeli then   -- ein anderer FC: was zum vorigen gehoert, gilt nicht mehr; ohne Verbindung bleibt es stehen
+        lebt, lebtHeli, rpmHoch, cellF, letzterFlug = {}, heli, 0, nil, {}
         for k in pairs(schlepp) do schlepp[k] = nil end
         for k in pairs(flug.sitzung) do flug.sitzung[k] = nil end
     end
@@ -770,15 +656,17 @@ local function lesen(tele)
         if s.fuel ~= nil and (s.fuel < 0 or s.fuel > 100) then s.fuel = nil end
         s.zellen = zellen
         s.verbrauch = g("consumption")
-        local alt = g("altitude")
-        if alt == nil and altSrc then alt = quelleWert(altSrc) end
+        local alt, _, altEinheit = tele.getSensor("altitude")   -- rfsuite 2.3.x rechnet bei Fuss selbst um und nennt "ft" als dritten Wert
+        alt = tonumber(alt)
+        if alt == nil and altSrc then alt, altEinheit = quelleWert(altSrc), nil end
         s.alt = ohneNull("alt", alt)
         local loc = rf and rf.preferences and rf.preferences.localizations   -- die Einheit, wie sie in der Suite eingestellt ist: rfsuite.preferences.localizations.altitude_unit 1 = Fuss (sensor_table.lua)
-        s.altFt = (type(loc) == "table" and loc.altitude_unit == 1) or false
-        if s.alt ~= nil and s.altFt then s.alt = s.alt * 3.28084 end
+        s.altFt = altEinheit == "ft" or (altEinheit ~= "m" and type(loc) == "table" and loc.altitude_unit == 1) or false
+        if s.alt ~= nil and s.altFt and altEinheit ~= "ft" then s.alt = s.alt * 3.28084 end   -- nur ein Wert in Metern wird umgerechnet
         if s.alt ~= nil then flug.hoehe(flug.sitzung, s.alt, os.clock()) end
         s.cpu = quelleWert(cpuSrc)
         if s.cpu ~= nil and (s.cpu < 0 or s.cpu > 100) then s.cpu = nil end
+        s.flugmodus = quelleWert(modusSrc)   -- die Bits der Firmware (runtime_config.h): ANGLE 2, HORIZON 4, RESCUE 32
         s.grad = gradLesen(tele)
     end
     if s.scharf == true and s.rpm ~= nil and s.rpm > 0 and s.bank ~= nil then
@@ -793,19 +681,20 @@ local function lesen(tele)
     end
     if s.scharf == true then   -- der Flug: Strom-Hoechstwert, Verbrauch und die Uhr je Bank laufen mit, bis der Heli entschaerft
         if not flug.laeuft then
-            flug.laeuft, flug.mahStart, flug.stromMax, flug.bank, flug.uhr = true, s.verbrauch, nil, {0, 0, 0}, nil
+            flug.laeuft, flug.mahStart, flug.stromMax, flug.bank, flug.uhr = true, s.verbrauch, nil, {0, 0, 0, 0, 0, 0}, nil
             flug.altMax, flug.steigMax, flug.sinkMax, flug.altVor, flug.altZeit = nil, nil, nil, nil, nil
         end
         if s.last ~= nil and (flug.stromMax == nil or s.last > flug.stromMax) then flug.stromMax = s.last end
         local jetzt, b = os.clock(), s.bank and floor(s.bank) or nil
+        flug.scharfZuletzt = jetzt
         if flug.uhr ~= nil and s.rpm ~= nil and s.rpm > 0 and b ~= nil and flug.bank[b] ~= nil then flug.bank[b] = flug.bank[b] + (jetzt - flug.uhr) end
         flug.uhr = jetzt
         if s.alt ~= nil then flug.hoehe(flug, s.alt, jetzt) end   -- die hoechste Hoehe und das staerkste Steigen und Sinken des Flugs
-    elseif flug.laeuft then
+    elseif flug.laeuft and (s.scharf == false or os.clock() - (flug.scharfZuletzt or 0) > FLUG_AUSSETZER) then   -- ein Aussetzer der Telemetrie im Flug beendet ihn nicht
         flug.laeuft, flug.ende, flug.uhr = false, true, nil
         letzterFlug = {strom = flug.stromMax, bank = s.bank and floor(s.bank) or nil,
                        mah = (s.verbrauch ~= nil and flug.mahStart ~= nil) and (s.verbrauch - flug.mahStart) or nil,
-                       alt = flug.altMax, steig = flug.steigMax, sink = flug.sinkMax, zeit = flug.bank[1] + flug.bank[2] + flug.bank[3]}
+                       alt = flug.altMax, steig = flug.steigMax, sink = flug.sinkMax, zeit = flug.bank[1] + flug.bank[2] + flug.bank[3] + flug.bank[4] + flug.bank[5] + flug.bank[6]}
     end
     s.tx = quelleWert(txSrc)
     local tm = rf and rf.session and rf.session.timer
@@ -817,7 +706,9 @@ end
 
 local function fmt(n, u, d)
     if n == nil then return "" end
-    return string.format("%." .. (d or 0) .. "f", n) .. (u or "")
+    local z = string.format("%." .. (d or 0) .. "f", n)
+    if n < 0 and z:find("^%-[0.]*$") then z = z:sub(2) end   -- was auf null rundet, steht ohne Minus (Hoehe -0.3 m, Strom -0.2 A)
+    return z .. (u or "")
 end
 
 local function fmtT(sec)
@@ -915,14 +806,13 @@ end
 
 local function malen(x, y, w, h, s)
     ox, oy, fx, fy = x, y, w / 480, h / 320
-    kursivAn = false   -- Senderschrift (Regel der Betreuer); die Masken bleiben nur als Lader im Code
     if tabellenStufe < 2 then
         tabellenSchritt()
         bildMalen(farbeNr)
         return
     end
-    kaltRest, bildZaehler = KALT_JE_BILD, bildZaehler + 1
     s = s or st
+    if s.link and SUITE_NEU and rf and rf.session and rf.session.isConnected == false then s = OHNE_LINK end   -- die Suite ohne gemeinsame Tabelle weckt das Feld beim Abbruch nur einmal; faellt das in die 0,1 s, zeigt das Bild trotzdem NO LINK
     local m = monitorAktiv and MONITORE[monitorAktiv]
     if m then
         m.malen(x, y, w, h, s)
@@ -1021,26 +911,34 @@ local function kopfLang()
     end
 end
 
-local function langdruckPruefen()
+local function langdruckPruefen()   -- true, wenn der lange Druck hier gewechselt hat: der Takt traegt dann nur das Speichern
     local d = druck
-    if d == nil or d.zone ~= "header" or os.clock() - d.seit < LANG then return end
+    if d == nil or d.zone ~= "header" then return false end
+    local alter = os.clock() - d.seit
+    if alter < LANG then return false end
+    if alter > LANG + 0.4 then   -- so alt sieht ihn der Takt nur, wenn die Suite den Finger genommen hat (Wischen der Werkzeugleiste): kein Druck mehr
+        druck = nil
+        return false
+    end
     kopfLang()
+    return true
 end
 
 local erstesWach = true
 local SEITEN_WORTE = {"GOVERNOR", "DREHZAHL", "HOCHLAUF", "GAIN", "IST", "BANK", "RATE", "ROLL", "NICK", "HECK", "KOLL.",
-                      "AKKU", "ZELLE", "VERBRAUCH", "HOEHE MAX", "STEIGEN MAX", "SINKEN MAX", "FLUGZEIT", "PID", "RATEN", "MSP"}
+                      "AKKU", "ZELLE", "VERBRAUCH", "HOEHE MAX", "STEIGEN MAX", "SINKEN MAX", "FLUGZEIT", "PID", "RATEN", "MSP",
+                      "FLUGMODUS", "WINKEL", "HORIZONT", "RETTUNG"}
 local wortVorrat = 1   -- die Woerter der Seiten, je Wakeup eines vorab uebersetzt: sonst uebersetzt das erste Malen einer Seite alle auf einmal (Rechenschritte)
 local function wach(box, tele)
     if erstesWach then erstesWach = false   -- der erste Wakeup traegt schon das Laden dieser Datei
+    elseif farbe.schritt ~= nil then farbeTakt() return st   -- ein Schritt des Speicherns traegt diesen Takt allein
     elseif tabellenStufe < 2 then tabellenSchritt()
-    elseif farbeAblage ~= nil then farbeAblageTakt()
     elseif SPRACHE ~= nil and wortVorrat <= #SEITEN_WORTE then
         pcall(SPRACHE.wort, SEITEN_WORTE[wortVorrat])
         wortVorrat = wortVorrat + 1
     end
     local jetzt = os.clock()
-    langdruckPruefen()
+    if langdruckPruefen() then return st end
     if jetzt - farbeGelesen >= FARBE_LESEN_SEK then
         farbeGelesen = jetzt
         farbeLesen()
@@ -1049,7 +947,6 @@ local function wach(box, tele)
         quellenSuche = jetzt
         quellenFinden()
     end
-    maskenLaden(MASKEN_JE_TAKT)
     if tele then st = lesen(tele) end
     if flug.ende then   -- nach dem Flug geht die Bankseite von selbst auf
         flug.ende = false
@@ -1065,7 +962,7 @@ local function trifft(z, x, y)
 end
 
 local wisch = nil   -- Wischen quer ueber freie Flaeche blaettert zwischen den Seiten (links davor, Mitte das Cockpit, rechts danach); senkrecht bleibt bei Ethos und der Suite; in einer offenen Seite gehoert jede Beruehrung dem Theme
-local WISCH_WEIT, WISCH_ENTSCHEID = 50, 6
+local WISCH_WEIT, WISCH_ENTSCHEID = 50, 16   -- entschieden wird nach 16 Punkten nach der groesseren Richtung: der Anfang eines Wischens geht oft schraeg
 local function blaettern(richtung)   -- -1: nach links gewischt = die Seite danach; +1: nach rechts gewischt = die Seite davor
     local lage = monitorAktiv and SEITEN[monitorAktiv]
     if monitorAktiv == nil then return monitorOeffnen(richtung < 0 and "baenke" or "vorflug") end
@@ -1105,6 +1002,17 @@ local function wischen(value, x, y, inSeite)   -- true = verbraucht, false = fue
     return nil
 end
 
+local function richtungFassen(widget)   -- der Ring: am Boden die gemessene Richtung als Bezug, scharf oder ohne Richtung der tiefe Ton
+    if st.grad ~= nil and not scharfJetzt() then
+        bezug = st.grad
+        ton(880, 120)
+    else
+        ton(200, 90)
+    end
+    if widget then lcd.invalidate(widget) end
+    return true
+end
+
 local function ereignis(widget, category, value, x, y)
     if category ~= EVT_TOUCH then return false end
     local m = monitorAktiv and MONITORE[monitorAktiv]
@@ -1113,7 +1021,10 @@ local function ereignis(widget, category, value, x, y)
             druck = trifft(m.zurueck, x, y) and {zone = "zurueck", seit = os.clock(), x = x, y = y} or nil
             if druck == nil and m.seite then wischen(TOUCH_START, x, y, true) end
         elseif value == TOUCH_MOVE then
-            if druck and x and y and (abs(x - druck.x) > DRIFT or abs(y - druck.y) > DRIFT) then druck = nil end
+            if druck and x and y and (abs(x - druck.x) > DRIFT or abs(y - druck.y) > DRIFT) then
+                if m.seite then wischen(TOUCH_START, druck.x, druck.y, true) end   -- der Finger verlaesst die Zone: ein Wischen ab dem Aufsetzen
+                druck = nil
+            end
             if druck == nil and m.seite then wischen(TOUCH_MOVE, x, y, true) end
         elseif value == TOUCH_END and druck == nil and m.seite and wischen(TOUCH_END, x, y, true) then
             if widget then lcd.invalidate(widget) end
@@ -1149,7 +1060,10 @@ local function ereignis(widget, category, value, x, y)
         return druck ~= nil   -- setzt der Finger auf einer Zone auf, behaelt ihn das Theme
     end
     if value == TOUCH_MOVE then
-        if druck and x and y and (abs(x - druck.x) > DRIFT or abs(y - druck.y) > DRIFT) then druck, fingerUnser = nil, false end
+        if druck and x and y and (abs(x - druck.x) > DRIFT or abs(y - druck.y) > DRIFT) then   -- der Finger verlaesst seine Zone: ein Wischen ab dem Aufsetzen wie auf freier Flaeche, sonst nimmt Ethos ihn und schiebt das ganze Dashboard weiter
+            wischen(TOUCH_START, druck.x, druck.y, false)
+            druck, fingerUnser = nil, false
+        end
         if druck ~= nil then return true end   -- liegt der Finger noch auf seiner Zone, verbraucht das Theme die Bewegung: sonst nimmt Ethos ihn zum Blaettern und TOUCH_END bleibt aus
         local r = wischen(TOUCH_MOVE, x, y, false)
         return r == true
@@ -1163,11 +1077,14 @@ local function ereignis(widget, category, value, x, y)
         local d = druck
         if d and d.zone == "header" then
             kopfLang()
+            if widget then lcd.invalidate(widget) end
         else
             druck = nil
             if d and d.zone == "tuer" and monitorOeffnen(d.ziel) then
                 ton(880, 120)   -- auch beim langen Druck piept die Tuer
                 if widget then lcd.invalidate(widget) end
+            elseif d and d.zone == "richtung" then
+                richtungFassen(widget)   -- der Ring fasst die Richtung auch beim langen Druck
             end
         end
         return fingerUnser   -- lag der Finger auf einer Zone, ist der lange Druck verbraucht: Ethos legt nichts Eigenes darueber
@@ -1183,51 +1100,12 @@ local function ereignis(widget, category, value, x, y)
         end
         return false
     end
-    if d.zone ~= "richtung" or os.clock() - d.seit >= LANG then return false end
-    if st.grad ~= nil and not scharfJetzt() then
-        bezug = st.grad
-        ton(880, 120)
-    else
-        ton(200, 90)
-    end
-    if widget then lcd.invalidate(widget) end
-    return true
-end
-
-local kursivHelfer = {abgeschaltet = false, unfertig = false, fensterNeu = function() end}   -- die Kursivschrift fuer die Zeichenteile der Schirme (stil_teile.lua): messen geht immer, gemalt wird, sobald die Masken geladen sind
-local massMerk, massMerkN = {}, 0   -- Masse je Stufe und Text: jedes Wort wird einmal gemessen, nicht je Bild
-
-function kursivHelfer.breite(text, font)
-    if not kursivAn then return nil end
-    local stufe = NACH_STUFE[font]
-    if stufe == nil or MASSE[stufe] == nil or MASSE.hoehe == nil then return nil end
-    local key = stufe .. "|" .. text
-    local m = massMerk[key]
-    if m == nil then
-        local b, h = masze(text, stufe)
-        if massMerkN >= 200 then massMerk, massMerkN = {}, 0 end
-        m = (b ~= nil) and {b, h} or false
-        massMerk[key], massMerkN = m, massMerkN + 1
-    end
-    if m == false then return nil end
-    return m[1], m[2]
-end
-
-function kursivHelfer.sparen() kaltRest = 0 end   -- dieses Bild baut kein neues Wort: es traegt schon eine andere einmalige Last
-
-function kursivHelfer.malen(px, py, text, font)
-    local w = wort(text, font)
-    if w == nil then
-        if kursivHelfer.breite(text, font) ~= nil then kursivHelfer.unfertig = true end
-        return nil
-    end
-    local z = w.zuege
-    for i = 1, #z do lcd.drawMask(floor(px) + z[i][1], floor(py) + z[i][2], z[i][3]) end
-    return w.breite
+    if d.zone ~= "richtung" then return false end
+    return richtungFassen(widget)   -- beim Loslassen, gleich wie lange der Finger lag
 end
 
 do   -- die Seiten neben dem Cockpit: eigene Dateien, bekommen den Schlepp-Merker, einen Merker ueber das Schliessen hinaus und rfsuite
-    local HELFER = {trifft = trifft, ton = ton, schlepp = schlepp, kursiv = kursivHelfer, laden = laden, auslaufMasken = LIN.auslaufMasken, eckenMasken = LIN.eckenMasken, merk = {},
+    local HELFER = {trifft = trifft, ton = ton, schlepp = schlepp, laden = laden, auslaufMasken = LIN.auslaufMasken, eckenMasken = LIN.eckenMasken, merk = {},
                     i18n = SPRACHE, rf = function() return rf end, stand = function() return st end,
                     oeffnen = function(name) return monitorOeffnen(name) end, zu = function() monitorZu() end,
                     farbe = function() return farbeNr end, bild = function() return BILDER[farbeNr] end,
@@ -1240,7 +1118,7 @@ do   -- die Seiten neben dem Cockpit: eigene Dateien, bekommen den Schlepp-Merke
                     farben = MODUS.seiten,   -- die Farben der Zahlen: dieselben Grenzen wie im Cockpit, nach dem Modus (MODUS.setzen fuellt die Tabelle neu)
                     zellFarbe = function(cell) return SETC[cellKey(cell)] end,
                     linkFarbe = function(s) return s.vfr and SETC[(s.vfr >= VFR_YEL) and "w" or ((s.vfr >= VFR_RED) and "y" or "r")] or C_WHITE end}
-    local MODULE = {{"vorflug"}, {"baenke", {x = 20, y = 184, w = 92, h = 44}}}   -- Tuer: das BANK/RATE-Feld oeffnet die Bankseite; die Seite links hat keine Tuer, beide auch durch Wischen quer; bank.lua wird nicht mehr geladen
+    local MODULE = {{"vorflug"}, {"baenke", {x = 20, y = 184, w = 92, h = 44}}}   -- Tuer: das BANK/RATE-Feld oeffnet die Bankseite; die Seite links hat keine Tuer, beide auch durch Wischen quer
     for _, m in ipairs(MODULE) do
         LADER[m[1]] = function()
             local chunk = laden(loadfile, m[1] .. ".lua")
@@ -1258,6 +1136,6 @@ local BOX = {col = 1, row = 1, type = "func", wakeupinterval = 0.1, wakeup = wac
 local ZUSTAND = {layout = {cols = 1, rows = 1, padding = 0}, boxes = {BOX}, event = ereignis,
                  scheduler = {spread_scheduling = false, spread_scheduling_paint = false, spread_ratio = 1.0}}
 
-return {zustand = function() return ZUSTAND end, malen = malen, lesen = lesen, wach = wach, ereignis = ereignis, BILDER = BILDER,
+return {zustand = function() return ZUSTAND end, malen = malen, lesen = lesen, wach = wach, ereignis = ereignis, ort = BASIS,   -- ort: aus welchem Ordner dieses Cockpit geladen ist (zustand.lua)
         monitore = MONITORE, tueren = TUEREN, monitorOeffnen = monitorOeffnen, monitorZu = monitorZu,
         aktiverMonitor = function() return monitorAktiv end}

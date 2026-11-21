@@ -14,6 +14,8 @@ S.SCHWARZ = lcd.RGB(0, 0, 0)
 local URSPRUNG = {WEISS = stil.WEISS, LEISE = stil.LEISE, FELD_LEISE = stil.FELD_LEISE, ROT = stil.ROT}   -- die Farben der Zeichenteile auf dunklem Grund, wie stil_teile.lua sie setzt
 local HELL = {WEISS = lcd.RGB(20, 20, 19), LEISE = lcd.RGB(95, 107, 120), FELD_LEISE = lcd.RGB(95, 107, 120), ROT = lcd.RGB(200, 32, 32)}   -- auf hellem Grund: Schrift dunkel, Leise und Rot wie im Cockpit (cockpit.lua PALETTE)
 local modusGesetzt = nil
+local LUECKE = 4                -- zwischen Zahl und Einheit einer Zeile, Punkte der Vorlage 480 x 320
+local luecke = LUECKE           -- dieselbe Luecke im Fenster, einmal je Bild in S.grund gerechnet
 local M = {X = stil.sx, Y = stil.sy, sx = stil.sx, sy = stil.sy}   -- das Fenster der Seite fuer rahmen.lua: die Umrechner von stil_teile selbst, ohne Zwischenruf (Rechenschritte je Malen); M.q haengt rahmen.lua an (R.frisch)
 
 local function suiteModul(pfad)   -- ein Modul der Suite ueber ihren Lader; nil ohne Lader (rfsuite 2.3.x) oder ohne das Modul
@@ -24,16 +26,16 @@ local function suiteModul(pfad)   -- ein Modul der Suite ueber ihren Lader; nil 
     return nil
 end
 
-function S.busLesen(codecPfad, fertig)   -- ein Satz ueber den Bus "msp.request" der Suite mit ihrem Codec; fertig(werte) einmal, nil bei Fehler; false, wenn nichts abging
+function S.busLesen(codecPfad, fertig)   -- ein Satz ueber den Bus "msp.request" der Suite mit ihrem Codec; fertig(werte) einmal, bei Fehler fertig(nil, Grund der Suite); false, wenn nichts abging
     local bus, codec = suiteModul("lib/bus.lua"), codecPfad and suiteModul(codecPfad) or nil
     if bus == nil or type(bus.publish) ~= "function" or codec == nil or type(codec.buildReadMessage) ~= "function" then return false end
     local einmal = false
-    local function ende(w)
+    local function ende(w, grund)
         if einmal then return end
         einmal = true
-        fertig(w)
+        fertig(w, grund)
     end
-    local ok, nachricht = pcall(codec.buildReadMessage, function(d) ende(type(d) == "table" and d or nil) end, function() ende(nil) end)
+    local ok, nachricht = pcall(codec.buildReadMessage, function(d) ende(type(d) == "table" and d or nil) end, function(grund) ende(nil, grund) end)
     if not ok or type(nachricht) ~= "table" or not pcall(bus.publish, "msp.request", nachricht) then einmal = true return false end
     return true
 end
@@ -63,6 +65,7 @@ end
 
 function S.grund()   -- der Grund des Cockpits (H.grund: Hochglanz, Carbon oder hell), ganz; ohne das Bild tiefschwarz; davor die Masse der Linien zum Fenster, einmal je Bild
     farben()
+    luecke = stil.sx(LUECKE)
     local R = H.rahmen()
     if R then R.frisch(M) end
     if type(H.grund) == "function" and H.grund() then return end
@@ -107,16 +110,16 @@ local function zeileMalen(x, cy, segs, breite, hoehe)   -- die Stuecke nebeneina
         local sg = segs[i]
         local b, h = stil.mass(sg[1], sg[3] or FONT_S)
         stil.textZug(x, oben + hoehe - (h or hoehe) - (i > 1 and 1 or 0), sg[1], sg[2], sg[3] or FONT_S)
-        x = x + b + 4
+        x = x + b + luecke
     end
     return breite
 end
 
 local function zeileMass(segs)
-    local breite, hoehe = -4, 0
+    local breite, hoehe = -luecke, 0
     for i = 1, #segs do
         local b, h = stil.mass(segs[i][1], segs[i][3] or FONT_S)
-        breite = breite + b + 4
+        breite = breite + b + luecke
         if (h or 0) > hoehe then hoehe = h end
     end
     return breite, hoehe

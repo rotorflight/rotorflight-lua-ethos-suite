@@ -5,10 +5,8 @@ local H = ...
 local nova = H.nova
 local t = {
     k_warten = "Speichert - bitte warten",
-    f_nichts_geaendert = "Nichts geaendert",
     laeuft = "laeuft ...",
     laeuft_still = "laeuft ...",
-    f_kein_rfsuite = "rfsuite nicht gefunden. Laeuft die Rotorflight-Suite?",
     f_kein_heli = "NO LINK",
     b_arm_unbekannt = "ARM ?",
     f_setup_scharf = "Heli ist scharf. Setup nur am Boden.",
@@ -18,21 +16,7 @@ local t = {
 }
 
 t.grund = {
-    keine_verbindung = "NO LINK",
-    armiert = "Modell ist scharf. Zuerst entschaerfen.",
-    arm_unbekannt = "Schaerfezustand unbekannt - ARM-Schalter belegen.",
-    schreiben_abgelehnt = "Schreiben abgelehnt.",
-    ruecklesen_offen = "Keine Antwort beim Ruecklesen - der Wert kann im FC stehen, nicht gesichert.",
-    zeitablauf = "Keine Antwort vom FC.",
-    unvollstaendig = "Antwort unvollstaendig. Nicht geschrieben.",
-    keine_struktur = "rfsuite liefert keine Feldliste.",
-    abweichung = "Ruecklesen weicht ab. NICHT als gespeichert bestaetigt.",
-    lesefehler = "Lesen fehlgeschlagen.",
-    schreibfehler = "Schreiben fehlgeschlagen.",
-    eeprom_fehler = "Geschrieben, aber EEPROM meldet einen Fehler.",
-    load_fehler = "rfsuite konnte das Kommando nicht laden.",
     msp_nicht_bereit = "MSP-Schicht noch nicht bereit. Moment ...",
-    spaeter = "",
 }
 
 function t.grundtext(g)                          -- Vergleich und Anzeige: ohne Log
@@ -46,7 +30,7 @@ t.sprache = "de"   -- SPRACHE VOM SENDER: Ethos nennt sie mit system.getLocale()
 local okS, sprache = pcall(function() return system.getLocale() end)
 if okS and type(sprache) == "string" then sprache = sprache:match("^(%a%a)") or sprache end   -- "en-US" / "pt_BR": die Datei heisst nach den zwei Buchstaben
 if okS and type(sprache) == "string" and sprache ~= "" and sprache ~= "de" then
-    local datei = H.laden(loadfile, "i18n_" .. sprache .. ".lua")   -- fehlt sie, bleibt es deutsch
+    local datei = H.laden(loadfile, "i18n_" .. sprache .. ".lua") or H.laden(loadfile, "i18n_en.lua")   -- fehlt sie, englisch: die Suite kennt mehr Sprachen als das Theme
     if datei then
         local okU, ueber = pcall(datei, nova)
         if okU and type(ueber) == "table" then
