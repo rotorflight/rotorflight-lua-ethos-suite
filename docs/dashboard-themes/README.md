@@ -97,10 +97,9 @@ Desktop preview, not radio capture. [Details and limits](Bastion/README.md).
 
 ## NovaFly RC
 
-Radio capture from the Ethos 26.1.2 X18 simulator (480 × 320) running this
-suite with its simulated telemetry. One screen serves all three phases.
-[Theme guide](../dashboard/novafly.md).
+Radio captures from the Ethos 26.1.2 X18RS simulator (800 × 480, radio
+language German) running this suite with its simulated telemetry.
 
-| Cockpit | Settings tile |
-| --- | --- |
-| ![NovaFly RC cockpit](NovaFly%20RC/cockpit.png) | ![NovaFly RC settings tile](NovaFly%20RC/settings_tile.png) |
+| Preflight | Cockpit | Banks |
+| --- | --- | --- |
+| ![NovaFly RC preflight](NovaFly%20RC/preflight.png) | ![NovaFly RC cockpit](NovaFly%20RC/cockpit.png) | ![NovaFly RC banks](NovaFly%20RC/banks.png) |

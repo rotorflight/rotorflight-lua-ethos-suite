@@ -56,12 +56,10 @@ both the theme picker and configuration grid. See the
 ## NovaFly RC
 
 This package registers **NovaFly RC** as `system/novafly`. It is drawn for
-480 × 320 radios (X18, X18S, X18RS): one full-screen cockpit that serves
-preflight, inflight and postflight alike. The layout exists for 480 × 320 only,
-so both the theme picker and the configuration grid hide it on any other window
-size. See the
-[NovaFly RC guide](../../../dashboard/novafly.md) and the
-[screen capture](../../../dashboard-themes/README.md#novafly-rc).
+480 × 320 (X18, X18S), 640 × 360 (X14, X14S, X14RS) and 800 × 480 radios
+(X20 family, X18RS), so the theme picker and the configuration grid
+offer it from 480 × 320 up to 800 × 480. See the
+[screen captures](../../../dashboard-themes/README.md#novafly-rc).
 
 ## KSE4 and KSE5
 

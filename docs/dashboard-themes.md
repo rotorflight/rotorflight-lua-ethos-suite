@@ -336,7 +336,7 @@ end }
   before the swipe gestures; return `true` to consume the touch, anything else lets the dashboard go on
   with it. While the toolbar or the info panel is open the touch stays with the dashboard, and an error
   raised by the handler is printed to the log and treated as not consumed. A theme without the field is
-  unaffected. NovaFly RC uses it for its bank screen and its colour long press.
+  unaffected. NovaFly RC uses it to move between its three screens and for its colour long press.
 
 ---
 
@@ -366,19 +366,15 @@ See the [complete theme guide](dashboard/bastion.md) and its three phase preview
 
 ## NovaFly RC
 
-NovaFly RC is the NovaFly cockpit as a dashboard theme for 480 × 320 radios:
-one instrument panel for all three flight phases, drawn over a panel image in
-one of nine colours, with an italic digit font made of bitmap masks. The
-layout exists for 480 × 320 only; both pickers hide the theme on any other
-window size. Tapping
-BANK or RATE opens the bank screen, which reads the active PID bank from the
-flight controller over MSP and lets the governor head speed of that bank be
-set on the ground.
+NovaFly RC is the NovaFly cockpit as a dashboard theme for 480 × 320,
+640 × 360 and 800 × 480 radios: three screens side by side - preflight,
+cockpit and the active bank - moved with a sideways swipe, in nine colours,
+dark or light. The theme only reads; it writes nothing to the flight
+controller.
 
-Select it under *System → Settings → Dashboard → Themes*, and choose the panel
-colour under *System → Settings → Dashboard → Settings*. The saved selection is
-`system/novafly`; the colour is kept in the `dashboard.novafly` section of
-`SCRIPTS:/rfsuite.user/settings.ini`.
+Select it under *System → Settings → Dashboard → Themes*, and choose the
+colour and the mode under *System → Settings → Dashboard → Settings*. The
+saved selection is `system/novafly`; colour and mode are kept in the
+`dashboard.novafly` section of `SCRIPTS:/rfsuite.user/settings.ini`.
 
-See the [theme guide](dashboard/novafly.md) and the
-[screen capture](dashboard-themes/README.md#novafly-rc).
+See the [screen captures](dashboard-themes/README.md#novafly-rc).
