@@ -305,8 +305,13 @@ local function malen()
     end
 
     balken(R, s, aktiv)
-    stil.beschriftung(140, FUSS_Y, S.wort("RATE") .. " " .. (rate and tostring(rate) or "?") .. "   " .. (typ or ""), stil.WEISS, FONT_S)
-    if werte.fehler ~= nil then stil.beschriftung(290, FUSS_Y, "MSP " .. S.wort(werte.fehler), stil.ROT, FONT_S) end
+    local fuss = S.wort("RATE") .. " " .. (rate and tostring(rate) or "?")
+    if werte.fehler ~= nil then   -- die rote Meldung braucht die Zeile: der Ratentyp bleibt weg, solange sie steht (Kevin 21.11. am X18: beide standen uebereinander)
+        stil.beschriftung(140, FUSS_Y, fuss, stil.WEISS, FONT_S)
+        stil.beschriftung(290, FUSS_Y, "MSP " .. S.wort(werte.fehler), stil.ROT, FONT_S)
+    else
+        stil.beschriftung(140, FUSS_Y, fuss .. "   " .. (typ or ""), stil.WEISS, FONT_S)
+    end
 end
 
 local function ereignis()   -- auf der Bankseite gibt es nichts zu tippen; jede Beruehrung gehoert trotzdem dem Theme
