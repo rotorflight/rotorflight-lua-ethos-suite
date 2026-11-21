@@ -33,6 +33,7 @@ local THEME_DEFS = {
   {label = "@i18n(app.modules.settings.dashboard_theme_kevd)@", path = "system/kevd", minResolution = {x = 784, y = 294}},
   {label = "@i18n(app.modules.settings.dashboard_theme_kse4)@", path = "system/kse4"},
   {label = "@i18n(app.modules.settings.dashboard_theme_kse5)@", path = "system/kse5"},
+  {label = "@i18n(app.modules.settings.dashboard_theme_novafly)@", path = "system/novafly", minResolution = {x = 480, y = 320}, maxResolution = {x = 800, y = 480}},
   {label = "@i18n(app.modules.settings.dashboard_theme_rfstatus)@", path = "system/rfstatus"},
   {label = "@i18n(app.modules.settings.dashboard_theme_rt_rc)@", path = "system/rt-rc"},
   {label = "@i18n(app.modules.settings.dashboard_theme_rt_rc_n)@", path = "system/rt-rc-n"},
@@ -50,11 +51,22 @@ local function themeKey(path)
   return dashboardThemes.key(path)
 end
 
+-- maxResolution: a theme drawn for one screen size is hidden on anything larger, the way
+-- minResolution hides a theme on anything smaller. Both are the radio's screen size
+-- (system.getVersion().lcdWidth/lcdHeight), not this page's window: inside the app the
+-- window is smaller than the screen (472 x 287 on a 480 x 320 X18), so a theme limited
+-- to 480 x 320 was hidden on the very radio it was drawn for.
 local function themeVisible(theme)
   local minRes = theme and theme.minResolution
-  if type(minRes) ~= "table" then return true end
-  local w, h = lcd.getWindowSize()
-  return not (w and h and (w < (minRes.x or 0) or h < (minRes.y or 0)))
+  local maxRes = theme and theme.maxResolution
+  if type(minRes) ~= "table" and type(maxRes) ~= "table" then return true end
+  local version = system and system.getVersion and system.getVersion() or nil
+  local w, h = version and version.lcdWidth, version and version.lcdHeight
+  if not (w and h) then w, h = lcd.getWindowSize() end
+  if not (w and h) then return true end
+  if type(minRes) == "table" and (w < (minRes.x or 0) or h < (minRes.y or 0)) then return false end
+  if type(maxRes) == "table" and (w > (maxRes.x or w) or h > (maxRes.y or h)) then return false end
+  return true
 end
 
 -- Shipped themes first, then the pilot's own from SCRIPTS:/rfsuite.user/dashboard/,

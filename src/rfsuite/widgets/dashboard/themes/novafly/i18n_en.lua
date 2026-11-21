@@ -1,0 +1,41 @@
+-- ENGLISCH fuer das NovaFly-Theme: Auszug aus novasetup/lib/i18n_en.lua, nur was das Cockpit und seine Seiten zeigen.
+-- Von einem Skript erzeugt - nie von Hand aendern.
+return {
+    k_warten = "Saving - please wait",
+    laeuft = "running ...",
+    laeuft_still = "running ...",
+    f_kein_heli = "NO LINK",
+    b_arm_unbekannt = "ARM ?",
+    f_setup_scharf = "Heli is armed. Setup only on the ground.",
+    dezimal = ".",
+    grund = {
+        msp_nicht_bereit = "MSP layer not ready yet. One moment ...",
+    },
+    woerter = {
+        ["AKKU"] = "BATTERY",
+        ["DREHZAHL"] = "HEADSPEED",
+        ["ESC"] = "ESC",
+        ["FLUGMODUS"] = "FLIGHT MODE",
+        ["FLUGTIMER"] = "FLIGHT TIMER",
+        ["FLUGZEIT"] = "FLIGHT TIME",
+        ["GOVERNOR"] = "GOVERNOR",
+        ["HECK"] = "TAIL",
+        ["HOCHLAUF"] = "SPOOL UP",
+        ["HOEHE MAX"] = "ALT MAX",
+        ["HORIZONT"] = "HORIZON",
+        ["IST"] = "ACTUAL",
+        ["KOLL."] = "COLL.",
+        ["NICK"] = "PITCH",
+        ["RATEN"] = "RATES",
+        ["RETTUNG"] = "RESCUE",
+        ["ROLL"] = "ROLL",
+        ["SINKEN MAX"] = "SINK MAX",
+        ["STEIGEN MAX"] = "CLIMB MAX",
+        ["VERBRAUCH"] = "CONSUMPTION",
+        ["WINKEL"] = "ANGLE",
+        ["ZELLE"] = "CELL",
+    },
+    muster = {
+        {"^BANK (%d+) .- Werte neu geholt$", "BANK %1 - values reloaded"},
+    },
+}

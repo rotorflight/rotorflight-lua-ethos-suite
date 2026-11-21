@@ -1,0 +1,41 @@
+-- ITALIENISCH fuer das NovaFly-Theme: Auszug aus novasetup/lib/i18n_it.lua, nur was das Cockpit und seine Seiten zeigen.
+-- Von einem Skript erzeugt - nie von Hand aendern.
+return {
+    k_warten = "Salvataggio - attendere",
+    laeuft = "in corso ...",
+    laeuft_still = "in corso ...",
+    f_kein_heli = "NO LINK",
+    b_arm_unbekannt = "ARM ?",
+    f_setup_scharf = "Eli armato. Setup solo a terra.",
+    dezimal = ",",
+    grund = {
+        msp_nicht_bereit = "Livello MSP non ancora pronto. Un attimo ...",
+    },
+    woerter = {
+        ["AKKU"] = "BATTERIA",
+        ["DREHZAHL"] = "GIRI",
+        ["ESC"] = "ESC",
+        ["FLUGMODUS"] = "MODO DI VOLO",
+        ["FLUGTIMER"] = "TIMER VOLO",
+        ["FLUGZEIT"] = "TEMPO VOLO",
+        ["GOVERNOR"] = "GOVERNOR",
+        ["HECK"] = "CODA",
+        ["HOCHLAUF"] = "SPOOL UP",
+        ["HOEHE MAX"] = "ALT MAX",
+        ["HORIZONT"] = "HORIZON",
+        ["IST"] = "REALE",
+        ["KOLL."] = "COLL.",
+        ["NICK"] = "BECCHEGGIO",
+        ["RATEN"] = "RATES",
+        ["RETTUNG"] = "RESCUE",
+        ["ROLL"] = "ROLLIO",
+        ["SINKEN MAX"] = "DISCESA MAX",
+        ["STEIGEN MAX"] = "SALITA MAX",
+        ["VERBRAUCH"] = "CONSUMO",
+        ["WINKEL"] = "ANGOLO",
+        ["ZELLE"] = "CELLA",
+    },
+    muster = {
+        {"^BANK (%d+) .- Werte neu geholt$", "BANK %1 - valori ricaricati"},
+    },
+}

@@ -7884,6 +7884,13 @@
           "reverse_text": false,
           "translation": "KSE5"
         },
+        "dashboard_theme_novafly": {
+          "english": "NovaFly RC",
+          "max_length": 10,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "NovaFly RC"
+        },
         "dashboard_theme_panel_global": {
           "english": "Default theme for all models",
           "max_length": 28,
