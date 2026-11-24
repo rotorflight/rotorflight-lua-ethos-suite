@@ -88,7 +88,7 @@ local U = {
     mcutemp = {x = 187, y = 51, f = F_SM},
     alt = {x = 58, y = 280, f = F_BIG},          -- die Hoehe links unten, mittig im Fussfeld (x 0-117, y 255-314)
     labels = {{58, 134, "RATE"}, {58, 195, "BANK"}, {421, 71, "BEC"},   -- die Beschriftungen in der kleinen Stufe (drei Groessen auf allen Schirmen: klein, mittel, gross); nur VFR unter RSSI bleibt winzig; BEC auf der Hoehe von FLUGTIMER (77), TX wie RATE, ESC wie BANK
-              {421, 134, "TX"}, {421, 195, "ESC"}, {421, 262, "ESC"},
+              {421, 134, "TX"}, {421, 195, "ESC"},   -- das Wort ueber dem Feld unten rechts (421, 262) wechselt mit dem Wert und wird dort gemalt
               {241, 170, "rpm"}, {143, 65, "MCU"}, {58, 266, "ALT"}},
 }
 local ZONEN = {header = {x = 176, y = 0, w = 184, h = 48}, richtung = {x = 127, y = 7, w = 40, h = 40}}
@@ -879,10 +879,15 @@ local function malen(x, y, w, h, s)
         end
     end
 
+    local wortUnten = "ESC"   -- das Feld unten rechts: die Temperatur des ESC; liefert er keine, die Spannung je Zelle in der Farbe des Akkus, und das Wort darueber wechselt mit
     if s.temp then
         local tc = celsius(s.temp, s.tempF)
         wert2(U.temp, fmt(s.temp, "", 0), gradZeichen(s.tempF), (tc < 60) and C_LGREEN or ((tc < 80) and C_YELLOW or C_LRED))
+    elseif cv then
+        wortUnten = "CELL"   -- in jeder Sprache gleich, wie ESC und BEC
+        if not sperre then wert2(U.temp, fmt(cv, "", 2), "V", SETC[cellKey(cv)]) end
     else wert(U.temp, "--", C_DIM) end
+    beschriftungMittig(421, 262 + 6, wortUnten, C_WHITE, F_SM)
     if s.mcutemp then
         local tc = celsius(s.mcutemp, s.mcutempF)
         wert2(U.mcutemp, fmt(s.mcutemp, "", 0), gradZeichen(s.mcutempF), (tc < 70) and C_LGREEN or ((tc < 90) and C_YELLOW or C_LRED), 8)
