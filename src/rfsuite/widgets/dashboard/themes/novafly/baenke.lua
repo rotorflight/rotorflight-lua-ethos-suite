@@ -306,7 +306,7 @@ local function malen()
 
     balken(R, s, aktiv)
     local fuss = S.wort("RATE") .. " " .. (rate and tostring(rate) or "?")
-    if werte.fehler ~= nil then   -- die rote Meldung braucht die Zeile: der Ratentyp bleibt weg, solange sie steht (Kevin 21.11. am X18: beide standen uebereinander)
+    if werte.fehler ~= nil then   -- die rote Meldung braucht die Zeile: der Ratentyp bleibt weg, solange sie steht
         stil.beschriftung(140, FUSS_Y, fuss, stil.WEISS, FONT_S)
         stil.beschriftung(290, FUSS_Y, "MSP " .. S.wort(werte.fehler), stil.ROT, FONT_S)
     else
