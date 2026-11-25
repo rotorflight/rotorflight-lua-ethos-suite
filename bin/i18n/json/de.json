@@ -214,13 +214,15 @@
       "english": "The flight controller may already be using the new values. Restart it to use the saved settings.",
       "translation": "The flight controller may already be using the new values. Restart it to use the saved settings.",
       "needs_translation": true,
-      "max_length": 96
+      "max_length": 96,
+      "reverse_text": false
     },
     "btn_restart_fc": {
       "english": "Restart FC",
       "translation": "Restart FC",
       "needs_translation": true,
-      "max_length": 10
+      "max_length": 10,
+      "reverse_text": false
     },
     "msg_save_failed_title": {
       "english": "Save failed",
@@ -2136,19 +2138,22 @@
           "english": "ETHOS Glasses menu",
           "translation": "ETHOS-Brillenmenü",
           "needs_translation": false,
-          "max_length": 18
+          "max_length": 18,
+          "reverse_text": false
         },
         "activelook_restart_radio": {
           "english": "Save, then restart the radio.",
           "translation": "Speichern, dann Sender neu starten.",
           "needs_translation": false,
-          "max_length": 29
+          "max_length": 29,
+          "reverse_text": false
         },
         "activelook_setup_hint": {
           "english": "One-time setup:\nModel > Glasses > Screen\nChoose the Full-Screen layout.\nAssign Rotorflight ActiveLook.",
           "translation": "Einmalig einrichten:\nModell > Brille > Bildschirm\nFull-Screen-Layout wählen.\nRotorflight ActiveLook zuweisen.",
           "needs_translation": false,
-          "max_length": 102
+          "max_length": 102,
+          "reverse_text": false
         },
         "feature_activelook": {
           "english": "Rotorflight ActiveLook",
@@ -2903,79 +2908,92 @@
           "english": "ESC Status",
           "translation": "ESC-Status",
           "needs_translation": false,
-          "max_length": 10
+          "max_length": 10,
+          "reverse_text": false
         },
         "activelook_esc_status_warning": {
           "english": "ESC Status Warning",
           "translation": "ESC-Statuswarnung",
           "needs_translation": false,
-          "max_length": 18
+          "max_length": 18,
+          "reverse_text": false
         },
         "activelook_esc_offline": {
           "english": "Connect to check",
           "translation": "Zum Prüfen verbinden",
           "needs_translation": false,
-          "max_length": 20
+          "max_length": 16,
+          "reverse_text": false
         },
         "activelook_esc_missing": {
           "english": "Telemetry missing",
           "translation": "Telemetrie fehlt",
           "needs_translation": false,
-          "max_length": 17
+          "max_length": 17,
+          "reverse_text": false
         },
         "activelook_esc_unsupported": {
           "english": "No status support",
           "translation": "Kein Status verfügbar",
           "needs_translation": false,
-          "max_length": 21
+          "max_length": 17,
+          "reverse_text": false
         },
         "activelook_esc_generic": {
           "english": "Generic faults only",
           "translation": "Nur allgemeine Fehler",
           "needs_translation": false,
-          "max_length": 21
+          "max_length": 19,
+          "reverse_text": false
         },
         "activelook_esc_available": {
           "english": "Status available",
           "translation": "Status verfügbar",
           "needs_translation": false,
-          "max_length": 16
+          "max_length": 16,
+          "reverse_text": false
         },
         "activelook_esc_setup": {
           "english": "Set up telemetry",
           "translation": "Telemetrie einrichten",
           "needs_translation": false,
-          "max_length": 21
+          "max_length": 16,
+          "reverse_text": false
         },
         "activelook_esc_messages": {
           "english": "Show messages",
           "translation": "Meldungen anzeigen",
           "needs_translation": false,
-          "max_length": 18
+          "max_length": 13,
+          "reverse_text": false
         },
         "activelook_esc_messages_all": {
           "english": "Errors and warnings",
           "translation": "Fehler und Warnungen",
           "needs_translation": false,
-          "max_length": 20
+          "max_length": 19,
+          "reverse_text": false
         },
         "activelook_esc_messages_errors": {
           "english": "Errors only",
           "translation": "Nur Fehler",
           "needs_translation": false,
-          "max_length": 11
+          "max_length": 11,
+          "reverse_text": false
         },
         "activelook_esc_messages_warnings": {
           "english": "Warnings only",
           "translation": "Nur Warnungen",
           "needs_translation": false,
-          "max_length": 13
+          "max_length": 13,
+          "reverse_text": false
         },
         "activelook_esc_telemetry_help": {
           "english": "Requires ESC1 Status and ESC1 Model ID telemetry. Use Set up telemetry to select both sensors, then save on the Telemetry page. ESC telemetry must already be configured on the flight controller.",
           "translation": "Benötigt ESC1 Status und ESC1 Model ID als Telemetrie. Unter Telemetrie einrichten beide Sensoren wählen und dort speichern. Die ESC-Telemetrie muss am Flightcontroller bereits eingerichtet sein.",
           "needs_translation": false,
-          "max_length": 195
+          "max_length": 194,
+          "reverse_text": false
         }
       },
       "telemetry": {
@@ -7819,7 +7837,8 @@
               "english": "Keep mAh",
               "max_length": 8,
               "needs_translation": false,
-              "translation": "mAh behalten"
+              "translation": "mAh behalten",
+              "reverse_text": false
             },
             "lv_bec_voltage": {
               "english": "BEC",
@@ -7881,13 +7900,15 @@
               "english": "Startup Response",
               "max_length": 16,
               "needs_translation": false,
-              "translation": "Startreaktion"
+              "translation": "Startreaktion",
+              "reverse_text": false
             },
             "startup_smooth": {
               "english": "Smooth",
               "max_length": 6,
               "needs_translation": false,
-              "translation": "Weich"
+              "translation": "Weich",
+              "reverse_text": false
             },
             "stick_range_us": {
               "english": "Stick Range",
@@ -8864,19 +8885,22 @@
           "english": "Polar cyclic: roll follows the Cyclic rates",
           "translation": "Polar-Cyclic: Roll folgt den Cyclic-Raten",
           "needs_translation": false,
-          "max_length": 46
+          "max_length": 43,
+          "reverse_text": false
         },
         "why_relief_off": {
           "english": "I-term relax does not act on this axis",
           "translation": "I-Term-Relax wirkt auf diese Achse nicht",
           "needs_translation": false,
-          "max_length": 46
+          "max_length": 38,
+          "reverse_text": false
         },
         "why_ring_fmt": {
           "english": "Cyclic ring at %d%% caps the rate asked.",
           "translation": "Cyclic-Ring bei %d%% begrenzt die Rate.",
           "needs_translation": false,
-          "max_length": 46
+          "max_length": 40,
+          "reverse_text": false
         },
         "why_relax": {
           "english": "After a stop, the I-term pushes the heli back.",
@@ -8973,13 +8997,15 @@
           "english": "No flight saved yet",
           "translation": "Noch kein Flug gespeichert",
           "needs_translation": true,
-          "max_length": 19
+          "max_length": 19,
+          "reverse_text": false
         },
         "no_flight_hint": {
           "english": "Fly acro with real rotation, then disarm",
           "translation": "Acro mit echter Rotation fliegen, dann disarmen",
           "needs_translation": true,
-          "max_length": 40
+          "max_length": 40,
+          "reverse_text": false
         },
         "no_aircraft": {
           "english": "Connect to a model first",
@@ -9013,7 +9039,8 @@
           "english": "Saved to the flight controller. The change record was not written.",
           "translation": "Im Flugcontroller gespeichert. Der Änderungsverlauf wurde nicht geschrieben.",
           "needs_translation": false,
-          "max_length": 66
+          "max_length": 66,
+          "reverse_text": false
         },
         "stage_read": {
           "english": "Reading current settings...",
@@ -9238,7 +9265,8 @@
           "english": "Mode switches",
           "translation": "Schalter",
           "needs_translation": false,
-          "max_length": 13
+          "max_length": 13,
+          "reverse_text": false
         },
         "step_finish": {
           "english": "Finish",
@@ -9671,7 +9699,8 @@
           "english": "The radio talks to the flight controller through this receiver. Here you set the channel order, check the sticks and set the throttle range.",
           "translation": "Der Sender spricht über diesen Empfänger mit dem Flugcontroller. Hier: Kanalfolge, Knüppeltest und Gasbereich.",
           "needs_translation": false,
-          "max_length": 140
+          "max_length": 140,
+          "reverse_text": false
         },
         "rcv_signal_ok": {
           "english": "Receiver signal: OK",
@@ -9831,7 +9860,8 @@
           "english": "Coll.",
           "translation": "Kol.",
           "needs_translation": false,
-          "max_length": 5
+          "max_length": 5,
+          "reverse_text": false
         },
         "rcv_ch_throttle": {
           "english": "Throttle",
@@ -9851,7 +9881,8 @@
           "english": "Each stick must reach ±100 %; if it does not, adjust the travel on the transmitter.",
           "translation": "Jeder Knüppel muss ±100 % erreichen; reicht der Weg nicht, am Sender justieren.",
           "needs_translation": false,
-          "max_length": 83
+          "max_length": 83,
+          "reverse_text": false
         },
         "rcv_throttle_title": {
           "english": "Throttle range",
@@ -9913,559 +9944,652 @@
           "english": "Nothing has changed: the flight controller keeps its receiver settings. Next goes on to the swashplate.",
           "translation": "Nichts geändert: Der FC behält seine Empfänger-Einstellungen. Weiter geht es zur Taumelscheibe.",
           "needs_translation": false,
-          "max_length": 103
+          "max_length": 103,
+          "reverse_text": false
         },
         "rcv_done_save": {
           "english": "The changes already work on the flight controller, but are not stored yet. Save and continue writes them to its memory (EEPROM), so they survive a restart.",
           "translation": "Die Änderungen wirken schon im FC, sind aber noch nicht gespeichert. Speichern & weiter schreibt sie in seinen Speicher (EEPROM), damit sie einen Neustart überstehen.",
           "needs_translation": false,
-          "max_length": 155
+          "max_length": 155,
+          "reverse_text": false
         },
         "step_profiles": {
           "english": "Profiles & gain",
           "translation": "Profile und Verstärkung",
           "needs_translation": false,
-          "max_length": 15
+          "max_length": 15,
+          "reverse_text": false
         },
         "prof_intro": {
           "english": "One switch picks the flight profile, master gain fine-tunes the gains in flight. Both are optional.",
           "translation": "Ein Schalter wählt das Flugprofil, die Hauptverstärkung feintunt die Gains im Flug. Beides ist optional.",
           "needs_translation": false,
-          "max_length": 99
+          "max_length": 99,
+          "reverse_text": false
         },
         "prof_switch_title": {
           "english": "Profile switch",
           "translation": "Profilschalter",
           "needs_translation": false,
-          "max_length": 14
+          "max_length": 14,
+          "reverse_text": false
         },
         "prof_switch_text": {
           "english": "A 2- or 3-position switch. Press Assign, then move it through every position: each one lands on its own profile.",
           "translation": "Ein Schalter mit 2 oder 3 Stellungen. Zuweisen drücken, dann den Schalter durch alle Stellungen bewegen: jede landet auf einem eigenen Profil.",
           "needs_translation": false,
-          "max_length": 112
+          "max_length": 112,
+          "reverse_text": false
         },
         "prof_both": {
           "english": "Profiles and rates",
           "translation": "Profile und Raten",
           "needs_translation": false,
-          "max_length": 18
+          "max_length": 18,
+          "reverse_text": false
         },
         "prof_pid": {
           "english": "PID profiles only",
           "translation": "Nur PID-Profile",
           "needs_translation": false,
-          "max_length": 17
+          "max_length": 17,
+          "reverse_text": false
         },
         "prof_none": {
           "english": "Not used",
           "translation": "Nicht verwendet",
           "needs_translation": false,
-          "max_length": 8
+          "max_length": 8,
+          "reverse_text": false
         },
         "prof_chosen": {
           "english": "Selected",
           "translation": "Gewählt",
           "needs_translation": false,
-          "max_length": 8
+          "max_length": 8,
+          "reverse_text": false
         },
         "prof_count_fmt": {
           "english": "CH %d · %d profiles",
           "translation": "CH %d · %d Profile",
           "needs_translation": false,
-          "max_length": 19
+          "max_length": 19,
+          "reverse_text": false
         },
         "prof_now_fmt": {
           "english": "Now: profile %d",
           "translation": "Jetzt: Profil %d",
           "needs_translation": false,
-          "max_length": 15
+          "max_length": 15,
+          "reverse_text": false
         },
         "prof_listen": {
           "english": "Move the switch…",
           "translation": "Schalter bewegen…",
           "needs_translation": false,
-          "max_length": 16
+          "max_length": 16,
+          "reverse_text": false
         },
         "prof_found_fmt": {
           "english": "%d positions found. Move through every position, then press Use.",
           "translation": "%d Stellungen gefunden. Alle durchgehen, dann übernehmen.",
           "needs_translation": false,
-          "max_length": 64
+          "max_length": 64,
+          "reverse_text": false
         },
         "prof_use": {
           "english": "Use",
           "translation": "Übernehmen",
           "needs_translation": false,
-          "max_length": 3
+          "max_length": 3,
+          "reverse_text": false
         },
         "prof_gain_title": {
           "english": "Master gain in flight",
           "translation": "Verstärkung im Flug",
           "needs_translation": false,
-          "max_length": 21
+          "max_length": 21,
+          "reverse_text": false
         },
         "prof_gain_text": {
           "english": "Changes all gains together. Raise it in flight until the wobble starts, then come back a few steps.",
           "translation": "Verändert alle Gains gemeinsam. Im Flug erhöhen, bis das Wackeln beginnt, dann einige Schritte zurück.",
           "needs_translation": false,
-          "max_length": 99
+          "max_length": 99,
+          "reverse_text": false
         },
         "prof_gain_buttons": {
           "english": "Trim buttons",
           "translation": "Trimm-Tasten",
           "needs_translation": false,
-          "max_length": 12
+          "max_length": 12,
+          "reverse_text": false
         },
         "prof_gain_knob": {
           "english": "Knob",
           "translation": "Drehregler",
           "needs_translation": false,
-          "max_length": 4
+          "max_length": 4,
+          "reverse_text": false
         },
         "prof_gain_none": {
           "english": "Not used",
           "translation": "Nicht verwendet",
           "needs_translation": false,
-          "max_length": 8
+          "max_length": 8,
+          "reverse_text": false
         },
         "prof_gain_buttons_note": {
           "english": "Set up the GAIN mix first (see the docs).",
           "translation": "Vorher den Mix GAIN anlegen (siehe Doku).",
           "needs_translation": false,
-          "max_length": 41
+          "max_length": 41,
+          "reverse_text": false
         },
         "prof_gain_knob_note": {
           "english": "Set a knob or slider on a spare channel, then move it.",
           "translation": "Einen Drehregler oder Schieber auf einem freien Kanal einrichten und bewegen.",
           "needs_translation": false,
-          "max_length": 54
+          "max_length": 54,
+          "reverse_text": false
         },
         "prof_gain_now": {
           "english": "Now",
           "translation": "Jetzt",
           "needs_translation": false,
-          "max_length": 3
+          "max_length": 3,
+          "reverse_text": false
         },
         "prof_listen_buttons": {
           "english": "Press a trim button…",
           "translation": "Trimm-Taste drücken…",
           "needs_translation": false,
-          "max_length": 20
+          "max_length": 20,
+          "reverse_text": false
         },
         "prof_listen_knob": {
           "english": "Turn the knob…",
           "translation": "Drehregler bewegen…",
           "needs_translation": false,
-          "max_length": 14
+          "max_length": 14,
+          "reverse_text": false
         },
         "prof_channels_title": {
           "english": "Channels in use",
           "translation": "Kanäle in Verwendung",
           "needs_translation": false,
-          "max_length": 15
+          "max_length": 15,
+          "reverse_text": false
         },
         "prof_channel_fmt": {
           "english": "CH %d",
           "translation": "CH %d",
           "needs_translation": false,
-          "max_length": 5
+          "max_length": 5,
+          "reverse_text": false
         },
         "prof_use_profile": {
           "english": "Profile switch",
           "translation": "Profilschalter",
           "needs_translation": false,
-          "max_length": 14
+          "max_length": 14,
+          "reverse_text": false
         },
         "prof_use_gain": {
           "english": "Master gain",
           "translation": "Hauptverstärkung",
           "needs_translation": false,
-          "max_length": 11
+          "max_length": 11,
+          "reverse_text": false
         },
         "prof_beyond8": {
           "english": "Needs more than 8 channels.",
           "translation": "Braucht mehr als 8 Kanäle.",
           "needs_translation": false,
-          "max_length": 27
+          "max_length": 27,
+          "reverse_text": false
         },
         "prof_full": {
           "english": "Every adjustment slot is in use. Free one under Adjustments.",
           "translation": "Alle Anpassungsplätze sind belegt. Einen unter Anpassungen freigeben.",
           "needs_translation": false,
-          "max_length": 60
+          "max_length": 60,
+          "reverse_text": false
         },
         "prof_done_keep": {
           "english": "Nothing has changed: the flight controller keeps its profile and gain settings. Next goes on to the swashplate.",
           "translation": "Nichts geändert: Der FC behält seine Profil- und Verstärkungs-Einstellungen. Weiter geht es zur Taumelscheibe.",
           "needs_translation": false,
-          "max_length": 111
+          "max_length": 111,
+          "reverse_text": false
         },
         "prof_done_save": {
           "english": "The changes already work on the flight controller, but are not stored yet. Save and continue writes them to its memory (EEPROM).",
           "translation": "Die Änderungen wirken schon im FC, sind aber noch nicht gespeichert. Speichern & weiter schreibt sie in seinen Speicher (EEPROM).",
           "needs_translation": false,
-          "max_length": 128
+          "max_length": 128,
+          "reverse_text": false
         },
         "prof_btn_cyclic_down": {
           "english": "Cyclic gain down",
           "translation": "Zyklisch-Gain runter",
           "needs_translation": false,
-          "max_length": 16
+          "max_length": 16,
+          "reverse_text": false
         },
         "prof_btn_cyclic_up": {
           "english": "Cyclic gain up",
           "translation": "Zyklisch-Gain hoch",
           "needs_translation": false,
-          "max_length": 14
+          "max_length": 14,
+          "reverse_text": false
         },
         "prof_btn_yaw_down": {
           "english": "Yaw gain down",
           "translation": "Heck-Gain runter",
           "needs_translation": false,
-          "max_length": 13
+          "max_length": 13,
+          "reverse_text": false
         },
         "prof_btn_yaw_up": {
           "english": "Yaw gain up",
           "translation": "Heck-Gain hoch",
           "needs_translation": false,
-          "max_length": 11
+          "max_length": 11,
+          "reverse_text": false
         },
         "prof_help_both": {
           "english": "The switch picks the PID profile and the rate profile 1, 2 or 3 together.",
           "translation": "Der Schalter wählt das PID-Profil und das Raten-Profil 1, 2 oder 3 gemeinsam.",
           "needs_translation": false,
-          "max_length": 73
+          "max_length": 73,
+          "reverse_text": false
         },
         "prof_help_pid": {
           "english": "The switch picks the PID profile; the rates stay as they are.",
           "translation": "Der Schalter wählt das PID-Profil; die Raten bleiben wie sie sind.",
           "needs_translation": false,
-          "max_length": 61
+          "max_length": 61,
+          "reverse_text": false
         },
         "prof_help_none": {
           "english": "The helicopter flies on one profile.",
           "translation": "Der Heli fliegt auf einem Profil.",
           "needs_translation": false,
-          "max_length": 36
+          "max_length": 36,
+          "reverse_text": false
         },
         "step_rates": {
           "english": "Rates",
           "translation": "Drehraten",
           "needs_translation": false,
-          "max_length": 5
+          "max_length": 5,
+          "reverse_text": false
         },
         "rates_intro": {
           "english": "Sets the flying style of each rate profile. Each one is a starting point you can refine later on the Rates page.",
           "translation": "Stellt den Flugstil jedes Ratenprofils ein. Jedes ist ein Ausgangspunkt, den du später auf der Drehraten-Seite verfeinern kannst.",
           "needs_translation": false,
-          "max_length": 112
+          "max_length": 112,
+          "reverse_text": false
         },
         "rates_page_fmt": {
           "english": "Rate profile %d",
           "translation": "Ratenprofil %d",
           "needs_translation": false,
-          "max_length": 15
+          "max_length": 15,
+          "reverse_text": false
         },
         "rates_position_fmt": {
           "english": "Switch position %d.",
           "translation": "Schalterstellung %d.",
           "needs_translation": false,
-          "max_length": 19
+          "max_length": 19,
+          "reverse_text": false
         },
         "rates_page_text": {
           "english": "Pick a flying style for this profile. Unchanged keeps its rates.",
           "translation": "Flugstil für dieses Profil wählen. Unverändert behält die Raten.",
           "needs_translation": false,
-          "max_length": 64
+          "max_length": 64,
+          "reverse_text": false
         },
         "rates_custom": {
           "english": "Custom",
           "translation": "Custom",
           "needs_translation": false,
-          "max_length": 6
+          "max_length": 6,
+          "reverse_text": false
         },
         "rates_none_matches": {
           "english": "None of the styles matches the rates this profile has now. Picking one replaces them.",
           "translation": "Kein Stil passt zu den Raten dieses Profils. Eine Auswahl ersetzt sie.",
           "needs_translation": false,
-          "max_length": 85
+          "max_length": 85,
+          "reverse_text": false
         },
         "rates_actual_note": {
           "english": "This firmware uses the Actual rates type: set the rates on the Rates page.",
           "translation": "Diese Firmware nutzt den Raten-Typ Actual: Raten auf der Drehraten-Seite einstellen.",
           "needs_translation": false,
-          "max_length": 74
+          "max_length": 74,
+          "reverse_text": false
         },
         "rates_values_fmt": {
           "english": "Cyclic %d °/s · yaw %d °/s · expo %d %%",
           "translation": "Zyklisch %d °/s · Gier %d °/s · Expo %d %%",
           "needs_translation": false,
-          "max_length": 39
+          "max_length": 39,
+          "reverse_text": false
         },
         "rates_busy": {
           "english": "Writing the rates…",
           "translation": "Raten werden geschrieben…",
           "needs_translation": false,
-          "max_length": 18
+          "max_length": 18,
+          "reverse_text": false
         },
         "rates_done_title": {
           "english": "Rates set",
           "translation": "Drehraten gesetzt",
           "needs_translation": false,
-          "max_length": 9
+          "max_length": 9,
+          "reverse_text": false
         },
         "rates_done_keep": {
           "english": "Nothing has changed: the flight controller keeps its rates. Next goes on to the swashplate.",
           "translation": "Nichts geändert: Der FC behält seine Raten. Weiter geht es zur Taumelscheibe.",
           "needs_translation": false,
-          "max_length": 91
+          "max_length": 91,
+          "reverse_text": false
         },
         "rates_done_save": {
           "english": "The rates already work on the flight controller, but are not stored yet. Save and continue writes them to its memory (EEPROM).",
           "translation": "Die Raten wirken schon im FC, sind aber noch nicht gespeichert. Speichern & weiter schreibt sie in seinen Speicher (EEPROM).",
           "needs_translation": false,
-          "max_length": 126
+          "max_length": 126,
+          "reverse_text": false
         },
         "rates_row_fmt": {
           "english": "Rate profile %d",
           "translation": "Ratenprofil %d",
           "needs_translation": false,
-          "max_length": 15
+          "max_length": 15,
+          "reverse_text": false
         },
         "rates_trainer": {
           "english": "Trainer",
           "translation": "Trainer",
           "needs_translation": false,
-          "max_length": 7
+          "max_length": 7,
+          "reverse_text": false
         },
         "rates_sport": {
           "english": "Sport",
           "translation": "Sport",
           "needs_translation": false,
-          "max_length": 5
+          "max_length": 5,
+          "reverse_text": false
         },
         "rates_3d": {
           "english": "3D",
           "translation": "3D",
           "needs_translation": false,
-          "max_length": 2
+          "max_length": 2,
+          "reverse_text": false
         },
         "rates_collective_fmt": {
           "english": "Collective %.1f °",
           "translation": "Kollektiv %.1f °",
           "needs_translation": false,
-          "max_length": 17
+          "max_length": 17,
+          "reverse_text": false
         },
         "rates_cyclic_fmt": {
           "english": "Cyclic %d °/s · expo %d %%",
           "translation": "Zyklisch %d °/s · Expo %d %%",
           "needs_translation": false,
-          "max_length": 26
+          "max_length": 26,
+          "reverse_text": false
         },
         "rates_yaw_fmt": {
           "english": "Yaw %d °/s · expo %d %%",
           "translation": "Gier %d °/s · Expo %d %%",
           "needs_translation": false,
-          "max_length": 23
+          "max_length": 23,
+          "reverse_text": false
         },
         "rates_axis_cyclic": {
           "english": "Cyclic",
           "translation": "Zyklisch",
           "needs_translation": false,
-          "max_length": 6
+          "max_length": 6,
+          "reverse_text": false
         },
         "rates_axis_yaw": {
           "english": "Yaw",
           "translation": "Gier",
           "needs_translation": false,
-          "max_length": 3
+          "max_length": 3,
+          "reverse_text": false
         },
         "rates_axis_collective": {
           "english": "Collective",
           "translation": "Kollektiv",
           "needs_translation": false,
-          "max_length": 10
+          "max_length": 10,
+          "reverse_text": false
         },
         "rates_legend_value": {
           "english": "Value: °/s at full stick",
           "translation": "Wert: °/s bei Vollausschlag",
           "needs_translation": false,
-          "max_length": 24
+          "max_length": 24,
+          "reverse_text": false
         },
         "rates_legend_shape": {
           "english": "Form: shape · Expo: expo in %",
           "translation": "Form: Shape · Expo: Expo in %",
           "needs_translation": false,
-          "max_length": 29
+          "max_length": 29,
+          "reverse_text": false
         },
         "rates_legend_collective": {
           "english": "Collective: value in °",
           "translation": "Kollektiv: Wert in °",
           "needs_translation": false,
-          "max_length": 22
+          "max_length": 22,
+          "reverse_text": false
         },
         "rates_type_fmt": {
           "english": "%s · shape %d",
           "translation": "%s · Shape %d",
           "needs_translation": false,
-          "max_length": 13
+          "max_length": 13,
+          "reverse_text": false
         },
         "rates_type_rotorflight": {
           "english": "Rotorflight",
           "translation": "Rotorflight",
           "needs_translation": false,
-          "max_length": 11
+          "max_length": 11,
+          "reverse_text": false
         },
         "rates_type_actual": {
           "english": "Actual",
           "translation": "Actual",
           "needs_translation": false,
-          "max_length": 6
+          "max_length": 6,
+          "reverse_text": false
         },
         "prof_gain_help_buttons": {
           "english": "The trim buttons step the master gain up and down, on one spare channel.",
           "translation": "Die Trimm-Tasten verändern die Hauptverstärkung schrittweise, auf einem freien Kanal.",
           "needs_translation": false,
-          "max_length": 72
+          "max_length": 72,
+          "reverse_text": false
         },
         "prof_gain_help_knob": {
           "english": "A knob or slider sets the master gain, on a spare channel.",
           "translation": "Ein Drehregler oder Schieber setzt die Hauptverstärkung, auf einem freien Kanal.",
           "needs_translation": false,
-          "max_length": 58
+          "max_length": 58,
+          "reverse_text": false
         },
         "prof_gain_help_none": {
           "english": "Master gain stays as it is. Find it later in flight, or on the Profiles page.",
           "translation": "Die Hauptverstärkung bleibt wie sie ist. Später im Flug oder auf der Profile-Seite einstellen.",
           "needs_translation": false,
-          "max_length": 77
+          "max_length": 77,
+          "reverse_text": false
         },
         "mod_intro": {
           "english": "Put modes on switches on your radio: press Assign, then flick the switch to the position that should turn the mode on. Only ARM is required; the others can be added later under Modes.",
           "translation": "Modi auf Schalter legen: Zuweisen drücken, dann den Schalter in die Stellung bringen, die den Modus einschalten soll. Nur ARM ist Pflicht; die anderen lassen sich später unter Modi ergänzen.",
           "needs_translation": false,
-          "max_length": 183
+          "max_length": 183,
+          "reverse_text": false
         },
         "mod_required": {
           "english": "Required",
           "translation": "Pflicht",
           "needs_translation": false,
-          "max_length": 8
+          "max_length": 8,
+          "reverse_text": false
         },
         "mod_assign": {
           "english": "Assign",
           "translation": "Zuweisen",
           "needs_translation": false,
-          "max_length": 6
+          "max_length": 6,
+          "reverse_text": false
         },
         "mod_reassign": {
           "english": "Assign again",
           "translation": "Neu zuweisen",
           "needs_translation": false,
-          "max_length": 12
+          "max_length": 12,
+          "reverse_text": false
         },
         "mod_remove": {
           "english": "Remove",
           "translation": "Entfernen",
           "needs_translation": false,
-          "max_length": 6
+          "max_length": 6,
+          "reverse_text": false
         },
         "mod_cancel": {
           "english": "Cancel",
           "translation": "Abbrechen",
           "needs_translation": false,
-          "max_length": 6
+          "max_length": 6,
+          "reverse_text": false
         },
         "mod_listening": {
           "english": "Flick the switch now…",
           "translation": "Jetzt den Schalter umlegen…",
           "needs_translation": false,
-          "max_length": 21
+          "max_length": 21,
+          "reverse_text": false
         },
         "mod_no_switch": {
           "english": "No switch moved. Press Assign and flick it within 15 s.",
           "translation": "Kein Schalter bewegt. Zuweisen drücken und ihn innerhalb von 15 s umlegen.",
           "needs_translation": false,
-          "max_length": 55
+          "max_length": 55,
+          "reverse_text": false
         },
         "mod_no_slot": {
           "english": "No free mode slot on the FC: remove one under Modes.",
           "translation": "Kein freier Modus-Platz im FC: unter Modi einen entfernen.",
           "needs_translation": false,
-          "max_length": 52
+          "max_length": 52,
+          "reverse_text": false
         },
         "mod_not_set": {
           "english": "Not assigned",
           "translation": "Nicht zugewiesen",
           "needs_translation": false,
-          "max_length": 12
+          "max_length": 12,
+          "reverse_text": false
         },
         "mod_range_fmt": {
           "english": "CH%d (%d - %d us)",
           "translation": "CH%d (%d - %d us)",
           "needs_translation": false,
-          "max_length": 17
+          "max_length": 17,
+          "reverse_text": false
         },
         "mod_on": {
           "english": "On",
           "translation": "Ein",
           "needs_translation": false,
-          "max_length": 2
+          "max_length": 2,
+          "reverse_text": false
         },
         "mod_off": {
           "english": "Off",
           "translation": "Aus",
           "needs_translation": false,
-          "max_length": 3
+          "max_length": 3,
+          "reverse_text": false
         },
         "mod_done_title": {
           "english": "Switches done",
           "translation": "Schalter fertig",
           "needs_translation": false,
-          "max_length": 13
+          "max_length": 13,
+          "reverse_text": false
         },
         "mod_done_keep": {
           "english": "Nothing has changed: the flight controller keeps its mode switches. Next goes on to the swashplate.",
           "translation": "Nichts geändert: Der FC behält seine Modus-Schalter. Weiter geht es zur Taumelscheibe.",
           "needs_translation": false,
-          "max_length": 99
+          "max_length": 99,
+          "reverse_text": false
         },
         "mod_arm": {
           "english": "Arm",
           "translation": "Arm",
           "needs_translation": false,
-          "max_length": 3
+          "max_length": 3,
+          "reverse_text": false
         },
         "mod_rescue": {
           "english": "Rescue",
           "translation": "Rettung",
           "needs_translation": false,
-          "max_length": 6
+          "max_length": 6,
+          "reverse_text": false
         },
         "mod_trainer": {
           "english": "Trainer",
           "translation": "Trainer",
           "needs_translation": false,
-          "max_length": 7
+          "max_length": 7,
+          "reverse_text": false
         },
         "mod_help_arm": {
           "english": "Arms the motor. Use a switch you won't knock by accident.",
           "translation": "Schaltet den Motor scharf. Einen Schalter wählen, den man nicht versehentlich umlegt.",
           "needs_translation": false,
-          "max_length": 57
+          "max_length": 57,
+          "reverse_text": false
         },
         "mod_help_rescue": {
           "english": "Turns the helicopter upright and holds it level.",
           "translation": "Dreht den Heli aufrecht und hält ihn waagerecht.",
           "needs_translation": false,
-          "max_length": 48
+          "max_length": 48,
+          "reverse_text": false
         },
         "mod_help_trainer": {
           "english": "Limits how far the helicopter can tilt, to help while learning.",
           "translation": "Begrenzt, wie weit sich der Heli neigen kann – hilft beim Lernen.",
           "needs_translation": false,
-          "max_length": 63
+          "max_length": 63,
+          "reverse_text": false
         },
         "swa_type_title": {
           "english": "Swashplate type",
@@ -10478,61 +10602,71 @@
           "english": "Pitch, roll and collective on servos 1-3, for a mechanical mixer.",
           "translation": "Nick, Roll und Kollektiv an den Servos 1-3, für einen mechanischen Mischer.",
           "needs_translation": false,
-          "max_length": 65
+          "max_length": 65,
+          "reverse_text": false
         },
         "swa_type_help_120": {
           "english": "Three servos, 120° apart. The most common.",
           "translation": "Drei Servos, 120° versetzt. Die gebräuchlichste Variante.",
           "needs_translation": false,
-          "max_length": 42
+          "max_length": 42,
+          "reverse_text": false
         },
         "swa_type_help_135": {
           "english": "Three servos, 135° apart.",
           "translation": "Drei Servos, 135° versetzt.",
           "needs_translation": false,
-          "max_length": 25
+          "max_length": 25,
+          "reverse_text": false
         },
         "swa_type_help_140": {
           "english": "Three servos, 140° apart.",
           "translation": "Drei Servos, 140° versetzt.",
           "needs_translation": false,
-          "max_length": 25
+          "max_length": 25,
+          "reverse_text": false
         },
         "swa_type_help_90l": {
           "english": "Two servos, front and left, 90° apart.",
           "translation": "Zwei Servos, vorne und links, 90° versetzt.",
           "needs_translation": false,
-          "max_length": 38
+          "max_length": 38,
+          "reverse_text": false
         },
         "swa_type_help_90v": {
           "english": "Two servos, front left and front right.",
           "translation": "Zwei Servos, vorne links und vorne rechts.",
           "needs_translation": false,
-          "max_length": 39
+          "max_length": 39,
+          "reverse_text": false
         },
         "swa_servo1": {
           "english": "Servo 1",
           "translation": "Servo 1",
           "needs_translation": false,
-          "max_length": 7
+          "max_length": 7,
+          "reverse_text": false
         },
         "swa_prepare_text": {
           "english": "Unplug the servos and remove the blades before the swashplate and the tail are set.",
           "translation": "Servos abstecken und Blätter abnehmen, bevor Taumelscheibe und Heck eingestellt werden.",
           "needs_translation": false,
-          "max_length": 83
+          "max_length": 83,
+          "reverse_text": false
         },
         "swa_front": {
           "english": "Front",
           "translation": "Vorne",
           "needs_translation": false,
-          "max_length": 5
+          "max_length": 5,
+          "reverse_text": false
         },
         "swa_rear": {
           "english": "Rear",
           "translation": "Hinten",
           "needs_translation": false,
-          "max_length": 4
+          "max_length": 4,
+          "reverse_text": false
         },
         "swa_type_text": {
           "english": "The servo numbers are the flight controller's servo outputs. Servo 1 can be in front of the main shaft or behind it.",
@@ -10671,13 +10805,15 @@
           "english": "Tail servo",
           "translation": "Heckservo",
           "needs_translation": false,
-          "max_length": 10
+          "max_length": 10,
+          "reverse_text": false
         },
         "swa_servo_none": {
           "english": "None",
           "translation": "Keine",
           "needs_translation": false,
-          "max_length": 4
+          "max_length": 4,
+          "reverse_text": false
         },
         "swa_pin_servo": {
           "english": "Servo 4",
@@ -10767,139 +10903,162 @@
           "english": "Headspeed",
           "translation": "Drehzahl",
           "needs_translation": false,
-          "max_length": 9
+          "max_length": 9,
+          "reverse_text": false
         },
         "gov_speed_text": {
           "english": "The headspeed of each PID profile, as the flight controller holds it. Set it for the profiles the profile switch uses.",
           "translation": "Die Drehzahl jedes PID-Profils, wie der Flugcontroller sie hält. Für die Profile setzen, die der Profilschalter nutzt.",
           "needs_translation": false,
-          "max_length": 118
+          "max_length": 118,
+          "reverse_text": false
         },
         "gov_profile_fmt": {
           "english": "Profile %d",
           "translation": "Profil %d",
           "needs_translation": false,
-          "max_length": 10
+          "max_length": 10,
+          "reverse_text": false
         },
         "gov_rpm_unit": {
           "english": "rpm",
           "translation": "U/min",
           "needs_translation": false,
-          "max_length": 3
+          "max_length": 3,
+          "reverse_text": false
         },
         "step_governor": {
           "english": "Governor",
           "translation": "Governor",
           "needs_translation": false,
-          "max_length": 8
+          "max_length": 8,
+          "reverse_text": false
         },
         "gov_prepare_text": {
           "english": "Keep the servos unplugged and the blades off. The governor is set here; it runs once the model is connected.",
           "translation": "Servos abgesteckt lassen und die Blätter abnehmen. Der Governor wird hier eingestellt und läuft nach dem Anschluss.",
           "needs_translation": false,
-          "max_length": 108
+          "max_length": 108,
+          "reverse_text": false
         },
         "gov_intro": {
           "english": "How the flight controller drives the motor. Pick the governor mode; the throttle type is for electric and nitro.",
           "translation": "Wie der Flugcontroller den Motor ansteuert. Governor-Modus wählen; die Betriebsart gilt für Elektro und Nitro.",
           "needs_translation": false,
-          "max_length": 112
+          "max_length": 112,
+          "reverse_text": false
         },
         "gov_row_mode": {
           "english": "Governor mode",
           "translation": "Governor-Modus",
           "needs_translation": false,
-          "max_length": 13
+          "max_length": 13,
+          "reverse_text": false
         },
         "gov_row_throttle": {
           "english": "Throttle type",
           "translation": "Betriebsart",
           "needs_translation": false,
-          "max_length": 13
+          "max_length": 13,
+          "reverse_text": false
         },
         "gov_rpm_next": {
           "english": "A governor needs an RPM signal: the next step sets it.",
           "translation": "Ein Governor braucht ein RPM-Signal: der nächste Schritt stellt es ein.",
           "needs_translation": false,
-          "max_length": 54
+          "max_length": 54,
+          "reverse_text": false
         },
         "rpm_intro": {
           "english": "Where the headspeed comes from: a wire from an RPM sensor or the ESC, or bidirectional DShot telemetry.",
           "translation": "Woher die Drehzahl kommt: Kabel von einem RPM-Sensor oder Regler, oder bidirektionales DShot.",
           "needs_translation": false,
-          "max_length": 103
+          "max_length": 103,
+          "reverse_text": false
         },
         "rpm_row_source": {
           "english": "RPM source",
           "translation": "RPM-Quelle",
           "needs_translation": false,
-          "max_length": 10
+          "max_length": 10,
+          "reverse_text": false
         },
         "rpm_wire": {
           "english": "Wire",
           "translation": "Kabel",
           "needs_translation": false,
-          "max_length": 4
+          "max_length": 4,
+          "reverse_text": false
         },
         "rpm_dshot": {
           "english": "Bidirectional DShot",
           "translation": "Bidirektionales DShot",
           "needs_translation": false,
-          "max_length": 19
+          "max_length": 19,
+          "reverse_text": false
         },
         "sty_hiend_digital": {
           "english": "Hi-End digital",
           "translation": "Hi-End digital",
           "needs_translation": false,
-          "max_length": 14
+          "max_length": 14,
+          "reverse_text": false
         },
         "sty_specific_digital": {
           "english": "Specific digital",
           "translation": "Specific digital",
           "needs_translation": false,
-          "max_length": 16
+          "max_length": 16,
+          "reverse_text": false
         },
         "sty_hiend_specific_digital": {
           "english": "Hi-End specific digital",
           "translation": "Hi-End specific digital",
           "needs_translation": false,
-          "max_length": 23
+          "max_length": 23,
+          "reverse_text": false
         },
         "sty_analog": {
           "english": "Analog",
           "translation": "Analog",
           "needs_translation": false,
-          "max_length": 6
+          "max_length": 6,
+          "reverse_text": false
         },
         "sty_digital": {
           "english": "Digital",
           "translation": "Digital",
           "needs_translation": false,
-          "max_length": 7
+          "max_length": 7,
+          "reverse_text": false
         },
         "sty_narrow": {
           "english": "Narrow band",
           "translation": "Schmalband",
           "needs_translation": false,
-          "max_length": 11
+          "max_length": 11,
+          "reverse_text": false
         },
         "sty_row_freq": {
           "english": "Frequency",
           "translation": "Frequenz",
           "needs_translation": false,
-          "max_length": 9
+          "max_length": 9,
+          "reverse_text": false
         },
         "sty_row_rate": {
           "english": "Frame rate",
           "translation": "Frame-Rate",
           "needs_translation": false,
-          "max_length": 10
+          "max_length": 10,
+          "reverse_text": false
         },
         "sty_geo_title": {
           "english": "Geometry correction",
           "translation": "Geometrie-Korrektur",
           "needs_translation": false,
-          "max_length": 19
+          "max_length": 19,
+          "reverse_text": false
         },
         "sty_hz_fmt": {
           "english": "%d Hz",
@@ -11122,7 +11281,7 @@
           "english": "Stage not changed: the tail ratio cannot be kept with whole teeth that fit.",
           "translation": "Stufe nicht geändert: Das Heck-Verhältnis lässt sich mit ganzen, passenden Zähnen nicht halten.",
           "needs_translation": false,
-          "max_length": 100,
+          "max_length": 75,
           "reverse_text": false
         },
         "mot_ratio_direct": {
@@ -11262,25 +11421,29 @@
           "english": "Set over the ESC link",
           "translation": "Set over the ESC link",
           "needs_translation": true,
-          "max_length": 21
+          "max_length": 21,
+          "reverse_text": false
         },
         "esc_link_busy": {
           "english": "Setting the range on the ESC...",
           "translation": "Setting the range on the ESC...",
           "needs_translation": true,
-          "max_length": 31
+          "max_length": 31,
+          "reverse_text": false
         },
         "esc_link_done": {
           "english": "Range set on the ESC and the FC.",
           "translation": "Range set on the ESC and the FC.",
           "needs_translation": true,
-          "max_length": 32
+          "max_length": 32,
+          "reverse_text": false
         },
         "esc_link_failed": {
           "english": "The ESC link did not confirm the range.",
           "translation": "The ESC link did not confirm the range.",
           "needs_translation": true,
-          "max_length": 39
+          "max_length": 39,
+          "reverse_text": false
         },
         "esc_need_calib": {
           "english": "Calibrate the ESC first.",
@@ -11419,7 +11582,7 @@
           "english": "Telemetry only",
           "translation": "Nur Telemetrie",
           "needs_translation": false,
-          "max_length": 18,
+          "max_length": 14,
           "reverse_text": false
         },
         "wir_found": {
@@ -11699,7 +11862,7 @@
           "english": "Roll and collective: 1 links to level, 2 trim, 3 blade links to zero pitch.",
           "translation": "Roll und Kollektiv: 1 Anlenkungen, 2 Trim, 3 Blattanlenkungen auf 0 Grad.",
           "needs_translation": false,
-          "max_length": 84,
+          "max_length": 75,
           "reverse_text": false
         },
         "lvl_side_text": {
@@ -11993,7 +12156,7 @@
           "english": "Links until the swash is level, then trim it, then the blade links to zero pitch.",
           "translation": "Erst Anlenkungen, bis die TS waagerecht ist, dann trimmen, dann Blattanlenkungen auf 0 Grad.",
           "needs_translation": false,
-          "max_length": 92,
+          "max_length": 81,
           "reverse_text": false
         },
         "lvl_reset": {
@@ -12028,7 +12191,7 @@
           "english": "Align the blades with the boom. The collective is held at 9 degrees. Measure the blade pitch, enter it, then Calibrate.",
           "translation": "Blätter in Auslegerrichtung ausrichten. Kollektiv wird auf 9 Grad gehalten. Blattwinkel messen, eingeben, dann Kalibrieren.",
           "needs_translation": false,
-          "max_length": 130,
+          "max_length": 119,
           "reverse_text": false
         },
         "pit_cyc_title": {
@@ -12042,7 +12205,7 @@
           "english": "Blades along the boom, as for the collective. Roll is held at 9 degrees. Measure, enter it, then Calibrate.",
           "translation": "Blätter in Auslegerrichtung wie beim Kollektiv. Roll wird auf 9 Grad gehalten. Messen, eingeben, dann Kalibrieren.",
           "needs_translation": false,
-          "max_length": 120,
+          "max_length": 107,
           "reverse_text": false
         },
         "pit_fine_text": {
@@ -12077,19 +12240,22 @@
           "english": "Check at 0 degrees",
           "translation": "Bei 0 Grad prüfen",
           "needs_translation": false,
-          "max_length": 24
+          "max_length": 18,
+          "reverse_text": false
         },
         "pit_back_nine": {
           "english": "Back to 9 degrees",
           "translation": "Zurück zu 9 Grad",
           "needs_translation": false,
-          "max_length": 24
+          "max_length": 17,
+          "reverse_text": false
         },
         "pit_hold_angle": {
           "english": "Hold angle",
           "translation": "Haltewinkel",
           "needs_translation": false,
-          "max_length": 20
+          "max_length": 10,
+          "reverse_text": false
         },
         "pit_calibrated": {
           "english": "Calibrated. Measure again to check.",
@@ -12564,85 +12730,99 @@
           "english": "Before this step",
           "translation": "Vor diesem Schritt",
           "needs_translation": false,
-          "max_length": 16
+          "max_length": 16,
+          "reverse_text": false
         },
         "rcv_prepare_text": {
           "english": "This step uses the settings already in the FC. Confirm the physical prerequisites before continuing.",
           "translation": "Dieser Schritt nutzt die Einstellungen im FC. Vor dem Weitergehen die Voraussetzungen am Modell bestätigen.",
           "needs_translation": false,
-          "max_length": 100
+          "max_length": 100,
+          "reverse_text": false
         },
         "rcv_protocol": {
           "english": "Protocol",
           "translation": "Protokoll",
           "needs_translation": false,
-          "max_length": 8
+          "max_length": 8,
+          "reverse_text": false
         },
         "rcv_protocol_title": {
           "english": "Choose the protocol",
           "translation": "Protokoll wählen",
           "needs_translation": false,
-          "max_length": 19
+          "max_length": 19,
+          "reverse_text": false
         },
         "rcv_link_warning": {
           "english": "Experienced pilots only: a setting that cuts the receiver link ends this setup.",
           "translation": "Nur für Erfahrene: Eine Einstellung, die den Empfänger trennt, beendet diese Einrichtung.",
           "needs_translation": false,
-          "max_length": 79
+          "max_length": 79,
+          "reverse_text": false
         },
         "rcv_link_text": {
           "english": "The protocol must match your receiver, or the radio link breaks.",
           "translation": "Das Protokoll muss zu deinem Empfänger passen, sonst bricht die Funkverbindung ab.",
           "needs_translation": false,
-          "max_length": 64
+          "max_length": 64,
+          "reverse_text": false
         },
         "rcv_standard_order": {
           "english": "Std. order",
           "translation": "Std.-Reihenfolge",
           "needs_translation": false,
-          "max_length": 10
+          "max_length": 10,
+          "reverse_text": false
         },
         "rcv_dir_forward": {
           "english": "Forward",
           "translation": "Vor",
           "needs_translation": false,
-          "max_length": 7
+          "max_length": 7,
+          "reverse_text": false
         },
         "rcv_dir_up": {
           "english": "Up",
           "translation": "Hoch",
           "needs_translation": false,
-          "max_length": 2
+          "max_length": 2,
+          "reverse_text": false
         },
         "rcv_dir_back": {
           "english": "Back",
           "translation": "Zurück",
           "needs_translation": false,
-          "max_length": 4
+          "max_length": 4,
+          "reverse_text": false
         },
         "rcv_dir_down": {
           "english": "Down",
           "translation": "Runter",
           "needs_translation": false,
-          "max_length": 4
+          "max_length": 4,
+          "reverse_text": false
         },
         "rcv_fc_range": {
           "english": "FC range",
           "translation": "FC-Bereich",
           "needs_translation": false,
-          "max_length": 8
+          "max_length": 8,
+          "reverse_text": false
         },
         "rcv_measured": {
           "english": "Measured",
           "translation": "Gemessen",
           "needs_translation": false,
-          "max_length": 8
+          "max_length": 8,
+          "reverse_text": false
         },
         "rcv_link_mismatch_fmt": {
           "english": "The FC reads %s differently: check the radio's channel outputs.",
           "translation": "Der FC liest %s anders: Kanalausgänge am Sender prüfen.",
           "needs_translation": false,
-          "max_length": 63
+          "max_length": 63,
+          "reverse_text": false
         }
       },
       "wizards": {
@@ -14773,19 +14953,22 @@
         "english": "ESC ERROR",
         "translation": "ESC-FEHLER",
         "needs_translation": false,
-        "max_length": 10
+        "max_length": 9,
+        "reverse_text": false
       },
       "alert_esc_warning": {
         "english": "ESC WARNING",
         "translation": "ESC-WARNUNG",
         "needs_translation": false,
-        "max_length": 11
+        "max_length": 11,
+        "reverse_text": false
       },
       "alert_no_esc_data": {
         "english": "NO ESC DATA",
         "translation": "KEINE ESC-DATEN",
         "needs_translation": false,
-        "max_length": 15
+        "max_length": 11,
+        "reverse_text": false
       }
     }
   }
