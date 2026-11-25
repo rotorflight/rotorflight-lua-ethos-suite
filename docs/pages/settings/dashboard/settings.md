@@ -49,6 +49,9 @@ value falls back to the default.
 
 Values are stored in the `dashboard.kse5` section of `settings.ini`.
 
+See the [Bastion guide](../../../dashboard/bastion.md) for its appearance,
+installation, and [phase previews](../../../dashboard-themes/Bastion/README.md).
+
 ## NovaFly RC
 
 **NovaFly RC** has two settings.
