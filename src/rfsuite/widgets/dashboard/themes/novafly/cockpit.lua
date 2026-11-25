@@ -1092,7 +1092,7 @@ local function event(widget, category, value, x, y)
     return captureHeading(widget)   -- on release, however long the finger lay
 end
 
-do   -- the pages beside the cockpit: files of their own, they get the peak memo, a memo that outlives closing, and the suite
+do   -- the pages beside the cockpit: files of their own, they get the peak memo, a memo that outlives closing, and the suite; and the pictures go when the suite clears its caches
     local HELPERS = {hits = hits, tone = tone, peaks = peaks, loadAsset = loadAsset, fadeMasks = LINES.fadeMasks, cornerMasks = LINES.cornerMasks, memo = {},
                     rf = function() return rf end, state = function() return st end,
                     open = function(name) return openMonitor(name) end, close = function() closeMonitor() end,
@@ -1117,6 +1117,18 @@ do   -- the pages beside the cockpit: files of their own, they get the peak memo
         end
         if m[2] then DOORS[#DOORS + 1] = {zone = m[2], target = m[1]} end
     end
+    local function releaseImages()   -- the suite's clearCaches({images = true}), on every theme reload, theme switch and close: every picture and mask goes, the next paint loads what it needs
+        BG.image, BG.name, BG.tries = nil, nil, 0
+        for k in pairs(LOGO.image) do LOGO.image[k] = nil end
+        for k in pairs(LOGO.tries) do LOGO.tries[k] = nil end
+        for k in pairs(LINES.notch) do LINES.notch[k] = nil end
+        for k in pairs(LINES.corners) do LINES.corners[k] = nil end
+        for k in pairs(LINES.fade) do LINES.fade[k] = nil end
+        local images = HELPERS.memo.images   -- photo and photo frame of the left page
+        if images then for k in pairs(images) do images[k] = nil end end
+    end
+    local utils = rf and rf.widgets and rf.widgets.dashboard and rf.widgets.dashboard.utils
+    if type(utils) == "table" and type(utils.registerImageCacheClearer) == "function" then utils.registerImageCacheClearer(releaseImages) end
 end
 
 local BOX = {col = 1, row = 1, type = "func", wakeupinterval = 0.1, wakeup = wake, paint = function(x, y, w, h, box, cache) paint(x, y, w, h, cache) end}

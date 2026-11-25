@@ -21,24 +21,25 @@ local style, S = nil, nil
 local nova = {dirty = false, armState = "unknown", flightLog = {}, highDetail = true, italic = nil}   -- the radio's font, no masks
 local IMAGES = H.memo.images or {}   -- photo and photo frame stay loaded beyond closing the page: every opening loaded them
 H.memo.images = IMAGES               -- again otherwise, and the X18 stopped
-local photo = nil
 local battery, batteryFor = nil, nil   -- the suite without session.batteryConfig: BATTERY_CONFIG over the bus, and the heli (mcu_id) it belongs to
 local request = {fc = nil, from = 0}   -- the request without an answer (for which heli) and from when the next may go
 
-local function loadPhoto()   -- the model picture the pilot gave the model in Ethos; the cockpit knows its place on the card (H.photoPath)
+local function loadPhoto()   -- the model picture the pilot gave the model in Ethos, or nil; the cockpit knows its place on the card (H.photoPath)
     local name = nil
     if type(model) == "table" and type(model.bitmap) == "function" then
         local ok, b = pcall(model.bitmap)
         if ok and type(b) == "string" then name = b end
     end
-    if IMAGES.photo ~= nil and IMAGES.photoName == name then photo = IMAGES.photo or nil return end   -- kept by the name of the picture: another model, another picture
-    photo, IMAGES.photo, IMAGES.photoName = nil, nil, name   -- let go of the previous picture: no reference holds it any more
+    if IMAGES.photo ~= nil and IMAGES.photoName == name then return IMAGES.photo or nil end   -- kept by the name of the picture: another model, another picture
+    IMAGES.photo, IMAGES.photoName = nil, name   -- let go of the previous picture: no reference holds it any more
+    local photo = nil
     local path = (name ~= nil and name ~= "" and not name:find("default_", 1, true)) and H.photoPath(name) or nil
     if path ~= nil and type(lcd.loadBitmap) == "function" then
         local ok, bmp = pcall(lcd.loadBitmap, path)
         if ok and bmp then photo = bmp end
     end
     IMAGES.photo = photo or false
+    return photo
 end
 
 local function photoBox()   -- place and size of the photo in the window: the height from the layout, the width 4 : 3 to it (Ethos keeps the aspect ratio of a picture)
@@ -105,7 +106,7 @@ local function paint()
     S.rowLeft(MODE.x, MODE.value, {{mode or "--", mode and H.colors.green or style.FIELD_DIM, FONT_S}})
     local z, f
     style.labelCenteredFit(240, HEAD_Y, s.craft or "", style.WHITE, FONT_L, 280)
-    loadPhoto()
+    local photo = loadPhoto()
     local fx, fy, fw, fh = photoBox()
     if photo ~= nil and pcall(lcd.drawBitmap, fx, fy, photo, fw, fh) then photoFrame() end
 
