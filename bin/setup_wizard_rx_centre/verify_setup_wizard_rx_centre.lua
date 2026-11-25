@@ -45,6 +45,8 @@ system = {getVersion = function() return {simulation = false} end, getSource = f
 
 -- The bus: every MSP request is kept, reads of MSP_RX_CHANNELS are answered at once.
 local sent = {}
+-- failing[command]: the request fails at once; silent[command]: no reply.
+local failing, silent = {}, {}
 local channels = {1500, 1500, 1500, 1000, 1000, 1000, 1000, 1000}
 local function u16list(list)
   local out = {}
@@ -55,6 +57,11 @@ package.loaded["rfsuite.lib.bus"] = {
   publish = function(topic, m)
     if topic ~= "msp.request" then return end
     sent[#sent + 1] = m
+    if failing[m.command] then
+      if m.errorHandler then m.errorHandler("timeout") end
+      return
+    end
+    if silent[m.command] then return end
     if m.command == 114 and m.processReply then m.processReply(nil, u16list(channels)) end
   end,
   subscribe = function() end,
@@ -151,6 +158,7 @@ local function run()
   -- 2. Pitch trimmed up: named, nothing written.
   channels[2] = 1540
   local before = #sent
+  local readsNow
   pressCheck(T("rcv_centre_detect"))
   check("sampling", shown.accent == T("rcv_centre_sampling"), shown.accent)
   for _ = 1, 20 do tick() end
@@ -159,12 +167,45 @@ local function run()
   for i = before + 1, #sent do if sent[i].command == 67 then writes = writes + 1 end end
   check("nothing written for an off trim", writes == 0, writes)
 
-  -- 3. All three at 1520: rc_center 1520 written, the rest as read.
+  -- 3. A read fails during Detect: it ends with no signal, Detect again.
   channels[2] = 1520
+  local function detectButton()
+    for _, c in ipairs(shown.checks) do
+      if c.answer == T("rcv_centre_detect") then return c end
+    end
+  end
+  before = #sent
+  pressCheck(T("rcv_centre_detect"))
+  tick(); tick()
+  failing[114] = true
+  for _ = 1, 20 do tick() end
+  failing[114] = nil
+  check("a failed read is no signal", shown.accent == T("rcv_centre_nosignal"), shown.accent)
+  check("and Detect is offered again", detectButton() and not detectButton().disabled)
+  readsNow = 0
+  for i = before + 1, #sent do if sent[i].command == 114 then readsNow = readsNow + 1 end end
+  check("no more reads after the failure", readsNow <= 3, readsNow)
+
+  -- 4. No reply at all: Detect gives up the same way.
+  silent[114] = true
+  pressCheck(T("rcv_centre_detect"))
+  for _ = 1, 40 do tick() end
+  silent[114] = nil
+  check("no reply is no signal", shown.accent == T("rcv_centre_nosignal"), shown.accent)
+
+  -- 5. The write fails: says so, and the old center is kept so Detect writes it again.
+  failing[67] = true
+  pressCheck(T("rcv_centre_detect"))
+  for _ = 1, 20 do tick() end
+  failing[67] = nil
+  check("a failed write says so", shown.accent == "@i18n(app.msg_save_failed_title)@", shown.accent)
+
+  -- 6. All three at 1520: rc_center 1520 written, the rest as read.
   before = #sent
   pressCheck(T("rcv_centre_detect"))
   for _ = 1, 20 do tick() end
-  local write, readsNow = nil, 0
+  local write
+  readsNow = 0
   for i = before + 1, #sent do
     if sent[i].command == 67 then write = sent[i] end
     if sent[i].command == 114 then readsNow = readsNow + 1 end
@@ -177,7 +218,7 @@ local function run()
   check("registered for Discard", changes[#changes] == "rc_config", changes[#changes])
   check("says it is set", shown.accent == T("rcv_centre_set_fmt"), shown.accent)
 
-  -- 4. Done lists the stick center.
+  -- 7. Done lists the stick center.
   shown.forward.press()
   local listed = false
   for _, c in ipairs(shown.checks) do

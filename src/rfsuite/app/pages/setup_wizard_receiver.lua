@@ -112,6 +112,7 @@ local T = {
   centreSetFmt = "@i18n(app.modules.setup_wizard.rcv_centre_set_fmt)@",
   centreSameFmt = "@i18n(app.modules.setup_wizard.rcv_centre_same_fmt)@",
   centreNoSignal = "@i18n(app.modules.setup_wizard.rcv_centre_nosignal)@",
+  centreWriteFailed = "@i18n(app.msg_save_failed_title)@",
   centreMoving = "@i18n(app.modules.setup_wizard.rcv_centre_moving)@",
   centreTrimFmt = "@i18n(app.modules.setup_wizard.rcv_centre_trim_fmt)@",
   centreRangeFmt = "@i18n(app.modules.setup_wizard.rcv_centre_range_fmt)@",
@@ -439,12 +440,20 @@ local function new(wiz)
     checkWanted, movedAt = true, -1000
   end
 
+  -- A failed write puts the old center back, so the page does not take the
+  -- new one as applied, and a later Detect tries again.
   local function writeCentre(us)
     wiz.change("rc_config", rcConfig, function(o)
       bus.publish("msp.request", rcConfigCodec.buildWriteMessage(o))
     end)
+    local old = rcConfig.rc_center
     rcConfig.rc_center = us
-    bus.publish("msp.request", rcConfigCodec.buildWriteMessage(rcConfig))
+    bus.publish("msp.request", rcConfigCodec.buildWriteMessage(rcConfig, nil, function()
+      if rcConfig.rc_center ~= us then return end
+      rcConfig.rc_center = old
+      centreStatus, centreApplied = "writeFailed", false
+      wiz.rebuild()
+    end))
   end
 
   local function go(name)
@@ -889,8 +898,8 @@ local function new(wiz)
     local st, c, axis = heli.centreFromSamples(centreSamples, centreCount)
     centreStatus, centreValue, centreAxis, centreApplied = st, c, axis, false
     if st == "ok" and heli.centreIsOff(c, rcConfig.rc_center) then
-      writeCentre(c)
       centreApplied = true
+      writeCentre(c)
     end
     wiz.rebuild()
   end
@@ -914,12 +923,23 @@ local function new(wiz)
     centreCount = centreCount + 1
     if centreCount >= CENTRE_READS then finishCentre() end
   end
-  local function onCentreError() centreInFlight = false end
+  -- A read that fails, or gets no reply, ends Detect: nothing is written.
+  local function stopCentre()
+    centreInFlight = false
+    if not centreSampling then return end
+    centreSampling = false
+    centreStatus, centreApplied = "noSignal", false
+    wiz.rebuild()
+  end
+  local function onCentreError() stopCentre() end
 
   local function centreWakeup(now)
     if not rxMap or not rcConfig then return end
     if not centreSampling and not centreHintWanted then return end
-    if centreInFlight and now - centreAt <= CHECK_GIVE_UP then return end
+    if centreInFlight then
+      if now - centreAt <= CHECK_GIVE_UP then return end
+      if centreSampling then return stopCentre() end
+    end
     if now < centreNextAt then return end
     centreHintWanted = false
     centreInFlight, centreAt, centreNextAt = true, now, now + CENTRE_GAP
@@ -942,6 +962,8 @@ local function new(wiz)
       return string.format(T.centreTrimFmt, FUNCTION_NAMES[centreAxis])
     elseif centreStatus == "range" then
       return string.format(T.centreRangeFmt, centreValue, heli.CENTRE_MIN, heli.CENTRE_MAX)
+    elseif centreStatus == "writeFailed" then
+      return T.centreWriteFailed
     end
     return nil
   end
