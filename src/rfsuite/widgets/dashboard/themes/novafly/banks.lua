@@ -28,8 +28,14 @@ local RATE_RULES = {   -- rcRates per rate type: {times, divisor, decimals} for 
 local SHIFT, FORMATS = {[0] = 1, 10, 100}, {"%.1f", "%.2f"}
 local RATE_AXES = {"@i18n(widgets.dashboard.novafly.roll)@", "@i18n(widgets.dashboard.novafly.pitch)@", "@i18n(widgets.dashboard.novafly.tail)@", "@i18n(widgets.dashboard.novafly.collective)@"}
 local rateNumber, rateUnit, ratesFor = {}, {}, nil   -- the four chips, computed once per RC_TUNING read, not per paint
+local NONE = {}
+local ONE, TWO = {{"", 0, 0}}, {{"", 0, 0}, {"", 0, 0}}   -- the rows of a number without and with its unit, built once and filled before each use: no new tables per paint
+local COLUMNS = {"@i18n(widgets.dashboard.novafly.governor)@", "@i18n(widgets.dashboard.novafly.headspeed)@", "@i18n(widgets.dashboard.novafly.spoolup)@", "GAIN"}   -- the head band: governor, target headspeed, spool-up, gain
+local columnValue = {}
+local GAIN_AXES = {{"@i18n(widgets.dashboard.novafly.roll)@", "roll"}, {"@i18n(widgets.dashboard.novafly.pitch)@", "pitch"}, {"@i18n(widgets.dashboard.novafly.tail)@", "yaw"}}
 
 local RPM_UNIT = "@i18n(widgets.dashboard.novafly.rpm_unit)@"   -- the unit of the headspeed: German U/min, in every other language rpm like the cockpit
+local COLUMN_UNITS = {false, RPM_UNIT, "s", false}   -- the units of the head band
 local style, S = nil, nil
 local nova = {dirty = false, armState = "unknown", flightLog = {}, highDetail = true, italic = nil}
 local values = {pid = nil, rc = nil, gov = nil, govProfile = nil, failed = nil}
@@ -98,8 +104,13 @@ local function number(v)
 end
 
 local function numberRow(cx, cy, z, font, color, unit)   -- the number with the unit small in the same row, centred together
-    local segs = {{z, color, font}}
-    if unit ~= nil then segs[2] = {unit, style.WHITE, FONT_XS} end
+    local segs = unit ~= nil and TWO or ONE
+    local a = segs[1]
+    a[1], a[2], a[3] = z, color, font
+    if unit ~= nil then
+        local b = segs[2]
+        b[1], b[2], b[3] = unit, style.WHITE, FONT_XS
+    end
     S.row(cx, cy, segs)
 end
 
@@ -121,41 +132,38 @@ local function governorCompute(g)   -- the name of the mode and the spool-up tim
 end
 
 local function drive()   -- the head band: governor, target headspeed, spool-up, gain in the alignment of the four chips
-    local g, p = values.gov or {}, values.govProfile or {}
+    local g, p = values.gov or NONE, values.govProfile or NONE
     if values.gov ~= govFor then governorCompute(g) end
-    local mode = govName
-    local columns = {{"@i18n(widgets.dashboard.novafly.governor)@", mode},
-                     {"@i18n(widgets.dashboard.novafly.headspeed)@", p.governor_headspeed, RPM_UNIT},
-                     {"@i18n(widgets.dashboard.novafly.spoolup)@", govSpoolup, "s"},
-                     {"GAIN", p.governor_gain}}
+    columnValue[1], columnValue[2], columnValue[3], columnValue[4] = govName, p.governor_headspeed, govSpoolup, p.governor_gain
     for i = 1, 4 do
         local x, w = chipPlace(RATE_CHIP, i)
         if i == 1 then x, w = 0, x + w end
-        local col = columns[i]
-        style.labelCentered(x + w / 2, 18, col[1], style.WHITE, FONT_XS)
+        local v = columnValue[i]
+        style.labelCentered(x + w / 2, 18, COLUMNS[i], style.WHITE, FONT_XS)
         local z, color
-        if i == 1 or i == 3 then z, color = col[2] or "--", col[2] and H.colors.green or style.FIELD_DIM   -- mode and spool-up are already text
-        else z, color = number(col[2]) end
-        numberRow(x + w / 2, 35, z, FONT_STD, color, col[2] ~= nil and col[3] or nil)
+        if i == 1 or i == 3 then z, color = v or "--", v and H.colors.green or style.FIELD_DIM   -- mode and spool-up are already text
+        else z, color = number(v) end
+        numberRow(x + w / 2, 35, z, FONT_STD, color, v ~= nil and COLUMN_UNITS[i] or nil)
     end
+end
+
+local function yOf(value, full, height)   -- the height of a value on the bar: 0 at the bottom, full at the top
+    local share = value / full
+    if share < 0 then share = 0 elseif share > 1 then share = 1 end
+    return BAR.bottom - height * share
 end
 
 local function bar(R, s, active)   -- the measured headspeed as a column against the bank's target; without a target (LIMIT, DIRECT, PASSTHROUGH, not read) against the end of the cockpit arc
     local b = BAR
     S.chip(b.x, b.top, b.w, b.bottom - b.top)
-    local g, p = values.gov or {}, values.govProfile or {}
+    local g, p = values.gov or NONE, values.govProfile or NONE
     local governed = g.gov_mode ~= nil and floor(g.gov_mode) >= GOV_FROM
     local target = governed and p.governor_headspeed or nil
     if target ~= nil and target <= 0 then target = nil end
     local full = target and (target * SCALE) or H.rpmFull()
     local height = b.bottom - b.top
-    local function yOf(value)
-        local share = value / full
-        if share < 0 then share = 0 elseif share > 1 then share = 1 end
-        return b.bottom - height * share
-    end
     if target and R then   -- the zones right of the bar and the target mark across it
-        local yTarget, yYellow = yOf(target), yOf(target * YELLOW_FROM)
+        local yTarget, yYellow = yOf(target, full, height), yOf(target * YELLOW_FROM, full, height)
         S.fillRect(ZONES_X, yTarget, ZONES_W, b.bottom - yTarget, R.GREEN)
         S.fillRect(ZONES_X, yYellow, ZONES_W, yTarget - yYellow, R.YELLOW)
         S.fillRect(ZONES_X, b.top, ZONES_W, yYellow - b.top, R.RED)
@@ -166,13 +174,13 @@ local function bar(R, s, active)   -- the measured headspeed as a column against
     if rpm ~= nil and rpm > 0 and R then
         local color = R.GREEN
         if target and rpm > target * YELLOW_FROM then color = R.RED elseif target and rpm > target then color = R.YELLOW end
-        local yTop, yBottom = yOf(rpm), b.bottom - b.rim
+        local yTop, yBottom = yOf(rpm, full, height), b.bottom - b.rim
         if yTop < b.top + b.rim then yTop = b.top + b.rim end
         if yBottom > yTop then S.fillRect(b.x + b.rim, yTop, b.w - 2 * b.rim, yBottom - yTop, color) end
     end
     local pk = active and H.peaks[active]
     if pk and pk.max and pk.max > 0 then   -- the mark of the highest headspeed of this bank, like the peak marker
-        local y = yOf(pk.max)
+        local y = yOf(pk.max, full, height)
         if y < b.top + b.rim then y = b.top + b.rim end
         S.fillRect(b.x + 2, floor(y) - 1, b.w - 4, 2, style.WHITE)
     end
@@ -206,12 +214,12 @@ local function paint()
     S.background()
     S.lines(false)
     local R = H.frame()
-    local s = H.state() or {}
+    local s = H.state() or NONE
     local active = s.bank and floor(s.bank) or nil
     local rate = s.rate and floor(s.rate) or nil
     drive()
 
-    local r = values.rc or {}
+    local r = values.rc or NONE
     local rtype = r.rates_type and RATE_TYPES[floor(r.rates_type)] or nil
     if values.rc ~= ratesFor then ratesCompute(r) end
     for i = 1, 4 do   -- per axis the number as the suite shows it: rotation rate, factor or for the collective the angle
@@ -224,14 +232,13 @@ local function paint()
         numberRow(x + w / 2, y + 40, z or "--", FONT_L, z and H.colors.green or style.FIELD_DIM, z and rateUnit[i] or nil)
     end
 
-    local p = values.pid or {}
-    local gainAxes = {{"@i18n(widgets.dashboard.novafly.roll)@", "roll"}, {"@i18n(widgets.dashboard.novafly.pitch)@", "pitch"}, {"@i18n(widgets.dashboard.novafly.tail)@", "yaw"}}
+    local p = values.pid or NONE
     for i = 1, 3 do   -- gains per axis: P I D F B O
         local x, w = chipPlace(GAIN_CHIP, i)
         local y, h = GAIN_CHIP.y, GAIN_CHIP.h
         S.chip(x, y, w, h, i == 1 and "left" or nil)
         if i == 1 then x, w = 0, x + w end
-        local a = gainAxes[i]
+        local a = GAIN_AXES[i]
         style.labelCentered(x + w / 2, y + 13, a[1], style.WHITE, FONT_S)
         pair(x + 10, y + 36, "P", p[a[2] .. "_p"])
         pair(x + 62, y + 36, "I", p[a[2] .. "_i"])
@@ -251,7 +258,7 @@ local function paint()
     end
 end
 
-local function event()   -- there is nothing to tap on the banks page; every touch still belongs to the theme
+local function event()   -- there is nothing to tap on the banks page (cockpit.lua decides what goes to the dashboard)
     return true
 end
 

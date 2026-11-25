@@ -16,6 +16,12 @@ local BATTERY = {x = 246, y = 66, w = 234, h = 174}  -- the box on the right, op
 local FOOT = {y = 262, h = 48, w = 112, gap = 6, x = 10}
 local NO_ZONE = {x = 0, y = 0, w = 0, h = 0}   -- there is no BACK on a page: back is the swipe
 local BATTERY_PAUSE = 3                              -- s until the next request for BATTERY_CONFIG when one failed or did not go out
+local NONE = {}
+local ROW1 = {{"", 0, 0}}                            -- the rows of the page, built once and filled before each use: no new tables per paint
+local ROW2 = {{"", 0, 0}, {"", 0, 0}}
+local BATTERY_LINE = {{"", 0, FONT_XS}, {"V  ", 0, FONT_XS}, {"", 0, FONT_XS}, {"", 0, FONT_XS}, {"mAh", 0, FONT_XS}}
+local CHIPS = {{"@i18n(widgets.dashboard.novafly.alt_max)@", "%.0f"}, {"@i18n(widgets.dashboard.novafly.climb_max)@", "%.1f"}, {"@i18n(widgets.dashboard.novafly.sink_max)@", "%.1f"}, {"@i18n(widgets.dashboard.novafly.flight_time)@", "%s"}}   -- the four chips of the foot band: word and format
+local chipValue, chipUnit = {}, {}
 
 local style, S = nil, nil
 local nova = {dirty = false, armState = "unknown", flightLog = {}, highDetail = true, italic = nil}   -- the radio's font, no masks
@@ -90,20 +96,32 @@ local function number(v, pattern)
     return z, H.colors.green
 end
 
+local function rowLeft1(x, cy, text, color, font)
+    local a = ROW1[1]
+    a[1], a[2], a[3] = text, color, font
+    S.rowLeft(x, cy, ROW1)
+end
+
+local function row2(cx, cy, t1, c1, f1, t2, c2, f2)   -- a number and its unit
+    local a, b = ROW2[1], ROW2[2]
+    a[1], a[2], a[3], b[1], b[2], b[3] = t1, c1, f1, t2, c2, f2
+    S.row(cx, cy, ROW2)
+end
+
 local function paint()
     if style == nil then return end
     style.windowRefresh()
     style.bandDrawn, style.footDrawn = false, false
     S.background()
     S.lines(true)
-    local s = H.state() or {}
+    local s = H.state() or NONE
     local link = H.linkColor(s)   -- white on a good link, yellow and red by the cockpit's limits; good is green here like the numbers
     if link == H.colors.white then link = H.colors.green end
     reception(BARS.rssi, steps(s.rssi, RSSI_STEPS), link)
     reception(BARS.vfr, steps(s.vfr, VFR_STEPS), link)
     local mode = modeWord(s.flightMode)
-    S.rowLeft(MODE.x, MODE.word, {{"@i18n(widgets.dashboard.novafly.flight_mode)@", style.WHITE, FONT_XS}})
-    S.rowLeft(MODE.x, MODE.value, {{mode or "--", mode and H.colors.green or style.FIELD_DIM, FONT_S}})
+    rowLeft1(MODE.x, MODE.word, "@i18n(widgets.dashboard.novafly.flight_mode)@", style.WHITE, FONT_XS)
+    rowLeft1(MODE.x, MODE.value, mode or "--", mode and H.colors.green or style.FIELD_DIM, FONT_S)
     local z, f
     style.labelCenteredFit(240, HEAD_Y, s.craft or "", style.WHITE, FONT_L, 280)
     local photo = loadPhoto()
@@ -116,47 +134,48 @@ local function paint()
     local cellCol = H.cellColor(s.cellF or s.cell)   -- the battery colour by the cell, like the cockpit
     style.labelCentered(cx, a.y + 17, "@i18n(widgets.dashboard.novafly.battery)@", style.WHITE, FONT_S)
     z, f = number(s.fuel ~= nil and floor(s.fuel + 0.5) or nil)
-    S.row(cx, a.y + 45, {{z, s.fuel ~= nil and cellCol or f, FONT_XL}, {"%", style.WHITE, FONT_S}})
+    row2(cx, a.y + 45, z, s.fuel ~= nil and cellCol or f, FONT_XL, "%", style.WHITE, FONT_S)
     local bc = battery   -- BATTERY_CONFIG of the connected heli (tick)
     local cap = type(bc) == "table" and tonumber(bc.batteryCapacity) or nil
     if cap ~= nil and cap <= 0 then cap = nil end
     local cells = s.cells or (type(bc) == "table" and tonumber(bc.batteryCellCount)) or nil
     if cells ~= nil and cells <= 0 then cells = nil end
-    local segs = {}
-    local function seg(text, color) segs[#segs + 1] = {text, color, FONT_XS} end
-    z, f = number(s.pack, "%.1f") seg(z, s.pack ~= nil and cellCol or f) seg("V  ", style.WHITE)
-    seg((cells ~= nil and tostring(floor(cells)) or "--") .. "S  ", cells ~= nil and style.WHITE or style.FIELD_DIM)
-    z, f = number(cap) seg(z, f) seg("mAh", style.WHITE)
-    S.row(cx, a.y + 74, segs)
+    local L = BATTERY_LINE
+    z, f = number(s.pack, "%.1f")
+    L[1][1], L[1][2], L[2][2] = z, s.pack ~= nil and cellCol or f, style.WHITE
+    L[3][1], L[3][2] = (cells ~= nil and tostring(floor(cells)) or "--") .. "S  ", cells ~= nil and style.WHITE or style.FIELD_DIM
+    z, f = number(cap)
+    L[4][1], L[4][2], L[5][2] = z, f, style.WHITE
+    S.row(cx, a.y + 74, L)
     local lx, rx = a.x + a.w / 4, a.x + a.w * 3 / 4
     style.labelCentered(lx, a.y + 108, "@i18n(widgets.dashboard.novafly.cell)@", style.WHITE, FONT_XS)
     z, f = number(s.cell, "%.2f")
-    S.row(lx, a.y + 133, {{z, s.cell ~= nil and cellCol or f, FONT_L}, {"V", style.WHITE, FONT_S}})
+    row2(lx, a.y + 133, z, s.cell ~= nil and cellCol or f, FONT_L, "V", style.WHITE, FONT_S)
     style.labelCentered(rx, a.y + 108, "@i18n(widgets.dashboard.novafly.consumption)@", style.WHITE, FONT_XS)
     z, f = number(s.used ~= nil and floor(s.used + 0.5) or nil)
-    S.row(rx, a.y + 133, {{z, f, FONT_L}, {"mAh", style.WHITE, FONT_S}})
+    row2(rx, a.y + 133, z, f, FONT_L, "mAh", style.WHITE, FONT_S)
 
-    local fl = H.flight() or {}   -- the last flight here: altitude and climb/sink from the altitude sensor, the flight time armed with a turning rotor;
-    local sz = type(H.session) == "function" and H.session() or {}   -- without a flight here the maximum values since connecting and the last flight time as the suite keeps it
+    local fl = H.flight() or NONE   -- the last flight here: altitude and climb/sink from the altitude sensor, the flight time armed with a turning rotor;
+    local sz = type(H.session) == "function" and H.session() or NONE   -- without a flight here the maximum values since connecting and the last flight time as the suite keeps it
     local altUnit, rateUnit = s.altFt and "ft" or "m", s.altFt and "ft/s" or "m/s"
     local sec = fl.time
     if sec == nil and type(H.lastFlightTime) == "function" then sec = H.lastFlightTime() end
     local time = sec ~= nil and string.format("%d:%02d", floor(sec / 60), floor(sec % 60)) or nil
     local altMax, climb, sink = fl.alt or sz.altMax, fl.climb or sz.climbMax, fl.sink or sz.sinkMax
-    local chips = {{"@i18n(widgets.dashboard.novafly.alt_max)@", altMax, "%.0f", altUnit}, {"@i18n(widgets.dashboard.novafly.climb_max)@", climb, "%.1f", rateUnit},
-                   {"@i18n(widgets.dashboard.novafly.sink_max)@", sink ~= nil and -sink or nil, "%.1f", rateUnit}, {"@i18n(widgets.dashboard.novafly.flight_time)@", time, "%s", "min"}}
+    chipValue[1], chipValue[2], chipValue[3], chipValue[4] = altMax, climb, sink ~= nil and -sink or nil, time
+    chipUnit[1], chipUnit[2], chipUnit[3], chipUnit[4] = altUnit, rateUnit, rateUnit, "min"
     for i = 1, 4 do
         local x = FOOT.x + (i - 1) * (FOOT.w + FOOT.gap)
         local w = (i == 4) and (480 - x) or FOOT.w
         S.chip(x, FOOT.y, w, FOOT.h, i == 4 and "right" or nil)
-        local c = chips[i]
+        local c = CHIPS[i]
         style.labelCentered(x + w / 2, FOOT.y + 13, c[1], style.WHITE, FONT_XS)
-        z, f = number(c[2], c[3])
-        S.row(x + w / 2, FOOT.y + 33, {{z, f, FONT_STD}, {c[4], style.WHITE, FONT_XS}})
+        z, f = number(chipValue[i], c[2])
+        row2(x + w / 2, FOOT.y + 33, z, f, FONT_STD, chipUnit[i], style.WHITE, FONT_XS)
     end
 end
 
-local function event()   -- there is nothing to tap on the left page; every touch still belongs to the theme
+local function event()   -- there is nothing to tap on the left page (cockpit.lua decides what goes to the dashboard)
     return true
 end
 

@@ -937,7 +937,7 @@ local function hits(z, x, y)
     return x ~= nil and y ~= nil and x >= X(z.x) and x < X(z.x) + sx(z.w) and y >= Y(z.y) and y < Y(z.y) + sy(z.h)
 end
 
-local swipe = nil   -- a sideways swipe over free space turns between the pages (left the one before, the centre the cockpit, right the one after); vertical stays with Ethos and the suite; on an open page every touch belongs to the theme
+local swipe = nil   -- a sideways swipe over free space turns between the pages (left the one before, the centre the cockpit, right the one after); vertical stays with Ethos and the suite, on the pages too
 local SWIPE_FAR, SWIPE_DECIDE = 50, 16   -- decided after 16 points by the larger direction: the start of a swipe often goes at a slant
 local function turnPage(dir)   -- -1: swiped to the left = the page after; +1: swiped to the right = the page before
     local side = activeMonitor and PAGES[activeMonitor]
@@ -946,7 +946,7 @@ local function turnPage(dir)   -- -1: swiped to the left = the page after; +1: s
     if (side > 0 and dir > 0) or (side < 0 and dir < 0) then closeMonitor() return true end   -- back to the cockpit
     return false   -- there is no further page beyond this one
 end
-local function swiping(value, x, y, onPage)   -- true = consumed, false = for Ethos, nil = no swipe (the tap goes on)
+local function swiping(value, x, y)   -- true = consumed, false = for Ethos, nil = no swipe (the tap goes on)
     if value == TOUCH_START then
         swipe = (x ~= nil and y ~= nil) and {x = x, y = y, across = nil, lastX = x} or nil
         return nil
@@ -957,9 +957,9 @@ local function swiping(value, x, y, onPage)   -- true = consumed, false = for Et
         local dx, dy = x - swipe.x, y - swipe.y
         if swipe.across == nil then
             if abs(dx) < SWIPE_DECIDE and abs(dy) < SWIPE_DECIDE then return true end   -- not decided yet: the finger stays with the theme
-            if abs(dy) > abs(dx) then   -- vertical
+            if abs(dy) > abs(dx) then   -- vertical: for the dashboard (toolbar up, info panel down)
                 swipe = nil
-                return onPage and true or false
+                return false
             end
             swipe.across = true
         end
@@ -993,18 +993,24 @@ local function event(widget, category, value, x, y)
     if category ~= EVT_TOUCH then return false end
     local m = activeMonitor and MONITORS[activeMonitor]
     if m then   -- in a monitor only its BACK zone and its own event count; the cockpit zones are closed
+        local consumed = true   -- a page lets through what free space on the cockpit lets through: the start, a vertical swipe, an end that turned nothing
         if value == TOUCH_START then
             press = hits(m.back, x, y) and {zone = "back", since = os.clock(), x = x, y = y} or nil
-            if press == nil and m.page then swiping(TOUCH_START, x, y, true) end
+            if press == nil and m.page then
+                swiping(TOUCH_START, x, y)
+                consumed = false
+            end
         elseif value == TOUCH_MOVE then
             if press and x and y and (abs(x - press.x) > DRIFT or abs(y - press.y) > DRIFT) then
-                if m.page then swiping(TOUCH_START, press.x, press.y, true) end   -- the finger leaves the zone: a swipe from where it came down
+                if m.page then swiping(TOUCH_START, press.x, press.y) end   -- the finger leaves the zone: a swipe from where it came down
                 press = nil
             end
-            if press == nil and m.page then swiping(TOUCH_MOVE, x, y, true) end
-        elseif value == TOUCH_END and press == nil and m.page and swiping(TOUCH_END, x, y, true) then
+            if press == nil and m.page then consumed = swiping(TOUCH_MOVE, x, y) == true end
+        elseif value == TOUCH_END and press == nil and m.page and swiping(TOUCH_END, x, y) then
             if widget then lcd.invalidate(widget) end
             return true
+        elseif value == TOUCH_END and press == nil and m.page then
+            consumed = false
         elseif (value == TOUCH_END or value == TOUCH_HOLD) and press ~= nil then
             local d = press
             press = nil
@@ -1016,7 +1022,7 @@ local function event(widget, category, value, x, y)
             end
         end
         if m.event then m.event(widget, category, value, x, y) end
-        return true   -- on an open screen every touch belongs to the theme: a move it does not consume Ethos takes for turning, then no TOUCH_END comes
+        return consumed   -- a move the theme does not consume Ethos may take, then no TOUCH_END comes: only a vertical swipe goes
     end
     if value == TOUCH_START then
         press = nil
@@ -1032,19 +1038,19 @@ local function event(widget, category, value, x, y)
             end
         end
         fingerOurs = (press ~= nil)
-        if press == nil then swiping(TOUCH_START, x, y, false) end   -- free space: if it becomes a sideways swipe, the theme turns the page
+        if press == nil then swiping(TOUCH_START, x, y) end   -- free space: if it becomes a sideways swipe, the theme turns the page
         return press ~= nil   -- when the finger comes down on a zone, the theme keeps it
     end
     if value == TOUCH_MOVE then
         if press and x and y and (abs(x - press.x) > DRIFT or abs(y - press.y) > DRIFT) then   -- the finger leaves its zone: a swipe from where it came down, as on free space, else Ethos takes it and moves the whole dashboard on
-            swiping(TOUCH_START, press.x, press.y, false)
+            swiping(TOUCH_START, press.x, press.y)
             press, fingerOurs = nil, false
         end
         if press ~= nil then return true end   -- while the finger is still on its zone the theme consumes the move: else Ethos takes it for turning and TOUCH_END never comes
-        local r = swiping(TOUCH_MOVE, x, y, false)
+        local r = swiping(TOUCH_MOVE, x, y)
         return r == true
     end
-    if value == TOUCH_END and press == nil and swiping(TOUCH_END, x, y, false) then
+    if value == TOUCH_END and press == nil and swiping(TOUCH_END, x, y) then
         if widget then lcd.invalidate(widget) end
         return true
     end
