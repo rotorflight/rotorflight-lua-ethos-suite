@@ -14645,6 +14645,274 @@
         "needs_translation": false,
         "max_length": 17,
         "reverse_text": false
+      },
+      "novafly": {
+        "flight_timer": {
+          "english": "FLIGHT TIMER",
+          "translation": "CHRONO VOL",
+          "needs_translation": false,
+          "reverse_text": false,
+          "max_length": 12
+        },
+        "arm_unknown": {
+          "english": "ARM ?",
+          "translation": "ARM ?",
+          "needs_translation": false,
+          "reverse_text": false,
+          "max_length": 5
+        },
+        "no_link": {
+          "english": "NO LINK",
+          "translation": "NO LINK",
+          "needs_translation": false,
+          "reverse_text": false,
+          "max_length": 7
+        },
+        "armed_setup": {
+          "english": "Heli is armed. Setup only on the ground.",
+          "translation": "Heli arme. Setup au sol seulement.",
+          "needs_translation": false,
+          "reverse_text": false,
+          "max_length": 40
+        },
+        "governor": {
+          "english": "GOVERNOR",
+          "translation": "GOVERNOR",
+          "needs_translation": false,
+          "reverse_text": false,
+          "max_length": 8
+        },
+        "headspeed": {
+          "english": "HEADSPEED",
+          "translation": "REGIME",
+          "needs_translation": false,
+          "reverse_text": false,
+          "max_length": 9
+        },
+        "spoolup": {
+          "english": "SPOOL UP",
+          "translation": "MONTEE",
+          "needs_translation": false,
+          "reverse_text": false,
+          "max_length": 8
+        },
+        "actual": {
+          "english": "ACTUAL",
+          "translation": "REEL",
+          "needs_translation": false,
+          "reverse_text": false,
+          "max_length": 6
+        },
+        "rpm_unit": {
+          "english": "rpm",
+          "translation": "rpm",
+          "needs_translation": false,
+          "reverse_text": false,
+          "max_length": 3
+        },
+        "roll": {
+          "english": "ROLL",
+          "translation": "ROULIS",
+          "needs_translation": false,
+          "reverse_text": false,
+          "max_length": 4
+        },
+        "pitch": {
+          "english": "PITCH",
+          "translation": "TANGAGE",
+          "needs_translation": false,
+          "reverse_text": false,
+          "max_length": 5
+        },
+        "tail": {
+          "english": "TAIL",
+          "translation": "QUEUE",
+          "needs_translation": false,
+          "reverse_text": false,
+          "max_length": 4
+        },
+        "collective": {
+          "english": "COLL.",
+          "translation": "COLL.",
+          "needs_translation": false,
+          "reverse_text": false,
+          "max_length": 5
+        },
+        "rates": {
+          "english": "RATES",
+          "translation": "RATES",
+          "needs_translation": false,
+          "reverse_text": false,
+          "max_length": 5
+        },
+        "flight_mode": {
+          "english": "FLIGHT MODE",
+          "translation": "MODE DE VOL",
+          "needs_translation": false,
+          "reverse_text": false,
+          "max_length": 11
+        },
+        "rescue": {
+          "english": "RESCUE",
+          "translation": "RESCUE",
+          "needs_translation": false,
+          "reverse_text": false,
+          "max_length": 6
+        },
+        "horizon": {
+          "english": "HORIZON",
+          "translation": "HORIZON",
+          "needs_translation": false,
+          "reverse_text": false,
+          "max_length": 7
+        },
+        "angle": {
+          "english": "ANGLE",
+          "translation": "ANGLE",
+          "needs_translation": false,
+          "reverse_text": false,
+          "max_length": 5
+        },
+        "battery": {
+          "english": "BATTERY",
+          "translation": "BATTERIE",
+          "needs_translation": false,
+          "reverse_text": false,
+          "max_length": 7
+        },
+        "cell": {
+          "english": "CELL",
+          "translation": "CELLULE",
+          "needs_translation": false,
+          "reverse_text": false,
+          "max_length": 4
+        },
+        "consumption": {
+          "english": "CONSUMPTION",
+          "translation": "CONSOMMATION",
+          "needs_translation": false,
+          "reverse_text": false,
+          "max_length": 11
+        },
+        "alt_max": {
+          "english": "ALT MAX",
+          "translation": "ALT MAX",
+          "needs_translation": false,
+          "reverse_text": false,
+          "max_length": 7
+        },
+        "climb_max": {
+          "english": "CLIMB MAX",
+          "translation": "MONTEE MAX",
+          "needs_translation": false,
+          "reverse_text": false,
+          "max_length": 9
+        },
+        "sink_max": {
+          "english": "SINK MAX",
+          "translation": "DESCENTE MAX",
+          "needs_translation": false,
+          "reverse_text": false,
+          "max_length": 8
+        },
+        "flight_time": {
+          "english": "FLIGHT TIME",
+          "translation": "TEMPS DE VOL",
+          "needs_translation": false,
+          "reverse_text": false,
+          "max_length": 11
+        },
+        "colour": {
+          "english": "Colour",
+          "translation": "Colour",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 6
+        },
+        "mode": {
+          "english": "Mode",
+          "translation": "Mode",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 4
+        },
+        "blue": {
+          "english": "Blue",
+          "translation": "Blue",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 4
+        },
+        "magenta": {
+          "english": "Magenta",
+          "translation": "Magenta",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 7
+        },
+        "green": {
+          "english": "Green",
+          "translation": "Green",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 5
+        },
+        "orange": {
+          "english": "Orange",
+          "translation": "Orange",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 6
+        },
+        "yellow": {
+          "english": "Yellow",
+          "translation": "Yellow",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 6
+        },
+        "carbon": {
+          "english": "Carbon",
+          "translation": "Carbon",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 6
+        },
+        "carbon_green": {
+          "english": "Carbon green",
+          "translation": "Carbon green",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 12
+        },
+        "carbon_violet": {
+          "english": "Carbon violet",
+          "translation": "Carbon violet",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 13
+        },
+        "carbon_red": {
+          "english": "Carbon red",
+          "translation": "Carbon red",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 10
+        },
+        "dark": {
+          "english": "Dark",
+          "translation": "Dark",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 4
+        },
+        "light": {
+          "english": "Light",
+          "translation": "Light",
+          "needs_translation": true,
+          "reverse_text": false,
+          "max_length": 5
+        }
       }
     },
     "governor": {

@@ -50,12 +50,6 @@ local function colors()   -- the colours of the drawing parts by mode, before ev
     style.WHITE, style.DIM, style.FIELD_DIM, style.RED = q.WHITE, q.DIM, q.FIELD_DIM, q.RED
 end
 
-function S.word(text)   -- in the radio's language; without an entry it stays German
-    local t = H.i18n
-    if t ~= nil and type(t.wort) == "function" then return t.wort(text) end
-    return text
-end
-
 function S.size() return M end
 
 function S.suffix()   -- the suffix of the picture files of this screen size (frame.lua R.suffix): "", "_640" or "_800"

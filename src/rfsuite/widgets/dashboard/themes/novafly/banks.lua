@@ -26,14 +26,12 @@ local RATE_RULES = {   -- rcRates per rate type: {times, divisor, decimals} for 
     [0] = {{1, 1, 0}, {1, 1, 0}}, {{1, 100, 2}, {1, 100, 2}}, {{10, 1, 0}, {1, 4, 1}, DEG_S}, {{1, 100, 2}, {1, 100, 2}},   -- NONE, BETAFLIGHT, RACEFLIGHT, KISS
     {{10, 1, 0}, {1, 4, 1}}, {{1, 100, 2}, {1, 100, 2}}, {{5, 1, 0}, {5, 40, 2}, DEG_S}}   -- ACTUAL, QUICK, ROTORFLIGHT; with the unit of the RC RATE column, the collective there is an angle (firmware: 480 degrees/s are 12 degrees)
 local SHIFT, FORMATS = {[0] = 1, 10, 100}, {"%.1f", "%.2f"}
-local RATE_AXES = {"ROLL", "NICK", "HECK", "KOLL."}
+local RATE_AXES = {"@i18n(widgets.dashboard.novafly.roll)@", "@i18n(widgets.dashboard.novafly.pitch)@", "@i18n(widgets.dashboard.novafly.tail)@", "@i18n(widgets.dashboard.novafly.collective)@"}
 local rateNumber, rateUnit, ratesFor = {}, {}, nil   -- the four chips, computed once per RC_TUNING read, not per paint
 
-local t = H.i18n
-local RPM_UNIT = (t and t.sprache ~= "de") and "rpm" or "U/min"   -- the unit of the headspeed: German U/min, in every other language rpm like the cockpit
+local RPM_UNIT = "@i18n(widgets.dashboard.novafly.rpm_unit)@"   -- the unit of the headspeed: German U/min, in every other language rpm like the cockpit
 local style, S = nil, nil
-local nova = {dirty = false, armState = "unknown", flightLog = {}, highDetail = true, italic = nil,
-              i18n = setmetatable({word = function(text) return text end}, {__index = t})}   -- the page translates its words itself (S.word); what style.lua draws does not go through the language a second time (instructions)
+local nova = {dirty = false, armState = "unknown", flightLog = {}, highDetail = true, italic = nil}
 local values = {pid = nil, rc = nil, gov = nil, govProfile = nil, failed = nil}
 local readFor = nil                  -- {bank, rate} for which the values were read; a change reads again
 local running = false
@@ -95,7 +93,7 @@ local function read(name, done)
     return true
 end
 
-local CHAIN = {{"PID_TUNING", "pid", "PID"}, {"RC_TUNING", "rc", "RATEN"}, {"GOVERNOR_CONFIG", "gov", "GOVERNOR"}, {"GOVERNOR_PROFILE", "govProfile", "GOVERNOR"}}
+local CHAIN = {{"PID_TUNING", "pid", "PID"}, {"RC_TUNING", "rc", "@i18n(widgets.dashboard.novafly.rates)@"}, {"GOVERNOR_CONFIG", "gov", "@i18n(widgets.dashboard.novafly.governor)@"}, {"GOVERNOR_PROFILE", "govProfile", "@i18n(widgets.dashboard.novafly.governor)@"}}
 local function chain(g, i)   -- reads the four messages one after another; an error stands in the foot, the chain goes on
     local link = CHAIN[i]
     if link == nil then   -- done: without an error the error line goes, with an error the tick reads again after the pause
@@ -187,15 +185,15 @@ local function drive()   -- the head band: governor, target headspeed, spool-up,
     local g, p = values.gov or {}, values.govProfile or {}
     if values.gov ~= govFor then governorCompute(g) end
     local mode = govName
-    local columns = {{"GOVERNOR", mode},
-                     {"DREHZAHL", p.governor_headspeed, RPM_UNIT},
-                     {"HOCHLAUF", govSpoolup, "s"},
+    local columns = {{"@i18n(widgets.dashboard.novafly.governor)@", mode},
+                     {"@i18n(widgets.dashboard.novafly.headspeed)@", p.governor_headspeed, RPM_UNIT},
+                     {"@i18n(widgets.dashboard.novafly.spoolup)@", govSpoolup, "s"},
                      {"GAIN", p.governor_gain}}
     for i = 1, 4 do
         local x, w = chipPlace(RATE_CHIP, i)
         if i == 1 then x, w = 0, x + w end
         local col = columns[i]
-        style.labelCentered(x + w / 2, 18, S.word(col[1]), style.WHITE, FONT_XS)
+        style.labelCentered(x + w / 2, 18, col[1], style.WHITE, FONT_XS)
         local z, color
         if i == 1 or i == 3 then z, color = col[2] or "--", col[2] and H.colors.green or style.FIELD_DIM   -- mode and spool-up are already text
         else z, color = number(col[2]) end
@@ -239,11 +237,11 @@ local function bar(R, s, active)   -- the measured headspeed as a column against
         if y < b.top + b.rim then y = b.top + b.rim end
         S.fillRect(b.x + 2, floor(y) - 1, b.w - 4, 2, style.WHITE)
     end
-    style.labelCentered(ACTUAL_X + ACTUAL_W / 2, 18, S.word("IST"), style.WHITE, FONT_XS)
+    style.labelCentered(ACTUAL_X + ACTUAL_W / 2, 18, "@i18n(widgets.dashboard.novafly.actual)@", style.WHITE, FONT_XS)
     local z, color = number(rpm)
     numberRow(ACTUAL_X + ACTUAL_W / 2, 35, z, FONT_STD, color, rpm ~= nil and RPM_UNIT or nil)
     for i = 1, 3 do
-        style.labelRight(BANK_RX, BANK_Y + (i - 1) * BANK_STEP, S.word("BANK") .. " " .. i, active == i and style.WHITE or style.FIELD_DIM, FONT_S)
+        style.labelRight(BANK_RX, BANK_Y + (i - 1) * BANK_STEP, "BANK " .. i, active == i and style.WHITE or style.FIELD_DIM, FONT_S)
     end
 end
 
@@ -282,20 +280,20 @@ local function paint()
         local y, h = RATE_CHIP.y, RATE_CHIP.h
         S.chip(x, y, w, h, i == 1 and "left" or nil)
         if i == 1 then x, w = 0, x + w end
-        style.labelCentered(x + w / 2, y + 15, S.word(RATE_AXES[i]), style.WHITE, FONT_S)
+        style.labelCentered(x + w / 2, y + 15, RATE_AXES[i], style.WHITE, FONT_S)
         local z = rateNumber[i]
         numberRow(x + w / 2, y + 40, z or "--", FONT_L, z and H.colors.green or style.FIELD_DIM, z and rateUnit[i] or nil)
     end
 
     local p = values.pid or {}
-    local gainAxes = {{"ROLL", 0}, {"NICK", 1}, {"HECK", 2}}
+    local gainAxes = {{"@i18n(widgets.dashboard.novafly.roll)@", 0}, {"@i18n(widgets.dashboard.novafly.pitch)@", 1}, {"@i18n(widgets.dashboard.novafly.tail)@", 2}}
     for i = 1, 3 do   -- gains per axis: P I D F B O
         local x, w = chipPlace(GAIN_CHIP, i)
         local y, h = GAIN_CHIP.y, GAIN_CHIP.h
         S.chip(x, y, w, h, i == 1 and "left" or nil)
         if i == 1 then x, w = 0, x + w end
         local a = gainAxes[i]
-        style.labelCentered(x + w / 2, y + 13, S.word(a[1]), style.WHITE, FONT_S)
+        style.labelCentered(x + w / 2, y + 13, a[1], style.WHITE, FONT_S)
         pair(x + 10, y + 36, "P", p["pid_" .. a[2] .. "_P"])
         pair(x + 62, y + 36, "I", p["pid_" .. a[2] .. "_I"])
         pair(x + 10, y + 58, "D", p["pid_" .. a[2] .. "_D"])
@@ -305,10 +303,10 @@ local function paint()
     end
 
     bar(R, s, active)
-    local foot = S.word("RATE") .. " " .. (rate and tostring(rate) or "?")
+    local foot = "RATE " .. (rate and tostring(rate) or "?")
     if values.failed ~= nil then   -- the red message needs the row: the rate type stays away while it stands
         style.label(140, FOOT_Y, foot, style.WHITE, FONT_S)
-        style.label(290, FOOT_Y, "MSP " .. S.word(values.failed), style.RED, FONT_S)
+        style.label(290, FOOT_Y, "MSP " .. values.failed, style.RED, FONT_S)
     else
         style.label(140, FOOT_Y, foot .. "   " .. (rtype or ""), style.WHITE, FONT_S)
     end
@@ -319,7 +317,6 @@ local function event()   -- there is nothing to tap on the banks page; every tou
 end
 
 local function open()
-    if t == nil then return false, "i18n_teile.lua missing" end
     if style == nil then
         local chunk, g = H.loadAsset(loadfile, "style.lua")
         if not chunk then return false, "style.lua does not load: " .. tostring(g) end

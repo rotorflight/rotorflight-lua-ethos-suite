@@ -53,7 +53,8 @@ local F_BIG = FONT_XL or FONT_L or FONT_STD
 local F_HUGE = FONT_XXL or FONT_XL or FONT_L or FONT_STD
 local FONT_STEPS = {F_HUGE, F_BIG, F_MID, F_STD_T, F_SM}
 
-local T = {timer = "FLUGTIMER", unknown = "ARM ?", link = "NO LINK", armed = "Heli ist scharf. Setup nur am Boden."}
+local T = {timer = "@i18n(widgets.dashboard.novafly.flight_timer)@", unknown = "@i18n(widgets.dashboard.novafly.arm_unknown)@",
+           link = "@i18n(widgets.dashboard.novafly.no_link)@", armed = "@i18n(widgets.dashboard.novafly.armed_setup)@"}
 
 local VFR_YEL, VFR_RED = 90, 80
 local GAUGE = {cx = 239.5, cy = 171.5}   -- the centre of the gauge; frame.lua draws the arc and the bars
@@ -112,17 +113,6 @@ local function loadAsset(fn, file)
     ok, x, reason = pcall(fn, BASE_ALT .. file)
     if ok and x then return x end
     return nil, tostring(first or (ok and reason) or x)
-end
-
-local LANGUAGE = nil   -- the texts in the radio's language, the same as in NovaFly; if the file does not load, the cockpit stays German
-do
-    local chunk = loadAsset(loadfile, "i18n_teile.lua")
-    local ok, tab = false, nil
-    if chunk then ok, tab = pcall(chunk, {laden = loadAsset}) end
-    if ok and type(tab) == "table" then
-        LANGUAGE = tab
-        T = {timer = tab.wort(T.timer), unknown = tab.b_arm_unbekannt, link = tab.f_kein_heli, armed = tab.f_setup_scharf}
-    end
 end
 
 local function measure(text, font)
@@ -930,17 +920,10 @@ local function checkLongPress()   -- true when the long press changed the colour
 end
 
 local firstWake = true
-local PAGE_WORDS = {"GOVERNOR", "DREHZAHL", "HOCHLAUF", "GAIN", "IST", "BANK", "RATE", "ROLL", "NICK", "HECK", "KOLL.",
-                      "AKKU", "ZELLE", "VERBRAUCH", "HOEHE MAX", "STEIGEN MAX", "SINKEN MAX", "FLUGZEIT", "PID", "RATEN", "MSP",
-                      "FLUGMODUS", "WINKEL", "HORIZONT", "RETTUNG"}
-local wordWarm = 1   -- the words of the pages, one translated ahead per wakeup: otherwise the first paint of a page translates them all at once (instructions)
 local function wake(box, tele)
     if firstWake then firstWake = false   -- the first wakeup already carries loading this file
     elseif colorSave.step ~= nil then colorStep() return st   -- a step of saving carries this tick alone
     elseif tableStage < 2 then tableStep()
-    elseif LANGUAGE ~= nil and wordWarm <= #PAGE_WORDS then
-        pcall(LANGUAGE.wort, PAGE_WORDS[wordWarm])
-        wordWarm = wordWarm + 1
     end
     local now = os.clock()
     if checkLongPress() then return st end
@@ -1111,7 +1094,7 @@ end
 
 do   -- the pages beside the cockpit: files of their own, they get the peak memo, a memo that outlives closing, and the suite
     local HELPERS = {hits = hits, tone = tone, peaks = peaks, loadAsset = loadAsset, fadeMasks = LINES.fadeMasks, cornerMasks = LINES.cornerMasks, memo = {},
-                    i18n = LANGUAGE, rf = function() return rf end, state = function() return st end,
+                    rf = function() return rf end, state = function() return st end,
                     open = function(name) return openMonitor(name) end, close = function() closeMonitor() end,
                     color = function() return colorNr end, colorName = function() return COLORS[colorNr] end,
                     light = function() return MODE.light end, lightName = function() return MODE.names[MODE.base[colorNr] or 1] end,   -- the mode and the light version of the colour (photo_frame_light_<name>.png)

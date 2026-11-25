@@ -4,10 +4,9 @@ if rf == nil and type(package.loaded["rfsuite.lib.require"]) == "function" then
     local ok, r = pcall(package.loaded["rfsuite.lib.require"], "widgets/dashboard/context.lua")
     if ok then rf = r end
 end
-local GERMAN = tostring((system.getLocale and system.getLocale()) or ""):sub(1, 2) == "de"
-local COLORS = GERMAN and {{"Blau", 1}, {"Magenta", 2}, {"Gruen", 3}, {"Orange", 4}, {"Gelb", 5}, {"Carbon", 6}, {"Carbon gruen", 7}, {"Carbon violett", 8}, {"Carbon rot", 9}}
-                        or {{"Blue", 1}, {"Magenta", 2}, {"Green", 3}, {"Orange", 4}, {"Yellow", 5}, {"Carbon", 6}, {"Carbon green", 7}, {"Carbon violet", 8}, {"Carbon red", 9}}
-local MODES = GERMAN and {{"Dunkel", 1}, {"Hell", 2}} or {{"Dark", 1}, {"Light", 2}}
+local COLORS = {{"@i18n(widgets.dashboard.novafly.blue)@", 1}, {"@i18n(widgets.dashboard.novafly.magenta)@", 2}, {"@i18n(widgets.dashboard.novafly.green)@", 3}, {"@i18n(widgets.dashboard.novafly.orange)@", 4}, {"@i18n(widgets.dashboard.novafly.yellow)@", 5},
+                {"@i18n(widgets.dashboard.novafly.carbon)@", 6}, {"@i18n(widgets.dashboard.novafly.carbon_green)@", 7}, {"@i18n(widgets.dashboard.novafly.carbon_violet)@", 8}, {"@i18n(widgets.dashboard.novafly.carbon_red)@", 9}}
+local MODES = {{"@i18n(widgets.dashboard.novafly.dark)@", 1}, {"@i18n(widgets.dashboard.novafly.light)@", 2}}
 local color, mode = 1, 1
 
 local function dash() return rf and rf.widgets and rf.widgets.dashboard end
@@ -16,9 +15,9 @@ local function configure()
     local d = dash()
     color = tonumber(d and d.getPreference and d.getPreference("color")) or 1   -- English keys (the maintainers' rule)
     mode = tonumber(d and d.getPreference and d.getPreference("mode")) or 1
-    local line = form.addLine(GERMAN and "Farbe" or "Colour")
+    local line = form.addLine("@i18n(widgets.dashboard.novafly.colour)@")
     form.addChoiceField(line, nil, COLORS, function() return color end, function(v) color = v end)
-    line = form.addLine(GERMAN and "Modus" or "Mode")
+    line = form.addLine("@i18n(widgets.dashboard.novafly.mode)@")
     form.addChoiceField(line, nil, MODES, function() return mode end, function(v) mode = v end)
 end
 

@@ -14272,6 +14272,274 @@
         "reverse_text": false,
         "translation": "Rescue"
       },
+      "novafly": {
+        "actual": {
+          "english": "ACTUAL",
+          "max_length": 6,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "ACTUEEL"
+        },
+        "alt_max": {
+          "english": "ALT MAX",
+          "max_length": 7,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "HOOGTE MAX"
+        },
+        "angle": {
+          "english": "ANGLE",
+          "max_length": 5,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "HOEK"
+        },
+        "arm_unknown": {
+          "english": "ARM ?",
+          "max_length": 5,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "ARM ?"
+        },
+        "armed_setup": {
+          "english": "Heli is armed. Setup only on the ground.",
+          "max_length": 40,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "Heli is armed. Setup alleen op de grond."
+        },
+        "battery": {
+          "english": "BATTERY",
+          "max_length": 7,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "ACCU"
+        },
+        "blue": {
+          "english": "Blue",
+          "max_length": 4,
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "Blue"
+        },
+        "carbon": {
+          "english": "Carbon",
+          "max_length": 6,
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "Carbon"
+        },
+        "carbon_green": {
+          "english": "Carbon green",
+          "max_length": 12,
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "Carbon green"
+        },
+        "carbon_red": {
+          "english": "Carbon red",
+          "max_length": 10,
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "Carbon red"
+        },
+        "carbon_violet": {
+          "english": "Carbon violet",
+          "max_length": 13,
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "Carbon violet"
+        },
+        "cell": {
+          "english": "CELL",
+          "max_length": 4,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "CEL"
+        },
+        "climb_max": {
+          "english": "CLIMB MAX",
+          "max_length": 9,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "STIJGEN MAX"
+        },
+        "collective": {
+          "english": "COLL.",
+          "max_length": 5,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "COLL."
+        },
+        "colour": {
+          "english": "Colour",
+          "max_length": 6,
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "Colour"
+        },
+        "consumption": {
+          "english": "CONSUMPTION",
+          "max_length": 11,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "VERBRUIK"
+        },
+        "dark": {
+          "english": "Dark",
+          "max_length": 4,
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "Dark"
+        },
+        "flight_mode": {
+          "english": "FLIGHT MODE",
+          "max_length": 11,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "VLIEGMODUS"
+        },
+        "flight_time": {
+          "english": "FLIGHT TIME",
+          "max_length": 11,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "VLIEGTIJD"
+        },
+        "flight_timer": {
+          "english": "FLIGHT TIMER",
+          "max_length": 12,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "VLUCHTTIMER"
+        },
+        "governor": {
+          "english": "GOVERNOR",
+          "max_length": 8,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "GOVERNOR"
+        },
+        "green": {
+          "english": "Green",
+          "max_length": 5,
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "Green"
+        },
+        "headspeed": {
+          "english": "HEADSPEED",
+          "max_length": 9,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "TOERENTAL"
+        },
+        "horizon": {
+          "english": "HORIZON",
+          "max_length": 7,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "HORIZON"
+        },
+        "light": {
+          "english": "Light",
+          "max_length": 5,
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "Light"
+        },
+        "magenta": {
+          "english": "Magenta",
+          "max_length": 7,
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "Magenta"
+        },
+        "mode": {
+          "english": "Mode",
+          "max_length": 4,
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "Mode"
+        },
+        "no_link": {
+          "english": "NO LINK",
+          "max_length": 7,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "NO LINK"
+        },
+        "orange": {
+          "english": "Orange",
+          "max_length": 6,
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "Orange"
+        },
+        "pitch": {
+          "english": "PITCH",
+          "max_length": 5,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "PITCH"
+        },
+        "rates": {
+          "english": "RATES",
+          "max_length": 5,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "RATES"
+        },
+        "rescue": {
+          "english": "RESCUE",
+          "max_length": 6,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "RESCUE"
+        },
+        "roll": {
+          "english": "ROLL",
+          "max_length": 4,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "ROL"
+        },
+        "rpm_unit": {
+          "english": "rpm",
+          "max_length": 3,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "rpm"
+        },
+        "sink_max": {
+          "english": "SINK MAX",
+          "max_length": 8,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "DALEN MAX"
+        },
+        "spoolup": {
+          "english": "SPOOL UP",
+          "max_length": 8,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "OPSPOELEN"
+        },
+        "tail": {
+          "english": "TAIL",
+          "max_length": 4,
+          "needs_translation": false,
+          "reverse_text": false,
+          "translation": "STAART"
+        },
+        "yellow": {
+          "english": "Yellow",
+          "max_length": 6,
+          "needs_translation": true,
+          "reverse_text": false,
+          "translation": "Yellow"
+        }
+      },
       "profile": {
         "english": "Profile",
         "max_length": 7,

@@ -117,14 +117,8 @@ local function mix(r1, g1, b1, r2, g2, b2, t)
                    math.floor(b1 + (b2 - b1) * t))
 end
 
-local function localize(text)                           -- LANGUAGE: every text that is measured or drawn goes through the language (German: unchanged)
-    local tt = nova.i18n
-    if tt and tt.word then return tt.word(text) end
-    return text
-end
-
 function style.measure(text, font)
-    text = localize(tostring(text or ""))
+    text = tostring(text or "")
     local k = nova.italic
     if k then
         local b, h = k.width(text, font)
@@ -136,7 +130,7 @@ function style.measure(text, font)
 end
 
 function style.drawTextAt(px, py, text, color, font)
-    text = localize(tostring(text or ""))
+    text = tostring(text or "")
     lcd.color(color or style.WHITE)
     local k = nova.italic
     if k then
@@ -193,7 +187,6 @@ function style.stepMemoCount() return stepMemoN end   -- for the tests
 function style.memoClear() stepMemo, stepMemoN = {}, 0 end   -- the font decisions belong to the screen that needed them
 
 local function stepDecide(text, f, maxReal)
-    text = localize(text)
     local k = nova.italic
     local fb = style.window()
     local key = ((k and k.off) and "g" or "k")
@@ -238,80 +231,7 @@ end
 
 local function systemMeasure(text, font)
     lcd.font(font or FONT_STD)
-    return lcd.getTextSize(localize(text))
-end
-
-local function systemDraw(px, py, text, color, font)
-    text = localize(text)
-    lcd.font(font or FONT_STD)
-    lcd.color(color or style.DIM)
-    lcd.drawText(math.floor(px), math.floor(py), text)
-    return (lcd.getTextSize(text))
-end
-
-local function stepSystem(text, f, maxReal)
-    text = localize(text)                              -- translate first, then shorten: otherwise shortened German stands on a radio in another language
-    local fb = style.window()
-    local key = "y\1" .. fb .. "\1" .. tostring(f) .. "\1" .. maxReal .. "\1" .. text
-    local e = stepMemo[key]
-    if e then return e.f, e.text end
-    local orig = key
-    while systemMeasure(text, f) > maxReal do
-        local smaller = STEP_DOWN[f]
-        if smaller then
-            f = smaller
-        else
-            while #text > 4 and systemMeasure(text .. "...", f) > maxReal do
-                text = text:sub(1, #text - 1)
-            end
-            text = text .. "..."
-            break
-        end
-    end
-    if stepMemoN >= STEP_MEMO_MAX then stepMemo, stepMemoN = {}, 0 end
-    stepMemo[orig] = {f = f, text = text}
-    stepMemoN = stepMemoN + 1
-    return f, text
-end
-
-function style.isWorkWord(text)   -- the words that only say that work is going on: the message line no longer draws them, a bar is drawn instead
-    if text == nil or text == "" then return false end
-    local t = nova.i18n
-    return text == t.laeuft or text == t.laeuft_still or text == t.k_warten or text == t.fi_loeschen_laeuft
-        or text == t.m_ansage_startet or text == t.grund.msp_nicht_bereit   -- "one moment" too only says that work is going on
-end
-
-function style.work()                         -- a screen that used to write "running ..." in the middle of the picture only reports here that work is going on
-    style.workWanted = true
-end
-
-function style.messageLine(text, color, left, leftColor)
-    text = tostring(text or "")
-    if style.sentenceBottom and (text == nova.i18n.laeuft or text == "") then text = style.sentenceBottom end   -- the flight controller speaks only in this row
-    if style.isWorkWord(text) then style.workWanted = true; text = "" end
-    left = left and tostring(left) or nil
-    if text == "" and not left then return end
-    style.bandDrawn = true
-
-    local bw, bh = style.window()
-
-    local _, th = systemMeasure("Ag", FONT_STD)
-    local height = (th or 19) + 2
-    lcd.color(style.BG)
-    lcd.drawFilledRectangle(0, bh - height - style.FRAME_THICK, bw,
-                            height + style.FRAME_THICK)
-    local y = bh - height - style.FRAME_THICK + 1
-
-    local x = 8
-    if left then
-        x = x + systemDraw(x, y, left, leftColor or style.DIM, FONT_STD) + 8
-    end
-    if text == "" then return end
-
-    if color == nil or color == style.DIM then color = style.NEON end
-    local f
-    f, text = stepSystem(text, FONT_STD, bw - x - 4)
-    style.bandEnd = x + systemDraw(x, y, text, color, f)   -- right edge of the word: the save bar starts there
+    return lcd.getTextSize(text)
 end
 
 style.BAR_FIELDS = 4   -- saving: four fields on the right of the message line, one per radio step
@@ -393,7 +313,7 @@ function style.title(text, color, font)
 end
 
 function style.drawTextRight(rx, py, text, color, font)
-    text = localize(tostring(text or ""))
+    text = tostring(text or "")
     local k = nova.italic
     if k and k.paintRight then
         lcd.color(color or style.WHITE)
