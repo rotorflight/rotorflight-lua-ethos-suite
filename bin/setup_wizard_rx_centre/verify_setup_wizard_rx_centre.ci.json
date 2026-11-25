@@ -1,0 +1,7 @@
+{
+  "id": "setup-wizard-rx-centre",
+  "name": "Setup Wizard stick center reads the FC and writes rc_center only when the sticks agree",
+  "step": "Check the Receiver step's stick center card",
+  "script": "bin/setup_wizard_rx_centre/verify_setup_wizard_rx_centre.lua",
+  "rationale": "Radios don't all send 1500 us with the sticks centered: some ELRS setups send 1520, and the FC\nthen reads every stick as slightly off center. The Receiver step's stick center card reads the FC's\nchannels (MSP_RX_CHANNELS, not the radio's own outputs: the offset is in what reaches the FC),\naverages roll, pitch and yaw, and writes rc_center.\n\nThe harness runs the real page and lib/setup_wizard_heli.lua with the screen, bus and wizard\nstubbed, and pins: the hint from one read when the card opens, an off trim named with nothing\nwritten, rc_center written with the rest of the RC config kept and registered for Discard, and\nthe stick center listed on Done.\n\n--self-test makes centreIsOff() always false and requires the write checks to go red."
+}
