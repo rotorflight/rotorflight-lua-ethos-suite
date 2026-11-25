@@ -234,6 +234,70 @@ function M.moved(peaks, excluded, minimum)
   return best
 end
 
+-- Stick center (rc_center), heli.js centreFromSamples(). Radios don't all
+-- send 1500 us with the sticks centered (some ELRS setups send 1520), and
+-- an offset reads as every stick held slightly off center. Measured on
+-- roll, pitch and yaw, which spring back to center; collective does not.
+M.CENTRE_MIN = 1400
+M.CENTRE_MAX = 1600
+-- A channel whose readings spread more than this (us) is still moving.
+local CENTRE_STILL_US = 10
+-- Roll, pitch and yaw must agree to within this (us); one further out has
+-- its trim (or subtrim) off center.
+local CENTRE_AGREE_US = 5
+-- Center is worth changing when it is off by more than this (us).
+local CENTRE_OFF_US = 3
+-- Sticks resting this close (us) to rc_center are taken to be centered.
+local CENTRE_NEAR_US = 60
+
+-- From samples[1..n] of the centered sticks, each {roll, pitch, yaw} in us:
+-- status, centre, axis. Values, not a table, so nothing is allocated.
+--   "ok", centre
+--   "noSignal"            no samples, or a channel reads 0
+--   "moving"              a stick moved while sampling
+--   "trim", centre, axis  axis (1 roll, 2 pitch, 3 yaw) is further than
+--                         CENTRE_AGREE_US from the others
+--   "range", centre       centre outside CENTRE_MIN..CENTRE_MAX
+function M.centreFromSamples(samples, n)
+  n = n or #samples
+  if n < 1 then return "noSignal" end
+  local m1, m2, m3
+  for axis = 1, 3 do
+    local lo, hi, sum = math.huge, -math.huge, 0
+    for i = 1, n do
+      local v = samples[i][axis] or 0
+      if v < lo then lo = v end
+      if v > hi then hi = v end
+      sum = sum + v
+    end
+    if lo <= 0 then return "noSignal" end
+    if hi - lo > CENTRE_STILL_US then return "moving" end
+    if axis == 1 then m1 = sum / n elseif axis == 2 then m2 = sum / n else m3 = sum / n end
+  end
+  local centre = round((m1 + m2 + m3) / 3)
+  -- The odd one out is the axis furthest from the middle value.
+  local middle = math.max(math.min(m1, m2), math.min(math.max(m1, m2), m3))
+  local worst, worstOff = 1, math.abs(m1 - middle)
+  if math.abs(m2 - middle) > worstOff then worst, worstOff = 2, math.abs(m2 - middle) end
+  if math.abs(m3 - middle) > worstOff then worst, worstOff = 3, math.abs(m3 - middle) end
+  if worstOff > CENTRE_AGREE_US then return "trim", centre, worst end
+  if centre < M.CENTRE_MIN or centre > M.CENTRE_MAX then return "range", centre end
+  return "ok", centre
+end
+
+-- Whether a measured centre differs enough from rc_center to change it.
+function M.centreIsOff(centre, rcCenter)
+  return math.abs(centre - rcCenter) > CENTRE_OFF_US
+end
+
+-- The centre the sticks show while they rest near rc_center, when it
+-- differs from rc_center, otherwise nil.
+function M.suggestedCentre(samples, n, rcCenter)
+  local status, centre = M.centreFromSamples(samples, n)
+  if status ~= "ok" or math.abs(centre - rcCenter) > CENTRE_NEAR_US then return nil end
+  return M.centreIsOff(centre, rcCenter) and centre or nil
+end
+
 -- An RX map from detected channels: detected[slot] = channel (0-based) for
 -- the slots found; every other slot gets the channels left over, in order.
 function M.mapFromDetected(detected, slots)

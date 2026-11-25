@@ -23,6 +23,14 @@
 --   throttle  the throttle range (MSP_SET_RC_CONFIG rc_min/max_throttle):
 --             measured from the throttle channel's travel, or the defaults,
 --             drawn as one bar with the FC's end points and the measured ones
+--   centre    the stick center (MSP_SET_RC_CONFIG rc_center), as the
+--             configurator's "Stick center" card: radios don't all send
+--             1500 us with the sticks centered (some ELRS setups send 1520).
+--             With the trims and sticks centered, Detect reads the FC's
+--             channels (MSP_RX_CHANNELS, not the radio's: the offset is in
+--             what reaches the FC) a few times and averages roll, pitch and
+--             yaw (heli.centreFromSamples()). One read when the card opens
+--             gives a hint when the resting sticks don't match rc_center.
 --
 -- Every change is sent straight away (the RX map and RC config apply in RAM)
 -- and registered with wiz.change() for Discard.
@@ -95,11 +103,30 @@ local T = {
   progress = "@i18n(app.modules.setup_wizard.progress_fmt)@",
   next = "@i18n(app.modules.setup_wizard.btn_next)@",
   start = "@i18n(app.modules.setup_wizard.btn_start)@",
+  centreTitle = "@i18n(app.modules.setup_wizard.rcv_centre_title)@",
+  centreText = "@i18n(app.modules.setup_wizard.rcv_centre_text)@",
+  centreFmt = "@i18n(app.modules.setup_wizard.rcv_centre_fmt)@",
+  centreDetect = "@i18n(app.modules.setup_wizard.rcv_centre_detect)@",
+  centreSampling = "@i18n(app.modules.setup_wizard.rcv_centre_sampling)@",
+  centreHintFmt = "@i18n(app.modules.setup_wizard.rcv_centre_hint_fmt)@",
+  centreSetFmt = "@i18n(app.modules.setup_wizard.rcv_centre_set_fmt)@",
+  centreSameFmt = "@i18n(app.modules.setup_wizard.rcv_centre_same_fmt)@",
+  centreNoSignal = "@i18n(app.modules.setup_wizard.rcv_centre_nosignal)@",
+  centreMoving = "@i18n(app.modules.setup_wizard.rcv_centre_moving)@",
+  centreTrimFmt = "@i18n(app.modules.setup_wizard.rcv_centre_trim_fmt)@",
+  centreRangeFmt = "@i18n(app.modules.setup_wizard.rcv_centre_range_fmt)@",
 }
 
 -- The screens of the step, in order: prepare, link (and its protocol), order
--- (and its presets, with the signal check), detect, sticks, throttle, done.
-local RECEIVER_SCREENS = 6
+-- (and its presets, with the signal check), detect, sticks, throttle, centre,
+-- done.
+local RECEIVER_SCREENS = 7
+
+-- Stick center: Detect reads the FC's channels CENTRE_READS times,
+-- CENTRE_GAP s apart. Each MSP reply blanks S.Port telemetry for 250 ms (see
+-- STATUS_POLL), so it reads only when asked, and once when the card opens.
+local CENTRE_READS = 5
+local CENTRE_GAP = 0.3
 
 local PRESET_NAMES = {
   elrs = "@i18n(app.modules.setup_wizard.rcv_preset_elrs)@",
@@ -248,6 +275,15 @@ local function new(wiz)
   -- The throttle channel differs from the radio by more than the arm margin allows (#2694). Kept
   -- apart from `mismatch`, which names only the first channel that differs.
   local throttleOff = false
+
+  -- Stick center: {roll, pitch, yaw} as the FC reads them, reused in place.
+  local centreSamples = {}
+  for i = 1, CENTRE_READS do centreSamples[i] = {0, 0, 0} end
+  local centreRaw = {}
+  local centreCount, centreSampling, centreHintWanted = 0, false, false
+  local centreInFlight, centreAt, centreNextAt = false, -1000, 0
+  local centreStatus, centreValue, centreAxis, centreApplied = nil, nil, nil, false
+  local centreHint = nil
 
   -- The radio's channel outputs, in us: raw by receiver channel, rc by function
   -- through the receiver map (as MSP_RX_CHANNELS and MSP_RC would answer).
@@ -403,9 +439,23 @@ local function new(wiz)
     checkWanted, movedAt = true, -1000
   end
 
+  local function writeCentre(us)
+    wiz.change("rc_config", rcConfig, function(o)
+      bus.publish("msp.request", rcConfigCodec.buildWriteMessage(o))
+    end)
+    rcConfig.rc_center = us
+    bus.publish("msp.request", rcConfigCodec.buildWriteMessage(rcConfig))
+  end
+
   local function go(name)
     screen, note, noteAccent, measuring = name, nil, nil, false
     if name == "sticks" then resetTravel() end
+    centreSampling = false
+    if name == "centre" then
+      -- One read once the sticks have settled, for the hint.
+      centreStatus, centreHint, centreHintWanted = nil, nil, true
+      centreNextAt = os.clock() + CHECK_SETTLE
+    end
     setLive()
     wiz.rebuild()
   end
@@ -825,6 +875,77 @@ local function new(wiz)
     return mismatch and string.format(T.mismatchFmt, channelLabel(mismatch)) or nil
   end
 
+  -- Stick center ------------------------------------------------------------
+
+  local function startCentre()
+    centreSampling, centreCount = true, 0
+    centreStatus, centreHint, centreHintWanted = nil, nil, false
+    centreNextAt = 0
+    wiz.rebuild()
+  end
+
+  local function finishCentre()
+    centreSampling = false
+    local st, c, axis = heli.centreFromSamples(centreSamples, centreCount)
+    centreStatus, centreValue, centreAxis, centreApplied = st, c, axis, false
+    if st == "ok" and heli.centreIsOff(c, rcConfig.rc_center) then
+      writeCentre(c)
+      centreApplied = true
+    end
+    wiz.rebuild()
+  end
+
+  -- One MSP_RX_CHANNELS reply: roll, pitch and yaw through the RX map.
+  local function onCentreRead()
+    centreInFlight = false
+    local slot = centreSamples[centreSampling and centreCount + 1 or 1]
+    for a = 1, 3 do
+      local ch = rxMap and rxMap[rxMapCodec.FIELDS[a]]
+      slot[a] = ch and centreRaw[ch + 1] or 0
+    end
+    if not centreSampling then
+      local h = heli.suggestedCentre(centreSamples, 1, rcConfig.rc_center)
+      if h ~= centreHint then
+        centreHint = h
+        wiz.rebuild()
+      end
+      return
+    end
+    centreCount = centreCount + 1
+    if centreCount >= CENTRE_READS then finishCentre() end
+  end
+  local function onCentreError() centreInFlight = false end
+
+  local function centreWakeup(now)
+    if not rxMap or not rcConfig then return end
+    if not centreSampling and not centreHintWanted then return end
+    if centreInFlight and now - centreAt <= CHECK_GIVE_UP then return end
+    if now < centreNextAt then return end
+    centreHintWanted = false
+    centreInFlight, centreAt, centreNextAt = true, now, now + CENTRE_GAP
+    local m = rcChannels.buildReadMessage(rcChannels.RX_CHANNELS_COMMAND, centreRaw, onCentreRead, onCentreError)
+    m.maxRetries = 0
+    bus.publish("msp.request", m)
+  end
+
+  -- The centre card's status line.
+  local function centreLine()
+    if centreSampling then return T.centreSampling end
+    if centreHint then return string.format(T.centreHintFmt, centreHint, rcConfig.rc_center) end
+    if centreStatus == "ok" then
+      return string.format(centreApplied and T.centreSetFmt or T.centreSameFmt, centreValue)
+    elseif centreStatus == "noSignal" then
+      return T.centreNoSignal
+    elseif centreStatus == "moving" then
+      return T.centreMoving
+    elseif centreStatus == "trim" then
+      return string.format(T.centreTrimFmt, FUNCTION_NAMES[centreAxis])
+    elseif centreStatus == "range" then
+      return string.format(T.centreRangeFmt, centreValue, heli.CENTRE_MIN, heli.CENTRE_MAX)
+    end
+    return nil
+  end
+
 
   -- Screens -----------------------------------------------------------------
 
@@ -963,7 +1084,18 @@ local function new(wiz)
         end},
       }, canUse and 2 or 1)
       local rowField = scr:row(function() go("sticks") end, nil,
-        {text = T.next, disabled = measuring, press = function() go("done") end})
+        {text = T.next, disabled = measuring, press = function() go("centre") end})
+      return field or rowField
+
+    elseif screen == "centre" then
+      scr:text(T.centreTitle, T.centreText .. " " .. string.format(T.centreFmt, rcConfig.rc_center), centreLine())
+      scr:step(6, RECEIVER_SCREENS)
+      functionBars(nil)
+      local field = scr:checks({
+        {answer = T.centreDetect, disabled = centreSampling, press = startCentre},
+      })
+      local rowField = scr:row(function() go("throttle") end, nil,
+        {text = T.next, disabled = centreSampling, press = function() go("done") end})
       return field or rowField
 
     else -- done
@@ -971,13 +1103,14 @@ local function new(wiz)
       -- does: Next when nothing changed, Save and continue when the EEPROM is owed.
       scr:text(T.doneTitle, wiz.hasPending() and T.doneSave or T.doneKeep)
       scr:picture(receiverPicture)
-      scr:step(6, RECEIVER_SCREENS)
+      scr:step(7, RECEIVER_SCREENS)
       scr:checks({
         {label = T.protocol, value = protocolName(currentProtocol())},
         {label = T.orderTitle, value = presetName(mapArray(rxMap))},
         {label = T.throttleTitle, value = fcRangeText()},
+        {label = T.centreTitle, value = rcConfig.rc_center .. " us"},
       })
-      return scr:row(function() go("throttle") end)
+      return scr:row(function() go("centre") end)
     end
   end
 
@@ -985,8 +1118,8 @@ local function new(wiz)
 
   function self.wakeup(now)
     local fresh = false
-    if (screen == "order" or screen == "detect" or screen == "sticks" or screen == "throttle")
-        and now - localAt >= LOCAL_READ then
+    if (screen == "order" or screen == "detect" or screen == "sticks" or screen == "throttle"
+        or screen == "centre") and now - localAt >= LOCAL_READ then
       localAt = now
       readLocal()
       fresh = true
@@ -1011,6 +1144,8 @@ local function new(wiz)
       if fresh then detectWakeup() end
     elseif screen == "throttle" then
       throttleWakeup()
+    elseif screen == "centre" then
+      centreWakeup(now)
     end
     if fresh and barCount > 0 and readBars() then wiz.invalidate() end
     if screen == "sticks" or screen == "throttle" or screen == "order" then checkWakeup(now) end
@@ -1019,6 +1154,7 @@ local function new(wiz)
   function self.released() scr:refresh() end
   function self.leave()
     measuring = false
+    centreSampling, centreHintWanted = false, false
     self.liveRc = nil
   end
 
