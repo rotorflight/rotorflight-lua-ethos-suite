@@ -18,7 +18,7 @@ local GAP = 4                -- between number and unit of a row, points of the 
 local gap = GAP           -- the same gap in the window, computed once per paint in S.background
 local M = {X = style.sx, Y = style.sy, sx = style.sx, sy = style.sy}   -- the page's window for frame.lua: style.lua's own converters, without an extra call (instructions per paint); frame.lua hangs M.q on it (R.refresh)
 
-local function suiteModule(path)   -- a module of the suite through its loader; nil without the loader (rfsuite 2.3.x) or without the module
+local function suiteModule(path)   -- a module of the suite through its loader; nil without the loader or without the module
     local loader = package.loaded["rfsuite.lib.require"]
     if type(loader) ~= "function" then return nil end
     local ok, m = pcall(loader, path)

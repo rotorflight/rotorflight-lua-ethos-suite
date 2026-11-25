@@ -1,6 +1,6 @@
 -- NovaFly cockpit: one box over the whole screen; cockpit.lua is loaded once and serves all three flight phases
-local rf = package.loaded.rfsuite
-if rf == nil and type(package.loaded["rfsuite.lib.require"]) == "function" then
+local rf = nil
+if type(package.loaded["rfsuite.lib.require"]) == "function" then
     local ok, r = pcall(package.loaded["rfsuite.lib.require"], "widgets/dashboard/context.lua")
     if ok then rf = r end
 end

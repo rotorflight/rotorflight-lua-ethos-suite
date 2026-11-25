@@ -1,6 +1,6 @@
--- NovaFly theme menu: the colour of the cockpit and the mode (dark or light), kept per model like every theme setting of the suite
-local rf = package.loaded.rfsuite
-if rf == nil and type(package.loaded["rfsuite.lib.require"]) == "function" then
+-- NovaFly theme menu: the colour of the cockpit and the mode (dark or light), kept in the theme's section of settings.ini like every theme setting of the suite
+local rf = nil
+if type(package.loaded["rfsuite.lib.require"]) == "function" then
     local ok, r = pcall(package.loaded["rfsuite.lib.require"], "widgets/dashboard/context.lua")
     if ok then rf = r end
 end

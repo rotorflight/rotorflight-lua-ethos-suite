@@ -4,11 +4,10 @@
 -- background (light: bands from white to the tint of the colour) and the lines (light: dark core).
 local BASE = ...
 local BASE_ALT = tostring(BASE):gsub("^SCRIPTS:/", "/scripts/")
-local SUITE_NEW = type(package.loaded["rfsuite.lib.require"]) == "function"   -- the suite with lib/require.lua and lib/settings_store.lua (not rfsuite 2.3.x)
 local NO_LINK = {link = false}
 local THEME_KEY = tostring(BASE):find("/widgets/dashboard/themes/novafly/", 1, true) and "novafly" or "user/novafly"   -- the section of the theme settings: the shipped theme or the copy under rfsuite.user
-local rf = package.loaded.rfsuite
-if rf == nil and type(package.loaded["rfsuite.lib.require"]) == "function" then
+local rf = nil
+if type(package.loaded["rfsuite.lib.require"]) == "function" then
     local ok, r = pcall(package.loaded["rfsuite.lib.require"], "widgets/dashboard/context.lua")
     if ok then rf = r end
 end
@@ -64,7 +63,7 @@ local BEC_FILL_BYTE, BEC_MIN, BEC_MAX = 25.5, 3.0, 13.0
 local HEADING = {x = 147, y = 27, r = 16, rim = 1, tip = 12, base = 10, corner = 145}
 local CPU_NAMES = {"RT Load", "CPU Load", "System Load", "MCU Load",   -- RT Load is the live value, CPU Load the average (Rotorflight sends both)
                    ids = {{0x51D2, "RT Load"}, {0x51D0, "CPU Load"}, {0x51D1, "System Load"}}}   -- the same sensors by their id when no name matches
-local YAW_SOURCES ={0x5210, 0x1103, 0x5022}   -- rfsuite 2.3.1 no longer passes yaw and altitude through getSensor: the theme then reads the Ethos sensors itself (S.Port, CRSF, the suite's simulator)
+local YAW_SOURCES ={0x5210, 0x1103, 0x5022}   -- the suite does not pass yaw through getSensor, nor the altitude without its sensor: the theme then reads the Ethos sensors itself (S.Port, CRSF, the suite's simulator)
 local ALT_SOURCES = {0x0100, 0x10B2, 0x5016}
 local FLIGHT_MODE_SOURCES = {0x5121, 0x1201}   -- the firmware's raw flightModeFlags (S.Port, CRSF): both suites only create the sensor, the theme reads it itself
 
@@ -410,16 +409,15 @@ end
 
 local function dash() return rf and rf.widgets and rf.widgets.dashboard end
 
-local colorSave = {step = nil, settings = nil, pending = nil, at = nil}   -- the suite without a shared table: the long-press colour goes to settings.ini in three ticks (read; set and write; publish) - in one call together over 28 000 instructions, Ethos stops at 20 000
+local colorSave = {step = nil, settings = nil, pending = nil, at = nil}   -- the long-press colour goes to settings.ini in three ticks (read; set and write; publish) - in one call together over 28 000 instructions, Ethos stops at 20 000
 local COLOR_GAP = 2   -- s without a tick: the dashboard was covered, a settings page may have saved meanwhile; the read state is stale, the ticks start with a fresh read
 
-local function readColor()   -- colour and mode as saved (configure.lua); if a connected model has no entry, the defaults apply as on the settings page
+local function readColor()   -- colour and mode as saved (configure.lua); without an entry the defaults apply, as on the settings page
     local d = dash()
     if not (d and d.getPreference) then return end
     local v = tonumber(d.getPreference("color"))   -- English keys (the maintainers' rule)
     local m = tonumber(d.getPreference("mode"))    -- 1 dark, 2 light
-    local modelPrefs = rf and rf.session and rf.session.modelPreferences   -- rfsuite 2.3.x: colour and mode belong to the FC; without a model what applies stays
-    if modelPrefs ~= nil then v, m = v or 1, m or 1 end
+    v, m = v or 1, m or 1
     local before, beforeLight = colorNr, MODE.light
     if colorSave.step == nil and v and COLORS[v] then colorNr = floor(v) end   -- while the long press saves, its colour applies
     if m ~= nil and (m == 2) ~= MODE.light then MODE.set(m == 2) end
@@ -429,7 +427,7 @@ local function readColor()   -- colour and mode as saved (configure.lua); if a c
     end
 end
 
-local function getStore()   -- the suite's lib/settings_store.lua, where it exists (not in rfsuite 2.3.x)
+local function getStore()   -- the suite's lib/settings_store.lua; nil if it does not load
     local req = package.loaded["rfsuite.lib.require"]
     if type(req) ~= "function" then return nil end
     local ok, store = pcall(req, "lib/settings_store.lua")
@@ -460,18 +458,10 @@ local function colorStep()   -- one step of saving per tick, like the settings p
     if colorSave.step == nil then colorSave.settings, colorSave.at = nil, nil end
 end
 
-local function nextColor()                   -- false when nothing is saved: rfsuite 2.3.x keeps the colour per model and has no model without a link; the suite without a shared table does not wake the theme without a link
+local function nextColor()                   -- false when nothing is saved: without a link the suite does not wake the theme, and a colour still being saved goes first
     local newNr = colorNr % #COLORS + 1
-    if getStore() ~= nil then
-        if not (rf and rf.session and rf.session.isConnected == true) or colorSave.step ~= nil then return false end
-        colorSave.pending, colorSave.step, colorSave.at = newNr, 1, os.clock()
-    else
-        local d = dash()
-        if d and d.savePreference then
-            local ok, r = pcall(d.savePreference, "color", newNr)
-            if ok and r == false then return false end
-        end
-    end
+    if getStore() == nil or not (rf and rf.session and rf.session.isConnected == true) or colorSave.step ~= nil then return false end
+    colorSave.pending, colorSave.step, colorSave.at = newNr, 1, os.clock()
     colorNr = newNr
     return true
 end
@@ -594,7 +584,7 @@ function flight.altitude(t, alt, now)   -- the highest altitude and the stronges
     end
 end
 
-function flight.lastTime()   -- the flight time of the last flight as the suite keeps it per model (lastflighttime in seconds, tasks/scheduler/timer/timer.lua); nil without an entry
+function flight.lastTime()   -- the flight time of the last flight as the suite keeps it per model (session.modelPreferences, general.lastflighttime in seconds); nil without an entry
     local ini = rf and rf.ini
     local prefs = rf and rf.session and rf.session.modelPreferences
     if type(ini) ~= "table" or type(ini.getvalue) ~= "function" or type(prefs) ~= "table" then return nil end
@@ -627,9 +617,9 @@ local function read(tele)
         s.rssi, s.vfr = g("link"), g("vfr")
         s.rpm = g("rpm")
         if s.rpm and s.rpm > rpmPeak then rpmPeak = s.rpm end
-        local function readTemp(k)   -- temperatures in the radio's unit: in Fahrenheit the suite gives the value in °F and names the unit (second or third return value); limits and sign follow it
-            local v, a, b = tele.getSensor(k)
-            local unit = (type(a) == "string" and a:find("\194\176") and a) or (type(b) == "string" and b:find("\194\176") and b) or nil
+        local function readTemp(k)   -- temperatures in the radio's unit: in Fahrenheit the suite gives the value in °F and names the unit as the third return value; limits and sign follow it
+            local v, _, b = tele.getSensor(k)
+            local unit = (type(b) == "string" and b:find("\194\176") and b) or nil
             return tonumber(v), unit == "\194\176F"
         end
         local tempEsc, escF = readTemp("temp_esc")
@@ -646,13 +636,11 @@ local function read(tele)
         if s.fuel ~= nil and (s.fuel < 0 or s.fuel > 100) then s.fuel = nil end
         s.cells = cells
         s.used = g("consumption")
-        local alt, _, altUnit = tele.getSensor("altitude")   -- rfsuite 2.3.x converts to feet itself and names "ft" as the third value
+        local alt, _, altUnit = tele.getSensor("altitude")   -- the unit is the third value; a value in feet comes as ft
         alt = tonumber(alt)
         if alt == nil and altSrc then alt, altUnit = sourceValue(altSrc), nil end
         s.alt = nonZero("alt", alt)
-        local loc = rf and rf.preferences and rf.preferences.localizations   -- the unit as set in the suite: rfsuite.preferences.localizations.altitude_unit 1 = feet (sensor_table.lua)
-        s.altFt = altUnit == "ft" or (altUnit ~= "m" and type(loc) == "table" and loc.altitude_unit == 1) or false
-        if s.alt ~= nil and s.altFt and altUnit ~= "ft" then s.alt = s.alt * 3.28084 end   -- only a value in metres is converted
+        s.altFt = altUnit == "ft"
         if s.alt ~= nil then flight.altitude(flight.session, s.alt, os.clock()) end
         s.cpu = sourceValue(cpuSrc)
         if s.cpu ~= nil and (s.cpu < 0 or s.cpu > 100) then s.cpu = nil end
@@ -802,7 +790,7 @@ local function paint(x, y, w, h, s)
         return
     end
     s = s or st
-    if s.link and SUITE_NEW and rf and rf.session and rf.session.isConnected == false then s = NO_LINK end   -- the suite without a shared table wakes the box only once when the link drops; if that falls into the 0.1 s, the picture still shows NO LINK
+    if s.link and rf and rf.session and rf.session.isConnected == false then s = NO_LINK end   -- the suite wakes the box only once when the link drops; if that falls into the 0.1 s, the picture still shows NO LINK
     local m = activeMonitor and MONITORS[activeMonitor]
     if m then
         m.paint(x, y, w, h, s)

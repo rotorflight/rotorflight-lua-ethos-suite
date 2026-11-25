@@ -21,7 +21,7 @@ local style, S = nil, nil
 local nova = {dirty = false, armState = "unknown", flightLog = {}, highDetail = true, italic = nil}   -- the radio's font, no masks
 local IMAGES = H.memo.images or {}   -- photo and photo frame stay loaded beyond closing the page: every opening loaded them
 H.memo.images = IMAGES               -- again otherwise, and the X18 stopped
-local battery, batteryFor = nil, nil   -- the suite without session.batteryConfig: BATTERY_CONFIG over the bus, and the heli (mcu_id) it belongs to
+local battery, batteryFor = nil, nil   -- BATTERY_CONFIG over the bus, and the heli (mcu_id) it belongs to
 local request = {fc = nil, from = 0}   -- the request without an answer (for which heli) and from when the next may go
 
 local function loadPhoto()   -- the model picture the pilot gave the model in Ethos, or nil; the cockpit knows its place on the card (H.photoPath)
@@ -117,11 +117,8 @@ local function paint()
     style.labelCentered(cx, a.y + 17, "@i18n(widgets.dashboard.novafly.battery)@", style.WHITE, FONT_S)
     z, f = number(s.fuel ~= nil and floor(s.fuel + 0.5) or nil)
     S.row(cx, a.y + 45, {{z, s.fuel ~= nil and cellCol or f, FONT_XL}, {"%", style.WHITE, FONT_S}})
-    local rf = H.rf()
-    local bc = rf and rf.session and rf.session.batteryConfig
-    local chosen = type(bc) == "table" and type(bc.profiles) == "table" and tonumber(bc.profiles[rf.session.activeBatteryType]) or nil   -- rfsuite 2.3.x: the capacity of the chosen battery (session.activeBatteryType, 0 to 5), as the suite itself computes it
-    if type(bc) ~= "table" then bc = battery end
-    local cap = (chosen ~= nil and chosen > 0) and chosen or (type(bc) == "table" and tonumber(bc.batteryCapacity) or nil)   -- without a choice or without a capacity in the profile the one from connecting
+    local bc = battery   -- BATTERY_CONFIG of the connected heli (tick)
+    local cap = type(bc) == "table" and tonumber(bc.batteryCapacity) or nil
     if cap ~= nil and cap <= 0 then cap = nil end
     local cells = s.cells or (type(bc) == "table" and tonumber(bc.batteryCellCount)) or nil
     if cells ~= nil and cells <= 0 then cells = nil end
@@ -170,9 +167,9 @@ local function fcNow()   -- the connected heli (the suite's mcu_id); nil without
     return se.mcu_id
 end
 
-local function tick()   -- every wakeup (cockpit.lua): without session.batteryConfig BATTERY_CONFIG once per heli, one request at a time, after a failed one BATTERY_PAUSE
+local function tick()   -- every wakeup (cockpit.lua): BATTERY_CONFIG once per heli, one request at a time, after a failed one BATTERY_PAUSE
     local rf = H.rf()
-    if S == nil or rf == nil or type(rf.session) ~= "table" or type(rf.session.batteryConfig) == "table" then return end
+    if S == nil or rf == nil or type(rf.session) ~= "table" then return end
     local fc = fcNow()
     if batteryFor ~= fc then battery, batteryFor = nil, nil end   -- another heli or none: the values of the previous one no longer apply
     if fc == nil or battery ~= nil or request.fc ~= nil or os.clock() < request.from then return end

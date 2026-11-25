@@ -18,9 +18,9 @@ local FOOT_Y = 277
 local NO_ZONE = {x = 0, y = 0, w = 0, h = 0}   -- there is no BACK on a page: back is the swipe
 local RATE_TYPES = {[0] = "NONE", "BETAFLIGHT", "RACEFLIGHT", "KISS", "ACTUAL", "QUICK", "ROTORFLIGHT"}
 local GOV_MODES = {[0] = "OFF", "LIMIT", "DIRECT", "ELECTRIC", "NITRO"}   -- the firmware's gov_mode; at 3 and 4 the FC governs the headspeed
-local GOV_MODES_OLD = {[0] = "OFF", "PASSTHROUGH", "STANDARD", "MODE1", "MODE2"}   -- below API 12.09 (rfsuite 2.3.0 GOVERNOR_CONFIG.lua); from 2 the FC governs, the suite then offers the target headspeed
-local govName, govFrom, govFor = nil, 3, nil   -- the name of the mode and from which mode the FC governs, once per GOVERNOR_CONFIG read
-local govSpoolup = nil                  -- gov_spoolup_time in tenths of a second, with one decimal like the suite (GOVERNOR_CONFIG.lua: decimals 1, scale 10)
+local GOV_FROM = 3
+local govName, govFor = nil, nil   -- the name of the mode, once per GOVERNOR_CONFIG read
+local govSpoolup = nil                  -- gov_spoolup_time in tenths of a second, with one decimal like the suite (lib/msp_governor_config.lua: decimals 1)
 local DEG_S, DEG = "\194\176/s", "\194\176"
 local RATE_RULES = {   -- rcRates per rate type: {times, divisor, decimals} for axes 1-3 and collective, shown raw * times / divisor
     [0] = {{1, 1, 0}, {1, 1, 0}}, {{1, 100, 2}, {1, 100, 2}}, {{10, 1, 0}, {1, 4, 1}, DEG_S}, {{1, 100, 2}, {1, 100, 2}},   -- NONE, BETAFLIGHT, RACEFLIGHT, KISS
@@ -42,55 +42,8 @@ local chainFailed, retryAt = false, nil -- a message of this chain did not come;
 
 local CODEC = {PID_TUNING = "lib/msp_pid_tuning.lua", RC_TUNING = "lib/msp_rc_tuning.lua",
                GOVERNOR_CONFIG = "lib/msp_governor_config.lua", GOVERNOR_PROFILE = "lib/msp_governor_profile.lua"}
-local AXIS = {roll = 0, pitch = 1, yaw = 2}
-
-local function pidNames(d)   -- the codec's PID fields (roll_p) in the names of rfsuite 2.3.x (pid_0_P) that paint() reads
-    local w = {}
-    for k, v in pairs(d) do
-        local axis, letter = nil, nil
-        if type(k) == "string" then axis, letter = string.match(k, "^(%a+)_(%a)$") end
-        if axis ~= nil and AXIS[axis] ~= nil then w["pid_" .. AXIS[axis] .. "_" .. string.upper(letter)] = v else w[k] = v end
-    end
-    return w
-end
-
-local function read(name, done)
-    local rf = H.rf()
-    local q = rf and rf.tasks and rf.tasks.msp
-    if q == nil or q.api == nil then   -- without the MSP queue of rfsuite 2.3.x: the suite's bus with its codec
-        return S.busRead(CODEC[name], function(d, reason)
-            if d ~= nil and name == "PID_TUNING" then d = pidNames(d) end
-            done(d, reason)
-        end)
-    end
-    local ok, api = pcall(q.api.load, name)
-    if not ok or type(api) ~= "table" then return false end
-    local fields = api.__rfReadStructure
-    if type(fields) ~= "table" or #fields == 0 then fields = api.__rfWriteStructure end
-    local once = false
-    api.setCompleteHandler(function()
-        if once then return end
-        once = true
-        local w = {}
-        if type(fields) == "table" then
-            for i = 1, #fields do
-                local e = fields[i]
-                if type(e) == "table" and e.field then
-                    local ok2, v = pcall(api.readValue, e.field)
-                    if ok2 and v ~= nil then w[e.field] = v end
-                end
-            end
-        end
-        done(w)
-    end)
-    api.setErrorHandler(function()
-        if once then return end
-        once = true
-        done(nil)
-    end)
-    local ok3, r = pcall(api.read)
-    if not ok3 or r == false then once = true return false end
-    return true
+local function read(name, done)   -- one message over the suite's bus with its codec (the PID fields named by axis: roll_p, pitch_i ...)
+    return S.busRead(CODEC[name], done)
 end
 
 local CHAIN = {{"PID_TUNING", "pid", "PID"}, {"RC_TUNING", "rc", "@i18n(widgets.dashboard.novafly.rates)@"}, {"GOVERNOR_CONFIG", "gov", "@i18n(widgets.dashboard.novafly.governor)@"}, {"GOVERNOR_PROFILE", "govProfile", "@i18n(widgets.dashboard.novafly.governor)@"}}
@@ -125,26 +78,18 @@ local function start(s, keep)   -- keep: the same bank and rate once more, what 
     chain(generation, 1)
 end
 
-local function queueEmpty()   -- rfsuite 2.3.x: nothing left in the MSP queue; without it (master) nil
-    local rf = H.rf()
-    local q = rf and rf.tasks and rf.tasks.msp and rf.tasks.msp.mspQueue
-    if q == nil or type(q.isProcessed) ~= "function" then return nil end
-    local ok, empty = pcall(q.isProcessed, q)
-    return ok and empty == true
-end
-
 local function tick()   -- every wakeup: a change of bank or rate on the FC reads the values again; a lost request and an error are read again
     if style == nil or readFor == nil then return end
     local now = os.clock()
-    if running then   -- lost: the timeout is over, or 2.3.x emptied the queue and took the callback away
-        if now - askedAt < TIMEOUT and queueEmpty() ~= true then return end
+    if running then   -- lost: the timeout is over
+        if now - askedAt < TIMEOUT then return end
         generation, running = generation + 1, false
         values.failed, retryAt = CHAIN[linkNow][3], now + PAUSE
     end
     local s = H.state() or {}
     local bank, rate = s.bank and floor(s.bank) or nil, s.rate and floor(s.rate) or nil
     if bank ~= readFor.bank or rate ~= readFor.rate then start(s)
-    elseif retryAt ~= nil and now >= retryAt and queueEmpty() ~= false then start(s, true) end
+    elseif retryAt ~= nil and now >= retryAt then start(s, true) end
 end
 
 local function number(v)
@@ -169,15 +114,9 @@ local function pair(x, y, letter, v)
     style.label(x + 16, y - 8, z, color, FONT_STD)
 end
 
-local function governorCompute(g)   -- the table of the modes, as the suite picks it by the API version (utils.apiVersionCompare); master connects only from 12.09
-    local rf = H.rf()
-    local u, old = rf and rf.utils, false
-    if u ~= nil and type(u.apiVersionCompare) == "function" then
-        local ok, v = pcall(u.apiVersionCompare, "<", {12, 0, 9})
-        old = ok and v == true
-    end
+local function governorCompute(g)   -- the name of the mode and the spool-up time of a GOVERNOR_CONFIG
     local m = g.gov_mode and floor(g.gov_mode)
-    govName, govFrom, govFor = m and (old and GOV_MODES_OLD or GOV_MODES)[m] or nil, old and 2 or 3, values.gov
+    govName, govFor = m and GOV_MODES[m] or nil, values.gov
     govSpoolup = g.gov_spoolup_time and string.format("%.1f", g.gov_spoolup_time / 10) or nil
 end
 
@@ -205,7 +144,7 @@ local function bar(R, s, active)   -- the measured headspeed as a column against
     local b = BAR
     S.chip(b.x, b.top, b.w, b.bottom - b.top)
     local g, p = values.gov or {}, values.govProfile or {}
-    local governed = g.gov_mode ~= nil and floor(g.gov_mode) >= govFrom
+    local governed = g.gov_mode ~= nil and floor(g.gov_mode) >= GOV_FROM
     local target = governed and p.governor_headspeed or nil
     if target ~= nil and target <= 0 then target = nil end
     local full = target and (target * SCALE) or H.rpmFull()
@@ -286,7 +225,7 @@ local function paint()
     end
 
     local p = values.pid or {}
-    local gainAxes = {{"@i18n(widgets.dashboard.novafly.roll)@", 0}, {"@i18n(widgets.dashboard.novafly.pitch)@", 1}, {"@i18n(widgets.dashboard.novafly.tail)@", 2}}
+    local gainAxes = {{"@i18n(widgets.dashboard.novafly.roll)@", "roll"}, {"@i18n(widgets.dashboard.novafly.pitch)@", "pitch"}, {"@i18n(widgets.dashboard.novafly.tail)@", "yaw"}}
     for i = 1, 3 do   -- gains per axis: P I D F B O
         local x, w = chipPlace(GAIN_CHIP, i)
         local y, h = GAIN_CHIP.y, GAIN_CHIP.h
@@ -294,12 +233,12 @@ local function paint()
         if i == 1 then x, w = 0, x + w end
         local a = gainAxes[i]
         style.labelCentered(x + w / 2, y + 13, a[1], style.WHITE, FONT_S)
-        pair(x + 10, y + 36, "P", p["pid_" .. a[2] .. "_P"])
-        pair(x + 62, y + 36, "I", p["pid_" .. a[2] .. "_I"])
-        pair(x + 10, y + 58, "D", p["pid_" .. a[2] .. "_D"])
-        pair(x + 62, y + 58, "F", p["pid_" .. a[2] .. "_F"])
-        pair(x + 10, y + 80, "B", p["pid_" .. a[2] .. "_B"])
-        if a[2] ~= 2 then pair(x + 62, y + 80, "O", p["pid_" .. a[2] .. "_O"]) end
+        pair(x + 10, y + 36, "P", p[a[2] .. "_p"])
+        pair(x + 62, y + 36, "I", p[a[2] .. "_i"])
+        pair(x + 10, y + 58, "D", p[a[2] .. "_d"])
+        pair(x + 62, y + 58, "F", p[a[2] .. "_f"])
+        pair(x + 10, y + 80, "B", p[a[2] .. "_b"])
+        if a[2] ~= "yaw" then pair(x + 62, y + 80, "O", p[a[2] .. "_o"]) end
     end
 
     bar(R, s, active)
