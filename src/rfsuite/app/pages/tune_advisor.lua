@@ -1015,7 +1015,7 @@ local function open(opts)
         checkProfiles(T.errWrite, T.errSwitched, function()
           applyStage = T.stageSave
           bus.publish("msp.request", eeprom.buildWriteMessage(verify, function()
-            finish(link.armed and T.errArmed or T.errSave)
+            finish(T.errSave)
           end))
         end)
         return
