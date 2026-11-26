@@ -161,7 +161,8 @@ local function paint()
     local sec = fl.time
     if sec == nil and type(H.lastFlightTime) == "function" then sec = H.lastFlightTime() end
     local time = sec ~= nil and string.format("%d:%02d", floor(sec / 60), floor(sec % 60)) or nil
-    local altMax, climb, sink = fl.alt or sz.altMax, fl.climb or sz.climbMax, fl.sink or sz.sinkMax
+    local altMax, climb, sink = fl.alt, fl.climb, fl.sink   -- with a flight here its values, what it did not measure stays --
+    if fl.time == nil then altMax, climb, sink = sz.altMax, sz.climbMax, sz.sinkMax end
     chipValue[1], chipValue[2], chipValue[3], chipValue[4] = altMax, climb, sink ~= nil and -sink or nil, time
     chipUnit[1], chipUnit[2], chipUnit[3], chipUnit[4] = altUnit, rateUnit, rateUnit, "min"
     for i = 1, 4 do
