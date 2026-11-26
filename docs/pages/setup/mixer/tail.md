@@ -22,6 +22,7 @@ Greyed out until the flight controller answers. Read-only while the model is arm
 | Tail pin | Read only. Where the tail pin is: *Servo 4*, *Motor 2*, *Own motor pin* (motor 2 has a pin of its own) or *No pin*. *Save: to motor 2* or *Save: to servo 4* when the tail mode needs the pin moved; Save moves it. *Kept: …* when the flight controller refused the move, with the reason (see Notes). Needs Rotorflight with MSP API 12.10; shows *-* on older firmware. |
 | Yaw Direction | Normal or Reversed yaw. |
 | Tail Idle Thr% | Motor tails only. The lowest throttle sent to the tail motor, in %. |
+| Tail Motor Lead | Motor tails only. Drops the tail throttle early when it falls, to offset the tail motor spinning down slower than it spins up, in ms. 0 is off. Range: 0 to 250 ms. Shown only with Rotorflight with MSP API 12.11 (rotorflight-firmware#606). |
 | Tail Center Offset | Motor tails only. Tail motor throttle for zero yaw, in %. |
 | Yaw Center Trim | Variable pitch only. Tail pitch trim at centre, in degrees. |
 | Yaw Calibration | Yaw gain to match the tail mechanics, in %. |

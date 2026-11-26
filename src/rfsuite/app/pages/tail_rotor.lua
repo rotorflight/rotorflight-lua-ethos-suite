@@ -40,11 +40,22 @@ local governorProfile = requireModule("lib/msp_governor_profile.lua")
 
 local PAGE_TITLE = "@i18n(app.modules.tail_rotor.name)@"
 
+-- TTA threshold and banking (rotorflight-firmware#606, MSP API 12.11):
+-- greyed out when the FC does not send them (see lib/msp_governor_profile.lua).
+local TTA_KEYS = {
+  "governor:governor_tta_threshold",
+  "governor:governor_tta_bank_limit",
+  "governor:governor_tta_bank_rate",
+  "governor:governor_tta_bank_release",
+}
+
 -- opts.onBack: called to return to the menu (the header's Menu button or
 -- the physical Back key -- see app/page_runtime.lua's buildChrome()).
 -- opts.setEventHandler/opts.setWakeupHandler: see app/menu_container.lua
 -- and app/tool.lua for how Ethos's event()/wakeup() reach a page.
 local function open(opts)
+  -- Assigned right after pageRuntime.new(); see app/pages/pid_controller.lua.
+  local controlRef
   local runtime = pageRuntime.new({
     pageTitle = PAGE_TITLE,
     logTag = "tailrotor",
@@ -54,7 +65,20 @@ local function open(opts)
     },
     opts = opts,
     unloadPackageKeys = {"rfsuite.lib.msp_pid_profile", "rfsuite.lib.msp_governor_profile"},
+    -- loadData() has just enabled every field: take the TTA ones back out
+    -- on an FC that does not have them.
+    onLoaded = function()
+      local rt = controlRef and controlRef.runtime
+      local governor = rt and rt.data and rt.data.governor
+      if governor and not governor.has_tta_banking then
+        for _, key in ipairs(TTA_KEYS) do
+          local field = rt.fields[key]
+          if field then field:enable(false) end
+        end
+      end
+    end,
   })
+  controlRef = runtime.controlRef
 
   form.clear()
   runtime:buildChrome()
@@ -81,6 +105,15 @@ local function open(opts)
   fieldLayout.buildGroup(runtime, "@i18n(app.modules.tail_rotor.tail_torque_assist)@", {
     {title = "@i18n(app.modules.tail_rotor.gain)@", spec = {key = "governor_tta_gain", source = "governor"}},
     {title = "@i18n(app.modules.tail_rotor.limit)@", spec = {key = "governor_tta_limit", source = "governor"}},
+  })
+
+  fieldLayout.buildSingle(runtime, "@i18n(app.modules.tail_rotor.tta_threshold)@",
+    {key = "governor_tta_threshold", source = "governor"})
+
+  fieldLayout.buildGroup(runtime, "@i18n(app.modules.tail_rotor.tta_banking)@", {
+    {title = "@i18n(app.modules.tail_rotor.limit)@", spec = {key = "governor_tta_bank_limit", source = "governor"}},
+    {title = "@i18n(app.modules.tail_rotor.rate)@", spec = {key = "governor_tta_bank_rate", source = "governor"}},
+    {title = "@i18n(app.modules.tail_rotor.release)@", spec = {key = "governor_tta_bank_release", source = "governor"}},
   })
 
   runtime:loadInitial()

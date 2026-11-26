@@ -20,6 +20,13 @@
 -- rebuild's floor is API >= 12.09 (see AGENTS.md), so -- matching this
 -- project's existing "no version branching" rule -- this codec always
 -- includes them: the full 17-byte struct, unconditionally.
+--
+-- The four TTA fields after `governor_flags` (threshold and banking,
+-- rotorflight-firmware#606, MSP API 12.11) are gated on the reply length
+-- instead, like lib/msp_pid_profile.lua's trailing fields: they are read
+-- only when the FC sends them, and written back only when they were read.
+-- The firmware set handler takes them only when all four are present.
+-- `has_tta_banking` tells pages whether the connected FC has them.
 
 -- Self-caches via package.loaded (same mechanism lib/bus.lua uses) --
 -- three pages share this codec and each reloads fresh via loadfile() on
@@ -53,8 +60,17 @@ local FIELDS = {
   {"governor_max_throttle", "U8"},
   {"governor_min_throttle", "U8"},
   {"governor_fallback_drop", "U8"},
-  {"governor_flags", "U16"}, -- bitmap: bit2=fallback_precomp, bit3=voltage_comp, bit4=pid_spoolup, bit6=dyn_min_throttle
+  {"governor_flags", "U16"}, -- bitmap: bit2=fallback_precomp, bit3=voltage_comp, bit4=pid_spoolup, bit6=dyn_min_throttle, bit7=tta_banking
 }
+
+-- Trailing U8 fields of API 12.11, in wire order (see the header comment).
+local TTA_FIELDS = {
+  "governor_tta_threshold",
+  "governor_tta_bank_limit",
+  "governor_tta_bank_rate",
+  "governor_tta_bank_release",
+}
+local BASE_BYTES = 17
 
 -- Fixture reply used automatically when running in the Ethos simulator
 -- (see tasks/msp/queue.lua) -- firmware defaults, in wire order.
@@ -74,6 +90,10 @@ local SIMULATOR_RESPONSE = {
   10,     -- governor_min_throttle
   10,     -- governor_fallback_drop
   0, 0,   -- governor_flags = 0 (U16)
+  0,      -- governor_tta_threshold
+  10,     -- governor_tta_bank_limit
+  20,     -- governor_tta_bank_rate
+  50,     -- governor_tta_bank_release
 }
 
 -- Per-field {min, max, default, suffix}, sourced from
@@ -103,12 +123,17 @@ local FIELD_META = {
   governor_max_throttle = {min = 10, max = 100, default = 100, suffix = "%"},
   governor_min_throttle = {min = 10, max = 100, default = 10, suffix = "%"},
   governor_fallback_drop = {min = 0, max = 50, default = 10, suffix = "%"},
+  governor_tta_threshold = {min = 0, max = 250, default = 0, decimals = 1, suffix = "%"},
+  governor_tta_bank_limit = {min = 0, max = 25, default = 10, suffix = "%"},
+  governor_tta_bank_rate = {min = 1, max = 100, default = 20, suffix = "%/s"},
+  governor_tta_bank_release = {min = 10, max = 100, default = 50, suffix = "%"},
 }
 
 local msp_governor_profile = {
   READ_COMMAND = READ_COMMAND,
   WRITE_COMMAND = WRITE_COMMAND,
   FIELDS = FIELDS,
+  TTA_FIELDS = TTA_FIELDS,
   FIELD_META = FIELD_META,
 }
 
@@ -124,6 +149,12 @@ function msp_governor_profile.decode(buf)
       data[name] = mspcodec.readU16(buf)
     else
       data[name] = mspcodec.readU8(buf)
+    end
+  end
+  data.has_tta_banking = #buf >= BASE_BYTES + #TTA_FIELDS
+  if data.has_tta_banking then
+    for i = 1, #TTA_FIELDS do
+      data[TTA_FIELDS[i]] = mspcodec.readU8(buf)
     end
   end
   return data
@@ -164,6 +195,15 @@ function msp_governor_profile.encode(data)
       mspcodec.writeU16(payload, data[name])
     else
       mspcodec.writeU8(payload, data[name])
+    end
+  end
+  -- All four or none: the firmware reads them only as a group.
+  if data.has_tta_banking then
+    for i = 1, #TTA_FIELDS do
+      if data[TTA_FIELDS[i]] == nil then return payload end
+    end
+    for i = 1, #TTA_FIELDS do
+      mspcodec.writeU8(payload, data[TTA_FIELDS[i]])
     end
   end
   return payload

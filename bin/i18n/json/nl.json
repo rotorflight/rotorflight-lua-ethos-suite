@@ -593,6 +593,34 @@
           "needs_translation": false,
           "reverse_text": false,
           "max_length": 5
+        },
+        "tta_threshold": {
+          "english": "TTA Threshold",
+          "translation": "TTA-drempel",
+          "needs_translation": false,
+          "reverse_text": false,
+          "max_length": 13
+        },
+        "tta_banking": {
+          "english": "TTA Banking",
+          "translation": "TTA-buffer",
+          "needs_translation": false,
+          "reverse_text": false,
+          "max_length": 11
+        },
+        "rate": {
+          "english": "Rate",
+          "translation": "Snelh.",
+          "needs_translation": false,
+          "reverse_text": false,
+          "max_length": 4
+        },
+        "release": {
+          "english": "Release",
+          "translation": "Vrijg.",
+          "needs_translation": false,
+          "reverse_text": false,
+          "max_length": 7
         }
       },
       "governor": {
@@ -742,6 +770,13 @@
           "needs_translation": false,
           "reverse_text": false,
           "max_length": 16
+        },
+        "tta_banking": {
+          "english": "TTA Banking",
+          "translation": "TTA-buffer",
+          "needs_translation": false,
+          "reverse_text": false,
+          "max_length": 11
         },
         "tbl_off": {
           "english": "Off",
@@ -3578,6 +3613,13 @@
           "needs_translation": false,
           "max_length": 14,
           "reverse_text": false
+        },
+        "tail_motor_lead": {
+          "english": "Tail Motor Lead",
+          "translation": "Staartmotor-voorloop",
+          "needs_translation": false,
+          "reverse_text": false,
+          "max_length": 15
         },
         "tail_rotor_mode": {
           "english": "Tail Mode",

@@ -3,7 +3,9 @@
 -- Ports the original API >= 12.0.9 Tail page. The visible field set is
 -- chosen from the current tail rotor mode: fixed-pitch tails expose yaw
 -- center trim in degrees, while motorized/bidirectional tails expose tail
--- idle and use raw percent-like yaw limits.
+-- idle and use raw percent-like yaw limits. Tail Motor Lead
+-- (rotorflight-firmware#606, MSP API 12.11) is shown on a motorized tail
+-- only when the FC sends it (see lib/msp_mixer_config.lua).
 --
 -- On a servo (variable pitch) tail, Tool toggles mixer override on the yaw
 -- input, which holds the tail at center. While it is on, the other fields are locked and a settled trim
@@ -124,6 +126,8 @@ local function open(opts)
   local lastRefused = nil
   local tailPinText = nil
   local inOverride = false
+  -- Whether the FC has tail_motor_lead; set on every load.
+  local leadSupported = false
   -- Raw tail_center_trim that EEPROM holds, the one the FC last confirmed,
   -- and the one sent live but not yet confirmed.
   local savedTrim = nil
@@ -217,6 +221,8 @@ local function open(opts)
       formData.yaw_direction = rateToDirection(yaw.rate_stabilized_yaw)
       formData.yaw_calibration = math.abs(u16ToS16(yaw.rate_stabilized_yaw))
       formData.tail_motor_idle = mixer.tail_motor_idle or 0
+      leadSupported = mixer.has_tail_motor_lead == true
+      formData.tail_motor_lead = mixer.tail_motor_lead or 0
       formData.tail_center_offset = mixer.tail_center_trim or 0
       formData.yaw_center_trim = round(u16ToS16(mixer.tail_center_trim) * 24 / 100)
       formData.yaw_cw_limit_motor = math.abs(u16ToS16(yaw.min_stabilized_yaw))
@@ -259,6 +265,9 @@ local function open(opts)
         mixer.tail_rotor_mode = formData.tail_rotor_mode or 0
         if isMotorizedMode(formData.tail_rotor_mode) then
           mixer.tail_motor_idle = formData.tail_motor_idle or 0
+          if mixer.has_tail_motor_lead then
+            mixer.tail_motor_lead = formData.tail_motor_lead or 0
+          end
           mixer.tail_center_trim = formData.tail_center_offset or 0
         else
           mixer.tail_center_trim = s16ToU16(round((formData.yaw_center_trim or 0) * 100 / 24))
@@ -371,7 +380,7 @@ local function open(opts)
     fields[key] = field
   end
 
-  local function addNumber(line, key, min, max, suffix, default)
+  local function addNumber(line, key, min, max, suffix, default, decimals)
     local field = form.addNumberField(line, nil, min, max,
       function() return formData[key] or 0 end,
       function(value)
@@ -379,7 +388,7 @@ local function open(opts)
         formData[key] = value
       end)
     field:suffix(suffix)
-    field:decimals(1)
+    field:decimals(decimals or 1)
     field:default(default)
     runtime:registerField(key, field)
     fields[key] = field
@@ -452,13 +461,34 @@ local function open(opts)
   idleField:rect(HIDDEN_RECT)
   idleLabel:rect(HIDDEN_RECT)
 
-  local appliedMotorized = false
+  -- Tail Motor Lead: built and hidden the same way, after Tail Idle.
+  local leadLine = form.addLine("", nil, false)
+  local leadField = addNumber(leadLine, "tail_motor_lead", 0, 250, "ms", 0, 0)
+  local leadRect = leadField:rect() or HIDDEN_RECT
+  local leadLabel = form.addStaticText(leadLine, labelRect, "@i18n(app.modules.mixer.tail_motor_lead)@")
+  leadField:rect(HIDDEN_RECT)
+  leadLabel:rect(HIDDEN_RECT)
 
-  -- Switches the slot rows and the Tail Idle row to the current kind of
-  -- tail. Does nothing unless that kind changed.
+  local appliedMotorized = false
+  local appliedLead = false
+
+  -- Switches the slot rows and the Tail Idle and Tail Motor Lead rows to
+  -- the current kind of tail. Does nothing unless that kind (or whether the
+  -- FC has the lead) changed.
   applyMode = function()
     local motorized = isMotorizedMode(formData.tail_rotor_mode)
-    if motorized == appliedMotorized then return end
+    local showLead = motorized and leadSupported
+    if motorized == appliedMotorized and showLead == appliedLead then return end
+    if showLead ~= appliedLead then
+      appliedLead = showLead
+      leadField:rect(showLead and leadRect or HIDDEN_RECT)
+      leadLabel:rect(showLead and labelRect or HIDDEN_RECT)
+      enableState = nil
+    end
+    if motorized == appliedMotorized then
+      if lcd.invalidate then lcd.invalidate() end
+      return
+    end
     appliedMotorized = motorized
     local variant = motorized and "motor" or "pitch"
     for slot, specs in pairs(SLOTS) do
@@ -486,9 +516,10 @@ local function open(opts)
     end
 
     -- Override on: only the trim (center) row stays editable. Tail Idle
-    -- only on a motor tail, where it is shown.
+    -- and Tail Motor Lead only where they are shown.
     local loaded = runtime.loaded == true
     local state = (loaded and 1 or 0) + (inOverride and 2 or 0) + (appliedMotorized and 4 or 0)
+      + (appliedLead and 8 or 0)
     if state == enableState then return end
     enableState = state
     local free = loaded and not inOverride
@@ -497,6 +528,8 @@ local function open(opts)
         field:enable(loaded)
       elseif key == "tail_motor_idle" then
         field:enable(free and appliedMotorized)
+      elseif key == "tail_motor_lead" then
+        field:enable(free and appliedLead)
       elseif key ~= "tail_pin" then
         field:enable(free)
       end
