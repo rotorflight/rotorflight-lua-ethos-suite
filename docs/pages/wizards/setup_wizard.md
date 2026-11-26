@@ -41,7 +41,7 @@ stays beside the title. A step with one screen shows no count.
 | Step | What it does |
 | --- | --- |
 | 1. [Board orientation](setup_wizard/sensors.md) | Calibrates the accelerometer and finds the board orientation. |
-| 2. [Receiver](setup_wizard/receiver.md) | Sets the protocol, the channel order, the throttle range and the stick center. |
+| 2. [Receiver](setup_wizard/receiver.md) | Sets the protocol, the channel order and the throttle range. |
 | 3. [Mode switches](setup_wizard/modes.md) | Puts Arm, and optionally Rescue and Trainer, on switches. |
 | 4. [Profiles & gain](setup_wizard/profiles.md) | Sets the profile switch (PID profile, with the rates or alone) and the master gain in flight, on trim buttons or a knob. |
 | 5. [Rescue](setup_wizard/rescue.md) | Turns rescue on or off for every profile, and whether it flips the helicopter upright. |

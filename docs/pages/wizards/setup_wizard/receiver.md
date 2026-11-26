@@ -7,14 +7,13 @@ sidebar_position: 20
 # Receiver
 
 Step 2 of the Model setup wizard. It sets the receiver protocol, checks that the receiver
-sends every channel, sets the channel order, measures the throttle range, and sets the
-stick center.
+sends every channel, sets the channel order, and measures the throttle range.
 
 ## Where to find it
 
 *Configuration* → *Wizards* → *Model setup*, step 2 *Receiver*. The step works through
 several screens: the prepare card, the link card, the channel order, the sticks, the
-throttle range, the stick center and the summary.
+throttle range and the summary.
 
 Only inside the wizard. Greyed out until the flight controller answers. Read-only while the
 model is armed.
@@ -31,7 +30,6 @@ model is armed.
 | Check the sticks | Each stick shows its live position in percent. Next waits until each of the four sticks has reached 95 % in both directions. |
 | Throttle range: Measure, Stop, Use | Measure, move the throttle end to end, Stop, then Use the measured range. Under 300 µs of travel the step asks you to move it end to end again. |
 | Throttle range: Defaults | Uses the default throttle range instead of a measurement. |
-| Stick center: Detect | Sets the stick center: normally 1500 µs, but some radios, ELRS among them, send 1520 µs. Center the roll, pitch and yaw trims and remove any subtrim, center the sticks and let go, then press Detect. It reads the flight controller's channels five times over about 1.5 seconds, averages the three sticks and writes the result. If one stick reads differently from the others it names that stick (its trim is off) and changes nothing. It also changes nothing if a stick moved or the result is outside 1400–1600 µs. |
 
 ## Notes
 
@@ -45,10 +43,6 @@ model is armed.
 - The last screen says whether the way forward is Next (nothing changed) or Save and
   continue (the changes already work on the flight controller but are not yet stored in
   its EEPROM).
-- The stick center reads the flight controller's channels, not the radio's: the offset is in
-  what reaches the flight controller. It reads once when the card opens, which shows a note
-  when the resting sticks don't match the stick center, and five times when you press Detect.
-  Each read briefly pauses the telemetry sensors on S.Port, F.Port and FBUS.
 - The port and the wiring are not changed here. They stay in the Configurator.
 
 ## Related

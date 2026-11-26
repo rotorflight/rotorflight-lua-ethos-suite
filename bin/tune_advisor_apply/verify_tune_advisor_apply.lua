@@ -1142,6 +1142,71 @@ do
     behind .. " refocused behind the dialog, " .. before .. " before it")
 end
 
+
+print("An EEPROM commit whose reply is lost is reported as unconfirmed")
+do
+  resetFc()
+  openPage()
+  pump()
+  local stored = false
+  local sent = applyNow(function(m)
+    if m.command == EEPROM then
+      stored = true
+      return "error"
+    end
+  end)
+  check("all parameter writes completed before the EEPROM commit", has(sent, 202) and has(sent, 204),
+    table.concat(sent, ","))
+  check("the EEPROM commit was attempted", has(sent, EEPROM), table.concat(sent, ","))
+  check("the controller may have stored the changes", stored)
+  check("the save is reported as unconfirmed", lastMessage():find("tune_advisor.err_save", 1, true) ~= nil,
+    lastMessage())
+  check("the save is not reported as definitely unsaved",
+    lastMessage():find("tune_advisor.err_armed", 1, true) == nil, lastMessage())
+end
+
+print("An EEPROM commit refused while armed is reported as unconfirmed")
+do
+  resetFc()
+  openPage()
+  pump()
+  local sent = applyNow(function(m)
+    if m.command == EEPROM then
+      session.isArmed = true
+      subs["session.update"](session)
+      return "error"
+    end
+  end)
+  session.isArmed = false
+  subs["session.update"](session)
+  check("the parameter writes completed before the refused commit", has(sent, 202) and has(sent, 204),
+    table.concat(sent, ","))
+  check("the EEPROM commit was attempted", has(sent, EEPROM), table.concat(sent, ","))
+  check("the save is reported as unconfirmed", lastMessage():find("tune_advisor.err_save", 1, true) ~= nil,
+    lastMessage())
+  check("the save is not reported as definitely unsaved",
+    lastMessage():find("tune_advisor.err_armed", 1, true) == nil, lastMessage())
+end
+
+print("Becoming armed before the first parameter write still stops Apply")
+do
+  resetFc()
+  openPage()
+  pump()
+  local sent = applyNow(function(m)
+    if m.command == STATUS then
+      session.isArmed = true
+      subs["session.update"](session)
+    end
+  end)
+  session.isArmed = false
+  subs["session.update"](session)
+  check("no parameter write or EEPROM commit is sent",
+    not has(sent, 202) and not has(sent, 204) and not has(sent, EEPROM), table.concat(sent, ","))
+  check("the pilot is told to disarm before writing",
+    lastMessage():find("tune_advisor.err_armed", 1, true) ~= nil, lastMessage())
+end
+
 print()
 print(string.format("%d checks, %d failed", checks, failures))
 os.exit(failures == 0 and 0 or 1)

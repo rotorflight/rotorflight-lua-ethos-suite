@@ -105,28 +105,6 @@ local function run(M)
   check("measured max", b, 1980)
   check("measured short", M.throttleFromMeasured(1400, 1600), nil)
 
-  -- Stick center: samples are {roll, pitch, yaw} in us (heli.test.js cases).
-  local st, c, ax = M.centreFromSamples({{1519, 1520, 1521}, {1520, 1521, 1520}, {1521, 1519, 1520}})
-  check("centre ok", st, "ok")
-  check("centre 1520", c, 1520)
-  check("centre is off", M.centreIsOff(1520, 1500), true)
-  check("centre not off", M.centreIsOff(1502, 1500), false)
-  check("centre no samples", M.centreFromSamples({}), "noSignal")
-  check("centre channel 0", M.centreFromSamples({{1500, 0, 1500}}), "noSignal")
-  check("centre moving", M.centreFromSamples({{1500, 1500, 1500}, {1530, 1500, 1500}}), "moving")
-  st, c, ax = M.centreFromSamples({{1520, 1540, 1520}})
-  check("centre trim", st, "trim")
-  check("centre trim value", c, 1527)
-  check("centre trim axis", ax, 2)
-  check("centre within 5 us", M.centreFromSamples({{1518, 1522, 1520}}), "ok")
-  st, c = M.centreFromSamples({{1700, 1700, 1700}})
-  check("centre range", st, "range")
-  check("centre first n", M.centreFromSamples({{1520, 1520, 1520}, {1600, 1500, 1500}}, 1), "ok")
-  check("suggested 1520", M.suggestedCentre({{1520, 1520, 1521}}, 1, 1500), 1520)
-  check("suggested right", M.suggestedCentre({{1501, 1500, 1500}}, 1, 1500), nil)
-  check("suggested elsewhere", M.suggestedCentre({{1590, 1590, 1590}}, 1, 1500), nil)
-  check("suggested trim", M.suggestedCentre({{1520, 1540, 1520}}, 1, 1500), nil)
-
   return failures
 end
 

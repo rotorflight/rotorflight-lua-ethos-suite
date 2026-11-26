@@ -125,7 +125,7 @@ The suggestions follow these rules:
    profile, and the same P, F, B, Iterm Relax Cutoff, rate type and rates on that axis, and the same Cyclic polarity,
    Cyclic ring and I-term Relax type. If anything differs (you
    changed it by hand, switched profile, or already applied this advice), it stops and nothing is changed: fly
-   again on the current settings. It also stops if a new value is out of range or the heli is armed.
+   again on the current settings. It also stops if a new value is out of range or the heli is armed before writing begins.
 3. **Writing changes**: writes only the settings that change; every other setting is written back as it was read.
 4. **Saving to flight controller**: commits them so they survive a restart.
 5. **Checking saved settings**: reads them back and confirms the new values.
@@ -141,8 +141,10 @@ With Betaflight, Raceflight or KISS rates the page can only give the rate change
 write it, and does not write the F change that goes with it either: F on its own would change the stick feel. Make
 both changes by hand, or switch to Actual, Quick or Rotorflight rates.
 
-If writing fails, nothing is saved and restarting the flight controller undoes any part already sent. If the
-read-back does not confirm the change, check the values on *PIDs*, *Rates* and *PID Controller*.
+If a parameter write fails, the page stops before sending the EEPROM commit. If the EEPROM save fails or its
+reply is lost, saving is not confirmed: the changes are active and may already be stored. If the controller is
+armed at that point, firmware may defer saving until disarm. Restart the flight controller, then check the values
+on *PIDs*, *Rates* and *PID Controller*.
 
 The saved flights are kept. The next flight is on the new tune, so the page starts again from it and leaves the
 older flights out.
