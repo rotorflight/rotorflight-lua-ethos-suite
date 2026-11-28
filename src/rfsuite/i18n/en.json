@@ -11016,10 +11016,10 @@
           "translation": "Could not read the settings from the flight controller. Nothing was changed."
         },
         "err_save": {
-          "english": "Saving failed. The changes are active until the flight controller restarts, then undone.",
-          "max_length": 88,
+          "english": "Saving was not confirmed. The changes are active and may already be stored: restart the flight controller, then check PIDs, Rates and PID Controller.",
+          "max_length": 149,
           "needs_translation": false,
-          "translation": "Saving failed. The changes are active until the flight controller restarts, then undone."
+          "translation": "Saving was not confirmed. The changes are active and may already be stored: restart the flight controller, then check PIDs, Rates and PID Controller."
         },
         "err_switched": {
           "english": "The PID or rate profile changed while writing. Nothing was saved: restart the flight controller to undo any part already sent.",

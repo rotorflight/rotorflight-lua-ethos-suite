@@ -1014,8 +1014,11 @@ local function open(opts)
       if not source then
         checkProfiles(T.errWrite, T.errSwitched, function()
           applyStage = T.stageSave
+          -- A failed commit is not a failed save (issue #2829): its answer
+          -- can be lost after the FC stored the values, and an armed FC that
+          -- refuses it marks the config dirty and stores it at the disarm.
           bus.publish("msp.request", eeprom.buildWriteMessage(verify, function()
-            finish(link.armed and T.errArmed or T.errSave)
+            finish(T.errSave)
           end))
         end)
         return

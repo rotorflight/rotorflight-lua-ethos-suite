@@ -141,8 +141,11 @@ With Betaflight, Raceflight or KISS rates the page can only give the rate change
 write it, and does not write the F change that goes with it either: F on its own would change the stick feel. Make
 both changes by hand, or switch to Actual, Quick or Rotorflight rates.
 
-If writing fails, nothing is saved and restarting the flight controller undoes any part already sent. If the
-read-back does not confirm the change, check the values on *PIDs*, *Rates* and *PID Controller*.
+If writing fails, nothing is saved and restarting the flight controller undoes any part already sent. If every
+change was written but saving is not confirmed, the changes are active and may already be stored: the answer to the
+save can be lost after the flight controller stored them, and a flight controller armed at that moment refuses the
+save but stores the changes when it disarms. Restart it, then check the values on *PIDs*, *Rates* and
+*PID Controller*. If the read-back does not confirm the change, check the same values.
 
 The saved flights are kept. The next flight is on the new tune, so the page starts again from it and leaves the
 older flights out.

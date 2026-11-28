@@ -512,6 +512,28 @@ do
   check("the failed write is reported", lastMessage():find("tune_advisor.err_write", 1, true) ~= nil, lastMessage())
 end
 
+print("A failed EEPROM commit is reported as not confirmed, armed or not (issue #2829)")
+for _, armedAtCommit in ipairs({false, true}) do
+  resetFc()
+  session.isArmed = false
+  openPage()
+  pump()
+  local sent = applyNow(function(m)
+    if m.command == EEPROM then
+      if armedAtCommit then session.isArmed = true subs["session.update"](session) end
+      return "error"
+    end
+  end)
+  session.isArmed = false
+  subs["session.update"](session)
+  local label = armedAtCommit and " (armed at the commit)" or ""
+  check("the commit was sent" .. label, has(sent, EEPROM), table.concat(sent, ","))
+  check("reported as a save not confirmed" .. label,
+    lastMessage():find("tune_advisor.err_save", 1, true) ~= nil, lastMessage())
+  check("not reported as nothing saved" .. label,
+    lastMessage():find("tune_advisor.err_armed", 1, true) == nil, lastMessage())
+end
+
 print("A read-back that differs is reported")
 do
   resetFc()
