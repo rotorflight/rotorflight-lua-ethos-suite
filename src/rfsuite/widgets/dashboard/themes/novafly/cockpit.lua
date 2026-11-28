@@ -598,6 +598,10 @@ local function read(tele)
     local mn = modelName()
     local fc = rf and rf.session and rf.session.mcu_id
     if fc ~= nil and fc ~= seenFc then   -- another FC: what belonged to the previous one no longer applies; without a link it stays
+        if seenFc ~= nil then   -- the heading reference and a flight left open belong to the previous one
+            headingRef, captured = nil, false
+            flight.running, flight.ended, flight.clock = false, false, nil
+        end
         seen, seenFc, rpmPeak, cellF, lastFlight = {}, fc, 0, nil, {}
         for k in pairs(peaks) do peaks[k] = nil end
         for k in pairs(flight.session) do flight.session[k] = nil end
