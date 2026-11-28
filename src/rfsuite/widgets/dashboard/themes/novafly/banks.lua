@@ -19,7 +19,8 @@ local NO_ZONE = {x = 0, y = 0, w = 0, h = 0}   -- there is no BACK on a page: ba
 local RATE_TYPES = {[0] = "NONE", "BETAFLIGHT", "RACEFLIGHT", "KISS", "ACTUAL", "QUICK", "ROTORFLIGHT"}
 local GOV_MODES = {[0] = "OFF", "LIMIT", "DIRECT", "ELECTRIC", "NITRO"}   -- the firmware's gov_mode; at 3 and 4 the FC governs the headspeed
 local GOV_FROM = 3
-local govName, govFor = nil, nil   -- the name of the mode, once per GOVERNOR_CONFIG read
+local FEATURE_GOVERNOR = 2 ^ 26   -- the GOVERNOR feature (lib/msp_feature_config.lua FEATURE_BIT_GOVERNOR): without it the firmware starts no governor (fc/init.c)
+local govMode, govName, govFor, govFeatureFor = nil, nil, nil, nil   -- the mode as shown and its name, once per GOVERNOR_CONFIG and FEATURE_CONFIG read
 local govSpoolup = nil                  -- gov_spoolup_time in tenths of a second, with one decimal like the suite (lib/msp_governor_config.lua: decimals 1)
 local DEG_S, DEG = "\194\176/s", "\194\176"
 local RATE_RULES = {   -- rcRates per rate type: {times, divisor, decimals} for axes 1-3 and collective, shown raw * times / divisor
@@ -38,7 +39,7 @@ local RPM_UNIT = "@i18n(widgets.dashboard.novafly.rpm_unit)@"   -- the unit of t
 local COLUMN_UNITS = {false, RPM_UNIT, "s", false}   -- the units of the head band
 local style, S = nil, nil
 local nova = {dirty = false, armState = "unknown", flightLog = {}, highDetail = true, italic = nil}
-local values = {pid = nil, rc = nil, gov = nil, govProfile = nil, failed = nil}
+local values = {pid = nil, rc = nil, gov = nil, feature = nil, govProfile = nil, failed = nil}
 local readFor = nil                  -- {bank, rate} for which the values were read; a change reads again
 local running = false
 local generation = 0                     -- the number of the running read chain; an answer with another number (page closed, new chain) is dropped
@@ -46,14 +47,15 @@ local TIMEOUT, PAUSE = 14, 3               -- a request without an answer is los
 local askedAt, linkNow = 0, 1         -- when the request on its way went out, and which message
 local chainFailed, retryAt = false, nil -- a message of this chain did not come; from retryAt (os.clock) the tick reads the same bank and rate again
 
-local CODEC = {PID_TUNING = "lib/msp_pid_tuning.lua", RC_TUNING = "lib/msp_rc_tuning.lua",
-               GOVERNOR_CONFIG = "lib/msp_governor_config.lua", GOVERNOR_PROFILE = "lib/msp_governor_profile.lua"}
+local CODEC = {PID_TUNING = "lib/msp_pid_tuning.lua", RC_TUNING = "lib/msp_rc_tuning.lua", GOVERNOR_CONFIG = "lib/msp_governor_config.lua",
+               FEATURE_CONFIG = "lib/msp_feature_config.lua", GOVERNOR_PROFILE = "lib/msp_governor_profile.lua"}
 local function read(name, done)   -- one message over the suite's bus with its codec (the PID fields named by axis: roll_p, pitch_i ...)
     return S.busRead(CODEC[name], done)
 end
 
-local CHAIN = {{"PID_TUNING", "pid", "PID"}, {"RC_TUNING", "rc", "@i18n(widgets.dashboard.novafly.rates)@"}, {"GOVERNOR_CONFIG", "gov", "@i18n(widgets.dashboard.novafly.governor)@"}, {"GOVERNOR_PROFILE", "govProfile", "@i18n(widgets.dashboard.novafly.governor)@"}}
-local function chain(g, i)   -- reads the four messages one after another; an error stands in the foot and the chain goes on, cleared and armed end it
+local CHAIN = {{"PID_TUNING", "pid", "PID"}, {"RC_TUNING", "rc", "@i18n(widgets.dashboard.novafly.rates)@"}, {"GOVERNOR_CONFIG", "gov", "@i18n(widgets.dashboard.novafly.governor)@"},
+               {"FEATURE_CONFIG", "feature", "@i18n(widgets.dashboard.novafly.governor)@"}, {"GOVERNOR_PROFILE", "govProfile", "@i18n(widgets.dashboard.novafly.governor)@"}}
+local function chain(g, i)   -- reads the five messages one after another; an error stands in the foot and the chain goes on, cleared and armed end it
     local link = CHAIN[i]
     if link == nil then   -- done: without an error the error line goes, with an error the tick reads again after the pause
         running = false
@@ -79,7 +81,7 @@ end
 local function start(s, keep)   -- keep: the same bank and rate once more, what is read already stays
     if running then return end
     if not keep then
-        values.pid, values.rc, values.gov, values.govProfile, values.failed = nil, nil, nil, nil, nil
+        values.pid, values.rc, values.gov, values.feature, values.govProfile, values.failed = nil, nil, nil, nil, nil, nil
         readFor = {bank = s.bank and floor(s.bank) or nil, rate = s.rate and floor(s.rate) or nil}
     end
     if s.armed == true then retryAt = os.clock() return end   -- armed: the suite keeps configuration traffic off the link (tasks/session.lua), so the page asks nothing until the ground
@@ -128,15 +130,17 @@ local function pair(x, y, letter, v)
     style.label(x + 16, y - 8, z, color, FONT_STD)
 end
 
-local function governorCompute(g)   -- the name of the mode and the spool-up time of a GOVERNOR_CONFIG
+local function governorCompute(g)   -- the mode as the suite's Governor page shows it (app/pages/setup_governor_general.lua: OFF while the GOVERNOR feature is off), its name and the spool-up time
     local m = g.gov_mode and floor(g.gov_mode)
-    govName, govFor = m and GOV_MODES[m] or nil, values.gov
+    local f = values.feature and tonumber(values.feature.enabledFeatures)
+    if m ~= nil and f ~= nil and floor(f / FEATURE_GOVERNOR) % 2 == 0 then m = 0 end
+    govMode, govName, govFor, govFeatureFor = m, m and GOV_MODES[m] or nil, values.gov, values.feature
     govSpoolup = g.gov_spoolup_time and string.format("%.1f", g.gov_spoolup_time / 10) or nil
 end
 
 local function drive()   -- the head band: governor, target headspeed, spool-up, gain in the alignment of the four chips
     local g, p = values.gov or NONE, values.govProfile or NONE
-    if values.gov ~= govFor then governorCompute(g) end
+    if values.gov ~= govFor or values.feature ~= govFeatureFor then governorCompute(g) end
     columnValue[1], columnValue[2], columnValue[3], columnValue[4] = govName, p.governor_headspeed, govSpoolup, p.governor_gain
     for i = 1, 4 do
         local x, w = chipPlace(RATE_CHIP, i)
@@ -156,11 +160,11 @@ local function yOf(value, full, height)   -- the height of a value on the bar: 0
     return BAR.bottom - height * share
 end
 
-local function bar(R, s, active)   -- the measured headspeed as a column against the bank's target; without a target (LIMIT, DIRECT, PASSTHROUGH, not read) against the end of the cockpit arc
+local function bar(R, s, active)   -- the measured headspeed as a column against the bank's target; without a target (OFF, LIMIT, DIRECT, not read) against the end of the cockpit arc
     local b = BAR
     S.chip(b.x, b.top, b.w, b.bottom - b.top)
-    local g, p = values.gov or NONE, values.govProfile or NONE
-    local governed = g.gov_mode ~= nil and floor(g.gov_mode) >= GOV_FROM
+    local p = values.govProfile or NONE
+    local governed = govMode ~= nil and govMode >= GOV_FROM   -- the mode as shown (drive, before the bar)
     local target = governed and p.governor_headspeed or nil
     if target ~= nil and target <= 0 then target = nil end
     local full = target and (target * SCALE) or H.rpmFull()
