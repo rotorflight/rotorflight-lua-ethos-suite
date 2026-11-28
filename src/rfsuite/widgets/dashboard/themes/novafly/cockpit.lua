@@ -89,7 +89,7 @@ local U = {
     alt = {x = 58, y = 280, f = F_BIG},          -- the altitude bottom left, centred in the foot field (x 0-117, y 255-314)
     labels = {{58, 134, "RATE"}, {58, 195, "BANK"}, {421, 71, "BEC"},   -- the labels in the small size (three sizes on every screen: small, medium, large); only VFR under RSSI stays tiny; BEC at the height of FLIGHT TIMER (77), TX like RATE, ESC like BANK
               {421, 134, "TX"}, {421, 195, "ESC"},   -- the word above the bottom right field (421, 262) changes with the value and is drawn there
-              {241, 170, "rpm"}, {143, 65, "MCU"}, {58, 266, "ALT"}},
+              {241, 170, "@i18n(widgets.dashboard.novafly.rpm_unit)@"}, {143, 65, "MCU"}, {58, 266, "ALT"}},   -- the unit of the headspeed as on the banks page (banks.lua RPM_UNIT)
 }
 local ZONES = {header = {x = 176, y = 0, w = 184, h = 48}, heading = {x = 127, y = 7, w = 40, h = 40}}
 
