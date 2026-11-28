@@ -567,8 +567,7 @@ local rpmPeak, cellF = 0, nil
 local st = {link = false}
 local peaks = {}   -- per bank min and max of the headspeed while armed: the peak marker on the banks page reads here
 local lastFlight = {}   -- the current maximum, used mAh and bank of the last flight: the pages before and after the flight read here
-local flight = {running = false, ended = false, mahStart = nil, currentMax = nil, bank = {0, 0, 0, 0, 0, 0}, clock = nil, armedLast = nil}   -- the running flight; the clock per bank (Rotorflight 4.6: up to six) counts armed with a turning rotor, from zero at arming, after the flight it stops
-local FLIGHT_DROPOUT = 5   -- this long the telemetry may drop out in flight without ending the flight
+local flight = {running = false, ended = false, mahStart = nil, currentMax = nil, bank = {0, 0, 0, 0, 0, 0}, clock = nil}   -- the running flight; the clock per bank (Rotorflight 4.6: up to six) counts armed with a turning rotor, from zero at arming, after the flight it stops
 flight.session = {}   -- altitude and climb/sink since connecting, armed or not: the left page shows them as long as no flight is recorded here
 local function celsius(v, fahrenheit) return fahrenheit and (v - 32) * 5 / 9 or v end   -- the colour limits are in °C
 local function degreeSign(fahrenheit) return fahrenheit and "\194\176F" or "\194\176C" end
@@ -664,15 +663,16 @@ local function read(tele)
         end
         if s.amps ~= nil and (flight.currentMax == nil or s.amps > flight.currentMax) then flight.currentMax = s.amps end
         local now, b = os.clock(), s.bank and floor(s.bank) or nil
-        flight.armedLast = now
         if flight.clock ~= nil and s.rpm ~= nil and s.rpm > 0 and b ~= nil and flight.bank[b] ~= nil then flight.bank[b] = flight.bank[b] + (now - flight.clock) end
         flight.clock = now
         if s.alt ~= nil then flight.altitude(flight, s.alt, now) end   -- the highest altitude and the strongest climb and sink of the flight
-    elseif flight.running and (s.armed == false or os.clock() - (flight.armedLast or 0) > FLIGHT_DROPOUT) then   -- a telemetry dropout in flight does not end it
+    elseif flight.running and s.armed == false then   -- the flight ends on a confirmed disarm
         flight.running, flight.ended, flight.clock = false, true, nil
         lastFlight = {current = flight.currentMax, bank = s.bank and floor(s.bank) or nil,
                        mah = (s.used ~= nil and flight.mahStart ~= nil) and (s.used - flight.mahStart) or nil,
                        alt = flight.altMax, climb = flight.climbMax, sink = flight.sinkMax, time = flight.bank[1] + flight.bank[2] + flight.bank[3] + flight.bank[4] + flight.bank[5] + flight.bank[6]}
+    elseif flight.running then
+        flight.clock = nil   -- link lost, arm state unknown: the flight stays open and the gap counts for no bank
     end
     s.tx = sourceValue(txSrc)
     local tm = rf and rf.session and rf.session.timer
