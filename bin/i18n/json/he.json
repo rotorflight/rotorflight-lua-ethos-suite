@@ -9099,11 +9099,11 @@
           "max_length": 95
         },
         "err_save": {
-          "english": "Saving failed. The changes are active until the flight controller restarts, then undone.",
-          "translation": "Saving failed. The changes are active until the flight controller restarts, then undone.",
+          "english": "Saving was not confirmed. The changes are active and may already be stored: restart the flight controller, then check PIDs, Rates and PID Controller.",
+          "translation": "Saving was not confirmed. The changes are active and may already be stored: restart the flight controller, then check PIDs, Rates and PID Controller.",
           "needs_translation": true,
           "reverse_text": false,
-          "max_length": 88
+          "max_length": 149
         },
         "err_verify": {
           "english": "Saved, but reading back did not confirm it. Check the settings on PIDs, Rates and PID Controller.",
