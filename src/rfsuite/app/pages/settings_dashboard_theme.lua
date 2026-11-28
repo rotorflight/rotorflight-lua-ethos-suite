@@ -33,6 +33,7 @@ local THEME_DEFS = {
   {label = "@i18n(app.modules.settings.dashboard_theme_kevd)@", path = "system/kevd", minResolution = {x = 784, y = 294}},
   {label = "@i18n(app.modules.settings.dashboard_theme_kse4)@", path = "system/kse4"},
   {label = "@i18n(app.modules.settings.dashboard_theme_kse5)@", path = "system/kse5"},
+  {label = "@i18n(app.modules.settings.dashboard_theme_novafly)@", path = "system/novafly", minResolution = {x = 472, y = 287}},
   {label = "@i18n(app.modules.settings.dashboard_theme_rfstatus)@", path = "system/rfstatus"},
   {label = "@i18n(app.modules.settings.dashboard_theme_rt_rc)@", path = "system/rt-rc"},
   {label = "@i18n(app.modules.settings.dashboard_theme_rt_rc_n)@", path = "system/rt-rc-n"},

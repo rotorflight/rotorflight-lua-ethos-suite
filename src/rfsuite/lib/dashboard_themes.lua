@@ -38,6 +38,7 @@ local SHIPPED = {
   kevd = true,
   kse4 = true,
   kse5 = true,
+  novafly = true,
   rfstatus = true,
   ["rt-rc-n"] = true,
   ["rt-rc"] = true,

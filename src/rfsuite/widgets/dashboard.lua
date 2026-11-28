@@ -2148,6 +2148,18 @@ local function event(widget, category, value, x, y)
     end
   end
 
+  -- A theme state may handle touches itself (a panel with controls of its
+  -- own): it sees them after the dashboard's controls above and before the
+  -- swipe gestures below, and a touch it consumes goes no further. While the
+  -- toolbar or the info panel lies over the dashboard the touch stays with
+  -- them, as it does for a theme without an event field.
+  if category == EVT_TOUCH and stateDef and type(stateDef.event) == "function"
+      and not widget.toolbarVisible and not widget.infoPanelVisible then
+    local ok, consumed = pcall(stateDef.event, widget, category, value, x, y)
+    if not ok then print("[dashboard] theme event failed: " .. tostring(consumed)) end
+    if ok and consumed then return true end
+  end
+
   if category == EVT_TOUCH and value == TOUCH_START and x and y then
     widget.gestureActive = true
     widget.gestureStartX = x

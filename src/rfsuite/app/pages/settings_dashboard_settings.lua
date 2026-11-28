@@ -26,6 +26,7 @@ local THEME_DEFS = {
   {label = "@i18n(app.modules.settings.dashboard_theme_gismo)@", folder = "gismo"},
   {label = "@i18n(app.modules.settings.dashboard_theme_kevd)@", folder = "kevd", minResolution = {x = 784, y = 294}},
   {label = "@i18n(app.modules.settings.dashboard_theme_kse5)@", folder = "kse5"},
+  {label = "@i18n(app.modules.settings.dashboard_theme_novafly)@", folder = "novafly", minResolution = {x = 472, y = 287}},
   {label = "@i18n(app.modules.settings.dashboard_theme_rfstatus)@", folder = "rfstatus"},
   {label = "@i18n(app.modules.settings.dashboard_theme_rt_rc)@", folder = "rt-rc"},
   {label = "@i18n(app.modules.settings.dashboard_theme_rt_rc_n)@", folder = "rt-rc-n"},

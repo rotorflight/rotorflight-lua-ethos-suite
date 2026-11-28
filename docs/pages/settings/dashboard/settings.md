@@ -51,3 +51,15 @@ Values are stored in the `dashboard.kse5` section of `settings.ini`.
 
 See the [Bastion guide](../../../dashboard/bastion.md) for its appearance,
 installation, and [phase previews](../../../dashboard-themes/Bastion/README.md).
+
+## NovaFly RC
+
+**NovaFly RC** has two settings.
+
+- **Colour** — Blue (default), Magenta, Green, Orange, Yellow, Carbon,
+  Carbon green, Carbon violet or Carbon red. A long press on the head of the
+  cockpit, on the ground and connected, steps through the same colours.
+- **Mode** — Dark (default) or Light.
+
+The values are stored as `color` and `mode` in the `dashboard.novafly`
+section of `settings.ini`.

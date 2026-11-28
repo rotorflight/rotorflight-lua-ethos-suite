@@ -331,6 +331,13 @@ end }
   layout.selectborder = 2
   ```
 
+* **State event handler:** a state layout may carry `event = function(widget, category, value, x, y)`.
+  The dashboard hands it every touch after its own controls (toolbar, battery picker, info panel) and
+  before the swipe gestures; return `true` to consume the touch, anything else lets the dashboard go on
+  with it. While the toolbar or the info panel is open the touch stays with the dashboard, and an error
+  raised by the handler is printed to the log and treated as not consumed. A theme without the field is
+  unaffected. NovaFly RC uses it to move between its three screens and for its colour long press.
+
 ---
 
 ## 6. Tips & Best Practices
@@ -356,3 +363,18 @@ selection is `system/bastion`; instrument thresholds use the `dashboard.bastion`
 section of `SCRIPTS:/rfsuite.user/settings.ini`.
 
 See the [complete theme guide](dashboard/bastion.md) and its three phase previews.
+
+## NovaFly RC
+
+NovaFly RC is the NovaFly cockpit as a dashboard theme for 480 × 320,
+640 × 360 and 800 × 480 radios: three screens side by side - preflight,
+cockpit and the active bank - moved with a sideways swipe, in nine colours,
+dark or light. The theme only reads; it writes nothing to the flight
+controller.
+
+Select it under *System → Settings → Dashboard → Themes*, and choose the
+colour and the mode under *System → Settings → Dashboard → Settings*. The
+saved selection is `system/novafly`; colour and mode are kept in the
+`dashboard.novafly` section of `SCRIPTS:/rfsuite.user/settings.ini`.
+
+See the [screen captures](dashboard-themes/README.md#novafly-rc).
