@@ -21,7 +21,7 @@ local ROW1 = {{"", 0, 0}}                            -- the rows of the page, bu
 local ROW2 = {{"", 0, 0}, {"", 0, 0}}
 local BATTERY_LINE = {{"", 0, FONT_XS}, {"V  ", 0, FONT_XS}, {"", 0, FONT_XS}, {"", 0, FONT_XS}, {"mAh", 0, FONT_XS}}
 local CHIPS = {{"@i18n(widgets.dashboard.novafly.alt_max)@", "%.0f"}, {"@i18n(widgets.dashboard.novafly.climb_max)@", "%.1f"}, {"@i18n(widgets.dashboard.novafly.sink_max)@", "%.1f"}, {"@i18n(widgets.dashboard.novafly.flight_time)@", "%s"}}   -- the four chips of the foot band: word and format
-local chipValue, chipUnit = {}, {}
+local chipValue, chipUnit = {}, {"m", "m/s", "m/s", "min"}   -- the units of the four chips: the suite gives the altitude in metres (lib/live_sensors.lua)
 
 local style, S = nil, nil
 local nova = {dirty = false, armState = "unknown", flightLog = {}, highDetail = true, italic = nil}   -- the radio's font, no masks
@@ -157,14 +157,12 @@ local function paint()
 
     local fl = H.flight() or NONE   -- the last flight here: altitude and climb/sink from the altitude sensor, the flight time armed with a turning rotor;
     local sz = type(H.session) == "function" and H.session() or NONE   -- without a flight here the maximum values since connecting and the last flight time as the suite keeps it
-    local altUnit, rateUnit = s.altFt and "ft" or "m", s.altFt and "ft/s" or "m/s"
     local sec = fl.time
     if sec == nil and type(H.lastFlightTime) == "function" then sec = H.lastFlightTime() end
     local time = sec ~= nil and string.format("%d:%02d", floor(sec / 60), floor(sec % 60)) or nil
     local altMax, climb, sink = fl.alt, fl.climb, fl.sink   -- with a flight here its values, what it did not measure stays --
     if fl.time == nil then altMax, climb, sink = sz.altMax, sz.climbMax, sz.sinkMax end
     chipValue[1], chipValue[2], chipValue[3], chipValue[4] = altMax, climb, sink ~= nil and -sink or nil, time
-    chipUnit[1], chipUnit[2], chipUnit[3], chipUnit[4] = altUnit, rateUnit, rateUnit, "min"
     for i = 1, 4 do
         local x = FOOT.x + (i - 1) * (FOOT.w + FOOT.gap)
         local w = (i == 4) and (480 - x) or FOOT.w

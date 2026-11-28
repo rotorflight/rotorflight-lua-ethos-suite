@@ -639,11 +639,9 @@ local function read(tele)
         if s.fuel ~= nil and (s.fuel < 0 or s.fuel > 100) then s.fuel = nil end
         s.cells = cells
         s.used = g("consumption")
-        local alt, _, altUnit = tele.getSensor("altitude")   -- the unit is the third value; a value in feet comes as ft
-        alt = tonumber(alt)
-        if alt == nil and altSrc then alt, altUnit = sourceValue(altSrc), nil end
+        local alt = tonumber((tele.getSensor("altitude")))   -- in metres: the suite gives the altitude with "m" (lib/live_sensors.lua)
+        if alt == nil and altSrc then alt = sourceValue(altSrc) end
         s.alt = nonZero("alt", alt)
-        s.altFt = altUnit == "ft"
         if s.alt ~= nil then flight.altitude(flight.session, s.alt, os.clock()) end
         s.cpu = sourceValue(cpuSrc)
         if s.cpu ~= nil and (s.cpu < 0 or s.cpu > 100) then s.cpu = nil end
@@ -820,7 +818,7 @@ local function paint(x, y, w, h, s)
     if s.bank ~= nil then showValue(U.bank, fmt(s.bank, "", 0), bf) else showValue(U.bank, "?", C_DIM) end
     if s.rate ~= nil then showValue(U.rate, fmt(s.rate, "", 0), bf) else showValue(U.rate, "?", C_DIM) end
 
-    if s.alt ~= nil then showValue2(U.alt, fmt(s.alt, "", 0), s.altFt and "ft" or "m", C_LGREEN) else showValue(U.alt, "--", C_DIM) end
+    if s.alt ~= nil then showValue2(U.alt, fmt(s.alt, "", 0), "m", C_LGREEN) else showValue(U.alt, "--", C_DIM) end
 
     local R = frame()
     if R then R.gauge(LINES.M, lineColors(colorNr), R.BIG, GAUGE.cx, GAUGE.cy, rpmShare(s.rpm)) end   -- arc, ticks and the pointer as before
