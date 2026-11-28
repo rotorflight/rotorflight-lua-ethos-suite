@@ -193,6 +193,7 @@ local function tick()   -- every wakeup (cockpit.lua): BATTERY_CONFIG once per h
     local fc = fcNow()
     if batteryFor ~= fc then battery, batteryFor = nil, nil end   -- another heli or none: the values of the previous one no longer apply
     if fc == nil or battery ~= nil or request.fc ~= nil or os.clock() < request.from then return end
+    if (H.state() or NONE).armed == true then return end   -- armed: the suite keeps configuration traffic off the link (tasks/session.lua), so the page asks nothing
     request.fc = fc
     local sent = S.busRead("lib/msp_battery_config.lua", function(d)
         request.fc = nil

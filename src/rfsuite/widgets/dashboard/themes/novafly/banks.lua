@@ -53,20 +53,22 @@ local function read(name, done)   -- one message over the suite's bus with its c
 end
 
 local CHAIN = {{"PID_TUNING", "pid", "PID"}, {"RC_TUNING", "rc", "@i18n(widgets.dashboard.novafly.rates)@"}, {"GOVERNOR_CONFIG", "gov", "@i18n(widgets.dashboard.novafly.governor)@"}, {"GOVERNOR_PROFILE", "govProfile", "@i18n(widgets.dashboard.novafly.governor)@"}}
-local function chain(g, i)   -- reads the four messages one after another; an error stands in the foot, the chain goes on
+local function chain(g, i)   -- reads the four messages one after another; an error stands in the foot and the chain goes on, cleared and armed end it
     local link = CHAIN[i]
     if link == nil then   -- done: without an error the error line goes, with an error the tick reads again after the pause
         running = false
         if chainFailed then retryAt = os.clock() + PAUSE else values.failed, retryAt = nil, nil end
         return
     end
+    if (H.state() or NONE).armed == true then running, retryAt = false, os.clock() return end   -- armed meanwhile: the rest is read on the ground
     askedAt, linkNow = os.clock(), i
     if not read(link[1], function(w, reason)
         if g ~= generation then return end
+        if reason == "cleared" then running, retryAt = false, os.clock() return end   -- the suite emptied its queue (arming, link lost): the chain ends, the tick reads again on the ground
         if w ~= nil then values[link[2]] = w
         else
             chainFailed = true
-            if reason ~= "cleared" then values.failed = link[3] end   -- cleared: the suite emptied its queue (armed, link gone), no error of the FC; it is read again all the same
+            values.failed = link[3]
         end
         chain(g, i + 1)
     end) then
@@ -76,11 +78,12 @@ end
 
 local function start(s, keep)   -- keep: the same bank and rate once more, what is read already stays
     if running then return end
-    running, generation, chainFailed, retryAt = true, generation + 1, false, nil
     if not keep then
         values.pid, values.rc, values.gov, values.govProfile, values.failed = nil, nil, nil, nil, nil
         readFor = {bank = s.bank and floor(s.bank) or nil, rate = s.rate and floor(s.rate) or nil}
     end
+    if s.armed == true then retryAt = os.clock() return end   -- armed: the suite keeps configuration traffic off the link (tasks/session.lua), so the page asks nothing until the ground
+    running, generation, chainFailed, retryAt = true, generation + 1, false, nil
     chain(generation, 1)
 end
 
